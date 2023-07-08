@@ -10292,7 +10292,7 @@
   </peripheral>
   <peripheral>
   <name>SID</name>
-  <description></description>
+  <description>Security ID</description>
   <baseAddress>0x01C14000</baseAddress>
   <registers>
    <register>

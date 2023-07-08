@@ -8497,6 +8497,7 @@ arm_hardware_piol_altfn50(unsigned long opins, unsigned af)
 
 #endif /* defined (GPIOL) */
 
+#if defined (GPIOA)
 
 /* подключаем к периферии, 2 МГц, open-drain */
 void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
@@ -8576,6 +8577,11 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #endif
 }
+
+#endif /* defined (GPIOA) */
+
+#if defined (GPIOB)
+
 /* подключаем к периферии, 2 МГц, open-drain */
 void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 {
@@ -8654,6 +8660,9 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #endif
 }
+#endif /* defined (GPIOB) */
+
+#if defined (GPIOC)
 
 /* подключаем к периферии, 2 МГц, open-drain */
 void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
@@ -8733,7 +8742,9 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #endif
 }
+#endif /* defined (GPIOC) */
 
+#if defined (GPIOD)
 /* подключаем к периферии, 2 МГц, open-drain */
 void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 {
@@ -8812,7 +8823,9 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #endif
 }
+#endif /* defined (GPIOD) */
 
+#if defined (GPIOE)
 /* подключаем к периферии, 2 МГц, open-drain */
 void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 {
@@ -8871,6 +8884,8 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #endif
 }
+
+#endif /* defined (GPIOE) */
 
 #if defined (GPIOF)
 
@@ -8987,6 +9002,9 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #endif /* defined (GPIOG) */
 
+#if defined (GPIOA)
+
+
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
 arm_hardware_pioa_updown(unsigned long up, unsigned long down)
@@ -9014,6 +9032,10 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 #endif
 }
+
+#endif /* defined (GPIOA) */
+
+#if defined (GPIOB)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
@@ -9043,6 +9065,10 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 #endif
 }
 
+#endif /* defined (GPIOB) */
+
+#if defined (GPIOC)
+
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
 arm_hardware_pioc_updown(unsigned long up, unsigned long down)
@@ -9070,6 +9096,10 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 #endif
 }
+
+#endif /* defined (GPIOC) */
+
+#if defined (GPIOD)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
@@ -9099,6 +9129,10 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 #endif
 }
 
+#endif /* defined (GPIOD) */
+
+#if defined (GPIOE)
+
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
 arm_hardware_pioe_updown(unsigned long up, unsigned long down)
@@ -9123,6 +9157,8 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 
 #endif
 }
+
+#endif /* defined (GPIOE) */
 
 #if defined (GPIOF)
 
@@ -9294,6 +9330,8 @@ arm_hardware_pioz_updown(unsigned long up, unsigned long down)
 
 #endif /* defined (GPIOZ) */
 
+#if defined (GPIOA)
+
 /* отключение подтягивающих резисторов. */
 void 
 arm_hardware_pioa_updownoff(unsigned long ipins)
@@ -9321,6 +9359,10 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 #endif
 }
+
+#endif /* defined (GPIOA) */
+
+#if defined (GPIOB)
 
 /* отключение подтягивающих резисторов. */
 void 
@@ -9350,6 +9392,10 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 #endif
 }
 
+#endif /* defined (GPIOB) */
+
+#if defined (GPIOC)
+
 /* отключение подтягивающих резисторов. */
 void 
 arm_hardware_pioc_updownoff(unsigned long ipins)
@@ -9377,6 +9423,10 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 #endif
 }
+
+#endif /* defined (GPIOC) */
+
+#if defined (GPIOD)
 
 /* отключение подтягивающих резисторов. */
 void 
@@ -9406,6 +9456,10 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 #endif
 }
 
+#endif /* defined (GPIOD) */
+
+#if defined (GPIOE)
+
 /* отключение подтягивающих резисторов. */
 void 
 arm_hardware_pioe_updownoff(unsigned long ipins)
@@ -9430,6 +9484,8 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 
 #endif
 }
+
+#endif /* defined (GPIOE) */
 
 #if defined (GPIOF)
 

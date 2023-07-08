@@ -1,7 +1,6 @@
 #type; CMCTR
-#type; CMCTR
-#comment; Контроллер управления синхронизацией
 #base; CMCTR 0x38094000
+#comment; Контроллер управления синхронизацией
 #regdef; DIV_MPU_CTR; 0x004; Регистр делителя частоты MPUCLK
 #regdef; DIV_ATB_CTR; 0x008; Регистр делителя частоты ATCLK
 #regdef; DIV_APB_CTR; 0x00c; Регистр делителя частоты APCLK

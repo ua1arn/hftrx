@@ -1,4 +1,3 @@
-#comment; Display Engine
 #type; DE
 #base; DE 0x05000000
 #irq; DE 119

@@ -1,5 +1,5 @@
-#comment; Mali-400MP2
 #type; GPU
+#comment; Mali-400MP2
 #base; GPU 0x01C40000
 #irq; GPU-GP 129
 #irq; GPU-GPMMU 130

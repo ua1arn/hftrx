@@ -610,7 +610,7 @@
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ /* PE6: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */\
-			arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	/* PAxx: pull-up second encoder button */ \
+			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */

@@ -1,6 +1,6 @@
-#comment; Security ID
 #type; SID
 #base; SID 0x03006000
+#comment; Security ID
 #regdef; SID_RKEY0; 0x000; Securiy root key[31:0]
 #regdef; SID_RKEY1; 0x004; Securiy root key[63:32]
 #regdef; SID_RKEY2; 0x008; Securiy root key[95:64]

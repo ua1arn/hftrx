@@ -1,9 +1,9 @@
-#comment; Serial Peripheral Interface
 #type; SPI
 #base; SPI0 0x01C68000
 #base; SPI1 0x01C69000
 #irq; SPI0 97
 #irq; SPI1 98
+#comment; Serial Peripheral Interface
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
 #regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
 #regdef; SPI_IER; 0x0010; SPI Interrupt Control Register

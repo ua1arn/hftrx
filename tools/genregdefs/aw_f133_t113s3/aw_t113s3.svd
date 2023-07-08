@@ -8745,7 +8745,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_TOP</name>
-  <description>Graphic 2D</description>
+  <description>Graphic 2D top</description>
   <baseAddress>0x05410000</baseAddress>
   <registers>
    <register>
@@ -9226,7 +9226,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_BLD</name>
-  <description>Blender</description>
+  <description>Graphic 2D (G2D) Engine Blender</description>
   <baseAddress>0x05410400</baseAddress>
   <registers>
    <register>

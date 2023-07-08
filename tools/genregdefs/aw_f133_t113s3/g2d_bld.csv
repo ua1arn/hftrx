@@ -1,7 +1,6 @@
-#comment; Graphic 2D (G2D) Engine Blender
 #type; G2D_BLD
 #base; G2D_BLD 0x05410400
-#comment; Blender
+#comment; Graphic 2D (G2D) Engine Blender
 #regdef; BLD_FILL_COLOR_CTL	; 0x000 ; BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106  
 #regdef; BLD_FILL_COLOR		; 0x010 4 ; BLD_FILLC  N=0..1 
 #regdef; BLD_CH_ISIZE     	; 0x020 4; BLD_CH_ISIZE N=0..1  

@@ -1,6 +1,6 @@
-#comment; Graphic 2D (G2D) Engine Write Back
 #type; G2D_WB
 #base; G2D_WB 0x05413000
+#comment; Graphic 2D (G2D) Engine Write Back
 #regdef; WB_ATT; 0x00; WB_ATT
 #regdef; WB_SIZE; 0x04; WB_SIZE
 #regdef; WB_PITCH0; 0x08; WB_PITCH0

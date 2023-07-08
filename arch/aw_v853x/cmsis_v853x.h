@@ -8,29 +8,29 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!<   Interrupt */
-    SGI1_IRQn = 1,                                    /*!<   Interrupt */
-    SGI2_IRQn = 2,                                    /*!<   Interrupt */
-    SGI3_IRQn = 3,                                    /*!<   Interrupt */
-    SGI4_IRQn = 4,                                    /*!<   Interrupt */
-    SGI5_IRQn = 5,                                    /*!<   Interrupt */
-    SGI6_IRQn = 6,                                    /*!<   Interrupt */
-    SGI7_IRQn = 7,                                    /*!<   Interrupt */
-    SGI8_IRQn = 8,                                    /*!<   Interrupt */
-    SGI9_IRQn = 9,                                    /*!<   Interrupt */
-    SGI10_IRQn = 10,                                  /*!<   Interrupt */
-    SGI11_IRQn = 11,                                  /*!<   Interrupt */
-    SGI12_IRQn = 12,                                  /*!<   Interrupt */
-    SGI13_IRQn = 13,                                  /*!<   Interrupt */
-    SGI14_IRQn = 14,                                  /*!<   Interrupt */
-    SGI15_IRQn = 15,                                  /*!<   Interrupt */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!<   Interrupt */
-    HypervisorTimer_IRQn = 26,                        /*!<   Interrupt */
-    VirtualTimer_IRQn = 27,                           /*!<   Interrupt */
-    Legacy_nFIQ_IRQn = 28,                            /*!<   Interrupt */
-    SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
-    Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE  Interrupt */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE  Interrupt */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE  Interrupt */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE  Interrupt */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE  Interrupt */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE  Interrupt */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE  Interrupt */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE  Interrupt */
     CPUX_MSGBOX_R_IRQn = 32,                          /*!< MSGBOX Message Box Interrupt */
     UART0_IRQn = 34,                                  /*!< UART  Interrupt */
     UART1_IRQn = 35,                                  /*!< UART  Interrupt */
@@ -167,8 +167,8 @@ typedef enum IRQn
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
 #define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!<  Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!<  Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Base */
 #define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM Base */
@@ -1633,7 +1633,7 @@ typedef struct DE_UI_Type
 /*
  * @brief G2D_TOP
  */
-/*!< G2D_TOP Graphic 2D */
+/*!< G2D_TOP Graphic 2D top */
 typedef struct G2D_TOP_Type
 {
     volatile uint32_t G2D_SCLK_GATE;                  /*!< Offset 0x000 G2D SCLK gate   */
@@ -1723,7 +1723,7 @@ typedef struct G2D_VSU_Type
 /*
  * @brief G2D_BLD
  */
-/*!< G2D_BLD Blender */
+/*!< G2D_BLD Graphic 2D (G2D) Engine Blender */
 typedef struct G2D_BLD_Type
 {
     volatile uint32_t BLD_FILL_COLOR_CTL;             /*!< Offset 0x000 BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106   */
@@ -2996,8 +2996,8 @@ typedef struct R_PRCM_Type
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM register set access pointer */
 #define DCU ((DCU_TypeDef *) DCU_BASE)                /*!< DCU Debug control interface? register set access pointer */
-#define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
-#define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
+#define GIC_DISTRIBUTOR ((GIC_DISTRIBUTOR_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
+#define GIC_INTERFACE ((GIC_INTERFACE_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */
@@ -3024,9 +3024,9 @@ typedef struct R_PRCM_Type
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
 #define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlacer (DI) register set access pointer */
-#define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D register set access pointer */
+#define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
-#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Blender register set access pointer */
+#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0  register set access pointer */
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0  register set access pointer */
 #define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1  register set access pointer */

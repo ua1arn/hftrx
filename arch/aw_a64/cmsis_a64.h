@@ -8,29 +8,29 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!<   Interrupt */
-    SGI1_IRQn = 1,                                    /*!<   Interrupt */
-    SGI2_IRQn = 2,                                    /*!<   Interrupt */
-    SGI3_IRQn = 3,                                    /*!<   Interrupt */
-    SGI4_IRQn = 4,                                    /*!<   Interrupt */
-    SGI5_IRQn = 5,                                    /*!<   Interrupt */
-    SGI6_IRQn = 6,                                    /*!<   Interrupt */
-    SGI7_IRQn = 7,                                    /*!<   Interrupt */
-    SGI8_IRQn = 8,                                    /*!<   Interrupt */
-    SGI9_IRQn = 9,                                    /*!<   Interrupt */
-    SGI10_IRQn = 10,                                  /*!<   Interrupt */
-    SGI11_IRQn = 11,                                  /*!<   Interrupt */
-    SGI12_IRQn = 12,                                  /*!<   Interrupt */
-    SGI13_IRQn = 13,                                  /*!<   Interrupt */
-    SGI14_IRQn = 14,                                  /*!<   Interrupt */
-    SGI15_IRQn = 15,                                  /*!<   Interrupt */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!<   Interrupt */
-    HypervisorTimer_IRQn = 26,                        /*!<   Interrupt */
-    VirtualTimer_IRQn = 27,                           /*!<   Interrupt */
-    Legacy_nFIQ_IRQn = 28,                            /*!<   Interrupt */
-    SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
-    Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE  Interrupt */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE  Interrupt */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE  Interrupt */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE  Interrupt */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE  Interrupt */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE  Interrupt */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE  Interrupt */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE  Interrupt */
     UART0_IRQn = 32,                                  /*!< UART  Interrupt */
     UART1_IRQn = 33,                                  /*!< UART  Interrupt */
     UART2_IRQn = 34,                                  /*!< UART  Interrupt */
@@ -172,8 +172,8 @@ typedef enum IRQn
 #define DRAMPHY0_BASE ((uintptr_t) 0x01C65000)        /*!< DRAMPHY0 Base */
 #define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Base */
 #define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!<  Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!<  Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE Base */
 #define MIPI_DSI_BASE ((uintptr_t) 0x01CA0000)        /*!< MIPI_DSI Base */
 #define MIPI_DSI_PHY_BASE ((uintptr_t) 0x01CA1000)    /*!< MIPI_DSI_PHY Base */
 #define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI Base */
@@ -1896,7 +1896,7 @@ typedef struct MSI_MEMC_Type
 /*
  * @brief SID
  */
-/*!< SID  */
+/*!< SID Security ID */
 typedef struct SID_Type
 {
     volatile uint32_t SID_RKEY0;                      /*!< Offset 0x000 Securiy root key[31:0] */
@@ -2272,7 +2272,7 @@ typedef struct R_RSB_Type
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
-#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
@@ -2319,8 +2319,8 @@ typedef struct R_RSB_Type
 #define DRAMPHY0 ((DRAMPHY0_TypeDef *) DRAMPHY0_BASE) /*!< DRAMPHY0  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
-#define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
-#define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
+#define GIC_DISTRIBUTOR ((GIC_DISTRIBUTOR_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
+#define GIC_INTERFACE ((GIC_INTERFACE_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define MIPI_DSI ((MIPI_DSI_TypeDef *) MIPI_DSI_BASE) /*!< MIPI_DSI  register set access pointer */
 #define MIPI_DSI_PHY ((MIPI_DSI_PHY_TypeDef *) MIPI_DSI_PHY_BASE)/*!< MIPI_DSI_PHY  register set access pointer */
 #define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlaced register set access pointer */

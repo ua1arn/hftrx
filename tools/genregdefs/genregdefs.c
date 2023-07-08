@@ -488,16 +488,19 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 	return regp;
 }
 
-// 0 - end of file
-// 1 - register definition ok
-static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
+// registers list bay be empty
+static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 	char fldname[VNAME_MAX];
 	unsigned fldsize;
 	int pos; /* end of parsed field position */
 
 	for (;;) {
 		//fprintf(stderr, "token0=%s\n", token0);
-		if (2
+		if (0 == memcmp(token0, "##", 2)) {
+			// source comments
+			if (nextline(fp) == 0)
+				break;
+		} else if (2
 				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname,
 						&fldsize, &pos)) {
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize,
@@ -536,17 +539,13 @@ static int parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 				|| strcmp(token0, "#aggregend;\n") == 0) {
 			/* parsed */
 			//fprintf(stderr, "#aggregend: token0=%s", token0);
-			return nextline(fp);
+			nextline(fp);
+			return;
 
 		} else {
-			/* unrecognized input = next source line */
-			fprintf(stderr, "#2 %s: unrecognized token0=%s", file, token0);
-			/* parsed */
-			if (nextline(fp) == 0)
-				break;
+			break;
 		}
 	}
-	return 0; /* end of file */
 }
 
 // 0 - end of file
@@ -558,10 +557,26 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	int irq;
 	unsigned base;
 
+	// #type should be 1-st in register definitions
+	if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
+		//fprintf(stderr, "Parsed typname='%s'\n", typname);
+		trimname(typname);
+		strcpy(pfl->bname, typname);
+
+		/* parsed */
+		if (nextline(fp) == 0)
+			return 0;
+	} else {
+		return 0;
+	}
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
+		if (0 == memcmp(token0, "##", 2)) {
+			// source comments
+			if (nextline(fp) == 0)
+				break;
+		} else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
 			pfl->comment = strdup(comment);
 			if (nextline(fp) == 0)
@@ -592,14 +607,6 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
-		} else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
-			//fprintf(stderr, "Parsed typname='%s'\n", typname);
-			trimname(typname);
-			strcpy(pfl->bname, typname);
-
-			/* parsed */
-			if (nextline(fp) == 0)
-				break;
 		} else if (2 == sscanf(token0, "#base; %s%i\n", typname, &base)) {
 			//fprintf(stderr, "Parsed base='%s' 0x%08X\n", typname, base);
 			if (pfl->base_count < BASE_MAX) {
@@ -613,15 +620,18 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			if (nextline(fp) == 0)
 				break;
 		} else {
-			return parsereglist(fp, file, &pfl->regslist);
+			parsereglist(fp, file, &pfl->regslist);
+			return 1;
 		}
 	}
-	return 0; /* end of file */
+	return 1;
 }
 
-static int loadregs(struct parsedfile *pfl, const char *file) {
+// parse file section
+// 0 - end of file
+// 1 - register definition ok
+static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file) {
 	const size_t maxrows = 256;
-	FILE *fp = fopen(file, "rt");
 	//TP();
 	strcpy(pfl->bname, "");
 	pfl->base_count = 0;
@@ -634,22 +644,37 @@ static int loadregs(struct parsedfile *pfl, const char *file) {
 	pfl->comment = NULL;
 	pfl->file = strdup(file);
 
-	//TP();
-	if (fp == NULL) {
-		fprintf(stderr, "#error Can not open file '%s'\n", file);
-		return 1;
-	}
 	//fprintf(stderr, "#error Opened file '%s'\n", file);
 
-	if (nextline(fp) == 0)
-		return 1;
+	// 0 - end of file
+	// 1 - register definition ok
+	return parseregfile(pfl, fp, file);
 
-	parseregfile(pfl, fp, file);
+}
 
-	//pfl->regs = regs; 
-	//pfl->nregs = nregs; 
+static void loadfile(const char *file) {
+	FILE *fp = fopen(file, "rt");
+
+	if (fp == NULL) {
+		fprintf(stderr, "#error Can not open file '%s'\n", file);
+		return;
+	}
+	// parser initialize
+	if (nextline(fp) == 0) {
+		fclose(fp);
+		return;
+	}
+	// parse file sections
+	for (;;) {
+		struct parsedfile *const pfl = calloc(1, sizeof(struct parsedfile));
+		if (loadregs(pfl, fp, file)) {
+			InsertTailList(&parsedfiles, &pfl->item);
+		} else {
+			free(pfl);
+			break;
+		}
+	}
 	fclose(fp);
-	return 0;
 }
 
 static void processfile_periphregs(struct parsedfile *pfl) {
@@ -1157,12 +1182,7 @@ int main(int argc, char *argv[], char *envp[]) {
 
 	/* Load files */
 	for (; i < argc;) {
-		struct parsedfile *const pfl = calloc(1, sizeof(struct parsedfile));
-		if (loadregs(pfl, argv[i]) != 0) {
-			free(pfl);
-		} else {
-			InsertTailList(&parsedfiles, &pfl->item);
-		}
+		loadfile(argv[i]);
 		++i;
 	}
 

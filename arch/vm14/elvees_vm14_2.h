@@ -8,29 +8,29 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!<   Interrupt */
-    SGI1_IRQn = 1,                                    /*!<   Interrupt */
-    SGI2_IRQn = 2,                                    /*!<   Interrupt */
-    SGI3_IRQn = 3,                                    /*!<   Interrupt */
-    SGI4_IRQn = 4,                                    /*!<   Interrupt */
-    SGI5_IRQn = 5,                                    /*!<   Interrupt */
-    SGI6_IRQn = 6,                                    /*!<   Interrupt */
-    SGI7_IRQn = 7,                                    /*!<   Interrupt */
-    SGI8_IRQn = 8,                                    /*!<   Interrupt */
-    SGI9_IRQn = 9,                                    /*!<   Interrupt */
-    SGI10_IRQn = 10,                                  /*!<   Interrupt */
-    SGI11_IRQn = 11,                                  /*!<   Interrupt */
-    SGI12_IRQn = 12,                                  /*!<   Interrupt */
-    SGI13_IRQn = 13,                                  /*!<   Interrupt */
-    SGI14_IRQn = 14,                                  /*!<   Interrupt */
-    SGI15_IRQn = 15,                                  /*!<   Interrupt */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!<   Interrupt */
-    HypervisorTimer_IRQn = 26,                        /*!<   Interrupt */
-    VirtualTimer_IRQn = 27,                           /*!<   Interrupt */
-    Legacy_nFIQ_IRQn = 28,                            /*!<   Interrupt */
-    SecurePhysicalTimer_IRQn = 29,                    /*!<   Interrupt */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!<   Interrupt */
-    Legacy_nIRQ_IRQn = 31,                            /*!<   Interrupt */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE  Interrupt */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE  Interrupt */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE  Interrupt */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE  Interrupt */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE  Interrupt */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE  Interrupt */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE  Interrupt */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE  Interrupt */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE  Interrupt */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE  Interrupt */
     UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
     UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
     UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
@@ -58,8 +58,8 @@ typedef enum IRQn
 #define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Base */
 #define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Base */
 #define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!<  Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!<  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!< GIC_INTERFACE Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR Base */
 
 /*
  * @brief PMCTR
@@ -431,8 +431,8 @@ typedef struct NORMPORT_Type
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */
-#define GIC_INTERFACE ((_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
-#define GIC_DISTRIBUTOR ((_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
+#define GIC_INTERFACE ((GIC_INTERFACE_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
+#define GIC_DISTRIBUTOR ((GIC_DISTRIBUTOR_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

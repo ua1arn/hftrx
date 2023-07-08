@@ -1,8 +1,8 @@
-#comment; MIPI DSI Display Interface
 #type; DSI
 #base; DSI0 0x05450000
 #irq; DSI0 124
 #irqrv; DSI0 108
+#comment; MIPI DSI Display Interface
 #regdef; DSI_CTL; 0x0000; dsi_gctl 0x00 - 0x0c
 #regdef; DSI_GINT0; 0x0004; dsi_gint0 
 #regdef; DSI_GINT1; 0x0008; dsi_gint1 
