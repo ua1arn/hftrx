@@ -1,6 +1,5 @@
 #type; CCU
 #base; CCU 0x01C20000
-#irq; CCU_FERR 80
 #regdef; PLL_CPUX_CTRL_REG; 0x0000; PLL_CPUX Control Register 
 #regdef; PLL_AUDIO_CTRL_REG; 0x0008; PLL_AUDIO Control Register
 #regdef; PLL_VIDEO0_CTRL_REG; 0x0010; PLL_VIDEO0 Control Register

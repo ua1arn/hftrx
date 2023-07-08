@@ -74,11 +74,6 @@
   <name>CCU</name>
   <description></description>
   <baseAddress>0x01C20000</baseAddress>
-  <interrupt>
-   <name>CCU_FERR</name>
-   <value>80</value>
-   <description></description>
-  </interrupt>
   <registers>
    <register>
     <name>PLL_CPUX_CTRL_REG</name>

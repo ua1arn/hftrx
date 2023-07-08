@@ -59,7 +59,6 @@ typedef enum IRQn
     SMC_IRQn = 76,                                    /*!< SMC  Interrupt */
     EMAC_IRQn = 78,                                   /*!< EMAC  Interrupt */
     R_TWD_IRQn = 78,                                  /*!< R_TWD R_Trusted Watchdog Timer Interrupt */
-    CCU_FERR_IRQn = 80,                               /*!< CCU  Interrupt */
     MSGBOX_IRQn = 81,                                 /*!< MSGBOX  Interrupt */
     DMAC_IRQn = 82,                                   /*!< DMAC  Interrupt */
     GPADC_IRQn = 89,                                  /*!< GPADC  Interrupt */
