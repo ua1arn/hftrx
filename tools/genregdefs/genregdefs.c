@@ -211,11 +211,9 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 
 	offs = 0;
 	for (t = regslist->Flink; t != regslist; t = t->Flink) {
-		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
-				item);
-		static const char *fldtypes[] = { "uint32_t", "uint8_t ", "uint16_t",
-				"uint24_t", "uint32_t", "uint40_t", "uint48_t", "uint56_t",
-				"uint64_t", };
+		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
+		static const char *fldtypes[] = { "uint32_t", "uint8_t ", "uint16_t", "uint24_t", "uint32_t", "uint40_t", "uint48_t",
+				"uint56_t", "uint64_t", };
 
 		char fldtype[VNAME_MAX];
 
@@ -224,11 +222,9 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 		if (!IsListEmpty(&regp->aggregate)) {
 			fldtype[0] = '\0';
 		} else if (regp->fldsize >= sizeof fldtypes / sizeof fldtypes[0]) {
-			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "typesize%u",
-					regp->fldsize);
+			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "typesize%u", regp->fldsize);
 		} else {
-			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "%s",
-					fldtypes[regp->fldsize]);
+			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "%s", fldtypes[regp->fldsize]);
 		}
 
 		if (regp->fldoffs > offs || regp->fldsize == 0) {
@@ -236,22 +232,18 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			const unsigned sz = regp->fldoffs - offs;
 
 			if (sz == 4) {
-				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n",
-						offs);
+				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X;\n", offs);
 			} else if (sz != 0 && (sz % 4) == 0) {
-				emitline(indent + INDENT + 9,
-						"uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
+				emitline(indent + INDENT + 9, "uint32_t reserved_0x%03X [0x%04X];\n", offs, sz / 4);
 			} else if (sz != 0) {
-				emitline(indent + INDENT + 9,
-						"uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
+				emitline(indent + INDENT + 9, "uint8_t reserved_0x%03X [0x%04X];\n", offs, sz);
 			}
 			offs = regp->fldoffs;
 		}
 
 		if (regp->fldoffs != offs) {
-			emitline(0,
-					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
-					offs, regp->fldname, fldtype, regp->fldoffs);
+			emitline(0, "#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n", offs, regp->fldname, fldtype,
+					regp->fldoffs);
 			//regp->fldoffs = offs;
 		}
 
@@ -260,32 +252,25 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 				/* Emit aggregate type */
 				emitline(indent + INDENT, "struct\n");
 				emitline(indent + INDENT, "{\n");
-				offs += regp->fldrept
-						* genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
-				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
-						regp->fldrept);
-				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+				offs += regp->fldrept * genreglist(indent + INDENT, &regp->aggregate, offs); /* Emit fields list */
+				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname, regp->fldrept);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", regp->fldoffs + baseoffset, regp->comment);
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
-					emitline(indent + INDENT, "volatile %s %s [0x%03X];",
-							fldtype, regp->fldname, regp->fldrept);
+					emitline(indent + INDENT, "volatile %s %s [0x%03X];", fldtype, regp->fldname, regp->fldrept);
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
 					// Plain field
-					emitline(indent + INDENT, "volatile %s %s;", fldtype,
-							regp->fldname);
+					emitline(indent + INDENT, "volatile %s %s;", fldtype, regp->fldname);
 					offs += regp->fldsize;
 				}
-				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", regp->fldoffs + baseoffset, regp->comment);
 			}
 		} else {
-			emitline(0,
-					"#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n",
-					offs, regp->fldname, fldtype, regp->fldoffs);
+			emitline(0, "#error Need offset 0x%03X of field '%s' type '%s' at (0x%03X)\n", offs, regp->fldname, fldtype,
+					regp->fldoffs);
 			//break;
 		}
 	}
@@ -299,47 +284,40 @@ void genstruct(struct parsedfile *pfl) {
 	emitline(0, " * @brief %s\n", pfl->bname);
 	emitline(0, " */\n");
 
-	emitline(0, "/*!< %s %s */\n", pfl->bname,
-			pfl->comment ? pfl->comment : "");
+	emitline(0, "/*!< %s %s */\n", pfl->bname, pfl->comment ? pfl->comment : "");
 	emitline(0, "typedef struct %s_Type\n", pfl->bname);
 	emitline(0, "{\n");
 
 	offs = genreglist(0, &pfl->regslist, 0);
 
-	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", pfl->bname,
-			offs);
+	emitline(0, "} %s_TypeDef; /* size of structure = 0x%03X */\n", pfl->bname, offs);
 }
 
 void genstructprint(struct parsedfile *pfl) {
 	PLIST_ENTRY t;
 
 	emitline(0, "/* Print %s */\n", pfl->bname);
-	emitline(0,
-			"static void %s_Type_print(const %s_TypeDef * p, const char * base)\n",
-			pfl->bname, pfl->bname);
+	emitline(0, "static void %s_Type_print(const %s_TypeDef * p, const char * base)\n", pfl->bname, pfl->bname);
 	emitline(0, "{\n");
 	for (t = pfl->regslist.Flink; t != &pfl->regslist; t = t->Flink) {
-		const struct regdfn *const p = CONTAINING_RECORD(t, struct regdfn,
-				item);
+		const struct regdfn *const p = CONTAINING_RECORD(t, struct regdfn, item);
 
 		if (p->fldsize != 0) {
 			if (p->fldrept) {
 				// Array forming
 				unsigned i;
 				for (i = 0; i < 4 && i < p->fldrept; ++i) {
-					emitline(INDENT,
+					emitline(
+					INDENT,
 							"PRINTF(\"%%s->%s [%u] = 0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s [%u], (unsigned) p->%s [%u]);",
 							p->fldname, i, p->fldname, i, p->fldname, i);
-					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-							p->fldoffs + i * p->fldsize, p->comment);
+					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs + i * p->fldsize, p->comment);
 				}
 			} else if (p->fldrept == 0) {
 				// Plain field
-				emitline(INDENT,
-						"PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );",
+				emitline(INDENT, "PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );",
 						p->fldname, p->fldname, p->fldname);
-				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs,
-						p->comment);
+				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 			}
 		}
 	}
@@ -421,8 +399,7 @@ static int nextline(FILE *fp) {
 }
 
 static int istokencomment(void) {
-	return (0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2)
-			|| strcmp(token0, "#\n") == 0);
+	return (0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || strcmp(token0, "#\n") == 0);
 }
 
 /* trim field name */
@@ -439,8 +416,8 @@ static void trimname(char *s) {
 		*strchr(s, '-') = '_';
 }
 
-static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
-		const char *file) {
+static struct regdfn*
+parseregdef(char *s0, char *fldname, unsigned fldsize, const char *file) {
 	unsigned fldoffset;
 	unsigned fldrept;
 	struct regdfn *regp = calloc(1, sizeof *regp);
@@ -487,8 +464,7 @@ static struct regdfn* parseregdef(char *s0, char *fldname, unsigned fldsize,
 	} else {
 		regp->comment = strdup("no comment");
 
-		fprintf(stderr, "fstrange '%s' token0='%s' regdef='%s'\n", file, token0,
-				s);
+		fprintf(stderr, "fstrange '%s' token0='%s' regdef='%s'\n", file, token0, s);
 
 		regp->fldname = strdup(fldname);
 		regp->fldoffs = 0;
@@ -513,19 +489,14 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 			// source comments
 			if (nextline(fp) == 0)
 				break;
-		} else if (2
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname,
-						&fldsize, &pos)) {
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize,
-					file);
+		} else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, file);
 			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
 			/* parsed */
 			InsertTailList(listhead, &regp->item);
 			if (nextline(fp) == 0)
 				break;
-		} else if (1
-				== sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %n", fldname,
-						&pos)) {
+		} else if (1 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %n", fldname, &pos)) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, file);
 			//	fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
@@ -534,9 +505,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 			if (nextline(fp) == 0)
 				break;
 
-		} else if (1
-				== sscanf(token0, "#aggreg; %[a-zA-Z_0-9/-] %n", fldname,
-						&pos)) {
+		} else if (1 == sscanf(token0, "#aggreg; %[a-zA-Z_0-9/-] %n", fldname, &pos)) {
 
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, file);
 			//fprintf(stderr, "x Parsed 1 aggreg fldname='%s' \n", fldname);
@@ -548,8 +517,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 				break;
 			parsereglist(fp, file, &regp->aggregate);
 
-		} else if (strcmp(token0, "#aggregend;") == 0
-				|| strcmp(token0, "#aggregend;\n") == 0) {
+		} else if (strcmp(token0, "#aggregend;") == 0 || strcmp(token0, "#aggregend;\n") == 0) {
 			/* parsed */
 			//fprintf(stderr, "#aggregend: token0=%s", token0);
 			nextline(fp);
@@ -772,8 +740,7 @@ static void emitcpu(int indent) {
 
 }
 
-static unsigned emitregister000(int indent, const struct regdfn *const regp,
-		unsigned baseoffset) {
+static unsigned emitregister000(int indent, const struct regdfn *const regp, unsigned baseoffset) {
 	unsigned offs;
 	unsigned regsizebits = regp->fldsize * 8;
 
@@ -800,12 +767,11 @@ static unsigned emitregister000(int indent, const struct regdfn *const regp,
 	return offs;
 }
 
-unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
-		unsigned baseoffset);
+unsigned
+emitregisters(int indent, const LIST_ENTRY *regslist, unsigned baseoffset);
 
 /* return total size of emitted registers */
-unsigned emitregister(int indent, const struct regdfn *const regp,
-		unsigned baseoffset) {
+unsigned emitregister(int indent, const struct regdfn *const regp, unsigned baseoffset) {
 	unsigned offs = 0;
 
 //	char buff [128];
@@ -820,8 +786,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 			emitline(indent, "<cluster>" "\n");
 			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
-			size = emitregisters(indent + 1, &regp->aggregate, 0)
-					* regp->fldrept;
+			size = emitregisters(indent + 1, &regp->aggregate, 0) * regp->fldrept;
 			emithex03(indent + 1, "dimIncrement", size);
 			offs += size;
 			emitline(indent, "</cluster>" "\n");
@@ -838,8 +803,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 			emitline(indent, "<cluster>" "\n");
 			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
-			size = emitregister000(indent + 1, regp, regp->fldoffs)
-					* regp->fldrept;
+			size = emitregister000(indent + 1, regp, regp->fldoffs) * regp->fldrept;
 			emithex03(indent + 1, "dimIncrement", size);
 			offs += size;
 			emitline(indent, "</cluster>" "\n");
@@ -854,8 +818,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 	return offs;
 }
 
-unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
-		unsigned baseoffset) {
+unsigned emitregisters(int indent, const LIST_ENTRY *regslist, unsigned baseoffset) {
 	unsigned offs;
 	PLIST_ENTRY t;
 
@@ -863,8 +826,7 @@ unsigned emitregisters(int indent, const LIST_ENTRY *regslist,
 
 	offs = 0;
 	for (t = regslist->Flink; t != regslist; t = t->Flink) {
-		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
-				item);
+		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
 		unsigned regsizebits = regp->fldsize * 8;
 
 		offs += emitregister(indent + 1, regp, offs);
@@ -921,8 +883,7 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	/* base address */
 	for (i = 1; i < pfl->base_count; ++i) {
 
-		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n",
-				pfl->base_names[0]);
+		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n", pfl->base_names[0]);
 		emitstring(indent, "name", pfl->base_names[i]);
 		emithex32(indent, "baseAddress", pfl->base_address[i]);
 		emitinterrupts(indent, pfl);
@@ -941,14 +902,12 @@ static void emitperipherials(int indent) {
 	/* structures */
 
 	for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
-				item);
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 		++nitems;
 	}
 	pflarray = calloc(nitems, sizeof(struct parsedfile*));
 	for (i = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink, ++i) {
-		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
-				item);
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 		pflarray[i] = pfl;
 	}
 	qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
@@ -994,8 +953,7 @@ static void generate_debug(void) {
 
 	/* print structire debug */
 
-	_snprintf(headrname, sizeof headrname / sizeof headrname[0],
-			"HEADER_%08X_INCLUDED", (unsigned) time(NULL));
+	_snprintf(headrname, sizeof headrname / sizeof headrname[0], "HEADER_%08X_INCLUDED", (unsigned) time(NULL));
 
 	emitline(0, "#ifndef %s" "\n", headrname);
 	emitline(0, "#define %s" "\n", headrname);
@@ -1004,8 +962,7 @@ static void generate_debug(void) {
 	/* structures */
 
 	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
-				item);
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 		processfile_periphregsdebug(pfl);
 	}
 	emitline(0, "#endif /* PRINTF */\n");
@@ -1017,8 +974,7 @@ static void generate_cmsis(void) {
 
 	/* CMSIS header forming */
 	char headrname[128];
-	_snprintf(headrname, sizeof headrname / sizeof headrname[0],
-			"HEADER_%08X_INCLUDED", (unsigned) 12345 /*time(NULL) */);
+	_snprintf(headrname, sizeof headrname / sizeof headrname[0], "HEADER_%08X_INCLUDED", (unsigned) 12345 /*time(NULL) */);
 
 	emitline(0, "#pragma once" "\n");
 	emitline(0, "#ifndef %s" "\n", headrname);
@@ -1035,13 +991,9 @@ static void generate_cmsis(void) {
 
 		{
 			PLIST_ENTRY t;
-			for (t = parsedfiles.Flink;
-					t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0];
-					t = t->Flink) {
-				struct parsedfile *const pfl = CONTAINING_RECORD(t,
-						struct parsedfile, item);
-				nitems += collect_irq(pfl,
-						sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
+			for (t = parsedfiles.Flink; t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0]; t = t->Flink) {
+				struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+				nitems += collect_irq(pfl, sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
 			}
 		}
 
@@ -1057,12 +1009,12 @@ static void generate_cmsis(void) {
 			struct irqmap *const p = &irqs[i];
 
 			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname,
-					p->pfl->comment ? p->pfl->comment : "");
+			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
-		emitline(INDENT,
+		emitline(
+		INDENT,
 				"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
 				1048);
 		emitline(0, "} IRQn_Type;\n");
@@ -1077,13 +1029,9 @@ static void generate_cmsis(void) {
 
 		{
 			PLIST_ENTRY t;
-			for (t = parsedfiles.Flink;
-					t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0];
-					t = t->Flink) {
-				struct parsedfile *const pfl = CONTAINING_RECORD(t,
-						struct parsedfile, item);
-				nitems += collect_irqrv(pfl,
-						sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
+			for (t = parsedfiles.Flink; t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0]; t = t->Flink) {
+				struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+				nitems += collect_irqrv(pfl, sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
 			}
 		}
 
@@ -1099,12 +1047,12 @@ static void generate_cmsis(void) {
 			struct irqmaprv *const p = &irqs[i];
 
 			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname,
-					p->pfl->comment ? p->pfl->comment : "");
+			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
-		emitline(INDENT,
+		emitline(
+		INDENT,
 				"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
 				1048);
 		emitline(0, "} IRQn_Type;\n");
@@ -1120,8 +1068,7 @@ static void generate_cmsis(void) {
 		PLIST_ENTRY t;
 
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
 		}
 
@@ -1135,8 +1082,7 @@ static void generate_cmsis(void) {
 		for (i = 0; i < nitems; ++i) {
 			struct basemap *const p = &maps[i];
 
-			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->name,
-					p->base);
+			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->name, p->base);
 			emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
 		}
 		emitline(0, "\n");
@@ -1149,17 +1095,13 @@ static void generate_cmsis(void) {
 		int i;
 		struct parsedfile **pflarray;
 
-		for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t =
-				t->Flink) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
+		for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			++nitems;
 		}
 		pflarray = calloc(nitems, sizeof(struct parsedfile*));
-		for (i = 0, t = parsedfiles.Flink; t != &parsedfiles;
-				t = t->Flink, ++i) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
+		for (i = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink, ++i) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			pflarray[i] = pfl;
 		}
 		qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
@@ -1183,8 +1125,7 @@ static void generate_cmsis(void) {
 		emitline(0, "\n");
 
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
 		}
 
@@ -1196,10 +1137,8 @@ static void generate_cmsis(void) {
 				/* no structure defined */
 				continue;
 			}
-			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].name,
-					maps[i].pfl->bname, maps[i].name);
-			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n",
-					maps[i].name, pfl->comment ? pfl->comment : "");
+			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].name, maps[i].pfl->bname, maps[i].name);
+			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n", maps[i].name, pfl->comment ? pfl->comment : "");
 		}
 		emitline(0, "\n");
 	}
@@ -1243,8 +1182,7 @@ int main(int argc, char *argv[], char *envp[]) {
 	{
 		PLIST_ENTRY t;
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			//fprintf(stderr, "$");
 		}
 	}
@@ -1263,8 +1201,7 @@ int main(int argc, char *argv[], char *envp[]) {
 		/* release memory */
 
 		for (t = parsedfiles.Flink; t != &parsedfiles;) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t,
-					struct parsedfile, item);
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			t = t->Flink;
 
 			freeregs(pfl);
