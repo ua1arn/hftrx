@@ -87,6 +87,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>PLL_VIDEO2_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Control Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>PLL_VE_CTRL_REG</name>
     <displayName>PLL_VE_CTRL_REG</displayName>
     <description>PLL_VE Control Register</description>
@@ -226,6 +235,24 @@
     <displayName>PLL_VIDEO1_PAT1_CTRL_REG</displayName>
     <description>PLL_VIDEO1 Pattern1 Control Register</description>
     <addressOffset>0x14C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO2_PAT0_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_PAT0_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Pattern0 Control Register</description>
+    <addressOffset>0x150</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO2_PAT1_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_PAT1_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Pattern1 Control Register</description>
+    <addressOffset>0x154</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

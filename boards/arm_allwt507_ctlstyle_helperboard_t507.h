@@ -26,7 +26,7 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
-	#define LSEFREQ 32768uL
+	#define LSEFREQ 32768u
 
 	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */

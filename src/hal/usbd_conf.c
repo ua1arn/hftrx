@@ -418,6 +418,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	}
 
+#elif CPUSTYLE_T507
+	#warning Implement for CPUSTYLE_T507
+
 #elif CPUSTYLE_A64
 
 	//	Allwinner USB DRD support (musb_otg)
@@ -604,6 +607,9 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 			arm_hardware_disable_handler(OTG_FS_IRQn);
 		  }
 	#endif /* defined (USB_OTG_FS) */
+
+#elif CPUSTYLE_T507
+	#warning Implement for CPUSTYLE_T507
 
 #elif CPUSTYLE_A64
 

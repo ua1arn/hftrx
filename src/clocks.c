@@ -1995,7 +1995,7 @@ uint_fast32_t allwnrt113_get_losc_freq(void)
 uint_fast64_t allwnr_a64_get_pll_cpux_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_CPUX_CTRL_REG;
-	const uint_fast32_t pllP = UINT32_C(1) + ((reg >> 16) & 0x03);
+	const uint_fast32_t pllP = UINT32_C(1) << ((reg >> 16) & 0x03);
 	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x1F);
 	const uint_fast32_t pllK = UINT32_C(1) + ((reg >> 4) & 0x03);
 	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x03);
@@ -2322,9 +2322,301 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 
 #elif CPUSTYLE_T507
 
+uint_fast32_t allwnr_t507_get_hosc_freq(void)
+{
+    return WITHCPUXTAL;
+}
+
+uint_fast32_t allwnr_t507_get_rtc32k_freq(void)
+{
+    return LSEFREQ;
+}
+
+uint_fast32_t allwnr_t507_get_rc16m_freq(void)
+{
+    return 16000000u;
+}
+
+uint_fast64_t allwnr_t507_get_pll_cpux_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_CPUX_CTRL_REG;
+	const uint_fast32_t divP = UINT32_C(1) << ((pllreg >> 16) & 0x03);
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0x1F);
+	// PLL_CPUX=24 MHz*N/P
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / divP;
+}
+
+uint_fast64_t allwnr_t507_get_pll_ddr0_x2_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DDR0_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_DDR= 24MHz*N/M0/ M1
+	//	The default value of PLL_DDR0 is 432MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_ddr1_x2_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DDR1_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_DDR= 24MHz*N/M0/ M1
+	//	The default value of PLL_DDR1 is 432MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_PERI0(2X) = 24MHz*N/M0/M1
+	//	PLL_PERI0(1X) = 24MHz*N/M0/M1/2
+	//	The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recomme nded to modify the value
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_peri1_x2_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI1_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_PERI1(2X) = 24MHz*N/M0/M1
+	//	PLL_PERI1(1X) = 24MHz*N/M0/M1/2
+	//	The default value of PLL_PERI1(2X) is 1.2 GHz. It is not recomme nded to modify the value
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_GPU0_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_GPU0 = 24 MHz*N/M0/M1.
+	//	The default value of PLL_GPU0 is 432 MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_VIDEO0(4X)= 24MHz*N/M.
+	//	PLL_VIDEO0(1X)=24MHz*N/M/4.
+	//	The default value of PLL_VIDEO0(4X) is 1188 MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_VIDEO1(4X)= 24MHz*N/M.
+	//	PLL_VIDEO1(1X)=24MHz*N/M/4.
+	//	The default value of PLL_VIDEO1(4X) is 1188 MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO2_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	PLL_VIDEO2(4X)= 24MHz*N/M.
+	//	PLL_VIDEO2(1X)=24MHz*N/M/4.
+	//	The default value of PLL_VIDEO2(4X) is 1188 MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_ve_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VE_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	The	PLL_VE = 24 MHz*N/M0/M1.
+	//	The default value of PLL_VE is 432MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_de_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DE_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	The	PLL_DE = 24 MHz*N/M0/M1.
+	//	The default value of PLL_DE is 432MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_CSI_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	//	The	PLL_CSI = 24 MHz*N/M0/M1.
+	//	The default value of PLL_CSI is 432MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / (divM0 * divM1);
+}
+
+uint_fast64_t allwnr_t507_get_pll_audio0_x4_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_CSI_CTRL_REG;
+	const uint_fast32_t divP = UINT32_C(1) + ((pllreg >> 8) & 0x3F);	// PLL_FACTOR_P
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t divider = divP * divM0 * divM1;
+	//	PLL_AUDIO(hs) 24 MHz*N/M1
+	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
+	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
+	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
+	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / divider;
+}
+
+uint_fast64_t allwnr_t507_get_pll_audio0_hs_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_CSI_CTRL_REG;
+	const uint_fast32_t divP = UINT32_C(1) + ((pllreg >> 8) & 0x3F);	// PLL_FACTOR_P
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t divider = divM0 * divM1;
+	//	PLL_AUDIO(hs) 24 MHz*N/M1
+	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
+	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
+	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
+	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
+	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * divN / divider;
+}
+
+uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
+{
+	return allwnr_t507_get_pll_peri0_x2_freq() / 2;
+}
+
+uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void)
+{
+	return allwnr_t507_get_pll_peri1_x2_freq() / 2;
+}
+
 uint_fast32_t allwnr_t507_get_cpux_freq(void)
 {
-	return WITHCPUXTAL;
+	//	CPUX Clock = Clock Source
+	//	CPUX_AXI Clock = Clock Source/M
+	//	CPUX_APB Clock = Clock Source/N
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = 1;
+	//	000: OSC24M
+	//	001: RTC_32K
+	//	010: RC16M
+	//	011: PLL_CPUX
+	//	100: PLL_PERI0(1X)
+	switch ((clkreg >> 16) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 010: RC16M
+		return allwnr_t507_get_rc16m_freq() / divider;
+	case 0x03:
+		// 011: PLL_CPUX
+		return allwnr_t507_get_pll_cpux_freq() / divider;
+	case 0x04:
+		// 100: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_axi_freq(void)
+{
+	//	CPUX Clock = Clock Source
+	//	CPUX_AXI Clock = Clock Source/M
+	//	CPUX_APB Clock = Clock Source/N
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	000: OSC24M
+	//	001: RTC_32K
+	//	010: RC16M
+	//	011: PLL_CPUX
+	//	100: PLL_PERI0(1X)
+	switch ((clkreg >> 16) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 010: RC16M
+		return allwnr_t507_get_rc16m_freq() / divider;
+	case 0x03:
+		// 011: PLL_CPUX
+		return allwnr_t507_get_pll_cpux_freq() / divider;
+	case 0x04:
+		// 100: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_apb_freq(void)
+{
+	//	CPUX Clock = Clock Source
+	//	CPUX_AXI Clock = Clock Source/M
+	//	CPUX_APB Clock = Clock Source/N
+	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = divN;
+	//	000: OSC24M
+	//	001: RTC_32K
+	//	010: RC16M
+	//	011: PLL_CPUX
+	//	100: PLL_PERI0(1X)
+	switch ((clkreg >> 16) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 010: RC16M
+		return allwnr_t507_get_rc16m_freq() / divider;
+	case 0x03:
+		// 011: PLL_CPUX
+		return allwnr_t507_get_pll_cpux_freq() / divider;
+	case 0x04:
+		// 100: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
 }
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)

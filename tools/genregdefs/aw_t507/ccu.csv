@@ -8,6 +8,7 @@
 #regdef; PLL_GPU0_CTRL_REG; 0x0030; PLL_GPU0 Control Register
 #regdef; PLL_VIDEO0_CTRL_REG; 0x0040; PLL_VIDEO0 Control Register
 #regdef; PLL_VIDEO1_CTRL_REG; 0x0048; PLL_VIDEO1 Control Register
+#regdef; PLL_VIDEO2_CTRL_REG; 0x0050; PLL_VIDEO2 Control Register
 #regdef; PLL_VE_CTRL_REG; 0x0058; PLL_VE Control Register
 #regdef; PLL_DE_CTRL_REG; 0x0060; PLL_DE Control Register
 #regdef; PLL_AUDIO_CTRL_REG; 0x0078; PLL_AUDIO Control Register
@@ -24,6 +25,8 @@
 #regdef; PLL_VIDEO0_PAT1_CTRL_REG; 0x0144; PLL_VIDEO0 Pattern1 Control Register
 #regdef; PLL_VIDEO1_PAT0_CTRL_REG; 0x0148; PLL_VIDEO1 Pattern0 Control Register
 #regdef; PLL_VIDEO1_PAT1_CTRL_REG; 0x014C; PLL_VIDEO1 Pattern1 Control Register
+#regdef; PLL_VIDEO2_PAT0_CTRL_REG; 0x0150; PLL_VIDEO2 Pattern0 Control Register
+#regdef; PLL_VIDEO2_PAT1_CTRL_REG; 0x0154; PLL_VIDEO2 Pattern1 Control Register
 #regdef; PLL_VE_PAT0_CTRL_REG; 0x0158; PLL_VE Pattern0 Control Register
 #regdef; PLL_VE_PAT1_CTRL_REG; 0x015C; PLL_VE Pattern1 Control Register
 #regdef; PLL_DE_PAT0_CTRL_REG; 0x0160; PLL_DE Pattern0 Control Register
