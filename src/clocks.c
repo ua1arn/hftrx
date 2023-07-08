@@ -2480,7 +2480,7 @@ uint_fast64_t allwnr_t507_get_pll_audio0_x4_freq(void)
 	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
 	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	const uint_fast32_t divider = divP * divM0 * divM1;
-	//	PLL_AUDIO(hs) 24 MHz*N/M1
+	//	PLL_AUDIO(hs) = 24 MHz*N/M1
 	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
 	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
 	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
@@ -2496,7 +2496,7 @@ uint_fast64_t allwnr_t507_get_pll_audio0_hs_freq(void)
 	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
 	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	const uint_fast32_t divider = divM0 * divM1;
-	//	PLL_AUDIO(hs) 24 MHz*N/M1
+	//	PLL_AUDIO(hs) = 24 MHz*N/M1
 	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
 	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
 	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
@@ -2514,16 +2514,26 @@ uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void)
 	return allwnr_t507_get_pll_peri1_x2_freq() / 2;
 }
 
+uint_fast64_t allwnr_t507_get_pll_ddr0_freq(void)
+{
+	return allwnr_t507_get_pll_ddr0_x2_freq() / 2;
+}
+
+uint_fast64_t allwnr_t507_get_pll_ddr1_freq(void)
+{
+	return allwnr_t507_get_pll_ddr1_x2_freq() / 2;
+}
+
 uint_fast32_t allwnr_t507_get_cpux_freq(void)
 {
-	//	CPUX Clock = Clock Source
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
+	//	CPUX Clock = Clock Source
 	//	000: OSC24M
 	//	001: RTC_32K
 	//	010: RC16M
 	//	011: PLL_CPUX
 	//	100: PLL_PERI0(1X)
-	switch ((clkreg >> 16) & 0x07)	/* CLK_SRC_SEL */
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:
@@ -2566,6 +2576,272 @@ uint_fast32_t allwnr_t507_get_apb_freq(void)
 	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
 
 	return allwnr_t507_get_cpux_freq() / divN;
+}
+
+uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->PSI_AHB1_AHB2_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0xFF);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = divN * divM;
+	//	PSI_AHB1_AHB2_CLK = Clock Source M/N
+	//	00: OSC24M
+	//	01: RTC_32K
+	//	10: RC16M
+	//	11: PLL_PERI0(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 10: RC16M
+		return allwnr_t507_get_rc16m_freq() / divider;
+	case 0x03:
+		// 11: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_ahb3_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->AHB3_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = divN * divM;
+	//	AHB3_CLK = Clock Source M/ N
+	//	00: OSC24M
+	//	01: RTC_32K
+	//	10: PSI
+	//	11: PLL_PERI0(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 10: PSI
+		return allwnr_t507_get_psi_ahb1_ahb2_freq() / divider;
+	case 0x03:
+		// 11: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_apb1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->APB1_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = divN * divM;
+	//	APB1_CLK = Clock Source M/ N
+	//	00: OSC24M
+	//	01: RTC_32K
+	//	10: PSI
+	//	11: PLL_PERI0(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 10: PSI
+		return allwnr_t507_get_psi_ahb1_ahb2_freq() / divider;
+	case 0x03:
+		// 11: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_apb2_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
+	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = divN * divM;
+	//	APB2_CLK = Clock Source M/N
+	//	00: OSC24M
+	//	01: RTC_32K
+	//	10: PSI
+	//	11: PLL_PERI0(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 001: RTC_32K
+		return allwnr_t507_get_rtc32k_freq() / divider;
+	case 0x02:
+		// 10: PSI
+		return allwnr_t507_get_psi_ahb1_ahb2_freq() / divider;
+	case 0x03:
+		// 11: PLL_PERI0(1X)
+		return allwnr_t507_get_pll_peri0_x1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_mbus_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->MBUS_CFG_REG;
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x07);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	MBUS_CLK = Clock Source/M.
+	//	00: OSC24M
+	//	01: PLL_PERI0(2X)
+	//	10: PLL_DDR0
+	//	11: PLL_DDR1
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 01: PLL_PERI0(2X)
+		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
+	case 0x02:
+		// 10: PLL_DDR0
+		return allwnr_t507_get_pll_ddr0_freq() / divider;
+	case 0x03:
+		// 11: PLL_DDR1
+		return allwnr_t507_get_pll_ddr1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_de_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	SCLK = Clock Source/M.
+	//	0: 	PLL_DE
+	//	1: 	PLL_PERI0(2X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 0: 	PLL_DE
+		return allwnr_t507_get_pll_de_freq() / divider;
+	case 0x01:
+		// 1: 	PLL_PERI0(2X)
+		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_di_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DI_CLK_REG;
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	SCLK = Clock Source/M.
+	//	0: 	PLL_DE
+	//	1: 	PLL_PERI0(2X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 0: 	PLL_DE
+		return allwnr_t507_get_pll_de_freq() / divider;
+	case 0x01:
+		// 1: 	PLL_PERI0(2X)
+		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_g2d_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->G2D_CLK_REG;
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	SCLK = Clock Source/M.
+	//	0: 	PLL_DE
+	//	1: 	PLL_PERI0(2X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 0: 	PLL_DE
+		return allwnr_t507_get_pll_de_freq() / divider;
+	case 0x01:
+		// 1: 	PLL_PERI0(2X)
+		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_ce_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CE_CLK_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = divN * divM;
+	//	SCLK = Clock Source/M/N
+	//	0:	OSC24M
+	//	1: 	PLL_PERI0(2X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 0:	OSC24M
+		return allwnr_t507_get_hosc_freq() / divider;
+	case 0x01:
+		// 1: 	PLL_PERI0(2X)
+		return allwnr_t507_get_pll_peri0_x2_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_ve_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->VE_CLK_REG;
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	SCLK = Clock Source/M.
+	//	0: 	PLL_VE
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 0: 	PLL_VE
+		return allwnr_t507_get_pll_ve_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_avs_freq(void)
+{
+	return allwnr_t507_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_t507_get_dram_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;
+	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = divM;
+	//	SCLK = Clock Source/M.
+	//	00 : PLL_DDR0
+	//	01 : PLL_DDR1
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00 : PLL_DDR0
+		return allwnr_t507_get_pll_ddr0_freq() / divider;
+	case 0x01:
+		// 01 : PLL_DDR1
+		return allwnr_t507_get_pll_ddr1_freq() / divider;
+	}
 }
 
 uint_fast32_t allwnrt113_get_spi0_freq(void)

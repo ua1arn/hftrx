@@ -199,6 +199,21 @@ uint_fast32_t allwnra64_get_audiopll_freq(void);
 
 // Allwinner T507/T507-H/H616
 uint_fast32_t allwnr_t507_get_cpux_freq(void);
+uint_fast32_t allwnr_t507_get_avs_freq(void);
+uint_fast32_t allwnr_t507_get_axi_freq(void);
+uint_fast32_t allwnr_t507_get_apb_freq(void);
+uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void);
+uint_fast32_t allwnr_t507_get_ahb3_freq(void);
+uint_fast32_t allwnr_t507_get_apb1_freq(void);
+uint_fast32_t allwnr_t507_get_apb2_freq(void);
+uint_fast32_t allwnr_t507_get_mbus_freq(void);
+uint_fast32_t allwnr_t507_get_de_freq(void);
+uint_fast32_t allwnr_t507_get_di_freq(void);
+uint_fast32_t allwnr_t507_get_g2d_freq(void);
+uint_fast32_t allwnr_t507_get_ce_freq(void);
+uint_fast32_t allwnr_t507_get_ve_freq(void);
+uint_fast32_t allwnr_t507_get_avs_freq(void);
+uint_fast32_t allwnr_t507_get_dram_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
