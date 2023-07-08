@@ -2808,13 +2808,11 @@ typedef struct C0_CPUX_CFG_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define DE ((DE_TypeDef *) DE_BASE)                   /*!< DE Display Engine (DE) register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
-#define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlacer (DI) register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
@@ -2827,7 +2825,6 @@ typedef struct C0_CPUX_CFG_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
 #define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
-#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
@@ -2838,13 +2835,10 @@ typedef struct C0_CPUX_CFG_Type
 #define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP  register set access pointer */
 #define TVD ((TVD_TypeDef *) TVD_BASE)                /*!< TVD Video Decoding register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
-#define RISC_WDG ((RISC_WDG_TypeDef *) RISC_WDG_BASE) /*!< RISC_WDG  register set access pointer */
-#define RISC_TIMESTAMP ((RISC_TIMESTAMP_TypeDef *) RISC_TIMESTAMP_BASE)/*!< RISC_TIMESTAMP  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
-#define C0_CPUX_MBIST ((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)/*!< C0_CPUX_MBIST  register set access pointer */
 #define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC  register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */
 

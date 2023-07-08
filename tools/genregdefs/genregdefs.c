@@ -412,6 +412,10 @@ static int nextline(FILE *fp) {
 
 }
 
+static int istokencomment(void) {
+	return (0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || strcmp(token0, "#\n") == 0);
+}
+
 /* trim field name */
 static void trimname(char *s) {
 	if (strchr(s, '\n') != NULL)
@@ -496,7 +500,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 	for (;;) {
 		//fprintf(stderr, "token0=%s\n", token0);
-		if (0 == memcmp(token0, "##", 2)) {
+		if (istokencomment()) {
 			// source comments
 			if (nextline(fp) == 0)
 				break;
@@ -572,7 +576,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (0 == memcmp(token0, "##", 2)) {
+		if (istokencomment()) {
 			// source comments
 			if (nextline(fp) == 0)
 				break;
@@ -1018,6 +1022,7 @@ static void generate_cmsis(void) {
 
 		qsort(irqs, nitems, sizeof irqs[0], compare_irq);
 
+		/* generate ARM IRQ vectors */
 		emitline(0, "\n");
 		emitline(0, "/* IRQs */\n");
 		emitline(0, "\n");
@@ -1059,6 +1064,7 @@ static void generate_cmsis(void) {
 
 		qsort(irqs, nitems, sizeof irqs[0], compare_irqrv);
 
+		/* generate RISC-V IRQ vectors */
 		emitline(0, "\n");
 		emitline(0, "/* IRQs */\n");
 		emitline(0, "\n");
@@ -1096,6 +1102,7 @@ static void generate_cmsis(void) {
 
 		qsort(maps, nitems, sizeof maps[0], compare_base);
 
+		/* collect base addresses */
 		emitline(0, "\n");
 		emitline(0, "/* Peripheral and RAM base address */\n");
 		emitline(0, "\n");
@@ -1142,6 +1149,10 @@ static void generate_cmsis(void) {
 
 		for (i = 0; i < nitems; ++i) {
 			struct parsedfile *const pfl = maps[i].pfl;
+			if (IsListEmpty(&pfl->regslist)) {
+				/* no structure defined */
+				continue;
+			}
 			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].name,
 					maps[i].pfl->bname, maps[i].name);
 			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n",

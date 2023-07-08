@@ -431,8 +431,6 @@ typedef struct NORMPORT_Type
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */
-#define GIC_INTERFACE ((GIC_INTERFACE_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
-#define GIC_DISTRIBUTOR ((GIC_DISTRIBUTOR_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

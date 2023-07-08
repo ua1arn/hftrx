@@ -2113,6 +2113,146 @@
   <baseAddress>0x02000120</baseAddress>
   </peripheral>
   <peripheral>
+  <name>GPIOBLOCK</name>
+  <description></description>
+  <baseAddress>0x02000000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>7</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000000</addressOffset>
+      <register>
+       <name>CFG</name>
+       <displayName>CFG</displayName>
+       <description>Configure Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <register>
+      <name>DATA</name>
+      <displayName>DATA</displayName>
+      <description>Data Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000014</addressOffset>
+      <register>
+       <name>DRV</name>
+       <displayName>DRV</displayName>
+       <description>Multi_Driving Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>2</dim>
+      <addressOffset>0x00000024</addressOffset>
+      <register>
+       <name>PULL</name>
+       <displayName>PULL</displayName>
+       <description>Pull Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x008</dimIncrement>
+     </cluster>
+    </registers>
+    <dimIncrement>0x134</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>7</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <registers>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000000</addressOffset>
+      <register>
+       <name>EINT_CFG</name>
+       <displayName>EINT_CFG</displayName>
+       <description>External Interrupt Configure Registers</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <register>
+      <name>EINT_CTL</name>
+      <displayName>EINT_CTL</displayName>
+      <description>External Interrupt Control Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>EINT_STATUS</name>
+      <displayName>EINT_STATUS</displayName>
+      <description>External Interrupt Status Register</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>EINT_DEB</name>
+      <displayName>EINT_DEB</displayName>
+      <description>External Interrupt Debounce Register</description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x0C4</dimIncrement>
+   </cluster>
+   <register>
+    <name>PIO_POW_MOD_SEL</name>
+    <displayName>PIO_POW_MOD_SEL</displayName>
+    <description>PIO Group Withstand Voltage Mode Select Register</description>
+    <addressOffset>0x340</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIO_POW_MS_CTL</name>
+    <displayName>PIO_POW_MS_CTL</displayName>
+    <description>PIO Group Withstand Voltage Mode Select Control Register</description>
+    <addressOffset>0x344</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIO_POW_VAL</name>
+    <displayName>PIO_POW_VAL</displayName>
+    <description>PIO Group Power Value Register</description>
+    <addressOffset>0x348</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>GPIOINTB</name>
   <description></description>
   <baseAddress>0x02000220</baseAddress>
@@ -2359,146 +2499,6 @@
    <value>95</value>
    <description></description>
   </interrupt>
-  </peripheral>
-  <peripheral>
-  <name>GPIOBLOCK</name>
-  <description></description>
-  <baseAddress>0x02000000</baseAddress>
-  <registers>
-   <cluster>
-    <dim>7</dim>
-    <addressOffset>0x00000000</addressOffset>
-    <registers>
-     <cluster>
-      <dim>4</dim>
-      <addressOffset>0x00000000</addressOffset>
-      <register>
-       <name>CFG</name>
-       <displayName>CFG</displayName>
-       <description>Configure Register</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x010</dimIncrement>
-     </cluster>
-     <register>
-      <name>DATA</name>
-      <displayName>DATA</displayName>
-      <description>Data Register</description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <cluster>
-      <dim>4</dim>
-      <addressOffset>0x00000014</addressOffset>
-      <register>
-       <name>DRV</name>
-       <displayName>DRV</displayName>
-       <description>Multi_Driving Register</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x010</dimIncrement>
-     </cluster>
-     <cluster>
-      <dim>2</dim>
-      <addressOffset>0x00000024</addressOffset>
-      <register>
-       <name>PULL</name>
-       <displayName>PULL</displayName>
-       <description>Pull Register</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x008</dimIncrement>
-     </cluster>
-    </registers>
-    <dimIncrement>0x134</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>7</dim>
-    <addressOffset>0x00000200</addressOffset>
-    <registers>
-     <cluster>
-      <dim>4</dim>
-      <addressOffset>0x00000000</addressOffset>
-      <register>
-       <name>EINT_CFG</name>
-       <displayName>EINT_CFG</displayName>
-       <description>External Interrupt Configure Registers</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x010</dimIncrement>
-     </cluster>
-     <register>
-      <name>EINT_CTL</name>
-      <displayName>EINT_CTL</displayName>
-      <description>External Interrupt Control Register</description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>EINT_STATUS</name>
-      <displayName>EINT_STATUS</displayName>
-      <description>External Interrupt Status Register</description>
-      <addressOffset>0x014</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>EINT_DEB</name>
-      <displayName>EINT_DEB</displayName>
-      <description>External Interrupt Debounce Register</description>
-      <addressOffset>0x018</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-    </registers>
-    <dimIncrement>0x0C4</dimIncrement>
-   </cluster>
-   <register>
-    <name>PIO_POW_MOD_SEL</name>
-    <displayName>PIO_POW_MOD_SEL</displayName>
-    <description>PIO Group Withstand Voltage Mode Select Register</description>
-    <addressOffset>0x340</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PIO_POW_MS_CTL</name>
-    <displayName>PIO_POW_MS_CTL</displayName>
-    <description>PIO Group Withstand Voltage Mode Select Control Register</description>
-    <addressOffset>0x344</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PIO_POW_VAL</name>
-    <displayName>PIO_POW_VAL</displayName>
-    <description>PIO Group Power Value Register</description>
-    <addressOffset>0x348</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
   </peripheral>
   <peripheral>
   <name>SMHC0</name>

@@ -1823,6 +1823,123 @@
   <baseAddress>0x01F02C00</baseAddress>
   </peripheral>
   <peripheral>
+  <name>GPIOBLOCK</name>
+  <description></description>
+  <baseAddress>0x01C20800</baseAddress>
+  <registers>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000000</addressOffset>
+      <register>
+       <name>CFG</name>
+       <displayName>CFG</displayName>
+       <description>Configure Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <register>
+      <name>DATA</name>
+      <displayName>DATA</displayName>
+      <description>Data Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <cluster>
+      <dim>2</dim>
+      <addressOffset>0x00000014</addressOffset>
+      <register>
+       <name>DRV</name>
+       <displayName>DRV</displayName>
+       <description>Multi_Driving Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x008</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>2</dim>
+      <addressOffset>0x0000001C</addressOffset>
+      <register>
+       <name>PULL</name>
+       <displayName>PULL</displayName>
+       <description>Pull Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x008</dimIncrement>
+     </cluster>
+    </registers>
+    <dimIncrement>0x120</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <registers>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000000</addressOffset>
+      <register>
+       <name>EINT_CFG</name>
+       <displayName>EINT_CFG</displayName>
+       <description>External Interrupt Configure Registers</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <register>
+      <name>EINT_CTL</name>
+      <displayName>EINT_CTL</displayName>
+      <description>External Interrupt Control Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>EINT_STATUS</name>
+      <displayName>EINT_STATUS</displayName>
+      <description>External Interrupt Status Register</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>EINT_DEB</name>
+      <displayName>EINT_DEB</displayName>
+      <description>External Interrupt Debounce Register</description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x0E0</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="GPIOBLOCK">
+  <name>GPIOBLOCK_L</name>
+  <baseAddress>0x01F02C00</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>GPIOINTB</name>
   <description></description>
   <baseAddress>0x01C20A00</baseAddress>
@@ -2278,123 +2395,6 @@
    <value>111</value>
    <description></description>
   </interrupt>
-  </peripheral>
-  <peripheral>
-  <name>GPIOBLOCK</name>
-  <description></description>
-  <baseAddress>0x01C20800</baseAddress>
-  <registers>
-   <cluster>
-    <dim>8</dim>
-    <addressOffset>0x00000000</addressOffset>
-    <registers>
-     <cluster>
-      <dim>4</dim>
-      <addressOffset>0x00000000</addressOffset>
-      <register>
-       <name>CFG</name>
-       <displayName>CFG</displayName>
-       <description>Configure Register</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x010</dimIncrement>
-     </cluster>
-     <register>
-      <name>DATA</name>
-      <displayName>DATA</displayName>
-      <description>Data Register</description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <cluster>
-      <dim>2</dim>
-      <addressOffset>0x00000014</addressOffset>
-      <register>
-       <name>DRV</name>
-       <displayName>DRV</displayName>
-       <description>Multi_Driving Register</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x008</dimIncrement>
-     </cluster>
-     <cluster>
-      <dim>2</dim>
-      <addressOffset>0x0000001C</addressOffset>
-      <register>
-       <name>PULL</name>
-       <displayName>PULL</displayName>
-       <description>Pull Register</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x008</dimIncrement>
-     </cluster>
-    </registers>
-    <dimIncrement>0x120</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>8</dim>
-    <addressOffset>0x00000200</addressOffset>
-    <registers>
-     <cluster>
-      <dim>4</dim>
-      <addressOffset>0x00000000</addressOffset>
-      <register>
-       <name>EINT_CFG</name>
-       <displayName>EINT_CFG</displayName>
-       <description>External Interrupt Configure Registers</description>
-       <addressOffset>0x000</addressOffset>
-       <size>0x20</size>
-       <access>read-write</access>
-       <resetValue>0x00000000</resetValue>
-      </register>
-      <dimIncrement>0x010</dimIncrement>
-     </cluster>
-     <register>
-      <name>EINT_CTL</name>
-      <displayName>EINT_CTL</displayName>
-      <description>External Interrupt Control Register</description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>EINT_STATUS</name>
-      <displayName>EINT_STATUS</displayName>
-      <description>External Interrupt Status Register</description>
-      <addressOffset>0x014</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>EINT_DEB</name>
-      <displayName>EINT_DEB</displayName>
-      <description>External Interrupt Debounce Register</description>
-      <addressOffset>0x018</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-    </registers>
-    <dimIncrement>0x0E0</dimIncrement>
-   </cluster>
-  </registers>
-  </peripheral>
-  <peripheral derivedFrom="GPIOBLOCK">
-  <name>GPIOBLOCK_L</name>
-  <baseAddress>0x01F02C00</baseAddress>
   </peripheral>
   <peripheral>
   <name>SMHC0</name>

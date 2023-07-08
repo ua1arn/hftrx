@@ -2849,11 +2849,7 @@ typedef struct DSP_CFG_Type
 /* Access pointers */
 
 #define DSP0_CFG ((DSP_CFG_TypeDef *) DSP0_CFG_BASE)  /*!< DSP0_CFG  register set access pointer */
-#define DSP_WDG ((DSP_WDG_TypeDef *) DSP_WDG_BASE)    /*!< DSP_WDG  register set access pointer */
-#define DSP_INTC ((DSP_INTC_TypeDef *) DSP_INTC_BASE) /*!< DSP_INTC  register set access pointer */
-#define DSP_TZMA ((DSP_TZMA_TypeDef *) DSP_TZMA_BASE) /*!< DSP_TZMA  register set access pointer */
 #define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
-#define xDSP_MSGBOX ((xDSP_MSGBOX_TypeDef *) xDSP_MSGBOX_BASE)/*!< xDSP_MSGBOX  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
@@ -2867,11 +2863,9 @@ typedef struct DSP_CFG_Type
 #define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)  /*!< GPIOINTE  register set access pointer */
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
-#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC Secure Peripherals Control (SPC) - Sets secure property of peripherals register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
-#define TZMA ((TZMA_TypeDef *) TZMA_BASE)             /*!< TZMA  register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC LED Lamp Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
@@ -2899,10 +2893,6 @@ typedef struct DSP_CFG_Type
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
-#define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM register set access pointer */
-#define DCU ((DCU_TypeDef *) DCU_BASE)                /*!< DCU Debug control interface? register set access pointer */
-#define GIC_DISTRIBUTOR ((GIC_DISTRIBUTOR_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
-#define GIC_INTERFACE ((GIC_INTERFACE_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */
@@ -2922,13 +2912,11 @@ typedef struct DSP_CFG_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define DE ((DE_TypeDef *) DE_BASE)                   /*!< DE Display Engine (DE) register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP  register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
-#define DI ((DI_TypeDef *) DI_BASE)                   /*!< DI De-interlacer (DI) register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
@@ -2941,7 +2929,6 @@ typedef struct DSP_CFG_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
 #define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
-#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */

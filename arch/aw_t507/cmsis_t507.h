@@ -624,7 +624,6 @@ typedef struct USB_OHCI_Capability_Type
 
 /* Access pointers */
 
-#define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU G31 MP2 register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
@@ -653,8 +652,6 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define GPIOINTI ((GPIOINT_TypeDef *) GPIOINTI_BASE)  /*!< GPIOINTI  register set access pointer */
-#define GIC_DISTRIBUTOR ((GIC_DISTRIBUTOR_TypeDef *) GIC_DISTRIBUTOR_BASE)/*!< GIC_DISTRIBUTOR  register set access pointer */
-#define GIC_INTERFACE ((GIC_INTERFACE_TypeDef *) GIC_INTERFACE_BASE)/*!< GIC_INTERFACE  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
