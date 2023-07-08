@@ -10,381 +10,6 @@
  <resetMask>0xFFFFFFFF</resetMask>
  <peripherals>
   <peripheral>
-  <name>PMCTR</name>
-  <description>Контроллер управления энергопотреблением</description>
-  <baseAddress>0x38095000</baseAddress>
-  <registers>
-   <register>
-    <name>SYS_PWR_STATUS</name>
-    <displayName>SYS_PWR_STATUS</displayName>
-    <description>Регистр статуса доменов</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SYS_PWR_IMASK</name>
-    <displayName>SYS_PWR_IMASK</displayName>
-    <description>Регистр маски прерывания SYS_PWR_INT</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SYS_PWR_IRSTAT</name>
-    <displayName>SYS_PWR_IRSTAT</displayName>
-    <description>Регистр наличного статуса прерывания SYS_PWR_ISTAT</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SYS_PWR_INT</name>
-    <displayName>SYS_PWR_INT</displayName>
-    <description>Регистр статуса прерывания SYS_PWR_INT</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SYS_PWR_ICLR</name>
-    <displayName>SYS_PWR_ICLR</displayName>
-    <description>Регистр очистки статуса прерывания SYS_PWR_INT</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SYS_PWR_DELAY</name>
-    <displayName>SYS_PWR_DELAY</displayName>
-    <description>Регистр задания задержек автоматов</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DDR_PIN_RET</name>
-    <displayName>DDR_PIN_RET</displayName>
-    <description>Регистр перевода выводов DDR в режим хранения состояния</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DDR_INIT_END</name>
-    <displayName>DDR_INIT_END</displayName>
-    <description>Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WARM_RST_EN</name>
-    <displayName>WARM_RST_EN</displayName>
-    <description>Регистр разрешения «теплого» сброса</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SW_RST</name>
-    <displayName>SW_RST</displayName>
-    <description>Регистр программного «теплого» сброса</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WARM_RST_STATUS</name>
-    <displayName>WARM_RST_STATUS</displayName>
-    <description>Регистр статуса последнего сброса</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PDM_RST_STATUS</name>
-    <displayName>PDM_RST_STATUS</displayName>
-    <description>Регистр статуса сброса доменов питания</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>NVMODE</name>
-    <displayName>NVMODE</displayName>
-    <description>Регистр управления сигналами NVMODE</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <cluster>
-    <dim>4</dim>
-    <addressOffset>0x00000050</addressOffset>
-    <register>
-     <name>CPU0_WKP_MASK</name>
-     <displayName>CPU0_WKP_MASK</displayName>
-     <description>Регистр маски включения домена CPU0 по прерываниям</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x010</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>4</dim>
-    <addressOffset>0x00000060</addressOffset>
-    <register>
-     <name>CPU1_WKP_MASK</name>
-     <displayName>CPU1_WKP_MASK</displayName>
-     <description>Регистр маски включения домена CPU1 по прерываниям</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x010</dimIncrement>
-   </cluster>
-   <register>
-    <name>ALWAYS_MISC0</name>
-    <displayName>ALWAYS_MISC0</displayName>
-    <description>Регистр общего назначения, не сбрасываемый при «теплом» сбросе</description>
-    <addressOffset>0x070</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ALWAYS_MISC1</name>
-    <displayName>ALWAYS_MISC1</displayName>
-    <description>Регистр общего назначения, не сбрасываемый при «теплом» сбросе</description>
-    <addressOffset>0x074</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WARM_BOOT_OVRD</name>
-    <displayName>WARM_BOOT_OVRD</displayName>
-    <description>Регистр управления загрузкой при «теплом» сбросе</description>
-    <addressOffset>0x078</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_UP</name>
-    <displayName>CORE_PWR_UP</displayName>
-    <description>Регистр включения доменов</description>
-    <addressOffset>0x080</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_DOWN</name>
-    <displayName>CORE_PWR_DOWN</displayName>
-    <description>Регистр выключения доменов</description>
-    <addressOffset>0x084</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_STATUS</name>
-    <displayName>CORE_PWR_STATUS</displayName>
-    <description>Регистр статуса доменов</description>
-    <addressOffset>0x08C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_IMASK</name>
-    <displayName>CORE_PWR_IMASK</displayName>
-    <description>Регистр маски прерывания CORE_PWR_INT</description>
-    <addressOffset>0x090</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_IRSTAT</name>
-    <displayName>CORE_PWR_IRSTAT</displayName>
-    <description>Регистр наличного статуса прерывания CORE_PWR_INT</description>
-    <addressOffset>0x094</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_ISTAT</name>
-    <displayName>CORE_PWR_ISTAT</displayName>
-    <description>Регистр статуса прерывания CORE_PWR_INT</description>
-    <addressOffset>0x098</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_ICLR</name>
-    <displayName>CORE_PWR_ICLR</displayName>
-    <description>Регистр очистки статуса прерывания CORE_PWR_INT</description>
-    <addressOffset>0x09C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CORE_PWR_DELAY</name>
-    <displayName>CORE_PWR_DELAY</displayName>
-    <description>Регистр задания задержек автоматов доменов</description>
-    <addressOffset>0x0A0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>SMCTR</name>
-  <description>общиме системные настройки микросхемы</description>
-  <baseAddress>0x38096000</baseAddress>
-  <registers>
-   <register>
-    <name>BOOT</name>
-    <displayName>BOOT</displayName>
-    <description>Регистр отображения сигналов BOOT[1:0] микросхемы</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>BOOT_REMAP</name>
-    <displayName>BOOT_REMAP</displayName>
-    <description>Регистр управления картой памяти при начальной загрузке</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MPU_CFGNMFI</name>
-    <displayName>MPU_CFGNMFI</displayName>
-    <description>Регистр разрешения немаскируемого FIQ в MPU</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DDR_REMAP</name>
-    <displayName>DDR_REMAP</displayName>
-    <description>Регистр управления картой памяти для DDR</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MIPI_MUX</name>
-    <displayName>MIPI_MUX</displayName>
-    <description>Регистр мультиплексирования MIPI DSI</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CHIP_ID</name>
-    <displayName>CHIP_ID</displayName>
-    <description>ID микросхемы</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CHIP_CONFIG</name>
-    <displayName>CHIP_CONFIG</displayName>
-    <description>Регистр конфигурации микросхемы</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>EMA_ARM</name>
-    <displayName>EMA_ARM</displayName>
-    <description>Регистр подстройки памятей в ARM MPU</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>EMA_L2</name>
-    <displayName>EMA_L2</displayName>
-    <description>Регистр подстройки памятей в L2CACHE</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>EMA_DSP</name>
-    <displayName>EMA_DSP</displayName>
-    <description>Регистр подстройки памятей в DSP и VPU</description>
-    <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>EMA_CORE</name>
-    <displayName>EMA_CORE</displayName>
-    <description>Регистр подстройки памятей в CORE</description>
-    <addressOffset>0x03C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IOPULL_CTR</name>
-    <displayName>IOPULL_CTR</displayName>
-    <description>Регистры управления подтягивающими резисторами контактных площадок микросхемы</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>COMM_DLOCK</name>
-    <displayName>COMM_DLOCK</displayName>
-    <description>Регистр индикации зависания коммутатора микросхемы</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
   <name>CMCTR</name>
   <description>Контроллер управления синхронизацией</description>
   <baseAddress>0x38094000</baseAddress>
@@ -615,281 +240,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral>
-  <name>UART0</name>
-  <description>Universal Asynchronous Receiver-Transmitter</description>
-  <baseAddress>0x38028000</baseAddress>
-  <interrupt>
-   <name>UART0</name>
-   <value>96</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART1</name>
-   <value>97</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART2</name>
-   <value>98</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART3</name>
-   <value>99</value>
-   <description></description>
-  </interrupt>
-  <registers>
-   <register>
-    <name>UART_RBR_THR_DLL</name>
-    <displayName>UART_RBR_THR_DLL</displayName>
-    <description>UART Receive Buffer Register/Transmit Holding Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_DLH_IER</name>
-    <displayName>UART_DLH_IER</displayName>
-    <description></description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_IIR_FCR</name>
-    <displayName>UART_IIR_FCR</displayName>
-    <description>UART Interrupt Identity Register/UART FIFO Control Register</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_LCR</name>
-    <displayName>UART_LCR</displayName>
-    <description>UART Line Control Register</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_MCR</name>
-    <displayName>UART_MCR</displayName>
-    <description>UART Modem Control Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_LSR</name>
-    <displayName>UART_LSR</displayName>
-    <description>UART Line Status Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_MSR</name>
-    <displayName>UART_MSR</displayName>
-    <description>UART Modem Status Register</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_SCR</name>
-    <displayName>UART_SCR</displayName>
-    <description>UART Scratch Register</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <cluster>
-    <dim>16</dim>
-    <addressOffset>0x00000030</addressOffset>
-    <register>
-     <name>UART_SRBR_STHR</name>
-     <displayName>UART_SRBR_STHR</displayName>
-     <description></description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x040</dimIncrement>
-   </cluster>
-   <register>
-    <name>UART_USR</name>
-    <displayName>UART_USR</displayName>
-    <description></description>
-    <addressOffset>0x07C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_TFL</name>
-    <displayName>UART_TFL</displayName>
-    <description></description>
-    <addressOffset>0x080</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_RFL</name>
-    <displayName>UART_RFL</displayName>
-    <description></description>
-    <addressOffset>0x084</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_SRR</name>
-    <displayName>UART_SRR</displayName>
-    <description></description>
-    <addressOffset>0x088</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_SRTS</name>
-    <displayName>UART_SRTS</displayName>
-    <description></description>
-    <addressOffset>0x08C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_SBCR</name>
-    <displayName>UART_SBCR</displayName>
-    <description>check address (was: 0x80) </description>
-    <addressOffset>0x090</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_SFE</name>
-    <displayName>UART_SFE</displayName>
-    <description></description>
-    <addressOffset>0x098</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_SRT</name>
-    <displayName>UART_SRT</displayName>
-    <description></description>
-    <addressOffset>0x09C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_STET</name>
-    <displayName>UART_STET</displayName>
-    <description></description>
-    <addressOffset>0x0A0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_HTX</name>
-    <displayName>UART_HTX</displayName>
-    <description></description>
-    <addressOffset>0x0A4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral derivedFrom="UART0">
-  <name>UART1</name>
-  <baseAddress>0x38029000</baseAddress>
-  <interrupt>
-   <name>UART0</name>
-   <value>96</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART1</name>
-   <value>97</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART2</name>
-   <value>98</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART3</name>
-   <value>99</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="UART0">
-  <name>UART2</name>
-  <baseAddress>0x3802A000</baseAddress>
-  <interrupt>
-   <name>UART0</name>
-   <value>96</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART1</name>
-   <value>97</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART2</name>
-   <value>98</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART3</name>
-   <value>99</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="UART0">
-  <name>UART3</name>
-  <baseAddress>0x3802B000</baseAddress>
-  <interrupt>
-   <name>UART0</name>
-   <value>96</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART1</name>
-   <value>97</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART2</name>
-   <value>98</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>UART3</name>
-   <value>99</value>
-   <description></description>
-  </interrupt>
   </peripheral>
   <peripheral>
   <name>GPIOA</name>
@@ -1163,6 +513,739 @@
     <displayName>gpio_ls_sync</displayName>
     <description>Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60</description>
     <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>NANDMPORT</name>
+  <description>КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)</description>
+  <baseAddress>0x38007000</baseAddress>
+  <registers>
+   <register>
+    <name>PACKET</name>
+    <displayName>PACKET</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MEMADDR1</name>
+    <displayName>MEMADDR1</displayName>
+    <description>RW Регистр адреса 1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MEMADDR2</name>
+    <displayName>MEMADDR2</displayName>
+    <description>RW Регистр адреса 2</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMMAND</name>
+    <displayName>COMMAND</displayName>
+    <description>RW Регистр команды</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PROGRAM</name>
+    <displayName>PROGRAM</displayName>
+    <description>RW Регистр программы</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTERRUPT_STATUS_EN</name>
+    <displayName>INTERRUPT_STATUS_EN</displayName>
+    <description>RW Регистр разрешения статуса прерываний</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTERRUPT_SIGNAL_EN</name>
+    <displayName>INTERRUPT_SIGNAL_EN</displayName>
+    <description>RW Регистр разрешения сигнала прерываний</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTERRUPT_STATUS</name>
+    <displayName>INTERRUPT_STATUS</displayName>
+    <description>RW Регистр статуса прерываний</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID1</name>
+    <displayName>ID1</displayName>
+    <description>RO Регистр ID1</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID2</name>
+    <displayName>ID2</displayName>
+    <description>RO Регистр ID2</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FLASH_STATUS</name>
+    <displayName>FLASH_STATUS</displayName>
+    <description>RO Регистр статуса флэш-памяти</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMING</name>
+    <displayName>TIMING</displayName>
+    <description>RW Регистр временных параметров</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BUFFER_DATA</name>
+    <displayName>BUFFER_DATA</displayName>
+    <description>RW Регистр данных буфера</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ECC</name>
+    <displayName>ECC</displayName>
+    <description>RW Регистр ECC</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ECC_ERROR_CNT</name>
+    <displayName>ECC_ERROR_CNT</displayName>
+    <description>RO Счётчик ошибок ECC</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ECC_SPARE_CMD</name>
+    <displayName>ECC_SPARE_CMD</displayName>
+    <description>RW Регистр команд ECC</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_1BIT</name>
+    <displayName>ERROR_CNT_1BIT</displayName>
+    <description>RW Счётчик 1-битных ошибок</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_2BIT</name>
+    <displayName>ERROR_CNT_2BIT</displayName>
+    <description>RW Счётчик 2-битных ошибок</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_3BIT</name>
+    <displayName>ERROR_CNT_3BIT</displayName>
+    <description>RW Счётчик 3-битных ошибок</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_CNT_4BIT</name>
+    <displayName>ERROR_CNT_4BIT</displayName>
+    <description>RW Счётчик 4-битных ошибок</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMA_SYS_ADDR</name>
+    <displayName>DMA_SYS_ADDR</displayName>
+    <description>RW Системный адрес DMA</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMA_BUFFER_BOUNDARY</name>
+    <displayName>DMA_BUFFER_BOUNDARY</displayName>
+    <description>RW Граница DMA пересылки</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU_STATE</name>
+    <displayName>CPU_STATE</displayName>
+    <description>RW Регистр состояния CPU</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_5BIT</name>
+    <displayName>ERROR_COUNT_5BIT</displayName>
+    <description>RW Счётчик 5-битных ошибок</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_6BIT</name>
+    <displayName>ERROR_COUNT_6BIT</displayName>
+    <description>RW Счётчик 6-битных ошибок</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_7BIT</name>
+    <displayName>ERROR_COUNT_7BIT</displayName>
+    <description>RW Счётчик 7-битных ошибок</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ERROR_COUNT_8BIT</name>
+    <displayName>ERROR_COUNT_8BIT</displayName>
+    <description>RW Счётчик 8-битных ошибок</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SLAVE_DMA_CFG</name>
+    <displayName>SLAVE_DMA_CFG</displayName>
+    <description>RW Регистр конфигурации Slave DMA</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>NORMPORT</name>
+  <description>контроллер внешней SRAM/NOR Flash памяти.</description>
+  <baseAddress>0x38008000</baseAddress>
+  <registers>
+   <register>
+    <name>SMC_MEMC_STATUS</name>
+    <displayName>SMC_MEMC_STATUS</displayName>
+    <description>RO Регистр состояния контроллера</description>
+    <addressOffset>0x1000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_MEMIF_CFG</name>
+    <displayName>SMC_MEMIF_CFG</displayName>
+    <description>RO Регистр конфигурации интерфейса памяти</description>
+    <addressOffset>0x1004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_MEMC_CFG_SET</name>
+    <displayName>SMC_MEMC_CFG_SET</displayName>
+    <description>WO Регистр установки конфигурации контроллера</description>
+    <addressOffset>0x1008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_MEMC_CFG_CLR</name>
+    <displayName>SMC_MEMC_CFG_CLR</displayName>
+    <description>WO Регистр сброса конфигурации контроллера</description>
+    <addressOffset>0x100C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_DIRECT_CMD</name>
+    <displayName>SMC_DIRECT_CMD</displayName>
+    <description>WO Регистр команд</description>
+    <addressOffset>0x1010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SET_CYCLES</name>
+    <displayName>SMC_SET_CYCLES</displayName>
+    <description>WO Регистр настройки циклов доступа к памяти</description>
+    <addressOffset>0x1014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SET_OPMODE</name>
+    <displayName>SMC_SET_OPMODE</displayName>
+    <description>WO Регистр настройки операции с памятью</description>
+    <addressOffset>0x1018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_REFRESH_PERIOD_0</name>
+    <displayName>SMC_REFRESH_PERIOD_0</displayName>
+    <description>RW Регистр периода обновления</description>
+    <addressOffset>0x1020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SRAM_CYCLES0_0</name>
+    <displayName>SMC_SRAM_CYCLES0_0</displayName>
+    <description>RO Регистр параметров цикла доступа к памяти 0</description>
+    <addressOffset>0x1100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_OPMODE0_0</name>
+    <displayName>SMC_OPMODE0_0</displayName>
+    <description>RO Регистр режима операции для памяти 0</description>
+    <addressOffset>0x1104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_SRAM_CYCLES0_1</name>
+    <displayName>SMC_SRAM_CYCLES0_1</displayName>
+    <description>RO Регистр параметров цикла доступа к памяти 1</description>
+    <addressOffset>0x1120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_OPMODE0_1</name>
+    <displayName>SMC_OPMODE0_1</displayName>
+    <description>RO Регистр режима операции для памяти 1</description>
+    <addressOffset>0x1124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_0</name>
+    <displayName>SMC_PERIPH_ID_0</displayName>
+    <description>RO ID регистр периферии 0</description>
+    <addressOffset>0x1FE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_1</name>
+    <displayName>SMC_PERIPH_ID_1</displayName>
+    <description>RO ID регистр периферии 1</description>
+    <addressOffset>0x1FE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_2</name>
+    <displayName>SMC_PERIPH_ID_2</displayName>
+    <description>RO ID регистр периферии 2</description>
+    <addressOffset>0x1FE8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PERIPH_ID_4</name>
+    <displayName>SMC_PERIPH_ID_4</displayName>
+    <description>RO ID регистр периферии 3</description>
+    <addressOffset>0x1FEC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_0</name>
+    <displayName>SMC_PCELL_ID_0</displayName>
+    <description>RO ID регистр компонента 0</description>
+    <addressOffset>0x1FF0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_1</name>
+    <displayName>SMC_PCELL_ID_1</displayName>
+    <description>RO ID регистр компонента 1</description>
+    <addressOffset>0x1FF4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_2</name>
+    <displayName>SMC_PCELL_ID_2</displayName>
+    <description>RO ID регистр компонента 2</description>
+    <addressOffset>0x1FF8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMC_PCELL_ID_3</name>
+    <displayName>SMC_PCELL_ID_3</displayName>
+    <description>RO ID регистр компонента 3</description>
+    <addressOffset>0x1FFC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STATIC_MEM_CFG_0</name>
+    <displayName>STATIC_MEM_CFG_0</displayName>
+    <description>RW Регистр настройки внешней памяти</description>
+    <addressOffset>0x200C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ADDR_CFG_0</name>
+    <displayName>ADDR_CFG_0</displayName>
+    <description>RW Регистр настройки адреса 0</description>
+    <addressOffset>0x2014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ADDR_CFG_1</name>
+    <displayName>ADDR_CFG_1</displayName>
+    <description>RW Регистр настройки адреса 1</description>
+    <addressOffset>0x2018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BYTE_ORDER</name>
+    <displayName>BYTE_ORDER</displayName>
+    <description>RW Регистр настройки порядка байтов</description>
+    <addressOffset>0x2024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>PMCTR</name>
+  <description>Контроллер управления энергопотреблением</description>
+  <baseAddress>0x38095000</baseAddress>
+  <registers>
+   <register>
+    <name>SYS_PWR_STATUS</name>
+    <displayName>SYS_PWR_STATUS</displayName>
+    <description>Регистр статуса доменов</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_IMASK</name>
+    <displayName>SYS_PWR_IMASK</displayName>
+    <description>Регистр маски прерывания SYS_PWR_INT</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_IRSTAT</name>
+    <displayName>SYS_PWR_IRSTAT</displayName>
+    <description>Регистр наличного статуса прерывания SYS_PWR_ISTAT</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_INT</name>
+    <displayName>SYS_PWR_INT</displayName>
+    <description>Регистр статуса прерывания SYS_PWR_INT</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_ICLR</name>
+    <displayName>SYS_PWR_ICLR</displayName>
+    <description>Регистр очистки статуса прерывания SYS_PWR_INT</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_DELAY</name>
+    <displayName>SYS_PWR_DELAY</displayName>
+    <description>Регистр задания задержек автоматов</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DDR_PIN_RET</name>
+    <displayName>DDR_PIN_RET</displayName>
+    <description>Регистр перевода выводов DDR в режим хранения состояния</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DDR_INIT_END</name>
+    <displayName>DDR_INIT_END</displayName>
+    <description>Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WARM_RST_EN</name>
+    <displayName>WARM_RST_EN</displayName>
+    <description>Регистр разрешения «теплого» сброса</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SW_RST</name>
+    <displayName>SW_RST</displayName>
+    <description>Регистр программного «теплого» сброса</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WARM_RST_STATUS</name>
+    <displayName>WARM_RST_STATUS</displayName>
+    <description>Регистр статуса последнего сброса</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDM_RST_STATUS</name>
+    <displayName>PDM_RST_STATUS</displayName>
+    <description>Регистр статуса сброса доменов питания</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NVMODE</name>
+    <displayName>NVMODE</displayName>
+    <description>Регистр управления сигналами NVMODE</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000050</addressOffset>
+    <register>
+     <name>CPU0_WKP_MASK</name>
+     <displayName>CPU0_WKP_MASK</displayName>
+     <description>Регистр маски включения домена CPU0 по прерываниям</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000060</addressOffset>
+    <register>
+     <name>CPU1_WKP_MASK</name>
+     <displayName>CPU1_WKP_MASK</displayName>
+     <description>Регистр маски включения домена CPU1 по прерываниям</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>ALWAYS_MISC0</name>
+    <displayName>ALWAYS_MISC0</displayName>
+    <description>Регистр общего назначения, не сбрасываемый при «теплом» сбросе</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALWAYS_MISC1</name>
+    <displayName>ALWAYS_MISC1</displayName>
+    <description>Регистр общего назначения, не сбрасываемый при «теплом» сбросе</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WARM_BOOT_OVRD</name>
+    <displayName>WARM_BOOT_OVRD</displayName>
+    <description>Регистр управления загрузкой при «теплом» сбросе</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_UP</name>
+    <displayName>CORE_PWR_UP</displayName>
+    <description>Регистр включения доменов</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_DOWN</name>
+    <displayName>CORE_PWR_DOWN</displayName>
+    <description>Регистр выключения доменов</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_STATUS</name>
+    <displayName>CORE_PWR_STATUS</displayName>
+    <description>Регистр статуса доменов</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_IMASK</name>
+    <displayName>CORE_PWR_IMASK</displayName>
+    <description>Регистр маски прерывания CORE_PWR_INT</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_IRSTAT</name>
+    <displayName>CORE_PWR_IRSTAT</displayName>
+    <description>Регистр наличного статуса прерывания CORE_PWR_INT</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_ISTAT</name>
+    <displayName>CORE_PWR_ISTAT</displayName>
+    <description>Регистр статуса прерывания CORE_PWR_INT</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_ICLR</name>
+    <displayName>CORE_PWR_ICLR</displayName>
+    <description>Регистр очистки статуса прерывания CORE_PWR_INT</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_PWR_DELAY</name>
+    <displayName>CORE_PWR_DELAY</displayName>
+    <description>Регистр задания задержек автоматов доменов</description>
+    <addressOffset>0x0A0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -1951,258 +2034,123 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>NANDMPORT</name>
-  <description>КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)</description>
-  <baseAddress>0x38007000</baseAddress>
+  <name>SMCTR</name>
+  <description>общиме системные настройки микросхемы</description>
+  <baseAddress>0x38096000</baseAddress>
   <registers>
    <register>
-    <name>PACKET</name>
-    <displayName>PACKET</displayName>
-    <description></description>
+    <name>BOOT</name>
+    <displayName>BOOT</displayName>
+    <description>Регистр отображения сигналов BOOT[1:0] микросхемы</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MEMADDR1</name>
-    <displayName>MEMADDR1</displayName>
-    <description>RW Регистр адреса 1</description>
+    <name>BOOT_REMAP</name>
+    <displayName>BOOT_REMAP</displayName>
+    <description>Регистр управления картой памяти при начальной загрузке</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>MEMADDR2</name>
-    <displayName>MEMADDR2</displayName>
-    <description>RW Регистр адреса 2</description>
+    <name>MPU_CFGNMFI</name>
+    <displayName>MPU_CFGNMFI</displayName>
+    <description>Регистр разрешения немаскируемого FIQ в MPU</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>COMMAND</name>
-    <displayName>COMMAND</displayName>
-    <description>RW Регистр команды</description>
+    <name>DDR_REMAP</name>
+    <displayName>DDR_REMAP</displayName>
+    <description>Регистр управления картой памяти для DDR</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PROGRAM</name>
-    <displayName>PROGRAM</displayName>
-    <description>RW Регистр программы</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>INTERRUPT_STATUS_EN</name>
-    <displayName>INTERRUPT_STATUS_EN</displayName>
-    <description>RW Регистр разрешения статуса прерываний</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>INTERRUPT_SIGNAL_EN</name>
-    <displayName>INTERRUPT_SIGNAL_EN</displayName>
-    <description>RW Регистр разрешения сигнала прерываний</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>INTERRUPT_STATUS</name>
-    <displayName>INTERRUPT_STATUS</displayName>
-    <description>RW Регистр статуса прерываний</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ID1</name>
-    <displayName>ID1</displayName>
-    <description>RO Регистр ID1</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ID2</name>
-    <displayName>ID2</displayName>
-    <description>RO Регистр ID2</description>
+    <name>MIPI_MUX</name>
+    <displayName>MIPI_MUX</displayName>
+    <description>Регистр мультиплексирования MIPI DSI</description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>FLASH_STATUS</name>
-    <displayName>FLASH_STATUS</displayName>
-    <description>RO Регистр статуса флэш-памяти</description>
+    <name>CHIP_ID</name>
+    <displayName>CHIP_ID</displayName>
+    <description>ID микросхемы</description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TIMING</name>
-    <displayName>TIMING</displayName>
-    <description>RW Регистр временных параметров</description>
+    <name>CHIP_CONFIG</name>
+    <displayName>CHIP_CONFIG</displayName>
+    <description>Регистр конфигурации микросхемы</description>
     <addressOffset>0x02C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>BUFFER_DATA</name>
-    <displayName>BUFFER_DATA</displayName>
-    <description>RW Регистр данных буфера</description>
+    <name>EMA_ARM</name>
+    <displayName>EMA_ARM</displayName>
+    <description>Регистр подстройки памятей в ARM MPU</description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ECC</name>
-    <displayName>ECC</displayName>
-    <description>RW Регистр ECC</description>
+    <name>EMA_L2</name>
+    <displayName>EMA_L2</displayName>
+    <description>Регистр подстройки памятей в L2CACHE</description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ECC_ERROR_CNT</name>
-    <displayName>ECC_ERROR_CNT</displayName>
-    <description>RO Счётчик ошибок ECC</description>
+    <name>EMA_DSP</name>
+    <displayName>EMA_DSP</displayName>
+    <description>Регистр подстройки памятей в DSP и VPU</description>
     <addressOffset>0x038</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ECC_SPARE_CMD</name>
-    <displayName>ECC_SPARE_CMD</displayName>
-    <description>RW Регистр команд ECC</description>
+    <name>EMA_CORE</name>
+    <displayName>EMA_CORE</displayName>
+    <description>Регистр подстройки памятей в CORE</description>
     <addressOffset>0x03C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ERROR_CNT_1BIT</name>
-    <displayName>ERROR_CNT_1BIT</displayName>
-    <description>RW Счётчик 1-битных ошибок</description>
+    <name>IOPULL_CTR</name>
+    <displayName>IOPULL_CTR</displayName>
+    <description>Регистры управления подтягивающими резисторами контактных площадок микросхемы</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ERROR_CNT_2BIT</name>
-    <displayName>ERROR_CNT_2BIT</displayName>
-    <description>RW Счётчик 2-битных ошибок</description>
+    <name>COMM_DLOCK</name>
+    <displayName>COMM_DLOCK</displayName>
+    <description>Регистр индикации зависания коммутатора микросхемы</description>
     <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ERROR_CNT_3BIT</name>
-    <displayName>ERROR_CNT_3BIT</displayName>
-    <description>RW Счётчик 3-битных ошибок</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ERROR_CNT_4BIT</name>
-    <displayName>ERROR_CNT_4BIT</displayName>
-    <description>RW Счётчик 4-битных ошибок</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DMA_SYS_ADDR</name>
-    <displayName>DMA_SYS_ADDR</displayName>
-    <description>RW Системный адрес DMA</description>
-    <addressOffset>0x050</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DMA_BUFFER_BOUNDARY</name>
-    <displayName>DMA_BUFFER_BOUNDARY</displayName>
-    <description>RW Граница DMA пересылки</description>
-    <addressOffset>0x054</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPU_STATE</name>
-    <displayName>CPU_STATE</displayName>
-    <description>RW Регистр состояния CPU</description>
-    <addressOffset>0x058</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ERROR_COUNT_5BIT</name>
-    <displayName>ERROR_COUNT_5BIT</displayName>
-    <description>RW Счётчик 5-битных ошибок</description>
-    <addressOffset>0x05C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ERROR_COUNT_6BIT</name>
-    <displayName>ERROR_COUNT_6BIT</displayName>
-    <description>RW Счётчик 6-битных ошибок</description>
-    <addressOffset>0x060</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ERROR_COUNT_7BIT</name>
-    <displayName>ERROR_COUNT_7BIT</displayName>
-    <description>RW Счётчик 7-битных ошибок</description>
-    <addressOffset>0x064</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ERROR_COUNT_8BIT</name>
-    <displayName>ERROR_COUNT_8BIT</displayName>
-    <description>RW Счётчик 8-битных ошибок</description>
-    <addressOffset>0x068</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SLAVE_DMA_CFG</name>
-    <displayName>SLAVE_DMA_CFG</displayName>
-    <description>RW Регистр конфигурации Slave DMA</description>
-    <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -2210,227 +2158,279 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>NORMPORT</name>
-  <description>контроллер внешней SRAM/NOR Flash памяти.</description>
-  <baseAddress>0x38008000</baseAddress>
+  <name>UART0</name>
+  <description>Universal Asynchronous Receiver-Transmitter</description>
+  <baseAddress>0x38028000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>99</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
-    <name>SMC_MEMC_STATUS</name>
-    <displayName>SMC_MEMC_STATUS</displayName>
-    <description>RO Регистр состояния контроллера</description>
-    <addressOffset>0x1000</addressOffset>
+    <name>UART_RBR_THR_DLL</name>
+    <displayName>UART_RBR_THR_DLL</displayName>
+    <description>UART Receive Buffer Register/Transmit Holding Register</description>
+    <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_MEMIF_CFG</name>
-    <displayName>SMC_MEMIF_CFG</displayName>
-    <description>RO Регистр конфигурации интерфейса памяти</description>
-    <addressOffset>0x1004</addressOffset>
+    <name>UART_DLH_IER</name>
+    <displayName>UART_DLH_IER</displayName>
+    <description></description>
+    <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_MEMC_CFG_SET</name>
-    <displayName>SMC_MEMC_CFG_SET</displayName>
-    <description>WO Регистр установки конфигурации контроллера</description>
-    <addressOffset>0x1008</addressOffset>
+    <name>UART_IIR_FCR</name>
+    <displayName>UART_IIR_FCR</displayName>
+    <description>UART Interrupt Identity Register/UART FIFO Control Register</description>
+    <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_MEMC_CFG_CLR</name>
-    <displayName>SMC_MEMC_CFG_CLR</displayName>
-    <description>WO Регистр сброса конфигурации контроллера</description>
-    <addressOffset>0x100C</addressOffset>
+    <name>UART_LCR</name>
+    <displayName>UART_LCR</displayName>
+    <description>UART Line Control Register</description>
+    <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_DIRECT_CMD</name>
-    <displayName>SMC_DIRECT_CMD</displayName>
-    <description>WO Регистр команд</description>
-    <addressOffset>0x1010</addressOffset>
+    <name>UART_MCR</name>
+    <displayName>UART_MCR</displayName>
+    <description>UART Modem Control Register</description>
+    <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_SET_CYCLES</name>
-    <displayName>SMC_SET_CYCLES</displayName>
-    <description>WO Регистр настройки циклов доступа к памяти</description>
-    <addressOffset>0x1014</addressOffset>
+    <name>UART_LSR</name>
+    <displayName>UART_LSR</displayName>
+    <description>UART Line Status Register</description>
+    <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_SET_OPMODE</name>
-    <displayName>SMC_SET_OPMODE</displayName>
-    <description>WO Регистр настройки операции с памятью</description>
-    <addressOffset>0x1018</addressOffset>
+    <name>UART_MSR</name>
+    <displayName>UART_MSR</displayName>
+    <description>UART Modem Status Register</description>
+    <addressOffset>0x018</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_REFRESH_PERIOD_0</name>
-    <displayName>SMC_REFRESH_PERIOD_0</displayName>
-    <description>RW Регистр периода обновления</description>
-    <addressOffset>0x1020</addressOffset>
+    <name>UART_SCR</name>
+    <displayName>UART_SCR</displayName>
+    <description>UART Scratch Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000030</addressOffset>
+    <register>
+     <name>UART_SRBR_STHR</name>
+     <displayName>UART_SRBR_STHR</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <register>
+    <name>UART_USR</name>
+    <displayName>UART_USR</displayName>
+    <description></description>
+    <addressOffset>0x07C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_SRAM_CYCLES0_0</name>
-    <displayName>SMC_SRAM_CYCLES0_0</displayName>
-    <description>RO Регистр параметров цикла доступа к памяти 0</description>
-    <addressOffset>0x1100</addressOffset>
+    <name>UART_TFL</name>
+    <displayName>UART_TFL</displayName>
+    <description></description>
+    <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_OPMODE0_0</name>
-    <displayName>SMC_OPMODE0_0</displayName>
-    <description>RO Регистр режима операции для памяти 0</description>
-    <addressOffset>0x1104</addressOffset>
+    <name>UART_RFL</name>
+    <displayName>UART_RFL</displayName>
+    <description></description>
+    <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_SRAM_CYCLES0_1</name>
-    <displayName>SMC_SRAM_CYCLES0_1</displayName>
-    <description>RO Регистр параметров цикла доступа к памяти 1</description>
-    <addressOffset>0x1120</addressOffset>
+    <name>UART_SRR</name>
+    <displayName>UART_SRR</displayName>
+    <description></description>
+    <addressOffset>0x088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_OPMODE0_1</name>
-    <displayName>SMC_OPMODE0_1</displayName>
-    <description>RO Регистр режима операции для памяти 1</description>
-    <addressOffset>0x1124</addressOffset>
+    <name>UART_SRTS</name>
+    <displayName>UART_SRTS</displayName>
+    <description></description>
+    <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_PERIPH_ID_0</name>
-    <displayName>SMC_PERIPH_ID_0</displayName>
-    <description>RO ID регистр периферии 0</description>
-    <addressOffset>0x1FE0</addressOffset>
+    <name>UART_SBCR</name>
+    <displayName>UART_SBCR</displayName>
+    <description>check address (was: 0x80) </description>
+    <addressOffset>0x090</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_PERIPH_ID_1</name>
-    <displayName>SMC_PERIPH_ID_1</displayName>
-    <description>RO ID регистр периферии 1</description>
-    <addressOffset>0x1FE4</addressOffset>
+    <name>UART_SFE</name>
+    <displayName>UART_SFE</displayName>
+    <description></description>
+    <addressOffset>0x098</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_PERIPH_ID_2</name>
-    <displayName>SMC_PERIPH_ID_2</displayName>
-    <description>RO ID регистр периферии 2</description>
-    <addressOffset>0x1FE8</addressOffset>
+    <name>UART_SRT</name>
+    <displayName>UART_SRT</displayName>
+    <description></description>
+    <addressOffset>0x09C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_PERIPH_ID_4</name>
-    <displayName>SMC_PERIPH_ID_4</displayName>
-    <description>RO ID регистр периферии 3</description>
-    <addressOffset>0x1FEC</addressOffset>
+    <name>UART_STET</name>
+    <displayName>UART_STET</displayName>
+    <description></description>
+    <addressOffset>0x0A0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMC_PCELL_ID_0</name>
-    <displayName>SMC_PCELL_ID_0</displayName>
-    <description>RO ID регистр компонента 0</description>
-    <addressOffset>0x1FF0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMC_PCELL_ID_1</name>
-    <displayName>SMC_PCELL_ID_1</displayName>
-    <description>RO ID регистр компонента 1</description>
-    <addressOffset>0x1FF4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMC_PCELL_ID_2</name>
-    <displayName>SMC_PCELL_ID_2</displayName>
-    <description>RO ID регистр компонента 2</description>
-    <addressOffset>0x1FF8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMC_PCELL_ID_3</name>
-    <displayName>SMC_PCELL_ID_3</displayName>
-    <description>RO ID регистр компонента 3</description>
-    <addressOffset>0x1FFC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>STATIC_MEM_CFG_0</name>
-    <displayName>STATIC_MEM_CFG_0</displayName>
-    <description>RW Регистр настройки внешней памяти</description>
-    <addressOffset>0x200C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ADDR_CFG_0</name>
-    <displayName>ADDR_CFG_0</displayName>
-    <description>RW Регистр настройки адреса 0</description>
-    <addressOffset>0x2014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>ADDR_CFG_1</name>
-    <displayName>ADDR_CFG_1</displayName>
-    <description>RW Регистр настройки адреса 1</description>
-    <addressOffset>0x2018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>BYTE_ORDER</name>
-    <displayName>BYTE_ORDER</displayName>
-    <description>RW Регистр настройки порядка байтов</description>
-    <addressOffset>0x2024</addressOffset>
+    <name>UART_HTX</name>
+    <displayName>UART_HTX</displayName>
+    <description></description>
+    <addressOffset>0x0A4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="UART0">
+  <name>UART1</name>
+  <baseAddress>0x38029000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>99</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="UART0">
+  <name>UART2</name>
+  <baseAddress>0x3802A000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>99</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="UART0">
+  <name>UART3</name>
+  <baseAddress>0x3802B000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>99</value>
+   <description></description>
+  </interrupt>
   </peripheral>
  </peripherals>
  <vendor>

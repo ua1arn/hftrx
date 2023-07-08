@@ -398,6 +398,14 @@ static int compare_irqrv(const void *v1, const void *v2) {
 	return p1->irqrv - p2->irqrv;
 }
 
+/* qsort parameter */
+static int compare_pfltypes(const void *v1, const void *v2) {
+	const struct parsedfile **p1 = v1;
+	const struct parsedfile **p2 = v2;
+
+	return strcmp((*p1)->bname, (*p2)->bname);
+}
+
 /* source line for parse */
 
 static char token0[1024];
@@ -413,7 +421,8 @@ static int nextline(FILE *fp) {
 }
 
 static int istokencomment(void) {
-	return (0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || strcmp(token0, "#\n") == 0);
+	return (0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2)
+			|| strcmp(token0, "#\n") == 0);
 }
 
 /* trim field name */
@@ -812,7 +821,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
 			size = emitregisters(indent + 1, &regp->aggregate, 0)
-							* regp->fldrept;
+					* regp->fldrept;
 			emithex03(indent + 1, "dimIncrement", size);
 			offs += size;
 			emitline(indent, "</cluster>" "\n");
@@ -830,7 +839,7 @@ unsigned emitregister(int indent, const struct regdfn *const regp,
 			emitudecimal(indent + 1, "dim", regp->fldrept);
 			emithex32(indent + 1, "addressOffset", regp->fldoffs);
 			size = emitregister000(indent + 1, regp, regp->fldoffs)
-							* regp->fldrept;
+					* regp->fldrept;
 			emithex03(indent + 1, "dimIncrement", size);
 			offs += size;
 			emitline(indent, "</cluster>" "\n");
@@ -923,18 +932,34 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 
 static void emitperipherials(int indent) {
 	PLIST_ENTRY t;
+	int nitems;
+	int i;
+	struct parsedfile **pflarray;
 
 	emitline(indent, "<peripherals>" "\n");
 
 	/* structures */
 
-	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+	for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
 				item);
+		++nitems;
+	}
+	pflarray = calloc(nitems, sizeof(struct parsedfile*));
+	for (i = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink, ++i) {
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
+				item);
+		pflarray[i] = pfl;
+	}
+	qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
+
+	for (i = 0; i < nitems; ++i) {
+		struct parsedfile *const pfl = pflarray[i];
 		emitperipherial(indent + 1, pfl);
 	}
 
 	emitline(indent, "</peripherals>" "\n");
+	free(pflarray);
 }
 
 static void emitvendorext(int indent) {
@@ -1102,7 +1127,7 @@ static void generate_cmsis(void) {
 
 		qsort(maps, nitems, sizeof maps[0], compare_base);
 
-		/* collect base addresses */
+		/* generate base addresses */
 		emitline(0, "\n");
 		emitline(0, "/* Peripheral and RAM base address */\n");
 		emitline(0, "\n");
@@ -1120,13 +1145,31 @@ static void generate_cmsis(void) {
 	if (1) {
 		/* structures */
 		PLIST_ENTRY t;
+		int nitems;
+		int i;
+		struct parsedfile **pflarray;
 
-		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+		for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t =
+				t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t,
 					struct parsedfile, item);
+			++nitems;
+		}
+		pflarray = calloc(nitems, sizeof(struct parsedfile*));
+		for (i = 0, t = parsedfiles.Flink; t != &parsedfiles;
+				t = t->Flink, ++i) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t,
+					struct parsedfile, item);
+			pflarray[i] = pfl;
+		}
+		qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
+
+		for (i = 0; i < nitems; ++i) {
+			struct parsedfile *const pfl = pflarray[i];
 			processfile_periphregs(pfl);
 		}
 		emitline(0, "\n");
+		free(pflarray);
 	}
 
 	if (1) {

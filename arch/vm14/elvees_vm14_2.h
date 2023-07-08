@@ -62,64 +62,6 @@ typedef enum IRQn
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR Base */
 
 /*
- * @brief PMCTR
- */
-/*!< PMCTR Контроллер управления энергопотреблением */
-typedef struct PMCTR_Type
-{
-             uint32_t reserved_0x000 [0x0003];
-    volatile uint32_t SYS_PWR_STATUS;                 /*!< Offset 0x00C Регистр статуса доменов */
-    volatile uint32_t SYS_PWR_IMASK;                  /*!< Offset 0x010 Регистр маски прерывания SYS_PWR_INT */
-    volatile uint32_t SYS_PWR_IRSTAT;                 /*!< Offset 0x014 Регистр наличного статуса прерывания SYS_PWR_ISTAT */
-    volatile uint32_t SYS_PWR_INT;                    /*!< Offset 0x018 Регистр статуса прерывания SYS_PWR_INT */
-    volatile uint32_t SYS_PWR_ICLR;                   /*!< Offset 0x01C Регистр очистки статуса прерывания SYS_PWR_INT */
-    volatile uint32_t SYS_PWR_DELAY;                  /*!< Offset 0x020 Регистр задания задержек автоматов */
-    volatile uint32_t DDR_PIN_RET;                    /*!< Offset 0x024 Регистр перевода выводов DDR в режим хранения состояния */
-    volatile uint32_t DDR_INIT_END;                   /*!< Offset 0x028 Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации */
-    volatile uint32_t WARM_RST_EN;                    /*!< Offset 0x02C Регистр разрешения «теплого» сброса */
-             uint32_t reserved_0x030 [0x0004];
-    volatile uint32_t SW_RST;                         /*!< Offset 0x040 Регистр программного «теплого» сброса */
-    volatile uint32_t WARM_RST_STATUS;                /*!< Offset 0x044 Регистр статуса последнего сброса */
-    volatile uint32_t PDM_RST_STATUS;                 /*!< Offset 0x048 Регистр статуса сброса доменов питания */
-    volatile uint32_t NVMODE;                         /*!< Offset 0x04C Регистр управления сигналами NVMODE */
-    volatile uint32_t CPU0_WKP_MASK [0x004];          /*!< Offset 0x050 Регистр маски включения домена CPU0 по прерываниям */
-    volatile uint32_t CPU1_WKP_MASK [0x004];          /*!< Offset 0x060 Регистр маски включения домена CPU1 по прерываниям */
-    volatile uint32_t ALWAYS_MISC0;                   /*!< Offset 0x070 Регистр общего назначения, не сбрасываемый при «теплом» сбросе */
-    volatile uint32_t ALWAYS_MISC1;                   /*!< Offset 0x074 Регистр общего назначения, не сбрасываемый при «теплом» сбросе */
-    volatile uint32_t WARM_BOOT_OVRD;                 /*!< Offset 0x078 Регистр управления загрузкой при «теплом» сбросе */
-             uint32_t reserved_0x07C;
-    volatile uint32_t CORE_PWR_UP;                    /*!< Offset 0x080 Регистр включения доменов */
-    volatile uint32_t CORE_PWR_DOWN;                  /*!< Offset 0x084 Регистр выключения доменов */
-             uint32_t reserved_0x088;
-    volatile uint32_t CORE_PWR_STATUS;                /*!< Offset 0x08C Регистр статуса доменов */
-    volatile uint32_t CORE_PWR_IMASK;                 /*!< Offset 0x090 Регистр маски прерывания CORE_PWR_INT */
-    volatile uint32_t CORE_PWR_IRSTAT;                /*!< Offset 0x094 Регистр наличного статуса прерывания CORE_PWR_INT */
-    volatile uint32_t CORE_PWR_ISTAT;                 /*!< Offset 0x098 Регистр статуса прерывания CORE_PWR_INT */
-    volatile uint32_t CORE_PWR_ICLR;                  /*!< Offset 0x09C Регистр очистки статуса прерывания CORE_PWR_INT */
-    volatile uint32_t CORE_PWR_DELAY;                 /*!< Offset 0x0A0 Регистр задания задержек автоматов доменов */
-} PMCTR_TypeDef; /* size of structure = 0x0A4 */
-/*
- * @brief SMCTR
- */
-/*!< SMCTR общиме системные настройки микросхемы */
-typedef struct SMCTR_Type
-{
-    volatile uint32_t BOOT;                           /*!< Offset 0x000 Регистр отображения сигналов BOOT[1:0] микросхемы */
-    volatile uint32_t BOOT_REMAP;                     /*!< Offset 0x004 Регистр управления картой памяти при начальной загрузке */
-    volatile uint32_t MPU_CFGNMFI;                    /*!< Offset 0x008 Регистр разрешения немаскируемого FIQ в MPU */
-    volatile uint32_t DDR_REMAP;                      /*!< Offset 0x00C Регистр управления картой памяти для DDR */
-             uint32_t reserved_0x010 [0x0005];
-    volatile uint32_t MIPI_MUX;                       /*!< Offset 0x024 Регистр мультиплексирования MIPI DSI */
-    volatile uint32_t CHIP_ID;                        /*!< Offset 0x028 ID микросхемы */
-    volatile uint32_t CHIP_CONFIG;                    /*!< Offset 0x02C Регистр конфигурации микросхемы */
-    volatile uint32_t EMA_ARM;                        /*!< Offset 0x030 Регистр подстройки памятей в ARM MPU */
-    volatile uint32_t EMA_L2;                         /*!< Offset 0x034 Регистр подстройки памятей в L2CACHE */
-    volatile uint32_t EMA_DSP;                        /*!< Offset 0x038 Регистр подстройки памятей в DSP и VPU */
-    volatile uint32_t EMA_CORE;                       /*!< Offset 0x03C Регистр подстройки памятей в CORE */
-    volatile uint32_t IOPULL_CTR;                     /*!< Offset 0x040 Регистры управления подтягивающими резисторами контактных площадок микросхемы */
-    volatile uint32_t COMM_DLOCK;                     /*!< Offset 0x044 Регистр индикации зависания коммутатора микросхемы */
-} SMCTR_TypeDef; /* size of structure = 0x048 */
-/*
  * @brief CMCTR
  */
 /*!< CMCTR Контроллер управления синхронизацией */
@@ -157,35 +99,6 @@ typedef struct CMCTR_Type
     volatile uint32_t SEL_VPLL;                       /*!< Offset 0x110 Регистр контроля VPLL */
     volatile uint32_t SEL_UPLL;                       /*!< Offset 0x114 Регистр контроля UPLL */
 } CMCTR_TypeDef; /* size of structure = 0x118 */
-/*
- * @brief UART
- */
-/*!< UART Universal Asynchronous Receiver-Transmitter */
-typedef struct UART_Type
-{
-    volatile uint32_t UART_RBR_THR_DLL;               /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
-    volatile uint32_t UART_DLH_IER;                   /*!< Offset 0x004  */
-    volatile uint32_t UART_IIR_FCR;                   /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
-    volatile uint32_t UART_LCR;                       /*!< Offset 0x00C UART Line Control Register */
-    volatile uint32_t UART_MCR;                       /*!< Offset 0x010 UART Modem Control Register */
-    volatile uint32_t UART_LSR;                       /*!< Offset 0x014 UART Line Status Register */
-    volatile uint32_t UART_MSR;                       /*!< Offset 0x018 UART Modem Status Register */
-    volatile uint32_t UART_SCR;                       /*!< Offset 0x01C UART Scratch Register */
-             uint32_t reserved_0x020 [0x0004];
-    volatile uint32_t UART_SRBR_STHR [0x010];         /*!< Offset 0x030  */
-             uint32_t reserved_0x070 [0x0003];
-    volatile uint32_t UART_USR;                       /*!< Offset 0x07C  */
-    volatile uint32_t UART_TFL;                       /*!< Offset 0x080  */
-    volatile uint32_t UART_RFL;                       /*!< Offset 0x084  */
-    volatile uint32_t UART_SRR;                       /*!< Offset 0x088  */
-    volatile uint32_t UART_SRTS;                      /*!< Offset 0x08C  */
-    volatile uint32_t UART_SBCR;                      /*!< Offset 0x090 check address (was: 0x80)  */
-             uint32_t reserved_0x094;
-    volatile uint32_t UART_SFE;                       /*!< Offset 0x098  */
-    volatile uint32_t UART_SRT;                       /*!< Offset 0x09C  */
-    volatile uint32_t UART_STET;                      /*!< Offset 0x0A0  */
-    volatile uint32_t UART_HTX;                       /*!< Offset 0x0A4  */
-} UART_TypeDef; /* size of structure = 0x0A8 */
 /*
  * @brief GPIO
  */
@@ -228,6 +141,118 @@ typedef struct GPIOBLOCK_Type
     volatile uint32_t gpio_ext_portd;                 /*!< Offset 0x05C Внешний регистр порта D. R 0x0 0x5C */
     volatile uint32_t gpio_ls_sync;                   /*!< Offset 0x060 Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60 */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x064 */
+/*
+ * @brief NANDMPORT
+ */
+/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
+typedef struct NANDMPORT_Type
+{
+    volatile uint32_t PACKET;                         /*!< Offset 0x000 (null) */
+    volatile uint32_t MEMADDR1;                       /*!< Offset 0x004 RW Регистр адреса 1 */
+    volatile uint32_t MEMADDR2;                       /*!< Offset 0x008 RW Регистр адреса 2 */
+    volatile uint32_t COMMAND;                        /*!< Offset 0x00C RW Регистр команды */
+    volatile uint32_t PROGRAM;                        /*!< Offset 0x010 RW Регистр программы */
+    volatile uint32_t INTERRUPT_STATUS_EN;            /*!< Offset 0x014 RW Регистр разрешения статуса прерываний */
+    volatile uint32_t INTERRUPT_SIGNAL_EN;            /*!< Offset 0x018 RW Регистр разрешения сигнала прерываний */
+    volatile uint32_t INTERRUPT_STATUS;               /*!< Offset 0x01C RW Регистр статуса прерываний */
+    volatile uint32_t ID1;                            /*!< Offset 0x020 RO Регистр ID1 */
+    volatile uint32_t ID2;                            /*!< Offset 0x024 RO Регистр ID2 */
+    volatile uint32_t FLASH_STATUS;                   /*!< Offset 0x028 RO Регистр статуса флэш-памяти */
+    volatile uint32_t TIMING;                         /*!< Offset 0x02C RW Регистр временных параметров */
+    volatile uint32_t BUFFER_DATA;                    /*!< Offset 0x030 RW Регистр данных буфера */
+    volatile uint32_t ECC;                            /*!< Offset 0x034 RW Регистр ECC */
+    volatile uint32_t ECC_ERROR_CNT;                  /*!< Offset 0x038 RO Счётчик ошибок ECC */
+    volatile uint32_t ECC_SPARE_CMD;                  /*!< Offset 0x03C RW Регистр команд ECC */
+    volatile uint32_t ERROR_CNT_1BIT;                 /*!< Offset 0x040 RW Счётчик 1-битных ошибок */
+    volatile uint32_t ERROR_CNT_2BIT;                 /*!< Offset 0x044 RW Счётчик 2-битных ошибок */
+    volatile uint32_t ERROR_CNT_3BIT;                 /*!< Offset 0x048 RW Счётчик 3-битных ошибок */
+    volatile uint32_t ERROR_CNT_4BIT;                 /*!< Offset 0x04C RW Счётчик 4-битных ошибок */
+    volatile uint32_t DMA_SYS_ADDR;                   /*!< Offset 0x050 RW Системный адрес DMA */
+    volatile uint32_t DMA_BUFFER_BOUNDARY;            /*!< Offset 0x054 RW Граница DMA пересылки */
+    volatile uint32_t CPU_STATE;                      /*!< Offset 0x058 RW Регистр состояния CPU */
+    volatile uint32_t ERROR_COUNT_5BIT;               /*!< Offset 0x05C RW Счётчик 5-битных ошибок */
+    volatile uint32_t ERROR_COUNT_6BIT;               /*!< Offset 0x060 RW Счётчик 6-битных ошибок */
+    volatile uint32_t ERROR_COUNT_7BIT;               /*!< Offset 0x064 RW Счётчик 7-битных ошибок */
+    volatile uint32_t ERROR_COUNT_8BIT;               /*!< Offset 0x068 RW Счётчик 8-битных ошибок */
+             uint32_t reserved_0x06C [0x0005];
+    volatile uint32_t SLAVE_DMA_CFG;                  /*!< Offset 0x080 RW Регистр конфигурации Slave DMA */
+} NANDMPORT_TypeDef; /* size of structure = 0x084 */
+/*
+ * @brief NORMPORT
+ */
+/*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. */
+typedef struct NORMPORT_Type
+{
+             uint32_t reserved_0x000 [0x0400];
+    volatile uint32_t SMC_MEMC_STATUS;                /*!< Offset 0x1000 RO Регистр состояния контроллера */
+    volatile uint32_t SMC_MEMIF_CFG;                  /*!< Offset 0x1004 RO Регистр конфигурации интерфейса памяти */
+    volatile uint32_t SMC_MEMC_CFG_SET;               /*!< Offset 0x1008 WO Регистр установки конфигурации контроллера */
+    volatile uint32_t SMC_MEMC_CFG_CLR;               /*!< Offset 0x100C WO Регистр сброса конфигурации контроллера */
+    volatile uint32_t SMC_DIRECT_CMD;                 /*!< Offset 0x1010 WO Регистр команд */
+    volatile uint32_t SMC_SET_CYCLES;                 /*!< Offset 0x1014 WO Регистр настройки циклов доступа к памяти */
+    volatile uint32_t SMC_SET_OPMODE;                 /*!< Offset 0x1018 WO Регистр настройки операции с памятью */
+             uint32_t reserved_0x101C;
+    volatile uint32_t SMC_REFRESH_PERIOD_0;           /*!< Offset 0x1020 RW Регистр периода обновления */
+             uint32_t reserved_0x1024 [0x0037];
+    volatile uint32_t SMC_SRAM_CYCLES0_0;             /*!< Offset 0x1100 RO Регистр параметров цикла доступа к памяти 0 */
+    volatile uint32_t SMC_OPMODE0_0;                  /*!< Offset 0x1104 RO Регистр режима операции для памяти 0 */
+             uint32_t reserved_0x1108 [0x0006];
+    volatile uint32_t SMC_SRAM_CYCLES0_1;             /*!< Offset 0x1120 RO Регистр параметров цикла доступа к памяти 1 */
+    volatile uint32_t SMC_OPMODE0_1;                  /*!< Offset 0x1124 RO Регистр режима операции для памяти 1 */
+             uint32_t reserved_0x1128 [0x03AE];
+    volatile uint32_t SMC_PERIPH_ID_0;                /*!< Offset 0x1FE0 RO ID регистр периферии 0 */
+    volatile uint32_t SMC_PERIPH_ID_1;                /*!< Offset 0x1FE4 RO ID регистр периферии 1 */
+    volatile uint32_t SMC_PERIPH_ID_2;                /*!< Offset 0x1FE8 RO ID регистр периферии 2 */
+    volatile uint32_t SMC_PERIPH_ID_4;                /*!< Offset 0x1FEC RO ID регистр периферии 3 */
+    volatile uint32_t SMC_PCELL_ID_0;                 /*!< Offset 0x1FF0 RO ID регистр компонента 0 */
+    volatile uint32_t SMC_PCELL_ID_1;                 /*!< Offset 0x1FF4 RO ID регистр компонента 1 */
+    volatile uint32_t SMC_PCELL_ID_2;                 /*!< Offset 0x1FF8 RO ID регистр компонента 2 */
+    volatile uint32_t SMC_PCELL_ID_3;                 /*!< Offset 0x1FFC RO ID регистр компонента 3 */
+             uint32_t reserved_0x2000 [0x0003];
+    volatile uint32_t STATIC_MEM_CFG_0;               /*!< Offset 0x200C RW Регистр настройки внешней памяти */
+             uint32_t reserved_0x2010;
+    volatile uint32_t ADDR_CFG_0;                     /*!< Offset 0x2014 RW Регистр настройки адреса 0 */
+    volatile uint32_t ADDR_CFG_1;                     /*!< Offset 0x2018 RW Регистр настройки адреса 1 */
+             uint32_t reserved_0x201C [0x0002];
+    volatile uint32_t BYTE_ORDER;                     /*!< Offset 0x2024 RW Регистр настройки порядка байтов */
+} NORMPORT_TypeDef; /* size of structure = 0x2028 */
+/*
+ * @brief PMCTR
+ */
+/*!< PMCTR Контроллер управления энергопотреблением */
+typedef struct PMCTR_Type
+{
+             uint32_t reserved_0x000 [0x0003];
+    volatile uint32_t SYS_PWR_STATUS;                 /*!< Offset 0x00C Регистр статуса доменов */
+    volatile uint32_t SYS_PWR_IMASK;                  /*!< Offset 0x010 Регистр маски прерывания SYS_PWR_INT */
+    volatile uint32_t SYS_PWR_IRSTAT;                 /*!< Offset 0x014 Регистр наличного статуса прерывания SYS_PWR_ISTAT */
+    volatile uint32_t SYS_PWR_INT;                    /*!< Offset 0x018 Регистр статуса прерывания SYS_PWR_INT */
+    volatile uint32_t SYS_PWR_ICLR;                   /*!< Offset 0x01C Регистр очистки статуса прерывания SYS_PWR_INT */
+    volatile uint32_t SYS_PWR_DELAY;                  /*!< Offset 0x020 Регистр задания задержек автоматов */
+    volatile uint32_t DDR_PIN_RET;                    /*!< Offset 0x024 Регистр перевода выводов DDR в режим хранения состояния */
+    volatile uint32_t DDR_INIT_END;                   /*!< Offset 0x028 Регистр вывода контроллеров DDRMC0, DDRMC1 из режима инициализации */
+    volatile uint32_t WARM_RST_EN;                    /*!< Offset 0x02C Регистр разрешения «теплого» сброса */
+             uint32_t reserved_0x030 [0x0004];
+    volatile uint32_t SW_RST;                         /*!< Offset 0x040 Регистр программного «теплого» сброса */
+    volatile uint32_t WARM_RST_STATUS;                /*!< Offset 0x044 Регистр статуса последнего сброса */
+    volatile uint32_t PDM_RST_STATUS;                 /*!< Offset 0x048 Регистр статуса сброса доменов питания */
+    volatile uint32_t NVMODE;                         /*!< Offset 0x04C Регистр управления сигналами NVMODE */
+    volatile uint32_t CPU0_WKP_MASK [0x004];          /*!< Offset 0x050 Регистр маски включения домена CPU0 по прерываниям */
+    volatile uint32_t CPU1_WKP_MASK [0x004];          /*!< Offset 0x060 Регистр маски включения домена CPU1 по прерываниям */
+    volatile uint32_t ALWAYS_MISC0;                   /*!< Offset 0x070 Регистр общего назначения, не сбрасываемый при «теплом» сбросе */
+    volatile uint32_t ALWAYS_MISC1;                   /*!< Offset 0x074 Регистр общего назначения, не сбрасываемый при «теплом» сбросе */
+    volatile uint32_t WARM_BOOT_OVRD;                 /*!< Offset 0x078 Регистр управления загрузкой при «теплом» сбросе */
+             uint32_t reserved_0x07C;
+    volatile uint32_t CORE_PWR_UP;                    /*!< Offset 0x080 Регистр включения доменов */
+    volatile uint32_t CORE_PWR_DOWN;                  /*!< Offset 0x084 Регистр выключения доменов */
+             uint32_t reserved_0x088;
+    volatile uint32_t CORE_PWR_STATUS;                /*!< Offset 0x08C Регистр статуса доменов */
+    volatile uint32_t CORE_PWR_IMASK;                 /*!< Offset 0x090 Регистр маски прерывания CORE_PWR_INT */
+    volatile uint32_t CORE_PWR_IRSTAT;                /*!< Offset 0x094 Регистр наличного статуса прерывания CORE_PWR_INT */
+    volatile uint32_t CORE_PWR_ISTAT;                 /*!< Offset 0x098 Регистр статуса прерывания CORE_PWR_INT */
+    volatile uint32_t CORE_PWR_ICLR;                  /*!< Offset 0x09C Регистр очистки статуса прерывания CORE_PWR_INT */
+    volatile uint32_t CORE_PWR_DELAY;                 /*!< Offset 0x0A0 Регистр задания задержек автоматов доменов */
+} PMCTR_TypeDef; /* size of structure = 0x0A4 */
 /*
  * @brief SDMA
  */
@@ -338,80 +363,55 @@ typedef struct SDMA_Type
     volatile uint32_t pcell_id_n;                     /*!< Offset 0xFF0 RO ID регистры компонента. */
 } SDMA_TypeDef; /* size of structure = 0xFF4 */
 /*
- * @brief NANDMPORT
+ * @brief SMCTR
  */
-/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
-typedef struct NANDMPORT_Type
+/*!< SMCTR общиме системные настройки микросхемы */
+typedef struct SMCTR_Type
 {
-    volatile uint32_t PACKET;                         /*!< Offset 0x000 (null) */
-    volatile uint32_t MEMADDR1;                       /*!< Offset 0x004 RW Регистр адреса 1 */
-    volatile uint32_t MEMADDR2;                       /*!< Offset 0x008 RW Регистр адреса 2 */
-    volatile uint32_t COMMAND;                        /*!< Offset 0x00C RW Регистр команды */
-    volatile uint32_t PROGRAM;                        /*!< Offset 0x010 RW Регистр программы */
-    volatile uint32_t INTERRUPT_STATUS_EN;            /*!< Offset 0x014 RW Регистр разрешения статуса прерываний */
-    volatile uint32_t INTERRUPT_SIGNAL_EN;            /*!< Offset 0x018 RW Регистр разрешения сигнала прерываний */
-    volatile uint32_t INTERRUPT_STATUS;               /*!< Offset 0x01C RW Регистр статуса прерываний */
-    volatile uint32_t ID1;                            /*!< Offset 0x020 RO Регистр ID1 */
-    volatile uint32_t ID2;                            /*!< Offset 0x024 RO Регистр ID2 */
-    volatile uint32_t FLASH_STATUS;                   /*!< Offset 0x028 RO Регистр статуса флэш-памяти */
-    volatile uint32_t TIMING;                         /*!< Offset 0x02C RW Регистр временных параметров */
-    volatile uint32_t BUFFER_DATA;                    /*!< Offset 0x030 RW Регистр данных буфера */
-    volatile uint32_t ECC;                            /*!< Offset 0x034 RW Регистр ECC */
-    volatile uint32_t ECC_ERROR_CNT;                  /*!< Offset 0x038 RO Счётчик ошибок ECC */
-    volatile uint32_t ECC_SPARE_CMD;                  /*!< Offset 0x03C RW Регистр команд ECC */
-    volatile uint32_t ERROR_CNT_1BIT;                 /*!< Offset 0x040 RW Счётчик 1-битных ошибок */
-    volatile uint32_t ERROR_CNT_2BIT;                 /*!< Offset 0x044 RW Счётчик 2-битных ошибок */
-    volatile uint32_t ERROR_CNT_3BIT;                 /*!< Offset 0x048 RW Счётчик 3-битных ошибок */
-    volatile uint32_t ERROR_CNT_4BIT;                 /*!< Offset 0x04C RW Счётчик 4-битных ошибок */
-    volatile uint32_t DMA_SYS_ADDR;                   /*!< Offset 0x050 RW Системный адрес DMA */
-    volatile uint32_t DMA_BUFFER_BOUNDARY;            /*!< Offset 0x054 RW Граница DMA пересылки */
-    volatile uint32_t CPU_STATE;                      /*!< Offset 0x058 RW Регистр состояния CPU */
-    volatile uint32_t ERROR_COUNT_5BIT;               /*!< Offset 0x05C RW Счётчик 5-битных ошибок */
-    volatile uint32_t ERROR_COUNT_6BIT;               /*!< Offset 0x060 RW Счётчик 6-битных ошибок */
-    volatile uint32_t ERROR_COUNT_7BIT;               /*!< Offset 0x064 RW Счётчик 7-битных ошибок */
-    volatile uint32_t ERROR_COUNT_8BIT;               /*!< Offset 0x068 RW Счётчик 8-битных ошибок */
-             uint32_t reserved_0x06C [0x0005];
-    volatile uint32_t SLAVE_DMA_CFG;                  /*!< Offset 0x080 RW Регистр конфигурации Slave DMA */
-} NANDMPORT_TypeDef; /* size of structure = 0x084 */
+    volatile uint32_t BOOT;                           /*!< Offset 0x000 Регистр отображения сигналов BOOT[1:0] микросхемы */
+    volatile uint32_t BOOT_REMAP;                     /*!< Offset 0x004 Регистр управления картой памяти при начальной загрузке */
+    volatile uint32_t MPU_CFGNMFI;                    /*!< Offset 0x008 Регистр разрешения немаскируемого FIQ в MPU */
+    volatile uint32_t DDR_REMAP;                      /*!< Offset 0x00C Регистр управления картой памяти для DDR */
+             uint32_t reserved_0x010 [0x0005];
+    volatile uint32_t MIPI_MUX;                       /*!< Offset 0x024 Регистр мультиплексирования MIPI DSI */
+    volatile uint32_t CHIP_ID;                        /*!< Offset 0x028 ID микросхемы */
+    volatile uint32_t CHIP_CONFIG;                    /*!< Offset 0x02C Регистр конфигурации микросхемы */
+    volatile uint32_t EMA_ARM;                        /*!< Offset 0x030 Регистр подстройки памятей в ARM MPU */
+    volatile uint32_t EMA_L2;                         /*!< Offset 0x034 Регистр подстройки памятей в L2CACHE */
+    volatile uint32_t EMA_DSP;                        /*!< Offset 0x038 Регистр подстройки памятей в DSP и VPU */
+    volatile uint32_t EMA_CORE;                       /*!< Offset 0x03C Регистр подстройки памятей в CORE */
+    volatile uint32_t IOPULL_CTR;                     /*!< Offset 0x040 Регистры управления подтягивающими резисторами контактных площадок микросхемы */
+    volatile uint32_t COMM_DLOCK;                     /*!< Offset 0x044 Регистр индикации зависания коммутатора микросхемы */
+} SMCTR_TypeDef; /* size of structure = 0x048 */
 /*
- * @brief NORMPORT
+ * @brief UART
  */
-/*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. */
-typedef struct NORMPORT_Type
+/*!< UART Universal Asynchronous Receiver-Transmitter */
+typedef struct UART_Type
 {
-             uint32_t reserved_0x000 [0x0400];
-    volatile uint32_t SMC_MEMC_STATUS;                /*!< Offset 0x1000 RO Регистр состояния контроллера */
-    volatile uint32_t SMC_MEMIF_CFG;                  /*!< Offset 0x1004 RO Регистр конфигурации интерфейса памяти */
-    volatile uint32_t SMC_MEMC_CFG_SET;               /*!< Offset 0x1008 WO Регистр установки конфигурации контроллера */
-    volatile uint32_t SMC_MEMC_CFG_CLR;               /*!< Offset 0x100C WO Регистр сброса конфигурации контроллера */
-    volatile uint32_t SMC_DIRECT_CMD;                 /*!< Offset 0x1010 WO Регистр команд */
-    volatile uint32_t SMC_SET_CYCLES;                 /*!< Offset 0x1014 WO Регистр настройки циклов доступа к памяти */
-    volatile uint32_t SMC_SET_OPMODE;                 /*!< Offset 0x1018 WO Регистр настройки операции с памятью */
-             uint32_t reserved_0x101C;
-    volatile uint32_t SMC_REFRESH_PERIOD_0;           /*!< Offset 0x1020 RW Регистр периода обновления */
-             uint32_t reserved_0x1024 [0x0037];
-    volatile uint32_t SMC_SRAM_CYCLES0_0;             /*!< Offset 0x1100 RO Регистр параметров цикла доступа к памяти 0 */
-    volatile uint32_t SMC_OPMODE0_0;                  /*!< Offset 0x1104 RO Регистр режима операции для памяти 0 */
-             uint32_t reserved_0x1108 [0x0006];
-    volatile uint32_t SMC_SRAM_CYCLES0_1;             /*!< Offset 0x1120 RO Регистр параметров цикла доступа к памяти 1 */
-    volatile uint32_t SMC_OPMODE0_1;                  /*!< Offset 0x1124 RO Регистр режима операции для памяти 1 */
-             uint32_t reserved_0x1128 [0x03AE];
-    volatile uint32_t SMC_PERIPH_ID_0;                /*!< Offset 0x1FE0 RO ID регистр периферии 0 */
-    volatile uint32_t SMC_PERIPH_ID_1;                /*!< Offset 0x1FE4 RO ID регистр периферии 1 */
-    volatile uint32_t SMC_PERIPH_ID_2;                /*!< Offset 0x1FE8 RO ID регистр периферии 2 */
-    volatile uint32_t SMC_PERIPH_ID_4;                /*!< Offset 0x1FEC RO ID регистр периферии 3 */
-    volatile uint32_t SMC_PCELL_ID_0;                 /*!< Offset 0x1FF0 RO ID регистр компонента 0 */
-    volatile uint32_t SMC_PCELL_ID_1;                 /*!< Offset 0x1FF4 RO ID регистр компонента 1 */
-    volatile uint32_t SMC_PCELL_ID_2;                 /*!< Offset 0x1FF8 RO ID регистр компонента 2 */
-    volatile uint32_t SMC_PCELL_ID_3;                 /*!< Offset 0x1FFC RO ID регистр компонента 3 */
-             uint32_t reserved_0x2000 [0x0003];
-    volatile uint32_t STATIC_MEM_CFG_0;               /*!< Offset 0x200C RW Регистр настройки внешней памяти */
-             uint32_t reserved_0x2010;
-    volatile uint32_t ADDR_CFG_0;                     /*!< Offset 0x2014 RW Регистр настройки адреса 0 */
-    volatile uint32_t ADDR_CFG_1;                     /*!< Offset 0x2018 RW Регистр настройки адреса 1 */
-             uint32_t reserved_0x201C [0x0002];
-    volatile uint32_t BYTE_ORDER;                     /*!< Offset 0x2024 RW Регистр настройки порядка байтов */
-} NORMPORT_TypeDef; /* size of structure = 0x2028 */
+    volatile uint32_t UART_RBR_THR_DLL;               /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
+    volatile uint32_t UART_DLH_IER;                   /*!< Offset 0x004  */
+    volatile uint32_t UART_IIR_FCR;                   /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
+    volatile uint32_t UART_LCR;                       /*!< Offset 0x00C UART Line Control Register */
+    volatile uint32_t UART_MCR;                       /*!< Offset 0x010 UART Modem Control Register */
+    volatile uint32_t UART_LSR;                       /*!< Offset 0x014 UART Line Status Register */
+    volatile uint32_t UART_MSR;                       /*!< Offset 0x018 UART Modem Status Register */
+    volatile uint32_t UART_SCR;                       /*!< Offset 0x01C UART Scratch Register */
+             uint32_t reserved_0x020 [0x0004];
+    volatile uint32_t UART_SRBR_STHR [0x010];         /*!< Offset 0x030  */
+             uint32_t reserved_0x070 [0x0003];
+    volatile uint32_t UART_USR;                       /*!< Offset 0x07C  */
+    volatile uint32_t UART_TFL;                       /*!< Offset 0x080  */
+    volatile uint32_t UART_RFL;                       /*!< Offset 0x084  */
+    volatile uint32_t UART_SRR;                       /*!< Offset 0x088  */
+    volatile uint32_t UART_SRTS;                      /*!< Offset 0x08C  */
+    volatile uint32_t UART_SBCR;                      /*!< Offset 0x090 check address (was: 0x80)  */
+             uint32_t reserved_0x094;
+    volatile uint32_t UART_SFE;                       /*!< Offset 0x098  */
+    volatile uint32_t UART_SRT;                       /*!< Offset 0x09C  */
+    volatile uint32_t UART_STET;                      /*!< Offset 0x0A0  */
+    volatile uint32_t UART_HTX;                       /*!< Offset 0x0A4  */
+} UART_TypeDef; /* size of structure = 0x0A8 */
 
 
 /* Access pointers */
