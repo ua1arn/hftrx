@@ -13,3 +13,46 @@
 #regdef; DATA; 0x0010; Data Register
 #regdef; DRV; 0x014 2; Multi_Driving Register
 #regdef; PULL; 0x01C 2; Pull Register
+##
+#type; GPIOBLOCK
+#base; GPIOBLOCK 0x0300B000
+#base; GPIOBLOCK_L 0x01F02C00
+#aggreg; GPIO_PINS; 0x0000 8; GPIO pin control
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 2; Multi_Driving Register
+#regdef; PULL; 0x01C 2; Pull Register
+#aggregend;
+#aggreg; GPIO_INTS; 0x0200 8; GPIO interrupt control
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#aggregend;
+##
+#type; GPIOINT
+#base; GPIOINTA 0x0300B200
+#base; GPIOINTC 0x0300B200
+#base; GPIOINTD 0x0300B200
+#base; GPIOINTE 0x0300B200
+#base; GPIOINTF 0x0300B200
+#base; GPIOINTG 0x0300B200
+#base; GPIOINTH 0x0300B200
+#base; GPIOINTI 0x0300B200
+#irq; GPIOB_NS 101 
+#irq; GPIOB_S 102 
+#irq; GPIOC_NS 103 
+#irq; GPIOC_S 104 
+#irq; GPIOD_NS 105 
+#irq; GPIOD_S 106 
+#irq; GPIOE_NS 107 
+#irq; GPIOE_S 108 
+#irq; GPIOF_NS 109 
+#irq; GPIOF_S 110 
+#irq; GPIOG_NS 111 
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; PB External Interrupt Debounce Register

@@ -584,18 +584,6 @@ typedef struct GPIO_Type
              uint32_t reserved_0x02C;
 } GPIO_TypeDef; /* size of structure = 0x030 */
 /*
- * @brief GPIOINT
- */
-/*!< GPIOINT  */
-typedef struct GPIOINT_Type
-{
-    volatile uint32_t EINT_CFG [0x004];               /*!< Offset 0x000 External Interrupt Configure Registers */
-    volatile uint32_t EINT_CTL;                       /*!< Offset 0x010 External Interrupt Control Register */
-    volatile uint32_t EINT_STATUS;                    /*!< Offset 0x014 External Interrupt Status Register */
-    volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
-             uint32_t reserved_0x01C;
-} GPIOINT_TypeDef; /* size of structure = 0x020 */
-/*
  * @brief GPIOBLOCK
  */
 /*!< GPIOBLOCK  */
@@ -623,6 +611,18 @@ typedef struct GPIOBLOCK_Type
     volatile uint32_t PIO_POW_MS_CTL;                 /*!< Offset 0x344 PIO Group Withstand Voltage Mode Select Control Register */
     volatile uint32_t PIO_POW_VAL;                    /*!< Offset 0x348 PIO Group Power Value Register */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x34C */
+/*
+ * @brief GPIOINT
+ */
+/*!< GPIOINT  */
+typedef struct GPIOINT_Type
+{
+    volatile uint32_t EINT_CFG [0x004];               /*!< Offset 0x000 External Interrupt Configure Registers */
+    volatile uint32_t EINT_CTL;                       /*!< Offset 0x010 External Interrupt Control Register */
+    volatile uint32_t EINT_STATUS;                    /*!< Offset 0x014 External Interrupt Status Register */
+    volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
+             uint32_t reserved_0x01C;
+} GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief SMHC
  */
