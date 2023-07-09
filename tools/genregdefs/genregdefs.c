@@ -48,6 +48,10 @@ enum {
 	VNAME_MAX = 96
 };
 
+enum {
+	MAXIRQNUMBERS = 1024
+};
+
 struct parsedfile {
 	LIST_ENTRY item;
 	LIST_ENTRY regslist;
@@ -893,32 +897,16 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 
 static void emitperipherials(int indent) {
 	PLIST_ENTRY t;
-	int nitems;
-	int i;
-	struct parsedfile **pflarray;
 
 	emitline(indent, "<peripherals>" "\n");
 
 	/* structures */
-
-	for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-		++nitems;
-	}
-	pflarray = calloc(nitems, sizeof(struct parsedfile*));
-	for (i = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink, ++i) {
-		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-		pflarray[i] = pfl;
-	}
-	qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
-
-	for (i = 0; i < nitems; ++i) {
-		struct parsedfile *const pfl = pflarray[i];
 		emitperipherial(indent + 1, pfl);
 	}
 
 	emitline(indent, "</peripherals>" "\n");
-	free(pflarray);
 }
 
 static void emitvendorext(int indent) {
@@ -985,16 +973,22 @@ static void generate_cmsis(void) {
 
 	if (!flag_riscv) {
 		/* collect ARM IRQ vectors */
+		const int maxbases = MAXIRQNUMBERS;
 		int nitems = 0;
 		int i;
-		struct irqmap irqs[1024];
+		struct irqmap *irqs;
 
+		irqs = calloc(maxbases, sizeof(struct irqmap));
 		{
 			PLIST_ENTRY t;
-			for (t = parsedfiles.Flink; t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0]; t = t->Flink) {
+			for (t = parsedfiles.Flink; t != &parsedfiles && nitems < maxbases; t = t->Flink) {
 				struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-				nitems += collect_irq(pfl, sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
+				nitems += collect_irq(pfl, maxbases - nitems, irqs + nitems);
 			}
+		}
+		if (maxbases == nitems) {
+			fprintf(stderr, "Too large data (struct irqmap)\n");
+			return;
 		}
 
 		qsort(irqs, nitems, sizeof irqs[0], compare_irq);
@@ -1019,20 +1013,28 @@ static void generate_cmsis(void) {
 				1048);
 		emitline(0, "} IRQn_Type;\n");
 		emitline(0, "\n");
+		free(irqs);
 	}
 
 	if (flag_riscv) {
 		/* collect RISC-V IRQ vectors */
+		const int maxbases = MAXIRQNUMBERS;
 		int nitems = 0;
 		int i;
-		struct irqmaprv irqs[1024];
+		struct irqmaprv *irqs;
+
+		irqs = calloc(maxbases, sizeof(struct irqmaprv));
 
 		{
 			PLIST_ENTRY t;
-			for (t = parsedfiles.Flink; t != &parsedfiles && nitems < sizeof irqs / sizeof irqs[0]; t = t->Flink) {
+			for (t = parsedfiles.Flink; t != &parsedfiles && nitems < maxbases; t = t->Flink) {
 				struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-				nitems += collect_irqrv(pfl, sizeof irqs / sizeof irqs[0] - nitems, irqs + nitems);
+				nitems += collect_irqrv(pfl, maxbases - nitems, irqs + nitems);
 			}
+		}
+		if (maxbases == nitems) {
+			fprintf(stderr, "Too large data (struct irqmaprv)\n");
+			return;
 		}
 
 		qsort(irqs, nitems, sizeof irqs[0], compare_irqrv);
@@ -1051,25 +1053,30 @@ static void generate_cmsis(void) {
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
-		emitline(
-		INDENT,
-				"Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */\n",
-				1048);
+		emitline(INDENT, "Force_IRQn_enum_size = %d /* Dummy entry to ensure IRQn_Type is more than 8 bits. "
+				"Otherwise GIC init loop would fail */\n", 1048);
 		emitline(0, "} IRQn_Type;\n");
 		emitline(0, "\n");
+		free(irqs);
 	}
 
 	if (1) {
 
 		/* collect base addresses */
+		const int maxbases = 1024;
 		int nitems = 0;
 		int i;
-		struct basemap maps[256];
+		struct basemap *maps;
 		PLIST_ENTRY t;
 
+		maps = calloc(maxbases, sizeof(struct basemap));
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+			nitems += collect_base(pfl, maxbases - nitems, maps + nitems);
+		}
+		if (maxbases == nitems) {
+			fprintf(stderr, "Too large data (struct basemap)\n");
+			return;
 		}
 
 		qsort(maps, nitems, sizeof maps[0], compare_base);
@@ -1086,47 +1093,38 @@ static void generate_cmsis(void) {
 			emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
 		}
 		emitline(0, "\n");
+		free(maps);
 	}
 
 	if (1) {
 		/* structures */
 		PLIST_ENTRY t;
-		int nitems;
-		int i;
-		struct parsedfile **pflarray;
 
-		for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-			++nitems;
-		}
-		pflarray = calloc(nitems, sizeof(struct parsedfile*));
-		for (i = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink, ++i) {
-			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-			pflarray[i] = pfl;
-		}
-		qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
-
-		for (i = 0; i < nitems; ++i) {
-			struct parsedfile *const pfl = pflarray[i];
 			processfile_periphregs(pfl);
 		}
 		emitline(0, "\n");
-		free(pflarray);
 	}
 
 	if (1) {
+		const int maxbases = 1024;
 		int nitems = 0;
 		int i;
-		struct basemap maps[256];
+		struct basemap *maps;
 		PLIST_ENTRY t;
 
 		emitline(0, "\n");
 		emitline(0, "/* Access pointers */\n");
 		emitline(0, "\n");
-
+		maps = calloc(maxbases, sizeof(struct basemap));
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-			nitems += collect_base(pfl, 1024 - nitems, maps + nitems);
+			nitems += collect_base(pfl, maxbases - nitems, maps + nitems);
+		}
+		if (maxbases == nitems) {
+			fprintf(stderr, "Too large data (struct basemap)\n");
+			return;
 		}
 
 		qsort(maps, nitems, sizeof maps[0], compare_base);
@@ -1141,6 +1139,7 @@ static void generate_cmsis(void) {
 			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n", maps[i].name, pfl->comment ? pfl->comment : "");
 		}
 		emitline(0, "\n");
+		free(maps);
 	}
 
 	emitline(0, "\n");
@@ -1171,20 +1170,48 @@ int main(int argc, char *argv[], char *envp[]) {
 	if (argc < 2)
 		return 1;
 
-	InitializeListHead(&parsedfiles);
-
 	/* Load files */
-	for (; i < argc;) {
-		loadfile(argv[i]);
-		++i;
-	}
+	{
+		InitializeListHead(&parsedfiles);
 
+		for (; i < argc;) {
+			loadfile(argv[i]);
+			++i;
+		}
+	}
+	/* demo */
 	{
 		PLIST_ENTRY t;
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-			//fprintf(stderr, "$");
+			/* any actions... */
 		}
+	}
+
+	/* Sort objects */
+	{
+		int nitems;
+		int i;
+		struct parsedfile **pflarray;
+		PLIST_ENTRY t;
+
+		for (nitems = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+			++nitems;
+		}
+		pflarray = calloc(nitems, sizeof(struct parsedfile*));
+		for (i = 0, t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink, ++i) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+			pflarray[i] = pfl;
+		}
+		qsort(pflarray, nitems, sizeof pflarray[0], compare_pfltypes);
+		/* rebuild list */
+		InitializeListHead(&parsedfiles);
+		for (i = 0; i < nitems; ++i) {
+			struct parsedfile *const pfl = pflarray[i];
+			InsertTailList(&parsedfiles, &pfl->item);
+		}
+		free(pflarray);
 	}
 
 	/* Generate one of required output files */
