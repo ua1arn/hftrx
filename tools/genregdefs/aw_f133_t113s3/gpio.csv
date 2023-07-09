@@ -10,7 +10,7 @@
 #regdef; DRV; 0x014 4; Multi_Driving Register
 #regdef; PULL; 0x024 2; Pull Register
 #regdef; padding 0; 0x030; Need for address arithmetics
-##
+
 #type; GPIOBLOCK
 #base; GPIOBLOCK 0x02000000
 #aggreg; GPIO_PINS; 0x0000 7; GPIO pin control
@@ -30,7 +30,7 @@
 #regdef; PIO_POW_MOD_SEL; 0x0340; PIO Group Withstand Voltage Mode Select Register
 #regdef; PIO_POW_MS_CTL; 0x0344; PIO Group Withstand Voltage Mode Select Control Register
 #regdef; PIO_POW_VAL; 0x0348; PIO Group Power Value Register
-##
+
 #type; GPIOINT
 #base; GPIOINTB 0x02000220
 #base; GPIOINTC 0x02000240

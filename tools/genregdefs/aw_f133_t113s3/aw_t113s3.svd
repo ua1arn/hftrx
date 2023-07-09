@@ -4482,7 +4482,7 @@
   </peripheral>
   <peripheral>
   <name>DE_BLD</name>
-  <description></description>
+  <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x05101000</baseAddress>
   <registers>
    <register>
@@ -4637,7 +4637,7 @@
   </peripheral>
   <peripheral>
   <name>DE_GLB</name>
-  <description></description>
+  <description>Display Engine (DE) - Global Control</description>
   <baseAddress>0x05100000</baseAddress>
   <registers>
    <register>
@@ -4680,8 +4680,13 @@
   </peripheral>
   <peripheral>
   <name>DE_TOP</name>
-  <description></description>
+  <description>Display Engine (DE)</description>
   <baseAddress>0x05000000</baseAddress>
+  <interrupt>
+   <name>DE</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>GATE_CFG</name>
@@ -4732,7 +4737,7 @@
   </peripheral>
   <peripheral>
   <name>DE_UI1</name>
-  <description></description>
+  <description>Display Engine (DE) - UI surface</description>
   <baseAddress>0x05103000</baseAddress>
   <registers>
    <cluster>
@@ -4836,7 +4841,7 @@
   </peripheral>
   <peripheral>
   <name>DE_VI</name>
-  <description></description>
+  <description>Display Engine (DE) - VI surface</description>
   <baseAddress>0x05102000</baseAddress>
   <registers>
    <cluster>

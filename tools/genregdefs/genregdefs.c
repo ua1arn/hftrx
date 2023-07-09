@@ -403,7 +403,8 @@ static int nextline(FILE *fp) {
 }
 
 static int istokencomment(void) {
-	return (0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || strcmp(token0, "#\n") == 0);
+	return 0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || 0 == strcmp(token0, "#\n") || 0 == strcmp(token0, "\n")
+			|| 0;
 }
 
 /* trim field name */

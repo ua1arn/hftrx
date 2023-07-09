@@ -51,7 +51,7 @@ typedef enum IRQn
     GPIOE_NS_IRQn = 91,                               /*!< GPIOINT  Interrupt */
     GPIOF_NS_IRQn = 93,                               /*!< GPIOINT  Interrupt */
     GPIOG_NS_IRQn = 95,                               /*!< GPIOINT  Interrupt */
-    DE_IRQn = 103,                                    /*!< DE Display Engine (DE) Interrupt */
+    DE_IRQn = 103,                                    /*!< DE_TOP Display Engine (DE) Interrupt */
     DI_IRQn = 104,                                    /*!< DI De-interlacer (DI) Interrupt */
     DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
     TVE_IRQn = 110,                                   /*!< TVE TV Encoder Interrupt */
@@ -893,7 +893,7 @@ typedef struct DDRPHYC_Type
 /*
  * @brief DE_BLD
  */
-/*!< DE_BLD  */
+/*!< DE_BLD Display Engine (DE) - Blender */
 typedef struct DE_BLD_Type
 {
     volatile uint32_t FCOLOR_CTL;                     /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
@@ -923,7 +923,7 @@ typedef struct DE_BLD_Type
 /*
  * @brief DE_GLB
  */
-/*!< DE_GLB  */
+/*!< DE_GLB Display Engine (DE) - Global Control */
 typedef struct DE_GLB_Type
 {
     volatile uint32_t GLB_CTL;                        /*!< Offset 0x000 Global control register */
@@ -934,7 +934,7 @@ typedef struct DE_GLB_Type
 /*
  * @brief DE_TOP
  */
-/*!< DE_TOP  */
+/*!< DE_TOP Display Engine (DE) */
 typedef struct DE_TOP_Type
 {
     volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
@@ -946,7 +946,7 @@ typedef struct DE_TOP_Type
 /*
  * @brief DE_UI
  */
-/*!< DE_UI  */
+/*!< DE_UI Display Engine (DE) - UI surface */
 typedef struct DE_UI_Type
 {
     struct
@@ -967,7 +967,7 @@ typedef struct DE_UI_Type
 /*
  * @brief DE_VI
  */
-/*!< DE_VI  */
+/*!< DE_VI Display Engine (DE) - VI surface */
 typedef struct DE_VI_Type
 {
     struct
@@ -2808,11 +2808,11 @@ typedef struct USB_OHCI_Capability_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP  register set access pointer */
-#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
-#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
-#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI  register set access pointer */
-#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) register set access pointer */
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI Display Engine (DE) - VI surface register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
