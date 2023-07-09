@@ -33,6 +33,11 @@
 #define WITHMODEM_USART3	1
 #define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
+#if WITHDEBUG
+	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
+	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
+#endif /* WITHDEBUG */
+
 #if WITHISBOOTLOADER
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -62,10 +67,6 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#if WITHDEBUG
-		//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
-		#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
-	#endif /* WITHDEBUG */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
