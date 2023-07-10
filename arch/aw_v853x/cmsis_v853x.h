@@ -88,9 +88,9 @@ typedef enum IRQn
     DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) Interrupt */
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) Interrupt */
     G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
-    TVE_IRQn = 123,                                   /*!< TVE_TOP TV Output Interrupt */
+    TVE_IRQn = 123,                                   /*!< TVE_TOP TV Output (TV_Encoder) Interrupt */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
-    TVE_IRQn = 126,                                   /*!< TVE TV Encoder (capture interface = CVBS OUT) Interrupt */
+    TV_Encoder_IRQn = 126,                            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  Interrupt */
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  Interrupt */
     CSIC_DMA2_IRQn = 129,                             /*!< CSIC_DMA  Interrupt */
@@ -2632,7 +2632,7 @@ typedef struct TVD_TOP_Type
 /*
  * @brief TVE_TOP
  */
-/*!< TVE_TOP TV Output */
+/*!< TVE_TOP TV Output (TV_Encoder) */
 typedef struct TVE_TOP_Type
 {
              uint32_t reserved_0x000 [0x0008];
@@ -3024,7 +3024,7 @@ typedef struct USB_OHCI_Capability_Type
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
-#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output register set access pointer */
+#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
 #define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Output register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */

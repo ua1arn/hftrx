@@ -14153,7 +14153,7 @@
   </peripheral>
   <peripheral>
   <name>TVE_TOP</name>
-  <description>TV Output</description>
+  <description>TV Output (TV_Encoder)</description>
   <baseAddress>0x05600000</baseAddress>
   <interrupt>
    <name>TVE</name>

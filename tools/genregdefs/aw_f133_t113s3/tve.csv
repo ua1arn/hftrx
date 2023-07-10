@@ -1,4 +1,4 @@
-#type; TVE
-#irq; TVE 126
-#irqrv; TVE 110
-#comment; TV Encoder (capture interface = CVBS OUT)
+#type; TV_Encoder
+#irq; TV_Encoder 126
+#irqrv; TV_Encoder 110
+#comment; TV Encoder (display out interface = CVBS OUT)
