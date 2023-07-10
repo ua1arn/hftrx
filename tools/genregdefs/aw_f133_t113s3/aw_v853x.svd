@@ -8218,7 +8218,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_UI0</name>
-  <description></description>
+  <description>Graphic 2D UI surface</description>
   <baseAddress>0x05411000</baseAddress>
   <registers>
    <register>
@@ -8305,7 +8305,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_V0</name>
-  <description></description>
+  <description>Graphic 2D VI surface</description>
   <baseAddress>0x05410800</baseAddress>
   <registers>
    <register>
