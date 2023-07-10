@@ -43,23 +43,23 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Base */
-#define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT Base */
-#define NORMPORT_BASE ((uintptr_t) 0x38008000)        /*!< NORMPORT Base */
-#define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
-#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Base */
-#define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Base */
-#define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Base */
-#define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Base */
-#define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Base */
-#define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Base */
-#define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Base */
-#define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!< GIC_INTERFACE Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR Base */
+#define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Регистры блока управления SDMA Base */
+#define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) Base */
+#define NORMPORT_BASE ((uintptr_t) 0x38008000)        /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. Base */
+#define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Регистры блока управления GPIO Base */
+#define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Регистры блока управления GPIO Base */
+#define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Регистры блока управления GPIO Base */
+#define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Регистры блока управления GPIO Base */
+#define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Регистры блока управления GPIO Base */
+#define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Контроллер управления синхронизацией Base */
+#define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Контроллер управления энергопотреблением Base */
+#define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR общиме системные настройки микросхемы Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR  Base */
 
 /*
  * @brief CMCTR

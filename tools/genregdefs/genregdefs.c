@@ -1087,7 +1087,7 @@ static void generate_cmsis(void) {
 			struct basemap *const p = &maps[i];
 
 			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->name, p->base);
-			emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
+			emitline(COMMENTNEAR, "/*!< %s %s Base */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
 		free(maps);

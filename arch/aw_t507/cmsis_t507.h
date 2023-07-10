@@ -65,51 +65,51 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Base */
-#define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC Base */
-#define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC Base */
-#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
-#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI Base */
-#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI Base */
-#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI Base */
-#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI Base */
-#define TWI4_BASE ((uintptr_t) 0x02503000)            /*!< TWI Base */
-#define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Base */
-#define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK Base */
-#define GPIOE_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOF_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOG_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOH_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOI_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOL_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Base */
-#define GPIOB_BASE ((uintptr_t) 0x0300B024)           /*!< GPIO Base */
-#define GPIOC_BASE ((uintptr_t) 0x0300B048)           /*!< GPIO Base */
-#define GPIOD_BASE ((uintptr_t) 0x0300B06C)           /*!< GPIO Base */
-#define GPIOINTA_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTC_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTD_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTE_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTF_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTG_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTH_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GPIOINTI_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE Base */
-#define UART0_BASE ((uintptr_t) 0x05000000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x05000400)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x05000800)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x05000C00)           /*!< UART Base */
-#define UART4_BASE ((uintptr_t) 0x05001000)           /*!< UART Base */
-#define UART5_BASE ((uintptr_t) 0x05001400)           /*!< UART Base */
-#define USB0_BASE ((uintptr_t) 0x05100000)            /*!< USBOTG Base */
-#define USBOTG0_BASE ((uintptr_t) 0x05100000)         /*!< USBOTG Base */
-#define USB1_BASE ((uintptr_t) 0x05200000)            /*!< USB_EHCI_Capability Base */
-#define USBOHCI1_BASE ((uintptr_t) 0x05200400)        /*!< USB_OHCI_Capability Base */
-#define USB3_BASE ((uintptr_t) 0x05310000)            /*!< USB_EHCI_Capability Base */
-#define USBOHCI3_BASE ((uintptr_t) 0x05310400)        /*!< USB_OHCI_Capability Base */
-#define USB4_BASE ((uintptr_t) 0x05311000)            /*!< USB_EHCI_Capability Base */
-#define USBOHCI4_BASE ((uintptr_t) 0x05311400)        /*!< USB_OHCI_Capability Base */
+#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
+#define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
+#define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
+#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
+#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI  Base */
+#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI  Base */
+#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI  Base */
+#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI  Base */
+#define TWI4_BASE ((uintptr_t) 0x02503000)            /*!< TWI  Base */
+#define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU  Base */
+#define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK  Base */
+#define GPIOE_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOF_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOG_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOH_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOI_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOL_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
+#define GPIOB_BASE ((uintptr_t) 0x0300B024)           /*!< GPIO  Base */
+#define GPIOC_BASE ((uintptr_t) 0x0300B048)           /*!< GPIO  Base */
+#define GPIOD_BASE ((uintptr_t) 0x0300B06C)           /*!< GPIO  Base */
+#define GPIOINTA_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTC_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTD_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTE_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTF_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTG_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTH_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTI_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define UART0_BASE ((uintptr_t) 0x05000000)           /*!< UART  Base */
+#define UART1_BASE ((uintptr_t) 0x05000400)           /*!< UART  Base */
+#define UART2_BASE ((uintptr_t) 0x05000800)           /*!< UART  Base */
+#define UART3_BASE ((uintptr_t) 0x05000C00)           /*!< UART  Base */
+#define UART4_BASE ((uintptr_t) 0x05001000)           /*!< UART  Base */
+#define UART5_BASE ((uintptr_t) 0x05001400)           /*!< UART  Base */
+#define USB0_BASE ((uintptr_t) 0x05100000)            /*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USBOTG0_BASE ((uintptr_t) 0x05100000)         /*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USB1_BASE ((uintptr_t) 0x05200000)            /*!< USB_EHCI_Capability  Base */
+#define USBOHCI1_BASE ((uintptr_t) 0x05200400)        /*!< USB_OHCI_Capability  Base */
+#define USB3_BASE ((uintptr_t) 0x05310000)            /*!< USB_EHCI_Capability  Base */
+#define USBOHCI3_BASE ((uintptr_t) 0x05310400)        /*!< USB_OHCI_Capability  Base */
+#define USB4_BASE ((uintptr_t) 0x05311000)            /*!< USB_EHCI_Capability  Base */
+#define USBOHCI4_BASE ((uintptr_t) 0x05311400)        /*!< USB_OHCI_Capability  Base */
 
 /*
  * @brief CCU

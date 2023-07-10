@@ -119,119 +119,119 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define DSP0_CFG_BASE ((uintptr_t) 0x01700000)        /*!< DSP_CFG Base */
-#define DSP_WDG_BASE ((uintptr_t) 0x01700400)         /*!< DSP_WDG Base */
-#define DSP_INTC_BASE ((uintptr_t) 0x01700800)        /*!< DSP_INTC Base */
-#define DSP_TZMA_BASE ((uintptr_t) 0x01700C00)        /*!< DSP_TZMA Base */
-#define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Base */
-#define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)     /*!< xDSP_MSGBOX Base */
-#define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
-#define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO Base */
-#define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO Base */
-#define GPIOD_BASE ((uintptr_t) 0x02000090)           /*!< GPIO Base */
-#define GPIOE_BASE ((uintptr_t) 0x020000C0)           /*!< GPIO Base */
-#define GPIOF_BASE ((uintptr_t) 0x020000F0)           /*!< GPIO Base */
-#define GPIOG_BASE ((uintptr_t) 0x02000120)           /*!< GPIO Base */
-#define GPIOINTB_BASE ((uintptr_t) 0x02000220)        /*!< GPIOINT Base */
-#define GPIOINTC_BASE ((uintptr_t) 0x02000240)        /*!< GPIOINT Base */
-#define GPIOINTD_BASE ((uintptr_t) 0x02000260)        /*!< GPIOINT Base */
-#define GPIOINTE_BASE ((uintptr_t) 0x02000280)        /*!< GPIOINT Base */
-#define GPIOINTF_BASE ((uintptr_t) 0x020002A0)        /*!< GPIOINT Base */
-#define GPIOINTG_BASE ((uintptr_t) 0x020002C0)        /*!< GPIOINT Base */
-#define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
-#define PWM_BASE ((uintptr_t) 0x02000C00)             /*!< PWM Base */
-#define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU Base */
-#define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX Base */
-#define TZMA_BASE ((uintptr_t) 0x02004000)            /*!< TZMA Base */
-#define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC Base */
-#define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
-#define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Base */
-#define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
-#define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
-#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
-#define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
-#define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM Base */
-#define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM Base */
-#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
-#define TIMER_BASE ((uintptr_t) 0x02050000)           /*!< TIMER Base */
-#define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x02500400)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x02500800)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x02500C00)           /*!< UART Base */
-#define UART4_BASE ((uintptr_t) 0x02501000)           /*!< UART Base */
-#define UART5_BASE ((uintptr_t) 0x02501400)           /*!< UART Base */
-#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI Base */
-#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI Base */
-#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI Base */
-#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI Base */
-#define CAN0_BASE ((uintptr_t) 0x02504000)            /*!< CAN Base */
-#define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN Base */
-#define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG Base */
-#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC Base */
-#define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)     /*!< MSGBOX Base */
-#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
-#define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
-#define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE Base */
-#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
-#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Base */
-#define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM Base */
-#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC Base */
-#define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC Base */
-#define MCTL_PHY_BASE ((uintptr_t) 0x03103000)        /*!< MCTL_PHY Base */
-#define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
-#define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
-#define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
-#define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Base */
-#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI_DBI Base */
-#define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG Base */
-#define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC Base */
-#define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI0_BASE ((uintptr_t) 0x04101400)        /*!< USB_OHCI_Capability Base */
-#define USBEHCI1_BASE ((uintptr_t) 0x04200000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability Base */
-#define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC Base */
-#define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC Base */
-#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Base */
-#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Base */
-#define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Base */
-#define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Base */
-#define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Base */
-#define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Base */
-#define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI Base */
-#define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Base */
-#define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Base */
-#define G2D_V0_BASE ((uintptr_t) 0x05410800)          /*!< G2D_VI Base */
-#define G2D_UI0_BASE ((uintptr_t) 0x05411000)         /*!< G2D_UI Base */
-#define G2D_UI1_BASE ((uintptr_t) 0x05411800)         /*!< G2D_UI Base */
-#define G2D_UI2_BASE ((uintptr_t) 0x05412000)         /*!< G2D_UI Base */
-#define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Base */
-#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Base */
-#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Base */
-#define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI Base */
-#define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY Base */
-#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP Base */
-#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
-#define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV Base */
-#define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP Base */
-#define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder Base */
-#define CSI_BASE ((uintptr_t) 0x05800000)             /*!< CSI Base */
-#define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU Base */
-#define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP Base */
-#define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)    /*!< CSIC_PARSER Base */
-#define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)       /*!< CSIC_DMA Base */
-#define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA Base */
-#define TVD_TOP_BASE ((uintptr_t) 0x05C00000)         /*!< TVD_TOP Base */
-#define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Base */
-#define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
-#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG Base */
-#define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
-#define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
-#define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
-#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
-#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Base */
+#define DSP0_CFG_BASE ((uintptr_t) 0x01700000)        /*!< DSP_CFG  Base */
+#define DSP_WDG_BASE ((uintptr_t) 0x01700400)         /*!< DSP_WDG  Base */
+#define DSP_INTC_BASE ((uintptr_t) 0x01700800)        /*!< DSP_INTC  Base */
+#define DSP_TZMA_BASE ((uintptr_t) 0x01700C00)        /*!< DSP_TZMA  Base */
+#define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Message Box Base */
+#define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)     /*!< xDSP_MSGBOX  Base */
+#define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
+#define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
+#define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO  Base */
+#define GPIOD_BASE ((uintptr_t) 0x02000090)           /*!< GPIO  Base */
+#define GPIOE_BASE ((uintptr_t) 0x020000C0)           /*!< GPIO  Base */
+#define GPIOF_BASE ((uintptr_t) 0x020000F0)           /*!< GPIO  Base */
+#define GPIOG_BASE ((uintptr_t) 0x02000120)           /*!< GPIO  Base */
+#define GPIOINTB_BASE ((uintptr_t) 0x02000220)        /*!< GPIOINT  Base */
+#define GPIOINTC_BASE ((uintptr_t) 0x02000240)        /*!< GPIOINT  Base */
+#define GPIOINTD_BASE ((uintptr_t) 0x02000260)        /*!< GPIOINT  Base */
+#define GPIOINTE_BASE ((uintptr_t) 0x02000280)        /*!< GPIOINT  Base */
+#define GPIOINTF_BASE ((uintptr_t) 0x020002A0)        /*!< GPIOINT  Base */
+#define GPIOINTG_BASE ((uintptr_t) 0x020002C0)        /*!< GPIOINT  Base */
+#define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Secure Peripherals Control (SPC) - Sets secure property of peripherals Base */
+#define PWM_BASE ((uintptr_t) 0x02000C00)             /*!< PWM Pulse Width Modulation module Base */
+#define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU  Base */
+#define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX  Base */
+#define TZMA_BASE ((uintptr_t) 0x02004000)            /*!< TZMA  Base */
+#define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC LED Lamp Controller Base */
+#define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC  Base */
+#define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Thermal Sensor Base */
+#define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC  Base */
+#define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU  Base */
+#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC  Base */
+#define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC  Base */
+#define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
+#define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
+#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA One Wire Audio (TX only) Base */
+#define TIMER_BASE ((uintptr_t) 0x02050000)           /*!< TIMER  Base */
+#define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART  Base */
+#define UART1_BASE ((uintptr_t) 0x02500400)           /*!< UART  Base */
+#define UART2_BASE ((uintptr_t) 0x02500800)           /*!< UART  Base */
+#define UART3_BASE ((uintptr_t) 0x02500C00)           /*!< UART  Base */
+#define UART4_BASE ((uintptr_t) 0x02501000)           /*!< UART  Base */
+#define UART5_BASE ((uintptr_t) 0x02501400)           /*!< UART  Base */
+#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI  Base */
+#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI  Base */
+#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI  Base */
+#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI  Base */
+#define CAN0_BASE ((uintptr_t) 0x02504000)            /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Base */
+#define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Base */
+#define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
+#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
+#define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)     /*!< MSGBOX Message Box Base */
+#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
+#define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM Base */
+#define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Debug control interface? Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE  Base */
+#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE  Base */
+#define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM  Base */
+#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC  Base */
+#define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
+#define MCTL_PHY_BASE ((uintptr_t) 0x03103000)        /*!< MCTL_PHY  Base */
+#define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI_DBI Serial Peripheral Interface Base */
+#define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG  Base */
+#define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC  Base */
+#define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability  Base */
+#define USBOHCI0_BASE ((uintptr_t) 0x04101400)        /*!< USB_OHCI_Capability  Base */
+#define USBEHCI1_BASE ((uintptr_t) 0x04200000)        /*!< USB_EHCI_Capability  Base */
+#define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability  Base */
+#define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC  Base */
+#define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC  Base */
+#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Display Engine (DE) Base */
+#define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
+#define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
+#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler Base */
+#define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
+#define G2D_V0_BASE ((uintptr_t) 0x05410800)          /*!< G2D_VI Graphic 2D VI surface Base */
+#define G2D_UI0_BASE ((uintptr_t) 0x05411000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI1_BASE ((uintptr_t) 0x05411800)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI2_BASE ((uintptr_t) 0x05412000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
+#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Also see 5.7 DE UIS Specification Base */
+#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT  Base */
+#define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI MIPI DSI Display Interface Base */
+#define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY MIPI DSI Physical Interface Base */
+#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP  Base */
+#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD  Base */
+#define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
+#define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
+#define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Output Base */
+#define CSI_BASE ((uintptr_t) 0x05800000)             /*!< CSI  Base */
+#define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU  Base */
+#define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP  Base */
+#define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)    /*!< CSIC_PARSER  Base */
+#define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)       /*!< CSIC_DMA  Base */
+#define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA  Base */
+#define TVD_TOP_BASE ((uintptr_t) 0x05C00000)         /*!< TVD_TOP Video Decoding Base */
+#define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Video Decoding Base */
+#define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG RISC-V core configuration register Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
+#define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
+#define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
+#define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG  Base */
 
 /*
  * @brief AUDIO_CODEC
