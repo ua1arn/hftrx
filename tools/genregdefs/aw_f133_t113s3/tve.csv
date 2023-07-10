@@ -1,7 +1,8 @@
 #type; TVE
 #irq; TVE 126
 #irqrv; TVE 110
-#comment; TV Encoder
+#comment; TV Encoder (capture interface = CVBS OUT)
+
 #regdef; TVE_000_REG; 0x0000; TV Encoder Clock Gating Register
 #regdef; TVE_004_REG; 0x0004; TV Encoder Configuration Register
 #regdef; TVE_008_REG; 0x0008; TV Encoder DAC Register1

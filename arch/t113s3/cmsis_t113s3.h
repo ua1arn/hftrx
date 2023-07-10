@@ -91,7 +91,7 @@ typedef enum IRQn
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) Interrupt */
     G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
-    TVE_IRQn = 126,                                   /*!< TVE TV Encoder Interrupt */
+    TVE_IRQn = 126,                                   /*!< TVE TV Encoder (capture interface = CVBS OUT) Interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  Interrupt */
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  Interrupt */
     CSIC_PARSER0_IRQn = 132,                          /*!< CSIC_PARSER  Interrupt */
@@ -2538,7 +2538,7 @@ typedef struct TVD_TOP_Type
 /*
  * @brief TVE
  */
-/*!< TVE TV Encoder */
+/*!< TVE TV Encoder (capture interface = CVBS OUT) */
 typedef struct TVE_Type
 {
     volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
