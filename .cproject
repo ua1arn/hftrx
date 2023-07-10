@@ -3439,7 +3439,7 @@
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
 									<listOptionValue builtIn="false" value="__CORTEX_A=9"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_XCZU=1"/>
-									<listOptionValue builtIn="false" value="XCZU11=1"/>
+									<listOptionValue builtIn="false" value="XCZU2=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.641692407" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
@@ -3466,7 +3466,7 @@
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
 									<listOptionValue builtIn="false" value="__CORTEX_A=9"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_XCZU=1"/>
-									<listOptionValue builtIn="false" value="XCZU11=1"/>
+									<listOptionValue builtIn="false" value="XCZU2=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1889560614" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
@@ -3493,7 +3493,7 @@
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
 									<listOptionValue builtIn="false" value="__CORTEX_A=9"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_XCZU=1"/>
-									<listOptionValue builtIn="false" value="XCZU11=1"/>
+									<listOptionValue builtIn="false" value="XCZU2=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1953818808" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
