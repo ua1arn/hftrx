@@ -10,8 +10,8 @@
 #ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED
 #define ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED 1
 
-	#if ! defined(XCZU2CG)
-		#error Wrong CPU selected. XCZU2CG expected
+	#if ! defined(XCZU2)
+		#error Wrong CPU selected. XCZU2 expected
 	#endif /* ! defined(XCZU2) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -65,9 +65,9 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-//	#define CTLREGMODE_NOCTLREG	1
-	#define CTLREGMODE_XCZU_V2	1
-	#define WITHQRPBOARD_UA3REO	1
+	#define CTLREGMODE_NOCTLREG	1
+//	#define CTLREGMODE_XCZU_V2	1
+//	#define WITHQRPBOARD_UA3REO	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -176,15 +176,15 @@
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */

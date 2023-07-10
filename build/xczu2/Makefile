@@ -42,7 +42,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 #CORE = -mcpu=cortex-a53 -march=armv8-a
 CORE = -mcpu=cortex-a53
-#CORE += -mfloat-abi=hard 
+CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
 #CORE += -mfpu=neon-vfpv4
