@@ -1,6 +1,6 @@
 #comment; Graphic 2D (G2D) Engine
 #type; G2D
-#comment; Graphic 2D (taken from 
+#comment; Graphic 2D (taken from ‎linux-sunxi/drivers/char/sunxi_g2d/g2d_regs.h)
 #regdef; G2D_CONTROL_REG; 0x000; Control register
 #regdef; G2D_STATUS_REG; 0x004; Status register
 #regdef; G2D_SCAN_ORDER_REG; 0x008; DMA scan order control register
