@@ -393,18 +393,22 @@ static int compare_pfltypes(const void *v1, const void *v2) {
 static char token0[1024];
 #define TKSZ (sizeof token0 / sizeof token0 [0])
 
-static int nextline(FILE *fp) {
-	char *s = fgets(token0, TKSZ, fp);
-	if (s != NULL) {
-		//fprintf(stderr, "#input:  '%s", s);
-	}
-	return s != NULL;
-
-}
 
 static int istokencomment(void) {
 	return 0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || 0 == strcmp(token0, "#\n") || 0 == strcmp(token0, "\n")
 			|| 0;
+}
+
+static int nextline(FILE *fp) {
+	for (;;) {
+		char *s = fgets(token0, TKSZ, fp);
+		if (s != NULL) {
+			if (istokencomment())
+				continue;
+		}
+		return s != NULL;
+	}
+
 }
 
 /* trim field name */
@@ -490,11 +494,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 	for (;;) {
 		//fprintf(stderr, "token0=%s\n", token0);
-		if (istokencomment()) {
-			// source comments
-			if (nextline(fp) == 0)
-				break;
-		} else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
+		if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, file);
 			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
 			/* parsed */
@@ -558,11 +558,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (istokencomment()) {
-			// source comments
-			if (nextline(fp) == 0)
-				break;
-		} else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
+		if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
 			pfl->comment = strdup(comment);
 			if (nextline(fp) == 0)
