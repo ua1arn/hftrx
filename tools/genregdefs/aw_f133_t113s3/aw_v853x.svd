@@ -3006,40 +3006,6 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>CSIC_CCU</name>
-  <description></description>
-  <baseAddress>0x05800000</baseAddress>
-  <registers>
-   <register>
-    <name>CCU_CLK_MODE_REG</name>
-    <displayName>CCU_CLK_MODE_REG</displayName>
-    <description>CCU Clock Mode Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCU_PARSER_CLK_EN_REG</name>
-    <displayName>CCU_PARSER_CLK_EN_REG</displayName>
-    <description>CCU Parser Clock Enable Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCU_POST0_CLK_EN_REG</name>
-    <displayName>CCU_POST0_CLK_EN_REG</displayName>
-    <description>CCU Post0 Clock Enable Register</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
   <name>CSIC_DMA0</name>
   <description></description>
   <baseAddress>0x05830000</baseAddress>
@@ -14638,14 +14604,9 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TVD</name>
+  <name>TVD0</name>
   <description>Video Decoding</description>
   <baseAddress>0x05C01000</baseAddress>
-  <interrupt>
-   <name>TVD</name>
-   <value>123</value>
-   <description></description>
-  </interrupt>
   <registers>
    <register>
     <name>TVD_EN</name>
@@ -14930,8 +14891,13 @@
   </peripheral>
   <peripheral>
   <name>TVD_TOP</name>
-  <description></description>
+  <description>Video Decoding</description>
   <baseAddress>0x05C00000</baseAddress>
+  <interrupt>
+   <name>TVD</name>
+   <value>123</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TVD_TOP_MAP</name>
@@ -15021,6 +14987,439 @@
     </registers>
     <dimIncrement>0x030</dimIncrement>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TVE_TOP</name>
+  <description>TV Output</description>
+  <baseAddress>0x05600000</baseAddress>
+  <interrupt>
+   <name>TVE</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TVE_DAC_MAP</name>
+    <displayName>TVE_DAC_MAP</displayName>
+    <description>TV Encoder DAC MAP Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_STATUS</name>
+    <displayName>TVE_DAC_STATUS</displayName>
+    <description>TV Encoder DAC STAUTS Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG0</name>
+    <displayName>TVE_DAC_CFG0</displayName>
+    <description>TV Encoder DAC CFG0 Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG1</name>
+    <displayName>TVE_DAC_CFG1</displayName>
+    <description>TV Encoder DAC CFG1 Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG2</name>
+    <displayName>TVE_DAC_CFG2</displayName>
+    <description>TV Encoder DAC CFG2 Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG3</name>
+    <displayName>TVE_DAC_CFG3</displayName>
+    <description>TV Encoder DAC CFG2 Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_TEST</name>
+    <displayName>TVE_DAC_TEST</displayName>
+    <description>TV Encoder DAC TEST Register</description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TV_Encoder</name>
+  <description>TV Output</description>
+  <baseAddress>0x05604000</baseAddress>
+  <registers>
+   <register>
+    <name>TVE_000_REG</name>
+    <displayName>TVE_000_REG</displayName>
+    <description>TV Encoder Clock Gating Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_004_REG</name>
+    <displayName>TVE_004_REG</displayName>
+    <description>TV Encoder Configuration Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_008_REG</name>
+    <displayName>TVE_008_REG</displayName>
+    <description>TV Encoder DAC Register1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_00C_REG</name>
+    <displayName>TVE_00C_REG</displayName>
+    <description>TV Encoder Notch and DAC Delay Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_010_REG</name>
+    <displayName>TVE_010_REG</displayName>
+    <description>TV Encoder Chroma Frequency Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_014_REG</name>
+    <displayName>TVE_014_REG</displayName>
+    <description>TV Encoder Front/Back Porch Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_018_REG</name>
+    <displayName>TVE_018_REG</displayName>
+    <description>TV Encoder HD Mode VSYNC Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_01C_REG</name>
+    <displayName>TVE_01C_REG</displayName>
+    <description>TV Encoder Line Number Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_020_REG</name>
+    <displayName>TVE_020_REG</displayName>
+    <description>TV Encoder Level Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_024_REG</name>
+    <displayName>TVE_024_REG</displayName>
+    <description>TV Encoder DAC Register2</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_030_REG</name>
+    <displayName>TVE_030_REG</displayName>
+    <description>TV Encoder Auto Detection Enable Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_034_REG</name>
+    <displayName>TVE_034_REG</displayName>
+    <description>TV Encoder Auto Detection Interrupt Status Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_038_REG</name>
+    <displayName>TVE_038_REG</displayName>
+    <description>TV Encoder Auto Detection Status Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_03C_REG</name>
+    <displayName>TVE_03C_REG</displayName>
+    <description>TV Encoder Auto Detection De-bounce Setting Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_0F8_REG</name>
+    <displayName>TVE_0F8_REG</displayName>
+    <description>TV Encoder Auto Detect Configuration Register0</description>
+    <addressOffset>0x0F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_0FC_REG</name>
+    <displayName>TVE_0FC_REG</displayName>
+    <description>TV Encoder Auto Detect Configuration Register1</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_100_REG</name>
+    <displayName>TVE_100_REG</displayName>
+    <description>TV Encoder Color Burst Phase Reset Configuration Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_104_REG</name>
+    <displayName>TVE_104_REG</displayName>
+    <description>TV Encoder VSYNC Number Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_108_REG</name>
+    <displayName>TVE_108_REG</displayName>
+    <description>TV Encoder Notch Filter Frequency Register</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_10C_REG</name>
+    <displayName>TVE_10C_REG</displayName>
+    <description>TV Encoder Cb/Cr Level/Gain Register</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_110_REG</name>
+    <displayName>TVE_110_REG</displayName>
+    <description>TV Encoder Tint and Color Burst Phase Register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_114_REG</name>
+    <displayName>TVE_114_REG</displayName>
+    <description>TV Encoder Burst Width Register</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_118_REG</name>
+    <displayName>TVE_118_REG</displayName>
+    <description>TV Encoder Cb/Cr Gain Register</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_11C_REG</name>
+    <displayName>TVE_11C_REG</displayName>
+    <description>TV Encoder Sync and VBI Level Register</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_120_REG</name>
+    <displayName>TVE_120_REG</displayName>
+    <description>TV Encoder White Level Register</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_124_REG</name>
+    <displayName>TVE_124_REG</displayName>
+    <description>TV Encoder Video Active Line Register</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_128_REG</name>
+    <displayName>TVE_128_REG</displayName>
+    <description>TV Encoder Video Chroma BW and CompGain Register</description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_12C_REG</name>
+    <displayName>TVE_12C_REG</displayName>
+    <description>TV Encoder Register</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_130_REG</name>
+    <displayName>TVE_130_REG</displayName>
+    <description>TV Encoder Re-sync Parameters Register</description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_134_REG</name>
+    <displayName>TVE_134_REG</displayName>
+    <description>TV Encoder Slave Parameter Register</description>
+    <addressOffset>0x134</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_138_REG</name>
+    <displayName>TVE_138_REG</displayName>
+    <description>TV Encoder Configuration Register0</description>
+    <addressOffset>0x138</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_13C_REG</name>
+    <displayName>TVE_13C_REG</displayName>
+    <description>TV Encoder Configuration Register1</description>
+    <addressOffset>0x13C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_380_REG</name>
+    <displayName>TVE_380_REG</displayName>
+    <description>TV Encoder Low Pass Control Register</description>
+    <addressOffset>0x380</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_384_REG</name>
+    <displayName>TVE_384_REG</displayName>
+    <description>TV Encoder Low Pass Filter Control Register</description>
+    <addressOffset>0x384</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_388_REG</name>
+    <displayName>TVE_388_REG</displayName>
+    <description>TV Encoder Low Pass Gain Register</description>
+    <addressOffset>0x388</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_38C_REG</name>
+    <displayName>TVE_38C_REG</displayName>
+    <description>TV Encoder Low Pass Gain Control Register</description>
+    <addressOffset>0x38C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_390_REG</name>
+    <displayName>TVE_390_REG</displayName>
+    <description>TV Encoder Low Pass Shoot Control Register</description>
+    <addressOffset>0x390</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_394_REG</name>
+    <displayName>TVE_394_REG</displayName>
+    <description>TV Encoder Low Pass Coring Register</description>
+    <addressOffset>0x394</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_3A0_REG</name>
+    <displayName>TVE_3A0_REG</displayName>
+    <description>TV Encoder Noise Reduction Register</description>
+    <addressOffset>0x3A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

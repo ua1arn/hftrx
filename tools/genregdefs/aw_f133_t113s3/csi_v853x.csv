@@ -1,3 +1,111 @@
+#type; CSI
+#base; CSI 0x05800800
+
+#type; CSIC_TOP
+#base; CSIC_TOP 0x05800800
+#irq; CSI_CMB 136
+#irq; CSI_TDM 137
+#irq; CSI_TOP_PKT 138
+#irqrv; CSI_CMB 120
+#irqrv; CSI_TDM 121
+#irqrv; CSI_TOP_PKT 122
+#regdef; CSIC_TOP_EN_REG; 0x0000; CSIC TOP Enable Register
+#regdef; CSIC_PTN_GEN_EN_REG; 0x0004; CSIC Pattern Generation Enable Register
+#regdef; CSIC_PTN_CTRL_REG; 0x0008; CSIC Pattern Control Register
+#regdef; CSIC_PTN_LEN_REG; 0x0020; CSIC Pattern Generation Length Register
+#regdef; CSIC_PTN_ADDR_REG; 0x0024; CSIC Pattern Generation Address Register
+#regdef; CSIC_PTN_ISP_SIZE_REG; 0x0028; CSIC Pattern ISP Size Register
+#regdef; CSIC_ISP0_INPUT0_SEL_REG; 0x0030; CSIC ISP0 Input0 Select Register
+#regdef; CSIC_ISP0_INPUT1_SEL_REG; 0x0034; CSIC ISP0 Input1 Select Register
+#regdef; CSIC_ISP0_INPUT2_SEL_REG; 0x0038; CSIC ISP0 Input2 Select Register
+#regdef; CSIC_ISP0_INPUT3_SEL_REG; 0x003C; CSIC ISP0 Input3 Select Register
+#regdef; CSIC_ISP1_INPUT0_SEL_REG; 0x0040; CSIC ISP1 Input0 Select Register
+#regdef; CSIC_ISP1_INPUT1_SEL_REG; 0x0044; CSIC ISP1 Input1 Select Register
+#regdef; CSIC_ISP1_INPUT2_SEL_REG; 0x0048; CSIC ISP1 Input2 Select Register
+#regdef; CSIC_ISP1_INPUT3_SEL_REG; 0x004C; CSIC ISP1 Input3 Select Register
+#regdef; CSIC_DMA0_INPUT_SEL_REG; 0x00A0; CSIC DMA0 Input Select Register
+#regdef; CSIC_DMA1_INPUT_SEL_REG; 0x00A4; CSIC DMA1 Input Select Register
+#regdef; CSIC_DMA2_INPUT_SEL_REG; 0x00A8; CSIC DMA2 Input Select Register
+#regdef; CSIC_DMA3_INPUT_SEL_REG; 0x00AC; CSIC DMA3 Input Select Register
+#regdef; CSIC_BIST_CS_REG; 0x00DC; CSIC BIST CS Register
+#regdef; CSIC_BIST_CONTROL_REG; 0x00E0; CSIC BIST Control Register
+#regdef; CSIC_BIST_START_REG; 0x00E4; CSIC BIST Start Register
+#regdef; CSIC_BIST_END_REG; 0x00E8; CSIC BIST End Register
+#regdef; CSIC_BIST_DATA_MASK_REG; 0x00EC; CSIC BIST Data Mask Register
+#regdef; CSIC_MBUS_REQ_MAX_REG; 0x00F0; CSIC MBUS REQ MAX Register
+#regdef; CSIC_MULF_MOD_REG; 0x0100; CSIC Multi-Frame Mode Register
+#regdef; CSIC_MULF_INT_REG; 0x0104; CSIC Multi-Frame Interrupt Register
+#regdef; CSIC_FEATURE_LIST_REG; 0x01F0; CSIC Feature List Register
+
+#type; CSIC_PARSER
+#base; CSIC_PARSER0 0x05820000
+#base; CSIC_PARSER1 0x05821000
+#base; CSIC_PARSER2 0x05822000
+#irq; CSIC_PARSER0 132
+#irq; CSIC_PARSER1 133
+#irq; CSIC_PARSER2 134
+#irqrv; CSIC_PARSER0 116
+#irqrv; CSIC_PARSER1 117
+#irqrv; CSIC_PARSER2 118
+#regdef; CSIC_PRS_EN_REG; 0x0000; CSIC Parser Enable Register
+#regdef; CSIC_PRS_NCSIC_IF_CFG_REG; 0x0004; CSIC Parser NCSIC Interface Configuration Register
+#regdef; CSIC_PRS_CAP_REG; 0x000C; CSIC Parser Capture Register
+#regdef; CSIC_PRS_SIGNAL_STA_REG; 0x0010; CSIC Parser Signal Status Register
+#regdef; CSIC_PRS_NCSIC_BT656_HEAD_CFG_REG; 0x0014; CSIC Parser NCSIC BT656 Header Configuration Register
+#regdef; CSIC_PRS_CH0_INFMT_REG; 0x0024; CSIC Parser Channel_0 Input Format Register
+#regdef; CSIC_PRS_CH0_OUTPUT_HSIZE_REG; 0x0028; CSIC Parser Channel_0 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH0_OUTPUT_VSIZE_REG; 0x002C; CSIC Parser Channel_0 Output Vertical Size Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA0_REG; 0x0030; CSIC Parser Channel_0 Input Parameter0 Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA1_REG; 0x0034; CSIC Parser Channel_0 Input Parameter1 Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA2_REG; 0x0038; CSIC Parser Channel_0 Input Parameter2 Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA3_REG; 0x003C; CSIC Parser Channel_0 Input Parameter3 Register
+#regdef; CSIC_PRS_CH0_INT_EN_REG; 0x0040; CSIC Parser Channel_0 Interrupt Enable Register
+#regdef; CSIC_PRS_CH0_INT_STA_REG; 0x0044; CSIC Parser Channel_0 Interrupt Status Register
+#regdef; CSIC_PRS_CH0_LINE_TIME_REG; 0x0048; CSIC Parser Channel_0 Line Time Register
+#regdef; CSIC_PRS_CH1_INFMT_REG; 0x0124; CSIC Parser Channel_1 Input Format Register
+#regdef; CSIC_PRS_CH1_OUTPUT_HSIZE_REG; 0x0128; CSIC Parser Channel_1 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH1_OUTPUT_VSIZE_REG; 0x012C; CSIC Parser Channel_1 Output Vertical Size Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA0_REG; 0x0130; CSIC Parser Channel_1 Input Parameter0 Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA1_REG; 0x0134; CSIC Parser Channel_1 Input Parameter1 Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA2_REG; 0x0138; CSIC Parser Channel_1 Input Parameter2 Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA3_REG; 0x013C; CSIC Parser Channel_1 Input Parameter3 Register
+#regdef; CSIC_PRS_CH1_INT_EN_REG; 0x0140; CSIC Parser Channel_1 Interrupt Enable Register
+#regdef; CSIC_PRS_CH1_INT_STA_REG; 0x0144; CSIC Parser Channel_1 Interrupt Status Register
+#regdef; CSIC_PRS_CH1_LINE_TIME_REG; 0x0148; CSIC Parser Channel_1 Line Time Register
+#regdef; CSIC_PRS_CH2_INFMT_REG; 0x0224; CSIC Parser Channel_2 Input Format Register
+#regdef; CSIC_PRS_CH2_OUTPUT_HSIZE_REG; 0x0228; CSIC Parser Channel_2 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH2_OUTPUT_VSIZE_REG; 0x022C; CSIC Parser Channel_2 Output Vertical Size Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA0_REG; 0x0230; CSIC Parser Channel_2 Input Parameter0 Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA1_REG; 0x0234; CSIC Parser Channel_2 Input Parameter1 Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA2_REG; 0x0238; CSIC Parser Channel_2 Input Parameter2 Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA3_REG; 0x023C; CSIC Parser Channel_2 Input Parameter3 Register
+#regdef; CSIC_PRS_CH2_INT_EN_REG; 0x0240; CSIC Parser Channel_2 Interrupt Enable Register
+#regdef; CSIC_PRS_CH2_INT_STA_REG; 0x0244; CSIC Parser Channel_2 Interrupt Status Register
+#regdef; CSIC_PRS_CH2_LINE_TIME_REG; 0x0248; CSIC Parser Channel_2 Line Time Register
+#regdef; CSIC_PRS_CH3_INFMT_REG; 0x0324; CSIC Parser Channel_3 Input Format Register
+#regdef; CSIC_PRS_CH3_OUTPUT_HSIZE_REG; 0x0328; CSIC Parser Channel_3 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH3_OUTPUT_VSIZE_REG; 0x032C; CSIC Parser Channel_3 Output Vertical Size Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA0_REG; 0x0330; CSIC Parser Channel_3 Input Parameter0 Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA1_REG; 0x0334; CSIC Parser Channel_3 Input Parameter1 Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA2_REG; 0x0338; CSIC Parser Channel_3 Input Parameter2 Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA3_REG; 0x033C; CSIC Parser Channel_3 Input Parameter3 Register
+#regdef; CSIC_PRS_CH3_INT_EN_REG; 0x0340; CSIC Parser Channel_3 Interrupt Enable Register
+#regdef; CSIC_PRS_CH3_INT_STA_REG; 0x0344; CSIC Parser Channel_3 Interrupt Status Register
+#regdef; CSIC_PRS_CH3_LINE_TIME_REG; 0x0348; CSIC Parser Channel_3 Line Time Register
+#regdef; CSIC_PRS_NCSIC_RX_SIGNAL0_DLY_ADJ_REG; 0x0500; CSIC Parser NCSIC RX Signal0 Delay Adjust Register
+#regdef; CSIC_PRS_NCSIC_RX_SIGNAL5_DLY_ADJ_REG; 0x0514; CSIC Parser NCSIC RX Signal5 Delay Adjust Register
+#regdef; CSIC_PRS_NCSIC_RX_SIGNAL6_DLY_ADJ_REG; 0x0518; CSIC Parser NCSIC RX Signal6 Delay Adjust Register
+#regdef; CSIC_PRS_SYNC_EN_REG; 0x0520; CSIC Parser SYNC EN Register
+#regdef; CSIC_PRS_SYNC_CFG_REG; 0x0524; CSIC Parser SYNC CFG Register
+#regdef; CSIC_PRS_VS_WAIT_N_REG; 0x0528; CSIC Parser VS WAIT N Register
+#regdef; CSIC_PRS_VS_WAIT_M_REG; 0x052C; CSIC Parser VS WAIT M Register
+#regdef; CSIC_PRS_XSYNC_ENABLE_REG; 0x0540; CSIC Parser XSYNC ENABLE Register
+#regdef; CSIC_PRS_XVS_PERIOD_REG; 0x0544; CSIC Parser XVS Period Register
+#regdef; CSIC_PRS_XHS_PERIOD_REG; 0x0548; CSIC Parser XHS Period Register
+#regdef; CSIC_PRS_XVS_LENGTH_REG; 0x054C; CSIC Parser XVS LENGTH Register
+#regdef; CSIC_PRS_XHS_LENGTH_REG; 0x0550; CSIC Parser XHS LENGTH Register
+#regdef; CSIC_PRS_SYNC_DLY_REG; 0x0554; CSIC Parser SYNC DELAY Register
+
 #type; CSIC_DMA
 #base; CSIC_DMA0 0x05830000
 #base; CSIC_DMA1 0x05831000
@@ -124,3 +232,4 @@
 #regdef; CSIC_LBC_CH3_LINE_TAR_BIT1_REG; 0x0908; CSIC LBC Channel3 Line Target Bit1 Register
 #regdef; CSIC_LBC_CH3_RC_ADV_REG; 0x090C; CSIC LBC Channel3 RC ADV Register
 #regdef; CSIC_LBC_CH3_MB_MIN_REG; 0x0910; CSIC LBC Channel3 MB MIN Register
+

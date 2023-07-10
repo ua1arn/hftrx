@@ -88,6 +88,7 @@ typedef enum IRQn
     DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) Interrupt */
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) Interrupt */
     G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
+    TVE_IRQn = 123,                                   /*!< TVE_TOP TV Output Interrupt */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
     TVE_IRQn = 126,                                   /*!< TVE TV Encoder (capture interface = CVBS OUT) Interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  Interrupt */
@@ -100,7 +101,7 @@ typedef enum IRQn
     CSI_CMB_IRQn = 136,                               /*!< CSIC_TOP  Interrupt */
     CSI_TDM_IRQn = 137,                               /*!< CSIC_TOP  Interrupt */
     CSI_TOP_PKT_IRQn = 138,                           /*!< CSIC_TOP  Interrupt */
-    TVD_IRQn = 139,                                   /*!< TVD Video Decoding Interrupt */
+    TVD_IRQn = 139,                                   /*!< TVD_TOP Video Decoding Interrupt */
     C0_CTI0_IRQn = 192,                               /*!< C0_CPUX_CFG  Interrupt */
     C0_CTI1_IRQn = 193,                               /*!< C0_CPUX_CFG  Interrupt */
     C0_COMMTX0_IRQn = 196,                            /*!< C0_CPUX_CFG  Interrupt */
@@ -211,7 +212,9 @@ typedef enum IRQn
 #define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV Base */
-#define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU Base */
+#define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP Base */
+#define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder Base */
+#define CSI_BASE ((uintptr_t) 0x05800800)             /*!< CSI Base */
 #define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP Base */
 #define CSIC_PARSER0_BASE ((uintptr_t) 0x05820000)    /*!< CSIC_PARSER Base */
 #define CSIC_PARSER1_BASE ((uintptr_t) 0x05821000)    /*!< CSIC_PARSER Base */
@@ -221,7 +224,7 @@ typedef enum IRQn
 #define CSIC_DMA2_BASE ((uintptr_t) 0x05832000)       /*!< CSIC_DMA Base */
 #define CSIC_DMA3_BASE ((uintptr_t) 0x05833000)       /*!< CSIC_DMA Base */
 #define TVD_TOP_BASE ((uintptr_t) 0x05C00000)         /*!< TVD_TOP Base */
-#define TVD_BASE ((uintptr_t) 0x05C01000)             /*!< TVD Base */
+#define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Base */
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG Base */
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
@@ -714,17 +717,6 @@ typedef struct CPU_SUBSYS_CTRL_Type
     volatile uint32_t GENER_CTRL_REG2;                /*!< Offset 0x018 General Control Register2 */
     volatile uint32_t DBG_STATE;                      /*!< Offset 0x01C Debug State Register */
 } CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x020 */
-/*
- * @brief CSIC_CCU
- */
-/*!< CSIC_CCU  */
-typedef struct CSIC_CCU_Type
-{
-    volatile uint32_t CCU_CLK_MODE_REG;               /*!< Offset 0x000 CCU Clock Mode Register */
-    volatile uint32_t CCU_PARSER_CLK_EN_REG;          /*!< Offset 0x004 CCU Parser Clock Enable Register */
-             uint32_t reserved_0x008;
-    volatile uint32_t CCU_POST0_CLK_EN_REG;           /*!< Offset 0x00C CCU Post0 Clock Enable Register */
-} CSIC_CCU_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief CSIC_DMA
  */
@@ -2569,10 +2561,10 @@ typedef struct TPADC_Type
     volatile uint32_t TP_DATA_REG;                    /*!< Offset 0x024 TP Data Register */
 } TPADC_TypeDef; /* size of structure = 0x028 */
 /*
- * @brief TVD
+ * @brief TVD0
  */
-/*!< TVD Video Decoding */
-typedef struct TVD_Type
+/*!< TVD0 Video Decoding */
+typedef struct TVD0_Type
 {
     volatile uint32_t TVD_EN;                         /*!< Offset 0x000 TVD MODULE CONTROL Register */
     volatile uint32_t TVD_MODE;                       /*!< Offset 0x004 TVD MODE CONTROL Register */
@@ -2613,11 +2605,11 @@ typedef struct TVD_Type
     volatile uint32_t TVD_STATUS4;                    /*!< Offset 0x18C TVD DEBUG STATUS Register4 */
     volatile uint32_t TVD_STATUS5;                    /*!< Offset 0x190 TVD DEBUG STATUS Register5 */
     volatile uint32_t TVD_STATUS6;                    /*!< Offset 0x194 TVD DEBUG STATUS Register6 */
-} TVD_TypeDef; /* size of structure = 0x198 */
+} TVD0_TypeDef; /* size of structure = 0x198 */
 /*
  * @brief TVD_TOP
  */
-/*!< TVD_TOP  */
+/*!< TVD_TOP Video Decoding */
 typedef struct TVD_TOP_Type
 {
     volatile uint32_t TVD_TOP_MAP;                    /*!< Offset 0x000 TVD TOP MAP Register */
@@ -2638,10 +2630,26 @@ typedef struct TVD_TOP_Type
     } TVD_ADC [0x004];                                /*!< Offset 0x020 TVD ADC Registers N (N = 0 to 3) */
 } TVD_TOP_TypeDef; /* size of structure = 0x0A0 */
 /*
- * @brief TVE
+ * @brief TVE_TOP
  */
-/*!< TVE TV Encoder (capture interface = CVBS OUT) */
-typedef struct TVE_Type
+/*!< TVE_TOP TV Output */
+typedef struct TVE_TOP_Type
+{
+             uint32_t reserved_0x000 [0x0008];
+    volatile uint32_t TVE_DAC_MAP;                    /*!< Offset 0x020 TV Encoder DAC MAP Register */
+    volatile uint32_t TVE_DAC_STATUS;                 /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
+    volatile uint32_t TVE_DAC_CFG0;                   /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
+    volatile uint32_t TVE_DAC_CFG1;                   /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
+    volatile uint32_t TVE_DAC_CFG2;                   /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
+    volatile uint32_t TVE_DAC_CFG3;                   /*!< Offset 0x034 TV Encoder DAC CFG2 Register */
+             uint32_t reserved_0x038 [0x002E];
+    volatile uint32_t TVE_DAC_TEST;                   /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
+} TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
+/*
+ * @brief TV_Encoder
+ */
+/*!< TV_Encoder TV Output */
+typedef struct TV_Encoder_Type
 {
     volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
     volatile uint32_t TVE_004_REG;                    /*!< Offset 0x004 TV Encoder Configuration Register */
@@ -2686,23 +2694,7 @@ typedef struct TVE_Type
     volatile uint32_t TVE_394_REG;                    /*!< Offset 0x394 TV Encoder Low Pass Coring Register */
              uint32_t reserved_0x398 [0x0002];
     volatile uint32_t TVE_3A0_REG;                    /*!< Offset 0x3A0 TV Encoder Noise Reduction Register */
-} TVE_TypeDef; /* size of structure = 0x3A4 */
-/*
- * @brief TVE_TOP
- */
-/*!< TVE_TOP  */
-typedef struct TVE_TOP_Type
-{
-             uint32_t reserved_0x000 [0x0008];
-    volatile uint32_t TVE_DAC_MAP;                    /*!< Offset 0x020 TV Encoder DAC MAP Register */
-    volatile uint32_t TVE_DAC_STATUS;                 /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
-    volatile uint32_t TVE_DAC_CFG0;                   /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
-    volatile uint32_t TVE_DAC_CFG1;                   /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
-    volatile uint32_t TVE_DAC_CFG2;                   /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
-    volatile uint32_t TVE_DAC_CFG3;                   /*!< Offset 0x034 TV Encoder DAC CFG2 Register */
-             uint32_t reserved_0x038 [0x002E];
-    volatile uint32_t TVE_DAC_TEST;                   /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
-} TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
+} TV_Encoder_TypeDef; /* size of structure = 0x3A4 */
 /*
  * @brief TWI
  */
@@ -3032,7 +3024,8 @@ typedef struct USB_OHCI_Capability_Type
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
-#define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
+#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output register set access pointer */
+#define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Output register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */
 #define CSIC_PARSER1 ((CSIC_PARSER_TypeDef *) CSIC_PARSER1_BASE)/*!< CSIC_PARSER1  register set access pointer */
@@ -3041,8 +3034,8 @@ typedef struct USB_OHCI_Capability_Type
 #define CSIC_DMA1 ((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)/*!< CSIC_DMA1  register set access pointer */
 #define CSIC_DMA2 ((CSIC_DMA_TypeDef *) CSIC_DMA2_BASE)/*!< CSIC_DMA2  register set access pointer */
 #define CSIC_DMA3 ((CSIC_DMA_TypeDef *) CSIC_DMA3_BASE)/*!< CSIC_DMA3  register set access pointer */
-#define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP  register set access pointer */
-#define TVD ((TVD_TypeDef *) TVD_BASE)                /*!< TVD Video Decoding register set access pointer */
+#define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP Video Decoding register set access pointer */
+#define TVD0 ((TVD0_TypeDef *) TVD0_BASE)             /*!< TVD0 Video Decoding register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
