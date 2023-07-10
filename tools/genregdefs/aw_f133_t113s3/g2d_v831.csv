@@ -1,14 +1,26 @@
-#comment; Graphic 2D (G2D) Engine
 #type; G2D
-#comment; Graphic 2D (taken from ‎linux-sunxi/drivers/char/sunxi_g2d/g2d_regs.h)
+#basel 0x01e80000
+
+#comment; Graphic 2D (G2D) Engine
+# (taken from https://github.com/‎linux-sunxi/drivers/char/sunxi_g2d/g2d_regs.h)
+# https://github.com/linux-sunxi/linux-sunxi/blob/d47d367036be38c5180632ec8a3ad169a4593a88/drivers/char/sunxi_g2d/g2d_regs.h#L48
+
+# Graphics 2D General Registers
+
 #regdef; G2D_CONTROL_REG; 0x000; Control register
 #regdef; G2D_STATUS_REG; 0x004; Status register
 #regdef; G2D_SCAN_ORDER_REG; 0x008; DMA scan order control register
+
+# Graphics 2D Input Address Parameter Setting Registers
+
 #regdef; G2D_DMA_HADDR_REG; 0x00c; Input DMA high 4 bits start addr register
 #regdef; G2D_DMA0_LADDR_REG; 0x010; Input DMA0 low 32 bits start addr register
 #regdef; G2D_DMA1_LADDR_REG; 0x014; Input DMA1 low 32 bits start addr register
 #regdef; G2D_DMA2_LADDR_REG; 0x018; Input DMA2 low 32 bits start addr register
 #regdef; G2D_DMA3_LADDR_REG; 0x01c; Input DMA3 low 32 bits start addr register
+
+# Graphics 2D Input Linewidth Buffer Parameter Setting Registers
+
 #regdef; G2D_DMA0_STRIDE_REG; 0x020; Input DMA0 line stride register
 #regdef; G2D_DMA1_STRIDE_REG; 0x024; Input DMA1 line stride register
 #regdef; G2D_DMA2_STRIDE_REG; 0x028; Input DMA2 line stride register

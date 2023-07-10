@@ -87,6 +87,7 @@ typedef enum IRQn
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
     DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) Interrupt */
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) Interrupt */
+    G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
     TVE_IRQn = 126,                                   /*!< TVE TV Encoder Interrupt */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  Interrupt */

@@ -1,0 +1,7 @@
+#type; TVE_TOP
+#base; TVE_TOP 0x05600000
+#irq; TV 123
+#irqrv; TV 107
+
+#type; TV_Encoder
+#base; TV_Encoder 0x05604000

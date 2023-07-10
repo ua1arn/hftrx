@@ -7203,6 +7203,11 @@
   <name>G2D_TOP</name>
   <description>Graphic 2D top</description>
   <baseAddress>0x05410000</baseAddress>
+  <interrupt>
+   <name>G2D</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>G2D_SCLK_GATE</name>
