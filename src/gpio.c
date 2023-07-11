@@ -796,7 +796,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static LCLSPINLOCK_t gpiodata_locks [8] =
+static LCLSPINLOCK_t gpiodata_locks [] =
 {
 	LCLSPINLOCK_INIT,	// GPIOA
 	LCLSPINLOCK_INIT,	// GPIOB - in T113-S3
@@ -806,6 +806,7 @@ static LCLSPINLOCK_t gpiodata_locks [8] =
 	LCLSPINLOCK_INIT,	// GPIOF - in T113-S3
 	LCLSPINLOCK_INIT,	// GPIOG - in T113-S3
 	LCLSPINLOCK_INIT,	// GPIOH
+	LCLSPINLOCK_INIT,	// GPIOI
 };
 
 static LCLSPINLOCK_t gpiodata_L_lock = LCLSPINLOCK_INIT;
@@ -815,9 +816,20 @@ static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 #if CPUSTYLE_A64
 	if (gpio == GPIOL)
 		return & gpiodata_L_lock;
+
+#elif CPUSTYLE_T507
+	if (gpio == GPIOL)
+		return & gpiodata_L_lock;
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOA_BASE];
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+
+#else
+	#error Unhandled CPUSTYLE_xxx
+
 #endif /* CPUSTYLE_A64 */
 
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 }
 
 
@@ -1041,8 +1053,10 @@ static void ALLW_GPIO_IRQ_Handler_GPIOC(void)
 
 static void ALLW_GPIO_IRQ_Handler_GPIOD(void)
 {
+#if defined (GPIOINTD)
 	const unsigned status = GPIOINTD->EINT_STATUS;
 	GPIOINTD->EINT_STATUS = status;
+#endif /* defined (GPIOINTD) */
 
 }
 
@@ -1067,21 +1081,38 @@ static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
 
 static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
 {
+#if defined (GPIOINTF)
 	const unsigned status = GPIOINTF->EINT_STATUS;
 	GPIOINTF->EINT_STATUS = status;
+#endif /* defined (GPIOINTF) */
 
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOG(void)
 {
+#if defined (GPIOINTG)
 	const unsigned status = GPIOINTG->EINT_STATUS;
 	GPIOINTG->EINT_STATUS = status;
+#endif /* defined (GPIOINTG) */
 
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
 {
-	ASSERT(0);
+#if defined (GPIOINTH)
+	const unsigned status = GPIOINTH->EINT_STATUS;
+	GPIOINTH->EINT_STATUS = status;
+#endif /* defined (GPIOINTH) */
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOI(void)
+{
+#if defined (GPIOINTI)
+	const unsigned status = GPIOINTI->EINT_STATUS;
+	GPIOINTI->EINT_STATUS = status;
+#endif /* defined (GPIOINTI) */
+
 }
 
 void ALLW_GPIO_IRQ_Handler(void)	// Allwinner specific
@@ -1104,9 +1135,15 @@ gpioX_onchangeinterrupt(
 	const unsigned gpioix = gpio == GPIOL ? 0 : (gpio - (GPIO_TypeDef *) GPIOB_BASE + 1);
 	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	GPIOBLOCK_TypeDef * const blk = gpio == GPIOL ? GPIOBLOCK_L : GPIOBLOCK;
-#else /* CPUSTYLE_A64 */
+#elif CPUSTYLE_T507
+	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOA_BASE + 1;
+	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
 	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
+#else
+	#error Unhandled CPUSTYLE_xxx
+
 #endif /* CPUSTYLE_A64 */
 	unsigned pos;
 	//	0x0: Positive Edge
@@ -1125,6 +1162,7 @@ gpioX_onchangeinterrupt(
 		ALLW_GPIO_IRQ_Handler_GPIOF,
 		ALLW_GPIO_IRQ_Handler_GPIOG,
 		ALLW_GPIO_IRQ_Handler_GPIOH,
+		ALLW_GPIO_IRQ_Handler_GPIOI,
 	};
 	unsigned cfgbits = 0;	// default - high level
 
@@ -1156,7 +1194,17 @@ gpioX_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		//gpiohandlers [gpioix] [pos] = handler;
+#if CPUSTYLE_A64
+
+#elif CPUSTYLE_T507
+		arm_hardware_set_handler(GPIOA_IRQn + gpioix, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
+#else
+	#error Unhandled CPUSTYLE_xxx
+
+#endif
 	}
 
 	blk->GPIO_INTS [gpioix].EINT_CTL |= ipins;

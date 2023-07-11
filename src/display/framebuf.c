@@ -35,7 +35,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 }
 #pragma GCC diagnostic pop
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
 
 	//#include "g2d_driver.h"
@@ -623,7 +623,7 @@ void arm_hardware_mdma_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
-#elif WITHMDMAHW & (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WITHMDMAHW & (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 /* Использование G2D для формирования изображений */
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
@@ -635,6 +635,10 @@ void arm_hardware_mdma_initialize(void)
 
 void arm_hardware_mdma_initialize(void)
 {
+#if CPUSTYLE_T507
+	#warning unhandled CPUSTYLE_T507
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	unsigned M = 5;	/* M = 1..32 */
@@ -678,7 +682,9 @@ void arm_hardware_mdma_initialize(void)
 	(void) G2D_TOP->G2D_AHB_RESET;
 
 	local_delay_ms(10);
-
+#else
+#error Unhandled CPUSTYLE_T507
+#endif
 	// peri:   allwnrt113_get_g2d_freq()=600000000
 	// video0: allwnrt113_get_g2d_freq()=297000000
 	// video1: allwnrt113_get_g2d_freq()=297000000
