@@ -1,9 +1,8 @@
 #type; G2D_TOP
-#base; G2D_TOP 0x05410000
+#base; G2D_TOP 0x01480000
 #comment; Graphic 2D top
 
-#irq; G2D 121
-#irqrv; G2D 105
+#irq; G2D 122
 
 #regdef; G2D_SCLK_GATE  ; 0x00 ; G2D SCLK gate  
 #regdef; G2D_HCLK_GATE  ; 0x04 ; g2d HCLK gate  
@@ -11,7 +10,10 @@
 #regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
 
 #type; G2D_MIXER
-#base; G2D_MIXER 0x05410100
+#base; G2D_MIXER 0x01480100
+
+# G2D_TOP + 0x0100
+
 #comment; Graphic 2D (G2D) Engine Video Scaler
 
 #regdef; G2D_MIXER_CTL; 0x00; G2D mixer control
@@ -19,7 +21,7 @@
 #regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock
 
 #type; G2D_BLD
-#base; G2D_BLD 0x05410400
+#base; G2D_BLD 0x01480400
 #comment; Graphic 2D (G2D) Engine Blender
 
 #regdef; BLD_FILL_COLOR_CTL	; 0x000 ; BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106  
@@ -76,7 +78,10 @@
 #regdef; BLD_CSC2_CONST2   ; 0x19C ; BLD_CSC2_CONST2    
 
 #type; G2D_VI
-#base; G2D_V0 0x05410800
+#base; G2D_V0 0x01480800
+
+# G2D_TOP + 0x0800
+
 #comment; Graphic 2D VI surface
 
 #regdef; V0_ATTCTL; 0x00; V0_ATTCTL
@@ -97,7 +102,10 @@
 #regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
 
 #type; G2D_WB
-#base; G2D_WB 0x05413000
+#base; G2D_WB 0x01483000
+
+# G2D_TOP + 0x3000
+
 #comment; Graphic 2D (G2D) Engine Write Back
 
 #regdef; WB_ATT; 0x00; WB_ATT
@@ -113,9 +121,9 @@
 #regdef; WB_HADD2; 0x28; WB_HADD2
 
 #type; G2D_UI
-#base; G2D_UI0 0x05411000
-#base; G2D_UI1 0x05411800
-#base; G2D_UI2 0x05412000
+#base; G2D_UI0 0x01481000
+#base; G2D_UI1 0x01481800
+#base; G2D_UI2 0x01482000
 #comment; Graphic 2D UI surface
 
 #regdef; UI_ATTR; 0x00; UIx_ATTR
@@ -128,7 +136,7 @@
 #regdef; UI_SIZE; 0x1C; UIx_SIZE
 
 #type; G2D_VSU
-#base; G2D_VSU 0x05418000
+#base; G2D_VSU 0x01488000
 #comment; 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
 #comment; have different layout
 #comment; Also see 5.7 DE UIS Specification
