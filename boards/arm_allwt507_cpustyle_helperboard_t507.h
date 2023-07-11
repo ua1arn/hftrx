@@ -26,7 +26,7 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-////#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2S01HW	1
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -500,7 +500,7 @@
 	#define targetnone 0x00
 
 	#define targetext1		(1u << 9)		// PI9 ext1 on front panel CSEXT1
-	#define targetnvram		(1u << 10)		// PI10 nvram FM25L16B
+	#define targetnvram		(1u << 10)		// PI10 nvram FM25W356
 	#define targetctl1		(1u << 15)		// PI15 board control registers chain
 	#define targetcodec1	(1u << 0)		// PI0 on-board codec1 NAU8822L
 	#define targetfpga1		(1u << 12)		// PI12 FPGA control registers CS1
@@ -569,12 +569,14 @@
 
 	#define SPI_TARGET_MISO_PIN		(GPIOH->DATA)
 
+	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
+
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioh_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
-		arm_hardware_pioh_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
-		arm_hardware_pioh_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-		/*arm_hardware_pioh_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  *//* PC6 SPI0_WP/D2 */ \
-		/*arm_hardware_pioh_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  *//* PC7 SPI0_HOLD/D3 */ \
+		arm_hardware_pioh_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+		/*arm_hardware_pioh_altfn2(SPDIF_D2_BIT, GPIO_CFG_AFx);  *//* PC6 SPI1_WP/D2 */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
@@ -602,8 +604,8 @@
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 5); /* PI5 UART2-TX */ \
 		const portholder_t RXMASK = (1u << 6); /* PI6 UART2-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF4); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF4); \
+		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_updown(RXMASK, 0); \
 	} while (0)
 
@@ -641,35 +643,35 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW || WITHTWIHW
-	// PL0 - S_TWI_SCK
-	// PL1 - S_TWI_SDA
+	// PA0 - TWI0_SCL
+	// PA1 - TWI0_SDA
 	#define TARGET_TWI_TWCK		(1u << 0)
 	#define TARGET_TWI_TWCK_PIN		(GPIOL->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioa_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioa_inputs(v); } while (0)
 
 	#define TARGET_TWI_TWD		(1u << 1)
 	#define TARGET_TWI_TWD_PIN		(GPIOL->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioa_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioa_inputs(v); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_pioa_inputs(TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_pioa_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI_SCK AF3 */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI_SDA AF3 */ \
+		arm_hardware_pioa_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
+		arm_hardware_pioa_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
 		} while (0) 
-	#define	TWIHARD_IX x3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_PTR xTWI3	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
 
 
 #endif /* WITHTWISW || WITHTWIHW */
@@ -855,7 +857,7 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	#if 0
+	#if 1
 		/* BL0: PA12. BL1: PA11, EN: PD28  */
 		#define	HARDWARE_BL_INITIALIZE() do { \
 			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA11:PA12 */ \
@@ -871,11 +873,8 @@
 			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA11:PA12 */ \
 			const portholder_t ENmask = (1u << 28); /* PD28 */ \
 			const portholder_t BLstate = (~ Vlevel) << 14; \
-			GPIOA->BSRR = \
-				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
-				BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
-				0; \
-			__DSB(); \
+			gpioX_setstate(GPIOA, BLpins, BLstate); \
+			gpioX_setstate(GPIOD, ENmask, !!(en) * ENmask); \
 		} while (0)
 	#endif
 
