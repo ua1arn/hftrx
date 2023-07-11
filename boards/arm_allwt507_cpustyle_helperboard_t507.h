@@ -15,7 +15,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
@@ -372,8 +372,8 @@
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_WP_BIT	(1U << 8)	/* PG8 - SDIO_WP */
-	#define HARDWARE_SDIO_CD_BIT	(1U << 7)	/* PG7 - SDIO_SENSE */
+	#define HARDWARE_SDIO_WP_BIT	(1u << 8)	/* PG8 - SDIO_WP */
+	#define HARDWARE_SDIO_CD_BIT	(1u << 7)	/* PG7 - SDIO_SENSE */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
@@ -422,7 +422,7 @@
 	// +++
 	// TXDISABLE input - PD10
 	#define TXDISABLE_TARGET_PIN				(GPIOD->DATA)
-	#define TXDISABLE_BIT_TXDISABLE				0//(1U << 10)		// PD10 - TX INHIBIT
+	#define TXDISABLE_BIT_TXDISABLE				0//(1u << 10)		// PD10 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() do { \
@@ -453,7 +453,7 @@
 	// ---
 	// TUNE input - PD11
 	#define TUNE_TARGET_PIN				(GPIOE->DATA)
-	#define TUNE_BIT_TUNE				(1U << 6)		// PE6
+	#define TUNE_BIT_TUNE				(1u << 6)		// PE6
 	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TUNE_BIT_TUNE); \
@@ -497,7 +497,7 @@
 	// Набор определений для работы без внешнего дешифратора
 
 	//#define targetdataflash 0xFF
-	//#define targetnone 0x00
+	#define targetnone 0x00
 
 	#define targetext1		(1u << 9)		// PI9 ext1 on front panel CSEXT1
 	#define targetnvram		(1u << 10)		// PI10 nvram FM25L16B
@@ -561,20 +561,20 @@
 	//#define SPDIF_D2_BIT (1u << 6)		// PC6 SPI0_WP/D2
 	//#define SPDIF_D3_BIT (1u << 7)		// PC7 SPI0_HOLD/D3
 
-//	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-//	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-//
-//	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-//	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-//
-//	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+
+	#define SPI_TARGET_MISO_PIN		(GPIOH->DATA)
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioh_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioh_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
 		arm_hardware_pioh_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-		arm_hardware_pioh_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioh_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+		/*arm_hardware_pioh_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  *//* PC6 SPI0_WP/D2 */ \
+		/*arm_hardware_pioh_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  *//* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
@@ -608,13 +608,13 @@
 	} while (0)
 
 
-#define TARGET_ENC2BTN_BIT (1U << 8)	// PA8 - second encoder button with pull-up
+#define TARGET_ENC2BTN_BIT (1u << 8)	// PA8 - second encoder button with pull-up
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	//#define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
-	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
+	//#define TARGET_ENC2BTN_BIT (1u << 15)	// PE15 - second encoder button with pull-up
+	#define TARGET_POWERBTN_BIT 0//(1u << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
 	// P7_8
@@ -823,7 +823,7 @@
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((1U << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		arm_hardware_piob_altfn2((1u << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
 		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
@@ -856,19 +856,20 @@
 	#endif
 
 	#if 0
-		/* BL0: PA14. BL1: PA15 */
+		/* BL0: PA12. BL1: PA11, EN: PD28  */
 		#define	HARDWARE_BL_INITIALIZE() do { \
-			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
-			arm_hardware_pioa_opendrain(BLpins, 0); \
+			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA11:PA12 */ \
+			const portholder_t ENmask = (1u << 28); /* PD28 */ \
+		arm_hardware_pioa_opendrain(BLpins, 0); \
+		arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
 			} while (0)
 
 		/* установка яркости и включение/выключение преобразователя подсветки */
 		/* BL0: PA14. BL1: PA15 */
 		#define HARDWARE_BL_SET(en, level) do { \
 			const portholder_t Vlevel = (level) & 0x03; \
-			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
-			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA11:PA12 */ \
+			const portholder_t ENmask = (1u << 28); /* PD28 */ \
 			const portholder_t BLstate = (~ Vlevel) << 14; \
 			GPIOA->BSRR = \
 				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
@@ -890,6 +891,41 @@
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
+		const portholder_t VSmask = (1u << 27); 	/* PD27 LCD_VSYNC */ \
+		const portholder_t HSmask = (1u << 26); 	/* PD26 LCD_HSYNC */ \
+		const portholder_t DEmask = (1u << 25); 	/* PD25 LCD_DE */ \
+		const portholder_t MODEmask = (1u << 9); 	/* PA9 mode */ \
+		/* set LCD DE/SYNC mode */ \
+		arm_hardware_pioa_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD0 = state */ \
+		/* synchro signals - sync mode */ \
+		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
+		arm_hardware_piod_altfn20((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn20((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		/* synchro signals - DE mode */ \
+		arm_hardware_piod_altfn20((demode != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
+		/* pixel clock */ \
+		arm_hardware_piod_altfn20(1u << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
+		/* RED */ \
+		arm_hardware_piod_altfn20(1u << 19, GPIO_CFG_AF2); /* R3 PD19 LCD_D19 */ \
+		arm_hardware_piod_altfn20(1u << 20, GPIO_CFG_AF2); /* R4 PD20 LCD_D20 */ \
+		arm_hardware_piod_altfn20(1u << 21, GPIO_CFG_AF2); /* R5 PD21 LCD_D21 */ \
+		arm_hardware_piod_altfn20(1u << 22, GPIO_CFG_AF2); /* R6 PD22 LCD_D22 */ \
+		arm_hardware_piod_altfn20(1u << 23, GPIO_CFG_AF2); /* R7 PD23 LCD_D23 */ \
+		/* GREEN */ \
+		arm_hardware_piod_altfn20(1u << 10, GPIO_CFG_AF2); 	/* G2 PD10 LCD_D10 */ \
+		arm_hardware_piod_altfn20(1u << 11, GPIO_CFG_AF2); 	/* G3 PD11 LCD_D11 */ \
+		arm_hardware_piod_altfn20(1u << 12, GPIO_CFG_AF2); 	/* G4 PD12 LCD_D12 */ \
+		arm_hardware_piod_altfn20(1u << 13, GPIO_CFG_AF2); 	/* G5 PD13 LCD_D13 */ \
+		arm_hardware_piod_altfn20(1u << 14, GPIO_CFG_AF2); /* G6 PD14 LCD_D14 */ \
+		arm_hardware_piod_altfn20(1u << 15, GPIO_CFG_AF2); /* G7 PD15 LCD_D15 */ \
+		/* BLUE  */ \
+		arm_hardware_piod_altfn20(1u << 3, GPIO_CFG_AF2); 	/* B3 PD3 LCD_D3 */ \
+		arm_hardware_piod_altfn20(1u << 4, GPIO_CFG_AF2); 	/* B4 PD4 LCD_D4 */ \
+		arm_hardware_piod_altfn20(1u << 5, GPIO_CFG_AF2); 	/* B5 PD5 LCD_D5 */ \
+		arm_hardware_piod_altfn20(1u << 6, GPIO_CFG_AF2); 	/* B6 PD6 LCD_D6 */ \
+		arm_hardware_piod_altfn20(1u << 7, GPIO_CFG_AF2); 	/* B7 PD7 LCD_D7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
@@ -973,7 +1009,7 @@
 	#define BOARD_BLINK_BIT1 (1u << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
 	#define BOARD_BLINK_BIT2 (1u << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
 
-#if 1
+#if 0
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
@@ -1007,7 +1043,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			BOARD_BLINK_INITIALIZE(); \
+			/*BOARD_BLINK_INITIALIZE(); */\
 			/*HARDWARE_KBD_INITIALIZE(); */\
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			/*HARDWARE_BL_INITIALIZE(); */\
