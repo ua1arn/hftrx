@@ -1104,6 +1104,8 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 #elif CPUSTYLE_T507
 	#warning Undefined CPUSTYLE_T507
 
+	const unsigned ix = 0;
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
 
@@ -2199,6 +2201,11 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
 	}
 
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
+
+	const unsigned ix = 1;
+
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 1;
@@ -2883,6 +2890,12 @@ xxxx!;
 	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
 	}
 
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
+
+	const unsigned ix = 2;
+
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	const unsigned ix = 2;
@@ -3418,6 +3431,11 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	{
 	   serial_set_handler(UART3_IRQn, UART3_IRQHandler);
 	}
+
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
+
+	const unsigned ix = 3;
 
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -4085,6 +4103,12 @@ xxxx!;
 	   serial_set_handler(UART4_IRQn, UART4_IRQHandler);
 	}
 
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
+
+	const unsigned ix = 4;
+
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 4;
 
@@ -4657,6 +4681,11 @@ xxxx!;
 	{
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
+
+#elif CPUSTYLE_T507
+	#warning Undefined CPUSTYLE_T507
+
+	const unsigned ix = 5;
 
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133

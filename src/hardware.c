@@ -2824,6 +2824,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYLE_T507
+
+	// Все сравнения должны быть не точнее 1 MB
+	if (a < 0x00100000)			// SYSRAM, BROM
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+	// 1 GB DDR RAM memory size allowed
+	if (a >= 0x40000000)			//  DRAM - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #elif CPUSTYLE_F133
 
 	if (a < 0x00400000)
