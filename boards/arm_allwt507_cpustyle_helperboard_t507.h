@@ -867,7 +867,7 @@
 		/* установка яркости и включение/выключение преобразователя подсветки */
 		/* BL0: PA14. BL1: PA15 */
 		#define HARDWARE_BL_SET(en, level) do { \
-			const portholder_t Vlevel = (level) & 0x03; \
+			const portholder_t Vlevel = 0x01 * !! (level & 0x02) + 0x02 * !! (level & 0x01); \
 			const portholder_t BLpins = (1u << 15) | (1u << 14); /* PA11:PA12 */ \
 			const portholder_t ENmask = (1u << 28); /* PD28 */ \
 			const portholder_t BLstate = (~ Vlevel) << 14; \
