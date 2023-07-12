@@ -3338,6 +3338,176 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>TIMER</name>
+  <description></description>
+  <baseAddress>0x03009000</baseAddress>
+  <interrupt>
+   <name>TIMER0</name>
+   <value>80</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1</name>
+   <value>81</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TMR_IRQ_EN_REG</name>
+    <displayName>TMR_IRQ_EN_REG</displayName>
+    <description>Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR_IRQ_STA_REG</name>
+    <displayName>TMR_IRQ_STA_REG</displayName>
+    <description>Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR0_CTRL_REG</name>
+    <displayName>TMR0_CTRL_REG</displayName>
+    <description>Timer 0 Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR0_INTV_VALUE_REG</name>
+    <displayName>TMR0_INTV_VALUE_REG</displayName>
+    <description>Timer 0 Interval Value Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR0_CUR_VALUE_REG</name>
+    <displayName>TMR0_CUR_VALUE_REG</displayName>
+    <description>Timer 0 Current Value Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR1_CTRL_REG</name>
+    <displayName>TMR1_CTRL_REG</displayName>
+    <description>Timer 1 Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR1_INTV_VALUE_REG</name>
+    <displayName>TMR1_INTV_VALUE_REG</displayName>
+    <description>Timer 1 Interval Value Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR1_CUR_VALUE_REG</name>
+    <displayName>TMR1_CUR_VALUE_REG</displayName>
+    <description>Timer 1 Current Value Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_IRQ_EN_REG</name>
+    <displayName>WDOG_IRQ_EN_REG</displayName>
+    <description>Watchdog IRQ Enable Register</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_IRQ_STA_REG</name>
+    <displayName>WDOG_IRQ_STA_REG</displayName>
+    <description>Watchdog Status Register</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CTRL_REG</name>
+    <displayName>WDOG_CTRL_REG</displayName>
+    <description>Watchdog Control Register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CFG_REG</name>
+    <displayName>WDOG_CFG_REG</displayName>
+    <description>Watchdog Configuration Register</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_MODE_REG</name>
+    <displayName>WDOG_MODE_REG</displayName>
+    <description>Watchdog Mode Register</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT_CTL_REG</name>
+    <displayName>AVS_CNT_CTL_REG</displayName>
+    <description>AVS Control Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT0_REG</name>
+    <displayName>AVS_CNT0_REG</displayName>
+    <description>AVS Counter 0 Register</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT1_REG</name>
+    <displayName>AVS_CNT1_REG</displayName>
+    <description>AVS Counter 1 Register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT_DIV_REG</name>
+    <displayName>AVS_CNT_DIV_REG</displayName>
+    <description>AVS Divisor Register</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>TWI0</name>
   <description></description>
   <baseAddress>0x05002000</baseAddress>

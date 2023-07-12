@@ -44,6 +44,8 @@ typedef enum IRQn
     TWI4_IRQn = 42,                                   /*!< TWI  Interrupt */
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface Interrupt */
+    TIMER0_IRQn = 80,                                 /*!< TIMER  Interrupt */
+    TIMER1_IRQn = 81,                                 /*!< TIMER  Interrupt */
     GPIOA_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOC_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOD_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
@@ -81,6 +83,7 @@ typedef enum IRQn
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU  Base */
+#define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK  Base */
 #define GPIOF_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
@@ -639,6 +642,35 @@ typedef struct SPI_Type
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
 } SPI_TypeDef; /* size of structure = 0x304 */
 /*
+ * @brief TIMER
+ */
+/*!< TIMER  */
+typedef struct TIMER_Type
+{
+    volatile uint32_t TMR_IRQ_EN_REG;                 /*!< Offset 0x000 Timer IRQ Enable Register */
+    volatile uint32_t TMR_IRQ_STA_REG;                /*!< Offset 0x004 Timer Status Register */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t TMR0_CTRL_REG;                  /*!< Offset 0x010 Timer 0 Control Register */
+    volatile uint32_t TMR0_INTV_VALUE_REG;            /*!< Offset 0x014 Timer 0 Interval Value Register */
+    volatile uint32_t TMR0_CUR_VALUE_REG;             /*!< Offset 0x018 Timer 0 Current Value Register */
+             uint32_t reserved_0x01C;
+    volatile uint32_t TMR1_CTRL_REG;                  /*!< Offset 0x020 Timer 1 Control Register */
+    volatile uint32_t TMR1_INTV_VALUE_REG;            /*!< Offset 0x024 Timer 1 Interval Value Register */
+    volatile uint32_t TMR1_CUR_VALUE_REG;             /*!< Offset 0x028 Timer 1 Current Value Register */
+             uint32_t reserved_0x02C [0x001D];
+    volatile uint32_t WDOG_IRQ_EN_REG;                /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
+    volatile uint32_t WDOG_IRQ_STA_REG;               /*!< Offset 0x0A4 Watchdog Status Register */
+             uint32_t reserved_0x0A8 [0x0002];
+    volatile uint32_t WDOG_CTRL_REG;                  /*!< Offset 0x0B0 Watchdog Control Register */
+    volatile uint32_t WDOG_CFG_REG;                   /*!< Offset 0x0B4 Watchdog Configuration Register */
+    volatile uint32_t WDOG_MODE_REG;                  /*!< Offset 0x0B8 Watchdog Mode Register */
+             uint32_t reserved_0x0BC;
+    volatile uint32_t AVS_CNT_CTL_REG;                /*!< Offset 0x0C0 AVS Control Register */
+    volatile uint32_t AVS_CNT0_REG;                   /*!< Offset 0x0C4 AVS Counter 0 Register */
+    volatile uint32_t AVS_CNT1_REG;                   /*!< Offset 0x0C8 AVS Counter 1 Register */
+    volatile uint32_t AVS_CNT_DIV_REG;                /*!< Offset 0x0CC AVS Divisor Register */
+} TIMER_TypeDef; /* size of structure = 0x0D0 */
+/*
  * @brief TWI
  */
 /*!< TWI  */
@@ -892,6 +924,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */
