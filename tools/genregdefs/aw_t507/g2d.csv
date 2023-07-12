@@ -101,65 +101,8 @@
 #regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
 #regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
 
-#type; G2D_WB
-#base; G2D_WB 0x01483000
-
-# G2D_TOP + 0x3000
-
-#comment; Graphic 2D (G2D) Engine Write Back
-
-#regdef; WB_ATT; 0x00; WB_ATT
-#regdef; WB_SIZE; 0x04; WB_SIZE
-#regdef; WB_PITCH0; 0x08; WB_PITCH0
-#regdef; WB_PITCH1; 0x0C; WB_PITCH1
-#regdef; WB_PITCH2; 0x10; WB_PITCH2
-#regdef; WB_LADD0; 0x14; WB_LADD0
-#regdef; WB_HADD0; 0x18; WB_HADD0
-#regdef; WB_LADD1; 0x1C; WB_LADD1
-#regdef; WB_HADD1; 0x20; WB_HADD1
-#regdef; WB_LADD2; 0x24; WB_LADD2
-#regdef; WB_HADD2; 0x28; WB_HADD2
-
-#type; G2D_UI
-#base; G2D_UI0 0x01481000
-#base; G2D_UI1 0x01481800
-#base; G2D_UI2 0x01482000
-#comment; Graphic 2D UI surface
-
-#regdef; UI_ATTR; 0x00; UIx_ATTR
-#regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
-#regdef; UI_COOR; 0x08; UIx_COOR
-#regdef; UI_PITCH; 0x0C; UIx_PITCH
-#regdef; UI_LADD; 0x10; UIx_LADD
-#regdef; UI_FILLC; 0x14; UIx_FILLC
-#regdef; UI_HADD; 0x18; UIx_HADD
-#regdef; UI_SIZE; 0x1C; UIx_SIZE
-
-#type; G2D_VSU
-#base; G2D_VSU 0x01488000
-#comment; 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
-#comment; have different layout
-#comment; Also see 5.7 DE UIS Specification
-
-#regdef; VS_CTRL; 0x000; VS_CTRL
-#regdef; VS_OUT_SIZE; 0x040; VS_OUT_SIZE
-#regdef; VS_GLB_ALPHA; 0x044; VS_GLB_ALPHA
-#regdef; VS_Y_SIZE; 0x080; VS_Y_SIZE
-#regdef; VS_Y_HSTEP; 0x088; VS_Y_HSTEP
-#regdef; VS_Y_VSTEP; 0x08C; VS_Y_VSTEP
-#regdef; VS_Y_HPHASE; 0x090; VS_Y_HPHASE
-#regdef; VS_Y_VPHASE0; 0x098; VS_Y_VPHASE0
-#regdef; VS_C_SIZE; 0x0C0; VS_C_SIZE
-#regdef; VS_C_HSTEP; 0x0C8; VS_C_HSTEP
-#regdef; VS_C_VSTEP; 0x0CC; VS_C_VSTEP
-#regdef; VS_C_HPHASE; 0x0D0; VS_C_HPHASE
-#regdef; VS_C_VPHASE0; 0x0D8; VS_C_VPHASE0
-#regdef; VS_Y_HCOEF; 0x200 64; VS_Y_HCOEF[N]. N=0..31
-#regdef; VS_Y_VCOEF; 0x300 64; VS_Y_VCOEF[N]. N=0..31
-#regdef; VS_C_HCOEF; 0x400 64; VS_C_HCOEF[N]. N=0..31
-
 #type; G2D_ROT
-#base; G2D_ROT 0x05438000
+#base; G2D_ROT 0x014A8000
 
 #regdef; ROT_CTL; 0x00; ROT_CTL						
 #regdef; ROT_INT; 0x04; ROT_INT				
@@ -185,3 +128,60 @@
 #regdef; ROT_OHADD1; 0xAC; Output U/UV memory address register1
 #regdef; ROT_OLADD2; 0xB0; Output V memory address register0
 #regdef; ROT_OHADD2; 0xB4; Output V memory address register1
+
+#type; G2D_UI
+#base; G2D_UI0 0x01481000
+#base; G2D_UI1 0x01481800
+#base; G2D_UI2 0x01482000
+#comment; Graphic 2D UI surface
+
+#regdef; UI_ATTR; 0x00; UIx_ATTR
+#regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
+#regdef; UI_COOR; 0x08; UIx_COOR
+#regdef; UI_PITCH; 0x0C; UIx_PITCH
+#regdef; UI_LADD; 0x10; UIx_LADD
+#regdef; UI_FILLC; 0x14; UIx_FILLC
+#regdef; UI_HADD; 0x18; UIx_HADD
+#regdef; UI_SIZE; 0x1C; UIx_SIZE
+
+#type; G2D_WB
+#base; G2D_WB 0x01483000
+
+# G2D_TOP + 0x3000
+
+#comment; Graphic 2D (G2D) Engine Write Back
+
+#regdef; WB_ATT; 0x00; WB_ATT
+#regdef; WB_SIZE; 0x04; WB_SIZE
+#regdef; WB_PITCH0; 0x08; WB_PITCH0
+#regdef; WB_PITCH1; 0x0C; WB_PITCH1
+#regdef; WB_PITCH2; 0x10; WB_PITCH2
+#regdef; WB_LADD0; 0x14; WB_LADD0
+#regdef; WB_HADD0; 0x18; WB_HADD0
+#regdef; WB_LADD1; 0x1C; WB_LADD1
+#regdef; WB_HADD1; 0x20; WB_HADD1
+#regdef; WB_LADD2; 0x24; WB_LADD2
+#regdef; WB_HADD2; 0x28; WB_HADD2
+
+#type; G2D_VSU
+#base; G2D_VSU 0x01488000
+#comment; 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
+#comment; have different layout
+#comment; Also see 5.7 DE UIS Specification
+
+#regdef; VS_CTRL; 0x000; VS_CTRL
+#regdef; VS_OUT_SIZE; 0x040; VS_OUT_SIZE
+#regdef; VS_GLB_ALPHA; 0x044; VS_GLB_ALPHA
+#regdef; VS_Y_SIZE; 0x080; VS_Y_SIZE
+#regdef; VS_Y_HSTEP; 0x088; VS_Y_HSTEP
+#regdef; VS_Y_VSTEP; 0x08C; VS_Y_VSTEP
+#regdef; VS_Y_HPHASE; 0x090; VS_Y_HPHASE
+#regdef; VS_Y_VPHASE0; 0x098; VS_Y_VPHASE0
+#regdef; VS_C_SIZE; 0x0C0; VS_C_SIZE
+#regdef; VS_C_HSTEP; 0x0C8; VS_C_HSTEP
+#regdef; VS_C_VSTEP; 0x0CC; VS_C_VSTEP
+#regdef; VS_C_HPHASE; 0x0D0; VS_C_HPHASE
+#regdef; VS_C_VPHASE0; 0x0D8; VS_C_VPHASE0
+#regdef; VS_Y_HCOEF; 0x200 64; VS_Y_HCOEF[N]. N=0..31
+#regdef; VS_Y_VCOEF; 0x300 64; VS_Y_VCOEF[N]. N=0..31
+#regdef; VS_C_HCOEF; 0x400 64; VS_C_HCOEF[N]. N=0..31

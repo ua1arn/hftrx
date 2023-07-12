@@ -1763,7 +1763,7 @@
   <peripheral>
   <name>G2D_ROT</name>
   <description></description>
-  <baseAddress>0x05438000</baseAddress>
+  <baseAddress>0x014A8000</baseAddress>
   <registers>
    <register>
     <name>ROT_CTL</name>
