@@ -373,9 +373,7 @@ static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; } scemr_
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 
 
@@ -744,6 +742,7 @@ hardware_uart0_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -829,6 +828,7 @@ hardware_uart0_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -1101,12 +1101,8 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	const unsigned ix = 0;
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 0;
 
 	/* Open the clock gate for uart0 */
@@ -1168,9 +1164,7 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif
 
 }
@@ -1752,6 +1746,7 @@ hardware_uart1_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -1849,6 +1844,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -2201,13 +2197,8 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
 	}
 
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	const unsigned ix = 1;
-
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 1;
 
 	/* Open the clock gate for uart1 */
@@ -2269,9 +2260,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif
 
 }
@@ -2371,9 +2360,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 	
 
@@ -2462,7 +2449,6 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 
 #else
 	#error Undefined CPUSTYLE_XXX
-
 #endif
 }
 
@@ -2581,6 +2567,7 @@ hardware_uart2_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -2654,6 +2641,7 @@ hardware_uart2_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -2890,13 +2878,7 @@ xxxx!;
 	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
 	}
 
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
-
-	const unsigned ix = 2;
-
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	const unsigned ix = 2;
 
@@ -3035,9 +3017,7 @@ xxxx!;
 		}
 	}
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 
 
@@ -3118,7 +3098,6 @@ void hardware_uart3_enablerx(uint_fast8_t state)
 
 #else
 	#error Undefined CPUSTYLE_XXX
-
 #endif
 }
 
@@ -3209,6 +3188,7 @@ hardware_uart3_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -3256,6 +3236,7 @@ hardware_uart3_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -3432,13 +3413,8 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	   serial_set_handler(UART3_IRQn, UART3_IRQHandler);
 	}
 
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	const unsigned ix = 3;
-
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 3;
 
 	/* Open the clock gate for uart3 */
@@ -3615,9 +3591,7 @@ void hardware_uart3_initialize(uint_fast8_t debug)
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 
 
@@ -3815,6 +3789,7 @@ hardware_uart4_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -3880,6 +3855,7 @@ hardware_uart4_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -4103,13 +4079,8 @@ xxxx!;
 	   serial_set_handler(UART4_IRQn, UART4_IRQHandler);
 	}
 
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	const unsigned ix = 4;
-
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 4;
 
 	/* Open the clock gate for uart3 */
@@ -4260,9 +4231,7 @@ xxxx!;
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 
 
@@ -4434,6 +4403,7 @@ hardware_uart5_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -4481,6 +4451,7 @@ hardware_uart5_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -4682,13 +4653,8 @@ xxxx!;
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
 
-#elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	const unsigned ix = 5;
-
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned ix = 5;
 
 	/* Open the clock gate for uart5 */
@@ -4819,9 +4785,7 @@ xxxx!;
 	}
 
 #else
-
 	#error Undefined CPUSTYLE_XXX
-
 #endif	/* CPUSTYLE_ATMEGA_XXX4 */
 
 
@@ -4889,7 +4853,6 @@ void hardware_uart7_enablerx(uint_fast8_t state)
 
 #else
 	#error Undefined CPUSTYLE_XXX
-
 #endif
 }
 
@@ -4970,6 +4933,7 @@ hardware_uart7_getchar(char * cp)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
@@ -5011,6 +4975,7 @@ hardware_uart7_putchar(uint_fast8_t c)
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
+
 	return 1;
 }
 
