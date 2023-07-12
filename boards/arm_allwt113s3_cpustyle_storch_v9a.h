@@ -224,12 +224,12 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOE->DATA)
+	#define ENCODER_INPUT_PORT	gpioX_getinputs(GPIOE)
 	#define ENCODER_BITA		(1u << 8)		// PE8
 	#define ENCODER_BITB		(1u << 7)		// PE7
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOE->DATA)
+	#define ENCODER2_INPUT_PORT	gpioX_getinputs(GPIOE)
 	#define ENCODER2_BITA		(1u << 5)		// PE5
 	#define ENCODER2_BITB		(1u << 4)		// PE4
 
@@ -276,11 +276,11 @@
 	// RXD at PA10, TXD at PA9
 
 	// CAT control lines
-	//#define FROMCAT_TARGET_PIN_RTS		(GPIOA->DATA)
+	//#define FROMCAT_TARGET_PIN_RTS		gpioX_getinputs(GPIOA)
 	//#define FROMCAT_BIT_RTS				(1u << 11)	/* PA11 сигнал RTS от FT232RL	*/
 
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	//#define FROMCAT_TARGET_PIN_DTR		(GPIOA->DATA)
+	//#define FROMCAT_TARGET_PIN_DTR		gpioX_getinputs(GPIOA)
 	//#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 сигнал DTR от FT232RL	*/
 
 	/* манипуляция от порта RS-232 */
@@ -299,11 +299,11 @@
 	// RXD at PA10, TXD at PA9
 
 	// CAT control lines
-	//#define FROMCAT_TARGET_PIN_RTS		(GPIOA->DATA) // was PINA
+	//#define FROMCAT_TARGET_PIN_RTS		gpioX_getinputs(GPIOA) // was PINA
 	//#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/
 
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	//#define FROMCAT_TARGET_PIN_DTR		(GPIOA->DATA) // was PINA
+	//#define FROMCAT_TARGET_PIN_DTR		gpioX_getinputs(GPIOA) // was PINA
 	//#define FROMCAT_BIT_DTR				(1u << 12)	/* сигнал DTR от FT232RL	*/
 
 	/* манипуляция от виртуального CDC порта */
@@ -368,8 +368,8 @@
 			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
-	#define HARDWARE_SDIOSENSE_CD() ((GPIOG->DATA & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
-	#define HARDWARE_SDIOSENSE_WP() ((GPIOG->DATA & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
+	#define HARDWARE_SDIOSENSE_CD() ((gpioX_getinputs(GPIOG) & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_WP() ((gpioX_getinputs(GPIOG) & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
 
 	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
 	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
@@ -407,7 +407,7 @@
 
 	// +++
 	// TXDISABLE input - PF5
-	#define TXDISABLE_TARGET_PIN				(GPIOF->DATA)
+	#define TXDISABLE_TARGET_PIN				gpioX_getinputs(GPIOF)
 	#define TXDISABLE_BIT_TXDISABLE				(1u << 5)		// PF5 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
@@ -420,9 +420,9 @@
 	// +++
 	// PTT input - PF3
 	// PTT2 input - PF4
-	#define PTT_TARGET_PIN				(GPIOF->DATA)
+	#define PTT_TARGET_PIN				gpioX_getinputs(GPIOF)
 	#define PTT_BIT_PTT					(1u << 3)		// PF3 - PTT
-	#define PTT2_TARGET_PIN				(GPIOF->DATA)
+	#define PTT2_TARGET_PIN				gpioX_getinputs(GPIOF)
 	#define PTT2_BIT_PTT				(1u << 4)		// PF4 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() 			((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
@@ -434,7 +434,7 @@
 		} while (0)
 	// ---
 	// TUNE input - PF2
-	#define TUNE_TARGET_PIN				(GPIOF->DATA)
+	#define TUNE_TARGET_PIN				gpioX_getinputs(GPIOF)
 	#define TUNE_BIT_TUNE				(1u << 2)		// PF2
 	#define HARDWARE_GET_TUNE() 		((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
@@ -457,7 +457,7 @@
 	#define ELKEY_BIT_LEFT				(1u << 0)		// PF0
 	#define ELKEY_BIT_RIGHT				(1u << 1)		// PF1
 
-	#define ELKEY_TARGET_PIN			(GPIOF->DATA)
+	#define ELKEY_TARGET_PIN			gpioX_getinputs(GPIOF)
 
 	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
 	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
@@ -549,7 +549,7 @@
 //	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
 //	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
 //
-//	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
+//	#define SPI_TARGET_MISO_PIN		gpioX_getinputs(GPIOC)
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
@@ -598,12 +598,12 @@
 
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_GET	(((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	((gpioX_getinputs(GPIOE) & TARGET_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_GET	0//(((GPIOx->DATA) & TARGET_POWERBTN_BIT) == 0)
+	#define TARGET_POWERBTN_GET	0//((gpioX_getinputs(GPIOx) & TARGET_POWERBTN_BIT) == 0)
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
@@ -624,12 +624,12 @@
 	// TWI1-SCK PE0
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(1u << 0)		// TWI1-SCK PE0
-	#define TARGET_TWI_TWCK_PIN		(GPIOE->DATA)
+	#define TARGET_TWI_TWCK_PIN		gpioX_getinputs(GPIOE)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
 
 	#define TARGET_TWI_TWD		(1u << 1)		// TWI1-SDA PE1
-	#define TARGET_TWI_TWD_PIN		(GPIOE->DATA)
+	#define TARGET_TWI_TWD_PIN		gpioX_getinputs(GPIOE)
 	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
 	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
 
@@ -661,13 +661,13 @@
 	#define FPGA_NCONFIG_BIT		(1u << 12)	/* PE12 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
-	#define FPGA_CONF_DONE_INPUT	(GPIOE->DATA)
+	#define FPGA_CONF_DONE_INPUT	gpioX_getinputs(GPIOE)
 	#define FPGA_CONF_DONE_BIT		(1u << 13)	/* PE13 bit conneced to CONF_DONE pin ALTERA FPGA */
 
-	#define FPGA_NSTATUS_INPUT		(GPIOB->DATA)
+	#define FPGA_NSTATUS_INPUT		gpioX_getinputs(GPIOB)
 	#define FPGA_NSTATUS_BIT		(1u << 2)	/* PB2 bit conneced to NSTATUS pin ALTERA FPGA */
 
-	#define FPGA_INIT_DONE_INPUT	(GPIOE->DATA)
+	#define FPGA_INIT_DONE_INPUT	gpioX_getinputs(GPIOE)
 	#define FPGA_INIT_DONE_BIT		(1u << 10)	/* PE10 bit conneced to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
@@ -734,7 +734,7 @@
 
 #if 1
 	/* получение состояния переполнения АЦП */
-	#define TARGET_FPGA_OVF_INPUT		(GPIOB->DATA)
+	#define TARGET_FPGA_OVF_INPUT		gpioX_getinputs(GPIOB)
 	#define TARGET_FPGA_OVF_BIT			(1u << 7)	// PB7
 	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
@@ -918,8 +918,8 @@
 		const portholder_t VSmask = (1u << 21); 	/* PD21 LCD_VSYNCC */ \
 		const portholder_t HSmask = (1u << 20); 	/* PD20 LCD_HSYNC */ \
 		const portholder_t DEmask = (1u << 19); 	/* PD19 LCD_DE */ \
-		/* while ((GPIOD->DATA & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOD->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
+		/* while ((gpioX_getinputs(GPIOD) & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
+		/* while ((gpioX_getinputs(GPIOD) & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 
@@ -1019,7 +1019,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
+	#define BOARD_IS_USERBOOT() ((gpioX_getinputs(GPIOE) & TARGET_ENC2BTN_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
 		} while (0)

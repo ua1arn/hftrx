@@ -597,6 +597,9 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		portholder_t mask,
 		portholder_t state
 		);
+	portholder_t gpioX_getinputs(
+		GPIO_TypeDef * gpio
+		);
 	void
 	gpioX_onchangeinterrupt(
 			GPIO_TypeDef * gpio,

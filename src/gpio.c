@@ -920,6 +920,13 @@ void gpioX_setstate(
 	gpioX_unlock(gpio, oldIrql);
 }
 
+portholder_t gpioX_getinputs(
+	GPIO_TypeDef * gpio
+	)
+{
+	return gpio->DATA;
+}
+
 static void gpioX_prog(
 	GPIO_TypeDef * gpio,
 	portholder_t iopins,
