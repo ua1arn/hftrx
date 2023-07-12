@@ -43,7 +43,7 @@ typedef enum IRQn
     TWI2_IRQn = 43,                                   /*!< TWI  Interrupt */
     TWI3_IRQn = 44,                                   /*!< TWI  Interrupt */
     SPI0_IRQn = 47,                                   /*!< SPI Serial Peripheral Interface Interrupt */
-    SPI1_IRQn = 48,                                   /*!< SPI_DBI Serial Peripheral Interface Interrupt */
+    SPI1_IRQn = 48,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     LEDC_IRQn = 52,                                   /*!< LEDC LED Lamp Controller Interrupt */
     CAN0_IRQn = 53,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
     CAN1_IRQn = 54,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
@@ -181,7 +181,8 @@ typedef enum IRQn
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Serial Peripheral Interface Base */
-#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI_DBI Serial Peripheral Interface Base */
+#define SPI1_BASE ((uintptr_t) 0x04026000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI Serial Peripheral Interface Base */
 #define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG  Base */
 #define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC  Base */
 #define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability  Base */
@@ -2283,7 +2284,17 @@ typedef struct SPI_Type
     volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
              uint32_t reserved_0x050 [0x000E];
     volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
-             uint32_t reserved_0x08C [0x005D];
+             uint32_t reserved_0x08C [0x001D];
+    volatile uint32_t DBI_CTL_0;                      /*!< Offset 0x100 DBI Control Register 0 */
+    volatile uint32_t DBI_CTL_1;                      /*!< Offset 0x104 DBI Control Register 1 */
+    volatile uint32_t DBI_CTL_2;                      /*!< Offset 0x108 DBI Control Register 2 */
+    volatile uint32_t DBI_TIMER;                      /*!< Offset 0x10C DBI Timer Control Register */
+    volatile uint32_t DBI_VIDEO_SZIE;                 /*!< Offset 0x110 DBI Video Size Configuration Register */
+             uint32_t reserved_0x114 [0x0003];
+    volatile uint32_t DBI_INT;                        /*!< Offset 0x120 DBI Interrupt Register */
+    volatile uint32_t DBI_DEBUG_0;                    /*!< Offset 0x124 DBI BEBUG 0 Register */
+    volatile uint32_t DBI_DEBUG_1;                    /*!< Offset 0x128 DBI BEBUG 1 Register */
+             uint32_t reserved_0x12C [0x0035];
     volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
@@ -2310,49 +2321,6 @@ typedef struct SPINLOCK_Type
              uint32_t reserved_0x094 [0x001B];
     volatile uint32_t SPINLOCK_LOCK_REG [0x020];      /*!< Offset 0x100 Spinlock Register N (N = 0 to 31) */
 } SPINLOCK_TypeDef; /* size of structure = 0x180 */
-/*
- * @brief SPI_DBI
- */
-/*!< SPI_DBI Serial Peripheral Interface */
-typedef struct SPI_DBI_Type
-{
-             uint32_t reserved_0x000;
-    volatile uint32_t SPI_GCR;                        /*!< Offset 0x004 SPI Global Control Register */
-    volatile uint32_t SPI_TCR;                        /*!< Offset 0x008 SPI Transfer Control Register */
-             uint32_t reserved_0x00C;
-    volatile uint32_t SPI_IER;                        /*!< Offset 0x010 SPI Interrupt Control Register */
-    volatile uint32_t SPI_ISR;                        /*!< Offset 0x014 SPI Interrupt Status Register */
-    volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
-    volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
-    volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
-             uint32_t reserved_0x024;
-    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x028 SPI Sample Delay Control Register */
-             uint32_t reserved_0x02C;
-    volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
-    volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
-    volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
-             uint32_t reserved_0x03C;
-    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
-    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
-    volatile uint32_t SPI_TBR;                        /*!< Offset 0x048 SPI TX Bit Register */
-    volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
-             uint32_t reserved_0x050 [0x000E];
-    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
-             uint32_t reserved_0x08C [0x001D];
-    volatile uint32_t DBI_CTL_0;                      /*!< Offset 0x100 DBI Control Register 0 */
-    volatile uint32_t DBI_CTL_1;                      /*!< Offset 0x104 DBI Control Register 1 */
-    volatile uint32_t DBI_CTL_2;                      /*!< Offset 0x108 DBI Control Register 2 */
-    volatile uint32_t DBI_TIMER;                      /*!< Offset 0x10C DBI Timer Control Register */
-    volatile uint32_t DBI_VIDEO_SZIE;                 /*!< Offset 0x110 DBI Video Size Configuration Register */
-             uint32_t reserved_0x114 [0x0003];
-    volatile uint32_t DBI_INT;                        /*!< Offset 0x120 DBI Interrupt Register */
-    volatile uint32_t DBI_DEBUG_0;                    /*!< Offset 0x124 DBI BEBUG 0 Register */
-    volatile uint32_t DBI_DEBUG_1;                    /*!< Offset 0x128 DBI BEBUG 1 Register */
-             uint32_t reserved_0x12C [0x0035];
-    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data register */
-             uint32_t reserved_0x204 [0x003F];
-    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data register */
-} SPI_DBI_TypeDef; /* size of structure = 0x304 */
 /*
  * @brief SYS_CFG
  */
@@ -2996,7 +2964,8 @@ typedef struct USB_OHCI_Capability_Type
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
-#define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
+#define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define SPI_DBI ((SPI_TypeDef *) SPI_DBI_BASE)        /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */

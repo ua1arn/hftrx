@@ -1,7 +1,8 @@
 #type; SPI
-#base; SPI0 0x04025000
-#irqrv; SPI0 31
-#irq; SPI0 47
+#base; SPI0 0x05010000
+#base; SPI1 0x05011000
+#irq; SPI0 44
+#irq; SPI1 45
 #comment; Serial Peripheral Interface
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
 #regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
@@ -15,7 +16,7 @@
 #regdef; SPI_MTC; 0x0034; SPI Master Transmit Counter Register
 #regdef; SPI_BCC; 0x0038; SPI Master Burst Control Register
 #regdef; SPI_BATCR; 0x0040; SPI Bit-Aligned Transfer Configure Register
-#regdef; SPI_BA_CCR; 0x0044; SPI Bit-Aligned Clock Configuration Register
+#regdef; SPI_3W_CCR; 0x0044; SPI Bit-Aligned Clock Configuration Register
 #regdef; SPI_TBR; 0x0048; SPI TX Bit Register
 #regdef; SPI_RBR; 0x004C; SPI RX Bit Register
 #regdef; SPI_NDMA_MODE_CTL; 0x0088; SPI Normal DMA Mode Control Register

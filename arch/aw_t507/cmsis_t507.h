@@ -35,12 +35,15 @@ typedef enum IRQn
     UART1_IRQn = 35,                                  /*!< UART  Interrupt */
     UART2_IRQn = 36,                                  /*!< UART  Interrupt */
     UART3_IRQn = 37,                                  /*!< UART  Interrupt */
+    TWI0_IRQn = 38,                                   /*!< TWI  Interrupt */
     UART4_IRQn = 38,                                  /*!< UART  Interrupt */
+    TWI1_IRQn = 39,                                   /*!< TWI  Interrupt */
     UART5_IRQn = 39,                                  /*!< UART  Interrupt */
-    TWI0_IRQn = 41,                                   /*!< TWI  Interrupt */
-    TWI1_IRQn = 42,                                   /*!< TWI  Interrupt */
-    TWI2_IRQn = 43,                                   /*!< TWI  Interrupt */
-    TWI3_IRQn = 44,                                   /*!< TWI  Interrupt */
+    TWI2_IRQn = 40,                                   /*!< TWI  Interrupt */
+    TWI3_IRQn = 41,                                   /*!< TWI  Interrupt */
+    TWI4_IRQn = 42,                                   /*!< TWI  Interrupt */
+    SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface Interrupt */
+    SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     GPIOA_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOC_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOD_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
@@ -55,6 +58,7 @@ typedef enum IRQn
     USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  Interrupt */
     USBOHCI1_IRQn = 107,                              /*!< USB_OHCI_Capability  Interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
+    S_TWI0_IRQn = 137,                                /*!< TWI  Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -76,11 +80,6 @@ typedef enum IRQn
 #define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
-#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI  Base */
-#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI  Base */
-#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI  Base */
-#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI  Base */
-#define TWI4_BASE ((uintptr_t) 0x02503000)            /*!< TWI  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU  Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK  Base */
@@ -107,6 +106,13 @@ typedef enum IRQn
 #define UART3_BASE ((uintptr_t) 0x05000C00)           /*!< UART  Base */
 #define UART4_BASE ((uintptr_t) 0x05001000)           /*!< UART  Base */
 #define UART5_BASE ((uintptr_t) 0x05001400)           /*!< UART  Base */
+#define TWI0_BASE ((uintptr_t) 0x05002000)            /*!< TWI  Base */
+#define TWI1_BASE ((uintptr_t) 0x05002400)            /*!< TWI  Base */
+#define TWI2_BASE ((uintptr_t) 0x05002800)            /*!< TWI  Base */
+#define TWI3_BASE ((uintptr_t) 0x05002C00)            /*!< TWI  Base */
+#define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
+#define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define USB0_BASE ((uintptr_t) 0x05100000)            /*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USBOTG0_BASE ((uintptr_t) 0x05100000)         /*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB1_BASE ((uintptr_t) 0x05200000)            /*!< USB_EHCI_Capability  Base */
@@ -117,6 +123,7 @@ typedef enum IRQn
 #define USBOHCI4_BASE ((uintptr_t) 0x05311400)        /*!< USB_OHCI_Capability  Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
+#define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 
 /*
  * @brief CCU
@@ -599,6 +606,39 @@ typedef struct GPIOINT_Type
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
+ * @brief SPI
+ */
+/*!< SPI Serial Peripheral Interface */
+typedef struct SPI_Type
+{
+             uint32_t reserved_0x000;
+    volatile uint32_t SPI_GCR;                        /*!< Offset 0x004 SPI Global Control Register */
+    volatile uint32_t SPI_TCR;                        /*!< Offset 0x008 SPI Transfer Control Register */
+             uint32_t reserved_0x00C;
+    volatile uint32_t SPI_IER;                        /*!< Offset 0x010 SPI Interrupt Control Register */
+    volatile uint32_t SPI_ISR;                        /*!< Offset 0x014 SPI Interrupt Status Register */
+    volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
+    volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
+    volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
+             uint32_t reserved_0x024;
+    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x028 SPI Sample Delay Control Register */
+             uint32_t reserved_0x02C;
+    volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
+    volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
+    volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
+             uint32_t reserved_0x03C;
+    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
+    volatile uint32_t SPI_3W_CCR;                     /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
+    volatile uint32_t SPI_TBR;                        /*!< Offset 0x048 SPI TX Bit Register */
+    volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
+             uint32_t reserved_0x050 [0x000E];
+    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
+             uint32_t reserved_0x08C [0x005D];
+    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
+             uint32_t reserved_0x204 [0x003F];
+    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
+} SPI_TypeDef; /* size of structure = 0x304 */
+/*
  * @brief TWI
  */
 /*!< TWI  */
@@ -851,11 +891,6 @@ typedef struct USB_OHCI_Capability_Type
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
-#define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0  register set access pointer */
-#define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
-#define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
-#define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
-#define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
@@ -880,6 +915,13 @@ typedef struct USB_OHCI_Capability_Type
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3  register set access pointer */
 #define UART4 ((UART_TypeDef *) UART4_BASE)           /*!< UART4  register set access pointer */
 #define UART5 ((UART_TypeDef *) UART5_BASE)           /*!< UART5  register set access pointer */
+#define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0  register set access pointer */
+#define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
+#define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
+#define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
+#define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
+#define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
+#define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define USB0 ((USBOTG_TypeDef *) USB0_BASE)           /*!< USB0 USB OTG Dual-Role Device controller register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
 #define USB1 ((USB_EHCI_Capability_TypeDef *) USB1_BASE)/*!< USB1  register set access pointer */
@@ -890,6 +932,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USBOHCI4 ((USB_OHCI_Capability_TypeDef *) USBOHCI4_BASE)/*!< USBOHCI4  register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
+#define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

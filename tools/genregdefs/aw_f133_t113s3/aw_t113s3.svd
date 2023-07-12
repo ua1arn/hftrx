@@ -12156,175 +12156,6 @@
    <value>31</value>
    <description></description>
   </interrupt>
-  <registers>
-   <register>
-    <name>SPI_GCR</name>
-    <displayName>SPI_GCR</displayName>
-    <description>SPI Global Control Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TCR</name>
-    <displayName>SPI_TCR</displayName>
-    <description>SPI Transfer Control Register</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_IER</name>
-    <displayName>SPI_IER</displayName>
-    <description>SPI Interrupt Control Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_ISR</name>
-    <displayName>SPI_ISR</displayName>
-    <description>SPI Interrupt Status Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_FCR</name>
-    <displayName>SPI_FCR</displayName>
-    <description>SPI FIFO Control Register</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_FSR</name>
-    <displayName>SPI_FSR</displayName>
-    <description>SPI FIFO Status Register</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_WCR</name>
-    <displayName>SPI_WCR</displayName>
-    <description>SPI Wait Clock Register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_SAMP_DL</name>
-    <displayName>SPI_SAMP_DL</displayName>
-    <description>SPI Sample Delay Control Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_MBC</name>
-    <displayName>SPI_MBC</displayName>
-    <description>SPI Master Burst Counter Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_MTC</name>
-    <displayName>SPI_MTC</displayName>
-    <description>SPI Master Transmit Counter Register</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BCC</name>
-    <displayName>SPI_BCC</displayName>
-    <description>SPI Master Burst Control Register</description>
-    <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BATCR</name>
-    <displayName>SPI_BATCR</displayName>
-    <description>SPI Bit-Aligned Transfer Configure Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BA_CCR</name>
-    <displayName>SPI_BA_CCR</displayName>
-    <description>SPI Bit-Aligned Clock Configuration Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TBR</name>
-    <displayName>SPI_TBR</displayName>
-    <description>SPI TX Bit Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_RBR</name>
-    <displayName>SPI_RBR</displayName>
-    <description>SPI RX Bit Register</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_NDMA_MODE_CTL</name>
-    <displayName>SPI_NDMA_MODE_CTL</displayName>
-    <description>SPI Normal DMA Mode Control Register</description>
-    <addressOffset>0x088</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TXD</name>
-    <displayName>SPI_TXD</displayName>
-    <description>SPI TX Data Register</description>
-    <addressOffset>0x200</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_RXD</name>
-    <displayName>SPI_RXD</displayName>
-    <description>SPI RX Data Register</description>
-    <addressOffset>0x300</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>SPI_DBI</name>
-  <description>Serial Peripheral Interface</description>
-  <baseAddress>0x04026000</baseAddress>
   <interrupt>
    <name>SPI1</name>
    <value>32</value>
@@ -12550,7 +12381,7 @@
    <register>
     <name>SPI_TXD</name>
     <displayName>SPI_TXD</displayName>
-    <description>SPI TX Data register</description>
+    <description>SPI TX Data Register</description>
     <addressOffset>0x200</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -12559,13 +12390,41 @@
    <register>
     <name>SPI_RXD</name>
     <displayName>SPI_RXD</displayName>
-    <description>SPI RX Data register</description>
+    <description>SPI RX Data Register</description>
     <addressOffset>0x300</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="SPI0">
+  <name>SPI1</name>
+  <baseAddress>0x04026000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>31</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="SPI0">
+  <name>SPI_DBI</name>
+  <baseAddress>0x04026000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>31</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>SYS_CFG</name>

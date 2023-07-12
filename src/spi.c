@@ -1152,9 +1152,11 @@ const FLASHMEM unsigned char revbittable [256] =
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
 		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
+	#else
+		#error Undefined CPUSTYLE_xxx
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -1664,8 +1666,8 @@ void hardware_spi_master_initialize(void)
 
 	#warning Implement for CPUSTYLE_A64
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	unsigned ix = 0;	// SPI0
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+	unsigned ix = SPIHARD_IX;	// SPI0
 
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
@@ -1675,10 +1677,10 @@ void hardware_spi_master_initialize(void)
 
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
 
-//	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
-//	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
+//	SPIHARD_PTR->SPI_GCR = (0x01uL << 31);	// SRST soft reset
+//	while ((SPIHARD_PTR->SPI_GCR & (0x01uL << 31)) != 0)
 //		;
-	SPI0->SPI_GCR |=
+	SPIHARD_PTR->SPI_GCR |=
 		(0u < 1) |	// MODE: 1: Master mode
 		0;
 
@@ -1691,10 +1693,10 @@ void hardware_spi_master_initialize(void)
 
 
 	/* Enable spi0 */
-	SPI0->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
+	SPIHARD_PTR->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
 	/* Do a soft reset */
-//	SPI0->SPI_GCR |= (1u << 31);
-//	while((SPI0->SPI_GCR & (1u << 31)) != 0)
+//	SPIHARD_PTR->SPI_GCR |= (1u << 31);
+//	while((SPIHARD_PTR->SPI_GCR & (1u << 31)) != 0)
 //		;
 
 	// De-assert hardware CS
@@ -2013,7 +2015,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
 	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	enum
 	{
@@ -2022,9 +2024,43 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	};
 
 	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03u << 24)) |
-		(clk_src << 24) |	/* CLK_SRC_SEL */
-		0;
+
+	if (0)
+	{
+
+	}
+#if defined (SPI0)
+	else if (SPIHARD_PTR == SPI0)
+	{
+		CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03u << 24)) |
+			(clk_src << 24) |	/* CLK_SRC_SEL */
+			0;
+	}
+#endif /* defined (SPI0) */
+#if defined (SPI1)
+	else if (SPIHARD_PTR == SPI1)
+	{
+		CCU->SPI1_CLK_REG = (CCU->SPI1_CLK_REG & ~ (0x03u << 24)) |
+			(clk_src << 24) |	/* CLK_SRC_SEL */
+			0;
+	}
+#endif /* defined (SPI1) */
+#if defined (SPI2)
+	else if (SPIHARD_PTR == SPI2)
+	{
+		CCU->SPI2_CLK_REG = (CCU->SPI2_CLK_REG & ~ (0x03u << 24)) |
+			(clk_src << 24) |	/* CLK_SRC_SEL */
+			0;
+	}
+#endif /* defined (SPI2) */
+#if defined (SPI_DBI) && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	else if (SPIHARD_PTR == SPI_DBI)
+	{
+		CCU->SPI1_CLK_REG = (CCU->SPI1_CLK_REG & ~ (0x03u << 24)) |
+			(clk_src << 24) |	/* CLK_SRC_SEL */
+			0;
+	}
+#endif /* defined (SPI_DBI) && (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 	//TP();
 	// SCLK = Clock Source/M/N.
@@ -2206,10 +2242,10 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 //	{
 //		unsigned val = SPI0->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -2294,14 +2330,14 @@ void hardware_spi_disconnect(void)
 	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	{
-		unsigned val = SPI0->SPI_TCR;
+		unsigned val = SPIHARD_PTR->SPI_TCR;
 		val &= ~((0x3 << 4) | (0x1 << 7));
 		val |= ((0 & 0x3) << 4) | (0x1 << 7);	// SS=1
-		SPI0->SPI_TCR = val;
-		(void) SPI0->SPI_TCR;
+		SPIHARD_PTR->SPI_TCR = val;
+		(void) SPIHARD_PTR->SPI_TCR;
 	}
 
 	HARDWARE_SPI_DISCONNECT();
@@ -2381,17 +2417,17 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return SPI0->RXD & 0xFF;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (1u << 31)) != 0)
 		;
 
-	const portholder_t v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+	const portholder_t v = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
-	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
+	SPIHARD_PTR->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPIHARD_PTR->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v;
@@ -3687,18 +3723,18 @@ void hardware_spi_b8_p1(
 	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
 		;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	SPI0->SPI_MBC = 1;	// Master Burst Counter
-	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	SPIHARD_PTR->SPI_MBC = 1;	// Master Burst Counter
+	SPIHARD_PTR->SPI_MTC = 1;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
+	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v;
 
-	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
