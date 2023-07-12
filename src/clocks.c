@@ -9488,7 +9488,7 @@ void hardware_adc_initialize(void)
 	#warning Undefined CPUSTYLE_A64
 
 #elif CPUSTYLE_T507
-	#warning Undefined CPUSTYLE_T507
+	//#warning Undefined CPUSTYLE_T507
 
 #else
 	#warning Undefined CPUSTYLE_XXX

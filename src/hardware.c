@@ -1661,7 +1661,7 @@ hardware_adc_startonescan(void)
 
 #else
 
-	#warning Undefined CPUSTYLE_XXX
+	//#warning Undefined CPUSTYLE_XXX
 
 #endif
 }
