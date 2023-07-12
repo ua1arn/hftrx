@@ -1088,7 +1088,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_duplex_master =
 	DMA_I2S2_TX_initialize_codec1,				// DMA по передаче канал 0
 	hardware_i2s2_duplex_enable_codec1,
 	hardware_dummy_enable,
-	"i2s2-i2s2ext-audiocodechw"
+	"audiocodechw-i2s2-i2s2ext-duplex-master"
 };
 
 #else /* WITHI2SI2S2EXTFULLDUPLEXHW */
@@ -1102,7 +1102,7 @@ static const codechw_t audiocodechw_i2s2_duplex_slave =
 	DMA_I2S2_TX_initialize_codec1,					// DMA по передаче SPI2_TX
 	hardware_i2s2_duplex_enable_codec1,
 	hardware_dummy_enable,
-	"i2s2-duplex-audiocodechw-slave"
+	"audiocodechw-i2s2-duplex-slave"
 };
 
 // Используется I2S2 в дуплексном режиме
@@ -1114,7 +1114,7 @@ static const codechw_t audiocodechw_i2s2_duplex_master =
 	DMA_I2S2_TX_initialize_codec1,					// DMA по передаче SPI2_TX
 	hardware_i2s2_duplex_enable_codec1,
 	hardware_dummy_enable,
-	"i2s2-duplex-audiocodechw-master"
+	"audiocodechw-i2s2-duplex-master"
 };
 
 #endif /* WITHI2SI2S2EXTFULLDUPLEXHW */
@@ -4373,7 +4373,10 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
-#if ! CPUSTYLE_A64
+#if defined (I2S2)
+
+// Allwinner A64 not support RX on I2S2
+#if ! defined (CPUSTYLE_A64)
 
 static void DMAC_I2S2_RX_initialize_codec1(void)
 {
@@ -4500,7 +4503,10 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-#endif /* ! CPUSTYLE_A64 */
+
+#endif /* ! defined (CPUSTYLE_A64) */
+
+#endif /* defined (I2S2) */
 
 static void DMAC_I2S1_TX_initialize_fpga(void)
 {
@@ -5013,6 +5019,8 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 
 #if defined (I2S2)
 
+#if ! defined (CPUSTYLE_A64)
+
 static const codechw_t audiocodechw_i2s2_duplex_slave =
 {
 	hardware_i2s2_slave_duplex_initialize_codec1,	// was: i2s1
@@ -5045,6 +5053,8 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-slave"
 };
+
+#endif /* ! defined (CPUSTYLE_A64) */
 
 #endif /* defined (I2S2) */
 
