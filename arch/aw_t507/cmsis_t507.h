@@ -46,6 +46,7 @@ typedef enum IRQn
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     TIMER0_IRQn = 80,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 81,                                 /*!< TIMER  Interrupt */
+    WATCHDOG_IRQn = 82,                               /*!< TIMER  Interrupt */
     GPIOA_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOC_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOD_IRQn = 83,                                  /*!< GPIOINT  Interrupt */

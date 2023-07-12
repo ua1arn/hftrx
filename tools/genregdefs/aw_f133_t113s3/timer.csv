@@ -2,8 +2,10 @@
 #base; TIMER 0x02050000
 #irq; TIMER0 91
 #irq; TIMER1 92
+#irq; WATCHDOG 95
 #irqrv; TIMER0 75
 #irqrv; TIMER1 76
+#irqrv; WATCHDOG 79
 #regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
 #regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register
 #regdef; TMR0_CTRL_REG; 0x0010; Timer0 Control Register

@@ -14204,6 +14204,11 @@
    <value>76</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>WATCHDOG</name>
+   <value>79</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TMR_IRQ_EN_REG</name>

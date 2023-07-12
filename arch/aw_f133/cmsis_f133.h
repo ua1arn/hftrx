@@ -44,6 +44,7 @@ typedef enum IRQn
     TIMER0_IRQn = 75,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 76,                                 /*!< TIMER  Interrupt */
     TPADC_IRQn = 78,                                  /*!< TPADC  Interrupt */
+    WATCHDOG_IRQn = 79,                               /*!< TIMER  Interrupt */
     IOMMU_IRQn = 80,                                  /*!< IOMMU  Interrupt */
     GPIOB_NS_IRQn = 85,                               /*!< GPIOINT  Interrupt */
     GPIOC_NS_IRQn = 87,                               /*!< GPIOINT  Interrupt */
