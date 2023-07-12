@@ -28,7 +28,7 @@ PRJROOT := ../..
 OBJDIR = obj
 
 # Define project name here
-PROJECT = tc1_a64
+PROJECT = tc1_awt507
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./allwnr_t507_boot.ld

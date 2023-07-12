@@ -2322,6 +2322,11 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 
 #elif CPUSTYLE_T507
 
+void allwnr_t507_pll_initialize(void)
+{
+
+}
+
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
     return WITHCPUXTAL;
@@ -8036,6 +8041,10 @@ sysinit_pll_initialize(void)
 	}
 	allwnrt113_pll_initialize();
 
+#elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
+	#warning Implement for CPUSTYLE_T507
+	allwnr_t507_pll_initialize();
+
 #elif CPUSTYLE_F133
 
 	/* Off bootloader USB */
@@ -8064,9 +8073,6 @@ sysinit_pll_initialize(void)
 	PMCTR->CORE_PWR_UP = 1;
 	CMCTR->GATE_CORE_CTR |= (1u << 0);	// L0_EN
 	CMCTR->GATE_SYS_CTR |= (1u << 0);	// SYS_EN - Разрешение для тактовых частот L1_HCLK, L3_PCLK и связанных с ними частот
-
-#elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
-	#warning Implement for CPUSTYLE_T507
 
 #else
 	//#warning Undefined CPUSTYLE_xxx

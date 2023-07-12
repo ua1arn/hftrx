@@ -1,13 +1,12 @@
 /* $Id$ */
-/* Allwinner A64-H (Banana Pi BPI-M64) layout */
+/* Allwinner T507 (HelperBoarf T507) layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x00018000 + 256, 			LENGTH = 96k - 256		/*  */
-  STACK (rwx): ORIGIN = 0x00044000,					LENGTH = 64k
-  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
-  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  RAM (rwx)	 : ORIGIN = 0x00020000 + 256, 			LENGTH = 96k - 256		/*  */
+  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 1024M - 16k		/*  */
+  TTB (rwx)  : ORIGIN = 0x40000000 + 1024M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
 }
 
 /* Library configurations */
@@ -205,11 +204,11 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > STACK
+	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(STACK) + LENGTH(STACK);
+	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
