@@ -1,0 +1,16 @@
+#type; C0_CPUX_CFG
+#base; C0_CPUX_CFG 0x09010000
+
+#comment; Cluster 0 Configuration Register List
+
+C0_RST_CTRL; 0x0000; Cluster 0 Reset Control Register
+C0_CTRL_REG0; 0x0010; Cluster 0 Control Register0
+C0_CTRL_REG1; 0x0014; Cluster 0 Control Register1
+C0_CTRL_REG2 0x0018; Cluster 0 Control Register2
+CACHE_CFG_REG; 0x0024; Cache Configuration Register
+C0_CPU0_CTRL_REG; 0x0060; Cluster 0 CPU0 Control Register
+C0_CPU1_CTRL_REG; 0x0064; Cluster 0 CPU1 Control Register
+C0_CPU2_CTRL_REG; 0x0068; Cluster 0 CPU2 Control Register
+C0_CPU3_CTRL_REG; 0x006C; Cluster 0 CPU3 Control Register
+C0_CPU_STATUS; 0x0080; Cluster 0 CPU Status Register
+L2_STATUS_REG; 0x0084; Cluster 0 L2 Status Register

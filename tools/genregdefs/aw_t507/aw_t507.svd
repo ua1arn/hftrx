@@ -1232,6 +1232,137 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CPU_SUBSYS_CTRL</name>
+  <description>CPU Subsystem Control Register List</description>
+  <baseAddress>0x08100000</baseAddress>
+  <registers>
+   <register>
+    <name>GENER_CTRL_REG0</name>
+    <displayName>GENER_CTRL_REG0</displayName>
+    <description>General Control Register0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG1</name>
+    <displayName>GENER_CTRL_REG1</displayName>
+    <description>General Control Register1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GIC_JTAG_RST_CTRL</name>
+    <displayName>GIC_JTAG_RST_CTRL</displayName>
+    <description>GIC and Jtag Reset Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_INT_EN</name>
+    <displayName>C0_INT_EN</displayName>
+    <description>Cluster0 Interrupt Enable Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_FIQ_STATUS</name>
+    <displayName>IRQ_FIQ_STATUS</displayName>
+    <description>IRQ/FIQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG2</name>
+    <displayName>GENER_CTRL_REG2</displayName>
+    <description>General Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_STATE</name>
+    <displayName>DBG_STATE</displayName>
+    <description>Debug State Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU0_CTRL_REG</name>
+    <displayName>CPU0_CTRL_REG</displayName>
+    <description>CPU0 Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU1_CTRL_REG</name>
+    <displayName>CPU1_CTRL_REG</displayName>
+    <description>CPU1 Control Reg ister</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU2_CTRL_REG</name>
+    <displayName>CPU2_CTRL_REG</displayName>
+    <description>CPU2 Control Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPU3_CTRL_REG</name>
+    <displayName>CPU3_CTRL_REG</displayName>
+    <description>CPU3 Control Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <registers>
+     <register>
+      <name>LOW</name>
+      <displayName>LOW</displayName>
+      <description>Reset Vector Base Address Registerx_L</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>HIGH</name>
+      <displayName>HIGH</displayName>
+      <description>Reset Vector Base Address Registerx_H</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>G2D_BLD</name>
   <description>Graphic 2D (G2D) Engine Blender</description>
   <baseAddress>0x01480400</baseAddress>

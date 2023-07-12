@@ -128,6 +128,8 @@ typedef enum IRQn
 #define USBOHCI4_BASE ((uintptr_t) 0x05311400)        /*!< USB_OHCI_Capability  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List Base */
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Cluster 0 Configuration Register List Base */
 
 /*
  * @brief CCU
@@ -355,6 +357,31 @@ typedef struct CCU_Type
              uint32_t reserved_0xF14 [0x0003];
     volatile uint32_t CCU_24M_27M_CLK_OUTPUT_REG;     /*!< Offset 0xF20 24M or 27M Clock Output Register */
 } CCU_TypeDef; /* size of structure = 0xF24 */
+/*
+ * @brief CPU_SUBSYS_CTRL
+ */
+/*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_Type
+{
+    volatile uint32_t GENER_CTRL_REG0;                /*!< Offset 0x000 General Control Register0 */
+    volatile uint32_t GENER_CTRL_REG1;                /*!< Offset 0x004 General Control Register1 */
+             uint32_t reserved_0x008;
+    volatile uint32_t GIC_JTAG_RST_CTRL;              /*!< Offset 0x00C GIC and Jtag Reset Control Register */
+    volatile uint32_t C0_INT_EN;                      /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
+    volatile uint32_t IRQ_FIQ_STATUS;                 /*!< Offset 0x014 IRQ/FIQ Status Register */
+    volatile uint32_t GENER_CTRL_REG2;                /*!< Offset 0x018 General Control Register2 */
+    volatile uint32_t DBG_STATE;                      /*!< Offset 0x01C Debug State Register */
+    volatile uint32_t CPU0_CTRL_REG;                  /*!< Offset 0x020 CPU0 Control Register */
+    volatile uint32_t CPU1_CTRL_REG;                  /*!< Offset 0x024 CPU1 Control Reg ister */
+    volatile uint32_t CPU2_CTRL_REG;                  /*!< Offset 0x028 CPU2 Control Register */
+    volatile uint32_t CPU3_CTRL_REG;                  /*!< Offset 0x02C CPU3 Control Register */
+             uint32_t reserved_0x030 [0x0004];
+    struct
+    {
+        volatile uint32_t LOW;                        /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
+        volatile uint32_t HIGH;                       /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
+    } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
+} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
 /*
  * @brief G2D_BLD
  */
@@ -967,6 +994,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USBOHCI4 ((USB_OHCI_Capability_TypeDef *) USBOHCI4_BASE)/*!< USBOHCI4  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */
