@@ -5011,10 +5011,11 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 	"audiocodechw-i2s1-duplex-slave"
 };
 
-#if ! CPUSTYLE_A64
+#if defined (I2S2)
+
 static const codechw_t audiocodechw_i2s2_duplex_slave =
 {
-	hardware_i2s1_slave_duplex_initialize_codec1,
+	hardware_i2s2_slave_duplex_initialize_codec1,	// was: i2s1
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_codec1,
 	DMAC_I2S2_TX_initialize_codec1,
@@ -5044,7 +5045,8 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-slave"
 };
-#endif
+
+#endif /* defined (I2S2) */
 
 static const codechw_t fpgacodechw_i2s1_duplex_slave =
 {
@@ -6036,14 +6038,9 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		"sai2-fpga spectrum for WFM"
 	};
 
-#elif CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	#warning Codecs not defined for CPUSTYLE_F133
-
-
-#elif CPUSTYLE_T113
-
-	#warning Codecs not defined for CPUSTYLE_T113
+	#warning Codecs not defined for CPUSTYLE_F133 || CPUSTYLE_F133
 
 #else
 
