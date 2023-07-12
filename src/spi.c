@@ -1639,7 +1639,7 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
 
@@ -1670,27 +1670,19 @@ void hardware_spi_master_initialize(void)
 	unsigned ix = SPIHARD_IX;	// SPI0
 
 	/* Open the clock gate for SPI0 */
-	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
+	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 0);
 
 	/* De-assert SPI0 reset */
-	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
+	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 16);
 
-	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
+	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI0_CLK_GATING
 
-//	SPIHARD_PTR->SPI_GCR = (0x01uL << 31);	// SRST soft reset
-//	while ((SPIHARD_PTR->SPI_GCR & (0x01uL << 31)) != 0)
+//	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
+//	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 	SPIHARD_PTR->SPI_GCR |=
 		(0u < 1) |	// MODE: 1: Master mode
 		0;
-
-	/* De-assert spi0 reset */
-	CCU->SPI_BGR_REG |= (1u << (ix + 16));
-	/* Open the spi0 gate */
-	CCU->SPI0_CLK_REG |= (1u << 31);
-	/* Open the spi0 bus gate */
-	CCU->SPI_BGR_REG |= (1u << (ix + 0));
-
 
 	/* Enable spi0 */
 	SPIHARD_PTR->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
@@ -2025,42 +2017,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 
-	if (0)
-	{
-
-	}
-#if defined (SPI0)
-	else if (SPIHARD_PTR == SPI0)
-	{
-		CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03u << 24)) |
-			(clk_src << 24) |	/* CLK_SRC_SEL */
-			0;
-	}
-#endif /* defined (SPI0) */
-#if defined (SPI1)
-	else if (SPIHARD_PTR == SPI1)
-	{
-		CCU->SPI1_CLK_REG = (CCU->SPI1_CLK_REG & ~ (0x03u << 24)) |
-			(clk_src << 24) |	/* CLK_SRC_SEL */
-			0;
-	}
-#endif /* defined (SPI1) */
-#if defined (SPI2)
-	else if (SPIHARD_PTR == SPI2)
-	{
-		CCU->SPI2_CLK_REG = (CCU->SPI2_CLK_REG & ~ (0x03u << 24)) |
-			(clk_src << 24) |	/* CLK_SRC_SEL */
-			0;
-	}
-#endif /* defined (SPI2) */
-#if defined (SPI_DBI) && (CPUSTYLE_T113 || CPUSTYLE_F133)
-	else if (SPIHARD_PTR == SPI_DBI)
-	{
-		CCU->SPI1_CLK_REG = (CCU->SPI1_CLK_REG & ~ (0x03u << 24)) |
-			(clk_src << 24) |	/* CLK_SRC_SEL */
-			0;
-	}
-#endif /* defined (SPI_DBI) && (CPUSTYLE_T113 || CPUSTYLE_F133) */
+	SPIHARD_CCU_CLK_REG = (SPIHARD_CCU_CLK_REG & ~ (0x03u << 24)) |
+		(clk_src << 24) |	/* CLK_SRC_SEL */
+		0;
 
 	//TP();
 	// SCLK = Clock Source/M/N.
@@ -2244,14 +2203,15 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 //	{
-//		unsigned val = SPI0->SPI_TCR;
+//		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
 //		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-//		SPI0->SPI_TCR = val;
-//		(void) SPI0->SPI_TCR;
+//		SPIHARD_PTR->SPI_TCR = val;
+//		(void) SPIHARD_PTR->SPI_TCR;
 //	}
  	HARDWARE_SPI_CONNECT();
 
@@ -3375,10 +3335,11 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+
+	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 //	{
 //		unsigned val = SPI0->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3434,17 +3395,17 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (1u << 31)) != 0)
 		;
 
-	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
+	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
-	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
+	SPIHARD_PTR->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPIHARD_PTR->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v & 0xFFFF;
@@ -3486,18 +3447,18 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	SPI0->SPI_MBC = 2;	// Master Burst Counter
-	SPI0->SPI_MTC = 2;	// 23..0: Number of bursts
+	SPIHARD_PTR->SPI_MBC = 2;	// Master Burst Counter
+	SPIHARD_PTR->SPI_MTC = 2;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
 		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint16_t *) & SPI0->SPI_TXD = __bswap16(v);
+	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);
 
-	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3564,16 +3525,17 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+
+	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 //	{
-//		unsigned val = SPI0->SPI_TCR;
+//		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
 //		val |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
-//		SPI0->SPI_TCR = val;
-//		(void) SPI0->SPI_TCR;
+//		SPIHARD_PTR->SPI_TCR = val;
+//		(void) SPIHARD_PTR->SPI_TCR;
 //	}
  	HARDWARE_SPI_CONNECT();
 
@@ -3600,17 +3562,17 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPI0->SPI_TCR & (1u << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (1u << 31)) != 0)
 		;
 
-	const portholder_t v = __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
+	const portholder_t v = __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
 
 	// TXFIFO and RXFIFO Reset
-	SPI0->SPI_FCR |= (1u << 31) | (1u << 15);
-	while ((SPI0->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
+	SPIHARD_PTR->SPI_FCR |= (1u << 31) | (1u << 15);
+	while ((SPIHARD_PTR->SPI_FCR & ((1u << 31) | (1u << 15))) != 0)
 		;
 
 	return v;
@@ -3636,18 +3598,18 @@ void hardware_spi_b32_p1(
 
 	HW_SPIUSED->SPDR.UINT32 = v;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
-	SPI0->SPI_MBC = 4;	// Master Burst Counter
-	SPI0->SPI_MTC = 4;	// 23..0: Number of bursts
+	SPIHARD_PTR->SPI_MBC = 4;	// Master Burst Counter
+	SPIHARD_PTR->SPI_MTC = 4;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
 		4 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	SPI0->SPI_TXD = __bswap32(v);	/* 32bit access */
+	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
 
-	SPI0->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4935,7 +4897,7 @@ void spidf_initialize(void)
 	PRINTF("%s:\n", __func__);
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
 	SCLR->LQSPI_CLK_CTRL = (SCLR->LQSPI_CLK_CTRL & ~ 0x3F00) |
@@ -5299,7 +5261,7 @@ static void spidf_iostart(
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
 		(0x02uL << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
 		(hasaddress != 0) * (bw << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
-		(0x01uL << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
+		(UINT32_C(1) << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
 		((uint_fast32_t) cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
 
@@ -5389,7 +5351,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 	// продолжение обмена без передачи команды, адреса... но с передаяей данных.
 	SPIBSC0.SMENR =
 			(SPIBSC0.SMENR & ~ (SPIBSC_SMENR_ADE | SPIBSC_SMENR_CDE | SPIBSC_SMENR_DME | SPIBSC_SMENR_OPDE | SPIBSC_SMENR_SPIDE)) |
-			(0x08uL << SPIBSC_SMENR_SPIDE_SHIFT) |
+			(UINT32_C(8) << SPIBSC_SMENR_SPIDE_SHIFT) |
 			0;
 
 	while (size --)
@@ -5587,12 +5549,12 @@ static void spidf_iostart(
 		(0u << SPIBSC_SMENR_ADB_SHIFT) | /* 1 address bit */
 		(0u << SPIBSC_SMENR_OPDB_SHIFT) | /* 1 optional data bit */
 		(0u << SPIBSC_SMENR_SPIDB_SHIFT) | /* Transfer Data Bit Size */
-		(0x01uL << SPIBSC_SMENR_CDE_SHIFT) | /* 1: Command output enabled */
+		(UINT32_C(1) << SPIBSC_SMENR_CDE_SHIFT) | /* 1: Command output enabled */
 		(0u << SPIBSC_SMENR_OCDE_SHIFT) | /* 0: Optional command output disabled */
 		(0u << SPIBSC_SMENR_OPDE_SHIFT) | /* Option Data Enable 0000: Output disabled */
 		((hasaddress ? 0x07 : 0x00) << SPIBSC_SMENR_ADE_SHIFT) | /* No address send or 0111: ADR[23:0] */
 		((ndummy != 0) << SPIBSC_SMENR_DME_SHIFT) |
-		((size && ! direction ? 0x08uL : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
+		((size && ! direction ? UINT32_C(8) : 0) << SPIBSC_SMENR_SPIDE_SHIFT) | /* 8 bits transferred (enables data at address 0 of the SPI mode read/write data registers 0) */
 		0;
 	// 17.4.10 SPI Mode Command Setting Register (SMCMR)
 	SPIBSC0.SMCMR =

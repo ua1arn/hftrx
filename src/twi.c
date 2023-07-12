@@ -1574,7 +1574,7 @@ void i2c_initialize(void)
 	hardware_iicps_configure();			// Peripheral
 }
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64)
 
 
 
@@ -2537,7 +2537,7 @@ void hardware_twi_master_configure(void)
 
 	#warning Should be implemented for CPUSTYLE_A64
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 	const int TWIx = TWIHARD_IX;
 	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);	// De-assert reset

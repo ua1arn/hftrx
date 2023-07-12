@@ -565,6 +565,11 @@
 //
 //	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
+
+	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
