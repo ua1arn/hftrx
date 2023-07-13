@@ -390,10 +390,7 @@ typedef struct CPU_SUBSYS_CTRL_Type
     volatile uint32_t IRQ_FIQ_STATUS;                 /*!< Offset 0x014 IRQ/FIQ Status Register */
     volatile uint32_t GENER_CTRL_REG2;                /*!< Offset 0x018 General Control Register2 */
     volatile uint32_t DBG_STATE;                      /*!< Offset 0x01C Debug State Register */
-    volatile uint32_t CPU0_CTRL_REG;                  /*!< Offset 0x020 CPU0 Control Register */
-    volatile uint32_t CPU1_CTRL_REG;                  /*!< Offset 0x024 CPU1 Control Reg ister */
-    volatile uint32_t CPU2_CTRL_REG;                  /*!< Offset 0x028 CPU2 Control Register */
-    volatile uint32_t CPU3_CTRL_REG;                  /*!< Offset 0x02C CPU3 Control Register */
+    volatile uint32_t CPUx_CTRL_REG [0x004];          /*!< Offset 0x020 CPU0..CPU3 Control Register */
              uint32_t reserved_0x030 [0x0004];
     struct
     {
