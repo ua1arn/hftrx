@@ -7346,7 +7346,7 @@ void hightests(void)
 #endif
 #if 0 && WITHDEBUG && WITHSMPSYSTEM
 	{
-		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, ARM_CA9_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
+		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, GIC_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
 		enum { TGCPUMASK1 = 1u << 1 };
 		enum { TGCPUMASK0 = 1u << 0 };
 		const int cpu = __get_MPIDR() & 0x03;

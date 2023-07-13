@@ -3065,7 +3065,7 @@ sysinit_fpu_initialize(void)
 	{
 		GIC_Enable();
 	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
@@ -4152,7 +4152,7 @@ void Reset_CPUn_Handler(void)
 	{
 		GIC_Enable();
 	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_IPC_ONLY));
+		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_IPC_ONLY));
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
@@ -4178,7 +4178,7 @@ void Reset_CPUn_Handler(void)
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 #if WITHNESTEDINTERRUPTS
-	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));
 #endif /* WITHNESTEDINTERRUPTS */
 
 #if WITHLWIP

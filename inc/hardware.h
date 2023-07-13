@@ -1354,7 +1354,7 @@ size_t getRamDiskSize(void);
 	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
-#if (__CORTEX_A == 53U)
+#if (__CORTEX_A == 53U) && 1
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 

@@ -13,7 +13,8 @@
 #include "reg-ccu.h"
 #include "reg-dram.h"
 
-typedef uint32_t virtual_addr_t;
+//typedef uint32_t virtual_addr_t;
+typedef uintptr_t virtual_addr_t;
 
 #define ddr_min(a, b)		((a) < (b) ? (a) : (b))
 #define ddr_max(a, b)		((a) > (b) ? (a) : (b))
