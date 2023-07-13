@@ -3695,8 +3695,11 @@ sysinit_cache_cpu1_initialize(void)
 
 //#define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
@@ -3738,8 +3741,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 //#define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
@@ -3768,8 +3774,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //#define HARDWARE_NCORES 2
 
 // Invoke at SVC context
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
@@ -3886,8 +3895,11 @@ static const uint32_t halt64 [16] =
  * Read 0x01F01C00+0x1A4 register Get soft_entry_address
  */
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	//startfunc = (uintptr_t) halt64;
 	//startfunc = (uintptr_t) halt32;
@@ -3981,8 +3993,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #define R_CPUCFG_BASE 0x07000400
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ (UINT32_C(1) << (targetcore + 0));	// CPUx_CORE_RESET: 0: Assert
 
@@ -4027,8 +4042,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 //#define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	C0_CPUX_CFG->C0_RST_CTRL |= (1u << targetcore);
@@ -4063,8 +4081,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // Страницы 74..78 документа Manual_1892VM14YA.pdf
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
     const uint32_t psmask = 0x03u << (targetcore * 8);	/* SCU_PWR mask */
 
 //    volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
@@ -4209,23 +4230,16 @@ void cpump_initialize(void)
 	__DSB();
 #endif /* (__CORTEX_A == 9U) */
 
+	extern uintptr_t aarch32_reset_handlers [];
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	unsigned core;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
-		static uintptr_t fns [4] =
-		{
-			0,
-			(uintptr_t) Reset_CPU1_Handler,
-			(uintptr_t) Reset_CPU2_Handler,
-			(uintptr_t) Reset_CPU3_Handler,
-		};
-
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
-		cortexa_mp_cpuN_start(fns [core], core);
+		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
 	}

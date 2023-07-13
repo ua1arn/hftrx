@@ -1108,9 +1108,6 @@ void IRQ_Handler_GICv1(void);
 void IRQ_Handler_GICv2(void);
 void IRQ_Handler(void);			// No GIC
 
-void Reset_CPU1_Handler(void);	// crt_CortexA_CPUn.S located function
-void Reset_CPU2_Handler(void);	// crt_CortexA_CPUn.S located function
-void Reset_CPU3_Handler(void);	// crt_CortexA_CPUn.S located function
 void Reset_CPUn_Handler(void);
 
 // Set interrupt vector wrappers
