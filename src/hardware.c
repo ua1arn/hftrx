@@ -3949,16 +3949,23 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << (0 + targetcore);
+
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
+	C0_CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0) de-assert
+	// Не влияют
+	// Register width state.Determines which execution state the processor boots into after a cold reset.
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+
+	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
 
 
@@ -4008,27 +4015,33 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #define R_CPUCFG_BASE 0x07000400
 
-static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ (UINT32_C(1) << (targetcore + 0));	// CPUx_CORE_RESET: 0: Assert
-
 	/* for AArch64 */
+static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] = 1; // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshift-count-overflow"
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = startfunc;
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = startfunc >> 32;
 #pragma GCC diagnostic pop
+}
 
-	/* for AArch32 */
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPU0_CORE_RESET
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [targetcore] = 0; // Register width state AA64NAA32 0: AArch32 1: AArch64
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+
+	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	// Run core
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= UINT32_C(1) << (targetcore + 0);	// CPUx_CORE_RESET: 1: Deassert
+
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
 
 #elif CPUSTYLE_T113
