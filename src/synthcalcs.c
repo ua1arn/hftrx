@@ -600,10 +600,10 @@ void synth_rts1_setfreq(
 		if (f < 0)
 			f = - f;
 		//debug_printf_P(PSTR("synth_rts1_setfreq: freq=%lu\n"), f);
-	#if (WITHRTS192 || WITHRTS96) && WITHDSPEXTDDC && (WITHDSPEXTFIR || CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+	#if (WITHRTS192 || WITHRTS96) && WITHDSPEXTDDC
 		const ftw_t ph = freq2ftw(f, dds1refdiv, dds1ref);    /* преобразование требуемой частоты в фазу */
 		prog_rts1_ftw(& ph);
-	#endif /* (WITHRTS192 || WITHRTS96) && WITHDSPEXTDDC && WITHDSPEXTFIR */
+	#endif /* (WITHRTS192 || WITHRTS96) && WITHDSPEXTDDC */
 	}
 }
 
