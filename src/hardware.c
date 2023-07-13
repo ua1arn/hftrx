@@ -3944,7 +3944,7 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 	restart_self_aarch64();
 }
 
@@ -4185,7 +4185,6 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
-	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
 	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	LCLSPIN_UNLOCK(& cpu1init);
@@ -4212,6 +4211,9 @@ void Reset_CPUn_Handler(void)
 		}
 	}
 #endif /* CPUSTYLE_VM14 */
+
+	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
+
 	// Idle loop
 	for (;;)
 	{
