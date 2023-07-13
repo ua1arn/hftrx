@@ -44,6 +44,15 @@ typedef enum IRQn
     TWI4_IRQn = 42,                                   /*!< TWI  Interrupt */
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface Interrupt */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface Interrupt */
+    USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller Interrupt */
+    USB20_OTG_EHCI_IRQn = 58,                         /*!< USB_EHCI_Capability  Interrupt */
+    USB20_OTG_OHCI_IRQn = 59,                         /*!< USB_OHCI_Capability  Interrupt */
+    USB20_HOST1_EHCI_IRQn = 60,                       /*!< USB_EHCI_Capability  Interrupt */
+    USB20_HOST1_OHCI_IRQn = 61,                       /*!< USB_OHCI_Capability  Interrupt */
+    USB20_HOST2_EHCI_IRQn = 62,                       /*!< USB_EHCI_Capability  Interrupt */
+    USB20_HOST2_OHCI_IRQn = 63,                       /*!< USB_OHCI_Capability  Interrupt */
+    USB20_HOST3_EHCI_IRQn = 64,                       /*!< USB_EHCI_Capability  Interrupt */
+    USB20_HOST3_OHCI_IRQn = 65,                       /*!< USB_OHCI_Capability  Interrupt */
     TIMER0_IRQn = 80,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 81,                                 /*!< TIMER  Interrupt */
     WATCHDOG_IRQn = 82,                               /*!< TIMER  Interrupt */
@@ -55,11 +64,6 @@ typedef enum IRQn
     GPIOG_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOH_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
     GPIOI_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    USBOTG0_IRQn = 103,                               /*!< USBOTG USB OTG Dual-Role Device controller Interrupt */
-    USBEHCI0_IRQn = 104,                              /*!< USB_EHCI_Capability  Interrupt */
-    USBOHCI0_IRQn = 105,                              /*!< USB_OHCI_Capability  Interrupt */
-    USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  Interrupt */
-    USBOHCI1_IRQn = 107,                              /*!< USB_OHCI_Capability  Interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
     S_TWI0_IRQn = 137,                                /*!< TWI  Interrupt */
 
@@ -119,14 +123,13 @@ typedef enum IRQn
 #define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
-#define USB0_BASE ((uintptr_t) 0x05100000)            /*!< USBOTG USB OTG Dual-Role Device controller Base */
-#define USBOTG0_BASE ((uintptr_t) 0x05100000)         /*!< USBOTG USB OTG Dual-Role Device controller Base */
-#define USB1_BASE ((uintptr_t) 0x05200000)            /*!< USB_EHCI_Capability  Base */
-#define USBOHCI1_BASE ((uintptr_t) 0x05200400)        /*!< USB_OHCI_Capability  Base */
-#define USB3_BASE ((uintptr_t) 0x05310000)            /*!< USB_EHCI_Capability  Base */
-#define USBOHCI3_BASE ((uintptr_t) 0x05310400)        /*!< USB_OHCI_Capability  Base */
-#define USB4_BASE ((uintptr_t) 0x05311000)            /*!< USB_EHCI_Capability  Base */
-#define USBOHCI4_BASE ((uintptr_t) 0x05311400)        /*!< USB_OHCI_Capability  Base */
+#define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x05100000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x05200000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
+#define USB20_HOST2_EHCI_BASE ((uintptr_t) 0x05310000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST2_OHCI_BASE ((uintptr_t) 0x05310400)/*!< USB_OHCI_Capability  Base */
+#define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
+#define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List Base */
@@ -1032,14 +1035,13 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
-#define USB0 ((USBOTG_TypeDef *) USB0_BASE)           /*!< USB0 USB OTG Dual-Role Device controller register set access pointer */
-#define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
-#define USB1 ((USB_EHCI_Capability_TypeDef *) USB1_BASE)/*!< USB1  register set access pointer */
-#define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
-#define USB3 ((USB_EHCI_Capability_TypeDef *) USB3_BASE)/*!< USB3  register set access pointer */
-#define USBOHCI3 ((USB_OHCI_Capability_TypeDef *) USBOHCI3_BASE)/*!< USBOHCI3  register set access pointer */
-#define USB4 ((USB_EHCI_Capability_TypeDef *) USB4_BASE)/*!< USB4  register set access pointer */
-#define USBOHCI4 ((USB_OHCI_Capability_TypeDef *) USBOHCI4_BASE)/*!< USBOHCI4  register set access pointer */
+#define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
+#define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
+#define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
+#define USB20_HOST2_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST2_EHCI_BASE)/*!< USB20_HOST2_EHCI  register set access pointer */
+#define USB20_HOST2_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST2_OHCI_BASE)/*!< USB20_HOST2_OHCI  register set access pointer */
+#define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
+#define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List register set access pointer */
