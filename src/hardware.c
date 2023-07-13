@@ -3888,7 +3888,7 @@ static const uint32_t halt64 [16] =
 
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	//startfunc = (uintptr_t) halt64;
 	//startfunc = (uintptr_t) halt32;
 
@@ -3979,6 +3979,8 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #define HARDWARE_NCORES 4
 
+#define R_CPUCFG_BASE 0x07000400
+
 static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 
@@ -3992,7 +3994,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #pragma GCC diagnostic pop
 
 	/* for AArch32 */
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	// Run core
