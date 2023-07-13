@@ -3904,13 +3904,24 @@ static const uint32_t halt64_a [] =
 //			;
 //	}
 
-static const uint32_t halt64 [] =
+static const uint32_t halt64_0 [] =
 {
 		0xD2900000,	// 	mov	x0, #0x8000                	// #32768
 		0xF2A03840,	// 	movk	x0, #0x1c2, lsl #16
 		0xB9407C01,	// 	ldr	w1, [x0, #124]
 		0x360FFFE1,	// 	tbz	w1, #1, 400008 <_start+0x8>
 		0x52800461,	// 	mov	w1, #0x23                  	// #35
+		0xB9000001,	// 	str	w1, [x0]
+		0x14000000,	// 	b	400018 <_start+0x18>
+};
+
+static const uint32_t halt64_1 [] =
+{
+		0xD2900000,	// 	mov	x0, #0x8000                	// #32768
+		0xF2A03840,	// 	movk	x0, #0x1c2, lsl #16
+		0xB9407C01,	// 	ldr	w1, [x0, #124]
+		0x360FFFE1,	// 	tbz	w1, #1, 400008 <_start+0x8>
+		0x528004A1,	// 	mov	w1, #0x23                  	// #35
 		0xB9000001,	// 	str	w1, [x0]
 		0x14000000,	// 	b	400018 <_start+0x18>
 };
@@ -3924,9 +3935,6 @@ static const uint32_t halt64 [] =
 
 static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	startfunc = (uintptr_t) halt64;
-	targetcore = __get_MPIDR() & 0x03;	// self id
-
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	// aarch64
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
@@ -4177,7 +4185,7 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
-	//aarch64_mp_cpuN_start(0, (__get_MPIDR() & 0x03));
+	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
 	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	LCLSPIN_UNLOCK(& cpu1init);
@@ -4249,7 +4257,7 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1init);
 
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
-		//aarch64_mp_cpuN_start(aarch32_reset_handlers [core], core);
+		//aarch64_mp_cpuN_start((uintptr_t) halt64_0, __get_MPIDR() & 0x03);
 
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
