@@ -86,6 +86,7 @@ typedef enum IRQn
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU  Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
+#define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK  Base */
 #define GPIOF_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
@@ -653,6 +654,36 @@ typedef struct GPIOINT_Type
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
+ * @brief PWM
+ */
+/*!< PWM Pulse Width Modulation module */
+typedef struct PWM_Type
+{
+    volatile uint32_t PIER;                           /*!< Offset 0x000 PWM IRQ Enable Register */
+    volatile uint32_t PISR;                           /*!< Offset 0x004 PWM IRQ Status Register */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t CIER;                           /*!< Offset 0x010 Capture IRQ Enable Register */
+    volatile uint32_t CISR;                           /*!< Offset 0x014 Capture IRQ Status Register */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t PCCR [0x003];                   /*!< Offset 0x020 PWM01, PWM23, PWM45 Clock Configuration Register */
+             uint32_t reserved_0x02C;
+    volatile uint32_t PDZCR [0x003];                  /*!< Offset 0x030 PWM01, PWM23, PWM45 Dead Zone Control Register */
+             uint32_t reserved_0x03C;
+    volatile uint32_t PER;                            /*!< Offset 0x040 PWM Enable Register */
+    volatile uint32_t CER;                            /*!< Offset 0x044 Capture Enable Register */
+             uint32_t reserved_0x048 [0x0006];
+    struct
+    {
+        volatile uint32_t PCR;                        /*!< Offset 0x060 PWM Control Register */
+        volatile uint32_t PPR;                        /*!< Offset 0x064 PWM Period Register */
+        volatile uint32_t PCNTR;                      /*!< Offset 0x068 PWM Count Register */
+        volatile uint32_t CCR;                        /*!< Offset 0x06C Capture Control Register */
+        volatile uint32_t CRLR;                       /*!< Offset 0x070 Capture Rise Lock Register */
+        volatile uint32_t CFLR;                       /*!< Offset 0x074 Capture Fall Lock Register */
+                 uint32_t reserved_0x018 [0x0002];
+    } CH [0x008];                                     /*!< Offset 0x060 Channels[0..5] */
+} PWM_TypeDef; /* size of structure = 0x160 */
+/*
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
@@ -970,6 +1001,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
+#define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */

@@ -3338,6 +3338,156 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>PWM</name>
+  <description>Pulse Width Modulation module</description>
+  <baseAddress>0x0300A000</baseAddress>
+  <registers>
+   <register>
+    <name>PIER</name>
+    <displayName>PIER</displayName>
+    <description>PWM IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PISR</name>
+    <displayName>PISR</displayName>
+    <description>PWM IRQ Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CIER</name>
+    <displayName>CIER</displayName>
+    <description>Capture IRQ Enable Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CISR</name>
+    <displayName>CISR</displayName>
+    <description>Capture IRQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <register>
+     <name>PCCR</name>
+     <displayName>PCCR</displayName>
+     <description>PWM01, PWM23, PWM45 Clock Configuration Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x00000030</addressOffset>
+    <register>
+     <name>PDZCR</name>
+     <displayName>PDZCR</displayName>
+     <description>PWM01, PWM23, PWM45 Dead Zone Control Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <register>
+    <name>PER</name>
+    <displayName>PER</displayName>
+    <description>PWM Enable Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CER</name>
+    <displayName>CER</displayName>
+    <description>Capture Enable Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000060</addressOffset>
+    <registers>
+     <register>
+      <name>PCR</name>
+      <displayName>PCR</displayName>
+      <description>PWM Control Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>PPR</name>
+      <displayName>PPR</displayName>
+      <description>PWM Period Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>PCNTR</name>
+      <displayName>PCNTR</displayName>
+      <description>PWM Count Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CCR</name>
+      <displayName>CCR</displayName>
+      <description>Capture Control Register</description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CRLR</name>
+      <displayName>CRLR</displayName>
+      <description>Capture Rise Lock Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CFLR</name>
+      <displayName>CFLR</displayName>
+      <description>Capture Fall Lock Register</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x0C0</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
   <baseAddress>0x05010000</baseAddress>
