@@ -816,6 +816,7 @@ static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 #if CPUSTYLE_A64
 	if (gpio == GPIOL)
 		return & gpiodata_L_lock;
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
 #elif CPUSTYLE_T507
 	if (gpio == GPIOL)
