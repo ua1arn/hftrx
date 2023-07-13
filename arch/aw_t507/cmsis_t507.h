@@ -132,6 +132,25 @@ typedef enum IRQn
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Cluster 0 Configuration Register List Base */
 
 /*
+ * @brief C0_CPUX_CFG
+ */
+/*!< C0_CPUX_CFG Cluster 0 Configuration Register List */
+typedef struct C0_CPUX_CFG_Type
+{
+    volatile uint32_t C0_RST_CTRL;                    /*!< Offset 0x000 Cluster 0 Reset Control Register */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t C0_CTRL_REG0;                   /*!< Offset 0x010 Cluster 0 Control Register0 */
+    volatile uint32_t C0_CTRL_REG1;                   /*!< Offset 0x014 Cluster 0 Control Register1 */
+    volatile uint32_t C0_CTRL_REG2;                   /*!< Offset 0x018 Cluster 0 Control Register2 */
+             uint32_t reserved_0x01C [0x0002];
+    volatile uint32_t CACHE_CFG_REG;                  /*!< Offset 0x024 Cache Configuration Register */
+             uint32_t reserved_0x028 [0x000E];
+    volatile uint32_t C0_CPUx_CTRL_REG [0x004];       /*!< Offset 0x060 Cluster 0 CPU0..CPU03 Control Register */
+             uint32_t reserved_0x070 [0x0004];
+    volatile uint32_t C0_CPU_STATUS;                  /*!< Offset 0x080 Cluster 0 CPU Status Register */
+    volatile uint32_t L2_STATUS_REG;                  /*!< Offset 0x084 Cluster 0 L2 Status Register */
+} C0_CPUX_CFG_TypeDef; /* size of structure = 0x088 */
+/*
  * @brief CCU
  */
 /*!< CCU  */
@@ -995,6 +1014,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List register set access pointer */
+#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG Cluster 0 Configuration Register List register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

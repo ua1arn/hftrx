@@ -10,6 +10,90 @@
  <resetMask>0xFFFFFFFF</resetMask>
  <peripherals>
   <peripheral>
+  <name>C0_CPUX_CFG</name>
+  <description>Cluster 0 Configuration Register List</description>
+  <baseAddress>0x09010000</baseAddress>
+  <registers>
+   <register>
+    <name>C0_RST_CTRL</name>
+    <displayName>C0_RST_CTRL</displayName>
+    <description>Cluster 0 Reset Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG0</name>
+    <displayName>C0_CTRL_REG0</displayName>
+    <description>Cluster 0 Control Register0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG1</name>
+    <displayName>C0_CTRL_REG1</displayName>
+    <description>Cluster 0 Control Register1</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG2</name>
+    <displayName>C0_CTRL_REG2</displayName>
+    <description>Cluster 0 Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CACHE_CFG_REG</name>
+    <displayName>CACHE_CFG_REG</displayName>
+    <description>Cache Configuration Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000060</addressOffset>
+    <register>
+     <name>C0_CPUx_CTRL_REG</name>
+     <displayName>C0_CPUx_CTRL_REG</displayName>
+     <description>Cluster 0 CPU0..CPU03 Control Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>C0_CPU_STATUS</name>
+    <displayName>C0_CPU_STATUS</displayName>
+    <description>Cluster 0 CPU Status Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_STATUS_REG</name>
+    <displayName>L2_STATUS_REG</displayName>
+    <description>Cluster 0 L2 Status Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>CCU</name>
   <description></description>
   <baseAddress>0x03001000</baseAddress>
