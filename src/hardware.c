@@ -3845,7 +3845,7 @@ __STATIC_FORCEINLINE void __set_RVBAR(uint32_t rvbar)
 }
 
 // От состяния бита AA64nAA32 в C_CTRL_REG0 не зависит
-static void restart_core0_aarch64(void)
+static void restart_self_aarch64(void)
 {
 	// RMR - Reset Management Register
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
@@ -3920,22 +3920,12 @@ static const uint32_t halt64 [] =
  * Read 0x01F01C00+0x1A4 register Get soft_entry_address
  */
 
-static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
+	targetcore = 0;
+	startfunc = (uintptr_t) halt64;
 
-	//targetcore = 0;
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
-	//startfunc = (uintptr_t) halt64;
-	//startfunc = (uintptr_t) halt32;
-
-	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-
-	// aarch32
-	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	// aarch64
 	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
 #pragma GCC diagnostic push
@@ -3944,28 +3934,24 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	//restart_core0_aarch64();
+	restart_self_aarch64();
+}
 
-//	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
-//	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
-
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
 
 	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
-	(void) C0_CPUX_CFG->C_RST_CTRL;
+
+	//targetcore = 0;
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	// aarch32
+	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
 	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0) de-assert
-	(void) C0_CPUX_CFG->C_RST_CTRL;
-
-//	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
-//	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
-//	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
-	//printhex32((uintptr_t) halt64, halt64, sizeof halt64);
-	//printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
-//	PRINTF("Check for modification: targetcore=%u\n", targetcore);
-//	printhex32(0x44000, (void *) 0x44000, 32);
-//
-//	for (;;)
-//		;
-
 }
 
 
@@ -4262,6 +4248,7 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
+		//aarch64_mp_cpuN_start(aarch32_reset_handlers [core], core);
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
 	}
