@@ -3812,6 +3812,9 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void halt32(void)
 {
+	UART0->UART_RBR_THR_DLL = '#';
+	for (;;)
+		;
 	volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
 	base [0] = 0xDEADBEEF;
 	base [1] = __get_MPIDR() & 0x03; //0xABBA1980;
@@ -3862,23 +3865,21 @@ static void restart_core0_aarch64(void)
 }
 
 
-/*
-	#include <stdint.h>
-
-	void _start(void)
-	{
-		volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
-		base [0] = 0xDEADBEEF;
-		for (;;)
-			;
-	}
-*/
-
 // aarch64-none-elf-gcc.exe -mcpu=cortex-A53 -Os -c tt.c
 // aarch64-none-elf-ld -o tt.elf tt.o
 // aarch64-none-elf-objdump.exe -d tt.elf
 
-static const uint32_t halt64 [16] =
+//	#include <stdint.h>
+//
+//	void _start(void)
+//	{
+//		volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
+//		base [0] = 0xDEADBEEF;
+//		for (;;)
+//			;
+//	}
+
+static const uint32_t halt64_a [16] =
 {
 		0xd2880000,        //mov     x0, #0x4000                     // #16384
 		0xf2a00080,        //movk    x0, #0x4, lsl #16
@@ -3886,6 +3887,24 @@ static const uint32_t halt64 [16] =
 		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
 		0xb9000001,        //str     w1, [x0]
 		0x14000000,        //b       400014 <_start+0x14>
+};
+
+//	#include <stdint.h>
+//	#include "../../arch/aw_a64/cmsis_a64.h"
+//	void _start(void)
+//	{
+//		UART0->UART_RBR_THR_DLL = '#';
+//		for (;;)
+//			;
+//	}
+
+static const uint32_t halt64 [16] =
+{
+		0xd2900000,        //mov     x0, #0x8000                     // #32768
+		0xf2a03840,        //movk    x0, #0x1c2, lsl #16
+		0x52800461,        //mov     w1, #0x23                       // #35
+		0xb9000001,        //str     w1, [x0]
+		0x14000000,        //b       400010 <_start+0x10>
 };
 
 // H3: R_CPUCFG @ 0x01F01C00
@@ -3914,11 +3933,19 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
 
+	// aarch32
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-//	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
-//	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
+
+	// aarch64
+	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 32;
+#pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	//local_delay_ms(250);
+
 	//dcache_clean_invalidate(0x44000, 64 * 1024);
 	//__set_RVBAR(halt32);
 //	PRINTF("RVBAR=%08X startfunc=%p\n", (unsigned) __get_RVBAR(), (void *) startfunc);
@@ -3926,6 +3953,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 //	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
 //	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
+
 
 	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
 	(void) C0_CPUX_CFG->C_RST_CTRL;
@@ -3935,7 +3963,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
 //	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
 //	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
-//	local_delay_ms(250);
 	//printhex32((uintptr_t) halt64, halt64, sizeof halt64);
 	//printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
 //	PRINTF("Check for modification: targetcore=%u\n", targetcore);
