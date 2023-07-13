@@ -3849,15 +3849,17 @@ static void restart_self_aarch64(void)
 {
 	// RMR - Reset Management Register
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
-
+	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
 	uint32_t result;
-	result = 0x03;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+
 	//__set_CP(15, 0, result, 12, 0, 2);
 	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
 	// G8.2.123 RMR, Reset Management Register
-	__set_CP(15, 0, result, 12, 0, 2);	// RMR_EL1 - work okay
+	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
 	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
 	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
 
 	__ISB();
 	__WFI();
@@ -3922,8 +3924,8 @@ static const uint32_t halt64 [] =
 
 static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	targetcore = 0;
 	startfunc = (uintptr_t) halt64;
+	targetcore = __get_MPIDR() & 0x03;	// self id
 
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	// aarch64
@@ -3934,6 +3936,7 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
 	restart_self_aarch64();
 }
 
@@ -3944,11 +3947,8 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
 
-	//targetcore = 0;
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
-	// aarch32
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0) de-assert
@@ -4177,7 +4177,7 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
-
+	//aarch64_mp_cpuN_start(0, (__get_MPIDR() & 0x03));
 	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	LCLSPIN_UNLOCK(& cpu1init);
@@ -4247,8 +4247,10 @@ void cpump_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
+
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
 		//aarch64_mp_cpuN_start(aarch32_reset_handlers [core], core);
+
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
 	}
