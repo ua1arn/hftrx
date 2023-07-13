@@ -20,7 +20,7 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-XFEL = ../../tools/xfel-windows-v1.2.9/xfel
+XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
