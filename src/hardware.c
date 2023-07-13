@@ -3934,6 +3934,62 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 }
 
+
+#elif CPUSTYLE_T507
+
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
+
+/* Memory regions */
+#define SUNXI_ROM_BASE			0x00000000
+#define SUNXI_ROM_SIZE			0x00010000
+#define SUNXI_SRAM_BASE			0x00020000
+#define SUNXI_SRAM_SIZE			0x00038000
+#define SUNXI_SRAM_A1_BASE		0x00020000
+#define SUNXI_SRAM_A1_SIZE		0x00008000
+#define SUNXI_SRAM_C_BASE		0x00028000
+#define SUNXI_SRAM_C_SIZE		0x00030000
+#define SUNXI_DEV_BASE			0x01000000
+#define SUNXI_DEV_SIZE			0x09000000
+#define SUNXI_DRAM_BASE			0x40000000
+#define SUNXI_DRAM_VIRT_BASE		SUNXI_DRAM_BASE
+
+/* Memory-mapped devices */
+#define SUNXI_SYSCON_BASE		0x03000000
+#define SUNXI_CCU_BASE			0x03001000
+#define SUNXI_DMA_BASE			0x03002000
+#define SUNXI_SID_BASE			0x03006000
+#define SUNXI_SPC_BASE			0x03008000
+#define SUNXI_WDOG_BASE			0x030090a0
+#define SUNXI_PIO_BASE			0x0300b000
+#define SUNXI_GICD_BASE			0x03021000
+#define SUNXI_GICC_BASE			0x03022000
+#define SUNXI_UART0_BASE		0x05000000
+#define SUNXI_SPI0_BASE			0x05010000
+#define SUNXI_R_CPUCFG_BASE		0x07000400
+#define SUNXI_R_PRCM_BASE		0x07010000
+//#define SUNXI_R_WDOG_BASE		0x07020400
+#define SUNXI_R_WDOG_BASE		SUNXI_WDOG_BASE
+#define SUNXI_R_PIO_BASE		0x07022000
+#define SUNXI_R_UART_BASE		0x07080000
+#define SUNXI_R_I2C_BASE		0x07081400
+#define SUNXI_R_RSB_BASE		0x07083000
+#define SUNXI_CPUCFG_BASE		0x09010000
+
+
+#define HARDWARE_NCORES 4
+
+static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ (UINT32_C(1) << (targetcore + 0));	// CPUx_CORE_RESET: 0: Assert
+
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	// Run core
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= UINT32_C(1) << (targetcore + 0);	// CPUx_CORE_RESET: 1: Deassert
+}
+
 #elif CPUSTYLE_T113
 
 //	3.4.2.4 CPU0 Hotplug Process
