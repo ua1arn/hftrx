@@ -3851,7 +3851,6 @@ static void restart_self_aarch64(void)
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
 	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
 	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-	uint32_t result;
 
 	//__set_CP(15, 0, result, 12, 0, 2);
 	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
@@ -3937,10 +3936,10 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	// aarch64
-	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 32;
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = startfunc;
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = startfunc >> 32;
 #pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
@@ -4018,9 +4017,9 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ (UINT32_C(1) << (targetcore + 0));	// CPUx_CORE_RESET: 0: Assert
 
 	/* for AArch64 */
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = startfunc;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = startfunc;
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = startfunc >> 32;
 #pragma GCC diagnostic pop
 
