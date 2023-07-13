@@ -3975,6 +3975,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #define SUNXI_R_RSB_BASE		0x07083000
 #define SUNXI_CPUCFG_BASE		0x09010000
 
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
 
 #define HARDWARE_NCORES 4
 
@@ -3983,6 +3984,14 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ (UINT32_C(1) << (targetcore + 0));	// CPUx_CORE_RESET: 0: Assert
 
+	/* for AArch64 */
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = startfunc;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+#pragma GCC diagnostic pop
+
+	/* for AArch32 */
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
