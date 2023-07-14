@@ -25,9 +25,9 @@
 #regdef; LCD_DEBUG_REG; 0x00FC; LCD Debug Register
 #regdef; LCD_CEU_CTL_REG; 0x0100; LCD CEU Control Register
 
-#regdef; LCD_CEU_COEF_MUL_REG; 0x0110 3; LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10)
+#regdef; LCD_CEU_COEF_MUL_REG; 0x0110 3; LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10) N=0: Rr, N=1: Rg, N=2: Rb, N=4: Gr, N=5: Gg, N=6: Gb, N=8: Br, N=9: Bg, N=10: Bb
 
-#regdef; LCD_CEU_COEF_ADD0_REG; 0x011C; LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2)
+#regdef; LCD_CEU_COEF_ADD0_REG; 0x011C; LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) N=0: Rc, N=1: Gc, N=2: Bc
 #regdef; LCD_CEU_COEF_ADD1_REG; 0x012C; LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2)
 #regdef; LCD_CEU_COEF_ADD2_REG; 0x013C; LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2)
 
