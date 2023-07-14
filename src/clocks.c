@@ -1193,7 +1193,7 @@ uint_fast32_t stm32mp1_get_mpuss_freq(void)
 	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
 	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
 
-	const uint_fast32_t mpudiv = 1uL << ((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos);
+	const uint_fast32_t mpudiv = UINT32_C(1) << ((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos);
 
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
@@ -3989,7 +3989,7 @@ calcdivider(
 	PRINTF("calcdivider: no parameters for divisor=%lu, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
 
 	// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
-	* dvalue = (1U << width) - 1;	// просто пустышка - максимальный делитель
+	* dvalue = (UINT32_C(1) << width) - 1;	// просто пустышка - максимальный делитель
 	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
 }
 
@@ -4318,7 +4318,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TCCR2B = prei + 1; // прескалер
 	OCR2A = value;	// делитель - программирование полного периода
 	OCR2B = 0x00;
-	TIMSK2 |= (1U << OCIE2A);	//0x02;	// enable interrupt from Timer/Counter 2 - use TIMER2_COMP_vect
+	TIMSK2 |= (UINT32_C(1) << OCIE2A);	//0x02;	// enable interrupt from Timer/Counter 2 - use TIMER2_COMP_vect
 
 	TCNT2 = 0x00;
 
@@ -4334,7 +4334,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TCCR0B = prei + 1; // прескалер
 	OCR0A = value;	// делитель - программирование полного периода
 	OCR0B = 0x00;
-	TIMSK0 |= (1U << OCIE0A);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMPA_vect
+	TIMSK0 |= (UINT32_C(1) << OCIE0A);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMPA_vect
 
 	TCNT0 = 0x00;
 
@@ -4345,10 +4345,10 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Использование автоматического расчёта предделителя
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
-	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
+	TCCR0 = (UINT32_C(1) << WGM01) | (prei + 1);	// прескалер
 	OCR0 = value;	// делитель - программирование полного периода
 
-	TIMSK |= (1U << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
+	TIMSK |= (UINT32_C(1) << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
 
 	TCNT0 = 0x00;
 
@@ -4359,10 +4359,10 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Использование автоматического расчёта предделителя
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
-	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
+	TCCR0 = (UINT32_C(1) << WGM01) | (prei + 1);	// прескалер
 	OCR0 = value;	// делитель - программирование полного периода
 
-	TIMSK |= (1U << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
+	TIMSK |= (UINT32_C(1) << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
 
 	TCNT0 = 0x00;
 
@@ -4382,13 +4382,13 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	AT91C_BASE_RTTC->RTTC_RTMR &= ~AT91C_RTTC_ALMIEN;		// запретить Real Time Timer Controller
 
 	// programming interrupts from SYS
-    AT91C_BASE_AIC->AIC_IDCR = (1UL << AT91C_ID_SYS);		// disable interrupt
+    AT91C_BASE_AIC->AIC_IDCR = (UINT32_C(1) << AT91C_ID_SYS);		// disable interrupt
     AT91C_BASE_AIC->AIC_SVR [AT91C_ID_SYS] = (AT91_REG) AT91F_SYS_IRQHandler;
 	AT91C_BASE_AIC->AIC_SMR [AT91C_ID_SYS] =
 		(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |
 		(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-	AT91C_BASE_AIC->AIC_ICCR = (1UL << AT91C_ID_SYS);		// clear pending interrupt
-    AT91C_BASE_AIC->AIC_IECR = (1UL << AT91C_ID_SYS);	// enable inerrupt
+	AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << AT91C_ID_SYS);		// clear pending interrupt
+    AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << AT91C_ID_SYS);	// enable inerrupt
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
@@ -4416,8 +4416,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
     OSTM0.OSTMnTT = 0x01u;      /* Stop counting */
 
 	OSTM0.OSTMnCTL = (OSTM0.OSTMnCTL & ~ 0x03) |
-		0 * (1U << 1) |	// Interval Timer Mode
-		1 * (1U << 0) |	// Enables the interrupts when counting starts.
+		0 * (UINT32_C(1) << 1) |	// Interval Timer Mode
+		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
 	OSTM0.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
@@ -4439,7 +4439,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM5_FREQ, ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
 
-	TIM5->PSC = ((1UL << prei) - 1);
+	TIM5->PSC = ((UINT32_C(1) << prei) - 1);
 	TIM5->ARR = value;
 	TIM5->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
@@ -4598,7 +4598,7 @@ void stm32mp1_pll_initialize(void)
 			;
 
 		SYSCFG->CMPCR = (SYSCFG->CMPCR & SYSCFG_CMPCR_SW_CTRL_Msk) |
-			//(1uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 1: IO compensation values come from RANSRC[3:0] and RAPSRC[3:0]
+			//(UINT32_C(1) << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 1: IO compensation values come from RANSRC[3:0] and RAPSRC[3:0]
 			(0uL << SYSCFG_CMPCR_SW_CTRL_Pos) |	// 0: IO compensation values come from ANSRC[3:0] and APSRC[3:0]
 			0;
 	}
@@ -5581,7 +5581,7 @@ static void lowlevwl_interrupts_init(void)
 Тактирование все же надо включать до подключения, причем аж в двух местах:
 Код
     AT91C_BASE_PMC->PMC_SCER = AT91C_PMC_UDP;
-    AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_UDP;
+    AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_UDP;
 
 
 */
@@ -5591,11 +5591,11 @@ static void usb_disable(void)
 {
 #if defined(AT91C_ID_UDP)
     AT91C_BASE_PMC->PMC_SCER = AT91C_PMC_UDP;
-	AT91C_BASE_PMC->PMC_PCER = 1UL << AT91C_ID_UDP; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_UDP; // разрешить тактированние этого блока
 
 	AT91C_BASE_UDP->UDP_TXVC = AT91C_UDP_TXVDIS;	// запрет usb приемо-передатчика
 
-	AT91C_BASE_PMC->PMC_PCDR = 1UL << AT91C_ID_UDP; // запретить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCDR = UINT32_C(1) << AT91C_ID_UDP; // запретить тактированние этого блока
 	AT91C_BASE_PMC->PMC_SCDR = AT91C_PMC_UDP;
 #endif // AT91C_ID_UDP
 }
@@ -6095,7 +6095,7 @@ stm32f4xx_MCOx_test(void)
 			6 * RCC_CFGR_MCO1PRE_0 |	// Смотрим sysclk / 4
 			0 * RCC_CFGR_MCO1_0 |	// 0: sysclk
 			0;
-		arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);	// PA8, AF=0: MCO1
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 8, AF_SYSTEM);	// PA8, AF=0: MCO1
 		for (;;)
 			;
 	}
@@ -6106,7 +6106,7 @@ stm32f4xx_MCOx_test(void)
 			6 * RCC_CFGR_MCO2PRE_0 |	// Смотрим sysclk / 4
 			0 * RCC_CFGR_MCO2_0 |	// 0: sysclk
 			0;
-		arm_hardware_pioc_altfn50(1U << 9, AF_SYSTEM);	// PC9, AF=0: MCO2
+		arm_hardware_pioc_altfn50(UINT32_C(1) << 9, AF_SYSTEM);	// PC9, AF=0: MCO2
 		for (;;)
 			;
 	}
@@ -6613,7 +6613,7 @@ stm32h7xx_pll_initialize(void)
 	if (0)
 	{
 		// Тестирование тактовой частоты - подача на сигнал MCO1
-		arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);			/* PA0 MCO1 */
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 8, AF_SYSTEM);			/* PA0 MCO1 */
 		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1_Msk | RCC_CFGR_MCO1PRE_Msk)) |
 			1 * RCC_CFGR_MCO1PRE_0 |	// divide to 1: bypass
 			3 * RCC_CFGR_MCO1_0 |	// 011: PLL1 clock selected (pll1_q_ck)
@@ -6790,7 +6790,7 @@ lowlevel_stm32f10x_pll_clock(void)
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI;
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0)
 		;
-	arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);	// PA8, AF=0: MCO
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 8, AF_SYSTEM);	// PA8, AF=0: MCO
 
 #endif
 }
@@ -6897,7 +6897,7 @@ stm32f30x_pll_clock(void)
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI;
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0)
 		;
-	arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);	// PA8, AF=0: MCO
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 8, AF_SYSTEM);	// PA8, AF=0: MCO
 
 #endif
 }
@@ -7248,7 +7248,7 @@ stm32f0xx_pll_clock(void)
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI;
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0)
 		;
-	arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);	// PA8, AF=0: MCO
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 8, AF_SYSTEM);	// PA8, AF=0: MCO
 
 #endif
 }
@@ -7432,7 +7432,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 	//RCC->CFGR = (RCC->CFGR & ~ RCC_CFGR_MCO) | RCC_CFGR_MCO_HSI;
 	while ((RCC->CFGR & RCC_CFGR_MCOF) == 0)
 		;
-	arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);	// PA8, AF=0: MCO
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 8, AF_SYSTEM);	// PA8, AF=0: MCO
 
 #endif
 }
@@ -7814,7 +7814,7 @@ sysinit_pll_initialize(void)
 	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
 		// power on bit
 		{
-			enum { WORKMASK = 1U << 11 };	/* PA11 */
+			enum { WORKMASK = UINT32_C(1) << 11 };	/* PA11 */
 			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
 
 		}
@@ -7945,7 +7945,7 @@ sysinit_pll_initialize(void)
 
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
+		XDCFG->CTRL &= ~ (UINT32_C(1) << 29);	// PCFG_POR_CNT_4K
 
 		////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
 
@@ -8586,7 +8586,7 @@ void SystemCoreClockUpdate(void)
 		/* TIM16_CH1 */
 		unsigned value;	/* делитель */
 		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
-		TIM16->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+		TIM16->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
 
 		TIM16->ARR = value;
 		//TIM16->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
@@ -8621,7 +8621,7 @@ void SystemCoreClockUpdate(void)
 		/* TIM17_CH1 */
 		unsigned value;	/* делитель */
 		const uint_fast8_t prei = calcdivider(v, STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, & value, 1);
-		TIM17->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+		TIM17->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
 
 		TIM17->ARR = value;
 		//TIM17->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
@@ -8774,7 +8774,7 @@ void hardware_adc_initialize(void)
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-    PMC->PMC_PCER0 = (1UL << ID_ADC);		// разрешить тактовую для ADC
+    PMC->PMC_PCER0 = (UINT32_C(1) << ID_ADC);		// разрешить тактовую для ADC
 	ADC->ADC_CR = ADC_CR_SWRST;	// reset ADC
 	/* программирование канала PDC, связанного с ADC */
 
@@ -8823,7 +8823,7 @@ void hardware_adc_initialize(void)
 
 #elif CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_ADC);		// разрешить тактовую для ADC
+	AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_ADC);		// разрешить тактовую для ADC
 	AT91C_BASE_ADC->ADC_CR = AT91C_ADC_SWRST;	// reset ADC
 
 	// adc characteristics: in 10 bit mode ADC clock max is 5 MHz, in 8 bit mode - 8 MHz
@@ -8849,13 +8849,13 @@ void hardware_adc_initialize(void)
 	AT91C_BASE_ADC->ADC_IER = AT91C_ADC_DRDY;	/* прерывание после завершения очередного преобразования. */
 
 	// programming interrupts from ADC
-	AT91C_BASE_AIC->AIC_IDCR = (1UL << AT91C_ID_ADC);
+	AT91C_BASE_AIC->AIC_IDCR = (UINT32_C(1) << AT91C_ID_ADC);
 	AT91C_BASE_AIC->AIC_SVR [AT91C_ID_ADC] = (AT91_REG) AT91F_ADC_IRQHandler;
 	AT91C_BASE_AIC->AIC_SMR [AT91C_ID_ADC] =
 		(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 		(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
-	AT91C_BASE_AIC->AIC_ICCR = (1UL << AT91C_ID_ADC);		// clear pending interrupt
-	AT91C_BASE_AIC->AIC_IECR = (1UL << AT91C_ID_ADC);	// enable inerrupt
+	AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << AT91C_ID_ADC);		// clear pending interrupt
+	AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << AT91C_ID_ADC);	// enable inerrupt
 
 #elif CPUSTYLE_ATMEGA
 
@@ -8867,11 +8867,11 @@ void hardware_adc_initialize(void)
 	#if CPUSTYLE_ATMEGA_XXX4
 
 		DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
-		ADCSRA = (1U << ADEN) | (1U << ADIE ) | prei;
+		ADCSRA = (UINT32_C(1) << ADEN) | (UINT32_C(1) << ADIE ) | prei;
 
 	#else /* CPUSTYLE_ATMEGA_XXX4 */
 
-		ADCSRA = (1U << ADEN) | (1U << ADIE ) | prei;
+		ADCSRA = (UINT32_C(1) << ADEN) | (UINT32_C(1) << ADIE ) | prei;
 
 
 	#endif	/* CPUSTYLE_ATMEGA_XXX4 */
@@ -8886,7 +8886,7 @@ void hardware_adc_initialize(void)
 
 	////ADCA.PRESCALER = prei;
 	//DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
-	//ADCSRA = (1U << ADEN) | (1U << ADIE );
+	//ADCSRA = (UINT32_C(1) << ADEN) | (UINT32_C(1) << ADIE );
 
 #if 0
 		// код из electronix.ru
@@ -8899,7 +8899,7 @@ void hardware_adc_initialize(void)
 
 	uint16_t get_adc()
 	{
-		ADCA.REFCTRL |= (1U << 5); // подаем смещение с пина AREFA
+		ADCA.REFCTRL |= (UINT32_C(1) << 5); // подаем смещение с пина AREFA
 		ADCA.CH1.MUXCTRL =	0x20; // выбираем ножку
 		ADCA.CH1.CTRL =	(ADC_CH_START_bm | ADC_CH_INPUTMODE_SINGLEENDED_gc); //0x81;	//запускаем преобразавние
 		_delay_us(30);
@@ -9079,7 +9079,7 @@ void hardware_adc_initialize(void)
 		#endif /* WITHTEMPSENSOR */
 			0;
 
-		adc->PCSEL |= ((1U << adcmap->ch) << ADC_PCSEL_PCSEL_Pos) & ADC_PCSEL_PCSEL_Msk;
+		adc->PCSEL |= ((UINT32_C(1) << adcmap->ch) << ADC_PCSEL_PCSEL_Pos) & ADC_PCSEL_PCSEL_Msk;
 
 		// установка врмени выборки для данного канала
 		const uint_fast32_t cycles = NTICKSADC01(adcmap->thold_uS01);	// в десятых долях микросекунды
@@ -9429,14 +9429,14 @@ void hardware_adc_initialize(void)
 
 	//#warning TODO: Add code for R7S721 ADC support
 
-	CPG.STBCR6 &= ~ (1U << CPG_STBCR6_MSTP67_SHIFT);	// Module Stop 67 0: The A/D converter runs.
+	CPG.STBCR6 &= ~ (UINT32_C(1) << CPG_STBCR6_MSTP67_SHIFT);	// Module Stop 67 0: The A/D converter runs.
 	(void) CPG.STBCR6;			/* Dummy read */
 
 	const uint_fast32_t ainmask = build_adc_mask();
 
 	ADC.ADCSR =
-		1 * (1uL << ADC_SR_ADIE_SHIFT) |	// ADIE - 1: A/D conversion end interrupt (ADI) request is enabled
-		3 * (1uL << ADC_SR_CKS_SHIFT) |	// CKS[2..0] - Clock Select - 011: Conversion time = 382 tcyc (maximum)
+		1 * (UINT32_C(1) << ADC_SR_ADIE_SHIFT) |	// ADIE - 1: A/D conversion end interrupt (ADI) request is enabled
+		3 * (UINT32_C(1) << ADC_SR_CKS_SHIFT) |	// CKS[2..0] - Clock Select - 011: Conversion time = 382 tcyc (maximum)
 		0;
 
 	HARDWARE_ADC_INITIALIZE(ainmask);
@@ -9491,7 +9491,7 @@ void hardware_adc_initialize(void)
 	(void) GPADC;
 
 #elif CPUSTYLE_A64
-	#warning Undefined CPUSTYLE_A64
+	//#warning Undefined CPUSTYLE_A64
 
 #elif CPUSTYLE_T507
 	//#warning Undefined CPUSTYLE_T507
@@ -9512,10 +9512,10 @@ void hardware_adc_initialize(void)
 #if CPUSTYLE_ATMEGA
 
 	#if CPUSTYLE_ATMEGA_XXX4
-		//enum { TCCR2A_WORK = (1U << COM2A0) | (1U << WGM21), TCCR2A_DISCONNECT = (1U << WGM21) };
+		//enum { TCCR2A_WORK = (UINT32_C(1) << COM2A0) | (UINT32_C(1) << WGM21), TCCR2A_DISCONNECT = (UINT32_C(1) << WGM21) };
 	#elif CPUSTYLE_ATMEGA328
 	#else
-		enum { TCCR2WGM = (1U << WGM21) | (1U << COM20) };	// 0x18
+		enum { TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) };	// 0x18
 	#endif
 #endif
 
@@ -9547,13 +9547,13 @@ void hardware_sounds_disable(void)
 	// генерация сигнала самоконтроля на PD7(OC2)
 
 	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
-	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
+	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
 
 #elif CPUSTYLE_ATMEGA32
 	// генерация сигнала самоконтроля на PD7(OC2)
 
 	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
-	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
+	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
@@ -9636,11 +9636,11 @@ void hardware_sounds_setfreq(
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
 	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2WGM = (1U << WGM21) | (1U << COM20)
+	// TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
 	const uint_fast8_t tccrXBval = TCCR2WGM | (prei + 1);
 	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
 	{
-		TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20) останавливаем таймер
+		TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) останавливаем таймер
 		OCR2 = value;		// загружаем новое значение TOP
 		TCNT2 = 0x00;		// сбрасыаваем счётчик
 		TCCR2 = tccrXBval;	// запускаем таймер
@@ -9654,11 +9654,11 @@ void hardware_sounds_setfreq(
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
 	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2WGM = (1U << WGM21) | (1U << COM20)
+	// TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
 	const uint_fast8_t tccrXBval = TCCR2WGM | (prei + 1);
 	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
 	{
-		TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20) останавливаем таймер
+		TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) останавливаем таймер
 		OCR2 = value;		// загружаем новое значение TOP
 		TCNT2 = 0x00;		// сбрасыаваем счётчик
 		TCCR2 = tccrXBval;	// запускаем таймер
@@ -9677,7 +9677,7 @@ void hardware_sounds_setfreq(
 
 #elif CPUSTYLE_STM32F
 
-	TIM4->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM4->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
 
 	TIM4->CCR3 = (value / 2) & TIM_CCR3_CCR3;	// TIM4_CH3 - sound output
 	TIM4->ARR = value;
@@ -9702,7 +9702,7 @@ hardware_beep_initialize(void)
 
 	// --- TC1 used to generate CW sidetone ---
 	// PA15: Peripheral B: TIOA1
-	PMC->PMC_PCER0 = (1UL << ID_TC1);	 // разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_TC1);	 // разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
 
 	//TC0->TC_BMR = (TC0->TC_BMR & ~ TC_BMR_TC1XC1S_Msk) | TC_BMR_TC1XC1S_TIOA0;
 	TC0->TC_CHANNEL [1].TC_CCR = TC_CCR_CLKDIS; // disable TC1 clock
@@ -9728,7 +9728,7 @@ hardware_beep_initialize(void)
 
 	// --- TC1 used to generate CW sidetone ---
 	// PA15: Peripheral B: TIOA1
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC1); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
+	AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_TC1); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
 
 	////AT91C_BASE_TCB->TCB_BMR = (AT91C_BASE_TCB->TCB_BMR & ~ AT91C_TCB_TC1XC1S) | AT91C_TCB_TC1XC1S_TIOA0;
 	AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_CLKDIS; // disable TC1 clock
@@ -9773,7 +9773,7 @@ hardware_beep_initialize(void)
 	// OC2A output: Toggle on compare match
 	// OC2B output: Disconnected
 	ASSR = 0x00;
-	TCCR2A = (1U << COM2A0) | (1U << WGM21);	// 0x42, (1U << WGM21) only - OC2A disconnected
+	TCCR2A = (UINT32_C(1) << COM2A0) | (UINT32_C(1) << WGM21);	// 0x42, (UINT32_C(1) << WGM21) only - OC2A disconnected
 	TCCR2B = 0x00;
 	// обязательно - настройка вывода процессора как выхода.
 	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // output pin connection - strongly need for working
@@ -9787,10 +9787,10 @@ hardware_beep_initialize(void)
 	// Mode: CTC top=OCR2
 	// OC2 output: Toggle on compare match
 	ASSR = 0x00;
-	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
+	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
 	// обязательно - настройка вывода процессора как выхода.
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (1U << DDD7);	// output pin connection - test without this string need.
-	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (1U << PD7);	// disable pull-up
+	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (UINT32_C(1) << DDD7);	// output pin connection - test without this string need.
+	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (UINT32_C(1) << PD7);	// disable pull-up
 
 #elif CPUSTYLE_ATMEGA32
 	// Timer/Counter 2 initialization
@@ -9799,15 +9799,15 @@ hardware_beep_initialize(void)
 	// Mode: CTC top=OCR2
 	// OC2 output: Toggle on compare match
 	ASSR = 0x00;
-	TCCR2 = TCCR2WGM;	// (1U << WGM21) | (1U << COM20)
+	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
 	// обязательно - настройка вывода процессора как выхода.
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (1U << DDD7);	// output pin connection - test without this string need.
-	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (1U << PD7);	// disable pull-up
+	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (UINT32_C(1) << DDD7);	// output pin connection - test without this string need.
+	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (UINT32_C(1) << PD7);	// disable pull-up
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
 	TCD1.CTRLB = (TC1_CCAEN_bm | TC_WGMODE_FRQ_gc);
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (1U << DDD7);	// output pin connection - test without this string need.
+	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (UINT32_C(1) << DDD7);	// output pin connection - test without this string need.
 
 #elif CPUSTYLE_STM32F
 
@@ -9905,17 +9905,17 @@ hardware_elkey_timer_initialize(void)
 #if CPUSTYLE_ATMEGA
 
 	// Timer/Counter 1 used for electronic key synchronisation with 1/20 of dot length
-	//// TCCR1B = (1U << WGM12) | (1U << CS12) | (1U << CS10);		// CTC mode (mode4) and 1/1024 prescaler
+	//// TCCR1B = (UINT32_C(1) << WGM12) | (UINT32_C(1) << CS12) | (UINT32_C(1) << CS10);		// CTC mode (mode4) and 1/1024 prescaler
 	//// OCR1A = 0xffff;
 
 	#if CPUSTYLE_ATMEGA_XXX4
 		// Timer/Counter 1 Interrupt(s) initialization
-		TIMSK1 |= (1U << OCIE1A);	// Timer/Counter 1 interrupt enable
+		TIMSK1 |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
 	#elif CPUSTYLE_ATMEGA328
 		// Timer/Counter 1 Interrupt(s) initialization
-		TIMSK1 |= (1U << OCIE1A);	// Timer/Counter 1 interrupt enable
+		TIMSK1 |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
 	#else /* CPUSTYLE_ATMEGA_XXX4 */
-		TIMSK |= (1U << OCIE1A);	// Timer/Counter 1 interrupt enable
+		TIMSK |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
 		//TIMSK |= 0x10;	// Timer/Counter 1 interrupt enable
 	#endif /* CPUSTYLE_ATMEGA_XXX4 */
 
@@ -9923,7 +9923,7 @@ hardware_elkey_timer_initialize(void)
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
-	PMC->PMC_PCER0 = (1UL << ID_TC2);	// разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_TC2);	// разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
 
 	TC2->TC_CHANNEL [2].TC_CMR =
 	                (TC_CMR_CLKI * 0) |
@@ -9947,7 +9947,7 @@ hardware_elkey_timer_initialize(void)
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TC2); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
+	AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_TC2); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
 
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 	                (AT91C_TC_CLKI * 0) |
@@ -9966,13 +9966,13 @@ hardware_elkey_timer_initialize(void)
 	{
 		enum { irqID = AT91C_ID_TC2 };
 
-		AT91C_BASE_AIC->AIC_IDCR = (1UL << irqID);		// disable interrupt
+		AT91C_BASE_AIC->AIC_IDCR = (UINT32_C(1) << irqID);		// disable interrupt
 		AT91C_BASE_AIC->AIC_SVR [irqID] = (AT91_REG) AT91F_TC2_IRQHandler;
 		AT91C_BASE_AIC->AIC_SMR [irqID] =
 			(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_HIGH_LEVEL) |
 			(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_HIGHEST);
-		AT91C_BASE_AIC->AIC_ICCR = (1UL << irqID);		// clear pending interrupt
-		AT91C_BASE_AIC->AIC_IECR = (1UL << irqID);	// enable interrupt
+		AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << irqID);		// clear pending interrupt
+		AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << irqID);	// enable interrupt
 	}
 
 #elif CPUSTYLE_ATXMEGA
@@ -10061,8 +10061,8 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
-	// (1U << WGM12) - mode4: CTC
-	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
+	// (UINT32_C(1) << WGM12) - mode4: CTC
+	TCCR1B = (UINT32_C(1) << WGM12) | (prei + 1);	// прескалер
 	OCR1A = value;	// делитель - программирование полного периода
 
 #elif CPUSTYLE_ATXMEGA
@@ -10087,7 +10087,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
-	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
@@ -10100,7 +10100,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
-	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
@@ -10112,7 +10112,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
-	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
+	TIM3->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
@@ -10122,8 +10122,8 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	OSTM1.OSTMnCMP = calcdivround_p0clock(ticksfreq) - 1;
 
 	OSTM1.OSTMnCTL = (OSTM1.OSTMnCTL & ~ 0x03) |
-		0 * (1U << 1) |	// Interval Timer Mode
-		1 * (1U << 0) |	// Enables the interrupts when counting starts.
+		0 * (UINT32_C(1) << 1) |	// Interval Timer Mode
+		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
@@ -10133,15 +10133,15 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	TIMER->TMR0_INTV_VALUE_REG = value;
 	TIMER->TMR0_CTRL_REG =
-		0 * (1uL << 7) |	// TMR0_MODE 0: Periodic mode.
-		prei * (1uL << 4) |
-		0x01 * (1uL << 2) |	// TMR1_CLK_SRC 01: OSC24M
-		(1uL << 0) | // TMR0_EN
+		0 * (UINT32_C(1) << 7) |	// TMR0_MODE 0: Periodic mode.
+		prei * (UINT32_C(1) << 4) |
+		0x01 * (UINT32_C(1) << 2) |	// TMR1_CLK_SRC 01: OSC24M
+		(UINT32_C(1) << 0) | // TMR0_EN
 		0;
 
-	while ((TIMER->TMR0_CTRL_REG & (1uL << 1)) != 0)
+	while ((TIMER->TMR0_CTRL_REG & (UINT32_C(1) << 1)) != 0)
 		;
-	TIMER->TMR0_CTRL_REG |= (1uL << 1);	// TMR0_RELOAD
+	TIMER->TMR0_CTRL_REG |= UINT32_C(1) << 1;	// TMR0_RELOAD
 
 #else
 	#warning Undefined CPUSTYLE_XXX
