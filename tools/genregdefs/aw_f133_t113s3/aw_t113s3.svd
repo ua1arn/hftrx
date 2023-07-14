@@ -14092,8 +14092,13 @@
   </peripheral>
   <peripheral>
   <name>TV_Encoder</name>
-  <description>TV Output</description>
+  <description>TV Encoder (display out interface = CVBS OUT)</description>
   <baseAddress>0x05604000</baseAddress>
+  <interrupt>
+   <name>TV_Encoder</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TVE_000_REG</name>

@@ -1,0 +1,47 @@
+#type; TV_Encoder
+#base; TV_Encoder 0x05604000
+
+#irq; TV_Encoder 126
+#irqrv; TV_Encoder 110
+
+#comment; TV Encoder (display out interface = CVBS OUT)
+
+#regdef; TVE_000_REG; 0x0000; TV Encoder Clock Gating Register
+#regdef; TVE_004_REG; 0x0004; TV Encoder Configuration Register
+#regdef; TVE_008_REG; 0x0008; TV Encoder DAC Register1
+#regdef; TVE_00C_REG; 0x000C; TV Encoder Notch and DAC Delay Register
+#regdef; TVE_010_REG; 0x0010; TV Encoder Chroma Frequency Register
+#regdef; TVE_014_REG; 0x0014; TV Encoder Front/Back Porch Register
+#regdef; TVE_018_REG; 0x0018; TV Encoder HD Mode VSYNC Register
+#regdef; TVE_01C_REG; 0x001C; TV Encoder Line Number Register
+#regdef; TVE_020_REG; 0x0020; TV Encoder Level Register
+#regdef; TVE_024_REG; 0x0024; TV Encoder DAC Register2
+#regdef; TVE_030_REG; 0x0030; TV Encoder Auto Detection Enable Register
+#regdef; TVE_034_REG; 0x0034; TV Encoder Auto Detection Interrupt Status Register
+#regdef; TVE_038_REG; 0x0038; TV Encoder Auto Detection Status Register
+#regdef; TVE_03C_REG; 0x003C; TV Encoder Auto Detection De-bounce Setting Register
+#regdef; TVE_0F8_REG; 0x00F8; TV Encoder Auto Detect Configuration Register0
+#regdef; TVE_0FC_REG; 0x00FC; TV Encoder Auto Detect Configuration Register1
+#regdef; TVE_100_REG; 0x0100; TV Encoder Color Burst Phase Reset Configuration Register
+#regdef; TVE_104_REG; 0x0104; TV Encoder VSYNC Number Register
+#regdef; TVE_108_REG; 0x0108; TV Encoder Notch Filter Frequency Register
+#regdef; TVE_10C_REG; 0x010C; TV Encoder Cb/Cr Level/Gain Register
+#regdef; TVE_110_REG; 0x0110; TV Encoder Tint and Color Burst Phase Register
+#regdef; TVE_114_REG; 0x0114; TV Encoder Burst Width Register
+#regdef; TVE_118_REG; 0x0118; TV Encoder Cb/Cr Gain Register
+#regdef; TVE_11C_REG; 0x011C; TV Encoder Sync and VBI Level Register
+#regdef; TVE_120_REG; 0x0120; TV Encoder White Level Register
+#regdef; TVE_124_REG; 0x0124; TV Encoder Video Active Line Register
+#regdef; TVE_128_REG; 0x0128; TV Encoder Video Chroma BW and CompGain Register
+#regdef; TVE_12C_REG; 0x012C; TV Encoder Register
+#regdef; TVE_130_REG; 0x0130; TV Encoder Re-sync Parameters Register
+#regdef; TVE_134_REG; 0x0134; TV Encoder Slave Parameter Register
+#regdef; TVE_138_REG; 0x0138; TV Encoder Configuration Register0
+#regdef; TVE_13C_REG; 0x013C; TV Encoder Configuration Register1
+#regdef; TVE_380_REG; 0x0380; TV Encoder Low Pass Control Register
+#regdef; TVE_384_REG; 0x0384; TV Encoder Low Pass Filter Control Register
+#regdef; TVE_388_REG; 0x0388; TV Encoder Low Pass Gain Register
+#regdef; TVE_38C_REG; 0x038C; TV Encoder Low Pass Gain Control Register
+#regdef; TVE_390_REG; 0x0390; TV Encoder Low Pass Shoot Control Register
+#regdef; TVE_394_REG; 0x0394; TV Encoder Low Pass Coring Register
+#regdef; TVE_3A0_REG; 0x03A0; TV Encoder Noise Reduction Register

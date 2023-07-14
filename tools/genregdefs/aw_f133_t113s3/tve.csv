@@ -1,4 +1,0 @@
-#type; TV_Encoder
-#irq; TV_Encoder 126
-#irqrv; TV_Encoder 110
-#comment; TV Encoder (display out interface = CVBS OUT)

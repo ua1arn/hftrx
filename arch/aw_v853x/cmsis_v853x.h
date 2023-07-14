@@ -215,7 +215,7 @@ typedef enum IRQn
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD  Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
 #define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
-#define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Output Base */
+#define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define CSI_BASE ((uintptr_t) 0x05800800)             /*!< CSI  Base */
 #define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP  Base */
 #define CSIC_PARSER0_BASE ((uintptr_t) 0x05820000)    /*!< CSIC_PARSER  Base */
@@ -2617,7 +2617,7 @@ typedef struct TVE_TOP_Type
 /*
  * @brief TV_Encoder
  */
-/*!< TV_Encoder TV Output */
+/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) */
 typedef struct TV_Encoder_Type
 {
     volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
@@ -2995,7 +2995,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
-#define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Output register set access pointer */
+#define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */
 #define CSIC_PARSER1 ((CSIC_PARSER_TypeDef *) CSIC_PARSER1_BASE)/*!< CSIC_PARSER1  register set access pointer */
