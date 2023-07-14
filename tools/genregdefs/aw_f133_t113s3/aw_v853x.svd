@@ -13611,60 +13611,20 @@
     </register>
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
-   <register>
-    <name>LCD_CPU_TRI0_REG</name>
-    <displayName>LCD_CPU_TRI0_REG</displayName>
-    <description>LCD CPU Panel Trigger Register0</description>
-    <addressOffset>0x160</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI1_REG</name>
-    <displayName>LCD_CPU_TRI1_REG</displayName>
-    <description>LCD CPU Panel Trigger Register1</description>
-    <addressOffset>0x164</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI2_REG</name>
-    <displayName>LCD_CPU_TRI2_REG</displayName>
-    <description>LCD CPU Panel Trigger Register2</description>
-    <addressOffset>0x168</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI3_REG</name>
-    <displayName>LCD_CPU_TRI3_REG</displayName>
-    <description>LCD CPU Panel Trigger Register3</description>
-    <addressOffset>0x16C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI4_REG</name>
-    <displayName>LCD_CPU_TRI4_REG</displayName>
-    <description>LCD CPU Panel Trigger Register4</description>
-    <addressOffset>0x170</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI5_REG</name>
-    <displayName>LCD_CPU_TRI5_REG</displayName>
-    <description>LCD CPU Panel Trigger Register5</description>
-    <addressOffset>0x174</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>6</dim>
+    <addressOffset>0x00000160</addressOffset>
+    <register>
+     <name>LCD_CPU_TRIx_REG</name>
+     <displayName>LCD_CPU_TRIx_REG</displayName>
+     <description>LCD CPU Panel Trigger Register0</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x018</dimIncrement>
+   </cluster>
    <register>
     <name>LCD_CMAP_CTL_REG</name>
     <displayName>LCD_CMAP_CTL_REG</displayName>

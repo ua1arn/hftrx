@@ -2193,12 +2193,7 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_CEU_COEF_ADD2_REG;          /*!< Offset 0x13C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) */
     volatile uint32_t LCD_CEU_COEF_RANG_REG [0x003];  /*!< Offset 0x140 LCD CEU Coefficient Register2 0x0140+N*0x04 (N=0,1,2) */
              uint32_t reserved_0x14C [0x0005];
-    volatile uint32_t LCD_CPU_TRI0_REG;               /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
-    volatile uint32_t LCD_CPU_TRI1_REG;               /*!< Offset 0x164 LCD CPU Panel Trigger Register1 */
-    volatile uint32_t LCD_CPU_TRI2_REG;               /*!< Offset 0x168 LCD CPU Panel Trigger Register2 */
-    volatile uint32_t LCD_CPU_TRI3_REG;               /*!< Offset 0x16C LCD CPU Panel Trigger Register3 */
-    volatile uint32_t LCD_CPU_TRI4_REG;               /*!< Offset 0x170 LCD CPU Panel Trigger Register4 */
-    volatile uint32_t LCD_CPU_TRI5_REG;               /*!< Offset 0x174 LCD CPU Panel Trigger Register5 */
+    volatile uint32_t LCD_CPU_TRIx_REG [0x006];       /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
              uint32_t reserved_0x178 [0x0002];
     volatile uint32_t LCD_CMAP_CTL_REG;               /*!< Offset 0x180 LCD Color Map Control Register */
              uint32_t reserved_0x184 [0x0003];
