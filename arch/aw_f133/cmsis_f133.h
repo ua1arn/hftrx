@@ -166,7 +166,7 @@ typedef enum IRQn
 #define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI MIPI DSI Display Interface Base */
 #define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY MIPI DSI Physical Interface Base */
 #define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP  Base */
-#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD  Base */
+#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
 #define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
 #define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
@@ -2154,7 +2154,7 @@ typedef struct SYS_CFG_Type
 /*
  * @brief TCON_LCD
  */
-/*!< TCON_LCD  */
+/*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
 typedef struct TCON_LCD_Type
 {
     volatile uint32_t LCD_GCTL_REG;                   /*!< Offset 0x000 LCD Global Control Register */
@@ -2795,7 +2795,7 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
 #define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
-#define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
+#define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
 #define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */

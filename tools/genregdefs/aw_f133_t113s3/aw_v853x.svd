@@ -13336,7 +13336,7 @@
   </peripheral>
   <peripheral>
   <name>TCON_LCD0</name>
-  <description></description>
+  <description>Timing Controller_LCD (TCON_LCD)</description>
   <baseAddress>0x05461000</baseAddress>
   <registers>
    <register>
