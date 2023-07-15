@@ -6,7 +6,9 @@
 #irqrv; SPI1 32
 #irq; SPI0 47
 #irq; SPI1 48
+
 #comment; Serial Peripheral Interface
+
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
 #regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
 #regdef; SPI_IER; 0x0010; SPI Interrupt Control Register

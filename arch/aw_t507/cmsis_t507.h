@@ -53,17 +53,18 @@ typedef enum IRQn
     USB20_HOST2_OHCI_IRQn = 63,                       /*!< USB_OHCI_Capability  Interrupt */
     USB20_HOST3_EHCI_IRQn = 64,                       /*!< USB_EHCI_Capability  Interrupt */
     USB20_HOST3_OHCI_IRQn = 65,                       /*!< USB_OHCI_Capability  Interrupt */
+    CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) Interrupt */
+    GPIOE_IRQn = 75,                                  /*!< GPIOINT  Interrupt */
     TIMER0_IRQn = 80,                                 /*!< TIMER  Interrupt */
     TIMER1_IRQn = 81,                                 /*!< TIMER  Interrupt */
     WATCHDOG_IRQn = 82,                               /*!< TIMER  Interrupt */
     GPIOA_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOC_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOD_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOE_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOF_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOG_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOH_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
-    GPIOI_IRQn = 83,                                  /*!< GPIOINT  Interrupt */
+    GPIOC_IRQn = 84,                                  /*!< GPIOINT  Interrupt */
+    GPIOD_IRQn = 85,                                  /*!< GPIOINT  Interrupt */
+    GPIOF_IRQn = 86,                                  /*!< GPIOINT  Interrupt */
+    GPIOG_IRQn = 87,                                  /*!< GPIOINT  Interrupt */
+    GPIOH_IRQn = 88,                                  /*!< GPIOINT  Interrupt */
+    GPIOI_IRQn = 89,                                  /*!< GPIOINT  Interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top Interrupt */
     S_TWI0_IRQn = 137,                                /*!< TWI  Interrupt */
 
@@ -88,7 +89,7 @@ typedef enum IRQn
 #define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
-#define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU  Base */
+#define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
@@ -157,7 +158,7 @@ typedef struct C0_CPUX_CFG_Type
 /*
  * @brief CCU
  */
-/*!< CCU  */
+/*!< CCU Clock Controller Unit (CCU) */
 typedef struct CCU_Type
 {
     volatile uint32_t PLL_CPUX_CTRL_REG;              /*!< Offset 0x000 PLL_CPUX Control Register */
@@ -1002,7 +1003,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
-#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */

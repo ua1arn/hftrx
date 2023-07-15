@@ -24,7 +24,7 @@ typedef enum IRQn
     CAN0_IRQn = 37,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
     CAN1_IRQn = 38,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
     OWA_IRQn = 39,                                    /*!< OWA One Wire Audio (TX only) Interrupt */
-    AUDIO_CODEC_IRQn = 41,                            /*!< AUDIO_CODEC  Interrupt */
+    AUDIO_CODEC_IRQn = 41,                            /*!< AUDIO_CODEC Audio Codec Interrupt */
     I2S_PCM1_IRQn = 43,                               /*!< I2S_PCM  Interrupt */
     I2S_PCM2_IRQn = 44,                               /*!< I2S_PCM  Interrupt */
     USB0_DEVICE_IRQn = 45,                            /*!< USBOTG  Interrupt */
@@ -34,7 +34,7 @@ typedef enum IRQn
     USB1_OHCI_IRQn = 50,                              /*!< USB_OHCI_Capability  Interrupt */
     MSI_IRQn = 59,                                    /*!< MSI_MEMC  Interrupt */
     EMAC_IRQn = 62,                                   /*!< EMAC  Interrupt */
-    CCU_FERR_IRQn = 64,                               /*!< CCU  Interrupt */
+    CCU_FERR_IRQn = 64,                               /*!< CCU Clock Controller Unit (CCU) Interrupt */
     DMAC_NS_IRQn = 66,                                /*!< DMAC  Interrupt */
     CE_NS_IRQn = 68,                                  /*!< CE  Interrupt */
     HSTIMER0_IRQn = 71,                               /*!< HSTIMER High Speed Timer Interrupt */
@@ -98,14 +98,14 @@ typedef enum IRQn
 #define GPIOINTF_BASE ((uintptr_t) 0x020002A0)        /*!< GPIOINT  Base */
 #define GPIOINTG_BASE ((uintptr_t) 0x020002C0)        /*!< GPIOINT  Base */
 #define PWM_BASE ((uintptr_t) 0x02000C00)             /*!< PWM Pulse Width Modulation module Base */
-#define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU  Base */
+#define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX  Base */
 #define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC LED Lamp Controller Base */
 #define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC  Base */
 #define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Thermal Sensor Base */
 #define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC  Base */
 #define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU  Base */
-#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC  Base */
+#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Audio Codec Base */
 #define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC  Base */
 #define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
 #define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
@@ -165,7 +165,7 @@ typedef enum IRQn
 #define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT  Base */
 #define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI MIPI DSI Display Interface Base */
 #define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY MIPI DSI Physical Interface Base */
-#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP  Base */
+#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP display interface top (DISPLAY_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
 #define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
@@ -192,7 +192,7 @@ typedef enum IRQn
 /*
  * @brief AUDIO_CODEC
  */
-/*!< AUDIO_CODEC  */
+/*!< AUDIO_CODEC Audio Codec */
 typedef struct AUDIO_CODEC_Type
 {
     volatile uint32_t AC_DAC_DPC;                     /*!< Offset 0x000 DAC Digital Part Control Register */
@@ -394,7 +394,7 @@ typedef struct CAN_Type
 /*
  * @brief CCU
  */
-/*!< CCU  */
+/*!< CCU Clock Controller Unit (CCU) */
 typedef struct CCU_Type
 {
     volatile uint32_t PLL_CPU_CTRL_REG;               /*!< Offset 0x000 PLL_CPU Control Register */
@@ -2730,14 +2730,14 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
-#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC LED Lamp Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
-#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */

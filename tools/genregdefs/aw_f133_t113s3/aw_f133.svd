@@ -11,7 +11,7 @@
  <peripherals>
   <peripheral>
   <name>AUDIO_CODEC</name>
-  <description></description>
+  <description>Audio Codec</description>
   <baseAddress>0x02030000</baseAddress>
   <interrupt>
    <name>AUDIO_CODEC</name>
@@ -1540,7 +1540,7 @@
   </peripheral>
   <peripheral>
   <name>CCU</name>
-  <description></description>
+  <description>Clock Controller Unit (CCU)</description>
   <baseAddress>0x02001000</baseAddress>
   <interrupt>
    <name>CCU_FERR</name>

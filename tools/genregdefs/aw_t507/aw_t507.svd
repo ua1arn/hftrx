@@ -95,8 +95,13 @@
   </peripheral>
   <peripheral>
   <name>CCU</name>
-  <description></description>
+  <description>Clock Controller Unit (CCU)</description>
   <baseAddress>0x03001000</baseAddress>
+  <interrupt>
+   <name>CLK_DET</name>
+   <value>73</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PLL_CPUX_CTRL_REG</name>
@@ -2952,37 +2957,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   <registers>
@@ -3039,37 +3044,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3083,37 +3088,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3127,37 +3132,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3171,37 +3176,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3215,37 +3220,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3259,37 +3264,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -3303,37 +3308,37 @@
   </interrupt>
   <interrupt>
    <name>GPIOC</name>
-   <value>83</value>
+   <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOD</name>
-   <value>83</value>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOE</name>
-   <value>83</value>
+   <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOF</name>
-   <value>83</value>
+   <value>86</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOG</name>
-   <value>83</value>
+   <value>87</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOH</name>
-   <value>83</value>
+   <value>88</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>GPIOI</name>
-   <value>83</value>
+   <value>89</value>
    <description></description>
   </interrupt>
   </peripheral>

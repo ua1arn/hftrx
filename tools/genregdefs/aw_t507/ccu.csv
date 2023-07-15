@@ -1,5 +1,10 @@
 #type; CCU
 #base; CCU 0x03001000
+
+#irq; CLK_DET 73
+
+#comment; Clock Controller Unit (CCU)
+
 #regdef; PLL_CPUX_CTRL_REG; 0x0000; PLL_CPUX Control Register
 #regdef; PLL_DDR0_CTRL_REG; 0x0010; PLL_DDR0 Control Register
 #regdef; PLL_DDR1_CTRL_REG; 0x0018; PLL_DDR1 Control Register

@@ -14,7 +14,7 @@
 #regdef; DATA; 0x0010; Data Register
 #regdef; DRV; 0x014 2; Multi_Driving Register
 #regdef; PULL; 0x01C 2; Pull Register
-##
+
 #type; GPIOBLOCK
 #base; GPIOBLOCK 0x0300B000
 #base; GPIOBLOCK_L 0x01F02C00
@@ -31,7 +31,7 @@
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
 #regdef; padding 0; 0x020; PB External Interrupt Debounce Register
 #aggregend;
-##
+
 #type; GPIOINT
 #base; GPIOINTA 0x0300B200
 #base; GPIOINTC 0x0300B200
@@ -42,13 +42,13 @@
 #base; GPIOINTH 0x0300B200
 #base; GPIOINTI 0x0300B200
 #irq; GPIOA 83 
-#irq; GPIOC 83 
-#irq; GPIOD 83 
-#irq; GPIOE 83 
-#irq; GPIOF 83 
-#irq; GPIOG 83 
-#irq; GPIOH 83 
-#irq; GPIOI 83 
+#irq; GPIOC 84 
+#irq; GPIOD 85 
+#irq; GPIOE 75 
+#irq; GPIOF 86 
+#irq; GPIOG 87 
+#irq; GPIOH 88 
+#irq; GPIOI 89 
 #regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register
