@@ -2322,7 +2322,7 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 
 #elif CPUSTYLE_T507
 
-void allwnr_t507_pll_initialize(unsigned N, unsigned Ppow)
+static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 {
 	// switch CPU clock to OSC24M
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
@@ -2349,6 +2349,12 @@ void allwnr_t507_pll_initialize(unsigned N, unsigned Ppow)
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
 		(UINT32_C(0x03) << 24) |	// 011: PLL_CPUX
 		0;
+}
+
+
+void allwnr_t507_pll_initialize(void)
+{
+	set_t507_pll_cpux_axi(PLL_CPU_N, PLL_CPU_P_POW);	// see sdram.c
 }
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
@@ -8067,7 +8073,7 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
 
-	allwnr_t507_pll_initialize(PLL_CPU_N, PLL_CPU_P_POW);
+	allwnr_t507_pll_initialize();
 
 #elif CPUSTYLE_F133
 
