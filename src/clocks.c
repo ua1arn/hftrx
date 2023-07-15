@@ -2335,8 +2335,8 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 		;
 	// Set PLL dividers
 	CCU->PLL_CPUX_CTRL_REG = (CCU->PLL_CPUX_CTRL_REG & ~ ((UINT32_C(0xFF) << 8) | (UINT32_C(0x03) << 16))) |
-		((uint32_t) (N - 1) << 8) |	// PLL_FACTOR_N
-		((uint32_t) Ppow  << 16) |	// PLL_OUT_EXT_DIVP
+		(N - 1) * (UINT32_C(1) << 8) |	// PLL_FACTOR_N
+		Ppow * (UINT32_C(1) << 16) |		// PLL_OUT_EXT_DIVP
 		0;
 
 	// Start PLL
@@ -2347,7 +2347,7 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 
 	// switch CPU clock to OSC24M
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
-		(UINT32_C(0x03) << 24) |	// 011: PLL_CPUX
+		0x03 * (UINT32_C(1) << 24) |	// 011: PLL_CPUX
 		0;
 }
 
