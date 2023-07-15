@@ -60,15 +60,17 @@ struct parsedfile {
 	char bname[VNAME_MAX];
 	int base_count;
 	unsigned base_address[BASE_MAX];
-	char base_names[BASE_MAX][VNAME_MAX];
+	char * base_xnames[BASE_MAX];
 
 	int irq_count;
 	int irq_array[BASE_MAX];
-	char irq_names[BASE_MAX][VNAME_MAX];
+	char * irq_xnames[BASE_MAX];
+	char * irq_xcomments[BASE_MAX];
 
 	int irqrv_count;
 	int irqrv_array[BASE_MAX];
-	char irqrv_names[BASE_MAX][VNAME_MAX];
+	char * irqrv_xnames[BASE_MAX];
+	char * irqrv_xcomments[BASE_MAX];
 
 	char *comment;
 	char *file;
@@ -332,19 +334,19 @@ static LIST_ENTRY parsedfiles;
 
 struct basemap {
 	unsigned base;
-	char name[VNAME_MAX];
+	char * xname;
 	struct parsedfile *pfl;
 };
 
 struct irqmap {
 	int irq;
-	char name[VNAME_MAX];
+	char * xname;
 	struct parsedfile *pfl;
 };
 
 struct irqmaprv {
 	int irqrv;
-	char name[VNAME_MAX];
+	char * xname;
 	struct parsedfile *pfl;
 };
 
@@ -353,7 +355,7 @@ static int compare_base(const void *v1, const void *v2) {
 	const struct basemap *p1 = v1;
 	const struct basemap *p2 = v2;
 	if (p1->base == p2->base) {
-		return strcmp(p1->name, p2->name);
+		return strcmp(p1->xname, p2->xname);
 	}
 	return p1->base - p2->base;
 }
@@ -364,7 +366,7 @@ static int compare_irq(const void *v1, const void *v2) {
 	const struct irqmap *p2 = v2;
 
 	if (p1->irq == p2->irq) {
-		return strcmp(p1->name, p2->name);
+		return strcmp(p1->xname, p2->xname);
 	}
 	return p1->irq - p2->irq;
 }
@@ -375,7 +377,7 @@ static int compare_irqrv(const void *v1, const void *v2) {
 	const struct irqmaprv *p2 = v2;
 
 	if (p1->irqrv == p2->irqrv) {
-		return strcmp(p1->name, p2->name);
+		return strcmp(p1->xname, p2->xname);
 	}
 	return p1->irqrv - p2->irqrv;
 }
@@ -568,7 +570,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
-				strcpy(pfl->irq_names[pfl->irq_count], irqname);
+				pfl->irq_xnames[pfl->irq_count] = strdup(irqname);
+				pfl->irq_xcomments[pfl->irq_count] = strdup(comment);
 				//
 				++pfl->irq_count;
 			}
@@ -581,7 +584,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
-				strcpy(pfl->irq_names[pfl->irq_count], irqname);
+				pfl->irq_xnames[pfl->irq_count] = strdup(irqname);
+				pfl->irq_xcomments[pfl->irq_count] = NULL;
 				//
 				++pfl->irq_count;
 			}
@@ -594,7 +598,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
-				strcpy(pfl->irqrv_names[pfl->irqrv_count], irqname);
+				pfl->irqrv_xnames[pfl->irq_count] = strdup(irqname);
+				pfl->irqrv_xcomments[pfl->irq_count] = strdup(comment);
 				//
 				++pfl->irqrv_count;
 			}
@@ -607,7 +612,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
-				strcpy(pfl->irqrv_names[pfl->irqrv_count], irqname);
+				pfl->irqrv_xnames[pfl->irq_count] = strdup(irqname);
+				pfl->irqrv_xcomments[pfl->irq_count] = NULL;
 				//
 				++pfl->irqrv_count;
 			}
@@ -620,7 +626,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			if (pfl->base_count < BASE_MAX) {
 				pfl->base_address[pfl->base_count] = base;
 				trimname(typname);
-				strcpy(pfl->base_names[pfl->base_count], typname);
+				pfl->base_xnames[pfl->base_count] = strdup(typname);
 				++pfl->base_count;
 			}
 
@@ -706,7 +712,7 @@ static int collect_base(struct parsedfile *pfl, int n, struct basemap *v) {
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->base_count && n--; ++i, ++v, ++score) {
-		strcpy(v->name, pfl->base_names[i]);
+		v->xname = pfl->base_xnames[i];
 		v->base = pfl->base_address[i];
 		v->pfl = pfl;
 	}
@@ -718,7 +724,7 @@ static int collect_irq(struct parsedfile *pfl, int n, struct irqmap *v) {
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->irq_count && n--; ++i, ++v, ++score) {
-		strcpy(v->name, pfl->irq_names[i]);
+		v->xname = pfl->irq_xnames[i];
 		v->irq = pfl->irq_array[i];
 		v->pfl = pfl;
 	}
@@ -730,7 +736,7 @@ static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmaprv *v) {
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->irqrv_count && n--; ++i, ++v, ++score) {
-		strcpy(v->name, pfl->irqrv_names[i]);
+		v->xname = pfl->irqrv_xnames[i];
 		v->irqrv = pfl->irqrv_array[i];
 		v->pfl = pfl;
 	}
@@ -750,6 +756,23 @@ static void freeregdfn(PLIST_ENTRY p) {
 }
 
 static void freeregs(struct parsedfile *pfl) {
+	int i;
+	for (i = 0; i < pfl->irqrv_count; ++ i)
+	{
+		free(pfl->irqrv_xnames [i]);
+		free(pfl->irqrv_xcomments [i]);
+	}
+	for (i = 0; i < pfl->irq_count; ++ i)
+	{
+		free(pfl->irq_xnames [i]);
+		free(pfl->irq_xcomments [i]);
+	}
+	for (i = 0; i < pfl->base_count; ++ i)
+	{
+		free(pfl->base_xnames [i]);
+		//free(pfl->base_xcomments [i]);
+	}
+	//free(pfl->sss);
 	freeregdfn(&pfl->regslist);
 	free(pfl->comment);
 	free(pfl->file);
@@ -876,13 +899,13 @@ static void emitinterrupts(int indent, const struct parsedfile *pfl) {
 		/* collect ARM IRQ vectors */
 		int i;
 		for (i = 0; i < pfl->irq_count; ++i) {
-			emitinterrupt(indent, pfl->irq_names[i], pfl->irq_array[i]);
+			emitinterrupt(indent, pfl->irq_xnames[i], pfl->irq_array[i]);
 		}
 	} else {
 		/* collect RISC-V IRQ vectors */
 		int i;
 		for (i = 0; i < pfl->irqrv_count; ++i) {
-			emitinterrupt(indent, pfl->irqrv_names[i], pfl->irqrv_array[i]);
+			emitinterrupt(indent, pfl->irqrv_xnames[i], pfl->irqrv_array[i]);
 		}
 	}
 }
@@ -899,7 +922,7 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	/* name */
 	if (pfl->base_count >= 1) {
 		emitline(indent, "<peripheral>" "\n");
-		emitstring(indent, "name", pfl->base_names[0]);
+		emitstring(indent, "name", pfl->base_xnames[0]);
 		emitstring(indent, "description", pfl->comment);
 		//emitstring(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
 		emithex32(indent, "baseAddress", pfl->base_address[0]);
@@ -910,8 +933,8 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	/* base address */
 	for (i = 1; i < pfl->base_count; ++i) {
 
-		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n", pfl->base_names[0]);
-		emitstring(indent, "name", pfl->base_names[i]);
+		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n", pfl->base_xnames[0]);
+		emitstring(indent, "name", pfl->base_xnames[i]);
 		emithex32(indent, "baseAddress", pfl->base_address[i]);
 		emitinterrupts(indent, pfl);
 		emitline(indent, "</peripheral>" "\n");
@@ -1025,7 +1048,7 @@ static void generate_cmsis(void) {
 		for (i = 0; i < nitems; ++i) {
 			struct irqmap *const p = &irqs[i];
 
-			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
+			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irq);
 			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
@@ -1071,7 +1094,7 @@ static void generate_cmsis(void) {
 		for (i = 0; i < nitems; ++i) {
 			struct irqmaprv *const p = &irqs[i];
 
-			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
+			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irqrv);
 			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
@@ -1112,7 +1135,7 @@ static void generate_cmsis(void) {
 		for (i = 0; i < nitems; ++i) {
 			struct basemap *const p = &maps[i];
 
-			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->name, p->base);
+			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->xname, p->base);
 			emitline(COMMENTNEAR, "/*!< %s %s Base */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
@@ -1158,8 +1181,8 @@ static void generate_cmsis(void) {
 				/* no structure defined */
 				continue;
 			}
-			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].name, maps[i].pfl->bname, maps[i].name);
-			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n", maps[i].name, pfl->comment ? pfl->comment : "");
+			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].xname, maps[i].pfl->bname, maps[i].xname);
+			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n", maps[i].xname, pfl->comment ? pfl->comment : "");
 		}
 		emitline(0, "\n");
 		free(maps);
