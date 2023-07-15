@@ -5023,7 +5023,7 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 
 static const codechw_t audiocodechw_i2s2_duplex_slave =
 {
-	hardware_i2s2_slave_duplex_initialize_codec1,	// was: i2s1
+	hardware_i2s2_slave_duplex_initialize_codec1,
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_codec1,
 	DMAC_I2S2_TX_initialize_codec1,
