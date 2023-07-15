@@ -7884,7 +7884,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_MIXER</name>
-  <description>Graphic 2D (G2D) Engine Video Scaler</description>
+  <description>Graphic 2D (G2D) Engine Video Mixer</description>
   <baseAddress>0x05410100</baseAddress>
   <registers>
    <register>
@@ -7918,7 +7918,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_ROT</name>
-  <description></description>
+  <description>Graphic 2D Rotate</description>
   <baseAddress>0x05438000</baseAddress>
   <registers>
    <register>
@@ -8427,7 +8427,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_VSU</name>
-  <description>Also see 5.7 DE UIS Specification</description>
+  <description>Graphic 2D Video Scaler</description>
   <baseAddress>0x05418000</baseAddress>
   <registers>
    <register>

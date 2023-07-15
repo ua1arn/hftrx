@@ -154,15 +154,15 @@ typedef enum IRQn
 #define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler Base */
+#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
 #define G2D_V0_BASE ((uintptr_t) 0x05410800)          /*!< G2D_VI Graphic 2D VI surface Base */
 #define G2D_UI0_BASE ((uintptr_t) 0x05411000)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_UI1_BASE ((uintptr_t) 0x05411800)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_UI2_BASE ((uintptr_t) 0x05412000)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
-#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Also see 5.7 DE UIS Specification Base */
-#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT  Base */
+#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Graphic 2D Video Scaler Base */
+#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI MIPI DSI Display Interface Base */
 #define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY MIPI DSI Physical Interface Base */
 #define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP display interface top (DISPLAY_TOP) Base */
@@ -1272,7 +1272,7 @@ typedef struct G2D_BLD_Type
 /*
  * @brief G2D_MIXER
  */
-/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler */
+/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer */
 typedef struct G2D_MIXER_Type
 {
     volatile uint32_t G2D_MIXER_CTL;                  /*!< Offset 0x000 G2D mixer control */
@@ -1282,7 +1282,7 @@ typedef struct G2D_MIXER_Type
 /*
  * @brief G2D_ROT
  */
-/*!< G2D_ROT  */
+/*!< G2D_ROT Graphic 2D Rotate */
 typedef struct G2D_ROT_Type
 {
     volatile uint32_t ROT_CTL;                        /*!< Offset 0x000 ROT_CTL						 */
@@ -1368,7 +1368,7 @@ typedef struct G2D_VI_Type
 /*
  * @brief G2D_VSU
  */
-/*!< G2D_VSU Also see 5.7 DE UIS Specification */
+/*!< G2D_VSU Graphic 2D Video Scaler */
 typedef struct G2D_VSU_Type
 {
     volatile uint32_t VS_CTRL;                        /*!< Offset 0x000 VS_CTRL */
@@ -2784,15 +2784,15 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
-#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
+#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0 Graphic 2D VI surface register set access pointer */
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Graphic 2D UI surface register set access pointer */
 #define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Graphic 2D UI surface register set access pointer */
 #define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Graphic 2D UI surface register set access pointer */
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
-#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
-#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D Video Scaler register set access pointer */
+#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */

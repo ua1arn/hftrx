@@ -1,6 +1,5 @@
-#type; G2D_TOP
+#type; G2D_TOP; Graphic 2D top
 #base; G2D_TOP 0x05410000
-#comment; Graphic 2D top
 
 #irq; G2D 121
 #irqrv; G2D 105
@@ -10,17 +9,15 @@
 #regdef; G2D_AHB_RESET  ; 0x08 ; G2D AHB reset  
 #regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
 
-#type; G2D_MIXER
+#type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
 #base; G2D_MIXER 0x05410100
-#comment; Graphic 2D (G2D) Engine Video Scaler
 
 #regdef; G2D_MIXER_CTL; 0x00; G2D mixer control
 #regdef; G2D_MIXER_INT; 0x04; G2D mixer interrupt
 #regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock
 
-#type; G2D_BLD
+#type; G2D_BLD; Graphic 2D (G2D) Engine Blender
 #base; G2D_BLD 0x05410400
-#comment; Graphic 2D (G2D) Engine Blender
 
 #regdef; BLD_FILL_COLOR_CTL	; 0x000 ; BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106  
 #regdef; BLD_FILL_COLOR		; 0x010 4 ; BLD_FILLC  N=0..1 
@@ -75,9 +72,8 @@
 #regdef; BLD_CSC2_COEF22   ; 0x198 ; BLD_CSC2_COEF22    
 #regdef; BLD_CSC2_CONST2   ; 0x19C ; BLD_CSC2_CONST2    
 
-#type; G2D_VI
+#type; G2D_VI; Graphic 2D VI surface
 #base; G2D_V0 0x05410800
-#comment; Graphic 2D VI surface
 
 #regdef; V0_ATTCTL; 0x00; V0_ATTCTL
 #regdef; V0_MBSIZE; 0x04; Source rectangle size (may be empty)
@@ -96,9 +92,8 @@
 #regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
 #regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
 
-#type; G2D_WB
+#type; G2D_WB; Graphic 2D (G2D) Engine Write Back
 #base; G2D_WB 0x05413000
-#comment; Graphic 2D (G2D) Engine Write Back
 
 #regdef; WB_ATT; 0x00; WB_ATT
 #regdef; WB_SIZE; 0x04; WB_SIZE
@@ -112,11 +107,10 @@
 #regdef; WB_LADD2; 0x24; WB_LADD2
 #regdef; WB_HADD2; 0x28; WB_HADD2
 
-#type; G2D_UI
+#type; G2D_UI; Graphic 2D UI surface
 #base; G2D_UI0 0x05411000
 #base; G2D_UI1 0x05411800
 #base; G2D_UI2 0x05412000
-#comment; Graphic 2D UI surface
 
 #regdef; UI_ATTR; 0x00; UIx_ATTR
 #regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
@@ -127,11 +121,12 @@
 #regdef; UI_HADD; 0x18; UIx_HADD
 #regdef; UI_SIZE; 0x1C; UIx_SIZE
 
-#type; G2D_VSU
+#type; G2D_VSU; Graphic 2D Video Scaler
 #base; G2D_VSU 0x05418000
-#comment; 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
-#comment; have different layout
-#comment; Also see 5.7 DE UIS Specification
+
+# 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
+# have different layout
+# Also see 5.7 DE UIS Specification
 
 #regdef; VS_CTRL; 0x000; VS_CTRL
 #regdef; VS_OUT_SIZE; 0x040; VS_OUT_SIZE
@@ -150,7 +145,7 @@
 #regdef; VS_Y_VCOEF; 0x300 64; VS_Y_VCOEF[N]. N=0..31
 #regdef; VS_C_HCOEF; 0x400 64; VS_C_HCOEF[N]. N=0..31
 
-#type; G2D_ROT
+#type; G2D_ROT; Graphic 2D Rotate
 #base; G2D_ROT 0x05438000
 
 #regdef; ROT_CTL; 0x00; ROT_CTL						

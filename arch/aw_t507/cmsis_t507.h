@@ -108,15 +108,15 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler Base */
+#define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x01480400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
 #define G2D_V0_BASE ((uintptr_t) 0x01480800)          /*!< G2D_VI Graphic 2D VI surface Base */
 #define G2D_UI0_BASE ((uintptr_t) 0x01481000)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_UI1_BASE ((uintptr_t) 0x01481800)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_UI2_BASE ((uintptr_t) 0x01482000)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_WB_BASE ((uintptr_t) 0x01483000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
-#define G2D_VSU_BASE ((uintptr_t) 0x01488000)         /*!< G2D_VSU Also see 5.7 DE UIS Specification Base */
-#define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT  Base */
+#define G2D_VSU_BASE ((uintptr_t) 0x01488000)         /*!< G2D_VSU Graphic 2D (G2D) Video Scaler Base */
+#define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
 #define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
@@ -501,7 +501,7 @@ typedef struct G2D_BLD_Type
 /*
  * @brief G2D_MIXER
  */
-/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler */
+/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer */
 typedef struct G2D_MIXER_Type
 {
     volatile uint32_t G2D_MIXER_CTL;                  /*!< Offset 0x000 G2D mixer control */
@@ -511,7 +511,7 @@ typedef struct G2D_MIXER_Type
 /*
  * @brief G2D_ROT
  */
-/*!< G2D_ROT  */
+/*!< G2D_ROT Graphic 2D Rotate */
 typedef struct G2D_ROT_Type
 {
     volatile uint32_t ROT_CTL;                        /*!< Offset 0x000 ROT_CTL						 */
@@ -597,7 +597,7 @@ typedef struct G2D_VI_Type
 /*
  * @brief G2D_VSU
  */
-/*!< G2D_VSU Also see 5.7 DE UIS Specification */
+/*!< G2D_VSU Graphic 2D (G2D) Video Scaler */
 typedef struct G2D_VSU_Type
 {
     volatile uint32_t VS_CTRL;                        /*!< Offset 0x000 VS_CTRL */
@@ -1023,15 +1023,15 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
-#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
+#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0 Graphic 2D VI surface register set access pointer */
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Graphic 2D UI surface register set access pointer */
 #define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Graphic 2D UI surface register set access pointer */
 #define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Graphic 2D UI surface register set access pointer */
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
-#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
-#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D (G2D) Video Scaler register set access pointer */
+#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
