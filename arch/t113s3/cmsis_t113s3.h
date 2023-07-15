@@ -175,8 +175,8 @@ typedef enum IRQn
 #define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Debug control interface? Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
-#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE  Base */
-#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE  Base */
+#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
+#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Crypto Engine (CE) Base */
 #define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM  Base */
 #define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC  Base */
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
@@ -651,7 +651,7 @@ typedef struct CCU_Type
 /*
  * @brief CE
  */
-/*!< CE  */
+/*!< CE Crypto Engine (CE) */
 typedef struct CE_Type
 {
     volatile uint32_t CE_TDA;                         /*!< Offset 0x000 Task Descriptor Address */
@@ -2862,8 +2862,8 @@ typedef struct USB_OHCI_Capability_Type
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
-#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
-#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
+#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Crypto Engine (CE) register set access pointer */
+#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Crypto Engine (CE) register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */
 #define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */

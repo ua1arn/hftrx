@@ -2650,7 +2650,7 @@
   </peripheral>
   <peripheral>
   <name>CE_NS</name>
-  <description></description>
+  <description>Crypto Engine (CE)</description>
   <baseAddress>0x03040000</baseAddress>
   <interrupt>
    <name>CE_NS</name>

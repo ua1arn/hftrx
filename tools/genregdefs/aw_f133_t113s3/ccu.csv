@@ -3,8 +3,6 @@
 #irq; CCU_FERR 80
 #irqrv; CCU_FERR 64
 
-#comment; Clock Controller Unit (CCU)
-
 #regdef; PLL_CPU_CTRL_REG; 0x0000; PLL_CPU Control Register
 #regdef; PLL_DDR_CTRL_REG; 0x0010; PLL_DDR Control Register
 #regdef; PLL_PERI_CTRL_REG; 0x0020; PLL_PERI Control Register

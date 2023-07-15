@@ -543,7 +543,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	memset(comment, 0, sizeof comment);
 
 	// #type should be 1-st in register definitions
-	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_]s; %1023[^\n]c", typname, comment)) {
+	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_]; %1023[^\n]", typname, comment)) {
 		//fixme: not work!
 		//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
 		trimname(typname);
@@ -553,7 +553,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 		/* parsed */
 		if (nextline(fp) == 0)
 			return 0;
-	} else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
+	} else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]\n", typname)) {
 		//fprintf(stderr, "Parsed [%s]: typname='%s'\n", token0, typname);
 		trimname(typname);
 		strcpy(pfl->bname, typname);
@@ -568,12 +568,12 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
+		if (1 == sscanf(token0, "#comment; %1023[^\n]\n", comment)) {
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
 			pfl->comment = strdup(comment);
 			if (nextline(fp) == 0)
 				break;
-		} else if (3 == sscanf(token0, "#irq; %s %i; %1023[^\n]c", irqname, &irq, comment)) {
+		} else if (3 == sscanf(token0, "#irq; %s %i; %1023[^\n]", irqname, &irq, comment)) {
 			trimname(irqname);
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
@@ -601,7 +601,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			/* parsed */
 			if (nextline(fp) == 0)
 				break;
-		} else if (3 == sscanf(token0, "#irqrv; %s %i; %1023[^\n]c\n", irqname, &irq, comment)) {
+		} else if (3 == sscanf(token0, "#irqrv; %s %i; %1023[^\n]\n", irqname, &irq, comment)) {
 			trimname(irqname);
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
