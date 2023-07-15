@@ -31,11 +31,9 @@
 	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
-	//  (24MHz*N*K)/(M*P)
-	#define PLL_CPU_N 	24
-	#define PLL_CPU_K	2
-	#define PLL_CPU_M	1
-	#define PLL_CPU_P	1
+	//  PLL_CPUX=24MHz*N/P
+	#define PLL_CPU_N 	62
+	#define PLL_CPU_P_POW 0
 
 	/* модели синтезаторов - схемы частотообразования */
 

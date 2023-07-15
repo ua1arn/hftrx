@@ -2322,9 +2322,33 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 
 #elif CPUSTYLE_T507
 
-void allwnr_t507_pll_initialize(void)
+void allwnr_t507_pll_initialize(unsigned N, unsigned Ppow)
 {
+	// switch CPU clock to OSC24M
+	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
+		(UINT32_C(0x00) << 24) |	// OSC24
+		0;
+	// Programming PLL
+	// Stop PLL
+	CCU->PLL_CPUX_CTRL_REG &= ~ (UINT32_C(1) << 31);
+	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 31)) != 0)
+		;
+	// Set PLL dividers
+	CCU->PLL_CPUX_CTRL_REG = (CCU->PLL_CPUX_CTRL_REG & ~ ((UINT32_C(0xFF) << 8) | (UINT32_C(0x03) << 16))) |
+		((uint32_t) (N - 1) << 8) |	// PLL_FACTOR_N
+		((uint32_t) Ppow  << 16) |	// PLL_OUT_EXT_DIVP
+		0;
 
+	// Start PLL
+	CCU->PLL_CPUX_CTRL_REG |= (UINT32_C(1) << 31);
+	// Waitig for PLL stable
+	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 28)) == 0)	// LOCK
+		;
+
+	// switch CPU clock to OSC24M
+	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
+		(UINT32_C(0x03) << 24) |	// 011: PLL_CPUX
+		0;
 }
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
@@ -8042,8 +8066,8 @@ sysinit_pll_initialize(void)
 	allwnrt113_pll_initialize();
 
 #elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
-	#warning Implement for CPUSTYLE_T507
-	allwnr_t507_pll_initialize();
+
+	allwnr_t507_pll_initialize(PLL_CPU_N, PLL_CPU_P_POW);
 
 #elif CPUSTYLE_F133
 
