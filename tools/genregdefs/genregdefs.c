@@ -543,7 +543,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	memset(comment, 0, sizeof comment);
 
 	// #type should be 1-st in register definitions
-	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_^;]s; %1023[^\n]c", typname, comment)) {
+	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_]s; %1023[^\n]c", typname, comment)) {
+		//fixme: not work!
 		//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
 		trimname(typname);
 		strcpy(pfl->bname, typname);
