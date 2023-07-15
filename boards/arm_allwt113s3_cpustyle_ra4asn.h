@@ -950,8 +950,8 @@
 
 	void stmpe811_interrupt_handler(void);
 
-	#define BOARD_GPIOE_STMPE811_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_STMPE811_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
+	#define BOARD_GPIOE_STMPE811_INT_PIN (1u << 12)		// PE12
+	#define BOARD_STMPE811_RESET_PIN (1u << 13)	// PE13
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
 		arm_hardware_pioe_altfn20(BOARD_GPIOE_STMPE811_INT_PIN, GPIO_CFG_EINT); \
