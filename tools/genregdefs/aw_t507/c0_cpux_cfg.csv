@@ -3,38 +3,38 @@
 
 #comment; Cluster 0 Configuration Register List
 
-#irq; C0_CTI0 160; C0_CTI0 interrupt
-#irq; C0_CTI1 161; C0_CTI1 interrupt
-#irq; C0_CTI2 162; C0_CTI2 interrupt
-#irq; C0_CTI3 163; C0_CTI3 interrupt
-#irq; C0_COMMTX0 164; C0_COMMTX0 interrupt
-#irq; C0_COMMTX1 165; C0_COMMTX1 interrupt
-#irq; C0_COMMTX2 166; C0_COMMTX2 interrupt
-#irq; C0_COMMTX3 167; C0_COMMTX3 interrupt
-#irq; C0_COMMRX0 168; C0_COMMRX0 interrupt
-#irq; C0_COMMRX1 169; C0_COMMRX1 interrupt
-#irq; C0_COMMRX2 170; C0_COMMRX2 interrupt
-#irq; C0_COMMRX3 171; C0_COMMRX3 interrupt
-#irq; C0_PMU0 172; C0_PMU0 interrupt
-#irq; C0_PMU1 173; C0_PMU1 interrupt
-#irq; C0_PMU2 174; C0_PMU2 interrupt
-#irq; C0_PMU3 175; C0_PMU3 interrupt
-#irq; C0_AXI_ERROR 176; C0_AXI_ERROR interrupt
-#irq; AXI_WR_IRQ 177; AXI_WR_IRQ interrupt
-#irq; AXI_RD_IRQ 178; AXI_RD_IRQ interrupt
-#irq; DBGRSTREQ0 179; DBGRSTREQ0 interrupt
-#irq; DBGRSTREQ1 180; DBGRSTREQ interrupt
-#irq; DBGRSTREQ2 181; DBGRSTREQ2 nterrupt
-#irq; DBGRSTREQ3 182; DBGRSTREQ3 nterrupt
-#irq; nVCPUMNTIRQ0 183; nVCPUMNTIRQ0 nterrupt
-#irq; nVCPUMNTIRQ1 184; nVCPUMNTIRQ1 nterrupt
-#irq; nVCPUMNTIRQ2 185; nVCPUMNTIRQ2 nterrupt
-#irq; nVCPUMNTIRQ3 186; nVCPUMNTIRQ3 nterrupt
-#irq; nCOMMIRQ0 187; nCOMMIRQ0 nterrupt
-#irq; nCOMMIRQ1 188; nCOMMIRQ1 interrupt
-#irq; nCOMMIRQ2 189; nCOMMIRQ2 nterrupt
-#irq; nCOMMIRQ3 190; nCOMMIRQ3 nterrupt
-#irq; DBGPWRUPREQ_out 191; DBGPWRUPREQ_out nterrupt
+#irq; C0_CTI0 160; C0_CTI0 Interrupt
+#irq; C0_CTI1 161; C0_CTI1 Interrupt
+#irq; C0_CTI2 162; C0_CTI2 Interrupt
+#irq; C0_CTI3 163; C0_CTI3 Interrupt
+#irq; C0_COMMTX0 164; C0_COMMTX0 Interrupt
+#irq; C0_COMMTX1 165; C0_COMMTX1 Interrupt
+#irq; C0_COMMTX2 166; C0_COMMTX2 Interrupt
+#irq; C0_COMMTX3 167; C0_COMMTX3 Interrupt
+#irq; C0_COMMRX0 168; C0_COMMRX0 Interrupt
+#irq; C0_COMMRX1 169; C0_COMMRX1 Interrupt
+#irq; C0_COMMRX2 170; C0_COMMRX2 Interrupt
+#irq; C0_COMMRX3 171; C0_COMMRX3 Interrupt
+#irq; C0_PMU0 172; C0_PMU0 Interrupt
+#irq; C0_PMU1 173; C0_PMU1 Interrupt
+#irq; C0_PMU2 174; C0_PMU2 Interrupt
+#irq; C0_PMU3 175; C0_PMU3 Interrupt
+#irq; C0_AXI_ERROR 176; C0_AXI_ERROR Interrupt
+#irq; AXI_WR_IRQ 177; AXI_WR_IRQ Interrupt
+#irq; AXI_RD_IRQ 178; AXI_RD_IRQ Interrupt
+#irq; DBGRSTREQ0 179; DBGRSTREQ0 Interrupt
+#irq; DBGRSTREQ1 180; DBGRSTREQ Interrupt
+#irq; DBGRSTREQ2 181; DBGRSTREQ2 Interrupt
+#irq; DBGRSTREQ3 182; DBGRSTREQ3 Interrupt
+#irq; nVCPUMNTIRQ0 183; nVCPUMNTIRQ0 Interrupt
+#irq; nVCPUMNTIRQ1 184; nVCPUMNTIRQ1 Interrupt
+#irq; nVCPUMNTIRQ2 185; nVCPUMNTIRQ2 Interrupt
+#irq; nVCPUMNTIRQ3 186; nVCPUMNTIRQ3 Interrupt
+#irq; nCOMMIRQ0 187; nCOMMIRQ0 Interrupt
+#irq; nCOMMIRQ1 188; nCOMMIRQ1 Interrupt
+#irq; nCOMMIRQ2 189; nCOMMIRQ2 Interrupt
+#irq; nCOMMIRQ3 190; nCOMMIRQ3 Interrupt
+#irq; DBGPWRUPREQ_out 191; DBGPWRUPREQ_out Interrupt
 
 #regdef; C0_RST_CTRL; 0x0000; Cluster 0 Reset Control Register
 #regdef; C0_CTRL_REG0; 0x0010; Cluster 0 Control Register0

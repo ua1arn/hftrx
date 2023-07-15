@@ -8,33 +8,33 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART3_IRQn = 99,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
+    UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    UART3_IRQn = 99,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */

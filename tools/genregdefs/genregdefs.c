@@ -60,17 +60,17 @@ struct parsedfile {
 	char bname[VNAME_MAX];
 	int base_count;
 	unsigned base_address[BASE_MAX];
-	char * base_xnames[BASE_MAX];
+	char *base_xnames[BASE_MAX];
 
 	int irq_count;
 	int irq_array[BASE_MAX];
-	char * irq_xnames[BASE_MAX];
-	char * irq_xcomments[BASE_MAX];
+	char *irq_xnames[BASE_MAX];
+	char *irq_xcomments[BASE_MAX];
 
 	int irqrv_count;
 	int irqrv_array[BASE_MAX];
-	char * irqrv_xnames[BASE_MAX];
-	char * irqrv_xcomments[BASE_MAX];
+	char *irqrv_xnames[BASE_MAX];
+	char *irqrv_xcomments[BASE_MAX];
 
 	char *comment;
 	char *file;
@@ -334,19 +334,21 @@ static LIST_ENTRY parsedfiles;
 
 struct basemap {
 	unsigned base;
-	char * xname;
+	char *xname;
 	struct parsedfile *pfl;
 };
 
 struct irqmap {
 	int irq;
-	char * xname;
+	char *xname;
+	char *xcomment;
 	struct parsedfile *pfl;
 };
 
 struct irqmaprv {
 	int irqrv;
-	char * xname;
+	char *xname;
+	char *xcomment;
 	struct parsedfile *pfl;
 };
 
@@ -394,7 +396,6 @@ static int compare_pfltypes(const void *v1, const void *v2) {
 
 static char token0[1024];
 #define TKSZ (sizeof token0 / sizeof token0 [0])
-
 
 static int istokencomment(void) {
 	return 0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || 0 == strcmp(token0, "#\n") || 0 == strcmp(token0, "\n")
@@ -725,6 +726,7 @@ static int collect_irq(struct parsedfile *pfl, int n, struct irqmap *v) {
 	int score = 0;
 	for (i = 0; i < pfl->irq_count && n--; ++i, ++v, ++score) {
 		v->xname = pfl->irq_xnames[i];
+		v->xcomment = pfl->irq_xcomments[i];
 		v->irq = pfl->irq_array[i];
 		v->pfl = pfl;
 	}
@@ -737,6 +739,7 @@ static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmaprv *v) {
 	int score = 0;
 	for (i = 0; i < pfl->irqrv_count && n--; ++i, ++v, ++score) {
 		v->xname = pfl->irqrv_xnames[i];
+		v->xcomment = pfl->irqrv_xcomments[i];
 		v->irqrv = pfl->irqrv_array[i];
 		v->pfl = pfl;
 	}
@@ -757,19 +760,16 @@ static void freeregdfn(PLIST_ENTRY p) {
 
 static void freeregs(struct parsedfile *pfl) {
 	int i;
-	for (i = 0; i < pfl->irqrv_count; ++ i)
-	{
-		free(pfl->irqrv_xnames [i]);
-		free(pfl->irqrv_xcomments [i]);
+	for (i = 0; i < pfl->irqrv_count; ++i) {
+		free(pfl->irqrv_xnames[i]);
+		free(pfl->irqrv_xcomments[i]);
 	}
-	for (i = 0; i < pfl->irq_count; ++ i)
-	{
-		free(pfl->irq_xnames [i]);
-		free(pfl->irq_xcomments [i]);
+	for (i = 0; i < pfl->irq_count; ++i) {
+		free(pfl->irq_xnames[i]);
+		free(pfl->irq_xcomments[i]);
 	}
-	for (i = 0; i < pfl->base_count; ++ i)
-	{
-		free(pfl->base_xnames [i]);
+	for (i = 0; i < pfl->base_count; ++i) {
+		free(pfl->base_xnames[i]);
 		//free(pfl->base_xcomments [i]);
 	}
 	//free(pfl->sss);
@@ -1047,9 +1047,10 @@ static void generate_cmsis(void) {
 		emitline(0, "{\n");
 		for (i = 0; i < nitems; ++i) {
 			struct irqmap *const p = &irqs[i];
+			const char *comment = p->xcomment ? p->xcomment : p->pfl->comment ? p->pfl->comment : "";
 
 			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irq);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+			emitline(COMMENTNEAR, "/*!< %s %s */\n", p->pfl->bname, comment);
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
@@ -1093,9 +1094,9 @@ static void generate_cmsis(void) {
 		emitline(0, "{\n");
 		for (i = 0; i < nitems; ++i) {
 			struct irqmaprv *const p = &irqs[i];
-
+			const char *comment = p->xcomment ? p->xcomment : p->pfl->comment ? p->pfl->comment : "";
 			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irqrv);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+			emitline(COMMENTNEAR, "/*!< %s %s */\n", p->pfl->bname, comment);
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
