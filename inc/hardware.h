@@ -939,8 +939,6 @@ void GPU_IRQHandler(void);	// STM32MP1 specific
 
 void r7s721_intc_initialize(void);
 
-void ALLW_GPIO_IRQ_Handler(void);	// Allwinner specific
-
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
 {

@@ -237,26 +237,29 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	gpioX_getinputs(GPIOA)
+	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOA))
 	#define ENCODER_BITA		(1u << 5)		// PA5
 	#define ENCODER_BITB		(1u << 4)		// PA4
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	gpioX_getinputs(GPIOA)
+	#define ENCODER2_INPUT_PORT	(gpioX_getinputs(GPIOA))
 	#define ENCODER2_BITA		(1u << 7)		// PA7
 	#define ENCODER2_BITB		(1u << 6)		// PA6
 
+	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
+	#define BOARA_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
+	#define BOARA_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
+	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(ENCODER_BITS); \
-			arm_hardware_pioa_updown(ENCODER_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_pioa_inputs(ENCODER2_BITS); \
-			arm_hardware_pioa_updown(ENCODER2_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_pioa_inputs(BOARA_GPIOE_ENCODER_BITS); \
+			arm_hardware_pioa_updown(BOARA_GPIOE_ENCODER_BITS, 0); \
+			arm_hardware_pioa_onchangeinterrupt(BOARA_GPIOE_ENCODER_BITS, BOARA_GPIOE_ENCODER_BITS, BOARA_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_pioa_inputs(BOARA_GPIOE_ENCODER2_BITS); \
+			arm_hardware_pioa_updown(BOARA_GPIOE_ENCODER2_BITS, 0); \
+			arm_hardware_pioa_onchangeinterrupt(0 * BOARA_GPIOE_ENCODER2_BITS, BOARA_GPIOE_ENCODER2_BITS, BOARA_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -290,11 +293,11 @@
 	// RXD at PA10, TXD at PA9
 
 	// CAT control lines
-	//#define FROMCAT_TARGET_PIN_RTS		gpioX_getinputs(GPIOA)
+	//#define FROMCAT_TARGET_PIN_RTS		(gpioX_getinputs(GPIOA))
 	//#define FROMCAT_BIT_RTS				(1u << 11)	/* PA11 сигнал RTS от FT232RL	*/
 
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	//#define FROMCAT_TARGET_PIN_DTR		gpioX_getinputs(GPIOA)
+	//#define FROMCAT_TARGET_PIN_DTR		(gpioX_getinputs(GPIOA))
 	//#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 сигнал DTR от FT232RL	*/
 
 	/* манипуляция от порта RS-232 */
@@ -313,11 +316,11 @@
 	// RXD at PA10, TXD at PA9
 
 	// CAT control lines
-	//#define FROMCAT_TARGET_PIN_RTS		gpioX_getinputs(GPIOA) // was PINA
+	//#define FROMCAT_TARGET_PIN_RTS		(gpioX_getinputs(GPIOA)) // was PINA
 	//#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/
 
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	//#define FROMCAT_TARGET_PIN_DTR		gpioX_getinputs(GPIOA) // was PINA
+	//#define FROMCAT_TARGET_PIN_DTR		(gpioX_getinputs(GPIOA)) // was PINA
 	//#define FROMCAT_BIT_DTR				(1u << 12)	/* сигнал DTR от FT232RL	*/
 
 	/* манипуляция от виртуального CDC порта */
@@ -633,7 +636,7 @@
 
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_GET	((gpioX_getinputs(GPIOA) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOA)) & TARGET_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -659,12 +662,12 @@
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
 	#define TARGET_TWI_TWCK		(1u << 0)
-	#define TARGET_TWI_TWCK_PIN		gpioX_getinputs(GPIOA)
+	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOA))
 	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioa_outputs((v), 0); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioa_inputs(v); } while (0)
 
 	#define TARGET_TWI_TWD		(1u << 1)
-	#define TARGET_TWI_TWD_PIN		gpioX_getinputs(GPIOA)
+	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOA))
 	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioa_outputs((v), 0); } while (0)
 	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioa_inputs(v); } while (0)
 
@@ -973,13 +976,13 @@
 
 		void stmpe811_interrupt_handler(void);
 
-		#define BOARD_STMPE811_INT_PIN (1u << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
+		#define BOARD_GPIOA_STMPE811_INT_PIN (1u << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
 		//#define BOARD_STMPE811_RESET_PIN (1u << 4)	/* PD4 : tsc/LCD reset, XS26, pin 22 */
 
 		#define BOARD_STMPE811_INT_CONNECT() do { \
-			arm_hardware_pioa_inputs(BOARD_STMPE811_INT_PIN); \
-			arm_hardware_pioa_updown(BOARD_STMPE811_INT_PIN, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+			arm_hardware_pioa_inputs(BOARD_GPIOA_STMPE811_INT_PIN); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_STMPE811_INT_PIN, 0); \
+			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_STMPE811_INT_PIN, 1 * BOARD_GPIOA_STMPE811_INT_PIN, 0 * BOARD_GPIOA_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 		} while (0)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
@@ -1046,7 +1049,7 @@
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1u << 8)	/* PA8: ~USER_BOOT - same as TARGET_ENC2BTN_BIT */
-	#define BOARD_IS_USERBOOT() ((gpioX_getinputs(GPIOA) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOA)) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)

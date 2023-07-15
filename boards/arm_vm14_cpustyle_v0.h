@@ -164,33 +164,6 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#if WITHENCODER
-
-	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOE->DATA)
-	#define ENCODER_BITA		(1u << 8)		// PE8
-	#define ENCODER_BITB		(1u << 7)		// PE7
-
-	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOE->DATA)
-	#define ENCODER2_BITA		(1u << 5)		// PE5
-	#define ENCODER2_BITB		(1u << 4)		// PE4
-
-
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	#define ENCODER_INITIALIZE() do { \
-		arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-		gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt); \
-		arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
-		gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
-	} while (0)
-
-#endif
-
 	// Инициализируются I2S1 в дуплексном режиме.
 	// аудиокодек
 	#define I2S1HW_INITIALIZE(master) do { \
@@ -891,61 +864,6 @@
 	} while (0)
 
 #endif /* WITHLTDCHW */
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-
-	//	tsc interrupt XS26, pin 08
-	//	tsc/LCD reset, XS26, pin 22
-	//	tsc SCL: XS26, pin 01
-	//	tsc SDA: XS26, pin 02
-
-	void stmpe811_interrupt_handler(void);
-
-	#define BOARD_STMPE811_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_STMPE811_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
-
-	#define BOARD_STMPE811_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_STMPE811_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_STMPE811_INT_PIN, 0); \
-		/*arm_hardware_pioe_onchangeinterrupt(0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); */ \
-		gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, 0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
-	} while (0)
-
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
-
-	/* PE9 TS_INT */
-	/* PD22 FPLCD_RESET */
-
-	void gt911_interrupt_handler(void);
-
-	#define BOARD_GT911_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_GT911_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
-
-	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
-
-	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pioe_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
-		arm_hardware_piod_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
-		 local_delay_ms(200);  \
-	} while (0)
-
-	#define BOARD_GT911_RESET_INITIO_2() do { \
-		arm_hardware_pioe_inputs(BOARD_GT911_INT_PIN); \
-		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
-	} while (0)
-
-	#define BOARD_GT911_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_GT911_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
-		gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, 0 * BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
-	} while (0)
-	//gt911_interrupt_handler
-
-#endif
-
 
 #if 0
 	#define BOARD_BLINK_BIT (0 * 1u << 22)	// PD22 (PWM7) - led on mq-r board (from VCC33

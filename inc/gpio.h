@@ -600,16 +600,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	portholder_t gpioX_getinputs(
 		GPIO_TypeDef * gpio
 		);
-	void
-	gpioX_onchangeinterrupt(
-			GPIO_TypeDef * gpio,
-			uint_fast16_t int_id,
-			portholder_t ipins,
-			portholder_t raise, portholder_t fall,
-			uint32_t priority,
-			uint_fast8_t targetcpu,
-			void (* handler)(void)
-			);
+
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 
 

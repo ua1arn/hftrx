@@ -1041,6 +1041,27 @@ static void ALLW_GPIO_IRQ_Handler_GPIOA(void)
 	const unsigned status = GPIOINTA->EINT_STATUS;
 	GPIOINTA->EINT_STATUS = status;
 #endif /* defined (GPIOINTA) */
+
+#if BOARD_GPIOA_ENCODER_BITS
+	if ((status & BOARD_GPIOA_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOA_ENCODER_BITS */
+
+#if BOARD_GPIOA_ENCODER2_BITS
+	if ((status & BOARD_GPIOA_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOA_ENCODER2_BITS */
+
+#if BOARD_GPIOA_GT911_INT_PIN
+	if ((status & BOARD_GPIOA_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOA_GT911_INT_PIN */
+
+#if BOARD_GPIOA_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOA_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOA_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOB(void)
@@ -1049,6 +1070,27 @@ static void ALLW_GPIO_IRQ_Handler_GPIOB(void)
 	const unsigned status = GPIOINTB->EINT_STATUS;
 	GPIOINTB->EINT_STATUS = status;
 #endif /* defined (GPIOINTB) */
+
+#if BOARD_GPIOB_ENCODER_BITS
+	if ((status & BOARD_GPIOB_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOB_ENCODER_BITS */
+
+#if BOARD_GPIOB_ENCODER2_BITS
+	if ((status & BOARD_GPIOB_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOB_ENCODER2_BITS */
+
+#if BOARD_GPIOB_GT911_INT_PIN
+	if ((status & BOARD_GPIOB_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOB_GT911_INT_PIN */
+
+#if BOARD_GPIOB_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOB_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOB_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOC(void)
@@ -1057,6 +1099,27 @@ static void ALLW_GPIO_IRQ_Handler_GPIOC(void)
 	const unsigned status = GPIOINTC->EINT_STATUS;
 	GPIOINTC->EINT_STATUS = status;
 #endif /* defined (GPIOINTC) */
+
+#if BOARD_GPIOC_ENCODER_BITS
+	if ((status & BOARD_GPIOC_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOC_ENCODER_BITS */
+
+#if BOARD_GPIOC_ENCODER2_BITS
+	if ((status & BOARD_GPIOC_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOC_ENCODER2_BITS */
+
+#if BOARD_GPIOC_GT911_INT_PIN
+	if ((status & BOARD_GPIOC_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOC_GT911_INT_PIN */
+
+#if BOARD_GPIOC_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOC_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOC_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOD(void)
@@ -1066,25 +1129,55 @@ static void ALLW_GPIO_IRQ_Handler_GPIOD(void)
 	GPIOINTD->EINT_STATUS = status;
 #endif /* defined (GPIOINTD) */
 
+#if BOARD_GPIOD_ENCODER_BITS
+	if ((status & BOARD_GPIOD_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOD_ENCODER_BITS */
+
+#if BOARD_GPIOD_ENCODER2_BITS
+	if ((status & BOARD_GPIOD_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOD_ENCODER2_BITS */
+
+#if BOARD_GPIOD_GT911_INT_PIN
+	if ((status & BOARD_GPIOD_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOD_GT911_INT_PIN */
+
+#if BOARD_GPIOD_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOD_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOD_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
 {
+#if defined (GPIOINTE)
 	const unsigned status = GPIOINTE->EINT_STATUS;
 	GPIOINTE->EINT_STATUS = status;
+#endif /* defined (GPIOINTE) */
 
-#if ENCODER_BITS
-	if ((status & ENCODER_BITS) != 0)
+#if BOARD_GPIOE_ENCODER_BITS
+	if ((status & BOARD_GPIOE_ENCODER_BITS) != 0)
 		spool_encinterrupt();
-#endif /* ENCODER_BITS */
-#if BOARD_GT911_INT_PIN
-//	if ((status & ENCODER_BITS) != 0)
-//		xspool_encinterrupt();
-#endif /* BOARD_GT911_INT_PIN */
-#if BOARD_STMPE811_INT_PIN
-//	if ((status & ENCODER_BITS) != 0)
-//		xspool_encinterrupt();
-#endif /* BOARD_STMPE811_INT_PIN */
+#endif /* BOARD_GPIOE_ENCODER_BITS */
+
+#if BOARD_GPIOE_ENCODER2_BITS
+	if ((status & BOARD_GPIOE_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOE_ENCODER2_BITS */
+
+#if BOARD_GPIOE_GT911_INT_PIN
+	if ((status & BOARD_GPIOE_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOE_GT911_INT_PIN */
+
+#if BOARD_GPIOE_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOE_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOE_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
@@ -1093,6 +1186,26 @@ static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
 	const unsigned status = GPIOINTF->EINT_STATUS;
 	GPIOINTF->EINT_STATUS = status;
 #endif /* defined (GPIOINTF) */
+
+#if BOARD_GPIOF_ENCODER_BITS
+	if ((status & BOARD_GPIOF_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOF_ENCODER_BITS */
+
+#if BOARD_GPIOF_ENCODER2_BITS
+	if ((status & BOARD_GPIOF_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOF_ENCODER2_BITS */
+
+#if BOARD_GPIOF_GT911_INT_PIN
+	if ((status & BOARD_GPIOF_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOF_GT911_INT_PIN */
+
+#if BOARD_GPIOF_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOF_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOF_STMPE811_INT_PIN */
 
 }
 
@@ -1103,6 +1216,26 @@ static void ALLW_GPIO_IRQ_Handler_GPIOG(void)
 	GPIOINTG->EINT_STATUS = status;
 #endif /* defined (GPIOINTG) */
 
+#if BOARD_GPIOG_ENCODER_BITS
+	if ((status & BOARD_GPIOG_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOG_ENCODER_BITS */
+
+#if BOARD_GPIOG_ENCODER2_BITS
+	if ((status & BOARD_GPIOG_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOG_ENCODER2_BITS */
+
+#if BOARD_GPIOG_GT911_INT_PIN
+	if ((status & BOARD_GPIOG_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOG_GT911_INT_PIN */
+
+#if BOARD_GPIOG_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOG_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOG_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
@@ -1111,6 +1244,26 @@ static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
 	const unsigned status = GPIOINTH->EINT_STATUS;
 	GPIOINTH->EINT_STATUS = status;
 #endif /* defined (GPIOINTH) */
+
+#if BOARD_GPIOH_ENCODER_BITS
+	if ((status & BOARD_GPIOH_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOH_ENCODER_BITS */
+
+#if BOARD_GPIOH_ENCODER2_BITS
+	if ((status & BOARD_GPIOH_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOH_ENCODER2_BITS */
+
+#if BOARD_GPIOH_GT911_INT_PIN
+	if ((status & BOARD_GPIOH_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOH_GT911_INT_PIN */
+
+#if BOARD_GPIOH_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOH_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOH_STMPE811_INT_PIN */
 
 }
 
@@ -1121,15 +1274,59 @@ static void ALLW_GPIO_IRQ_Handler_GPIOI(void)
 	GPIOINTI->EINT_STATUS = status;
 #endif /* defined (GPIOINTI) */
 
+#if BOARD_GPIOI_ENCODER_BITS
+	if ((status & BOARD_GPIOI_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOI_ENCODER_BITS */
+
+#if BOARD_GPIOI_ENCODER2_BITS
+	if ((status & BOARD_GPIOI_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOI_ENCODER2_BITS */
+
+#if BOARD_GPIOI_GT911_INT_PIN
+	if ((status & BOARD_GPIOI_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOI_GT911_INT_PIN */
+
+#if BOARD_GPIOI_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOI_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOI_STMPE811_INT_PIN */
+
 }
 
-void ALLW_GPIO_IRQ_Handler(void)	// Allwinner specific
+static void ALLW_GPIO_IRQ_Handler_GPIOL(void)
 {
+#if defined (GPIOINTL)
+	const unsigned status = GPIOINTL->EINT_STATUS;
+	GPIOINTL->EINT_STATUS = status;
+#endif /* defined (GPIOINTL) */
+
+#if BOARD_GPIOL_ENCODER_BITS
+	if ((status & BOARD_GPIOL_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOL_ENCODER_BITS */
+
+#if BOARD_GPIOL_ENCODER2_BITS
+	if ((status & BOARD_GPIOL_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOL_ENCODER2_BITS */
+
+#if BOARD_GPIOL_GT911_INT_PIN
+	if ((status & BOARD_GPIOL_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOL_GT911_INT_PIN */
+
+#if BOARD_GPIOL_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOL_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOL_STMPE811_INT_PIN */
 
 }
 
 /* разрешение прерывания по изменению состояния указанных групп выводов */
-void
+static void
 gpioX_onchangeinterrupt(
 		GPIO_TypeDef * gpio,
 		uint_fast16_t int_id,
@@ -1137,7 +1334,7 @@ gpioX_onchangeinterrupt(
 		portholder_t raise, portholder_t fall,
 		uint32_t priority,
 		uint_fast8_t targetcpu,
-		void (* handler_unused)(void)
+		void (* group_handler)(void)
 		)
 {
 #if CPUSTYLE_A64
@@ -1160,19 +1357,6 @@ gpioX_onchangeinterrupt(
 	//	0x2: High Level
 	//	0x3: Low Level
 	//	0x4: Double Edge (Positive/Negative)
-
-	static void (* const handlers [])(void) =
-	{
-		ALLW_GPIO_IRQ_Handler_GPIOA,
-		ALLW_GPIO_IRQ_Handler_GPIOB,
-		ALLW_GPIO_IRQ_Handler_GPIOC,
-		ALLW_GPIO_IRQ_Handler_GPIOD,
-		ALLW_GPIO_IRQ_Handler_GPIOE,
-		ALLW_GPIO_IRQ_Handler_GPIOF,
-		ALLW_GPIO_IRQ_Handler_GPIOG,
-		ALLW_GPIO_IRQ_Handler_GPIOH,
-		ALLW_GPIO_IRQ_Handler_GPIOI,
-	};
 	unsigned cfgbits = 0;	// default - high level
 
 	if (! raise && ! fall)
@@ -1203,17 +1387,8 @@ gpioX_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		//gpiohandlers [gpioix] [pos] = handler;
-#if CPUSTYLE_A64
 
-#elif CPUSTYLE_T507
-		arm_hardware_set_handler(int_id, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-		arm_hardware_set_handler(int_id, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
-#else
-	#error Unhandled CPUSTYLE_xxx
-
-#endif
+		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 	}
 
 	blk->GPIO_INTS [gpioix].EINT_CTL |= ipins;
@@ -9761,15 +9936,15 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9818,15 +9993,15 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9875,15 +10050,15 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT C
+	//gpioX_onchangeinterrupt(GPIOC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9934,15 +10109,15 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT D
+	//gpioX_onchangeinterrupt(GPIOD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9987,15 +10162,15 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT E
+	gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT E
+	//gpioX_onchangeinterrupt(GPIOE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT E
+	gpioX_onchangeinterrupt(GPIOE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10033,15 +10208,15 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT F
+	//gpioX_onchangeinterrupt(GPIOF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10078,16 +10253,16 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10117,15 +10292,15 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10155,15 +10330,15 @@ arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10302,3 +10477,527 @@ tms320_hardware_pioс_inputs(unsigned long ipins)
 }
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
+
+
+/*
+	Машинно-независимый обработчик прерываний.
+	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+*/
+RAMFUNC void spool_elkeybundle(void)
+{
+#if WITHELKEY
+	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+#endif /* WITHELKEY */
+}
+
+/*
+	Машинно-независимый обработчик прерываний.
+	Вызывается при изменении состояния входов электронного ключа,
+    входа манипуляции от CAT (CAT_DTR).
+*/
+RAMFUNC void spool_elkeyinputsbundle(void)
+{
+	//key_spool_inputs();	// опрос состояния электронного ключа и запоминание факта нажатия
+}
+
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
+/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
+RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
+{
+#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+	if ((pr & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0)
+	{
+		spool_elkeyinputsbundle();
+	}
+#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+#if WITHENCODER && defined (ENCODER_BITS)
+	if ((pr & ENCODER_BITS) != 0)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+	}
+#endif /* WITHENCODER && defined (ENCODER_BITS) */
+#if WITHENCODER2 && defined (ENCODER2_BITS)
+	if ((pr & ENCODER2_BITS) != 0)
+	{
+		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+	}
+#endif /* WITHENCODER && ENCODER2_BITS */
+#if BOARD_GT911_INT_PIN
+	if ((pr & BOARD_GT911_INT_PIN) != 0)
+	{
+		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+	}
+#endif /* BOARD_GT911_INT_PIN */
+#if BOARD_STMPE811_INT_PIN
+	if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+	{
+		stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+	}
+#endif /* BOARD_STMPE811_INT_PIN */
+#if WITHLFM && BOARD_PPSIN_BIT
+	if ((pr & BOARD_PPSIN_BIT) != 0)
+	{
+		spool_nmeapps();	/* прерывание по изменению сигнала на входе от PPS */
+	}
+#endif /* WITHLFM && BOARD_PPSIN_BIT */
+}
+
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */
+
+#if CPUSTYLE_STM32MP1
+
+	void EXTI0_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM0;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI1_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM1;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM2;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM3;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM4;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI5_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM5;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI6_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM6;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI7_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM7;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI8_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM8;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI9_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM9;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI10_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM10;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI11_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM11;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI12_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM12;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI13_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM13;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI14_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM14;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI15_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM15;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+#elif CPUSTYLE_STM32L0XX
+
+	void EXTI0_1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI2_3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI4_15_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (
+				EXTI_IMR_IM15 | EXTI_IMR_IM14 | EXTI_IMR_IM13 | EXTI_IMR_IM12 |
+				EXTI_IMR_IM11 | EXTI_IMR_IM10 | EXTI_IMR_IM9 | EXTI_IMR_IM8 |
+				EXTI_IMR_IM7 | EXTI_IMR_IM6 | EXTI_IMR_IM5 | EXTI_IMR_IM4
+				);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+#elif CPUSTYLE_STM32H7XX
+
+	void EXTI0_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+
+	void EXTI1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR3);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR4);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI9_5_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR9 | EXTI_PR1_PR8 | EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI15_10_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | EXTI_PR1_PR11 | EXTI_PR1_PR10);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+#elif CPUSTYLE_STM32F
+
+	void EXTI0_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI0_1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_15_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (
+				EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 |
+				EXTI_IMR_MR11 | EXTI_IMR_MR10 | EXTI_IMR_MR9 | EXTI_IMR_MR8 |
+				EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5 | EXTI_IMR_MR4
+				);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI9_5_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI15_10_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	void RAMFUNC_NONILINE
+	PIOA_Handler(void)
+	{
+		//display_menu_label(PSTR("PIOA_IrqHandler"));
+		//for (;;)
+		//	;
+		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
+		// all the interrupts that are pending when PIO_ISR is read must be handled.
+		const portholder_t state = PIOA->PIO_ISR;
+	#if WITHENCODER && defined (ENCODER_BITS)
+		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
+		{
+			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		}
+	#endif /* WITHENCODER && defined (ENCODER_BITS) */
+	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
+		{
+			spool_elkeyinputsbundle();
+		}
+	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+	#if WITHNMEA
+		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
+		{
+			spool_nmeapps();
+		}
+	#endif /* WITHNMEA */
+	#if BOARD_GT911_INT_PIN
+		if ((state & BOARD_GT911_INT_PIN) != 0)
+		{
+			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_GT911_INT_PIN */
+	#if BOARD_STMPE811_INT_PIN
+		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+		{
+			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_STMPE811_INT_PIN */
+	}
+
+#elif CPUSTYLE_AT91SAM7S
+
+	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void)
+	{
+		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
+		// all the interrupts that are pending when PIO_ISR is read must be handled.
+		const portholder_t state = AT91C_BASE_PIOA->PIO_ISR;
+	#if WITHENCODER && defined (ENCODER_BITS)
+		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
+		{
+			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		}
+	#endif /* WITHENCODER && defined (ENCODER_BITS) */
+	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
+		{
+			spool_elkeyinputsbundle();
+		}
+	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+	#if WITHNMEA
+		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
+		{
+			spool_nmeapps();
+		}
+	#endif /* WITHNMEA */
+	#if BOARD_GT911_INT_PIN
+		if ((state & BOARD_GT911_INT_PIN) != 0)
+		{
+			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_GT911_INT_PIN */
+	#if BOARD_STMPE811_INT_PIN
+		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+		{
+			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_STMPE811_INT_PIN */
+	}
+
+#elif CPUSTYLE_ATMEGA
+
+	ISR(INT0_vect)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+	}
+
+	ISR(INT1_vect)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+	}
+
+
+	// Timer 1 output compare A interrupt service routine
+	ISR(TIMER1_COMPA_vect)
+	{
+		spool_elkeybundle();
+	}
+	// Обработчик по изменению состояния входов PTT и электронного ключа
+	#if CPUSTYLE_ATMEGA_XXX4
+		#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+			// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
+			ISR(PCIVECT)
+			{
+				spool_elkeyinputsbundle();
+			}
+		#endif /* (WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)) */
+		#if defined (FROMCAT_BIT_DTR) && defined (DTRPCICR_BIT) && (PCICR_BIT != DTRPCICR_BIT)
+			ISR(DTRPCIVECT)
+			{
+				spool_elkeyinputsbundle();	// по изменению PTT
+			}
+		#endif
+	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+#else
+
+	//#warning Undefined CPUSTYLE_XXX encoder interrrupts handlers
+#endif
