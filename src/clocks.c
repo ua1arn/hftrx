@@ -2326,7 +2326,7 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 {
 	// switch CPU clock to OSC24M
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
-		(UINT32_C(0x00) << 24) |	// OSC24
+		0x00 * (UINT32_C(1) << 24) |	// OSC24
 		0;
 	// Programming PLL
 	// Stop PLL
@@ -2338,23 +2338,49 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 		(N - 1) * (UINT32_C(1) << 8) |	// PLL_FACTOR_N
 		Ppow * (UINT32_C(1) << 16) |		// PLL_OUT_EXT_DIVP
 		0;
-
 	// Start PLL
-	CCU->PLL_CPUX_CTRL_REG |= (UINT32_C(1) << 31);
+	CCU->PLL_CPUX_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 29);
 	// Waitig for PLL stable
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
-
-	// switch CPU clock to OSC24M
+	// switch CPU clock to PLL_CPUX
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
 		0x03 * (UINT32_C(1) << 24) |	// 011: PLL_CPUX
 		0;
 }
 
 
+static void allwnr_t507_module_pll_enable(volatile uint32_t * reg)
+{
+
+	if(!(* reg & (1 << 31)))	// PLL_ENABLE
+	{
+		* reg |= (UINT32_C(1) << 31);	// PLL_ENABLE
+
+		/* Lock enable */
+		* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+
+		/* Wait pll stable */
+		while(! (* reg & (UINT32_C(1) << 28)))	// LOCK
+			;
+		//local_delay_ms(20);
+
+		/* Lock disable */
+//		val = * reg;
+//		val &= ~(1 << 29);
+//		* reg = val;
+	}
+}
+
 void allwnr_t507_pll_initialize(void)
 {
 	set_t507_pll_cpux_axi(PLL_CPU_N, PLL_CPU_P_POW);	// see sdram.c
+
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 }
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
