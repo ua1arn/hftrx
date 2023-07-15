@@ -42,7 +42,7 @@ struct regdfn {
 };
 
 enum {
-	BASE_MAX = 32
+	BASE_MAX = 64
 };
 enum {
 	VNAME_MAX = 96
@@ -563,6 +563,19 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			pfl->comment = strdup(comment);
 			if (nextline(fp) == 0)
 				break;
+		} else if (3 == sscanf(token0, "#irq; %s %i; %1023[^\n]c\n", irqname, &irq, comment)) {
+			trimname(irqname);
+			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
+			if (pfl->irq_count < BASE_MAX) {
+				pfl->irq_array[pfl->irq_count] = irq;
+				strcpy(pfl->irq_names[pfl->irq_count], irqname);
+				//
+				++pfl->irq_count;
+			}
+
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
 		} else if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
 			trimname(irqname);
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
@@ -571,6 +584,19 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 				strcpy(pfl->irq_names[pfl->irq_count], irqname);
 				//
 				++pfl->irq_count;
+			}
+
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
+		} else if (3 == sscanf(token0, "#irqrv; %s %i; %1023[^\n]c\n", irqname, &irq, comment)) {
+			trimname(irqname);
+			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
+			if (pfl->irqrv_count < BASE_MAX) {
+				pfl->irqrv_array[pfl->irqrv_count] = irq;
+				strcpy(pfl->irqrv_names[pfl->irqrv_count], irqname);
+				//
+				++pfl->irqrv_count;
 			}
 
 			/* parsed */
