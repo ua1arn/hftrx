@@ -626,17 +626,17 @@
 	} while (0)
 
 
-#define TARGET_ENC2BTN_BIT (UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
+#define BOARD_GPIOA_ENC2BTN_BIT (UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	//#define TARGET_ENC2BTN_BIT (UINT32_C(1) << 15)	// PE15 - second encoder button with pull-up
+	//#define BOARD_GPIOA_ENC2BTN_BIT (UINT32_C(1) << 15)	// PE15 - second encoder button with pull-up
 	#define TARGET_POWERBTN_BIT 0//(UINT32_C(1) << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOA)) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -645,8 +645,8 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(TARGET_ENC2BTN_BIT); \
-			arm_hardware_pioa_updown(TARGET_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioa_inputs(BOARD_GPIOA_ENC2BTN_BIT); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
 			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
@@ -912,15 +912,15 @@
 		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
 		const portholder_t MODEmask = (UINT32_C(1) << 9); 	/* PA9 mode */ \
 		/* set LCD DE/SYNC mode */ \
-		arm_hardware_pioa_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD0 = state */ \
+		arm_hardware_pioa_outputs(MODEmask, (demode != 0) * MODEmask);	/* PA9 = state */ \
 		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
-		arm_hardware_piod_altfn20((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_altfn20((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
+		arm_hardware_piod_altfn20((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
+		arm_hardware_piod_altfn20((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
 		/* synchro signals - DE mode */ \
 		arm_hardware_piod_altfn20((demode != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
-		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
+		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn20(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
 		/* RED */ \
@@ -1048,7 +1048,7 @@
 	#endif /* WITHISBOOTLOADER */
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as TARGET_ENC2BTN_BIT */
+	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); /* set as input with pull-up */ \
