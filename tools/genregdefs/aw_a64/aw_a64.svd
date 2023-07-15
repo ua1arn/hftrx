@@ -5408,58 +5408,23 @@
   <description></description>
   <baseAddress>0x01C20A00</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   <registers>
@@ -5510,58 +5475,23 @@
   <name>GPIOINTC</name>
   <baseAddress>0x01C20A20</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5569,58 +5499,23 @@
   <name>GPIOINTD</name>
   <baseAddress>0x01C20A40</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5628,58 +5523,23 @@
   <name>GPIOINTE</name>
   <baseAddress>0x01C20A60</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5687,58 +5547,23 @@
   <name>GPIOINTF</name>
   <baseAddress>0x01C20A80</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5746,58 +5571,23 @@
   <name>GPIOINTG</name>
   <baseAddress>0x01C20AA0</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5805,58 +5595,23 @@
   <name>GPIOINTH</name>
   <baseAddress>0x01C20AC0</baseAddress>
   <interrupt>
-   <name>GPIOB_NS</name>
-   <value>101</value>
+   <name>PB_EINT</name>
+   <value>43</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOB_S</name>
-   <value>102</value>
+   <name>PG_EINT</name>
+   <value>49</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_NS</name>
-   <value>103</value>
+   <name>PH_EINT</name>
+   <value>53</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOC_S</name>
-   <value>104</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_NS</name>
-   <value>105</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOD_S</name>
-   <value>106</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_NS</name>
-   <value>107</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOE_S</name>
-   <value>108</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_NS</name>
-   <value>109</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOF_S</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG_NS</name>
-   <value>111</value>
+   <name>R_PL_EINT</name>
+   <value>77</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -7793,11 +7548,6 @@
   <name>NDFC</name>
   <description>NAND Flash Controller Interface</description>
   <baseAddress>0x01C03000</baseAddress>
-  <interrupt>
-   <name>NDFC</name>
-   <value>102</value>
-   <description></description>
-  </interrupt>
   <interrupt>
    <name>NAND</name>
    <value>102</value>

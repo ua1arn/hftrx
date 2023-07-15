@@ -37,17 +37,12 @@
 #base; GPIOINTF 0x01C20A80
 #base; GPIOINTG 0x01C20AA0
 #base; GPIOINTH 0x01C20AC0
-#irq; GPIOB_NS 101 
-#irq; GPIOB_S 102 
-#irq; GPIOC_NS 103 
-#irq; GPIOC_S 104 
-#irq; GPIOD_NS 105 
-#irq; GPIOD_S 106 
-#irq; GPIOE_NS 107 
-#irq; GPIOE_S 108 
-#irq; GPIOF_NS 109 
-#irq; GPIOF_S 110 
-#irq; GPIOG_NS 111 
+
+#irq; PB_EINT 43; PB_EINT interrupt 
+#irq; PG_EINT 49; PG_EINT interrupt
+#irq; PH_EINT 53; PH_EINT interrupt
+#irq; R_PL_EINT 77; R_PL_EINT interrupt
+
 #regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register

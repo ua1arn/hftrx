@@ -603,6 +603,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	void
 	gpioX_onchangeinterrupt(
 			GPIO_TypeDef * gpio,
+			uint_fast16_t int_id,
 			portholder_t ipins,
 			portholder_t raise, portholder_t fall,
 			uint32_t priority,
