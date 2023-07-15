@@ -66,8 +66,8 @@ typedef enum IRQn
     CCU_FERR_IRQn = 80,                               /*!< CCU Clock Controller Unit (CCU) */
     DMAC_NS_IRQn = 82,                                /*!< DMAC  */
     DMAC_S_IRQn = 83,                                 /*!< DMAC  */
-    CE_NS_IRQn = 84,                                  /*!< CE  */
-    CE_S_IRQn = 85,                                   /*!< CE  */
+    CE_NS_IRQn = 84,                                  /*!< CE Crypto Engine (CE) */
+    CE_S_IRQn = 85,                                   /*!< CE Crypto Engine (CE) */
     HSTIMER0_IRQn = 87,                               /*!< HSTIMER High Speed Timer */
     HSTIMER1_IRQn = 88,                               /*!< HSTIMER High Speed Timer */
     GPADC_IRQn = 89,                                  /*!< GPADC  */

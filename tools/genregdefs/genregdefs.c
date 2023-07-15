@@ -39,6 +39,15 @@ struct regdfn {
 	char *comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 	unsigned resetvalue;
+
+	LIST_ENTRY bitfields; /* named bitfields in register */
+};
+
+struct bitfield {
+	LIST_ENTRY item;
+	char *bitfldname;
+	unsigned bitfldwidth; /* width in bits */
+	unsigned bitfldrpos; /* right bit position */
 };
 
 enum {
@@ -55,25 +64,27 @@ enum {
 struct parsedfile {
 	LIST_ENTRY item;
 	LIST_ENTRY regslist;
-	//   size_t nregs;
-	//   struct regdfn * regs;
+
 	char bname[VNAME_MAX];
+	char *comment;
+	char *file;
+
 	int base_count;
 	unsigned base_address[BASE_MAX];
 	char *base_xnames[BASE_MAX];
 
+	// ARM interrupt requests
 	int irq_count;
 	int irq_array[BASE_MAX];
 	char *irq_xnames[BASE_MAX];
 	char *irq_xcomments[BASE_MAX];
 
+	// RISC-V interrupt requests
 	int irqrv_count;
 	int irqrv_array[BASE_MAX];
 	char *irqrv_xnames[BASE_MAX];
 	char *irqrv_xcomments[BASE_MAX];
 
-	char *comment;
-	char *file;
 };
 
 #define INDENT 4
@@ -424,6 +435,7 @@ parseregdef(char *s0, char *fldname, unsigned fldsize, const char *file) {
 	char *s2 = strtok(NULL, SEP);
 
 	InitializeListHead(&regp->aggregate);
+	InitializeListHead(&regp->bitfields);
 
 	trimname(fldname);
 
@@ -528,9 +540,20 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	int irq;
 	unsigned base;
 
+	memset(comment, 0, sizeof comment);
+
 	// #type should be 1-st in register definitions
-	if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
-		//fprintf(stderr, "Parsed typname='%s'\n", typname);
+	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_^;]s; %1023[^\n]c", typname, comment)) {
+		//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
+		trimname(typname);
+		strcpy(pfl->bname, typname);
+		pfl->comment = strdup(comment);
+
+		/* parsed */
+		if (nextline(fp) == 0)
+			return 0;
+	} else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
+		//fprintf(stderr, "Parsed [%s]: typname='%s'\n", token0, typname);
 		trimname(typname);
 		strcpy(pfl->bname, typname);
 
@@ -540,6 +563,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	} else {
 		return 0;
 	}
+
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
@@ -548,7 +572,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			pfl->comment = strdup(comment);
 			if (nextline(fp) == 0)
 				break;
-		} else if (3 == sscanf(token0, "#irq; %s %i; %1023[^\n]c\n", irqname, &irq, comment)) {
+		} else if (3 == sscanf(token0, "#irq; %s %i; %1023[^\n]c", irqname, &irq, comment)) {
 			trimname(irqname);
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
@@ -636,10 +660,9 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file) {
 	pfl->irqrv_count = 0;
 
 	InitializeListHead(&pfl->regslist);
-	//pfl->regs = NULL; 
-	//pfl->nregs = 0; 
-	pfl->comment = NULL;
+
 	pfl->file = strdup(file);
+	pfl->comment = NULL;
 
 	//fprintf(stderr, "#error Opened file '%s'\n", file);
 
@@ -727,6 +750,19 @@ static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmap *v) {
 	}
 	return score;
 }
+
+/* release memory of bitfields */
+static void freebitfields(PLIST_ENTRY p) {
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;) {
+		struct bitfield *const fieldp = CONTAINING_RECORD(t, struct bitfield, item);
+		t = t->Flink;
+		free(fieldp->bitfldname);
+	}
+}
+
+/* release memory of register definitions */
 static void freeregdfn(PLIST_ENTRY p) {
 	PLIST_ENTRY t;
 	//fprintf(stderr, "Release memory\n");
@@ -736,6 +772,7 @@ static void freeregdfn(PLIST_ENTRY p) {
 		free(regp->fldname);
 		free(regp->comment);
 		freeregdfn(&regp->aggregate);
+		freebitfields(&regp->bitfields);
 		free(regp);
 	}
 }
