@@ -345,13 +345,6 @@ struct irqmap {
 	struct parsedfile *pfl;
 };
 
-struct irqmaprv {
-	int irqrv;
-	char *xname;
-	char *xcomment;
-	struct parsedfile *pfl;
-};
-
 /* qsort parameter */
 static int compare_base(const void *v1, const void *v2) {
 	const struct basemap *p1 = v1;
@@ -371,17 +364,6 @@ static int compare_irq(const void *v1, const void *v2) {
 		return strcmp(p1->xname, p2->xname);
 	}
 	return p1->irq - p2->irq;
-}
-
-/* qsort parameter */
-static int compare_irqrv(const void *v1, const void *v2) {
-	const struct irqmaprv *p1 = v1;
-	const struct irqmaprv *p2 = v2;
-
-	if (p1->irqrv == p2->irqrv) {
-		return strcmp(p1->xname, p2->xname);
-	}
-	return p1->irqrv - p2->irqrv;
 }
 
 /* qsort parameter */
@@ -733,14 +715,14 @@ static int collect_irq(struct parsedfile *pfl, int n, struct irqmap *v) {
 	return score;
 }
 
-static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmaprv *v) {
+static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmap *v) {
 	/* collect irq vectors */
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->irqrv_count && n--; ++i, ++v, ++score) {
 		v->xname = pfl->irqrv_xnames[i];
 		v->xcomment = pfl->irqrv_xcomments[i];
-		v->irqrv = pfl->irqrv_array[i];
+		v->irq = pfl->irqrv_array[i];
 		v->pfl = pfl;
 	}
 	return score;
@@ -1068,9 +1050,9 @@ static void generate_cmsis(void) {
 		const int maxbases = MAXIRQNUMBERS;
 		int nitems = 0;
 		int i;
-		struct irqmaprv *irqs;
+		struct irqmap *irqs;
 
-		irqs = calloc(maxbases, sizeof(struct irqmaprv));
+		irqs = calloc(maxbases, sizeof(struct irqmap));
 
 		{
 			PLIST_ENTRY t;
@@ -1080,11 +1062,11 @@ static void generate_cmsis(void) {
 			}
 		}
 		if (maxbases == nitems) {
-			fprintf(stderr, "Too large data (struct irqmaprv)\n");
+			fprintf(stderr, "Too large data (struct irqmap)\n");
 			return;
 		}
 
-		qsort(irqs, nitems, sizeof irqs[0], compare_irqrv);
+		qsort(irqs, nitems, sizeof irqs[0], compare_irq);
 
 		/* generate RISC-V IRQ vectors */
 		emitline(0, "\n");
@@ -1093,9 +1075,9 @@ static void generate_cmsis(void) {
 		emitline(0, "typedef enum IRQn\n");
 		emitline(0, "{\n");
 		for (i = 0; i < nitems; ++i) {
-			struct irqmaprv *const p = &irqs[i];
+			struct irqmap *const p = &irqs[i];
 			const char *comment = p->xcomment ? p->xcomment : p->pfl->comment ? p->pfl->comment : "";
-			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irqrv);
+			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irq);
 			emitline(COMMENTNEAR, "/*!< %s %s */\n", p->pfl->bname, comment);
 		}
 		emitline(0, "\n");
