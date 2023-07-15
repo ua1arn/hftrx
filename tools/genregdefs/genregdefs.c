@@ -599,8 +599,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
-				pfl->irqrv_xnames[pfl->irq_count] = strdup(irqname);
-				pfl->irqrv_xcomments[pfl->irq_count] = strdup(comment);
+				pfl->irqrv_xnames[pfl->irqrv_count] = strdup(irqname);
+				pfl->irqrv_xcomments[pfl->irqrv_count] = strdup(comment);
 				//
 				++pfl->irqrv_count;
 			}
@@ -613,8 +613,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
-				pfl->irqrv_xnames[pfl->irq_count] = strdup(irqname);
-				pfl->irqrv_xcomments[pfl->irq_count] = NULL;
+				pfl->irqrv_xnames[pfl->irqrv_count] = strdup(irqname);
+				pfl->irqrv_xcomments[pfl->irqrv_count] = NULL;
 				//
 				++pfl->irqrv_count;
 			}
