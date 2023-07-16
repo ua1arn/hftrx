@@ -38,7 +38,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
-	#define WITHUART2HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
+	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART2 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -616,11 +616,11 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-// WITHUART0HW
-// tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
+// WITHUART2HW
+// Используется периферийный контроллер последовательного порта UART2 */
 #define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TXMASK = (UINT32_C(1) << 5); /* PI5 UART2-TX */ \
-		const portholder_t RXMASK = (UINT32_C(1) << 6); /* PI6 UART2-RX - pull-up RX data */  \
+		const portholder_t TXMASK = UINT32_C(1) << 5; /* PI5 UART2-TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 6; /* PI6 UART2-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_updown(RXMASK, 0); \

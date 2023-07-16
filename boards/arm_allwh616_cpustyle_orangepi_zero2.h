@@ -12,9 +12,9 @@
 #ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED
 #define ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
@@ -26,7 +26,7 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2S01HW	1
@@ -38,13 +38,13 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
-	#define WITHUART2HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
+	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+//#define WITHCAT_USART0		1
+#define WITHDEBUG_USART0	1
+#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -617,13 +617,13 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART0HW
-// tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
-#define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TXMASK = (UINT32_C(1) << 5); /* PI5 UART2-TX */ \
-		const portholder_t RXMASK = (UINT32_C(1) << 6); /* PI6 UART2-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, 0); \
+// Используется периферийный контроллер последовательного порта UART0 */
+#define HARDWARE_UART0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0_RX - pull-up RX data */  \
+		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_updown(RXMASK, 0); \
 	} while (0)
 
 
@@ -874,7 +874,7 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	#if 1
+	#if 0
 		/* BL0: PA12. BL1: PA11, EN: PD28  */
 		#define	HARDWARE_BL_INITIALIZE() do { \
 			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA11:PA12 */ \
@@ -1022,20 +1022,20 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 24)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
-	#define BOARD_BLINK_BIT2 (UINT32_C(1) << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
 
-#if 0
+#if 1
+
+	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 12)	// PC12 PWR-LED - RED to ground
+	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 13)	// PC13 STATUS-LED - Green - to ground
+
+
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
+		arm_hardware_pioc_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_pioc_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-		gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
+		gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		gpioX_setstate(GPIOC, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
 	} while (0)
 #endif
 
@@ -1057,10 +1057,10 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*BOARD_BLINK_INITIALIZE(); */\
+			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
-			HARDWARE_BL_INITIALIZE(); \
+			/*HARDWARE_BL_INITIALIZE(); */\
 			HARDWARE_DCDC_INITIALIZE(); \
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
