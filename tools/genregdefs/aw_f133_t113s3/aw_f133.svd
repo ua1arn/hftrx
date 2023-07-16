@@ -10781,7 +10781,7 @@
   </peripheral>
   <peripheral>
   <name>PLIC</name>
-  <description></description>
+  <description>Platform-Level Interrupt Controller (PLIC)</description>
   <baseAddress>0x10000000</baseAddress>
   <registers>
    <cluster>

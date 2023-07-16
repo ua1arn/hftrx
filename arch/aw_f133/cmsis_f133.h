@@ -186,7 +186,7 @@ typedef enum IRQn
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG  Base */
 #define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)   /*!< C0_CPUX_MBIST  Base */
-#define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC  Base */
+#define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Platform-Level Interrupt Controller (PLIC) Base */
 #define CLINT_BASE ((uintptr_t) 0x14000000)           /*!< CLINT  Base */
 
 /*
@@ -1877,7 +1877,7 @@ typedef struct OWA_Type
 /*
  * @brief PLIC
  */
-/*!< PLIC  */
+/*!< PLIC Platform-Level Interrupt Controller (PLIC) */
 typedef struct PLIC_Type
 {
     volatile uint32_t PLIC_PRIO_REGn [0x400];         /*!< Offset 0x000 (0<n<256) PLIC Priority Register n - Interrupt Source Priority */
@@ -2811,7 +2811,7 @@ typedef struct USB_OHCI_Capability_Type
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
-#define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC  register set access pointer */
+#define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC Platform-Level Interrupt Controller (PLIC) register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */
 
 
