@@ -51,16 +51,16 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define WITHSDRAM_AXP308	1	/* power management chip */
+	////#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	////#define WITHSDRAM_AXP308	1	/* power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
-	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	////#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -1040,11 +1040,12 @@
 #endif
 
 	#if WITHISBOOTLOADER
+		// See WITHSDRAM_AXP308
 		int axp803_initialize(void);
 
 		/* Контроллер питания AXP803 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			axp803_initialize(); \
+			/*axp803_initialize(); */\
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 
