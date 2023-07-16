@@ -3739,8 +3739,6 @@ uint_fast32_t allwnrt113_get_dsi_freq(void)
 	}
 }
 
-#if CPUSTYLE_F133
-
 uint_fast32_t allwnrf133_get_riscv_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->RISC_CLK_REG;
@@ -3774,8 +3772,6 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 	}
 }
 
-#elif CPUSTYLE_T113
-
 // DSP (HiFi4)
 uint_fast32_t allwnrt113_get_dsp_freq(void)
 {
@@ -3801,8 +3797,6 @@ uint_fast32_t allwnrt113_get_dsp_freq(void)
 		return allwnrt113_get_audio1pll_div2_freq() / M;
 	}
 }
-
-#endif /* CPUSTYLE_F133 */
 
 uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
 {

@@ -6721,34 +6721,38 @@ void hightests(void)
 		// Test: write byte to 0x02500000 = UART0 data tegister
 		static const uint32_t code [] = {
 				0x02500537, // 37 05 50 02
-				0x0230059B,	// 9B 05 30 02 │
+				0x0230059B,	// 9B 05 30 02
 				0x00B50023, // 23 00 B5 00
 				0x0000006F, // 6F 00 00 00,
 		};
 
-		* (volatile uint32_t *) 0x070005DC = 0*0xFA50392Fu;	// Hotplug Flag Register
+		* (volatile uint32_t *) 0x070005DC = 1*UINT32_C(0xFA50392F);	// Hotplug Flag Register
 		* (volatile uint32_t *) 0x070005E0 = (uintptr_t) code;	// Soft Entry Address Register
 
 		dcache_clean_all();
 
-		printhex(0x06000000, (void *) 0x06000000, 0x10000);
-		//CCU->RISC_GATING_REG
-		CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
-		(void) CCU->RISC_CFG_BGR_REG;
-		PRINTF("CCU->RISC_CFG_BGR_REG=%08" PRIX32 "\n", CCU->RISC_CFG_BGR_REG);
+		//printhex32(0x070005DC, (void *) 0x070005DC, 4);
+		//printhex32(0x070005E0, (void *) 0x070005E0, 4);
+
+		//printhex(0x06000000, (void *) 0x06000000, 0x10000);
+		CCU->RISC_GATING_REG = 1*(UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
+		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
+
+		PRINTF("RISC_CFG->WORK_MODE_REG=%08" PRIX32 "\n", RISC_CFG->WORK_MODE_REG);
 
 		RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) code;
 		RISC_CFG->RISC_STA_ADD1_REG = 0;//(uint32_t) (uintptr_t) code >> 32;
 		//memset(RISC_CFG, ~ 0u, sizeof * RISC_CFG);
+
+		PRINTF("allwnrf133_get_riscv_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_freq());
 		PRINTF("CCU->RISC_GATING_REG=%08" PRIX32 ", CCU->RISC_CFG_BGR_REG=%08" PRIX32 "\n", CCU->RISC_GATING_REG, CCU->RISC_CFG_BGR_REG);
 		PRINTF("RISC_CFG->RISC_STA_ADD0_REG=%08" PRIX32 ", RISC_CFG->RISC_STA_ADD1_REG=%08" PRIX32 "\n", RISC_CFG->RISC_STA_ADD0_REG, RISC_CFG->RISC_STA_ADD1_REG);
 		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		local_delay_ms(3000);
-		//PRINTF("CCU->RISC_RST_REG=%08" PRIX32 "\n", CCU->RISC_RST_REG);
-		CCU->RISC_RST_REG = 0x16AA0001u;
-		(void) CCU->RISC_RST_REG;
-		//PRINTF("CCU->RISC_RST_REG=%08" PRIX32 "\n", CCU->RISC_RST_REG);
-		//ASSERT(CCU->RISC_RST_REG & 0x01u);
+		//((void (*) (void)) code)();		/* test code invokation for risc-v here */
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0x01;	/* tested on Allwinner F133 */
+		//TP();
+		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		for (;;)
 			;
 	}
