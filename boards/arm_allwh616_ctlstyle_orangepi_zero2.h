@@ -5,8 +5,8 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре Allwinner T507
-// v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// Orange Pi Zero 2
+// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2
 
 #ifndef ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED
 #define ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED 1

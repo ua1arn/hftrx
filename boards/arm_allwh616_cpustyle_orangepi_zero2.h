@@ -6,11 +6,11 @@
 // UA1ARN
 //
 
-// Трансивер с DSP обработкой "Аист" на процессоре Allwinner T507
-// v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// Orange Pi Zero 2
+// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2
 
-#ifndef ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED
+#define ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1068,4 +1068,4 @@
 			/*USBD_EHCI_INITIALIZE(); */\
 		} while (0)
 
-#endif /* ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED */
