@@ -6317,6 +6317,19 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 	readDATAFLASH(flashoffset, dest, Len);
 }
 
+void bootloader_verifyimage(unsigned long flashoffset, const uint8_t * dest, unsigned Len)
+{
+	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+	if (verifyDATAFLASH(flashoffset, dest, Len))
+	{
+		PRINTF("bootloader_verifyimage: errors\n");
+	}
+	else
+	{
+		PRINTF("bootloader_verifyimage: okay\n");
+	}
+}
+
 void bootloader_chiperase(void)
 {
 	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
