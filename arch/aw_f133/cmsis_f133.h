@@ -181,6 +181,7 @@ typedef enum IRQn
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG RISC-V core configuration register Base */
 #define RISC_WDG_BASE ((uintptr_t) 0x06011000)        /*!< RISC_WDG  Base */
 #define RISC_TIMESTAMP_BASE ((uintptr_t) 0x06012000)  /*!< RISC_TIMESTAMP  Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
@@ -2010,6 +2011,18 @@ typedef struct RTC_Type
     volatile uint32_t RTC_SPI_CLK_CTRL_REG;           /*!< Offset 0x310 RTC SPI Clock Control Register */
 } RTC_TypeDef; /* size of structure = 0x314 */
 /*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG  */
+typedef struct R_CPUCFG_Type
+{
+             uint32_t reserved_0x000 [0x0070];
+    volatile uint32_t HOTPLUGFLAG;                    /*!< Offset 0x1C0 The Hotplug Flag Register is 0x070005C0. */
+    volatile uint32_t SOFTENTRY [0x002];              /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
+             uint32_t reserved_0x1CC [0x0002];
+    volatile uint32_t SUP_STAN_FLAG;                  /*!< Offset 0x1D4 Super Standby Flag (bit 16) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1D8 */
+/*
  * @brief R_PRCM
  */
 /*!< R_PRCM  */
@@ -2807,6 +2820,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP Video Decoding register set access pointer */
 #define TVD0 ((TVD0_TypeDef *) TVD0_BASE)             /*!< TVD0 Video Decoding register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */

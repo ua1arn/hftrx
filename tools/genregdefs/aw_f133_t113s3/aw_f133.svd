@@ -11530,6 +11530,45 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>R_CPUCFG</name>
+  <description></description>
+  <baseAddress>0x07000400</baseAddress>
+  <registers>
+   <register>
+    <name>HOTPLUGFLAG</name>
+    <displayName>HOTPLUGFLAG</displayName>
+    <description>The Hotplug Flag Register is 0x070005C0.</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x000001C4</addressOffset>
+    <register>
+     <name>SOFTENTRY</name>
+     <displayName>SOFTENTRY</displayName>
+     <description>The Soft Entry Address Register of CPUx (x=0..1)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <register>
+    <name>SUP_STAN_FLAG</name>
+    <displayName>SUP_STAN_FLAG</displayName>
+    <description>Super Standby Flag (bit 16)</description>
+    <addressOffset>0x1D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>R_PRCM</name>
   <description></description>
   <baseAddress>0x07010000</baseAddress>
