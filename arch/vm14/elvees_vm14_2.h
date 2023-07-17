@@ -461,90 +461,30 @@ typedef struct SDMA_Type
     volatile uint32_t FSRC;                           /*!< Offset 0x034 RO Сбой потоков каналов */
     volatile uint32_t FTRD;                           /*!< Offset 0x038 RO Тип сбоя потока управления */
              uint32_t reserved_0x03C;
-    volatile uint32_t FTR0;                           /*!< Offset 0x040 RO Тип ошибки канала 0 */
-    volatile uint32_t FTR1;                           /*!< Offset 0x044 RO Тип ошибки канала 1 */
-    volatile uint32_t FTR2;                           /*!< Offset 0x048 RO Тип ошибки канала 2 */
-    volatile uint32_t FTR3;                           /*!< Offset 0x04C RO Тип ошибки канала 3 */
-    volatile uint32_t FTR4;                           /*!< Offset 0x050 RO Тип ошибки канала 4 */
-    volatile uint32_t FTR5;                           /*!< Offset 0x054 RO Тип ошибки канала 5 */
-    volatile uint32_t FTR6;                           /*!< Offset 0x058 RO Тип ошибки канала 6 */
-    volatile uint32_t FTR7;                           /*!< Offset 0x05C RO Тип ошибки канала 7 */
+    volatile uint32_t FTR [0x008];                    /*!< Offset 0x040 RO Тип ошибки канала 0..7 */
              uint32_t reserved_0x060 [0x0028];
-    volatile uint32_t CSR0;                           /*!< Offset 0x100 RO Статус канала 0 */
-    volatile uint32_t CPC0;                           /*!< Offset 0x104 RO PC канала 0 */
-    volatile uint32_t CSR1;                           /*!< Offset 0x108 RO Статус канала 1 */
-    volatile uint32_t CPC1;                           /*!< Offset 0x10C RO PC канала 1 */
-    volatile uint32_t CSR2;                           /*!< Offset 0x110 RO Статус канала 2 */
-    volatile uint32_t CPC2;                           /*!< Offset 0x114 RO PC канала 2 */
-    volatile uint32_t CSR3;                           /*!< Offset 0x118 RO Статус канала 3 */
-    volatile uint32_t CPC3;                           /*!< Offset 0x11C RO PC канала 3 */
-    volatile uint32_t CSR4;                           /*!< Offset 0x120 RO Статус канала 4 */
-    volatile uint32_t CPC4;                           /*!< Offset 0x124 RO PC канала 4 */
-    volatile uint32_t CSR5;                           /*!< Offset 0x128 RO Статус канала 5 */
-    volatile uint32_t CPC5;                           /*!< Offset 0x12C RO PC канала 5 */
-    volatile uint32_t CSR6;                           /*!< Offset 0x130 RO Статус канала 6 */
-    volatile uint32_t CPC6;                           /*!< Offset 0x134 RO PC канала 6 */
-    volatile uint32_t CSR7;                           /*!< Offset 0x138 RO Статус канала 7 */
-    volatile uint32_t CPC7;                           /*!< Offset 0x13C RO PC канала 7 */
+    struct
+    {
+        volatile uint32_t CSR;                        /*!< Offset 0x100 RO Статус канала 0..7 */
+        volatile uint32_t CPC;                        /*!< Offset 0x104 RO PC канала 0..7 */
+    } CSR_CPC [0x008];                                /*!< Offset 0x100 Статус и PC канала 0..7 */
              uint32_t reserved_0x140 [0x00B0];
-    volatile uint32_t SAR0;                           /*!< Offset 0x400 RO Адрес Источника для канала 0 */
-    volatile uint32_t DAR0;                           /*!< Offset 0x404 RO Адрес Приёмника для канала 0 */
-    volatile uint32_t CCR0;                           /*!< Offset 0x408 RO Регистр управления для канала 0 */
-    volatile uint32_t LC0_0;                          /*!< Offset 0x40C RO Счётчик циклов 0 для канала 0 */
-    volatile uint32_t LC1_0;                          /*!< Offset 0x410 RO Счётчик циклов 1 для канала 0 */
-             uint32_t reserved_0x414 [0x0003];
-    volatile uint32_t SAR1;                           /*!< Offset 0x420 RO Адрес Источника для канала 1 */
-    volatile uint32_t DAR1;                           /*!< Offset 0x424 RO Адрес Приёмника для канала 1 */
-    volatile uint32_t CCR1;                           /*!< Offset 0x428 RO Регистр управления для канала 1 */
-    volatile uint32_t LC0_1;                          /*!< Offset 0x42C RO Счётчик циклов 0 для канала 1 */
-    volatile uint32_t LC1_1;                          /*!< Offset 0x430 RO Счётчик циклов 1 для канала 1 */
-             uint32_t reserved_0x434 [0x0003];
-    volatile uint32_t SAR2;                           /*!< Offset 0x440 RO Адрес Источника для канала 2 */
-    volatile uint32_t DAR2;                           /*!< Offset 0x444 RO Адрес Приёмника для канала 2 */
-    volatile uint32_t CCR2;                           /*!< Offset 0x448 RO Регистр управления для канала 2 */
-    volatile uint32_t LC0_2;                          /*!< Offset 0x44C RO Счётчик циклов 0 для канала 2 */
-    volatile uint32_t LC1_2;                          /*!< Offset 0x450 RO Счётчик циклов 1 для канала 2 */
-             uint32_t reserved_0x454 [0x0003];
-    volatile uint32_t SAR3;                           /*!< Offset 0x460 RO Адрес Источника для канала 3 */
-    volatile uint32_t DAR3;                           /*!< Offset 0x464 RO Адрес Приёмника для канала 3 */
-    volatile uint32_t CCR3;                           /*!< Offset 0x468 RO Регистр управления для канала 3 */
-    volatile uint32_t LC0_3;                          /*!< Offset 0x46C RO Счётчик циклов 0 для канала 3 */
-    volatile uint32_t LC1_3;                          /*!< Offset 0x470 RO Счётчик циклов 1 для канала 3 */
-             uint32_t reserved_0x474 [0x0003];
-    volatile uint32_t SAR4;                           /*!< Offset 0x480 RO Адрес Источника для канала 4 */
-    volatile uint32_t DAR4;                           /*!< Offset 0x484 RO Адрес Приёмника для канала 4 */
-    volatile uint32_t CCR4;                           /*!< Offset 0x488 RO Регистр управления для канала 4 */
-    volatile uint32_t LC0_4;                          /*!< Offset 0x48C RO Счётчик циклов 0 для канала 4 */
-    volatile uint32_t LC1_4;                          /*!< Offset 0x490 RO Счётчик циклов 1 для канала 4 */
-             uint32_t reserved_0x494 [0x0003];
-    volatile uint32_t SAR5;                           /*!< Offset 0x4A0 RO Адрес Источника для канала 5 */
-    volatile uint32_t DAR5;                           /*!< Offset 0x4A4 RO Адрес Приёмника для канала 5 */
-    volatile uint32_t CCR5;                           /*!< Offset 0x4A8 RO Регистр управления для канала 5 */
-    volatile uint32_t LC0_5;                          /*!< Offset 0x4AC RO Счётчик циклов 0 для канала 5 */
-    volatile uint32_t LC1_5;                          /*!< Offset 0x4B0 RO Счётчик циклов 1 для канала 5 */
-             uint32_t reserved_0x4B4 [0x0003];
-    volatile uint32_t SAR6;                           /*!< Offset 0x4C0 RO Адрес Источника для канала 6 */
-    volatile uint32_t DAR6;                           /*!< Offset 0x4C4 RO Адрес Приёмника для канала 6 */
-    volatile uint32_t CCR6;                           /*!< Offset 0x4C8 RO Регистр управления для канала 6 */
-    volatile uint32_t LC0_6;                          /*!< Offset 0x4CC RO Счётчик циклов 0 для канала 6 */
-    volatile uint32_t LC1_6;                          /*!< Offset 0x4D0 RO Счётчик циклов 1 для канала 6 */
-             uint32_t reserved_0x4D4 [0x0003];
-    volatile uint32_t SAR7;                           /*!< Offset 0x4E0 RO Адрес Источника для канала 7 */
-    volatile uint32_t DAR7;                           /*!< Offset 0x4E4 RO Адрес Приёмника для канала 7 */
-    volatile uint32_t CCR7;                           /*!< Offset 0x4E8 RO Регистр управления для канала 7 */
-    volatile uint32_t LC0_7;                          /*!< Offset 0x4EC RO Счётчик циклов 0 для канала 7 */
-    volatile uint32_t LC1_7;                          /*!< Offset 0x4F0 RO Счётчик циклов 1 для канала 7 */
-             uint32_t reserved_0x4F4 [0x0203];
+    struct
+    {
+        volatile uint32_t SAR;                        /*!< Offset 0x400 RO Адрес Источника для канала 0..7 */
+        volatile uint32_t DAR;                        /*!< Offset 0x404 RO Адрес Приёмника для канала 0..7 */
+        volatile uint32_t CCR;                        /*!< Offset 0x408 RO Регистр управления для канала 0..7 */
+        volatile uint32_t LC0;                        /*!< Offset 0x40C RO Счётчик циклов 0 для канала 0..7 */
+        volatile uint32_t LC1;                        /*!< Offset 0x410 RO Счётчик циклов 1 для канала 0..7 */
+                 uint32_t reserved_0x014 [0x0003];
+    } CH [0x008];                                     /*!< Offset 0x400 Состояния каналов 0..7 */
+             uint32_t reserved_0x500 [0x0200];
     volatile uint32_t DBGSTATUS;                      /*!< Offset 0xD00 RO Debug Status Register */
     volatile uint32_t DBGCMD;                         /*!< Offset 0xD04 WO Debug Command Register */
     volatile uint32_t DBGINST0;                       /*!< Offset 0xD08 WO 0-ой регистр отладки */
     volatile uint32_t DBGINST1;                       /*!< Offset 0xD0C WO 1-ый регистр отладки */
              uint32_t reserved_0xD10 [0x003C];
-    volatile uint32_t CR0;                            /*!< Offset 0xE00 RO Регистр конфигурации 0 */
-    volatile uint32_t CR1;                            /*!< Offset 0xE04 RO Регистр конфигурации 1 */
-    volatile uint32_t CR2;                            /*!< Offset 0xE08 RO Регистр конфигурации 2 */
-    volatile uint32_t CR3;                            /*!< Offset 0xE0C RO Регистр конфигурации 3 */
-    volatile uint32_t CR4;                            /*!< Offset 0xE10 RO Регистр конфигурации 4 */
+    volatile uint32_t CR [0x005];                     /*!< Offset 0xE00 RO Регистр конфигурации 0..4 */
     volatile uint32_t CRD;                            /*!< Offset 0xE14 RO Конфигурация SDMA */
              uint32_t reserved_0xE18 [0x001A];
     volatile uint32_t WD;                             /*!< Offset 0xE80 RW Сторожевой регистр */
