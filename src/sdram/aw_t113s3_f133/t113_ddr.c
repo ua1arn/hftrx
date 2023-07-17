@@ -57,17 +57,6 @@ static uint32_t read32ptr(void * addr)
 	return read32((uintptr_t) addr);
 }
 
-////
-///
-//char *memcpy_self(char *dst, char *src, int len)
-//{
-//	int i;
-//	for (i = 0; i != len; i++) {
-//		dst[i] = src[i];
-//	}
-//	return dst;
-//}
-
 void sid_read_ldoB_cal(dram_para_t *para)
 {
 	uint32_t reg;
@@ -844,14 +833,38 @@ void mctl_com_init(dram_para_t *para)
 // It is unclear which lines are being remapped. It seems to pick
 // table cfg7 for the Nezha board.
 //
-static const uint8_t cfg0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static const uint8_t cfg1[] = {1, 9, 3, 7, 8, 18, 4, 13, 5, 6, 10, 2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
-static const uint8_t cfg2[] = {4, 9, 3, 7, 8, 18, 1, 13, 2, 6, 10, 5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
-static const uint8_t cfg3[] = {1, 7, 8, 12, 10, 18, 4, 13, 5, 6, 3, 2, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
-static const uint8_t cfg4[] = {4, 12, 10, 7, 8, 18, 1, 13, 2, 6, 3, 5, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
-static const uint8_t cfg5[] = {13, 2, 7, 9, 12, 19, 5, 1, 6, 3, 4, 8, 10, 0, 0, 0, 21, 22, 18, 17, 11, 20};
-static const uint8_t cfg6[] = {3, 10, 7, 13, 9, 11, 1, 2, 4, 6, 8, 5, 12, 0, 0, 0, 20, 1, 0, 21, 22, 17};
-static const uint8_t cfg7[] = {3, 2, 4, 7, 9, 1, 17, 12, 18, 14, 13, 8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11};
+
+// MCTL_COM_REMAP0,MCTL_COM_REMAP1,MCTL_COM_REMAP2, MCTL_COM_REMAP3 data
+
+static const uint8_t cfg0[] = { 0, 0, 0, 0, 0, 		0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 		0, 0, 0, 0, 0, 0};
+static const uint8_t cfg1[] = { 1, 9, 3, 7, 8, 		18, 4, 13, 5, 6, 10, 	2, 14, 12, 0, 0, 	21, 17, 20, 19, 11, 22};
+static const uint8_t cfg2[] = { 4, 9, 3, 7, 8, 		18, 1, 13, 2, 6, 10,	5, 14, 12, 0, 0, 	21, 17, 20, 19, 11, 22};
+static const uint8_t cfg3[] = { 1, 7, 8, 12, 10, 	18, 4, 13, 5, 6, 3, 	2, 9, 0, 0, 0, 		21, 17, 20, 19, 11, 22};
+static const uint8_t cfg4[] = { 4, 12, 10, 7, 8, 	18, 1, 13, 2, 6, 3, 	5, 9, 0, 0, 0, 		21, 17, 20, 19, 11, 22};
+static const uint8_t cfg5[] = { 13, 2, 7, 9, 12, 	19, 5, 1, 6, 3, 4, 		8, 10, 0, 0, 0, 	21, 22, 18, 17, 11, 20};	// T113-s3
+static const uint8_t cfg6[] = { 3, 10, 7, 13, 9, 	11, 1, 2, 4, 6, 8, 		5, 12, 0, 0, 0, 	20, 1, 0, 21, 22, 17};
+static const uint8_t cfg7[] = { 3, 2, 4, 7, 9, 1, 	17, 12, 18, 14, 13, 	8, 15, 6, 10, 5, 	19, 22, 16, 21, 20, 11};
+
+// MCTL_COM_REMAP2
+// 5 address remap fields
+static uint32_t pack_24_00(const uint8_t * pcfg)
+{
+	return (pcfg[4] << 20) | (pcfg[3] << 15) | (pcfg[2] << 10) | (pcfg[1] << 5) | (pcfg[0] << 0);
+}
+
+// MCTL_COM_REMAP0
+// 5 address remap fields
+static uint32_t pack_29_05(const uint8_t * pcfg)
+{
+	return (pcfg[4] << 25) | (pcfg[3] << 20) | (pcfg[2] << 15) | (pcfg[1] << 10) | (pcfg[0] << 5);
+}
+
+// MCTL_COM_REMAP1, MCTL_COM_REMAP3
+// 6 address remap fields
+static uint32_t pack_29_00(const uint8_t * pcfg)
+{
+	return (pcfg[5] << 25) | (pcfg[4] << 20) | (pcfg[3] << 15) | (pcfg[2] << 10) | (pcfg[1] << 5) | (pcfg[0] << 0);
+}
 
 void mctl_phy_ac_remapping(dram_para_t *para)
 {
@@ -861,76 +874,55 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 	fuse = (read32(SID_BASE + 0x228) << 0x14) >> 0x1c;
 	PRINTF("ddr_efuse_type: 0x%x\n", fuse);
 
+	//SID->SID_DATA [0]
+	// T113-S3: 0x60 (sid=93406000 ac004814 01440821 5c6b1bcb)
+	// F133-A:  0x5C (sid=93005c00 ac004814 01425a4c 644c1dcb)
 	val = (unsigned int)(read32(SID_BASE + 0x200) << 0x10) >> 0x18;
 	PRINTF("mark_id: 0x%x\n", val);
 
 	if ((para->dram_tpr13 >> 18) & 0x3) {
-		//memcpy_self(cfg0, cfg7, 22);
 		pcfg = cfg7;
 	} else {
 		switch (fuse) {
-#if 1
 			case 8:
-				//memcpy_self(cfg0, cfg2, 22);
 				pcfg = cfg2;
 				break;
 			case 9:
-				//memcpy_self(cfg0, cfg3, 22);
 				pcfg = cfg3;
 				break;
-#endif
 			case 10:
-				// T113-s3
-				// F133-A
-				//memcpy_self(cfg0, cfg5, 22);
+				// T113-s3, F133-A
 				pcfg = cfg5;
 				break;
-#if 1
 			case 11:
-				//memcpy_self(cfg0, cfg4, 22);
 				pcfg = cfg4;
 				break;
 			default:
 			case 12:
-				//memcpy_self(cfg0, cfg1, 22);
 				pcfg = cfg1;
 				break;
 			case 13:
 			case 14:
 				pcfg = cfg0;
 				break;
-#endif
 		}
 	}
 
 	if (para->dram_type == 2) {
 		if (fuse == 15)
 			return;
-		//memcpy_self(cfg0, cfg6, 22);
 		pcfg = cfg6;
 		pcfg = cfg0;	// FIXME: for F133-A tested
 	}
 
 	if (para->dram_type == 2 || para->dram_type == 3) {
-		val = (pcfg[4] << 25) | (pcfg[3] << 20) | (pcfg[2] << 15) | (pcfg[1] << 10) | (pcfg[0] << 5);
-		//write32(MSI_MEMC_BASE + 0x500, val);
-		MSI_MEMC->MCTL_COM_REMAP0 = val;
 
-		val = (pcfg[10] << 25) | (pcfg[9] << 20) | (pcfg[8] << 15) | (pcfg[7] << 10) | (pcfg[6] << 5) | pcfg[5];
-		//write32(MSI_MEMC_BASE + 0x504, val);
-		MSI_MEMC->MCTL_COM_REMAP1 = val;
+		MSI_MEMC->MCTL_COM_REMAP0 = pack_29_05(pcfg + 0);	// 5 bytes used
+		MSI_MEMC->MCTL_COM_REMAP1 = pack_29_00(pcfg + 5);	// 6 bytes used
+		MSI_MEMC->MCTL_COM_REMAP2 = pack_24_00(pcfg + 11);	// 5 bytes used
+		MSI_MEMC->MCTL_COM_REMAP3 = pack_29_00(pcfg + 16);	// 6 bytes used
 
-		val = (pcfg[15] << 20) | (pcfg[14] << 15) | (pcfg[13] << 10) | (pcfg[12] << 5) | pcfg[11];
-		//write32(MSI_MEMC_BASE + 0x508, val);
-		MSI_MEMC->MCTL_COM_REMAP2 = val;
-
-		val = (pcfg[21] << 25) | (pcfg[20] << 20) | (pcfg[19] << 15) | (pcfg[18] << 10) | (pcfg[17] << 5) | pcfg[16];
-		//write32(MSI_MEMC_BASE + 0x50c, val);
-		MSI_MEMC->MCTL_COM_REMAP3 = val;
-
-		val = (pcfg[4] << 25) | (pcfg[3] << 20) | (pcfg[2] << 15) | (pcfg[1] << 10) | (pcfg[0] << 5) | 1;
-		//write32(MSI_MEMC_BASE + 0x500, val);
-		MSI_MEMC->MCTL_COM_REMAP0 = val;
+		MSI_MEMC->MCTL_COM_REMAP0 |= UINT32_C(1) << 0;
 	}
 
 }
