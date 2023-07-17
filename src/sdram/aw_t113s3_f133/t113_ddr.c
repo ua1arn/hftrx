@@ -678,7 +678,7 @@ int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	unsigned int val, clk, n;
 	unsigned MHZ = allwnrt113_get_hosc_freq() / 1000000;
 
-	clk = (para->dram_tpr13 & (1 << 6)) ? para->dram_tpr9 : para->dram_clk;
+	clk = (para->dram_tpr13 & (UINT32_C(1) << 6)) ? para->dram_tpr9 : para->dram_clk;
 
 	// set VCO clock divider
 	n = (clk * 2) / MHZ;
@@ -822,7 +822,7 @@ void mctl_com_init(dram_para_t *para)
 	write32(DDRPHYC_BASE + 0x120, val);
 
 	// set mctl reg 3c4 to zero when using half DQ
-	if (para->dram_para2 & (1 << 0)) {
+	if (para->dram_para2 & (UINT32_C(1) << 0)) {
 		write32(DDRPHYC_BASE + 0x3c4, 0);
 	}
 
@@ -1008,10 +1008,10 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	val = read32(DDRPHYC_BASE + 0x0c0);
 	val &= 0xf0000000;
-	val |= (para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007; // 0x01003087 XXX
+	val |= (para->dram_para2 & (UINT32_C(1) << 12)) ? 0x03000001 : 0x01000007; // 0x01003087 XXX
 	write32(DDRPHYC_BASE + 0x0c0, val);
 
-	if (R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) {
+	if (R_CPUCFG->SUP_STAN_FLAG & (UINT32_C(1) << 16)) {
 		val = read32(R_PRCM_BASE  + 0x0250);
 		val &= 0xfffffffd;
 		write32(R_PRCM_BASE  + 0x0250, val);
@@ -1045,7 +1045,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 		}
 
 	} else {
-		if ((R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) == 0) {
+		if ((R_CPUCFG->SUP_STAN_FLAG & (UINT32_C(1) << 16)) == 0) {
 			// prep DRAM init + PHY reset + d-cal + PLL init + z-cal
 			//			val = (para->dram_type == 3) ? 0x1f2	// + DRAM reset
 			//						     : 0x172;
@@ -1072,7 +1072,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	while ((DDRPHYC->PHYC_REG_010 & 0x1) == 0) {
 	} // wait for IDONE
 
-	if (R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) {
+	if (R_CPUCFG->SUP_STAN_FLAG & (UINT32_C(1) << 16)) {
 		val = read32(DDRPHYC_BASE + 0x10c);
 		val &= 0xf9ffffff;
 		val |= 0x04000000;
@@ -1223,7 +1223,7 @@ int dqs_gate_detect(dram_para_t *para)
 	unsigned int u1;
 	unsigned int u2;
 
-	if (DDRPHYC->PHYC_REG_010 & (1 << 22)) {
+	if (DDRPHYC->PHYC_REG_010 & (UINT32_C(1) << 22)) {
 		u1 = (uint32_t)(read32(DDRPHYC_BASE + 0x348) << 6) >> 0x1e;
 		u2 = (uint32_t)(read32(DDRPHYC_BASE + 0x3c8) << 6) >> 0x1e;
 
@@ -1301,12 +1301,12 @@ void mctl_vrefzq_init(dram_para_t *para)
 {
 	unsigned int val;
 
-	if ((para->dram_tpr13 & (1 << 17)) == 0) {
+	if ((para->dram_tpr13 & (UINT32_C(1) << 17)) == 0) {
 		val = read32(DDRPHYC_BASE + 0x110) & 0x80808080; // IOCVR0
 		val |= para->dram_tpr5;
 		write32(DDRPHYC_BASE + 0x110, val);
 
-		if ((para->dram_tpr13 & (1 << 16)) == 0) {
+		if ((para->dram_tpr13 & (UINT32_C(1) << 16)) == 0) {
 			val = read32(DDRPHYC_BASE + 0x114) & 0xffffff80; // IOCVR1
 			val |= para->dram_tpr6 & 0x7f;
 			write32(DDRPHYC_BASE + 0x114, val);
@@ -1374,7 +1374,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		// Scan per address line, until address wraps (i.e. see shadow)
 		for (i = 11; i < 17; i++) {
-			chk = DRAM_SPACE_BASE + (1 << (i + 11));
+			chk = DRAM_SPACE_BASE + (UINT32_C(1) << (i + 11));
 			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
 				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
@@ -1413,7 +1413,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			;
 
 		// Test if bit A23 is BA2 or mirror XXX A22?
-		chk = DRAM_SPACE_BASE + (1 << 22);
+		chk = DRAM_SPACE_BASE + (UINT32_C(1) << 22);
 		ptr = DRAM_SPACE_BASE;
 		for (i = 0, j = 0; i < 64; i++) {
 			if (read32(chk) != (uint32_t) (((i & 1) ? ptr : ~ptr))) {
@@ -1451,7 +1451,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		// Scan per address line, until address wraps (i.e. see shadow)
 		for (i = 9; i < 14; i++) {
-			chk = DRAM_SPACE_BASE + (1 << i);
+			chk = DRAM_SPACE_BASE + (UINT32_C(1) << i);
 			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
 				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
@@ -1464,7 +1464,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 		}
 		if (i > 13)
 			i = 13;
-		int pgsize = (i == 9) ? 0 : (1 << (i - 10));
+		int pgsize = (i == 9) ? 0 : (UINT32_C(1) << (i - 10));
 		PRINTF("[AUTO DEBUG] rank %d page size = %d KB\n", rank, pgsize);
 
 		// Store page size
@@ -1525,7 +1525,7 @@ int auto_scan_dram_rank_width(dram_para_t *para)
 
 	mctl_core_init(para);
 
-	if (DDRPHYC->PHYC_REG_010 & (1 << 20)) {
+	if (DDRPHYC->PHYC_REG_010 & (UINT32_C(1) << 20)) {
 		return 0;
 	}
 
@@ -1545,15 +1545,15 @@ int auto_scan_dram_rank_width(dram_para_t *para)
 //
 int auto_scan_dram_config(dram_para_t *para)
 {
-	if (((para->dram_tpr13 & (1 << 14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
+	if (((para->dram_tpr13 & (UINT32_C(1) << 14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
 		PRINTF("[ERROR DEBUG] auto scan dram rank & width failed !\n");
 		return 0;
 	}
-	if (((para->dram_tpr13 & (1 << 0)) == 0) && (auto_scan_dram_size(para) == 0)) {
+	if (((para->dram_tpr13 & (UINT32_C(1) << 0)) == 0) && (auto_scan_dram_size(para) == 0)) {
 		PRINTF("[ERROR DEBUG] auto scan dram size failed !\n");
 		return 0;
 	}
-	if ((para->dram_tpr13 & (1 << 15)) == 0) {
+	if ((para->dram_tpr13 & (UINT32_C(1) << 15)) == 0) {
 		para->dram_tpr13 |= 0x6003;
 	}
 	return 1;
@@ -1628,7 +1628,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 
 #if 0
 	// Purpose ??
-	if (para->dram_tpr13 & (1 << 30)) {
+	if (para->dram_tpr13 & (UINT32_C(1) << 30)) {
 		rc = read32(&para->dram_tpr8);
 		if (rc == 0) {
 			rc = 0x10000200;
@@ -1656,13 +1656,13 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		write32(DDRPHYC_BASE + 0x100, rc | 0x5000);
 	}
 
-	write32(DDRPHYC_BASE + 0x140, DDRPHYC->PHYC_REG_140 | (1 << 31));
-	if (para->dram_tpr13 & (1 << 8)) {
+	write32(DDRPHYC_BASE + 0x140, DDRPHYC->PHYC_REG_140 | (UINT32_C(1) << 31));
+	if (para->dram_tpr13 & (UINT32_C(1) << 8)) {
 		write32(DDRPHYC_BASE + 0x0b8, DDRPHYC->PHYC_REG_140 | 0x300);
 	}
 
 	rc = read32(DDRPHYC_BASE + 0x108);
-	if (para->dram_tpr13 & (1 << 16)) {
+	if (para->dram_tpr13 & (UINT32_C(1) << 16)) {
 		rc &= 0xffffdfff;
 	} else {
 		rc |= 0x00002000;
@@ -1677,9 +1677,9 @@ int init_DRAM(int type, dram_para_t *para) // s0
 	}
 
 	dram_enable_all_master();
-	if (para->dram_tpr13 & (1 << 28)) {
+	if (para->dram_tpr13 & (UINT32_C(1) << 28)) {
 		rc = R_CPUCFG->SUP_STAN_FLAG;
-		if ((rc & (1 << 16)) || dramc_simple_wr_test(mem_size, 4096)) {
+		if ((rc & (UINT32_C(1) << 16)) || dramc_simple_wr_test(mem_size, 4096)) {
 			return 0;
 		}
 	}
