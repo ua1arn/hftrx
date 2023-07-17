@@ -59,14 +59,14 @@ static uint32_t read32ptr(void * addr)
 
 ////
 ///
-char *memcpy_self(char *dst, char *src, int len)
-{
-	int i;
-	for (i = 0; i != len; i++) {
-		dst[i] = src[i];
-	}
-	return dst;
-}
+//char *memcpy_self(char *dst, char *src, int len)
+//{
+//	int i;
+//	for (i = 0; i != len; i++) {
+//		dst[i] = src[i];
+//	}
+//	return dst;
+//}
 
 void sid_read_ldoB_cal(dram_para_t *para)
 {
@@ -844,18 +844,19 @@ void mctl_com_init(dram_para_t *para)
 // It is unclear which lines are being remapped. It seems to pick
 // table cfg7 for the Nezha board.
 //
-static char cfg0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static char cfg1[] = {1, 9, 3, 7, 8, 18, 4, 13, 5, 6, 10, 2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg2[] = {4, 9, 3, 7, 8, 18, 1, 13, 2, 6, 10, 5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg3[] = {1, 7, 8, 12, 10, 18, 4, 13, 5, 6, 3, 2, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg4[] = {4, 12, 10, 7, 8, 18, 1, 13, 2, 6, 3, 5, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg5[] = {13, 2, 7, 9, 12, 19, 5, 1, 6, 3, 4, 8, 10, 0, 0, 0, 21, 22, 18, 17, 11, 20};
-static char cfg6[] = {3, 10, 7, 13, 9, 11, 1, 2, 4, 6, 8, 5, 12, 0, 0, 0, 20, 1, 0, 21, 22, 17};
-static char cfg7[] = {3, 2, 4, 7, 9, 1, 17, 12, 18, 14, 13, 8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11};
+static const uint8_t cfg0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static const uint8_t cfg1[] = {1, 9, 3, 7, 8, 18, 4, 13, 5, 6, 10, 2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
+static const uint8_t cfg2[] = {4, 9, 3, 7, 8, 18, 1, 13, 2, 6, 10, 5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
+static const uint8_t cfg3[] = {1, 7, 8, 12, 10, 18, 4, 13, 5, 6, 3, 2, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
+static const uint8_t cfg4[] = {4, 12, 10, 7, 8, 18, 1, 13, 2, 6, 3, 5, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
+static const uint8_t cfg5[] = {13, 2, 7, 9, 12, 19, 5, 1, 6, 3, 4, 8, 10, 0, 0, 0, 21, 22, 18, 17, 11, 20};
+static const uint8_t cfg6[] = {3, 10, 7, 13, 9, 11, 1, 2, 4, 6, 8, 5, 12, 0, 0, 0, 20, 1, 0, 21, 22, 17};
+static const uint8_t cfg7[] = {3, 2, 4, 7, 9, 1, 17, 12, 18, 14, 13, 8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11};
 
 void mctl_phy_ac_remapping(dram_para_t *para)
 {
 	unsigned int fuse, val;
+	const uint8_t * pcfg;
 
 	fuse = (read32(SID_BASE + 0x228) << 0x14) >> 0x1c;
 	PRINTF("ddr_efuse_type: 0x%x\n", fuse);
@@ -864,30 +865,39 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 	PRINTF("mark_id: 0x%x\n", val);
 
 	if ((para->dram_tpr13 >> 18) & 0x3) {
-		memcpy_self(cfg0, cfg7, 22);
+		//memcpy_self(cfg0, cfg7, 22);
+		pcfg = cfg7;
 	} else {
 		switch (fuse) {
 #if 1
 			case 8:
-				memcpy_self(cfg0, cfg2, 22);
+				//memcpy_self(cfg0, cfg2, 22);
+				pcfg = cfg2;
 				break;
 			case 9:
-				memcpy_self(cfg0, cfg3, 22);
+				//memcpy_self(cfg0, cfg3, 22);
+				pcfg = cfg3;
 				break;
 #endif
 			case 10:
-				memcpy_self(cfg0, cfg5, 22);
+				// T113-s3
+				// F133-A
+				//memcpy_self(cfg0, cfg5, 22);
+				pcfg = cfg5;
 				break;
 #if 1
 			case 11:
-				memcpy_self(cfg0, cfg4, 22);
+				//memcpy_self(cfg0, cfg4, 22);
+				pcfg = cfg4;
 				break;
 			default:
 			case 12:
-				memcpy_self(cfg0, cfg1, 22);
+				//memcpy_self(cfg0, cfg1, 22);
+				pcfg = cfg1;
 				break;
 			case 13:
 			case 14:
+				pcfg = cfg0;
 				break;
 #endif
 		}
@@ -896,25 +906,33 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 	if (para->dram_type == 2) {
 		if (fuse == 15)
 			return;
-		memcpy_self(cfg0, cfg6, 22);
+		//memcpy_self(cfg0, cfg6, 22);
+		pcfg = cfg6;
+		pcfg = cfg0;	// FIXME: for F133-A tested
 	}
 
 	if (para->dram_type == 2 || para->dram_type == 3) {
-		val = (cfg0[4] << 25) | (cfg0[3] << 20) | (cfg0[2] << 15) | (cfg0[1] << 10) | (cfg0[0] << 5);
-		write32(MSI_MEMC_BASE + 0x500, val);
+		val = (pcfg[4] << 25) | (pcfg[3] << 20) | (pcfg[2] << 15) | (pcfg[1] << 10) | (pcfg[0] << 5);
+		//write32(MSI_MEMC_BASE + 0x500, val);
+		MSI_MEMC->MCTL_COM_REMAP0 = val;
 
-		val = (cfg0[10] << 25) | (cfg0[9] << 20) | (cfg0[8] << 15) | (cfg0[7] << 10) | (cfg0[6] << 5) | cfg0[5];
-		write32(MSI_MEMC_BASE + 0x504, val);
+		val = (pcfg[10] << 25) | (pcfg[9] << 20) | (pcfg[8] << 15) | (pcfg[7] << 10) | (pcfg[6] << 5) | pcfg[5];
+		//write32(MSI_MEMC_BASE + 0x504, val);
+		MSI_MEMC->MCTL_COM_REMAP1 = val;
 
-		val = (cfg0[15] << 20) | (cfg0[14] << 15) | (cfg0[13] << 10) | (cfg0[12] << 5) | cfg0[11];
-		write32(MSI_MEMC_BASE + 0x508, val);
+		val = (pcfg[15] << 20) | (pcfg[14] << 15) | (pcfg[13] << 10) | (pcfg[12] << 5) | pcfg[11];
+		//write32(MSI_MEMC_BASE + 0x508, val);
+		MSI_MEMC->MCTL_COM_REMAP2 = val;
 
-		val = (cfg0[21] << 25) | (cfg0[20] << 20) | (cfg0[19] << 15) | (cfg0[18] << 10) | (cfg0[17] << 5) | cfg0[16];
-		write32(MSI_MEMC_BASE + 0x50c, val);
+		val = (pcfg[21] << 25) | (pcfg[20] << 20) | (pcfg[19] << 15) | (pcfg[18] << 10) | (pcfg[17] << 5) | pcfg[16];
+		//write32(MSI_MEMC_BASE + 0x50c, val);
+		MSI_MEMC->MCTL_COM_REMAP3 = val;
 
-		val = (cfg0[4] << 25) | (cfg0[3] << 20) | (cfg0[2] << 15) | (cfg0[1] << 10) | (cfg0[0] << 5) | 1;
-		write32(MSI_MEMC_BASE + 0x500, val);
+		val = (pcfg[4] << 25) | (pcfg[3] << 20) | (pcfg[2] << 15) | (pcfg[1] << 10) | (pcfg[0] << 5) | 1;
+		//write32(MSI_MEMC_BASE + 0x500, val);
+		MSI_MEMC->MCTL_COM_REMAP0 = val;
 	}
+
 }
 
 // Init the controller channel. The key part is placing commands in the main
