@@ -921,8 +921,10 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 		MCTL_COM->MCTL_COM_REMAP1 = pack_29_00(pcfg + 5);	// 6 bytes used
 		MCTL_COM->MCTL_COM_REMAP2 = pack_24_00(pcfg + 11);	// 5 bytes used
 		MCTL_COM->MCTL_COM_REMAP3 = pack_29_00(pcfg + 16);	// 6 bytes used
-
-		MCTL_COM->MCTL_COM_REMAP0 |= UINT32_C(1) << 0;
+		if (para->dram_type != 2) {
+			// FIXME: for F133-A tested
+			MCTL_COM->MCTL_COM_REMAP0 |= UINT32_C(1) << 0;
+		}
 	}
 
 }
