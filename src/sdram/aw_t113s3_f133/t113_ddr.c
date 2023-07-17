@@ -1698,7 +1698,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		}
 	}
 
-	return mem_size;
+	return mem_size != 0;
 }
 
 #endif /* CPUSTYLE_T113 */
