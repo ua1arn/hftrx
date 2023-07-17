@@ -48,6 +48,7 @@ typedef enum IRQn
     I2C0_IC_INTR_IRQn = 100,                          /*!< I2C  */
     I2C1_IC_INTR_IRQn = 101,                          /*!< I2C  */
     I2C2_IC_INTR_IRQn = 102,                          /*!< I2C  */
+    I2S0_IRQn = 104,                                  /*!< I2S Прерывание от I2S0 */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -66,6 +67,7 @@ typedef enum IRQn
 #define I2C0_BASE ((uintptr_t) 0x3802C000)            /*!< I2C  Base */
 #define I2C1_BASE ((uintptr_t) 0x3802D000)            /*!< I2C  Base */
 #define I2C2_BASE ((uintptr_t) 0x3802E000)            /*!< I2C  Base */
+#define I2S0_BASE ((uintptr_t) 0x38030000)            /*!< I2S Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. Base */
 #define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Регистры блока управления GPIO Base */
 #define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Регистры блока управления GPIO Base */
 #define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Регистры блока управления GPIO Base */
@@ -210,6 +212,90 @@ typedef struct I2C_Type
     volatile uint32_t IC_FS_SPKLEN;                   /*!< Offset 0x0A0 Регистр управления фильтрацией для standard-speed и fast.speed режимов W/R 0x5 0xA0 */
     volatile uint32_t IC_HS_SPKLEN;                   /*!< Offset 0x0A4 Регистр управления фильтрацией для high.speed режима. W/R 0x1 0xA4 */
 } I2C_TypeDef; /* size of structure = 0x0A8 */
+/*
+ * @brief I2S
+ */
+/*!< I2S Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. */
+typedef struct I2S_Type
+{
+    volatile uint32_t IER;                            /*!< Offset 0x000 Регистр включения контроллера. W/R 0x0 0x0 */
+    volatile uint32_t IRER;                           /*!< Offset 0x004 Регистр включения блока приема. W/R 0x0 0x4 */
+    volatile uint32_t ITER;                           /*!< Offset 0x008 Регистр включения блока передачи. W/R 0x0 0x8 */
+    volatile uint32_t CER;                            /*!< Offset 0x00C Регистр включения тактовой частоты. W/R 0x0 0xC */
+    volatile uint32_t CCR;                            /*!< Offset 0x010 Регистр конфигурации тактовой частоты. W/R 0x10 0x10 */
+    volatile uint32_t RXFFR;                          /*!< Offset 0x014 Регистр сброса FIFO буферов блока приема. W 0x0 0x14 */
+    volatile uint32_t TXFFR;                          /*!< Offset 0x018 Регистр сброса FIFO буферов блока передачи. W 0x0 0x18 */
+             uint32_t reserved_0x01C;
+    volatile uint32_t LRBR0_LTHR0;                    /*!< Offset 0x020 Регистр «левого» слова приемника. R 0x0 0x20, Регистр «левого» слова нулевого передатчика. W 0x0 0x20 */
+    volatile uint32_t RRBR0;                          /*!< Offset 0x024 Регистр «правого» слова приемника. R 0x0 0x24, Регистр «правого» слова нулевого передатчика. W 0x0 0x24 */
+    volatile uint32_t RER0;                           /*!< Offset 0x028 Регистр включения приемника. W/R 0x1 0x28 */
+    volatile uint32_t TER0;                           /*!< Offset 0x02C Регистр включения нулевого передатчика. W/R 0x1 0x2C */
+    volatile uint32_t RCR0;                           /*!< Offset 0x030 Регистр конфигурации приемника. W/R 0x5 0x30 */
+    volatile uint32_t TCR0;                           /*!< Offset 0x034 Регистр конфигурации нулевого передатчика. W/R 0x5 0x34 */
+    volatile uint32_t ISR0;                           /*!< Offset 0x038 Регистр статуса прерывания нулевого канала. R 0x10 0x38 */
+    volatile uint32_t IMR0;                           /*!< Offset 0x03C Регистр маски прерывания нулевого канала. W/R 0x33 0x3C */
+    volatile uint32_t ROR0;                           /*!< Offset 0x040 Регистр переполнения FIFO приемника. R 0x0 0x40 */
+    volatile uint32_t TOR0;                           /*!< Offset 0x044 Регистр переполнения FIFO нулевого передатчика. R 0x0 0x44 */
+    volatile uint32_t RFCR0;                          /*!< Offset 0x048 Регистр конфигурации FIFO приемника. W/R 0x3 0x48 */
+    volatile uint32_t TFCR0;                          /*!< Offset 0x04C Регистр конфигурации FIFO нулевого передатчика. W/R 0x3 0x4C */
+    volatile uint32_t RFF0;                           /*!< Offset 0x050 Регистр сброса FIFO приемника. W 0x0 0x50 */
+    volatile uint32_t TFF0;                           /*!< Offset 0x054 Регистр сброса FIFO нулевого передатчика. W 0x0 0x54 */
+             uint32_t reserved_0x058 [0x0002];
+    volatile uint32_t LTHR1;                          /*!< Offset 0x060 Регистр «левого» слова первого передатчика. W 0x0 0x60 */
+    volatile uint32_t RTHR1;                          /*!< Offset 0x064 Регистр «правого» слова первого передатчика. W 0x0 0x64 */
+             uint32_t reserved_0x068;
+    volatile uint32_t TER1;                           /*!< Offset 0x06C Регистр включения первого передатчика W/R 0x1 0x6C */
+             uint32_t reserved_0x070;
+    volatile uint32_t TCR1;                           /*!< Offset 0x074 Регистр конфигурации первого передатчика. W/R 0x5 0x74 */
+    volatile uint32_t ISR1;                           /*!< Offset 0x078 Регистр статуса прерывания первого канала. R 0x10 0x78 */
+    volatile uint32_t IMR1;                           /*!< Offset 0x07C Регистр маски прерывания первого канала. W/R 0x33 0x7C */
+             uint32_t reserved_0x080;
+    volatile uint32_t TOR1;                           /*!< Offset 0x084 Регистр переполнения первого передатчика. R 0x0 0x84 */
+             uint32_t reserved_0x088;
+    volatile uint32_t TFCR1;                          /*!< Offset 0x08C Регистр конфигурации FIFO первого передатчика. W/R 0x3 0x8C */
+             uint32_t reserved_0x090;
+    volatile uint32_t TFF1;                           /*!< Offset 0x094 Регистр сброса FIFO первого передатчика. W 0x0 0x94 */
+             uint32_t reserved_0x098 [0x0002];
+    volatile uint32_t LTHR2;                          /*!< Offset 0x0A0 Регистр «левого» слова второго передатчика. W 0x0 0xA0 */
+    volatile uint32_t RTHR2;                          /*!< Offset 0x0A4 Регистр «правого» слова второго передатчика. W 0x0 0xA4 */
+             uint32_t reserved_0x0A8;
+    volatile uint32_t TER2;                           /*!< Offset 0x0AC Регистр включения второго передатчика W/R 0x1 0xAC */
+             uint32_t reserved_0x0B0;
+    volatile uint32_t TCR2;                           /*!< Offset 0x0B4 Регистр конфигурации второго передатчика. W/R 0x5 0xB4 */
+    volatile uint32_t ISR2;                           /*!< Offset 0x0B8 Регистр статуса прерывания второго канала. R 0x10 0xB8 */
+    volatile uint32_t IMR2;                           /*!< Offset 0x0BC Регистр маски прерывания второго канала. W/R 0x33 0xBC */
+             uint32_t reserved_0x0C0;
+    volatile uint32_t TOR2;                           /*!< Offset 0x0C4 Регистр переполнения второго передатчика. R 0x0 0xC4 */
+             uint32_t reserved_0x0C8;
+    volatile uint32_t TFCR2;                          /*!< Offset 0x0CC Регистр конфигурации FIFO второго передатчика. W/R 0x3 0xCC */
+             uint32_t reserved_0x0D0;
+    volatile uint32_t TFF2;                           /*!< Offset 0x0D4 Регистр сброса FIFO второго передатчика. W 0x0 0xD4 */
+             uint32_t reserved_0x0D8 [0x0002];
+    volatile uint32_t LTHR3;                          /*!< Offset 0x0E0 Регистр «левого» слова третьего передатчика. W 0x0 0xE0 */
+    volatile uint32_t RTHR3;                          /*!< Offset 0x0E4 Регистр «правого» слова третьего передатчика. W 0x0 0xE4 */
+             uint32_t reserved_0x0E8;
+    volatile uint32_t TER3;                           /*!< Offset 0x0EC Регистр включения третьего передатчика W/R 0x1 0xEC */
+             uint32_t reserved_0x0F0;
+    volatile uint32_t TCR3;                           /*!< Offset 0x0F4 Регистр конфигурации третьего передатчика. W/R 0x5 0xF4 */
+    volatile uint32_t ISR3;                           /*!< Offset 0x0F8 Регистр статуса прерывания третьего канала. R 0x10 0xF8 */
+    volatile uint32_t IMR3;                           /*!< Offset 0x0FC Регистр маски прерывания третьего канала. W/R 0x33 0xFC */
+             uint32_t reserved_0x100;
+    volatile uint32_t TOR3;                           /*!< Offset 0x104 Регистр переполнения третьего передатчика. R 0x0 0x104 */
+             uint32_t reserved_0x108;
+    volatile uint32_t TFCR3;                          /*!< Offset 0x10C Регистр конфигурации FIFO третьего передатчика. W/R 0x3 0x10C */
+             uint32_t reserved_0x110;
+    volatile uint32_t TFF3;                           /*!< Offset 0x114 Регистр сброса FIFO третьего передатчика. W 0x0 0x114 */
+             uint32_t reserved_0x118 [0x002A];
+    volatile uint32_t RXDMA;                          /*!< Offset 0x1C0 Регистр DMA приема. R 0x0 0x1C0 */
+             uint32_t reserved_0x1C4;
+    volatile uint32_t TXDMA;                          /*!< Offset 0x1C8 Регистр DMA передачи. W 0x0 0x1C8 */
+    volatile uint32_t RTXDMA;                         /*!< Offset 0x1CC Регистр сброса DMA передачи. W 0x0 0x1CC */
+             uint32_t reserved_0x1D0 [0x0008];
+    volatile uint32_t I2S_COMP_PARAM_2;               /*!< Offset 0x1F0 Второй регистр параметров компонента. R 0x48c 0x1F0 */
+    volatile uint32_t I2S_COMP_PARAM_1;               /*!< Offset 0x1F4 Первый регистр параметров компонента. R 0x24c067e 0x1F4 */
+    volatile uint32_t I2S_COMP_VERSION;               /*!< Offset 0x1F8 Регистр ревизии компонента. R 0x3130362a 0x1F8 */
+    volatile uint32_t I2S_COMP_TYPE;                  /*!< Offset 0x1FC Регистр типа компонента. R 0x445701a0 0x1FC */
+} I2S_TypeDef; /* size of structure = 0x200 */
 /*
  * @brief MFBSP
  */
@@ -516,6 +602,7 @@ typedef struct UART_Type
 #define I2C0 ((I2C_TypeDef *) I2C0_BASE)              /*!< I2C0  register set access pointer */
 #define I2C1 ((I2C_TypeDef *) I2C1_BASE)              /*!< I2C1  register set access pointer */
 #define I2C2 ((I2C_TypeDef *) I2C2_BASE)              /*!< I2C2  register set access pointer */
+#define I2S0 ((I2S_TypeDef *) I2S0_BASE)              /*!< I2S0 Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. register set access pointer */
 #define GPIO0 ((GPIOBLOCK_TypeDef *) GPIO0_BASE)      /*!< GPIO0 Регистры блока управления GPIO register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Регистры блока управления GPIO register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Регистры блока управления GPIO register set access pointer */
