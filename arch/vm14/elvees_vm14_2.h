@@ -337,7 +337,7 @@ typedef struct MFBSP_Type
 /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
 typedef struct NANDMPORT_Type
 {
-    volatile uint32_t PACKET;                         /*!< Offset 0x000 (null) */
+    volatile uint32_t PACKET;                         /*!< Offset 0x000 0x0 RW Регистр настройки пакетов */
     volatile uint32_t MEMADDR1;                       /*!< Offset 0x004 RW Регистр адреса 1 */
     volatile uint32_t MEMADDR2;                       /*!< Offset 0x008 RW Регистр адреса 2 */
     volatile uint32_t COMMAND;                        /*!< Offset 0x00C RW Регистр команды */

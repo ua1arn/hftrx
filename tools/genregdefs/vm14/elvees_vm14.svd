@@ -1669,7 +1669,7 @@
    <register>
     <name>PACKET</name>
     <displayName>PACKET</displayName>
-    <description></description>
+    <description>0x0 RW Регистр настройки пакетов</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
