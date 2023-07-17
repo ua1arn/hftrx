@@ -113,18 +113,18 @@ void dram_vol_set(dram_para_t *para)
 
 void dram_enable_all_master(void)
 {
-	MSI_MEMC->MCTL_COM_MAER0 = 0xFFFFFFFF;
-	MSI_MEMC->MCTL_COM_MAER1 = 0xFF;
-	MSI_MEMC->MCTL_COM_MAER2 = 0xFFFF;
+	MCTL_COM->MCTL_COM_MAER0 = 0xFFFFFFFF;
+	MCTL_COM->MCTL_COM_MAER1 = 0xFF;
+	MCTL_COM->MCTL_COM_MAER2 = 0xFFFF;
 
 	sdelay(10);
 }
 
 void dram_disable_all_master(void)
 {
-	MSI_MEMC->MCTL_COM_MAER0 = 1;
-	MSI_MEMC->MCTL_COM_MAER1 = 0;
-	MSI_MEMC->MCTL_COM_MAER2 = 0;
+	MCTL_COM->MCTL_COM_MAER0 = 1;
+	MCTL_COM->MCTL_COM_MAER1 = 0;
+	MCTL_COM->MCTL_COM_MAER2 = 0;
 
 	sdelay(10);
 }
@@ -749,7 +749,7 @@ void mctl_sys_init(dram_para_t *para)
 // The main purpose of this routine seems to be to copy an address configuration
 // from the dram_para1 and dram_para2 fields to the PHY configuration registers
 // (0x3102000, 0x3102004).
-// MSI_MEMC_BASE = 0x03102000
+// MCTL_COM_BASE = 0x03102000
 //
 void mctl_com_init(dram_para_t *para)
 {
@@ -758,12 +758,12 @@ void mctl_com_init(dram_para_t *para)
 	int			 i;
 
 	// purpose ??
-	val = read32(MSI_MEMC_BASE + 0x008) & 0xffffc0ff;
+	val = read32(MCTL_COM_BASE + 0x008) & 0xffffc0ff;
 	val |= 0x2000;
-	write32(MSI_MEMC_BASE + 0x008, val);
+	write32(MCTL_COM_BASE + 0x008, val);
 
 	// Set sdram type and word width
-	val = read32(MSI_MEMC_BASE + 0x000) & 0xff000fff;
+	val = read32(MCTL_COM_BASE + 0x000) & 0xff000fff;
 	val |= (para->dram_type & 0x7) << 16; // DRAM type
 	val |= (~para->dram_para2 & 0x1) << 12; // DQ width
 	if ((para->dram_type) != 6 && (para->dram_type) != 7) {
@@ -772,12 +772,12 @@ void mctl_com_init(dram_para_t *para)
 	} else {
 		val |= 0x480000; // type 6 and 7 must use 1T
 	}
-	write32(MSI_MEMC_BASE + 0x000, val);
+	write32(MCTL_COM_BASE + 0x000, val);
 
 	// init rank / bank / row for single/dual or two different ranks
 	val = para->dram_para2;
 	end = ((val & 0x100) && (((val >> 12) & 0xf) != 1)) ? 32 : 16;
-	ptr = MSI_MEMC_BASE;
+	ptr = MCTL_COM_BASE;
 
 	for (i = 0; i != end; i += 16) {
 		val = read32(ptr) & 0xfffff000;
@@ -809,7 +809,7 @@ void mctl_com_init(dram_para_t *para)
 	}
 
 	// set ODTMAP based on number of ranks in use
-	val = (read32(MSI_MEMC_BASE + 0x000) & 0x1) ? 0x303 : 0x201;
+	val = (read32(MCTL_COM_BASE + 0x000) & 0x1) ? 0x303 : 0x201;
 	write32(DDRPHYC_BASE + 0x120, val);
 
 	// set mctl reg 3c4 to zero when using half DQ
@@ -819,13 +819,13 @@ void mctl_com_init(dram_para_t *para)
 
 	// purpose ??
 	if (para->dram_tpr4) {
-		val = read32(MSI_MEMC_BASE + 0x000);
+		val = read32(MCTL_COM_BASE + 0x000);
 		val |= (para->dram_tpr4 << 25) & 0x06000000;
-		write32(MSI_MEMC_BASE + 0x000, val);
+		write32(MCTL_COM_BASE + 0x000, val);
 
-		val = read32(MSI_MEMC_BASE + 0x004);
+		val = read32(MCTL_COM_BASE + 0x004);
 		val |= ((para->dram_tpr4 >> 2) << 12) & 0x001ff000;
-		write32(MSI_MEMC_BASE + 0x004, val);
+		write32(MCTL_COM_BASE + 0x004, val);
 	}
 }
 
@@ -917,12 +917,12 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 
 	if (para->dram_type == 2 || para->dram_type == 3) {
 
-		MSI_MEMC->MCTL_COM_REMAP0 = pack_29_05(pcfg + 0);	// 5 bytes used
-		MSI_MEMC->MCTL_COM_REMAP1 = pack_29_00(pcfg + 5);	// 6 bytes used
-		MSI_MEMC->MCTL_COM_REMAP2 = pack_24_00(pcfg + 11);	// 5 bytes used
-		MSI_MEMC->MCTL_COM_REMAP3 = pack_29_00(pcfg + 16);	// 6 bytes used
+		MCTL_COM->MCTL_COM_REMAP0 = pack_29_05(pcfg + 0);	// 5 bytes used
+		MCTL_COM->MCTL_COM_REMAP1 = pack_29_00(pcfg + 5);	// 6 bytes used
+		MCTL_COM->MCTL_COM_REMAP2 = pack_24_00(pcfg + 11);	// 5 bytes used
+		MCTL_COM->MCTL_COM_REMAP3 = pack_29_00(pcfg + 16);	// 6 bytes used
 
-		MSI_MEMC->MCTL_COM_REMAP0 |= UINT32_C(1) << 0;
+		MCTL_COM->MCTL_COM_REMAP0 |= UINT32_C(1) << 0;
 	}
 
 }
@@ -938,9 +938,9 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	dqs_gating_mode = (para->dram_tpr13 >> 2) & 0x3;
 
 	// set DDR clock to half of CPU clock
-	val = read32(MSI_MEMC_BASE + 0x00c) & 0xfffff000;
+	val = read32(MCTL_COM_BASE + 0x00c) & 0xfffff000;
 	val |= (para->dram_clk >> 1) - 1;
-	write32(MSI_MEMC_BASE + 0x00c, val);
+	write32(MCTL_COM_BASE + 0x00c, val);
 
 	// MRCTRL0 nibble 3 undocumented
 	val = read32(DDRPHYC_BASE + 0x108) & 0xfffff0ff;
@@ -1167,9 +1167,9 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	sdelay(10);
 
-	val = read32(MSI_MEMC_BASE + 0x014);
+	val = read32(MCTL_COM_BASE + 0x014);
 	val |= 0x80000000;
-	write32(MSI_MEMC_BASE + 0x014, val);
+	write32(MCTL_COM_BASE + 0x014, val);
 
 	sdelay(10);
 
@@ -1195,7 +1195,7 @@ int DRAMC_get_dram_size(void)
 {
 	unsigned int rval, temp, size0, size1;
 
-	rval = MSI_MEMC->MCTL_COM_WORK_MODE0;// read32(MSI_MEMC_BASE + 0x000); // MC_WORK_MODE0
+	rval = MCTL_COM->MCTL_COM_WORK_MODE0;// read32(MCTL_COM_BASE + 0x000); // MC_WORK_MODE0
 
 	temp = (rval >> 8) & 0xf; // page size - 3
 	temp += (rval >> 4) & 0xf; // row width - 1
@@ -1208,7 +1208,7 @@ int DRAMC_get_dram_size(void)
 		return size0;
 	}
 
-	rval = MSI_MEMC->MCTL_COM_WORK_MODE1;// read32(MSI_MEMC_BASE + 0x004); // MC_WORK_MODE1
+	rval = MCTL_COM->MCTL_COM_WORK_MODE1;// read32(MCTL_COM_BASE + 0x004); // MC_WORK_MODE1
 
 	temp = rval & 0x3;
 	if (temp == 0) { // two identical ranks
@@ -1366,7 +1366,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 	}
 
 	maxrank		 = (para->dram_para2 & 0xf000) ? 2 : 1;
-	mc_work_mode = MSI_MEMC_BASE;
+	mc_work_mode = MCTL_COM_BASE;
 	offs		 = 0;
 
 	// write test pattern
@@ -1410,10 +1410,10 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		if (rank == 1) {
 			// Set bank mode for rank0
-			rval = read32(MSI_MEMC_BASE + 0x000);
+			rval = read32(MCTL_COM_BASE + 0x000);
 			rval &= 0xfffff003;
 			rval |= 0x000006a4;
-			write32(MSI_MEMC_BASE + 0x000, rval);
+			write32(MCTL_COM_BASE + 0x000, rval);
 		}
 
 		// Set bank mode for current rank
@@ -1447,10 +1447,10 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		if (rank == 1) {
 			// Set page mode for rank0
-			rval = read32(MSI_MEMC_BASE + 0x000);
+			rval = read32(MCTL_COM_BASE + 0x000);
 			rval &= 0xfffff003;
 			rval |= 0x00000aa0;
-			write32(MSI_MEMC_BASE + 0x000, rval);
+			write32(MCTL_COM_BASE + 0x000, rval);
 		}
 
 		// Set page mode for current rank

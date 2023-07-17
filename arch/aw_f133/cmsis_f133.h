@@ -32,7 +32,7 @@ typedef enum IRQn
     USB0_OHCI_IRQn = 47,                              /*!< USB_OHCI_Capability  */
     USB1_EHCI_IRQn = 49,                              /*!< USB_EHCI_Capability  */
     USB1_OHCI_IRQn = 50,                              /*!< USB_OHCI_Capability  */
-    MSI_IRQn = 59,                                    /*!< MSI_MEMC  */
+    MCTL_IRQn = 59,                                   /*!< MCTL_COM  */
     EMAC_IRQn = 62,                                   /*!< EMAC  */
     CCU_FERR_IRQn = 64,                               /*!< CCU Clock Controller Unit (CCU) */
     DMAC_NS_IRQn = 66,                                /*!< DMAC  */
@@ -129,7 +129,6 @@ typedef enum IRQn
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Crypto Engine (CE) Base */
 #define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM  Base */
-#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC  Base */
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
 #define MCTL_PHY_BASE ((uintptr_t) 0x03103000)        /*!< MCTL_PHY  Base */
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
@@ -1834,28 +1833,6 @@ typedef struct MCTL_PHY_Type
     volatile uint32_t MCTL_PHY_ACIOCR1 [0x010];       /*!< Offset 0x210 0x210 + 0x4 * x */
 } MCTL_PHY_TypeDef; /* size of structure = 0x250 */
 /*
- * @brief MSI_MEMC
- */
-/*!< MSI_MEMC  */
-typedef struct MSI_MEMC_Type
-{
-    volatile uint32_t MCTL_COM_WORK_MODE0;            /*!< Offset 0x000  */
-    volatile uint32_t MCTL_COM_WORK_MODE1;            /*!< Offset 0x004  */
-    volatile uint32_t MCTL_COM_DBGCR;                 /*!< Offset 0x008  */
-    volatile uint32_t MCTL_COM_TMR;                   /*!< Offset 0x00C  */
-             uint32_t reserved_0x010;
-    volatile uint32_t MCTL_COM_CCCR;                  /*!< Offset 0x014  */
-             uint32_t reserved_0x018 [0x0002];
-    volatile uint32_t MCTL_COM_MAER0;                 /*!< Offset 0x020  */
-    volatile uint32_t MCTL_COM_MAER1;                 /*!< Offset 0x024  */
-    volatile uint32_t MCTL_COM_MAER2;                 /*!< Offset 0x028  */
-             uint32_t reserved_0x02C [0x0135];
-    volatile uint32_t MCTL_COM_REMAP0;                /*!< Offset 0x500  */
-    volatile uint32_t MCTL_COM_REMAP1;                /*!< Offset 0x504  */
-    volatile uint32_t MCTL_COM_REMAP2;                /*!< Offset 0x508  */
-    volatile uint32_t MCTL_COM_REMAP3;                /*!< Offset 0x50C  */
-} MSI_MEMC_TypeDef; /* size of structure = 0x510 */
-/*
  * @brief OWA
  */
 /*!< OWA One Wire Audio (TX only) */
@@ -2774,7 +2751,6 @@ typedef struct USB_OHCI_Capability_Type
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Crypto Engine (CE) register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Crypto Engine (CE) register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */
-#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define MCTL_PHY ((MCTL_PHY_TypeDef *) MCTL_PHY_BASE) /*!< MCTL_PHY  register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */

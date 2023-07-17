@@ -56,7 +56,6 @@ typedef enum IRQn
     R_UART_IRQn = 70,                                 /*!< UART  */
     R_RSB_IRQn = 71,                                  /*!< R_RSB Reduced Serial Bus Host Controller */
     R_TIMER2_IRQn = 74,                               /*!< R_TIMER  */
-    MSI_IRQn = 75,                                    /*!< MSI_MEMC  */
     R_TIMER3_IRQn = 75,                               /*!< R_TIMER  */
     R_TWI_IRQn = 76,                                  /*!< TWI  */
     SMC_IRQn = 76,                                    /*!< SMC  */
@@ -194,7 +193,6 @@ typedef enum IRQn
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE  Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE  Base */
-#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC  Base */
 #define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
 
@@ -1335,21 +1333,6 @@ typedef struct MSGBOX_Type
     volatile uint32_t MSGBOXM_MSG_REG [0x008];        /*!< Offset 0x180 Message Register For Message Queue N(N=0~7) */
 } MSGBOX_TypeDef; /* size of structure = 0x1A0 */
 /*
- * @brief MSI_MEMC
- */
-/*!< MSI_MEMC  */
-typedef struct MSI_MEMC_Type
-{
-    volatile uint32_t MEMC_REG_000;                   /*!< Offset 0x000 Reg_000 */
-    volatile uint32_t MEMC_REG_004;                   /*!< Offset 0x004 Reg_004 */
-    volatile uint32_t MEMC_REG_008;                   /*!< Offset 0x008 Reg_008 */
-    volatile uint32_t MEMC_REG_00C;                   /*!< Offset 0x00C Reg_00C */
-             uint32_t reserved_0x010 [0x0004];
-    volatile uint32_t MEMC_REG_020;                   /*!< Offset 0x020 Reg_020 */
-    volatile uint32_t MEMC_REG_024;                   /*!< Offset 0x024 Reg_024 */
-    volatile uint32_t MEMC_REG_028;                   /*!< Offset 0x028 Reg_028 */
-} MSI_MEMC_TypeDef; /* size of structure = 0x02C */
-/*
  * @brief NDFC
  */
 /*!< NDFC NAND Flash Controller Interface */
@@ -2272,7 +2255,6 @@ typedef struct USB_OHCI_Capability_Type
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
-#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 

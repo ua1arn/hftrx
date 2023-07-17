@@ -1,7 +1,7 @@
 #type; MCTL_COM
 #base; MCTL_COM 0x03102000
-##irq; MCTL 75
-##irqrv; MCTL 59
+#irq; MCTL 75
+#irqrv; MCTL 59
 #regdef; MCTL_COM_WORK_MODE0; 0x000; Reg_000
 #regdef; MCTL_COM_WORK_MODE1; 0x004; Reg_004
 #regdef; MCTL_COM_DBGCR; 0x008; Reg_008
