@@ -396,6 +396,13 @@ typedef uint_fast8_t STTE_t;
 
 void board_fpga_reset(void);
 
+#if WITHIQSHIFT
+
+uint8_t iq_shift_cic_rx(uint8_t val);
+uint8_t iq_shift_fir_rx(uint8_t val);
+uint8_t iq_shift_tx(uint8_t val);
+
+#endif /* WITHIQSHIFT */
 
 int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts);
 int stpmic1_regulator_enable(const char *name);

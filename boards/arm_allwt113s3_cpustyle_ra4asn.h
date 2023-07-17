@@ -7,9 +7,15 @@
 //
 
 // custom Allwinner T113-S3 board by RA4ASN
+// FGPA - Xilinx XC7A35T-FGG484-1 (QMTech Artix-7 board)
+// ADC - LTC2209
 
 #ifndef ARM_ALLW_T113_CPUSTYLE_RA4ASN_H_INCLUDED
 #define ARM_ALLW_T113_CPUSTYLE_RA4ASN_H_INCLUDED 1
+
+#define CALIBRATION_IQ_FIR_RX_SHIFT		50
+#define CALIBRATION_IQ_CIC_RX_SHIFT		63
+#define CALIBRATION_TX_SHIFT			23
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
