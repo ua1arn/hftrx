@@ -1,0 +1,52 @@
+#type; I2C
+
+#base; I2C0 0x3802C000
+#base; I2C1 0x3802D000
+#base; I2C2 0x3802E000
+
+#irq; I2C0_IC_INTR 100
+#irq; I2C1_IC_INTR 101
+#irq; I2C2_IC_INTR 102
+
+#regdef; IC_CON; 0x0000; Регистр управления W/R (R для 4-ого бита) 0x7F 0x0
+#regdef; IC_TAR; 0x0004; Регистр адреса абонента W/R 0x1055 0x4
+#regdef; IC_SAR; 0x0008; Регистр slave-адреса. W/R 0x55 0x8
+#regdef; IC_HS_MADD; 0x000C; Регистр кода адреса мастера для high speed режима. W/R 0x1 0xС
+#regdef; IC_DATA_CMD; 0x0010; Регистр управления передачей. W/R 0x0 0x10
+#regdef; IC_SS_SCL_HCNT; 0x0014; Старший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x190 0x14
+#regdef; IC_SS_SCL_LCNT; 0x0018; Младший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x1d6 0x18
+#regdef; IC_FS_SCL_HCNT; 0x001C; Старший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x3c 0x1C
+#regdef; IC_FS_SCL_LCNT; 0x0020; Младший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x82 0x20
+#regdef; IC_HS_SCL_HCNT; 0x0024; Старший регистр счетчика предделителя частоты для high-speed режима. W/R 0x6 0x24
+#regdef; IC_HS_SCL_LCNT; 0x0028; Младший регистр счетчика предделителя частоты для high-speed режима. W/R 0x10 0x28
+#regdef; IC_INTR_STAT; 0x002C; Регистр статуса прерывания. R 0x0 0x2C
+#regdef; IC_INTR_MASK; 0x0030; Регистр маски прерывания W/R 0x8ff 0X30
+#regdef; IC_RAW_INTR_STAT; 0x0034; Регистр статуса необработанного прерывания R 0x0 0x34
+#regdef; IC_RX_TL; 0x0038; Регистр порога заполнения FIFO приемника. W/R 0x0 0x38
+#regdef; IC_TX_TL; 0x003C; Регистр порога заполнения FIFO передатчика. W/R 0x0 0x3C
+#regdef; IC_CLT_INTR; 0x0040; Регистр сброса прерываний. R 0x0 0x40
+#regdef; C_CLR_RX_UNDER; 0x0044; Регистр сброса прерывания RX_UNDER R 0x0 0x44
+#regdef; IC_CLR_RX_OVER; 0x0048; Регистр сброса прерывания RX_OVER R 0x0 0x48
+#regdef; IC_CLR_TX_OVER; 0x004C; Регистр сброса прерывания TX_OVER R 0x0 0x4C
+#regdef; IC_CLR_RD_REQ; 0x0050; Регистр сброса прерывания RD_REQ R 0x0 0x50
+#regdef; IC_CLR_TX_ABR; 0x0054; Регистр сброса прерывания TX_ABR R 0x0 0x54
+#regdef; IC_CLR_RX_DONE; 0x0058; Регистр сброса прерывания RX_DONE R 0x0 0x58
+#regdef; IC_CLR_ACTIVITY; 0x005C; Регистр сброса прерывания ACTIVITY R 0x0 0x5C
+#regdef; IC_CLR_STOP_DET; 0x0060; Регистр сброса прерывания STOP_DET R 0x0 0x60
+#regdef; IC_CLR_START_DET; 0x0064; Регистр сброса прерывания START_DET R 0x0 0x64
+#regdef; IC_CLR_GEN_CALL; 0x0068; Регистр сброса прерывания GEN_CALL R 0x0 0x68
+#regdef; IC_ENABLE; 0x006C; Регистр включения шины. W/R 0x0 0x6C
+#regdef; IC_STATUS; 0x0070; Регистр статуса шины. R 0x6 0x70
+#regdef; IC_TXFLR; 0x0074; Регистр уровня FIFO передатчика R 0x0 0x74
+#regdef; IC_RXFLR; 0x0078; Регистр уровня FIFO приемника R 0x0 0x78
+#regdef; IC_SDA_HOLD; 0x007C; Регистр времени удержания SDA. W/R 0x1 0x7C
+#regdef; IC_TX_ABRT_SOURCE; 0x0080; Регистр статуса обрыва передачи. R 0x0 0x80
+#regdef; IC_SLV_DATA_NACK_ONLY; 0x0084; Регистр генерирования SLV_DATA_NACK W/R 0x0 0x84
+#regdef; IC_DMA_CR; 0x0088; Регистр контроля DMA интерфейса. W/R 0x0 0x88
+#regdef; IC_DMA_TDLR; 0x008C; Регистр передачи данных через DMA интерфейс. W/R 0x0 0x8C
+#regdef; IC_DMA_RDLR; 0x0090; Регистр приема данных через DMA интерфейс. W/R 0x0 0x90
+#regdef; IC_SDA_SETUP; 0x0094; Регистр установки SDA W/R 0x64 0x94
+#regdef; IC_ACK_GENERAL_CALL; 0x0098; Регистр вызова общего ACK W/R 0x1 0x98
+#regdef; IC_ENABLE_STATUS; 0x009C; Регистр статуса включения R 0x0 0x9C
+#regdef; IC_FS_SPKLEN; 0x00A0; Регистр управления фильтрацией для standard-speed и fast.speed режимов W/R 0x5 0xA0
+#regdef; IC_HS_SPKLEN; 0x00A4; Регистр управления фильтрацией для high.speed режима. W/R 0x1 0xA4

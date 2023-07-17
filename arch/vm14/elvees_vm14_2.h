@@ -31,10 +31,23 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
     Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
+    MFBSP0_DMAIRQ0_IRQn = 52,                         /*!< DMA_MFBSP  */
+    MFBSP0_DMAIRQ1_IRQn = 53,                         /*!< DMA_MFBSP  */
+    MFBSP1_DMAIRQ0_IRQn = 54,                         /*!< DMA_MFBSP  */
+    MFBSP1_DMAIRQ1_IRQn = 55,                         /*!< DMA_MFBSP  */
+    MFBSP0_RXIRQ_IRQn = 90,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP0_TXIRQ_IRQn = 91,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP0_SRQ_IRQn = 92,                             /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP1_RXIRQ_IRQn = 93,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP1_TXIRQ_IRQn = 94,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP1_SRQ_IRQn = 95,                             /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
     UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
     UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
     UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
     UART3_IRQn = 99,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    I2C0_IC_INTR_IRQn = 100,                          /*!< I2C  */
+    I2C1_IC_INTR_IRQn = 101,                          /*!< I2C  */
+    I2C2_IC_INTR_IRQn = 102,                          /*!< I2C  */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -50,6 +63,9 @@ typedef enum IRQn
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
 #define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
 #define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define I2C0_BASE ((uintptr_t) 0x3802C000)            /*!< I2C  Base */
+#define I2C1_BASE ((uintptr_t) 0x3802D000)            /*!< I2C  Base */
+#define I2C2_BASE ((uintptr_t) 0x3802E000)            /*!< I2C  Base */
 #define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Регистры блока управления GPIO Base */
 #define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Регистры блока управления GPIO Base */
 #define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Регистры блока управления GPIO Base */
@@ -145,6 +161,55 @@ typedef struct GPIOBLOCK_Type
     volatile uint32_t gpio_ext_portd;                 /*!< Offset 0x05C Внешний регистр порта D. R 0x0 0x5C */
     volatile uint32_t gpio_ls_sync;                   /*!< Offset 0x060 Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60 */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x064 */
+/*
+ * @brief I2C
+ */
+/*!< I2C  */
+typedef struct I2C_Type
+{
+    volatile uint32_t IC_CON;                         /*!< Offset 0x000 Регистр управления W/R (R для 4-ого бита) 0x7F 0x0 */
+    volatile uint32_t IC_TAR;                         /*!< Offset 0x004 Регистр адреса абонента W/R 0x1055 0x4 */
+    volatile uint32_t IC_SAR;                         /*!< Offset 0x008 Регистр slave-адреса. W/R 0x55 0x8 */
+    volatile uint32_t IC_HS_MADD;                     /*!< Offset 0x00C Регистр кода адреса мастера для high speed режима. W/R 0x1 0xС */
+    volatile uint32_t IC_DATA_CMD;                    /*!< Offset 0x010 Регистр управления передачей. W/R 0x0 0x10 */
+    volatile uint32_t IC_SS_SCL_HCNT;                 /*!< Offset 0x014 Старший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x190 0x14 */
+    volatile uint32_t IC_SS_SCL_LCNT;                 /*!< Offset 0x018 Младший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x1d6 0x18 */
+    volatile uint32_t IC_FS_SCL_HCNT;                 /*!< Offset 0x01C Старший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x3c 0x1C */
+    volatile uint32_t IC_FS_SCL_LCNT;                 /*!< Offset 0x020 Младший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x82 0x20 */
+    volatile uint32_t IC_HS_SCL_HCNT;                 /*!< Offset 0x024 Старший регистр счетчика предделителя частоты для high-speed режима. W/R 0x6 0x24 */
+    volatile uint32_t IC_HS_SCL_LCNT;                 /*!< Offset 0x028 Младший регистр счетчика предделителя частоты для high-speed режима. W/R 0x10 0x28 */
+    volatile uint32_t IC_INTR_STAT;                   /*!< Offset 0x02C Регистр статуса прерывания. R 0x0 0x2C */
+    volatile uint32_t IC_INTR_MASK;                   /*!< Offset 0x030 Регистр маски прерывания W/R 0x8ff 0X30 */
+    volatile uint32_t IC_RAW_INTR_STAT;               /*!< Offset 0x034 Регистр статуса необработанного прерывания R 0x0 0x34 */
+    volatile uint32_t IC_RX_TL;                       /*!< Offset 0x038 Регистр порога заполнения FIFO приемника. W/R 0x0 0x38 */
+    volatile uint32_t IC_TX_TL;                       /*!< Offset 0x03C Регистр порога заполнения FIFO передатчика. W/R 0x0 0x3C */
+    volatile uint32_t IC_CLT_INTR;                    /*!< Offset 0x040 Регистр сброса прерываний. R 0x0 0x40 */
+    volatile uint32_t C_CLR_RX_UNDER;                 /*!< Offset 0x044 Регистр сброса прерывания RX_UNDER R 0x0 0x44 */
+    volatile uint32_t IC_CLR_RX_OVER;                 /*!< Offset 0x048 Регистр сброса прерывания RX_OVER R 0x0 0x48 */
+    volatile uint32_t IC_CLR_TX_OVER;                 /*!< Offset 0x04C Регистр сброса прерывания TX_OVER R 0x0 0x4C */
+    volatile uint32_t IC_CLR_RD_REQ;                  /*!< Offset 0x050 Регистр сброса прерывания RD_REQ R 0x0 0x50 */
+    volatile uint32_t IC_CLR_TX_ABR;                  /*!< Offset 0x054 Регистр сброса прерывания TX_ABR R 0x0 0x54 */
+    volatile uint32_t IC_CLR_RX_DONE;                 /*!< Offset 0x058 Регистр сброса прерывания RX_DONE R 0x0 0x58 */
+    volatile uint32_t IC_CLR_ACTIVITY;                /*!< Offset 0x05C Регистр сброса прерывания ACTIVITY R 0x0 0x5C */
+    volatile uint32_t IC_CLR_STOP_DET;                /*!< Offset 0x060 Регистр сброса прерывания STOP_DET R 0x0 0x60 */
+    volatile uint32_t IC_CLR_START_DET;               /*!< Offset 0x064 Регистр сброса прерывания START_DET R 0x0 0x64 */
+    volatile uint32_t IC_CLR_GEN_CALL;                /*!< Offset 0x068 Регистр сброса прерывания GEN_CALL R 0x0 0x68 */
+    volatile uint32_t IC_ENABLE;                      /*!< Offset 0x06C Регистр включения шины. W/R 0x0 0x6C */
+    volatile uint32_t IC_STATUS;                      /*!< Offset 0x070 Регистр статуса шины. R 0x6 0x70 */
+    volatile uint32_t IC_TXFLR;                       /*!< Offset 0x074 Регистр уровня FIFO передатчика R 0x0 0x74 */
+    volatile uint32_t IC_RXFLR;                       /*!< Offset 0x078 Регистр уровня FIFO приемника R 0x0 0x78 */
+    volatile uint32_t IC_SDA_HOLD;                    /*!< Offset 0x07C Регистр времени удержания SDA. W/R 0x1 0x7C */
+    volatile uint32_t IC_TX_ABRT_SOURCE;              /*!< Offset 0x080 Регистр статуса обрыва передачи. R 0x0 0x80 */
+    volatile uint32_t IC_SLV_DATA_NACK_ONLY;          /*!< Offset 0x084 Регистр генерирования SLV_DATA_NACK W/R 0x0 0x84 */
+    volatile uint32_t IC_DMA_CR;                      /*!< Offset 0x088 Регистр контроля DMA интерфейса. W/R 0x0 0x88 */
+    volatile uint32_t IC_DMA_TDLR;                    /*!< Offset 0x08C Регистр передачи данных через DMA интерфейс. W/R 0x0 0x8C */
+    volatile uint32_t IC_DMA_RDLR;                    /*!< Offset 0x090 Регистр приема данных через DMA интерфейс. W/R 0x0 0x90 */
+    volatile uint32_t IC_SDA_SETUP;                   /*!< Offset 0x094 Регистр установки SDA W/R 0x64 0x94 */
+    volatile uint32_t IC_ACK_GENERAL_CALL;            /*!< Offset 0x098 Регистр вызова общего ACK W/R 0x1 0x98 */
+    volatile uint32_t IC_ENABLE_STATUS;               /*!< Offset 0x09C Регистр статуса включения R 0x0 0x9C */
+    volatile uint32_t IC_FS_SPKLEN;                   /*!< Offset 0x0A0 Регистр управления фильтрацией для standard-speed и fast.speed режимов W/R 0x5 0xA0 */
+    volatile uint32_t IC_HS_SPKLEN;                   /*!< Offset 0x0A4 Регистр управления фильтрацией для high.speed режима. W/R 0x1 0xA4 */
+} I2C_TypeDef; /* size of structure = 0x0A8 */
 /*
  * @brief MFBSP
  */
@@ -448,6 +513,9 @@ typedef struct UART_Type
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3 Universal Asynchronous Receiver-Transmitter register set access pointer */
+#define I2C0 ((I2C_TypeDef *) I2C0_BASE)              /*!< I2C0  register set access pointer */
+#define I2C1 ((I2C_TypeDef *) I2C1_BASE)              /*!< I2C1  register set access pointer */
+#define I2C2 ((I2C_TypeDef *) I2C2_BASE)              /*!< I2C2  register set access pointer */
 #define GPIO0 ((GPIOBLOCK_TypeDef *) GPIO0_BASE)      /*!< GPIO0 Регистры блока управления GPIO register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Регистры блока управления GPIO register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Регистры блока управления GPIO register set access pointer */
