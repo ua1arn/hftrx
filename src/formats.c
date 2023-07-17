@@ -580,6 +580,13 @@ int dbg_puts_impl(const char * s)
 	return 0;
 }
 
+// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+void dbg_flush(void)
+{
+	local_delay_ms(500);
+	HARDWARE_DEBUG_FLUSH();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+}
+
 #else /* WITHDEBUG */
 
 int dbg_getchar(char * r)
@@ -602,6 +609,12 @@ int dbg_puts_impl(const char * s)
 	(void) s;
 	return 0;
 }
+
+// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+void dbg_flush(void)
+{
+}
+
 #endif /* WITHDEBUG */
 
 

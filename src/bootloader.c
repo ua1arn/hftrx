@@ -134,6 +134,9 @@ bootloader_launch_app(uintptr_t ip)
 	__ISB();
 	__DSB();
 #endif
+
+	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+
 	(* (void (*)(void)) ip)();
 
 
