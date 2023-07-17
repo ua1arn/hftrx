@@ -1183,7 +1183,7 @@ int DRAMC_get_dram_size(void)
 {
 	unsigned int rval, temp, size0, size1;
 
-	rval = read32(MSI_MEMC_BASE + 0x000); // MC_WORK_MODE0
+	rval = MSI_MEMC->MCTL_COM_WORK_MODE0;// read32(MSI_MEMC_BASE + 0x000); // MC_WORK_MODE0
 
 	temp = (rval >> 8) & 0xf; // page size - 3
 	temp += (rval >> 4) & 0xf; // row width - 1
@@ -1196,7 +1196,7 @@ int DRAMC_get_dram_size(void)
 		return size0;
 	}
 
-	rval = read32(MSI_MEMC_BASE + 0x004); // MC_WORK_MODE1
+	rval = MSI_MEMC->MCTL_COM_WORK_MODE1;// read32(MSI_MEMC_BASE + 0x004); // MC_WORK_MODE1
 
 	temp = rval & 0x3;
 	if (temp == 0) { // two identical ranks
