@@ -11,6 +11,11 @@
 #ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
 #define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
 
+
+/**
+ * sun8i
+ */
+
 /**
  * @brief Allwinner T128-S3 Interrupt Number Definition, according to the selected device
  *        in @ref Library_configuration_section
