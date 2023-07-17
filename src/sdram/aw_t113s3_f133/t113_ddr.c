@@ -1366,7 +1366,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 {
 	unsigned int rval, i, j, rank, maxrank, offs, mc_work_mode;
 	unsigned int shft;
-	uintptr_t chk, ptr;
+	uint32_t chk, ptr;
 
 	if (mctl_core_init(para) == 0) {
 		PRINTF("[ERROR DEBUG] DRAM initialisation error : 0!\n");
