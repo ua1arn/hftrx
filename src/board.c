@@ -9933,3 +9933,58 @@ void board_get_serialnr(uint_fast32_t * sn)
 	* sn = 0;
 #endif
 }
+
+#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
+
+#define FPGA_DECODE_CIC_SHIFT	(10u)
+#define FPGA_DECODE_FIR_SHIFT	(11u)
+#define FPGA_DECODE_TX_SHIFT	(12u)
+
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
+
+static void fpga_prog_shift(uint8_t addr, uint8_t val)
+{
+	rbtype_t rbbuff [5] = { 0 };
+	RBVAL8(040, addr);
+	RBVAL8(000, val);
+	board_fpga1_spi_send_frame(targetfpga1, rbbuff, ARRAY_SIZE(rbbuff));
+}
+
+uint8_t iq_shift_cic_rx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
+			rx_cic_shift = val;
+
+		fpga_prog_shift(FPGA_DECODE_CIC_SHIFT, rx_cic_shift);
+	}
+	return rx_cic_shift;
+}
+
+uint8_t iq_shift_fir_rx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
+			rx_fir_shift = val;
+
+		fpga_prog_shift(FPGA_DECODE_FIR_SHIFT, rx_fir_shift);
+	}
+	return rx_fir_shift;
+}
+
+uint8_t iq_shift_tx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= tx_shift_min && val <= tx_shift_max)
+			tx_shift = val;
+
+		fpga_prog_shift(FPGA_DECODE_TX_SHIFT, tx_shift);
+	}
+	return tx_shift;
+}
+
+#endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
