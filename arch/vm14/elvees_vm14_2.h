@@ -55,6 +55,10 @@ typedef enum IRQn
 #define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Регистры блока управления GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Регистры блока управления GPIO Base */
 #define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Регистры блока управления GPIO Base */
+#define MFBSP0_BASE ((uintptr_t) 0x38086000)          /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  Base */
+#define DMA_MFBSP0_BASE ((uintptr_t) 0x38087000)      /*!< DMA_MFBSP  Base */
+#define MFBSP1_BASE ((uintptr_t) 0x38088000)          /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  Base */
+#define DMA_MFBSP1_BASE ((uintptr_t) 0x38089000)      /*!< DMA_MFBSP  Base */
 #define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Контроллер управления синхронизацией Base */
 #define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Контроллер управления энергопотреблением Base */
 #define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR общиме системные настройки микросхемы Base */
@@ -141,6 +145,27 @@ typedef struct GPIOBLOCK_Type
     volatile uint32_t gpio_ext_portd;                 /*!< Offset 0x05C Внешний регистр порта D. R 0x0 0x5C */
     volatile uint32_t gpio_ls_sync;                   /*!< Offset 0x060 Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60 */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x064 */
+/*
+ * @brief MFBSP
+ */
+/*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+typedef struct MFBSP_Type
+{
+    volatile uint32_t RX_TX_MFBSP;                    /*!< Offset 0x000 R Буфер приёма данных, W Буфер передачи данных */
+    volatile uint32_t CSR_MFBSP;                      /*!< Offset 0x004 R/W Регистр управления и состояния */
+    volatile uint32_t DIR_MFBSP;                      /*!< Offset 0x008 R/W Регистр управления направлением выводов порта ввода-вывода */
+    volatile uint32_t GPIO_DR;                        /*!< Offset 0x00C R/W Регистр данных порта ввода-вывода */
+    volatile uint32_t TCTR;                           /*!< Offset 0x010 R/W Регистр управления передатчиком */
+    volatile uint32_t RCTR;                           /*!< Offset 0x014 R/W Регистр управления приёмником  */
+    volatile uint32_t TSR;                            /*!< Offset 0x018 R/W Регистр состояния передатчика */
+    volatile uint32_t RSR;                            /*!< Offset 0x01C R/W Регистр состояния приёмника */
+    volatile uint32_t TCTR_RATE;                      /*!< Offset 0x020 (null) */
+    volatile uint32_t RCTR_RATE;                      /*!< Offset 0x024 (null) */
+    volatile uint32_t TSTART;                         /*!< Offset 0x028 R/W псевдорегистр ten – запуск/останов передатчика без изменения настроек передатчика */
+    volatile uint32_t RSTART;                         /*!< Offset 0x02C R/W псевдорегистр ren – запуск/останов приемника без изменения настроек приемника */
+    volatile uint32_t EMERG_MFBSP;                    /*!< Offset 0x030 R/W Регистр аварийного управления портом */
+    volatile uint32_t IMASK_MFBSP;                    /*!< Offset 0x034 R/W Регистр маски прерываний от порта */
+} MFBSP_TypeDef; /* size of structure = 0x038 */
 /*
  * @brief NANDMPORT
  */
@@ -428,6 +453,8 @@ typedef struct UART_Type
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Регистры блока управления GPIO register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Регистры блока управления GPIO register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD Регистры блока управления GPIO register set access pointer */
+#define MFBSP0 ((MFBSP_TypeDef *) MFBSP0_BASE)        /*!< MFBSP0 МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  register set access pointer */
+#define MFBSP1 ((MFBSP_TypeDef *) MFBSP1_BASE)        /*!< MFBSP1 МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  register set access pointer */
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */

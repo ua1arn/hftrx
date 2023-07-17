@@ -520,6 +520,143 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>MFBSP0</name>
+  <description>МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP) </description>
+  <baseAddress>0x38086000</baseAddress>
+  <registers>
+   <register>
+    <name>RX_TX_MFBSP</name>
+    <displayName>RX_TX_MFBSP</displayName>
+    <description>R Буфер приёма данных, W Буфер передачи данных</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR_MFBSP</name>
+    <displayName>CSR_MFBSP</displayName>
+    <description>R/W Регистр управления и состояния</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIR_MFBSP</name>
+    <displayName>DIR_MFBSP</displayName>
+    <description>R/W Регистр управления направлением выводов порта ввода-вывода</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPIO_DR</name>
+    <displayName>GPIO_DR</displayName>
+    <description>R/W Регистр данных порта ввода-вывода</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCTR</name>
+    <displayName>TCTR</displayName>
+    <description>R/W Регистр управления передатчиком</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCTR</name>
+    <displayName>RCTR</displayName>
+    <description>R/W Регистр управления приёмником </description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSR</name>
+    <displayName>TSR</displayName>
+    <description>R/W Регистр состояния передатчика</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSR</name>
+    <displayName>RSR</displayName>
+    <description>R/W Регистр состояния приёмника</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCTR_RATE</name>
+    <displayName>TCTR_RATE</displayName>
+    <description></description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCTR_RATE</name>
+    <displayName>RCTR_RATE</displayName>
+    <description></description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSTART</name>
+    <displayName>TSTART</displayName>
+    <description>R/W псевдорегистр ten – запуск/останов передатчика без изменения настроек передатчика</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSTART</name>
+    <displayName>RSTART</displayName>
+    <description>R/W псевдорегистр ren – запуск/останов приемника без изменения настроек приемника</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMERG_MFBSP</name>
+    <displayName>EMERG_MFBSP</displayName>
+    <description>R/W Регистр аварийного управления портом</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMASK_MFBSP</name>
+    <displayName>IMASK_MFBSP</displayName>
+    <description>R/W Регистр маски прерываний от порта</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="MFBSP0">
+  <name>MFBSP1</name>
+  <baseAddress>0x38088000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>NANDMPORT</name>
   <description>КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)</description>
   <baseAddress>0x38007000</baseAddress>
