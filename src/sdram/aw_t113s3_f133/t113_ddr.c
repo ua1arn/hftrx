@@ -124,17 +124,19 @@ void dram_vol_set(dram_para_t *para)
 
 void dram_enable_all_master(void)
 {
-	write32(MSI_MEMC_BASE + 0x020, -1);
-	write32(MSI_MEMC_BASE + 0x024, 0xff);
-	write32(MSI_MEMC_BASE + 0x028, 0xffff);
+	MSI_MEMC->MCTL_COM_MAER0 = 0xFFFFFFFF;
+	MSI_MEMC->MCTL_COM_MAER1 = 0xFF;
+	MSI_MEMC->MCTL_COM_MAER2 = 0xFFFF;
+
 	sdelay(10);
 }
 
 void dram_disable_all_master(void)
 {
-	write32(MSI_MEMC_BASE + 0x020, 1);
-	write32(MSI_MEMC_BASE + 0x024, 0);
-	write32(MSI_MEMC_BASE + 0x028, 0);
+	MSI_MEMC->MCTL_COM_MAER0 = 1;
+	MSI_MEMC->MCTL_COM_MAER1 = 0;
+	MSI_MEMC->MCTL_COM_MAER2 = 0;
+
 	sdelay(10);
 }
 
