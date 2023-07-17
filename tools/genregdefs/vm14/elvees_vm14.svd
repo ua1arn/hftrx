@@ -1665,6 +1665,11 @@
   <name>NANDMPORT</name>
   <description>КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)</description>
   <baseAddress>0x38007000</baseAddress>
+  <interrupt>
+   <name>NFC_MPORTINT</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PACKET</name>

@@ -35,6 +35,7 @@ typedef enum IRQn
     MFBSP0_DMAIRQ1_IRQn = 53,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
     MFBSP1_DMAIRQ0_IRQn = 54,                         /*!< SWIC_MFBSP_DMA MFBSP1 */
     MFBSP1_DMAIRQ1_IRQn = 55,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    NFC_MPORTINT_IRQn = 71,                           /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
     SWIC0DMA_IRQ0_IRQn = 80,                          /*!< SWIC_MFBSP_DMA SWIC0 */
     SWIC0DMA_IRQ1_IRQn = 81,                          /*!< SWIC_MFBSP_DMA SWIC0 */
     SWIC0DMA_IRQ2_IRQn = 82,                          /*!< SWIC_MFBSP_DMA SWIC0 */

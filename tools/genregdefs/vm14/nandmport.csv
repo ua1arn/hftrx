@@ -1,6 +1,8 @@
 #type; NANDMPORT; КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)
 #base; NANDMPORT 0x38007000
 
+#irq; NFC_MPORTINT 71
+
 #regdef; PACKET; 0x00; 0x0 RW Регистр настройки пакетов
 #regdef; MEMADDR1; 0x04; RW Регистр адреса 1
 #regdef; MEMADDR2; 0x08; RW Регистр адреса 2
