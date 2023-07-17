@@ -31,10 +31,20 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
     Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
-    MFBSP0_DMAIRQ0_IRQn = 52,                         /*!< DMA_MFBSP  */
-    MFBSP0_DMAIRQ1_IRQn = 53,                         /*!< DMA_MFBSP  */
-    MFBSP1_DMAIRQ0_IRQn = 54,                         /*!< DMA_MFBSP  */
-    MFBSP1_DMAIRQ1_IRQn = 55,                         /*!< DMA_MFBSP  */
+    MFBSP0_DMAIRQ0_IRQn = 52,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    MFBSP0_DMAIRQ1_IRQn = 53,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    MFBSP1_DMAIRQ0_IRQn = 54,                         /*!< SWIC_MFBSP_DMA MFBSP1 */
+    MFBSP1_DMAIRQ1_IRQn = 55,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    SWIC0DMA_IRQ0_IRQn = 80,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC0DMA_IRQ1_IRQn = 81,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC0DMA_IRQ2_IRQn = 82,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC0DMA_IRQ3_IRQn = 83,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC1DMA_IRQ0_IRQn = 84,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC1DMA_IRQ1_IRQn = 85,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC1DMA_IRQ2_IRQn = 86,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC1DMA_IRQ3_IRQn = 87,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC0_INT_IRQn = 88,                              /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
+    SWIC1_INT_IRQn = 89,                              /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
     MFBSP0_RXIRQ_IRQn = 90,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
     MFBSP0_TXIRQ_IRQn = 91,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
     MFBSP0_SRQ_IRQn = 92,                             /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
@@ -73,10 +83,14 @@ typedef enum IRQn
 #define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Регистры блока управления GPIO Base */
 #define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Регистры блока управления GPIO Base */
 #define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Регистры блока управления GPIO Base */
+#define SWIC0_BASE ((uintptr_t) 0x38082000)           /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) Base */
+#define DMA_SWIC0_BASE ((uintptr_t) 0x38083000)       /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
+#define SWIC1_BASE ((uintptr_t) 0x38084000)           /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) Base */
+#define DMA_SWIC1_BASE ((uintptr_t) 0x38085000)       /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
 #define MFBSP0_BASE ((uintptr_t) 0x38086000)          /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  Base */
-#define DMA_MFBSP0_BASE ((uintptr_t) 0x38087000)      /*!< DMA_MFBSP  Base */
+#define DMA_MFBSP0_BASE ((uintptr_t) 0x38087000)      /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
 #define MFBSP1_BASE ((uintptr_t) 0x38088000)          /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  Base */
-#define DMA_MFBSP1_BASE ((uintptr_t) 0x38089000)      /*!< DMA_MFBSP  Base */
+#define DMA_MFBSP1_BASE ((uintptr_t) 0x38089000)      /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
 #define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Контроллер управления синхронизацией Base */
 #define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Контроллер управления энергопотреблением Base */
 #define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR общиме системные настройки микросхемы Base */
@@ -560,6 +574,58 @@ typedef struct SMCTR_Type
     volatile uint32_t COMM_DLOCK;                     /*!< Offset 0x044 Регистр индикации зависания коммутатора микросхемы */
 } SMCTR_TypeDef; /* size of structure = 0x048 */
 /*
+ * @brief SWIC
+ */
+/*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
+typedef struct SWIC_Type
+{
+    volatile uint32_t HW_VER;                         /*!< Offset 0x000 Номер версии контроллера RD 0x00 */
+    volatile uint32_t STATUS;                         /*!< Offset 0x004 Регистр состояния WR/RD 0x04 */
+    volatile uint32_t RX_CODE;                        /*!< Offset 0x008 Регистр управляющего символа, принятого из сети (маркера времени, кода распределенного прерывания, кода подтверждения распределенного прерывания или кода CC11) RD 0x08 */
+    volatile uint32_t MODE_CR;                        /*!< Offset 0x00C Регистр режима работы WR 0x0С */
+    volatile uint32_t TX_SPEED;                       /*!< Offset 0x010 Регистр коэффициента скорости передачи WR 0x10 */
+    volatile uint32_t TX_CODE;                        /*!< Offset 0x014 Регистр управляющего символа (маркера времени, кода распределенного прерывания, кода подтверждения, кода CC11) для передачи в сеть WR 0x14 */
+    volatile uint32_t RX_SPEED;                       /*!< Offset 0x018 Регистр скорости приема данных в канале SpaceWire RD 0x18 */
+             uint32_t reserved_0x01C;
+    volatile uint32_t CNT_RX_PACK;                    /*!< Offset 0x020 Регистр счетчика принятых пакетов ненулевой длины RD/WR 0x20 */
+    volatile uint32_t ISR_L;                          /*!< Offset 0x024 Младшие разряды регистра ISR RD/WR 0x24 */
+    volatile uint32_t ISR_H;                          /*!< Offset 0x028 Старшие разряды регистра ISR RD/WR 0x28 */
+    volatile uint32_t TRUE_TIME;                      /*!< Offset 0x02C Регистр, содержащий значение последнего правильного маркера времени и последнего принятого из сети маркера времени RD 0x2C */
+    volatile uint32_t TOUT_CODE;                      /*!< Offset 0x030 Регистр размера таймаутов RD/WR 0x30 */
+    volatile uint32_t ISR_tout_L;                     /*!< Offset 0x034 Младшие разряды регистра флагов таймаутов ISR RD/WR 0x34 */
+    volatile uint32_t ISR_tout_H;                     /*!< Offset 0x038 Старшие разряды регистра флагов таймаутов ISR RD/WR 0x38 */
+    volatile uint32_t LOG_ADDR;                       /*!< Offset 0x03C Регистр логического адреса RD/WR 0x3С */
+    volatile uint32_t ack_nonack_regime;              /*!< Offset 0x040 Регистр управления режимом распределенных прерываний (с подтверждениями или без подтверждений) RD/WR 0x40 */
+    volatile uint32_t isr_touts2;                     /*!< Offset 0x044 Регистр таймаутов кодов распределенных прерываний 2 RD/WR 0x44 */
+    volatile uint32_t ISR_handler_TERM_FUNCT;         /*!< Offset 0x048 Регистр флагов функций терминального узла –обработчика RD/WR 0x48 */
+    volatile uint32_t ISR_SPEC;                       /*!< Offset 0x04C Регистр рассылки управляющих кодов в специальный набор портов RD/WR 0x4C */
+    volatile uint32_t ISR_1101;                       /*!< Offset 0x050 Регистр флагов приема управляющих кодов, назначение которых не определено в текущей версии стандарта RD/WR 0x50 */
+    volatile uint32_t ISR_MACK_1101;                  /*!< Offset 0x054 Регистр маски портов, из которых не должны приниматься управляющие коды, назначение которых не определено в текущей версии стандарта RD/WR 0x54 */
+    volatile uint32_t INT_RESET;                      /*!< Offset 0x058 Регистр параметров команды внешнего сброса WR/RD 0x58 */
+    volatile uint32_t STATUS2;                        /*!< Offset 0x05C Регистр состояния 0x5C */
+    volatile uint32_t MODE_CR2;                       /*!< Offset 0x060 Регистр режима работы 2 0x60 */
+    volatile uint32_t Int_H_mack;                     /*!< Offset 0x064 Старшая половина регистра маски распределенных прерываний WR/RD 0x64 */
+    volatile uint32_t Int_L_mack;                     /*!< Offset 0x068 Младшая половина регистра маски распределенных прерываний WR/RD 0x68 */
+    volatile uint32_t Ack_H_mack;                     /*!< Offset 0x06C Старшая половина регистра маски кодов подтверждения WR/RD 0x6C */
+    volatile uint32_t Ackl_L_mack;                    /*!< Offset 0x070 Младшая половина регистра маски кодов подтверждения WR/RD 0x70 */
+    volatile uint32_t AUTO_SPEED_MANAGE;              /*!< Offset 0x074 Регистр параметров автоматической установки скорости передачи WR/RD 0x74 */
+    volatile uint32_t ISR_source_TERM_FUNCT;          /*!< Offset 0x078 Регистр флагов функций терминального узла –источника 0x78 */
+    volatile uint32_t ISR_spec_term_funct;            /*!< Offset 0x07C Регистр признака специальной функции для терминального узла обработчика 0x7C */
+    volatile uint32_t ISR_L_reset;                    /*!< Offset 0x080 Младшая половина регистра глобального сброса ISR 0x80 */
+    volatile uint32_t ISR_H_reset;                    /*!< Offset 0x084 Старшая половина регистра глобального сброса ISR 0x84 */
+} SWIC_TypeDef; /* size of structure = 0x088 */
+/*
+ * @brief SWIC_MFBSP_DMA
+ */
+/*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP */
+typedef struct SWIC_MFBSP_DMA_Type
+{
+    volatile uint32_t CSR;                            /*!< Offset 0x000 Регистр управления и состояния (по чтению сброс битов «END» и «DONE») */
+    volatile uint32_t CP;                             /*!< Offset 0x004 Регистр указателя цепочки  */
+    volatile uint32_t IR;                             /*!< Offset 0x008 Регистр индекса */
+    volatile uint32_t RUN;                            /*!< Offset 0x00C На запись: Псевдорегистр управления состоянием бита RUN регистра CSR На чтение: Регистр управления и состояния без сброса битов «END» и «DONE» */
+} SWIC_MFBSP_DMA_TypeDef; /* size of structure = 0x010 */
+/*
  * @brief UART
  */
 /*!< UART Universal Asynchronous Receiver-Transmitter */
@@ -608,8 +674,14 @@ typedef struct UART_Type
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Регистры блока управления GPIO register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Регистры блока управления GPIO register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD Регистры блока управления GPIO register set access pointer */
+#define SWIC0 ((SWIC_TypeDef *) SWIC0_BASE)           /*!< SWIC0 КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) register set access pointer */
+#define DMA_SWIC0 ((SWIC_MFBSP_DMA_TypeDef *) DMA_SWIC0_BASE)/*!< DMA_SWIC0 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
+#define SWIC1 ((SWIC_TypeDef *) SWIC1_BASE)           /*!< SWIC1 КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) register set access pointer */
+#define DMA_SWIC1 ((SWIC_MFBSP_DMA_TypeDef *) DMA_SWIC1_BASE)/*!< DMA_SWIC1 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
 #define MFBSP0 ((MFBSP_TypeDef *) MFBSP0_BASE)        /*!< MFBSP0 МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  register set access pointer */
+#define DMA_MFBSP0 ((SWIC_MFBSP_DMA_TypeDef *) DMA_MFBSP0_BASE)/*!< DMA_MFBSP0 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
 #define MFBSP1 ((MFBSP_TypeDef *) MFBSP1_BASE)        /*!< MFBSP1 МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  register set access pointer */
+#define DMA_MFBSP1 ((SWIC_MFBSP_DMA_TypeDef *) DMA_MFBSP1_BASE)/*!< DMA_MFBSP1 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */

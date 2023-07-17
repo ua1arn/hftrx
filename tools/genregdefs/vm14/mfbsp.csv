@@ -24,15 +24,3 @@
 #regdef; RSTART; 0x2c; R/W псевдорегистр ren – запуск/останов приемника без изменения настроек приемника
 #regdef; EMERG_MFBSP; 0x30; R/W Регистр аварийного управления портом
 #regdef; IMASK_MFBSP; 0x34; R/W Регистр маски прерываний от порта
-
-#type; DMA_MFBSP 
-
-#base; DMA_MFBSP0 0x38087000 
-#base; DMA_MFBSP1 0x38089000 
-
-#irq; MFBSP0_DMAIRQ0 52
-#irq; MFBSP0_DMAIRQ1 53
-#irq; MFBSP1_DMAIRQ0 54
-#irq; MFBSP1_DMAIRQ1 55
-
-
