@@ -1022,13 +1022,13 @@ r7s721_adi_irq_handler(void)
 	// ADC IRQ handler
 	//#warning Unhandled CPUSTYLE_T113
 #elif CPUSTYLE_A64
-// ADC IRQ handler
+	// ADC IRQ handler
 
 #elif CPUSTYLE_T507
-// ADC IRQ handler
+	// ADC IRQ handler
 
 #else
-	#error No CPUSTYLE_XXXXX defined
+	// ADC IRQ handler
 #endif
 
 
