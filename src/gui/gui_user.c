@@ -821,6 +821,11 @@ static void gui_main_process(void)
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
+			else if (bh == btn_2)
+			{
+				gui_open_debug_window();
+			}
+
 #if WITHFT8
 			else if (bh == btn_ft8)
 			{
@@ -4036,7 +4041,7 @@ static void window_gui_settings_process(void)
 
 static void window_shift_process(void)
 {
-#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
+#if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static unsigned update = 0, cic_test = 0;
@@ -4102,7 +4107,7 @@ static void window_shift_process(void)
 			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_test"))
 			{
 				cic_test = ! cic_test;
-				xcz_cic_test(cic_test);
+				iq_cic_test(cic_test);
 				bh->is_locked = cic_test;
 			}
 		}
@@ -4136,20 +4141,20 @@ static void window_shift_process(void)
 		if (enc.select == 0)
 		{
 			win->lh_ptr [0].color = COLORMAIN_YELLOW;
-			unsigned v = xcz_rx_cic_shift(0);
-			xcz_rx_cic_shift(v + enc.change);
+			unsigned v = iq_shift_cic_rx(0);
+			iq_shift_cic_rx(v + enc.change);
 		}
 		else if (enc.select == 1)
 		{
 			win->lh_ptr [1].color = COLORMAIN_YELLOW;
-			unsigned v = xcz_rx_iq_shift(0);
-			xcz_rx_iq_shift(v + enc.change);
+			unsigned v = iq_shift_fir_rx(0);
+			iq_shift_fir_rx(v + enc.change);
 		}
 		else if (enc.select == 2)
 		{
 			win->lh_ptr [2].color = COLORMAIN_YELLOW;
-			unsigned v = xcz_tx_shift(0);
-			xcz_tx_shift(v + enc.change);
+			unsigned v = iq_shift_tx(0);
+			iq_shift_tx(v + enc.change);
 		}
 
 		update = 1;
@@ -4160,20 +4165,20 @@ static void window_shift_process(void)
 		update = 0;
 
 		label_t * lbl_rx_cic_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
-		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC: %d", (int) xcz_rx_cic_shift(0));
+		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC: %d", (int) iq_shift_cic_rx(0));
 		label_t * lbl_rx_fir_shift = find_gui_element(TYPE_LABEL, win, "lbl_rx_fir_shift");
-		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR: %d", (int) xcz_rx_iq_shift(0));
+		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR: %d", (int) iq_shift_fir_rx(0));
 		label_t * lbl_tx_shift = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
-		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC: %d", (int) xcz_tx_shift(0));
+		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC: %d", (int) iq_shift_tx(0));
 
 		if (cic_test)
 		{
 			label_t * lbl_iq_test = find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
-			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", xcz_cic_test_process());
+			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", iq_cic_test_process());
 		}
 	}
 
-#endif /* XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR */
+#endif /* WITHIQSHIFT */
 }
 
 // *********************************************************************************************************************************************************************

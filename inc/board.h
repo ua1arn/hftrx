@@ -401,6 +401,8 @@ void board_fpga_reset(void);
 uint8_t iq_shift_cic_rx(uint8_t val);
 uint8_t iq_shift_fir_rx(uint8_t val);
 uint8_t iq_shift_tx(uint8_t val);
+void iq_cic_test(uint32_t val);
+uint32_t iq_cic_test_process(void);
 
 #endif /* WITHIQSHIFT */
 
