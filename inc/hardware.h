@@ -1348,6 +1348,11 @@ signed int init_DRAM(int type, dram_para_t *para); // s0
 uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
 
+void lowinitialize(void);
+void initialize2(void);
+void application_mainloop(void);
+void application_initialize(void);
+
 #if LINUX_SUBSYSTEM
 	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
