@@ -1430,6 +1430,18 @@ static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 //	LowerIrql(irql);
 }
 
+void gpioX_setstate(
+	GPIO_TypeDef * gpio,
+	portholder_t opins,
+	portholder_t state
+	)
+{
+	gpio->gpio_swport_dr = (gpio->gpio_swport_dr & ~ opins) | (opins & state);
+	(void) gpio->gpio_swport_dr;
+}
+
+
+
 #endif
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV

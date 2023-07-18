@@ -256,9 +256,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all:BOOT2
-
-allX: APP2 $(PROJECT)_app.alw32
+all: APP2 $(PROJECT)_app.alw32
 
 allZ:
 	@echo Src

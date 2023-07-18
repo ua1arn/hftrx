@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"
+#include "formats.h"
 
 
 /* Главная функция программы */
