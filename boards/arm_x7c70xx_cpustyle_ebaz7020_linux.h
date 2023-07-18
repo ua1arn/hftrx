@@ -54,6 +54,9 @@
 #define LINUX_FB_FILE		"/dev/fb0"
 #define LINUX_TTY_FILE		"/dev/tty0"
 
+#define HARDWARE_DEBUG_FLUSH() do { \
+} while (0)
+
 //#define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 

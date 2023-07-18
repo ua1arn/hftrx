@@ -4,6 +4,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
+#include "board.h"
 #include "audio.h"
 #include "ft8.h"
 
@@ -437,9 +438,11 @@ void linux_iq_init(void)
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
 
-	xcz_rx_iq_shift(CALIBRATION_IQ_FIR_RX_SHIFT);
-	xcz_rx_cic_shift(CALIBRATION_IQ_CIC_RX_SHIFT);
-	xcz_tx_shift(CALIBRATION_TX_SHIFT);
+#if WITHIQSHIFT
+	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
+	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
+	iq_shift_tx(CALIBRATION_TX_SHIFT);
+#endif /* WITHIQSHIFT */
 }
 
 void linux_iq_thread(void)
@@ -717,13 +720,6 @@ void xcz_rxtx_state(uint8_t tx)
 	update_modem_ctrl();
 }
 
-void xcz_dds_ftw(const uint_least64_t * val)
-{
-	uint32_t v = * val;
-    * ftw = v;
-    mirror_nco1 = v;
-}
-
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	uint32_t v = * val;
@@ -731,7 +727,23 @@ void xcz_dds_rts(const uint_least64_t * val)
     mirror_ncorts = v;
 }
 
-uint32_t xcz_rx_iq_shift(uint8_t val) // 52
+void xcz_dds_ftw(const uint_least64_t * val)
+{
+	uint32_t v = * val;
+    * ftw = v;
+    mirror_nco1 = v;
+}
+
+void xcz_dds_ftw_sub(const uint_least64_t * val)
+{
+	uint32_t v = * val;
+	* ftw_sub = v;
+	mirror_nco2 = v;
+}
+
+#if WITHIQSHIFT
+
+uint8_t iq_shift_fir_rx(uint8_t val) // 52
 {
 	if (val > 0)
 	{
@@ -743,14 +755,7 @@ uint32_t xcz_rx_iq_shift(uint8_t val) // 52
 	return rx_fir_shift;
 }
 
-void xcz_dds_ftw_sub(const uint_least64_t * val)
-{
-	uint32_t v = * val;
-	* ftw_sub = v;
-	mirror_nco2 = v;
-}
-
-uint32_t xcz_rx_cic_shift(uint32_t val)
+uint8_t iq_shift_cic_rx(uint8_t val)
 {
 	if (val > 0)
 	{
@@ -762,7 +767,7 @@ uint32_t xcz_rx_cic_shift(uint32_t val)
 	return rx_cic_shift;
 }
 
-uint32_t xcz_tx_shift(uint32_t val)
+uint8_t iq_shift_tx(uint8_t val)
 {
 	if (val > 0)
 	{
@@ -774,12 +779,14 @@ uint32_t xcz_tx_shift(uint32_t val)
 	return tx_shift;
 }
 
-uint32_t xcz_cic_test_process(void)
+uint32_t iq_cic_test_process(void)
 {
 	return 0;
 }
 
-void xcz_cic_test(uint32_t val) {}
+void iq_cic_test(uint32_t val) {}
+
+#endif /* WITHIQSHIFT */
 
 #if WITHHWDUALVFO
 

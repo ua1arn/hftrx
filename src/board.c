@@ -9987,4 +9987,14 @@ uint8_t iq_shift_tx(uint8_t val)
 	return tx_shift;
 }
 
+uint32_t iq_cic_test_process(void)
+{
+	return 0;
+}
+
+void iq_cic_test(uint32_t val)
+{
+
+}
+
 #endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
