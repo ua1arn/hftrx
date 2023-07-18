@@ -2059,9 +2059,9 @@ static void window_utilites_process(void)
 #if WITHLFM
 		add_element("btn_lfm",      100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
-#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
+#if WITHIQSHIFT
 		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
-#endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
+#endif /* WITHIQSHIFT */
 
 		x = 0;
 		y = 0;
@@ -2131,12 +2131,12 @@ static void window_utilites_process(void)
 				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
-#if defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR
+#if WITHIQSHIFT
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_shift"))
 			{
 				open_window(get_win(WINDOW_SHIFT));
 			}
-#endif /* defined XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR || defined AXI_MODEM_CTRL_ADDR */
+#endif /* WITHIQSHIFT */
 		}
 		break;
 
@@ -4061,13 +4061,13 @@ static void window_shift_process(void)
 		add_element("lbl_tx_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
 		add_element("lbl_iq_test", 0, FONT_MEDIUM, COLORMAIN_WHITE, 23);
 
+		add_element("btn_p", 50, 50, 0, 0, "+");
+		add_element("btn_m", 50, 50, 0, 0, "-");
 		add_element("btn_test", 50, 50, 0, 0, "CIC|test");
-
-		label_t * lh = NULL;
 
 		for (unsigned i = 0; i < win->lh_count; i ++)
 		{
-			lh = & win->lh_ptr [i];
+			label_t * lh = & win->lh_ptr [i];
 
 			lh->x = x;
 			lh->y = y;
@@ -4078,14 +4078,21 @@ static void window_shift_process(void)
 			y += get_label_height(lh) + interval * 3;
 		}
 
+		label_t * lh = find_gui_element(TYPE_LABEL, win, "lbl_rx_cic_shift");
+		x = lh->x + get_label_width(lh) + interval * 2;
+
+		for (unsigned i = 0; i < win->bh_count; i ++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+
+			bh->x1 = x;
+			bh->y1 = 0;
+			bh->visible = VISIBLE;
+
+			x += bh->w + interval * 2;
+		}
+
 		label_t * lbl_iq_test = find_gui_element(TYPE_LABEL, win, "lbl_iq_test");
-
-		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_test");
-		bh->x1 = lbl_iq_test->x + get_label_width(lbl_iq_test) - bh->w;
-		bh->y1 = 0;
-		bh->is_locked = cic_test;
-		bh->visible = VISIBLE;
-
 		local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test:");
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -4109,6 +4116,16 @@ static void window_shift_process(void)
 				cic_test = ! cic_test;
 				iq_cic_test(cic_test);
 				bh->is_locked = cic_test;
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_p"))
+			{
+				enc.change = 1;
+				enc.updated = 1;
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_m"))
+			{
+				enc.change = -1;
+				enc.updated = 1;
 			}
 		}
 		break;
@@ -4170,6 +4187,9 @@ static void window_shift_process(void)
 		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR: %d", (int) iq_shift_fir_rx(0));
 		label_t * lbl_tx_shift = find_gui_element(TYPE_LABEL, win, "lbl_tx_shift");
 		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC: %d", (int) iq_shift_tx(0));
+
+		button_t * btn_test = find_gui_element(TYPE_BUTTON, win, "btn_test");
+		btn_test->is_locked = cic_test;
 
 		if (cic_test)
 		{
