@@ -42,18 +42,18 @@ int DDR_INIT(unsigned int reset_type, void *mem_cfg_0, void *mem_cfg_1);
 #define DDR1_BA (0xA0000000)
 
 #define DDRMC0_BASE 0x37204000
-#define DDRMC0(a) (*(volatile unsigned int *)(DDRMC0_BASE + (a)))
+#define DDRMC0(a) (*(volatile uint32_t *)(DDRMC0_BASE + (a)))
 #define DDRMC1_BASE 0x37206000
-#define DDRMC1(a) (*(volatile unsigned int *)(DDRMC1_BASE + (a)))
+#define DDRMC1(a) (*(volatile uint32_t *)(DDRMC1_BASE + (a)))
 #define DDRMC0_PHY_BASE 0x37205000
-#define DDRMC0_PHY(a) (*(volatile unsigned int *)(DDRMC0_PHY_BASE + (a)))
+#define DDRMC0_PHY(a) (*(volatile uint32_t *)(DDRMC0_PHY_BASE + (a)))
 #define DDRMC1_PHY_BASE 0x37207000
-#define DDRMC1_PHY(a) (*(volatile unsigned int *)(DDRMC1_PHY_BASE + (a)))
+#define DDRMC1_PHY(a) (*(volatile uint32_t *)(DDRMC1_PHY_BASE + (a)))
 
 //#define CMCTR_BASE 0x38094000
-#define DIV_DDR0_CTR_REG (*(volatile unsigned int *)(CMCTR_BASE + 0x030))
-#define DIV_DDR1_CTR_REG (*(volatile unsigned int *)(CMCTR_BASE + 0x034))
-#define GATE_CORE_CTR_REG (*(volatile unsigned int *)(CMCTR_BASE + 0x048))
+#define DIV_DDR0_CTR_REG (CMCTR->DIV_DDR0_CTR) //(*(volatile unsigned int *)(CMCTR_BASE + 0x030))
+#define DIV_DDR1_CTR_REG (CMCTR->DIV_DDR1_CTR) //(*(volatile unsigned int *)(CMCTR_BASE + 0x034))
+#define GATE_CORE_CTR_REG (CMCTR->GATE_CORE_CTR) //(*(volatile unsigned int *)(CMCTR_BASE + 0x048))
 #define GPU_EN (1 << 6)
 #define VPU_EN (1 << 5)
 #define VPOUT_EN (1 << 4)
@@ -61,7 +61,7 @@ int DDR_INIT(unsigned int reset_type, void *mem_cfg_0, void *mem_cfg_1);
 #define DDR1_EN (1 << 2)
 #define DDR0_EN (1 << 1)
 #define L0_EN (1 << 0)
-#define xSEL_CPLL_REG (*(volatile unsigned int *)(CMCTR_BASE + 0x104))
+//#define SEL_CPLL_REG (*(volatile unsigned int *)(CMCTR_BASE + 0x104))
 #define PLL_LOCK_BIT (1 << 31)
 
 //#define PMCTR_BASE 0x38095000
