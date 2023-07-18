@@ -36,7 +36,7 @@ int testmem_ddr(unsigned int base_addr);
 int DDR_INIT(unsigned int reset_type, void *mem_cfg_0, void *mem_cfg_1);
 #endif
 
-#define MHZ_TO_SEL(MHz) ((MHz / 24) - 1)
+#define MHZ_TO_SEL(MHz) (((MHz) / 24) - 1)
 
 #define DDR0_BA (0x40000000)
 #define DDR1_BA (0xA0000000)
@@ -54,15 +54,15 @@ int DDR_INIT(unsigned int reset_type, void *mem_cfg_0, void *mem_cfg_1);
 #define DIV_DDR0_CTR_REG (CMCTR->DIV_DDR0_CTR) //(*(volatile unsigned int *)(CMCTR_BASE + 0x030))
 #define DIV_DDR1_CTR_REG (CMCTR->DIV_DDR1_CTR) //(*(volatile unsigned int *)(CMCTR_BASE + 0x034))
 #define GATE_CORE_CTR_REG (CMCTR->GATE_CORE_CTR) //(*(volatile unsigned int *)(CMCTR_BASE + 0x048))
-#define GPU_EN (1 << 6)
-#define VPU_EN (1 << 5)
-#define VPOUT_EN (1 << 4)
-#define VPIN_EN (1 << 3)
-#define DDR1_EN (1 << 2)
-#define DDR0_EN (1 << 1)
-#define L0_EN (1 << 0)
+#define GPU_EN (UINT32_C(1) << 6)
+#define VPU_EN (UINT32_C(1) << 5)
+#define VPOUT_EN (UINT32_C(1) << 4)
+#define VPIN_EN (UINT32_C(1) << 3)
+#define DDR1_EN (UINT32_C(1) << 2)
+#define DDR0_EN (UINT32_C(1) << 1)
+#define L0_EN (UINT32_C(1) << 0)
 //#define SEL_CPLL_REG (*(volatile unsigned int *)(CMCTR_BASE + 0x104))
-#define PLL_LOCK_BIT (1 << 31)
+#define PLL_LOCK_BIT (UINT32_C(1) << 31)
 
 //#define PMCTR_BASE 0x38095000
 //#define SMCTR_BASE 0x38096000
@@ -297,7 +297,7 @@ int umctl2_init_common(ddr_common_t **mem_cfg, dwc_umctl2_regs_t **umctl2_regs,
             continue;
         }
 
-        CMCTR->GATE_CORE_CTR = CMCTR->GATE_CORE_CTR | (1 << (j + 1));
+        CMCTR->GATE_CORE_CTR = CMCTR->GATE_CORE_CTR | (UINT32_C(1) << (j + 1));
 
         umctl2_regs[j]->DFIMISC = SET_SNPS_DDR_DFIMISC_DFI_INIT_COMPLETE_EN(
             umctl2_regs[j]->DFIMISC, 0);
@@ -574,10 +574,10 @@ void init_start(dwc_umctl2_regs_t *umctl2_regs, ddrphy_t *pub_regs,
     while ((pub_regs->PGSR & 0x3) != 0x3) {
     };
 
-    pub_regs->ZQ0CR0 |= (1 << 30);
-    while ((pub_regs->ZQ0CR0 & (1 << 30))) {
+    pub_regs->ZQ0CR0 |= (UINT32_C(1) << 30);
+    while ((pub_regs->ZQ0CR0 & (UINT32_C(1) << 30))) {
     };
-    while (!(pub_regs->ZQ0SR0 & (1 << 31)) || pub_regs->ZQ0SR1) {
+    while (!(pub_regs->ZQ0SR0 & (UINT32_C(1) << 31)) || pub_regs->ZQ0SR1) {
     };
 
     pub_regs->PIR = SNPS_DDR_PUB_PIR_CLRSR(1);
