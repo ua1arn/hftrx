@@ -70,6 +70,7 @@ typedef enum IRQn
 
 #define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Регистры блока управления SDMA Base */
 #define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) Base */
+#define NFCM_BASE_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) Base */
 #define NORMPORT_BASE ((uintptr_t) 0x38008000)        /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. Base */
 #define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
 #define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
@@ -601,6 +602,7 @@ typedef struct UART_Type
 
 #define SDMA ((SDMA_TypeDef *) SDMA_BASE)             /*!< SDMA Регистры блока управления SDMA register set access pointer */
 #define NANDMPORT ((NANDMPORT_TypeDef *) NANDMPORT_BASE)/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) register set access pointer */
+#define NFCM_BASE ((NANDMPORT_TypeDef *) NFCM_BASE_BASE)/*!< NFCM_BASE КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) register set access pointer */
 #define NORMPORT ((NORMPORT_TypeDef *) NORMPORT_BASE) /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */

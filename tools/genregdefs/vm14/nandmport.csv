@@ -1,5 +1,6 @@
 #type; NANDMPORT; КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)
 #base; NANDMPORT 0x38007000
+#base; NFCM_BASE 0x38007000
 
 #irq; NFC_MPORTINT 71
 

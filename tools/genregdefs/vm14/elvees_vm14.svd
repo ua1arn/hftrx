@@ -1925,6 +1925,15 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="NANDMPORT">
+  <name>NFCM_BASE</name>
+  <baseAddress>0x38007000</baseAddress>
+  <interrupt>
+   <name>NFC_MPORTINT</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
   <peripheral>
   <name>NORMPORT</name>
   <description>контроллер внешней SRAM/NOR Flash памяти.</description>
