@@ -116,6 +116,7 @@ uint_fast16_t hamradio_get_lfmtinterval(void);
 void hamradio_set_lfmtinterval(uint_fast16_t v);
 void hamradio_lfm_disable(void);
 void gui_get_nmea_time(char * p);
+void hamradio_set_gdactest(uint8_t v);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

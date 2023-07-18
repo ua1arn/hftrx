@@ -9989,12 +9989,14 @@ uint8_t iq_shift_tx(uint8_t val)
 
 uint32_t iq_cic_test_process(void)
 {
-	return 0;
+	uint8_t data [5] = { 0 }, dummy [5] = { 0 };
+	prog_spi_exchange(targetfpga1, SPIC_SPEEDFAST, SPIC_MODE3, 50, dummy, data, ARRAY_SIZE(data));
+	return (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
 }
 
 void iq_cic_test(uint32_t val)
 {
-
+	hamradio_set_gdactest(val);
 }
 
 #endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */

@@ -21628,6 +21628,12 @@ void display2_set_page_temp(uint_fast8_t page)
 
 #endif /* WITHTOUCHGUI */
 
+void hamradio_set_gdactest(uint8_t v)
+{
+	gdactest = v != 0;
+	updateboard(1, 1);
+}
+
 #if WITHUSEDUALWATCH
 uint_fast8_t hamradio_split_toggle(void)
 {
