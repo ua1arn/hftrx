@@ -332,6 +332,11 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 #if WITHSDHCHW
+
+	#define	SMHCHARD_IX 0	/* 0 - SMHC0, 1: SMHC1... */
+	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
+	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
+
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
 			arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2);	/* PF3 - SDIO_CMD	*/ \
