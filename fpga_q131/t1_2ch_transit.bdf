@@ -5916,7 +5916,7 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -4608 2104 -4432 2248)
+	(rect -4616 2104 -4440 2248)
 	(text "LPM_FF" (rect 19 0 78 16)(font "Arial" (font_size 10)))
 	(text "inst85" (rect 3 133 32 145)(font "Arial" ))
 	(port
@@ -6025,7 +6025,7 @@ applicable agreement for further details.
 		(line (pt 16 80)(pt 24 88))
 		(line (pt 24 88)(pt 16 96))
 	)
-	(annotation_block (parameter)(rect -4256 2168 -4112 2238))
+	(annotation_block (parameter)(rect -4264 2168 -4120 2238))
 )
 (symbol
 	(rect -4752 2192 -4720 2208)
@@ -8536,10 +8536,6 @@ applicable agreement for further details.
 	(pt -4736 1528)
 )
 (connector
-	(pt -4736 1408)
-	(pt -4440 1408)
-)
-(connector
 	(pt -4816 1672)
 	(pt -4816 1768)
 )
@@ -8903,22 +8899,6 @@ applicable agreement for further details.
 	(text "nb2_en" (rect -3862 1536 -3827 1548)(font "Arial" ))
 	(pt -3896 1552)
 	(pt -3808 1552)
-)
-(connector
-	(pt -4440 1368)
-	(pt -4440 1408)
-)
-(connector
-	(pt -4440 1408)
-	(pt -4440 1536)
-)
-(connector
-	(pt -4408 1304)
-	(pt -4408 1352)
-)
-(connector
-	(pt -4408 1352)
-	(pt -4408 1768)
 )
 (connector
 	(pt -3680 1072)
@@ -9492,20 +9472,8 @@ applicable agreement for further details.
 	(pt -4392 1872)
 )
 (connector
-	(pt -4736 1912)
-	(pt -4736 2032)
-)
-(connector
-	(pt -4736 1912)
-	(pt -4440 1912)
-)
-(connector
 	(pt -4816 2176)
 	(pt -4816 2272)
-)
-(connector
-	(pt -4816 2272)
-	(pt -4408 2272)
 )
 (connector
 	(pt -4648 2064)
@@ -9524,55 +9492,6 @@ applicable agreement for further details.
 	(pt -4664 2048)
 )
 (connector
-	(pt -4440 1872)
-	(pt -4440 1912)
-)
-(connector
-	(pt -4440 1912)
-	(pt -4440 2040)
-)
-(connector
-	(pt -4408 1808)
-	(pt -4408 1856)
-)
-(connector
-	(pt -4824 2176)
-	(pt -4816 2176)
-)
-(connector
-	(pt -4816 2176)
-	(pt -4608 2176)
-)
-(connector
-	(pt -4736 2208)
-	(pt -4648 2208)
-)
-(connector
-	(pt -4648 2208)
-	(pt -4608 2208)
-)
-(connector
-	(text "clk_122880" (rect -4798 2176 -4743 2188)(font "Arial" ))
-	(pt -4800 2192)
-	(pt -4664 2192)
-)
-(connector
-	(pt -4664 2192)
-	(pt -4608 2192)
-)
-(connector
-	(pt -4824 2032)
-	(pt -4736 2032)
-)
-(connector
-	(pt -4736 2032)
-	(pt -4632 2032)
-)
-(connector
-	(pt -4408 1856)
-	(pt -4408 2272)
-)
-(connector
 	(text "i2s3_sck" (rect -4270 1792 -4227 1804)(font "Arial" ))
 	(pt -4408 1808)
 	(pt -4240 1808)
@@ -9586,6 +9505,132 @@ applicable agreement for further details.
 	(text "i2s3_wsp" (rect -4270 1856 -4226 1868)(font "Arial" ))
 	(pt -4296 1872)
 	(pt -4240 1872)
+)
+(connector
+	(pt -4408 1304)
+	(pt -4408 1352)
+)
+(connector
+	(pt -4440 1544)
+	(pt -4456 1544)
+)
+(connector
+	(pt -4824 2176)
+	(pt -4816 2176)
+)
+(connector
+	(pt -4816 2176)
+	(pt -4616 2176)
+)
+(connector
+	(text "clk_122880" (rect -4798 2176 -4743 2188)(font "Arial" ))
+	(pt -4800 2192)
+	(pt -4664 2192)
+)
+(connector
+	(pt -4664 2192)
+	(pt -4616 2192)
+)
+(connector
+	(pt -4736 2208)
+	(pt -4648 2208)
+)
+(connector
+	(pt -4648 2208)
+	(pt -4616 2208)
+)
+(connector
+	(pt -4440 2192)
+	(pt -4432 2192)
+	(bus)
+)
+(connector
+	(pt -4408 1808)
+	(pt -4408 1856)
+)
+(connector
+	(pt -4440 2048)
+	(pt -4456 2048)
+)
+(connector
+	(pt -4736 2032)
+	(pt -4736 1912)
+)
+(connector
+	(pt -4824 2032)
+	(pt -4736 2032)
+)
+(connector
+	(pt -4736 2032)
+	(pt -4632 2032)
+)
+(connector
+	(pt -4736 1912)
+	(pt -4440 1912)
+)
+(connector
+	(pt -4440 1936)
+	(pt -4440 2048)
+)
+(connector
+	(pt -4440 1872)
+	(pt -4440 1912)
+)
+(connector
+	(pt -4440 1912)
+	(pt -4440 1920)
+)
+(connector
+	(pt -4440 1440)
+	(pt -4440 1544)
+)
+(connector
+	(pt -4440 1368)
+	(pt -4440 1408)
+)
+(connector
+	(pt -4440 1408)
+	(pt -4440 1424)
+)
+(connector
+	(pt -4736 1408)
+	(pt -4440 1408)
+)
+(connector
+	(pt -4432 1688)
+	(pt -4424 1688)
+)
+(connector
+	(pt -4416 1688)
+	(pt -4408 1688)
+)
+(connector
+	(pt -4408 1352)
+	(pt -4408 1688)
+)
+(connector
+	(pt -4408 1688)
+	(pt -4408 1768)
+)
+(connector
+	(pt -4432 2192)
+	(pt -4424 2192)
+)
+(connector
+	(pt -4416 2192)
+	(pt -4408 2192)
+)
+(connector
+	(pt -4408 1856)
+	(pt -4408 2192)
+)
+(connector
+	(pt -4408 2192)
+	(pt -4408 2272)
+)
+(connector
+	(pt -4816 2272)
+	(pt -4408 2272)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
@@ -9679,6 +9724,8 @@ applicable agreement for further details.
 (junction (pt -4648 2208))
 (junction (pt -4664 2192))
 (junction (pt -4736 2032))
+(junction (pt -4408 2192))
+(junction (pt -4408 1688))
 (text "Previous" (rect -2280 1000 -2231 1014)(font "Arial" (font_size 8)))
 (text "Current" (rect -2280 1096 -2238 1110)(font "Arial" (font_size 8)))
 (text "Previous" (rect -1904 -112 -1855 -98)(font "Arial" (font_size 8)))

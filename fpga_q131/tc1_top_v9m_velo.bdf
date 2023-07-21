@@ -241,6 +241,22 @@ applicable agreement for further details.
 	(annotation_block (location)(rect 992 304 1040 320))
 )
 (pin
+	(input)
+	(rect 1104 256 1272 272)
+	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
+	(text "i2s1_sdo" (rect 5 0 49 12)(font "Arial" ))
+	(pt 168 8)
+	(drawing
+		(line (pt 84 12)(pt 109 12))
+		(line (pt 84 4)(pt 109 4))
+		(line (pt 113 8)(pt 168 8))
+		(line (pt 84 12)(pt 84 4))
+		(line (pt 109 4)(pt 113 8))
+		(line (pt 109 12)(pt 113 8))
+	)
+	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
+)
+(pin
 	(output)
 	(rect 1624 160 1800 176)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
@@ -408,7 +424,7 @@ applicable agreement for further details.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 1864 264 1912 280))
+	(annotation_block (location)(rect 1864 224 1912 240))
 )
 (pin
 	(output)
@@ -443,23 +459,6 @@ applicable agreement for further details.
 		(line (pt 78 12)(pt 82 8))
 	)
 	(annotation_block (location)(rect 1904 880 1952 896))
-)
-(pin
-	(output)
-	(rect 944 600 1120 616)
-	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "i2s_ckin" (rect 90 0 130 12)(font "Arial" ))
-	(pt 0 8)
-	(drawing
-		(line (pt 0 8)(pt 52 8))
-		(line (pt 52 4)(pt 78 4))
-		(line (pt 52 12)(pt 78 12))
-		(line (pt 52 12)(pt 52 4))
-		(line (pt 78 4)(pt 82 8))
-		(line (pt 82 8)(pt 78 12))
-		(line (pt 78 12)(pt 82 8))
-	)
-	(annotation_block (location)(rect 1152 600 1208 616))
 )
 (pin
 	(output)
@@ -528,6 +527,40 @@ applicable agreement for further details.
 		(line (pt 78 12)(pt 82 8))
 	)
 	(annotation_block (location)(rect 1152 720 1208 736))
+)
+(pin
+	(output)
+	(rect 976 600 1152 616)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "i2s1_mclk" (rect 90 0 139 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+	(annotation_block (location)(rect 1152 600 1208 616))
+)
+(pin
+	(output)
+	(rect 1664 256 1840 272)
+	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
+	(text "i2s1_sdi" (rect 90 0 130 12)(font "Arial" ))
+	(pt 0 8)
+	(drawing
+		(line (pt 0 8)(pt 52 8))
+		(line (pt 52 4)(pt 78 4))
+		(line (pt 52 12)(pt 78 12))
+		(line (pt 52 12)(pt 52 4))
+		(line (pt 78 4)(pt 82 8))
+		(line (pt 82 8)(pt 78 12))
+		(line (pt 78 12)(pt 82 8))
+	)
+	(annotation_block (location)(rect 1840 272 1896 288))
 )
 (symbol
 	(rect 1696 464 1744 496)
@@ -1500,10 +1533,6 @@ applicable agreement for further details.
 	(pt 856 728)
 )
 (connector
-	(pt 752 608)
-	(pt 944 608)
-)
-(connector
 	(pt 752 624)
 	(pt 872 624)
 )
@@ -1616,11 +1645,6 @@ applicable agreement for further details.
 	(pt 1568 344)
 )
 (connector
-	(text "i2s_ready" (rect 1650 264 1698 276)(font "Arial" ))
-	(pt 1536 280)
-	(pt 1704 280)
-)
-(connector
 	(pt 1304 408)
 	(pt 856 408)
 )
@@ -1647,6 +1671,23 @@ applicable agreement for further details.
 (connector
 	(pt 840 424)
 	(pt 840 656)
+)
+(connector
+	(pt 752 608)
+	(pt 976 608)
+)
+(connector
+	(text "i2s_ready" (rect 1586 264 1634 276)(font "Arial" ))
+	(pt 1536 280)
+	(pt 1640 280)
+)
+(connector
+	(pt 1536 264)
+	(pt 1664 264)
+)
+(connector
+	(pt 1304 264)
+	(pt 1272 264)
 )
 (junction (pt 1672 480))
 (junction (pt 1552 168))

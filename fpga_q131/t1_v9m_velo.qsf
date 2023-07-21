@@ -82,10 +82,10 @@ set_location_assignment PIN_66 -to dac_d[8]
 set_location_assignment PIN_65 -to dac_d[7]
 set_location_assignment PIN_64 -to dac_d[6]
 set_location_assignment PIN_60 -to dac_d[5]
-set_location_assignment PIN_33 -to sai1_sd_a
+set_location_assignment PIN_33 -to sai1_sd_a -comment "Data from CPU"
 set_location_assignment PIN_32 -to sai1_sck_a
 set_location_assignment PIN_31 -to sai1_fs_a
-set_location_assignment PIN_30 -to sai1_sd_b
+set_location_assignment PIN_30 -to sai1_sd_b -comment "Data to CPU"
 set_location_assignment PIN_13 -to cpu_mosi
 set_location_assignment PIN_24 -to fpga_ctl_cs
 set_location_assignment PIN_6 -to cpu_miso
@@ -203,7 +203,6 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to dac_d* 
 set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC_FOR_AREA ON
 set_global_assignment -name ENABLE_INIT_DONE_OUTPUT ON
 set_location_assignment PIN_23 -to fpga_fir_cs
-set_location_assignment PIN_143 -to i2s_ckin
 set_location_assignment PIN_144 -to i2s1_lrck
 set_location_assignment PIN_142 -to i2s1_bclk
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
@@ -216,18 +215,22 @@ set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_pga
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "20 MHz" -to cpu_miso
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to dac_sleep
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "7 MHz" -to sai1_sd_b
+set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "7 MHz" -to sai1_sd_b -comment "Data to CPU"
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_mck
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_ck
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to sai1_sck_a
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to sai1_fs_a
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_ws
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to sai1_sd_b
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to sai1_sd_b -comment "Data to CPU"
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to dac_d*
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to adc_ovfl
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR OFF -to tx_inh_h
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to adc_d*
-set_global_assignment -name SDC_FILE tc1_top_v9d_2ch.sdc
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_sdi
+set_location_assignment PIN_143 -to i2s1_mclk
+set_location_assignment PIN_135 -to i2s1_sdi -comment "Data to codec"
+set_location_assignment PIN_136 -to i2s1_sdo -comment "Data from codec"
+set_global_assignment -name SDC_FILE tc1_top_v9m_velo.sdc
 set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
 set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
 set_global_assignment -name QIP_FILE lpm_shiftreg_32.qip
