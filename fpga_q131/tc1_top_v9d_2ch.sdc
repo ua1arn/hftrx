@@ -34,7 +34,7 @@ create_clock -name "ref122880" -period 125MHz [get_ports {refclk_in}]
 
 #create_generated_clock -name "i2s2_mck" -source [get_ports {refclk_in}] -divide_by 10 -duty_cycle 40.0 [get_ports {i2s2_mck}]
 
-create_clock -name "sclk_clock" -period 25MHz [get_ports {cpu_sclk}]
+#create_clock -name "sclk_clock" -period 25MHz [get_ports {cpu_sclk}]
 create_clock -name "fpga_ctl_cs_clock" -period 25MHz [get_ports {fpga_ctl_cs}]
 create_clock -name "fpga_fir_cs_clock" -period 25MHz [get_ports {fpga_fir_cs}]
 create_clock -name "i2smslk_clock" -period 25MHz [get_ports {i2smslk}]
