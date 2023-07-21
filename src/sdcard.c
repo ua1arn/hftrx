@@ -4807,6 +4807,12 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
 				0;
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
+
+#elif CPUSTYLE_T507
+	#warning CPUSTYLE_T507 to be implemented
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -4968,6 +4974,12 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	// Wait Internal_Clock_Stable
 	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
 		;
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
+
+#elif CPUSTYLE_T507
+	#warning CPUSTYLE_T507 to be implemented
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -5161,10 +5173,14 @@ void hardware_sdhost_initialize(void)
 
 	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
+
+#elif CPUSTYLE_T507
+	#warning CPUSTYLE_T507 to be implemented
+
 #else
-
 	#error Wrong CPUSTYLE_xxx
-
 #endif
 }
 
