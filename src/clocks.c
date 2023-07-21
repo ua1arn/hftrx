@@ -3675,6 +3675,47 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 	}
 }
 
+uint_fast32_t allwnrt113_get_smhc0_freq(void)
+{
+	const uint_fast32_t pgdiv = 4 * 2;	// post-gate dividers: clkdiv4 and clkdiv2y
+	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / pgdiv;
+	case 0x01:
+		/* 001: PLL_PERI(1X) */
+		return allwnrt113_get_peripll1x_freq() / pgdiv;
+	case 0x02:
+		/* 010: PLL_PERI(2X) */
+		return allwnrt113_get_peripll2x_freq() / pgdiv;
+	case 0x03:
+		/* 011: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
+	case 0x04:
+		/* 100: PLL_AUDIO1(DIV5) */
+		return allwnrt113_get_audio1pll_div5_freq() / pgdiv;
+	}
+}
+
+uint_fast32_t allwnrt113_get_smhc1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SMHC1_CLK_REG;
+
+	return return allwnrt113_get_hosc_freq();
+}
+
+uint_fast32_t allwnrt113_get_smhc2_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SMHC2_CLK_REG;
+
+	return return allwnrt113_get_hosc_freq();
+}
+
 uint_fast32_t allwnrt113_get_arm_freq(void)
 {
 	return allwnrt113_get_pll_cpu_freq();
