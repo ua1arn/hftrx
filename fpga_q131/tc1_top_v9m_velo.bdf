@@ -1177,8 +1177,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 304)
 		(input)
-		(text "i2s3_sck" (rect 0 0 50 14)(font "Arial" (font_size 8)))
-		(text "i2s3_sck" (rect 21 299 71 313)(font "Arial" (font_size 8)))
+		(text "i2s3_scki" (rect 0 0 53 14)(font "Arial" (font_size 8)))
+		(text "i2s3_scki" (rect 21 299 74 313)(font "Arial" (font_size 8)))
 		(line (pt 0 304)(pt 16 304))
 	)
 	(port
