@@ -19355,33 +19355,9 @@ processkeyboard(uint_fast8_t kbch)
 
 /* вызывается при запрещённых прерываниях. */
 void
-lowinitialize(void)
+applowinitialize(void)
 {
 #if ! WITHRTOS
-	board_beep_initialize();
-	//hardware_cw_diagnostics_noirq(1, 0, 1);	// 'K'
-#if WITHDEBUG
-
-	//HARDWARE_DEBUG_INITIALIZE();
-	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-
-	dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 1 debug session starts.\n"));
-	// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
-	//for (;;)
-	//	hardware_putchar(0xff);
-	// тестирование приёма и передачи символов
-	for (;0;)
-	{
-		char c;
-		if (dbg_getchar(& c))
-		{
-			if (c == 0x1b)
-				break;
-			dbg_putchar(c);
-		}
-	}
-#endif /* WITHDEBUG */
 
 #if WITHCAT
 
@@ -19412,12 +19388,6 @@ lowinitialize(void)
 
 #endif /* WITHMODEM */
 
-	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
-	// Инициализация таймера и списка регистрирумых обработчиков
-	hardware_timer_initialize(TICKS_FREQUENCY);
-
-	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
-	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
 #if WITHWATCHDOG
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */

@@ -1346,6 +1346,7 @@ uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
 
 void lowinitialize(void);
+void applowinitialize(void);
 void initialize2(void);
 void application_mainloop(void);
 void application_initialize(void);
