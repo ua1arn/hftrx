@@ -11571,6 +11571,21 @@
   <name>SMHC0</name>
   <description>SD-MMC Host Controller</description>
   <baseAddress>0x04020000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>SMHC_CTRL</name>
@@ -11937,10 +11952,40 @@
   <peripheral derivedFrom="SMHC0">
   <name>SMHC1</name>
   <baseAddress>0x04021000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="SMHC0">
   <name>SMHC2</name>
   <baseAddress>0x04022000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>SPI0</name>

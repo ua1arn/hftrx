@@ -32,6 +32,9 @@ typedef enum IRQn
     USB0_OHCI_IRQn = 47,                              /*!< USB_OHCI_Capability  */
     USB1_EHCI_IRQn = 49,                              /*!< USB_EHCI_Capability  */
     USB1_OHCI_IRQn = 50,                              /*!< USB_OHCI_Capability  */
+    SMHC0_IRQn = 56,                                  /*!< SMHC SD-MMC Host Controller */
+    SMHC1_IRQn = 57,                                  /*!< SMHC SD-MMC Host Controller */
+    SMHC2_IRQn = 58,                                  /*!< SMHC SD-MMC Host Controller */
     MCTL_IRQn = 59,                                   /*!< MCTL_COM  */
     EMAC_IRQn = 62,                                   /*!< EMAC  */
     CCU_FERR_IRQn = 64,                               /*!< CCU Clock Controller Unit (CCU) */
