@@ -5176,8 +5176,26 @@ void hardware_sdhost_initialize(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
 
+	unsigned ix = 0;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+
+
 #elif CPUSTYLE_T507
 	#warning CPUSTYLE_T507 to be implemented
+
+	unsigned ix = 0;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+
 
 #else
 	#error Wrong CPUSTYLE_xxx

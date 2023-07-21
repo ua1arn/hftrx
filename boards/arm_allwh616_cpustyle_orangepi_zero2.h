@@ -34,9 +34,10 @@
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
+#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#define WITHETHHW 1	/* Hardware Ethernet controller */
+
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
@@ -337,71 +338,62 @@
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
-			arm_hardware_piod_altfn50(UINT32_C(1) << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2);	/* PF3 - SDIO_CMD	*/ \
+			arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2);	/* PF2 - SDIO_CK	*/ \
+			arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2);	/* PF1 - SDIO_D0	*/ \
+			arm_hardware_piof_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2);	/* PF0 - SDIO_D1	*/ \
+			arm_hardware_piof_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2);	/* PF5 - SDIO_D2	*/ \
+			arm_hardware_piof_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2);	/* PF4 - SDIO_D3	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piof_inputs(UINT32_C(1) << 3);	/* PF3 - SDIO_CMD	*/ \
+			arm_hardware_piof_inputs(UINT32_C(1) << 2);	/* PF2 - SDIO_CK	*/ \
+			arm_hardware_piof_inputs(UINT32_C(1) << 1);	/* PF1 - SDIO_D0	*/ \
+			arm_hardware_piof_inputs(UINT32_C(1) << 0);	/* PF0 - SDIO_D1	*/ \
+			arm_hardware_piof_inputs(UINT32_C(1) << 5);	/* PF5 - SDIO_D2	*/ \
+			arm_hardware_piof_inputs(UINT32_C(1) << 4);	/* PF4 - SDIO_D3	*/ \
+			arm_hardware_piof_updown(0, UINT32_C(1) << 3);	/* PF3 - SDIO_CMD	*/ \
+			arm_hardware_piof_updown(0, UINT32_C(1) << 2);	/* PF2 - SDIO_CK	*/ \
+			arm_hardware_piof_updown(0, UINT32_C(1) << 1);	/* PF1 - SDIO_D0	*/ \
+			arm_hardware_piof_updown(0, UINT32_C(1) << 0);	/* PF0 - SDIO_D1	*/ \
+			arm_hardware_piof_updown(0, UINT32_C(1) << 5);	/* PF5 - SDIO_D2	*/ \
+			arm_hardware_piof_updown(0, UINT32_C(1) << 4);	/* PF4 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE() do { \
-			arm_hardware_piod_altfn50(UINT32_C(1) << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_altfn50(UINT32_C(1) << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2);	/* PF3 - SDIO_CMD	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2);	/* PF2 - SDIO_CK	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2);	/* PF1 - SDIO_D0	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_piod_updown(0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
+		arm_hardware_piof_inputs(UINT32_C(1) << 3);	/* PF3 - SDIO_CMD	*/ \
+		arm_hardware_piof_inputs(UINT32_C(1) << 2);	/* PF2 - SDIO_CK	*/ \
+		arm_hardware_piof_inputs(UINT32_C(1) << 1);	/* PF1 - SDIO_D0	*/ \
+		arm_hardware_piof_inputs(UINT32_C(1) << 6);	/* PF6 - SDC0_DET	*/ \
+		arm_hardware_piof_updown(0, UINT32_C(1) << 3);	/* PF3 - SDIO_CMD	*/ \
+		arm_hardware_piof_updown(0, UINT32_C(1) << 2);	/* PF2 - SDIO_CK	*/ \
+		arm_hardware_piof_updown(0, UINT32_C(1) << 1);	/* PF1 - SDIO_D0	*/ \
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
-	#define HARDWARE_SDIO_WP_BIT	(UINT32_C(1) << 8)	/* PG8 - SDIO_WP */
-	#define HARDWARE_SDIO_CD_BIT	(UINT32_C(1) << 7)	/* PG7 - SDIO_SENSE */
+	#define HARDWARE_SDIO_CD_BIT	(UINT32_C(1) << 6)	/* PF6 - SDC0_DET */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
-			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
-			arm_hardware_piog_updown(HARDWARE_SDIO_WP_BIT, 0); \
-			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PD0 - SDIO_SENSE */ \
+			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PF6 - SDC0_DET */ \
 			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
-	#define HARDWARE_SDIOSENSE_CD() ((gpioX_getinputs(GPIOG) & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
-	#define HARDWARE_SDIOSENSE_WP() ((gpioX_getinputs(GPIOG) & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
 
-	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
-	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define HARDWARE_SDIOPOWER_BIT (UINT32_C(1) << 7)	/* PC7 */
+	#define HARDWARE_SDIOSENSE_CD() ((GPIOF->DATA & HARDWARE_SDIO_CD_BIT) == 0)	/* == 0: no disk. получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_WP() 0//((GPIOG->DATA & HARDWARE_SDIO_WP_BIT) != 0)	/* != 0: write protected получить состояние датчика CARD WRITE PROTECT */
+
 	/* если питание SD CARD управляется прямо с процессора */
 	#define HARDWARE_SDIOPOWER_INITIALIZE()	do { \
-		arm_hardware_pioc_outputs2m(HARDWARE_SDIOPOWER_BIT, HARDWARE_SDIOPOWER_BIT); /* питание выключено */ \
 		} while (0)
 	/* parameter on not zero for powering SD CARD */
 	#define HARDWARE_SDIOPOWER_SET(on) do { \
-		if ((on) != 0) \
-			HARDWARE_SDIOPOWER_C(HARDWARE_SDIOPOWER_BIT); \
-		else \
-			HARDWARE_SDIOPOWER_S(HARDWARE_SDIOPOWER_BIT); \
 	} while (0)
 
 #endif /* WITHSDHCHW */
