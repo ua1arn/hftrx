@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"
+#include "bootloader.h"
 #include "formats.h"
 
 
