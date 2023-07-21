@@ -268,7 +268,7 @@ bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 # Take from tc1_a64_boot.map
-SystemInitAddr = 0x00021de4
+SystemInitAddr = 0x000221b8
 
 # Invoke SystemInit 
 boot_run: fsbl_frz.alw32
