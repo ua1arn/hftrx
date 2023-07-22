@@ -604,7 +604,7 @@ int axp305_initialize(void)
 		return -1;
 
 
-	if (1)
+	if (0)
 	{
 		unsigned reg;
 		for (reg = 0; reg <= 0xED; ++ reg)
