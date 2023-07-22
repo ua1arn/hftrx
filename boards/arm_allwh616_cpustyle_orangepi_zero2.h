@@ -751,7 +751,7 @@
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
-#if 1
+#if 0
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		gpioX_getinputs(GPIOE)
 	#define TARGET_FPGA_OVF_BIT			(UINT32_C(1) << 1)	// PE1
@@ -1048,9 +1048,9 @@
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */
-	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_USERBOOT_BIT) == 0)
+	#define BOARD_IS_USERBOOT() 0//(((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); /* set as input with pull-up */ \
+			/*arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); *//* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */

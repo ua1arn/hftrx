@@ -57,13 +57,10 @@ typedef enum IRQn
     SMHC1_IRQn = 68,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
-    GPIOE_IRQn = 75,                                  /*!< GPIOINT  */
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
     WATCHDOG_IRQn = 82,                               /*!< TIMER  */
-    GPIOA_IRQn = 83,                                  /*!< GPIOINT  */
     GPIOC_IRQn = 84,                                  /*!< GPIOINT  */
-    GPIOD_IRQn = 85,                                  /*!< GPIOINT  */
     GPIOF_IRQn = 86,                                  /*!< GPIOINT  */
     GPIOG_IRQn = 87,                                  /*!< GPIOINT  */
     GPIOH_IRQn = 88,                                  /*!< GPIOINT  */
@@ -127,15 +124,12 @@ typedef enum IRQn
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
-#define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK  Base */
-#define GPIOF_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
-#define GPIOG_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
-#define GPIOH_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
-#define GPIOI_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
-#define GPIOC_BASE ((uintptr_t) 0x0300B024)           /*!< GPIO  Base */
-#define GPIOD_BASE ((uintptr_t) 0x0300B048)           /*!< GPIO  Base */
-#define GPIOE_BASE ((uintptr_t) 0x0300B06C)           /*!< GPIO  Base */
+#define GPIOC_BASE ((uintptr_t) 0x0300B048)           /*!< GPIO  Base */
+#define GPIOF_BASE ((uintptr_t) 0x0300B0B4)           /*!< GPIO  Base */
+#define GPIOG_BASE ((uintptr_t) 0x0300B0D8)           /*!< GPIO  Base */
+#define GPIOH_BASE ((uintptr_t) 0x0300B0FC)           /*!< GPIO  Base */
+#define GPIOI_BASE ((uintptr_t) 0x0300B120)           /*!< GPIO  Base */
 #define GPIOINTA_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
 #define GPIOINTC_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
 #define GPIOINTD_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
@@ -1104,15 +1098,12 @@ typedef struct USB_OHCI_Capability_Type
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
-#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
 #define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)           /*!< GPIOH  register set access pointer */
 #define GPIOI ((GPIO_TypeDef *) GPIOI_BASE)           /*!< GPIOI  register set access pointer */
-#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
-#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD  register set access pointer */
-#define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)           /*!< GPIOE  register set access pointer */
 #define GPIOINTA ((GPIOINT_TypeDef *) GPIOINTA_BASE)  /*!< GPIOINTA  register set access pointer */
 #define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)  /*!< GPIOINTC  register set access pointer */
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */

@@ -275,9 +275,13 @@ boot_run: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr)
 
-app_run: $(PROJECT)_app.alw32 boot_run
+__app_run: $(PROJECT)_app.alw32 boot_run
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
+
+app_run: bootloader
+	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) exec 0x00028000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32

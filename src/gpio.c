@@ -796,7 +796,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static LCLSPINLOCK_t gpiodata_locks [] =
+static LCLSPINLOCK_t gpiodata_locks [16] =
 {
 	LCLSPINLOCK_INIT,	// GPIOA
 	LCLSPINLOCK_INIT,	// GPIOB - in T113-S3
@@ -821,7 +821,7 @@ static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 #elif CPUSTYLE_T507
 	if (gpio == GPIOL)
 		return & gpiodata_L_lock;
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOA_BASE];
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
@@ -1342,7 +1342,7 @@ gpioX_onchangeinterrupt(
 	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
 	GPIOBLOCK_TypeDef * const blk = gpio == GPIOL ? GPIOBLOCK_L : GPIOBLOCK;
 #elif CPUSTYLE_T507
-	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOA_BASE + 1;
+	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE;
 	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
