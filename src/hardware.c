@@ -3576,11 +3576,14 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
 
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (INT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	/* Не влияет: */
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (INT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (INT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
+
+	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
 	* rvaddr = startfunc;
 	ASSERT(* rvaddr == startfunc);
