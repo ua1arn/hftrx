@@ -1609,12 +1609,10 @@ static int mctl_core_init(struct dram_para *para)
 
 static void mctl_auto_detect_rank_width(struct dram_para *para)
 {
-	TP();
 	/* this is minimum size that it's supported */
 	para->cols = 8;
 	TP();
 	para->rows = 13;
-	TP();
 
 	/*
 	 * Strategy here is to test most demanding combination first and least
@@ -1631,9 +1629,7 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 	TP();
 	para->ranks = 2;
 	TP();
-	local_delay_us(1);
 	TP();
-	local_delay_us(1);
 	if (mctl_core_init(para))
 		return;
 
