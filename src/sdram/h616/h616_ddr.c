@@ -36,6 +36,14 @@
 
 #define SUNXI_CCM_BASE CCU_BASE
 
+// CONFIG_DRAM_SUN50I_H616_UNKNOWN_FEATURE
+// CONFIG_DRAM_ODT_EN
+// CONFIG_DRAM_SUN50I_H616_WRITE_LEVELING
+// CONFIG_DRAM_SUN50I_H616_READ_CALIBRATION
+// CONFIG_DRAM_SUN50I_H616_READ_TRAINING
+// CONFIG_DRAM_SUN50I_H616_WRITE_TRAINING
+// CONFIG_DRAM_SUN50I_H616_BIT_DELAY_COMPENSATION
+
 #define IS_ENABLED(v) (1)
 
 #define BIT_U32(pos) (UINT32_C(1) << (pos))
@@ -723,7 +731,7 @@ inline void mbus_configure_port(uint8_t port,
 			   | (bwl0 << 16) );
 	const uint32_t cfg1 = ((uint32_t)bwl2 << 16) | (bwl1 & 0xffff);
 
-	PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", port, (unsigned) cfg0, (unsigned) cfg1);
+	//PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", port, (unsigned) cfg0, (unsigned) cfg1);
 	writel(cfg0, &mctl_com->master[port].cfg0);
 	writel(cfg1, &mctl_com->master[port].cfg1);
 }
@@ -765,16 +773,12 @@ static void mctl_set_master_priority(void)
 
 static void mctl_sys_init(struct dram_para *para)
 {
-	TP();
-	local_delay_us(1);
 	struct sunxi_ccm_reg * const ccm =
 			(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
 	struct sunxi_mctl_com_reg * const mctl_com =
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
-	TP();
-	local_delay_us(1);
 
 	/* Put all DRAM-related blocks to reset state */
 	clrbits_le32(&ccm->mbus_cfg, MBUS_ENABLE);
@@ -784,8 +788,6 @@ static void mctl_sys_init(struct dram_para *para)
 	clrbits_le32(&ccm->dram_gate_reset, BIT_U32(RESET_SHIFT));
 	clrbits_le32(&ccm->pll5_cfg, CCM_PLL5_CTRL_EN);
 	clrbits_le32(&ccm->dram_clk_cfg, DRAM_MOD_RESET);
-	TP();
-	local_delay_us(1);
 
 	udelay(5);
 
@@ -1519,17 +1521,14 @@ static int mctl_phy_init(struct dram_para *para)
 
 static int mctl_ctrl_init(struct dram_para *para)
 {
-	TP();
 	struct sunxi_mctl_com_reg * const mctl_com =
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
 	uint32_t reg_val;
 
-	TP();
 	clrsetbits_le32(&mctl_com->unk_0x500, BIT_U32(24), 0x200);
 	writel(0x8000, &mctl_ctl->clken);
-	TP();
 
 	setbits_le32(&mctl_com->unk_0x008, 0xff00);
 
