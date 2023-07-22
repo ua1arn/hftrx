@@ -1622,14 +1622,11 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 	 * visible.
 	 */
 
-	TP();
 	PRINTF("testing 32-bit width, rank = 2\n");
 	TP();
 	para->bus_full_width = 1;
 	TP();
 	para->ranks = 2;
-	TP();
-	TP();
 	if (mctl_core_init(para))
 		return;
 
@@ -1714,9 +1711,9 @@ unsigned long sunxi_dram_init(void)
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	PRINTF("arm_hardware_sdram_initialize start\n");
+	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	unsigned long v = sunxi_dram_init();
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
-	PRINTF("arm_hardware_sdram_initialize done\n");
+	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
 #endif /* CPUSTYLE_T507 */
