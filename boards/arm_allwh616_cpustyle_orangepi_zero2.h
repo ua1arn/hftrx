@@ -53,7 +53,7 @@
 
 #if WITHISBOOTLOADER
 
-	////#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define WITHSDRAM_AXP305	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */

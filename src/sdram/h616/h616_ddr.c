@@ -36,7 +36,7 @@
 
 #define SUNXI_CCM_BASE CCU_BASE
 
-#define IS_ENABLED(v) (0)
+#define IS_ENABLED(v) (1)
 
 #define BIT_U32(pos) (UINT32_C(1) << (pos))
 
@@ -765,12 +765,16 @@ static void mctl_set_master_priority(void)
 
 static void mctl_sys_init(struct dram_para *para)
 {
+	TP();
+	local_delay_us(1);
 	struct sunxi_ccm_reg * const ccm =
 			(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
 	struct sunxi_mctl_com_reg * const mctl_com =
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
+	TP();
+	local_delay_us(1);
 
 	/* Put all DRAM-related blocks to reset state */
 	clrbits_le32(&ccm->mbus_cfg, MBUS_ENABLE);
@@ -780,6 +784,8 @@ static void mctl_sys_init(struct dram_para *para)
 	clrbits_le32(&ccm->dram_gate_reset, BIT_U32(RESET_SHIFT));
 	clrbits_le32(&ccm->pll5_cfg, CCM_PLL5_CTRL_EN);
 	clrbits_le32(&ccm->dram_clk_cfg, DRAM_MOD_RESET);
+	TP();
+	local_delay_us(1);
 
 	udelay(5);
 
@@ -1513,14 +1519,17 @@ static int mctl_phy_init(struct dram_para *para)
 
 static int mctl_ctrl_init(struct dram_para *para)
 {
+	TP();
 	struct sunxi_mctl_com_reg * const mctl_com =
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
 	uint32_t reg_val;
 
+	TP();
 	clrsetbits_le32(&mctl_com->unk_0x500, BIT_U32(24), 0x200);
 	writel(0x8000, &mctl_ctl->clken);
+	TP();
 
 	setbits_le32(&mctl_com->unk_0x008, 0xff00);
 
@@ -1595,16 +1604,29 @@ static int mctl_ctrl_init(struct dram_para *para)
 
 static int mctl_core_init(struct dram_para *para)
 {
+	TP();
+	local_delay_us(1);
+	TP();
+	local_delay_us(1);
+	TP();
+	local_delay_us(1);
+	TP();
+	local_delay_us(1);
 	mctl_sys_init(para);
+	TP();
+	local_delay_us(1);
 
 	return mctl_ctrl_init(para);
 }
 
 static void mctl_auto_detect_rank_width(struct dram_para *para)
 {
+	TP();
 	/* this is minimum size that it's supported */
 	para->cols = 8;
+	TP();
 	para->rows = 13;
+	TP();
 
 	/*
 	 * Strategy here is to test most demanding combination first and least
@@ -1614,11 +1636,19 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 	 * visible.
 	 */
 
+	TP();
 	PRINTF("testing 32-bit width, rank = 2\n");
+	TP();
 	para->bus_full_width = 1;
+	TP();
 	para->ranks = 2;
+	TP();
+	local_delay_us(1);
+	TP();
+	local_delay_us(1);
 	if (mctl_core_init(para))
 		return;
+	TP();
 
 	PRINTF("testing 32-bit width, rank = 1\n");
 	para->bus_full_width = 1;
@@ -1687,9 +1717,10 @@ unsigned long sunxi_dram_init(void)
 
 	setbits_le32(0x7010310, BIT_U32(8));
 	clrbits_le32(0x7010318, 0x3f);
-
 	mctl_auto_detect_rank_width(&para);
+	TP();
 	mctl_auto_detect_dram_size(&para);
+	TP();
 
 	mctl_core_init(&para);
 
@@ -1704,7 +1735,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 	unsigned long v = sunxi_dram_init();
-	PRINTF("arm_hardware_sdram_initialize: v=%lu\n", v);
+	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
 #endif /* CPUSTYLE_T507 */
