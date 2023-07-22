@@ -2176,6 +2176,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+#if WITHTX
 	{
 		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
@@ -2186,6 +2187,7 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#endif /* WITHTX */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
 #endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN) */
