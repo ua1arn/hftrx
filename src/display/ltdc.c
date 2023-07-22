@@ -2530,7 +2530,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
-static void t113_tcon_mipidsi_initsteps(const videomode_t * vdmode)
+static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
 
 	unsigned prei = 0;
@@ -2587,7 +2587,7 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 #if WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
 #elif WITHMIPIDSISHW
-	t113_tcon_mipidsi_initsteps(vdmode);
+	t113_tcon_dsi_initsteps(vdmode);
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */

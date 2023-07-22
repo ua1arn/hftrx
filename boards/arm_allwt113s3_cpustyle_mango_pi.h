@@ -962,6 +962,9 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
+	// PD0..PD9: mipi-dsi connect
+	// PD20 - TWI2-SCK
+	// PD21 - TWI2-SDA
 	#define HARDWARE_MIPIDSI_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF4); 	/* PD0 DSI-D0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF4); 	/* PD1 DSI-D0N */ \
@@ -973,6 +976,9 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF4); 	/* PD7 DSI-D2N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF4); 	/* PD8 DSI-D3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF4); 	/* PD9 DSI-D3N */ \
+		/* I2C control */ \
+		/*arm_hardware_piod_altfn2(UINT32_C(1) << 20, GPIO_CFG_AF3);*/	/* PD20 TWI2-SCK SCL */ \
+		/*arm_hardware_piod_altfn2(UINT32_C(1) << 21, GPIO_CFG_AF3);	*//* PD21 TWI2-SDA SDA */ \
 	} while (0)
 
 #endif /* WITHLTDCHW */
