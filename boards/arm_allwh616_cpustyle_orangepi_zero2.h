@@ -121,9 +121,9 @@
 
 	////#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	////#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -135,9 +135,8 @@
 //	#define WITHUSBHOST_DMAENABLE 1
 
 	////#define WITHEHCIHW	1	/* USB_EHCI controller */
-
-	////#define WITHUSBHW_EHCI		USBEHCI1
-	////#define WITHUSBHW_OHCI		USBOHCI1
+	////#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
+	////#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port

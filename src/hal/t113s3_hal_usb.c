@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW
+#if (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHUSBHW
 
 #include "board.h"
 #include "audio.h"
@@ -4703,4 +4703,4 @@ HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
   return HAL_OK;
 }
 
-#endif /* (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133) && WITHUSBHW */
+#endif /* (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHUSBHW */
