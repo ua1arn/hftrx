@@ -3516,6 +3516,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
+	ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert

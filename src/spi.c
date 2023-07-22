@@ -17,7 +17,7 @@
 	#include <machine/endian.h>
 #endif /* ! LINUX_SUNSYSTEM */
 
-#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
+#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
@@ -1324,7 +1324,7 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
@@ -1335,7 +1335,7 @@ static void sys_spinor_exit(void)
 	val &= ~ ((1u << 1) | (1u << 0));
 	SPI0->SPI_GCR = val;
 }
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
@@ -4324,7 +4324,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 		spidf_progval8(* buff ++);
 }
 
-#elif WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
 {
@@ -5998,7 +5998,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
-		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 
 
@@ -6054,14 +6054,14 @@ int testchipDATAFLASH(void)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
-			//PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
+			PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
 			chipSize = (dword2 >> 3) + 1uL;
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
-			//PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
+			PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
 			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
 		}
 		///////////////////////////////////
@@ -6072,8 +6072,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		//PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: Sector Erase size1..4: %u, %u, %u, %u\n", 1u << (sct [0] & 0xFF), 1u << (sct [1] & 0xFF), 1u << (sct [2] & 0xFF), 1u << (sct [3] & 0xFF));
+		PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		PRINTF("SFDP: Sector Erase size1..4: %u, %u, %u, %u\n", 1u << (sct [0] & 0xFF), 1u << (sct [1] & 0xFF), 1u << (sct [2] & 0xFF), 1u << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)

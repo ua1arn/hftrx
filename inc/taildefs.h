@@ -606,7 +606,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #endif /* CPUSTYLE_XC7Z */
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
 	// Bootloader parameters
 	#if WITHSDRAMHW
 		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
