@@ -67,38 +67,38 @@ typedef enum IRQn
     GPIOI_IRQn = 89,                                  /*!< GPIOINT  */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
-    C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG C0_CTI0 Interrupt */
-    C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG C0_CTI1 Interrupt */
-    C0_CTI2_IRQn = 162,                               /*!< C0_CPUX_CFG C0_CTI2 Interrupt */
-    C0_CTI3_IRQn = 163,                               /*!< C0_CPUX_CFG C0_CTI3 Interrupt */
-    C0_COMMTX0_IRQn = 164,                            /*!< C0_CPUX_CFG C0_COMMTX0 Interrupt */
-    C0_COMMTX1_IRQn = 165,                            /*!< C0_CPUX_CFG C0_COMMTX1 Interrupt */
-    C0_COMMTX2_IRQn = 166,                            /*!< C0_CPUX_CFG C0_COMMTX2 Interrupt */
-    C0_COMMTX3_IRQn = 167,                            /*!< C0_CPUX_CFG C0_COMMTX3 Interrupt */
-    C0_COMMRX0_IRQn = 168,                            /*!< C0_CPUX_CFG C0_COMMRX0 Interrupt */
-    C0_COMMRX1_IRQn = 169,                            /*!< C0_CPUX_CFG C0_COMMRX1 Interrupt */
-    C0_COMMRX2_IRQn = 170,                            /*!< C0_CPUX_CFG C0_COMMRX2 Interrupt */
-    C0_COMMRX3_IRQn = 171,                            /*!< C0_CPUX_CFG C0_COMMRX3 Interrupt */
-    C0_PMU0_IRQn = 172,                               /*!< C0_CPUX_CFG C0_PMU0 Interrupt */
-    C0_PMU1_IRQn = 173,                               /*!< C0_CPUX_CFG C0_PMU1 Interrupt */
-    C0_PMU2_IRQn = 174,                               /*!< C0_CPUX_CFG C0_PMU2 Interrupt */
-    C0_PMU3_IRQn = 175,                               /*!< C0_CPUX_CFG C0_PMU3 Interrupt */
-    C0_AXI_ERROR_IRQn = 176,                          /*!< C0_CPUX_CFG C0_AXI_ERROR Interrupt */
-    AXI_WR_IRQ_IRQn = 177,                            /*!< C0_CPUX_CFG AXI_WR_IRQ Interrupt */
-    AXI_RD_IRQ_IRQn = 178,                            /*!< C0_CPUX_CFG AXI_RD_IRQ Interrupt */
-    DBGRSTREQ0_IRQn = 179,                            /*!< C0_CPUX_CFG DBGRSTREQ0 Interrupt */
-    DBGRSTREQ1_IRQn = 180,                            /*!< C0_CPUX_CFG DBGRSTREQ Interrupt */
-    DBGRSTREQ2_IRQn = 181,                            /*!< C0_CPUX_CFG DBGRSTREQ2 Interrupt */
-    DBGRSTREQ3_IRQn = 182,                            /*!< C0_CPUX_CFG DBGRSTREQ3 Interrupt */
-    nVCPUMNTIRQ0_IRQn = 183,                          /*!< C0_CPUX_CFG nVCPUMNTIRQ0 Interrupt */
-    nVCPUMNTIRQ1_IRQn = 184,                          /*!< C0_CPUX_CFG nVCPUMNTIRQ1 Interrupt */
-    nVCPUMNTIRQ2_IRQn = 185,                          /*!< C0_CPUX_CFG nVCPUMNTIRQ2 Interrupt */
-    nVCPUMNTIRQ3_IRQn = 186,                          /*!< C0_CPUX_CFG nVCPUMNTIRQ3 Interrupt */
-    nCOMMIRQ0_IRQn = 187,                             /*!< C0_CPUX_CFG nCOMMIRQ0 Interrupt */
-    nCOMMIRQ1_IRQn = 188,                             /*!< C0_CPUX_CFG nCOMMIRQ1 Interrupt */
-    nCOMMIRQ2_IRQn = 189,                             /*!< C0_CPUX_CFG nCOMMIRQ2 Interrupt */
-    nCOMMIRQ3_IRQn = 190,                             /*!< C0_CPUX_CFG nCOMMIRQ3 Interrupt */
-    DBGPWRUPREQ_out_IRQn = 191,                       /*!< C0_CPUX_CFG DBGPWRUPREQ_out Interrupt */
+    C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
+    C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
+    C0_CTI2_IRQn = 162,                               /*!< C0_CPUX_CFG_T507 C0_CTI2 Interrupt */
+    C0_CTI3_IRQn = 163,                               /*!< C0_CPUX_CFG_T507 C0_CTI3 Interrupt */
+    C0_COMMTX0_IRQn = 164,                            /*!< C0_CPUX_CFG_T507 C0_COMMTX0 Interrupt */
+    C0_COMMTX1_IRQn = 165,                            /*!< C0_CPUX_CFG_T507 C0_COMMTX1 Interrupt */
+    C0_COMMTX2_IRQn = 166,                            /*!< C0_CPUX_CFG_T507 C0_COMMTX2 Interrupt */
+    C0_COMMTX3_IRQn = 167,                            /*!< C0_CPUX_CFG_T507 C0_COMMTX3 Interrupt */
+    C0_COMMRX0_IRQn = 168,                            /*!< C0_CPUX_CFG_T507 C0_COMMRX0 Interrupt */
+    C0_COMMRX1_IRQn = 169,                            /*!< C0_CPUX_CFG_T507 C0_COMMRX1 Interrupt */
+    C0_COMMRX2_IRQn = 170,                            /*!< C0_CPUX_CFG_T507 C0_COMMRX2 Interrupt */
+    C0_COMMRX3_IRQn = 171,                            /*!< C0_CPUX_CFG_T507 C0_COMMRX3 Interrupt */
+    C0_PMU0_IRQn = 172,                               /*!< C0_CPUX_CFG_T507 C0_PMU0 Interrupt */
+    C0_PMU1_IRQn = 173,                               /*!< C0_CPUX_CFG_T507 C0_PMU1 Interrupt */
+    C0_PMU2_IRQn = 174,                               /*!< C0_CPUX_CFG_T507 C0_PMU2 Interrupt */
+    C0_PMU3_IRQn = 175,                               /*!< C0_CPUX_CFG_T507 C0_PMU3 Interrupt */
+    C0_AXI_ERROR_IRQn = 176,                          /*!< C0_CPUX_CFG_T507 C0_AXI_ERROR Interrupt */
+    AXI_WR_IRQ_IRQn = 177,                            /*!< C0_CPUX_CFG_T507 AXI_WR_IRQ Interrupt */
+    AXI_RD_IRQ_IRQn = 178,                            /*!< C0_CPUX_CFG_T507 AXI_RD_IRQ Interrupt */
+    DBGRSTREQ0_IRQn = 179,                            /*!< C0_CPUX_CFG_T507 DBGRSTREQ0 Interrupt */
+    DBGRSTREQ1_IRQn = 180,                            /*!< C0_CPUX_CFG_T507 DBGRSTREQ Interrupt */
+    DBGRSTREQ2_IRQn = 181,                            /*!< C0_CPUX_CFG_T507 DBGRSTREQ2 Interrupt */
+    DBGRSTREQ3_IRQn = 182,                            /*!< C0_CPUX_CFG_T507 DBGRSTREQ3 Interrupt */
+    nVCPUMNTIRQ0_IRQn = 183,                          /*!< C0_CPUX_CFG_T507 nVCPUMNTIRQ0 Interrupt */
+    nVCPUMNTIRQ1_IRQn = 184,                          /*!< C0_CPUX_CFG_T507 nVCPUMNTIRQ1 Interrupt */
+    nVCPUMNTIRQ2_IRQn = 185,                          /*!< C0_CPUX_CFG_T507 nVCPUMNTIRQ2 Interrupt */
+    nVCPUMNTIRQ3_IRQn = 186,                          /*!< C0_CPUX_CFG_T507 nVCPUMNTIRQ3 Interrupt */
+    nCOMMIRQ0_IRQn = 187,                             /*!< C0_CPUX_CFG_T507 nCOMMIRQ0 Interrupt */
+    nCOMMIRQ1_IRQn = 188,                             /*!< C0_CPUX_CFG_T507 nCOMMIRQ1 Interrupt */
+    nCOMMIRQ2_IRQn = 189,                             /*!< C0_CPUX_CFG_T507 nCOMMIRQ2 Interrupt */
+    nCOMMIRQ3_IRQn = 190,                             /*!< C0_CPUX_CFG_T507 nCOMMIRQ3 Interrupt */
+    DBGPWRUPREQ_out_IRQn = 191,                       /*!< C0_CPUX_CFG_T507 DBGPWRUPREQ_out Interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -165,14 +165,42 @@ typedef enum IRQn
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
-#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List Base */
-#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Cluster 0 Configuration Register List Base */
+#define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
+#define CPU_SUBSYS_CTRL_T507_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List Base */
+#define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
+#define C0_CPUX_CFG_T507_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List Base */
 
 /*
- * @brief C0_CPUX_CFG
+ * @brief C0_CPUX_CFG_H616
  */
-/*!< C0_CPUX_CFG Cluster 0 Configuration Register List */
-typedef struct C0_CPUX_CFG_Type
+/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List */
+typedef struct C0_CPUX_CFG_H616_Type
+{
+    volatile uint32_t C0_RST_CTRL;                    /*!< Offset 0x000 Cluster 0 Reset Control Register */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t C0_CTRL_REG0;                   /*!< Offset 0x010 Cluster 0 Control Register0 */
+    volatile uint32_t C0_CTRL_REG1;                   /*!< Offset 0x014 Cluster 0 Control Register1 */
+    volatile uint32_t C0_CTRL_REG2;                   /*!< Offset 0x018 Cluster 0 Control Register2 */
+             uint32_t reserved_0x01C [0x0002];
+    volatile uint32_t CACHE_CFG_REG;                  /*!< Offset 0x024 Cache Configuration Register */
+             uint32_t reserved_0x028 [0x0006];
+    struct
+    {
+        volatile uint32_t LOW;                        /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
+        volatile uint32_t HIGH;                       /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
+    } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
+             uint32_t reserved_0x060 [0x0008];
+    volatile uint32_t C0_CPU_STATUS;                  /*!< Offset 0x080 Cluster 0 CPU Status Register */
+    volatile uint32_t L2_STATUS_REG;                  /*!< Offset 0x084 Cluster 0 L2 Status Register */
+             uint32_t reserved_0x088 [0x000E];
+    volatile uint32_t DBG_REG0;                       /*!< Offset 0x0C0 Cluster 0 Debug State Register0 */
+    volatile uint32_t DBG_REG1;                       /*!< Offset 0x0C4 Cluster 0 Debug State Register1 */
+} C0_CPUX_CFG_H616_TypeDef; /* size of structure = 0x0C8 */
+/*
+ * @brief C0_CPUX_CFG_T507
+ */
+/*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List */
+typedef struct C0_CPUX_CFG_T507_Type
 {
     volatile uint32_t C0_RST_CTRL;                    /*!< Offset 0x000 Cluster 0 Reset Control Register */
              uint32_t reserved_0x004 [0x0003];
@@ -186,7 +214,7 @@ typedef struct C0_CPUX_CFG_Type
              uint32_t reserved_0x070 [0x0004];
     volatile uint32_t C0_CPU_STATUS;                  /*!< Offset 0x080 Cluster 0 CPU Status Register */
     volatile uint32_t L2_STATUS_REG;                  /*!< Offset 0x084 Cluster 0 L2 Status Register */
-} C0_CPUX_CFG_TypeDef; /* size of structure = 0x088 */
+} C0_CPUX_CFG_T507_TypeDef; /* size of structure = 0x088 */
 /*
  * @brief CCU
  */
@@ -414,10 +442,25 @@ typedef struct CCU_Type
     volatile uint32_t CCU_24M_27M_CLK_OUTPUT_REG;     /*!< Offset 0xF20 24M or 27M Clock Output Register */
 } CCU_TypeDef; /* size of structure = 0xF24 */
 /*
- * @brief CPU_SUBSYS_CTRL
+ * @brief CPU_SUBSYS_CTRL_H616
  */
-/*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_Type
+/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_H616_Type
+{
+    volatile uint32_t GENER_CTRL_REG0;                /*!< Offset 0x000 General Control Register0 */
+    volatile uint32_t GENER_CTRL_REG1;                /*!< Offset 0x004 General Control Register1 */
+             uint32_t reserved_0x008;
+    volatile uint32_t GIC_JTAG_RST_CTRL;              /*!< Offset 0x00C GIC and Jtag Reset Control Register */
+    volatile uint32_t C0_INT_EN;                      /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
+    volatile uint32_t IRQ_FIQ_STATUS;                 /*!< Offset 0x014 IRQ/FIQ Status Register */
+    volatile uint32_t GENER_CTRL_REG2;                /*!< Offset 0x018 General Control Register2 */
+    volatile uint32_t DBG_STATE;                      /*!< Offset 0x01C Debug State Register */
+} CPU_SUBSYS_CTRL_H616_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief CPU_SUBSYS_CTRL_T507
+ */
+/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_T507_Type
 {
     volatile uint32_t GENER_CTRL_REG0;                /*!< Offset 0x000 General Control Register0 */
     volatile uint32_t GENER_CTRL_REG1;                /*!< Offset 0x004 General Control Register1 */
@@ -434,7 +477,7 @@ typedef struct CPU_SUBSYS_CTRL_Type
         volatile uint32_t LOW;                        /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
         volatile uint32_t HIGH;                       /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
-} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
+} CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
 /*
  * @brief G2D_BLD
  */
@@ -1137,8 +1180,10 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
-#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL CPU Subsystem Control Register List register set access pointer */
-#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG Cluster 0 Configuration Register List register set access pointer */
+#define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
+#define CPU_SUBSYS_CTRL_T507 ((CPU_SUBSYS_CTRL_T507_TypeDef *) CPU_SUBSYS_CTRL_T507_BASE)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List register set access pointer */
+#define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */
+#define C0_CPUX_CFG_T507 ((C0_CPUX_CFG_T507_TypeDef *) C0_CPUX_CFG_T507_BASE)/*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

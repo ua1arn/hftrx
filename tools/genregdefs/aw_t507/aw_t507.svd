@@ -10,8 +10,121 @@
  <resetMask>0xFFFFFFFF</resetMask>
  <peripherals>
   <peripheral>
-  <name>C0_CPUX_CFG</name>
-  <description>Cluster 0 Configuration Register List</description>
+  <name>C0_CPUX_CFG_H616</name>
+  <description>H616 Cluster 0 Configuration Register List</description>
+  <baseAddress>0x09010000</baseAddress>
+  <registers>
+   <register>
+    <name>C0_RST_CTRL</name>
+    <displayName>C0_RST_CTRL</displayName>
+    <description>Cluster 0 Reset Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG0</name>
+    <displayName>C0_CTRL_REG0</displayName>
+    <description>Cluster 0 Control Register0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG1</name>
+    <displayName>C0_CTRL_REG1</displayName>
+    <description>Cluster 0 Control Register1</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_CTRL_REG2</name>
+    <displayName>C0_CTRL_REG2</displayName>
+    <description>Cluster 0 Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CACHE_CFG_REG</name>
+    <displayName>CACHE_CFG_REG</displayName>
+    <description>Cache Configuration Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <registers>
+     <register>
+      <name>LOW</name>
+      <displayName>LOW</displayName>
+      <description>Reset Vector Base Address Registerx_L</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>HIGH</name>
+      <displayName>HIGH</displayName>
+      <description>Reset Vector Base Address Registerx_H</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>C0_CPU_STATUS</name>
+    <displayName>C0_CPU_STATUS</displayName>
+    <description>Cluster 0 CPU Status Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_STATUS_REG</name>
+    <displayName>L2_STATUS_REG</displayName>
+    <description>Cluster 0 L2 Status Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_REG0</name>
+    <displayName>DBG_REG0</displayName>
+    <description>Cluster 0 Debug State Register0</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_REG1</name>
+    <displayName>DBG_REG1</displayName>
+    <description>Cluster 0 Debug State Register1</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>C0_CPUX_CFG_T507</name>
+  <description>T507 Cluster 0 Configuration Register List</description>
   <baseAddress>0x09010000</baseAddress>
   <interrupt>
    <name>C0_CTI0</name>
@@ -1481,8 +1594,78 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>CPU_SUBSYS_CTRL</name>
-  <description>CPU Subsystem Control Register List</description>
+  <name>CPU_SUBSYS_CTRL_H616</name>
+  <description>H616 CPU Subsystem Control Register List</description>
+  <baseAddress>0x08100000</baseAddress>
+  <registers>
+   <register>
+    <name>GENER_CTRL_REG0</name>
+    <displayName>GENER_CTRL_REG0</displayName>
+    <description>General Control Register0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG1</name>
+    <displayName>GENER_CTRL_REG1</displayName>
+    <description>General Control Register1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GIC_JTAG_RST_CTRL</name>
+    <displayName>GIC_JTAG_RST_CTRL</displayName>
+    <description>GIC and Jtag Reset Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_INT_EN</name>
+    <displayName>C0_INT_EN</displayName>
+    <description>Cluster0 Interrupt Enable Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_FIQ_STATUS</name>
+    <displayName>IRQ_FIQ_STATUS</displayName>
+    <description>IRQ/FIQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG2</name>
+    <displayName>GENER_CTRL_REG2</displayName>
+    <description>General Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_STATE</name>
+    <displayName>DBG_STATE</displayName>
+    <description>Debug State Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>CPU_SUBSYS_CTRL_T507</name>
+  <description>T507 CPU Subsystem Control Register List</description>
   <baseAddress>0x08100000</baseAddress>
   <registers>
    <register>
