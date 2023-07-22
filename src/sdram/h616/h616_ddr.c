@@ -1623,7 +1623,6 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 	 */
 
 	PRINTF("testing 32-bit width, rank = 2\n");
-	TP();
 	para->bus_full_width = 1;
 	TP();
 	para->ranks = 2;
