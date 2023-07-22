@@ -579,8 +579,6 @@ int axp_set_dcdcd(unsigned int mvolt)
 int axp305_initialize(void)
 {
 	uint8_t axp305_chip_id;
-
-	uint8_t axp_chip_id;
 	int ret;
 
 	ret = pmic_bus_init();
@@ -594,15 +592,6 @@ int axp305_initialize(void)
 	ret = pmic_bus_init();
 	if (ret)
 		return ret;
-
-	ret = pmic_bus_read(AXP305_CHIP_VERSION, &axp_chip_id);
-	if (ret)
-		return ret;
-
-	PRINTF("axp_chip_id=0x%02X (expected 0x40)\n", axp_chip_id);
-	if ((axp_chip_id & AXP305_CHIP_VERSION_MASK) != 0x40)
-		return -1;
-
 
 	if (0)
 	{

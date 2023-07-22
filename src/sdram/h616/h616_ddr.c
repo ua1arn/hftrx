@@ -1603,18 +1603,7 @@ static int mctl_ctrl_init(struct dram_para *para)
 
 static int mctl_core_init(struct dram_para *para)
 {
-	TP();
-	local_delay_us(1);
-	TP();
-	local_delay_us(1);
-	TP();
-	local_delay_us(1);
-	TP();
-	local_delay_us(1);
 	mctl_sys_init(para);
-	TP();
-	local_delay_us(1);
-
 	return mctl_ctrl_init(para);
 }
 
