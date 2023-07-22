@@ -962,6 +962,18 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
+	#define HARDWARE_MIPIDSI_INITIALIZE() do { \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF4); 	/* PD0 DSI-D0P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF4); 	/* PD1 DSI-D0N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF4); 	/* PD2 DSI-D1P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF4); 	/* PD3 DSI-D1N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF4); 	/* PD4 DSI-CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF4); 	/* PD5 DSI-CKN */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF4); 	/* PD6 DSI-D2P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF4); 	/* PD7 DSI-D2N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF4); 	/* PD8 DSI-D3P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF4); 	/* PD9 DSI-D3N */ \
+	} while (0)
 
 #endif /* WITHLTDCHW */
 
