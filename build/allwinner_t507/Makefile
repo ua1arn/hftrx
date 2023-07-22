@@ -268,18 +268,18 @@ bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 # Take from tc1_t507_boot.map
-SystemInitAddr = 0x00021de4
+SystemInitAddr = 0x000309a0
 
 # Invoke SystemInit 
-boot_run: fsbl_frz.alw32
-	$(XFEL) write 0x00018000 fsbl_frz.alw32
+boot_run: h616_fsbl_frz.alw32
+	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr)
 
-__app_run: $(PROJECT)_app.alw32 boot_run
+app_run: $(PROJECT)_app.alw32 boot_run
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 
-app_run: bootloader
+xxxapp_run: bootloader
 	$(XFEL) write 0x00028000 fsbl.alw32
 	$(XFEL) exec 0x00028000 
 
