@@ -1636,7 +1636,6 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 	local_delay_us(1);
 	if (mctl_core_init(para))
 		return;
-	TP();
 
 	PRINTF("testing 32-bit width, rank = 1\n");
 	para->bus_full_width = 1;
@@ -1706,9 +1705,7 @@ unsigned long sunxi_dram_init(void)
 	setbits_le32(0x7010310, BIT_U32(8));
 	clrbits_le32(0x7010318, 0x3f);
 	mctl_auto_detect_rank_width(&para);
-	TP();
 	mctl_auto_detect_dram_size(&para);
-	TP();
 
 	mctl_core_init(&para);
 
