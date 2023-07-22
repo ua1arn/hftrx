@@ -81,3 +81,44 @@
 
 
 int axp803_initialize(void);
+
+// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/include/axp305.h#L6
+
+/* SPDX-License-Identifier: GPL-2.0+ */
+/*
+ * (C) Copyright 2020 Jernej Skrabec <jernej.skrabec@siol.net>
+ */
+
+enum axp305_reg {
+	AXP305_CHIP_VERSION = 0x3,
+	AXP305_OUTPUT_CTRL1 = 0x10,
+	AXP305_DCDCA_VOLTAGE = 0x12,
+	AXP305_DCDCB_VOLTAGE = 0x13,
+	AXP305_DCDCC_VOLTAGE = 0x14,
+	AXP305_DCDCD_VOLTAGE = 0x15,
+	AXP305_DCDCE_VOLTAGE = 0x16,
+
+	AXP305_ALDO1_VOLTAGE = 0x17,
+	AXP305_ALDO2_VOLTAGE = 0x18,
+	AXP305_ALDO3_VOLTAGE = 0x19,
+
+	AXP305_SHUTDOWN = 0x32,
+};
+
+#define AXP305_CHIP_VERSION_MASK	0xcf
+
+#define AXP305_OUTPUT_CTRL1_ALDO3_EN	(1 << 7)	// default: off
+#define AXP305_OUTPUT_CTRL1_ALDO2_EN	(1 << 6)	// default: off
+#define AXP305_OUTPUT_CTRL1_ALDO1_EN	(1 << 5)
+#define AXP305_OUTPUT_CTRL1_DCDCE_EN	(1 << 4)
+#define AXP305_OUTPUT_CTRL1_DCDCD_EN	(1 << 3)
+#define AXP305_OUTPUT_CTRL1_DCDCC_EN	(1 << 2)
+#define AXP305_OUTPUT_CTRL1_DCDCB_EN	(1 << 1)
+#define AXP305_OUTPUT_CTRL1_DCDCA_EN	(1 << 0)
+
+#define AXP305_POWEROFF			(1 << 7)
+
+#define AXP_POWER_STATUS		0x00
+#define AXP_POWER_STATUS_ALDO_IN		(1 << 0)
+
+int axp305_initialize(void);

@@ -512,10 +512,75 @@ int axp803_initialize(void)
 //}
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/sunxi_power.c#L23
+// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/include/axp305.h#L6
+
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * AXP305 driver
+ *
+ * (C) Copyright 2020 Jernej Skrabec <jernej.skrabec@siol.net>
+ *
+ * Based on axp221.c
+ * (C) Copyright 2014 Hans de Goede <hdegoede@redhat.com>
+ * (C) Copyright 2013 Oliver Schinagl <oliver@schinagl.nl>
+ */
+
+#define AXP305_DCDC4_1600MV_OFFSET 46
+
+static uint8_t axp305_mvolt_to_cfg(int mvolt, int min, int max, int div)
+{
+	if (mvolt < min)
+		mvolt = min;
+	else if (mvolt > max)
+		mvolt = max;
+
+	return  (mvolt - min) / div;
+}
+
+int axp_set_dcdcd(unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (mvolt >= 1600)
+		cfg = AXP305_DCDC4_1600MV_OFFSET +
+			axp305_mvolt_to_cfg(mvolt, 1600, 3300, 100);
+	else
+		cfg = axp305_mvolt_to_cfg(mvolt, 600, 1500, 20);
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP305_OUTPUT_CTRL1,
+					AXP305_OUTPUT_CTRL1_DCDCD_EN);
+
+	ret = pmic_bus_write(AXP305_DCDCD_VOLTAGE, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP305_OUTPUT_CTRL1,
+				AXP305_OUTPUT_CTRL1_DCDCD_EN);
+}
+
+
+//#if !CONFIG_IS_ENABLED(ARM_PSCI_FW) && !IS_ENABLED(CONFIG_SYSRESET_CMD_POWEROFF)
+//int do_poweroff(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
+//{
+//	pmic_bus_write(AXP305_SHUTDOWN, AXP305_POWEROFF);
+//
+//	/* infinite loop during shutdown */
+//	while (1) {}
+//
+//	/* not reached */
+//	return 0;
+//}
+//#endif
+
+// AXP 305 - контроллер питания производства Allwinner - аналог Datasheet AXP805
 
 int axp305_initialize(void)
 {
 	uint8_t axp305_chip_id;
+
+	uint8_t axp_chip_id;
 	int ret;
 
 	ret = pmic_bus_init();
@@ -526,7 +591,20 @@ int axp305_initialize(void)
 	if (ret)
 		return ret;
 
-	if (0)
+	ret = pmic_bus_init();
+	if (ret)
+		return ret;
+
+	ret = pmic_bus_read(AXP305_CHIP_VERSION, &axp_chip_id);
+	if (ret)
+		return ret;
+
+	PRINTF("axp_chip_id=0x%02X (expected 0x40)\n", axp_chip_id);
+	if ((axp_chip_id & AXP305_CHIP_VERSION_MASK) != 0x40)
+		return -1;
+
+
+	if (1)
 	{
 		unsigned reg;
 		for (reg = 0; reg <= 0xED; ++ reg)
@@ -543,36 +621,47 @@ int axp305_initialize(void)
 
 	return 0;
 
-	axp305_set_aldo1(3300);	// VCC-PE
-	axp305_set_aldo2(3300);	// VCC-PL
-	axp305_set_aldo3(3000);	// AVCC, VCC-PLL
+	// dcdc/a: 0.9V
+	// dcdc/b: NC
+	// DCDC/C: 0.9V (GPU)
+	// DCDC/D: 1.2V (DRM & DDR4*2)
+	// DCDC/E: 3.3V
+	// ALDO1: 3.3V (already started)
+	// ALDO2&3: 3.3V
+	// BLDO1: 1.8V
+	// CLDO1: 2.5V (DDR4*2)
 
-//	&reg_dc1sw {
-//		regulator-name = "vcc-phy";
-//	};
-
-	axp305_set_dcdc1(3300);	// VCC-CARD, VCC-PC, ...
-
-	// plyphased
-	axp305_set_dcdc2(1100);	// VDD-CPUX
-	axp305_set_dcdc3(1100);	// VDD-CPUX
-
-	axp305_set_dcdc5(1500);	// VCC-DRAM
-
-	//axp305_set_dcdc6(1100);	// VDD-SYS
-
-	axp305_set_dldo(1, 3300);
-	axp305_set_dldo(2, 3300);
-	axp305_set_dldo(4, 3300);
-
-	axp305_set_eldo(1, 1800);	// CPVDD (analog power of CPU)
-	//axp305_set_eldo(2, 1800);	// not uised in banana pi M64
-	axp305_set_eldo(3, 1800);	// CSI
-
-	axp305_set_fldo(1, 1200);	// VCC1V2-HSIC
-	axp305_set_fldo(2, 1100);	// VDD-CPUX
-
-	axp305_set_sw(1);	// reg 12h, bit 7
+//
+//	axp305_set_aldo1(3300);	// VCC-PE
+//	axp305_set_aldo2(3300);	// VCC-PL
+//	axp305_set_aldo3(3000);	// AVCC, VCC-PLL
+//
+////	&reg_dc1sw {
+////		regulator-name = "vcc-phy";
+////	};
+//
+//	axp305_set_dcdc1(3300);	// VCC-CARD, VCC-PC, ...
+//
+//	// plyphased
+//	axp305_set_dcdc2(1100);	// VDD-CPUX
+//	axp305_set_dcdc3(1100);	// VDD-CPUX
+//
+//	axp305_set_dcdc5(1500);	// VCC-DRAM
+//
+//	//axp305_set_dcdc6(1100);	// VDD-SYS
+//
+//	axp305_set_dldo(1, 3300);
+//	axp305_set_dldo(2, 3300);
+//	axp305_set_dldo(4, 3300);
+//
+//	axp305_set_eldo(1, 1800);	// CPVDD (analog power of CPU)
+//	//axp305_set_eldo(2, 1800);	// not uised in banana pi M64
+//	axp305_set_eldo(3, 1800);	// CSI
+//
+//	axp305_set_fldo(1, 1200);	// VCC1V2-HSIC
+//	axp305_set_fldo(2, 1100);	// VDD-CPUX
+//
+//	axp305_set_sw(1);	// reg 12h, bit 7
 
 	return 0;
 }
