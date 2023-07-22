@@ -2172,7 +2172,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 {
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
 	/* Configure TCONLCD clock */
-    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (0x0Fu << 0))) |
+    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
 		(UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
 		(prei << 8) |	// FACTOR_N 0..3: 1..8
 		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
@@ -2198,9 +2198,9 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	PRINTF("ltdc divider = %u\n", (unsigned) val);
 	ASSERT(val >= 1 && val <= 127);
 //	write32((uintptr_t) & tcon->dclk,
-//			(0x0Fu << 28) | (val << 0));
+//			(UINT32_C(0x0f) << 28) | (val << 0));
 	TCON_LCD0->LCD_DCLK_REG = (
-			(0x0Fu << 28) |		// LCD_DCLK_EN
+			(UINT32_C(0x0f) << 28) |		// LCD_DCLK_EN
 			(val << 0)			// LCD_DCLK_DIV
 			);
     local_delay_us(10);
@@ -2210,8 +2210,20 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
     TCON_LCD0->LCD_DCLK_REG =
-		(0x0Fu << 28) |	// LCD_DCLK_EN
-		(7 << 0) |	// LCD_DCLK_DIV
+		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
+		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
+		0;
+    local_delay_us(10);
+}
+
+// LVDS step2 - Clock configuration
+// TODO: this is only placeholder!
+
+static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode)
+{
+    TCON_LCD0->LCD_DCLK_REG =
+		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
+		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
 }
@@ -2246,17 +2258,17 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | 0x0Fu << 0)) |
-		(0x02u << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0f) << 0)) |
+		(UINT32_C(2) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
 		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
 		((UINT32_C(4) - 1) << 0) |
 		0;
 
-	CCU->DSI_CLK_REG |= (UINT32_C(1) << 31);		// DSI_CLK_GATING
+	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
 	(void) CCU->DSI_CLK_REG;
 
-	CCU->DSI_BGR_REG |= (UINT32_C(1) << 0);	// DSI_GATING
-	CCU->DSI_BGR_REG |= (UINT32_C(1) << 16);	// DSI_RST
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
 	(void) CCU->DSI_BGR_REG;
 
 //	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
@@ -2348,14 +2360,14 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 		// Step 6 LVDS controller configuration
 		// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
 		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] =
-			(0x0Fu << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+			(UINT32_C(0x0f) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
 			(UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
 			(0x04u << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
 			(UINT32_C(3) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
 			0;
 		// test
 		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
-		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x0Fu << 12);	// LVDS_REG_DEN
+		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0f) << 12);	// LVDS_REG_DEN
 
 		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 30);	// en_ldo
 		local_delay_ms(1);
@@ -2521,6 +2533,30 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 static void t113_tcon_mipidsi_initsteps(const videomode_t * vdmode)
 {
 
+	unsigned prei = 0;
+	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
+	// step0 - CCU configuration
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_MIPIDSI_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open IO output
+	t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	t113_LVDS_controller_configuration(vdmode);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	t113_open_module_enable(vdmode);
+
+	(void) DSI0->DSI_CTL;
 }
 
 // What is DPSS_TOP_BGR_REG ?
@@ -2529,8 +2565,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 {
 
 	/* Configure DE clock */
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (0x0Fu << 0))) |
-		(0x02u << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
+		(UINT32_C(2) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
 		(0u << 8) |	// FACTOR_N 0..3: 1..8
 		((UINT32_C(4) - 1) << 0) |	// FACTOR_M 300 MHz
 		0;
