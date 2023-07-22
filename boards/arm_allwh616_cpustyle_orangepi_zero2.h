@@ -27,7 +27,8 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+
 #if WITHINTEGRATEDDSP
 	#define WITHI2S01HW	1
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -53,7 +54,7 @@
 #if WITHISBOOTLOADER
 
 	////#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	////#define WITHSDRAM_AXP308	1	/* power management chip */
+	#define WITHSDRAM_AXP305	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -660,32 +661,32 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW || WITHTWIHW
-	// PA0 - TWI0_SCL
-	// PA1 - TWI0_SDA
+	// PL0 S_TWI0_SCK
+	// PL1 S_TWI0_DL
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOA))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioa_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioa_inputs(v); } while (0)
+	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
 
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOA))
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioa_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioa_inputs(v); } while (0)
+	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOL))
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_pioa_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
-		arm_hardware_pioa_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PL1 - S_TWI0_SDA */ \
 		} while (0) 
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
@@ -1040,12 +1041,16 @@
 #endif
 
 	#if WITHISBOOTLOADER
-		// See WITHSDRAM_AXP308
-		int axp803_initialize(void);
 
-		/* Контроллер питания AXP803 */
+		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+		// See WITHSDRAM_AXP308
+		int axp305_initialize(void);
+
+		/* Контроллер питания AXP305 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			/*axp803_initialize(); */\
+			axp305_initialize(); \
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 

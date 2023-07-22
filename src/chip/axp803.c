@@ -30,15 +30,12 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_A64
+#if WITHSDRAM_AXP803 || WITHSDRAM_AXP305
 
 #include "gpio.h"
 #include "formats.h"
 
 #include "axp803.h"
-
-#define PMIC_I2C_W 0x68
-#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 static i2cp_t pmic_i2cp;	/* параметры для обмена по I2C. Поскольку работаем до инициализации кеша-памяти, надо учитывать медленную работу процессора */
 
@@ -514,4 +511,70 @@ int axp803_initialize(void)
 //	return 0;
 //}
 
-#endif /* CPUSTYLE_A64 */
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/sunxi_power.c#L23
+
+int axp305_initialize(void)
+{
+	uint8_t axp305_chip_id;
+	int ret;
+
+	ret = pmic_bus_init();
+	if (ret)
+		return ret;
+
+	ret = pmic_bus_read(AXP803_CHIP_ID, &axp305_chip_id);
+	if (ret)
+		return ret;
+
+	if (0)
+	{
+		unsigned reg;
+		for (reg = 0; reg <= 0xED; ++ reg)
+		{
+			uint8_t v;
+			pmic_bus_read(reg, & v);
+			PRINTF("axp305 reg%02X=0x%02X\n", reg, v);
+		}
+	}
+
+	PRINTF("axp305_chip_id=0x%02X (expected 0x60)\n", axp305_chip_id);
+	if (!(axp305_chip_id == 0x60))
+		return -1;
+
+	return 0;
+
+	axp305_set_aldo1(3300);	// VCC-PE
+	axp305_set_aldo2(3300);	// VCC-PL
+	axp305_set_aldo3(3000);	// AVCC, VCC-PLL
+
+//	&reg_dc1sw {
+//		regulator-name = "vcc-phy";
+//	};
+
+	axp305_set_dcdc1(3300);	// VCC-CARD, VCC-PC, ...
+
+	// plyphased
+	axp305_set_dcdc2(1100);	// VDD-CPUX
+	axp305_set_dcdc3(1100);	// VDD-CPUX
+
+	axp305_set_dcdc5(1500);	// VCC-DRAM
+
+	//axp305_set_dcdc6(1100);	// VDD-SYS
+
+	axp305_set_dldo(1, 3300);
+	axp305_set_dldo(2, 3300);
+	axp305_set_dldo(4, 3300);
+
+	axp305_set_eldo(1, 1800);	// CPVDD (analog power of CPU)
+	//axp305_set_eldo(2, 1800);	// not uised in banana pi M64
+	axp305_set_eldo(3, 1800);	// CSI
+
+	axp305_set_fldo(1, 1200);	// VCC1V2-HSIC
+	axp305_set_fldo(2, 1100);	// VDD-CPUX
+
+	axp305_set_sw(1);	// reg 12h, bit 7
+
+	return 0;
+}
+
+#endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 */
