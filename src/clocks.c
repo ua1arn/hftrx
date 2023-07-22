@@ -2402,7 +2402,7 @@ uint_fast64_t allwnr_t507_get_pll_cpux_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_CPUX_CTRL_REG;
 	const uint_fast32_t divP = UINT32_C(1) << ((pllreg >> 16) & 0x03);
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0x1F);
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);
 	// PLL_CPUX=24 MHz*N/P
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / divP;
 }
