@@ -910,15 +910,15 @@
 		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
 		const portholder_t MODEmask = (UINT32_C(1) << 9); 	/* PA9 mode */ \
 		/* set LCD DE/SYNC mode */ \
-		arm_hardware_pioa_outputs(MODEmask, (demode != 0) * MODEmask);	/* PA9 = state */ \
+		arm_hardware_pioa_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PA9 = state */ \
 		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
-		arm_hardware_piod_altfn20((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_altfn20((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
+		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
+		arm_hardware_piod_altfn20(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
+		arm_hardware_piod_altfn20(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
 		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn20((demode != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
-		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
+		arm_hardware_piod_altfn20(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
+		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn20(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
 		/* RED */ \
