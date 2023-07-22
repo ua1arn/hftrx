@@ -228,10 +228,10 @@ struct sunxi_mctl_ctl_reg {
 struct dram_para {
 	uint32_t clk;
 	enum sunxi_dram_type type;
-	uint8_t cols;
-	uint8_t rows;
-	uint8_t ranks;
-	uint8_t bus_full_width;
+	uint32_t cols;
+	uint32_t rows;
+	uint32_t ranks;
+	uint32_t bus_full_width;
 };
 
 
@@ -1611,7 +1611,6 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 {
 	/* this is minimum size that it's supported */
 	para->cols = 8;
-	TP();
 	para->rows = 13;
 
 	/*
@@ -1624,7 +1623,6 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 
 	PRINTF("testing 32-bit width, rank = 2\n");
 	para->bus_full_width = 1;
-	TP();
 	para->ranks = 2;
 	if (mctl_core_init(para))
 		return;
@@ -1688,7 +1686,7 @@ static unsigned long mctl_calc_size(struct dram_para *para)
 
 unsigned long sunxi_dram_init(void)
 {
-	struct dram_para para = {
+	static struct dram_para para = {
 		.clk = CONFIG_DRAM_CLK,
 		.type = SUNXI_DRAM_TYPE_DDR3,
 	};
