@@ -118,8 +118,6 @@ typedef enum IRQn
 #define G2D_VSU_BASE ((uintptr_t) 0x01488000)         /*!< G2D_VSU Graphic 2D (G2D) Video Scaler Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
-#define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
-#define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
@@ -159,10 +157,13 @@ typedef enum IRQn
 #define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x05100000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x05200000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
+#define USBPHYC1_BASE ((uintptr_t) 0x05200800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define USB20_HOST2_EHCI_BASE ((uintptr_t) 0x05310000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST2_OHCI_BASE ((uintptr_t) 0x05310400)/*!< USB_OHCI_Capability  Base */
+#define USBPHYC2_BASE ((uintptr_t) 0x05310800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
+#define USBPHYC3_BASE ((uintptr_t) 0x05311800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
@@ -1069,12 +1070,18 @@ typedef struct USBOTG_Type
 /*
  * @brief USBPHYC
  */
-/*!< USBPHYC  */
+/*!< USBPHYC HCI Contgroller and PHY Interface Description */
 typedef struct USBPHYC_Type
 {
-    volatile uint32_t HCI_ICR;                        /*!< Offset 0x000 HCI Interface Control Register */
-    volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x004 HSIC status Register This register is valid on HCI1. */
-} USBPHYC_TypeDef; /* size of structure = 0x008 */
+    volatile uint32_t USB_CTRL;                       /*!< Offset 0x000 HCI Interface Register  */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t PHY_CTRL;                       /*!< Offset 0x010 PHY Control Register */
+             uint32_t reserved_0x014 [0x0002];
+    volatile uint32_t HSIC_PHY_tune1;                 /*!< Offset 0x01C HSIC PHY Tune1 Register */
+    volatile uint32_t HSIC_PHY_tune2;                 /*!< Offset 0x020 HSIC PHY Tune2 Register */
+    volatile uint32_t HSIC_PHY_tune3;                 /*!< Offset 0x024 HSIC PHY Tune3 Register */
+    volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register */
+} USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief USB_EHCI_Capability
  */
@@ -1136,8 +1143,6 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D (G2D) Video Scaler register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
-#define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
-#define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
@@ -1175,10 +1180,13 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
 #define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
 #define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
+#define USBPHYC1 ((USBPHYC_TypeDef *) USBPHYC1_BASE)  /*!< USBPHYC1 HCI Contgroller and PHY Interface Description register set access pointer */
 #define USB20_HOST2_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST2_EHCI_BASE)/*!< USB20_HOST2_EHCI  register set access pointer */
 #define USB20_HOST2_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST2_OHCI_BASE)/*!< USB20_HOST2_OHCI  register set access pointer */
+#define USBPHYC2 ((USBPHYC_TypeDef *) USBPHYC2_BASE)  /*!< USBPHYC2 HCI Contgroller and PHY Interface Description register set access pointer */
 #define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
+#define USBPHYC3 ((USBPHYC_TypeDef *) USBPHYC3_BASE)  /*!< USBPHYC3 HCI Contgroller and PHY Interface Description register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */

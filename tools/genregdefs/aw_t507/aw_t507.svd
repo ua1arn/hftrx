@@ -5855,33 +5855,73 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>USBPHY0</name>
-  <description></description>
-  <baseAddress>0x01C1A800</baseAddress>
+  <name>USBPHYC1</name>
+  <description>HCI Contgroller and PHY Interface Description</description>
+  <baseAddress>0x05200800</baseAddress>
   <registers>
    <register>
-    <name>HCI_ICR</name>
-    <displayName>HCI_ICR</displayName>
-    <description>HCI Interface Control Register</description>
+    <name>USB_CTRL</name>
+    <displayName>USB_CTRL</displayName>
+    <description>HCI Interface Register </description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HSIC_STATUS</name>
-    <displayName>HSIC_STATUS</displayName>
-    <description>HSIC status Register This register is valid on HCI1.</description>
-    <addressOffset>0x004</addressOffset>
+    <name>PHY_CTRL</name>
+    <displayName>PHY_CTRL</displayName>
+    <description>PHY Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HSIC_PHY_tune1</name>
+    <displayName>HSIC_PHY_tune1</displayName>
+    <description>HSIC PHY Tune1 Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HSIC_PHY_tune2</name>
+    <displayName>HSIC_PHY_tune2</displayName>
+    <description>HSIC PHY Tune2 Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HSIC_PHY_tune3</name>
+    <displayName>HSIC_PHY_tune3</displayName>
+    <description>HSIC PHY Tune3 Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_SPDCR</name>
+    <displayName>USB_SPDCR</displayName>
+    <description>HCI SIE Port Disable Control Register</description>
+    <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="USBPHY0">
-  <name>USBPHY1</name>
-  <baseAddress>0x01C1B800</baseAddress>
+  <peripheral derivedFrom="USBPHYC1">
+  <name>USBPHYC2</name>
+  <baseAddress>0x05310800</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="USBPHYC1">
+  <name>USBPHYC3</name>
+  <baseAddress>0x05311800</baseAddress>
   </peripheral>
   <peripheral>
   <name>USB20_HOST1_EHCI</name>

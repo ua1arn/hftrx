@@ -1,5 +1,12 @@
-#type; USBPHYC
-#base; USBPHY0 0x01C1A800
-#base; USBPHY1 0x01C1B800
-#regdef; HCI_ICR; 0x000; HCI Interface Control Register
-#regdef; HSIC_STATUS; 0x004; HSIC status Register This register is valid on HCI1.
+#type; USBPHYC; HCI Contgroller and PHY Interface Description
+
+#base; USBPHYC1 0x05200800
+#base; USBPHYC2 0x05310800
+#base; USBPHYC3 0x05311800
+
+#regdef; USB_CTRL; 0x000; HCI Interface Register 
+#regdef; PHY_CTRL; 0x010; PHY Control Register; 
+#regdef; HSIC_PHY_tune1; 0x01C; HSIC PHY Tune1 Register; 
+#regdef; HSIC_PHY_tune2; 0x020; HSIC PHY Tune2 Register; 
+#regdef; HSIC_PHY_tune3; 0x024; HSIC PHY Tune3 Register; 
+#regdef; USB_SPDCR; 0x028; HCI SIE Port Disable Control Register; 

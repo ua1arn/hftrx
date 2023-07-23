@@ -2350,6 +2350,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 //		CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 //		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
 //
+//		//USBPHYC0->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+//		USBPHYC0->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+//
 //	#if WITHEHCIHWSOFTSPOLL == 0
 //		arm_hardware_set_handler_system(USB20_OTG_OHCI_IRQn, USBH_OHCI_IRQHandler);
 //		arm_hardware_set_handler_system(USB20_OTG_EHCI_IRQn, USBH_EHCI_IRQHandler);
@@ -2372,6 +2375,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB1_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY1_RST
 		CCU->USB1_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY1_RST
 		CCU->USB1_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
+
+		//USBPHYC1->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+		USBPHYC1->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -2396,6 +2402,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
 
+		//USBPHYC2->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+		USBPHYC2->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB20_HOST2_EHCI_IRQn, USBH_EHCI_IRQHandler);
@@ -2418,6 +2427,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB3_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY3_RST
 		CCU->USB3_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY3_RST
 		CCU->USB3_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
+
+		//USBPHYC3->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+		USBPHYC3->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
