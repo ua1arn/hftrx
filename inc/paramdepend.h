@@ -823,7 +823,7 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "Allw A64"
+	#define WITHCPUNAME "Allw T507"
 
 #elif CPUSTYLE_T113
 
@@ -990,6 +990,7 @@ extern "C" {
 	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define HARDWARE_NCORES 4
+	#define WITHCPUNAME "Zynq XCZU"
 
 #elif defined(_WIN32)
 

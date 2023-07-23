@@ -3267,7 +3267,7 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #elif CPUSTYLE_A64
 
-#define HARDWARE_NCORES 4
+//#define HARDWARE_NCORES 4
 
 
 // https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
@@ -3409,21 +3409,6 @@ static const uint32_t halt64_1 [] =
  * Read 0x01F01C00+0x1A4 register Get soft_entry_address
  */
 
-static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
-	// aarch64
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = startfunc;
-	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = startfunc >> 32;
-#pragma GCC diagnostic pop
-
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
-	restart_self_aarch64();
-}
-
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
@@ -3445,6 +3430,21 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
 
+/* for AArch64 */
+static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
+{
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	// aarch64
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = startfunc;
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+//#pragma GCC diagnostic pop
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	restart_self_aarch64();
+}
 
 #elif CPUSTYLE_H616
 // AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
@@ -3553,21 +3553,9 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
 
-#define HARDWARE_NCORES 4
+//#define HARDWARE_NCORES 4
 
 #define R_CPUCFG_BASE 0x07000400
-
-	/* for AArch64 */
-static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= INT32_C(1) << (targetcore + 24); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = startfunc;
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = startfunc >> 32;
-#pragma GCC diagnostic pop
-}
 
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
@@ -3580,8 +3568,8 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_RTC_BASE + 0x5c4 + targetcore * 4));
 
 	/* Не влияет: */
-//	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (INT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-//	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (INT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
@@ -3596,6 +3584,17 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
 
+/* for AArch64 */
+static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
+{
+	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= UINT32_C(1) << (targetcore + 24); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = startfunc;
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+//#pragma GCC diagnostic pop
+}
 
 #elif CPUSTYLE_T507
 
@@ -3662,10 +3661,10 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #define SUNXI_DRAM_CTL0_BASE		0x04003000
 #define SUNXI_DRAM_PHY0_BASE		0x04005000
 #endif
-#define SUNXI_NFC_BASE			0x04011000
-#define SUNXI_MMC0_BASE			0x04020000
-#define SUNXI_MMC1_BASE			0x04021000
-#define SUNXI_MMC2_BASE			0x04022000
+//#define SUNXI_NFC_BASE			0x04011000
+//#define SUNXI_MMC0_BASE			0x04020000
+//#define SUNXI_MMC1_BASE			0x04021000
+//#define SUNXI_MMC2_BASE			0x04022000
 #ifdef CONFIG_MACH_SUN50I_H616
 #define SUNXI_DRAM_COM_BASE		0x047FA000
 #define SUNXI_DRAM_CTL0_BASE		0x047FB000
@@ -3703,39 +3702,38 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
 
-#define HARDWARE_NCORES 4
+//#define HARDWARE_NCORES 4
 
 #define R_CPUCFG_BASE 0x07000400
 
-	/* for AArch64 */
-static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] = 1; // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = startfunc;
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = startfunc >> 32;
-#pragma GCC diagnostic pop
-}
-
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-
 	const uint32_t CORE_RESET_MASK = 1;//UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (0x070001BC));	// See Allwinner_H6_V200_User_Manual_V1.1.pdf, page 79
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [targetcore] = 0; // Register width state AA64NAA32 0: AArch32 1: AArch64
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = 0; // Register width state AA64NAA32 0: AArch32 1: AArch64
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 	ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
+}
+
+/* for AArch64 */
+static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
+{
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG [targetcore] = 1; // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = startfunc;
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+//#pragma GCC diagnostic pop
 }
 
 #elif CPUSTYLE_T113
@@ -3766,13 +3764,17 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;
+	//R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	* rvaddr = startfunc;
+	ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= (1u << targetcore);
-	(void) C0_CPUX_CFG->C0_RST_CTRL;
+	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;
 }
 
 #elif CPUSTYLE_VM14
@@ -3931,6 +3933,8 @@ void Reset_CPUn_Handler(void)
 void cpump_initialize(void)
 {
 #if 1
+	unsigned core;
+	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
 
@@ -3954,10 +3958,8 @@ void cpump_initialize(void)
 	__DSB();
 #endif /* (__CORTEX_A == 9U) */
 
-	extern uintptr_t aarch32_reset_handlers [];
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
-	unsigned core;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);

@@ -11519,7 +11519,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>2</dim>
+    <dim>4</dim>
     <addressOffset>0x000001C4</addressOffset>
     <register>
      <name>SOFTENTRY</name>
@@ -11530,7 +11530,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x008</dimIncrement>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>SUP_STAN_FLAG</name>
