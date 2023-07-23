@@ -86,7 +86,7 @@ typedef enum IRQn
     GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  */
     GPIOF_S_IRQn = 110,                               /*!< GPIOINT  */
     GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  */
-    DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) */
+    DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) TOP */
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) */
     G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top */
     TVE_IRQn = 123,                                   /*!< TVE_TOP TV Output (TV_Encoder) */
@@ -192,7 +192,7 @@ typedef enum IRQn
 #define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC  Base */
 #define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC  Base */
 #define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Display Engine (DE) Base */
-#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Display Engine (DE) TOP Base */
 #define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Display Engine (DE) - VI surface Base */
@@ -1112,7 +1112,7 @@ typedef struct DE_GLB_Type
 /*
  * @brief DE_TOP
  */
-/*!< DE_TOP Display Engine (DE) */
+/*!< DE_TOP Display Engine (DE) TOP */
 typedef struct DE_TOP_Type
 {
     volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
@@ -2945,7 +2945,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI Display Engine (DE) - VI surface register set access pointer */

@@ -4680,7 +4680,7 @@
   </peripheral>
   <peripheral>
   <name>DE_TOP</name>
-  <description>Display Engine (DE)</description>
+  <description>Display Engine (DE) TOP</description>
   <baseAddress>0x05000000</baseAddress>
   <interrupt>
    <name>DE</name>

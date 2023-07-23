@@ -1,7 +1,6 @@
-#type; G2D
+#type; G2D; Graphic 2D (G2D) Engine
 #basel 0x01e80000
 
-#comment; Graphic 2D (G2D) Engine
 # (taken from https://github.com/‎linux-sunxi/drivers/char/sunxi_g2d/g2d_regs.h)
 # https://github.com/linux-sunxi/linux-sunxi/blob/d47d367036be38c5180632ec8a3ad169a4593a88/drivers/char/sunxi_g2d/g2d_regs.h#L48
 
