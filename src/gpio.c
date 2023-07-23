@@ -10165,7 +10165,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
+	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #elif (CPUSTYLE_T507)
 
