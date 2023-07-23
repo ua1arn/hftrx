@@ -3092,9 +3092,9 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>GPIOC</name>
+  <name>GPIOA</name>
   <description></description>
-  <baseAddress>0x0300B048</baseAddress>
+  <baseAddress>0x0300B000</baseAddress>
   <registers>
    <cluster>
     <dim>4</dim>
@@ -3149,23 +3149,35 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="GPIOC">
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOC</name>
+  <baseAddress>0x0300B048</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOD</name>
+  <baseAddress>0x0300B06C</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOE</name>
+  <baseAddress>0x0300B090</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOF</name>
   <baseAddress>0x0300B0B4</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOC">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOG</name>
   <baseAddress>0x0300B0D8</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOC">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOH</name>
   <baseAddress>0x0300B0FC</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOC">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOI</name>
   <baseAddress>0x0300B120</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="GPIOC">
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOL</name>
   <baseAddress>0x07022000</baseAddress>
   </peripheral>
@@ -3291,8 +3303,18 @@
   <description></description>
   <baseAddress>0x0300B200</baseAddress>
   <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>GPIOC</name>
    <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -3361,10 +3383,20 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
   <name>GPIOINTC</name>
-  <baseAddress>0x0300B200</baseAddress>
+  <baseAddress>0x0300B240</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>GPIOC</name>
    <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -3390,39 +3422,20 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
   <name>GPIOINTD</name>
-  <baseAddress>0x0300B200</baseAddress>
+  <baseAddress>0x0300B260</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>GPIOC</name>
    <value>84</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>GPIOF</name>
-   <value>86</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOG</name>
-   <value>87</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOH</name>
-   <value>88</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPIOI</name>
-   <value>89</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="GPIOINTA">
-  <name>GPIOINTE</name>
-  <baseAddress>0x0300B200</baseAddress>
-  <interrupt>
-   <name>GPIOC</name>
-   <value>84</value>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -3448,10 +3461,20 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
   <name>GPIOINTF</name>
-  <baseAddress>0x0300B200</baseAddress>
+  <baseAddress>0x0300B2A0</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>GPIOC</name>
    <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -3477,10 +3500,20 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
   <name>GPIOINTG</name>
-  <baseAddress>0x0300B200</baseAddress>
+  <baseAddress>0x0300B2C0</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>GPIOC</name>
    <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -3506,10 +3539,20 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
   <name>GPIOINTH</name>
-  <baseAddress>0x0300B200</baseAddress>
+  <baseAddress>0x0300B2E0</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>GPIOC</name>
    <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -3535,10 +3578,20 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTA">
   <name>GPIOINTI</name>
-  <baseAddress>0x0300B200</baseAddress>
+  <baseAddress>0x0300B300</baseAddress>
+  <interrupt>
+   <name>GPIOA</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
   <interrupt>
    <name>GPIOC</name>
    <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPIOD</name>
+   <value>85</value>
    <description></description>
   </interrupt>
   <interrupt>
@@ -4965,32 +5018,32 @@
   <baseAddress>0x05000000</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>34</value>
+   <value>32</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>35</value>
+   <value>33</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>36</value>
+   <value>34</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>37</value>
+   <value>35</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART4</name>
-   <value>38</value>
+   <value>36</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART5</name>
-   <value>39</value>
+   <value>37</value>
    <description></description>
   </interrupt>
   <registers>
@@ -5280,32 +5333,32 @@
   <baseAddress>0x05000400</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>34</value>
+   <value>32</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>35</value>
+   <value>33</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>36</value>
+   <value>34</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>37</value>
+   <value>35</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART4</name>
-   <value>38</value>
+   <value>36</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART5</name>
-   <value>39</value>
+   <value>37</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5314,32 +5367,32 @@
   <baseAddress>0x05000800</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>34</value>
+   <value>32</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>35</value>
+   <value>33</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>36</value>
+   <value>34</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>37</value>
+   <value>35</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART4</name>
-   <value>38</value>
+   <value>36</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART5</name>
-   <value>39</value>
+   <value>37</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5348,32 +5401,32 @@
   <baseAddress>0x05000C00</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>34</value>
+   <value>32</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>35</value>
+   <value>33</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>36</value>
+   <value>34</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>37</value>
+   <value>35</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART4</name>
-   <value>38</value>
+   <value>36</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART5</name>
-   <value>39</value>
+   <value>37</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5382,32 +5435,32 @@
   <baseAddress>0x05001000</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>34</value>
+   <value>32</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>35</value>
+   <value>33</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>36</value>
+   <value>34</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>37</value>
+   <value>35</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART4</name>
-   <value>38</value>
+   <value>36</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART5</name>
-   <value>39</value>
+   <value>37</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -5416,32 +5469,32 @@
   <baseAddress>0x05001400</baseAddress>
   <interrupt>
    <name>UART0</name>
-   <value>34</value>
+   <value>32</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART1</name>
-   <value>35</value>
+   <value>33</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART2</name>
-   <value>36</value>
+   <value>34</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART3</name>
-   <value>37</value>
+   <value>35</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART4</name>
-   <value>38</value>
+   <value>36</value>
    <description></description>
   </interrupt>
   <interrupt>
    <name>UART5</name>
-   <value>39</value>
+   <value>37</value>
    <description></description>
   </interrupt>
   </peripheral>

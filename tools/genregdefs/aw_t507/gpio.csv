@@ -1,9 +1,9 @@
 #type; GPIO
-##base; GPIOA 0x0300B000
+#base; GPIOA 0x0300B000
 ##base; GPIOB 0x0300B024
 #base; GPIOC 0x0300B048
-##base; GPIOD 0x0300B06C
-##base; GPIOE 0x0300B090
+#base; GPIOD 0x0300B06C
+#base; GPIOE 0x0300B090
 #base; GPIOF 0x0300B0B4
 #base; GPIOG 0x0300B0D8
 #base; GPIOH 0x0300B0FC
@@ -19,6 +19,7 @@
 #type; GPIOBLOCK
 #base; GPIOBLOCK 0x0300B000
 #base; GPIOBLOCK_L 0x01F02C00
+
 #aggreg; GPIO_PINS; 0x0000 8; GPIO pin control
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
@@ -34,24 +35,28 @@
 #aggregend;
 
 #type; GPIOINT
-#base; GPIOINTA 0x0300B200
-#base; GPIOINTC 0x0300B200
-#base; GPIOINTD 0x0300B200
-#base; GPIOINTE 0x0300B200
-#base; GPIOINTF 0x0300B200
-#base; GPIOINTG 0x0300B200
-#base; GPIOINTH 0x0300B200
-#base; GPIOINTI 0x0300B200
-##irq; GPIOA 83 
-#irq; GPIOC 84 
-##irq; GPIOD 85 
-##irq; GPIOE 75 
-#irq; GPIOF 86 
-#irq; GPIOG 87 
-#irq; GPIOH 88 
-#irq; GPIOI 89 
+
+#base; GPIOINTA 0x0300B200; GPIOA interrupt
+##base; GPIOINTB 0x0300B220; GPIOB interrupt
+#base; GPIOINTC 0x0300B240; GPIOC interrupt
+#base; GPIOINTD 0x0300B260; GPIOD interrupt
+##base; GPIOINTE 0x0300B280; GPIOE interrupt
+#base; GPIOINTF 0x0300B2A0; GPIOF interrupt
+#base; GPIOINTG 0x0300B2C0; GPIOG interrupt
+#base; GPIOINTH 0x0300B2E0; GPIOH interrupt
+#base; GPIOINTI 0x0300B300; GPIOI interrupt
+
+#irq; GPIOA 83; GPIOA interrupt
+#irq; GPIOC 84; GPIOC interrupt
+#irq; GPIOD 85; GPIOD interrupt
+##irq; GPIOE 75; GPIOE interrupt
+#irq; GPIOF 86; GPIOF interrupt
+#irq; GPIOG 87; GPIOG interrupt
+#irq; GPIOH 88; GPIOH interrupt
+#irq; GPIOI 89; GPIOI interrupt
+
 #regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
-#regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#regdef; padding 0; 0x020; force align

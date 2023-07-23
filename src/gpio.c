@@ -1329,6 +1329,7 @@ static void ALLW_GPIO_IRQ_Handler_GPIOL(void)
 static void
 gpioX_onchangeinterrupt(
 		GPIO_TypeDef * gpio,
+		GPIOINT_TypeDef * gpioint,
 		uint_fast16_t int_id,
 		portholder_t ipins,
 		portholder_t raise, portholder_t fall,
@@ -1337,20 +1338,6 @@ gpioX_onchangeinterrupt(
 		void (* group_handler)(void)
 		)
 {
-#if CPUSTYLE_A64
-	const unsigned gpioix = gpio == GPIOL ? 0 : (gpio - (GPIO_TypeDef *) GPIOB_BASE + 1);
-	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
-	GPIOBLOCK_TypeDef * const blk = gpio == GPIOL ? GPIOBLOCK_L : GPIOBLOCK;
-#elif CPUSTYLE_T507
-	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE;
-	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
-	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
-#else
-	#error Unhandled CPUSTYLE_xxx
-
-#endif /* CPUSTYLE_A64 */
 	unsigned pos;
 	//	0x0: Positive Edge
 	//	0x1: Negative Edge
@@ -1376,10 +1363,10 @@ gpioX_onchangeinterrupt(
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
 
-	blk->GPIO_INTS [gpioix].EINT_CFG [0] = (blk->GPIO_INTS [gpioix].EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	blk->GPIO_INTS [gpioix].EINT_CFG [1] = (blk->GPIO_INTS [gpioix].EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	blk->GPIO_INTS [gpioix].EINT_CFG [2] = (blk->GPIO_INTS [gpioix].EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	blk->GPIO_INTS [gpioix].EINT_CFG [3] = (blk->GPIO_INTS [gpioix].EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	gpioint->EINT_CFG [0] = (gpioint->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+	gpioint->EINT_CFG [1] = (gpioint->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+	gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+	gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
@@ -1391,7 +1378,7 @@ gpioX_onchangeinterrupt(
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 	}
 
-	blk->GPIO_INTS [gpioix].EINT_CTL |= ipins;
+	gpioint->EINT_CTL |= ipins;
 	// todo: EINT_STATUS = ipins; // for clear
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -9948,15 +9935,15 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -10005,15 +9992,15 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -10062,15 +10049,15 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
+	//gpioX_onchangeinterrupt(GPIOC, GPIOINTC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -10121,15 +10108,15 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
+	//gpioX_onchangeinterrupt(GPIOD, GPIOINTD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -10174,15 +10161,15 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
+	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
+	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
+	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10220,15 +10207,15 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
+	//gpioX_onchangeinterrupt(GPIOF, GPIOINTF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10265,16 +10252,16 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10304,15 +10291,15 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10342,15 +10329,15 @@ arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
 
 #else
 	#error Undefined CPUSTYLE_XXX

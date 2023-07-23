@@ -31,14 +31,14 @@ typedef enum IRQn
     SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
     NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
     Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
-    UART0_IRQn = 34,                                  /*!< UART  */
-    UART1_IRQn = 35,                                  /*!< UART  */
-    UART2_IRQn = 36,                                  /*!< UART  */
-    UART3_IRQn = 37,                                  /*!< UART  */
+    UART0_IRQn = 32,                                  /*!< UART  */
+    UART1_IRQn = 33,                                  /*!< UART  */
+    UART2_IRQn = 34,                                  /*!< UART  */
+    UART3_IRQn = 35,                                  /*!< UART  */
+    UART4_IRQn = 36,                                  /*!< UART  */
+    UART5_IRQn = 37,                                  /*!< UART  */
     TWI0_IRQn = 38,                                   /*!< TWI  */
-    UART4_IRQn = 38,                                  /*!< UART  */
     TWI1_IRQn = 39,                                   /*!< TWI  */
-    UART5_IRQn = 39,                                  /*!< UART  */
     TWI2_IRQn = 40,                                   /*!< TWI  */
     TWI3_IRQn = 41,                                   /*!< TWI  */
     TWI4_IRQn = 42,                                   /*!< TWI  */
@@ -60,11 +60,13 @@ typedef enum IRQn
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
     WATCHDOG_IRQn = 82,                               /*!< TIMER  */
-    GPIOC_IRQn = 84,                                  /*!< GPIOINT  */
-    GPIOF_IRQn = 86,                                  /*!< GPIOINT  */
-    GPIOG_IRQn = 87,                                  /*!< GPIOINT  */
-    GPIOH_IRQn = 88,                                  /*!< GPIOINT  */
-    GPIOI_IRQn = 89,                                  /*!< GPIOINT  */
+    GPIOA_IRQn = 83,                                  /*!< GPIOINT GPIOA interrupt */
+    GPIOC_IRQn = 84,                                  /*!< GPIOINT GPIOC interrupt */
+    GPIOD_IRQn = 85,                                  /*!< GPIOINT GPIOD interrupt */
+    GPIOF_IRQn = 86,                                  /*!< GPIOINT GPIOF interrupt */
+    GPIOG_IRQn = 87,                                  /*!< GPIOINT GPIOG interrupt */
+    GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
+    GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
     DE_IRQn = 120,                                    /*!< DE33 DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
@@ -124,20 +126,22 @@ typedef enum IRQn
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
+#define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK  Base */
 #define GPIOC_BASE ((uintptr_t) 0x0300B048)           /*!< GPIO  Base */
+#define GPIOD_BASE ((uintptr_t) 0x0300B06C)           /*!< GPIO  Base */
+#define GPIOE_BASE ((uintptr_t) 0x0300B090)           /*!< GPIO  Base */
 #define GPIOF_BASE ((uintptr_t) 0x0300B0B4)           /*!< GPIO  Base */
 #define GPIOG_BASE ((uintptr_t) 0x0300B0D8)           /*!< GPIO  Base */
 #define GPIOH_BASE ((uintptr_t) 0x0300B0FC)           /*!< GPIO  Base */
 #define GPIOI_BASE ((uintptr_t) 0x0300B120)           /*!< GPIO  Base */
 #define GPIOINTA_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTC_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTD_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTE_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTF_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTG_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTH_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
-#define GPIOINTI_BASE ((uintptr_t) 0x0300B200)        /*!< GPIOINT  Base */
+#define GPIOINTC_BASE ((uintptr_t) 0x0300B240)        /*!< GPIOINT  Base */
+#define GPIOINTD_BASE ((uintptr_t) 0x0300B260)        /*!< GPIOINT  Base */
+#define GPIOINTF_BASE ((uintptr_t) 0x0300B2A0)        /*!< GPIOINT  Base */
+#define GPIOINTG_BASE ((uintptr_t) 0x0300B2C0)        /*!< GPIOINT  Base */
+#define GPIOINTH_BASE ((uintptr_t) 0x0300B2E0)        /*!< GPIOINT  Base */
+#define GPIOINTI_BASE ((uintptr_t) 0x0300B300)        /*!< GPIOINT  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
@@ -1152,8 +1156,11 @@ typedef struct USB_OHCI_Capability_Type
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
+#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD  register set access pointer */
+#define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)           /*!< GPIOE  register set access pointer */
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
 #define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)           /*!< GPIOH  register set access pointer */
@@ -1161,7 +1168,6 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTA ((GPIOINT_TypeDef *) GPIOINTA_BASE)  /*!< GPIOINTA  register set access pointer */
 #define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)  /*!< GPIOINTC  register set access pointer */
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
-#define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)  /*!< GPIOINTE  register set access pointer */
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
