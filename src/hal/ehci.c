@@ -2323,7 +2323,112 @@ void MX_USB_HOST_Process(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+
+	if (0)
+	{
+
+	}
+//	else if (WITHUSBHW_EHCI == USB20_HOST0_EHCI_BASE)
+//	{
+//		// EHCI0/OHCI0
+//		arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+//		arm_hardware_disable_handler(USB20_OTG_OHCI_IRQn);
+//		arm_hardware_disable_handler(USB20_OTG_EHCI_IRQn);
+//
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+//
+//		CCU->USB_BGR_REG |= (UINT32_C(1) << 4);	// USBEHCI0_GATING
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+//		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
+//
+//		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+//		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
+//
+//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+//		CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+//		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
+//
+//	#if WITHEHCIHWSOFTSPOLL == 0
+//		arm_hardware_set_handler_system(USB20_OTG_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_OTG_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+//	}
+	else if (WITHUSBHW_EHCI == USB20_HOST1_EHCI)
+	{
+		// EHCI1/OHCI1
+		arm_hardware_disable_handler(USB20_HOST1_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST1_EHCI_IRQn);
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 21);	// USBEHCI1_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 17);	// USBOHCI1_RST
+
+		CCU->USB1_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY1_RST
+		CCU->USB1_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY1_RST
+		CCU->USB1_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+	else if (WITHUSBHW_EHCI == USB20_HOST2_EHCI)
+	{
+		// EHCI2/OHCI2
+		arm_hardware_disable_handler(USB20_HOST2_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST2_EHCI_IRQn);
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 6);	// USBEHCI2_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 22);	// USBEHCI2_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 22);	// USBEHCI2_RST
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 2);	// USBOHCI2_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 18);	// USBOHCI2_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 18);	// USBOHCI2_RST
+
+		CCU->USB2_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY2_RST
+		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
+		CCU->USB2_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST2_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+	else if (WITHUSBHW_EHCI == USB20_HOST3_EHCI)
+	{
+		// EHCI2/OHCI2
+		arm_hardware_disable_handler(USB20_HOST3_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST3_EHCI_IRQn);
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 7);	// USBEHCI3_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 23);	// USBEHCI3_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 23);	// USBEHCI3_RST
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 3);	// USBOHCI3_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 19);	// USBOHCI3_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 19);	// USBOHCI3_RST
+
+		CCU->USB3_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY3_RST
+		CCU->USB3_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY3_RST
+		CCU->USB3_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST3_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
+
+
+
+
+#elif CPUSTYLE_A64
 
 	// xfel boot
 	//	USBPHY_CFG_REG: 00000101

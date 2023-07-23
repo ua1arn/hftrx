@@ -1349,6 +1349,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>USB3_CLK_REG</name>
+    <displayName>USB3_CLK_REG</displayName>
+    <description>USB3 Clock Register</description>
+    <addressOffset>0xA7C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>USB_BGR_REG</name>
     <displayName>USB_BGR_REG</displayName>
     <description>USB Bus Gating Reset Register</description>

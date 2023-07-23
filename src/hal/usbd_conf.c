@@ -420,14 +420,17 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYLE_T507
 
+	arm_hardware_disable_handler(USB20_OTG_OHCI_IRQn);
+	arm_hardware_disable_handler(USB20_OTG_EHCI_IRQn);
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
-
-	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
-	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 
 	CCU->USB_BGR_REG |= (UINT32_C(1) << 8);	// USBOTG_GATING
 	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
 	CCU->USB_BGR_REG |= (UINT32_C(1) << 24);	// USBOTG_RST
+
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 
 	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 

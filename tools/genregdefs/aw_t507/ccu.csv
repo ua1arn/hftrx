@@ -113,6 +113,7 @@
 #regdef; USB0_CLK_REG; 0x0A70; USB0 Clock Register
 #regdef; USB1_CLK_REG; 0x0A74; USB1 Clock Register
 #regdef; USB2_CLK_REG; 0x0A78; USB2 Clock Register
+#regdef; USB3_CLK_REG; 0x0A7C; USB3 Clock Register
 #regdef; USB_BGR_REG; 0x0A8C; USB Bus Gating Reset Register
 #regdef; HDMI0_CLK_REG; 0x0B00; HDMI0 Clock Register
 #regdef; HDMI0_SLOW_CLK_REG; 0x0B04; HDMI0 Slow Clock Register

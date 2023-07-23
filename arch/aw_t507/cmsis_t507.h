@@ -398,7 +398,8 @@ typedef struct CCU_Type
     volatile uint32_t USB0_CLK_REG;                   /*!< Offset 0xA70 USB0 Clock Register */
     volatile uint32_t USB1_CLK_REG;                   /*!< Offset 0xA74 USB1 Clock Register */
     volatile uint32_t USB2_CLK_REG;                   /*!< Offset 0xA78 USB2 Clock Register */
-             uint32_t reserved_0xA7C [0x0004];
+    volatile uint32_t USB3_CLK_REG;                   /*!< Offset 0xA7C USB3 Clock Register */
+             uint32_t reserved_0xA80 [0x0003];
     volatile uint32_t USB_BGR_REG;                    /*!< Offset 0xA8C USB Bus Gating Reset Register */
              uint32_t reserved_0xA90 [0x001C];
     volatile uint32_t HDMI0_CLK_REG;                  /*!< Offset 0xB00 HDMI0 Clock Register */

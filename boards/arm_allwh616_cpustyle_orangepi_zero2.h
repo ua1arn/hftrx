@@ -134,9 +134,9 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	////#define WITHEHCIHW	1	/* USB_EHCI controller */
-	////#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-	////#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
+	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
@@ -785,38 +785,13 @@
 #endif /* WITHCPUADCHW */
 
 #if WITHUSBHW
-	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { } while (0) //do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { } while (0) //do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_USBFS_VBUSON_BIT (0 * UINT32_C(1) << 2)	// PD2 - нулём включение питания для device
-	/**USB_OTG_FS GPIO Configuration    
-	PA9     ------> USB_OTG_FS_VBUS
-	PA10     ------> USB_OTG_FS_ID
-	PA11     ------> USB_OTG_FS_DM
-	PA12     ------> USB_OTG_FS_DP 
-	*/
-
+	#define TARGET_USBFS_VBUSON_BIT (UINT32_C(1) << 16)	// PC16 - единицей включение питания для device
 	#define	USBD_EHCI_INITIALIZE() do { \
-		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
-		(void) RCC->MP_APB4ENSETR; \
-		RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN; \
-		(void) RCC->MP_APB4LPENSETR; \
-		/* STM32_USBPHYC_MISC bit fields */ \
-		/*	SWITHOST 0: Select OTG controller for 2nd PHY port */ \
-		/*	SWITHOST 1: Select Host controller for 2nd PHY port */ \
-		/*	EHCI controller hard wired to 1st PHY port */ \
-		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk | USBPHYC_MISC_PPCKDIS_Msk)) | \
-			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
-			(USBPHYC_MISC_PPCKDIS_VAL << USBPHYC_MISC_PPCKDIS_Pos) | \
-			0; \
-		(void) USBPHYC->MISC; \
-		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
-		} while (0)
+		arm_hardware_pioc_outputs(TARGET_USBFS_VBUSON_BIT, 0 * TARGET_USBFS_VBUSON_BIT); \
+	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		if ((on) != 0) \
-			TARGET_USBFS_VBUSON_PORT_C(TARGET_USBFS_VBUSON_BIT); \
-		else \
-			TARGET_USBFS_VBUSON_PORT_S(TARGET_USBFS_VBUSON_BIT); \
+		gpioX_setstate(GPIOC, TARGET_USBFS_VBUSON_BIT, !! (on) * TARGET_USBFS_VBUSON_BIT); \
 	} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    
@@ -1070,7 +1045,7 @@
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
-			/*USBD_EHCI_INITIALIZE(); */\
+			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED */
