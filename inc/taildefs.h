@@ -619,7 +619,7 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	/* DFU device разделяет по приходящему адресу куда писать */
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE 0x30000000uL	/* Воображаемый адрес, где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
+	#define BOOTLOADER_SELFSIZE (1024uL * 256)	// 256k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* Воображаемый адрес, адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128

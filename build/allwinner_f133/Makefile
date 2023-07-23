@@ -273,7 +273,7 @@ app_run: $(PROJECT)_app.f133
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.f133
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.f133
+	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.f133
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

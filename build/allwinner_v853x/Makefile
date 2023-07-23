@@ -281,12 +281,7 @@ app_runXBOOT: xboot_t113_800.bin
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
-
-flash_old:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
