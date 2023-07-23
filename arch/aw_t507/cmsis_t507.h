@@ -155,6 +155,9 @@ typedef enum IRQn
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x05100000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USBPHYC0_BASE ((uintptr_t) 0x05100400)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
+#define USB20_OTG_EHCI_BASE ((uintptr_t) 0x05101000)  /*!< USB_EHCI_Capability  Base */
+#define USB20_OTG_OHCI_BASE ((uintptr_t) 0x05101400)  /*!< USB_OHCI_Capability  Base */
 #define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x05200000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC1_BASE ((uintptr_t) 0x05200800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
@@ -1178,6 +1181,9 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
+#define USBPHYC0 ((USBPHYC_TypeDef *) USBPHYC0_BASE)  /*!< USBPHYC0 HCI Contgroller and PHY Interface Description register set access pointer */
+#define USB20_OTG_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_OTG_EHCI_BASE)/*!< USB20_OTG_EHCI  register set access pointer */
+#define USB20_OTG_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_OTG_OHCI_BASE)/*!< USB20_OTG_OHCI  register set access pointer */
 #define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
 #define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
 #define USBPHYC1 ((USBPHYC_TypeDef *) USBPHYC1_BASE)  /*!< USBPHYC1 HCI Contgroller and PHY Interface Description register set access pointer */

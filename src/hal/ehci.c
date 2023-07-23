@@ -79,7 +79,10 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 
 static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 {
+	// EHCI0: phy->USB_CTRL
 	PRINTF("%p->USB_CTRL=%08X\n", phy, (unsigned) phy->USB_CTRL);
+
+	//phy->USB_CTRL = 0x4300CC01;
 	//USBPHYC1->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
 	phy->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
 	//phy->USB_CTRL |= (UINT32_C(1) << 28);	// DMA Transfer Status Enable
@@ -2348,36 +2351,35 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	{
 
 	}
-//	else if (WITHUSBHW_EHCI == USB20_HOST0_EHCI_BASE)
-//	{
-//		// EHCI0/OHCI0
-//		arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
-//		arm_hardware_disable_handler(USB20_OTG_OHCI_IRQn);
-//		arm_hardware_disable_handler(USB20_OTG_EHCI_IRQn);
-//
-//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
-//
-//		CCU->USB_BGR_REG |= (UINT32_C(1) << 4);	// USBEHCI0_GATING
-//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
-//		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
-//
-//		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
-//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
-//		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
-//
-//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
-//		CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
-//		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
-//
-//		//USBPHYC0->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
-//		USBPHYC0->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
-//		SetupUsbPhyc(USBPHYC0);
-//
-//	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB20_OTG_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB20_OTG_EHCI_IRQn, USBH_EHCI_IRQHandler);
-//	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-//	}
+	else if (WITHUSBHW_EHCI == USB20_OTG_EHCI)
+	{
+		// EHCI0/OHCI0
+		arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+		arm_hardware_disable_handler(USB20_OTG_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_OTG_EHCI_IRQn);
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 4);	// USBEHCI0_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
+
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
+
+		SetupUsbPhyc(USBPHYC0);
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB20_OTG_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_OTG_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+	}
 	else if (WITHUSBHW_EHCI == USB20_HOST1_EHCI)
 	{
 		// EHCI1/OHCI1

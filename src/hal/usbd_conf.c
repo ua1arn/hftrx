@@ -432,6 +432,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
 	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 
+	//USBPHYC0->USB_CTRL = UINT32_C(0x4300CC01);	// мдадший бит не влияет
+
+
 	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #elif CPUSTYLE_A64

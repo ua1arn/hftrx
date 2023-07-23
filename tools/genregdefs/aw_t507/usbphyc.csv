@@ -1,5 +1,6 @@
 #type; USBPHYC; HCI Contgroller and PHY Interface Description
 
+#base; USBPHYC0 0x05100400
 #base; USBPHYC1 0x05200800
 #base; USBPHYC2 0x05310800
 #base; USBPHYC3 0x05311800
