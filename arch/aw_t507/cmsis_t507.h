@@ -65,6 +65,7 @@ typedef enum IRQn
     GPIOG_IRQn = 87,                                  /*!< GPIOINT  */
     GPIOH_IRQn = 88,                                  /*!< GPIOINT  */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT  */
+    DE_IRQn = 120,                                    /*!< DE33 DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
@@ -107,6 +108,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE33 Display Engine (DE) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x01480400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
