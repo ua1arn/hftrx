@@ -1869,11 +1869,12 @@ static void allwnr_a64_pll_initialize(void)
 
 static void allwnr_a64_mbus_initialize(void)
 {
+	unsigned M = 2;
 //		CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
 	CCU->MBUS_CLK_REG =
 		(1u << 31) | 	// MBUS_SCLK_GATING.
 		(0x02 << 24) | 	// MBUS_SCLK_SRC 01: PLL_PERIPH0(2X) 11: PLL_DDR1.
-		(0x07 << 0) | // MBUS_SCLK_RATIO_M (M=1..8, code=0..7)
+		((M - 1) << 0) | // MBUS_SCLK_RATIO_M (M=1..8, code=0..7)
 		0;
 	(void) CCU->MBUS_CLK_REG;
 	(void) CCU->MBUS_CLK_REG;
@@ -2003,6 +2004,28 @@ uint_fast64_t allwnr_a64_get_pll_cpux_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * pllK / (pllM * pllP);
 }
 
+uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DDR0_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t divK = UINT32_C(1) + ((pllreg >> 4) & 0x03);	// PLL_FACTOR_K
+	const uint_fast32_t divM = UINT32_C(1) + ((pllreg >> 0) & 0x03);	// PLL_FACTOR_M
+	//	PLL_DDR0 = (24MHz*N*K)/M.
+	//	The default value of PLL_DDR0 is 432MHz.
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN * divK / divM;
+}
+
+uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DDR1_CTRL_REG;
+	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t divK = UINT32_C(1) + ((pllreg >> 4) & 0x03);	// PLL_FACTOR_K
+	const uint_fast32_t divM = UINT32_C(1) + ((pllreg >> 0) & 0x03);	// PLL_FACTOR_M
+	//	PLL_DDR0 = (24MHz*N*K)/M.
+	//	The default value of PLL_DDR0 is 432MHz.
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN * divK / divM;
+}
+
 uint_fast32_t allwnr_a64_get_cpux_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
@@ -2021,7 +2044,7 @@ uint_fast32_t allwnr_a64_get_cpux_freq(void)
 }
 
 //	The PLL_AUDIO(8X) = (24MHz*N*2)/M
-uint_fast32_t allwnra64_get_audiopll8x_freq(void)
+uint_fast32_t allwnr_a64_get_audiopll8x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	//const uint_fast32_t pllP = UINT32_C(1) + ((reg >> 16) & 0x0F);
@@ -2032,7 +2055,7 @@ uint_fast32_t allwnra64_get_audiopll8x_freq(void)
 }
 
 //	The PLL_AUDIO= (24MHz*N)/(M*P).
-uint_fast32_t allwnra64_get_audiopll_freq(void)
+uint_fast32_t allwnr_a64_get_audiopll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	const uint_fast32_t pllP = UINT32_C(1) + ((reg >> 16) & 0x0F);
@@ -2061,6 +2084,16 @@ uint_fast64_t allwnrt113_get_pll_periph1_x2_freq(void)
 	//const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x03);	// PLL_FACTOR_M - PLL Factor M (M = Factor + 1) is only valid in plltest debug.
 
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
+}
+
+uint_fast32_t allwnr_a64_get_pll_hsic_freq(void)
+{
+	// PLL_HSIC = (24MHz*N)/M.
+	const uint_fast32_t reg = CCU->PLL_HSIC_CTRL_REG;
+	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
 }
 
 uint_fast64_t allwnrt113_get_pll_video0_x2_freq(void)
@@ -2135,6 +2168,27 @@ uint_fast64_t allwnrt113_get_pll_mipi_freq(void)
 		const uint_fast64_t divider = sint_frac ? (s6p25 ? 10 : 100) : 1;
 
 		return (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * M * (sdiv2 + 1) * multiplier / divider;
+	}
+}
+
+uint_fast32_t allwnr_a64_get_mbus_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->MBUS_CLK_REG;
+	const uint_fast32_t clkdiv = 1u + ((clkreg >> 0) & 0x07);	// MBUS_SCLK_RATIO_M
+	switch ((clkreg >> 24) & 0x03)	/* MBUS_SCLK_SRC */
+	{
+	case 0x00:
+		// 00: 00: OSC24M
+		return allwnrt113_get_hosc_freq() / clkdiv;
+	case 0x01:
+		// 01: PLL_PERIPH0(2X)
+		return allwnrt113_get_pll_periph0_x2_freq() / clkdiv;
+	case 0x02:
+		// 10: PLL_DDR0
+		return allwnr_a64_get_pll_ddr0_freq() / clkdiv;
+	case 0x03:
+		// 11: PLL_DDR1
+		return allwnr_a64_get_pll_ddr1_freq() / clkdiv;
 	}
 }
 
@@ -8150,7 +8204,7 @@ sysinit_pll_initialize(void)
 	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_a64_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
 	allwnr_a64_module_pllaudio_enable();
-	//allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
+	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
 	allwnr_a64_mbus_initialize();
 

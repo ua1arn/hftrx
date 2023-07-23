@@ -197,8 +197,12 @@ uint_fast32_t allwnrt113_get_smhc2_freq(void);
 
 // Allwinner A64
 uint_fast32_t allwnr_a64_get_cpux_freq(void);
-uint_fast32_t allwnra64_get_audiopll8x_freq(void);
-uint_fast32_t allwnra64_get_audiopll_freq(void);
+uint_fast32_t allwnr_a64_get_audiopll8x_freq(void);
+uint_fast32_t allwnr_a64_get_audiopll_freq(void);
+uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
+uint_fast32_t allwnr_a64_get_mbus_freq(void);
+uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void);
+uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void);
 
 // Allwinner T507/T507-H/H616
 uint_fast32_t allwnr_t507_get_cpux_freq(void);

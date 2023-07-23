@@ -3633,16 +3633,16 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	{
 	default:
 	case 0:
-		clk = allwnra64_get_audiopll8x_freq();
+		clk = allwnr_a64_get_audiopll8x_freq();
 		break;
 	case 1:
-		clk = allwnra64_get_audiopll8x_freq() / 2;
+		clk = allwnr_a64_get_audiopll8x_freq() / 2;
 		break;
 	case 2:
-		clk = allwnra64_get_audiopll8x_freq() / 4;
+		clk = allwnr_a64_get_audiopll8x_freq() / 4;
 		break;
 	case 3:
-		clk = allwnra64_get_audiopll_freq();
+		clk = allwnr_a64_get_audiopll_freq();
 		break;
 	}
 

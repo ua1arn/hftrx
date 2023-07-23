@@ -59,7 +59,7 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 {
 	phy->HCI_ICR |= (UINT32_C(1) << 0);
 
-//	phy->HCI_ICR |= (UINT32_C(1) << 1);
+//	phy->HCI_ICR |= (UINT32_C(1) << 1);			// С этим битом не видит connect HSIC - This meaning is only valid when the controller is HCI1
 //	phy->HCI_ICR |= (UINT32_C(1) << 17);
 
 	phy->HCI_ICR |= (UINT32_C(1) << 20);		// EHCI HS force
@@ -2464,22 +2464,26 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_A64
 
+	PRINTF("allwnr_a64_get_pll_hsic_freq()=%" PRIuFAST32 "\n", allwnr_a64_get_pll_hsic_freq());
+	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 "\n", allwnr_a64_get_mbus_freq());
+	PRINTF("allwnr_a64_get_pll_ddr0_freq()=%" PRIuFAST64 "\n", allwnr_a64_get_pll_ddr0_freq());
+
 	// xfel boot
 	//	USBPHY_CFG_REG: 00000101
 	//	BUS_CLK_GATING_REG0: 00800000
 	//	BUS_SOFT_RST_REG0: 00800000
 
 	CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-				(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
-				(UINT32_C(1) << 11) |
-				(UINT32_C(1) << 10) |
-				(UINT32_C(1) << 2) |
+			(UINT32_C(3) << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
+			(UINT32_C(1) << 11) |
+			(UINT32_C(1) << 10) |
+			(UINT32_C(1) << 2) |
 			0)) |
-			(3u << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
-			//(UINT32_C(1) << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
-			//(UINT32_C(1) << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
-			//(UINT32_C(1) << 2) |	// USBHSIC_RST
-			0;
+		(UINT32_C(3) << 16) |	// SCLK_GATING_OHCI - 11:OTG-OHCI and OHCI0 Clock is ON
+		//(UINT32_C(1) << 11) |	// SCLK_GATING_12M  Gating Special 12M Clock For HSIC
+		//(UINT32_C(1) << 10) |	// SCLK_GATING_HSIC Gating Special Clock For HSIC
+		(UINT32_C(1) << 2) |	// USBHSIC_RST
+		0;
 
 	const unsigned OHCIx_12M_SRC_SEL = 0u;	// 00: 12M divided from 48M, 01: 12M divided from 24M, 10: LOSC
 
@@ -2489,14 +2493,14 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI0);	/* host and usb-otg port */
 
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-					(3u << 20) |	// OHCI0_12M_SRC_SEL
-					(UINT32_C(1) << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
-					(UINT32_C(1) << 0) |	// USBPHY0_RST
-					0)) |
-				(OHCIx_12M_SRC_SEL << 20) |	// OHCI0_12M_SRC_SEL
+				(3u << 20) |	// OHCI0_12M_SRC_SEL
 				(UINT32_C(1) << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
-				(UINT32_C(1) << 0) |	// USBPHY0_RST - xfel boot setup
-				0;
+				(UINT32_C(1) << 0) |	// USBPHY0_RST
+				0)) |
+			(OHCIx_12M_SRC_SEL << 20) |	// OHCI0_12M_SRC_SEL
+			(UINT32_C(1) << 8) |	// SCLK_GATING_USBPHY0 - xfel boot setup
+			(UINT32_C(1) << 0) |	// USBPHY0_RST - xfel boot setup
+			0;
 
 		CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 23);	// USB-OTG-Device_RST
 
@@ -2517,14 +2521,14 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		ASSERT((void *) WITHUSBHW_EHCI == USBEHCI1);	/* host-only port */
 
 		CCU->USBPHY_CFG_REG = (CCU->USBPHY_CFG_REG & ~ (
-					(3u << 22) |	// OHCI1_12M_SRC_SEL
-					(UINT32_C(1) << 9) |
-					(UINT32_C(1) << 1) |
-					0)) |
-				(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
-				(UINT32_C(1) << 9) |	// SCLK_GATING_USBPHY1
-				(UINT32_C(1) << 1) |	// USBPHY1_RST
-				0;
+				(3u << 22) |	// OHCI1_12M_SRC_SEL
+				(UINT32_C(1) << 9) |
+				(UINT32_C(1) << 1) |
+				0)) |
+			(OHCIx_12M_SRC_SEL << 22) |	// OHCI1_12M_SRC_SEL
+			(UINT32_C(1) << 9) |	// SCLK_GATING_USBPHY1
+			(UINT32_C(1) << 1) |	// USBPHY1_RST
+			0;
 
 		CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 29);	// USBOHCI0_GATING.
 		CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 25);	// USBEHCI0_GATING.
