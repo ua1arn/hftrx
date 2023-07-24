@@ -720,8 +720,8 @@ typedef struct GPIOBLOCK_Type
         volatile uint32_t DATA;                       /*!< Offset 0x010 Data Register */
         volatile uint32_t DRV [0x002];                /*!< Offset 0x014 Multi_Driving Register */
         volatile uint32_t PULL [0x002];               /*!< Offset 0x01C Pull Register */
-    } GPIO_PINS [0x008];                              /*!< Offset 0x000 GPIO pin control */
-             uint32_t reserved_0x120 [0x0038];
+    } GPIO_PINS [0x009];                              /*!< Offset 0x000 GPIO pin control */
+             uint32_t reserved_0x144 [0x002F];
     struct
     {
         volatile uint32_t EINT_CFG [0x004];           /*!< Offset 0x200 External Interrupt Configure Registers */
@@ -729,8 +729,8 @@ typedef struct GPIOBLOCK_Type
         volatile uint32_t EINT_STATUS;                /*!< Offset 0x214 External Interrupt Status Register */
         volatile uint32_t EINT_DEB;                   /*!< Offset 0x218 External Interrupt Debounce Register */
                  uint32_t reserved_0x01C;
-    } GPIO_INTS [0x008];                              /*!< Offset 0x200 GPIO interrupt control */
-} GPIOBLOCK_TypeDef; /* size of structure = 0x300 */
+    } GPIO_INTS [0x009];                              /*!< Offset 0x200 GPIO interrupt control */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x320 */
 /*
  * @brief GPIOINT
  */

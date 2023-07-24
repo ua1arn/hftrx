@@ -3187,7 +3187,7 @@
   <baseAddress>0x0300B000</baseAddress>
   <registers>
    <cluster>
-    <dim>8</dim>
+    <dim>9</dim>
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <cluster>
@@ -3242,10 +3242,10 @@
       <dimIncrement>0x008</dimIncrement>
      </cluster>
     </registers>
-    <dimIncrement>0x120</dimIncrement>
+    <dimIncrement>0x144</dimIncrement>
    </cluster>
    <cluster>
-    <dim>8</dim>
+    <dim>9</dim>
     <addressOffset>0x00000200</addressOffset>
     <registers>
      <cluster>
@@ -3290,7 +3290,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0E0</dimIncrement>
+    <dimIncrement>0x0FC</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
