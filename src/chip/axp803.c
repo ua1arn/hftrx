@@ -1016,6 +1016,7 @@ int axp853_initialize(void)
 		}
 	}
 
+	pmu_axp858_ap_reset_enable();	// без этой строчки не инициалищируется после reset
 	axp858_set_sw(0);
 
 	axp858_set_dcdc1(3300);
@@ -1029,6 +1030,7 @@ int axp853_initialize(void)
 
 	axp858_set_sw(1);
 	//local_delay_ms(100);
+
 	return 0;
 }
 #endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 */
