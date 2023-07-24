@@ -586,7 +586,7 @@ void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 	}
 }
 
-#if 1
+#if 1//CPUSTYLE_H616
 // https://github.com/apritzel/u-boot/blob/master/arch/arm/mach-sunxi/dram_timings/h616_ddr3_1333.c#L18
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
@@ -667,6 +667,10 @@ void mctl_set_timing_params(struct dram_para *para)
 	/* set refresh timing */
 	writel((trefi << 16) | trfc, &mctl_ctl->rfshtmg);
 }
+
+#else
+// LPDDR4
+
 #endif
 /*
  * Test if memory at offset offset matches memory at begin of DRAM
