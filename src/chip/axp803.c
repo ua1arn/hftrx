@@ -845,6 +845,23 @@ int axp858_set_dcdc5(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC5_EN);
 }
 
+/* Fix fornon-sequential register address */
+static int axp858_getaldor(int aldo_num)
+{
+	switch (aldo_num)
+	{
+	case 1:	return AXP858_ALDO1_CTRL;
+	case 2:	return AXP858_ALDO2_CTRL;
+	case 3:	return AXP858_ALDO3_CTRL;
+	case 4:	return AXP858_ALDO4_CTRL;
+	case 5:	return AXP858_ALDO5_CTRL;
+	default:
+		ASSERT(0);
+		for (;;)
+			;
+	}
+}
+
 int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 {
 	int ret;
@@ -858,7 +875,7 @@ int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 				AXP858_OUTPUT_CTRL2_ALDO1_EN << (aldo_num - 1));
 
 	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
-	ret = pmic_bus_write(AXP858_ALDO1_CTRL + (aldo_num - 1), cfg);
+	ret = pmic_bus_write(axp858_getaldor(aldo_num), cfg);
 	if (ret)
 		return ret;
 
