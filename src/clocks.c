@@ -2420,32 +2420,8 @@ static void allwnr_t507_module_pll_enable(volatile uint32_t * reg)
 	}
 }
 
-void allwnr_t507_pll_initialize(void)
-{
-	{
-		// Disable XFEL enabled device
-
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
-		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
-	}
-
-	set_t507_pll_cpux_axi(PLL_CPU_N, PLL_CPU_P_POW);
-
-	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-
-#if CPUSTYLE_H616
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#else /* CPUSTYLE_H616 */
-	C0_CPUX_CFG_T507->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	C0_CPUX_CFG_T507->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#endif /* CPUSTYLE_H616 */
-}
+void allwnr_t507_pll_initialize(int forced)
+{}
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
@@ -7884,7 +7860,7 @@ uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 
 // PLL initialize
 void FLASHMEMINITFUNC
-sysinit_pll_initialize(void)
+sysinit_pll_initialize(int forced)
 {
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
@@ -8228,7 +8204,30 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
 
-	allwnr_t507_pll_initialize();
+
+	{
+		// Disable XFEL enabled device
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
+	}
+
+	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
+
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+
+#if CPUSTYLE_H616
+	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#else /* CPUSTYLE_H616 */
+	C0_CPUX_CFG_T507->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	C0_CPUX_CFG_T507->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#endif /* CPUSTYLE_H616 */
 
 #elif CPUSTYLE_F133
 

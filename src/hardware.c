@@ -3092,10 +3092,11 @@ SystemInit(void)
 {
 #if ! LINUX_SUBSYSTEM
 	sysinit_fpu_initialize();
-	sysinit_pll_initialize();	// PLL iniitialize
+	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysinit_pmic_initialize();
+	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR

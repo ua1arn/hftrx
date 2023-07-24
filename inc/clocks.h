@@ -236,8 +236,6 @@ void allwnrt113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
 void set_pll_riscv_axi(unsigned n);
 
-void allwnr_t507_pll_initialize(void);	//  PLL_CPUX=24MHz*N/P
-
 uint_fast32_t elveesvm14_get_arm_freq(void);
 uint_fast32_t elveesvm14_get_usart_freq(void);
 
