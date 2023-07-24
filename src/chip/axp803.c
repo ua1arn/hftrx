@@ -760,7 +760,7 @@ static uint8_t axp858_mvolt_to_cfg(int mvolt, int min, int max, int div)
 	return  (mvolt - min) / div;
 }
 
-int axp_set_dcdc1(unsigned int mvolt)
+int axp858_set_dcdc1(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg = axp858_mvolt_to_cfg(mvolt, 1500, 3400, 100);
@@ -777,7 +777,7 @@ int axp_set_dcdc1(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC1_EN);
 }
 
-int axp_set_dcdc2(unsigned int mvolt)
+int axp858_set_dcdc2(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -800,7 +800,7 @@ int axp_set_dcdc2(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC2_EN);
 }
 
-int axp_set_dcdc3(unsigned int mvolt)
+int axp858_set_dcdc3(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -823,7 +823,7 @@ int axp_set_dcdc3(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC3_EN);
 }
 
-int axp_set_dcdc5(unsigned int mvolt)
+int axp858_set_dcdc5(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -845,7 +845,7 @@ int axp_set_dcdc5(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC5_EN);
 }
 
-int axp_set_aldo(int aldo_num, unsigned int mvolt)
+int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -867,22 +867,22 @@ int axp_set_aldo(int aldo_num, unsigned int mvolt)
 }
 
 /* TODO: re-work other AXP drivers to consolidate ALDO functions. */
-int axp_set_aldo1(unsigned int mvolt)
+int axp858_set_aldo1(unsigned int mvolt)
 {
-	return axp_set_aldo(1, mvolt);
+	return axp858_set_aldo(1, mvolt);
 }
 
-int axp_set_aldo2(unsigned int mvolt)
+int axp858_set_aldo2(unsigned int mvolt)
 {
-	return axp_set_aldo(2, mvolt);
+	return axp858_set_aldo(2, mvolt);
 }
 
-int axp_set_aldo3(unsigned int mvolt)
+int axp858_set_aldo3(unsigned int mvolt)
 {
-	return axp_set_aldo(3, mvolt);
+	return axp858_set_aldo(3, mvolt);
 }
 
-// int axp_set_dldo(int dldo_num, unsigned int mvolt)
+// int axp858_set_dldo(int dldo_num, unsigned int mvolt)
 // {
 // 	int ret;
 // 	uint8_t cfg;
@@ -905,7 +905,7 @@ int axp_set_aldo3(unsigned int mvolt)
 // 				AXP858_OUTPUT_CTRL2_DLDO1_EN << (dldo_num - 1));
 // }
 
-// int axp_set_eldo(int eldo_num, unsigned int mvolt)
+// int axp858_set_eldo(int eldo_num, unsigned int mvolt)
 // {
 // 	int ret;
 // 	uint8_t cfg;
@@ -926,7 +926,7 @@ int axp_set_aldo3(unsigned int mvolt)
 // 				AXP858_OUTPUT_CTRL2_ELDO1_EN << (eldo_num - 1));
 // }
 
-// int axp_set_fldo(int fldo_num, unsigned int mvolt)
+// int axp858_set_fldo(int fldo_num, unsigned int mvolt)
 // {
 // 	int ret;
 // 	uint8_t cfg;
@@ -960,7 +960,7 @@ int axp_set_aldo3(unsigned int mvolt)
 // 				AXP858_OUTPUT_CTRL3_FLDO1_EN << (fldo_num - 1));
 // }
 
-int axp_set_sw(int on)
+int axp858_set_sw(int on)
 {
 	if (on)
 		return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
