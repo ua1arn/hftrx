@@ -39,7 +39,7 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
+	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 

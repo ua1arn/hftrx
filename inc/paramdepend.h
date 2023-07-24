@@ -876,7 +876,7 @@ extern "C" {
 	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 2
-	#define WITHCPUNAME "Allw t113-s3"
+	#define WITHCPUNAME "Allw T113-s3"
 
 #elif CPUSTYLE_VM14
 

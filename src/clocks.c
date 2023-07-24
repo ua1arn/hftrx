@@ -1971,13 +1971,7 @@ static void allwnr_a64_module_pllaudio_enable(void)
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
-#if defined WITHCPUXTAL
-	return WITHCPUXTAL;
-#elif defined WITHCPUXOSC
-	return WITHCPUXOSC;
-#else
-	return 24000000u;	/* На процессоре установлен кварц 24.000 МГц */
-#endif
+    return REFINFREQ;	// 24 MHz usually
 }
 
 uint_fast32_t allwnrt113_get_losc_freq(void)
@@ -2447,7 +2441,7 @@ void allwnr_t507_pll_initialize(void)
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
-    return WITHCPUXTAL;
+    return REFINFREQ;	// 24 MHz usually
 }
 
 uint_fast32_t allwnr_t507_get_rtc32k_freq(void)
@@ -3295,18 +3289,12 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
-#if defined WITHCPUXTAL
-	return WITHCPUXTAL;
-#elif defined WITHCPUXOSC
-	return WITHCPUXOSC;
-#else
-	return 24000000u;	/* На процессоре установлен кварц 24.000 МГц */
-#endif
+    return REFINFREQ;	// 24 MHz usually
 }
 
 uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 {
-	// PLL_CPU = InputFreq*N.
+	// PLL_CPU = InputFreq*N
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
 	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x03);
