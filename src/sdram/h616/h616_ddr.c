@@ -13,9 +13,16 @@
 
 #include "formats.h"
 
+#if CPUSTYLE_H616
+	#define ENHTEST 1
+	#define CONFIG_DRAM_CLK 533
+#else
+	#define ENHTEST 0
+	#define CONFIG_DRAM_CLK 1333
+#endif
+
 #define CONFIG_SYS_SDRAM_BASE 0x40000000
 
-#define CONFIG_DRAM_CLK 533
 
 #define CONFIG_MACH_SUN50I_H616 1
 
@@ -1471,7 +1478,7 @@ static int mctl_phy_init(struct dram_para *para)
 	clrbits_le32(&mctl_ctl->rfshctl3, 1);
 	writel(1, &mctl_ctl->swctl);
 
-	if (IS_ENABLED(CONFIG_DRAM_SUN50I_H616_WRITE_LEVELING)) {
+	if (ENHTEST && IS_ENABLED(CONFIG_DRAM_SUN50I_H616_WRITE_LEVELING)) {
 		for (i = 0; i < 5; i++)
 			if (mctl_phy_write_leveling(para))
 				break;
@@ -1481,7 +1488,7 @@ static int mctl_phy_init(struct dram_para *para)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_DRAM_SUN50I_H616_READ_CALIBRATION)) {
+	if (ENHTEST && IS_ENABLED(CONFIG_DRAM_SUN50I_H616_READ_CALIBRATION)) {
 		for (i = 0; i < 5; i++)
 			if (mctl_phy_read_calibration(para))
 				break;
@@ -1491,7 +1498,7 @@ static int mctl_phy_init(struct dram_para *para)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_DRAM_SUN50I_H616_READ_TRAINING)) {
+	if (ENHTEST && IS_ENABLED(CONFIG_DRAM_SUN50I_H616_READ_TRAINING)) {
 		for (i = 0; i < 5; i++)
 			if (mctl_phy_read_training(para))
 				break;
@@ -1501,7 +1508,7 @@ static int mctl_phy_init(struct dram_para *para)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_DRAM_SUN50I_H616_WRITE_TRAINING)) {
+	if (ENHTEST && IS_ENABLED(CONFIG_DRAM_SUN50I_H616_WRITE_TRAINING)) {
 		for (i = 0; i < 5; i++)
 			if (mctl_phy_write_training(para))
 				break;
