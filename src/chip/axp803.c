@@ -850,7 +850,7 @@ int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 	int ret;
 	uint8_t cfg;
 
-	if (aldo_num < 1 || aldo_num > 4)
+	if (aldo_num < 1 || aldo_num > 5)
 		return -1;
 
 	if (mvolt == 0)
@@ -885,6 +885,11 @@ int axp858_set_aldo3(unsigned int mvolt)
 int axp858_set_aldo4(unsigned int mvolt)
 {
 	return axp858_set_aldo(4, mvolt);
+}
+
+int axp858_set_aldo5(unsigned int mvolt)
+{
+	return axp858_set_aldo(5, mvolt);
 }
 
 // int axp858_set_dldo(int dldo_num, unsigned int mvolt)
@@ -1028,6 +1033,7 @@ int axp853_initialize(void)
 	axp858_set_aldo2(1800);
 	axp858_set_aldo3(2500);
 	axp858_set_aldo4(1800);
+	axp858_set_aldo5(3300);		// locked to 2,8 ?
 
 	axp858_set_sw(1);
 	//local_delay_ms(100);

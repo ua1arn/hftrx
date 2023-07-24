@@ -809,6 +809,11 @@
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
+#else /* WITHUSBHW */
+	#define	USBD_EHCI_INITIALIZE() do { \
+		arm_hardware_pioc_outputs(TARGET_USBFS_VBUSON_BIT, 0 * TARGET_USBFS_VBUSON_BIT); \
+	} while (0)
+
 #endif /* WITHUSBHW */
 
 #if WITHDCDCFREQCTL
