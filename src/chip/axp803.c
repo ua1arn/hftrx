@@ -882,6 +882,11 @@ int axp858_set_aldo3(unsigned int mvolt)
 	return axp858_set_aldo(3, mvolt);
 }
 
+int axp858_set_aldo4(unsigned int mvolt)
+{
+	return axp858_set_aldo(4, mvolt);
+}
+
 // int axp858_set_dldo(int dldo_num, unsigned int mvolt)
 // {
 // 	int ret;
@@ -1011,6 +1016,19 @@ int axp853_initialize(void)
 		}
 	}
 
+	axp858_set_sw(0);
+
+	axp858_set_dcdc1(3300);
+	axp858_set_dcdc2(900);
+	//axp858_set_dcdc4(900);	// VDD-GPU
+	axp858_set_dcdc5(1100);
+	axp858_set_aldo1(1800);
+	axp858_set_aldo2(1800);
+	axp858_set_aldo3(2500);
+	axp858_set_aldo4(1800);
+
+	axp858_set_sw(1);
+	//local_delay_ms(100);
 	return 0;
 }
 #endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 */
