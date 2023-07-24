@@ -2422,6 +2422,14 @@ static void allwnr_t507_module_pll_enable(volatile uint32_t * reg)
 
 void allwnr_t507_pll_initialize(void)
 {
+	{
+		// Disable XFEL enabled device
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
+	}
+
 	set_t507_pll_cpux_axi(PLL_CPU_N, PLL_CPU_P_POW);
 
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);

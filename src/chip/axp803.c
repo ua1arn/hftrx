@@ -30,7 +30,7 @@
 
 #include "hardware.h"
 
-#if WITHSDRAM_AXP803 || WITHSDRAM_AXP305
+#if WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853
 
 #include "gpio.h"
 #include "formats.h"
@@ -655,4 +655,38 @@ int axp305_initialize(void)
 	return 0;
 }
 
-#endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 */
+int axp853_initialize(void)
+{
+	uint8_t axp853_chip_id;
+	int ret;
+
+	ret = pmic_bus_init();
+	if (ret)
+		return ret;
+
+	ret = pmic_bus_read(AXP803_CHIP_ID, &axp853_chip_id);
+	if (ret)
+		return ret;
+
+	ret = pmic_bus_init();
+	if (ret)
+		return ret;
+
+	if (0)
+	{
+		unsigned reg;
+		for (reg = 0; reg <= 0xED; ++ reg)
+		{
+			uint8_t v;
+			pmic_bus_read(reg, & v);
+			PRINTF("axp853 reg%02X=0x%02X\n", reg, v);
+		}
+	}
+
+	PRINTF("axp853_chip_id=0x%02X (expected 0x60)\n", axp853_chip_id);
+	if (!(axp853_chip_id == 0x60))
+		return -1;
+
+	return 0;
+}
+#endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 */

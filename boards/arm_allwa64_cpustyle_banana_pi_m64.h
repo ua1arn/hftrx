@@ -51,7 +51,6 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define WITHSDRAM_AXP803	1	/* power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -994,6 +993,8 @@
 #endif
 
 	#if WITHISBOOTLOADER
+
+		#define WITHSDRAM_AXP803	1	/* power management chip */
 
 		#define PMIC_I2C_W 0x68
 		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)

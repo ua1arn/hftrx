@@ -8,6 +8,7 @@
 
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner T507
 // v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// HelperBoard T507 Core Board
 
 #ifndef ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED
 #define ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED 1
@@ -26,8 +27,9 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+
 #if WITHINTEGRATEDDSP
 	#define WITHI2S01HW	1
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -53,7 +55,7 @@
 #if WITHISBOOTLOADER
 
 	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_AXP308	1	/* power management chip */
+	//#define BOARD_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -61,20 +63,14 @@
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
-	//#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+
+	//#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
-
-	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	#define WITHUSBHOST_DMAENABLE 1
-
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
-//	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
-	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
 //	#define WITHUSBHW_EHCI		USBEHCI0	/* host and usb-otg port */
 //	#define WITHUSBHW_OHCI		USBOHCI0	/* host and usb-otg port */
@@ -120,9 +116,9 @@
 
 	////#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	////#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -133,10 +129,12 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	////#define WITHEHCIHW	1	/* USB_EHCI controller */
 
-	////#define WITHUSBHW_EHCI		USBEHCI1
-	////#define WITHUSBHW_OHCI		USBOHCI1
+//	#define WITHTINYUSB 1
+//	#define BOARD_TUH_RHPORT 1
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
+	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
@@ -655,7 +653,40 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW || WITHTWIHW
+#if 1
+	// PL0 S-TWI0-SCK
+	// PL1 S-TWI0-SDA
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
+	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
+	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
+	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOL))
+	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+
+	// Инициализация битов портов ввода-вывода для программной реализации I2C
+	#define	TWISOFT_INITIALIZE() do { \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+		} while (0)
+	#define	TWISOFT_DEINITIALIZE() do { \
+			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
+		} while (0)
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	TWIHARD_INITIALIZE() do { \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PL1 - S_TWI0_SDA */ \
+		} while (0)
+	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
+
+
+
+#elif WITHTWISW || WITHTWIHW
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
@@ -875,10 +906,10 @@
 		#define	HARDWARE_BL_INITIALIZE() do { \
 			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA11:PA12 */ \
 			const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
-		arm_hardware_pioa_opendrain(BLpins, 0); \
-		arm_hardware_piod_outputs(BLpins, 0 * BLpins); /* TODO: fix it! */ \
-		arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
-			} while (0)
+			arm_hardware_pioa_opendrain(BLpins, 0); \
+			arm_hardware_piod_outputs(BLpins, 0 * BLpins); /* TODO: fix it! */ \
+			arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
+		} while (0)
 
 		/* установка яркости и включение/выключение преобразователя подсветки */
 		/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
@@ -1036,12 +1067,18 @@
 #endif
 
 	#if WITHISBOOTLOADER
-		// See WITHSDRAM_AXP308
-		int axp803_initialize(void);
 
-		/* Контроллер питания AXP803 */
+		#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
+		// AXP853T on HelperBoard T507 Core Board
+		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+		// See WITHSDRAM_AXP308
+		int axp853_initialize(void);
+
+		/* Контроллер питания AXP305 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			/*axp803_initialize(); */\
+			axp853_initialize(); \
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 

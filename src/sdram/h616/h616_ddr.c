@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_T507
+#if WITHSDRAMHW && CPUSTYLE_T507
 
 #include "formats.h"
 
@@ -1688,7 +1688,7 @@ unsigned long sunxi_dram_init(void)
 {
 	static struct dram_para para = {
 		.clk = CONFIG_DRAM_CLK,
-		.type = SUNXI_DRAM_TYPE_DDR3,
+		.type = BOARD_DRAM_TYPE,
 	};
 	unsigned long size;
 
@@ -1713,4 +1713,4 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
-#endif /* CPUSTYLE_T507 */
+#endif /* WITHSDRAMHW && CPUSTYLE_T507 */
