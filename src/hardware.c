@@ -3708,20 +3708,21 @@ static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
 
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	const uint32_t CORE_RESET_MASK = 1;//UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (0x070001BC));	// See Allwinner_H6_V200_User_Manual_V1.1.pdf, page 79
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
+	// не влияет
+	//CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = !0; // Register width state AA64NAA32 0: AArch32 1: AArch64
 
-	CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = 0; // Register width state AA64NAA32 0: AArch32 1: AArch64
 	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
 	ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
 /* for AArch64 */
