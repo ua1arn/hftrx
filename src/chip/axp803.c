@@ -1042,8 +1042,8 @@ int axp853_initialize(void)
 	axp858_set_sw(0);
 
 	axp858_set_dcdc1(3300);
-	axp858_set_dcdc2(960);		// CPU
-	axp858_set_dcdc3(960);		// SYS
+	axp858_set_dcdc2(900);		// CPU
+	axp858_set_dcdc3(900);
 	//axp858_set_dcdc4(900);	// VDD-GPU
 	axp858_set_dcdc5(1100);
 	axp858_set_aldo1(1800);
