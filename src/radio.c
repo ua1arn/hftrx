@@ -13151,7 +13151,7 @@ const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 }
 
 // Four-character wide printed current RX/TX bandwidth value
-const FLASHMEM char * hamradio_get_rxbw_value4_P(void)
+const char * hamradio_get_rxbw_value4(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	static char s [5];

@@ -2177,7 +2177,7 @@ static void display2_rxbwval4(
 	dctx_t * pctx
 	)
 {
-	const char * const labels [1] = { hamradio_get_rxbw_value4_P(), };
+	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
 	ASSERT(strlen(labels [0]) == 4);
 	display2_text(x, y, labels, colors_1state, 0);
 }
@@ -2189,7 +2189,7 @@ static void display2_rxbwval6alt(
 	dctx_t * pctx
 	)
 {
-	const char * const labels [1] = { hamradio_get_rxbw_value4_P(), };
+	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
 	enum { state = 0 };
 	ASSERT(strlen(labels [0]) == 4);
 	layout_label1_medium(x, y, labels [state], 4, 6, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
