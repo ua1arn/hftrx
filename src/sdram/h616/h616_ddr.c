@@ -18,7 +18,7 @@
 	#define CONFIG_DRAM_CLK 533
 #else
 	#define ENHTEST 0
-	#define CONFIG_DRAM_CLK 1333
+	#define CONFIG_DRAM_CLK 800
 #endif
 
 #define CONFIG_SYS_SDRAM_BASE 0x40000000
