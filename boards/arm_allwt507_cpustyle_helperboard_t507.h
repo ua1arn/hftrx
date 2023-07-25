@@ -41,6 +41,7 @@
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
+	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART2 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
@@ -610,6 +611,16 @@
 	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
 #endif /* WITHSPIHW || WITHSPISW */
+
+// WITHUART0HW
+// Используется периферийный контроллер последовательного порта UART0 */
+#define HARDWARE_UART0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
+		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_updown(RXMASK, 0); \
+	} while (0)
 
 // WITHUART2HW
 // Используется периферийный контроллер последовательного порта UART2 */
