@@ -301,8 +301,9 @@ void bootloader_mainloop(void)
 	}
 #endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
-	PRINTF("bootloader_mainloop: loop\n");
+	PRINTF("bootloader_mainloop: loop [%p]\n", bootloader_mainloop);
 	PRINTF("bootloader_mainloop: loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+
 	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
