@@ -887,10 +887,10 @@
 	#if 1
 		/* BL0: PA12. BL1: PA11, EN: PD28  */
 		#define	HARDWARE_BL_INITIALIZE() do { \
-			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA11:PA12 */ \
+			const portholder_t BLpins = (UINT32_C(1) << 12) | (UINT32_C(1) << 11); /* PA11:PA12 */ \
 			const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
 			arm_hardware_pioa_opendrain(BLpins, 0); \
-			arm_hardware_piod_outputs(BLpins, 0 * BLpins); /* TODO: fix it! */ \
+			arm_hardware_pioa_outputs(BLpins, 0 * BLpins); /* TODO: fix it! */ \
 			arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
 		} while (0)
 
@@ -898,9 +898,9 @@
 		/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
 		#define HARDWARE_BL_SET(en, level) do { \
 			const portholder_t Vlevel = 0x01 * !! (level & 0x02) + 0x02 * !! (level & 0x01); \
-			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA11:PA12 */ \
+			const portholder_t BLpins = (UINT32_C(1) << 12) | (UINT32_C(1) << 11); /* PA11:PA12 */ \
 			const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
-			const portholder_t BLstate = (~ Vlevel) << 14; \
+			const portholder_t BLstate = (~ Vlevel) << 11; \
 			gpioX_setstate(GPIOA, BLpins, BLstate); \
 			gpioX_setstate(GPIOD, ENmask, !!(en) * ENmask); \
 		} while (0)
