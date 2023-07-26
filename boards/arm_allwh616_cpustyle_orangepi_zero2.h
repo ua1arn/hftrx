@@ -787,14 +787,15 @@
 		} while (0)
 #endif /* WITHCPUADCHW */
 
+	#define TARGET_GPIOC_VBUSON_BIT (UINT32_C(1) << 16)	// PC16 - единицей включение питания для device
+
 #if WITHUSBHW
-	#define TARGET_USBFS_VBUSON_BIT (UINT32_C(1) << 16)	// PC16 - единицей включение питания для device
 	#define	USBD_EHCI_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(TARGET_USBFS_VBUSON_BIT, 0 * TARGET_USBFS_VBUSON_BIT); \
+		arm_hardware_pioc_outputs(TARGET_GPIOC_VBUSON_BIT, 0 * TARGET_GPIOC_VBUSON_BIT); \
 	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		gpioX_setstate(GPIOC, TARGET_USBFS_VBUSON_BIT, !! (on) * TARGET_USBFS_VBUSON_BIT); \
+		gpioX_setstate(GPIOC, TARGET_GPIOC_VBUSON_BIT, !! (on) * TARGET_GPIOC_VBUSON_BIT); \
 	} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    
@@ -811,7 +812,7 @@
 		} while (0)
 #else /* WITHUSBHW */
 	#define	USBD_EHCI_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(TARGET_USBFS_VBUSON_BIT, 0 * TARGET_USBFS_VBUSON_BIT); \
+		arm_hardware_pioc_outputs(TARGET_GPIOC_VBUSON_BIT, 0 * TARGET_GPIOC_VBUSON_BIT); \
 	} while (0)
 
 #endif /* WITHUSBHW */
