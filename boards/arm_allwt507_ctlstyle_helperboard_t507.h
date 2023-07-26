@@ -237,6 +237,10 @@
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
+	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"
+	#define BOARD_BITIMAGE_NAME_ZIP "rbf/rbfimage_v9m_velo_zip.h"
+	#define BOARD_BITIMAGE_NAME_COMPRESSED "t1_v9m_velo.rbf"	/* требуемый файл в архиве */
 
 #else /* WITHISBOOTLOADER */
 
@@ -304,7 +308,9 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"
+	#define BOARD_BITIMAGE_NAME_ZIP "rbf/rbfimage_v9m_velo_zip.h"
+	#define BOARD_BITIMAGE_NAME_COMPRESSED "t1_v9m_velo.rbf"	/* требуемый файл в архиве */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
