@@ -6704,74 +6704,23 @@ static void board_fpga_loader_initialize(void)
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
-#if WITHFPGALOAD_PS
+#if WITHFPGALOAD_PS && defined (BOARD_BITIMAGE_NAME_ZIP)
 
-#if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
-
-#if defined (BOARD_BITIMAGE_NAME_ZIP)
-
-	/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
-	static ALIGNX_BEGIN const FLASHMEMINIT uint8_t rbfimage0_zip [] ALIGNX_END =
-	{
-	#include BOARD_BITIMAGE_NAME_ZIP
-	};
-
-	/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
-	const uint8_t * getrbfimagezip(size_t * count)
-	{
-		* count = sizeof rbfimage0_zip / sizeof rbfimage0_zip [0];
-		return & rbfimage0_zip [0];
-	}
-
-	#include "unzipLIB.h"
-
-	static ZIPFILE zpf; // Statically allocate the 41K UNZIP class/structure
-
-#elif defined (BOARD_BITIMAGE_NAME)
-
-	/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
-	static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
-	{
-	#include BOARD_BITIMAGE_NAME
-	};
-
-
-	/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
-	const uint16_t * getrbfimage(size_t * count)
-	{
-		* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
-		return & rbfimage0 [0];
-	}
-
-#endif /* (BOARD_BITIMAGE_NAME_ZIP */
-
-#endif /* ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
-
-//#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
-
-static void fpga_send16_p1(uint_fast16_t v16)
+static ALIGNX_BEGIN const FLASHMEMINIT uint8_t rbfimage0_zip [] ALIGNX_END =
 {
-#if WITHSPIEXT16// for skip in test configurations
-	hardware_spi_b16_p1(v16);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	// Software SPI
-	spi_progval8_p1(targetnone, v16 >> 8);
-	spi_progval8_p2(targetnone, v16 >> 0);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
+#include BOARD_BITIMAGE_NAME_ZIP
+};
 
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint8_t * getrbfimagezip(size_t * count)
+{
+	* count = sizeof rbfimage0_zip / sizeof rbfimage0_zip [0];
+	return & rbfimage0_zip [0];
 }
 
-static void fpga_send16_p2(uint_fast16_t v16)
-{
-#if WITHSPIEXT16// for skip in test configurations
-	hardware_spi_b16_p2(v16);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	// Software SPI
-	spi_progval8_p2(targetnone, v16 >> 8);
-	spi_progval8_p2(targetnone, v16 >> 0);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
+#include "unzipLIB.h"
 
-}
+static ZIPFILE zpf; // Statically allocate the 41K UNZIP class/structure
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
@@ -6779,8 +6728,6 @@ static void board_fpga_loader_PS(void)
 	unsigned long w = 1000;
 	unsigned retries = 0;
 	size_t rbflength;
-
-#if defined (BOARD_BITIMAGE_NAME_ZIP)
 
 	const uint8_t * zipp = getrbfimagezip(& rbflength);
 	unzFile zHandle;
@@ -6819,8 +6766,6 @@ static void board_fpga_loader_PS(void)
 	}
 	//PRINTF("File located within archive.\n");
 
-#endif /* defined (BOARD_BITIMAGE_NAME_ZIP) */
-
 #if WITHSPIEXT16	// for skip in test configurations
 	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
 #else /* WITHSPIEXT16 */	// for skip in test configurations
@@ -6847,7 +6792,6 @@ restart:
 	}
 	;
 
-#if defined (BOARD_BITIMAGE_NAME_ZIP)
 	/* ZIP-compressed images load */
 	do {
 		unsigned score = 0;
@@ -6960,12 +6904,100 @@ restart:
 		*/
 		} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
 
-#if defined (BOARD_BITIMAGE_NAME_ZIP)
 		//unzClose(& zpf);
-#endif /* defined (BOARD_BITIMAGE_NAME_ZIP) */
 
-#else /* defined (BOARD_BITIMAGE_NAME) */
 
+	//PRINTF("fpga: board_fpga_loader_PS done\n");
+	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
+	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+
+#if WITHSPIEXT16	// for skip in test configurations
+	hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+	PRINTF("board_fpga_loader_PS: usermode okay\n");
+}
+
+#elif WITHFPGALOAD_PS
+
+#if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
+
+/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
+static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
+{
+#include BOARD_BITIMAGE_NAME
+};
+
+#endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
+
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint16_t * getrbfimage(size_t * count)
+{
+	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
+	return & rbfimage0 [0];
+}
+
+#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+
+static void fpga_send16_p1(uint_fast16_t v16)
+{
+#if WITHSPIEXT16// for skip in test configurations
+	hardware_spi_b16_p1(v16);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_progval8_p1(targetnone, v16 >> 8);
+	spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+}
+
+static void fpga_send16_p2(uint_fast16_t v16)
+{
+#if WITHSPIEXT16// for skip in test configurations
+	hardware_spi_b16_p2(v16);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_progval8_p2(targetnone, v16 >> 8);
+	spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+}
+
+/* FPGA загружается процессором с помощью SPI */
+static void board_fpga_loader_PS(void)
+{
+	unsigned retries = 0;
+
+#if WITHSPIEXT16	// for skip in test configurations
+	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+restart:
+
+	if (++ retries > 4)
+	{
+		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+
+#if WITHSPIEXT16	// for skip in test configurations
+		hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+		spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+		return;
+	}
+	;
+
+	unsigned long w = 1000;
 	do {
 		size_t rbflength;
 		const uint16_t * p = getrbfimage(& rbflength);
@@ -7010,15 +7042,22 @@ restart:
 			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
 			goto restart;
 		}
-		/* 3) Выдать байты (младший бит .rbf файла первым) */
-		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", (unsigned long) rbflength);
+		/* 3) Выдать байты (бладший бит .rbf файла первым) */
+		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
 		{
 			unsigned wcd = 0;
 			size_t n = rbflength - 1;
 			//
 
-			fpga_send16_p1(* p ++);
+#if WITHSPIEXT16// for skip in test configurations
+			hardware_spi_b16_p1(* p ++);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			// Software SPI
+			const uint_fast16_t v16 = * p ++;
+			spi_progval8_p1(targetnone, v16 >> 8);
+			spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 			++ score;
 			while (n --)
 			{
@@ -7027,7 +7066,13 @@ restart:
 					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u\n", score);
 					goto restart;
 				}
-				fpga_send16_p2(* p ++);
+#if WITHSPIEXT16	// for skip in test configurations
+				hardware_spi_b16_p2(* p ++);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+				const uint_fast16_t v16_2 = * p ++;
+				spi_progval8_p2(targetnone, v16_2 >> 8);
+				spi_progval8_p2(targetnone, v16_2 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
 				++ score;
 			}
 #if WITHSPIEXT16	// for skip in test configurations
@@ -7062,9 +7107,6 @@ restart:
 			*/
 		}
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
-
-#endif
-
 	//PRINTF("fpga: board_fpga_loader_PS done\n");
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
