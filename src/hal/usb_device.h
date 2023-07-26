@@ -25,6 +25,9 @@
 
 #include "hardware.h"
 
+
+#if WITHUSBHW
+
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -167,6 +170,8 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* WITHUSBHW */
 
 #endif /* __USB_DEVICE__H__ */
 
