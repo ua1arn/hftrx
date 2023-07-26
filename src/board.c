@@ -6720,16 +6720,16 @@ const uint8_t * getrbfimagezip(size_t * count)
 
 #include "unzipLIB.h"
 
-static ZIPFILE zpf; // Statically allocate the 41K UNZIP class/structure
 
-/* FPGA загружается процессором с помощью SPI */
+/* FPGA загружается процессором с помощью SPI из упакованного .zip образа в памяти */
 static void board_fpga_loader_PS(void)
 {
 	unsigned long w = 1000;
 	unsigned retries = 0;
 	size_t rbflength;
+	static ZIPFILE zpf; // Statically allocate the 41K UNZIP class/structure
 
-	const uint8_t * zipp = getrbfimagezip(& rbflength);
+	const uint8_t * const zipp = getrbfimagezip(& rbflength);
 	unzFile zHandle;
 	int err;
 
@@ -6756,38 +6756,32 @@ static void board_fpga_loader_PS(void)
 	{
 		PRINTF("file %s not found within archive\n", BOARD_BITIMAGE_NAME_COMPRESSED);
 		unzClose(zHandle);
-		ASSERT(0);
+		return;
 	}
+
+	//PRINTF("File located within archive.\n");
+
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
+
+restart:
+
 	rc = unzOpenCurrentFile(zHandle); /* Try to open the file we want */
 	if (rc != UNZ_OK) {
 	   PRINTF("Error opening file = %d\n", rc);
 	   unzClose(zHandle);
-	   ASSERT(0);
+	   return;
 	}
-	//PRINTF("File located within archive.\n");
-
-#if WITHSPIEXT16	// for skip in test configurations
-	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-	// Software SPI
-	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-
-restart:
 
 	if (++ retries > 4)
 	{
 		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
 
-#if WITHSPIEXT16	// for skip in test configurations
-		hardware_spi_disconnect();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
 		spi_unselect(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
 
-#if defined (BOARD_BITIMAGE_NAME_ZIP)
-		//unzClose(& zpf);
-#endif /* defined (BOARD_BITIMAGE_NAME_ZIP) */
+		rc = unzCloseCurrentFile(zHandle);
+		unzClose(zHandle);
+
 		return;
 	}
 	;
@@ -6836,7 +6830,7 @@ restart:
 			goto restart;
 		}
 		/* 3) Выдать байты (младший бит .rbf файла первым) */
-		PRINTF("fpga: start sending compressed RBF image (%u bytes))\n", (unsigned) rbflength);
+		//PRINTF("fpga: start sending compressed RBF image (%u bytes))\n", (unsigned) rbflength);
 
 		unsigned wcd = 0;
 		rc = 1;
@@ -6867,34 +6861,19 @@ restart:
 				break;
 			}
 		}
-#if WITHSPIEXT16	// for skip in test configurations
-		hardware_spi_complete_b16();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
 		spi_complete(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-
-		//PRINTF("Total bytes read = %d (reading 256 bytes at a time)\n", score);
-		rc = unzCloseCurrentFile(zHandle);
-		unzClose(zHandle);
 
 
 		//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 		/* 4) Дождаться "1" на CONF_DONE */
-		while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
+		while (board_fpga_get_CONF_DONE() == 0)
 		{
 			++ wcd;
-#if WITHSPIEXT16	// for skip in test configurations
-			hardware_spi_b16_p1(0xffff);
-			hardware_spi_complete_b16();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-			const uint_fast16_t v16_3 = 0xFFFF;
-			spi_progval8_p1(targetnone, v16_3 >> 8);
-			spi_progval8_p2(targetnone, v16_3 >> 0);
+			spi_progval8_p1(targetnone, 0xFF);
 			spi_complete(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
 		}
 
-		//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
+		PRINTF("fpga: CONF_DONE asserted, score=%u, wcd=%u\n", score, wcd);
 		////if (wcd >= rbflength)
 		////	goto restart;
 		/*
@@ -6916,11 +6895,10 @@ restart:
 			goto restart;
 	}
 
-#if WITHSPIEXT16	// for skip in test configurations
-	hardware_spi_disconnect();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
+	rc = unzCloseCurrentFile(zHandle);
+	unzClose(zHandle);
+
 	spi_unselect(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
 }
 
