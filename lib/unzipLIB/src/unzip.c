@@ -321,7 +321,7 @@ static int32_t seekMem(void *p, int32_t iPosition, int iType)
      Else, the return value is a unzFile Handle, usable with other function
 	   of this unzip package.
 */
-extern unzFile ZEXPORT unzOpen (const char *path, uint8_t *pData, uint32_t u32DataSize, ZIPFILE *pzf, ZIP_OPEN_CALLBACK *pfnOpen, ZIP_READ_CALLBACK *pfnRead, ZIP_SEEK_CALLBACK *pfnSeek, ZIP_CLOSE_CALLBACK *pfnClose)
+extern unzFile ZEXPORT unzOpen (const char *path, const uint8_t *pData, uint32_t u32DataSize, ZIPFILE *pzf, ZIP_OPEN_CALLBACK *pfnOpen, ZIP_READ_CALLBACK *pfnRead, ZIP_SEEK_CALLBACK *pfnSeek, ZIP_CLOSE_CALLBACK *pfnClose)
 {
 	unz_s us;
 	unz_s *s;

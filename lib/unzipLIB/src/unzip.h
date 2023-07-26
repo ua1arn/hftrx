@@ -75,7 +75,7 @@ typedef struct zipFile
     int32_t iPos; // current file position
     int32_t iSize; // file size
     int iLastError;
-    uint8_t *pData; // memory file pointer
+    const uint8_t *pData; // memory file pointer
     void * fHandle; // class pointer to File/SdFat or whatever you want
     void * zHandle; // pointer to unzFile
     ZIP_CLOSE_CALLBACK *pfnClose;
@@ -162,7 +162,7 @@ extern int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
 */
 
 
-extern unzFile ZEXPORT unzOpen OF((const char *path, uint8_t *pData, uint32_t u32DataSize, ZIPFILE *pzf, ZIP_OPEN_CALLBACK *pfnOpen, ZIP_READ_CALLBACK *pfnRead, ZIP_SEEK_CALLBACK *pfnSeek, ZIP_CLOSE_CALLBACK *pfnClose));
+extern unzFile ZEXPORT unzOpen OF((const char *path, const uint8_t *pData, uint32_t u32DataSize, ZIPFILE *pzf, ZIP_OPEN_CALLBACK *pfnOpen, ZIP_READ_CALLBACK *pfnRead, ZIP_SEEK_CALLBACK *pfnSeek, ZIP_CLOSE_CALLBACK *pfnClose));
 /*
   Open a Zip file. path contain the full pathname (by example,
      on a Windows NT computer "c:\\zlib\\zlib111.zip" or on an Unix computer

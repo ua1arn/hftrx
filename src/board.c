@@ -6786,7 +6786,7 @@ static void board_fpga_loader_PS(void)
 	unzFile zHandle;
 	int err;
 
-    zHandle = unzOpen(NULL, (uint8_t *) zipp, rbflength, & zpf, NULL, NULL, NULL, NULL);
+    zHandle = unzOpen(NULL, zipp, rbflength, & zpf, NULL, NULL, NULL, NULL);
     ASSERT(NULL != zHandle);
     TP();
 
