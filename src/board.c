@@ -6747,7 +6747,7 @@ static void board_fpga_loader_initialize(void)
 
 #endif /* ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
 
-#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+//#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 static void fpga_send16_p1(uint_fast16_t v16)
 {
@@ -6788,17 +6788,20 @@ static void board_fpga_loader_PS(void)
 
     zHandle = unzOpen(NULL, zipp, rbflength, & zpf, NULL, NULL, NULL, NULL);
     ASSERT(NULL != zHandle);
-    TP();
-
-    static char szTemp [256];
-    err = unzGetGlobalComment(zHandle, (char *)szTemp, sizeof(szTemp));
-    if (err >= 0)
+    if (NULL == zHandle)
     {
-        PRINTF("Global Comment:\n");
-        printhex(0, szTemp, err);
+    	PRINTF("Wrong compressed FPGA image format\n");
+    	return;
     }
 
-	unsigned score = 0;
+    char szTemp [256];
+//    err = unzGetGlobalComment(zHandle, (char *)szTemp, sizeof(szTemp));
+//    if (err >= 0)
+//    {
+//        PRINTF("Global Comment:\n");
+//        printhex(0, szTemp, err);
+//    }
+
 	int rc;
 
 	rc = unzLocateFile(zHandle, BOARD_BITIMAGE_NAME_COMPRESSED, 2);
@@ -6814,29 +6817,7 @@ static void board_fpga_loader_PS(void)
 	   unzClose(zHandle);
 	   ASSERT(0);
 	}
-	PRINTF("File located within archive.\n");
-	rc = 1;
-	score = 0;
-	while (rc > 0) {
-		rc = unzReadCurrentFile(zHandle, szTemp, sizeof(szTemp));
-		if (rc >= 0) {
-			//printhex(score, szTemp, rc);
-//			if (0 == score) {
-//				spi_progval8_p1(targetnone, revbits8(szTemp [l]));
-//			} else {
-//				spi_progval8_p2(targetnone, revbits8(szTemp [l]));
-//			}
-
-			score += rc;
-		} else {
-			PRINTF("Error reading from file\n");
-			break;
-		}
-	}
-	PRINTF("Total bytes read = %d (reading 256 bytes at a time)\n", score);
-	rc = unzCloseCurrentFile(zHandle);
-	unzClose(zHandle);
-	TP();
+	//PRINTF("File located within archive.\n");
 
 #endif /* defined (BOARD_BITIMAGE_NAME_ZIP) */
 
@@ -6869,7 +6850,6 @@ restart:
 #if defined (BOARD_BITIMAGE_NAME_ZIP)
 	/* ZIP-compressed images load */
 	do {
-		const uint8_t * p = getrbfimagezip(& rbflength);
 		unsigned score = 0;
 
 		PRINTF("fpga: board_fpga_loader_PS (zip) start\n");
@@ -6912,57 +6892,73 @@ restart:
 			goto restart;
 		}
 		/* 3) Выдать байты (младший бит .rbf файла первым) */
-		//PRINTF("fpga: start sending RBF image (%lu) of 16-bit words) (zip)\n", (unsigned long) rbflength);
-		if (rbflength != 0)
-		{
-			unsigned wcd = 0;
-			size_t n = rbflength - 1;
-			//
+		PRINTF("fpga: start sending compressed RBF image (%u bytes))\n", (unsigned) rbflength);
 
-			fpga_send16_p1(* p ++);
-			++ score;
-			while (n --)
+		unsigned wcd = 0;
+		rc = 1;
+		score = 0;
+		while (rc > 0)
+		{
+			rc = unzReadCurrentFile(zHandle, szTemp, sizeof(szTemp));
+			if (rc >= 0)
 			{
-				if (board_fpga_get_CONF_DONE() != 0)
+				int l;
+				for (l = 0; l < rc; ++ l)
 				{
-					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
-					goto restart;
+					if (board_fpga_get_CONF_DONE() != 0)
+					{
+						PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+						goto restart;
+					}
+
+					if (0 == score) {
+						spi_progval8_p1(targetnone, revbits8(szTemp [l]));
+					} else {
+						spi_progval8_p2(targetnone, revbits8(szTemp [l]));
+					}
+					++ score;
 				}
-				fpga_send16_p2(* p ++);
-				++ score;
+			} else {
+				PRINTF("Error reading from file\n");
+				break;
 			}
+		}
 #if WITHSPIEXT16	// for skip in test configurations
+		hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+		spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+		//PRINTF("Total bytes read = %d (reading 256 bytes at a time)\n", score);
+		rc = unzCloseCurrentFile(zHandle);
+		unzClose(zHandle);
+
+
+		//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
+		/* 4) Дождаться "1" на CONF_DONE */
+		while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
+		{
+			++ wcd;
+#if WITHSPIEXT16	// for skip in test configurations
+			hardware_spi_b16_p1(0xffff);
 			hardware_spi_complete_b16();
 #else /* WITHSPIEXT16 */	// for skip in test configurations
+			const uint_fast16_t v16_3 = 0xFFFF;
+			spi_progval8_p1(targetnone, v16_3 >> 8);
+			spi_progval8_p2(targetnone, v16_3 >> 0);
 			spi_complete(targetnone);
 #endif /* WITHSPIEXT16 */	// for skip in test configurations
-
-			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
-			/* 4) Дождаться "1" на CONF_DONE */
-			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
-			{
-				++ wcd;
-#if WITHSPIEXT16	// for skip in test configurations
-				hardware_spi_b16_p1(0xffff);
-				hardware_spi_complete_b16();
-#else /* WITHSPIEXT16 */	// for skip in test configurations
-				const uint_fast16_t v16_3 = 0xFFFF;
-				spi_progval8_p1(targetnone, v16_3 >> 8);
-				spi_progval8_p2(targetnone, v16_3 >> 0);
-				spi_complete(targetnone);
-#endif /* WITHSPIEXT16 */	// for skip in test configurations
-			}
-
-			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
-			if (wcd >= rbflength)
-				goto restart;
-			/*
-			After the configuration data is accepted and CONF_DONE goes
-			high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
-			user mode.
-			*/
 		}
-	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
+
+		//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
+		////if (wcd >= rbflength)
+		////	goto restart;
+		/*
+		After the configuration data is accepted and CONF_DONE goes
+		high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
+		user mode.
+		*/
+		} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
 
 #if defined (BOARD_BITIMAGE_NAME_ZIP)
 		//unzClose(& zpf);
