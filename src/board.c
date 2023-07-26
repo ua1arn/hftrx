@@ -6798,39 +6798,44 @@ static void board_fpga_loader_PS(void)
         printhex(0, szTemp, err);
     }
 
-    int rc;
-    int i;
-    //    rc = unzLocateFile(zHandle, argv[2], 2);
-        rc = unzLocateFile(zHandle, BOARD_BITIMAGE_NAME_COMPRESSED, 2);
-        if (rc != UNZ_OK) /* Report the file not found */
-        {
-            PRINTF("file %s not found within archive\n", BOARD_BITIMAGE_NAME_COMPRESSED);
-            unzClose(zHandle);
-            ASSERT(0);
-        }
-        rc = unzOpenCurrentFile(zHandle); /* Try to open the file we want */
-        if (rc != UNZ_OK) {
-           PRINTF("Error opening file = %d\n", rc);
-           unzClose(zHandle);
-           ASSERT(0);
-        }
-        PRINTF("File located within archive.\n");
-        rc = 1;
-        i = 0;
-        while (rc > 0) {
-            rc = unzReadCurrentFile(zHandle, szTemp, sizeof(szTemp));
-            if (rc >= 0) {
-            	printhex(i, szTemp, rc);
-                i += rc;
-            } else {
-                PRINTF("Error reading from file\n");
-                break;
-            }
-        }
-        PRINTF("Total bytes read = %d (reading 256 bytes at a time)\n", i);
-        rc = unzCloseCurrentFile(zHandle);
-        unzClose(zHandle);
-        TP();
+	unsigned score = 0;
+	int rc;
+
+	rc = unzLocateFile(zHandle, BOARD_BITIMAGE_NAME_COMPRESSED, 2);
+	if (rc != UNZ_OK) /* Report the file not found */
+	{
+		PRINTF("file %s not found within archive\n", BOARD_BITIMAGE_NAME_COMPRESSED);
+		unzClose(zHandle);
+		ASSERT(0);
+	}
+	rc = unzOpenCurrentFile(zHandle); /* Try to open the file we want */
+	if (rc != UNZ_OK) {
+	   PRINTF("Error opening file = %d\n", rc);
+	   unzClose(zHandle);
+	   ASSERT(0);
+	}
+	PRINTF("File located within archive.\n");
+	rc = 1;
+	score = 0;
+	while (rc > 0) {
+		rc = unzReadCurrentFile(zHandle, szTemp, sizeof(szTemp));
+		if (rc >= 0) {
+			//printhex(score, szTemp, rc);
+//			if (0 == score) {
+//				spi_progval8_p1(targetnone, revbits8(szTemp [l]));
+//			} else {
+//				spi_progval8_p2(targetnone, revbits8(szTemp [l]));
+//			}
+
+			score += rc;
+		} else {
+			PRINTF("Error reading from file\n");
+			break;
+		}
+	}
+	PRINTF("Total bytes read = %d (reading 256 bytes at a time)\n", score);
+	rc = unzCloseCurrentFile(zHandle);
+	unzClose(zHandle);
 	TP();
 
 #endif /* defined (BOARD_BITIMAGE_NAME_ZIP) */
@@ -6873,11 +6878,11 @@ restart:
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* 1) Выставить "1" на nCONFIG */
-		PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1 (zip)\n"));
+		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1 (zip)\n"));
 		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* x) Дождаться "0" на nSTATUS */
-		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 (zip) \n");
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 (zip) \n");
 		while (board_fpga_get_NSTATUS() != 0)
 		{
 			local_delay_ms(1);
@@ -6887,27 +6892,27 @@ restart:
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
-			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+			//PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
 			goto restart;
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 		local_delay_ms(1);
 		/* 2) Дождаться "1" на nSTATUS */
-		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 (zip) \n");
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 (zip) \n");
 		while (board_fpga_get_NSTATUS() == 0)
 		{
 			local_delay_ms(1);
 			if (-- w == 0)
 				goto restart;
 		}
-		PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done (zip) \n");
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done (zip) \n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
 			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u (zip)\n", score);
 			goto restart;
 		}
 		/* 3) Выдать байты (младший бит .rbf файла первым) */
-		PRINTF("fpga: start sending RBF image (%lu) of 16-bit words) (zip)\n", (unsigned long) rbflength);
+		//PRINTF("fpga: start sending RBF image (%lu) of 16-bit words) (zip)\n", (unsigned long) rbflength);
 		if (rbflength != 0)
 		{
 			unsigned wcd = 0;
