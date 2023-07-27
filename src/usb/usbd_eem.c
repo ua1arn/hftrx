@@ -700,14 +700,17 @@ static USBD_StatusTypeDef USBD_CDCEEM_Setup(USBD_HandleTypeDef *pdev, const USBD
 
 			case INTERFACE_CDCEEM_DATA:	// CDC EEM interface
 				{
-					case USB_REQ_GET_INTERFACE:
+					switch (req->bRequest)
 					{
-						static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
-						//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
-						buff [0] = 0;
-						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+						case USB_REQ_GET_INTERFACE:
+						{
+							static USBALIGN_BEGIN uint8_t buff [64] USBALIGN_END;
+							//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
+							buff [0] = 0;
+							USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+						}
+						break;
 					}
-					break;
 				}
 			}
 			break;
