@@ -1433,7 +1433,7 @@ void gpioX_setstate(
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
-	#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F
 		/*!< Atomic port state change */
 		void gpioX_setstate(
 			GPIO_TypeDef * gpio,
@@ -1454,17 +1454,7 @@ void gpioX_setstate(
 		{
 			return gpio->IDR;
 		}
-	#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
-		/* Установка начального состояния битов  в GPIO STM32F4X */
-		#define gpioX_setstate(gpio, opins, initialstate) \
-		  do { \
-			const portholder_t op = (opins); \
-			const portholder_t is = (initialstate); \
-			(gpio)->BSRR = \
-				BSRR_S((is) & (op)) | /* set bits */ \
-				BSRR_C(~ (is) & (op)) | /* reset bits */ \
-				0; \
-			} while (0)
+
 	#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32F1XX
