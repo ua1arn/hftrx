@@ -590,7 +590,7 @@ void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX)
 	/*!< Atomic port state change */
 	void gpioX_setstate(
 		GPIO_TypeDef * gpio,
@@ -601,7 +601,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		GPIO_TypeDef * gpio
 		);
 
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_STM32MP1 }} CPUSTYLE_STM32H7XX) */
 
 
 portholder_t power2(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.
