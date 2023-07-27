@@ -1027,9 +1027,9 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 208 216 424 536)
+	(rect 208 216 424 568)
 	(text "i2smclk" (rect 5 0 46 14)(font "Arial" (font_size 8)))
-	(text "inst5" (rect 8 304 31 316)(font "Arial" ))
+	(text "inst5" (rect 8 336 31 348)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -1163,8 +1163,15 @@ applicable agreement for further details.
 		(text "ws_8k" (rect 157 283 195 297)(font "Arial" (font_size 8)))
 		(line (pt 216 288)(pt 200 288))
 	)
+	(port
+		(pt 216 304)
+		(output)
+		(text "sck_48k_2x256bit" (rect 0 0 102 14)(font "Arial" (font_size 8)))
+		(text "sck_48k_2x256bit" (rect 93 299 195 313)(font "Arial" (font_size 8)))
+		(line (pt 216 304)(pt 200 304))
+	)
 	(drawing
-		(rectangle (rect 16 16 200 304))
+		(rectangle (rect 16 16 200 336))
 	)
 )
 (connector
@@ -1433,26 +1440,6 @@ applicable agreement for further details.
 (connector
 	(pt 936 -112)
 	(pt 984 -112)
-)
-(connector
-	(pt 896 64)
-	(pt 912 64)
-)
-(connector
-	(pt 424 264)
-	(pt 464 264)
-)
-(connector
-	(pt 464 264)
-	(pt 464 392)
-)
-(connector
-	(pt 912 64)
-	(pt 912 344)
-)
-(connector
-	(pt 464 392)
-	(pt 864 392)
 )
 (junction (pt 648 -200))
 (junction (pt 648 -128))
