@@ -6566,6 +6566,33 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if CPUSTYLE_STM32MP1 && WITHETHHW && 0
+	{
+		RCC->ETHCKSELR =
+				0 |
+				0;
+
+		// Ethernet controller tests
+		RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHMACEN_Msk;
+		(void) RCC->MP_AHB6ENSETR;
+		RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHTXEN_Msk;
+		(void) RCC->MP_AHB6ENSETR;
+		RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHRXEN_Msk;
+		(void) RCC->MP_AHB6ENSETR;
+
+		RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_ETHMACRST_Msk;	// assert reset
+		(void) RCC->AHB6RSTSETR;
+		RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_ETHMACRST_Msk;	// de-assert reset
+		(void) RCC->AHB6RSTCLRR;
+
+		TP();
+
+		ETH->MACCR |= ETH_MACCR_PS_Msk | ETH_MACCR_FES_Msk;	// Select 100 Mbps operation
+
+		PRINTF("ETH->MACCR=%08X\n", (unsigned) ETH->MACCR);
+
+	}
+#endif
 #if CPUSTYLE_T113 && 0
 	{
 		// HiFI4 DSP start test
