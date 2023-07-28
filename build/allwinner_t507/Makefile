@@ -298,6 +298,9 @@ flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
+erase:
+	$(XFEL) spinor erase 0x00000000 1024
+
 flash_old:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00040000 ddr3init.bin

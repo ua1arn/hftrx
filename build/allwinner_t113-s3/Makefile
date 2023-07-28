@@ -284,7 +284,7 @@ flash:
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 erase:
-	$(XFEL) spinor erase 1024
+	$(XFEL) spinor erase 0x00000000 1024
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
