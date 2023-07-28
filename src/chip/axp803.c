@@ -39,7 +39,7 @@
 
 static i2cp_t pmic_i2cp;	/* параметры для обмена по I2C. Поскольку работаем до инициализации кеша-памяти, надо учитывать медленную работу процессора */
 
-int pmic_bus_init(void)
+static int pmic_bus_init(void)
 {
 #if WITHTWISW
 	i2cp_intiialize(& pmic_i2cp, I2CP_I2C1, 100000000);
@@ -67,7 +67,7 @@ int pmic_bus_init(void)
 	return 0;
 }
 
-int pmic_bus_read(uint8_t reg, uint8_t * data)
+static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 #if WITHTWIHW
 	uint8_t bufw = reg;
@@ -85,7 +85,7 @@ int pmic_bus_read(uint8_t reg, uint8_t * data)
 	return 0;
 }
 
-int pmic_bus_write(uint8_t reg, uint8_t data)
+static int pmic_bus_write(uint8_t reg, uint8_t data)
 {
 #if WITHTWIHW
 	uint8_t bufw [] = { reg, data };
@@ -103,7 +103,7 @@ int pmic_bus_write(uint8_t reg, uint8_t data)
 	return 0;
 }
 
-int pmic_bus_setbits(uint8_t reg, uint8_t bits)
+static int pmic_bus_setbits(uint8_t reg, uint8_t bits)
 {
 	int ret;
 	uint8_t val;
@@ -119,7 +119,7 @@ int pmic_bus_setbits(uint8_t reg, uint8_t bits)
 	return pmic_bus_write(reg, val);
 }
 
-int pmic_bus_clrbits(uint8_t reg, uint8_t bits)
+static int pmic_bus_clrbits(uint8_t reg, uint8_t bits)
 {
 	int ret;
 	uint8_t val;
@@ -145,7 +145,7 @@ static uint8_t axp803_mvolt_to_cfg(int mvolt, int min, int max, int div)
 	return  (mvolt - min) / div;
 }
 
-int axp803_set_dcdc1(unsigned int mvolt)
+static int axp803_set_dcdc1(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg = axp803_mvolt_to_cfg(mvolt, 1600, 3400, 100);
@@ -162,7 +162,7 @@ int axp803_set_dcdc1(unsigned int mvolt)
 				AXP803_OUTPUT_CTRL1_DCDC1_EN);
 }
 
-int axp803_set_dcdc2(unsigned int mvolt)
+static int axp803_set_dcdc2(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -184,7 +184,7 @@ int axp803_set_dcdc2(unsigned int mvolt)
 				AXP803_OUTPUT_CTRL1_DCDC2_EN);
 }
 
-int axp803_set_dcdc3(unsigned int mvolt)
+static int axp803_set_dcdc3(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -206,7 +206,7 @@ int axp803_set_dcdc3(unsigned int mvolt)
 				AXP803_OUTPUT_CTRL1_DCDC3_EN);
 }
 
-int axp803_set_dcdc5(unsigned int mvolt)
+static int axp803_set_dcdc5(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -228,7 +228,7 @@ int axp803_set_dcdc5(unsigned int mvolt)
 				AXP803_OUTPUT_CTRL1_DCDC5_EN);
 }
 
-int axp803_set_aldo(int aldo_num, unsigned int mvolt)
+static int axp803_set_aldo(int aldo_num, unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -250,22 +250,22 @@ int axp803_set_aldo(int aldo_num, unsigned int mvolt)
 }
 
 /* TODO: re-work other AXP drivers to consolidate ALDO functions. */
-int axp803_set_aldo1(unsigned int mvolt)
+static int axp803_set_aldo1(unsigned int mvolt)
 {
 	return axp803_set_aldo(1, mvolt);
 }
 
-int axp803_set_aldo2(unsigned int mvolt)
+static int axp803_set_aldo2(unsigned int mvolt)
 {
 	return axp803_set_aldo(2, mvolt);
 }
 
-int axp803_set_aldo3(unsigned int mvolt)
+static int axp803_set_aldo3(unsigned int mvolt)
 {
 	return axp803_set_aldo(3, mvolt);
 }
 
-int axp803_set_dldo(int dldo_num, unsigned int mvolt)
+static int axp803_set_dldo(int dldo_num, unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -288,7 +288,7 @@ int axp803_set_dldo(int dldo_num, unsigned int mvolt)
 				AXP803_OUTPUT_CTRL2_DLDO1_EN << (dldo_num - 1));
 }
 
-int axp803_set_eldo(int eldo_num, unsigned int mvolt)
+static int axp803_set_eldo(int eldo_num, unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -309,7 +309,7 @@ int axp803_set_eldo(int eldo_num, unsigned int mvolt)
 				AXP803_OUTPUT_CTRL2_ELDO1_EN << (eldo_num - 1));
 }
 
-int axp803_set_fldo(int fldo_num, unsigned int mvolt)
+static int axp803_set_fldo(int fldo_num, unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -330,7 +330,7 @@ int axp803_set_fldo(int fldo_num, unsigned int mvolt)
 				AXP803_OUTPUT_CTRL3_FLDO1_EN << (fldo_num - 1));
 }
 
-int axp803_set_sw(int on)
+static int axp803_set_sw(int on)
 {
 	if (on)
 		return pmic_bus_setbits(AXP803_OUTPUT_CTRL2,
@@ -537,7 +537,7 @@ static uint8_t axp305_mvolt_to_cfg(int mvolt, int min, int max, int div)
 	return  (mvolt - min) / div;
 }
 
-int axp_set_dcdcd(unsigned int mvolt)
+static int axp_set_dcdcd(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -760,7 +760,7 @@ static uint8_t axp858_mvolt_to_cfg(int mvolt, int min, int max, int div)
 	return  (mvolt - min) / div;
 }
 
-int axp858_set_dcdc1(unsigned int mvolt)
+static int axp858_set_dcdc1(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg = axp858_mvolt_to_cfg(mvolt, 1500, 3400, 100);
@@ -777,7 +777,7 @@ int axp858_set_dcdc1(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC1_EN);
 }
 
-int axp858_set_dcdc2(unsigned int mvolt)
+static int axp858_set_dcdc2(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -800,7 +800,7 @@ int axp858_set_dcdc2(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC2_EN);
 }
 
-int axp858_set_dcdc3(unsigned int mvolt)
+static int axp858_set_dcdc3(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -823,7 +823,7 @@ int axp858_set_dcdc3(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC3_EN);
 }
 
-int axp858_set_dcdc5(unsigned int mvolt)
+static int axp858_set_dcdc5(unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -862,7 +862,7 @@ static int axp858_getaldor(int aldo_num)
 	}
 }
 
-int axp858_set_aldo(int aldo_num, unsigned int mvolt)
+static int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 {
 	int ret;
 	uint8_t cfg;
@@ -884,27 +884,27 @@ int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 }
 
 /* TODO: re-work other AXP drivers to consolidate ALDO functions. */
-int axp858_set_aldo1(unsigned int mvolt)
+static int axp858_set_aldo1(unsigned int mvolt)
 {
 	return axp858_set_aldo(1, mvolt);
 }
 
-int axp858_set_aldo2(unsigned int mvolt)
+static int axp858_set_aldo2(unsigned int mvolt)
 {
 	return axp858_set_aldo(2, mvolt);
 }
 
-int axp858_set_aldo3(unsigned int mvolt)
+static int axp858_set_aldo3(unsigned int mvolt)
 {
 	return axp858_set_aldo(3, mvolt);
 }
 
-int axp858_set_aldo4(unsigned int mvolt)
+static int axp858_set_aldo4(unsigned int mvolt)
 {
 	return axp858_set_aldo(4, mvolt);
 }
 
-int axp858_set_aldo5(unsigned int mvolt)
+static int axp858_set_aldo5(unsigned int mvolt)
 {
 	return axp858_set_aldo(5, mvolt);
 }
@@ -987,7 +987,7 @@ int axp858_set_aldo5(unsigned int mvolt)
 // 				AXP858_OUTPUT_CTRL3_FLDO1_EN << (fldo_num - 1));
 // }
 
-int axp858_set_sw(int on)
+static int axp858_set_sw(int on)
 {
 	if (on)
 		return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
@@ -1041,16 +1041,16 @@ int axp853_initialize(void)
 	pmu_axp858_ap_reset_enable();	// без этой строчки не инициалищируется после reset
 	axp858_set_sw(0);
 
-	axp858_set_dcdc1(3300);
-	axp858_set_dcdc2(900);		// CPU
-	axp858_set_dcdc3(900);
-	//axp858_set_dcdc4(900);	// VDD-GPU
-	axp858_set_dcdc5(1100);		// VCC-DRAM - 1.1V for LPDDR4
-	axp858_set_aldo1(1800);
-	axp858_set_aldo2(1800);
-	axp858_set_aldo3(2500);
-	axp858_set_aldo4(1800);		// 1.8V for LPDDR4
-	axp858_set_aldo5(3300);		// locked to 2,8 ?
+	VERIFY(0 == axp858_set_dcdc1(3300));
+	VERIFY(0 == axp858_set_dcdc2(900));		// CPU
+	VERIFY(0 == axp858_set_dcdc3(900));
+	//VERIFY(0 == axp858_set_dcdc4(900));	// VDD-GPU
+	VERIFY(0 == axp858_set_dcdc5(1100));		// VCC-DRAM - 1.1V for LPDDR4
+	VERIFY(0 == axp858_set_aldo1(1800));
+	VERIFY(0 == axp858_set_aldo2(1800));
+	VERIFY(0 == axp858_set_aldo3(2500));
+	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
+	VERIFY(0 == axp858_set_aldo5(3300));		// locked to 2,8 ?
 
 	axp858_set_sw(1);
 	//local_delay_ms(100);
