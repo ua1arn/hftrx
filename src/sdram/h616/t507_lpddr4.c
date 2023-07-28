@@ -635,7 +635,9 @@ void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 }
 
 #if 1//CPUSTYLE_H616
-// https://github.com/apritzel/u-boot/blob/master/arch/arm/mach-sunxi/dram_timings/h616_ddr3_1333.c#L18
+
+// https://github.com/iuncuim/u-boot/blob/t507-lpddr4/arch/arm/mach-sunxi/dram_timings/h616_ddr3_1333.c
+
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
 void mctl_set_timing_params(struct dram_para *para)
@@ -677,48 +679,41 @@ void mctl_set_timing_params(struct dram_para *para)
 	uint8_t trd2wr	= 5;			/* (RL + BL / 2 + 2 - WL) / 2 */
 
 	/* set DRAM timing */
-	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | tras,
-	       &mctl_ctl->dramtmg[0]);
-	writel((txp << 16) | (trtp << 8) | trc, &mctl_ctl->dramtmg[1]);
-	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | twr2rd,
-	       &mctl_ctl->dramtmg[2]);
-	writel((tmrw << 20) | (tmrd << 12) | tmod, &mctl_ctl->dramtmg[3]);
-	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | trp,
-	       &mctl_ctl->dramtmg[4]);
-	writel((tcksrx << 24) | (tcksre << 16) | (tckesr << 8) | tcke,
-	       &mctl_ctl->dramtmg[5]);
+	writel(0x180f0c10,&mctl_ctl->dramtmg[0]); //100
+	writel(0x00030418, &mctl_ctl->dramtmg[1]); //104
+	writel(0x050a1212, &mctl_ctl->dramtmg[2]); //108
+	writel(0x0060600c, &mctl_ctl->dramtmg[3]); //10c
+	writel(0x07040408, &mctl_ctl->dramtmg[4]); //110
+	writel(0x02020606, &mctl_ctl->dramtmg[5]); //114
 	/* Value suggested by ZynqMP manual and used by libdram */
-	writel((txp + 2) | 0x02020000, &mctl_ctl->dramtmg[6]);
-	writel((txsfast << 24) | (txsabort << 16) | (txsdll << 8) | txs,
-	       &mctl_ctl->dramtmg[8]);
-	writel(0x00020208, &mctl_ctl->dramtmg[9]);
-	writel(0xE0C05, &mctl_ctl->dramtmg[10]);
-	writel(0x440C021C, &mctl_ctl->dramtmg[11]);
-	writel(8, &mctl_ctl->dramtmg[12]);
-	writel(0xA100002, &mctl_ctl->dramtmg[13]);
-	writel(txsr, &mctl_ctl->dramtmg[14]);
+	writel(0x02020005, &mctl_ctl->dramtmg[6]); //118
+	writel(0x04041004, &mctl_ctl->dramtmg[8]); //120
+	writel(0x00020208, &mctl_ctl->dramtmg[9]); //124
+	writel(0xE0C05, &mctl_ctl->dramtmg[10]);   //128
+	writel(0x440C021C, &mctl_ctl->dramtmg[11]); //12c
+	writel(8, &mctl_ctl->dramtmg[12]);         //130
+	writel(0xA100002, &mctl_ctl->dramtmg[13]); //134
+	writel(0x45, &mctl_ctl->dramtmg[14]);      //138
 
-	clrbits_le32(&mctl_ctl->init[0], 3 << 30);
-	writel(0x420000, &mctl_ctl->init[1]);
-	writel(5, &mctl_ctl->init[2]);
-	writel(0x1f140004, &mctl_ctl->init[3]);
-	writel(0x00200000, &mctl_ctl->init[4]);
+	writel(0x203f0, &mctl_ctl->init[0]);        //0do
+	writel(0x1f20000, &mctl_ctl->init[1]);      //0d4
+	writel(0xd05, &mctl_ctl->init[2]);          //0d8
+	writel(0x0034001b, &mctl_ctl->init[3]);     //0dc
+	writel(0x00330000, &mctl_ctl->init[4]);     //0e0
+	writel(0x00100004, &mctl_ctl->init[5]);     //0e4
+	writel(0x00040072, &mctl_ctl->init[6]);     //0e8
+	writel(0x00240009, &mctl_ctl->init[7]);     //0ec
 
 	writel(0, &mctl_ctl->dfimisc);
 	clrsetbits_le32(&mctl_ctl->rankctl, 0xff0, 0x660);
 
 	/* Configure DFI timing */
-	writel((tcl - 2) | 0x2000000 | (t_rdata_en << 16) | 0x808000,
-	       &mctl_ctl->dfitmg0);
+	writel(0x02918005, &mctl_ctl->dfitmg0);
 	writel(0x100202, &mctl_ctl->dfitmg1);
 
 	/* set refresh timing */
-	writel((trefi << 16) | trfc, &mctl_ctl->rfshtmg);
+	writel(0x002b0041, &mctl_ctl->rfshtmg);
 }
-
-#else
-// LPDDR4
-
 #endif
 /*
  * Test if memory at offset offset matches memory at begin of DRAM
@@ -1790,7 +1785,7 @@ unsigned long sunxi_dram_init(void)
 		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
 	static struct dram_para para = {
 		.clk = 800, //CONFIG_DRAM_CLK,
-		.type = SUNXI_DRAM_TYPE_DDR4,
+		.type = SUNXI_DRAM_TYPE_DDR3,
 	};
 	unsigned long size;
 
