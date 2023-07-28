@@ -1342,6 +1342,47 @@ typedef struct dram_para_t
 
 signed int init_DRAM(int type, dram_para_t *para); // s0
 
+
+// https://github.com/engSinteck/A133_Image/blob/125333364cdacc364a5ea855019756a03a3043dd/longan/brandy/arisc/ar100s/include/driver/dram.h#L83
+
+typedef struct dram4_para
+{
+	unsigned int	dram_clk;
+	unsigned int	dram_type;
+	unsigned int	dram_dx_odt;
+	unsigned int	dram_dx_dri;
+	unsigned int	dram_ca_dri;
+	unsigned int	dram_para0;
+	unsigned int	dram_para1;
+	unsigned int	dram_para2;
+	unsigned int	dram_mr0;
+	unsigned int	dram_mr1;
+	unsigned int	dram_mr2;
+	unsigned int	dram_mr3;
+	unsigned int    dram_mr4;
+	unsigned int    dram_mr5;
+	unsigned int    dram_mr6;
+	unsigned int    dram_mr11;
+	unsigned int    dram_mr12;
+	unsigned int    dram_mr13;
+	unsigned int    dram_mr14;
+	unsigned int    dram_mr16;
+	unsigned int    dram_mr17;
+	unsigned int    dram_mr22;
+	unsigned int	dram_tpr0;
+	unsigned int	dram_tpr1;
+	unsigned int	dram_tpr2;
+	unsigned int	dram_tpr3;
+	unsigned int    dram_tpr6;
+	unsigned int	dram_tpr10;
+	unsigned int	dram_tpr11;
+	unsigned int	dram_tpr12;
+	unsigned int	dram_tpr13;
+	unsigned int	dram_tpr14;
+} dram4_para_t;
+
+signed int init_DRAM4(int type, dram_para_t *para); // s0
+
 uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
 
