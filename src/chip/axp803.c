@@ -1045,11 +1045,11 @@ int axp853_initialize(void)
 	axp858_set_dcdc2(900);		// CPU
 	axp858_set_dcdc3(900);
 	//axp858_set_dcdc4(900);	// VDD-GPU
-	axp858_set_dcdc5(1100);
+	axp858_set_dcdc5(1100);		// VCC-DRAM - 1.1V for LPDDR4
 	axp858_set_aldo1(1800);
 	axp858_set_aldo2(1800);
 	axp858_set_aldo3(2500);
-	axp858_set_aldo4(1800);
+	axp858_set_aldo4(1800);		// 1.8V for LPDDR4
 	axp858_set_aldo5(3300);		// locked to 2,8 ?
 
 	axp858_set_sw(1);
