@@ -9,13 +9,14 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && CPUSTYLE_T507
+#if WITHSDRAMHW && CPUSTYLE_H616
 
 #include "formats.h"
 
+#include <string.h>
+
 #if CPUSTYLE_H616
 	#define ENHTEST 1
-	#define CONFIG_DRAM_CLK 533
 #else
 	#define ENHTEST 0
 	#define CONFIG_DRAM_CLK 800
@@ -40,6 +41,8 @@
 	#define SUNXI_DRAM_CTL0_BASE		0x047FB000
 	#define SUNXI_DRAM_PHY0_BASE		0x04800000
 #endif
+
+#define SUNXI_PRCM_BASE			0x07010000
 
 #define SUNXI_CCM_BASE CCU_BASE
 
@@ -109,6 +112,48 @@ static /*static inline*/ void udelay(int loops)
 
 #define writel(data, addr) do { write32((uintptr_t)(addr), (data)); } while (0)
 #define readl(addr) (read32((uintptr_t)(addr)))
+
+struct sunxi_prcm_reg {
+	uint32_t cpus_cfg;		/* 0x000 */
+	uint8_t res0[0x8];		/* 0x004 */
+	uint32_t apbs1_cfg;		/* 0x00c */
+	uint32_t apbs2_cfg;		/* 0x010 */
+	uint8_t res1[0x108];		/* 0x014 */
+	uint32_t tmr_gate_reset;	/* 0x11c */
+	uint8_t res2[0xc];		/* 0x120 */
+	uint32_t twd_gate_reset;	/* 0x12c */
+	uint8_t res3[0xc];		/* 0x130 */
+	uint32_t pwm_gate_reset;	/* 0x13c */
+	uint8_t res4[0x4c];		/* 0x140 */
+	uint32_t uart_gate_reset;	/* 0x18c */
+	uint8_t res5[0xc];		/* 0x190 */
+	uint32_t twi_gate_reset;	/* 0x19c */
+	uint8_t res6[0x1c];		/* 0x1a0 */
+	uint32_t rsb_gate_reset;	/* 0x1bc */
+	uint32_t cir_cfg;		/* 0x1c0 */
+	uint8_t res7[0x8];		/* 0x1c4 */
+	uint32_t cir_gate_reset;	/* 0x1cc */
+	uint8_t res8[0x10];		/* 0x1d0 */
+	uint32_t w1_cfg;		/* 0x1e0 */
+	uint8_t res9[0x8];		/* 0x1e4 */
+	uint32_t w1_gate_reset;	/* 0x1ec */
+	uint8_t res10[0x1c];		/* 0x1f0 */
+	uint32_t rtc_gate_reset;	/* 0x20c */
+	uint8_t res11[0x34];		/* 0x210 */
+	uint32_t pll_ldo_cfg;	/* 0x244 */
+	uint8_t res12[0x8];		/* 0x248 */
+	uint32_t sys_pwroff_gating;	/* 0x250 */
+	uint8_t res13[0xbc];		/* 0x254 */
+	uint32_t res_cal_ctrl;	/* 0x310 */
+	uint32_t ohms200;		/* 0x314 */
+	uint32_t ohms240;		/* 0x318 */
+	uint32_t res_cal_status;	/* 0x31c */
+};
+//check_member(sunxi_prcm_reg, rtc_gate_reset, 0x20c);
+//check_member(sunxi_prcm_reg, res_cal_status, 0x31c);
+
+#define PRCM_TWI_GATE		(1 << 0)
+#define PRCM_TWI_RESET		(1 << 16)
 
 // https://github.com/apritzel/u-boot/blob/master/arch/arm/include/asm/arch-sunxi/dram_sun50i_h616.h
 
@@ -225,6 +270,7 @@ struct sunxi_mctl_ctl_reg {
 #define MSTR_DEVICETYPE_LPDDR2	BIT_U32(2)
 #define MSTR_DEVICETYPE_LPDDR3	BIT_U32(3)
 #define MSTR_DEVICETYPE_DDR4	BIT_U32(4)
+#define MSTR_DEVICETYPE_LPDDR4	BIT_U32(5)
 #define MSTR_DEVICETYPE_MASK	GENMASK(5, 0)
 #define MSTR_2TMODE		BIT_U32(10)
 #define MSTR_BUSWIDTH_FULL	(0 << 12)
@@ -244,9 +290,9 @@ struct dram_para {
 
 static inline int ns_to_t(int nanoseconds)
 {
-	const unsigned int ctrl_freq = CONFIG_DRAM_CLK / 2;
+	const unsigned int ctrl_freq = BOARD_CONFIG_DRAM_CLK / 2;
 
-	return DIV_ROUND_UP(ctrl_freq * nanoseconds, 1000);
+	return DIV_ROUND_UP(ctrl_freq * (uint_fast64_t) nanoseconds, 1000);
 }
 
 void mctl_set_timing_params(struct dram_para *para);
@@ -784,6 +830,7 @@ static void mctl_set_master_priority(void)
 
 static void mctl_sys_init(struct dram_para *para)
 {
+	const unsigned reffreq = allwnrt113_get_hosc_freq() / 1000 / 1000;
 	struct sunxi_ccm_reg * const ccm =
 			(struct sunxi_ccm_reg *)SUNXI_CCM_BASE;
 	struct sunxi_mctl_com_reg * const mctl_com =
@@ -804,7 +851,7 @@ static void mctl_sys_init(struct dram_para *para)
 
 	/* Set PLL5 rate to doubled DRAM clock rate */
 	writel(CCM_PLL5_CTRL_EN | CCM_PLL5_LOCK_EN | CCM_PLL5_OUT_EN |
-	       CCM_PLL5_CTRL_N(para->clk * 2 / 24), &ccm->pll5_cfg);
+	       CCM_PLL5_CTRL_N(para->clk * 2 / reffreq), &ccm->pll5_cfg);
 	mctl_await_completion(&ccm->pll5_cfg, CCM_PLL5_LOCK, CCM_PLL5_LOCK);
 
 	/* Configure DRAM mod clock */
@@ -1698,8 +1745,8 @@ static unsigned long mctl_calc_size(struct dram_para *para)
 unsigned long sunxi_dram_init(void)
 {
 	static struct dram_para para = {
-		.clk = CONFIG_DRAM_CLK,
-		.type = BOARD_DRAM_TYPE,
+		.clk = BOARD_CONFIG_DRAM_CLK,
+		.type = BOARD_CONFIG_DRAM_TYPE,
 	};
 	unsigned long size;
 
@@ -1724,4 +1771,4 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
-#endif /* WITHSDRAMHW && CPUSTYLE_T507 */
+#endif /* WITHSDRAMHW && CPUSTYLE_H616 */

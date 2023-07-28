@@ -54,7 +54,8 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define BOARD_DRAM_TYPE SUNXI_DRAM_TYPE_DDR3
+	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_DDR3
+	#define BOARD_CONFIG_DRAM_CLK 800
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */

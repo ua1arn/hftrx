@@ -7,6 +7,8 @@ MEMORY
   RAM (rwx)	 : ORIGIN = 0x00028000 + 256, 			LENGTH = 192k - 256		/*  */
   DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 1024M - 16k		/*  */
   TTB (rwx)  : ORIGIN = 0x40000000 + 1024M - 16k, 	LENGTH = 16k	/* last 16 kB for TTB */
+  _RAM (rwx)	 : ORIGIN = 0x00028000 + 256, 			LENGTH = 192k - 16k - 256		/*  */
+  _TTB (rwx)  : ORIGIN = 0x00028000 + 192k - 16k, 	LENGTH = 16k	/* last 16 kB for TTB - if bootloader debug */
 }
 
 /* Library configurations */
