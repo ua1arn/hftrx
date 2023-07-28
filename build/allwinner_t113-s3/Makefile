@@ -257,7 +257,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean erase
 
 all: APP2 $(PROJECT)_app.alw32
 
@@ -282,6 +282,9 @@ app_runXBOOT: xboot_t113_800.bin
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
+
+erase:
+	$(XFEL) spinor erase 1024
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

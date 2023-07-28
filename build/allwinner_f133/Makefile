@@ -254,7 +254,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean erase
 
 all: APP2 $(PROJECT)_app.f133
 
@@ -274,6 +274,9 @@ app_run: $(PROJECT)_app.f133
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.f133
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.f133
+
+erase:
+	$(XFEL) spinor erase 1024
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
