@@ -787,7 +787,7 @@ inline void mbus_configure_port(uint8_t port,
 			   | (bwl0 << 16) );
 	const uint32_t cfg1 = ((uint32_t)bwl2 << 16) | (bwl1 & 0xffff);
 
-	PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", port, (unsigned) cfg0, (unsigned) cfg1);
+	//PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", port, (unsigned) cfg0, (unsigned) cfg1);
 	writel_relaxed(cfg0, &mctl_com->master[port].cfg0);
 	writel_relaxed(cfg1, &mctl_com->master[port].cfg1);
 }
