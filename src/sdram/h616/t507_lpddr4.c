@@ -1804,6 +1804,7 @@ unsigned long sunxi_dram_init(void)
 	return size;
 }
 
+#if 1
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -1817,4 +1818,98 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
+
+#else
+
+// https://github.com/engSinteck/A133_Image/blob/125333364cdacc364a5ea855019756a03a3043dd/longan/brandy/arisc/ar100s/include/driver/dram.h#L83
+
+typedef struct dram4_para
+{
+	unsigned int	dram_clk;
+	unsigned int	dram_type;
+	unsigned int	dram_dx_odt;
+	unsigned int	dram_dx_dri;
+	unsigned int	dram_ca_dri;
+	unsigned int	dram_para0;
+	unsigned int	dram_para1;
+	unsigned int	dram_para2;
+	unsigned int	dram_mr0;
+	unsigned int	dram_mr1;
+	unsigned int	dram_mr2;
+	unsigned int	dram_mr3;
+	unsigned int    dram_mr4;
+	unsigned int    dram_mr5;
+	unsigned int    dram_mr6;
+	unsigned int    dram_mr11;
+	unsigned int    dram_mr12;
+	unsigned int    dram_mr13;
+	unsigned int    dram_mr14;
+	unsigned int    dram_mr16;
+	unsigned int    dram_mr17;
+	unsigned int    dram_mr22;
+	unsigned int	dram_tpr0;
+	unsigned int	dram_tpr1;
+	unsigned int	dram_tpr2;
+	unsigned int	dram_tpr3;
+	unsigned int    dram_tpr6;
+	unsigned int	dram_tpr10;
+	unsigned int	dram_tpr11;
+	unsigned int	dram_tpr12;
+	unsigned int	dram_tpr13;
+	unsigned int	dram_tpr14;
+} dram4_para_t;
+
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+	long int memsize;
+	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
+	static dram4_para_t lpddr4 =
+	{
+			.dram_clk       = 792,
+			.dram_type      = 8,
+			.dram_dx_odt    = 0x07070707,
+			.dram_dx_dri    = 0x0d0d0d0d,
+			.dram_ca_dri    = 0x0e0e,
+			.dram_para0     = 0x0d0a050c,
+			.dram_para1     = 0x30ea,
+			.dram_para2     = 0x1000,
+			.dram_mr0       = 0x0,
+			.dram_mr1       = 0x34,
+			.dram_mr2       = 0x1b,
+			.dram_mr3       = 0x33,
+			.dram_mr4       = 0x3,
+			.dram_mr5       = 0x0,
+			.dram_mr6       = 0x0,
+			.dram_mr11      = 0x04,
+			.dram_mr12      = 0x72,
+			.dram_mr13      = 0x0,
+			.dram_mr14      = 0x7,
+			.dram_mr16      = 0x0,
+			.dram_mr17      = 0x0,
+			.dram_mr22      = 0x26,
+			.dram_tpr0      = 0x06060606,
+			.dram_tpr1      = 0x04040404,
+			.dram_tpr2      = 0x0,
+			.dram_tpr3      = 0x0,
+			.dram_tpr6      = 0x48000000,
+			.dram_tpr10     = 0x00273333,
+			.dram_tpr11     = 0x241f1923,
+			.dram_tpr12     = 0x14151313,
+			.dram_tpr13     = 0x81d20,
+			.dram_tpr14     = 0x2023211f,
+	};
+
+	memsize =  init_DRAM(0, (void *) & lpddr4);
+
+	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
+
+	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
+//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
+//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
+	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
+
+	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+}
+#endif
+
 #endif /* WITHSDRAMHW && CPUSTYLE_T507 && ! CPUSTYLE_H616 */
