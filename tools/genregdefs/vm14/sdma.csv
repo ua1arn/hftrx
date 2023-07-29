@@ -1,6 +1,6 @@
-#type; SDMA
-#comment; Регистры блока управления SDMA
+#type; SDMA; Регистры блока управления SDMA
 #base; SDMA 0x37220000
+
 #regdef; DSR; 0x000; RO Состояние потока управления
 #regdef; DPC; 0x004; RO Счётчик команд потока управления
 #regdef; INTEN; 0x020; RW Разрешение прерываний

@@ -1,5 +1,4 @@
-#type; NDFC
-#comment; NAND Flash Controller Interface
+#type; NDFC; NAND Flash Controller Interface
 #base; NDFC 0x01C03000
 #irq; NAND 102 ; NAND Flash Controller interrupt
 #regdef; NDFC_CTL; 0x000;  NDFC Configure and Control Register

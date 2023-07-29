@@ -1,16 +1,18 @@
-#type; GPIO
-#comment; Регистры блока управления GPIO
+#type; GPIO; Регистры блока управления GPIO
+
 #base; GPIOA 0x38034000
 #base; GPIOB 0x3803400C
 #base; GPIOC 0x38034018
 #base; GPIOD 0x38034024
+
 #regdef; gpio_swport_dr; 0x000; Регистр данных порта А. W/R 0x0 0x00
 #regdef; gpio_swport_ddr; 0x004; Регистр направления потока данных через порт А. W/R 0x0 0x04
 #regdef; gpio_swport_ctl; 0x008; Регистр источника данных порта А. W/R 0x0 0x08
-##
-#type; GPIOBLOCK
-#comment; Регистры блока управления GPIO
+
+#type; GPIOBLOCK; Регистры блока управления GPIO
+
 #base; GPIO0 0x38034000
+
 #regdef; gpio_swporta_dr; 0x000; Регистр данных порта А. W/R 0x0 0x00
 #regdef; gpio_swporta_ddr; 0x004; Регистр направления потока данных через порт А. W/R 0x0 0x04
 #regdef; gpio_swporta_ctl; 0x008; Регистр источника данных порта А. W/R 0x0 0x08

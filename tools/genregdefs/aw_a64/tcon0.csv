@@ -1,6 +1,6 @@
-#type; TCON0
+#type; TCON0; TCON0 LVDS/RGB/MIPI-DSI Interface
 #base; TCON0 0x01C0C000
-#comment; TCON0 LVDS/RGB/MIPI-DSI Interface
+
 #regdef; TCON_GCTL_REG; 0x000; TCON global control register
 #regdef; TCON_GINT0_REG; 0x004; TCON global interrupt register0
 #regdef; TCON_GINT1_REG; 0x008; TCON global interrupt register1
