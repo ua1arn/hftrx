@@ -787,7 +787,7 @@ inline void mbus_configure_port(uint8_t port,
 }
 
 #define MBUS_CONF(port, bwlimit, qos, acs, bwl0, bwl1, bwl2)	\
-	mbus_configure_port(port, bwlimit, 0 /*fasle*/, \
+	mbus_configure_port(port, bwlimit, 0 /*false*/, \
 			    MBUS_QOS_ ## qos, 0, acs, bwl0, bwl1, bwl2)
 
 static void mctl_set_master_priority(void)
@@ -1025,16 +1025,16 @@ static int mctl_phy_write_leveling(struct dram_para *para)
 
 	val = readl(SUNXI_DRAM_PHY0_BASE + 0x258);
 	if (val == 0 || val == 0x3f)
-		result = 0 /*fasle*/;
+		result = 0 /*false*/;
 	val = readl(SUNXI_DRAM_PHY0_BASE + 0x25c);
 	if (val == 0 || val == 0x3f)
-		result = 0 /*fasle*/;
+		result = 0 /*false*/;
 	val = readl(SUNXI_DRAM_PHY0_BASE + 0x318);
 	if (val == 0 || val == 0x3f)
-		result = 0 /*fasle*/;
+		result = 0 /*false*/;
 	val = readl(SUNXI_DRAM_PHY0_BASE + 0x31c);
 	if (val == 0 || val == 0x3f)
-		result = 0 /*fasle*/;
+		result = 0 /*false*/;
 
 	clrbits_le32(SUNXI_DRAM_PHY0_BASE + 8, 0xc0);
 
@@ -1074,7 +1074,7 @@ static int mctl_phy_read_calibration(struct dram_para *para)
 
 	while ((readl(SUNXI_DRAM_PHY0_BASE + 0x184) & val) != val) {
 		if (readl(SUNXI_DRAM_PHY0_BASE + 0x184) & 0x20) {
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 			break;
 		}
 	}
@@ -1090,7 +1090,7 @@ static int mctl_phy_read_calibration(struct dram_para *para)
 
 		while ((readl(SUNXI_DRAM_PHY0_BASE + 0x184) & val) != val) {
 			if (readl(SUNXI_DRAM_PHY0_BASE + 0x184) & 0x20) {
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 				break;
 			}
 		}
@@ -1134,12 +1134,12 @@ static int mctl_phy_read_training(struct dram_para *para)
 
 	mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x840), 0xc, 0xc);
 	if (readl(SUNXI_DRAM_PHY0_BASE + 0x840) & 3)
-		result = 0 /*fasle*/;
+		result = 0 /*false*/;
 
 	if (para->bus_full_width) {
 		mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xa40), 0xc, 0xc);
 		if (readl(SUNXI_DRAM_PHY0_BASE + 0xa40) & 3)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 	}
 
 	ptr1 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x898);
@@ -1148,7 +1148,7 @@ static int mctl_phy_read_training(struct dram_para *para)
 		val1 = readl(&ptr1[i]);
 		val2 = readl(&ptr2[i]);
 		if (val1 - val2 <= 6)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 	}
 	ptr1 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x8bc);
 	ptr2 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x874);
@@ -1156,7 +1156,7 @@ static int mctl_phy_read_training(struct dram_para *para)
 		val1 = readl(&ptr1[i]);
 		val2 = readl(&ptr2[i]);
 		if (val1 - val2 <= 6)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 	}
 
 	if (para->bus_full_width) {
@@ -1166,7 +1166,7 @@ static int mctl_phy_read_training(struct dram_para *para)
 			val1 = readl(&ptr1[i]);
 			val2 = readl(&ptr2[i]);
 			if (val1 - val2 <= 6)
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 		}
 
 		ptr1 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xabc);
@@ -1175,7 +1175,7 @@ static int mctl_phy_read_training(struct dram_para *para)
 			val1 = readl(&ptr1[i]);
 			val2 = readl(&ptr2[i]);
 			if (val1 - val2 <= 6)
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 		}
 	}
 
@@ -1190,12 +1190,12 @@ static int mctl_phy_read_training(struct dram_para *para)
 
 		mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x840), 0xc, 0xc);
 		if (readl(SUNXI_DRAM_PHY0_BASE + 0x840) & 3)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 
 		if (para->bus_full_width) {
 			mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xa40), 0xc, 0xc);
 			if (readl(SUNXI_DRAM_PHY0_BASE + 0xa40) & 3)
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 		}
 
 		clrbits_le32(SUNXI_DRAM_PHY0_BASE + 0x190, 3);
@@ -1224,12 +1224,12 @@ static int mctl_phy_write_training(struct dram_para *para)
 
 	mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x8e0), 3, 3);
 	if (readl(SUNXI_DRAM_PHY0_BASE + 0x8e0) & 0xc)
-		result = 0 /*fasle*/;
+		result = 0 /*false*/;
 
 	if (para->bus_full_width) {
 		mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xae0), 3, 3);
 		if (readl(SUNXI_DRAM_PHY0_BASE + 0xae0) & 0xc)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 	}
 
 	ptr1 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x938);
@@ -1238,7 +1238,7 @@ static int mctl_phy_write_training(struct dram_para *para)
 		val1 = readl(&ptr1[i]);
 		val2 = readl(&ptr2[i]);
 		if (val1 - val2 <= 6)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 	}
 	ptr1 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x95c);
 	ptr2 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x914);
@@ -1246,7 +1246,7 @@ static int mctl_phy_write_training(struct dram_para *para)
 		val1 = readl(&ptr1[i]);
 		val2 = readl(&ptr2[i]);
 		if (val1 - val2 <= 6)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 	}
 
 	if (para->bus_full_width) {
@@ -1256,7 +1256,7 @@ static int mctl_phy_write_training(struct dram_para *para)
 			val1 = readl(&ptr1[i]);
 			val2 = readl(&ptr2[i]);
 			if (val1 - val2 <= 6)
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 		}
 		ptr1 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xb5c);
 		ptr2 = (uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xb14);
@@ -1264,7 +1264,7 @@ static int mctl_phy_write_training(struct dram_para *para)
 			val1 = readl(&ptr1[i]);
 			val2 = readl(&ptr2[i]);
 			if (val1 - val2 <= 6)
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 		}
 	}
 
@@ -1278,12 +1278,12 @@ static int mctl_phy_write_training(struct dram_para *para)
 
 		mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0x8e0), 3, 3);
 		if (readl(SUNXI_DRAM_PHY0_BASE + 0x8e0) & 0xc)
-			result = 0 /*fasle*/;
+			result = 0 /*false*/;
 
 		if (para->bus_full_width) {
 			mctl_await_completion((uint32_t*)(SUNXI_DRAM_PHY0_BASE + 0xae0), 3, 3);
 			if (readl(SUNXI_DRAM_PHY0_BASE + 0xae0) & 0xc)
-				result = 0 /*fasle*/;
+				result = 0 /*false*/;
 		}
 
 		clrbits_le32(SUNXI_DRAM_PHY0_BASE + 0x190, 0x60);
@@ -1528,7 +1528,7 @@ static int mctl_phy_init(struct dram_para *para)
 				break;
 		if (i == 5) {
 			PRINTF("write leveling failed!\n");
-			return 0 /*fasle*/;
+			return 0 /*false*/;
 		}
 	}
 
@@ -1538,7 +1538,7 @@ static int mctl_phy_init(struct dram_para *para)
 				break;
 		if (i == 5) {
 			PRINTF("read calibration failed!\n");
-			return 0 /*fasle*/;
+			return 0 /*false*/;
 		}
 	}
 
@@ -1548,7 +1548,7 @@ static int mctl_phy_init(struct dram_para *para)
 				break;
 		if (i == 5) {
 			PRINTF("read training failed!\n");
-			return 0 /*fasle*/;
+			return 0 /*false*/;
 		}
 	}
 
@@ -1558,7 +1558,7 @@ static int mctl_phy_init(struct dram_para *para)
 				break;
 		if (i == 5) {
 			PRINTF("write training failed!\n");
-			return 0 /*fasle*/;
+			return 0 /*false*/;
 		}
 	}
 
@@ -1636,7 +1636,7 @@ static int mctl_ctrl_init(struct dram_para *para)
 	setbits_le32(&mctl_com->unk_0x500, BIT_U32(24));
 
 	if (!mctl_phy_init(para))
-		return 0 /*fasle*/;
+		return 0 /*false*/;
 
 	writel(0, &mctl_ctl->swctl);
 	clrbits_le32(&mctl_ctl->rfshctl3, BIT_U32(0));
@@ -1737,7 +1737,7 @@ static unsigned long mctl_calc_size(struct dram_para *para)
 
 unsigned long sunxi_dram_init(void)
 {
-	static struct dram_para para = {
+	 struct dram_para para = {
 		.clk = BOARD_CONFIG_DRAM_CLK,
 		.type = BOARD_CONFIG_DRAM_TYPE,
 	};

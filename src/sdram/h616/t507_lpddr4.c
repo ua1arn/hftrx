@@ -44,6 +44,15 @@
 	#define SUNXI_DRAM_PHY0_BASE		0x04800000
 #endif
 
+#define DRAM_CLK_ENABLE			BIT_U32(31)
+
+static void dbp(void)
+{
+	printhex32(SUNXI_DRAM_PHY0_BASE, (void *) SUNXI_DRAM_PHY0_BASE, 32);
+	printhex32(SUNXI_DRAM_CTL0_BASE, (void *) SUNXI_DRAM_CTL0_BASE, 32);
+
+}
+
 #define SUNXI_PRCM_BASE			0x07010000
 
 #define SUNXI_CCM_BASE CCU_BASE
@@ -1501,9 +1510,12 @@ static int mctl_phy_init(struct xdram_para *para)
 	/* start DFI init */
 	setbits_le32(&mctl_ctl->dfimisc, 0x20);
 	writel(1, &mctl_ctl->swctl);
+	TP();
 	mctl_await_completion(&mctl_ctl->swstat, 1, 1);
+	TP();
 	/* poll DFI init complete */
 	mctl_await_completion(&mctl_ctl->dfistat, 1, 1);
+	TP();
 	writel(0, &mctl_ctl->swctl);
 	clrbits_le32(&mctl_ctl->dfimisc, 0x20);
 
@@ -1581,7 +1593,7 @@ static int mctl_phy_init(struct xdram_para *para)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_DRAM_SUN50I_H616_READ_TRAINING)) {
+	if (0 && IS_ENABLED(CONFIG_DRAM_SUN50I_H616_READ_TRAINING)) {
 		for (i = 0; i < 5; i++)
 			if (mctl_phy_read_training(para))
 				break;
@@ -1781,39 +1793,40 @@ static unsigned long mctl_calc_size(struct xdram_para *para)
 	return (1ULL << (para->cols + para->rows + 3)) * width * para->ranks;
 }
 
+static struct xdram_para xpara = {
+	.clk = 800, //CONFIG_DRAM_CLK,
+	.type = SUNXI_DRAM_TYPE_DDR3,
+};
+
 unsigned long sunxi_dram_init(void)
 {
 	struct sunxi_prcm_reg *const prcm =
 		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
-	static struct xdram_para para = {
-		.clk = 800, //CONFIG_DRAM_CLK,
-		.type = SUNXI_DRAM_TYPE_DDR3,
-	};
 	unsigned long size;
 
 	setbits_le32(&prcm->res_cal_ctrl, BIT_U32(8));
 	clrbits_le32(&prcm->ohms240, 0x3f);
 
-	mctl_auto_detect_rank_width(&para);
-	mctl_auto_detect_dram_size(&para);
+	mctl_auto_detect_rank_width(&xpara);
+	mctl_auto_detect_dram_size(&xpara);
 
-	mctl_core_init(&para);
+	mctl_core_init(&xpara);
 
-	size = mctl_calc_size(&para);
+	size = mctl_calc_size(&xpara);
 
 	mctl_set_master_priority();
 
 	return size;
 }
 
-#if 0
 
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize0(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	unsigned long v = sunxi_dram_init();
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
 
+	dbp();
 	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
 	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
@@ -1821,7 +1834,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
 
-#else
+#if 1
 
 
 struct dram_para
@@ -1990,6 +2003,7 @@ static const unsigned char phy_init_lpddr4_b[] = {
 
 static void libdram_mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 {
+	PRINTF("libdram_mctl_await_completion %p\n", reg);
 	//unsigned long tmo = timer_get_us() + 1000000;
 
 	while ((readl(reg) & mask) != val)
@@ -1997,6 +2011,7 @@ static void libdram_mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t
 //		if (timer_get_us() > tmo)
 //			panic("Timeout initialising DRAM\n");
 	}
+	PRINTF("libdram_mctl_await_completion done\n");
 }
 
 static int libdram_dramc_simple_wr_test(uint32_t dram_size, uint32_t test_range)
@@ -2085,11 +2100,15 @@ static void libdram_ccm_set_pll_ddr0_sccg(struct dram_para *para)
 
 static void libdram_mctl_sys_init(struct dram_para *para)
 {
+	return;
 	/* Put all DRAM-related blocks to reset state */
 	clrbits_le32(&ccm->mbus_cfg, MBUS_ENABLE);
 	clrbits_le32(&ccm->mbus_cfg, MBUS_RESET);
-	clrbits_le32(&ccm->dram_gate_reset, BIT_U32(GATE_SHIFT));
-	clrbits_le32(&ccm->dram_gate_reset, BIT_U32(RESET_SHIFT));
+	PRINTF("dram_gate_reset: %08X\n", (unsigned) readl(&ccm->dram_gate_reset));
+	clrbits_le32(&ccm->dram_gate_reset, BIT_U32(GATE_SHIFT));	// !!!
+	PRINTF("dram_gate_reset: %08X\n", (unsigned) readl(&ccm->dram_gate_reset));
+	clrbits_le32(&ccm->dram_gate_reset, BIT_U32(RESET_SHIFT));	// !!!
+	PRINTF("dram_gate_reset: %08X\n", (unsigned) readl(&ccm->dram_gate_reset));
 	clrbits_le32(&ccm->pll5_cfg, CCM_PLL5_CTRL_EN);
 	clrbits_le32(&ccm->dram_clk_cfg, DRAM_MOD_RESET);
 
@@ -2101,9 +2120,10 @@ static void libdram_mctl_sys_init(struct dram_para *para)
 
 	/* Configure DRAM mod clock */
 	clrbits_le32(&ccm->dram_clk_cfg, 0x3000000);
-	clrsetbits_le32(&ccm->dram_clk_cfg, 0x800001F, BIT_U32(31) | BIT_U32(0) | BIT_U32(1)); // FACTOR_N = 3
+	clrsetbits_le32(&ccm->dram_clk_cfg, 0x800001F, DRAM_CLK_ENABLE | BIT_U32(0) | 0*BIT_U32(1)); // FACTOR_N = 3
 	writel(BIT_U32(RESET_SHIFT), &ccm->dram_gate_reset);
 	setbits_le32(&ccm->dram_gate_reset, BIT_U32(GATE_SHIFT));
+	PRINTF("start: dram_gate_reset: %08X\n", (unsigned) readl(&ccm->dram_gate_reset));
 
 	/* Configure MBUS and enable DRAM mod reset */
 	setbits_le32(&ccm->mbus_cfg, MBUS_RESET);
@@ -3103,6 +3123,7 @@ static void libdram_phy_para_config(struct dram_para *para)
 	udelay(1);
 	clrbits_le32(SUNXI_DRAM_PHY0_BASE + 0x14c, 8);
 	TP();
+	dbp();
 	libdram_mctl_await_completion((uint32_t *)(SUNXI_DRAM_PHY0_BASE + 0x180), 4, 4);
 	TP();
 
@@ -3134,7 +3155,9 @@ static void libdram_mctl_dfi_init(struct dram_para *para)
 	clrbits_le32(&mctl_ctl->dfimisc, 0x20);
 	writel(1, &mctl_ctl->swctl);
 	libdram_mctl_await_completion(&mctl_ctl->swstat, 1, 1);
+	TP();
 	libdram_mctl_await_completion(&mctl_ctl->dfistat, 1, 1);
+	TP();
 
 	clrbits_le32(&mctl_ctl->pwrctl, 0x20);
 	writel(1, &mctl_ctl->swctl);
@@ -3595,24 +3618,33 @@ static int libdram_mctl_channel_init(struct dram_para *para)
 	setbits_le32(&mctl_com->maer0, 0x8000);
 
 	TP();
+	dbp();
 	libdram_mctl_com_set_bus_config(para);
 	TP();
+	dbp();
 
 	writel(0, &mctl_ctl->hwlpctl);
 
 	libdram_mctl_com_init(para);
 	TP();
+	dbp();
 	ret = libdram_mctl_phy_init(para);
 	TP();
+	dbp();
 	libdram_mctl_com_set_controller_after_phy();
 	TP();
+	dbp();
 
 	return ret;
 }
 
 static int libdram_mctl_core_init(struct dram_para *para)
 {
-	libdram_mctl_sys_init(para);
+	TP();
+	dbp();
+	libdram_mctl_sys_init(para);	// FIXME: после этого дампы нулевые...
+	TP();
+	dbp();
 	return libdram_mctl_channel_init(para);
 }
 
@@ -3637,6 +3669,8 @@ static int libdram_auto_scan_dram_config(struct dram_para *para)
 	uint32_t tpr11, tpr12, tpr14;
 	uint32_t dram_size;
 
+	TP();
+	dbp();
 	clk = para->clk;
 
 	if ((para->tpr13 & 0x1000) && (para->clk > 360))
@@ -3672,6 +3706,8 @@ static int libdram_auto_scan_dram_config(struct dram_para *para)
 	if (!(para->tpr13 & 0x8000))
 		para->tpr13 |= 0x6001;
 
+	TP();
+	dbp();
 	if (para->tpr13 & 0x80000)
 	{
 		uint32_t *ptr;
@@ -3715,6 +3751,8 @@ static int libdram_auto_scan_dram_config(struct dram_para *para)
 			break;
 		}
 	}
+	TP();
+	dbp();
 
 	if (para->tpr13 & 0x2000000)
 	{
@@ -3760,8 +3798,12 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 	}
 	PRINTF("DRAM BOOT DRIVE INFO: %s\n", "V0.696");
 
+	TP();
+	dbp();
 	(*((volatile uint32_t *)0x3000160)) |= 0x100;
 	(*((volatile uint32_t *)0x3000168)) &= 0xffffffc0;
+	TP();
+	dbp();
 
 	if ((para->tpr13 & 1) == 0 && !libdram_auto_scan_dram_config(para))
 	{
@@ -3769,6 +3811,7 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 		return 0;
 	}
 	TP();
+	dbp();
 	if ((para->tpr13 & 0x800) != 0 && !libdram_dram_software_training(para))
 	{
 		PRINTF("dram_software_training: failed\n");
@@ -3777,15 +3820,21 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 
 	PRINTF("DRAM CLK = %d MHZ\n", (int) para->clk);
 	PRINTF("DRAM Type = %d (3:DDR3,4:DDR4,7:LPDDR3,8:LPDDR4)\n", para->type);
+	TP();
+	dbp();
 
 	if (!libdram_mctl_core_init(para))
 	{
 		PRINTF("DRAM initial error : 0 !\n");
 		return 0;
 	}
+	TP();
+	dbp();
 
 	dram_size = libdram_DRAMC_get_dram_size(para);
 	actual_dram_size = (para->para2 >> 16) & 0x3FFF;
+	TP();
+	dbp();
 
 	switch (para->para2 >> 30)
 	{
@@ -3814,6 +3863,8 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 		para->tpr11 = tmp_tpr11;
 		para->tpr12 = tmp_tpr12;
 	}
+	TP();
+	dbp();
 
 	if (libdram_dramc_simple_wr_test(dram_size, 4096))
 	{
@@ -3827,6 +3878,8 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 		if (libdram_dramc_simple_wr_test(dram_size, 4096))
 			return 0;
 	}
+	TP();
+	dbp();
 
 	return dram_size;
 };
@@ -3835,46 +3888,56 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 //{
 //	return libdram_init_DRAM(&para) * 1024 * 1024;
 //};
+static struct dram_para lpddr4 =
+{
+		.clk       = 792,
+		.type      = SUNXI_DRAM_TYPE_LPDDR4,
+		.dx_odt    = 0x07070707,
+		.dx_dri    = 0x0d0d0d0d,
+		.ca_dri    = 0x0e0e,
+		.para0     = 0x0d0a050c,
+		.para1     = 0x30ea,
+		.para2     = 0x1000,
+		.mr0       = 0x0,
+		.mr1       = 0x34,
+		.mr2       = 0x1b,
+		.mr3       = 0x33,
+		.mr4       = 0x3,
+		.mr5       = 0x0,
+		.mr6       = 0x0,
+		.mr11      = 0x04,
+		.mr12      = 0x72,
+		.mr13      = 0x0,
+		.mr14      = 0x7,
+		.mr16      = 0x0,
+		.mr17      = 0x0,
+		.mr22      = 0x26,
+		.tpr0      = 0x06060606,
+		.tpr1      = 0x04040404,
+		.tpr2      = 0x0,
+		.tpr3      = 0x0,
+		.tpr6      = 0x48000000,
+		.tpr10     = 0x00273333,
+		.tpr11     = 0x241f1923,
+		.tpr12     = 0x14151313,
+		.tpr13     = 0x81d20,
+		.tpr14     = 0x2023211f,
+};
+
+void xmctl_set_timing_params(struct xdram_para *para)
+{
+	libdram_mctl_com_set_channel_timing(& lpddr4);
+}
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	long int memsize;
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-	static struct dram_para lpddr4 =
-	{
-			.clk       = 792,
-			.type      = SUNXI_DRAM_TYPE_LPDDR4,
-			.dx_odt    = 0x07070707,
-			.dx_dri    = 0x0d0d0d0d,
-			.ca_dri    = 0x0e0e,
-			.para0     = 0x0d0a050c,
-			.para1     = 0x30ea,
-			.para2     = 0x1000,
-			.mr0       = 0x0,
-			.mr1       = 0x34,
-			.mr2       = 0x1b,
-			.mr3       = 0x33,
-			.mr4       = 0x3,
-			.mr5       = 0x0,
-			.mr6       = 0x0,
-			.mr11      = 0x04,
-			.mr12      = 0x72,
-			.mr13      = 0x0,
-			.mr14      = 0x7,
-			.mr16      = 0x0,
-			.mr17      = 0x0,
-			.mr22      = 0x26,
-			.tpr0      = 0x06060606,
-			.tpr1      = 0x04040404,
-			.tpr2      = 0x0,
-			.tpr3      = 0x0,
-			.tpr6      = 0x48000000,
-			.tpr10     = 0x00273333,
-			.tpr11     = 0x241f1923,
-			.tpr12     = 0x14151313,
-			.tpr13     = 0x81d20,
-			.tpr14     = 0x2023211f,
-	};
+
+	//arm_hardware_sdram_initialize0();
+
+	TP();
+	dbp();
 
 	memsize =   libdram_init_DRAM(& lpddr4) * 1024 * 1024;
 	//memsize =  init_DRAM(0, (void *) & lpddr4);
