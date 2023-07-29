@@ -562,9 +562,9 @@
 	// Назначения входов АЦП процессора.
 	enum 
 	{ 
-		WPM_POTIX = BOARD_ADCXKIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		IFGAIN_IXI = BOARD_ADCXKIN(0),			// MCP3208 CH0 IF GAIN
-		AFGAIN_IXI = BOARD_ADCXKIN(1),			// MCP3208 CH1 AF GAIN
+		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
+		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
+		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
 
 	#if WITHPOTIFGAIN
 		POTIFGAIN = IFGAIN_IXI,
@@ -609,8 +609,8 @@
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
-		FWD = BOARD_ADCXKIN(0),
-		REF = BOARD_ADCXKIN(1),
+		FWD = BOARD_ADCX2IN(0),
+		REF = BOARD_ADCX2IN(1),
 		PWRI = FWD,
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
@@ -618,10 +618,10 @@
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX2IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCXKIN(7),		// Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCXKINxxx(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		// ST LM235Z
@@ -632,7 +632,7 @@
 
 	#elif WITHAUTOTUNER_AVBELNN
 
-		XTHERMOIX = BOARD_ADCX2IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
@@ -643,23 +643,23 @@
 		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 
 		#if WITHSWRMTR
-			FWD = BOARD_ADCX2IN(3), REF = BOARD_ADCX2IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
+			FWD = BOARD_ADCX1IN(3), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 
-		VOLTSOURCE = BOARD_ADCXKIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		VOLTSOURCE = BOARD_ADCX2INxx(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
-		FWD = BOARD_ADCX2IN(3),
-		REF = BOARD_ADCX2IN(2),
+		FWD = BOARD_ADCX2INxx(3),
+		REF = BOARD_ADCX2INxx(2),
 		PWRI = FWD,
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
-		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
-		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
+		PASENSEIX2 = BOARD_ADCX2INxx(0),	// DRAIN
+		PAREFERIX2 = BOARD_ADCX2INxx(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
 	#else
 		// толькло основная плата - 5W усилитель
 
@@ -668,18 +668,18 @@
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
-			PASENSEIX = BOARD_ADCXKIN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
+			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCXKIN(7),		// Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX2IN(6),		// Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX1IN(6),		// Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
-			FWD = BOARD_ADCX2IN(3), REF = BOARD_ADCX2IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
+			FWD = BOARD_ADCX1IN(4), REF = BOARD_ADCX1IN(5),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
@@ -693,11 +693,11 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = BOARD_ADCX1IN(0), 	// клавиатура на АЦП MCP3208
-		KI1 = BOARD_ADCX1IN(1),
-		KI2 = BOARD_ADCX1IN(2),
-		KI3 = BOARD_ADCX1IN(3),
-		KI4 = BOARD_ADCX1IN(4)
+		KI0 = BOARD_ADCXKIN(0), 	// клавиатура на АЦП MCP3208
+		KI1 = BOARD_ADCXKIN(1),
+		KI2 = BOARD_ADCXKIN(2),
+		KI3 = BOARD_ADCXKIN(3),
+		KI4 = BOARD_ADCXKIN(4)
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП

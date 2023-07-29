@@ -484,8 +484,8 @@
 	#define targetfpga1		(UINT32_C(1) << 12)		// PI12 FPGA control registers CS1
 	//#define targetrtc1		(UINT32_C(1) << 10)		// PIx RTC DS1305 RTC_CS
 
-	#define targetadc2		(UINT32_C(1) << 8)	// PI8 on-board ADC MCP3208-BI/SL chip select (potentiometers) ADCCS1
-	#define targetadck		(UINT32_C(1) << 9)	// PI9 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADCCS2
+	#define targetadc2		(UINT32_C(1) << 7)	// PI7 on-board ADC MCP3208-BI/SL chip select (potentiometers, swr-meter) ADC1CS
+	#define targetadck		(UINT32_C(1) << 8)	// PI8 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 11)	// PI11 ext2 external SPI device (PA BOARD ADC) CSEXT2
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
