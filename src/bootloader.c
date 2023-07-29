@@ -272,6 +272,16 @@ void bootloader_fatfs_mainloop(void)
 
 #else /* WITHISBOOTLOADERFATFS */
 
+// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+void display2_keyboard_screen0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
 void bootloader_mainloop(void)
 {
 	PRINTF("bootloader_mainloop:\n");
@@ -309,6 +319,10 @@ void bootloader_mainloop(void)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
+
+		if (kbready)
+			PRINTF("kbch=%02x\n", kbch);
+
 		{
 			/* здесь можно добавить обработку каких-либо команд с debug порта */
 			char c;
