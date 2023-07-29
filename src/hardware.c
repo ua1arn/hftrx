@@ -3092,6 +3092,9 @@ SystemInit(void)
 {
 #if ! LINUX_SUBSYSTEM
 	sysinit_fpu_initialize();
+#if ! WITHISBOOTLOADER_DDR
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+#endif
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
@@ -3100,7 +3103,6 @@ SystemInit(void)
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
-	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
