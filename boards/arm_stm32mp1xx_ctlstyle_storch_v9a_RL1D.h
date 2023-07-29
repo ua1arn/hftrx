@@ -441,7 +441,7 @@
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
-	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
+	#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
