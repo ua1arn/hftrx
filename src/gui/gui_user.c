@@ -823,7 +823,9 @@ static void gui_main_process(void)
 			}
 			else if (bh == btn_2)
 			{
+#if WITHGUIDEBUG
 				gui_open_debug_window();
+#endif /*WITHGUIDEBUG */
 			}
 
 #if WITHFT8
