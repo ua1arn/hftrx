@@ -1,6 +1,6 @@
-#type; RISC_CFG
+#type; RISC_CFG; RISC-V core configuration register
 #base; RISC_CFG 0x06010000
-#comment; RISC-V core configuration register
+
 #regdef; RISC_STA_ADD0_REG; 0x0004; RISC Start Address0 Register
 #regdef; RISC_STA_ADD1_REG; 0x0008; RISC Start Address1 Register
 #regdef; RF1P_CFG_REG; 0x0010; RF1P Configuration Register

@@ -1,6 +1,6 @@
-#type; PMCTR
-#comment; Контроллер управления энергопотреблением
+#type; PMCTR; Контроллер управления энергопотреблением
 #base; PMCTR 0x38095000
+
 #regdef; SYS_PWR_STATUS; 0x00c; Регистр статуса доменов
 #regdef; SYS_PWR_IMASK; 0x010; Регистр маски прерывания SYS_PWR_INT
 #regdef; SYS_PWR_IRSTAT; 0x014; Регистр наличного статуса прерывания SYS_PWR_ISTAT

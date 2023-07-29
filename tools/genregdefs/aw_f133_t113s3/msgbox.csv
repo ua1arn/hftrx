@@ -1,8 +1,8 @@
-#type; MSGBOX
+#type; MSGBOX; Message Box
 #base; CPUX_MSGBOX 0x03003000
 #base; DSP_MSGBOX 0x01701000
 #irq; CPUX_MSGBOX_R 32
-#comment; Message Box
+
 #aggreg; N; 0x0020 2; MSGBOX (N=0-1)
 #regdef; MSGBOX_RD_IRQ_EN_REG; 0x000; 0x0020+N*0x0100 (N=0-1) MSGBOX Read IRQ Enable Register
 #regdef; MSGBOX_RD_IRQ_STATUS_REG; 0x004; 0x0024+N*0x0100 (N=0-1) MSGBOX Read IRQ Status Register

@@ -1,9 +1,7 @@
-#type; AUDIO_CODEC
+#type; AUDIO_CODEC; Audio Codec
 #base; AUDIO_CODEC 0x02030000
 #irq; AUDIO_CODEC 57
 #irqrv; AUDIO_CODEC 41
-
-#comment; Audio Codec
 
 #regdef;AC_DAC_DPC; 0x0000; DAC Digital Part Control Register
 #regdef;DAC_VOL_CTRL; 0x0004; DAC Volume Control Register

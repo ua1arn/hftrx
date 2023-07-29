@@ -1,11 +1,12 @@
 
 # Television Decoder (TVD) is an interface that transforms Composite Video Broadcast Signal (CVBS) or component signal into YUV data.
 
-#type; TVD_TOP
+#type; TVD_TOP; Video Decoding
 #base; TVD_TOP 0x05C00000
+
 #irq; TVD 139
 #irqrv; TVD 123
-#comment; Video Decoding
+
 
 #regdef; TVD_TOP_MAP; 0x0000; TVD TOP MAP Register
 #regdef; TVD_3D_CTL1; 0x0008; TVD 3D DMA CONTROL Register1
@@ -20,9 +21,9 @@
 #regdef; padding 0; 0x020; Need for address arithmetics
 #aggregend;
 
-#type; TVD0
+#type; TVD0; Video Decoding
 #base; TVD0 0x05C01000
-#comment; Video Decoding
+
 
 #regdef; TVD_EN; 0x0000; TVD MODULE CONTROL Register
 #regdef; TVD_MODE; 0x0004; TVD MODE CONTROL Register

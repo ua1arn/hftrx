@@ -1,3 +1,3 @@
-#type; DCU
+#type; DCU; Debug control interface?
 #base; DCU 0x03010000
-#comment; Debug control interface?
+

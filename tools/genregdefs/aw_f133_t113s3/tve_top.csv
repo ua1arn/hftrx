@@ -1,10 +1,9 @@
-#type; TV_Encoder
+#type; TV_Encoder; TV Encoder (display out interface = CVBS OUT)
 #base; TV_Encoder 0x05604000
 
 #irq; TV_Encoder 126
 #irqrv; TV_Encoder 110
 
-#comment; TV Encoder (display out interface = CVBS OUT)
 
 #regdef; TVE_000_REG; 0x0000; TV Encoder Clock Gating Register
 #regdef; TVE_004_REG; 0x0004; TV Encoder Configuration Register

@@ -8292,6 +8292,131 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>HSTIMER</name>
+  <description>High Speed Timer (HSTimer)</description>
+  <baseAddress>0x03008000</baseAddress>
+  <interrupt>
+   <name>HSTIMER0</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>HSTIMER1</name>
+   <value>72</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>HS_TMR_IRQ_EN_REG</name>
+    <displayName>HS_TMR_IRQ_EN_REG</displayName>
+    <description>HS Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR_IRQ_STAS_REG</name>
+    <displayName>HS_TMR_IRQ_STAS_REG</displayName>
+    <description>HS Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_CTRL_REG</name>
+    <displayName>HS_TMR0_CTRL_REG</displayName>
+    <description>HS Timer0 Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_INTV_LO_REG</name>
+    <displayName>HS_TMR0_INTV_LO_REG</displayName>
+    <description>HS Timer0 Interval Value Low Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_INTV_HI_REG</name>
+    <displayName>HS_TMR0_INTV_HI_REG</displayName>
+    <description>HS Timer0 Interval Value High Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_CURNT_LO_REG</name>
+    <displayName>HS_TMR0_CURNT_LO_REG</displayName>
+    <description>HS Timer0 Current Value Low Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_CURNT_HI_REG</name>
+    <displayName>HS_TMR0_CURNT_HI_REG</displayName>
+    <description>HS Timer0 Current Value High Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_CTRL_REG</name>
+    <displayName>HS_TMR1_CTRL_REG</displayName>
+    <description>HS Timer1 Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_INTV_LO_REG</name>
+    <displayName>HS_TMR1_INTV_LO_REG</displayName>
+    <description>HS Timer1 Interval Value Low Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_INTV_HI_REG</name>
+    <displayName>HS_TMR1_INTV_HI_REG</displayName>
+    <description>HS Timer1 Interval Value High Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_CURNT_LO_REG</name>
+    <displayName>HS_TMR1_CURNT_LO_REG</displayName>
+    <description>HS Timer1 Current Value Low Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_CURNT_HI_REG</name>
+    <displayName>HS_TMR1_CURNT_HI_REG</displayName>
+    <description>HS Timer1 Current Value High Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>I2S1</name>
   <description></description>
   <baseAddress>0x02033000</baseAddress>

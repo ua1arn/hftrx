@@ -68,8 +68,8 @@ typedef enum IRQn
     DMAC_S_IRQn = 83,                                 /*!< DMAC  */
     CE_NS_IRQn = 84,                                  /*!< CE Crypto Engine (CE) */
     CE_S_IRQn = 85,                                   /*!< CE Crypto Engine (CE) */
-    HSTIMER0_IRQn = 87,                               /*!< HSTIMER High Speed Timer */
-    HSTIMER1_IRQn = 88,                               /*!< HSTIMER High Speed Timer */
+    HSTIMER0_IRQn = 87,                               /*!< HSTIMER High Speed Timer (HSTimer) */
+    HSTIMER1_IRQn = 88,                               /*!< HSTIMER High Speed Timer (HSTimer) */
     GPADC_IRQn = 89,                                  /*!< GPADC  */
     THS_IRQn = 90,                                    /*!< THS Thermal Sensor */
     TIMER0_IRQn = 91,                                 /*!< TIMER  */
@@ -170,10 +170,12 @@ typedef enum IRQn
 #define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
 #define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)     /*!< MSGBOX Message Box Base */
+#define SPINLOCK_BASE ((uintptr_t) 0x03005000)        /*!< SPINLOCK Spin Lock module Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM Base */
+#define HSTIMER_BASE ((uintptr_t) 0x03008000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Debug control interface? Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
 #define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Crypto Engine (CE) Base */
@@ -1556,7 +1558,7 @@ typedef struct GPIOINT_Type
 /*
  * @brief HSTIMER
  */
-/*!< HSTIMER High Speed Timer */
+/*!< HSTIMER High Speed Timer (HSTimer) */
 typedef struct HSTIMER_Type
 {
     volatile uint32_t HS_TMR_IRQ_EN_REG;              /*!< Offset 0x000 HS Timer IRQ Enable Register */
@@ -2837,7 +2839,9 @@ typedef struct USB_OHCI_Capability_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
+#define SPINLOCK ((SPINLOCK_TypeDef *) SPINLOCK_BASE) /*!< SPINLOCK Spin Lock module register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
+#define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Crypto Engine (CE) register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Crypto Engine (CE) register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */

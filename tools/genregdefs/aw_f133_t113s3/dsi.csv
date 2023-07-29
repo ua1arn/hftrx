@@ -1,10 +1,9 @@
-#type; DSI
+#type; DSI; MIPI DSI Display Interface
 #base; DSI0 0x05450000
 
 #irq; DSI0 124
 #irqrv; DSI0 108
 
-#comment; MIPI DSI Display Interface
 
 #regdef; DSI_CTL; 0x0000; dsi_gctl 0x00 - 0x0c
 #regdef; DSI_GINT0; 0x0004; dsi_gint0 
@@ -54,10 +53,8 @@
 #regdef; DSI_DEBUG_DATA; 0x02f8; dsi_debug_data 
 #regdef; DSI_CMD_TX; 0x0300 64; dsi_cmd_tx[64] 0x300 - 0x3fc
 
-#type; DSI_DPHY
+#type; DSI_DPHY; MIPI DSI Physical Interface
 #base; DSI_DPHY 0x05451000
-
-#comment; MIPI DSI Physical Interface
 
 #regdef; DPHY_GCTL; 0x000;
 #regdef; DPHY_TX_CTL; 0x004;

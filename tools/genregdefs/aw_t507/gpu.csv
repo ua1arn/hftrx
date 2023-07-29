@@ -1,3 +1,2 @@
-#type; GPU
+#type; GPU; Mali G31 MP2
 #base; GPU 0x01800000
-#comment; Mali G31 MP2

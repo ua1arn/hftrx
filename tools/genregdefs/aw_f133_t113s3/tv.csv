@@ -1,9 +1,9 @@
-#type; TVE_TOP
+#type; TVE_TOP; TV Output (TV_Encoder)
 #base; TVE_TOP 0x05600000
+
 #irq; TVE 123
 #irqrv; TVE 107
 
-#comment; TV Output (TV_Encoder)
 
 #regdef; TVE_DAC_MAP; 0x0020; TV Encoder DAC MAP Register
 #regdef; TVE_DAC_STATUS; 0x0024; TV Encoder DAC STAUTS Register
