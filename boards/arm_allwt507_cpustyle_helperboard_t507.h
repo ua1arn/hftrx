@@ -102,6 +102,19 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
+	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
+	// AXP853T on HelperBoard T507 Core Board
+	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+	// See WITHSDRAM_AXP308
+	int axp853_initialize(void);
+
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		axp853_initialize(); /* Voltages are set here */ \
+	} while (0)
+
 #else /* WITHISBOOTLOADER */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
@@ -186,56 +199,19 @@
 
 #endif /* WITHISBOOTLOADER */
 
+#define LS020_RS				(0 * UINT32_C(1) << 9)			// PA9 signal
+#define LS020_RS_SET(v) 		do { gpioX_setstate(GPIOA, LS020_RS, !! (v) * LS020_RS); } while (0)
 
 #define LS020_RS_INITIALIZE() do { \
-		/*arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); *//* PD3 */ \
+		arm_hardware_pioa_outputs2m(LS020_RS, LS020_RS); /* PA9 */ \
 	} while (0)
+
+#define LS020_RESET				(UINT32_C(1) << 10)			// PA10 signal
+#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOA, LS020_RESET, !! (v) * LS020_RESET); } while (0)
 
 #define LS020_RESET_INITIALIZE() do { \
-		/*arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); *//* PD4 */ \
+		arm_hardware_pioa_outputs2m(LS020_RESET, LS020_RESET); /* PA10 */ \
 	} while (0)
-
-#define LS020_RS_SET(v) do { \
-		if ((v) != 0) LS020_RS_PORT_S(LS020_RS); \
-		else  LS020_RS_PORT_C(LS020_RS); \
-	} while (0)
-
-#define LS020_RESET_SET(v) do { \
-		if ((v) != 0) LS020_RESET_PORT_S(LS020_RESET); \
-		else  LS020_RESET_PORT_C(LS020_RESET); \
-	} while (0)
-
-#if LCDMODE_SPI_NA
-	// эти контроллеры требуют только RS
-
-	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS			(UINT32_C(1) << 3)			// PD3 signal
-
-#elif LCDMODE_SPI_RN
-	// эти контроллеры требуют только RESET
-
-	#define LS020_RESET_PORT_S(v)		do { } while (0) //do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET_PORT_C(v)		do { } while (0) //do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET			0//(UINT32_C(1) << 4)			// PD4 signal
-
-#elif LCDMODE_SPI_RA
-	// Эти контроллеры требуют RESET и RS
-	// LCDMODE_UC1608
-
-	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS			(UINT32_C(1) << 3)			// PD3 signal
-
-	#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET			(UINT32_C(1) << 2)			// PD4 signal
-
-#elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
-
-	#error Unsupported LCDMODE_HD44780
-
-#endif
 
 #if WITHENCODER
 
@@ -1060,22 +1036,6 @@
 		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
 	} while (0)
 #endif
-
-	#if WITHISBOOTLOADER
-
-		#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-		// AXP853T on HelperBoard T507 Core Board
-		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
-		// See WITHSDRAM_AXP308
-		int axp853_initialize(void);
-
-		/* Контроллер питания AXP305 */
-		#define BOARD_PMIC_INITIALIZE() do { \
-			axp853_initialize(); \
-		} while (0)
-	#endif /* WITHISBOOTLOADER */
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */

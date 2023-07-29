@@ -203,6 +203,9 @@
 
 #endif /* WITHISBOOTLOADER */
 
+#define LS020_RS				(1u << 3)			// PD3 signal
+#define LS020_RS_SET(v) 		do { gpioX_setstate(GPIOD, LS020_RS, !! (v) * LS020_RS); } while (0)
+
 #define LS020_RS_INITIALIZE() do { \
 		arm_hardware_piod_outputs2m(LS020_RS, LS020_RS); /* PD0 */ \
 	} while (0)
@@ -211,15 +214,8 @@
 		arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); /* PD22 */ \
 	} while (0)
 
-#define LS020_RS_SET(v) 		do { gpioX_setstate(GPIOD, LS020_RS, !! (v) * LS020_RS); } while (0)
-#define LS020_RS_PORT_S(v)		do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0)
-#define LS020_RS_PORT_C(v)		do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
-#define LS020_RS				(1u << 3)			// PD3 signal
-
-#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOD, LS020_RESET, !! (v) * LS020_RESET); } while (0)
-#define LS020_RESET_PORT_S(v)		do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0)
-#define LS020_RESET_PORT_C(v)		do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
 #define LS020_RESET				(1u << 22)			// PD22 signal
+#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOD, LS020_RESET, !! (v) * LS020_RESET); } while (0)
 
 #if WITHENCODER
 
