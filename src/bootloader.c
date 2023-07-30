@@ -321,7 +321,7 @@ void bootloader_mainloop(void)
 		processmessages(& kbch, & kbready, 0, NULL);
 
 		if (kbready)
-			PRINTF("kbch=%02x\n", kbch);
+			PRINTF("bkbch=%02x\n", kbch);
 
 		{
 			/* здесь можно добавить обработку каких-либо команд с debug порта */

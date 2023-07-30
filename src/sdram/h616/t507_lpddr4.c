@@ -4106,7 +4106,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	// artmem atl4b0832
 	long int memsize;
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-
+	return;
 	TP();
 	int status = sunxi_board_init();
 	PRINTF("status=%i\n", status);
