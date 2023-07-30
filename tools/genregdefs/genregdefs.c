@@ -544,7 +544,6 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 
 	// #type should be 1-st in register definitions
 	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_]; %1023[^\n]", typname, comment)) {
-		//fixme: not work!
 		//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
 		trimname(typname);
 		strcpy(pfl->bname, typname);
