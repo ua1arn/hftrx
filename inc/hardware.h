@@ -1304,7 +1304,7 @@ processmessages(
 	const FLASHMEM struct menudef * mp
 	);
 
-typedef struct dram_para_t
+typedef struct dram_para_tag
 {
 	//normal configuration
 	uint32_t        	dram_clk;

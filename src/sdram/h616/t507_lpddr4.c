@@ -4094,7 +4094,7 @@ boot0_private_head_t  BT0_head;
 //extern int debug_mode;
 
 int init_DRAM(int, struct dram_para *);
-void sunxi_board_init(void);
+int sunxi_board_init(void);
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -4106,25 +4106,18 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 
 	TP();
-	sunxi_board_init();
-//	sunxi_board_pll_init();
-	//sunxi_set_printf_debug_mode(1);
+	int status = sunxi_board_init();
+	PRINTF("status=%i\n", status);
 	TP();
-	//memsize =  dram_power_up_process(& lpddr4);
-	memsize =  init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
-	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
+	memsize = init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
+	PRINTF("arm_hardware_sdram_initialize: v=%ld, %ld MB\n", memsize, memsize / 1024 / 1024);
 	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 	//memsize =   libdram_init_DRAM(& lpddr4) * 1024 * 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
 	//PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
 
-//	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
-	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
-	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
-	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
-
-	if (xdramc_simple_wr_test(4, 4096))
+	if (xdramc_simple_wr_test(4, 32))
 	{
 		PRINTF("xdramc_simple_wr_test failed\n");
 	}
@@ -4134,7 +4127,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 
 	int e;
-	for (e = 0; e < 5; ++ e)
+	for (e = 0; e < 0; ++ e)
 	{
 		unsigned uret;
 		unsigned size = 64 * 1024 * 1024;
@@ -4148,6 +4141,11 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		}
 		TP();
 	}
+
+	//	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
+	//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
+	//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
+	printhex32(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
 #endif
