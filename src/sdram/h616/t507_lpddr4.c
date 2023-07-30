@@ -1795,10 +1795,10 @@ static unsigned long mctl_calc_size(struct xdram_para *para)
 
 static struct xdram_para xpara = {
 	.clk = 800, //CONFIG_DRAM_CLK,
-	.type = SUNXI_DRAM_TYPE_DDR3,
+	.type = SUNXI_DRAM_TYPE_LPDDR4,
 };
 
-unsigned long sunxi_dram_init(void)
+unsigned long XXXXsunxi_dram_init(void)
 {
 	struct sunxi_prcm_reg *const prcm =
 		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
@@ -1823,8 +1823,6 @@ unsigned long sunxi_dram_init(void)
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize0(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-	unsigned long v = sunxi_dram_init();
-	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
 
 	dbp();
 	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
@@ -1840,7 +1838,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize0(void)
 struct dram_para
 {
 	uint32_t clk;
-	enum sunxi_dram_type type;
+	uint32_t /*enum sunxi_dram_type */type;
 	uint32_t dx_odt;
 	uint32_t dx_dri;
 	uint32_t ca_dri;
@@ -2116,7 +2114,6 @@ static void libdram_mctl_sys_init(struct dram_para *para)
 	libdram_ccm_set_pll_ddr0_sccg(para);
 	clrsetbits_le32(&ccm->pll5_cfg, 0xff03, CCM_PLL5_CTRL_EN | CCM_PLL5_LOCK_EN | CCM_PLL5_OUT_EN | CCM_PLL5_CTRL_N(para->clk * 2 / 24));
 	libdram_mctl_await_completion(&ccm->pll5_cfg, CCM_PLL5_LOCK, CCM_PLL5_LOCK);
-	unsigned ctrl_freq = ((((CCU->PLL_DDR0_CTRL_REG >> 8) & 0xFF) + 1) * 24) / 2;
 
 	/* Configure DRAM mod clock */
 	clrbits_le32(&ccm->dram_clk_cfg, 0x3000000);
@@ -3819,7 +3816,7 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 	}
 
 	PRINTF("DRAM CLK = %d MHZ\n", (int) para->clk);
-	PRINTF("DRAM Type = %d (3:DDR3,4:DDR4,7:LPDDR3,8:LPDDR4)\n", para->type);
+	PRINTF("DRAM Type = %d (3:DDR3,4:DDR4,7:LPDDR3,8:LPDDR4)\n", (int) para->type);
 	TP();
 	dbp();
 
@@ -3929,26 +3926,158 @@ void xmctl_set_timing_params(struct xdram_para *para)
 	libdram_mctl_com_set_channel_timing(& lpddr4);
 }
 
+/*
+ * (C) Copyright 2012
+ *     wangflord@allwinnertech.com
+ *
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program;
+ *
+ */
+#define STAMP_VALUE                     0x5F0A6C39
+
+
+typedef struct
+{
+	unsigned int		ChannelCnt;
+	unsigned int        ChipCnt;                            //the count of the total nand flash chips are currently connecting on the CE pin
+    unsigned int       ChipConnectInfo;                    //chip connect information, bit == 1 means there is a chip connecting on the CE pin
+	unsigned int		RbCnt;
+	unsigned int		RbConnectInfo;						//the connect  information of the all rb  chips are connected
+    unsigned int        RbConnectMode;						//the rb connect  mode
+	unsigned int        BankCntPerChip;                     //the count of the banks in one nand chip, multiple banks can support Inter-Leave
+    unsigned int        DieCntPerChip;                      //the count of the dies in one nand chip, block management is based on Die
+    unsigned int        PlaneCntPerDie;                     //the count of planes in one die, multiple planes can support multi-plane operation
+    unsigned int        SectorCntPerPage;                   //the count of sectors in one single physic page, one sector is 0.5k
+    unsigned int       PageCntPerPhyBlk;                   //the count of physic pages in one physic block
+    unsigned int       BlkCntPerDie;                       //the count of the physic blocks in one die, include valid block and invalid block
+    unsigned int       OperationOpt;                       //the mask of the operation types which current nand flash can support support
+    unsigned int        FrequencePar;                       //the parameter of the hardware access clock, based on 'MHz'
+    unsigned int        EccMode;                            //the Ecc Mode for the nand flash chip, 0: bch-16, 1:bch-28, 2:bch_32
+    unsigned char       NandChipId[8];                      //the nand chip id of current connecting nand chip
+    unsigned int       ValidBlkRatio;                      //the ratio of the valid physical blocks, based on 1024
+	unsigned int 		good_block_ratio;					//good block ratio get from hwscan
+	unsigned int		ReadRetryType;						//the read retry type
+	unsigned int       DDRType;
+	unsigned int		Reserved[32];
+}boot_nand_para_t0;
+
+
+//ͨ�õģ���GPIO��ص����ݽṹ
+typedef struct _normal_gpio_cfg
+{
+    unsigned char      port;                       //�˿ں�
+    unsigned char      port_num;                   //�˿��ڱ��
+    char      mul_sel;                    //���ܱ��
+    char      pull;                       //����״̬
+    char      drv_level;                  //������������
+    char      data;                       //�����ƽ
+    unsigned char      reserved[2];                //����λ����֤����
+}
+normal_gpio_cfg;
+
+/******************************************************************************/
+/*                              file head of Boot0                            */
+/******************************************************************************/
+typedef struct _boot0_private_head_t
+{
+	unsigned int            prvt_head_size;
+	char                    prvt_head_vsn[4];       // the version of boot0_private_head_t
+	unsigned int            dram_para[32];          // DRAM patameters for initialising dram. Original values is arbitrary,
+	int						uart_port;              // UART���������
+	normal_gpio_cfg         uart_ctrl[2];           // UART������(���Դ�ӡ��)������Ϣ
+	int                     enable_jtag;            // 1 : enable,  0 : disable
+    normal_gpio_cfg	        jtag_gpio[5];           // ����JTAG��ȫ��GPIO��Ϣ
+    normal_gpio_cfg         storage_gpio[32];       // �洢�豸 GPIO��Ϣ
+    char                    storage_data[512 - sizeof(normal_gpio_cfg) * 32];      // �û�����������Ϣ
+    //boot_nand_connect_info_t    nand_connect_info;
+}boot0_private_head_t;
+
+
+int xdramc_simple_wr_test(unsigned int mem_mb, int len)
+{
+	unsigned int  offs	= (mem_mb >> 1) << 18; // half of memory size
+	const uint32_t  patt1 = 0x01234567;
+	const uint32_t  patt2 = 0xfedcba98;
+	uint32_t *addr, v1, v2, i;
+
+	addr = (uint32_t *)CONFIG_SYS_SDRAM_BASE;
+	for (i = 0; i != len; i++, addr++) {
+		write32((virtual_addr_t)addr, patt1 + i);
+		write32((virtual_addr_t)(addr + offs), patt2 + i);
+	}
+
+	addr = (uint32_t *)CONFIG_SYS_SDRAM_BASE;
+	for (i = 0; i != len; i++) {
+		v1 = read32((virtual_addr_t)(addr + i));
+		v2 = patt1 + i;
+		if (v1 != v2) {
+			PRINTF("DRAM simple test FAIL.\n");
+			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, (void *) (addr + i));
+			return 1;
+		}
+		v1 = read32((virtual_addr_t)(addr + offs + i));
+		v2 = patt2 + i;
+		if (v1 != v2) {
+			PRINTF("DRAM simple test FAIL.\n");
+			PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, (void *) (addr + offs + i));
+			return 1;
+		}
+	}
+	PRINTF("DRAM simple test OK.\n");
+	return 0;
+}
+
+boot0_private_head_t  BT0_head;
+//extern int debug_mode;
+
+int init_DRAM(int, struct dram_para *);
+void sunxi_board_init(void);
+
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
+	ASSERT(sizeof BT0_head.dram_para == sizeof lpddr4);
+	memcpy(& BT0_head.dram_para, & lpddr4, sizeof BT0_head.dram_para);
+	// https://artmemtech.com/
+	// artmem atl4b0832
 	long int memsize;
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 
-	//arm_hardware_sdram_initialize0();
-
 	TP();
-	dbp();
-
-	memsize =   libdram_init_DRAM(& lpddr4) * 1024 * 1024;
-	//memsize =  init_DRAM(0, (void *) & lpddr4);
-
+	sunxi_board_init();
+	//sunxi_set_printf_debug_mode(1);
+	TP();
+	memsize =  init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
+	//memsize =   libdram_init_DRAM(& lpddr4) * 1024 * 1024;
+	//memsize =  dram_power_up_process(& lpddr4);
+	//dbp();
+	//PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
 
 	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
-//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
-//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
+	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
+	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
 	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 
+	if (xdramc_simple_wr_test(1024 * 3, 4096))
+	{
+		PRINTF("xdramc_simple_wr_test failed\n");
+	}
+	else
+	{
+		PRINTF("xdramc_simple_wr_test passed\n");
+	}
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
 #endif

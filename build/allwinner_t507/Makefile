@@ -326,7 +326,7 @@ $(OBJSA_APP) $(ZOBJSA):
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 %_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
-	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
+	$(GPP) libsun50iw9p1_spinor.a $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
 %_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
