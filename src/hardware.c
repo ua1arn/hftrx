@@ -2853,7 +2853,7 @@ sysinit_mmu_initialize(void)
 
 // ОБщая для всех процессоров инициализация
 static void FLASHMEMINITFUNC
-sysinit_cache_initialize(void)
+sysinit_cache_core0_initialize(void)
 {
 #if defined (__CORTEX_M)
 	#if __ICACHE_PRESENT
@@ -3053,7 +3053,7 @@ sysinit_cache_initialize(void)
 
 /* инициадихации кеш-памяти, спцифические для CORE0 */
 static void FLASHMEMINITFUNC
-sysinit_cache_L2_cpu0_initialize(void)
+sysinit_cache_L2_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
@@ -3104,8 +3104,8 @@ SystemInit(void)
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_mmu_initialize();
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
+	sysinit_cache_core0_initialize();	// caches iniitialize
+	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
 #endif /* ! LINUX_SUBSYSTEM */
 }
@@ -3132,7 +3132,7 @@ static void cortexa_cpuinfo(void)
 #if WITHSMPSYSTEM && ! WITHRTOS
 
 static void FLASHMEMINITFUNC
-sysinit_cache_cpu1_initialize(void)
+sysinit_cache_coreN_initialize(void)
 {
 #if (__CORTEX_A != 0)
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
@@ -3874,8 +3874,8 @@ void Reset_CPUn_Handler(void)
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_cpu1_initialize();
+	sysinit_cache_core0_initialize();	// caches iniitialize
+	sysinit_cache_coreN_initialize();
 
 	{
 		GIC_Enable();
