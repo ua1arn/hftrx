@@ -3887,7 +3887,7 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 //};
 static struct dram_para lpddr4 =
 {
-		.clk       = 792,
+		.clk       = 533,//792,
 		.type      = SUNXI_DRAM_TYPE_LPDDR4,
 		.dx_odt    = 0x07070707,
 		.dx_dri    = 0x0d0d0d0d,
@@ -3913,10 +3913,10 @@ static struct dram_para lpddr4 =
 		.tpr1      = 0x04040404,
 		.tpr2      = 0x0,
 		.tpr3      = 0x0,
-		.tpr6      = 0x48000000,
+		.tpr6      = 0x40808080,
 		.tpr10     = 0x00273333,
-		.tpr11     = 0x241f1923,
-		.tpr12     = 0x14151313,
+		.tpr11     = 0x23272724,
+		.tpr12     = 0x09080908,
 		.tpr13     = 0x81d20,
 		.tpr14     = 0x2023211f,
 };
@@ -4039,6 +4039,57 @@ int xdramc_simple_wr_test(unsigned int mem_mb, int len)
 	return 0;
 }
 
+
+static unsigned long rand_val = 123456UL;
+
+static void local_random_init(void)
+{
+	rand_val = 123456UL;
+}
+
+static unsigned long local_random(void)
+{
+
+
+	if (rand_val & 0x80000000UL)
+		rand_val = (rand_val << 1);
+	else
+		rand_val = (rand_val << 1) ^ 0x201051UL;
+
+	return (rand_val);
+}
+
+static uint32_t ddr_check_rand(unsigned long sizeee)
+{
+	typedef uint16_t test_t;
+	const uint32_t sizeN = sizeee / sizeof (test_t);
+	volatile test_t * const p = (volatile test_t *) CONFIG_SYS_SDRAM_BASE;
+	uint32_t i;
+	uint32_t uret;
+
+	// fill
+	//local_random_init();
+	uint32_t seed = rand_val;
+
+	for (i = 0; i < sizeN; ++ i)
+	{
+		//ddr_check_progress(i);
+		p [i] = local_random();
+	}
+	// compare
+	//local_random_init();
+	rand_val = seed;
+	//p = (volatile uint16_t *) STM32MP_DDR_BASE;
+	for (i = 0; i < sizeN; ++ i)
+	{
+		//ddr_check_progress(i);
+		if (p [i] != (test_t) local_random())
+			return i * sizeof (test_t);
+	}
+
+	return sizeee;	// OK
+}
+
 boot0_private_head_t  BT0_head;
 //extern int debug_mode;
 
@@ -4056,27 +4107,46 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 	TP();
 	sunxi_board_init();
+//	sunxi_board_pll_init();
 	//sunxi_set_printf_debug_mode(1);
 	TP();
+	//memsize =  dram_power_up_process(& lpddr4);
 	memsize =  init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
+	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 	//memsize =   libdram_init_DRAM(& lpddr4) * 1024 * 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
 	//PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
 
-	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
+//	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
 	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
 	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 
-	if (xdramc_simple_wr_test(1024 * 3, 4096))
+	if (xdramc_simple_wr_test(4, 4096))
 	{
 		PRINTF("xdramc_simple_wr_test failed\n");
 	}
 	else
 	{
 		PRINTF("xdramc_simple_wr_test passed\n");
+	}
+
+	int e;
+	for (e = 0; e < 5; ++ e)
+	{
+		unsigned uret;
+		unsigned size = 64 * 1024 * 1024;
+		int partfortest = 16;
+		uret = ddr_check_rand(size / partfortest);
+		if (uret != (size / partfortest)) {
+			PRINTF("DDR random test: 0x%08x does not match DT config: 0x%08x\n",
+			      uret, size / partfortest);
+			for(;;)
+				;
+		}
+		TP();
 	}
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
