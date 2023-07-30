@@ -285,7 +285,11 @@ boot_run_h616: h616_fsbl_frz.alw32
 	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr_H616)
 
-app_run: $(PROJECT)_app.alw32 boot_run_h616
+boot_run_t507:
+	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
+	$(XFEL) exec 0x00032c00
+
+app_run: $(PROJECT)_app.alw32 boot_run_t507
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 
@@ -325,8 +329,9 @@ $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
+# add libsun50iw9p1_spinor.a 
 %_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
-	$(GPP) libsun50iw9p1_spinor.a $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
 %_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)

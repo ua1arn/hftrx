@@ -2171,6 +2171,7 @@ uint_fast32_t allwnr_a64_get_mbus_freq(void)
 	const uint_fast32_t clkdiv = 1u + ((clkreg >> 0) & 0x07);	// MBUS_SCLK_RATIO_M
 	switch ((clkreg >> 24) & 0x03)	/* MBUS_SCLK_SRC */
 	{
+	default:
 	case 0x00:
 		// 00: 00: OSC24M
 		return allwnrt113_get_hosc_freq() / clkdiv;

@@ -645,6 +645,7 @@ void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 	}
 }
 
+
 #if 1//CPUSTYLE_H616
 
 // https://github.com/iuncuim/u-boot/blob/t507-lpddr4/arch/arm/mach-sunxi/dram_timings/h616_ddr3_1333.c
@@ -1834,8 +1835,9 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize0(void)
 
 #if 1
 
+// https://github.com/engSinteck/A133_Image/blob/125333364cdacc364a5ea855019756a03a3043dd/longan/brandy/arisc/ar100s/include/driver/dram.h#L83
 
-struct dram_para
+typedef struct dram_para
 {
 	uint32_t clk;
 	uint32_t /*enum sunxi_dram_type */type;
@@ -1869,7 +1871,7 @@ struct dram_para
 	uint32_t tpr12;
 	uint32_t tpr13;
 	uint32_t tpr14;
-};
+} dram_para_t;
 
 struct dram_timing
 {
@@ -3887,7 +3889,7 @@ static uint32_t libdram_init_DRAM(struct dram_para *para)
 //};
 static struct dram_para lpddr4 =
 {
-		.clk       = 533,//792,
+		.clk       = 792,
 		.type      = SUNXI_DRAM_TYPE_LPDDR4,
 		.dx_odt    = 0x07070707,
 		.dx_dri    = 0x0d0d0d0d,

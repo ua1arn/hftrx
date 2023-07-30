@@ -823,6 +823,28 @@ static int axp858_set_dcdc3(unsigned int mvolt)
 				AXP858_OUTPUT_CTRL1_DCDC3_EN);
 }
 
+static int axp858_set_dcdc4(unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (mvolt >= 1140)
+		cfg = 32 + axp858_mvolt_to_cfg(mvolt, 1140, 1840, 20);
+	else
+		cfg = axp858_mvolt_to_cfg(mvolt, 800, 1120, 10);
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL1,
+					AXP858_OUTPUT_CTRL1_DCDC4_EN);
+
+	ret = pmic_bus_write(AXP858_DCDC4_CTRL, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP858_OUTPUT_CTRL1,
+				AXP858_OUTPUT_CTRL1_DCDC4_EN);
+}
+
 static int axp858_set_dcdc5(unsigned int mvolt)
 {
 	int ret;
@@ -1058,7 +1080,7 @@ int axp853_initialize(void)
 	VERIFY(0 == axp858_set_aldo2(1800));
 	VERIFY(0 == axp858_set_aldo3(2500));		// VPP DRAM
 	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
-	VERIFY(0 == axp858_set_aldo5(3300));		// locked to 2,8 ?
+	VERIFY(0 == axp858_set_aldo5(3300));		// VCC-PE
 
 	axp858_set_sw(1);
 	//local_delay_ms(100);

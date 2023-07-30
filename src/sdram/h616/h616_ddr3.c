@@ -271,7 +271,7 @@ struct sunxi_mctl_ctl_reg {
 #define MSTR_ACTIVE_RANKS(x)	(((x == 2) ? 3 : 1) << 24)
 #define MSTR_BURST_LENGTH(x)	(((x) >> 1) << 16)
 
-struct dram_para {
+struct h616_dram_para {
 	uint32_t clk;
 	enum sunxi_dram_type type;
 	uint32_t cols;
@@ -288,7 +288,7 @@ static inline int ns_to_t(int nanoseconds)
 	return DIV_ROUND_UP(ctrl_freq * (uint_fast64_t) nanoseconds, 1000);
 }
 
-void mctl_set_timing_params(struct dram_para *para);
+void mctl_set_timing_params(struct h616_dram_para *para);
 
 
 struct sunxi_ccm_reg {
@@ -629,7 +629,7 @@ void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 // https://github.com/apritzel/u-boot/blob/master/arch/arm/mach-sunxi/dram_timings/h616_ddr3_1333.c#L18
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
-void mctl_set_timing_params(struct dram_para *para)
+void mctl_set_timing_params(struct h616_dram_para *para)
 {
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
@@ -821,7 +821,7 @@ static void mctl_set_master_priority(void)
 	__DMB();
 }
 
-static void mctl_sys_init(struct dram_para *para)
+static void mctl_sys_init(struct h616_dram_para *para)
 {
 	const unsigned reffreq = allwnrt113_get_hosc_freq() / 1000 / 1000;
 	struct sunxi_ccm_reg * const ccm =
@@ -871,7 +871,7 @@ static void mctl_sys_init(struct dram_para *para)
 	writel(0x8000, &mctl_ctl->clken);
 }
 
-static void mctl_set_addrmap(struct dram_para *para)
+static void mctl_set_addrmap(struct h616_dram_para *para)
 {
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
@@ -1003,7 +1003,7 @@ static void mctl_phy_configure_odt(void)
 	__DMB();
 }
 
-static int mctl_phy_write_leveling(struct dram_para *para)
+static int mctl_phy_write_leveling(struct h616_dram_para *para)
 {
 	int result = 1 /*true*/;
 	uint32_t val;
@@ -1058,7 +1058,7 @@ static int mctl_phy_write_leveling(struct dram_para *para)
 	return result;
 }
 
-static int mctl_phy_read_calibration(struct dram_para *para)
+static int mctl_phy_read_calibration(struct h616_dram_para *para)
 {
 	int result = 1 /*true*/;
 	uint32_t val, tmp;
@@ -1117,7 +1117,7 @@ static int mctl_phy_read_calibration(struct dram_para *para)
 	return result;
 }
 
-static int mctl_phy_read_training(struct dram_para *para)
+static int mctl_phy_read_training(struct h616_dram_para *para)
 {
 	uint32_t val1, val2, *ptr1, *ptr2;
 	int result = 1 /*true*/;
@@ -1206,7 +1206,7 @@ static int mctl_phy_read_training(struct dram_para *para)
 	return result;
 }
 
-static int mctl_phy_write_training(struct dram_para *para)
+static int mctl_phy_write_training(struct h616_dram_para *para)
 {
 	uint32_t val1, val2, *ptr1, *ptr2;
 	int result = 1 /*true*/;
@@ -1294,7 +1294,7 @@ static int mctl_phy_write_training(struct dram_para *para)
 	return result;
 }
 
-static int mctl_phy_bit_delay_compensation(struct dram_para *para)
+static int mctl_phy_bit_delay_compensation(struct h616_dram_para *para)
 {
 	uint32_t *ptr;
 	int i;
@@ -1406,7 +1406,7 @@ static int mctl_phy_bit_delay_compensation(struct dram_para *para)
 	return 1 /*true*/;
 }
 
-static int mctl_phy_init(struct dram_para *para)
+static int mctl_phy_init(struct h616_dram_para *para)
 {
 	struct sunxi_mctl_com_reg * const mctl_com =
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
@@ -1570,7 +1570,7 @@ static int mctl_phy_init(struct dram_para *para)
 	return 1 /*true*/;
 }
 
-static int mctl_ctrl_init(struct dram_para *para)
+static int mctl_ctrl_init(struct h616_dram_para *para)
 {
 	struct sunxi_mctl_com_reg * const mctl_com =
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
@@ -1652,13 +1652,13 @@ static int mctl_ctrl_init(struct dram_para *para)
 	return 1 /*true*/;
 }
 
-static int mctl_core_init(struct dram_para *para)
+static int mctl_core_init(struct h616_dram_para *para)
 {
 	mctl_sys_init(para);
 	return mctl_ctrl_init(para);
 }
 
-static void mctl_auto_detect_rank_width(struct dram_para *para)
+static void mctl_auto_detect_rank_width(struct h616_dram_para *para)
 {
 	/* this is minimum size that it's supported */
 	para->cols = 8;
@@ -1701,7 +1701,7 @@ static void mctl_auto_detect_rank_width(struct dram_para *para)
 		;
 }
 
-static void mctl_auto_detect_dram_size(struct dram_para *para)
+static void mctl_auto_detect_dram_size(struct h616_dram_para *para)
 {
 	/* detect row address bits */
 	para->cols = 8;
@@ -1727,7 +1727,7 @@ static void mctl_auto_detect_dram_size(struct dram_para *para)
 	}
 }
 
-static unsigned long mctl_calc_size(struct dram_para *para)
+static unsigned long mctl_calc_size(struct h616_dram_para *para)
 {
 	uint8_t width = para->bus_full_width ? 4 : 2;
 
@@ -1737,7 +1737,7 @@ static unsigned long mctl_calc_size(struct dram_para *para)
 
 unsigned long sunxi_dram_init(void)
 {
-	 struct dram_para para = {
+	 struct h616_dram_para para = {
 		.clk = BOARD_CONFIG_DRAM_CLK,
 		.type = BOARD_CONFIG_DRAM_TYPE,
 	};

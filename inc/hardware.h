@@ -1304,84 +1304,6 @@ processmessages(
 	const FLASHMEM struct menudef * mp
 	);
 
-typedef struct dram_para_tag
-{
-	//normal configuration
-	uint32_t        	dram_clk;
-	uint32_t        	dram_type;	//dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
-	//uint32_t        	lpddr2_type;	//LPDDR2 type S4:0 S2:1 NVM:2
-	uint32_t        	dram_zq;	//do not need
-	uint32_t		dram_odt_en;
-
-	//control configuration
-	uint32_t		dram_para1;
-	uint32_t		dram_para2;
-
-	//timing configuration
-	uint32_t		dram_mr0;
-	uint32_t		dram_mr1;
-	uint32_t		dram_mr2;
-	uint32_t		dram_mr3;
-	uint32_t		dram_tpr0;	//DRAMTMG0
-	uint32_t		dram_tpr1;	//DRAMTMG1
-	uint32_t		dram_tpr2;	//DRAMTMG2
-	uint32_t		dram_tpr3;	//DRAMTMG3
-	uint32_t		dram_tpr4;	//DRAMTMG4
-	uint32_t		dram_tpr5;	//DRAMTMG5
-   	uint32_t		dram_tpr6;	//DRAMTMG8
-
-	//reserved for future use
-	uint32_t		dram_tpr7;
-	uint32_t		dram_tpr8;
-	uint32_t		dram_tpr9;
-	uint32_t		dram_tpr10;
-	uint32_t		dram_tpr11;
-	uint32_t		dram_tpr12;
-	uint32_t		dram_tpr13;
-} dram_para_t;
-
-signed int init_DRAM(int type, dram_para_t *para); // s0
-
-
-// https://github.com/engSinteck/A133_Image/blob/125333364cdacc364a5ea855019756a03a3043dd/longan/brandy/arisc/ar100s/include/driver/dram.h#L83
-
-typedef struct dram4_para
-{
-	unsigned int	dram_clk;
-	unsigned int	dram_type;
-	unsigned int	dram_dx_odt;
-	unsigned int	dram_dx_dri;
-	unsigned int	dram_ca_dri;
-	unsigned int	dram_para0;
-	unsigned int	dram_para1;
-	unsigned int	dram_para2;
-	unsigned int	dram_mr0;
-	unsigned int	dram_mr1;
-	unsigned int	dram_mr2;
-	unsigned int	dram_mr3;
-	unsigned int    dram_mr4;
-	unsigned int    dram_mr5;
-	unsigned int    dram_mr6;
-	unsigned int    dram_mr11;
-	unsigned int    dram_mr12;
-	unsigned int    dram_mr13;
-	unsigned int    dram_mr14;
-	unsigned int    dram_mr16;
-	unsigned int    dram_mr17;
-	unsigned int    dram_mr22;
-	unsigned int	dram_tpr0;
-	unsigned int	dram_tpr1;
-	unsigned int	dram_tpr2;
-	unsigned int	dram_tpr3;
-	unsigned int    dram_tpr6;
-	unsigned int	dram_tpr10;
-	unsigned int	dram_tpr11;
-	unsigned int	dram_tpr12;
-	unsigned int	dram_tpr13;
-	unsigned int	dram_tpr14;
-} dram4_para_t;
-
-signed int init_DRAM4(int type, dram_para_t *para); // s0
 
 uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
@@ -1443,5 +1365,9 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 }
 
 #endif /* (__CORTEX_A == 53U) */
+
+// Substitutions for t507 ddr ram init
+//#define i2c_read local_i2c_read
+//#define i2c_write local_i2c_write
 
 #endif // HARDWARE_H_INCLUDED

@@ -812,6 +812,32 @@ int sys_dram_init(void)
 	return 1;
 }
 
+///////////////////////
+///
+
+
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+	PRINTF("arm_hardware_sdram_initialize start\n");
+
+//	dram_clock_init();
+//	init_dram_controller();
+
+	sys_dram_init();
+//	TP();
+//
+//	printhex(0x40000000, (void *) 0x40000000, 256);
+//	memset((void *) 0x40000000, 0xFF, 128);
+//	memset((void *) 0x40000080, 0x00, 128);
+//	printhex(0x40000000, (void *) 0x40000000, 256);
+//	memset((void *) 0x70000000, 0xFF, 128);
+//	memset((void *) 0x70000080, 0x00, 128);
+//	printhex(0x70000000, (void *) 0x70000000, 256);
+
+	PRINTF("arm_hardware_sdram_initialize done\n");
+
+}
+
 #endif
 
 
