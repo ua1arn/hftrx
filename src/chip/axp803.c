@@ -1041,6 +1041,14 @@ int axp853_initialize(void)
 	pmu_axp858_ap_reset_enable();	// без этой строчки не инициалищируется после reset
 	axp858_set_sw(0);
 
+	// https://artmemtech.com/
+	// artmem atl4b0832
+
+	// VDD2, VDDQ = 1.06–1.17V; VDD1 = 1.70–1.95V; TC = 0°C to +85°C
+
+	// F1 ball VDD1: 1.8
+	// A4 ball VDD2: vcc_dram 1.1
+
 	VERIFY(0 == axp858_set_dcdc1(3300));
 	VERIFY(0 == axp858_set_dcdc2(900));		// CPU
 	VERIFY(0 == axp858_set_dcdc3(900));
@@ -1048,7 +1056,7 @@ int axp853_initialize(void)
 	VERIFY(0 == axp858_set_dcdc5(1100));		// VCC-DRAM - 1.1V for LPDDR4
 	VERIFY(0 == axp858_set_aldo1(1800));
 	VERIFY(0 == axp858_set_aldo2(1800));
-	VERIFY(0 == axp858_set_aldo3(2500));
+	VERIFY(0 == axp858_set_aldo3(2500));		// VPP DRAM
 	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
 	VERIFY(0 == axp858_set_aldo5(3300));		// locked to 2,8 ?
 
