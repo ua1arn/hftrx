@@ -6437,10 +6437,11 @@ void testpng(const void * pngbuffer)
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR
     \return               Configuration Base Address Register
+    MRC p15, 1, <Rt>, c15, c3, 0; Read CBAR into Rt
  */
 __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
 {
-	uint64_t result;
+	uint32_t result;
   __get_CP(15, 1, result, 15, 3, 0);
   return(result);
 }
@@ -6875,15 +6876,18 @@ void hightests(void)
 #endif
 #if 0 && CPUSTYLE_CA53
 	{
-		const uint_fast32_t cbar = __get_CA53_CBAR();
-		const uintptr_t periphbase = (uintptr_t) (cbar & 0xFFFC00000u) | (uintptr_t) (cbar & 0xFF) << 32;
+		const uint_fast32_t ca53_cbar = __get_CA53_CBAR();
+		const uint64_t periphbase = (uint64_t) (ca53_cbar & UINT32_C(0xFFFC0000)) | ((uint64_t) (ca53_cbar & UINT32_C(0xFF)) << 32);
 
+		//PRINTF("__get_CBAR()=%08X\n", (unsigned) __get_CBAR());
 		PRINTF("__get_CPUACTLR()=%08X\n", (unsigned) __get_CPUACTLR());
 		PRINTF("__get_CPUECTLR()=%08X\n", (unsigned) __get_CPUECTLR());
-		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) periphbase);			/* SYS_CFG_BASE */
+		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) ca53_cbar);			/* SYS_CFG_BASE */
+		PRINTF("periphbase=%016" PRIX64 "\n", periphbase);			/* SYS_CFG_BASE */
 
 		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
 		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
+		//printhex(ca53_cbar, ca53_cbar, 256);
 
 		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
 		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
