@@ -3,7 +3,7 @@
 @set TARGET=E_but_may_be_changed
 
 cfimager -raw -offset 0x2000 -f boot0_sdcard_sun50iw9p1.bin -d %TARGET%
-cfimager -raw -offset 0x1004000 -f bl31.bin -d %TARGET%
+cfimager -raw -offset 0x1004000 -f o.bin -d %TARGET%
 
 
 rem boot0_nand_sun50iw9p1.bin
