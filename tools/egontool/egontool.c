@@ -149,6 +149,23 @@ static void process(
 	fillpad(outfile, silesizealigned - binsize - execoffset);
 }
 
+static void printfile(FILE * fp)
+{
+	boot_file_head_t head;
+	size_t n;
+
+	n = fread(& head, 1, sizeof head, fp);
+	if (n < 1)
+	{
+		fprintf(stderr, "Not enough data\n");
+		return;
+	}
+	printf("magic: '%8.8s'\n", head.magic);
+	printf("length: %u (0x%x) bytes\n", (unsigned) head.length, (unsigned) head.length);
+}
+
+static int printFLAG;
+
 int main(int argc, char* argv[])
 {
 	if (argc > 1 && strcmp(argv [1], "-rv") == 0)
@@ -158,6 +175,13 @@ int main(int argc, char* argv[])
 		targetRV = 1;
 		//fprintf(stderr, "RISC-V header generate\n");
 	}
+	if (argc > 1 && strcmp(argv [1], "-print") == 0)
+	{
+		++ argv;
+		-- argc;
+		printFLAG = 1;
+		//fprintf(stderr, "RISC-V header generate\n");
+	}
 	if (argc > 1 && strcmp(argv [1], "-aarch64") == 0)
 	{
 		++ argv;
@@ -165,6 +189,21 @@ int main(int argc, char* argv[])
 		targetAARCH64 = 1;
 		//fprintf(stderr, "RISC-V header generate\n");
 	}
+
+	if (printFLAG && argc >= 2)
+	{
+		const char * const infilename = argv [1];
+		FILE * infile = fopen(infilename,"rb");
+		if (infile == NULL)
+		{
+			fprintf(stderr, "Can not open file '%s'...\n", infilename);
+			return 1;
+		}
+		printfile(infile);
+		fclose(infile);
+		return 0;
+	}
+
 	if (argc < 3)
 		return 1;
 	else
