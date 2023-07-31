@@ -2893,6 +2893,9 @@ sysinit_cache_core0_initialize(void)
 			__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 			// set the CPUECTLR.SMPEN
 			__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+			// 4.5.28 Auxiliary Control Register
+			// bit6: L2ACTLR write access control
+			__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
 			__ISB();
 			__DSB();
 		#elif (__CORTEX_A == 7U)
@@ -3864,7 +3867,9 @@ void Reset_CPUn_Handler(void)
 	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
