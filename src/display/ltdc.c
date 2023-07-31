@@ -1805,7 +1805,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	hardware_ltdc_main_set(layer0);
 }
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 * 0)
 
 
 #define T113_DE_BASE		DE_BASE

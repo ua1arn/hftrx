@@ -6457,17 +6457,17 @@ __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
 void gpadc_initialize(void)
 {
 
-	CCU->GPADC_BGR_REG |= (1u << 16); // 1: De-assert reset  HOSC
-	CCU->GPADC_BGR_REG |= (1u << 0); // 1: Pass clock
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16); // 1: De-assert reset  HOSC
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0); // 1: Pass clock
 
 	GPADC->GP_SR_CON |= (0x2fu << 0);
 	GPADC->GP_CTRL |= (0x2u << 18); // continuous mode
 
-	GPADC->GP_CS_EN |= (1u << 0); // enable
+	GPADC->GP_CS_EN |= (UINT32_C(1) << 0); // enable
 
-	GPADC->GP_CTRL |= (1u << 17); // calibration
+	GPADC->GP_CTRL |= (UINT32_C(1) << 17); // calibration
 
-	GPADC->GP_CTRL |= (1u << 16);
+	GPADC->GP_CTRL |= (UINT32_C(1) << 16);
 
 	while ((GPADC->GP_DATA_INTS) & (1uL << 0))	///if 1 complete
 		;
@@ -6617,6 +6617,105 @@ void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
 
 #endif
 
+#if CPUSTYLE_T507
+//#define DE_BASE 0x01000000
+#define G2D_BASE 0x01480000
+
+#define DISP_IF_TOP_BASE 0x06510000
+//#define TCON_LCD0_BASE 0x06511000
+//#define TCON_LCD1_BASE 0x06512000
+
+void detest(void)
+{
+	const unsigned K64 = 64 * 1024;
+	{
+		/* Configure DE clock */
+	    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(3) << 8) & ~ (UINT32_C(0x0f) << 0)) |
+			0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
+			0 * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+			(4 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+			0;
+	    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);
+	    local_delay_us(10);
+		PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000000));
+
+	    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+	    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+	    local_delay_us(10);
+
+//		memset((void *) DE_BASE + K64, 0xE5, 256);
+//		PRINTF("DE_BASE:\n");
+//		printhex32(DE_BASE + 0, (void *) DE_BASE + 0, 128 * 1024);
+	}
+	{
+		// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
+		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
+		unsigned M = 2;	/* M = 1..32 */
+		unsigned divider = 0;
+
+		CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
+		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
+		//local_delay_us(10);
+
+		// User manual say about 250 MHz default.
+		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+			0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
+			(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
+			0;
+		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
+		local_delay_us(10);
+		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000000));
+
+		//CCU->G2D_BGR_REG = 0;
+		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
+		CCU->G2D_BGR_REG &= ~ (UINT32_C(1) << 16);	/* G2D reset 0: Assert */
+		CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);	/* G2D reset 1: De-assert */
+		(void) CCU->G2D_BGR_REG;
+		local_delay_us(10);
+
+		/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
+//		G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
+//			divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
+//			divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
+//			0;
+//		(void) G2D_TOP->G2D_SCLK_DIV;
+//		//local_delay_us(10);
+//
+//		G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_SCLK_GATE;
+//		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_HCLK_GATE;
+//		G2D_TOP->G2D_AHB_RESET &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_AHB_RESET;
+//		G2D_TOP->G2D_AHB_RESET |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_AHB_RESET;
+//
+//		local_delay_ms(10);
+//
+		PRINTF("G2D_BASE:\n");
+		printhex32(G2D_BASE, (void *) G2D_BASE, 256);
+	}
+	{
+		unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+		TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			1 * (UINT32_C(0x07) << 24) | // 001: PLL_VIDEO0(4X)
+			0;
+		TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+		CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+		CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+		CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset
+
+		PRINTF("TCON_LCD%d:\n", (int) TCONLCD_IX);
+		printhex32((uintptr_t) TCONLCD_PTR, (void *) TCONLCD_PTR, 256);
+	}
+ 	PRINTF("DISP_IF_TOP_BASE:\n");
+	printhex32(DISP_IF_TOP_BASE, (void *) DISP_IF_TOP_BASE, 512);
+}
+
+#endif
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
@@ -6624,6 +6723,11 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if CPUSTYLE_T507 && 1
+	{
+		detest();
+	}
+#endif
 #if CPUSTYLE_STM32MP1 && WITHETHHW && 0
 	{
 		// Ethernet controller tests
@@ -6709,13 +6813,13 @@ void hightests(void)
 				((M - 1) << 0) |
 				0;
 
-		CCU->DSP_CLK_REG |= (1u << 31);	// DSP_CLK_GATING
+		CCU->DSP_CLK_REG |= (UINT32_C(1) << 31);	// DSP_CLK_GATING
 
 
-		CCU->DSP_BGR_REG |= (1u << 1);	// DSP_CFG_GATING
-		CCU->DSP_BGR_REG |= (1u << 17);	// DSP_CFG_RST
+		CCU->DSP_BGR_REG |= (UINT32_C(1) << 1);	// DSP_CFG_GATING
+		CCU->DSP_BGR_REG |= (UINT32_C(1) << 17);	// DSP_CFG_RST
 
-		CCU->DSP_BGR_REG &= ~ (1u << 16);	// DSP_RST
+		CCU->DSP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DSP_RST
 
 		// Map local sram to CPU
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x01;	/* DSP BOOT SRAM REMAP ENABLE 1: DSP 128K Local SRAM Remap for System Boot */
@@ -6745,14 +6849,14 @@ void hightests(void)
 
 		// DSP Start address change
 		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 if non-cached need
-		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
+		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 1);	// BIT_START_VEC_SEL
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
-		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 0);	// Set runstall
+		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 0);	// Set runstall
 
-		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 2);	/* set dsp clken */
-		CCU->DSP_BGR_REG |= (1u << 16);	// DSP_RST
-		DSP0_CFG->DSP_CTRL_REG0 &= ~ (1u << 0);	// Clear runstall
+		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 2);	/* set dsp clken */
+		CCU->DSP_BGR_REG |= (UINT32_C(1) << 16);	// DSP_RST
+		DSP0_CFG->DSP_CTRL_REG0 &= ~ (UINT32_C(1) << 0);	// Clear runstall
 		(void) DSP0_CFG->DSP_CTRL_REG0;
 
 		/*
@@ -6776,7 +6880,7 @@ void hightests(void)
 #endif
 #if CPUSTYLE_VM14 && 0
 	{
-		unsigned mask = 1u << 24; // GC24 - DBGLED1
+		unsigned mask = UINT32_C(1) << 24; // GC24 - DBGLED1
 		for (;;)
 		{
 			arm_hardware_pioc_outputs(mask, 1 * mask);
@@ -6788,15 +6892,15 @@ void hightests(void)
 #endif
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 	{
-		CCU->GPADC_BGR_REG |= (1u << 16); 	// 1: De-assert reset  HOSC
-		CCU->GPADC_BGR_REG |= (1u << 0); 	// 1: Pass clock
+		CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16); 	// 1: De-assert reset  HOSC
+		CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0); 	// 1: Pass clock
 		GPADC->GP_SR_CON |= (0x2fu << 0);	// set the acquiring time of ADC
 		GPADC->GP_SR_CON |= (0x1dfu << 16);	// set the ADC sample frequency divider
 		GPADC->GP_CTRL |= (0x2u << 18); 		// set the continuous conversion mode
-		GPADC->GP_CS_EN |= (1u << 0); 		// enable the analog input channel
-		GPADC->GP_DATA_INTC |= (1u << 0);	// enable the GPADC data interrupt
+		GPADC->GP_CS_EN |= (UINT32_C(1) << 0); 		// enable the analog input channel
+		GPADC->GP_DATA_INTC |= (UINT32_C(1) << 0);	// enable the GPADC data interrupt
 		arm_hardware_set_handler_system(GPADC_IRQn, gpadc_inthandler);
-		GPADC->GP_CTRL |= (1u << 16);		// enable the ADC function
+		GPADC->GP_CTRL |= (UINT32_C(1) << 16);		// enable the ADC function
 		for(;;) {}
 	}
 #endif /* #if (CPUSTYLE_T113 || CPUSTYLE_F133) */
@@ -6906,7 +7010,7 @@ void hightests(void)
 		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
 		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
 
-		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (1u << 4);	// GICCDISABLE
+		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (UINT32_C(1) << 4);	// GICCDISABLE
 		C0_CPUX_CFG->C_CPU_STATUS |= (0x0Fu << 24);		// SMP
 		C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << 24);		// AA64nAA32 1: AArch64
 
@@ -7174,10 +7278,10 @@ void hightests(void)
 		TP();
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
 
-//		CCU->DSP_BGR_REG |= 1u << 18;	// DSP_DBG_RST 1: De-assert
-//		CCU->DSP_BGR_REG |= 1u << 17;	// DSP_CFG_RST 1: De-assert
-//		CCU->DSP_BGR_REG |= 1u << 16;	// DSP_RST 1: De-assert
-//		CCU->DSP_BGR_REG |= 1u << 1;	// DSP_CFG_GATING 1: Pass
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 18;	// DSP_DBG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 17;	// DSP_CFG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 16;	// DSP_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 1;	// DSP_CFG_GATING 1: Pass
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -7259,7 +7363,7 @@ void hightests(void)
 
 		for (int pos = 0; pos < 24; ++ pos)
 		{
-			COLORPIP_T c = TFTALPHA(255, 1u << pos);
+			COLORPIP_T c = TFTALPHA(255, UINT32_C(1) << pos);
 			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
 			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
 			local_delay_ms(2000);
@@ -7286,7 +7390,7 @@ void hightests(void)
 		// Allwinner t113-s3 boot mode display
 
 //		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
-//		CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 2);	// CE_MCLK_EN
+//		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 2);	// CE_MCLK_EN
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
 		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
@@ -7298,7 +7402,7 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
-		RTC->FBOOT_INFO_REG0 = (1u << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
+		RTC->FBOOT_INFO_REG0 = (UINT32_C(1) << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
 	}
 #endif
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
@@ -7471,15 +7575,15 @@ void hightests(void)
 #if 0 && WITHDEBUG && WITHSMPSYSTEM
 	{
 		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, GIC_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
-		enum { TGCPUMASK1 = 1u << 1 };
-		enum { TGCPUMASK0 = 1u << 0 };
+		enum { TGCPUMASK1 = UINT32_C(1) << 1 };
+		enum { TGCPUMASK0 = UINT32_C(1) << 0 };
 		const int cpu = __get_MPIDR() & 0x03;
 
 		PRINTF("Main thread test: I am CPU=%d\n", cpu);
 		local_delay_ms(100);
 
-		arm_hardware_set_handler(SGI13_IRQn, SecondCPUTaskSGI13, BOARD_SGI_PRIO, 0x01u << 1);
-		arm_hardware_set_handler(SGI15_IRQn, SecondCPUTaskSGI15, BOARD_SGI_PRIO, 0x01u << 1);
+		arm_hardware_set_handler(SGI13_IRQn, SecondCPUTaskSGI13, BOARD_SGI_PRIO, UINT32_C(1) << 1);
+		arm_hardware_set_handler(SGI15_IRQn, SecondCPUTaskSGI15, BOARD_SGI_PRIO, UINT32_C(1) << 1);
 
 		for (;;)
 		{
@@ -9498,9 +9602,9 @@ void hightests(void)
 		//}
 		for (c = 0; c < 5; ++ c)
 		{
-			display_setbgcolor(TFTRGB(1u << (c + 3), 0, 0));
+			display_setbgcolor(TFTRGB(UINT32_C(1) << (c + 3), 0, 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), UINT32_C(1) << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -9513,9 +9617,9 @@ void hightests(void)
 		//}
 		for (c = 0; c < 6; ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, 1u << (c + 2), 0));
+			display_setbgcolor(TFTRGB(0, UINT32_C(1) << (c + 2), 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), 1u << (c + 2));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), UINT32_C(1) << (c + 2));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -9528,9 +9632,9 @@ void hightests(void)
 		//}
 		for (c = 0; c < 5; ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, 0, 1u << (c + 3)));
+			display_setbgcolor(TFTRGB(0, 0, UINT32_C(1) << (c + 3)));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), UINT32_C(1) << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -10528,7 +10632,7 @@ void vConfigureTickInterrupt(void)
 	// Set bits: IRQ enable and Auto reload
 	PTIM_SetControl(0x06U);
 
-	arm_hardware_set_handler(PrivTimer_IRQn, PTIM_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, 1u << 0);
+	arm_hardware_set_handler(PrivTimer_IRQn, PTIM_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, UINT32_C(1) << 0);
 
 	// Start the Private Timer
 	PTIM_SetControl(PTIM_GetControl() | 0x01);
@@ -11182,7 +11286,7 @@ void lowtests(void)
 		for (i = 0; i < 26; ++ i)
 		{
 			const int pos = 25 - i;
-			const unsigned mask = 1u << pos;
+			const unsigned mask = UINT32_C(1) << pos;
 			PRINTF("%c", (misa_val & mask) ? 'A' + pos : '-');
 		}
 		PRINTF("\n");

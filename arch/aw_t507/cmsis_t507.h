@@ -173,6 +173,8 @@ typedef enum IRQn
 #define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC3_BASE ((uintptr_t) 0x05311800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
+#define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
+#define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
@@ -867,6 +869,75 @@ typedef struct SPI_Type
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
 } SPI_TypeDef; /* size of structure = 0x304 */
 /*
+ * @brief TCON_LCD
+ */
+/*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
+typedef struct TCON_LCD_Type
+{
+    volatile uint32_t LCD_GCTL_REG;                   /*!< Offset 0x000 LCD Global Control Register */
+    volatile uint32_t LCD_GINT0_REG;                  /*!< Offset 0x004 LCD Global Interrupt Register0 */
+    volatile uint32_t LCD_GINT1_REG;                  /*!< Offset 0x008 LCD Global Interrupt Register1 */
+             uint32_t reserved_0x00C;
+    volatile uint32_t LCD_FRM_CTL_REG;                /*!< Offset 0x010 LCD FRM Control Register */
+    volatile uint32_t LCD_FRM_SEED_REG;               /*!< Offset 0x014 LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04 */
+             uint32_t reserved_0x018 [0x0005];
+    volatile uint32_t LCD_FRM_TAB_REG;                /*!< Offset 0x02C LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04 */
+             uint32_t reserved_0x030 [0x0003];
+    volatile uint32_t LCD_3D_FIFO_REG;                /*!< Offset 0x03C LCD 3D FIFO Register */
+    volatile uint32_t LCD_CTL_REG;                    /*!< Offset 0x040 LCD Control Register */
+    volatile uint32_t LCD_DCLK_REG;                   /*!< Offset 0x044 LCD Data Clock Register */
+    volatile uint32_t LCD_BASIC0_REG;                 /*!< Offset 0x048 LCD Basic Timing Register0 */
+    volatile uint32_t LCD_BASIC1_REG;                 /*!< Offset 0x04C LCD Basic Timing Register1 */
+    volatile uint32_t LCD_BASIC2_REG;                 /*!< Offset 0x050 LCD Basic Timing Register2 */
+    volatile uint32_t LCD_BASIC3_REG;                 /*!< Offset 0x054 LCD Basic Timing Register3 */
+    volatile uint32_t LCD_HV_IF_REG;                  /*!< Offset 0x058 LCD HV Panel Interface Register */
+             uint32_t reserved_0x05C;
+    volatile uint32_t LCD_CPU_IF_REG;                 /*!< Offset 0x060 LCD CPU Panel Interface Register */
+    volatile uint32_t LCD_CPU_WR_REG;                 /*!< Offset 0x064 LCD CPU Panel Write Data Regist er */
+    volatile uint32_t LCD_CPU_RD0_REG;                /*!< Offset 0x068 LCD CPU Panel Read Data Register0 */
+    volatile uint32_t LCD_CPU_RD1_REG;                /*!< Offset 0x06C LCD CPU Panel Read Data Register1 */
+             uint32_t reserved_0x070 [0x0005];
+    volatile uint32_t LCD_LVDS_IF_REG;                /*!< Offset 0x084 LCD LVDS Configure Register */
+    volatile uint32_t LCD_IO_POL_REG;                 /*!< Offset 0x088 LCD IO Polarity Register */
+    volatile uint32_t LCD_IO_TRI_REG;                 /*!< Offset 0x08C LCD IO Control Register */
+             uint32_t reserved_0x090 [0x001B];
+    volatile uint32_t LCD_DEBUG_REG;                  /*!< Offset 0x0FC LCD Debug Register */
+    volatile uint32_t LCD_CEU_CTL_REG;                /*!< Offset 0x100 LCD CEU Control Register */
+             uint32_t reserved_0x104 [0x0003];
+    volatile uint32_t LCD_CEU_COEF_MUL_REG;           /*!< Offset 0x110 LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04 */
+             uint32_t reserved_0x114 [0x0002];
+    volatile uint32_t LCD_CEU_COEF_ADD_REG;           /*!< Offset 0x11C LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10 */
+             uint32_t reserved_0x120 [0x0008];
+    volatile uint32_t LCD_CEU_COEF_RANG_REG;          /*!< Offset 0x140 LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04 */
+             uint32_t reserved_0x144 [0x0007];
+    volatile uint32_t LCD_CPU_TRI0_REG;               /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
+    volatile uint32_t LCD_CPU_TRI1_REG;               /*!< Offset 0x164 LCD CPU Panel Trigger Register1 */
+    volatile uint32_t LCD_CPU_TRI2_REG;               /*!< Offset 0x168 LCD CPU Panel Trigger Register2 */
+    volatile uint32_t LCD_CPU_TRI3_REG;               /*!< Offset 0x16C LCD CPU Panel Trigger Register3 */
+    volatile uint32_t LCD_CPU_TRI4_REG;               /*!< Offset 0x170 LCD CPU Panel Trigger Register4 */
+    volatile uint32_t LCD_CPU_TRI5_REG;               /*!< Offset 0x174 LCD CPU Panel Trigger Register5 */
+             uint32_t reserved_0x178 [0x0002];
+    volatile uint32_t LCD_CMAP_CTL_REG;               /*!< Offset 0x180 LCD Color Map Control Register */
+             uint32_t reserved_0x184 [0x0003];
+    volatile uint32_t LCD_CMAP_ODD0_REG;              /*!< Offset 0x190 LCD Color Map Odd L ine Register0 */
+    volatile uint32_t LCD_CMAP_ODD1_REG;              /*!< Offset 0x194 LCD Color Map Odd Line Register1 */
+    volatile uint32_t LCD_CMAP_EVEN0_REG;             /*!< Offset 0x198 LCD Color Map Even Line Register0 */
+    volatile uint32_t LCD_CMAP_EVEN1_REG;             /*!< Offset 0x19C LCD Color Map Even Line Register1 */
+             uint32_t reserved_0x1A0 [0x0014];
+    volatile uint32_t LCD_SAFE_PERIOD_REG;            /*!< Offset 0x1F0 LCD Safe Period Register */
+             uint32_t reserved_0x1F4 [0x000B];
+    volatile uint32_t LCD_LVDS0_ANA_REG;              /*!< Offset 0x220 LCD LVDS Analog Register 0 */
+    volatile uint32_t LCD_LVDS1_ANA_REG;              /*!< Offset 0x224 LCD LVDS Analog Register 1 */
+             uint32_t reserved_0x228 [0x0005];
+    volatile uint32_t LCD_FSYNC_GEN_CTRL_REG;         /*!< Offset 0x23C Module Enable and Output Value Register */
+    volatile uint32_t LCD_FSYNC_GEN_DLY_REG;          /*!< Offset 0x240 Fsync Active Time Register */
+             uint32_t reserved_0x244 [0x006F];
+    volatile uint32_t LCD_GAMMA_TABLE_REG [0x100];    /*!< Offset 0x400 LCD Gamma Table Register 0x0400-0x07FF */
+             uint32_t reserved_0x800 [0x01FD];
+    volatile uint32_t LCD_3D_FIFO_BIST_REG;           /*!< Offset 0xFF4 LCD 3D FIFO Bist Register */
+    volatile uint32_t LCD_TRI_FIFO_BIST_REG;          /*!< Offset 0xFF8 LCD Trigger FIFO Bist Register */
+} TCON_LCD_TypeDef; /* size of structure = 0xFFC */
+/*
  * @brief TIMER
  */
 /*!< TIMER  */
@@ -1201,6 +1272,8 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define USBPHYC3 ((USBPHYC_TypeDef *) USBPHYC3_BASE)  /*!< USBPHYC3 HCI Contgroller and PHY Interface Description register set access pointer */
+#define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
+#define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */

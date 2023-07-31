@@ -1,0 +1,50 @@
+#type; TCON_LCD; Timing Controller_LCD (TCON_LCD)
+
+#base; TCON_LCD0 0x06511000
+#base; TCON_LCD1 0x06512000
+
+#regdef; LCD_GCTL_REG; 0x0000; LCD Global Control Register
+#regdef; LCD_GINT0_REG; 0x0004; LCD Global Interrupt Register0
+#regdef; LCD_GINT1_REG; 0x0008; LCD Global Interrupt Register1
+#regdef; LCD_FRM_CTL_REG; 0x0010; LCD FRM Control Register
+#regdef; LCD_FRM_SEED_REG; 0x0014; LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04
+#regdef; LCD_FRM_TAB_REG; 0x002C; LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04
+#regdef; LCD_3D_FIFO_REG; 0x003C; LCD 3D FIFO Register
+#regdef; LCD_CTL_REG; 0x0040; LCD Control Register
+#regdef; LCD_DCLK_REG; 0x0044; LCD Data Clock Register
+#regdef; LCD_BASIC0_REG; 0x0048; LCD Basic Timing Register0
+#regdef; LCD_BASIC1_REG; 0x004C; LCD Basic Timing Register1
+#regdef; LCD_BASIC2_REG; 0x0050; LCD Basic Timing Register2
+#regdef; LCD_BASIC3_REG; 0x0054; LCD Basic Timing Register3
+#regdef; LCD_HV_IF_REG; 0x0058; LCD HV Panel Interface Register
+#regdef; LCD_CPU_IF_REG; 0x0060; LCD CPU Panel Interface Register
+#regdef; LCD_CPU_WR_REG; 0x0064; LCD CPU Panel Write Data Regist er
+#regdef; LCD_CPU_RD0_REG; 0x0068; LCD CPU Panel Read Data Register0
+#regdef; LCD_CPU_RD1_REG; 0x006C; LCD CPU Panel Read Data Register1
+#regdef; LCD_LVDS_IF_REG; 0x0084; LCD LVDS Configure Register
+#regdef; LCD_IO_POL_REG; 0x0088; LCD IO Polarity Register
+#regdef; LCD_IO_TRI_REG; 0x008C; LCD IO Control Register
+#regdef; LCD_DEBUG_REG; 0x00FC; LCD Debug Register
+#regdef; LCD_CEU_CTL_REG; 0x0100; LCD CEU Control Register
+#regdef; LCD_CEU_COEF_MUL_REG; 0x0110; LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04
+#regdef; LCD_CEU_COEF_ADD_REG; 0x011C; LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10
+#regdef; LCD_CEU_COEF_RANG_REG; 0x0140; LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04
+#regdef; LCD_CPU_TRI0_REG; 0x0160; LCD CPU Panel Trigger Register0
+#regdef; LCD_CPU_TRI1_REG; 0x0164; LCD CPU Panel Trigger Register1
+#regdef; LCD_CPU_TRI2_REG; 0x0168; LCD CPU Panel Trigger Register2
+#regdef; LCD_CPU_TRI3_REG; 0x016C; LCD CPU Panel Trigger Register3
+#regdef; LCD_CPU_TRI4_REG; 0x0170; LCD CPU Panel Trigger Register4
+#regdef; LCD_CPU_TRI5_REG; 0x0174; LCD CPU Panel Trigger Register5
+#regdef; LCD_CMAP_CTL_REG; 0x0180; LCD Color Map Control Register
+#regdef; LCD_CMAP_ODD0_REG; 0x0190; LCD Color Map Odd L ine Register0
+#regdef; LCD_CMAP_ODD1_REG; 0x0194; LCD Color Map Odd Line Register1
+#regdef; LCD_CMAP_EVEN0_REG; 0x0198; LCD Color Map Even Line Register0
+#regdef; LCD_CMAP_EVEN1_REG; 0x019C; LCD Color Map Even Line Register1
+#regdef; LCD_SAFE_PERIOD_REG; 0x01F0; LCD Safe Period Register
+#regdef; LCD_LVDS0_ANA_REG; 0x0220; LCD LVDS Analog Register 0
+#regdef; LCD_LVDS1_ANA_REG; 0x0224; LCD LVDS Analog Register 1
+#regdef; LCD_FSYNC_GEN_CTRL_REG; 0x023C; Module Enable and Output Value Register
+#regdef; LCD_FSYNC_GEN_DLY_REG; 0x0240; Fsync Active Time Register
+#regdef; LCD_GAMMA_TABLE_REG; 0x0400 256; LCD Gamma Table Register 0x0400-0x07FF
+#regdef; LCD_3D_FIFO_BIST_REG; 0x0FF4; LCD 3D FIFO Bist Register
+#regdef; LCD_TRI_FIFO_BIST_REG; 0x0FF8; LCD Trigger FIFO Bist Register

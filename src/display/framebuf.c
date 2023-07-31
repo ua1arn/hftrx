@@ -638,7 +638,7 @@ void arm_hardware_mdma_initialize(void)
 #if CPUSTYLE_T507
 	#warning unhandled CPUSTYLE_T507
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 * 0)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	unsigned M = 5;	/* M = 1..32 */

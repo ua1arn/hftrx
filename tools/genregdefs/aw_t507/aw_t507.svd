@@ -4460,6 +4460,427 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>TCON_LCD0</name>
+  <description>Timing Controller_LCD (TCON_LCD)</description>
+  <baseAddress>0x06511000</baseAddress>
+  <registers>
+   <register>
+    <name>LCD_GCTL_REG</name>
+    <displayName>LCD_GCTL_REG</displayName>
+    <description>LCD Global Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_GINT0_REG</name>
+    <displayName>LCD_GINT0_REG</displayName>
+    <description>LCD Global Interrupt Register0</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_GINT1_REG</name>
+    <displayName>LCD_GINT1_REG</displayName>
+    <description>LCD Global Interrupt Register1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_FRM_CTL_REG</name>
+    <displayName>LCD_FRM_CTL_REG</displayName>
+    <description>LCD FRM Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_FRM_SEED_REG</name>
+    <displayName>LCD_FRM_SEED_REG</displayName>
+    <description>LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_FRM_TAB_REG</name>
+    <displayName>LCD_FRM_TAB_REG</displayName>
+    <description>LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_3D_FIFO_REG</name>
+    <displayName>LCD_3D_FIFO_REG</displayName>
+    <description>LCD 3D FIFO Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CTL_REG</name>
+    <displayName>LCD_CTL_REG</displayName>
+    <description>LCD Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_DCLK_REG</name>
+    <displayName>LCD_DCLK_REG</displayName>
+    <description>LCD Data Clock Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_BASIC0_REG</name>
+    <displayName>LCD_BASIC0_REG</displayName>
+    <description>LCD Basic Timing Register0</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_BASIC1_REG</name>
+    <displayName>LCD_BASIC1_REG</displayName>
+    <description>LCD Basic Timing Register1</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_BASIC2_REG</name>
+    <displayName>LCD_BASIC2_REG</displayName>
+    <description>LCD Basic Timing Register2</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_BASIC3_REG</name>
+    <displayName>LCD_BASIC3_REG</displayName>
+    <description>LCD Basic Timing Register3</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_HV_IF_REG</name>
+    <displayName>LCD_HV_IF_REG</displayName>
+    <description>LCD HV Panel Interface Register</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_IF_REG</name>
+    <displayName>LCD_CPU_IF_REG</displayName>
+    <description>LCD CPU Panel Interface Register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_WR_REG</name>
+    <displayName>LCD_CPU_WR_REG</displayName>
+    <description>LCD CPU Panel Write Data Regist er</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_RD0_REG</name>
+    <displayName>LCD_CPU_RD0_REG</displayName>
+    <description>LCD CPU Panel Read Data Register0</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_RD1_REG</name>
+    <displayName>LCD_CPU_RD1_REG</displayName>
+    <description>LCD CPU Panel Read Data Register1</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_LVDS_IF_REG</name>
+    <displayName>LCD_LVDS_IF_REG</displayName>
+    <description>LCD LVDS Configure Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_IO_POL_REG</name>
+    <displayName>LCD_IO_POL_REG</displayName>
+    <description>LCD IO Polarity Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_IO_TRI_REG</name>
+    <displayName>LCD_IO_TRI_REG</displayName>
+    <description>LCD IO Control Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_DEBUG_REG</name>
+    <displayName>LCD_DEBUG_REG</displayName>
+    <description>LCD Debug Register</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CEU_CTL_REG</name>
+    <displayName>LCD_CEU_CTL_REG</displayName>
+    <description>LCD CEU Control Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CEU_COEF_MUL_REG</name>
+    <displayName>LCD_CEU_COEF_MUL_REG</displayName>
+    <description>LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CEU_COEF_ADD_REG</name>
+    <displayName>LCD_CEU_COEF_ADD_REG</displayName>
+    <description>LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CEU_COEF_RANG_REG</name>
+    <displayName>LCD_CEU_COEF_RANG_REG</displayName>
+    <description>LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04</description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_TRI0_REG</name>
+    <displayName>LCD_CPU_TRI0_REG</displayName>
+    <description>LCD CPU Panel Trigger Register0</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_TRI1_REG</name>
+    <displayName>LCD_CPU_TRI1_REG</displayName>
+    <description>LCD CPU Panel Trigger Register1</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_TRI2_REG</name>
+    <displayName>LCD_CPU_TRI2_REG</displayName>
+    <description>LCD CPU Panel Trigger Register2</description>
+    <addressOffset>0x168</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_TRI3_REG</name>
+    <displayName>LCD_CPU_TRI3_REG</displayName>
+    <description>LCD CPU Panel Trigger Register3</description>
+    <addressOffset>0x16C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_TRI4_REG</name>
+    <displayName>LCD_CPU_TRI4_REG</displayName>
+    <description>LCD CPU Panel Trigger Register4</description>
+    <addressOffset>0x170</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CPU_TRI5_REG</name>
+    <displayName>LCD_CPU_TRI5_REG</displayName>
+    <description>LCD CPU Panel Trigger Register5</description>
+    <addressOffset>0x174</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CMAP_CTL_REG</name>
+    <displayName>LCD_CMAP_CTL_REG</displayName>
+    <description>LCD Color Map Control Register</description>
+    <addressOffset>0x180</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CMAP_ODD0_REG</name>
+    <displayName>LCD_CMAP_ODD0_REG</displayName>
+    <description>LCD Color Map Odd L ine Register0</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CMAP_ODD1_REG</name>
+    <displayName>LCD_CMAP_ODD1_REG</displayName>
+    <description>LCD Color Map Odd Line Register1</description>
+    <addressOffset>0x194</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CMAP_EVEN0_REG</name>
+    <displayName>LCD_CMAP_EVEN0_REG</displayName>
+    <description>LCD Color Map Even Line Register0</description>
+    <addressOffset>0x198</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_CMAP_EVEN1_REG</name>
+    <displayName>LCD_CMAP_EVEN1_REG</displayName>
+    <description>LCD Color Map Even Line Register1</description>
+    <addressOffset>0x19C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_SAFE_PERIOD_REG</name>
+    <displayName>LCD_SAFE_PERIOD_REG</displayName>
+    <description>LCD Safe Period Register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_LVDS0_ANA_REG</name>
+    <displayName>LCD_LVDS0_ANA_REG</displayName>
+    <description>LCD LVDS Analog Register 0</description>
+    <addressOffset>0x220</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_LVDS1_ANA_REG</name>
+    <displayName>LCD_LVDS1_ANA_REG</displayName>
+    <description>LCD LVDS Analog Register 1</description>
+    <addressOffset>0x224</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_FSYNC_GEN_CTRL_REG</name>
+    <displayName>LCD_FSYNC_GEN_CTRL_REG</displayName>
+    <description>Module Enable and Output Value Register</description>
+    <addressOffset>0x23C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_FSYNC_GEN_DLY_REG</name>
+    <displayName>LCD_FSYNC_GEN_DLY_REG</displayName>
+    <description>Fsync Active Time Register</description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>256</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>LCD_GAMMA_TABLE_REG</name>
+     <displayName>LCD_GAMMA_TABLE_REG</displayName>
+     <description>LCD Gamma Table Register 0x0400-0x07FF</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
+   <register>
+    <name>LCD_3D_FIFO_BIST_REG</name>
+    <displayName>LCD_3D_FIFO_BIST_REG</displayName>
+    <description>LCD 3D FIFO Bist Register</description>
+    <addressOffset>0xFF4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LCD_TRI_FIFO_BIST_REG</name>
+    <displayName>LCD_TRI_FIFO_BIST_REG</displayName>
+    <description>LCD Trigger FIFO Bist Register</description>
+    <addressOffset>0xFF8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="TCON_LCD0">
+  <name>TCON_LCD1</name>
+  <baseAddress>0x06512000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>TIMER</name>
   <description></description>
   <baseAddress>0x03009000</baseAddress>
