@@ -635,10 +635,59 @@ void arm_hardware_mdma_initialize(void)
 
 void arm_hardware_mdma_initialize(void)
 {
-#if CPUSTYLE_T507
-	#warning unhandled CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	#warning unhandled CPUSTYLE_T507 || CPUSTYLE_H616
+	#define G2D_BASE 0x01480000
+	{
+		// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
+		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
+		unsigned M = 2;	/* M = 1..32 */
+		unsigned divider = 0;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 * 0)
+		CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
+		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
+		//local_delay_us(10);
+
+		// User manual say about 250 MHz default.
+		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+			0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
+			(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
+			0;
+		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
+		local_delay_us(10);
+		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000000));
+
+		//CCU->G2D_BGR_REG = 0;
+		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
+		CCU->G2D_BGR_REG &= ~ (UINT32_C(1) << 16);	/* G2D reset 0: Assert */
+		CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);	/* G2D reset 1: De-assert */
+		(void) CCU->G2D_BGR_REG;
+		local_delay_us(10);
+
+		/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
+//		G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
+//			divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
+//			divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
+//			0;
+//		(void) G2D_TOP->G2D_SCLK_DIV;
+//		//local_delay_us(10);
+//
+//		G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_SCLK_GATE;
+//		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_HCLK_GATE;
+//		G2D_TOP->G2D_AHB_RESET &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_AHB_RESET;
+//		G2D_TOP->G2D_AHB_RESET |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//		(void) G2D_TOP->G2D_AHB_RESET;
+//
+//		local_delay_ms(10);
+//
+		PRINTF("G2D_BASE:\n");
+		printhex32(G2D_BASE, (void *) G2D_BASE, 256);
+	}
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 	unsigned M = 5;	/* M = 1..32 */
@@ -683,7 +732,7 @@ void arm_hardware_mdma_initialize(void)
 
 	local_delay_ms(10);
 #else
-#error Unhandled CPUSTYLE_T507
+#error Unhandled CPUSTYLE_xxx
 #endif
 	// peri:   allwnrt113_get_g2d_freq()=600000000
 	// video0: allwnrt113_get_g2d_freq()=297000000
