@@ -2519,6 +2519,9 @@ sysinit_fpu_initialize(void)
 
 	// FPU
 	__FPU_Enable();
+	L1C_DisableCaches();
+	L1C_DisableBTAC();
+	MMU_Disable();
 
 #elif CPUSTYLE_RISCV
 
@@ -3861,6 +3864,7 @@ void Reset_CPUn_Handler(void)
 	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)

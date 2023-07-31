@@ -289,7 +289,7 @@ boot_run_t507:
 	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
 	$(XFEL) exec 0x00032c00
 
-app_run: $(PROJECT)_app.alw32 boot_run_t507
+app_run: $(PROJECT)_app.alw32
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 
