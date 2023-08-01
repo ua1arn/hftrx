@@ -289,8 +289,8 @@ boot_run_t507:
 	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
 	$(XFEL) exec 0x00032c00
 
-app_run: $(PROJECT)_app.alw32
-	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+app_run: $(PROJECT)_app.bin
+	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
 	$(XFEL) exec 0x40000100 
 
 # debug for bootloader - check .ld file
