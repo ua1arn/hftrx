@@ -19,14 +19,42 @@ typedef unsigned char uint8_t;
 
 #define TOC_MAIN_INFO_MAGIC 0x89119800
 
-#define UBOOT_MAGIC             "uboot"
 #define STAMP_VALUE             0x5F0A6C39
 #define ALIGN_SIZE              16 * 1024
 #define MAGIC_SIZE              8
-#define STORAGE_BUFFER_SIZE    (256)
+//#define STORAGE_BUFFER_SIZE    (256)
+#define  TOC_MAIN_INFO_MAGIC   0x89119800
+#define  TOC_MAIN_INFO_END     0x3b45494d
+#define  TOC_ITEM_INFO_END     0x3b454949
 
 static const char sunxi_package_sign [16] = "sunxi-package";
-static const char uboot_sign [64] = "u-boot";
+
+// https://github.com/smaeul/sun20i_d1_spl/blob/mainline/include/private_toc.h#L157
+#define ITEM_PARAMETER_NAME             "parameter"
+#define ITEM_OPTEE_NAME			"optee"
+#define ITEM_SCP_NAME			"scp"
+#define ITEM_MONITOR_NAME		"monitor"
+#define ITEM_UBOOT_NAME			"u-boot"
+#define ITEM_RTOS_NAME			"freertos"
+#define ITEM_MELIS_NAME			"melis"
+#define ITEM_MELIS_GZ_NAME		"melis-gz"
+#define ITEM_MELIS_LZ4_NAME		"melis-lz4"
+#define ITEM_MELIS_LZMA_NAME    "melis-lzma"
+#define ITEM_MELIS_ZSTD_NAME    "melis-zstd"
+#define ITEM_MELIS_CONFIG_NAME	"melis-config"
+#define ITEM_OPENSBI_NAME		"opensbi"
+#define ITEM_LOGO_NAME			"logo"
+#define ITEM_DTB_NAME			"dtb"
+#define ITEM_DTBO_NAME			"dtbo"
+#define ITEM_SOCCFG_NAME		"soc-cfg"
+#define ITEM_BDCFG_NAME			"board-cfg"
+#define ITEM_ESM_IMG_NAME          "esm-img"
+#define ITEM_SHUTDOWNCHARGE_LOGO_NAME	"shutdowncharge"
+#define ITEM_ANDROIDCHARGE_LOGO_NAME	"androidcharge"
+#define ITEM_EMMC_FW_NAME		"emmc-fw"
+
+static const char uboot_sign [64] = ITEM_UBOOT_NAME;
+//static const char uboot_sign [64] = "falcon-boot";
 
 // Структура заголовка пакета boot_package.fex, имеющего размер 64 байта:
 
@@ -50,7 +78,7 @@ struct head_info // заголовок с общей информацией о �
 //
 
 struct item_info {
-	char name[64]; // имя файла, например monitor
+	char item_name[64]; // имя файла, например monitor
 	uint32_t data_offset; // смещение
 	uint32_t data_len; // размер
 	uint32_t encrypt; // шифрование 0: нет AES, 1: AES
@@ -130,24 +158,28 @@ void fillfile(FILE * dst, size_t n)
 		fputc(FILLV, dst);
 }
 
-void makedata(FILE * fp)
+void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 {
 	FILE * datafile;
 	struct head_info hi;
 	struct item_info ii;
 	unsigned i;
 	long int isize;
-	unsigned cks;
-	unsigned dataoffset = alignup((sizeof hi + sizeof ii), 2048);
-	unsigned datapad = dataoffset - (sizeof hi + sizeof ii);
+	unsigned datafilecks;
+	unsigned dataoffset = alignup((sizeof hi + sizeof ii), ALIGN_SIZE);
+	unsigned headerpad = dataoffset - (sizeof hi + sizeof ii);
+	unsigned datapad;
+	unsigned isizealigned;
 
-	datafile = fopen("tc1_awt507_app.bin", "rb");
+	datafile = fopen(datafilename, "rb");
 	if (datafile == NULL)
 		return;
-	getfileinfo(datafile, & isize, & cks, STAMP_VALUE);
-	printf("sizeof (struct head_info) = %u\n", sizeof (struct head_info));
-	printf("sizeof (struct item_info) = %u\n", sizeof (struct item_info));
-	printf("ckecksum=%08X, isize=%u\n", cks, isize);
+	getfileinfo(datafile, & isize, & datafilecks, STAMP_VALUE);
+	isizealigned = alignup(isize, ALIGN_SIZE);
+	datapad = isizealigned - isize;
+//	printf("sizeof (struct head_info) = %u\n", sizeof (struct head_info));
+//	printf("sizeof (struct item_info) = %u\n", sizeof (struct item_info));
+	printf("datafilecks=%08X, isize=%u\n", datafilecks, isize);
 
 
 	memset(& hi, 0, sizeof hi);
@@ -159,34 +191,41 @@ void makedata(FILE * fp)
 	hi.items_nr = 1;
 
 	// Fill item info
-	hi.valid_len = sizeof hi + sizeof ii + datapad + isize;
-	hi.add_sum = calccks(& hi, sizeof hi, STAMP_VALUE);
+	hi.valid_len = sizeof hi + sizeof ii + headerpad + isizealigned;
 
-	memcpy(ii.name, uboot_sign, sizeof ii.name);
-	ii.run_addr = 0x40800000 + 256;
+	memcpy(ii.item_name, uboot_sign, sizeof ii.item_name);
+	ii.type = 3;
+	ii.run_addr = baseaddr;	// Loaded image start address
 	ii.data_offset = dataoffset;
-	ii.end = 0x3B454949;	// IIE;
+	ii.data_len = isizealigned;
+	ii.end = 0x3B454949;	// IIE; - не обязательно
+	hi.add_sum = calccks(& hi, sizeof hi, calccks(& ii, sizeof ii, datafilecks));
 
 	// save result
 	fwrite(& hi, sizeof hi, 1, fp);
 	fwrite(& ii, sizeof ii, 1, fp);
-	fillfile(fp, datapad);
+	fillfile(fp, headerpad);
+
 	copyfile(fp, datafile);
+	fillfile(fp, datapad);
 
 
 	fclose(datafile);
 
-	printf("v=%u\n", alignup(77, 512));
+	//printf("v=%u\n", alignup(77, 512));
 }
 
 int main(int argc, char **argv) {
+	unsigned loadaddr = 0x40000100;
+	const char * outfilename = "o.bin";
+	const char * file = "tc1_awt507_app.bin";
 	FILE * out;
 
-	out = fopen("o.bin", "wb");
+	out = fopen(outfilename, "wb");
 	if (out == NULL)
 		return 1;
 
-	makedata(out);
+	makedata(out, file, loadaddr);
 
 	fclose(out);
 	return 0;

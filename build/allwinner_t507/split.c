@@ -22,12 +22,14 @@ void copyfile(FILE * dst, FILE * src, int uptolength)
 
 int main(int argc, char * * argv)
 {
-	unsigned startoffset = 0x2000;
+
+	unsigned startoffset = 0x1004000;
+	//unsigned startoffset = 0x2000;
 	unsigned cutlength = 256 * 1024;
 	FILE * fi;
 	FILE * fo;
 	const char * srcfilename = "Y:\\ua1arn\\ubuntu-t507.img";
-	const char * dstfilename = "curboot.bin";
+	const char * dstfilename = "sunxihead.bin";
 	fi = fopen(srcfilename, "rb");
 	if (fi == NULL)
 	{

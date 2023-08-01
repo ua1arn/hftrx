@@ -3,13 +3,7 @@
 @set TARGET=E_but_may_be_changed
 
 rem cfimager -raw -offset 0x2000 -f boot0_sdcard_sun50iw9p1.bin -d %TARGET%
+bootutil
 cfimager -raw -offset 0x2000 -f curboot.bin -d %TARGET%
-rem cfimager -raw -offset 0x1004000 -f o.bin -d %TARGET%
-
-
-rem boot0_nand_sun50iw9p1.bin
-rem boot0_sdcard_sun50iw9p1.bin
-rem boot0_spinor_sun50iw9p1.bin
-rem fes1_sun50iw9p1.bin
-rem sboot_sun50iw9p1.bin
-
+cfimager -raw -offset 0x1004000 -f o.bin -d %TARGET%
+rem cfimager -raw -offset 0x1004000 -f tt.txt -d %TARGET%
