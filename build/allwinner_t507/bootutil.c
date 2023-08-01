@@ -170,6 +170,7 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 	unsigned headerpad = dataoffset - (sizeof hi + sizeof ii [0]);
 	unsigned datapad;
 	unsigned isizealigned;
+	unsigned totaldatalen;
 
 	datafile = fopen(datafilename, "rb");
 	if (datafile == NULL)
@@ -181,38 +182,41 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 //	printf("sizeof (struct item_info) = %u\n", sizeof (struct item_info));
 	printf("file: '%s', base=0x%08X, datafilecks=%08X, isize=%u\n", datafilename, baseaddr, datafilecks, isize);
 
-
+	totaldatalen = 0;
 	for (item = 0; item < 1; ++ item)
 	{
-		memset(& ii [0], 0, sizeof ii [0]);
-		memcpy(ii [0].item_name, item_signature, sizeof ii [0].item_name);
-		ii [0].type = 3;
-		ii [0].run_addr = baseaddr;	// Loaded image start address
-		ii [0].data_offset = dataoffset;
-		ii [0].data_len = isizealigned;
-		ii [0].end = 0x3B454949;	// IIE; - не обязательно
+		memset(& ii [item], 0, sizeof ii [item]);
+		memcpy(ii [item].item_name, item_signature, sizeof ii [item].item_name);
+		ii [item].type = 3;
+		ii [item].run_addr = baseaddr;	// Loaded image start address
+		ii [item].data_offset = dataoffset;
+		ii [item].data_len = isizealigned;
+		ii [item].end = TOC_ITEM_INFO_END;	// IIE; - не обязательно
+		//printf("dataoffset=%08X\n", dataoffset);
+		totaldatalen += isizealigned;
 	}
 
 	memset(& hi, 0, sizeof hi);
 	memcpy(hi.name, sunxi_package_sign, sizeof hi.name);
 	hi.magic = TOC_MAIN_INFO_MAGIC;
-	hi.end = 0x3B45494D;	// MIE;
+	hi.end = TOC_MAIN_INFO_END;	// MIE;
 	hi.items_nr = sizeof ii / sizeof ii [0];
 
 	// Fill item info
-	hi.valid_len = sizeof hi + sizeof ii [0] + headerpad + isizealigned;
+	hi.valid_len = sizeof hi + sizeof ii + headerpad + totaldatalen;
 	hi.add_sum = calccks(& hi, sizeof hi, calccks(& ii, sizeof ii, datafilecks));
 
-	//printf("dataoffset=%08X\n", dataoffset);
 
 	// save result
 	fwrite(& hi, sizeof hi, 1, fp);
 	fwrite(& ii [0], sizeof ii, 1, fp);
 	fillfile(fp, headerpad);
 
-	copyfile(fp, datafile);
-	fillfile(fp, datapad);
-
+	for (item = 0; item < 1; ++ item)
+	{
+		copyfile(fp, datafile);
+		fillfile(fp, datapad);
+	}
 
 	fclose(datafile);
 
