@@ -2173,16 +2173,28 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
 #if CPUSTYLE_T507
 	#warning CPUSTYLE_T507 not implemented
- 	unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	(void) CCU->DISPLAY_IF_TOP_BGR_REG;
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	(void) CCU->DISPLAY_IF_TOP_BGR_REG;
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
+	(void) CCU->DISPLAY_IF_TOP_BGR_REG;
+
+	unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		1 * (UINT32_C(0x07) << 24) | // 001: PLL_VIDEO0(4X)
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	(void) TCONLCD_CCU_CLK_REG;
 
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+	(void) CCU->TCON_LCD_BGR_REG;
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+	(void) CCU->TCON_LCD_BGR_REG;
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset
+	(void) CCU->TCON_LCD_BGR_REG;
 
 
     local_delay_us(10);
@@ -2428,8 +2440,8 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 		);
 	// timing1
 	TCON_LCD0->LCD_BASIC1_REG =
-		((HTOTAL - 1) << 16) |
-		((LEFTMARGIN - 1) << 0) |
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((LEFTMARGIN - 1) << 0) |	// HBP
 		0;
 	// timing2
 	TCON_LCD0->LCD_BASIC2_REG =
@@ -2592,7 +2604,12 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
-
+	//PRINTF("hardware_de_initialize start\n");
+#if CPUSTYLE_T507
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
+#endif
 	/* Configure DE clock */
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
 		(UINT32_C(2) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
@@ -2609,6 +2626,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	t113_de_set_mode(vdmode);
 	t113_de_enable();
+	//PRINTF("hardware_de_initialize done\n");
 }
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
