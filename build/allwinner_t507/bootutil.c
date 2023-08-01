@@ -224,11 +224,21 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 }
 
 int main(int argc, char **argv) {
-	unsigned loadaddr = 0x40400100;
-	const char * outfilename = "o.bin";
-	const char * file = "tc1_awt507_app.bin";
+	unsigned loadaddr;// = 0x40400100;
+	const char * outfilename;// = "o.bin";
+	const char * file;// = "tc1_awt507_app.bin";
 	FILE * out;
 
+	if (argc >= 4)
+	{
+		file = argv [1];
+		loadaddr = strtoul(argv [2], NULL, 0);
+		outfilename = argv [3];
+	}
+	else
+	{
+		fprintf(stderr, "Not enough parameters (file, address, outile)\n");
+	}
 	out = fopen(outfilename, "wb");
 	if (out == NULL)
 		return 1;
