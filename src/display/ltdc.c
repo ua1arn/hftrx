@@ -2141,7 +2141,7 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 		write32((uintptr_t) & tcon->frm_ctrl, TCON_FRM_MODE_VAL);
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 	}
 }
 
@@ -2157,7 +2157,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 	// ctrl
 	//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
 	val = 0x1F;
-	TCON_LCD0->LCD_CTL_REG =
+	TCONLCD_PTR->LCD_CTL_REG =
 		//(UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
 		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 		(0x00u << 23) |		// LCD_RB_SWAP
@@ -2201,12 +2201,12 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #else
 	/* Configure TCONLCD clock */
-    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
+    TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
 		(UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
 		(prei << 8) |	// FACTOR_N 0..3: 1..8
 		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
-    CCU->TCONLCD_CLK_REG |= (UINT32_C(1) << 31);
+    TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
     local_delay_us(10);
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
@@ -2233,7 +2233,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	ASSERT(val >= 1 && val <= 127);
 //	write32((uintptr_t) & tcon->dclk,
 //			(UINT32_C(0x0f) << 28) | (val << 0));
-	TCON_LCD0->LCD_DCLK_REG = (
+	TCONLCD_PTR->LCD_DCLK_REG = (
 			(UINT32_C(0x0f) << 28) |		// LCD_DCLK_EN
 			(val << 0)			// LCD_DCLK_DIV
 			);
@@ -2243,7 +2243,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 // LVDS step2 - Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
-    TCON_LCD0->LCD_DCLK_REG =
+    TCONLCD_PTR->LCD_DCLK_REG =
 		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
 		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
 		0;
@@ -2255,7 +2255,7 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 
 static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode)
 {
-    TCON_LCD0->LCD_DCLK_REG =
+    TCONLCD_PTR->LCD_DCLK_REG =
 		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
 		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
 		0;
@@ -2267,11 +2267,11 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 {
 #if defined (LCD_LVDS_IF_REG_VALUE)
 
-	TCON_LCD0->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
 
 #else /* defined (LCD_LVDS_IF_REG_VALUE) */
 
-	TCON_LCD0->LCD_LVDS_IF_REG =
+	TCONLCD_PTR->LCD_LVDS_IF_REG =
 	(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
 	(0u << 30) |	/* LCD_LVDS_LINK: 0: single link */
 	(! UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
@@ -2286,11 +2286,11 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 #endif /* defined (LCD_LVDS_IF_REG_VALUE) */
 }
 
-#if ! CPUSTYLE_T507
 
 // step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 {
+#if ! CPUSTYLE_T507
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
@@ -2395,31 +2395,31 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 
 		// Step 6 LVDS controller configuration
 		// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] =
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] =
 			(UINT32_C(0x0f) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
 			(UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
 			(0x04u << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
 			(UINT32_C(3) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
 			0;
 		// test
-		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
-		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0f) << 12);	// LVDS_REG_DEN
+		//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
+		//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0f) << 12);	// LVDS_REG_DEN
 
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 30);	// en_ldo
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 30);	// en_ldo
 		local_delay_ms(1);
 
 		// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 31);	// ?LVDS_EN_MB start module voltage
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 31);	// ?LVDS_EN_MB start module voltage
 		local_delay_ms(1);
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 29);	// enable EN_LVDS
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 29);	// enable EN_LVDS
 		local_delay_ms(1);
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 		local_delay_ms(1);
 
-		//PRINTF("TCON_LCD0->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num]);
+		//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 	}
-}
 #endif
+}
 
 // Set sequuence parameters
 static void t113_set_sequence_parameters(const videomode_t * vdmode)
@@ -2434,26 +2434,30 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
+//	PRINTF("TCONLCD_PTR:\n");
+//	printhex32(TCON_LCD0_BASE, (void* ) TCON_LCD0_BASE, sizeof * TCONLCD_PTR);
 	// timing0 (window)
-	TCON_LCD0->LCD_BASIC0_REG = (
+	TCONLCD_PTR->LCD_BASIC0_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
 		);
 	// timing1
-	TCON_LCD0->LCD_BASIC1_REG =
+	TCONLCD_PTR->LCD_BASIC1_REG =
 		((HTOTAL - 1) << 16) |		// TOTAL
 		((LEFTMARGIN - 1) << 0) |	// HBP
 		0;
 	// timing2
-	TCON_LCD0->LCD_BASIC2_REG =
+	TCONLCD_PTR->LCD_BASIC2_REG =
 		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
 		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
 		0;
 	// timing3
-	TCON_LCD0->LCD_BASIC3_REG =
+	TCONLCD_PTR->LCD_BASIC3_REG =
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
 
+//	PRINTF("TCONLCD_PTR:\n");
+//	printhex32(TCON_LCD0_BASE, (void* ) TCON_LCD0_BASE, sizeof * TCONLCD_PTR);
 }
 
 // Step4 - Open IO output
@@ -2461,7 +2465,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 {
 	// io_tristate
 	//write32((uintptr_t) & tcon->io_tristate, 0);
-	TCON_LCD0->LCD_IO_TRI_REG = 0;
+	TCONLCD_PTR->LCD_IO_TRI_REG = 0;
 	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
 	{
@@ -2496,7 +2500,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		if (! timing.clk_active)
 			val |= (UINT32_C(1) << 26);	// IO2_Inv
 
-		TCON_LCD0->LCD_IO_POL_REG = val;
+		TCONLCD_PTR->LCD_IO_POL_REG = val;
 
 	}
 	//t113_tconlcd_set_dither(pdat);
@@ -2510,7 +2514,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 
 	}
 }
@@ -2523,8 +2527,8 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
-	TCON_LCD0->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCON_LCD0->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 }
 
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
@@ -2570,9 +2574,10 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 }
-#if ! CPUSTYLE_T507
+
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
+#if ! CPUSTYLE_T507
 
 	unsigned prei = 0;
 	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
@@ -2598,13 +2603,12 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 
 	(void) DSI0->DSI_CTL;
-}
 #endif
+}
 // What is DPSS_TOP_BGR_REG ?
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
-	//PRINTF("hardware_de_initialize start\n");
 #if CPUSTYLE_T507
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -2626,7 +2630,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	t113_de_set_mode(vdmode);
 	t113_de_enable();
-	//PRINTF("hardware_de_initialize done\n");
 }
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
