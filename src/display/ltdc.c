@@ -2162,7 +2162,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 		(0x00u << 23) |		// LCD_RB_SWAP
 #if CPUSTYLE_T507
-		(UINT32_C(1) << 20) |		// LCD_INTERLACE_EN
+		//(UINT32_C(1) << 20) |		// LCD_INTERLACE_EN
 #endif
 		((val & 0x1fu) << 4) |	// LCD_START_DLY
 		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
@@ -2171,7 +2171,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 
 // What is DPSS_TOP_BGR_REG ?
 
-static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned tconlcddiv)
+static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned preiPOW, unsigned tconlcddiv)
 {
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
 #if CPUSTYLE_T507
@@ -2187,7 +2187,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-		1 * (UINT32_C(0x07) << 24) | // 001: PLL_VIDEO0(4X)
+		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	(void) TCONLCD_CCU_CLK_REG;
@@ -2205,8 +2205,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #else
 	/* Configure TCONLCD clock */
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
-		(UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
+		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		(preiPOW << 8) |	// FACTOR_N 0..3: 1..8
 		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
     TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
@@ -2237,7 +2237,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 //	write32((uintptr_t) & tcon->dclk,
 //			(UINT32_C(0x0f) << 28) | (val << 0));
 	TCONLCD_PTR->LCD_DCLK_REG = (
-			(UINT32_C(0x0f) << 28) |		// LCD_DCLK_EN
+			(UINT32_C(0x0F) << 28) |		// LCD_DCLK_EN
 			(val << 0)			// LCD_DCLK_DIV
 			);
     local_delay_us(10);
