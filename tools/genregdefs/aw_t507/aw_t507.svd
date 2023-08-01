@@ -2482,6 +2482,40 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DISP_IF_TOP</name>
+  <description>display interface top (DISP_IF_TOP)</description>
+  <baseAddress>0x06510000</baseAddress>
+  <registers>
+   <register>
+    <name>TV_CLK_SRC_RGB_SRC</name>
+    <displayName>TV_CLK_SRC_RGB_SRC</displayName>
+    <description>TCON_TV CClock SSelect and RGB Source S Select Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_PORT_PERH_SEL</name>
+    <displayName>DE_PORT_PERH_SEL</displayName>
+    <description>DE Source Select TCON R Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MODULE_GATING</name>
+    <displayName>MODULE_GATING</displayName>
+    <description>TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DMAC</name>
   <description></description>
   <baseAddress>0x03002000</baseAddress>
@@ -5469,6 +5503,16 @@
   <name>TCON_LCD0</name>
   <description>Timing Controller_LCD (TCON_LCD)</description>
   <baseAddress>0x06511000</baseAddress>
+  <interrupt>
+   <name>TCON_LCD0</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TCON_LCD1</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>LCD_GCTL_REG</name>
@@ -5885,6 +5929,16 @@
   <peripheral derivedFrom="TCON_LCD0">
   <name>TCON_LCD1</name>
   <baseAddress>0x06512000</baseAddress>
+  <interrupt>
+   <name>TCON_LCD0</name>
+   <value>96</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TCON_LCD1</name>
+   <value>97</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>TIMER</name>

@@ -6620,13 +6620,16 @@ void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
 #if CPUSTYLE_T507
 //#define DE_BASE 0x01000000
 
-#define DISP_IF_TOP_BASE 0x06510000
+//#define DISP_IF_TOP_BASE 0x06510000
 //#define TCON_LCD0_BASE 0x06511000
 //#define TCON_LCD1_BASE 0x06512000
 
 void detest(void)
 {
 	const unsigned K64 = 64 * 1024;
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
 	{
 		/* Configure DE clock */
 	    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(3) << 8) & ~ (UINT32_C(0x0f) << 0)) |
@@ -6642,9 +6645,13 @@ void detest(void)
 	    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
 	    local_delay_us(10);
 
-//		memset((void *) DE_BASE + K64, 0xE5, 256);
+		memset((void *) DE_BASE + 0, 0xE5, 4 * 1024 * 1024);
 //		PRINTF("DE_BASE:\n");
-//		printhex32(DE_BASE + 0, (void *) DE_BASE + 0, 128 * 1024);
+//		unsigned i;
+//		for (i = 0; i < 4 * 1024 * 1024; i += 4096)
+//		{
+//			printhex32(DE_BASE + i, (void *) (DE_BASE + i), 64);
+//		}
 	}
 	{
 		unsigned ix = TCONLCD_IX;	// TCON_LCD0
@@ -6661,8 +6668,8 @@ void detest(void)
 		PRINTF("TCON_LCD%d:\n", (int) TCONLCD_IX);
 		printhex32((uintptr_t) TCONLCD_PTR, (void *) TCONLCD_PTR, 256);
 	}
- 	PRINTF("DISP_IF_TOP_BASE:\n");
-	printhex32(DISP_IF_TOP_BASE, (void *) DISP_IF_TOP_BASE, 512);
+ 	PRINTF("DISP_IF_TOP:\n");
+	printhex32(DISP_IF_TOP_BASE, DISP_IF_TOP, sizeof * DISP_IF_TOP);
 }
 
 #endif
@@ -6676,7 +6683,14 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if CPUSTYLE_T507 && 0
 	{
+		board_set_bglight(!1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
+		board_update();
 		detest();
+		PRINTF("hightests: [%p]\n", hightests);
+		PRINTF("hightests: CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+		PRINTF("hightests: ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000000));
+		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000000));
 	}
 #endif
 #if CPUSTYLE_STM32MP1 && WITHETHHW && 0

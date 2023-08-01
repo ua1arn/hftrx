@@ -2609,11 +2609,6 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
-#if CPUSTYLE_T507
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
-#endif
 	/* Configure DE clock */
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
 		(UINT32_C(2) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)

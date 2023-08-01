@@ -68,6 +68,8 @@ typedef enum IRQn
     GPIOG_IRQn = 87,                                  /*!< GPIOINT GPIOG interrupt */
     GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
+    TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
+    TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
@@ -185,6 +187,7 @@ typedef enum IRQn
 #define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC3_BASE ((uintptr_t) 0x05311800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
+#define DISP_IF_TOP_BASE ((uintptr_t) 0x06510000)     /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
@@ -637,6 +640,17 @@ typedef struct DE_VI_Type
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0  */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8  */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DISP_IF_TOP
+ */
+/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) */
+typedef struct DISP_IF_TOP_Type
+{
+    volatile uint32_t TV_CLK_SRC_RGB_SRC;             /*!< Offset 0x000 TCON_TV CClock SSelect and RGB Source S Select Register */
+             uint32_t reserved_0x004 [0x0006];
+    volatile uint32_t DE_PORT_PERH_SEL;               /*!< Offset 0x01C DE Source Select TCON R Register */
+    volatile uint32_t MODULE_GATING;                  /*!< Offset 0x020 TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister */
+} DISP_IF_TOP_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief DMAC
  */
@@ -1487,6 +1501,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define USBPHYC3 ((USBPHYC_TypeDef *) USBPHYC3_BASE)  /*!< USBPHYC3 HCI Contgroller and PHY Interface Description register set access pointer */
+#define DISP_IF_TOP ((DISP_IF_TOP_TypeDef *) DISP_IF_TOP_BASE)/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */

@@ -3,6 +3,9 @@
 #base; TCON_LCD0 0x06511000
 #base; TCON_LCD1 0x06512000
 
+#irq; TCON_LCD0 96; TCON_LCD0 interrupt
+#irq; TCON_LCD1 97; TCON_LCD1 interrupt
+
 #regdef; LCD_GCTL_REG; 0x0000; LCD Global Control Register
 #regdef; LCD_GINT0_REG; 0x0004; LCD Global Interrupt Register0
 #regdef; LCD_GINT1_REG; 0x0008; LCD Global Interrupt Register1
@@ -48,3 +51,11 @@
 #regdef; LCD_GAMMA_TABLE_REG; 0x0400 256; LCD Gamma Table Register 0x0400-0x07FF
 #regdef; LCD_3D_FIFO_BIST_REG; 0x0FF4; LCD 3D FIFO Bist Register
 #regdef; LCD_TRI_FIFO_BIST_REG; 0x0FF8; LCD Trigger FIFO Bist Register
+
+#type; DISP_IF_TOP; display interface top (DISP_IF_TOP)
+
+#base; DISP_IF_TOP 0x06510000
+
+#regdef; TV_CLK_SRC_RGB_SRC; 0x0000; TCON_TV CClock SSelect and RGB Source S Select Register
+#regdef; DE_PORT_PERH_SEL; 0x001C; DE Source Select TCON R Register
+#regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister
