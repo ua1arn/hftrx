@@ -2,8 +2,9 @@
 @rem http://nskhuman.ru/allwinner/card/cardmode.php?ysclid=lkq00i1n2061987481
 @set TARGET=E_but_may_be_changed
 
-rem cfimager -raw -offset 0x2000 -f boot0_sdcard_sun50iw9p1.bin -d %TARGET%
-bootutil tc1_awt507_app.bin 0x40400100 o.bin
+bootutil tc1_awt507_app.bin 0x40000100 monitor.bin
+
+@rem cfimager -raw -offset 0x2000 -f boot0_sdcard_sun50iw9p1.bin -d %TARGET%
 cfimager -raw -offset 0x2000 -f curboot.bin -d %TARGET%
-cfimager -raw -offset 0x1004000 -f o.bin -d %TARGET%
-rem cfimager -raw -offset 0x1004000 -f tt.txt -d %TARGET%
+cfimager -raw -offset 0x1004000 -f monitor.bin -d %TARGET%
+@rem cfimager -raw -offset 0x1004000 -f tt.txt -d %TARGET%

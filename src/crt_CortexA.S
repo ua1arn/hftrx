@@ -155,6 +155,11 @@ FIQAddr_rtos:       .word FIQ_Handler
 /****************************************************************************/
 Reset_Handler:
 
+//	b	skipMarker
+//	.ascii "Xmonitor"
+//	.align 8, 0
+//skipMarker:
+
 	/* Mask interrupts */
     mov   	lr, #0
 	cpsid   if

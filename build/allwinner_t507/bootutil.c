@@ -54,9 +54,11 @@ static const char sunxi_package_sign [16] = "sunxi-package";
 #define ITEM_EMMC_FW_NAME		"emmc-fw"
 
 static const char item_signature [64] = ITEM_UBOOT_NAME;
-//static const char item_signature [64] = "falcon-boot";
+//static const char item_signature [64] = "falcon-boot";	/* непрерывано перезапучкаетс */
 
 // Структура заголовка пакета boot_package.fex, имеющего размер 64 байта:
+
+// https://github.com/lindenis-org/lindenis-v853-lichee-brandy-2.0-spl-pub/blob/d36b228278e654d7d7bfa2f5f777311b6d9dc61b/nboot/main/boot0_main.c#L103
 
 struct head_info // заголовок с общей информацией о пакете
 {
