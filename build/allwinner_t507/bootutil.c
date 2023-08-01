@@ -19,8 +19,8 @@ typedef unsigned char uint8_t;
 
 #define TOC_MAIN_INFO_MAGIC 0x89119800
 
-#define STAMP_VALUE             0x5F0A6C39
-#define ALIGN_SIZE              16 * 1024
+#define STAMP_VALUE             0x5F0A6C39	/* начальное значение при подсчетах контрольной суммы */
+#define ALIGN_SIZE              (16 * 1024)
 #define MAGIC_SIZE              8
 //#define STORAGE_BUFFER_SIZE    (256)
 #define  TOC_MAIN_INFO_MAGIC   0x89119800
@@ -162,7 +162,7 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 {
 	FILE * datafile;
 	struct head_info hi;
-	struct item_info ii [4];
+	struct item_info ii [1];
 	unsigned item;
 	long int isize;
 	unsigned datafilecks;
@@ -193,6 +193,7 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 		ii [item].data_len = isizealigned;
 		ii [item].end = TOC_ITEM_INFO_END;	// IIE; - не обязательно
 		//printf("dataoffset=%08X\n", dataoffset);
+		//ii [item].index = 1;
 		totaldatalen += isizealigned;
 	}
 
