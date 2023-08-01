@@ -2161,8 +2161,11 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		//(UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
 		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 		(0x00u << 23) |		// LCD_RB_SWAP
+#if CPUSTYLE_T507
+		(UINT32_C(1) << 20) |		// LCD_INTERLACE_EN
+#endif
 		((val & 0x1fu) << 4) |	// LCD_START_DLY
-		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
+		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
 }
 
