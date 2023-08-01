@@ -53,8 +53,8 @@ static const char sunxi_package_sign [16] = "sunxi-package";
 #define ITEM_ANDROIDCHARGE_LOGO_NAME	"androidcharge"
 #define ITEM_EMMC_FW_NAME		"emmc-fw"
 
-static const char uboot_sign [64] = ITEM_UBOOT_NAME;
-//static const char uboot_sign [64] = "falcon-boot";
+static const char item_signature [64] = ITEM_UBOOT_NAME;
+//static const char item_signature [64] = "falcon-boot";
 
 // Структура заголовка пакета boot_package.fex, имеющего размер 64 байта:
 
@@ -79,15 +79,15 @@ struct head_info // заголовок с общей информацией о �
 
 struct item_info {
 	char item_name[64]; // имя файла, например monitor
-	uint32_t data_offset; // смещение
-	uint32_t data_len; // размер
-	uint32_t encrypt; // шифрование 0: нет AES, 1: AES
-	uint32_t type; // 0: обычный файл, все равно
+	uint32_t data_offset; // + 0x40 смещение
+	uint32_t data_len; // + 0x44 размер
+	uint32_t encrypt; // + 0x48 шифрование 0: нет AES, 1: AES
+	uint32_t type; // + 0x4C  0: обычный файл, все равно
 	// 1: ключ сертификата
 	// 2: подпись сертификата
 	// 3: бинарный файл
-	uint32_t run_addr;	// если это bin-файл, то запускать по этому адресу; если нет, то должно быть 0
-	uint32_t index;	// если это bin-файл, то значение показывает индекс для запуска
+	uint32_t run_addr;	// + 0x50 если это bin-файл, то запускать по этому адресу; если нет, то должно быть 0
+	uint32_t index;	// 0x54 если это bin-файл, то значение показывает индекс для запуска
 	// если это файл сертификата, он должен быть равен индексу файла bin,
 	// это означает, что они в одной группе
 	// должно быть = 0 для любого другого типа данных
@@ -162,12 +162,12 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 {
 	FILE * datafile;
 	struct head_info hi;
-	struct item_info ii;
-	unsigned i;
+	struct item_info ii [4];
+	unsigned item;
 	long int isize;
 	unsigned datafilecks;
-	unsigned dataoffset = alignup((sizeof hi + sizeof ii), ALIGN_SIZE);
-	unsigned headerpad = dataoffset - (sizeof hi + sizeof ii);
+	unsigned dataoffset = alignup((sizeof hi + sizeof ii [0]), ALIGN_SIZE);
+	unsigned headerpad = dataoffset - (sizeof hi + sizeof ii [0]);
 	unsigned datapad;
 	unsigned isizealigned;
 
@@ -179,31 +179,35 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 	datapad = isizealigned - isize;
 //	printf("sizeof (struct head_info) = %u\n", sizeof (struct head_info));
 //	printf("sizeof (struct item_info) = %u\n", sizeof (struct item_info));
-	printf("datafilecks=%08X, isize=%u\n", datafilecks, isize);
+	printf("file: '%s', base=0x%08X, datafilecks=%08X, isize=%u\n", datafilename, baseaddr, datafilecks, isize);
 
+
+	for (item = 0; item < 1; ++ item)
+	{
+		memset(& ii [0], 0, sizeof ii [0]);
+		memcpy(ii [0].item_name, item_signature, sizeof ii [0].item_name);
+		ii [0].type = 3;
+		ii [0].run_addr = baseaddr;	// Loaded image start address
+		ii [0].data_offset = dataoffset;
+		ii [0].data_len = isizealigned;
+		ii [0].end = 0x3B454949;	// IIE; - не обязательно
+	}
 
 	memset(& hi, 0, sizeof hi);
-	memset(& ii, 0, sizeof ii);
-
 	memcpy(hi.name, sunxi_package_sign, sizeof hi.name);
 	hi.magic = TOC_MAIN_INFO_MAGIC;
 	hi.end = 0x3B45494D;	// MIE;
-	hi.items_nr = 1;
+	hi.items_nr = sizeof ii / sizeof ii [0];
 
 	// Fill item info
-	hi.valid_len = sizeof hi + sizeof ii + headerpad + isizealigned;
-
-	memcpy(ii.item_name, uboot_sign, sizeof ii.item_name);
-	ii.type = 3;
-	ii.run_addr = baseaddr;	// Loaded image start address
-	ii.data_offset = dataoffset;
-	ii.data_len = isizealigned;
-	ii.end = 0x3B454949;	// IIE; - не обязательно
+	hi.valid_len = sizeof hi + sizeof ii [0] + headerpad + isizealigned;
 	hi.add_sum = calccks(& hi, sizeof hi, calccks(& ii, sizeof ii, datafilecks));
+
+	//printf("dataoffset=%08X\n", dataoffset);
 
 	// save result
 	fwrite(& hi, sizeof hi, 1, fp);
-	fwrite(& ii, sizeof ii, 1, fp);
+	fwrite(& ii [0], sizeof ii, 1, fp);
 	fillfile(fp, headerpad);
 
 	copyfile(fp, datafile);
@@ -216,7 +220,7 @@ void makedata(FILE * fp, const char * datafilename, unsigned baseaddr)
 }
 
 int main(int argc, char **argv) {
-	unsigned loadaddr = 0x40000100;
+	unsigned loadaddr = 0x40400100;
 	const char * outfilename = "o.bin";
 	const char * file = "tc1_awt507_app.bin";
 	FILE * out;
