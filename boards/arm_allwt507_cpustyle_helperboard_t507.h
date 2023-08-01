@@ -893,7 +893,7 @@
 			const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
 			arm_hardware_pioa_opendrain(BLpins, 0); \
 			arm_hardware_pioa_outputs(BLpins, 0 * BLpins); /* TODO: fix it! */ \
-			arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
+			arm_hardware_piod_outputs(ENmask, 0 * ENmask); \
 		} while (0)
 
 		/* установка яркости и включение/выключение преобразователя подсветки */

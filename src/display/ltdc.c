@@ -2466,10 +2466,14 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		timing.den_active = ! vdmode->deneg;
 		timing.clk_active = 0;
 
+#if CPUSTYLE_T507
+		val = 0;
+#else
 		val =
 			(UINT32_C(1) << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
 			(UINT32_C(1) << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 			0;
+#endif
 
 		if (! timing.h_sync_active)
 			val |= (UINT32_C(1) << 25);	// IO1_Inv
