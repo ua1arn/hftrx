@@ -160,6 +160,14 @@ Reset_Handler:
 //	.align 8, 0
 //skipMarker:
 
+#if 0
+	ldr	r0, =0x05000000
+	ldr r1, =0x23
+	str	r1, [r0]
+rrrr:
+	b rrrr
+#endif
+
 	/* Mask interrupts */
     mov   	lr, #0
 	cpsid   if
