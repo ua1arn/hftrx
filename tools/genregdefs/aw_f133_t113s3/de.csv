@@ -13,7 +13,7 @@
 #regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
 
 #type; DE_GLB; Display Engine (DE) - Global Control
-#base; DE_GLB 0x5100000
+#base; DE_GLB 0x05100000
 
 #regdef; GLB_CTL;	 	0x000;	Global control register
 #regdef; GLB_STS;		0x004;	Global status register
@@ -40,7 +40,7 @@
 #regdef;  OVL_SIZE; 0x088; 
 
 #type; DE_BLD; Display Engine (DE) - Blender
-#base; DE_BLD 0x5101000
+#base; DE_BLD 0x05101000
 
 #regdef; FCOLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
 #aggreg; ATTR; 0x004 4; Pipe [0..3]
