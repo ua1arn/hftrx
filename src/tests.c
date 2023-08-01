@@ -6674,7 +6674,7 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if CPUSTYLE_T507 && 1
+#if CPUSTYLE_T507 && 0
 	{
 		detest();
 	}
