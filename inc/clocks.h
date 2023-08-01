@@ -221,6 +221,8 @@ uint_fast32_t allwnr_t507_get_ce_freq(void);
 uint_fast32_t allwnr_t507_get_ve_freq(void);
 uint_fast32_t allwnr_t507_get_avs_freq(void);
 uint_fast32_t allwnr_t507_get_dram_freq(void);
+uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void);
+uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);

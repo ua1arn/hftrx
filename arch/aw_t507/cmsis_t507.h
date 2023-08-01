@@ -68,7 +68,7 @@ typedef enum IRQn
     GPIOG_IRQn = 87,                                  /*!< GPIOINT GPIOG interrupt */
     GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
-    DE_IRQn = 120,                                    /*!< DE33 DE interrupt */
+    DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
@@ -111,7 +111,12 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE33 Display Engine (DE) Base */
+#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Display Engine (DE) TOP Base */
+#define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_UI1_BASE ((uintptr_t) 0x01103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x01480400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
@@ -536,6 +541,102 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
         volatile uint32_t HIGH;                       /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
 } CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
+/*
+ * @brief DE_BLD
+ */
+/*!< DE_BLD Display Engine (DE) - Blender */
+typedef struct DE_BLD_Type
+{
+    volatile uint32_t FCOLOR_CTL;                     /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    struct
+    {
+        volatile uint32_t FCOLOR;                     /*!< Offset 0x004 BLD fill color register */
+        volatile uint32_t INSIZE;                     /*!< Offset 0x008 BLD input memory size register */
+        volatile uint32_t OFFSET;                     /*!< Offset 0x00C BLD input memory offset register */
+                 uint32_t reserved_0x00C;
+    } ATTR [0x004];                                   /*!< Offset 0x004 Pipe [0..3] */
+             uint32_t reserved_0x044 [0x000F];
+    volatile uint32_t ROUTE;                          /*!< Offset 0x080 BLD_CH_RTCTL Offset 0x080 BLD routing control register */
+    volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
+    volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */
+    volatile uint32_t OUTPUT_SIZE;                    /*!< Offset 0x08C  */
+    volatile uint32_t BLD_MODE [0x004];               /*!< Offset 0x090 BLD_CTL */
+             uint32_t reserved_0x0A0 [0x0004];
+    volatile uint32_t CK_CTL;                         /*!< Offset 0x0B0  */
+    volatile uint32_t CK_CFG;                         /*!< Offset 0x0B4  */
+             uint32_t reserved_0x0B8 [0x0002];
+    volatile uint32_t CK_MAX [0x004];                 /*!< Offset 0x0C0  */
+             uint32_t reserved_0x0D0 [0x0004];
+    volatile uint32_t CK_MIN [0x004];                 /*!< Offset 0x0E0  */
+             uint32_t reserved_0x0F0 [0x0003];
+    volatile uint32_t OUT_CTL;                        /*!< Offset 0x0FC  */
+} DE_BLD_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DE_GLB
+ */
+/*!< DE_GLB Display Engine (DE) - Global Control */
+typedef struct DE_GLB_Type
+{
+    volatile uint32_t GLB_CTL;                        /*!< Offset 0x000 Global control register */
+    volatile uint32_t GLB_STS;                        /*!< Offset 0x004 Global status register */
+    volatile uint32_t GLB_DBUFFER;                    /*!< Offset 0x008 Global double buffer control register */
+    volatile uint32_t GLB_SIZE;                       /*!< Offset 0x00C Global size register */
+} DE_GLB_TypeDef; /* size of structure = 0x010 */
+/*
+ * @brief DE_TOP
+ */
+/*!< DE_TOP Display Engine (DE) TOP */
+typedef struct DE_TOP_Type
+{
+    volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
+    volatile uint32_t BUS_CFG;                        /*!< Offset 0x004 ? HCLK_GATE ? DE HCLK Gating Register */
+    volatile uint32_t RST_CFG;                        /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
+    volatile uint32_t DIV_CFG;                        /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
+    volatile uint32_t SEL_CFG;                        /*!< Offset 0x010 ? DE2TCON ? MUX register */
+} DE_TOP_TypeDef; /* size of structure = 0x014 */
+/*
+ * @brief DE_UI
+ */
+/*!< DE_UI Display Engine (DE) - UI surface */
+typedef struct DE_UI_Type
+{
+    struct
+    {
+        volatile uint32_t ATTR;                       /*!< Offset 0x000  */
+        volatile uint32_t SIZE;                       /*!< Offset 0x004  */
+        volatile uint32_t COORD;                      /*!< Offset 0x008  */
+        volatile uint32_t PITCH;                      /*!< Offset 0x00C  */
+        volatile uint32_t TOP_LADDR;                  /*!< Offset 0x010  */
+        volatile uint32_t BOT_LADDR;                  /*!< Offset 0x014  */
+        volatile uint32_t FCOLOR;                     /*!< Offset 0x018  */
+                 uint32_t reserved_0x01C;
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
+    volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
+} DE_UI_TypeDef; /* size of structure = 0x08C */
+/*
+ * @brief DE_VI
+ */
+/*!< DE_VI Display Engine (DE) - VI surface */
+typedef struct DE_VI_Type
+{
+    struct
+    {
+        volatile uint32_t ATTR;                       /*!< Offset 0x000  */
+        volatile uint32_t SIZE;                       /*!< Offset 0x004  */
+        volatile uint32_t COORD;                      /*!< Offset 0x008  */
+        volatile uint32_t PITCH [0x003];              /*!< Offset 0x00C  */
+        volatile uint32_t TOP_LADDR [0x003];          /*!< Offset 0x018  */
+        volatile uint32_t BOT_LADDR [0x003];          /*!< Offset 0x024  */
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
+    volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
+    volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
+    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8  */
+    volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0  */
+    volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8  */
+} DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DMAC
  */
@@ -1316,6 +1417,11 @@ typedef struct USB_OHCI_Capability_Type
 
 /* Access pointers */
 
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP register set access pointer */
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI Display Engine (DE) - VI surface register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */

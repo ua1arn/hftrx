@@ -2541,6 +2541,16 @@ uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
 }
 
+uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
+{
+	return allwnr_t507_get_pll_video0_x4_freq() / 4;
+}
+
+uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void)
+{
+	return allwnr_t507_get_pll_video1_x4_freq() / 4;
+}
+
 uint_fast64_t allwnr_t507_get_pll_ve_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VE_CTRL_REG;
@@ -2943,6 +2953,48 @@ uint_fast32_t allwnr_t507_get_dram_freq(void)
 	case 0x01:
 		// 01 : PLL_DDR1
 		return allwnr_t507_get_pll_ddr1_freq() / divider;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON_LCD0_CLK_REG;
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq();
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq();
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnr_t507_get_pll_video1_x1_freq();
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnr_t507_get_pll_video1_x4_freq();
+	}
+}
+
+uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON_LCD1_CLK_REG;
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq();
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq();
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnr_t507_get_pll_video1_x1_freq();
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnr_t507_get_pll_video1_x4_freq();
 	}
 }
 
