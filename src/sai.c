@@ -3591,15 +3591,15 @@ static void I2S_fill_TXxCHMAP(
 //	ASSERT(0);
 //}
 
-void I2S_PCMx_IrqHandler(void)
-{
-//	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
-//	I2S1->I2S_PCM_ISTA = ista;
-//	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
-	ASSERT(0);
-	for (;;)
-		;
-}
+//void I2S_PCMx_IrqHandler(void)
+//{
+////	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
+////	I2S1->I2S_PCM_ISTA = ista;
+////	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+//	ASSERT(0);
+//	for (;;)
+//		;
+//}
 
 static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
@@ -3829,7 +3829,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (1u << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
 	i2s->I2S_PCM_INT |= (1u << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
-	arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
 #endif
 }
 
