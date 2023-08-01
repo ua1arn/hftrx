@@ -8865,26 +8865,31 @@ void SystemCoreClockUpdate(void)
 		//const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		const uint_fast8_t prei = calcdivider(2, ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		//PRINTF("hardware_dcdcfreq_pwm_initialize: allwnrt113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnrt113_get_apb0_freq(), prei, value);
-		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
-		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
+		CCU->PWM_BGR_REG |= (UINT32_C(1) << 0);	// PWM_GATING
+		CCU->PWM_BGR_REG |= (UINT32_C(1) << 16);	// PWM_RST
+
+		//PRINTF("prei=%u, value=%u\n", prei, value);
 		// 9.10.4.1 Configuring Clock
 		//	Step 1 PWM gating: When using PWM, write 1 to PCGR[PWMx_CLK_GATING].
-		PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << (4 + (pwmch % 2)));	/* PWM01_CLK_SRC_BYPASS_TO_PWM0 */
+		PWM->PCCR [pwmch / 2] = 0;
+		PWM->PCCR [pwmch / 2] |= 0x01 * (UINT32_C(1) << 7);	// APB1
+		PWM->PCCR [pwmch / 2] |= prei * (UINT32_C(1) << 0);	// PWM01_CLK_DIV_M
+		//PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << (5 + (pwmch % 2)));	/* PWM01_CLK_SRC_BYPASS_TO_PWM0 - не использовать делитель */
 		PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << 4);	/* PWM01_CLK_GATING */
-		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ ((0xFF << 0) | (1u << 9))) |
-			0 * (1u << 9) | /* PWM_MODE 0: Cycle mode */
-			value * (1u << 0) | /* PWM_PRESCAL_K */
+		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ ((UINT32_C(0xFF) << 0) | (UINT32_C(1) << 9))) |
+			0 * (UINT32_C(1) << 9) | /* PWM_MODE 0: Cycle mode */
+			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
 			0;
 
 	#else
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		//PRINTF("hardware_dcdcfreq_pwm_initialize: allwnrt113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnrt113_get_apb0_freq(), prei, value);
-		CCU->PWM_BGR_REG |= (1u << 0);	// PWM_GATING
-		CCU->PWM_BGR_REG |= (1u << 16);	// PWM_RST
+		CCU->PWM_BGR_REG |= (UINT32_C(1) << 0);	// PWM_GATING
+		CCU->PWM_BGR_REG |= (UINT32_C(1) << 16);	// PWM_RST
 		// 9.10.4.1 Configuring Clock
 		//	Step 1 PWM gating: When using PWM, write 1 to PCGR[PWMx_CLK_GATING].
-		PWM->PCGR |= (1u << (0 + pwmch));	/* PWM5_CLK_GATING */
+		PWM->PCGR |= (UINT32_C(1) << (0 + pwmch));	/* PWM5_CLK_GATING */
 
 		//	Step 2 PWM clock source select: Set PCCR01[PWM01_CLK_SRC] to select HOSC or APB0 clock.
 		//	Step 3 PWM clock divider: Set PCCR01[PWM01_CLK_DIV_M] to select different frequency division coefficient (1/2/4/8/16/32/64/128/256).
@@ -8895,9 +8900,9 @@ void SystemCoreClockUpdate(void)
 		//	Step 4 PWM clock bypass: Set PCGR[PWM_CLK_SRC_BYPASS_TO_PWM] to 1, output the PWM clock after the secondary frequency division to the corresponding PWM output pin.
 		//PWM->PCGR |= (1u << (16 + IX));	/* PWM5_CLK_BYPASS */
 		//	Step 5 PWM internal clock configuration: Set PCR[PWM_PRESCAL_K] to select any frequency division coefficient from 1 to 256.
-		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ ((0xFF << 0) | (1u << 9))) |
-			0 * (1u << 9) | /* PWM_MODE 0: Cycle mode */
-			value * (1u << 0) | /* PWM_PRESCAL_K */
+		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ ((UINT32_C(0xFF) << 0) | (UINT32_C(1) << 9))) |
+			0 * (UINT32_C(1) << 9) | /* PWM_MODE 0: Cycle mode */
+			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
 			0;
 		// 9.10.4.2 Configuring PWM
 		//	Step 1 PWM mode: Set PCR[PWM_MODE] to select cycle mode or pulse mode, if pulse mode, PCR[PWM_PUL_NUM] needs to be configured.
@@ -8917,10 +8922,11 @@ void SystemCoreClockUpdate(void)
 
 	void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle)
 	{
+		//PRINTF("hardware_dcdcfreq_pwm_setdiv: pwmch=%u, cycle=%u\n", pwmch, cycle);
 		PWM->PER |= (1u << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
-			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
-			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
+			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */
+			(cycle / 2) * (UINT32_C(1) << 0) |	/* PWM_ACT_CYCLE */
 			0;
 		while ((PWM->CH [pwmch].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
 			;
