@@ -966,12 +966,12 @@ void hardware_tim21_initialize(void);
 
 void hardware_dcdcfreq_tim16_ch1_initialize(void);
 void hardware_dcdcfreq_tim17_ch1_initialize(void);
-void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch);	/* Allwinner */
+void hardware_dcdcfreq_pwm_initialize(unsigned pwmch);	/* Allwinner */
 void hardware_dcdcfreq_tioc0a_mtu0_initialize(void);
 
 void hardware_dcdcfreq_tim16_ch1_setdiv(uint_fast32_t v);
 void hardware_dcdcfreq_tim17_ch1_setdiv(uint_fast32_t v);
-void hardware_dcdcfreq_pwm5_setdiv(unsigned pwmch, uint_fast32_t cycle);	/* Allwinner */
+void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle);	/* Allwinner */
 void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v);
 
 uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);

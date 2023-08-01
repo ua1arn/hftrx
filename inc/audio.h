@@ -139,47 +139,49 @@ extern "C" {
 			#define DMABUF32TXQ		1		// TX, Q
 
 		#elif WITHFPGAIF_FRAMEBITS == 256
-				// buff data layout: I main/I sub/Q main/Q sub
-				#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-				// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-				#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			// buff data layout: I main/I sub/Q main/Q sub
+			#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+			#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
-				#define DMABUF32RX0I	0		// RX0, I
-				#define DMABUF32RX1I	1		// RX1, I
-				#define DMABUF32RX0Q	4		// RX0, Q
-				#define DMABUF32RX1Q	5		// RX1, Q
+			#define DMABUF32RX0I	0		// RX0, I
+			#define DMABUF32RX1I	1		// RX1, I
+			#define DMABUF32RX0Q	4		// RX0, Q
+			#define DMABUF32RX1Q	5		// RX1, Q
 
-				#if WITHRTS96
-					#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
-					#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
-					#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
-					#define DMABUF32RTS1Q	7		// RTS1, Q	// current
-				#endif /* WITHRTS96 */
+			#if WITHRTS96
+				#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
+				#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
+				#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
+				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#endif /* WITHRTS96 */
 
-				// Slot S0, S4: Oldest sample (T-3)
-				// Slot S1, S5: Old sample (T-2)
-				// Slot S2, S6: Old sample (T-1)
-				// Slot S3, S7: Newest sample (T-0)
-				#define DMABUF32RXWFM0I	0		// WFM OLDEST
-				#define DMABUF32RXWFM0Q	4		// WFM
-				#define DMABUF32RXWFM1I	1		// WFM
-				#define DMABUF32RXWFM1Q	5		// WFM
-				#define DMABUF32RXWFM2I	2		// WFM
-				#define DMABUF32RXWFM2Q	6		// WFM
-				#define DMABUF32RXWFM3I	3		// WFM NEWEST
-				#define DMABUF32RXWFM3Q	7		// WFM
+			// Slot S0, S4: Oldest sample (T-3)
+			// Slot S1, S5: Old sample (T-2)
+			// Slot S2, S6: Old sample (T-1)
+			// Slot S3, S7: Newest sample (T-0)
+			#define DMABUF32RXWFM0I	0		// WFM OLDEST
+			#define DMABUF32RXWFM0Q	4		// WFM
+			#define DMABUF32RXWFM1I	1		// WFM
+			#define DMABUF32RXWFM1Q	5		// WFM
+			#define DMABUF32RXWFM2I	2		// WFM
+			#define DMABUF32RXWFM2Q	6		// WFM
+			#define DMABUF32RXWFM3I	3		// WFM NEWEST
+			#define DMABUF32RXWFM3Q	7		// WFM
 
-				#define DMABUFFSTEP32TX	8		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-				#define DMABUF32TXI	0		// TX, I
-				#define DMABUF32TXQ	4		// TX, Q
+			#define DMABUFFSTEP32TX	8		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUF32TXI	0		// TX, I
+			#define DMABUF32TXQ	4		// TX, Q
 
-				#define DMABUF32TX_NCO1		6		// NCO RX A
-				#define DMABUF32TX_NCO2		2		// NCO RX B
-				#define DMABUF32TX_NCORTS	7		// NCO RTS
+			#define DMABUF32TX_NCO1		6		// NCO RX A
+			#define DMABUF32TX_NCO2		2		// NCO RX B
+			#define DMABUF32TX_NCORTS	7		// NCO RTS
 
-				// ws=0: 00 01 02 03
-				// ws=1: 04 05 06 07
-	#endif
+			// ws=0: 00 01 02 03
+			// ws=1: 04 05 06 07
+		#else
+			#error Undefined WITHFPGAIF_FRAMEBITS value
+		#endif
 
 	#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
@@ -251,54 +253,103 @@ extern "C" {
 		#define DMABUF32RXWFM3I	6		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
+		#if WITHFPGAIF_FRAMEBITS == 256
 
+			// buff data layout: I main/I sub/Q main/Q sub
+			#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+			#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
-		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-		#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUF32RX0I	0		// RX0, I
+			#define DMABUF32RX1I	2		// RX1, I
+			#define DMABUF32RX0Q	1		// RX0, Q
+			#define DMABUF32RX1Q	3		// RX1, Q
 
-		#define DMABUF32RX0I	0		// RX0, I
-		#define DMABUF32RX1I	2		// RX1, I
-		#define DMABUF32RX0Q	1		// RX0, Q
-		#define DMABUF32RX1Q	3		// RX1, Q
+			#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUF32TXI	0		// TX, I
+			#define DMABUF32TXQ	1		// TX, Q
 
-		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-		#define DMABUF32TXI	0		// TX, I
-		#define DMABUF32TXQ	1		// TX, Q
+			#define DMABUF32TX_NCO1		5		// NCO RX A
+			#define DMABUF32TX_NCO2		4		// NCO RX B
+			#define DMABUF32TX_NCORTS	7		// NCO RTS
 
-		#define DMABUF32TX_NCO1		5		// NCO RX A
-		#define DMABUF32TX_NCO2		4		// NCO RX B
-		#define DMABUF32TX_NCORTS	7		// NCO RTS
+			// ws=0: 00 02 04 06
+			// ws=1: 01 03 05 07
 
-		// ws=0: 00 02 04 06
-		// ws=1: 01 03 05 07
+			#if WITHRTS96
+				#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
+				#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
+				#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
+				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#endif /* WITHRTS96 */
 
-		#if WITHRTS96
-			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
-			#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
-			#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
-			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
-		#endif /* WITHRTS96 */
+			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
+			// ws=0: even samples, ws=1: odd samples
 
-		// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
-		// ws=0: even samples, ws=1: odd samples
+			// Slot S0, S4: Oldest sample (T-3)
+			// Slot S1, S5: Old sample (T-2)
+			// Slot S2, S6: Old sample (T-1)
+			// Slot S3, S7: Newest sample (T-0)
+			#define DMABUF32RXWFM0I	0		// WFM OLDEST
+			#define DMABUF32RXWFM0Q	1		// WFM
+			#define DMABUF32RXWFM1I	2		// WFM
+			#define DMABUF32RXWFM1Q	3		// WFM
+			#define DMABUF32RXWFM2I	4		// WFM
+			#define DMABUF32RXWFM2Q	5		// WFM
+			#define DMABUF32RXWFM3I	6		// WFM NEWEST
+			#define DMABUF32RXWFM3Q	7		// WFM
 
-		// Slot S0, S4: Oldest sample (T-3)
-		// Slot S1, S5: Old sample (T-2)
-		// Slot S2, S6: Old sample (T-1)
-		// Slot S3, S7: Newest sample (T-0)
-		#define DMABUF32RXWFM0I	0		// WFM OLDEST
-		#define DMABUF32RXWFM0Q	1		// WFM
-		#define DMABUF32RXWFM1I	2		// WFM
-		#define DMABUF32RXWFM1Q	3		// WFM
-		#define DMABUF32RXWFM2I	4		// WFM
-		#define DMABUF32RXWFM2Q	5		// WFM
-		#define DMABUF32RXWFM3I	6		// WFM NEWEST
-		#define DMABUF32RXWFM3Q	7		// WFM
+		#elif WITHFPGAIF_FRAMEBITS == 512
+			// buff data layout: I main/I sub/Q main/Q sub
+			#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
+			#define DMABUFFSTEP32RTS	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+
+			#define DMABUF32RX0I	0		// RX0, I
+			#define DMABUF32RX1I	2		// RX1, I
+			#define DMABUF32RX0Q	1		// RX0, Q
+			#define DMABUF32RX1Q	3		// RX1, Q
+
+			#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUF32TXI	0		// TX, I
+			#define DMABUF32TXQ	1		// TX, Q
+
+			#define DMABUF32TX_NCO1		5		// NCO RX A
+			#define DMABUF32TX_NCO2		4		// NCO RX B
+			#define DMABUF32TX_NCORTS	7		// NCO RTS
+
+			// ws=0: 00 02 04 06
+			// ws=1: 01 03 05 07
+
+			#if WITHRTS96
+				#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
+				#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
+				#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
+				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#endif /* WITHRTS96 */
+
+			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
+			// ws=0: even samples, ws=1: odd samples
+
+			// Slot S0, S4: Oldest sample (T-3)
+			// Slot S1, S5: Old sample (T-2)
+			// Slot S2, S6: Old sample (T-1)
+			// Slot S3, S7: Newest sample (T-0)
+			#define DMABUF32RXWFM0I	0		// WFM OLDEST
+			#define DMABUF32RXWFM0Q	1		// WFM
+			#define DMABUF32RXWFM1I	2		// WFM
+			#define DMABUF32RXWFM1Q	3		// WFM
+			#define DMABUF32RXWFM2I	4		// WFM
+			#define DMABUF32RXWFM2Q	5		// WFM
+			#define DMABUF32RXWFM3I	6		// WFM NEWEST
+			#define DMABUF32RXWFM3Q	7		// WFM
+
+		#else
+			#error Undefined WITHFPGAIF_FRAMEBITS
+		#endif
 
 	#else
 		#warning Define I2S layout for this CPUSTYLE_XXX

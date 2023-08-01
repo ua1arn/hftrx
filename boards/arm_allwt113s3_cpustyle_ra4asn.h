@@ -799,11 +799,11 @@
 	// PF6 - DC-DC synchro output
 	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		hardware_dcdcfreq_pwm5_initialize(HARDWARE_DCDC_PWMCH); \
+		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
 		arm_hardware_piof_altfn2((UINT32_C(1) << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_pwm5_setdiv(HARDWARE_DCDC_PWMCH, f); \
+		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \

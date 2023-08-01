@@ -1,0 +1,64 @@
+#type; AHUB; Audio HUB
+#base; AHUB 0x05097000
+
+#regdef; AHUB_RST; 0x0008; AHUB Reset
+#regdef; AHUB_GAT; 0x000C; AHUB Gating
+
+#aggreg; APBIF_TX; 0x010 2; APBIF TX (n=0~2)
+
+#regdef; APBIF_TXn_CTRL; 0x000; APBIF TXn Control
+#regdef; APBIF_TXnIRQ_CTRL; 0x004; APBIF TXn DMA & Interrupt Control
+#regdef; APBIF_TXnIRQ_STS; 0x008; AHUB APBIF TXn DMA & Interrupt Status
+#regdef; APBIF_TXnFIFO_CTRL; 0x0010; AHUB APBIF TXn FIFO Control
+#regdef; APBIF_TXnFIFO_STS; 0x0014; APBIF TXn FIFO Status
+#regdef; APBIF_TXnFIFO; 0x0020; APBIF TXn FIFO
+#regdef; APBIF_TXnFIFO_CNT; 0x0024; APBIF TXn FIFO Counter
+#regdef; padding 0; 0x030; Placeholder for 0x30 alignment
+
+#aggregend;
+
+#aggreg; APBIF_RX; 0x0100 2; APBIF RX (n=0~2)
+
+#regdef; APBIF_RXn_CTRL; 0x000; APBIF RXn Control
+#regdef; APBIF_RXnIRQ_CTRL; 0x004; APBIF RXn DMA & Interrupt Control
+#regdef; APBIF_RXnIRQ_STS; 0x008; APBIF RXn DMA & Interrupt Status
+#regdef; APBIF_RXnFIFO_CTRL; 0x010; APBIF RXn FIFO Control
+#regdef; APBIF_RXnFIFO_STS; 0x014; APBIF RX0 FIFO Status
+#regdef; APBIF_RXn_CONT; 0x018; APBIF RXn Contact Select
+#regdef; APBIF_RXnFIFO; 0x020; APBIF RXn FIFO
+#regdef; APBIF_RXnFIFO_CNT; 0x024; APBIF RXn FIFO Counter
+#regdef; padding 0; 0x030; Placeholder for 0x30 alignment
+
+#aggregend;
+
+
+#type; I2S_PCM
+
+#base; I2S0 0x05097200
+#base; I2S1 0x05097300
+#base; I2S2 0x05097400
+#base; I2S3 0x05097500
+
+#regdef; I2S/PCM_CTL; 0x000; I2Sn Control
+#regdef; I2S/PCM_FMT0; 0x004; I2Sn Format 0
+#regdef; I2S/PCM_FMT1; 0x008; I2Sn Format 1
+#regdef; I2S/PCM_CLKD; 0x00C; I2Sn Clock Divide
+#regdef; I2S/PCM_RXDIF_CONT; 0x020; I2Sn RXDIF Contact Select
+#regdef; I2S/PCM_CHCFG; 0x024; I2Sn Channel Configuration
+#regdef; I2S/PCM_IRQ_CTRL; 0x028; I2Sn DMA & Interrupt Control
+#regdef; I2S/PCM_IRQ_STS; 0x02C; I2Sn DMA & Interrupt Status
+
+#aggreg; I2S/PCM_SDOUT; 0x030 4; SDOUTm (m=0~3)
+
+#regdef; I2S/PCM_SDOUTm_SLOTCTR; 0x000; (n=0~3)(m=0~3); I2Sn Output Slot Control
+#regdef; I2S/PCM_SDOUTmCHMAP0; 0x004; I2Sn SDOUTm Channel Mapping 0
+#regdef; I2S/PCM_SDOUTmCHMAP1; 0x008; I2Sn SDOUTm Channel Mapping 1
+#regdef; padding 0; 0x010; Placeholder for 0x10 alignment
+
+#aggregend;
+ 
+#regdef; I2S/PCM_SDIN_SLOTCTR; 0x0270; I2Sn Input Slot Control
+#regdef; I2S/PCM_SDINCHMAP0; 0x0274; I2Sn SDIN Channel Mapping 0
+#regdef; I2S/PCM_SDINCHMAP1; 0x0278; I2Sn SDIN Channel Mapping 1
+#regdef; I2S/PCM_SDINCHMAP2; 0x0274; I2Sn SDIN Channel Mapping 2
+#regdef; I2S/PCM_SDINCHMAP3; 0x0278; I2Sn SDIN Channel Mapping 3

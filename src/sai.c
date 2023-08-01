@@ -3405,7 +3405,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 * 0
 
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0u : (1u << ((ch) * 4)))
@@ -3607,7 +3607,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
 
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+
+#elif CPUSTYLE_A64
 
 	const unsigned irq = I2S_PCM0_IRQn + ix;
 
@@ -3655,9 +3657,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
 
 #else
-	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
+	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
 
-	arm_hardware_disable_handler(irq);
+	//arm_hardware_disable_handler(irq);
 	// ARMI2SRATE // I2S sample rate audio codec (human side)
 	// ARMI2SMCLK = ARMI2SRATE * 256
 	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
@@ -3728,6 +3730,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 #endif
 
+#if CPUSTYLE_T507
+
+#else
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
 	// Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -3825,7 +3830,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (1u << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
 	arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
-
+#endif
 }
 
 #if CPUSTYLE_A64
@@ -5069,7 +5074,7 @@ static const codechw_t fpgacodechw_i2s1_duplex_slave =
 	"fpgacodechw-i2s1-duplex-slave"
 };
 
-#if CPUSTYLE_A64
+#if CPUSTYLE_A64 || CPUSTYLE_T507
 
 // FPGA interface
 static void hardware_i2s0_master_duplex_initialize_fpga(void)

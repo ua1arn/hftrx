@@ -117,14 +117,14 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	////#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	////#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	////#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	////#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
+	//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
+	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	////#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -849,16 +849,16 @@
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
+	#define HARDWARE_DCDC_PWMCH 4	/* PWM4 */
 
-	// PB9 - DC-DC synchro output
-	// TIM17_CH1 AF1
-	// TIM4_CH4	AF2	AF_TIM4
+	// PI14 - DC-DC synchro output
+	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
-		hardware_dcdcfreq_tim17_ch1_initialize(); \
+		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
+		arm_hardware_pioi_altfn2((UINT32_C(1) << 14), GPIO_CFG_AF5); /* PI14 - PWM4 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_tim17_ch1_setdiv(f); \
+		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \

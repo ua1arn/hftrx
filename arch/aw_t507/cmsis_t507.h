@@ -57,6 +57,7 @@ typedef enum IRQn
     SMHC1_IRQn = 68,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
+    DMAC_IRQn = 74,                                   /*!< DMAC  */
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
     WATCHDOG_IRQn = 82,                               /*!< TIMER  */
@@ -124,6 +125,7 @@ typedef enum IRQn
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
+#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO  Base */
@@ -160,6 +162,11 @@ typedef enum IRQn
 #define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
+#define AHUB_BASE ((uintptr_t) 0x05097000)            /*!< AHUB Audio HUB Base */
+#define I2S0_BASE ((uintptr_t) 0x05097200)            /*!< I2S_PCM  Base */
+#define I2S1_BASE ((uintptr_t) 0x05097300)            /*!< I2S_PCM  Base */
+#define I2S2_BASE ((uintptr_t) 0x05097400)            /*!< I2S_PCM  Base */
+#define I2S3_BASE ((uintptr_t) 0x05097500)            /*!< I2S_PCM  Base */
 #define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x05100000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USBPHYC0_BASE ((uintptr_t) 0x05100400)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define USB20_OTG_EHCI_BASE ((uintptr_t) 0x05101000)  /*!< USB_EHCI_Capability  Base */
@@ -182,6 +189,44 @@ typedef enum IRQn
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
 #define C0_CPUX_CFG_T507_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List Base */
 
+/*
+ * @brief AHUB
+ */
+/*!< AHUB Audio HUB */
+typedef struct AHUB_Type
+{
+             uint32_t reserved_0x000 [0x0002];
+    volatile uint32_t AHUB_RST;                       /*!< Offset 0x008 AHUB Reset */
+    volatile uint32_t AHUB_GAT;                       /*!< Offset 0x00C AHUB Gating */
+    struct
+    {
+        volatile uint32_t APBIF_TXn_CTRL;             /*!< Offset 0x010 APBIF TXn Control */
+        volatile uint32_t APBIF_TXnIRQ_CTRL;          /*!< Offset 0x014 APBIF TXn DMA & Interrupt Control */
+        volatile uint32_t APBIF_TXnIRQ_STS;           /*!< Offset 0x018 AHUB APBIF TXn DMA & Interrupt Status */
+                 uint32_t reserved_0x00C;
+        volatile uint32_t APBIF_TXnFIFO_CTRL;         /*!< Offset 0x020 AHUB APBIF TXn FIFO Control */
+        volatile uint32_t APBIF_TXnFIFO_STS;          /*!< Offset 0x024 APBIF TXn FIFO Status */
+                 uint32_t reserved_0x018 [0x0002];
+        volatile uint32_t APBIF_TXnFIFO;              /*!< Offset 0x030 APBIF TXn FIFO */
+        volatile uint32_t APBIF_TXnFIFO_CNT;          /*!< Offset 0x034 APBIF TXn FIFO Counter */
+                 uint32_t reserved_0x028 [0x0002];
+    } APBIF_TX [0x002];                               /*!< Offset 0x010 APBIF TX (n=0~2) */
+             uint32_t reserved_0x070 [0x0024];
+    struct
+    {
+        volatile uint32_t APBIF_RXn_CTRL;             /*!< Offset 0x100 APBIF RXn Control */
+        volatile uint32_t APBIF_RXnIRQ_CTRL;          /*!< Offset 0x104 APBIF RXn DMA & Interrupt Control */
+        volatile uint32_t APBIF_RXnIRQ_STS;           /*!< Offset 0x108 APBIF RXn DMA & Interrupt Status */
+                 uint32_t reserved_0x00C;
+        volatile uint32_t APBIF_RXnFIFO_CTRL;         /*!< Offset 0x110 APBIF RXn FIFO Control */
+        volatile uint32_t APBIF_RXnFIFO_STS;          /*!< Offset 0x114 APBIF RX0 FIFO Status */
+        volatile uint32_t APBIF_RXn_CONT;             /*!< Offset 0x118 APBIF RXn Contact Select */
+                 uint32_t reserved_0x01C;
+        volatile uint32_t APBIF_RXnFIFO;              /*!< Offset 0x120 APBIF RXn FIFO */
+        volatile uint32_t APBIF_RXnFIFO_CNT;          /*!< Offset 0x124 APBIF RXn FIFO Counter */
+                 uint32_t reserved_0x028 [0x0002];
+    } APBIF_RX [0x002];                               /*!< Offset 0x100 APBIF RX (n=0~2) */
+} AHUB_TypeDef; /* size of structure = 0x160 */
 /*
  * @brief C0_CPUX_CFG_H616
  */
@@ -492,6 +537,41 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
 } CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
 /*
+ * @brief DMAC
+ */
+/*!< DMAC  */
+typedef struct DMAC_Type
+{
+    volatile uint32_t DMAC_IRQ_EN_REG0;               /*!< Offset 0x000 DMAC IRQ Enable Register 0 */
+    volatile uint32_t DMAC_IRQ_EN_REG1;               /*!< Offset 0x004 DMAC IRQ Enable Register 1 */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t DMAC_IRQ_PEND_REG0;             /*!< Offset 0x010 DMAC IRQ Pending Register 0 */
+    volatile uint32_t DMAC_IRQ_PEND_REG1;             /*!< Offset 0x014 DMAC IRQ Pending Register 1 */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t DMAC_SEC_REG;                   /*!< Offset 0x020 DMA Security Register */
+             uint32_t reserved_0x024;
+    volatile uint32_t DMAC_AUTO_GATE_REG;             /*!< Offset 0x028 DMAC Auto Gating Register */
+             uint32_t reserved_0x02C;
+    volatile uint32_t DMAC_STA_REG;                   /*!< Offset 0x030 DMAC Status Register */
+             uint32_t reserved_0x034 [0x0033];
+    struct
+    {
+        volatile uint32_t DMAC_EN_REGN;               /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
+        volatile uint32_t DMAC_PAU_REGN;              /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
+        volatile uint32_t DMAC_DESC_ADDR_REGN;        /*!< Offset 0x108 DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040 */
+        volatile uint32_t DMAC_CFG_REGN;              /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
+        volatile uint32_t DMAC_CUR_SRC_REGN;          /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
+        volatile uint32_t DMAC_CUR_DEST_REGN;         /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
+        volatile uint32_t DMAC_BCNT_LEFT_REGN;        /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
+        volatile uint32_t DMAC_PARA_REGN;             /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
+                 uint32_t reserved_0x020 [0x0002];
+        volatile uint32_t DMAC_MODE_REGN;             /*!< Offset 0x128 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
+        volatile uint32_t DMAC_FDESC_ADDR_REGN;       /*!< Offset 0x12C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
+        volatile uint32_t DMAC_PKG_NUM_REGN;          /*!< Offset 0x130 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
+                 uint32_t reserved_0x034 [0x0003];
+    } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
+} DMAC_TypeDef; /* size of structure = 0x500 */
+/*
  * @brief G2D_BLD
  */
 /*!< G2D_BLD Graphic 2D (G2D) Engine Blender */
@@ -745,6 +825,29 @@ typedef struct GPIOINT_Type
     volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief I2S_PCM
+ */
+/*!< I2S_PCM  */
+typedef struct I2S_PCM_Type
+{
+    volatile uint32_t I2S_PCM_CTL;                    /*!< Offset 0x000 I2Sn Control */
+    volatile uint32_t I2S_PCM_FMT0;                   /*!< Offset 0x004 I2Sn Format 0 */
+    volatile uint32_t I2S_PCM_FMT1;                   /*!< Offset 0x008 I2Sn Format 1 */
+    volatile uint32_t I2S_PCM_CLKD;                   /*!< Offset 0x00C I2Sn Clock Divide */
+             uint32_t reserved_0x010 [0x0004];
+    volatile uint32_t I2S_PCM_RXDIF_CONT;             /*!< Offset 0x020 I2Sn RXDIF Contact Select */
+    volatile uint32_t I2S_PCM_CHCFG;                  /*!< Offset 0x024 I2Sn Channel Configuration */
+    volatile uint32_t I2S_PCM_IRQ_CTRL;               /*!< Offset 0x028 I2Sn DMA & Interrupt Control */
+    volatile uint32_t I2S_PCM_IRQ_STS;                /*!< Offset 0x02C I2Sn DMA & Interrupt Status */
+    struct
+    {
+        volatile uint32_t I2S_PCM_SDOUTm_SLOTCTR;     /*!< Offset 0x030 (n=0~3)(m=0~3) */
+        volatile uint32_t I2S_PCM_SDOUTmCHMAP0;       /*!< Offset 0x034 I2Sn SDOUTm Channel Mapping 0 */
+        volatile uint32_t I2S_PCM_SDOUTmCHMAP1;       /*!< Offset 0x038 I2Sn SDOUTm Channel Mapping 1 */
+                 uint32_t reserved_0x00C;
+    } I2S_PCM_SDOUT [0x004];                          /*!< Offset 0x030 SDOUTm (m=0~3) */
+} I2S_PCM_TypeDef; /* size of structure = 0x070 */
 /*
  * @brief PWM
  */
@@ -1225,6 +1328,7 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
+#define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA  register set access pointer */
@@ -1259,6 +1363,11 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define AHUB ((AHUB_TypeDef *) AHUB_BASE)             /*!< AHUB Audio HUB register set access pointer */
+#define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
+#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
+#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
+#define I2S3 ((I2S_PCM_TypeDef *) I2S3_BASE)          /*!< I2S3  register set access pointer */
 #define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
 #define USBPHYC0 ((USBPHYC_TypeDef *) USBPHYC0_BASE)  /*!< USBPHYC0 HCI Contgroller and PHY Interface Description register set access pointer */
 #define USB20_OTG_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_OTG_EHCI_BASE)/*!< USB20_OTG_EHCI  register set access pointer */
