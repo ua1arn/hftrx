@@ -2202,6 +2202,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     local_delay_us(10);
 
+    TCON_LCD0->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+    TCON_LCD1->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+
 #else
 	/* Configure TCONLCD clock */
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |

@@ -1110,9 +1110,8 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_GINT1_REG;                  /*!< Offset 0x008 LCD Global Interrupt Register1 */
              uint32_t reserved_0x00C;
     volatile uint32_t LCD_FRM_CTL_REG;                /*!< Offset 0x010 LCD FRM Control Register */
-    volatile uint32_t LCD_FRM_SEED_REG;               /*!< Offset 0x014 LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04 */
-             uint32_t reserved_0x018 [0x0005];
-    volatile uint32_t LCD_FRM_TAB_REG;                /*!< Offset 0x02C LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04 */
+    volatile uint32_t LCD_FRM_SEED_REG [0x006];       /*!< Offset 0x014 LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04 */
+    volatile uint32_t LCD_FRM_TAB_REG;                /*!< Offset 0x02C 4 LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04 */
              uint32_t reserved_0x030 [0x0003];
     volatile uint32_t LCD_3D_FIFO_REG;                /*!< Offset 0x03C LCD 3D FIFO Register */
     volatile uint32_t LCD_CTL_REG;                    /*!< Offset 0x040 LCD Control Register */
@@ -1156,7 +1155,9 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_CMAP_EVEN1_REG;             /*!< Offset 0x19C LCD Color Map Even Line Register1 */
              uint32_t reserved_0x1A0 [0x0014];
     volatile uint32_t LCD_SAFE_PERIOD_REG;            /*!< Offset 0x1F0 LCD Safe Period Register */
-             uint32_t reserved_0x1F4 [0x000B];
+             uint32_t reserved_0x1F4 [0x0003];
+    volatile uint32_t mux_ctrl;                       /*!< Offset 0x200 https://github.com/yodaos-project/yodaos/blob/d0d7bbc277c0fc1c64e2e0a1c82fe6e63f6eb954/boot/rpi/drivers/video/sunxi/lcdc.c#L204C16-L204C16 */
+             uint32_t reserved_0x204 [0x0007];
     volatile uint32_t LCD_LVDS0_ANA_REG;              /*!< Offset 0x220 LCD LVDS Analog Register 0 */
     volatile uint32_t LCD_LVDS1_ANA_REG;              /*!< Offset 0x224 LCD LVDS Analog Register 1 */
              uint32_t reserved_0x228 [0x0005];
