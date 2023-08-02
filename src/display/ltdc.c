@@ -2630,17 +2630,18 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
 	//#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
 	//#define SUNXI_DE2_MUX1_BASE			(SUNXI_DE2_BASE + 0x200000)
-#define SUNXI_SRAMC_BASE 0x03000000
+
+ 	#define SUNXI_SRAMC_BASE 0x03000000
     {
     	uint32_t reg_value;
 
     	/* set SRAM for video use (A64 only) */
     	//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
-    	reg_value = * (volatile uint32_t *) (SUNXI_SRAMC_BASE + 0x04);
+    	reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
      	PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
     	reg_value &= ~(0x01 << 24);
     	//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
-    	* (volatile uint32_t *) (SUNXI_SRAMC_BASE + 0x04) = reg_value;
+    	* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
      	PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
 
     }

@@ -1,0 +1,6 @@
+#type; SYS_CFG
+#base; SYS_CFG 0x03000000
+
+#regdef; VER_REG; 0x0024; Version Register
+#regdef; EMAC_EPHY_CLK_REG0; 0x0030; EMAC-EPHY Clock Register 0
+#regdef; EMAC_EPHY_CLK_REG1; 0x0034; EMAC-EPHY Clock Register 1 (T507 only)

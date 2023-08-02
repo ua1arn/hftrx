@@ -131,6 +131,7 @@ typedef enum IRQn
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
+#define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
@@ -1087,6 +1088,18 @@ typedef struct SPI_Type
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
 } SPI_TypeDef; /* size of structure = 0x304 */
 /*
+ * @brief SYS_CFG
+ */
+/*!< SYS_CFG  */
+typedef struct SYS_CFG_Type
+{
+             uint32_t reserved_0x000 [0x0009];
+    volatile uint32_t VER_REG;                        /*!< Offset 0x024 Version Register */
+             uint32_t reserved_0x028 [0x0002];
+    volatile uint32_t EMAC_EPHY_CLK_REG0;             /*!< Offset 0x030 EMAC-EPHY Clock Register 0 */
+    volatile uint32_t EMAC_EPHY_CLK_REG1;             /*!< Offset 0x034 EMAC-EPHY Clock Register 1 (T507 only) */
+} SYS_CFG_TypeDef; /* size of structure = 0x038 */
+/*
  * @brief TCON_LCD
  */
 /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
@@ -1447,6 +1460,7 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D (G2D) Video Scaler register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
+#define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
