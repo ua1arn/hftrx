@@ -2508,25 +2508,23 @@ uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
 uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
 	//	PLL_VIDEO0(4X)= 24MHz*N/M.
 	//	PLL_VIDEO0(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO0(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M;
 }
 
 uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
 	//	PLL_VIDEO1(4X)= 24MHz*N/M.
 	//	PLL_VIDEO1(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO1(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M;
 }
 
 uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)

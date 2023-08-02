@@ -2230,18 +2230,12 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
-#if CPUSTYLE_T507
-	val = allwnr_t507_get_tcon_lcd0_freq() * 2 / display_getdotclock(vdmode);
-#else
-	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
-#endif
-	PRINTF("ltdc divider = %u\n", (unsigned) val);
+	val = BOARD_TCONLCDFREQ / display_getdotclock(vdmode);
+	PRINTF("ltdc_divider=%u\n", val);
 	ASSERT(val >= 1 && val <= 127);
-//	write32((uintptr_t) & tcon->dclk,
-//			(UINT32_C(0x0f) << 28) | (val << 0));
 	TCONLCD_PTR->LCD_DCLK_REG = (
-			(UINT32_C(0x0F) << 28) |		// LCD_DCLK_EN
-			(val << 0)			// LCD_DCLK_DIV
+			0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
+			val * (UINT32_C(1) << 0)			// LCD_DCLK_DIV
 			);
     local_delay_us(10);
 }

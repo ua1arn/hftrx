@@ -31,9 +31,9 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
-	#define WITHI2S01HW	1
-	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+	#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
+	//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+	//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
 #define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
@@ -984,6 +984,7 @@
 #define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 #define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 #define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
