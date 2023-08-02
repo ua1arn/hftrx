@@ -2495,13 +2495,13 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #endif
 
 		if (! timing.h_sync_active)
-			val |= (UINT32_C(1) << 25);	// IO1_Inv
+			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
 		if (! timing.v_sync_active)
-			val |= (UINT32_C(1) << 24);	// IO0_Inv
+			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
 		if (! timing.den_active)
-			val |= (UINT32_C(1) << 27);	// IO3_Inv
+			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
 		if (! timing.clk_active)
-			val |= (UINT32_C(1) << 26);	// IO2_Inv
+			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
 
 		TCONLCD_PTR->LCD_IO_POL_REG = val;
 
@@ -2625,6 +2625,26 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
+
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+	//#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
+	//#define SUNXI_DE2_MUX1_BASE			(SUNXI_DE2_BASE + 0x200000)
+#define SUNXI_SRAMC_BASE 0x03000000
+    {
+    	uint32_t reg_value;
+
+    	/* set SRAM for video use (A64 only) */
+    	//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
+    	reg_value = * (volatile uint32_t *) (SUNXI_SRAMC_BASE + 0x04);
+     	PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+    	reg_value &= ~(0x01 << 24);
+    	//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
+    	* (volatile uint32_t *) (SUNXI_SRAMC_BASE + 0x04) = reg_value;
+     	PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+
+    }
+#endif
 
 	t113_de_set_mode(vdmode);
 	t113_de_enable();

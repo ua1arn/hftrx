@@ -1,8 +1,12 @@
 #type; DE; Display Engine (DE)
 #base; DE 0x01000000
+##base; DE0 0x01000000
+##base; DE1 0x01000000
 
 #type; DE_TOP; Display Engine (DE) TOP
 #base; DE_TOP 0x01000000
+##	//#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
+##	//#define SUNXI_DE2_MUX1_BASE			(SUNXI_DE2_BASE + 0x200000)
 
 #irq; DE 120; DE interrupt
 
