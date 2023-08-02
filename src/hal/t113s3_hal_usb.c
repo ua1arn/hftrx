@@ -148,6 +148,35 @@ static int wBoot_block_write(unsigned int start,unsigned int nblock,void *pBuffe
   return 0;
 }
 #endif /* WITHUSBDMSC */
+/////////////////////////////////////
+///
+
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+
+static uint32_t readl(uintptr_t addr)
+{
+	return * (volatile uint32_t *) addr;
+}
+
+static void writel(uint32_t value, uintptr_t addr)
+{
+	* (volatile uint32_t *) addr = value;
+}
+
+// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/usb/musb-new/sunxi.c#L178C1-L189C1
+
+static void USBC_ConfigFIFO_Base(void)
+{
+	uint32_t reg_value;
+
+    /* config usb fifo, 8kb mode */
+    reg_value = readl(SYS_CFG_BASE + 0x04);
+    reg_value &= ~(0x03 << 0);
+    reg_value |= 0x01;
+    writel(reg_value, SYS_CFG_BASE + 0x04);
+}
+
+#endif /* CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 //////////////////////////////////////////////////////////////////
 
