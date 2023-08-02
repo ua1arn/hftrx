@@ -1808,7 +1808,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 
 	/* Disable pll */
 	val = CCU->PLL_CPUX_CTRL_REG;
-	val &= ~(1 << 31);			// PLL_ENABLE
+	val &= ~(UINT32_C(1) << 31);			// PLL_ENABLE
 	CCU->PLL_CPUX_CTRL_REG = val;
 
 	/* Set default clk to 1008mhz */
@@ -1831,7 +1831,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 
 	/* Enable pll */
 	val = CCU->PLL_CPUX_CTRL_REG;
-	val |= (1 << 31);	// PLL_ENABLE
+	val |= (UINT32_C(1) << 31);	// PLL_ENABLE
 	CCU->PLL_CPUX_CTRL_REG = val;
 
 	//TP();
@@ -1870,9 +1870,9 @@ static void allwnr_a64_pll_initialize(void)
 static void allwnr_a64_mbus_initialize(void)
 {
 	unsigned M = 2;
-//		CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+//		CCU->MBUS_CLK_REG |= (UINT32_C(1) << 31);		// MBUS_SCLK_GATING.
 	CCU->MBUS_CLK_REG =
-		(1u << 31) | 	// MBUS_SCLK_GATING.
+		(UINT32_C(1) << 31) | 	// MBUS_SCLK_GATING.
 		(0x02 << 24) | 	// MBUS_SCLK_SRC 01: PLL_PERIPH0(2X) 11: PLL_DDR1.
 		((M - 1) << 0) | // MBUS_SCLK_RATIO_M (M=1..8, code=0..7)
 		0;
@@ -1881,9 +1881,9 @@ static void allwnr_a64_mbus_initialize(void)
 	(void) CCU->MBUS_CLK_REG;
 	(void) CCU->MBUS_CLK_REG;
 
-//	CCU->MBUS_RST_REG &= ~ (1u << 31);		// MBUS_RESET.
-//	CCU->MBUS_RST_REG |= (1u << 31);		// MBUS_RESET.
-	CCU->MBUS_CLK_REG |= (1u << 31);		// MBUS_SCLK_GATING.
+//	CCU->MBUS_RST_REG &= ~ (UINT32_C(1) << 31);		// MBUS_RESET.
+//	CCU->MBUS_RST_REG |= (UINT32_C(1) << 31);		// MBUS_RESET.
+	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 31);		// MBUS_SCLK_GATING.
 }
 
 
@@ -1893,7 +1893,7 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 	if(!(* reg & (UINT32_C(1) << 31)))
 	{
 		uint32_t val;
-		* reg |= (1u << 31) | (1u << 30);
+		* reg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
 		(void) * reg;
 
 		/* Lock enable */
@@ -1935,7 +1935,7 @@ static void allwnr_a64_module_pllaudio_enable(void)
 	// pll1: p1=4(5), p0=1(2), n=0x7F, m=0
 
 	// (24MHz*N)/P must be in the range of 72MHz~504MHz.
-	CCU->PLL_AUDIO_CTRL_REG &= ~ (1u << 31);
+	CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31);
 	(void) CCU->PLL_AUDIO_CTRL_REG;
 	// 307.2
 	CCU->PLL_AUDIO_CTRL_REG =
@@ -1946,10 +1946,10 @@ static void allwnr_a64_module_pllaudio_enable(void)
 	(void) CCU->PLL_AUDIO_CTRL_REG;
 
 
-	if(!(CCU->PLL_AUDIO_CTRL_REG & (1 << 31)))
+	if(!(CCU->PLL_AUDIO_CTRL_REG & (UINT32_C(1) << 31)))
 	{
 		uint32_t val;
-		CCU->PLL_AUDIO_CTRL_REG |= (1u << 31) | (1u << 30);
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
 		(void) CCU->PLL_AUDIO_CTRL_REG;
 
 		/* Lock enable */
@@ -1991,33 +1991,33 @@ uint_fast64_t allwnr_a64_get_pll_cpux_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_CPUX_CTRL_REG;
 	const uint_fast32_t pllP = UINT32_C(1) << ((reg >> 16) & 0x03);
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x1F);
-	const uint_fast32_t pllK = UINT32_C(1) + ((reg >> 4) & 0x03);
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x03);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x1F);
+	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);
 	//  (24MHz*N*K)/(M*P)
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * pllK / (pllM * pllP);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N * K / (M * pllP);
 }
 
 uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_DDR0_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0x1F);	// PLL_FACTOR_N
-	const uint_fast32_t divK = UINT32_C(1) + ((pllreg >> 4) & 0x03);	// PLL_FACTOR_K
-	const uint_fast32_t divM = UINT32_C(1) + ((pllreg >> 0) & 0x03);	// PLL_FACTOR_M
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t K = UINT32_C(1) + ((pllreg >> 4) & 0x03);	// PLL_FACTOR_K
+	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 0) & 0x03);	// PLL_FACTOR_M
 	//	PLL_DDR0 = (24MHz*N*K)/M.
 	//	The default value of PLL_DDR0 is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN * divK / divM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N * K / M;
 }
 
 uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_DDR1_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0x1F);	// PLL_FACTOR_N
-	const uint_fast32_t divK = UINT32_C(1) + ((pllreg >> 4) & 0x03);	// PLL_FACTOR_K
-	const uint_fast32_t divM = UINT32_C(1) + ((pllreg >> 0) & 0x03);	// PLL_FACTOR_M
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t K = UINT32_C(1) + ((pllreg >> 4) & 0x03);	// PLL_FACTOR_K
+	const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 0) & 0x03);	// PLL_FACTOR_M
 	//	PLL_DDR0 = (24MHz*N*K)/M.
 	//	The default value of PLL_DDR0 is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN * divK / divM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N * K / M;
 }
 
 uint_fast32_t allwnr_a64_get_cpux_freq(void)
@@ -2042,10 +2042,10 @@ uint_fast32_t allwnr_a64_get_audiopll8x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	//const uint_fast32_t pllP = UINT32_C(1) + ((reg >> 16) & 0x0F);
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x1F);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x1F);
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN * 2 / pllM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N * 2 / M;
 }
 
 //	The PLL_AUDIO= (24MHz*N)/(M*P).
@@ -2053,68 +2053,68 @@ uint_fast32_t allwnr_a64_get_audiopll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
 	const uint_fast32_t pllP = UINT32_C(1) + ((reg >> 16) & 0x0F);
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x1F);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x1F);
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / (pllM * pllP);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M * pllP);
 }
 
 uint_fast64_t allwnrt113_get_pll_periph0_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
 	//const uint_fast32_t pllP = UINT32_C(1) + ((reg >> 16) & 0x0F);	// PLL_24M_POST_DIV
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
-	const uint_fast32_t pllK = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
-	//const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x03);	// PLL_FACTOR_M = PLL Factor M (M = Factor + 1) is only valid in plltest debug.
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+	//const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);	// PLL_FACTOR_M = PLL Factor M (M = Factor + 1) is only valid in plltest debug.
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  * K;
 }
 
 uint_fast64_t allwnrt113_get_pll_periph1_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH1_CTRL_REG;
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
-	const uint_fast32_t pllK = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
-	//const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x03);	// PLL_FACTOR_M - PLL Factor M (M = Factor + 1) is only valid in plltest debug.
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+	//const uint_fast32_t M = 1u + ((reg >> 0) & 0x03);	// PLL_FACTOR_M - PLL Factor M (M = Factor + 1) is only valid in plltest debug.
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  * pllK;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  * K;
 }
 
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void)
 {
 	// PLL_HSIC = (24MHz*N)/M.
 	const uint_fast32_t reg = CCU->PLL_HSIC_CTRL_REG;
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  / M;
 }
 
 uint_fast64_t allwnrt113_get_pll_video0_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  / M;
 }
 
 uint_fast64_t allwnrt113_get_pll_video1_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  / M;
 }
 
 uint_fast64_t allwnrt113_get_pll_de_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_DE_CTRL_REG;
-	const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
-	const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x7F);	// PLL_FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M - PLL Pre-div Factor(M = Factor+1).
 
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN  / pllM;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  / M;
 }
 
 uint_fast64_t allwnrt113_get_pll_periph0_x1_freq(void)
@@ -2145,11 +2145,11 @@ uint_fast64_t allwnrt113_get_pll_mipi_freq(void)
 	if (vfb_sel == 0)
 	{
 		// PLL_MIPI default value is 594MHz.
-		const uint_fast32_t pllN = UINT32_C(1) + ((reg >> 8) & 0x0F);	// PLL_FACTOR_N
-		const uint_fast32_t pllK = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
-		const uint_fast32_t pllM = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M
+		const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x0F);	// PLL_FACTOR_N
+		const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+		const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x0F);	// PLL_FACTOR_M
 
-		return (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * pllN  * pllK  / pllM;
+		return (uint_fast64_t) allwnrt113_get_pll_video0_x1_freq() * N  * K  / M;
 	}
 	else
 	{
@@ -2204,8 +2204,8 @@ uint_fast32_t allwnr_a64_get_apb_freq(void)
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 16) & 0x03);
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	//	00: OSC24M
 	//	01: PLL_PERIPH0(1X)
 	//	10: PLL_PERIPH1(1X)
@@ -2214,21 +2214,21 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnrt113_get_hosc_freq() / (divM * divN);
+		return allwnrt113_get_hosc_freq() / (M * N);
 	case 0x01:
 		// 01: PLL_PERIPH0(1X)
-		return allwnrt113_get_pll_periph0_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph0_x1_freq() / (M * N);
 	case 0x02:
 		// 10: PLL_PERIPH1(1X)
-		return allwnrt113_get_pll_periph1_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph1_x1_freq() / (M * N);
 	}
 }
 
 uint_fast32_t allwnrt113_get_spi1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 16) & 0x03);
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	//	00: OSC24M
 	//	01: PLL_PERIPH0(1X)
 	//	10: PLL_PERIPH1(1X)
@@ -2237,13 +2237,13 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnrt113_get_hosc_freq() / (divM * divN);
+		return allwnrt113_get_hosc_freq() / (M * N);
 	case 0x01:
 		// 01: PLL_PERIPH0(1X)
-		return allwnrt113_get_pll_periph0_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph0_x1_freq() / (M * N);
 	case 0x02:
 		// 10: PLL_PERIPH1(1X)
-		return allwnrt113_get_pll_periph1_x1_freq() / (divM * divN);
+		return allwnrt113_get_pll_periph1_x1_freq() / (M * N);
 	}
 }
 
@@ -2255,16 +2255,16 @@ uint_fast32_t allwnrt113_get_usart_freq(void)
 uint_fast32_t allwnrt113_get_hdmi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:
 		// 00: PLL_VIDEO0(1X)
-		return allwnrt113_get_pll_video0_x1_freq() / divM;
+		return allwnrt113_get_pll_video0_x1_freq() / M;
 	case 0x01:
 		// 00: PLL_VIDEO1(1X)
-		return allwnrt113_get_pll_video1_x1_freq() / divM;
+		return allwnrt113_get_pll_video1_x1_freq() / M;
 	}
 }
 
@@ -2286,23 +2286,23 @@ uint_fast32_t allwnrt113_get_tcon0_freq(void)
 uint_fast32_t allwnrt113_get_tcon1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON1_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:
 		// 00: PLL_VIDEO0(1X)
-		return allwnrt113_get_pll_video0_x1_freq() / divM;
+		return allwnrt113_get_pll_video0_x1_freq() / M;
 	case 0x02:
 		// 10: PLL_VIDEO1(1X)
-		return allwnrt113_get_pll_video1_x1_freq() / divM;
+		return allwnrt113_get_pll_video1_x1_freq() / M;
 	}
 }
 
 uint_fast32_t allwnrt113_get_de_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
@@ -2318,20 +2318,20 @@ uint_fast32_t allwnrt113_get_de_freq(void)
 uint_fast32_t allwnrt113_get_ce_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 16) & 0x03);
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnrt113_get_hosc_freq() / (divN * divM);
+		return allwnrt113_get_hosc_freq() / (N * M);
 	case 0x01:
 		// 01: PLL_PERIPH0（2X）
-		return allwnrt113_get_pll_periph0_x2_freq() / (divN * divM);
+		return allwnrt113_get_pll_periph0_x2_freq() / (N * M);
 	case 0x02:
 		// 10: PLL_PERIPH1（2X）
-		return allwnrt113_get_pll_periph1_x2_freq() / (divN * divM);
+		return allwnrt113_get_pll_periph1_x2_freq() / (N * M);
 	}
 }
 
@@ -2352,20 +2352,20 @@ uint_fast32_t allwnrt113_get_ths_freq(void)
 uint_fast32_t allwnrt113_get_nand_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->NAND_CLK_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 16) & 0x03);
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:
 		// 00: OSC24M
-		return allwnrt113_get_hosc_freq() / (divN * divM);
+		return allwnrt113_get_hosc_freq() / (N * M);
 	case 0x01:
 		// 01: PLL_PERIPH0
-		return allwnrt113_get_pll_periph0_x1_freq() / (divN * divM);
+		return allwnrt113_get_pll_periph0_x1_freq() / (N * M);
 	case 0x02:
 		// 10: PLL_PERIPH0
-		return allwnrt113_get_pll_periph1_x1_freq() / (divN * divM);
+		return allwnrt113_get_pll_periph1_x1_freq() / (N * M);
 	}
 }
 
@@ -2402,7 +2402,7 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 static void allwnr_t507_module_pll_enable(volatile uint32_t * reg)
 {
 
-	if(!(* reg & (1 << 31)))	// PLL_ENABLE
+	if(!(* reg & (UINT32_C(1) << 31)))	// PLL_ENABLE
 	{
 		* reg |= (UINT32_C(1) << 31);	// PLL_ENABLE
 
@@ -2443,66 +2443,66 @@ uint_fast64_t allwnr_t507_get_pll_cpux_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_CPUX_CTRL_REG;
 	const uint_fast32_t divP = UINT32_C(1) << ((pllreg >> 16) & 0x03);
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);
 	// PLL_CPUX=24 MHz*N/P
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / divP;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / divP;
 }
 
 uint_fast64_t allwnr_t507_get_pll_ddr0_x2_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_DDR0_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_DDR= 24MHz*N/M0/ M1
 	//	The default value of PLL_DDR0 is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_ddr1_x2_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_DDR1_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_DDR= 24MHz*N/M0/ M1
 	//	The default value of PLL_DDR1 is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_PERI0(2X) = 24MHz*N/M0/M1
 	//	PLL_PERI0(1X) = 24MHz*N/M0/M1/2
 	//	The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recomme nded to modify the value
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri1_x2_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_PERI1_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_PERI1(2X) = 24MHz*N/M0/M1
 	//	PLL_PERI1(1X) = 24MHz*N/M0/M1/2
 	//	The default value of PLL_PERI1(2X) is 1.2 GHz. It is not recomme nded to modify the value
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_gpu0_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_GPU0_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_GPU0 = 24 MHz*N/M0/M1.
 	//	The default value of PLL_GPU0 is 432 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void)
@@ -2530,13 +2530,13 @@ uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void)
 uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VIDEO2_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	PLL_VIDEO2(4X)= 24MHz*N/M.
 	//	PLL_VIDEO2(1X)=24MHz*N/M/4.
 	//	The default value of PLL_VIDEO2(4X) is 1188 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
@@ -2552,66 +2552,66 @@ uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void)
 uint_fast64_t allwnr_t507_get_pll_ve_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_VE_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	The	PLL_VE = 24 MHz*N/M0/M1.
 	//	The default value of PLL_VE is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_de_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_DE_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	The	PLL_DE = 24 MHz*N/M0/M1.
 	//	The default value of PLL_DE is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_CSI_CTRL_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
 	//	The	PLL_CSI = 24 MHz*N/M0/M1.
 	//	The default value of PLL_CSI is 432MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / (divM0 * divM1);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
 uint_fast64_t allwnr_t507_get_pll_audio0_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_CSI_CTRL_REG;
 	const uint_fast32_t divP = UINT32_C(1) + ((pllreg >> 8) & 0x3F);	// PLL_FACTOR_P
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
-	const uint_fast32_t divider = divP * divM0 * divM1;
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t divider = divP * M0 * M1;
 	//	PLL_AUDIO(hs) = 24 MHz*N/M1
 	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
 	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
 	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
 	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / divider;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / divider;
 }
 
 uint_fast64_t allwnr_t507_get_pll_audio0_hs_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_CSI_CTRL_REG;
 	const uint_fast32_t divP = UINT32_C(1) + ((pllreg >> 8) & 0x3F);	// PLL_FACTOR_P
-	const uint_fast32_t divN = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t divM1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	const uint_fast32_t divM0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
-	const uint_fast32_t divider = divM0 * divM1;
+	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
+	const uint_fast32_t divider = M0 * M1;
 	//	PLL_AUDIO(hs) = 24 MHz*N/M1
 	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
 	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
 	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
 	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * divN / divider;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / divider;
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
@@ -2670,10 +2670,10 @@ uint_fast32_t allwnr_t507_get_axi_freq(void)
 	//	CPUX_AXI Clock = Clock Source/M
 	//	CPUX_APB Clock = Clock Source/N
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
 
-	return allwnr_t507_get_cpux_freq() / divM;
+	return allwnr_t507_get_cpux_freq() / M;
 }
 
 uint_fast32_t allwnr_t507_get_apb_freq(void)
@@ -2682,18 +2682,18 @@ uint_fast32_t allwnr_t507_get_apb_freq(void)
 	//	CPUX_AXI Clock = Clock Source/M
 	//	CPUX_APB Clock = Clock Source/N
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
 
-	return allwnr_t507_get_cpux_freq() / divN;
+	return allwnr_t507_get_cpux_freq() / N;
 }
 
 uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_AHB1_AHB2_CFG_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0xFF);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
-	const uint_fast32_t divider = divN * divM;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0xFF);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = N * M;
 	//	PSI_AHB1_AHB2_CLK = Clock Source M/N
 	//	00: OSC24M
 	//	01: RTC_32K
@@ -2720,9 +2720,9 @@ uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void)
 uint_fast32_t allwnr_t507_get_ahb3_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->AHB3_CFG_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
-	const uint_fast32_t divider = divN * divM;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = N * M;
 	//	AHB3_CLK = Clock Source M/ N
 	//	00: OSC24M
 	//	01: RTC_32K
@@ -2749,9 +2749,9 @@ uint_fast32_t allwnr_t507_get_ahb3_freq(void)
 uint_fast32_t allwnr_t507_get_apb1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB1_CFG_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
-	const uint_fast32_t divider = divN * divM;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = N * M;
 	//	APB1_CLK = Clock Source M/ N
 	//	00: OSC24M
 	//	01: RTC_32K
@@ -2778,9 +2778,9 @@ uint_fast32_t allwnr_t507_get_apb1_freq(void)
 uint_fast32_t allwnr_t507_get_apb2_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
-	const uint_fast32_t divN = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
-	const uint_fast32_t divider = divN * divM;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	const uint_fast32_t divider = N * M;
 	//	APB2_CLK = Clock Source M/N
 	//	00: OSC24M
 	//	01: RTC_32K
@@ -2807,8 +2807,8 @@ uint_fast32_t allwnr_t507_get_apb2_freq(void)
 uint_fast32_t allwnr_t507_get_mbus_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->MBUS_CFG_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x07);	// FACTOR_M
-	const uint_fast32_t divider = divM;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x07);	// FACTOR_M
+	const uint_fast32_t divider = M;
 	//	MBUS_CLK = Clock Source/M.
 	//	00: OSC24M
 	//	01: PLL_PERI0(2X)
@@ -2835,8 +2835,8 @@ uint_fast32_t allwnr_t507_get_mbus_freq(void)
 uint_fast32_t allwnr_t507_get_de_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t divider = divM;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = M;
 	//	SCLK = Clock Source/M.
 	//	0: 	PLL_DE
 	//	1: 	PLL_PERI0(2X)
@@ -2855,8 +2855,8 @@ uint_fast32_t allwnr_t507_get_de_freq(void)
 uint_fast32_t allwnr_t507_get_di_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DI_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t divider = divM;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = M;
 	//	SCLK = Clock Source/M.
 	//	0: 	PLL_DE
 	//	1: 	PLL_PERI0(2X)
@@ -2875,8 +2875,8 @@ uint_fast32_t allwnr_t507_get_di_freq(void)
 uint_fast32_t allwnr_t507_get_g2d_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->G2D_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t divider = divM;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = M;
 	//	SCLK = Clock Source/M.
 	//	0: 	PLL_DE
 	//	1: 	PLL_PERI0(2X)
@@ -2895,9 +2895,9 @@ uint_fast32_t allwnr_t507_get_g2d_freq(void)
 uint_fast32_t allwnr_t507_get_ce_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CE_CLK_REG;
-	const uint_fast32_t divN = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t divider = divN * divM;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = N * M;
 	//	SCLK = Clock Source/M/N
 	//	0:	OSC24M
 	//	1: 	PLL_PERI0(2X)
@@ -2916,8 +2916,8 @@ uint_fast32_t allwnr_t507_get_ce_freq(void)
 uint_fast32_t allwnr_t507_get_ve_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->VE_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t divider = divM;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = M;
 	//	SCLK = Clock Source/M.
 	//	0: 	PLL_VE
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
@@ -2937,8 +2937,8 @@ uint_fast32_t allwnr_t507_get_avs_freq(void)
 uint_fast32_t allwnr_t507_get_dram_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;
-	const uint_fast32_t divM = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t divider = divM;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t divider = M;
 	//	SCLK = Clock Source/M.
 	//	00 : PLL_DDR0
 	//	01 : PLL_DDR1
@@ -3020,7 +3020,7 @@ static void set_pll_cpu(unsigned n)
 
 	/* Enable pll ldo */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1u << 30);
+	val |= (UINT32_C(1) << 30);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Set default clk to 1008mhz */
@@ -3039,7 +3039,7 @@ static void set_pll_cpu(unsigned n)
 
 	/* Enable pll */
 	val = CCU->PLL_CPU_CTRL_REG;
-	val |= (1u << 31);
+	val |= (UINT32_C(1) << 31);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	//TP();
@@ -3148,7 +3148,7 @@ static void set_pll_periph0(void)
 	uint32_t val;
 
 	/* Periph0 has been enabled */
-	if (CCU->PLL_PERI_CTRL_REG & (1 << 31))
+	if (CCU->PLL_PERI_CTRL_REG & (UINT32_C(1) << 31))
 	{
 		//sys_uart_puts("PLL_PERI_REG = ");
 		//sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_PLL_PERI_CTRL_REG));
@@ -3171,7 +3171,7 @@ static void set_pll_periph0(void)
 
 	/* Enabe pll 600m(1x) 1200m(2x) */
 	val = CCU->PLL_PERI_CTRL_REG;
-	val |= (1 << 31);
+	val |= (UINT32_C(1) << 31);
 	CCU->PLL_PERI_CTRL_REG = val;
 
 	/* Wait pll stable */
@@ -3234,7 +3234,7 @@ static void set_mbus(void)
 	uint32_t val;
 
 	/* Reset mbus domain */
-	CCU->MBUS_CLK_REG |= (1u << 30);  // MBUS Reset 1: De-assert reset
+	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);  // MBUS Reset 1: De-assert reset
 	local_delay_ms(1);
 	/* Enable mbus master clock gating */
 	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
@@ -3244,10 +3244,10 @@ static void set_mbus(void)
 static void allwnrt113_module_pll_enable(volatile uint32_t * reg)
 {
 
-	if(!(* reg & (1 << 31)))
+	if(!(* reg & (UINT32_C(1) << 31)))
 	{
 		uint32_t val;
-		* reg |= (1u << 31) | (1u << 30);
+		* reg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
 
 		/* Lock enable */
 		* reg |= (1u << 29);
@@ -3331,70 +3331,70 @@ uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 {
 	// PLL_CPU = InputFreq*N
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);
-	const uint_fast32_t pllM = 1u + ((reg >> 0) & 0x03);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M = 1u + ((reg >> 0) & 0x03);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M;
 }
 
 uint_fast64_t allwnrt113_get_pll_ddr_freq(void)
 {
 	// PLL_DDR = InputFreq*N/M1/M0
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);
-	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);	// PLL input divider
-	const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);	// PLL outpur divider
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1 / pllM0;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M1 = 1u + ((reg >> 1) & 0x01);	// PLL input divider
+	const uint_fast32_t M0 = 1u + ((reg >> 0) & 0x01);	// PLL outpur divider
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1 / M0;
 }
 
 uint_fast64_t allwnrt113_get_pll_peri_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);
-	const uint_fast32_t pllM = 1u + ((reg >> 1) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M = 1u + ((reg >> 1) & 0x01);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M;
 }
 
 uint_fast32_t allwnrt113_get_peripll2x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
-	const uint_fast32_t pllP0 = 1u + ((reg >> 16) & 0x07);
-	return allwnrt113_get_pll_peri_freq() / pllP0;
+	const uint_fast32_t P0 = 1u + ((reg >> 16) & 0x07);
+	return allwnrt113_get_pll_peri_freq() / P0;
 }
 
 uint_fast32_t allwnrt113_get_pll_peri_800M_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
-	const uint_fast32_t pllP1 = 1u + ((reg >> 20) & 0x07);
-	return allwnrt113_get_pll_peri_freq() / pllP1;
+	const uint_fast32_t P1 = 1u + ((reg >> 20) & 0x07);
+	return allwnrt113_get_pll_peri_freq() / P1;
 }
 
 // When the HOSC is 24 MHz, the default frequency of PLL_VIDEO0(4X) is 1188 MHz.
 uint_fast32_t allwnrt113_get_video0pllx4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);	// >= 12
-	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);	// Input divider
-	//const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);	// >= 12
+	const uint_fast32_t M1 = 1u + ((reg >> 1) & 0x01);	// Input divider
+	//const uint_fast32_t M0 = 1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1;
 }
 
 // When the HOSC is 24 MHz, the default frequency of PLL_VIDEO1(4X) is 1188 MHz.
 uint_fast32_t allwnrt113_get_video1pllx4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);	// >= 12
-	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);	// Input divider
-	//const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);	// >= 12
+	const uint_fast32_t M1 = 1u + ((reg >> 1) & 0x01);	// Input divider
+	//const uint_fast32_t M0 = 1u + ((reg >> 0) & 0x01);	// PLL Output Div D.(The factor is only for testing)
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1;
 }
 
 uint_fast32_t allwnrt113_get_vepll_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_VE_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);	// >= 12
-	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);
-	const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM1 / pllM0;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);	// >= 12
+	const uint_fast32_t M1 = 1u + ((reg >> 1) & 0x01);
+	const uint_fast32_t M0 = 1u + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1 / M0;
 }
 
 //	By default, PLL_AUDIO0(1X) is 24.5714 MHz, and PLL_AUDIO0(4X) is 98.2856 MHz.
@@ -3404,10 +3404,10 @@ uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
 	//PLL_AUDIO0(4X) = 24MHz*N/M1/M0/P
 	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
 	const uint_fast32_t pllPostDivP = 1 + ((reg >> 16) & 0x3F);	// PLL_POST_DIV_P
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);
-	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);
-	const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * pllN / pllM0 / pllM1 / pllPostDivP;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M1 = 1u + ((reg >> 1) & 0x01);
+	const uint_fast32_t M0 = 1u + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M0 / M1 / pllPostDivP;
 }
 
 // By default,
@@ -3418,10 +3418,10 @@ uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
 uint_fast32_t allwnrt113_get_audio1pll1x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
-	const uint_fast32_t pllN = 1u + ((reg >> 8) & 0xFF);
-	const uint_fast32_t pllM1 = 1u + ((reg >> 1) & 0x01);
-	const uint_fast32_t pllM0 = 1u + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
+	const uint_fast32_t N = 1u + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M1 = 1u + ((reg >> 1) & 0x01);
+	const uint_fast32_t M0 = 1u + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / M0 * N / M1;
 }
 
 uint_fast32_t allwnrt113_get_audio0pll1x_freq(void)
@@ -8244,12 +8244,12 @@ sysinit_pll_initialize(int forced)
 	/* Off bootloader USB */
 	if (1)
 	{
-		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 24);	// USBOTG0_RST
 
-		CCU->USB0_CLK_REG &= ~ (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~ (1u << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
 	allwnrt113_pll_initialize();
 
@@ -8285,12 +8285,12 @@ sysinit_pll_initialize(int forced)
 	/* Off bootloader USB */
 	if (1)
 	{
-		CCU->USB_BGR_REG &= ~ (1u << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (1u << 20);	// USBEHCI0_RST
 		CCU->USB_BGR_REG &= ~  (1u << 24);	// USBOTG0_RST
 
-		CCU->USB0_CLK_REG &= ~  (1u << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (1u << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 11);	// RISC_MCLK_EN
@@ -8298,7 +8298,7 @@ sysinit_pll_initialize(int forced)
 //
 	set_pll_riscv_axi(PLL_CPU_N);
 
-	CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);	// не проищзволит видимого эффекта
+	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (1u << 0);	// не проищзволит видимого эффекта
 
 	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
 
@@ -8961,7 +8961,7 @@ void SystemCoreClockUpdate(void)
 //		unsigned pwmoutfreq = 1200000;
 //		unsigned cycle = calcdivround2(pwm5ticksfreq, pwmoutfreq);
 //		PWM->CH [IX].PPR =
-//			(cycle - 1) * (1u << 16) |	/* PWM_ENTIRE_CYCLE */
+//			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */
 //			(cycle / 2) * (1u << 0) |	/* PWM_ACT_CYCLE */
 //			0;
 		//	Step 4 PWM starting/stoping phase: Configure PCNTR[PWM_COUNTER_START] after the clock gating is enabled and before the PWM is enabled. You can verify whether the configuration was successful by reading back PCNTR[PWM_COUNTER_STATUS].
@@ -8973,12 +8973,12 @@ void SystemCoreClockUpdate(void)
 	void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle)
 	{
 		//PRINTF("hardware_dcdcfreq_pwm_setdiv: pwmch=%u, cycle=%u\n", pwmch, cycle);
-		PWM->PER |= (1u << (0 + pwmch));
+		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */
 			(cycle / 2) * (UINT32_C(1) << 0) |	/* PWM_ACT_CYCLE */
 			0;
-		while ((PWM->CH [pwmch].PCR & (1u << 11)) == 0)	/* PWM_PERIOD_RDY */
+		while ((PWM->CH [pwmch].PCR & (UINT32_C(1) << 11)) == 0)	/* PWM_PERIOD_RDY */
 			;
 	}
 
