@@ -2150,18 +2150,17 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 // LVDS: mstep1, HV: step1: Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
-	//pdat->backlight = NULL;
-	//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-	uint32_t val;
+	uint32_t start_dly;
 
 	// ctrl
-	//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
-	val = 0x1F;
+	//start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
+	start_dly = 0x1F;
 	TCONLCD_PTR->LCD_CTL_REG =
-		//(UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
-		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
-		(0x00u << 23) |		// LCD_RB_SWAP
-		((val & 0x1fu) << 4) |	// LCD_START_DLY
+		//1 * (UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
+		0 * (UINT32_C(1) << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+		0 * (UINT32_C(1) << 23) |		// LCD_RB_SWAP
+		1 * (UINT32_C(1) << 20) |		// LCD_INTERLACE_EN (has no effect)
+		((start_dly & 0x1fu) << 4) |	// LCD_START_DLY
 		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
 }
@@ -2183,7 +2182,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	(void) TCONLCD_CCU_CLK_REG;
 
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset

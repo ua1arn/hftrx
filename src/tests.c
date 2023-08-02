@@ -6617,7 +6617,7 @@ void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
 
 #endif
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 && 0
 //#define DE_BASE 0x01000000
 
 //#define DISP_IF_TOP_BASE 0x06510000
