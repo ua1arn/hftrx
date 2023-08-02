@@ -2596,19 +2596,36 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 	/* Configure DE clock */
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
-		(UINT32_C(2) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
-		((UINT32_C(4) - 1) << 0) |	// FACTOR_M 300 MHz
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0f) << 0)) |
+		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		(2 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
-	//PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000000));
+	PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000 / 1000));
 
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	/* Configure DE clock */
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
+		2 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
+		(0u << 8) |	// FACTOR_N 0..3: 1..8
+		(4 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+		0;
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    local_delay_us(10);
+	//PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000 / 1000));
+
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+    local_delay_us(10);
+#else
+	#error Undefined CPUSTYLE_xxx
+#endif
 
 #if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
