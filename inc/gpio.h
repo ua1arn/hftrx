@@ -597,6 +597,12 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		portholder_t mask,
 		portholder_t state
 		);
+	/* Установка состояния выходов именно так как оно передано в state: 0: притянут у земле, 1: отпустили */
+	void gpioX_setopendrain(
+		GPIO_TypeDef * gpio,
+		portholder_t mask,
+		portholder_t state
+		);
 	portholder_t gpioX_getinputs(
 		GPIO_TypeDef * gpio
 		);

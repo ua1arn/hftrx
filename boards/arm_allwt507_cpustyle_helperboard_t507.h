@@ -661,29 +661,29 @@
 	// PL1 S-TWI0-SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
 	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOL, (v), 1 * (v)); } while (0)
 
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
 	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOL))
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOL, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0)
+		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
-		} while (0)
+		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+		arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
+	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PL1 - S_TWI0_SDA */ \
-		} while (0)
+	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
 
@@ -886,27 +886,26 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	#if 1
-		/* BL0: PA12. BL1: PA11, EN: PD28  */
-		#define	HARDWARE_BL_INITIALIZE() do { \
-			const portholder_t BLpins = (UINT32_C(1) << 12) | (UINT32_C(1) << 11); /* PA11:PA12 */ \
-			const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
-			arm_hardware_pioa_opendrain(BLpins, 0); \
-			arm_hardware_pioa_outputs(BLpins, 0 * BLpins); /* TODO: fix it! */ \
-			arm_hardware_piod_outputs(ENmask, 0 * ENmask); \
-		} while (0)
+	/* BL0: PA12. BL1: PA11, EN: PD28  */
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
+		const portholder_t BLPinMSB = UINT32_C(1) << 11; /* PA11 - MSB open drain */ \
+		const portholder_t BLPinLSB = UINT32_C(1) << 12; /* PA12 - LSB open drain */ \
+		arm_hardware_pioa_opendrain(BLPinMSB, BLPinMSB); /* минимальный ток */ \
+		arm_hardware_pioa_opendrain(BLPinLSB, BLPinLSB); /* минимальный ток */ \
+		arm_hardware_piod_outputs(ENmask, 0 * ENmask); \
+	} while (0)
 
-		/* установка яркости и включение/выключение преобразователя подсветки */
-		/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
-		#define HARDWARE_BL_SET(en, level) do { \
-			const portholder_t Vlevel = 0x01 * !! (level & 0x02) + 0x02 * !! (level & 0x01); \
-			const portholder_t BLpins = (UINT32_C(1) << 12) | (UINT32_C(1) << 11); /* PA11:PA12 */ \
-			const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
-			const portholder_t BLstate = (~ Vlevel) << 11; \
-			gpioX_setstate(GPIOA, BLpins, BLstate); \
-			gpioX_setstate(GPIOD, ENmask, !!(en) * ENmask); \
-		} while (0)
-	#endif
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t ENmask = UINT32_C(1) << 28; /* PD28 */ \
+		const portholder_t BLPinMSB = UINT32_C(1) << 11; /* PA11 - MSB open drain */ \
+		const portholder_t BLPinLSB = UINT32_C(1) << 12; /* PA12 - LSB open drain */ \
+		gpioX_setopendrain(GPIOA, BLPinMSB, BLPinMSB * ! (level & 0x02)); /* Больший ток - нулём */ \
+		gpioX_setopendrain(GPIOA, BLPinLSB, BLPinLSB * ! (level & 0x01)); /* Больший ток - нулём */ \
+		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
+	} while (0)
 
 #if WITHLTDCHW
 
@@ -977,14 +976,13 @@
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 	} while (0)
 
+	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 
 #endif /* WITHLTDCHW */
 
-
-#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 

@@ -844,28 +844,29 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	#if 0
-		/* BL0: PA14. BL1: PA15 */
-		#define	HARDWARE_BL_INITIALIZE() do { \
-			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA15:PA14 */ \
-			const portholder_t ENmask = 0 * (UINT32_C(1) << 1); /* PF1 - not in this hardware  */ \
-			arm_hardware_pioa_opendrain(BLpins, 0); \
-			} while (0)
+#if 0
+	/* Управлятся через 75HC595 */
+	/* BL0: PA14. BL1: PA15 */
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t ENmask = 0*(UINT32_C(1) << 28); /* PDxx */ \
+		const portholder_t BLPinMSB = UINT32_C(1) << 15; /* PA15 - MSB open drain */ \
+		const portholder_t BLPinLSB = UINT32_C(1) << 14; /* PA14 - LSB open drain */ \
+		arm_hardware_pioa_opendrain(BLPinMSB, BLPinMSB); /* минимальный ток */ \
+		arm_hardware_pioa_opendrain(BLPinLSB, BLPinLSB); /* минимальный ток */ \
+		arm_hardware_piod_outputs(ENmask, 0 * ENmask); \
+	} while (0)
 
-		/* установка яркости и включение/выключение преобразователя подсветки */
-		/* BL0: PA14. BL1: PA15 */
-		#define HARDWARE_BL_SET(en, level) do { \
-			const portholder_t Vlevel = (level) & 0x03; \
-			const portholder_t ENmask = 0 * (UINT32_C(1) << 1); /* PF1 - not in this hardware */ \
-			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA15:PA14 */ \
-			const portholder_t BLstate = (~ Vlevel) << 14; \
-			GPIOA->BSRR = \
-				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
-				BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
-				0; \
-			__DSB(); \
-		} while (0)
-	#endif
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	/* BL0: PA14. BL1: PA15 */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t ENmask = 0*(UINT32_C(1) << 28); /* PDxx */ \
+		const portholder_t BLPinMSB = UINT32_C(1) << 15; /* PA15 - MSB open drain */ \
+		const portholder_t BLPinLSB = UINT32_C(1) << 14; /* PA14 - LSB open drain */ \
+		gpioX_setopendrain(GPIOA, BLPinMSB, BLPinMSB * ! (level & 0x02)); /* Больший ток - нулём */ \
+		gpioX_setopendrain(GPIOA, BLPinLSB, BLPinLSB * ! (level & 0x01)); /* Больший ток - нулём */ \
+		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
+	} while (0)
+#endif
 
 #if WITHLTDCHW
 
@@ -951,12 +952,12 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
-#endif /* WITHLTDCHW */
+	//#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
 
-#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
+#endif /* WITHLTDCHW */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 

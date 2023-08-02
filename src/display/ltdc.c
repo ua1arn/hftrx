@@ -2174,11 +2174,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #if CPUSTYLE_T507
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	(void) CCU->DISPLAY_IF_TOP_BGR_REG;
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	(void) CCU->DISPLAY_IF_TOP_BGR_REG;
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
-	(void) CCU->DISPLAY_IF_TOP_BGR_REG;
 
 	unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
@@ -2189,12 +2186,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	(void) TCONLCD_CCU_CLK_REG;
 
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
-	(void) CCU->TCON_LCD_BGR_REG;
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
-	(void) CCU->TCON_LCD_BGR_REG;
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset
-	(void) CCU->TCON_LCD_BGR_REG;
-
 
     local_delay_us(10);
 
