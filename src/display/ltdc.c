@@ -2231,7 +2231,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 #if CPUSTYLE_T507
-	val = allwnr_t507_get_tcon_lcd0_freq() / display_getdotclock(vdmode);
+	val = allwnr_t507_get_tcon_lcd0_freq() * 2 / display_getdotclock(vdmode);
 #else
 	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
 #endif
