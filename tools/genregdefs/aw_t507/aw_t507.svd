@@ -4833,6 +4833,29 @@
     </registers>
     <dimIncrement>0x030</dimIncrement>
    </cluster>
+   <register>
+    <name>I2Sn_SDIN_SLOTCTR</name>
+    <displayName>I2Sn_SDIN_SLOTCTR</displayName>
+    <description>I2Sn Input Slot Control</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000074</addressOffset>
+    <register>
+     <name>I2Sn_SDINCHMAP</name>
+     <displayName>I2Sn_SDINCHMAP</displayName>
+     <description>I2Sn SDIN Channel Mapping 0..3</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral derivedFrom="I2S0">

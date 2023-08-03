@@ -986,12 +986,15 @@ typedef struct I2S_PCM_Type
     volatile uint32_t I2Sn_IRQ_STS;                   /*!< Offset 0x02C I2Sn DMA & Interrupt Status */
     struct
     {
-        volatile uint32_t I2S_PCM_SDOUTm_SLOTCTR;     /*!< Offset 0x030 (n=0~3)(m=0~3) */
-        volatile uint32_t I2S_PCM_SDOUTmCHMAP0;       /*!< Offset 0x034 I2Sn SDOUTm Channel Mapping 0 */
-        volatile uint32_t I2S_PCM_SDOUTmCHMAP1;       /*!< Offset 0x038 I2Sn SDOUTm Channel Mapping 1 */
+        volatile uint32_t I2Sn_SDOUTm_SLOTCTR;        /*!< Offset 0x030 (n=0~3)(m=0~3) */
+        volatile uint32_t I2Sn_SDOUTmCHMAP0;          /*!< Offset 0x034 I2Sn SDOUTm Channel Mapping 0 */
+        volatile uint32_t I2Sn_SDOUTmCHMAP1;          /*!< Offset 0x038 I2Sn SDOUTm Channel Mapping 1 */
                  uint32_t reserved_0x00C;
-    } I2S_PCM_SDOUT [0x004];                          /*!< Offset 0x030 SDOUTm (m=0~3) */
-} I2S_PCM_TypeDef; /* size of structure = 0x070 */
+    } I2Sn_SDOUT [0x004];                             /*!< Offset 0x030 SDOUTm (m=0~3) */
+    volatile uint32_t I2Sn_SDIN_SLOTCTR;              /*!< Offset 0x070 I2Sn Input Slot Control */
+    volatile uint32_t I2Sn_SDINCHMAP [0x004];         /*!< Offset 0x074 I2Sn SDIN Channel Mapping 0..3 */
+             uint32_t reserved_0x084 [0x001F];
+} I2S_PCM_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief PWM
  */
