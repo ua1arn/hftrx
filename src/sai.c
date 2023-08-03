@@ -3608,9 +3608,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned mclkf = lrckf * 256;
 
 #if CPUSTYLE_T507
+	// CCU
+	#warning CPUSTYLE_T507 to be implemented
 
 #elif CPUSTYLE_A64
-
+	// CCU
 	const unsigned irq = I2S_PCM0_IRQn + ix;
 
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
@@ -3656,7 +3658,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
 	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
 
-#else
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
 
 	//arm_hardware_disable_handler(irq);
@@ -3728,11 +3730,26 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	CCU->I2S_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Gating Clock for I2S/PCMx
 	CCU->I2S_BGR_REG |= (UINT32_C(1) << (16 + ix));	// I2S/PCMx Reset
 
+#else
+	#error Unhandled CPUSTYLE_xxx
+
 #endif
 
 #if CPUSTYLE_T507
+	// Каналы AHUB - RX
+	AHUB->APBIF_RX [ix].APBIF_RXnFIFO_CTRL =
+		0;
 
-#else
+	// Каналы AHUB - TX
+	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL =
+		0;
+
+	// Каналы I2S
+#elif CPUSTYLE_A64
+	#warning CPUSTYLE_T507 to be implemented
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	// Каналы I2S
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
 	// Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -3830,6 +3847,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
 	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+
+#else
+	#error Unhandled CPUSTYLE_xxx
 #endif
 }
 
