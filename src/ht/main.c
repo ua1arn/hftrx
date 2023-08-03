@@ -1,40 +1,28 @@
 #include "hardware.h"
 #include "formats.h"
-
-
+#include <string.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-//#include <conio.h>
-#include <time.h>
+//
+//#include "Type.h"
+//
+//#include "timer.h"
+//#include "PWM.h"
+//#include "LowLevel.h"
 
 #include "rs.h"
-
-#define u8  unsigned char
-#define u16 unsigned short
-
-#define EE 256       /* 8*/
-#define KK (NN-EE)
-#define K  4096      /*16*/
 
 dtype data[NN];
 dtype data2[NN];
 
-//#define show
-
-static __inline__ unsigned long long rdtsc(void)
-{
-//    unsigned hi, lo;
-//    __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-//    return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
-	return cpu_getdebugticks();
-}
-
 void hmain(void)
 {
- srand(time(NULL));
+	PRINTF("cpufreq=%u\n", (unsigned) CPU_FREQ);
+// LowLevel_Init();
+// PWM_Init(75);
 
- init_rs(KK,K);
+ init_rs(KK); //init_rs(KK,K);
 
  PRINTF("RS init\n");
 
@@ -47,82 +35,44 @@ void hmain(void)
 
  for(int i=0;i<K;i++)data[i]=rand()&NN;
 
- t=rdtsc();
- int r=encode_rs(data);
- t=rdtsc()-t;
- PRINTF("Encode: %0.1lf FPS   ",(double)3000000000ULL/(double)t); //"%llu\n"
+ t=cpu_getdebugticks();
+ int r=encode_rs(data,&data[KK]); //encode_rs(data);
+ t=cpu_getdebugticks()-t;
+ PRINTF("Encode: %0.1lf FPS   ",(double)CPU_FREQ/(double)t); //"%llu\n"
 
  memcpy(data2,data,NN*sizeof(data[0]));
 
  if(r==-1)
  {
   PRINTF("\n\nEncode Error!\n");
-  //getch();
-  //exit(-1);
-  return;
+  while(1);
  }
 
-#ifdef show
- PRINTF("\n\n");
+ uint16_t n=((uint16_t)rand())%((EE/2)+1); //0      .. (EE/2)
+ uint16_t m=(EE/2)-n;                 //(EE/2) .. 0
 
- for(int i=0;i<K;i++)
- {
-  PRINTF("%04X ",data[i]);
- }
-#endif
+ for(uint16_t i=0;i<n;i++)data[   (((uint16_t)rand())%K )]=(uint16_t)rand();
+ for(uint16_t i=0;i<m;i++)data[KK+(((uint16_t)rand())%EE)]=(uint16_t)rand();
 
- int n=rand()%((EE/2)+1); //0    ..EE/2
- int m=(EE/2)-n;          //EE/2 ..0
+// for(int i=0;i<EE/4;i++)data[   (((uint16_t)rand())%K )]=(uint16_t)rand();
+// for(int i=0;i<EE/4;i++)data[KK+(((uint16_t)rand())%EE)]=(uint16_t)rand();
 
- for(int i=0;i<n+0;i++)data[   (((u16)rand())%K )]=(u16)rand();
- for(int i=0;i<m+0;i++)data[KK+(((u16)rand())%EE)]=(u16)rand();
-
-#ifdef show
- PRINTF("\n\n");
-
- for(int i=0;i<K;i++)
- {
-  if(data[i])     PRINTF("%04X ",data[i]);
-  else            PRINTF("     ");
- }
- for(int i=0;i<EE;i++)
- {
-  if(data[KK+i])PRINTF("%04X ",data[KK+i]);
-  else         PRINTF("     ");
- }
-
-#endif
-
-//getch();
-
-// t=rdtsc();
-// r=eras_dec_rs(data,NULL,0);
-// t=rdtsc()-t;
-// PRINTF("Decode: %0.1lf FPS\n",(double)3000000000ULL/(double)t); //"%llu\n"
+ t=cpu_getdebugticks();
+ r=eras_dec_rs(data,NULL,0);
+ t=cpu_getdebugticks()-t;
+ PRINTF("Decode: %0.1lf FPS\n",(double)CPU_FREQ/(double)t); //"%llu\n"
 
  if(r==-1)
  {
   PRINTF("\n\nDecode Error!\n");
-  return;
+  while(1);
  }
 
  if(memcmp(data,data2,NN*sizeof(data[0]))!=0)
  {
   PRINTF("\n\nNot Compare!\n");
-  return;
+  while(1);
  }
-
-#ifdef show
-
- PRINTF("\n\n");
-
- for(int i=0;i<K ;i++)PRINTF("%04X ",data[   i]);
- for(int i=0;i<EE;i++)PRINTF("%04X ",data[KK+i]);
-
-
-#endif
-
-// PRINTF("%c",(rand()%10)+'0');
 
  goto Again;
 

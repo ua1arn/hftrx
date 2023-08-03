@@ -36,8 +36,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#ifdef USE_JPWL
-#if 1
+#if 1//def USE_JPWL
 
 /**
 @file rs.c
@@ -70,7 +69,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "rs.h"
 
 /* This defines the type used to store an element of the Galois Field
@@ -82,11 +80,8 @@
  */
 typedef int gf;
 
-/* KK = number of all information symbols (including zeroes) */
-static int	KK;
-
-/* KK = number of useful information symbols */
-static int	K;
+/* KK = number of information symbols */
+/*static*/ int	KK=(NN-EE);
 
 /* Primitive polynomials - see Lin & Costello, Appendix A,
  * and  Lee & Messerschmitt, p. 453.
@@ -159,9 +154,11 @@ int Pp[MM+1] = { 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1 };
 
 /* index->polynomial form conversion table */
 gf Alpha_to[NN + 1];
+//gf *Alpha_to=(gf*)(0x40000000+((64+24)*0x100000UL));
 
 /* Polynomial->index form conversion table */
 gf Index_of[NN + 1];
+//gf *Index_of=(gf*)(0x40000000+((64+24)*0x100000UL)+((NN+1)*sizeof(gf)));
 
 /* No legal value in index form represents zero, so
  * we need a special value for this purpose
@@ -174,50 +171,49 @@ gf Index_of[NN + 1];
  */
 /*gf Gg[NN - KK + 1];*/
 gf		Gg[NN - 1];
+//gf *Gg=(gf*)0x00040000;
+
+static inline gf
+modnn2(int x)
+{
+	return x % 65535;
+ if (x <      65535)  return x              ;
+                      return x -      65535 ;
+}
 
 /* Compute x % NN, where NN is 2**MM - 1,
  * without a slow divide
  */
-
-//http://homepage.cs.uiowa.edu/~dwjones/bcd/mod.shtml#exmod15
-
-static inline gf modnn(int x)
+static inline gf
+modnn(int x)
 {
-/*
+	return x % NN;
+   //246 FPS
     while (x >= NN) {
         x -= NN;
         x = (x >> MM) + (x & NN);
     }
     return x;
-*/
 
-// return x%NN;
+//164 FPS
+// return x%NN; 
 
+//230 FPS
 #if 0
     x = (x >> 16) + (x & 0xFFFF); /* sum base 2**16 digits */
-    x = (x >>  8) + (x & 0xFF);   /* sum base 2**8 digits */
-    if (x < 255) return x;
-    if (x < (2 * 255)) return x - 255;
-    return x - (2 * 255);
+    if (x <      65535)  return x              ;
+    if (x < (2 * 65535)) return x -      65535 ;
+                         return x - (2 * 65535);
 #endif
-
-    x = (x >> 16) + (x & 0xFFFF); /* sum base 2**16 digits */
-    if (x <      65535)
-    {
-    	return x              ;
-    }
-    if (x < (2 * 65535))
-    {
-    	return x -      65535 ;
-    }
-    return x - (2 * 65535);
 }
 
 #if 1
 
-#define	CLEAR(a,n)  memset(a,0,(n)*sizeof((a)[0]));
-#define COPY(a,b,n) memcpy(a,b,(n)*sizeof((a)[0]));
-#define	COPYDOWN COPY
+#include <string.h>
+
+#define	CLEAR(a,n)      memset(a,0,(n)*sizeof((a)[0]))
+#define COPY(a,b,n)     memcpy(a,b,(n)*sizeof((a)[0]))
+#define	COPYDOWN(a,b,n) memmove(a,b,(n)*sizeof((a)[0]))
 
 #else
 
@@ -240,16 +236,14 @@ static inline gf modnn(int x)
 
 #endif
 
-void init_rs(int kk,int k)
+void init_rs(int k)
 {
-    KK = kk;
-
+    KK = k;
     if (KK >= NN) {
         PRINTF("KK must be less than 2**MM - 1\n");
-        while(1);
+        return;
+        //exit(1);
     }
-
-    K=k;
 
     generate_gf();
     gen_poly();
@@ -319,6 +313,7 @@ generate_gf(void)
     Alpha_to[NN] = 0;
 }
 
+
 /*
  * Obtain the generator polynomial of the TT-error correcting, length
  * NN=(2**MM -1) Reed Solomon code from the product of (X+@**(B0+i)), i = 0,
@@ -358,6 +353,7 @@ gen_poly(void)
         Gg[i] = Index_of[Gg[i]];
 }
 
+
 /*
  * take the string of symbols in data[i], i=0..(k-1) and encode
  * systematically to produce NN-KK parity symbols in bb[0]..bb[NN-KK-1] data[]
@@ -367,10 +363,8 @@ gen_poly(void)
  * data(X)*X**(NN-KK)+ b(X)
  */
 int
-encode_rs(dtype *data)
+encode_rs(dtype *data, dtype *bb)
 {
-    #define bb (&data[KK])
-
     register int i, j;
     gf feedback;
 
@@ -401,7 +395,6 @@ encode_rs(dtype *data)
 
     return 0;
 
-    #undef bb
 }
 
 /*
@@ -425,12 +418,9 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
     gf u,q,tmp,num1,num2,den,discr_r;
     static gf recd[NN];
     /* Err+Eras Locator poly and syndrome poly */
-    /*gf lambda[NN-KK + 1], s[NN-KK + 1];
+    gf lambda[NN-KK + 1], s[NN-KK + 1];
     gf b[NN-KK + 1], t[NN-KK + 1], omega[NN-KK + 1];
-    gf root[NN-KK], reg[NN-KK + 1], loc[NN-KK];*/
-    static gf lambda[NN + 1], s[NN + 1];
-    static gf b[NN + 1], t[NN + 1], omega[NN + 1];
-    static gf root[NN], reg[NN + 1], loc[NN];
+    gf root[NN-KK], reg[NN-KK + 1], loc[NN-KK];
     int syn_error, count;
 
     /* data[] is in polynomial form, copy and convert to index form */
@@ -485,6 +475,7 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
                     lambda[j] ^= Alpha_to[modnn(u + tmp)];
             }
         }
+#if 0
 #ifdef ERASURE_DEBUG
         /* find roots of the erasure location polynomial */
         for(i=1; i<=no_eras; i++)
@@ -515,6 +506,7 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
         for (i = 0; i < count; i++)
             PRINTF("%d ", loc[i]);
         PRINTF("\n");
+#endif
 #endif
 #endif
     }
@@ -580,7 +572,7 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
     COPY(&reg[1],&lambda[1],NN-KK);
 
     count = 0;		/* Number of roots of lambda(x) */
-
+ 
 for (i = NN-1; i >= KK; i--) //Parity
 {
         q = 1;
@@ -613,7 +605,7 @@ for(i=0;i<KK-K;i++)
 }
 */
 
-//            for(j=deg_lambda;j>0;j--)if(reg[j]!=A0)reg[j]=/*modnn*/(reg[j]+(j*(KK-K)));
+//            for(j=deg_lambda;j>0;j--)if(reg[j]!=A0)reg[j]=modnn(reg[j]+(j*(KK-K)));
               for(j=deg_lambda;j>0;j--)if(reg[j]!=A0)reg[j]+=j*(KK-K);
 
 for (i = K-1; i >= 0 ; i--) //Data
@@ -634,7 +626,6 @@ for (i = K-1; i >= 0 ; i--) //Data
             count++;
         }
 }
-
 
 //      for(j=deg_lambda;j>0;j--)PRINTF("%d ",reg[j]);
 //      PRINTF("\n");
