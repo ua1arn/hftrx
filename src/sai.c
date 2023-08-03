@@ -3937,6 +3937,47 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 }
 
+static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t state)
+{
+#if CPUSTYLE_T507
+	if (state)
+	{
+		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
+		i2s->I2Sn_CTL |=
+			1 * (UINT32_C(1) << 2) |	// TXEN
+			1 * (UINT32_C(1) << 1) |	// RXEN
+			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+			0;
+	}
+	else
+	{
+		i2s->I2Sn_CTL &= ~ (
+			1 * (UINT32_C(1) << 2) |	// TXEN
+			1 * (UINT32_C(1) << 1) |	// RXEN
+			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+			0);
+		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
+	}
+#else
+	if (state)
+	{
+		i2s->I2S_PCM_CTL |=
+			(UINT32_C(1) << 2) |	// TXEN
+			(UINT32_C(1) << 1) |	// RXEN
+			0;
+		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
+	}
+	else
+	{
+		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
+	}
+#endif
+}
+
 #if CPUSTYLE_A64
 
 static void hardware_i2s0_master_duplex_initialize_codec1(void)
@@ -3953,22 +3994,70 @@ static void hardware_i2s0_slave_duplex_initialize_codec1(void)
 
 #endif /* CPUSTYLE_A64 */
 
+#define CODEC1_NCH 2	/* всегда стерео */
+
+#if defined(I2S0)
+static void hardware_i2s0_enable(uint_fast8_t state)
+{
+	hardware_i2s_enable(0, I2S0, state);
+}
+
+// FPGA interface
+static void hardware_i2s0_master_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S0HW_INITIALIZE(1);
+}
+
+static void hardware_i2s0_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S0HW_INITIALIZE(0);
+}
+#endif /* defined(I2S0) */
+
+#if defined(I2S1)
+static void hardware_i2s1_enable(uint_fast8_t state)
+{
+	hardware_i2s_enable(1, I2S1, state);
+}
+
 // Codec initialize
 static void hardware_i2s1_master_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(1, I2S1, 1, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_initialize(1, I2S1, 1, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
 	I2S1HW_INITIALIZE(1);
 }
 
 static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(1, I2S1, 0, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_initialize(1, I2S1, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
 	I2S1HW_INITIALIZE(0);
+}
+
+static void hardware_i2s1_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(1, I2S1, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(0);
+}
+
+#endif /* defined(I2S1) */
+
+#if defined(I2S2)
+static void hardware_i2s2_enable(uint_fast8_t state)
+{
+	hardware_i2s_enable(2, I2S2, state);
 }
 
 static void hardware_i2s2_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(2, I2S2, 0, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_initialize(2, I2S2, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(0);
+}
+
+static void hardware_i2s2_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(2, I2S2, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(0);
 }
 
@@ -3978,106 +4067,7 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 	hardware_i2s_initialize(2, I2S2, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(1);
 }
-
-static void hardware_i2s1_slave_duplex_initialize_fpga(void)
-{
-	hardware_i2s_initialize(1, I2S1, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S1HW_INITIALIZE(0);
-}
-
-static void hardware_i2s2_slave_duplex_initialize_fpga(void)
-{
-	hardware_i2s_initialize(2, I2S2, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S2HW_INITIALIZE(0);
-}
-
-static void hardware_i2s1_enable_codec1(uint_fast8_t state)
-{
-#if CPUSTYLE_T507
-#else
-	I2S_PCM_TypeDef * const i2s = I2S1;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(UINT32_C(1) << 2) |	// TXEN
-			(UINT32_C(1) << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
-	}
-#endif
-}
-
-static void hardware_i2s2_enable_codec1(uint_fast8_t state)
-{
-#if CPUSTYLE_T507
-#else
-	I2S_PCM_TypeDef * const i2s = I2S2;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(UINT32_C(1) << 2) |	// TXEN
-			(UINT32_C(1) << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
-	}
-#endif
-}
-
-static void hardware_i2s1_enable_fpga(uint_fast8_t state)
-{
-#if CPUSTYLE_T507
-#else
-	I2S_PCM_TypeDef * const i2s = I2S1;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(UINT32_C(1) << 2) |	// TXEN
-			(UINT32_C(1) << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
-	}
-#endif
-}
-
-static void hardware_i2s2_enable_fpga(uint_fast8_t state)
-{
-#if CPUSTYLE_T507
-#else
-	I2S_PCM_TypeDef * const i2s = I2S2;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(UINT32_C(1) << 2) |	// TXEN
-			(UINT32_C(1) << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
-	}
-#endif
-}
+#endif /* defined(I2S2) */
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -4839,7 +4829,7 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 	hardware_dummy_initialize,
 	DMAC_I2S1_RX_initialize_codec1,
 	DMAC_I2S1_TX_initialize_codec1,
-	hardware_i2s1_enable_codec1,
+	hardware_i2s1_enable,
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-master"
 };
@@ -5211,7 +5201,7 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S1_RX_initialize_codec1,
 	DMAC_I2S1_TX_initialize_codec1,
-	hardware_i2s1_enable_codec1,
+	hardware_i2s1_enable,
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-slave"
 };
@@ -5226,7 +5216,7 @@ static const codechw_t audiocodechw_i2s2_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_codec1,
 	DMAC_I2S2_TX_initialize_codec1,
-	hardware_i2s2_enable_codec1,
+	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"audiocodechw-i2s2-duplex-slave"
 };
@@ -5237,7 +5227,7 @@ static const codechw_t fpgacodechw_i2s2_duplex_master =
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_fpga,
 	DMAC_I2S2_TX_initialize_fpga,
-	hardware_i2s2_enable_fpga,
+	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-master"
 };
@@ -5248,7 +5238,7 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_fpga,
 	DMAC_I2S2_TX_initialize_fpga,
-	hardware_i2s2_enable_fpga,
+	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-slave"
 };
@@ -5263,70 +5253,14 @@ static const codechw_t fpgacodechw_i2s1_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S1_RX_initialize_fpga,
 	DMAC_I2S1_TX_initialize_fpga,
-	hardware_i2s1_enable_fpga,
+	hardware_i2s1_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s1-duplex-slave"
 };
 
 #if CPUSTYLE_A64 || CPUSTYLE_T507
 
-// FPGA interface
-static void hardware_i2s0_master_duplex_initialize_fpga(void)
-{
-	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S0HW_INITIALIZE(1);
-}
 
-static void hardware_i2s0_slave_duplex_initialize_fpga(void)
-{
-	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S0HW_INITIALIZE(0);
-}
-
-
-static void hardware_i2s0_enable_fpga(uint_fast8_t state)
-{
-#if CPUSTYLE_T507
-	unsigned ix = 0;
-	I2S_PCM_TypeDef * const i2s = I2S0;
-	if (state)
-	{
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
-		i2s->I2Sn_CTL |=
-			1 * (UINT32_C(1) << 2) |	// TXEN
-			1 * (UINT32_C(1) << 1) |	// RXEN
-			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
-			0;
-	}
-	else
-	{
-		i2s->I2Sn_CTL &= ~ (
-			1 * (UINT32_C(1) << 2) |	// TXEN
-			1 * (UINT32_C(1) << 1) |	// RXEN
-			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
-			0);
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
-	}
-#else
-	I2S_PCM_TypeDef * const i2s = I2S0;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(UINT32_C(1) << 2) |	// TXEN
-			(UINT32_C(1) << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
-	}
-#endif
-}
 
 static void DMAC_I2S0_RX_initialize_fpga(void)
 {
@@ -5586,7 +5520,7 @@ static const codechw_t fpgacodechw_i2s0_duplex_master =
 	hardware_dummy_initialize,
 	DMAC_I2S0_RX_initialize_fpga,
 	DMAC_I2S0_TX_initialize_fpga,
-	hardware_i2s0_enable_fpga,
+	hardware_i2s0_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s0-duplex-master"
 };
@@ -5597,7 +5531,7 @@ static const codechw_t fpgacodechw_i2s0_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S0_RX_initialize_fpga,
 	DMAC_I2S0_TX_initialize_fpga,
-	hardware_i2s0_enable_fpga,
+	hardware_i2s0_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s0-duplex-slave"
 };
@@ -5608,7 +5542,7 @@ static const codechw_t fpgapipechw_i2s0_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S0_RX_initialize_fpgapipe,
 	DMAC_I2S0_TX_initialize_fpgapipe,
-	hardware_i2s0_enable_fpga,
+	hardware_i2s0_enable,
 	hardware_dummy_enable,
 	"fpgapipehw-i2s0-duplex-slave"
 };
