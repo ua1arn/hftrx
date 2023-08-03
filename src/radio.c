@@ -20223,6 +20223,12 @@ hamradio_main_step(void)
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
+//					case ' ':
+//						//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
+//						PRINTF("APBIF_RXnFIFO_CNT=%08X, APBIF_TXnFIFO_CNT=%08X\n",
+//								(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
+//								(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
+//						break;
 		#if WITHDEBUG && WITHMENU
 					case 'm':
 						PRINTF("menu items:\n");
