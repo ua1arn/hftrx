@@ -31,6 +31,31 @@
 
 #aggregend;
 
+#aggreg; DAM; 0x0A00 2; DAMn (n=0~2)
+
+#regdef; DAMn_CTRL; 	0x0000; DAM Control
+#regdef; DAMn_RX0_SRC; 	0x0010; DAM RXDIF0 Source Select
+#regdef; DAMn_RX1_SRC; 	0x0014; DAM RXDIF1 Source Select
+#regdef; DAMn_RX2_SRC; 	0x0018; DAM RXDIF2 Source Select
+#regdef; DAMn_MIX_CTRL0; 0x0030; DAM MIX Control 0
+#regdef; DAMn_MIX_CTRL1; 0x0034; DAM MIX Control 1
+#regdef; DAMn_MIX_CTRL2; 0x0038; DAM MIX Control 2
+#regdef; DAMn_MIX_CTRL3; 0x003C; DAM MIX Control 3
+#regdef; DAMn_MIX_CTRL4; 0x0040; DAM MIX Control 4
+#regdef; DAMn_MIX_CTRL5; 0x0044; DAM MIX Control 5
+#regdef; DAMn_MIX_CTRL6; 0x0048; DAM MIX Control 6
+#regdef; DAMn_MIX_CTRL7; 0x004C; DAM MIX Control 7
+#regdef; DAMn_GAIN_CTRL0; 0x0050; DAM GAIN Control 0
+#regdef; DAMn_GAIN_CTRL1; 0x0054; DAM GAIN Control 1
+#regdef; DAMn_GAIN_CTRL2; 0x0058; DAM GAIN Control 2
+#regdef; DAMn_GAIN_CTRL3; 0x005C; DAM GAIN Control 3
+#regdef; DAMn_GAIN_CTRL4; 0x0060; DAM GAIN Control 4
+#regdef; DAMn_GAIN_CTRL5; 0x0064; DAM GAIN Control 5
+#regdef; DAMn_GAIN_CTRL6; 0x0068; DAM GAIN Control 6
+#regdef; DAMn_GAIN_CTRL7; 0x006C; DAM GAIN Control 7
+#regdef; padding 0; 0x0080; Placeholder for 0x0080 alignment
+
+#aggregend;
 
 #type; I2S_PCM
 

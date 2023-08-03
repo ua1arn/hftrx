@@ -10,6 +10,7 @@
 #include <string.h>
 
 // http://nskhuman.ru/allwinner/firmware.php?np=2&nf=3
+// https://trustedfirmware-a.readthedocs.io/en/latest/plat/allwinner.html
 
 // offset 0x2000
 // offset 0x1004000
