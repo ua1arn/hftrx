@@ -1070,18 +1070,6 @@ void adcdone_del(adcdone_t * p);
 
 void bootloader_deffereddetach(void * arg);
 
-/* система отказа от передачи при аварийных ситуациях */
-typedef struct edgepin_tag
-{
-	LIST_ENTRY item;
-	uint_fast8_t state;
-	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
-	uint_fast8_t (* getpin)(void * ctx);
-} edgepin_t;
-
-void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
-uint_fast8_t edgepin_get(edgepin_t * egp);
-
 // targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
 // targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
 // targetxad2 - external SPI device (PA BOARD ADC)

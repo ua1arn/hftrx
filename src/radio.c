@@ -349,6 +349,31 @@ void hamradio_lfm_disable(void)
 
 #endif /* WITHLFM */
 
+LIST_ENTRY edgepins;
+
+static edgepin_t edgphandptt;
+static edgepin_t edgpcatptt;
+static edgepin_t edgptunerptt;
+static edgepin_t edgpelkeyptt;
+
+void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx)
+{
+	egp->getpin = fn;
+	egp->ctx = ctx;
+	egp->outstate = 0;
+	egp->prevstate = fn(ctx);
+
+	InitializeListHead(& egp->item);
+	InsertTailList(& edgepins, & egp->item);
+}
+
+uint_fast8_t edgepin_get(edgepin_t * egp)
+{
+	return egp->outstate;
+}
+
+
+
 static uint_fast8_t local_isdigit(char c)
 {
 	//return isdigit((unsigned char) c) != 0;
@@ -19353,6 +19378,43 @@ processkeyboard(uint_fast8_t kbch)
 
 #endif /* WITHKEYBOARD */
 
+
+uint_fast8_t checkhandptt(void * ctx)
+{
+	return 0;
+}
+
+uint_fast8_t checkcatptt(void * ctx)
+{
+	return 0;
+}
+
+uint_fast8_t checktunerptt(void * ctx)
+{
+	return 0;
+}
+
+uint_fast8_t checkelkeyptt(void * ctx)
+{
+	return 0;
+}
+
+void edgepins_initialize(void)
+{
+	InitializeListHead(& edgepins);
+
+	edgepin_initialize(& edgphandptt, checkhandptt, NULL);
+	edgepin_initialize(& edgpcatptt, checkcatptt, NULL);
+	edgepin_initialize(& edgptunerptt, checktunerptt, NULL);
+	edgepin_initialize(& edgpelkeyptt, checkelkeyptt, NULL);
+}
+
+uint_fast8_t edgepins_getptt(void)
+{
+
+	return 0;
+}
+
 /* вызывается при запрещённых прерываниях. */
 void
 applowinitialize(void)
@@ -19406,6 +19468,8 @@ applowinitialize(void)
 #endif /* WITHAUTOTUNER */
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
+
+	edgepins_initialize();
 
 #if WITHUSBHW
 	board_usb_initialize();		// USB device and host support

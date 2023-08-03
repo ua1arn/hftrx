@@ -417,6 +417,20 @@ void ulpi_chip_vbuson(uint_fast8_t state);
 void ulpi_chip_sethost(uint_fast8_t state);
 void ulpi_chip_debug(void);
 
+
+/* система отказа от передачи при аварийных ситуациях */
+typedef struct edgepin_tag
+{
+	LIST_ENTRY item;
+	uint8_t outstate;	/* результирующее состояние */
+	uint8_t prevstate;
+	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
+	uint_fast8_t (* getpin)(void * ctx);
+} edgepin_t;
+
+void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
+uint_fast8_t edgepin_get(edgepin_t * egp);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

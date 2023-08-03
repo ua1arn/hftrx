@@ -3502,6 +3502,7 @@ const char * get_band_label3(unsigned b); /* получение человеко
 #define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
 #define CWWPMMAX	60
 
+uint_fast8_t edgepins_getptt(void);		/* Есть ли запрос на передачу с одного из источников */
 
 #ifdef __cplusplus
 }

@@ -176,8 +176,9 @@ gf		Gg[NN - 1];
 static inline gf
 modnn2(int x)
 {
- if (x <      65535)  return x              ;
-                      return x -      65535 ;
+	return x % 65535;
+// if (x <      65535)  return x              ;
+//                      return x -      65535 ;
 }
 
 /* Compute x % NN, where NN is 2**MM - 1,
