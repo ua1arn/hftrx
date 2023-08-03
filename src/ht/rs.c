@@ -1,3 +1,5 @@
+#include "hardware.h"
+#include "formats.h"
 /*
 * The copyright in this software is being made available under the 2-clauses
 * BSD License, included below. This software may be subject to other third
@@ -243,7 +245,7 @@ void init_rs(int kk,int k)
     KK = kk;
 
     if (KK >= NN) {
-        printf("KK must be less than 2**MM - 1\n");
+        PRINTF("KK must be less than 2**MM - 1\n");
         while(1);
     }
 
@@ -505,14 +507,14 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
             }
         }
         if (count != no_eras) {
-            printf("\n lambda(x) is WRONG\n");
+            PRINTF("\n lambda(x) is WRONG\n");
             return -1;
         }
 #ifndef NO_PRINT
-        printf("\n Erasure positions as determined by roots of Eras Loc Poly:\n");
+        PRINTF("\n Erasure positions as determined by roots of Eras Loc Poly:\n");
         for (i = 0; i < count; i++)
-            printf("%d ", loc[i]);
-        printf("\n");
+            PRINTF("%d ", loc[i]);
+        PRINTF("\n");
 #endif
 #endif
     }
@@ -634,14 +636,14 @@ for (i = K-1; i >= 0 ; i--) //Data
 }
 
 
-//      for(j=deg_lambda;j>0;j--)printf("%d ",reg[j]);
-//      printf("\n");
+//      for(j=deg_lambda;j>0;j--)PRINTF("%d ",reg[j]);
+//      PRINTF("\n");
 
 #ifdef DEBUG
-    printf("\n Final error positions:\t");
+    PRINTF("\n Final error positions:\t");
     for (i = 0; i < count; i++)
-        printf("%d ", loc[i]);
-    printf("\n");
+        PRINTF("%d ", loc[i]);
+    PRINTF("\n");
 #endif
 
     if (deg_lambda != count) {
@@ -689,7 +691,7 @@ for (i = K-1; i >= 0 ; i--) //Data
         }
         if (den == 0) {
 #ifdef DEBUG
-            printf("\n ERROR: denominator = 0\n");
+            PRINTF("\n ERROR: denominator = 0\n");
 #endif
             return -1;
         }
