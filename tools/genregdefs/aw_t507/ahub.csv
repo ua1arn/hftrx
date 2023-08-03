@@ -75,17 +75,15 @@
 #regdef; I2Sn_IRQ_CTRL; 0x028; I2Sn DMA & Interrupt Control
 #regdef; I2Sn_IRQ_STS; 0x02C; I2Sn DMA & Interrupt Status
 
-#aggreg; I2S/PCM_SDOUT; 0x030 4; SDOUTm (m=0~3)
+#aggreg; I2Sn_SDOUT; 0x030 4; SDOUTm (m=0~3)
 
-#regdef; I2S/PCM_SDOUTm_SLOTCTR; 0x000; (n=0~3)(m=0~3); I2Sn Output Slot Control
-#regdef; I2S/PCM_SDOUTmCHMAP0; 0x004; I2Sn SDOUTm Channel Mapping 0
-#regdef; I2S/PCM_SDOUTmCHMAP1; 0x008; I2Sn SDOUTm Channel Mapping 1
+#regdef; I2Sn_SDOUTm_SLOTCTR; 0x000; (n=0~3)(m=0~3); I2Sn Output Slot Control
+#regdef; I2Sn_SDOUTmCHMAP0; 0x004; I2Sn SDOUTm Channel Mapping 0
+#regdef; I2Sn_SDOUTmCHMAP1; 0x008; I2Sn SDOUTm Channel Mapping 1
 #regdef; padding 0; 0x010; Placeholder for 0x10 alignment
 
 #aggregend;
  
-#regdef; I2Sn_SDIN_SLOTCTR; 0x0270; I2Sn Input Slot Control
-#regdef; I2Sn_SDINCHMAP0; 0x0274; I2Sn SDIN Channel Mapping 0
-#regdef; I2Sn_SDINCHMAP1; 0x0278; I2Sn SDIN Channel Mapping 1
-#regdef; I2Sn_SDINCHMAP2; 0x0274; I2Sn SDIN Channel Mapping 2
-#regdef; I2Sn_SDINCHMAP3; 0x0278; I2Sn SDIN Channel Mapping 3
+#regdef; I2Sn_SDIN_SLOTCTR; 0x0070; I2Sn Input Slot Control
+#regdef; I2Sn_SDINCHMAP; 0x0074 4; I2Sn SDIN Channel Mapping 0..3
+#regdef; padding 0; 0x0100; Placeholder for 0x100 alignment

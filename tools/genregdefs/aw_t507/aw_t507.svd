@@ -4804,8 +4804,8 @@
     <addressOffset>0x00000030</addressOffset>
     <registers>
      <register>
-      <name>I2S_PCM_SDOUTm_SLOTCTR</name>
-      <displayName>I2S_PCM_SDOUTm_SLOTCTR</displayName>
+      <name>I2Sn_SDOUTm_SLOTCTR</name>
+      <displayName>I2Sn_SDOUTm_SLOTCTR</displayName>
       <description>(n=0~3)(m=0~3)</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -4813,8 +4813,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>I2S_PCM_SDOUTmCHMAP0</name>
-      <displayName>I2S_PCM_SDOUTmCHMAP0</displayName>
+      <name>I2Sn_SDOUTmCHMAP0</name>
+      <displayName>I2Sn_SDOUTmCHMAP0</displayName>
       <description>I2Sn SDOUTm Channel Mapping 0</description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -4822,8 +4822,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>I2S_PCM_SDOUTmCHMAP1</name>
-      <displayName>I2S_PCM_SDOUTmCHMAP1</displayName>
+      <name>I2Sn_SDOUTmCHMAP1</name>
+      <displayName>I2Sn_SDOUTmCHMAP1</displayName>
       <description>I2Sn SDOUTm Channel Mapping 1</description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>

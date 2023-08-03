@@ -3609,8 +3609,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 #if CPUSTYLE_T507
 	// CCU
-	#warning CPUSTYLE_T507 to be implemented
-	//volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
 
 	CCU->AUDIO_HUB_CLK_REG = 1 * (UINT32_C(1) << 0);	// div 2
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
@@ -3772,15 +3770,17 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL = 0;
 
 	// Каналы I2S
+#if CODEC1_FORMATI2S_PHILIPS
+	const unsigned txrx_offset = 1;
+#else /* CODEC1_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 0;
+#endif /* CODEC1_FORMATI2S_PHILIPS */
 
 	i2s->I2Sn_CTL =
-		!! master * (UINT32_C(1) << 18) |
+		!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
 		1 * (UINT32_C(1) << 12) |	// SDI0_EN
 		1 * (UINT32_C(1) << 8) |	// SDO0_EN
-		1 * (UINT32_C(1) << 4) |	// MODE_SEL Left mode(offset 0: L-J Mode; offset 1: I2S mode)
-//		1 * (UINT32_C(1) << 2) |	// TXEN
-//		1 * (UINT32_C(1) << 1) |	// RXEN
-//		1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+		1 * (UINT32_C(1) << 4) |	// MODE_SEL 01: Left mode(offset 0: L-J Mode; offset 1: I2S mode)
 		0;
 	i2s->I2Sn_FMT0 =
 		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
@@ -3791,6 +3791,41 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0;
 	i2s->I2Sn_FMT1 = 0;
 	i2s->I2Sn_CLKD = 0;
+
+	i2s->I2Sn_CHCFG =
+		(NCH - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
+		(NCH - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
+		0;
+
+	i2s->I2Sn_RXDIF_CONT = 0;//(UINT32_C(1) << x);
+
+	ASSERT(din < 4);
+	ASSERT(dout < 4);
+
+	i2s->I2Sn_SDOUT [0].I2Sn_SDOUTm_SLOTCTR =
+		(NCH - 1) *  (UINT32_C(1) << 16) |	// SDOUTm_SLOT_NUM
+		(txrx_offset * (UINT32_C(1) << 20)) |	// SDOUTm_OFFSET
+		0xFFFF |	// SDOUTm_SLOT_EN
+		0;
+	i2s->I2Sn_SDOUT [1].I2Sn_SDOUTm_SLOTCTR =
+		0;
+	i2s->I2Sn_SDOUT [2].I2Sn_SDOUTm_SLOTCTR =
+		0;
+	i2s->I2Sn_SDOUT [3].I2Sn_SDOUTm_SLOTCTR =
+		0;
+
+	i2s->I2Sn_SDIN_SLOTCTR =
+		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
+		(NCH - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		0;
+//	i2s->I2Sn_SDINCHMAP [0] =
+//		0;
+//	i2s->I2Sn_SDINCHMAP [1] =
+//		0;
+//	i2s->I2Sn_SDINCHMAP [2] =
+//		0;
+//	i2s->I2Sn_SDINCHMAP [3] =
+//		0;
 
 #elif CPUSTYLE_A64
 	#warning CPUSTYLE_A64 to be implemented
@@ -3863,7 +3898,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0;
 
 	i2s->I2S_PCM_RXCHSEL =
-		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode
+		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
 		(NCH - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
 
@@ -4160,12 +4195,12 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	////const uintptr_t addr = descraddr [ix];
+	////descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	////dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	TP();
+	dbg_putchar('r');
 //	{
 //		const size_t dw = sizeof (IFADCvalue_t);
 //		const unsigned NBYTES = DMABUFFSIZE32RX * dw;
@@ -4174,11 +4209,11 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 //	}
 
 	/* Работа с только что принятыми данными */
-	processing_dmabuffer32rts(addr);
-	processing_dmabuffer32rx(addr);
-	release_dmabuffer32rx(addr);
+	////processing_dmabuffer32rts(addr);
+	////processing_dmabuffer32rx(addr);
+	////release_dmabuffer32rx(addr);
 
-	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+	////buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
 
 /* Передача в FPGA */
@@ -4188,14 +4223,15 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	////const uintptr_t addr = descraddr [ix];
+	////descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
+	dbg_putchar('t');
 
 	/* Работа с только что передаными данными */
-	release_dmabuffer32tx(addr);
+	////release_dmabuffer32tx(addr);
 }
 
 
@@ -4225,7 +4261,6 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 static void DMAC_clock_initialize(void)
 {
 #if CPUSTYLE_T507
-	#warning CPUSTYLE_T507 not implemented
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
 
@@ -5558,8 +5593,8 @@ static const codechw_t fpgacodechw_i2s0_duplex_slave =
 {
 	hardware_i2s0_slave_duplex_initialize_fpga,
 	hardware_dummy_initialize,
-	DMAC_I2S0_RX_initialize_fpgapipe,
-	DMAC_I2S0_TX_initialize_fpgapipe,
+	DMAC_I2S0_RX_initialize_fpga,
+	DMAC_I2S0_TX_initialize_fpga,
 	hardware_i2s0_enable_fpga,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s0-duplex-slave"
@@ -5569,8 +5604,8 @@ static const codechw_t fpgapipechw_i2s0_duplex_slave =
 {
 	hardware_i2s0_slave_duplex_initialize_fpga,
 	hardware_dummy_initialize,
-	DMAC_I2S0_RX_initialize_fpga,
-	DMAC_I2S0_TX_initialize_fpga,
+	DMAC_I2S0_RX_initialize_fpgapipe,
+	DMAC_I2S0_TX_initialize_fpgapipe,
 	hardware_i2s0_enable_fpga,
 	hardware_dummy_enable,
 	"fpgapipehw-i2s0-duplex-slave"
