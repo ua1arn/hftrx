@@ -3996,7 +3996,7 @@ static void hardware_i2s0_slave_duplex_initialize_codec1(void)
 
 #define CODEC1_NCH 2	/* всегда стерео */
 
-#if defined(I2S0)
+#if defined(I2S0) && WITHI2S0HW
 static void hardware_i2s0_enable(uint_fast8_t state)
 {
 	hardware_i2s_enable(0, I2S0, state);
@@ -4005,18 +4005,18 @@ static void hardware_i2s0_enable(uint_fast8_t state)
 // FPGA interface
 static void hardware_i2s0_master_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
 	I2S0HW_INITIALIZE(1);
 }
 
 static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
 	I2S0HW_INITIALIZE(0);
 }
-#endif /* defined(I2S0) */
+#endif /* defined(I2S0) && WITHI2S0HW */
 
-#if defined(I2S1)
+#if defined(I2S1) && WITHI2S1HW
 static void hardware_i2s1_enable(uint_fast8_t state)
 {
 	hardware_i2s_enable(1, I2S1, state);
@@ -4041,9 +4041,9 @@ static void hardware_i2s1_slave_duplex_initialize_fpga(void)
 	I2S1HW_INITIALIZE(0);
 }
 
-#endif /* defined(I2S1) */
+#endif /* defined(I2S1) && WITHI2S1HW */
 
-#if defined(I2S2)
+#if defined(I2S2) && WITHI2S2HW
 static void hardware_i2s2_enable(uint_fast8_t state)
 {
 	hardware_i2s_enable(2, I2S2, state);
@@ -4067,7 +4067,7 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 	hardware_i2s_initialize(2, I2S2, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(1);
 }
-#endif /* defined(I2S2) */
+#endif /* defined(I2S2) && WITHI2S2HW */
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -4823,6 +4823,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
+#if defined(I2S1) && WITHI2S1HW
 static const codechw_t audiocodechw_i2s1_duplex_master =
 {
 	hardware_i2s1_master_duplex_initialize_codec1,
@@ -4833,7 +4834,7 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-master"
 };
-
+#endif /* defined(I2S1) && WITHI2S1HW */
 
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
@@ -5195,6 +5196,7 @@ static const codechw_t audiocodechw_hwblock_duplex_master =
 
 #endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 
+#if defined(I2S1) && WITHI2S1HW
 static const codechw_t audiocodechw_i2s1_duplex_slave =
 {
 	hardware_i2s1_slave_duplex_initialize_codec1,
@@ -5205,8 +5207,9 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-slave"
 };
+#endif /* defined(I2S1) && WITHI2S1HW */
 
-#if defined (I2S2)
+#if defined(I2S2) && WITHI2S2HW
 
 #if ! defined (CPUSTYLE_A64) && ! defined (CPUSTYLE_T507)
 
@@ -5245,8 +5248,9 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 
 #endif /* ! defined (CPUSTYLE_A64) */
 
-#endif /* defined (I2S2) */
+#endif /* defined(I2S2) && WITHI2S2HW */
 
+#if defined(I2S1) && WITHI2S1HW
 static const codechw_t fpgacodechw_i2s1_duplex_slave =
 {
 	hardware_i2s1_slave_duplex_initialize_fpga,
@@ -5258,9 +5262,9 @@ static const codechw_t fpgacodechw_i2s1_duplex_slave =
 	"fpgacodechw-i2s1-duplex-slave"
 };
 
-#if CPUSTYLE_A64 || CPUSTYLE_T507
+#endif /* defined(I2S1) && WITHI2S1HW */
 
-
+#if defined(I2S0) && WITHI2S0HW
 
 static void DMAC_I2S0_RX_initialize_fpga(void)
 {
@@ -5547,7 +5551,7 @@ static const codechw_t fpgapipechw_i2s0_duplex_slave =
 	"fpgapipehw-i2s0-duplex-slave"
 };
 
-#endif /* CPUSTYLE_A64 */
+#endif /* defined(I2S0) && WITHI2S0HW */
 
 #elif CPUSTYLE_R7S721
 	

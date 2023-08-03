@@ -30,12 +30,6 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#if WITHINTEGRATEDDSP
-	#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
-	//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-	//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
-#endif /* WITHINTEGRATEDDSP */
-
 #define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 #define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define WITHETHHW 1	/* Hardware Ethernet controller */
@@ -118,14 +112,21 @@
 #else /* WITHISBOOTLOADER */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
-	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
-	//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
-	#define WITHFPGAPIPE_I2S0_DUPLEX_SLAVE	1	/* Интерфейс к IF кодеку/FPGA, транзитом в аудио кодек через I2S0 */
+
+	#if WITHINTEGRATEDDSP
+		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
+		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+
+		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
+		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		#define WITHFPGAPIPE_I2S0_DUPLEX_SLAVE	1		/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+	#endif /* WITHINTEGRATEDDSP */
 
 	////#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -267,18 +268,6 @@
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
-	// Инициализируются I2S1 в дуплексном режиме.
-	// аудиокодек
-	#define I2S1HW_INITIALIZE(master) do { \
-	} while (0)
-	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
-	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
-	// Инициализируются I2S2 в дуплексном режиме.
-	// FPGA или IF codec
-	#define I2S2HW_INITIALIZE(master) do { \
-	} while (0)
-	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
-	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
 
 /* Распределение битов в ARM контроллерах */
 
