@@ -40,7 +40,7 @@ void hmain(void)
  t=cpu_getdebugticks();
  int r=encode_rs(data);
  t=cpu_getdebugticks()-t;
- PRINTF("Encode: %0.1lf FPS   ",(double)CPU_FREQ/(double)t); //"%llu\n"
+ PRINTF("Encode: %0.1lf FPS   ",(double)cpu_getdebugticksfreq()/(double)t); //"%llu\n"
 
  memcpy(data2,data,K*sizeof(data[0]));
 
@@ -61,7 +61,7 @@ void hmain(void)
  t=cpu_getdebugticks();
  r=eras_dec_rs(data,NULL,0);
  t=cpu_getdebugticks()-t;
- PRINTF("Decode: %0.1lf FPS\n",(double)CPU_FREQ/(double)t); //"%llu\n"
+ PRINTF("Decode: %0.1lf FPS\n",(double)cpu_getdebugticksfreq()/(double)t); //"%llu\n"
 
  if(r==-1)
  {

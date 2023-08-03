@@ -2045,6 +2045,11 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 
 #endif /* CPUSTYLE_ARM_CM7 */
 
+// получение частоты, с которой инкрементируется счетчик
+uint_fast32_t cpu_getdebugticksfreq(void)
+{
+	return CPU_FREQ;
+}
 
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see SystemInit() in hardware.c
