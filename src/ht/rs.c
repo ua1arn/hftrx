@@ -176,7 +176,6 @@ gf		Gg[NN - 1];
 static inline gf
 modnn2(int x)
 {
-	return x % 65535;
  if (x <      65535)  return x              ;
                       return x -      65535 ;
 }
@@ -187,8 +186,7 @@ modnn2(int x)
 static inline gf
 modnn(int x)
 {
-	return x % NN;
-   //246 FPS
+    //246 FPS
     while (x >= NN) {
         x -= NN;
         x = (x >> MM) + (x & NN);
@@ -241,7 +239,6 @@ void init_rs(int k)
     KK = k;
     if (KK >= NN) {
         PRINTF("KK must be less than 2**MM - 1\n");
-        return;
         //exit(1);
     }
 
@@ -377,10 +374,10 @@ encode_rs(dtype *data, dtype *bb)
         if (feedback != A0) {	/* feedback term is non-zero */
 
             for (j = NN - KK - 1; j > 0; j--)
-                if (Gg[j] != A0) bb[j] = bb[j - 1] ^ Alpha_to[modnn(Gg[j] + feedback)];
+                if (Gg[j] != A0) bb[j] = bb[j - 1] ^ Alpha_to[modnn2(Gg[j] + feedback)];
                 else             bb[j] = bb[j - 1];
 
-            bb[0] = Alpha_to[modnn(Gg[0] + feedback)];
+            bb[0] = Alpha_to[modnn2(Gg[0] + feedback)];
 
         }
         else 
@@ -424,15 +421,12 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
     int syn_error, count;
 
     /* data[] is in polynomial form, copy and convert to index form */
-    for (i = NN-1; i >= 0; i--) { //!!! optimized
+    for (i = NN-1; i >= KK; i--) { //!!! optimized
+     recd[i] = Index_of[data[i]];
+    }
 
-     if((i>=K)&&(i<KK))continue; //[0..K-1] ... [KK..NN-1]
-
-#if (MM != 8)
-        if(data[i] > NN)
-            return -1;	/* Illegal symbol */
-#endif
-        recd[i] = Index_of[data[i]];
+    for (i = K-1; i >= 0; i--) { //!!! optimized
+     recd[i] = Index_of[data[i]];
     }
 
     /* first form the syndromes; i.e., evaluate recd(x) at roots of g(x)
@@ -442,10 +436,14 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
     for (i = 1; i <= NN-KK; i++) {
         tmp = 0;
 
-        for (j = 0; j < NN; j++) //!!! optimized
+        for (j = 0; j < K; j++) //!!! optimized
         {
-            if((j>=K)&&(j<KK))continue; //[0..K-1] ... [KK..NN-1]
+            if (recd[j] != A0)	/* recd[j] in index form */
+                tmp ^= Alpha_to[modnn(recd[j] + (B0+i-1)*j)];
+        }
 
+        for (j = KK; j < NN; j++) //!!! optimized
+        {
             if (recd[j] != A0)	/* recd[j] in index form */
                 tmp ^= Alpha_to[modnn(recd[j] + (B0+i-1)*j)];
         }
