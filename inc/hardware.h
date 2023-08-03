@@ -357,6 +357,7 @@ elif CPUSTYLE_STM32F0XX
 	// RISC-V processor Allwinner D1 XuanTie C906
 
 	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_f133.h"
 	//#include "irq_ctrl.h"
@@ -370,6 +371,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_A64
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a64.h"
 	#include "irq_ctrl.h"
@@ -384,6 +386,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_T507
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t507.h"
 	#include "irq_ctrl.h"
@@ -397,6 +400,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_V853X
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v853x.h"
 	#include "irq_ctrl.h"
@@ -410,6 +414,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_T113
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t113s3.h"
 	#include "irq_ctrl.h"

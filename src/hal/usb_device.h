@@ -60,7 +60,7 @@
 
 	#include "zynq7000_hal.h"
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	#include "t113s3_hal.h"
 
