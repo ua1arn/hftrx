@@ -1060,7 +1060,7 @@ int axp853_initialize(void)
 		}
 	}
 
-	pmu_axp858_ap_reset_enable();	// без этой строчки не инициалищируется после reset
+	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
 	axp858_set_sw(0);
 
 	// https://artmemtech.com/
@@ -1072,8 +1072,8 @@ int axp853_initialize(void)
 	// A4 ball VDD2: vcc_dram 1.1
 
 	VERIFY(0 == axp858_set_dcdc1(3300));
-	VERIFY(0 == axp858_set_dcdc2(900));		// CPU
-	VERIFY(0 == axp858_set_dcdc3(900));
+	VERIFY(0 == axp858_set_dcdc2(970));		// CPU
+	VERIFY(0 == axp858_set_dcdc3(970));
 	//VERIFY(0 == axp858_set_dcdc4(900));	// VDD-GPU
 	VERIFY(0 == axp858_set_dcdc5(1100));		// VCC-DRAM - 1.1V for LPDDR4
 	VERIFY(0 == axp858_set_aldo1(1800));
@@ -1081,6 +1081,9 @@ int axp853_initialize(void)
 	VERIFY(0 == axp858_set_aldo3(2500));		// VPP DRAM
 	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
 	VERIFY(0 == axp858_set_aldo5(3300));		// VCC-PE
+
+//	pmic_bus_setbits(0x1A,	// DCDC mode control 1
+//					1U << 6);	// DCDC 2&3 polyphase control
 
 	axp858_set_sw(1);
 	//local_delay_ms(100);
