@@ -1,15 +1,17 @@
 #include "hardware.h"
 #include "formats.h"
+
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-//
+
 //#include "Type.h"
 //
 //#include "timer.h"
 //#include "PWM.h"
 //#include "LowLevel.h"
+//#include "interrupt.h"
 
 #include "rs.h"
 
@@ -18,11 +20,11 @@ dtype data2[NN];
 
 void hmain(void)
 {
-	PRINTF("cpufreq=%u\n", (unsigned) CPU_FREQ);
 // LowLevel_Init();
 // PWM_Init(75);
+// CLI();
 
- init_rs(KK); //init_rs(KK,K);
+ init_rs(4096 /*-1-EE*/ );
 
  PRINTF("RS init\n");
 
@@ -33,14 +35,14 @@ void hmain(void)
 
  Again:
 
- for(int i=0;i<K;i++)data[i]=rand()&NN;
+ for(int i=0;i<K;i++)data[i]=rand()%NN;
 
  t=cpu_getdebugticks();
- int r=encode_rs(data,&data[KK]); //encode_rs(data);
+ int r=encode_rs(data);
  t=cpu_getdebugticks()-t;
  PRINTF("Encode: %0.1lf FPS   ",(double)CPU_FREQ/(double)t); //"%llu\n"
 
- memcpy(data2,data,NN*sizeof(data[0]));
+ memcpy(data2,data,K*sizeof(data[0]));
 
  if(r==-1)
  {
@@ -51,11 +53,10 @@ void hmain(void)
  uint16_t n=((uint16_t)rand())%((EE/2)+1); //0      .. (EE/2)
  uint16_t m=(EE/2)-n;                 //(EE/2) .. 0
 
- for(uint16_t i=0;i<n;i++)data[   (((uint16_t)rand())%K )]=(uint16_t)rand();
- for(uint16_t i=0;i<m;i++)data[KK+(((uint16_t)rand())%EE)]=(uint16_t)rand();
-
-// for(int i=0;i<EE/4;i++)data[   (((uint16_t)rand())%K )]=(uint16_t)rand();
-// for(int i=0;i<EE/4;i++)data[KK+(((uint16_t)rand())%EE)]=(uint16_t)rand();
+ for(uint16_t i=0;i<n;i++)
+	 data[   (((uint16_t)rand())%K )]=((uint16_t)rand())%NN;
+ for(uint16_t i=0;i<m;i++)
+	 data[KK+(((uint16_t)rand())%EE)]=((uint16_t)rand())%NN;
 
  t=cpu_getdebugticks();
  r=eras_dec_rs(data,NULL,0);
@@ -68,7 +69,7 @@ void hmain(void)
   while(1);
  }
 
- if(memcmp(data,data2,NN*sizeof(data[0]))!=0)
+ if(memcmp(data,data2,K*sizeof(data[0]))!=0)
  {
   PRINTF("\n\nNot Compare!\n");
   while(1);

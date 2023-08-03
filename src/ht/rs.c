@@ -80,8 +80,7 @@
  */
 typedef int gf;
 
-/* KK = number of information symbols */
-/*static*/ int	KK=(NN-EE);
+int K=4096;
 
 /* Primitive polynomials - see Lin & Costello, Appendix A,
  * and  Lee & Messerschmitt, p. 453.
@@ -154,11 +153,9 @@ int Pp[MM+1] = { 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1 };
 
 /* index->polynomial form conversion table */
 gf Alpha_to[NN + 1];
-//gf *Alpha_to=(gf*)(0x40000000+((64+24)*0x100000UL));
 
 /* Polynomial->index form conversion table */
 gf Index_of[NN + 1];
-//gf *Index_of=(gf*)(0x40000000+((64+24)*0x100000UL)+((NN+1)*sizeof(gf)));
 
 /* No legal value in index form represents zero, so
  * we need a special value for this purpose
@@ -171,15 +168,6 @@ gf Index_of[NN + 1];
  */
 /*gf Gg[NN - KK + 1];*/
 gf		Gg[NN - 1];
-//gf *Gg=(gf*)0x00040000;
-
-static inline gf
-modnn2(int x)
-{
-	return x % 65535;
-// if (x <      65535)  return x              ;
-//                      return x -      65535 ;
-}
 
 /* Compute x % NN, where NN is 2**MM - 1,
  * without a slow divide
@@ -237,11 +225,7 @@ modnn(int x)
 
 void init_rs(int k)
 {
-    KK = k;
-    if (KK >= NN) {
-        PRINTF("KK must be less than 2**MM - 1\n");
-        //exit(1);
-    }
+    K=k;
 
     generate_gf();
     gen_poly();
@@ -361,10 +345,13 @@ gen_poly(void)
  * data(X)*X**(NN-KK)+ b(X)
  */
 int
-encode_rs(dtype *data, dtype *bb)
+encode_rs(dtype *data)
 {
-    register int i, j;
+    dtype *bb=&data[KK];
+
     gf feedback;
+
+    register int i, j;
 
     CLEAR(bb,NN-KK);
 
@@ -375,10 +362,10 @@ encode_rs(dtype *data, dtype *bb)
         if (feedback != A0) {	/* feedback term is non-zero */
 
             for (j = NN - KK - 1; j > 0; j--)
-                if (Gg[j] != A0) bb[j] = bb[j - 1] ^ Alpha_to[modnn2(Gg[j] + feedback)];
+                if (Gg[j] != A0) bb[j] = bb[j - 1] ^ Alpha_to[modnn(Gg[j] + feedback)];
                 else             bb[j] = bb[j - 1];
 
-            bb[0] = Alpha_to[modnn2(Gg[0] + feedback)];
+            bb[0] = Alpha_to[modnn(Gg[0] + feedback)];
 
         }
         else 
@@ -392,7 +379,6 @@ encode_rs(dtype *data, dtype *bb)
     }
 
     return 0;
-
 }
 
 /*
@@ -414,18 +400,22 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
     int deg_lambda, el, deg_omega;
     int i, j, r;
     gf u,q,tmp,num1,num2,den,discr_r;
-    static gf recd[NN];
+    static gf recd[NN /*NN-KK+K*/];
     /* Err+Eras Locator poly and syndrome poly */
-    gf lambda[NN-KK + 1], s[NN-KK + 1];
-    gf b[NN-KK + 1], t[NN-KK + 1], omega[NN-KK + 1];
-    gf root[NN-KK], reg[NN-KK + 1], loc[NN-KK];
+    static gf lambda[NN-KK + 1];
+    static gf s[NN-KK + 1];
+    static gf b[NN-KK + 1];
+    static gf t[NN-KK + 1];
+    static gf omega[NN-KK + 1];
+    static gf root[NN-KK];
+    static gf reg[NN-KK + 1];
+    static gf loc[NN-KK];
     int syn_error, count;
 
     /* data[] is in polynomial form, copy and convert to index form */
     for (i = NN-1; i >= KK; i--) { //!!! optimized
-     recd[i] = Index_of[data[i]];
+     recd[i/*-KK+K*/] = Index_of[data[i]];
     }
-
     for (i = K-1; i >= 0; i--) { //!!! optimized
      recd[i] = Index_of[data[i]];
     }
@@ -442,11 +432,10 @@ eras_dec_rs(dtype *data, int *eras_pos, int no_eras)
             if (recd[j] != A0)	/* recd[j] in index form */
                 tmp ^= Alpha_to[modnn(recd[j] + (B0+i-1)*j)];
         }
-
         for (j = KK; j < NN; j++) //!!! optimized
         {
-            if (recd[j] != A0)	/* recd[j] in index form */
-                tmp ^= Alpha_to[modnn(recd[j] + (B0+i-1)*j)];
+            if (recd[j/*-KK+K*/] != A0)	/* recd[j] in index form */
+                tmp ^= Alpha_to[modnn(recd[j/*-KK+K*/] + (B0+i-1)*j)];
         }
 
         syn_error |= tmp;	/* set flag if non-zero syndrome =>

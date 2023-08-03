@@ -34,8 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#ifdef USE_JPWL
-#if 1
+#if 1//def USE_JPWL
 
 /**
 @file rs.h
@@ -60,25 +59,23 @@
  * to NN-KK erasures or (NN-KK)/2 errors, or combinations thereof with
  * each error counting as two erasures.
  */
-#define MM  16 /*8*/		/* RS code over GF(2**MM) - change to suit */
-
-/* KK defined in rs.c */
+#define MM  16	/* RS code over GF(2**MM) - change to suit */
 
 #define	NN ((1 << MM) - 1)
 
-#define EE 256       /* 8*/
-#define K  4096      /*16*/
+#define EE 256     //����������� �������
+#define KK (NN-EE) //�������� ������� + ����
 
-extern int KK;
+extern int K;      //�������� �������
 
 #if (MM <= 8)
 typedef unsigned char dtype;
 #else
-typedef unsigned short /*int*/ dtype;
+typedef unsigned int dtype;
 #endif
 
 /** Initialization function */
-void init_rs(int);
+void init_rs(int k);
 
 /** These two functions *must* be called in this order (e.g.,
  * by init_rs()) before any encoding/decoding
@@ -91,7 +88,7 @@ void gen_poly(void);	/* Generate generator polynomial */
  * bb[] may lie past the end of the data, e.g., for (255,223):
  *	encode_rs(&data[0],&data[223]);
  */
-int encode_rs(dtype data[], dtype bb[]);
+int encode_rs(dtype data[]);
 
 /** Reed-Solomon erasures-and-errors decoding
  * The received block goes into data[], and a list of zero-origin
