@@ -4200,7 +4200,7 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	////dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	dbg_putchar('r');
+	//dbg_putchar('r');
 //	{
 //		const size_t dw = sizeof (IFADCvalue_t);
 //		const unsigned NBYTES = DMABUFFSIZE32RX * dw;
@@ -4228,7 +4228,7 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	dbg_putchar('t');
+	//dbg_putchar('t');
 
 	/* Работа с только что передаными данными */
 	////release_dmabuffer32tx(addr);
