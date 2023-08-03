@@ -4195,7 +4195,7 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	////const uintptr_t addr = descraddr [ix];
+	const uintptr_t addr = descraddr [ix];
 	////descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	////dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
@@ -4205,7 +4205,7 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 //		const size_t dw = sizeof (IFADCvalue_t);
 //		const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 //		printhex32(addr, (void *) addr, NBYTES);
-//
+//		dma_invalidate32rx(addr);
 //	}
 
 	/* Работа с только что принятыми данными */
@@ -4223,7 +4223,7 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	////const uintptr_t addr = descraddr [ix];
+	const uintptr_t addr = descraddr [ix];
 	////descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
