@@ -259,11 +259,11 @@
 #endif
 
 	#define I2S0HW_INITIALIZE(master) do { \
-		/*arm_hardware_pioi_altfn20(UINT32_C(1) << 3,	GPIO_CFG_AF3); *//* PB3 I2S0-MCLK	*/ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 2,	GPIO_CFG_AF3); /* PI2 I2S0-SYNC	*/ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 1,	GPIO_CFG_AF3); /* PI1 I2S0-BCLK	*/ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 3,	GPIO_CFG_AF3); /* PI3 I2S0-DOUT to FPGA */ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PI4 I2S0-DIN from FPGA */ \
+		/*arm_hardware_pioi_altfn50(UINT32_C(1) << 0,	GPIO_CFG_AF4); *//* PI0 H_I2S0_MCLK	*/ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 2,	GPIO_CFG_AF4); /* PI2 H_I2S0_LRCK	*/ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 1,	GPIO_CFG_AF4); /* PI1 H_I2S0_BCLK	*/ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 3,	GPIO_CFG_AF4); /* PI3 H_I2S0_DOUT0 to FPGA */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 4,	GPIO_CFG_AF4); /* PI4 H_I2S0_DIN0 from FPGA */ \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */

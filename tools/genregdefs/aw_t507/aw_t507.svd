@@ -13,6 +13,11 @@
   <name>AHUB</name>
   <description>Audio HUB</description>
   <baseAddress>0x05097000</baseAddress>
+  <interrupt>
+   <name>AHUB</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>AHUB_RST</name>
@@ -4723,8 +4728,8 @@
   <baseAddress>0x05097200</baseAddress>
   <registers>
    <register>
-    <name>I2S_PCM_CTL</name>
-    <displayName>I2S_PCM_CTL</displayName>
+    <name>I2Sn_CTL</name>
+    <displayName>I2Sn_CTL</displayName>
     <description>I2Sn Control</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -4732,8 +4737,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_FMT0</name>
-    <displayName>I2S_PCM_FMT0</displayName>
+    <name>I2Sn_FMT0</name>
+    <displayName>I2Sn_FMT0</displayName>
     <description>I2Sn Format 0</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -4741,8 +4746,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_FMT1</name>
-    <displayName>I2S_PCM_FMT1</displayName>
+    <name>I2Sn_FMT1</name>
+    <displayName>I2Sn_FMT1</displayName>
     <description>I2Sn Format 1</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -4750,8 +4755,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_CLKD</name>
-    <displayName>I2S_PCM_CLKD</displayName>
+    <name>I2Sn_CLKD</name>
+    <displayName>I2Sn_CLKD</displayName>
     <description>I2Sn Clock Divide</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
@@ -4759,8 +4764,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_RXDIF_CONT</name>
-    <displayName>I2S_PCM_RXDIF_CONT</displayName>
+    <name>I2Sn_RXDIF_CONT</name>
+    <displayName>I2Sn_RXDIF_CONT</displayName>
     <description>I2Sn RXDIF Contact Select</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
@@ -4768,8 +4773,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_CHCFG</name>
-    <displayName>I2S_PCM_CHCFG</displayName>
+    <name>I2Sn_CHCFG</name>
+    <displayName>I2Sn_CHCFG</displayName>
     <description>I2Sn Channel Configuration</description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
@@ -4777,8 +4782,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_IRQ_CTRL</name>
-    <displayName>I2S_PCM_IRQ_CTRL</displayName>
+    <name>I2Sn_IRQ_CTRL</name>
+    <displayName>I2Sn_IRQ_CTRL</displayName>
     <description>I2Sn DMA &amp; Interrupt Control</description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
@@ -4786,8 +4791,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>I2S_PCM_IRQ_STS</name>
-    <displayName>I2S_PCM_IRQ_STS</displayName>
+    <name>I2Sn_IRQ_STS</name>
+    <displayName>I2Sn_IRQ_STS</displayName>
     <description>I2Sn DMA &amp; Interrupt Status</description>
     <addressOffset>0x02C</addressOffset>
     <size>0x20</size>

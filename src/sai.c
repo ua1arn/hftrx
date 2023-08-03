@@ -3610,6 +3610,14 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	// CCU
 	#warning CPUSTYLE_T507 to be implemented
+	//volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
+
+	CCU->AUDIO_HUB_CLK_REG = 1 * (UINT32_C(1) << 0);	// div 2
+	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
+
+	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
+	//CCU->AUDIO_HUB_BGR_REG &= ~ (UINT32_C(1) << 16);	// AUDIO_HUB_RST (могут быть другие каналы)
+	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
 #elif CPUSTYLE_A64
 	// CCU
@@ -3736,17 +3744,56 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 
 #if CPUSTYLE_T507
+	// AHUB = top level
+	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - ix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - ix);	// bita 27..25
+	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..21
+	//const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+
+	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - ix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - ix);	// bita 27..25
+	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..21
+	//const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+
+	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT;
+	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST;
+
+	const uint32_t ws = width2fmt(framebits / NCH);	// 7: 32 bit
+	const uint32_t nchan = 0x07;	// 7: 32 bit
+
 	// Каналы AHUB - RX
-	AHUB->APBIF_RX [ix].APBIF_RXnFIFO_CTRL =
-		0;
+	AHUB->APBIF_RX [ix].APBIF_RXn_CTRL = (ws << 16) | ((NCH - 1) << 8);
+	AHUB->APBIF_RX [ix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
+	AHUB->APBIF_RX [ix].APBIF_RXnFIFO_CTRL = 0;
 
 	// Каналы AHUB - TX
-	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL =
-		0;
+	AHUB->APBIF_TX [ix].APBIF_TXn_CTRL = (ws << 16) | ((NCH - 1) << 8);
+	AHUB->APBIF_TX [ix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
+	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL = 0;
 
 	// Каналы I2S
+
+	i2s->I2Sn_CTL =
+		!! master * (UINT32_C(1) << 18) |
+		1 * (UINT32_C(1) << 12) |	// SDI0_EN
+		1 * (UINT32_C(1) << 8) |	// SDO0_EN
+		1 * (UINT32_C(1) << 4) |	// MODE_SEL Left mode(offset 0: L-J Mode; offset 1: I2S mode)
+		1 * (UINT32_C(1) << 2) |	// TXEN
+		1 * (UINT32_C(1) << 1) |	// RXEN
+		1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+		0;
+	i2s->I2Sn_FMT0 =
+		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebits / NCH) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NCH) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		0;
+	i2s->I2Sn_FMT1 = 0;
+	i2s->I2Sn_CLKD = 0;
+
 #elif CPUSTYLE_A64
-	#warning CPUSTYLE_T507 to be implemented
+	#warning CPUSTYLE_A64 to be implemented
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// Каналы I2S
@@ -3909,6 +3956,8 @@ static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 
 static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 {
+#if CPUSTYLE_T507
+#else
 	I2S_PCM_TypeDef * const i2s = I2S1;
 	if (state)
 	{
@@ -3924,10 +3973,13 @@ static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
 	}
+#endif
 }
 
 static void hardware_i2s2_enable_codec1(uint_fast8_t state)
 {
+#if CPUSTYLE_T507
+#else
 	I2S_PCM_TypeDef * const i2s = I2S2;
 	if (state)
 	{
@@ -3943,10 +3995,13 @@ static void hardware_i2s2_enable_codec1(uint_fast8_t state)
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
 	}
+#endif
 }
 
 static void hardware_i2s1_enable_fpga(uint_fast8_t state)
 {
+#if CPUSTYLE_T507
+#else
 	I2S_PCM_TypeDef * const i2s = I2S1;
 	if (state)
 	{
@@ -3962,10 +4017,13 @@ static void hardware_i2s1_enable_fpga(uint_fast8_t state)
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
 	}
+#endif
 }
 
 static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 {
+#if CPUSTYLE_T507
+#else
 	I2S_PCM_TypeDef * const i2s = I2S2;
 	if (state)
 	{
@@ -3981,6 +4039,7 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
 	}
+#endif
 }
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
@@ -4106,13 +4165,13 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	{
-		const size_t dw = sizeof (IFADCvalue_t);
-		const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-		TP();
-		printhex32(addr, (void *) addr, NBYTES);
-
-	}
+	TP();
+//	{
+//		const size_t dw = sizeof (IFADCvalue_t);
+//		const unsigned NBYTES = DMABUFFSIZE32RX * dw;
+//		printhex32(addr, (void *) addr, NBYTES);
+//
+//	}
 
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rts(addr);
@@ -4135,7 +4194,6 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 
 	DMA_resume(dmach, descbase);
 
-	TP();
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
 }
@@ -5191,7 +5249,19 @@ static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 
 static void hardware_i2s0_enable_fpga(uint_fast8_t state)
 {
-	state = 0;
+#if CPUSTYLE_T507
+	unsigned ix = 0;
+	if (state)
+	{
+		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
+	}
+	else
+	{
+		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
+	}
+#else
 	I2S_PCM_TypeDef * const i2s = I2S0;
 	if (state)
 	{
@@ -5207,6 +5277,7 @@ static void hardware_i2s0_enable_fpga(uint_fast8_t state)
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
 		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
 	}
+#endif
 }
 
 static void DMAC_I2S0_RX_initialize_fpga(void)
@@ -5455,7 +5526,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpgapipe);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled

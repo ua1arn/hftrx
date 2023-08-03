@@ -44,6 +44,7 @@ typedef enum IRQn
     TWI4_IRQn = 42,                                   /*!< TWI  */
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface */
+    AHUB_IRQn = 56,                                   /*!< AHUB AudioHub interrupt */
     USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller */
     USB20_OTG_EHCI_IRQn = 58,                         /*!< USB_EHCI_Capability  */
     USB20_OTG_OHCI_IRQn = 59,                         /*!< USB_OHCI_Capability  */
@@ -974,15 +975,15 @@ typedef struct GPIOINT_Type
 /*!< I2S_PCM  */
 typedef struct I2S_PCM_Type
 {
-    volatile uint32_t I2S_PCM_CTL;                    /*!< Offset 0x000 I2Sn Control */
-    volatile uint32_t I2S_PCM_FMT0;                   /*!< Offset 0x004 I2Sn Format 0 */
-    volatile uint32_t I2S_PCM_FMT1;                   /*!< Offset 0x008 I2Sn Format 1 */
-    volatile uint32_t I2S_PCM_CLKD;                   /*!< Offset 0x00C I2Sn Clock Divide */
+    volatile uint32_t I2Sn_CTL;                       /*!< Offset 0x000 I2Sn Control */
+    volatile uint32_t I2Sn_FMT0;                      /*!< Offset 0x004 I2Sn Format 0 */
+    volatile uint32_t I2Sn_FMT1;                      /*!< Offset 0x008 I2Sn Format 1 */
+    volatile uint32_t I2Sn_CLKD;                      /*!< Offset 0x00C I2Sn Clock Divide */
              uint32_t reserved_0x010 [0x0004];
-    volatile uint32_t I2S_PCM_RXDIF_CONT;             /*!< Offset 0x020 I2Sn RXDIF Contact Select */
-    volatile uint32_t I2S_PCM_CHCFG;                  /*!< Offset 0x024 I2Sn Channel Configuration */
-    volatile uint32_t I2S_PCM_IRQ_CTRL;               /*!< Offset 0x028 I2Sn DMA & Interrupt Control */
-    volatile uint32_t I2S_PCM_IRQ_STS;                /*!< Offset 0x02C I2Sn DMA & Interrupt Status */
+    volatile uint32_t I2Sn_RXDIF_CONT;                /*!< Offset 0x020 I2Sn RXDIF Contact Select */
+    volatile uint32_t I2Sn_CHCFG;                     /*!< Offset 0x024 I2Sn Channel Configuration */
+    volatile uint32_t I2Sn_IRQ_CTRL;                  /*!< Offset 0x028 I2Sn DMA & Interrupt Control */
+    volatile uint32_t I2Sn_IRQ_STS;                   /*!< Offset 0x02C I2Sn DMA & Interrupt Status */
     struct
     {
         volatile uint32_t I2S_PCM_SDOUTm_SLOTCTR;     /*!< Offset 0x030 (n=0~3)(m=0~3) */
