@@ -19409,9 +19409,28 @@ void edgepins_initialize(void)
 	edgepin_initialize(& edgpelkeyptt, checkelkeyptt, NULL);
 }
 
+/* проверка, есть ли хоть на одном из входов продетектированный запрос перехода на пережачу */
 uint_fast8_t edgepins_getptt(void)
 {
-
+	PLIST_ENTRY t;
+	for (t = edgepins.Blink; t != & edgepins; t = t->Blink)
+	{
+		PLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
+		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
+		const uint_fast8_t f = p->getpin(p->ctx);
+		if (f)
+		{
+			if (p->prevstate == 0)
+				p->outstate = 1;
+		}
+		else
+		{
+			p->outstate = 0;
+		}
+		p->prevstate = f;
+		if (p->outstate)
+			return 1;
+	}
 	return 0;
 }
 
