@@ -3778,9 +3778,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		1 * (UINT32_C(1) << 12) |	// SDI0_EN
 		1 * (UINT32_C(1) << 8) |	// SDO0_EN
 		1 * (UINT32_C(1) << 4) |	// MODE_SEL Left mode(offset 0: L-J Mode; offset 1: I2S mode)
-		1 * (UINT32_C(1) << 2) |	// TXEN
-		1 * (UINT32_C(1) << 1) |	// RXEN
-		1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+//		1 * (UINT32_C(1) << 2) |	// TXEN
+//		1 * (UINT32_C(1) << 1) |	// RXEN
+//		1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
 		0;
 	i2s->I2Sn_FMT0 =
 		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
@@ -5251,13 +5251,24 @@ static void hardware_i2s0_enable_fpga(uint_fast8_t state)
 {
 #if CPUSTYLE_T507
 	unsigned ix = 0;
+	I2S_PCM_TypeDef * const i2s = I2S0;
 	if (state)
 	{
 		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
 		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
+		i2s->I2Sn_CTL |=
+			1 * (UINT32_C(1) << 2) |	// TXEN
+			1 * (UINT32_C(1) << 1) |	// RXEN
+			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+			0;
 	}
 	else
 	{
+		i2s->I2Sn_CTL &= ~ (
+			1 * (UINT32_C(1) << 2) |	// TXEN
+			1 * (UINT32_C(1) << 1) |	// RXEN
+			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+			0);
 		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
 		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
 	}
