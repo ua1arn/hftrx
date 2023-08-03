@@ -351,6 +351,7 @@ void hamradio_lfm_disable(void)
 
 LIST_ENTRY edgepins;
 
+static edgepin_t edgpmoxptt;
 static edgepin_t edgphandptt;
 static edgepin_t edgpcatptt;
 static edgepin_t edgptunerptt;
@@ -19379,14 +19380,19 @@ processkeyboard(uint_fast8_t kbch)
 #endif /* WITHKEYBOARD */
 
 
+uint_fast8_t checkmoxptt(void * ctx)
+{
+	return moxmode;	// с клавиатуры
+}
+
 uint_fast8_t checkhandptt(void * ctx)
 {
-	return 0;
+	return hardware_get_ptt();	// тангента, педаль;
 }
 
 uint_fast8_t checkcatptt(void * ctx)
 {
-	return 0;
+	return cat_get_ptt();
 }
 
 uint_fast8_t checktunerptt(void * ctx)
@@ -19403,6 +19409,7 @@ void edgepins_initialize(void)
 {
 	InitializeListHead(& edgepins);
 
+	edgepin_initialize(& edgpmoxptt, checkmoxptt, NULL);
 	edgepin_initialize(& edgphandptt, checkhandptt, NULL);
 	edgepin_initialize(& edgpcatptt, checkcatptt, NULL);
 	edgepin_initialize(& edgptunerptt, checktunerptt, NULL);
@@ -19410,7 +19417,7 @@ void edgepins_initialize(void)
 }
 
 /* проверка, есть ли хоть на одном из входов продетектированный запрос перехода на пережачу */
-uint_fast8_t edgepins_getptt(void)
+uint_fast8_t edgepins_get_ptt(void)
 {
 	PLIST_ENTRY t;
 	for (t = edgepins.Blink; t != & edgepins; t = t->Blink)
@@ -19428,6 +19435,7 @@ uint_fast8_t edgepins_getptt(void)
 			p->outstate = 0;
 		}
 		p->prevstate = f;
+
 		if (p->outstate)
 			return 1;
 	}
