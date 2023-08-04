@@ -2197,6 +2197,8 @@ void RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
 	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
 	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
 	unsigned i;
+
+	ASSERT((DMABUFFSIZE32RX / DMABUFFSTEP32RX) == (DMABUFFSIZE16RX / DMABUFFSTEP16RX));
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
 	{
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
@@ -2210,6 +2212,9 @@ void RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
 	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
 	unsigned i;
+
+	ASSERT((DMABUFFSIZE32TX / DMABUFFSTEP32TX) == (DMABUFFSIZE16TX / DMABUFFSTEP16TX));
+	ASSERT(DMABUFFSTEP16TX >= 2);
 	for (i = 0; i < DMABUFFSIZE32TX; i += DMABUFFSTEP32TX)
 	{
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
