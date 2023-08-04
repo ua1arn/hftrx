@@ -2191,6 +2191,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
 }
 
+#if WITHFPGAIF_FRAMEBITS == 512
 // копирование полей из принятого от FPGA буфера
 void RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
 {
@@ -2221,6 +2222,8 @@ void RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + 1];
 	}
 }
+
+#endif /* WITHFPGAIF_FRAMEBITS == 512 */
 
 #if WITHRTS192
 // Этой функцией пользуются обработчики прерываний DMA
