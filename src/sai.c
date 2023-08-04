@@ -4181,7 +4181,7 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 	release_dmabuffer32tx(addr);
 }
 
-/* Приём от FPGA */
+/* Приём от FPGA (PIPE mode) */
 static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
@@ -4205,7 +4205,7 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	processing_dmabuffer16rx(addr16);
 }
 
-/* Передача в FPGA */
+/* Передача в FPGA (PIPE mode)  */
 static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };

@@ -349,12 +349,11 @@ extern "C" {
 
 			/* звук идет по PIPE */
 
-			#define DMABUFFSTEP16RX		DMABUFFSTEP32RX		/* 2 - каждому сэмплу при получении от AUDIO CODEC соответствует два числа в DMA буфере */
-			#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
+			#define DMABUFF32TX_CODEC1_LEFT 	0		/* индекс сэмпла левого канала к кодеку (через PIPE) */
+			#define	DMABUFF32TX_CODEC1_RIGHT 	1		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
 
-			#define DMABUFFSTEP16TX		DMABUFFSTEP32TX		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
-			#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
-			#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+			#define DMABUFF32RX_CODEC1_LEFT 	0		/* индекс сэмпла левого канала от кодека (через PIPE) */
+			#define	DMABUFF32RX_CODEC1_RIGHT 	1		/* индекс сэмпла правого канала от кодека (через PIPE)  */
 
 
 		#else
@@ -430,16 +429,18 @@ extern "C" {
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
-#elif WITHFPGAIF_FRAMEBITS == 512
-
 #else /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 
 	/* Обычный I2S канал */
 
 	#define DMABUFFSTEP16RX		2		/* 2 - каждому сэмплу при получении от AUDIO CODEC соответствует два числа в DMA буфере */
+
 	#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
+	#define DMABUFF16RX_LEFT 	0		/* for PIPE: индекс сэмпла левого канала */
+	#define DMABUFF16RX_RIGHT 	1		/* for PIPE: индекс сэмпла правого канала */
 
 	#define DMABUFFSTEP16TX		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
+
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
@@ -998,6 +999,8 @@ void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
 void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
+void pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx);	// копирование полей из принятого от FPGA буфера
+void pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx);	// копирование полей в передаваемый на FPGA буфера
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);

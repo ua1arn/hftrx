@@ -192,6 +192,7 @@ int main(int argc, char* argv[])
 
 	if (printFLAG && argc >= 2)
 	{
+		int i;
 		const char * const infilename = argv [1];
 		FILE * infile = fopen(infilename,"rb");
 		if (infile == NULL)
@@ -200,6 +201,14 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		printfile(infile);
+		fseek(infile, 0x38, SEEK_SET);
+		for (i = 0; i < 40; ++ i)
+		{
+			uint32_t v;
+			fread(& v, 1, 4, infile);
+			printf(".xxx%i = 0x%08X, /* %i */,\n", i, v, i);
+
+		}
 		fclose(infile);
 		return 0;
 	}
