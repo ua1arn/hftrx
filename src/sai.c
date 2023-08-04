@@ -4186,23 +4186,23 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
-	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	volatile uint32_t * const descraddr32 = (volatile uint32_t *) descbase;
+	const uintptr_t addr32old = descraddr32 [ix];
+	const uintptr_t addr32new = allocate_dmabuffer32rx();
+	descraddr32 [ix] = dma_invalidate32rx(addr32new);
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
-	processing_dmabuffer32rts(addr);
-	processing_dmabuffer32rx(addr);
-	release_dmabuffer32rx(addr);
+	const uintptr_t addr16 = allocate_dmabuffer16rx();
+	pipe_dmabuffer32rx(addr32old, addr16);	// копирование сэмплов
+	processing_dmabuffer16rx(addr16);
+	processing_dmabuffer32rts(addr32old);
+	processing_dmabuffer32rx(addr32old);
+	release_dmabuffer32rx(addr32old);
 
 	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
-
-	// test for "pipe" mode
-	const uintptr_t addr16 = dma_invalidate16rx(allocate_dmabuffer16rx());
-	processing_dmabuffer16rx(addr16);
 }
 
 /* Передача в FPGA (PIPE mode)  */
@@ -4212,18 +4212,17 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	const uintptr_t addr16new = getfilled_dmabuffer16txphones();
+	const uintptr_t addr32new = getfilled_dmabuffer32tx_main();
+	pipe_dmabuffer32tx(addr32new, addr16new);	// копирование сэмплов
+	const uintptr_t addr32old = descraddr [ix];
+	descraddr [ix] = dma_flush32tx(addr32new);
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
-	/* Работа с только что передаными данными */
-	release_dmabuffer32tx(addr);
-
-	// test for "pipe" mode
-	const uintptr_t addr16 = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	release_dmabuffer16tx(addr16);
+	release_dmabuffer32tx(addr32old);
+	release_dmabuffer16tx(addr16new);
 
 }
 
