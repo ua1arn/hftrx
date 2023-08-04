@@ -306,14 +306,14 @@ extern "C" {
 			// buff data layout: I main/I sub/Q main/Q sub
 			#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-			#define DMABUFFSTEP32RTS	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUFFSTEP32RTS	DMABUFFSTEP32RX		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX1I	2		// RX1, I
 			#define DMABUF32RX0Q	1		// RX0, Q
 			#define DMABUF32RX1Q	3		// RX1, Q
 
-			#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUFFSTEP32TX	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 			#define DMABUF32TXI	0		// TX, I
 			#define DMABUF32TXQ	1		// TX, Q
 
@@ -346,6 +346,16 @@ extern "C" {
 			#define DMABUF32RXWFM2Q	5		// WFM
 			#define DMABUF32RXWFM3I	6		// WFM NEWEST
 			#define DMABUF32RXWFM3Q	7		// WFM
+
+			/* звук идет по PIPE */
+
+			#define DMABUFFSTEP16RX		DMABUFFSTEP32RX		/* 2 - каждому сэмплу при получении от AUDIO CODEC соответствует два числа в DMA буфере */
+			#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
+
+			#define DMABUFFSTEP16TX		DMABUFFSTEP32TX		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
+			#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
+			#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
 
 		#else
 			#error Undefined WITHFPGAIF_FRAMEBITS
@@ -419,6 +429,8 @@ extern "C" {
 	#define DMABUFFSTEP16TX		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
+
+#elif WITHFPGAIF_FRAMEBITS == 512
 
 #else /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
 

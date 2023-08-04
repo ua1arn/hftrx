@@ -4188,24 +4188,21 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	////descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
-	////dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	//dbg_putchar('r');
-//	{
-//		const size_t dw = sizeof (IFADCvalue_t);
-//		const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-//		printhex32(addr, (void *) addr, NBYTES);
-//		dma_invalidate32rx(addr);
-//	}
 
 	/* Работа с только что принятыми данными */
-	////processing_dmabuffer32rts(addr);
-	////processing_dmabuffer32rx(addr);
-	////release_dmabuffer32rx(addr);
+	processing_dmabuffer32rts(addr);
+	processing_dmabuffer32rx(addr);
+	release_dmabuffer32rx(addr);
 
-	////buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+
+	// test for "pipe" mode
+	const uintptr_t addr16 = dma_invalidate16rx(allocate_dmabuffer16rx());
+	processing_dmabuffer16rx(addr16);
 }
 
 /* Передача в FPGA */
@@ -4216,14 +4213,18 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	////descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
-	//dbg_putchar('t');
 
 	/* Работа с только что передаными данными */
-	////release_dmabuffer32tx(addr);
+	release_dmabuffer32tx(addr);
+
+	// test for "pipe" mode
+	const uintptr_t addr16 = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
+	release_dmabuffer16tx(addr16);
+
 }
 
 
