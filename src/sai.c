@@ -4296,7 +4296,7 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
 	return (uintptr_t) & AHUB->APBIF_RX [ahubch].APBIF_RXnFIFO;
 #else
 	(void) ahubch;
-	return (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
+	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
 #endif
 }
 
@@ -4307,7 +4307,7 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
 	return (uintptr_t) & AHUB->APBIF_TX [ahubch].APBIF_TXnFIFO;
 #else
 	(void) ahubch;
-	return (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
+	return (uintptr_t) & i2s->I2S_PCM_TXFIFO;
 #endif
 }
 
