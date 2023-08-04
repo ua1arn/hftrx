@@ -569,14 +569,6 @@ applicable agreement for further details.
 	(color 255 0 0)
 )
 (connector
-	(pt 792 464)
-	(pt 792 560)
-)
-(connector
-	(pt 792 560)
-	(pt 792 720)
-)
-(connector
 	(pt 1264 488)
 	(pt 1248 488)
 )
@@ -585,23 +577,9 @@ applicable agreement for further details.
 	(pt 1248 720)
 )
 (connector
-	(pt 792 720)
-	(pt 1248 720)
-)
-(connector
-	(pt 1248 720)
-	(pt 1264 720)
-)
-(connector
 	(text "s01[63..32]" (rect 1474 472 1529 484)(font "Arial" ))
 	(pt 1440 488)
 	(pt 1528 488)
-	(bus)
-)
-(connector
-	(text "<<__$DEF_ALIAS10269>>" (rect 1450 704 1579 716)(font "Arial" )(invisible))
-	(pt 1440 720)
-	(pt 1528 720)
 	(bus)
 )
 (connector
@@ -640,10 +618,30 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "s01[63..0]" (rect 1538 520 1587 532)(font "Arial" ))
-	(pt 1600 536)
-	(pt 1528 536)
+	(text "s01[31..0]" (rect 1450 704 1499 716)(font "Arial" ))
+	(pt 1440 720)
+	(pt 1528 720)
 	(bus)
+)
+(connector
+	(pt 792 464)
+	(pt 792 560)
+	(color 255 0 0)
+)
+(connector
+	(pt 792 560)
+	(pt 792 720)
+	(color 255 0 0)
+)
+(connector
+	(pt 792 720)
+	(pt 1248 720)
+	(color 255 0 0)
+)
+(connector
+	(pt 1248 720)
+	(pt 1264 720)
+	(color 255 0 0)
 )
 (junction (pt 760 544))
 (junction (pt 1232 784))
