@@ -19392,7 +19392,11 @@ uint_fast8_t checkhandptt(void * ctx)
 
 uint_fast8_t checkcatptt(void * ctx)
 {
+#if WITHCAT
 	return cat_get_ptt();
+#else
+	return 0;
+#endif
 }
 
 uint_fast8_t checktunerptt(void * ctx)

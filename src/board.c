@@ -6912,15 +6912,15 @@ static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 #include BOARD_BITIMAGE_NAME
 };
 
-#endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
-
-
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
 const uint16_t * getrbfimage(size_t * count)
 {
 	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
 	return & rbfimage0 [0];
 }
+
+#endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
+
 
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
