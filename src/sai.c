@@ -3582,7 +3582,7 @@ static void I2S_fill_TXxCHMAP(
 //		;
 //}
 
-static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
+static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 
 	const unsigned bclkf = lrckf * framebits;
@@ -3595,10 +3595,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
-	//CCU->AUDIO_HUB_BGR_REG &= ~ (UINT32_C(1) << 16);	// AUDIO_HUB_RST (могут быть другие каналы)
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
-	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NCH=%u, clk=%u\n", ix, mclkf, bclkf, NCH, (unsigned) 0);
+	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, clk=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) 0);
 
 #elif CPUSTYLE_A64
 	// CCU
@@ -3703,6 +3702,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 
 #if CPUSTYLE_T507
+	/* Установка формата обмна */
 	// AHUB = top level
 	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - ix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - ix);	// bita 27..25
@@ -3717,25 +3717,20 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT;
 	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST;
 
-	const uint32_t ws = width2fmt(framebits / NCH);	// 7: 32 bit
-	const uint32_t nchan = 0x07;	// 7: 32 bit
+	const unsigned txrx_offset = 1;	// Каналы I2S
+	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
+	//const uint32_t nchan = 0x07;	// 7: 32 bit
+	const uint32_t nc = 2; // left & tight
 
 	// Каналы AHUB - RX
-	AHUB->APBIF_RX [ix].APBIF_RXn_CTRL = (ws << 16) | ((NCH - 1) << 8);
+	AHUB->APBIF_RX [ix].APBIF_RXn_CTRL = (ws << 16) | ((nc - 1) << 8);
 	AHUB->APBIF_RX [ix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
 	AHUB->APBIF_RX [ix].APBIF_RXnFIFO_CTRL = 0;
 
 	// Каналы AHUB - TX
-	AHUB->APBIF_TX [ix].APBIF_TXn_CTRL = (ws << 16) | ((NCH - 1) << 8);
+	AHUB->APBIF_TX [ix].APBIF_TXn_CTRL = (ws << 16) | ((nc - 1) << 8);
 	AHUB->APBIF_TX [ix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
 	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL = 0;
-
-	// Каналы I2S
-#if CODEC1_FORMATI2S_PHILIPS
-	const unsigned txrx_offset = 1;
-#else /* CODEC1_FORMATI2S_PHILIPS */
-	const unsigned txrx_offset = 0;
-#endif /* CODEC1_FORMATI2S_PHILIPS */
 
 	i2s->I2Sn_CTL =
 		!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
@@ -3747,15 +3742,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		ws * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		ws * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	i2s->I2Sn_FMT1 = 0;
 	i2s->I2Sn_CLKD = 0;
 
 	i2s->I2Sn_CHCFG =
-		(NCH - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
-		(NCH - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
+		(nc - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
+		(nc - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
 		0;
 
 	i2s->I2Sn_RXDIF_CONT = 0;//(UINT32_C(1) << x);
@@ -3764,7 +3759,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	ASSERT(dout < 4);
 
 	i2s->I2Sn_SDOUT [0].I2Sn_SDOUTm_SLOTCTR =
-		(NCH - 1) *  (UINT32_C(1) << 16) |	// SDOUTm_SLOT_NUM
+		(NSLOTS - 1) *  (UINT32_C(1) << 16) |	// SDOUTm_SLOT_NUM
 		(txrx_offset * (UINT32_C(1) << 20)) |	// SDOUTm_OFFSET
 		0xFFFF |	// SDOUTm_SLOT_EN
 		0;
@@ -3777,7 +3772,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	i2s->I2Sn_SDIN_SLOTCTR =
 		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-		(NCH - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	//SDIN Slot number Select for each output
 		0;
 //	i2s->I2Sn_SDINCHMAP [0] =
 //		0;
@@ -3806,8 +3801,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	i2s->I2S_PCM_FMT1 =
 		0;
@@ -3824,8 +3819,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	// I2S/PCM Channel Configuration Register
 	i2s->I2S_PCM_CHCFG =
-		(NCH - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
-		(NCH - 1) * (UINT32_C(1) << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
 		0;
 
 	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
@@ -3858,13 +3853,13 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-		(NCH - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
 
 
 	const portholder_t txchsel =
 		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
-		(NCH - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
 		0xFFFF * (UINT32_C(1) << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
@@ -3874,11 +3869,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_fill_RXCHMAP(i2s, din, NCH);
-	I2S_fill_TXxCHMAP(i2s, 0, dout, NCH);	// I2S_PCM_TX0CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 1, dout, NCH);	// I2S_PCM_TX1CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 2, dout, NCH);	// I2S_PCM_TX2CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 3, dout, NCH);	// I2S_PCM_TX3CHMAPx
+	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+	I2S_fill_TXxCHMAP(i2s, 0, dout, NSLOTS);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, dout, NSLOTS);	// I2S_PCM_TX3CHMAPx
 
 	i2s->I2S_PCM_INT = 0;
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
