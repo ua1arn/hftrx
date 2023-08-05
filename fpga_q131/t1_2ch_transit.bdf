@@ -6532,6 +6532,38 @@ applicable agreement for further details.
 		(line (pt 8 8)(pt 24 8))
 	)
 )
+(symbol
+	(rect -1680 104 -1648 120)
+	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
+	(text "inst41" (rect 3 5 32 17)(font "Arial" )(invisible))
+	(port
+		(pt 16 16)
+		(output)
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(line (pt 16 16)(pt 16 8))
+	)
+	(drawing
+		(line (pt 8 8)(pt 24 8))
+	)
+)
+(symbol
+	(rect -1680 136 -1648 168)
+	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
+	(text "inst121" (rect 3 21 38 33)(font "Arial" )(invisible))
+	(port
+		(pt 16 0)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(line (pt 16 8)(pt 16 0))
+	)
+	(drawing
+		(line (pt 8 8)(pt 16 16))
+		(line (pt 16 16)(pt 24 8))
+		(line (pt 8 8)(pt 24 8))
+	)
+)
 (connector
 	(pt -1576 -336)
 	(pt -1608 -336)
@@ -10167,6 +10199,32 @@ applicable agreement for further details.
 	(pt -1368 -88)
 	(pt -1432 -88)
 	(bus)
+)
+(connector
+	(pt -1368 -72)
+	(pt -1480 -72)
+	(bus)
+)
+(connector
+	(pt -1480 -72)
+	(pt -1480 80)
+	(bus)
+)
+(connector
+	(text "1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0" (rect -1736 64 -1136 76)(font "Arial" ))
+	(pt -1480 80)
+	(pt -1736 80)
+	(bus)
+)
+(connector
+	(text "1" (rect -1710 104 -1705 116)(font "Arial" ))
+	(pt -1712 120)
+	(pt -1664 120)
+)
+(connector
+	(text "0" (rect -1710 120 -1705 132)(font "Arial" ))
+	(pt -1712 136)
+	(pt -1664 136)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))

@@ -3587,13 +3587,13 @@ static void I2S_fill_TXxCHMAP(
 // 0..1
 static unsigned getapbifrxixbofi2s(unsigned ix)
 {
-	return 0*1;
+	return 1;
 }
 
 // 0..1
 static unsigned getapbiftxixbofi2s(unsigned ix)
 {
-	return 0*1;
+	return 1;
 }
 
 
@@ -3619,6 +3619,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
+	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
 	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 
 #elif CPUSTYLE_A64
@@ -3739,13 +3740,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const uint32_t DAMx_RST = 0;//UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
-	//AHUB->AHUB_RST = 0;
+	AHUB->AHUB_RST = 0;	// пока это единственный используемый канал - моджно сбрасывать
 	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 
 	const unsigned txrx_offset = 1;	// Каналы I2S
 	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
-	//const uint32_t nchan = 0x07;	// 7: 32 bit
-	const uint32_t nc = NSLOTS;//2; // left & tight
+	const uint32_t nc = NSLOTS;
 
 	// Каналы AHUB[0..1] - RX
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((nc - 1) << 8);
@@ -4180,7 +4180,8 @@ volatile uint32_t txfreq;
 volatile IFADCvalue_t xbuff [DMABUFFSIZE32RX];
 void zprintf(void)
 {
-	printhex32(0, xbuff, sizeof xbuff);
+	PRINTF("rx buffer:\n");
+	printhex32(0, (void *) xbuff, sizeof xbuff);
 }
 
 /* Приём от FPGA (PIPE mode) */

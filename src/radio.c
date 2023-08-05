@@ -20250,12 +20250,12 @@ hamradio_main_step(void)
 							static uint32_t txlasc;
 							uint32_t last = txlastts;
 							uint32_t lastc = txlasc;
-							txlasc = AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT;
+							txlasc = AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT;
 							txlastts = cpu_getdebugticks();
 							uint32_t d = txlastts - last;
 							uint32_t dc = txlasc - lastc;
 							uint32_t df = cpu_getdebugticksfreq();
-							PRINTF("txfreq=%u\n", (unsigned) ((uint64_t) df * dc / d));
+							PRINTF("rxfreq=%u\n", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
 						}
 						break;
 					case 'z':
