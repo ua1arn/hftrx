@@ -3768,7 +3768,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// I2S0 TXDIF -> APBIF RXDIF (receive from external devices)
 
 	//AHUB->DAM [damix].DAMn_CTRL = 1;
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// I2S0..I2S3 TXDIF
+	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
 	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
 	i2s->I2Sn_CTL =
@@ -3812,18 +3813,13 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
 		(NSLOTS - 1) * (UINT32_C(1) << 16) |	//SDIN Slot number Select for each output
 		0;
-//	i2s->I2Sn_SDINCHMAP [0] =
-//		0;
-//	i2s->I2Sn_SDINCHMAP [1] =
-//		0;
-//	i2s->I2Sn_SDINCHMAP [2] =
-//		0;
-//	i2s->I2Sn_SDINCHMAP [3] =
-//		0;
+	// I2Sn_SDINCHMAP оставляем по умолчанию
+	//printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
+	//printhex32((uintptr_t)i2s, i2s, sizeof * i2s);
 
 	// DAM setup
-	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
-	printhex((uintptr_t) & AHUB->DAM [1], & AHUB->DAM [1], sizeof AHUB->DAM [1]);
+//	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
+//	printhex((uintptr_t) & AHUB->DAM [1], & AHUB->DAM [1], sizeof AHUB->DAM [1]);
 
 	//AHUB->DAM [damix].DAMn_CTRL = 0;
 
