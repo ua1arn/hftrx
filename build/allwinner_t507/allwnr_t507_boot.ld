@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Allwinner T507 (HelperBoarf T507) layout */
+/* sun50iw9p1 Allwinner T507 (HelperBoarf T507) layout */
 /* Linker script to configure memory regions. */
 
 MEMORY
