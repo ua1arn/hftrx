@@ -2585,7 +2585,7 @@ uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
 uint_fast64_t allwnr_t507_get_pll_audio_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_AUDIO_CTRL_REG;
-	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 8) & 0x3F);	// PLL_FACTOR_P
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x3F);	// PLL_FACTOR_P
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
@@ -8301,6 +8301,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 
 #if CPUSTYLE_H616
 	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
