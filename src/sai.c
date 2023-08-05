@@ -3889,31 +3889,33 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 }
 
-static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t state)
+static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
 #if CPUSTYLE_T507
-	if (state)
+	if (en)
 	{
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
 			1 * (UINT32_C(1) << 1) |	// RXEN
+			0;
+		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
 			0;
+		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
 	}
 	else
 	{
+		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
+		i2s->I2Sn_CTL &= ~ (UINT32_C(1) << 0);	// GEN Globe Enable
 		i2s->I2Sn_CTL &= ~ (
 			1 * (UINT32_C(1) << 2) |	// TXEN
 			1 * (UINT32_C(1) << 1) |	// RXEN
-			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
 			0);
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
 	}
 #else
-	if (state)
+	if (en)
 	{
 		i2s->I2S_PCM_CTL |=
 			(UINT32_C(1) << 2) |	// TXEN
