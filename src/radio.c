@@ -20234,9 +20234,12 @@ hamradio_main_step(void)
 		#if CPUSTYLE_T507
 					case ' ':
 						//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
-						PRINTF("APBIF_RXnFIFO_CNT=%08X, APBIF_TXnFIFO_CNT=%08X, rxfreq=%u, txfreq=%u\n",
+						PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X, APBIF_RX1FIFO_CNT=%08X, APBIF_TX1FIFO_CNT=%08X, ",
 								(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
 								(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT,
+								(unsigned) AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT,
+								(unsigned) AHUB->APBIF_TX[1].APBIF_TXnFIFO_CNT);
+								PRINTF("rxfreq=%u, txfreq=%u\n",
 								(unsigned) rxfreq,
 								(unsigned) txfreq);
 						break;
