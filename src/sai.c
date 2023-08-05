@@ -3583,21 +3583,14 @@ static void I2S_fill_TXxCHMAP(
 //}
 
 #if CPUSTYLE_T507
-static unsigned getdamofi2s(unsigned ix)
-{
-	return 0;
-}
 
-static unsigned getdifbofi2s(unsigned ix)
-{
-	return 0;
-}
-
+// 0..1
 static unsigned getapbifrxixbofi2s(unsigned ix)
 {
 	return 0;
 }
 
+// 0..1
 static unsigned getapbiftxixbofi2s(unsigned ix)
 {
 	return 0;
@@ -3729,8 +3722,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	/* Установка формата обмна */
 	// AHUB = top level
-	const unsigned difix = getdifbofi2s(ix);
-	const unsigned damix = getdifbofi2s(ix);	// DAM0/DAM1 index
 	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
 	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
