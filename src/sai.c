@@ -4193,20 +4193,23 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr32 = (volatile uint32_t *) descbase;
-	const uintptr_t addr32old = descraddr32 [ix];
-	const uintptr_t addr32new = allocate_dmabuffer32rx();
-	descraddr32 [ix] = dma_invalidate32rx(addr32new);
+	const uintptr_t addr32 = descraddr32 [ix];
+	descraddr32 [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
+//	printhex32(addr32, addr32, buffers_dmabuffer32rxcachesize());
+//	for (;;)
+//		;
 	/* Работа с только что принятыми данными */
 	const uintptr_t addr16 = allocate_dmabuffer16rx();
-	pipe_dmabuffer32rx(addr32old, addr16);	// копирование сэмплов
+	pipe_dmabuffer32rx(addr32, addr16);	// копирование сэмплов
 	processing_dmabuffer16rx(addr16);
-	processing_dmabuffer32rts(addr32old);
-	processing_dmabuffer32rx(addr32old);
-	release_dmabuffer32rx(addr32old);
+
+	processing_dmabuffer32rts(addr32);
+	processing_dmabuffer32rx(addr32);
+	release_dmabuffer32rx(addr32);
 
 	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
@@ -4299,22 +4302,22 @@ enum
 	DMAC_Ch_Total
 };
 
-static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
+static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
 	(void) i2s;
-	return (uintptr_t) & AHUB->APBIF_RX [ahubch].APBIF_RXnFIFO;
+	return (uintptr_t) & AHUB->APBIF_RX [getapbifrxixbofi2s(ix)].APBIF_RXnFIFO;
 #else
 	(void) ahubch;
 	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
 #endif
 }
 
-static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
+static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
 	(void) i2s;
-	return (uintptr_t) & AHUB->APBIF_TX [ahubch].APBIF_TXnFIFO;
+	return (uintptr_t) & AHUB->APBIF_TX [getapbiftxixbofi2s(ix)].APBIF_TXnFIFO;
 #else
 	(void) ahubch;
 	return (uintptr_t) & i2s->I2S_PCM_TXFIFO;
