@@ -20216,6 +20216,8 @@ hamradio_main_step(void)
 			}
 	#if WITHDEBUG
 			{
+				extern volatile uint32_t rxfreq;
+				extern volatile uint32_t txfreq;
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
 				if (dbg_getchar(& c))
@@ -20230,9 +20232,11 @@ hamradio_main_step(void)
 		#if CPUSTYLE_T507
 					case ' ':
 						//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
-						PRINTF("APBIF_RXnFIFO_CNT=%08X, APBIF_TXnFIFO_CNT=%08X\n",
+						PRINTF("APBIF_RXnFIFO_CNT=%08X, APBIF_TXnFIFO_CNT=%08X, rxfreq=%u, txfreq=%u\n",
 								(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
-								(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
+								(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT,
+								(unsigned) rxfreq,
+								(unsigned) txfreq);
 						break;
 		#endif /* CPUSTYLE_T507 */
 		#if WITHDEBUG && WITHMENU

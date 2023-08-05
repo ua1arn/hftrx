@@ -199,177 +199,48 @@
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
-     <register>
-      <name>DAMn_RX0_SRC</name>
-      <displayName>DAMn_RX0_SRC</displayName>
-      <description>DAM RXDIF0 Source Select</description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_RX1_SRC</name>
-      <displayName>DAMn_RX1_SRC</displayName>
-      <description>DAM RXDIF1 Source Select</description>
-      <addressOffset>0x014</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_RX2_SRC</name>
-      <displayName>DAMn_RX2_SRC</displayName>
-      <description>DAM RXDIF2 Source Select</description>
-      <addressOffset>0x018</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL0</name>
-      <displayName>DAMn_MIX_CTRL0</displayName>
-      <description>DAM MIX Control 0</description>
-      <addressOffset>0x030</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL1</name>
-      <displayName>DAMn_MIX_CTRL1</displayName>
-      <description>DAM MIX Control 1</description>
-      <addressOffset>0x034</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL2</name>
-      <displayName>DAMn_MIX_CTRL2</displayName>
-      <description>DAM MIX Control 2</description>
-      <addressOffset>0x038</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL3</name>
-      <displayName>DAMn_MIX_CTRL3</displayName>
-      <description>DAM MIX Control 3</description>
-      <addressOffset>0x03C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL4</name>
-      <displayName>DAMn_MIX_CTRL4</displayName>
-      <description>DAM MIX Control 4</description>
-      <addressOffset>0x040</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL5</name>
-      <displayName>DAMn_MIX_CTRL5</displayName>
-      <description>DAM MIX Control 5</description>
-      <addressOffset>0x044</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL6</name>
-      <displayName>DAMn_MIX_CTRL6</displayName>
-      <description>DAM MIX Control 6</description>
-      <addressOffset>0x048</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_MIX_CTRL7</name>
-      <displayName>DAMn_MIX_CTRL7</displayName>
-      <description>DAM MIX Control 7</description>
-      <addressOffset>0x04C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL0</name>
-      <displayName>DAMn_GAIN_CTRL0</displayName>
-      <description>DAM GAIN Control 0</description>
-      <addressOffset>0x050</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL1</name>
-      <displayName>DAMn_GAIN_CTRL1</displayName>
-      <description>DAM GAIN Control 1</description>
-      <addressOffset>0x054</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL2</name>
-      <displayName>DAMn_GAIN_CTRL2</displayName>
-      <description>DAM GAIN Control 2</description>
-      <addressOffset>0x058</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL3</name>
-      <displayName>DAMn_GAIN_CTRL3</displayName>
-      <description>DAM GAIN Control 3</description>
-      <addressOffset>0x05C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL4</name>
-      <displayName>DAMn_GAIN_CTRL4</displayName>
-      <description>DAM GAIN Control 4</description>
-      <addressOffset>0x060</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL5</name>
-      <displayName>DAMn_GAIN_CTRL5</displayName>
-      <description>DAM GAIN Control 5</description>
-      <addressOffset>0x064</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL6</name>
-      <displayName>DAMn_GAIN_CTRL6</displayName>
-      <description>DAM GAIN Control 6</description>
-      <addressOffset>0x068</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>DAMn_GAIN_CTRL7</name>
-      <displayName>DAMn_GAIN_CTRL7</displayName>
-      <description>DAM GAIN Control 7</description>
-      <addressOffset>0x06C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
+     <cluster>
+      <dim>3</dim>
+      <addressOffset>0x00000010</addressOffset>
+      <register>
+       <name>DAMn_RXx_SRC</name>
+       <displayName>DAMn_RXx_SRC</displayName>
+       <description>DAM RXDIF0..RXDIF2 Source Select</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x00C</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>8</dim>
+      <addressOffset>0x00000030</addressOffset>
+      <register>
+       <name>DAMn_MIX_CTRLx</name>
+       <displayName>DAMn_MIX_CTRLx</displayName>
+       <description>DAM MIX Control 0..7</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x020</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>8</dim>
+      <addressOffset>0x00000050</addressOffset>
+      <register>
+       <name>DAMn_GAIN_CTRLx</name>
+       <displayName>DAMn_GAIN_CTRLx</displayName>
+       <description>DAM GAIN Control 0..7</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x020</dimIncrement>
+     </cluster>
     </registers>
     <dimIncrement>0x0A0</dimIncrement>
    </cluster>

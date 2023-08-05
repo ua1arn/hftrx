@@ -3593,6 +3593,12 @@ static unsigned getdifbofi2s(unsigned ix)
 	return 0;
 }
 
+static unsigned getapbifixbofi2s(unsigned ix)
+{
+	return 0;
+}
+
+
 #endif /* CPUSTYLE_T507 */
 
 
@@ -3719,16 +3725,18 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	/* Установка формата обмна */
 	// AHUB = top level
 	const unsigned difix = getdifbofi2s(ix);
-	const unsigned damix = getdifbofi2s(ix);
-	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - difix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - difix);	// bita 27..25
+	const unsigned damix = getdifbofi2s(ix);	// DAM0/DAM1 index
+	const unsigned apbiftxix = getapbifixbofi2s(ix);	// APBIF_RXn/APBIF_TXn index
+	const unsigned apbifrxix = getapbifixbofi2s(ix);	// APBIF_RXn/APBIF_TXn index
+	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t DAMx_GAT = 0*UINT32_C(1) << (15 - damix);	// bita 15..14
 
-	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - ix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - ix);	// bita 27..25
+	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t DAMx_RST = 0*UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
 	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
@@ -3736,17 +3744,26 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned txrx_offset = 1;	// Каналы I2S
 	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
 	//const uint32_t nchan = 0x07;	// 7: 32 bit
-	const uint32_t nc = 2; // left & tight
+	const uint32_t nc = NSLOTS;//2; // left & tight
 
-	// Каналы AHUB - RX
-	AHUB->APBIF_RX [ix].APBIF_RXn_CTRL = (ws << 16) | ((nc - 1) << 8);
-	AHUB->APBIF_RX [ix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
-	AHUB->APBIF_RX [ix].APBIF_RXnFIFO_CTRL = 0;
+	// Каналы AHUB[0..1] - RX
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((nc - 1) << 8);
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0;
 
-	// Каналы AHUB - TX
-	AHUB->APBIF_TX [ix].APBIF_TXn_CTRL = (ws << 16) | ((nc - 1) << 8);
-	AHUB->APBIF_TX [ix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
-	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL = 0;
+	// Каналы AHUB[0..1] - TX
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((nc - 1) << 8);
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0;
+
+	// Figure 9- 2. Audio HUB Crossbar Switch and Clients
+	// Need:
+	// APBIF TXDIF -> I2S0 RXDIF (transmit to external devices)
+	// I2S0 TXDIF -> APBIF RXDIF (receive from external devices)
+
+	//AHUB->DAM [damix].DAMn_CTRL = 1;
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// I2S0..I2S3 TXDIF
+	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
 	i2s->I2Sn_CTL =
 		!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
@@ -3769,7 +3786,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		(nc - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
 		0;
 
-	i2s->I2Sn_RXDIF_CONT = 0;//(UINT32_C(1) << x);
 
 	ASSERT(din < 4);
 	ASSERT(dout < 4);
@@ -3798,6 +3814,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //		0;
 //	i2s->I2Sn_SDINCHMAP [3] =
 //		0;
+
+
+	// APBIF_TX[0..1]
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
 
 #elif CPUSTYLE_A64
 	/* Установка формата обмна */
@@ -3907,9 +3928,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
 #if CPUSTYLE_T507
-	const unsigned difix = getdifbofi2s(ix);
 	if (en)
 	{
+		return;
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
 			1 * (UINT32_C(1) << 1) |	// RXEN
@@ -3917,13 +3938,9 @@ static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
 			0;
-		AHUB->APBIF_RX [difix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
-		AHUB->APBIF_TX [difix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
 	}
 	else
 	{
-		AHUB->APBIF_TX [difix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
-		AHUB->APBIF_RX [difix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
 		i2s->I2Sn_CTL &= ~ (UINT32_C(1) << 0);	// GEN Globe Enable
 		i2s->I2Sn_CTL &= ~ (
 			1 * (UINT32_C(1) << 2) |	// TXEN
@@ -4151,9 +4168,20 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 	release_dmabuffer32tx(addr);
 }
 
+uint32_t rxlastts;
+uint32_t txlastts;
+volatile uint32_t rxfreq;
+volatile uint32_t txfreq;
+
 /* Приём от FPGA (PIPE mode) */
 static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
+	uint32_t last = rxlastts;
+	rxlastts = cpu_getdebugticks();
+	uint32_t d = rxlastts - last;
+	rxfreq = cpu_getdebugticksfreq() * (DMABUFFSIZE32RX / DMABUFFSTEP32RX) / d;
+	return;
+
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr32 = (volatile uint32_t *) descbase;
@@ -4178,6 +4206,11 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 /* Передача в FPGA (PIPE mode)  */
 static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 {
+	uint32_t last = txlastts;
+	txlastts = cpu_getdebugticks();
+	uint32_t d = txlastts - last;
+	txfreq = cpu_getdebugticksfreq() * (DMABUFFSIZE32TX / DMABUFFSTEP32TX) / d;
+	return;
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
