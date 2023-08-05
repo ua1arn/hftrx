@@ -4313,7 +4313,8 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
 #endif
 }
 
-static void DMAC_I2S1_RX_initialize_codec1(void)
+#if WITHI2S1HW
+static void DMAC_I2S1_RX_initialize_codec1(unsigned ix)
 {
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -4438,8 +4439,11 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif /* WITHI2S1HW */
 
-static void DMAC_I2S2_TX_initialize_codec1(void)
+#if WITHI2S2HW
+
+static void DMAC_I2S2_TX_initialize_codec1(vois)
 {
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -4501,7 +4505,8 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-
+#endif
+#if WITHI2S1HW
 static void DMAC_I2S1_RX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFADCvalue_t);
@@ -4564,8 +4569,9 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
-#if defined (I2S2)
+#if defined (I2S2) && WITHI2S2HW
 
 // Allwinner A64 not support RX on I2S2
 #if ! defined (CPUSTYLE_A64) && ! defined (CPUSTYLE_T507)
@@ -4700,6 +4706,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 
 #endif /* defined (I2S2) */
 
+#if WITHI2S1HW
 static void DMAC_I2S1_TX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFDACvalue_t);
@@ -4762,7 +4769,9 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
+#if WITHI2S2HW
 static void DMAC_I2S2_TX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFDACvalue_t);
@@ -4825,6 +4834,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
 #if defined(I2S1) && WITHI2S1HW
 static const codechw_t audiocodechw_i2s1_duplex_master =
@@ -5278,6 +5288,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
+	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX; // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5289,7 +5300,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S0_RX * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5341,6 +5352,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
+	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX; // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5348,7 +5360,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S0_TX * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
@@ -5404,6 +5416,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
+	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX; // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5415,7 +5428,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S0_RX * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5467,6 +5480,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
+	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX; // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5474,7 +5488,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S0_TX * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
