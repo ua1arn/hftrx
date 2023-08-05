@@ -4299,7 +4299,7 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 	(void) i2s;
 	return (uintptr_t) & AHUB->APBIF_RX [getapbifrxixbofi2s(ix)].APBIF_RXnFIFO;
 #else
-	(void) ahubch;
+	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
 #endif
 }
@@ -4310,13 +4310,13 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 	(void) i2s;
 	return (uintptr_t) & AHUB->APBIF_TX [getapbiftxixbofi2s(ix)].APBIF_TXnFIFO;
 #else
-	(void) ahubch;
+	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_TXFIFO;
 #endif
 }
 
 #if WITHI2S1HW
-static void DMAC_I2S1_RX_initialize_codec1(unsigned ix)
+static void DMAC_I2S1_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -4445,7 +4445,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 
 #if WITHI2S2HW
 
-static void DMAC_I2S2_TX_initialize_codec1(vois)
+static void DMAC_I2S2_TX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
