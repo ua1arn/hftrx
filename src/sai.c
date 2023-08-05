@@ -3582,6 +3582,20 @@ static void I2S_fill_TXxCHMAP(
 //		;
 //}
 
+#if CPUSTYLE_T507
+static unsigned getdamofi2s(unsigned ix)
+{
+	return 0;
+}
+
+static unsigned getdifbofi2s(unsigned ix)
+{
+	return 0;
+}
+
+#endif /* CPUSTYLE_T507 */
+
+
 static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 
@@ -3704,18 +3718,20 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	/* Установка формата обмна */
 	// AHUB = top level
-	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - ix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - ix);	// bita 27..25
-	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..21
-	//const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const unsigned difix = getdifbofi2s(ix);
+	const unsigned damix = getdifbofi2s(ix);
+	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - difix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - difix);	// bita 27..25
+	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
+	const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - ix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - ix);	// bita 27..25
-	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..21
-	//const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
+	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
 
-	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT;
-	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST;
+	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
+	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 
 	const unsigned txrx_offset = 1;	// Каналы I2S
 	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
@@ -3856,7 +3872,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
 
-
 	const portholder_t txchsel =
 		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
 		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
@@ -3879,8 +3894,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 3); // RX_DRQ
 
-	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
-	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
 	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
 
@@ -3892,6 +3907,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
 #if CPUSTYLE_T507
+	const unsigned difix = getdifbofi2s(ix);
 	if (en)
 	{
 		i2s->I2Sn_CTL |=
@@ -3901,13 +3917,13 @@ static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
 			0;
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [difix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [difix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
 	}
 	else
 	{
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [difix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [difix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
 		i2s->I2Sn_CTL &= ~ (UINT32_C(1) << 0);	// GEN Globe Enable
 		i2s->I2Sn_CTL &= ~ (
 			1 * (UINT32_C(1) << 2) |	// TXEN
