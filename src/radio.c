@@ -4031,7 +4031,7 @@ enum
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
-		#if WITHUSBHEADSET
+		#if WITHUSBHEADSET || CPUSTYLE_T507
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#else /* WITHUSBHEADSET */
 			static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -20242,6 +20242,21 @@ hamradio_main_step(void)
 								PRINTF("rxfreq=%u, txfreq=%u\n",
 								(unsigned) rxfreq,
 								(unsigned) txfreq);
+						break;
+
+					case 'f':
+						{
+							static uint32_t txlastts;
+							static uint32_t txlasc;
+							uint32_t last = txlastts;
+							uint32_t lastc = txlasc;
+							txlasc = AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT;
+							txlastts = cpu_getdebugticks();
+							uint32_t d = txlastts - last;
+							uint32_t dc = txlasc - lastc;
+							uint32_t df = cpu_getdebugticksfreq();
+							PRINTF("txfreq=%u\n", (unsigned) ((uint64_t) df * dc / d));
+						}
 						break;
 					case 'z':
 						zprintf();

@@ -3587,13 +3587,13 @@ static void I2S_fill_TXxCHMAP(
 // 0..1
 static unsigned getapbifrxixbofi2s(unsigned ix)
 {
-	return 1;
+	return 0*1;
 }
 
 // 0..1
 static unsigned getapbiftxixbofi2s(unsigned ix)
 {
-	return 1;
+	return 0*1;
 }
 
 
@@ -3609,7 +3609,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	// CCU
 
-	CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
+	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
+		(UINT32_C(3) << 24) |
+		(UINT32_C(2) << 8) |	// div4
+		0;
+	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
@@ -3763,6 +3767,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
 	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
+	if (1)
 	{
 		/* I2S part */
 		i2s->I2Sn_CTL =
@@ -4184,7 +4189,7 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	uint32_t last = rxlastts;
 	rxlastts = cpu_getdebugticks();
 	uint32_t d = rxlastts - last;
-	rxfreq = cpu_getdebugticksfreq() * (DMABUFFSIZE32RX / DMABUFFSTEP32RX) / d;
+	rxfreq = (uint64_t) cpu_getdebugticksfreq() * (DMABUFFSIZE32RX / DMABUFFSTEP32RX) / d;
 //	return;
 
 	enum { ix = DMAC_DESC_DST };
@@ -4216,7 +4221,7 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	uint32_t last = txlastts;
 	txlastts = cpu_getdebugticks();
 	uint32_t d = txlastts - last;
-	txfreq = cpu_getdebugticksfreq() * (DMABUFFSIZE32TX / DMABUFFSTEP32TX) / d;
+	txfreq = (uint64_t) cpu_getdebugticksfreq() * (DMABUFFSIZE32TX / DMABUFFSTEP32TX) / d;
 	return;
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
