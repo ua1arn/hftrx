@@ -287,17 +287,8 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		(0u << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
 #endif /* CODEC1_FRAMEBITS == 64 */
-
 		(0u << SPI_I2SCFGR_CKPOL_Pos) |
-
-#if CODEC1_FORMATI2S_PHILIPS
 		(0u << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
-
-#else /* CODEC1_FORMATI2S_PHILIPS */
-		(UINT32_C(1) << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
-
-#endif /* CODEC1_FORMATI2S_PHILIPS */
-
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		((i2sdiv << SPI_I2SCFGR_I2SDIV_Pos) & SPI_I2SCFGR_I2SDIV) |
 		(SPI_I2SCFGR_ODD * i2soddv) |
@@ -1575,10 +1566,8 @@ static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, 
 		((CODEC1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((CODEC1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if CODEC1_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* CODEC1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	sai_A->FRCR =
@@ -1683,10 +1672,8 @@ static void hardware_sai_a_tx_b_rx_initialize_fpga(SAI_Block_TypeDef * sai_A, SA
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	sai_A->FRCR =
@@ -2134,10 +2121,8 @@ static void hardware_sai1_master_duplex_initialize_v3d_fpga(void)		/* иници
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2259,10 +2244,8 @@ static void hardware_sai1_master_duplex_initialize_fpga(void)		/* инициал
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2381,10 +2364,8 @@ static void hardware_sai1_slave_duplex_initialize_fpga(void)		/* инициал�
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -3134,10 +3115,8 @@ static void hardware_sai2_slave_duplex_initialize_WFM(void)
 		((WITHFPGARTS_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGARTS_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGARTS_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGARTS_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI2_Block_A->FRCR =
@@ -3499,7 +3478,6 @@ static unsigned width2fmt(unsigned width)
 {
 	switch (width)
 	{
-	default:
 	case 8:			return 0x01;
 	case 12:		return 0x02;
 	case 16:		return 0x03;
@@ -3507,6 +3485,7 @@ static unsigned width2fmt(unsigned width)
 	case 24:		return 0x05;
 	case 28:		return 0x06;
 	case 32:		return 0x07;
+	default:		TP(); return 0x07;
 	}
 }
 
@@ -3518,7 +3497,8 @@ static void I2S_fill_RXCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+#elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	__IO uint32_t * const reg = & i2s->I2S_PCM_RXCHMAP0;
@@ -3554,7 +3534,8 @@ static void I2S_fill_TXxCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+#elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
@@ -3668,28 +3649,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
-
-	//arm_hardware_disable_handler(irq);
-	// ARMI2SRATE // I2S sample rate audio codec (human side)
-	// ARMI2SMCLK = ARMI2SRATE * 256
-	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
-	// ARMSAIMCLK = ARMSAIRATE * 256
-	// CODEC1_FRAMEBITS 64
-
-//	PRINTF("allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
-//	PRINTF("allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
-
-	//	i2s1: prei=2, value=30, mclkf=12288000, (clk=1536000000)
-	//	allwnrt113_get_audio0pll1x_freq = 24.571.428
-	//	allwnrt113_get_audio0pll4x_freq = 98.28.5714
-	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
-	//	allwnrt113_get_audio1pll1x_freq = 3072.000.000
-	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
-	//	allwnrt113_get_audio1pll_div5_freq = 614.400.000
 
 	// 0x00, 0x01, 0x03: 48000
 	// 0x02: ~ 48350
@@ -3830,9 +3789,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //		0;
 
 #elif CPUSTYLE_A64
+	/* Установка формата обмна */
 	#warning CPUSTYLE_A64 to be implemented
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	/* Установка формата обмна */
 	// Каналы I2S
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
@@ -3882,11 +3843,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
 
-#if CODEC1_FORMATI2S_PHILIPS
-	const unsigned txrx_offset = 1;
-#else /* CODEC1_FORMATI2S_PHILIPS */
-	const unsigned txrx_offset = 0;
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 1;		// I2S format
 
 	ASSERT(din < 4);
 	ASSERT(dout < 4);
@@ -5811,11 +5768,7 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 		0 * (UINT32_C(1) << 11) |		// SPDP		0: Padding bits are low.
 		0 * (UINT32_C(1) << 10) |		// SDTA
 		0 * (UINT32_C(1) << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
-#if CODEC1_FORMATI2S_PHILIPS
-		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* CODEC1_FORMATI2S_PHILIPS */
-		1 * (UINT32_C(1) << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA (I2S)
 		master * R7S721_SSIF0_CKDIV_val |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
@@ -6092,11 +6045,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 		0 * (UINT32_C(1) << 11) |		// SPDP 0: Padding bits are low.
 		0 * (UINT32_C(1) << 10) |		// SDTA
 		0 * (UINT32_C(1) << 9) |		// PDTA
-#if WITHFPGAIF_FORMATI2S_PHILIPS
-		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (UINT32_C(1) << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA - I2S
 		master * R7S721_SSIF_CKDIV1 * (UINT32_C(1) << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
@@ -6261,11 +6210,7 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 		0 * (UINT32_C(1) << 11) |		// SPDP 0: Padding bits are low.
 		0 * (UINT32_C(1) << 10) |		// SDTA
 		0 * (UINT32_C(1) << 9) |		// PDTA
-#if WITHFPGARTS_FORMATI2S_PHILIPS
-		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (UINT32_C(1) << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA - I2S
 		master * R7S721_SSIF_CKDIV1 * (UINT32_C(1) << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
