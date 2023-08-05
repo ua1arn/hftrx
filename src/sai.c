@@ -3593,7 +3593,12 @@ static unsigned getdifbofi2s(unsigned ix)
 	return 0;
 }
 
-static unsigned getapbifixbofi2s(unsigned ix)
+static unsigned getapbifrxixbofi2s(unsigned ix)
+{
+	return 0;
+}
+
+static unsigned getapbiftxixbofi2s(unsigned ix)
 {
 	return 0;
 }
@@ -3726,19 +3731,20 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// AHUB = top level
 	const unsigned difix = getdifbofi2s(ix);
 	const unsigned damix = getdifbofi2s(ix);	// DAM0/DAM1 index
-	const unsigned apbiftxix = getapbifixbofi2s(ix);	// APBIF_RXn/APBIF_TXn index
-	const unsigned apbifrxix = getapbifixbofi2s(ix);	// APBIF_RXn/APBIF_TXn index
+	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
 	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_GAT = 0*UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t DAMx_GAT = 0;//UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_RST = 0*UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t DAMx_RST = 0;//UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
+	//AHUB->AHUB_RST = 0;
 	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 
 	const unsigned txrx_offset = 1;	// Каналы I2S
@@ -3815,6 +3821,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	i2s->I2Sn_SDINCHMAP [3] =
 //		0;
 
+	// DAM setup
+	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
+	printhex((uintptr_t) & AHUB->DAM [1], & AHUB->DAM [1], sizeof AHUB->DAM [1]);
+
+	//AHUB->DAM [damix].DAMn_CTRL = 0;
 
 	// APBIF_TX[0..1]
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
@@ -3930,6 +3941,7 @@ static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t
 #if CPUSTYLE_T507
 	if (en)
 	{
+		#warning Should be removesd
 		return;
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
