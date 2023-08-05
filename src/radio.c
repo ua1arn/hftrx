@@ -20218,6 +20218,8 @@ hamradio_main_step(void)
 			{
 				extern volatile uint32_t rxfreq;
 				extern volatile uint32_t txfreq;
+				void zprintf(void);
+
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
 				if (dbg_getchar(& c))
@@ -20237,6 +20239,9 @@ hamradio_main_step(void)
 								(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT,
 								(unsigned) rxfreq,
 								(unsigned) txfreq);
+						break;
+					case 'z':
+						zprintf();
 						break;
 		#endif /* CPUSTYLE_T507 */
 		#if WITHDEBUG && WITHMENU

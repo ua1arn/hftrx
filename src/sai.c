@@ -4172,37 +4172,43 @@ uint32_t txlastts;
 volatile uint32_t rxfreq;
 volatile uint32_t txfreq;
 
+volatile IFADCvalue_t xbuff [DMABUFFSIZE32RX];
+void zprintf(void)
+{
+	printhex32(0, xbuff, sizeof xbuff);
+}
+
 /* Приём от FPGA (PIPE mode) */
 static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
-	uint32_t last = rxlastts;
-	rxlastts = cpu_getdebugticks();
-	uint32_t d = rxlastts - last;
-	rxfreq = cpu_getdebugticksfreq() * (DMABUFFSIZE32RX / DMABUFFSTEP32RX) / d;
-	return;
+//	uint32_t last = rxlastts;
+//	rxlastts = cpu_getdebugticks();
+//	uint32_t d = rxlastts - last;
+//	rxfreq = cpu_getdebugticksfreq() * (DMABUFFSIZE32RX / DMABUFFSTEP32RX) / d;
+//	return;
 
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
-	volatile uint32_t * const descraddr32 = (volatile uint32_t *) descbase;
-	const uintptr_t addr32 = descraddr32 [ix];
-	descraddr32 [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr32 = descraddr [ix];
+	//descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
-//	printhex32(addr32, addr32, buffers_dmabuffer32rxcachesize());
-//	for (;;)
-//		;
-	/* Работа с только что принятыми данными */
-	const uintptr_t addr16 = allocate_dmabuffer16rx();
-	pipe_dmabuffer32rx(addr32, addr16);	// копирование сэмплов
-	processing_dmabuffer16rx(addr16);
-
-	processing_dmabuffer32rts(addr32);
-	processing_dmabuffer32rx(addr32);
-	release_dmabuffer32rx(addr32);
-
-	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+	memcpy(xbuff, addr32, sizeof xbuff);
+	dma_invalidate32rx(addr32);
+//
+//	/* Работа с только что принятыми данными */
+//	const uintptr_t addr16 = allocate_dmabuffer16rx();
+//	pipe_dmabuffer32rx(addr32, addr16);	// копирование сэмплов
+//	processing_dmabuffer16rx(addr16);
+//
+//	processing_dmabuffer32rts(addr32);
+//	processing_dmabuffer32rx(addr32);
+//	release_dmabuffer32rx(addr32);
+//
+//	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
 
 /* Передача в FPGA (PIPE mode)  */
@@ -4296,6 +4302,8 @@ enum
 static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
+//	static uint32_t v = 0xDEADBEEF;
+//	return (uintptr_t) & v;
 	(void) i2s;
 	return (uintptr_t) & AHUB->APBIF_RX [getapbifrxixbofi2s(ix)].APBIF_RXnFIFO;
 #else
@@ -5413,6 +5421,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 
 static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_RX_Ch;
@@ -5420,7 +5429,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
-	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX; // T507
+	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix); // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5477,6 +5486,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 
 static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_TX_Ch;
@@ -5484,7 +5494,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
-	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX; // T507
+	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix); // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
