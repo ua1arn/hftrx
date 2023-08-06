@@ -3768,20 +3768,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
-	AHUB->AHUB_RST = 0;	// пока это единственный используемый канал - моджно сбрасывать
 	(void) AHUB->AHUB_RST;
-	local_delay_ms(5);
-	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
-
-	memset(AHUB, 0, sizeof * AHUB);
-	//memset(i2s, 0, sizeof * i2s);
-
-	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
-	(void) AHUB->AHUB_RST;
-	local_delay_ms(5);
-	AHUB->AHUB_RST = 0;	// пока это единственный используемый канал - моджно сбрасывать
-	(void) AHUB->AHUB_RST;
-	local_delay_ms(5);
 	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 
 	const unsigned txrx_offset = 1;	// Каналы I2S
@@ -3801,7 +3788,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// Need:
 	// APBIF TXDIF -> I2S0 RXDIF (transmit to external devices)
 	// I2S0 TXDIF -> APBIF RXDIF (receive from external devices)
-
+//	I2S0->I2Sn_CTL = 0;
+//	I2S1->I2Sn_CTL = 0;
+//	I2S2->I2Sn_CTL = 0;
+//	I2S3->I2Sn_CTL = 0;
 	if (1)
 	{
 		/* I2S part */
@@ -3862,7 +3852,17 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		// 4: counter
 		// 5: counter
 
-		unsigned sch0 = 4;
+		// 256-bit pattern generator
+		// 0: 0xFFFFFFFF
+		// 1: 0xFFFFFFFF
+		// 2: 0xFF00FF00
+		// 3: 0xAAAAAAAA
+		// 4: inverted counter
+		// 5: inverted counter
+		// 6: counter
+		// 7: counter
+
+		unsigned sch0 = 0;
 		aw_i2s_setchsrc(i2s, 0, 	sch0, din);
 		aw_i2s_setchsrc(i2s, 1, 	sch0, din);
 		aw_i2s_setchsrc(i2s, 2, 	sch0, din);
