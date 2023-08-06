@@ -287,17 +287,8 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		(0u << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
 #endif /* CODEC1_FRAMEBITS == 64 */
-
 		(0u << SPI_I2SCFGR_CKPOL_Pos) |
-
-#if CODEC1_FORMATI2S_PHILIPS
 		(0u << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
-
-#else /* CODEC1_FORMATI2S_PHILIPS */
-		(UINT32_C(1) << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
-
-#endif /* CODEC1_FORMATI2S_PHILIPS */
-
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		((i2sdiv << SPI_I2SCFGR_I2SDIV_Pos) & SPI_I2SCFGR_I2SDIV) |
 		(SPI_I2SCFGR_ODD * i2soddv) |
@@ -1575,10 +1566,8 @@ static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, 
 		((CODEC1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((CODEC1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if CODEC1_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* CODEC1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	sai_A->FRCR =
@@ -1683,10 +1672,8 @@ static void hardware_sai_a_tx_b_rx_initialize_fpga(SAI_Block_TypeDef * sai_A, SA
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	sai_A->FRCR =
@@ -2134,10 +2121,8 @@ static void hardware_sai1_master_duplex_initialize_v3d_fpga(void)		/* иници
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2259,10 +2244,8 @@ static void hardware_sai1_master_duplex_initialize_fpga(void)		/* инициал
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2381,10 +2364,8 @@ static void hardware_sai1_slave_duplex_initialize_fpga(void)		/* инициал�
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -3134,10 +3115,8 @@ static void hardware_sai2_slave_duplex_initialize_WFM(void)
 		((WITHFPGARTS_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGARTS_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGARTS_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGARTS_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI2_Block_A->FRCR =
@@ -3499,7 +3478,6 @@ static unsigned width2fmt(unsigned width)
 {
 	switch (width)
 	{
-	default:
 	case 8:			return 0x01;
 	case 12:		return 0x02;
 	case 16:		return 0x03;
@@ -3507,7 +3485,55 @@ static unsigned width2fmt(unsigned width)
 	case 24:		return 0x05;
 	case 28:		return 0x06;
 	case 32:		return 0x07;
+	default:		TP(); return 0x07;
 	}
+}
+
+/* Установить для заданного канала I2S требуемый DINx и слот */
+static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, unsigned rxsdi)
+{
+#if CPUSTYLE_T507
+
+	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
+	/* в каждом регистре управления для восьми каналов */
+	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2Sn_SDINCHMAP1 - каналы 7..4
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2Sn_SDINCHMAP2 - каналы 11..8
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2Sn_SDINCHMAP3 - каналы 15..12
+
+	const portholder_t ALLMASK = 0x3F;
+	const portholder_t field =
+		((portholder_t) rxsdi << 4) |	// RX Channel Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
+		0;
+
+	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#elif CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	__IO uint32_t * const reg = i2s->I2S_PCM_RXCHMAP;
+	/* в каждом регистре управления для восьми каналов */
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
+	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
+
+	const portholder_t ALLMASK = 0x3F;
+	const portholder_t field =
+		((portholder_t) rxsdi << 4) |	// RX Channel Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
+		0;
+
+	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#endif
 }
 
 /* I2S/PCM RX Channel Mapping Registers initialization */
@@ -3518,31 +3544,11 @@ static void I2S_fill_RXCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_A64
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	__IO uint32_t * const reg = & i2s->I2S_PCM_RXCHMAP0;
 	unsigned chnl;
 	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
-		/* в каждом регистре управления для восьми каналов */
-		const portholder_t mask3 = power8((UINT32_C(1) << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
-		const portholder_t mask2 = power8((UINT32_C(1) << chnl) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
-		const portholder_t mask1 = power8((UINT32_C(1) << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
-		const portholder_t mask0 = power8((UINT32_C(1) << chnl) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
-
-		const portholder_t ALLMASK = 0x3F;
-		const portholder_t field =
-			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
-			0;
-
-		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
-		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
-		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
-		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+		aw_i2s_setchsrc(i2s, chnl, chnl, rxsdi);
 	}
-#endif
 }
 
 /* I2S/PCM TX0 Channel Mapping Registers initialization */
@@ -3554,7 +3560,8 @@ static void I2S_fill_TXxCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+#elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
@@ -3601,7 +3608,25 @@ static void I2S_fill_TXxCHMAP(
 //		;
 //}
 
-static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
+#if CPUSTYLE_T507
+
+// 0..2
+static unsigned getapbifrxixbofi2s(unsigned ix)
+{
+	return 2;
+}
+
+// 0..2
+static unsigned getapbiftxixbofi2s(unsigned ix)
+{
+	return 2;
+}
+
+
+#endif /* CPUSTYLE_T507 */
+
+
+static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 
 	const unsigned bclkf = lrckf * framebits;
@@ -3610,14 +3635,18 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	// CCU
 
-	CCU->AUDIO_HUB_CLK_REG = 1 * (UINT32_C(1) << 0);	// div 2
+	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
+		(UINT32_C(3) << 24) |
+		(UINT32_C(2) << 8) |	// div4
+		0;
+	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
-	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
-	//CCU->AUDIO_HUB_BGR_REG &= ~ (UINT32_C(1) << 16);	// AUDIO_HUB_RST (могут быть другие каналы)
+	CCU->AUDIO_HUB_BGR_REG = UINT32_C(1) << 0;	// AUDIO_HUB_GATING
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
-	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NCH=%u, clk=%u\n", ix, mclkf, bclkf, NCH, (unsigned) 0);
+	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
+	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 
 #elif CPUSTYLE_A64
 	// CCU
@@ -3668,28 +3697,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
-
-	//arm_hardware_disable_handler(irq);
-	// ARMI2SRATE // I2S sample rate audio codec (human side)
-	// ARMI2SMCLK = ARMI2SRATE * 256
-	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
-	// ARMSAIMCLK = ARMSAIRATE * 256
-	// CODEC1_FRAMEBITS 64
-
-//	PRINTF("allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
-//	PRINTF("allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
-
-	//	i2s1: prei=2, value=30, mclkf=12288000, (clk=1536000000)
-	//	allwnrt113_get_audio0pll1x_freq = 24.571.428
-	//	allwnrt113_get_audio0pll4x_freq = 98.28.5714
-	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
-	//	allwnrt113_get_audio1pll1x_freq = 3072.000.000
-	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
-	//	allwnrt113_get_audio1pll_div5_freq = 614.400.000
 
 	// 0x00, 0x01, 0x03: 48000
 	// 0x02: ~ 48350
@@ -3744,95 +3751,174 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 
 #if CPUSTYLE_T507
+
+	/* Установка формата обмна */
 	// AHUB = top level
-	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - ix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - ix);	// bita 27..25
-	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..21
-	//const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const unsigned damix = 0;
+	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
+	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
+	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
+	const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
 
-	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - ix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - ix);	// bita 27..25
-	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..21
-	//const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
+	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
+	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
 
-	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT;
-	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST;
+	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
+	(void) AHUB->AHUB_RST;
+	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 
-	const uint32_t ws = width2fmt(framebits / NCH);	// 7: 32 bit
-	const uint32_t nchan = 0x07;	// 7: 32 bit
+	const unsigned txrx_offset = 1;	// Каналы I2S
+	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
 
-	// Каналы AHUB - RX
-	AHUB->APBIF_RX [ix].APBIF_RXn_CTRL = (ws << 16) | ((NCH - 1) << 8);
-	AHUB->APBIF_RX [ix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
-	AHUB->APBIF_RX [ix].APBIF_RXnFIFO_CTRL = 0;
+	// Каналы AHUB[0..1] - RX
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = (UINT32_C(1) << 3);	// RXn_DRQ
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0;
 
-	// Каналы AHUB - TX
-	AHUB->APBIF_TX [ix].APBIF_TXn_CTRL = (ws << 16) | ((NCH - 1) << 8);
-	AHUB->APBIF_TX [ix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
-	AHUB->APBIF_TX [ix].APBIF_TXnFIFO_CTRL = 0;
+	// Каналы AHUB[0..1] - TX
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL = (UINT32_C(1) << 3);	// TXn_DRQ
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0;
 
-	// Каналы I2S
-#if CODEC1_FORMATI2S_PHILIPS
-	const unsigned txrx_offset = 1;
-#else /* CODEC1_FORMATI2S_PHILIPS */
-	const unsigned txrx_offset = 0;
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+	// Figure 9- 2. Audio HUB Crossbar Switch and Clients
+	// Need:
+	// APBIF TXDIF -> I2S0 RXDIF (transmit to external devices)
+	// I2S0 TXDIF -> APBIF RXDIF (receive from external devices)
+//	I2S0->I2Sn_CTL = 0;
+//	I2S1->I2Sn_CTL = 0;
+//	I2S2->I2Sn_CTL = 0;
+//	I2S3->I2Sn_CTL = 0;
+	if (1)
+	{
+		/* I2S part */
+		i2s->I2Sn_CTL =
+			!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
+			1 * (UINT32_C(1) << 12) |	// SDI0_EN
+			1 * (UINT32_C(1) << 8) |	// SDO0_EN
+			1 * (UINT32_C(1) << 4) |	// MODE_SEL 01: Left mode(offset 0: L-J Mode; offset 1: I2S mode)
+			0;
+		i2s->I2Sn_FMT0 =
+			0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+			0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+			((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+			ws * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+			ws * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+			0;
+		i2s->I2Sn_FMT1 = 0;
+		i2s->I2Sn_CLKD = 0;
 
-	i2s->I2Sn_CTL =
-		!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
-		1 * (UINT32_C(1) << 12) |	// SDI0_EN
-		1 * (UINT32_C(1) << 8) |	// SDO0_EN
-		1 * (UINT32_C(1) << 4) |	// MODE_SEL 01: Left mode(offset 0: L-J Mode; offset 1: I2S mode)
-		0;
-	i2s->I2Sn_FMT0 =
-		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
-		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
-		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
-		0;
-	i2s->I2Sn_FMT1 = 0;
-	i2s->I2Sn_CLKD = 0;
+		i2s->I2Sn_CHCFG =
+			(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
+			(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
+			0;
 
-	i2s->I2Sn_CHCFG =
-		(NCH - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
-		(NCH - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
-		0;
 
-	i2s->I2Sn_RXDIF_CONT = 0;//(UINT32_C(1) << x);
+		ASSERT(din < 4);
+		ASSERT(dout < 4);
 
-	ASSERT(din < 4);
-	ASSERT(dout < 4);
+		i2s->I2Sn_SDOUT [0].I2Sn_SDOUTm_SLOTCTR =
+			(NSLOTS - 1) *  (UINT32_C(1) << 16) |	// SDOUTm_SLOT_NUM
+			txrx_offset * (UINT32_C(1) << 20) |	// SDOUTm_OFFSET
+			0xFFFF |	// SDOUTm_SLOT_EN
+			0;
+		i2s->I2Sn_SDOUT [1].I2Sn_SDOUTm_SLOTCTR =
+			0;
+		i2s->I2Sn_SDOUT [2].I2Sn_SDOUTm_SLOTCTR =
+			0;
+		i2s->I2Sn_SDOUT [3].I2Sn_SDOUTm_SLOTCTR =
+			0;
 
-	i2s->I2Sn_SDOUT [0].I2Sn_SDOUTm_SLOTCTR =
-		(NCH - 1) *  (UINT32_C(1) << 16) |	// SDOUTm_SLOT_NUM
-		(txrx_offset * (UINT32_C(1) << 20)) |	// SDOUTm_OFFSET
-		0xFFFF |	// SDOUTm_SLOT_EN
-		0;
-	i2s->I2Sn_SDOUT [1].I2Sn_SDOUTm_SLOTCTR =
-		0;
-	i2s->I2Sn_SDOUT [2].I2Sn_SDOUTm_SLOTCTR =
-		0;
-	i2s->I2Sn_SDOUT [3].I2Sn_SDOUTm_SLOTCTR =
-		0;
+		i2s->I2Sn_SDIN_SLOTCTR =
+			txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
+			(NSLOTS - 1) * (UINT32_C(1) << 16) |	//SDIN Slot number Select for each output
+			0;
 
-	i2s->I2Sn_SDIN_SLOTCTR =
-		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-		(NCH - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
-		0;
-//	i2s->I2Sn_SDINCHMAP [0] =
-//		0;
-//	i2s->I2Sn_SDINCHMAP [1] =
-//		0;
-//	i2s->I2Sn_SDINCHMAP [2] =
-//		0;
-//	i2s->I2Sn_SDINCHMAP [3] =
-//		0;
+
+//		i2s->I2Sn_SDINCHMAP [0] = 0x03020100;
+//		i2s->I2Sn_SDINCHMAP [1] = 0x07060504;
+//		i2s->I2Sn_SDINCHMAP [2] = 0x0B0A0908;
+//		i2s->I2Sn_SDINCHMAP [3] = 0x0F0E0D0C;
+		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+
+#if 0
+		// 0: 0xFF00FF00
+		// 1: 0xAAAAAAAA
+		// 2: 0xFFFFFFFF
+		// 3: 0xFFFFFFFF
+		// 4: counter
+		// 5: counter
+
+		// 256-bit pattern generator
+		// 0: 0xFFFFFFFF
+		// 1: 0xFFFFFFFF
+		// 2: 0xFF00FF00
+		// 3: 0xAAAAAAAA
+		// 4: inverted counter
+		// 5: inverted counter
+		// 6: counter
+		// 7: counter
+
+		unsigned sch0 = 0;
+		aw_i2s_setchsrc(i2s, 0, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 1, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 2, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 3, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 4, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 5, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 6, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 7, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 8, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 9, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 10, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 11, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 12, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 13, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 14, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 15, 	sch0, din);
+#endif
+
+		// I2Sn_SDINCHMAP оставляем по умолчанию
+		printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, (void *) & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
+		//printhex32((uintptr_t)i2s, i2s, sizeof * i2s);
+		i2s->I2Sn_CTL |=
+			1 * (UINT32_C(1) << 2) |	// TXEN
+			1 * (UINT32_C(1) << 1) |	// RXEN
+			0;
+		i2s->I2Sn_CTL |=
+			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+			0;
+	}
+
+	//AHUB->DAM [damix].DAMn_CTRL = 1;
+	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
+	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
+
+	// DAM setup
+//	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
+//	printhex((uintptr_t) & AHUB->DAM [1], & AHUB->DAM [1], sizeof AHUB->DAM [1]);
+
+//	AHUB->DAM [0].DAMn_CTRL = 0;
+//	AHUB->DAM [0].DAMn_RXx_SRC [0] = 0;
+//	AHUB->DAM [0].DAMn_RXx_SRC [1] = 0;
+//	AHUB->DAM [0].DAMn_RXx_SRC [2] = 0;
+//	AHUB->DAM [1].DAMn_CTRL = 0;
+//	AHUB->DAM [1].DAMn_RXx_SRC [0] = 0;
+//	AHUB->DAM [1].DAMn_RXx_SRC [1] = 0;
+//	AHUB->DAM [1].DAMn_RXx_SRC [2] = 0;
+//	memset(AHUB->DAM, 0, sizeof AHUB->DAM);
 
 #elif CPUSTYLE_A64
+	/* Установка формата обмна */
 	#warning CPUSTYLE_A64 to be implemented
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	/* Установка формата обмна */
 	// Каналы I2S
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
@@ -3845,8 +3931,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(framebits / NCH) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	i2s->I2S_PCM_FMT1 =
 		0;
@@ -3863,8 +3949,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	// I2S/PCM Channel Configuration Register
 	i2s->I2S_PCM_CHCFG =
-		(NCH - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
-		(NCH - 1) * (UINT32_C(1) << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
 		0;
 
 	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
@@ -3882,11 +3968,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
 
-#if CODEC1_FORMATI2S_PHILIPS
-	const unsigned txrx_offset = 1;
-#else /* CODEC1_FORMATI2S_PHILIPS */
-	const unsigned txrx_offset = 0;
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 1;		// I2S format
 
 	ASSERT(din < 4);
 	ASSERT(dout < 4);
@@ -3901,13 +3983,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-		(NCH - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
-
 
 	const portholder_t txchsel =
 		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
-		(NCH - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
 		0xFFFF * (UINT32_C(1) << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
@@ -3917,18 +3998,18 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_fill_RXCHMAP(i2s, din, NCH);
-	I2S_fill_TXxCHMAP(i2s, 0, dout, NCH);	// I2S_PCM_TX0CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 1, dout, NCH);	// I2S_PCM_TX1CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 2, dout, NCH);	// I2S_PCM_TX2CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 3, dout, NCH);	// I2S_PCM_TX3CHMAPx
+	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+	I2S_fill_TXxCHMAP(i2s, 0, dout, NSLOTS);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, dout, NSLOTS);	// I2S_PCM_TX3CHMAPx
 
 	i2s->I2S_PCM_INT = 0;
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 3); // RX_DRQ
 
-	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
-	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
 	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
 
@@ -3937,31 +4018,24 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 }
 
-static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t state)
+static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
 #if CPUSTYLE_T507
-	if (state)
+	/* Соответствующий i2S не работает напрямую с DMA */
+	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
+	if (en)
 	{
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
-		i2s->I2Sn_CTL |=
-			1 * (UINT32_C(1) << 2) |	// TXEN
-			1 * (UINT32_C(1) << 1) |	// RXEN
-			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
-			0;
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
 	}
 	else
 	{
-		i2s->I2Sn_CTL &= ~ (
-			1 * (UINT32_C(1) << 2) |	// TXEN
-			1 * (UINT32_C(1) << 1) |	// RXEN
-			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
-			0);
-		AHUB->APBIF_TX [ix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
-		AHUB->APBIF_RX [ix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
 	}
 #else
-	if (state)
+	if (en)
 	{
 		i2s->I2S_PCM_CTL |=
 			(UINT32_C(1) << 2) |	// TXEN
@@ -4069,6 +4143,118 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 }
 #endif /* defined(I2S2) && WITHI2S2HW */
 
+
+#if CPUSTYLE_T507 || 1
+
+static uint32_t rxlastts;
+static uint32_t txlastts;
+static volatile uint32_t rxfreq;
+static volatile uint32_t txfreq;
+
+static void txstamp(unsigned samples)
+{
+#if WITHDEBUG
+	uint32_t last = txlastts;
+	txlastts = cpu_getdebugticks();
+	uint32_t d = txlastts - last;
+	txfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
+#endif /* WITHDEBUG */
+}
+
+static void rxstamp(unsigned samples)
+{
+#if WITHDEBUG
+	uint32_t last = rxlastts;
+	rxlastts = cpu_getdebugticks();
+	uint32_t d = rxlastts - last;
+	rxfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
+#endif /* WITHDEBUG */
+}
+
+static LCLSPINLOCK_t locklistprint = LCLSPINLOCK_INIT;
+static volatile uintptr_t printptr;
+
+void zdataprint(void)
+{
+#if WITHDEBUG
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& locklistprint);
+	uintptr_t pp = printptr;
+	printptr = 0;
+	LCLSPIN_UNLOCK(& locklistprint);
+	LowerIrql(oldIrql);
+
+	if (pp != 0)
+	{
+		PRINTF("rx buffer:\n");
+		//printhex32(0, (void *) xbuff, sizeof xbuff);
+		printhex32(0, (void *) pp, 128);
+
+		RiseIrql(IRQL_REALTIME, & oldIrql);
+		LCLSPIN_LOCK(& locklistprint);
+		release_dmabuffer32rx(pp);
+		LCLSPIN_UNLOCK(& locklistprint);
+		LowerIrql(oldIrql);
+	}
+#endif /* WITHDEBUG */
+}
+
+static void savetodebug(uintptr_t addr32)
+{
+#if WITHDEBUG
+	uintptr_t p = allocate_dmabuffer32rx();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& locklistprint);
+	uintptr_t oldpp = printptr;
+	printptr = p;
+	LCLSPIN_UNLOCK(& locklistprint);
+	LowerIrql(oldIrql);
+
+	if (oldpp != 0)
+		release_dmabuffer32rx(oldpp);
+
+	memcpy((void *) p, (void *) addr32, 128);
+
+#endif /* WITHDEBUG */
+}
+
+void zcountsprint(void)
+{
+#if CPUSTYLE_T507
+	//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
+	PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
+	PRINTF("APBIF_RX1FIFO_CNT=%08X, APBIF_TX1FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[1].APBIF_TXnFIFO_CNT);
+	PRINTF("APBIF_RX2FIFO_CNT=%08X, APBIF_TX2FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[2].APBIF_TXnFIFO_CNT);
+#endif
+}
+
+void zfreqprint(void)
+{
+#if CPUSTYLE_T507
+	static uint32_t txlasc;
+	uint32_t lastc = txlasc;
+	txlasc = AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT;
+	uint32_t df = cpu_getdebugticksfreq();
+	static uint32_t txlastts;
+	uint32_t last = txlastts;
+	txlastts = cpu_getdebugticks();
+	uint32_t d = txlastts - last;
+	uint32_t dc = txlasc - lastc;
+	PRINTF("iofreq=%u\n", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
+#endif
+	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
+}
+
+#endif
+
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
 #define DMAC_DESC_PARAM	4	/* Parameter */
@@ -4147,13 +4333,16 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
+	rxstamp(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
+
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
+	savetodebug(addr);
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
@@ -4167,6 +4356,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
+	txstamp(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
@@ -4184,37 +4374,42 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 /* Приём от FPGA (PIPE mode) */
 static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
+	rxstamp(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
-	volatile uint32_t * const descraddr32 = (volatile uint32_t *) descbase;
-	const uintptr_t addr32old = descraddr32 [ix];
-	const uintptr_t addr32new = allocate_dmabuffer32rx();
-	descraddr32 [ix] = dma_invalidate32rx(addr32new);
+
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [ix];
+	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
+
+	savetodebug(addr);
 	DMA_resume(dmach, descbase);
-
-	/* Работа с только что принятыми данными */
-	const uintptr_t addr16 = allocate_dmabuffer16rx();
-	pipe_dmabuffer32rx(addr32old, addr16);	// копирование сэмплов
-	processing_dmabuffer16rx(addr16);
-	processing_dmabuffer32rts(addr32old);
-	processing_dmabuffer32rx(addr32old);
-	release_dmabuffer32rx(addr32old);
-
-	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+//
+//	/* Работа с только что принятыми данными */
+//	const uintptr_t addr16 = allocate_dmabuffer16rx();
+//	pipe_dmabuffer32rx(addr, addr16);	// копирование сэмплов
+//	processing_dmabuffer16rx(addr16);
+//
+//	processing_dmabuffer32rts(addr);
+//	processing_dmabuffer32rx(addr);
+	release_dmabuffer32rx(addr);
+//
+//	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
 
 /* Передача в FPGA (PIPE mode)  */
 static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 {
+	txstamp(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr16new = getfilled_dmabuffer16txphones();
 	const uintptr_t addr32new = getfilled_dmabuffer32tx_main();
-	pipe_dmabuffer32tx(addr32new, addr16new);	// копирование сэмплов
+	pipe_dmabuffer32tx(addr32new, addr16new);	// копирование сэмплов из addr16new
 	const uintptr_t addr32old = descraddr [ix];
 	descraddr [ix] = dma_flush32tx(addr32new);
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
@@ -4227,7 +4422,7 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 }
 
 
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
@@ -4288,28 +4483,31 @@ enum
 	DMAC_Ch_Total
 };
 
-static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
+static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
+//	static uint32_t v = 0xDEADBEEF;
+//	return (uintptr_t) & v;
 	(void) i2s;
-	return (uintptr_t) & AHUB->APBIF_RX [ahubch].APBIF_RXnFIFO;
+	return (uintptr_t) & AHUB->APBIF_RX [getapbifrxixbofi2s(ix)].APBIF_RXnFIFO;
 #else
-	(void) ahubch;
+	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
 #endif
 }
 
-static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ahubch)
+static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
 	(void) i2s;
-	return (uintptr_t) & AHUB->APBIF_TX [ahubch].APBIF_TXnFIFO;
+	return (uintptr_t) & AHUB->APBIF_TX [getapbiftxixbofi2s(ix)].APBIF_TXnFIFO;
 #else
-	(void) ahubch;
+	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_TXFIFO;
 #endif
 }
 
+#if WITHI2S1HW
 static void DMAC_I2S1_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
@@ -4435,6 +4633,9 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif /* WITHI2S1HW */
+
+#if WITHI2S2HW
 
 static void DMAC_I2S2_TX_initialize_codec1(void)
 {
@@ -4498,7 +4699,8 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-
+#endif
+#if WITHI2S1HW
 static void DMAC_I2S1_RX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFADCvalue_t);
@@ -4561,8 +4763,9 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
-#if defined (I2S2)
+#if defined (I2S2) && WITHI2S2HW
 
 // Allwinner A64 not support RX on I2S2
 #if ! defined (CPUSTYLE_A64) && ! defined (CPUSTYLE_T507)
@@ -4697,6 +4900,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 
 #endif /* defined (I2S2) */
 
+#if WITHI2S1HW
 static void DMAC_I2S1_TX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFDACvalue_t);
@@ -4759,7 +4963,9 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
+#if WITHI2S2HW
 static void DMAC_I2S2_TX_initialize_fpga(void)
 {
 	const size_t dw = sizeof (IFDACvalue_t);
@@ -4822,6 +5028,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
 #if defined(I2S1) && WITHI2S1HW
 static const codechw_t audiocodechw_i2s1_duplex_master =
@@ -5268,13 +5475,15 @@ static const codechw_t fpgacodechw_i2s1_duplex_slave =
 
 static void DMAC_I2S0_RX_initialize_fpga(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
+	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix); // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5286,7 +5495,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S0_RX * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5331,13 +5540,15 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 
 static void DMAC_I2S0_TX_initialize_fpga(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, ix); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
+	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix); // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5345,7 +5556,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S0_TX * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
@@ -5394,6 +5605,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 
 static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_RX_Ch;
@@ -5401,6 +5613,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
+	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix); // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5412,7 +5625,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S0_RX * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5446,7 +5659,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		;
+		TP();
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpgapipe);
@@ -5457,6 +5670,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 
 static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_TX_Ch;
@@ -5464,6 +5678,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
+	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix); // T507
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5471,7 +5686,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S0_TX * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
@@ -5509,7 +5724,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		;
+		TP();
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpgapipe);
@@ -5811,11 +6026,7 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 		0 * (UINT32_C(1) << 11) |		// SPDP		0: Padding bits are low.
 		0 * (UINT32_C(1) << 10) |		// SDTA
 		0 * (UINT32_C(1) << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
-#if CODEC1_FORMATI2S_PHILIPS
-		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* CODEC1_FORMATI2S_PHILIPS */
-		1 * (UINT32_C(1) << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA (I2S)
 		master * R7S721_SSIF0_CKDIV_val |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
@@ -6092,11 +6303,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 		0 * (UINT32_C(1) << 11) |		// SPDP 0: Padding bits are low.
 		0 * (UINT32_C(1) << 10) |		// SDTA
 		0 * (UINT32_C(1) << 9) |		// PDTA
-#if WITHFPGAIF_FORMATI2S_PHILIPS
-		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (UINT32_C(1) << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA - I2S
 		master * R7S721_SSIF_CKDIV1 * (UINT32_C(1) << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
@@ -6261,11 +6468,7 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 		0 * (UINT32_C(1) << 11) |		// SPDP 0: Padding bits are low.
 		0 * (UINT32_C(1) << 10) |		// SDTA
 		0 * (UINT32_C(1) << 9) |		// PDTA
-#if WITHFPGARTS_FORMATI2S_PHILIPS
-		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (UINT32_C(1) << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA - I2S
 		master * R7S721_SSIF_CKDIV1 * (UINT32_C(1) << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 

@@ -283,7 +283,7 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHFPGAIF_FRAMEBITS 512	// Полный размер фрейма
+	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -310,9 +310,9 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"
 	//#define BOARD_BITIMAGE_NAME_ZIP "rbf/rbfimage_v9m_velo_zip.h"
 	//#define BOARD_BITIMAGE_NAME_COMPRESSED "t1_v9m_velo.rbf"	/* требуемый файл в архиве */
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch_pattern256.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX

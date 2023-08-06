@@ -11,7 +11,7 @@
 #regdef; PER; 0x0040; PWM Enable Register
 #regdef; CER; 0x0044; Capture Enable Register
 
-#aggreg; CH; 0x0060 8; Channels[0..5]
+#aggreg; CH; 0x0060 6; Channels[0..5]
 
 #regdef; PCR; 0x0000; PWM Control Register
 #regdef; PPR; 0x0004; PWM Period Register

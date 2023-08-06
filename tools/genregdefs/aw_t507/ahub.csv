@@ -6,7 +6,7 @@
 #regdef; AHUB_RST; 0x0008; AHUB Reset
 #regdef; AHUB_GAT; 0x000C; AHUB Gating
 
-#aggreg; APBIF_TX; 0x010 2; APBIF TX (n=0~2)
+#aggreg; APBIF_TX; 0x010 3; APBIF TX (n=0~2)
 
 #regdef; APBIF_TXn_CTRL; 0x000; APBIF TXn Control
 #regdef; APBIF_TXnIRQ_CTRL; 0x004; APBIF TXn DMA & Interrupt Control
@@ -19,7 +19,7 @@
 
 #aggregend;
 
-#aggreg; APBIF_RX; 0x0100 2; APBIF RX (n=0~2)
+#aggreg; APBIF_RX; 0x0100 3; APBIF RX (n=0~2)
 
 #regdef; APBIF_RXn_CTRL; 0x000; APBIF RXn Control
 #regdef; APBIF_RXnIRQ_CTRL; 0x004; APBIF RXn DMA & Interrupt Control
@@ -36,35 +36,19 @@
 #aggreg; DAM; 0x0A00 2; DAMn (n=0~2)
 
 #regdef; DAMn_CTRL; 	0x0000; DAM Control
-#regdef; DAMn_RX0_SRC; 	0x0010; DAM RXDIF0 Source Select
-#regdef; DAMn_RX1_SRC; 	0x0014; DAM RXDIF1 Source Select
-#regdef; DAMn_RX2_SRC; 	0x0018; DAM RXDIF2 Source Select
-#regdef; DAMn_MIX_CTRL0; 0x0030; DAM MIX Control 0
-#regdef; DAMn_MIX_CTRL1; 0x0034; DAM MIX Control 1
-#regdef; DAMn_MIX_CTRL2; 0x0038; DAM MIX Control 2
-#regdef; DAMn_MIX_CTRL3; 0x003C; DAM MIX Control 3
-#regdef; DAMn_MIX_CTRL4; 0x0040; DAM MIX Control 4
-#regdef; DAMn_MIX_CTRL5; 0x0044; DAM MIX Control 5
-#regdef; DAMn_MIX_CTRL6; 0x0048; DAM MIX Control 6
-#regdef; DAMn_MIX_CTRL7; 0x004C; DAM MIX Control 7
-#regdef; DAMn_GAIN_CTRL0; 0x0050; DAM GAIN Control 0
-#regdef; DAMn_GAIN_CTRL1; 0x0054; DAM GAIN Control 1
-#regdef; DAMn_GAIN_CTRL2; 0x0058; DAM GAIN Control 2
-#regdef; DAMn_GAIN_CTRL3; 0x005C; DAM GAIN Control 3
-#regdef; DAMn_GAIN_CTRL4; 0x0060; DAM GAIN Control 4
-#regdef; DAMn_GAIN_CTRL5; 0x0064; DAM GAIN Control 5
-#regdef; DAMn_GAIN_CTRL6; 0x0068; DAM GAIN Control 6
-#regdef; DAMn_GAIN_CTRL7; 0x006C; DAM GAIN Control 7
+#regdef; DAMn_RXx_SRC; 	0x0010 3; DAM RXDIF0..RXDIF2 Source Select
+#regdef; DAMn_MIX_CTRLx; 0x0030 8; DAM MIX Control 0..7
+#regdef; DAMn_GAIN_CTRLx; 0x0050 8; DAM GAIN Control 0..7
 #regdef; padding 0; 0x0080; Placeholder for 0x0080 alignment
 
 #aggregend;
 
 #type; I2S_PCM
 
-#base; I2S0 0x05097200
-#base; I2S1 0x05097300
-#base; I2S2 0x05097400
-#base; I2S3 0x05097500
+#base; I2S0 0x05097200; H_I2S0
+#base; I2S1 0x05097300; HDMI
+#base; I2S2 0x05097400; H_I2S2
+#base; I2S3 0x05097500; H_I2S3
 
 #regdef; I2Sn_CTL; 0x000; I2Sn Control
 #regdef; I2Sn_FMT0; 0x004; I2Sn Format 0

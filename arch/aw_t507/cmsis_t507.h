@@ -220,8 +220,8 @@ typedef struct AHUB_Type
         volatile uint32_t APBIF_TXnFIFO;              /*!< Offset 0x030 APBIF TXn FIFO */
         volatile uint32_t APBIF_TXnFIFO_CNT;          /*!< Offset 0x034 APBIF TXn FIFO Counter */
                  uint32_t reserved_0x028 [0x0002];
-    } APBIF_TX [0x002];                               /*!< Offset 0x010 APBIF TX (n=0~2) */
-             uint32_t reserved_0x070 [0x0024];
+    } APBIF_TX [0x003];                               /*!< Offset 0x010 APBIF TX (n=0~2) */
+             uint32_t reserved_0x0A0 [0x0018];
     struct
     {
         volatile uint32_t APBIF_RXn_CTRL;             /*!< Offset 0x100 APBIF RXn Control */
@@ -235,32 +235,16 @@ typedef struct AHUB_Type
         volatile uint32_t APBIF_RXnFIFO;              /*!< Offset 0x120 APBIF RXn FIFO */
         volatile uint32_t APBIF_RXnFIFO_CNT;          /*!< Offset 0x124 APBIF RXn FIFO Counter */
                  uint32_t reserved_0x028 [0x0002];
-    } APBIF_RX [0x002];                               /*!< Offset 0x100 APBIF RX (n=0~2) */
-             uint32_t reserved_0x160 [0x0228];
+    } APBIF_RX [0x003];                               /*!< Offset 0x100 APBIF RX (n=0~2) */
+             uint32_t reserved_0x190 [0x021C];
     struct
     {
         volatile uint32_t DAMn_CTRL;                  /*!< Offset 0xA00 DAM Control */
                  uint32_t reserved_0x004 [0x0003];
-        volatile uint32_t DAMn_RX0_SRC;               /*!< Offset 0xA10 DAM RXDIF0 Source Select */
-        volatile uint32_t DAMn_RX1_SRC;               /*!< Offset 0xA14 DAM RXDIF1 Source Select */
-        volatile uint32_t DAMn_RX2_SRC;               /*!< Offset 0xA18 DAM RXDIF2 Source Select */
+        volatile uint32_t DAMn_RXx_SRC [0x003];       /*!< Offset 0xA10 DAM RXDIF0..RXDIF2 Source Select */
                  uint32_t reserved_0x01C [0x0005];
-        volatile uint32_t DAMn_MIX_CTRL0;             /*!< Offset 0xA30 DAM MIX Control 0 */
-        volatile uint32_t DAMn_MIX_CTRL1;             /*!< Offset 0xA34 DAM MIX Control 1 */
-        volatile uint32_t DAMn_MIX_CTRL2;             /*!< Offset 0xA38 DAM MIX Control 2 */
-        volatile uint32_t DAMn_MIX_CTRL3;             /*!< Offset 0xA3C DAM MIX Control 3 */
-        volatile uint32_t DAMn_MIX_CTRL4;             /*!< Offset 0xA40 DAM MIX Control 4 */
-        volatile uint32_t DAMn_MIX_CTRL5;             /*!< Offset 0xA44 DAM MIX Control 5 */
-        volatile uint32_t DAMn_MIX_CTRL6;             /*!< Offset 0xA48 DAM MIX Control 6 */
-        volatile uint32_t DAMn_MIX_CTRL7;             /*!< Offset 0xA4C DAM MIX Control 7 */
-        volatile uint32_t DAMn_GAIN_CTRL0;            /*!< Offset 0xA50 DAM GAIN Control 0 */
-        volatile uint32_t DAMn_GAIN_CTRL1;            /*!< Offset 0xA54 DAM GAIN Control 1 */
-        volatile uint32_t DAMn_GAIN_CTRL2;            /*!< Offset 0xA58 DAM GAIN Control 2 */
-        volatile uint32_t DAMn_GAIN_CTRL3;            /*!< Offset 0xA5C DAM GAIN Control 3 */
-        volatile uint32_t DAMn_GAIN_CTRL4;            /*!< Offset 0xA60 DAM GAIN Control 4 */
-        volatile uint32_t DAMn_GAIN_CTRL5;            /*!< Offset 0xA64 DAM GAIN Control 5 */
-        volatile uint32_t DAMn_GAIN_CTRL6;            /*!< Offset 0xA68 DAM GAIN Control 6 */
-        volatile uint32_t DAMn_GAIN_CTRL7;            /*!< Offset 0xA6C DAM GAIN Control 7 */
+        volatile uint32_t DAMn_MIX_CTRLx [0x008];     /*!< Offset 0xA30 DAM MIX Control 0..7 */
+        volatile uint32_t DAMn_GAIN_CTRLx [0x008];    /*!< Offset 0xA50 DAM GAIN Control 0..7 */
                  uint32_t reserved_0x070 [0x0004];
     } DAM [0x002];                                    /*!< Offset 0xA00 DAMn (n=0~2) */
 } AHUB_TypeDef; /* size of structure = 0xB00 */
@@ -1023,8 +1007,8 @@ typedef struct PWM_Type
         volatile uint32_t CRLR;                       /*!< Offset 0x070 Capture Rise Lock Register */
         volatile uint32_t CFLR;                       /*!< Offset 0x074 Capture Fall Lock Register */
                  uint32_t reserved_0x018 [0x0002];
-    } CH [0x008];                                     /*!< Offset 0x060 Channels[0..5] */
-} PWM_TypeDef; /* size of structure = 0x160 */
+    } CH [0x006];                                     /*!< Offset 0x060 Channels[0..5] */
+} PWM_TypeDef; /* size of structure = 0x120 */
 /*
  * @brief SMHC
  */

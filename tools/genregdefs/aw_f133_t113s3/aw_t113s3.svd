@@ -4526,7 +4526,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>ROUTE</name>
@@ -4808,7 +4808,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x070</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
    <register>
     <name>TOP_HADDR</name>
@@ -5174,7 +5174,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x2C0</dimIncrement>
+    <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -8043,7 +8043,7 @@
       <dimIncrement>0x008</dimIncrement>
      </cluster>
     </registers>
-    <dimIncrement>0x134</dimIncrement>
+    <dimIncrement>0x150</dimIncrement>
    </cluster>
    <cluster>
     <dim>7</dim>
@@ -8091,7 +8091,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0C4</dimIncrement>
+    <dimIncrement>0x0E0</dimIncrement>
    </cluster>
    <register>
     <name>PIO_POW_MOD_SEL</name>
@@ -8744,42 +8744,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP0</name>
-    <displayName>I2S_PCM_RXCHMAP0</displayName>
-    <description>I2S/PCM RX Channel Mapping Register0</description>
-    <addressOffset>0x068</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP1</name>
-    <displayName>I2S_PCM_RXCHMAP1</displayName>
-    <description>I2S/PCM RX Channel Mapping Register1</description>
-    <addressOffset>0x06C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP2</name>
-    <displayName>I2S_PCM_RXCHMAP2</displayName>
-    <description>I2S/PCM RX Channel Mapping Register2</description>
-    <addressOffset>0x070</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP3</name>
-    <displayName>I2S_PCM_RXCHMAP3</displayName>
-    <description>I2S/PCM RX Channel Mapping Register3</description>
-    <addressOffset>0x074</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000068</addressOffset>
+    <register>
+     <name>I2S_PCM_RXCHMAP</name>
+     <displayName>I2S_PCM_RXCHMAP</displayName>
+     <description>I2S/PCM RX Channel Mapping Register0..3</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
    <register>
     <name>MCLKCFG</name>
     <displayName>MCLKCFG</displayName>
@@ -10877,7 +10855,7 @@
       <dimIncrement>0x010</dimIncrement>
      </cluster>
     </registers>
-    <dimIncrement>0x0A8</dimIncrement>
+    <dimIncrement>0x200</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -11165,7 +11143,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0E0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -14128,7 +14106,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -15731,7 +15709,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x060</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

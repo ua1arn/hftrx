@@ -4031,7 +4031,7 @@ enum
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
-		#if WITHUSBHEADSET
+		#if WITHUSBHEADSET || CPUSTYLE_T507
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#else /* WITHUSBHEADSET */
 			static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -19392,7 +19392,11 @@ uint_fast8_t checkhandptt(void * ctx)
 
 uint_fast8_t checkcatptt(void * ctx)
 {
+#if WITHCAT
 	return cat_get_ptt();
+#else
+	return 0;
+#endif
 }
 
 uint_fast8_t checktunerptt(void * ctx)
@@ -20212,6 +20216,10 @@ hamradio_main_step(void)
 			}
 	#if WITHDEBUG
 			{
+				void zdataprint(void);
+				void zcountsprint(void);
+				void zfreqprint(void);
+
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
 				if (dbg_getchar(& c))
@@ -20225,10 +20233,13 @@ hamradio_main_step(void)
 						break;
 		#if CPUSTYLE_T507
 					case ' ':
-						//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
-						PRINTF("APBIF_RXnFIFO_CNT=%08X, APBIF_TXnFIFO_CNT=%08X\n",
-								(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
-								(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
+						zcountsprint();
+						break;
+					case 'f':
+						zfreqprint();
+						break;
+					case 'z':
+						zdataprint();
 						break;
 		#endif /* CPUSTYLE_T507 */
 		#if WITHDEBUG && WITHMENU
