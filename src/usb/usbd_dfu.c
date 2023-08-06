@@ -9,10 +9,10 @@
 
 #if WITHUSBHW && WITHUSBDFU
 
-#include "gpio.h"
+#include "formats.h"
+#include "bootloader.h"
 #include "spi.h"
 #include "board.h"
-#include "formats.h"
 #include "usb_device.h"
 #include "usbd_def.h"
 #include "usbd_core.h"

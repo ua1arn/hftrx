@@ -3497,14 +3497,14 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
 	/* в каждом регистре управления для восьми каналов */
 	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
-	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2Sn_SDINCHMAP2 - каналы 7..4
-	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2Sn_SDINCHMAP3 - каналы 11..8
-	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2Sn_SDINCHMAP4 - каналы 15..12
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2Sn_SDINCHMAP1 - каналы 7..4
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2Sn_SDINCHMAP2 - каналы 11..8
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2Sn_SDINCHMAP3 - каналы 15..12
 
 	const portholder_t ALLMASK = 0x3F;
 	const portholder_t field =
-		((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-		((portholder_t) slot << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+		((portholder_t) rxsdi << 4) |	// RX Channel Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
 		0;
 
 	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
@@ -3524,8 +3524,8 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 
 	const portholder_t ALLMASK = 0x3F;
 	const portholder_t field =
-		((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-		((portholder_t) slot << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+		((portholder_t) rxsdi << 4) |	// RX Channel Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
 		0;
 
 	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
@@ -3855,22 +3855,30 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
 
 #if 0
-		aw_i2s_setchsrc(i2s, 0, 0, din);
-		aw_i2s_setchsrc(i2s, 1, 1, din);
-		aw_i2s_setchsrc(i2s, 2, 0, din);
-		aw_i2s_setchsrc(i2s, 3, 0, din);
-		aw_i2s_setchsrc(i2s, 4, 0, din);
-		aw_i2s_setchsrc(i2s, 5, 0, din);
-		aw_i2s_setchsrc(i2s, 6, 0, din);
-		aw_i2s_setchsrc(i2s, 7, 0, din);
-		aw_i2s_setchsrc(i2s, 8, 0, din);
-		aw_i2s_setchsrc(i2s, 9, 0, din);
-		aw_i2s_setchsrc(i2s, 10, 0, din);
-		aw_i2s_setchsrc(i2s, 11, 0, din);
-		aw_i2s_setchsrc(i2s, 12, 0, din);
-		aw_i2s_setchsrc(i2s, 13, 0, din);
-		aw_i2s_setchsrc(i2s, 14, 0, din);
-		aw_i2s_setchsrc(i2s, 15, 0, din);
+		// 0: 0xFF00FF00
+		// 1: 0xAAAAAAAA
+		// 2: 0xFFFFFFFF
+		// 3: 0xFFFFFFFF
+		// 4: counter
+		// 5: counter
+
+		unsigned sch0 = 4;
+		aw_i2s_setchsrc(i2s, 0, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 1, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 2, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 3, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 4, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 5, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 6, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 7, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 8, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 9, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 10, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 11, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 12, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 13, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 14, 	sch0, din);
+		aw_i2s_setchsrc(i2s, 15, 	sch0, din);
 #endif
 
 		// I2Sn_SDINCHMAP оставляем по умолчанию
@@ -4135,6 +4143,118 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 }
 #endif /* defined(I2S2) && WITHI2S2HW */
 
+
+#if CPUSTYLE_T507 || 1
+
+static uint32_t rxlastts;
+static uint32_t txlastts;
+static volatile uint32_t rxfreq;
+static volatile uint32_t txfreq;
+
+static void txstamp(unsigned samples)
+{
+#if WITHDEBUG
+	uint32_t last = txlastts;
+	txlastts = cpu_getdebugticks();
+	uint32_t d = txlastts - last;
+	txfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
+#endif /* WITHDEBUG */
+}
+
+static void rxstamp(unsigned samples)
+{
+#if WITHDEBUG
+	uint32_t last = rxlastts;
+	rxlastts = cpu_getdebugticks();
+	uint32_t d = rxlastts - last;
+	rxfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
+#endif /* WITHDEBUG */
+}
+
+static LCLSPINLOCK_t locklistprint = LCLSPINLOCK_INIT;
+static volatile uintptr_t printptr;
+
+void zdataprint(void)
+{
+#if WITHDEBUG
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& locklistprint);
+	uintptr_t pp = printptr;
+	printptr = 0;
+	LCLSPIN_UNLOCK(& locklistprint);
+	LowerIrql(oldIrql);
+
+	if (pp != 0)
+	{
+		PRINTF("rx buffer:\n");
+		//printhex32(0, (void *) xbuff, sizeof xbuff);
+		printhex32(0, (void *) pp, 128);
+
+		RiseIrql(IRQL_REALTIME, & oldIrql);
+		LCLSPIN_LOCK(& locklistprint);
+		release_dmabuffer32rx(pp);
+		LCLSPIN_UNLOCK(& locklistprint);
+		LowerIrql(oldIrql);
+	}
+#endif /* WITHDEBUG */
+}
+
+static void savetodebug(uintptr_t addr32)
+{
+#if WITHDEBUG
+	uintptr_t p = allocate_dmabuffer32rx();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& locklistprint);
+	uintptr_t oldpp = printptr;
+	printptr = p;
+	LCLSPIN_UNLOCK(& locklistprint);
+	LowerIrql(oldIrql);
+
+	if (oldpp != 0)
+		release_dmabuffer32rx(oldpp);
+
+	memcpy((void *) p, (void *) addr32, 128);
+
+#endif /* WITHDEBUG */
+}
+
+void zcountsprint(void)
+{
+#if CPUSTYLE_T507
+	//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
+	PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
+	PRINTF("APBIF_RX1FIFO_CNT=%08X, APBIF_TX1FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[1].APBIF_TXnFIFO_CNT);
+	PRINTF("APBIF_RX2FIFO_CNT=%08X, APBIF_TX2FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[2].APBIF_TXnFIFO_CNT);
+#endif
+}
+
+void zfreqprint(void)
+{
+#if CPUSTYLE_T507
+	static uint32_t txlasc;
+	uint32_t lastc = txlasc;
+	txlasc = AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT;
+	uint32_t df = cpu_getdebugticksfreq();
+	static uint32_t txlastts;
+	uint32_t last = txlastts;
+	txlastts = cpu_getdebugticks();
+	uint32_t d = txlastts - last;
+	uint32_t dc = txlasc - lastc;
+	PRINTF("iofreq=%u\n", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
+#endif
+	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
+}
+
+#endif
+
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
 #define DMAC_DESC_PARAM	4	/* Parameter */
@@ -4213,13 +4333,16 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
+	rxstamp(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
+
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
+	savetodebug(addr);
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
@@ -4233,6 +4356,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
+	txstamp(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
@@ -4247,48 +4371,30 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 	release_dmabuffer32tx(addr);
 }
 
-uint32_t rxlastts;
-uint32_t txlastts;
-volatile uint32_t rxfreq;
-volatile uint32_t txfreq;
-
-volatile IFADCvalue_t xbuff [DMABUFFSIZE32RX];
-void zprintf(void)
-{
-	PRINTF("rx buffer:\n");
-	//printhex32(0, (void *) xbuff, sizeof xbuff);
-	printhex32(0, (void *) xbuff, 128);
-}
-
 /* Приём от FPGA (PIPE mode) */
 static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
-	uint32_t last = rxlastts;
-	rxlastts = cpu_getdebugticks();
-	uint32_t d = rxlastts - last;
-	rxfreq = (uint64_t) cpu_getdebugticksfreq() * (DMABUFFSIZE32RX / DMABUFFSTEP32RX) / d;
-//	return;
-
+	rxstamp(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
+
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr32 = descraddr [ix];
+	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	DMA_resume(dmach, descbase);
 
-	//memcpy(xbuff, (void *) addr32, sizeof xbuff);
-	memcpy((void *) xbuff, (void *) addr32, 128);
+	savetodebug(addr);
+	DMA_resume(dmach, descbase);
 //
 //	/* Работа с только что принятыми данными */
 //	const uintptr_t addr16 = allocate_dmabuffer16rx();
-//	pipe_dmabuffer32rx(addr32, addr16);	// копирование сэмплов
+//	pipe_dmabuffer32rx(addr, addr16);	// копирование сэмплов
 //	processing_dmabuffer16rx(addr16);
 //
-//	processing_dmabuffer32rts(addr32);
-//	processing_dmabuffer32rx(addr32);
-	release_dmabuffer32rx(addr32);
+//	processing_dmabuffer32rts(addr);
+//	processing_dmabuffer32rx(addr);
+	release_dmabuffer32rx(addr);
 //
 //	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
@@ -4296,18 +4402,14 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 /* Передача в FPGA (PIPE mode)  */
 static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 {
-	uint32_t last = txlastts;
-	txlastts = cpu_getdebugticks();
-	uint32_t d = txlastts - last;
-	txfreq = (uint64_t) cpu_getdebugticksfreq() * (DMABUFFSIZE32TX / DMABUFFSTEP32TX) / d;
-	return;
+	txstamp(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr16new = getfilled_dmabuffer16txphones();
 	const uintptr_t addr32new = getfilled_dmabuffer32tx_main();
-	pipe_dmabuffer32tx(addr32new, addr16new);	// копирование сэмплов
+	pipe_dmabuffer32tx(addr32new, addr16new);	// копирование сэмплов из addr16new
 	const uintptr_t addr32old = descraddr [ix];
 	descraddr [ix] = dma_flush32tx(addr32new);
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
@@ -4320,7 +4422,7 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 }
 
 
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {

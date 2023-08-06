@@ -852,7 +852,8 @@ void buffers_initialize(void)
 	}
 	{
 		unsigned i;
-	    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
+		// +2 - для отладочной печати содеожимого буферов
+	    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [2 + 6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
 
 		InitializeListHead2(& voicesfree32rx);	// Незаполненные
 		for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)

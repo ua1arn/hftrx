@@ -58,7 +58,7 @@ CORE += -mfpu=neon-vfpv3
 # olny -Og for app
 # Application
 #OPT = -Og
-OPT = -Ofast -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP

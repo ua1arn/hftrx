@@ -60,7 +60,7 @@ CORE += -mfpu=neon-vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
+OPT = -Ofast
 #OPT = -Os -flto
 #OPT = -Os
 
