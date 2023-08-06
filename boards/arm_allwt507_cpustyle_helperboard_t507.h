@@ -124,8 +124,8 @@
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
-		//#define WITHFPGAPIPE_I2S0_DUPLEX_SLAVE	1		/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
+		#define WITHFPGAPIPE_I2S0_DUPLEX_SLAVE	1		/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
 	#endif /* WITHINTEGRATEDDSP */
 
 	////#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
