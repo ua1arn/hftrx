@@ -4383,20 +4383,15 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-
 	savetodebug(addr);
 	DMA_resume(dmach, descbase);
-//
-//	/* Работа с только что принятыми данными */
-//	const uintptr_t addr16 = allocate_dmabuffer16rx();
-//	pipe_dmabuffer32rx(addr, addr16);	// копирование сэмплов
-//	processing_dmabuffer16rx(addr16);
-//
-//	processing_dmabuffer32rts(addr);
-//	processing_dmabuffer32rx(addr);
+
+	/* Работа с только что принятыми данными */
+	processing_dmabuffer32rts(addr);
+	processing_dmabuffer32rx(addr);
 	release_dmabuffer32rx(addr);
-//
-//	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 }
 
 /* Передача в FPGA (PIPE mode)  */
@@ -4407,18 +4402,16 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr16new = getfilled_dmabuffer16txphones();
-	const uintptr_t addr32new = getfilled_dmabuffer32tx_main();
-	pipe_dmabuffer32tx(addr32new, addr16new);	// копирование сэмплов из addr16new
-	const uintptr_t addr32old = descraddr [ix];
-	descraddr [ix] = dma_flush32tx(addr32new);
+	const uintptr_t addr = descraddr [ix];
+	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	descraddr [ix] = dma_flush32tx(pipe_dmabuffer32tx(getfilled_dmabuffer32tx_main(), addr16));
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
-	release_dmabuffer32tx(addr32old);
-	release_dmabuffer16tx(addr16new);
-
+	/* Работа с только что передаными данными */
+	release_dmabuffer32tx(addr);
+	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
 }
 
 

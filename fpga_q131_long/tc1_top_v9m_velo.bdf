@@ -921,23 +921,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect 808 872 840 904)
-	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
-	(text "inst14" (rect 3 21 32 33)(font "Arial" )(invisible))
-	(port
-		(pt 16 0)
-		(output)
-		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
-		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
-		(line (pt 16 8)(pt 16 0))
-	)
-	(drawing
-		(line (pt 8 8)(pt 16 16))
-		(line (pt 16 16)(pt 24 8))
-		(line (pt 8 8)(pt 24 8))
-	)
-)
-(symbol
 	(rect 1304 120 1536 472)
 	(text "t1_2ch_transit" (rect 5 0 86 14)(font "Arial" (font_size 8)))
 	(text "inst" (rect 8 336 25 348)(font "Arial" ))
@@ -1317,6 +1300,21 @@ applicable agreement for further details.
 		(rectangle (rect 16 16 200 336))
 	)
 )
+(symbol
+	(rect 792 872 824 888)
+	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
+	(text "inst14" (rect 3 5 32 17)(font "Arial" )(invisible))
+	(port
+		(pt 16 16)
+		(output)
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(line (pt 16 16)(pt 16 8))
+	)
+	(drawing
+		(line (pt 8 8)(pt 24 8))
+	)
+)
 (connector
 	(pt 1768 480)
 	(pt 1744 480)
@@ -1511,14 +1509,6 @@ applicable agreement for further details.
 	(pt 824 752)
 )
 (connector
-	(pt 824 704)
-	(pt 824 752)
-)
-(connector
-	(pt 824 752)
-	(pt 824 872)
-)
-(connector
 	(text "clk_122880" (rect 378 544 433 556)(font "Arial" ))
 	(pt 536 560)
 	(pt 376 560)
@@ -1697,6 +1687,18 @@ applicable agreement for further details.
 (connector
 	(pt 776 832)
 	(pt 776 624)
+)
+(connector
+	(pt 824 704)
+	(pt 824 752)
+)
+(connector
+	(pt 824 752)
+	(pt 824 888)
+)
+(connector
+	(pt 824 888)
+	(pt 808 888)
 )
 (junction (pt 1672 480))
 (junction (pt 1552 168))

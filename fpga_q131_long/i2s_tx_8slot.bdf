@@ -135,7 +135,7 @@ applicable agreement for further details.
 	(input)
 	(rect 168 368 336 384)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "i2s_sdi_half" (rect 5 0 64 12)(font "Arial" ))
+	(text "sdi_ws0" (rect 5 0 44 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -151,7 +151,7 @@ applicable agreement for further details.
 	(input)
 	(rect 168 384 336 400)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "i2s_sdi_main" (rect 5 0 68 12)(font "Arial" ))
+	(text "sdi_ws1" (rect 5 0 44 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -167,7 +167,7 @@ applicable agreement for further details.
 	(output)
 	(rect 1536 368 1712 384)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "i2s_sdo" (rect 90 0 127 12)(font "Arial" ))
+	(text "sdo_ws0" (rect 90 0 132 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))
@@ -184,7 +184,7 @@ applicable agreement for further details.
 	(output)
 	(rect 1536 384 1712 400)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
-	(text "i2s_sdo_half" (rect 90 0 152 12)(font "Arial" ))
+	(text "sdo_ws1" (rect 90 0 132 12)(font "Arial" ))
 	(pt 0 8)
 	(drawing
 		(line (pt 0 8)(pt 52 8))

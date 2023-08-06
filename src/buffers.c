@@ -2203,7 +2203,7 @@ uintptr_t RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
 
 	ASSERT((DMABUFFSIZE32RX / DMABUFFSTEP32RX) == (DMABUFFSIZE16RX / DMABUFFSTEP16RX));
 	ASSERT(sizeof * rx32 == sizeof * rx16);
-	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
+	for (i = 0; i < (DMABUFFSIZE32RX / DMABUFFSTEP32RX); ++ i)
 	{
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
@@ -2218,14 +2218,17 @@ uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
 	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
 	unsigned i;
+	const FLOAT_t scale = 1;
 
 	ASSERT((DMABUFFSIZE32TX / DMABUFFSTEP32TX) == (DMABUFFSIZE16TX / DMABUFFSTEP16TX));
 	ASSERT(DMABUFFSTEP16TX >= 2);
 	ASSERT(sizeof * tx32 == sizeof * tx16);
-	for (i = 0; i < DMABUFFSIZE32TX; i += DMABUFFSTEP32TX)
+	for (i = 0; i < (DMABUFFSIZE32TX / DMABUFFSTEP32TX); ++ i)
 	{
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = adpt_outputexact(& afcodectx, get_lout() * scale);
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = adpt_outputexact(& afcodectx, get_rout() * scale);
 	}
 	return addr32tx;
 }
