@@ -10044,12 +10044,6 @@ applicable agreement for further details.
 	(pt -1016 224)
 )
 (connector
-	(text "w32[31..0]" (rect -840 200 -790 212)(font "Arial" ))
-	(pt -872 216)
-	(pt -800 216)
-	(bus)
-)
-(connector
 	(pt -1080 208)
 	(pt -1016 208)
 )
@@ -10225,6 +10219,18 @@ applicable agreement for further details.
 	(text "0" (rect -1710 120 -1705 132)(font "Arial" ))
 	(pt -1712 136)
 	(pt -1664 136)
+)
+(connector
+	(text "w32[31..0]" (rect -840 200 -790 212)(font "Arial" ))
+	(pt -872 216)
+	(pt -800 216)
+	(bus)
+)
+(connector
+	(text "w32[31..0],w32[31..0]" (rect -1494 -120 -1389 -108)(font "Arial" ))
+	(pt -1368 -104)
+	(pt -1496 -104)
+	(bus)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))

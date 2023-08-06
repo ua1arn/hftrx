@@ -220,8 +220,8 @@ typedef struct AHUB_Type
         volatile uint32_t APBIF_TXnFIFO;              /*!< Offset 0x030 APBIF TXn FIFO */
         volatile uint32_t APBIF_TXnFIFO_CNT;          /*!< Offset 0x034 APBIF TXn FIFO Counter */
                  uint32_t reserved_0x028 [0x0002];
-    } APBIF_TX [0x002];                               /*!< Offset 0x010 APBIF TX (n=0~2) */
-             uint32_t reserved_0x070 [0x0024];
+    } APBIF_TX [0x003];                               /*!< Offset 0x010 APBIF TX (n=0~2) */
+             uint32_t reserved_0x0A0 [0x0018];
     struct
     {
         volatile uint32_t APBIF_RXn_CTRL;             /*!< Offset 0x100 APBIF RXn Control */
@@ -235,8 +235,8 @@ typedef struct AHUB_Type
         volatile uint32_t APBIF_RXnFIFO;              /*!< Offset 0x120 APBIF RXn FIFO */
         volatile uint32_t APBIF_RXnFIFO_CNT;          /*!< Offset 0x124 APBIF RXn FIFO Counter */
                  uint32_t reserved_0x028 [0x0002];
-    } APBIF_RX [0x002];                               /*!< Offset 0x100 APBIF RX (n=0~2) */
-             uint32_t reserved_0x160 [0x0228];
+    } APBIF_RX [0x003];                               /*!< Offset 0x100 APBIF RX (n=0~2) */
+             uint32_t reserved_0x190 [0x021C];
     struct
     {
         volatile uint32_t DAMn_CTRL;                  /*!< Offset 0xA00 DAM Control */

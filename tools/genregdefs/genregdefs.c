@@ -816,6 +816,7 @@ static unsigned emitregister000(int indent, const struct regdfn *const regp, uns
 	offs = 0;
 	if (regp->fldsize == 0) {
 		/* set to required size */
+		offs = regp->fldoffs - baseoffset;
 	} else {
 
 		emitline(indent + 0, "<register>" "\n");
@@ -883,7 +884,12 @@ unsigned emitregister(int indent, const struct regdfn *const regp, unsigned base
 			//		regp->fldname);
 			offs += emitregister000(indent, regp, 0);
 		}
+	} else {
+		// fldsize == 0: align
+		//fprintf(stderr, "align to %u %s\n", regp->fldoffs, regp->fldname);
+		offs = regp->fldoffs - baseoffset;
 	}
+
 	return offs;
 }
 

@@ -6,7 +6,7 @@
 #regdef; AHUB_RST; 0x0008; AHUB Reset
 #regdef; AHUB_GAT; 0x000C; AHUB Gating
 
-#aggreg; APBIF_TX; 0x010 2; APBIF TX (n=0~2)
+#aggreg; APBIF_TX; 0x010 3; APBIF TX (n=0~2)
 
 #regdef; APBIF_TXn_CTRL; 0x000; APBIF TXn Control
 #regdef; APBIF_TXnIRQ_CTRL; 0x004; APBIF TXn DMA & Interrupt Control
@@ -19,7 +19,7 @@
 
 #aggregend;
 
-#aggreg; APBIF_RX; 0x0100 2; APBIF RX (n=0~2)
+#aggreg; APBIF_RX; 0x0100 3; APBIF RX (n=0~2)
 
 #regdef; APBIF_RXn_CTRL; 0x000; APBIF RXn Control
 #regdef; APBIF_RXnIRQ_CTRL; 0x004; APBIF RXn DMA & Interrupt Control

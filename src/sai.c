@@ -3584,16 +3584,16 @@ static void I2S_fill_TXxCHMAP(
 
 #if CPUSTYLE_T507
 
-// 0..1
+// 0..2
 static unsigned getapbifrxixbofi2s(unsigned ix)
 {
-	return 1;
+	return 2;
 }
 
-// 0..1
+// 0..2
 static unsigned getapbiftxixbofi2s(unsigned ix)
 {
-	return 1;
+	return 2;
 }
 
 
@@ -3745,15 +3745,14 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	const unsigned txrx_offset = 1;	// Каналы I2S
 	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
-	const uint32_t nc = NSLOTS;
 
 	// Каналы AHUB[0..1] - RX
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((nc - 1) << 8);
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0;
 
 	// Каналы AHUB[0..1] - TX
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((nc - 1) << 8);
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0;
 
@@ -3761,11 +3760,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// Need:
 	// APBIF TXDIF -> I2S0 RXDIF (transmit to external devices)
 	// I2S0 TXDIF -> APBIF RXDIF (receive from external devices)
-
-	//AHUB->DAM [damix].DAMn_CTRL = 1;
-	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
-	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
 	if (1)
 	{
@@ -3787,8 +3781,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		i2s->I2Sn_CLKD = 0;
 
 		i2s->I2Sn_CHCFG =
-			(nc - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
-			(nc - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
+			(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
+			(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
 			0;
 
 
@@ -3822,6 +3816,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
 			0;
 	}
+
+	//AHUB->DAM [damix].DAMn_CTRL = 1;
+	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
+	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
 	// DAM setup
 //	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
@@ -4181,7 +4181,8 @@ volatile IFADCvalue_t xbuff [DMABUFFSIZE32RX];
 void zprintf(void)
 {
 	PRINTF("rx buffer:\n");
-	printhex32(0, (void *) xbuff, sizeof xbuff);
+	//printhex32(0, (void *) xbuff, sizeof xbuff);
+	printhex32(0, (void *) xbuff, 32 * 4);
 }
 
 /* Приём от FPGA (PIPE mode) */
@@ -4202,7 +4203,8 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 
 	DMA_resume(dmach, descbase);
 
-	memcpy(xbuff, addr32, sizeof xbuff);
+	//memcpy(xbuff, (void *) addr32, sizeof xbuff);
+	memcpy((void *) xbuff, (void *) addr32, 32 * 4);
 //
 //	/* Работа с только что принятыми данными */
 //	const uintptr_t addr16 = allocate_dmabuffer16rx();
@@ -5480,7 +5482,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		;
+		TP();
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpgapipe);
@@ -5545,7 +5547,7 @@ static void DMAC_I2S0_TX_initialize_fpgapipe(void)
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		;
+		TP();
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpgapipe);

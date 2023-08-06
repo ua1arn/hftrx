@@ -38,7 +38,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>2</dim>
+    <dim>3</dim>
     <addressOffset>0x00000010</addressOffset>
     <registers>
      <register>
@@ -105,10 +105,10 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x038</dimIncrement>
+    <dimIncrement>0x090</dimIncrement>
    </cluster>
    <cluster>
-    <dim>2</dim>
+    <dim>3</dim>
     <addressOffset>0x00000100</addressOffset>
     <registers>
      <register>
@@ -184,7 +184,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x040</dimIncrement>
+    <dimIncrement>0x090</dimIncrement>
    </cluster>
    <cluster>
     <dim>2</dim>
@@ -242,7 +242,7 @@
       <dimIncrement>0x020</dimIncrement>
      </cluster>
     </registers>
-    <dimIncrement>0x0A0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -2064,7 +2064,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>ROUTE</name>
@@ -2346,7 +2346,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x070</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
    <register>
     <name>TOP_HADDR</name>
@@ -2755,7 +2755,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x2C0</dimIncrement>
+    <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -4268,7 +4268,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0FC</dimIncrement>
+    <dimIncrement>0x120</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -4702,7 +4702,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>I2Sn_SDIN_SLOTCTR</name>
@@ -4887,7 +4887,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0C0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -7518,7 +7518,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x060</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
