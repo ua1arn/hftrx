@@ -2194,7 +2194,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 
 #if WITHFPGAIF_FRAMEBITS == 512
 // копирование полей из принятого от FPGA буфера
-void RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
+uintptr_t RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
@@ -2208,10 +2208,11 @@ void RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
 	}
+	return addr32rx;
 }
 
 // копирование полей в передаваемый на FPGA буфер
-void RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
+uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
@@ -2226,6 +2227,7 @@ void RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
 	}
+	return addr32tx;
 }
 
 #endif /* WITHFPGAIF_FRAMEBITS == 512 */

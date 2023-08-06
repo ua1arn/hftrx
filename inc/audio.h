@@ -1000,8 +1000,8 @@ void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
 void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
-void pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx);	// копирование полей из принятого от FPGA буфера
-void pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx);	// копирование полей в передаваемый на FPGA буфера
+uintptr_t pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx);	// копирование полей из принятого от FPGA буфера
+uintptr_t pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx);	// копирование полей в передаваемый на FPGA буфера
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
