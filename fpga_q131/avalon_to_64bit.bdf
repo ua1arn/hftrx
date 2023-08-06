@@ -85,7 +85,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1544 776 1720 792)
+	(rect 1288 672 1464 688)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "valid_out" (rect 90 0 134 12)(font "Arial" ))
 	(pt 0 8)
@@ -101,7 +101,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1600 528 1776 544)
+	(rect 1288 552 1464 568)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "s01[63..0]" (rect 90 0 139 12)(font "Arial" ))
 	(pt 0 8)
@@ -274,230 +274,6 @@ applicable agreement for further details.
 		(line (pt 0 0)(pt 0 0))
 	)
 )
-(symbol
-	(rect 1264 400 1440 544)
-	(text "LPM_FF" (rect 19 0 78 16)(font "Arial" (font_size 10)))
-	(text "inst14" (rect 3 133 32 145)(font "Arial" ))
-	(port
-		(pt 0 104)
-		(input)
-		(text "enable" (rect 20 97 57 111)(font "Arial" (font_size 8)))
-		(text "enable" (rect 20 97 57 111)(font "Arial" (font_size 8)))
-		(line (pt 0 104)(pt 16 104))
-	)
-	(port
-		(pt 0 88)
-		(input)
-		(text "clock" (rect 20 81 49 95)(font "Arial" (font_size 8))(invisible))
-		(text "clock" (rect 20 81 49 95)(font "Arial" (font_size 8))(invisible))
-		(line (pt 0 88)(pt 16 88))
-	)
-	(port
-		(pt 0 24)
-		(input)
-		(text "aload" (rect 20 17 50 31)(font "Arial" (font_size 8)))
-		(text "aload" (rect 20 17 50 31)(font "Arial" (font_size 8)))
-		(line (pt 0 24)(pt 16 24))
-		(unused)
-	)
-	(port
-		(pt 0 40)
-		(input)
-		(text "sset" (rect 20 33 44 47)(font "Arial" (font_size 8)))
-		(text "sset" (rect 20 33 44 47)(font "Arial" (font_size 8)))
-		(line (pt 0 40)(pt 16 40))
-		(unused)
-	)
-	(port
-		(pt 0 56)
-		(input)
-		(text "sload" (rect 20 49 50 63)(font "Arial" (font_size 8)))
-		(text "sload" (rect 20 49 50 63)(font "Arial" (font_size 8)))
-		(line (pt 0 56)(pt 16 56))
-		(unused)
-	)
-	(port
-		(pt 88 0)
-		(input)
-		(text "aset" (rect 79 17 103 31)(font "Arial" (font_size 8)))
-		(text "aset" (rect 79 17 103 31)(font "Arial" (font_size 8)))
-		(line (pt 88 16)(pt 88 0))
-		(unused)
-	)
-	(port
-		(pt 0 120)
-		(input)
-		(text "sclr" (rect 20 113 41 127)(font "Arial" (font_size 8)))
-		(text "sclr" (rect 20 113 41 127)(font "Arial" (font_size 8)))
-		(line (pt 0 120)(pt 16 120))
-		(unused)
-	)
-	(port
-		(pt 88 144)
-		(input)
-		(text "aclr" (rect 80 113 101 127)(font "Arial" (font_size 8)))
-		(text "aclr" (rect 80 113 101 127)(font "Arial" (font_size 8)))
-		(line (pt 88 144)(pt 88 128))
-		(unused)
-	)
-	(port
-		(pt 0 72)
-		(input)
-		(text "data[LPM_WIDTH-1..0]" (rect 20 63 146 77)(font "Arial" (font_size 8)))
-		(text "data[]" (rect 20 63 51 77)(font "Arial" (font_size 8)))
-		(line (pt 0 72)(pt 16 72)(line_width 3))
-	)
-	(port
-		(pt 176 88)
-		(output)
-		(text "q[LPM_WIDTH-1..0]" (rect 144 81 252 95)(font "Arial" (font_size 8)))
-		(text "q[]" (rect 144 81 158 95)(font "Arial" (font_size 8)))
-		(line (pt 160 88)(pt 176 88)(line_width 3))
-	)
-	(parameter
-		"LPM_AVALUE"
-		""
-		"Unsigned value associated with the aset port"
-	)
-	(parameter
-		"LPM_FFTYPE"
-		"DFF"
-		"Selects behavior as DFF or TFF"
-		"\"DFF\"" "\"TFF\"" 
-		(type "PARAMETER_STRING")	)
-	(parameter
-		"LPM_SVALUE"
-		""
-		"Unsigned value associated with the sset port"
-	)
-	(parameter
-		"LPM_WIDTH"
-		"32"
-		"Width of I/O, any integer > 0"
-		" 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" " 9" "10" "11" "12" "13" "14" "15" "16" "20" "24" "28" "32" "40" "48" "56" "64" 
-		(type "PARAMETER_SIGNED_DEC")	)
-	(drawing
-		(line (pt 16 16)(pt 160 16))
-		(line (pt 16 128)(pt 160 128))
-		(line (pt 160 128)(pt 160 16))
-		(line (pt 16 128)(pt 16 16))
-		(line (pt 16 80)(pt 24 88))
-		(line (pt 24 88)(pt 16 96))
-	)
-	(annotation_block (parameter)(rect 1264 312 1462 382))
-)
-(symbol
-	(rect 1264 632 1440 776)
-	(text "LPM_FF" (rect 19 0 78 16)(font "Arial" (font_size 10)))
-	(text "inst15" (rect 3 133 32 145)(font "Arial" ))
-	(port
-		(pt 0 104)
-		(input)
-		(text "enable" (rect 20 97 57 111)(font "Arial" (font_size 8)))
-		(text "enable" (rect 20 97 57 111)(font "Arial" (font_size 8)))
-		(line (pt 0 104)(pt 16 104))
-	)
-	(port
-		(pt 0 88)
-		(input)
-		(text "clock" (rect 20 81 49 95)(font "Arial" (font_size 8))(invisible))
-		(text "clock" (rect 20 81 49 95)(font "Arial" (font_size 8))(invisible))
-		(line (pt 0 88)(pt 16 88))
-	)
-	(port
-		(pt 0 24)
-		(input)
-		(text "aload" (rect 20 17 50 31)(font "Arial" (font_size 8)))
-		(text "aload" (rect 20 17 50 31)(font "Arial" (font_size 8)))
-		(line (pt 0 24)(pt 16 24))
-		(unused)
-	)
-	(port
-		(pt 0 40)
-		(input)
-		(text "sset" (rect 20 33 44 47)(font "Arial" (font_size 8)))
-		(text "sset" (rect 20 33 44 47)(font "Arial" (font_size 8)))
-		(line (pt 0 40)(pt 16 40))
-		(unused)
-	)
-	(port
-		(pt 0 56)
-		(input)
-		(text "sload" (rect 20 49 50 63)(font "Arial" (font_size 8)))
-		(text "sload" (rect 20 49 50 63)(font "Arial" (font_size 8)))
-		(line (pt 0 56)(pt 16 56))
-		(unused)
-	)
-	(port
-		(pt 88 0)
-		(input)
-		(text "aset" (rect 79 17 103 31)(font "Arial" (font_size 8)))
-		(text "aset" (rect 79 17 103 31)(font "Arial" (font_size 8)))
-		(line (pt 88 16)(pt 88 0))
-		(unused)
-	)
-	(port
-		(pt 0 120)
-		(input)
-		(text "sclr" (rect 20 113 41 127)(font "Arial" (font_size 8)))
-		(text "sclr" (rect 20 113 41 127)(font "Arial" (font_size 8)))
-		(line (pt 0 120)(pt 16 120))
-		(unused)
-	)
-	(port
-		(pt 88 144)
-		(input)
-		(text "aclr" (rect 80 113 101 127)(font "Arial" (font_size 8)))
-		(text "aclr" (rect 80 113 101 127)(font "Arial" (font_size 8)))
-		(line (pt 88 144)(pt 88 128))
-		(unused)
-	)
-	(port
-		(pt 0 72)
-		(input)
-		(text "data[LPM_WIDTH-1..0]" (rect 20 63 146 77)(font "Arial" (font_size 8)))
-		(text "data[]" (rect 20 63 51 77)(font "Arial" (font_size 8)))
-		(line (pt 0 72)(pt 16 72)(line_width 3))
-	)
-	(port
-		(pt 176 88)
-		(output)
-		(text "q[LPM_WIDTH-1..0]" (rect 144 81 252 95)(font "Arial" (font_size 8)))
-		(text "q[]" (rect 144 81 158 95)(font "Arial" (font_size 8)))
-		(line (pt 160 88)(pt 176 88)(line_width 3))
-	)
-	(parameter
-		"LPM_AVALUE"
-		""
-		"Unsigned value associated with the aset port"
-	)
-	(parameter
-		"LPM_FFTYPE"
-		"DFF"
-		"Selects behavior as DFF or TFF"
-		"\"DFF\"" "\"TFF\"" 
-		(type "PARAMETER_STRING")	)
-	(parameter
-		"LPM_SVALUE"
-		""
-		"Unsigned value associated with the sset port"
-	)
-	(parameter
-		"LPM_WIDTH"
-		"32"
-		"Width of I/O, any integer > 0"
-		" 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" " 9" "10" "11" "12" "13" "14" "15" "16" "20" "24" "28" "32" "40" "48" "56" "64" 
-		(type "PARAMETER_SIGNED_DEC")	)
-	(drawing
-		(line (pt 16 16)(pt 160 16))
-		(line (pt 16 128)(pt 160 128))
-		(line (pt 160 128)(pt 160 16))
-		(line (pt 16 128)(pt 16 16))
-		(line (pt 16 80)(pt 24 88))
-		(line (pt 24 88)(pt 16 96))
-	)
-	(annotation_block (parameter)(rect 1264 544 1462 614))
-)
 (connector
 	(pt 552 680)
 	(pt 472 680)
@@ -516,52 +292,29 @@ applicable agreement for further details.
 )
 (connector
 	(pt 680 680)
-	(pt 704 680)
+	(pt 1288 680)
 )
 (connector
-	(pt 680 664)
-	(pt 704 664)
-)
-(connector
-	(pt 792 560)
 	(pt 848 560)
+	(pt 792 560)
 	(color 255 0 0)
 )
 (connector
-	(pt 704 576)
 	(pt 848 576)
+	(pt 736 576)
 )
 (connector
-	(pt 704 664)
-	(pt 704 576)
+	(pt 680 664)
+	(pt 736 664)
 )
 (connector
-	(pt 704 680)
-	(pt 704 784)
+	(pt 736 664)
+	(pt 736 576)
 )
 (connector
-	(pt 1264 736)
-	(pt 1232 736)
-)
-(connector
-	(pt 704 784)
-	(pt 1232 784)
-)
-(connector
-	(pt 1232 784)
-	(pt 1544 784)
-)
-(connector
-	(pt 1264 504)
-	(pt 1232 504)
-)
-(connector
-	(pt 1232 504)
-	(pt 1232 736)
-)
-(connector
-	(pt 1232 736)
-	(pt 1232 784)
+	(pt 792 464)
+	(pt 792 560)
+	(color 255 0 0)
 )
 (connector
 	(pt 480 464)
@@ -569,17 +322,14 @@ applicable agreement for further details.
 	(color 255 0 0)
 )
 (connector
-	(pt 1264 488)
-	(pt 1248 488)
+	(pt 760 544)
+	(pt 760 632)
+	(bus)
 )
 (connector
-	(pt 1248 488)
-	(pt 1248 720)
-)
-(connector
-	(text "s01[63..32]" (rect 1474 472 1529 484)(font "Arial" ))
-	(pt 1440 488)
-	(pt 1528 488)
+	(text "s01[31..0]" (rect 1066 616 1115 628)(font "Arial" ))
+	(pt 760 632)
+	(pt 1112 632)
 	(bus)
 )
 (connector
@@ -593,58 +343,9 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 1264 704)
-	(pt 760 704)
-	(bus)
-)
-(connector
-	(pt 760 544)
-	(pt 760 704)
-	(bus)
-)
-(connector
-	(pt 1264 472)
-	(pt 1064 472)
-	(bus)
-)
-(connector
-	(pt 1064 472)
-	(pt 1064 560)
-	(bus)
-)
-(connector
+	(text "s01[63..32]" (rect 1058 544 1113 556)(font "Arial" ))
 	(pt 1024 560)
-	(pt 1064 560)
+	(pt 1112 560)
 	(bus)
-)
-(connector
-	(text "s01[31..0]" (rect 1450 704 1499 716)(font "Arial" ))
-	(pt 1440 720)
-	(pt 1528 720)
-	(bus)
-)
-(connector
-	(pt 792 464)
-	(pt 792 560)
-	(color 255 0 0)
-)
-(connector
-	(pt 792 560)
-	(pt 792 720)
-	(color 255 0 0)
-)
-(connector
-	(pt 792 720)
-	(pt 1248 720)
-	(color 255 0 0)
-)
-(connector
-	(pt 1248 720)
-	(pt 1264 720)
-	(color 255 0 0)
 )
 (junction (pt 760 544))
-(junction (pt 1232 784))
-(junction (pt 1232 736))
-(junction (pt 792 560))
-(junction (pt 1248 720))

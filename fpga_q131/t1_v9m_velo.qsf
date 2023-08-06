@@ -230,7 +230,6 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW "MINIMUM CURRENT" -to i2s2_sd
 set_location_assignment PIN_143 -to i2s1_mclk
 set_location_assignment PIN_135 -to i2s1_sdi -comment "Data to codec"
 set_location_assignment PIN_136 -to i2s1_sdo -comment "Data from codec"
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to dac_d
 set_global_assignment -name SDC_FILE tc1_top_v9m_velo.sdc
 set_global_assignment -name QIP_FILE lpm_counter_mod6.qip
 set_global_assignment -name QIP_FILE lpm_counter_i2sclocls.qip
@@ -248,6 +247,7 @@ set_global_assignment -name QIP_FILE lpm_decode_4ch.qip
 set_global_assignment -name QIP_FILE lpm_decode_2ch.qip
 set_global_assignment -name QIP_FILE dacout14.qip
 set_global_assignment -name QIP_FILE lpm_decode_4ch_en.qip
+set_global_assignment -name QIP_FILE fifo64.qip
 set_global_assignment -name QIP_FILE cic_64_2iq.qip
 set_global_assignment -name QIP_FILE cic40_ddc_2rx.qip
 set_global_assignment -name QIP_FILE fir_20_2ch.qip
@@ -275,5 +275,6 @@ set_global_assignment -name QIP_FILE fir_5a_2ch.qip
 set_global_assignment -name QIP_FILE dacout15.qip
 set_global_assignment -name QIP_FILE lpm_counter_ovf_1024.qip
 set_global_assignment -name BDF_FILE tc1_top_v9m_velo.bdf
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to dac_d
 set_global_assignment -name QIP_FILE altpll0.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
