@@ -4403,13 +4403,15 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	descraddr [ix] = dma_flush32tx(pipe_dmabuffer32tx(getfilled_dmabuffer32tx_main(), addr16));
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
+	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
 }
 
 

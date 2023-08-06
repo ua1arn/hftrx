@@ -2224,8 +2224,10 @@ uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 	ASSERT(sizeof * tx32 == sizeof * tx16);
 	for (i = 0; i < (DMABUFFSIZE32TX / DMABUFFSTEP32TX); ++ i)
 	{
-		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
-		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = adpt_output(& afcodectx, get_lout());
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = adpt_output(& afcodectx, get_rout());
+//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
+//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
 	}
 	return addr32tx;
 }
@@ -2277,17 +2279,6 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 		PLIST_ENTRY t = RemoveTailList2(& voicesready32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
 		LCLSPIN_UNLOCK(& locklist32tx);
-#if CPUSTYLE_T507
-		{
-			// Заполнение буфера передатяика тоном для тестирования pipe
-			unsigned i;
-			for (i = 0; i < DMABUFFSIZE32TX; i += DMABUFFSTEP32TX)
-			{
-				p->buff [i + DMABUFF32TX_CODEC1_LEFT] = adpt_output(& afcodectx, get_lout());
-				p->buff [i + DMABUFF32TX_CODEC1_RIGHT] = adpt_output(& afcodectx, get_rout());
-			}
-		}
-#endif
 		return (uintptr_t) & p->buff;
 	}
 	LCLSPIN_UNLOCK(& locklist32tx);
