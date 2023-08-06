@@ -1007,8 +1007,8 @@ typedef struct PWM_Type
         volatile uint32_t CRLR;                       /*!< Offset 0x070 Capture Rise Lock Register */
         volatile uint32_t CFLR;                       /*!< Offset 0x074 Capture Fall Lock Register */
                  uint32_t reserved_0x018 [0x0002];
-    } CH [0x008];                                     /*!< Offset 0x060 Channels[0..5] */
-} PWM_TypeDef; /* size of structure = 0x160 */
+    } CH [0x006];                                     /*!< Offset 0x060 Channels[0..5] */
+} PWM_TypeDef; /* size of structure = 0x120 */
 /*
  * @brief SMHC
  */
