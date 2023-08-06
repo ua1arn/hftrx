@@ -3489,6 +3489,53 @@ static unsigned width2fmt(unsigned width)
 	}
 }
 
+/* Установить для заданного канала I2S требуемый DINx и слот */
+static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, unsigned rxsdi)
+{
+#if CPUSTYLE_T507
+
+	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
+	/* в каждом регистре управления для восьми каналов */
+	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2Sn_SDINCHMAP2 - каналы 7..4
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2Sn_SDINCHMAP3 - каналы 11..8
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2Sn_SDINCHMAP4 - каналы 15..12
+
+	const portholder_t ALLMASK = 0x3F;
+	const portholder_t field =
+		((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+		0;
+
+	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#elif CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	__IO uint32_t * const reg = i2s->I2S_PCM_RXCHMAP;
+	/* в каждом регистре управления для восьми каналов */
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
+	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
+
+	const portholder_t ALLMASK = 0x3F;
+	const portholder_t field =
+		((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+		0;
+
+	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#endif
+}
+
 /* I2S/PCM RX Channel Mapping Registers initialization */
 /* Простое отображение каналов с последовательно увеличивающимся номером */
 static void I2S_fill_RXCHMAP(
@@ -3497,54 +3544,11 @@ static void I2S_fill_RXCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_T507
-
-	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
 	unsigned chnl;
 	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
-		/* в каждом регистре управления для восьми каналов */
-		const portholder_t mask0 = power8((UINT32_C(1) << chnl) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
-		const portholder_t mask1 = power8((UINT32_C(1) << chnl) >> 4);	// биты в I2Sn_SDINCHMAP2 - каналы 7..4
-		const portholder_t mask2 = power8((UINT32_C(1) << chnl) >> 8);	// биты в I2Sn_SDINCHMAP3 - каналы 11..8
-		const portholder_t mask3 = power8((UINT32_C(1) << chnl) >> 12);	// биты в I2Sn_SDINCHMAP4 - каналы 15..12
-
-		const portholder_t ALLMASK = 0x3F;
-		const portholder_t field =
-			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
-			0;
-
-		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
-		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
-		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
-		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+		aw_i2s_setchsrc(i2s, chnl, chnl, rxsdi);
 	}
-#elif CPUSTYLE_A64
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	__IO uint32_t * const reg = i2s->I2S_PCM_RXCHMAP;
-	unsigned chnl;
-	for (chnl = 0; chnl < NCH; ++ chnl)
-	{
-		/* в каждом регистре управления для восьми каналов */
-		const portholder_t mask3 = power8((UINT32_C(1) << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
-		const portholder_t mask2 = power8((UINT32_C(1) << chnl) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
-		const portholder_t mask1 = power8((UINT32_C(1) << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
-		const portholder_t mask0 = power8((UINT32_C(1) << chnl) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
-
-		const portholder_t ALLMASK = 0x3F;
-		const portholder_t field =
-			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
-			0;
-
-		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
-		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
-		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
-		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
-	}
-#endif
 }
 
 /* I2S/PCM TX0 Channel Mapping Registers initialization */
@@ -3849,8 +3853,28 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //		i2s->I2Sn_SDINCHMAP [2] = 0x0B0A0908;
 //		i2s->I2Sn_SDINCHMAP [3] = 0x0F0E0D0C;
 		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+
+#if 0
+		aw_i2s_setchsrc(i2s, 0, 0, din);
+		aw_i2s_setchsrc(i2s, 1, 1, din);
+		aw_i2s_setchsrc(i2s, 2, 0, din);
+		aw_i2s_setchsrc(i2s, 3, 0, din);
+		aw_i2s_setchsrc(i2s, 4, 0, din);
+		aw_i2s_setchsrc(i2s, 5, 0, din);
+		aw_i2s_setchsrc(i2s, 6, 0, din);
+		aw_i2s_setchsrc(i2s, 7, 0, din);
+		aw_i2s_setchsrc(i2s, 8, 0, din);
+		aw_i2s_setchsrc(i2s, 9, 0, din);
+		aw_i2s_setchsrc(i2s, 10, 0, din);
+		aw_i2s_setchsrc(i2s, 11, 0, din);
+		aw_i2s_setchsrc(i2s, 12, 0, din);
+		aw_i2s_setchsrc(i2s, 13, 0, din);
+		aw_i2s_setchsrc(i2s, 14, 0, din);
+		aw_i2s_setchsrc(i2s, 15, 0, din);
+#endif
+
 		// I2Sn_SDINCHMAP оставляем по умолчанию
-		printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
+		printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, (void *) & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
 		//printhex32((uintptr_t)i2s, i2s, sizeof * i2s);
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
