@@ -1608,10 +1608,7 @@ typedef struct I2S_PCM_Type
     volatile uint32_t I2S_PCM_TX3CHMAP0;              /*!< Offset 0x05C I2S/PCM TX3 Channel Mapping Register0 */
     volatile uint32_t I2S_PCM_TX3CHMAP1;              /*!< Offset 0x060 I2S/PCM TX3 Channel Mapping Register1 */
     volatile uint32_t I2S_PCM_RXCHSEL;                /*!< Offset 0x064 I2S/PCM RX Channel Select Register */
-    volatile uint32_t I2S_PCM_RXCHMAP0;               /*!< Offset 0x068 I2S/PCM RX Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_RXCHMAP1;               /*!< Offset 0x06C I2S/PCM RX Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_RXCHMAP2;               /*!< Offset 0x070 I2S/PCM RX Channel Mapping Register2 */
-    volatile uint32_t I2S_PCM_RXCHMAP3;               /*!< Offset 0x074 I2S/PCM RX Channel Mapping Register3 */
+    volatile uint32_t I2S_PCM_RXCHMAP [0x004];        /*!< Offset 0x068 I2S/PCM RX Channel Mapping Register0..3 */
              uint32_t reserved_0x078 [0x0002];
     volatile uint32_t MCLKCFG;                        /*!< Offset 0x080 ASRC MCLK Configuration Register */
     volatile uint32_t FsoutCFG;                       /*!< Offset 0x084 ASRC Out Sample Rate Configuration Register */

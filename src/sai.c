@@ -3498,10 +3498,32 @@ static void I2S_fill_RXCHMAP(
 	)
 {
 #if CPUSTYLE_T507
+
+	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
+	unsigned chnl;
+	for (chnl = 0; chnl < NCH; ++ chnl)
+	{
+		/* в каждом регистре управления для восьми каналов */
+		const portholder_t mask0 = power8((UINT32_C(1) << chnl) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
+		const portholder_t mask1 = power8((UINT32_C(1) << chnl) >> 4);	// биты в I2Sn_SDINCHMAP2 - каналы 7..4
+		const portholder_t mask2 = power8((UINT32_C(1) << chnl) >> 8);	// биты в I2Sn_SDINCHMAP3 - каналы 11..8
+		const portholder_t mask3 = power8((UINT32_C(1) << chnl) >> 12);	// биты в I2Sn_SDINCHMAP4 - каналы 15..12
+
+		const portholder_t ALLMASK = 0x3F;
+		const portholder_t field =
+			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
+			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+			0;
+
+		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+	}
 #elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	__IO uint32_t * const reg = & i2s->I2S_PCM_RXCHMAP0;
+	__IO uint32_t * const reg = i2s->I2S_PCM_RXCHMAP;
 	unsigned chnl;
 	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
@@ -3616,7 +3638,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
-	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
+	CCU->AUDIO_HUB_BGR_REG = UINT32_C(1) << 0;	// AUDIO_HUB_GATING
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
 	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
@@ -3725,22 +3747,37 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 
 #if CPUSTYLE_T507
+
 	/* Установка формата обмна */
 	// AHUB = top level
+	const unsigned damix = 0;
 	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
 	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_GAT = 0;//UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_RST = 0;//UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
 
 	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
 	AHUB->AHUB_RST = 0;	// пока это единственный используемый канал - моджно сбрасывать
+	(void) AHUB->AHUB_RST;
+	local_delay_ms(5);
+	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
+
+	memset(AHUB, 0, sizeof * AHUB);
+	//memset(i2s, 0, sizeof * i2s);
+
+	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
+	(void) AHUB->AHUB_RST;
+	local_delay_ms(5);
+	AHUB->AHUB_RST = 0;	// пока это единственный используемый канал - моджно сбрасывать
+	(void) AHUB->AHUB_RST;
+	local_delay_ms(5);
 	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
 
 	const unsigned txrx_offset = 1;	// Каналы I2S
@@ -3748,12 +3785,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	// Каналы AHUB[0..1] - RX
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL |= (UINT32_C(1) << 3);	// RXn_DRQ
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = (UINT32_C(1) << 3);	// RXn_DRQ
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0;
 
 	// Каналы AHUB[0..1] - TX
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL |= (UINT32_C(1) << 3);	// TXn_DRQ
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL = (UINT32_C(1) << 3);	// TXn_DRQ
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0;
 
 	// Figure 9- 2. Audio HUB Crossbar Switch and Clients
@@ -3805,8 +3842,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
 			(NSLOTS - 1) * (UINT32_C(1) << 16) |	//SDIN Slot number Select for each output
 			0;
+
+
+//		i2s->I2Sn_SDINCHMAP [0] = 0x03020100;
+//		i2s->I2Sn_SDINCHMAP [1] = 0x07060504;
+//		i2s->I2Sn_SDINCHMAP [2] = 0x0B0A0908;
+//		i2s->I2Sn_SDINCHMAP [3] = 0x0F0E0D0C;
+		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
 		// I2Sn_SDINCHMAP оставляем по умолчанию
-		//printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
+		printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
 		//printhex32((uintptr_t)i2s, i2s, sizeof * i2s);
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
@@ -3827,8 +3871,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
 //	printhex((uintptr_t) & AHUB->DAM [1], & AHUB->DAM [1], sizeof AHUB->DAM [1]);
 
-	//AHUB->DAM [damix].DAMn_CTRL = 0;
-
+//	AHUB->DAM [0].DAMn_CTRL = 0;
+//	AHUB->DAM [0].DAMn_RXx_SRC [0] = 0;
+//	AHUB->DAM [0].DAMn_RXx_SRC [1] = 0;
+//	AHUB->DAM [0].DAMn_RXx_SRC [2] = 0;
+//	AHUB->DAM [1].DAMn_CTRL = 0;
+//	AHUB->DAM [1].DAMn_RXx_SRC [0] = 0;
+//	AHUB->DAM [1].DAMn_RXx_SRC [1] = 0;
+//	AHUB->DAM [1].DAMn_RXx_SRC [2] = 0;
+//	memset(AHUB->DAM, 0, sizeof AHUB->DAM);
 
 #elif CPUSTYLE_A64
 	/* Установка формата обмна */
@@ -4182,7 +4233,7 @@ void zprintf(void)
 {
 	PRINTF("rx buffer:\n");
 	//printhex32(0, (void *) xbuff, sizeof xbuff);
-	printhex32(0, (void *) xbuff, 32 * 4);
+	printhex32(0, (void *) xbuff, 128);
 }
 
 /* Приём от FPGA (PIPE mode) */
@@ -4204,7 +4255,7 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	DMA_resume(dmach, descbase);
 
 	//memcpy(xbuff, (void *) addr32, sizeof xbuff);
-	memcpy((void *) xbuff, (void *) addr32, 32 * 4);
+	memcpy((void *) xbuff, (void *) addr32, 128);
 //
 //	/* Работа с только что принятыми данными */
 //	const uintptr_t addr16 = allocate_dmabuffer16rx();

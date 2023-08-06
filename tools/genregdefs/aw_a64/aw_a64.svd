@@ -3416,7 +3416,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>route</name>
@@ -3921,7 +3921,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x070</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
    <register>
     <name>top_haddr</name>
@@ -4286,7 +4286,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x2C0</dimIncrement>
+    <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -5395,7 +5395,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0E0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -8145,7 +8145,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0E0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -9744,7 +9744,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x00C</dimIncrement>
+    <dimIncrement>0x030</dimIncrement>
    </cluster>
    <register>
     <name>TCON_SAFE_PERIOD_REG</name>
@@ -11492,7 +11492,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x060</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
