@@ -308,10 +308,10 @@ extern "C" {
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
 			#define DMABUFFSTEP32RTS	DMABUFFSTEP32RX		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
-			#define DMABUF32RX0I	0		// RX0, I
-			#define DMABUF32RX1I	2		// RX1, I
-			#define DMABUF32RX0Q	1		// RX0, Q
-			#define DMABUF32RX1Q	3		// RX1, Q
+			#define DMABUF32RX0I	8		// RX0, I
+			#define DMABUF32RX0Q	9		// RX0, Q
+			#define DMABUF32RX1I	10		// RX1, I
+			#define DMABUF32RX1Q	11		// RX1, Q
 
 			#define DMABUFFSTEP32TX	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 			#define DMABUF32TXI	0		// TX, I
@@ -325,10 +325,10 @@ extern "C" {
 			// ws=1: 01 03 05 07
 
 			#if WITHRTS96
-				#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
-				#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
-				#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
-				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+				#define DMABUF32RTS0I	12		// RTS0, I	// previous - oldest
+				#define DMABUF32RTS0Q	13		// RTS0, Q	// previous
+				#define DMABUF32RTS1I	14		// RTS1, I	// current	- nevest
+				#define DMABUF32RTS1Q	15		// RTS1, Q	// current
 			#endif /* WITHRTS96 */
 
 			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
@@ -349,11 +349,11 @@ extern "C" {
 
 			/* звук идет по PIPE */
 
-			#define DMABUFF32TX_CODEC1_LEFT 	0		/* индекс сэмпла левого канала к кодеку (через PIPE) */
-			#define	DMABUFF32TX_CODEC1_RIGHT 	1		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
+			#define DMABUFF32TX_CODEC1_LEFT 	14		/* индекс сэмпла левого канала к кодеку (через PIPE) */
+			#define	DMABUFF32TX_CODEC1_RIGHT 	15		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
 
-			#define DMABUFF32RX_CODEC1_LEFT 	0		/* индекс сэмпла левого канала от кодека (через PIPE) */
-			#define	DMABUFF32RX_CODEC1_RIGHT 	1		/* индекс сэмпла правого канала от кодека (через PIPE)  */
+			#define DMABUFF32RX_CODEC1_LEFT 	6		/* индекс сэмпла левого канала от кодека (через PIPE) */
+			#define	DMABUFF32RX_CODEC1_RIGHT 	7		/* индекс сэмпла правого канала от кодека (через PIPE)  */
 
 
 		#else

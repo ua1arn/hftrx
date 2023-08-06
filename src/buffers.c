@@ -2277,6 +2277,17 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 		PLIST_ENTRY t = RemoveTailList2(& voicesready32tx);
 		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
 		LCLSPIN_UNLOCK(& locklist32tx);
+#if CPUSTYLE_T507
+		{
+			// Заполнение буфера передатяика тоном для тестирования pipe
+			unsigned i;
+			for (i = 0; i < DMABUFFSIZE32TX; i += DMABUFFSTEP32TX)
+			{
+				p->buff [i + DMABUFF32TX_CODEC1_LEFT] = adpt_output(& afcodectx, get_lout());
+				p->buff [i + DMABUFF32TX_CODEC1_RIGHT] = adpt_output(& afcodectx, get_rout());
+			}
+		}
+#endif
 		return (uintptr_t) & p->buff;
 	}
 	LCLSPIN_UNLOCK(& locklist32tx);
