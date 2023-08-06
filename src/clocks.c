@@ -8957,7 +8957,7 @@ void SystemCoreClockUpdate(void)
 		PWM->PCCR [pwmch / 2] |= prei * (UINT32_C(1) << 0);	// PWM01_CLK_DIV_M
 		//PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << (5 + (pwmch % 2)));	/* PWM01_CLK_SRC_BYPASS_TO_PWM0 - не использовать делитель */
 		PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << 4);	/* PWM01_CLK_GATING */
-		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ ((UINT32_C(0xFF) << 0) | (UINT32_C(1) << 9))) |
+		PWM->CH [pwmch].PCR = (PWM->CH [pwmch].PCR & ~ (UINT32_C(0xFF) << 0) & ~ (UINT32_C(1) << 9)) |
 			0 * (UINT32_C(1) << 9) | /* PWM_MODE 0: Cycle mode */
 			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
 			0;
@@ -9003,13 +9003,14 @@ void SystemCoreClockUpdate(void)
 
 	void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle)
 	{
-		//PRINTF("hardware_dcdcfreq_pwm_setdiv: pwmch=%u, cycle=%u\n", pwmch, cycle);
+		//PRINTF("hardware_dcdcfreq_pwm_setdiv: pwmch=%u, cycle=%u (PER=%08u)\n", pwmch, (unsigned) cycle, (unsigned) PWM->PER);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */
 			(cycle / 2) * (UINT32_C(1) << 0) |	/* PWM_ACT_CYCLE */
 			0;
-		while ((PWM->CH [pwmch].PCR & (UINT32_C(1) << 11)) == 0)	/* PWM_PERIOD_RDY */
+		// 0: PWM period register is ready to write
+		while ((PWM->CH [pwmch].PCR & (UINT32_C(1) << 11)) != 0)	/* PWM_PERIOD_RDY */
 			;
 	}
 
