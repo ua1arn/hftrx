@@ -1,2 +1,10 @@
-#type; DISPLAY_TOP
+#type; DISPLAY_TOP; display interface top (DISPLAY_TOP)
 #base; DISPLAY_TOP 0x05460000
+
+## comment; display interface top (DISP_IF_TOP) - taken from Allwinner_T5_Series_User_Manual-v1.3.pdf
+
+# in T113-s3 not exist
+
+##regdef; TV_CLK_SRC_RGB_SRC; 0x0000; TCON_TV Clock Select and RGB Source Select Register
+##regdef; DE_PORT_PERH_SEL; 0x001C; DE Source Select TCON R Register
+##regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister

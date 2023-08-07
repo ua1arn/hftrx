@@ -6704,9 +6704,208 @@ static void board_fpga_loader_initialize(void)
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
-#if WITHFPGALOAD_PS
+#if WITHFPGALOAD_PS && defined (BOARD_BITIMAGE_NAME_ZIP)
+
+static ALIGNX_BEGIN const FLASHMEMINIT uint8_t rbfimage0_zip [] ALIGNX_END =
+{
+#include BOARD_BITIMAGE_NAME_ZIP
+};
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint8_t * getrbfimagezip(size_t * count)
+{
+	* count = sizeof rbfimage0_zip / sizeof rbfimage0_zip [0];
+	return & rbfimage0_zip [0];
+}
+
+#include "unzipLIB.h"
+
+
+/* FPGA загружается процессором с помощью SPI из упакованного .zip образа в памяти */
+static void board_fpga_loader_PS(void)
+{
+	unsigned long w = 1000;
+	unsigned retries = 0;
+	size_t rbflength;
+	static ZIPFILE zpf; // Statically allocate the 41K UNZIP class/structure
+
+	const uint8_t * const zipp = getrbfimagezip(& rbflength);
+	unzFile zHandle;
+	int err;
+
+    zHandle = unzOpen(NULL, zipp, rbflength, & zpf, NULL, NULL, NULL, NULL);
+    ASSERT(NULL != zHandle);
+    if (NULL == zHandle)
+    {
+    	PRINTF("Wrong compressed FPGA image format\n");
+    	return;
+    }
+
+    char szTemp [256];
+//    err = unzGetGlobalComment(zHandle, (char *)szTemp, sizeof(szTemp));
+//    if (err >= 0)
+//    {
+//        PRINTF("Global Comment:\n");
+//        printhex(0, szTemp, err);
+//    }
+
+	int rc;
+
+	rc = unzLocateFile(zHandle, BOARD_BITIMAGE_NAME_COMPRESSED, 2);
+	if (rc != UNZ_OK) /* Report the file not found */
+	{
+		PRINTF("file %s not found within archive\n", BOARD_BITIMAGE_NAME_COMPRESSED);
+		unzClose(zHandle);
+		return;
+	}
+
+	//PRINTF("File located within archive.\n");
+
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
+
+restart:
+
+	rc = unzOpenCurrentFile(zHandle); /* Try to open the file we want */
+	if (rc != UNZ_OK) {
+	   PRINTF("Error opening file = %d\n", rc);
+	   unzClose(zHandle);
+	   return;
+	}
+
+	if (++ retries > 4)
+	{
+		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+
+		spi_unselect(targetnone);
+
+		rc = unzCloseCurrentFile(zHandle);
+		unzClose(zHandle);
+
+		return;
+	}
+	;
+
+	/* ZIP-compressed images load */
+	do {
+		unsigned score = 0;
+
+		PRINTF("fpga: board_fpga_loader_PS (zip) start\n");
+		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 1) Выставить "1" на nCONFIG */
+		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1 (zip)\n"));
+		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* x) Дождаться "0" на nSTATUS */
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 (zip) \n");
+		while (board_fpga_get_NSTATUS() != 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			//PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+			goto restart;
+		}
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 2) Дождаться "1" на nSTATUS */
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 (zip) \n");
+		while (board_fpga_get_NSTATUS() == 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done (zip) \n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u (zip)\n", score);
+			goto restart;
+		}
+		/* 3) Выдать байты (младший бит .rbf файла первым) */
+		//PRINTF("fpga: start sending compressed RBF image (%u bytes))\n", (unsigned) rbflength);
+
+		unsigned wcd = 0;
+		rc = 1;
+		score = 0;
+		while (rc > 0)
+		{
+			rc = unzReadCurrentFile(zHandle, szTemp, sizeof(szTemp));
+			if (rc >= 0)
+			{
+				int l;
+				for (l = 0; l < rc; ++ l)
+				{
+					if (board_fpga_get_CONF_DONE() != 0)
+					{
+						PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+						goto restart;
+					}
+
+					if (0 == score) {
+						spi_progval8_p1(targetnone, revbits8(szTemp [l]));
+					} else {
+						spi_progval8_p2(targetnone, revbits8(szTemp [l]));
+					}
+					++ score;
+				}
+			} else {
+				PRINTF("Error reading from file\n");
+				break;
+			}
+		}
+		spi_complete(targetnone);
+
+
+		//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
+		/* 4) Дождаться "1" на CONF_DONE */
+		while (board_fpga_get_CONF_DONE() == 0)
+		{
+			++ wcd;
+			spi_progval8_p1(targetnone, 0xFF);
+			spi_complete(targetnone);
+		}
+
+		PRINTF("fpga: CONF_DONE asserted, score=%u, wcd=%u\n", score, wcd);
+		////if (wcd >= rbflength)
+		////	goto restart;
+		/*
+		After the configuration data is accepted and CONF_DONE goes
+		high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
+		user mode.
+		*/
+		} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
+
+		//unzClose(& zpf);
+
+
+	//PRINTF("fpga: board_fpga_loader_PS done\n");
+	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
+	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+
+	rc = unzCloseCurrentFile(zHandle);
+	unzClose(zHandle);
+
+	spi_unselect(targetnone);
+	PRINTF("board_fpga_loader_PS: usermode okay\n");
+}
+
+#elif WITHFPGALOAD_PS
 
 #if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
+
 /* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
@@ -6720,9 +6919,34 @@ const uint16_t * getrbfimage(size_t * count)
 	return & rbfimage0 [0];
 }
 
-#endif /* ! (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
+#endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
+
 
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+
+static void fpga_send16_p1(uint_fast16_t v16)
+{
+#if WITHSPIEXT16// for skip in test configurations
+	hardware_spi_b16_p1(v16);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_progval8_p1(targetnone, v16 >> 8);
+	spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+}
+
+static void fpga_send16_p2(uint_fast16_t v16)
+{
+#if WITHSPIEXT16// for skip in test configurations
+	hardware_spi_b16_p2(v16);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_progval8_p2(targetnone, v16 >> 8);
+	spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+}
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS(void)
@@ -9933,3 +10157,70 @@ void board_get_serialnr(uint_fast32_t * sn)
 	* sn = 0;
 #endif
 }
+
+#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
+
+#define FPGA_DECODE_CIC_SHIFT	(10u)
+#define FPGA_DECODE_FIR_SHIFT	(11u)
+#define FPGA_DECODE_TX_SHIFT	(12u)
+
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
+
+static void fpga_prog_shift(uint8_t addr, uint8_t val)
+{
+	rbtype_t rbbuff [5] = { 0 };
+	RBVAL8(040, addr);
+	RBVAL8(000, val);
+	board_fpga1_spi_send_frame(targetfpga1, rbbuff, ARRAY_SIZE(rbbuff));
+}
+
+uint8_t iq_shift_cic_rx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
+			rx_cic_shift = val;
+
+		fpga_prog_shift(FPGA_DECODE_CIC_SHIFT, rx_cic_shift);
+	}
+	return rx_cic_shift;
+}
+
+uint8_t iq_shift_fir_rx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
+			rx_fir_shift = val;
+
+		fpga_prog_shift(FPGA_DECODE_FIR_SHIFT, rx_fir_shift);
+	}
+	return rx_fir_shift;
+}
+
+uint8_t iq_shift_tx(uint8_t val)
+{
+	if (val > 0)
+	{
+		if (val >= tx_shift_min && val <= tx_shift_max)
+			tx_shift = val;
+
+		fpga_prog_shift(FPGA_DECODE_TX_SHIFT, tx_shift);
+	}
+	return tx_shift;
+}
+
+uint32_t iq_cic_test_process(void)
+{
+	uint8_t data [5] = { 0 }, dummy [5] = { 0 };
+	prog_spi_exchange(targetfpga1, SPIC_SPEEDFAST, SPIC_MODE3, 50, dummy, data, ARRAY_SIZE(data));
+	return (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
+}
+
+void iq_cic_test(uint32_t val)
+{
+	hamradio_set_gdactest(val);
+}
+
+#endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */

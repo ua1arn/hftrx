@@ -1,0 +1,27 @@
+#type; SWIC_MFBSP_DMA; Регистры встроенных DMA портов SWIC и MFBSP
+
+#base; DMA_MFBSP0 0x38087000 
+#base; DMA_MFBSP1 0x38089000 
+
+#irq; MFBSP0_DMAIRQ0 52; MFBSP0
+#irq; MFBSP0_DMAIRQ1 53; MFBSP0
+#irq; MFBSP1_DMAIRQ0 54; MFBSP1
+#irq; MFBSP1_DMAIRQ1 55; MFBSP0
+
+#base; DMA_SWIC0 0x38083000
+#base; DMA_SWIC1 0x38085000 
+
+#irq; SWIC0DMA_IRQ0 80; SWIC0
+#irq; SWIC0DMA_IRQ1 81; SWIC0
+#irq; SWIC0DMA_IRQ2 82; SWIC0
+#irq; SWIC0DMA_IRQ3 83; SWIC0
+
+#irq; SWIC1DMA_IRQ0 84; SWIC1
+#irq; SWIC1DMA_IRQ1 85; SWIC1
+#irq; SWIC1DMA_IRQ2 86; SWIC1
+#irq; SWIC1DMA_IRQ3 87; SWIC1
+
+#regdef; CSR;	0x00; Регистр управления и состояния (по чтению сброс битов «END» и «DONE»)
+#regdef; CP;	0x04; Регистр указателя цепочки 
+#regdef; IR;	0x08; Регистр индекса
+#regdef; RUN;	0x0c; На запись: Псевдорегистр управления состоянием бита RUN регистра CSR На чтение: Регистр управления и состояния без сброса битов «END» и «DONE»

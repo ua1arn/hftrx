@@ -39,10 +39,19 @@ struct regdfn {
 	char *comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 	unsigned resetvalue;
+
+	LIST_ENTRY bitfields; /* named bitfields in register */
+};
+
+struct bitfield {
+	LIST_ENTRY item;
+	char *bitfldname;
+	unsigned bitfldwidth; /* width in bits */
+	unsigned bitfldrpos; /* right bit position */
 };
 
 enum {
-	BASE_MAX = 32
+	BASE_MAX = 64
 };
 enum {
 	VNAME_MAX = 96
@@ -55,23 +64,27 @@ enum {
 struct parsedfile {
 	LIST_ENTRY item;
 	LIST_ENTRY regslist;
-	//   size_t nregs;
-	//   struct regdfn * regs;
+
 	char bname[VNAME_MAX];
-	int base_count;
-	unsigned base_address[BASE_MAX];
-	char base_names[BASE_MAX][VNAME_MAX];
-
-	int irq_count;
-	int irq_array[BASE_MAX];
-	char irq_names[BASE_MAX][VNAME_MAX];
-
-	int irqrv_count;
-	int irqrv_array[BASE_MAX];
-	char irqrv_names[BASE_MAX][VNAME_MAX];
-
 	char *comment;
 	char *file;
+
+	int base_count;
+	unsigned base_address[BASE_MAX];
+	char *base_xnames[BASE_MAX];
+
+	// ARM interrupt requests
+	int irq_count;
+	int irq_array[BASE_MAX];
+	char *irq_xnames[BASE_MAX];
+	char *irq_xcomments[BASE_MAX];
+
+	// RISC-V interrupt requests
+	int irqrv_count;
+	int irqrv_array[BASE_MAX];
+	char *irqrv_xnames[BASE_MAX];
+	char *irqrv_xcomments[BASE_MAX];
+
 };
 
 #define INDENT 4
@@ -332,19 +345,14 @@ static LIST_ENTRY parsedfiles;
 
 struct basemap {
 	unsigned base;
-	char name[VNAME_MAX];
+	char *xname;
 	struct parsedfile *pfl;
 };
 
 struct irqmap {
 	int irq;
-	char name[VNAME_MAX];
-	struct parsedfile *pfl;
-};
-
-struct irqmaprv {
-	int irqrv;
-	char name[VNAME_MAX];
+	char *xname;
+	char *xcomment;
 	struct parsedfile *pfl;
 };
 
@@ -353,7 +361,7 @@ static int compare_base(const void *v1, const void *v2) {
 	const struct basemap *p1 = v1;
 	const struct basemap *p2 = v2;
 	if (p1->base == p2->base) {
-		return strcmp(p1->name, p2->name);
+		return strcmp(p1->xname, p2->xname);
 	}
 	return p1->base - p2->base;
 }
@@ -364,20 +372,9 @@ static int compare_irq(const void *v1, const void *v2) {
 	const struct irqmap *p2 = v2;
 
 	if (p1->irq == p2->irq) {
-		return strcmp(p1->name, p2->name);
+		return strcmp(p1->xname, p2->xname);
 	}
 	return p1->irq - p2->irq;
-}
-
-/* qsort parameter */
-static int compare_irqrv(const void *v1, const void *v2) {
-	const struct irqmaprv *p1 = v1;
-	const struct irqmaprv *p2 = v2;
-
-	if (p1->irqrv == p2->irqrv) {
-		return strcmp(p1->name, p2->name);
-	}
-	return p1->irqrv - p2->irqrv;
 }
 
 /* qsort parameter */
@@ -393,18 +390,21 @@ static int compare_pfltypes(const void *v1, const void *v2) {
 static char token0[1024];
 #define TKSZ (sizeof token0 / sizeof token0 [0])
 
-static int nextline(FILE *fp) {
-	char *s = fgets(token0, TKSZ, fp);
-	if (s != NULL) {
-		//fprintf(stderr, "#input:  '%s", s);
-	}
-	return s != NULL;
-
-}
-
 static int istokencomment(void) {
 	return 0 == memcmp(token0, "##", 2) || 0 == memcmp(token0, "# ", 2) || 0 == strcmp(token0, "#\n") || 0 == strcmp(token0, "\n")
 			|| 0;
+}
+
+static int nextline(FILE *fp) {
+	for (;;) {
+		char *s = fgets(token0, TKSZ, fp);
+		if (s != NULL) {
+			if (istokencomment())
+				continue;
+		}
+		return s != NULL;
+	}
+
 }
 
 /* trim field name */
@@ -435,6 +435,7 @@ parseregdef(char *s0, char *fldname, unsigned fldsize, const char *file) {
 	char *s2 = strtok(NULL, SEP);
 
 	InitializeListHead(&regp->aggregate);
+	InitializeListHead(&regp->bitfields);
 
 	trimname(fldname);
 
@@ -490,11 +491,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 	for (;;) {
 		//fprintf(stderr, "token0=%s\n", token0);
-		if (istokencomment()) {
-			// source comments
-			if (nextline(fp) == 0)
-				break;
-		} else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
+		if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, file);
 			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
 			/* parsed */
@@ -543,9 +540,20 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	int irq;
 	unsigned base;
 
+	memset(comment, 0, sizeof comment);
+
 	// #type should be 1-st in register definitions
-	if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]s\n", typname)) {
-		//fprintf(stderr, "Parsed typname='%s'\n", typname);
+	if (2 == sscanf(token0, "#type; %[a-zA-Z0-9_]; %1023[^\n]", typname, comment)) {
+		//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
+		trimname(typname);
+		strcpy(pfl->bname, typname);
+		pfl->comment = strdup(comment);
+
+		/* parsed */
+		if (nextline(fp) == 0)
+			return 0;
+	} else if (1 == sscanf(token0, "#type; %[a-zA-Z0-9_]\n", typname)) {
+		//fprintf(stderr, "Parsed [%s]: typname='%s'\n", token0, typname);
 		trimname(typname);
 		strcpy(pfl->bname, typname);
 
@@ -555,16 +563,27 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 	} else {
 		return 0;
 	}
+
 	for (;;) {
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (istokencomment()) {
-			// source comments
-			if (nextline(fp) == 0)
-				break;
-		} else if (1 == sscanf(token0, "#comment; %1023[^\n]c\n", comment)) {
+		if (1 == sscanf(token0, "#comment; %1023[^\n]\n", comment)) {
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
 			pfl->comment = strdup(comment);
+			if (nextline(fp) == 0)
+				break;
+		} else if (3 == sscanf(token0, "#irq; %s %i; %1023[^\n]", irqname, &irq, comment)) {
+			trimname(irqname);
+			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
+			if (pfl->irq_count < BASE_MAX) {
+				pfl->irq_array[pfl->irq_count] = irq;
+				pfl->irq_xnames[pfl->irq_count] = strdup(irqname);
+				pfl->irq_xcomments[pfl->irq_count] = strdup(comment);
+				//
+				++pfl->irq_count;
+			}
+
+			/* parsed */
 			if (nextline(fp) == 0)
 				break;
 		} else if (2 == sscanf(token0, "#irq; %s %i\n", irqname, &irq)) {
@@ -572,9 +591,24 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irq='%s' %d\n", irqname, irq);
 			if (pfl->irq_count < BASE_MAX) {
 				pfl->irq_array[pfl->irq_count] = irq;
-				strcpy(pfl->irq_names[pfl->irq_count], irqname);
+				pfl->irq_xnames[pfl->irq_count] = strdup(irqname);
+				pfl->irq_xcomments[pfl->irq_count] = NULL;
 				//
 				++pfl->irq_count;
+			}
+
+			/* parsed */
+			if (nextline(fp) == 0)
+				break;
+		} else if (3 == sscanf(token0, "#irqrv; %s %i; %1023[^\n]\n", irqname, &irq, comment)) {
+			trimname(irqname);
+			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
+			if (pfl->irqrv_count < BASE_MAX) {
+				pfl->irqrv_array[pfl->irqrv_count] = irq;
+				pfl->irqrv_xnames[pfl->irqrv_count] = strdup(irqname);
+				pfl->irqrv_xcomments[pfl->irqrv_count] = strdup(comment);
+				//
+				++pfl->irqrv_count;
 			}
 
 			/* parsed */
@@ -585,7 +619,8 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			//fprintf(stderr, "Parsed irqrv='%s' %d\n", irqname, irqrv);
 			if (pfl->irqrv_count < BASE_MAX) {
 				pfl->irqrv_array[pfl->irqrv_count] = irq;
-				strcpy(pfl->irqrv_names[pfl->irqrv_count], irqname);
+				pfl->irqrv_xnames[pfl->irqrv_count] = strdup(irqname);
+				pfl->irqrv_xcomments[pfl->irqrv_count] = NULL;
 				//
 				++pfl->irqrv_count;
 			}
@@ -598,7 +633,7 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file) {
 			if (pfl->base_count < BASE_MAX) {
 				pfl->base_address[pfl->base_count] = base;
 				trimname(typname);
-				strcpy(pfl->base_names[pfl->base_count], typname);
+				pfl->base_xnames[pfl->base_count] = strdup(typname);
 				++pfl->base_count;
 			}
 
@@ -625,10 +660,9 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file) {
 	pfl->irqrv_count = 0;
 
 	InitializeListHead(&pfl->regslist);
-	//pfl->regs = NULL; 
-	//pfl->nregs = 0; 
-	pfl->comment = NULL;
+
 	pfl->file = strdup(file);
+	pfl->comment = NULL;
 
 	//fprintf(stderr, "#error Opened file '%s'\n", file);
 
@@ -684,7 +718,7 @@ static int collect_base(struct parsedfile *pfl, int n, struct basemap *v) {
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->base_count && n--; ++i, ++v, ++score) {
-		strcpy(v->name, pfl->base_names[i]);
+		v->xname = pfl->base_xnames[i];
 		v->base = pfl->base_address[i];
 		v->pfl = pfl;
 	}
@@ -696,24 +730,39 @@ static int collect_irq(struct parsedfile *pfl, int n, struct irqmap *v) {
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->irq_count && n--; ++i, ++v, ++score) {
-		strcpy(v->name, pfl->irq_names[i]);
+		v->xname = pfl->irq_xnames[i];
+		v->xcomment = pfl->irq_xcomments[i];
 		v->irq = pfl->irq_array[i];
 		v->pfl = pfl;
 	}
 	return score;
 }
 
-static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmaprv *v) {
+static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmap *v) {
 	/* collect irq vectors */
 	int i;
 	int score = 0;
 	for (i = 0; i < pfl->irqrv_count && n--; ++i, ++v, ++score) {
-		strcpy(v->name, pfl->irqrv_names[i]);
-		v->irqrv = pfl->irqrv_array[i];
+		v->xname = pfl->irqrv_xnames[i];
+		v->xcomment = pfl->irqrv_xcomments[i];
+		v->irq = pfl->irqrv_array[i];
 		v->pfl = pfl;
 	}
 	return score;
 }
+
+/* release memory of bitfields */
+static void freebitfields(PLIST_ENTRY p) {
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;) {
+		struct bitfield *const fieldp = CONTAINING_RECORD(t, struct bitfield, item);
+		t = t->Flink;
+		free(fieldp->bitfldname);
+	}
+}
+
+/* release memory of register definitions */
 static void freeregdfn(PLIST_ENTRY p) {
 	PLIST_ENTRY t;
 	//fprintf(stderr, "Release memory\n");
@@ -723,11 +772,26 @@ static void freeregdfn(PLIST_ENTRY p) {
 		free(regp->fldname);
 		free(regp->comment);
 		freeregdfn(&regp->aggregate);
+		freebitfields(&regp->bitfields);
 		free(regp);
 	}
 }
 
 static void freeregs(struct parsedfile *pfl) {
+	int i;
+	for (i = 0; i < pfl->irqrv_count; ++i) {
+		free(pfl->irqrv_xnames[i]);
+		free(pfl->irqrv_xcomments[i]);
+	}
+	for (i = 0; i < pfl->irq_count; ++i) {
+		free(pfl->irq_xnames[i]);
+		free(pfl->irq_xcomments[i]);
+	}
+	for (i = 0; i < pfl->base_count; ++i) {
+		free(pfl->base_xnames[i]);
+		//free(pfl->base_xcomments [i]);
+	}
+	//free(pfl->sss);
 	freeregdfn(&pfl->regslist);
 	free(pfl->comment);
 	free(pfl->file);
@@ -752,6 +816,7 @@ static unsigned emitregister000(int indent, const struct regdfn *const regp, uns
 	offs = 0;
 	if (regp->fldsize == 0) {
 		/* set to required size */
+		offs = regp->fldoffs - baseoffset;
 	} else {
 
 		emitline(indent + 0, "<register>" "\n");
@@ -819,7 +884,12 @@ unsigned emitregister(int indent, const struct regdfn *const regp, unsigned base
 			//		regp->fldname);
 			offs += emitregister000(indent, regp, 0);
 		}
+	} else {
+		// fldsize == 0: align
+		//fprintf(stderr, "align to %u %s\n", regp->fldoffs, regp->fldname);
+		offs = regp->fldoffs - baseoffset;
 	}
+
 	return offs;
 }
 
@@ -854,13 +924,13 @@ static void emitinterrupts(int indent, const struct parsedfile *pfl) {
 		/* collect ARM IRQ vectors */
 		int i;
 		for (i = 0; i < pfl->irq_count; ++i) {
-			emitinterrupt(indent, pfl->irq_names[i], pfl->irq_array[i]);
+			emitinterrupt(indent, pfl->irq_xnames[i], pfl->irq_array[i]);
 		}
 	} else {
 		/* collect RISC-V IRQ vectors */
 		int i;
 		for (i = 0; i < pfl->irqrv_count; ++i) {
-			emitinterrupt(indent, pfl->irqrv_names[i], pfl->irqrv_array[i]);
+			emitinterrupt(indent, pfl->irqrv_xnames[i], pfl->irqrv_array[i]);
 		}
 	}
 }
@@ -877,7 +947,7 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	/* name */
 	if (pfl->base_count >= 1) {
 		emitline(indent, "<peripheral>" "\n");
-		emitstring(indent, "name", pfl->base_names[0]);
+		emitstring(indent, "name", pfl->base_xnames[0]);
 		emitstring(indent, "description", pfl->comment);
 		//emitstring(indent, "<groupName>%s</groupName>" "\n", pfl->base_names [0]);
 		emithex32(indent, "baseAddress", pfl->base_address[0]);
@@ -888,8 +958,8 @@ static void emitperipherial(int indent, const struct parsedfile *pfl) {
 	/* base address */
 	for (i = 1; i < pfl->base_count; ++i) {
 
-		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n", pfl->base_names[0]);
-		emitstring(indent, "name", pfl->base_names[i]);
+		emitline(indent, "<peripheral derivedFrom=\"%s\">" "\n", pfl->base_xnames[0]);
+		emitstring(indent, "name", pfl->base_xnames[i]);
 		emithex32(indent, "baseAddress", pfl->base_address[i]);
 		emitinterrupts(indent, pfl);
 		emitline(indent, "</peripheral>" "\n");
@@ -1002,9 +1072,10 @@ static void generate_cmsis(void) {
 		emitline(0, "{\n");
 		for (i = 0; i < nitems; ++i) {
 			struct irqmap *const p = &irqs[i];
+			const char *comment = p->xcomment ? p->xcomment : p->pfl->comment ? p->pfl->comment : "";
 
-			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irq);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irq);
+			emitline(COMMENTNEAR, "/*!< %s %s */\n", p->pfl->bname, comment);
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
@@ -1022,9 +1093,9 @@ static void generate_cmsis(void) {
 		const int maxbases = MAXIRQNUMBERS;
 		int nitems = 0;
 		int i;
-		struct irqmaprv *irqs;
+		struct irqmap *irqs;
 
-		irqs = calloc(maxbases, sizeof(struct irqmaprv));
+		irqs = calloc(maxbases, sizeof(struct irqmap));
 
 		{
 			PLIST_ENTRY t;
@@ -1034,11 +1105,11 @@ static void generate_cmsis(void) {
 			}
 		}
 		if (maxbases == nitems) {
-			fprintf(stderr, "Too large data (struct irqmaprv)\n");
+			fprintf(stderr, "Too large data (struct irqmap)\n");
 			return;
 		}
 
-		qsort(irqs, nitems, sizeof irqs[0], compare_irqrv);
+		qsort(irqs, nitems, sizeof irqs[0], compare_irq);
 
 		/* generate RISC-V IRQ vectors */
 		emitline(0, "\n");
@@ -1047,10 +1118,10 @@ static void generate_cmsis(void) {
 		emitline(0, "typedef enum IRQn\n");
 		emitline(0, "{\n");
 		for (i = 0; i < nitems; ++i) {
-			struct irqmaprv *const p = &irqs[i];
-
-			emitline(INDENT, "%s_IRQn = %d,", p->name, p->irqrv);
-			emitline(COMMENTNEAR, "/*!< %s %s Interrupt */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
+			struct irqmap *const p = &irqs[i];
+			const char *comment = p->xcomment ? p->xcomment : p->pfl->comment ? p->pfl->comment : "";
+			emitline(INDENT, "%s_IRQn = %d,", p->xname, p->irq);
+			emitline(COMMENTNEAR, "/*!< %s %s */\n", p->pfl->bname, comment);
 		}
 		emitline(0, "\n");
 		emitline(INDENT, "MAX_IRQ_n,\n");
@@ -1090,8 +1161,8 @@ static void generate_cmsis(void) {
 		for (i = 0; i < nitems; ++i) {
 			struct basemap *const p = &maps[i];
 
-			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->name, p->base);
-			emitline(COMMENTNEAR, "/*!< %s Base */\n", p->pfl->bname);
+			emitline(0, "#define %s_BASE ((uintptr_t) 0x%08X)", p->xname, p->base);
+			emitline(COMMENTNEAR, "/*!< %s %s Base */\n", p->pfl->bname, p->pfl->comment ? p->pfl->comment : "");
 		}
 		emitline(0, "\n");
 		free(maps);
@@ -1136,8 +1207,8 @@ static void generate_cmsis(void) {
 				/* no structure defined */
 				continue;
 			}
-			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].name, maps[i].pfl->bname, maps[i].name);
-			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n", maps[i].name, pfl->comment ? pfl->comment : "");
+			emitline(0, "#define %s ((%s_TypeDef *) %s_BASE)", maps[i].xname, maps[i].pfl->bname, maps[i].xname);
+			emitline(COMMENTNEAR, "/*!< %s %s register set access pointer */\n", maps[i].xname, pfl->comment ? pfl->comment : "");
 		}
 		emitline(0, "\n");
 		free(maps);

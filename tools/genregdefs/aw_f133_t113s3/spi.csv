@@ -1,8 +1,14 @@
-#type; SPI
+#type; SPI; Serial Peripheral Interface
 #base; SPI0 0x04025000
+#base; SPI1 0x04026000
+#base; SPI_DBI 0x04026000
+
 #irqrv; SPI0 31
+#irqrv; SPI1 32
 #irq; SPI0 47
-#comment; Serial Peripheral Interface
+#irq; SPI1 48
+
+
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
 #regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
 #regdef; SPI_IER; 0x0010; SPI Interrupt Control Register
@@ -19,5 +25,13 @@
 #regdef; SPI_TBR; 0x0048; SPI TX Bit Register
 #regdef; SPI_RBR; 0x004C; SPI RX Bit Register
 #regdef; SPI_NDMA_MODE_CTL; 0x0088; SPI Normal DMA Mode Control Register
+#regdef; DBI_CTL_0; 0x0100; DBI Control Register 0
+#regdef; DBI_CTL_1; 0x0104; DBI Control Register 1
+#regdef; DBI_CTL_2; 0x0108; DBI Control Register 2
+#regdef; DBI_TIMER; 0x010C; DBI Timer Control Register
+#regdef; DBI_VIDEO_SZIE; 0x0110; DBI Video Size Configuration Register
+#regdef; DBI_INT; 0x0120; DBI Interrupt Register
+#regdef; DBI_DEBUG_0; 0x0124; DBI BEBUG 0 Register
+#regdef; DBI_DEBUG_1; 0x0128; DBI BEBUG 1 Register
 #regdef; SPI_TXD; 0x0200; SPI TX Data Register
 #regdef; SPI_RXD; 0x0300; SPI RX Data Register

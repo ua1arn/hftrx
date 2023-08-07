@@ -1,9 +1,12 @@
-#type; HSTIMER
-#comment; High Speed Timer
+#type; HSTIMER; High Speed Timer (HSTimer)
+
+#base; HSTIMER 0x03008000
+
 #irq; HSTIMER0 87
 #irq; HSTIMER1 88
 #irqrv; HSTIMER0 71
 #irqrv; HSTIMER1 72
+
 #regdef; HS_TMR_IRQ_EN_REG; 0x0000; HS Timer IRQ Enable Register
 #regdef; HS_TMR_IRQ_STAS_REG; 0x0004; HS Timer Status Register
 #regdef; HS_TMR0_CTRL_REG; 0x0020; HS Timer0 Control Register

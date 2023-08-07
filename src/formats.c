@@ -424,7 +424,7 @@ toprintc(int c)
 void
 printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 {
-	const uint8_t * buff = (const uint8_t *) vbuff;
+	const volatile uint8_t * buff = (const volatile uint8_t *) vbuff;
 	enum { ROWSIZE = 16 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = (length + ROWSIZE - 1) / ROWSIZE;
@@ -450,7 +450,7 @@ printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 void
 printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 {
-	const uint32_t * buff = (const uint32_t *) vbuff;
+	const volatile uint32_t * buff = (const volatile uint32_t *) vbuff;
 	enum { ROWSIZE = 8 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
@@ -470,7 +470,7 @@ printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 void
 printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 {
-	const uint64_t * buff = (const uint64_t *) vbuff;
+	const volatile uint64_t * buff = (const volatile uint64_t *) vbuff;
 	enum { ROWSIZE = 4 };	/* elements in one row */
 	unsigned i, j;
 	unsigned rows = ((length + 7) / 8 + ROWSIZE - 1) / ROWSIZE;
@@ -580,6 +580,13 @@ int dbg_puts_impl(const char * s)
 	return 0;
 }
 
+// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+void dbg_flush(void)
+{
+	local_delay_ms(500);
+	HARDWARE_DEBUG_FLUSH();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+}
+
 #else /* WITHDEBUG */
 
 int dbg_getchar(char * r)
@@ -602,6 +609,12 @@ int dbg_puts_impl(const char * s)
 	(void) s;
 	return 0;
 }
+
+// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+void dbg_flush(void)
+{
+}
+
 #endif /* WITHDEBUG */
 
 

@@ -1,0 +1,80 @@
+#type; G2D; Graphic 2D (G2D) Engine
+#basel 0x01e80000
+
+# (taken from https://github.com/‎linux-sunxi/drivers/char/sunxi_g2d/g2d_regs.h)
+# https://github.com/linux-sunxi/linux-sunxi/blob/d47d367036be38c5180632ec8a3ad169a4593a88/drivers/char/sunxi_g2d/g2d_regs.h#L48
+
+# Graphics 2D General Registers
+
+#regdef; G2D_CONTROL_REG; 0x000; Control register
+#regdef; G2D_STATUS_REG; 0x004; Status register
+#regdef; G2D_SCAN_ORDER_REG; 0x008; DMA scan order control register
+
+# Graphics 2D Input Address Parameter Setting Registers
+
+#regdef; G2D_DMA_HADDR_REG; 0x00c; Input DMA high 4 bits start addr register
+#regdef; G2D_DMA0_LADDR_REG; 0x010; Input DMA0 low 32 bits start addr register
+#regdef; G2D_DMA1_LADDR_REG; 0x014; Input DMA1 low 32 bits start addr register
+#regdef; G2D_DMA2_LADDR_REG; 0x018; Input DMA2 low 32 bits start addr register
+#regdef; G2D_DMA3_LADDR_REG; 0x01c; Input DMA3 low 32 bits start addr register
+
+# Graphics 2D Input Linewidth Buffer Parameter Setting Registers
+
+#regdef; G2D_DMA0_STRIDE_REG; 0x020; Input DMA0 line stride register
+#regdef; G2D_DMA1_STRIDE_REG; 0x024; Input DMA1 line stride register
+#regdef; G2D_DMA2_STRIDE_REG; 0x028; Input DMA2 line stride register
+#regdef; G2D_DMA3_STRIDE_REG; 0x02c; Input DMA3 line stride register
+#regdef; G2D_DMA0_SIZE_REG; 0x030; Input DMA0 memory block size register
+#regdef; G2D_DMA1_SIZE_REG; 0x034; Input DMA1 memory block size register
+#regdef; G2D_DMA2_SIZE_REG; 0x038; Input DMA2 memory block size register
+#regdef; G2D_DMA3_SIZE_REG; 0x03c; Input DMA3 memory block size register
+#regdef; G2D_DMA0_COOR_REG; 0x040; Input DMA0 memory block coordinate register
+#regdef; G2D_DMA1_COOR_REG; 0x044; Input DMA1 memory block coordinate register
+#regdef; G2D_DMA2_COOR_REG; 0x048; Input DMA2 memory block coordinate register
+#regdef; G2D_DMA3_COOR_REG; 0x04c; Input DMA3 memory block coordinate register
+#regdef; G2D_DMA0_CONTROL_REG; 0x050; Input DMA0 control register
+#regdef; G2D_DMA1_CONTROL_REG; 0x054; Input DMA1 control register
+#regdef; G2D_DMA2_CONTROL_REG; 0x058; Input DMA2 control register
+#regdef; G2D_DMA3_CONTROL_REG; 0x05c; Input DMA3 control register
+#regdef; G2D_DMA0_FILLCOLOR_REG; 0x060; Input DMA0 fillcolor register
+#regdef; G2D_DMA1_FILLCOLOR_REG; 0x064; Input DMA1 fillcolor register
+#regdef; G2D_DMA2_FILLCOLOR_REG; 0x068; Input DMA2 fillcolor register
+#regdef; G2D_DMA3_FILLCOLOR_REG; 0x06c; Input DMA3 fillcolor register
+#regdef; G2D_CSC0_CONTROL_REG; 0x074; Color space converter0 control register
+#regdef; G2D_CSC1_CONTROL_REG; 0x078; Color space converter1 control register
+#regdef; G2D_SCALER_CONTROL_REG; 0x080; Scaler control register
+#regdef; G2D_SCALER_SIZE_REG; 0x084; Scaler output size control register
+#regdef; G2D_SCALER_HFACTOR_REG; 0x088; Scaler horizontal scaling factor register
+#regdef; G2D_SCALER_VFACTOR_REG; 0x08c; Scaler vertical scaling factor register
+#regdef; G2D_SCALER_HPHASE_REG; 0x090; Scaler horizontal start phase register
+#regdef; G2D_SCALER_VPHASE_REG; 0x094; Scaler vertical start phase register
+#regdef; G2D_ROP_CONTROL_REG; 0x0b0; Rop control register
+#regdef; G2D_ROP_INDEX0_REG; 0x0b8; Rop index0 control table setting register
+#regdef; G2D_ROP_INDEX1_REG; 0x0bc; Rop index1 control table setting register
+#regdef; G2D_CK_CONTROL_REG; 0x0c0; Colorkey/alpha control register
+#regdef; G2D_CK_MINCOLOR_REG; 0x0c4; Colorkey min color control register
+#regdef; G2D_CK_MAXCOLOR_REG; 0x0c8; Colorkey max color control register
+#regdef; G2D_ROP_FILLCOLOR_REG; 0x0cc; Rop output fillcolor setting register
+#regdef; G2D_CSC2_CONTROL_REG; 0x0d0; Color space converter2 control register
+#regdef; G2D_OUTPUT_CONTROL_REG; 0x0e0; Output control register
+#regdef; G2D_OUTPUT_SIZE_REG; 0x0e8; Output size register
+#regdef; G2D_OUTPUT_HADDR_REG; 0x0ec; Output high 4 bits address control register
+#regdef; G2D_OUTPUT0_LADDR_REG; 0x0f0; Output low 32 bits address control register
+#regdef; G2D_OUTPUT1_LADDR_REG; 0x0f4; Output low 32 bits address control register
+#regdef; G2D_OUTPUT2_LADDR_REG; 0x0f8; Output low 32 bits address control register
+#regdef; G2D_OUTPUT0_STRIDE_REG; 0x100; Output channel0 line stride control register
+#regdef; G2D_OUTPUT1_STRIDE_REG; 0x104; Output channel1 line stride control register
+#regdef; G2D_OUTPUT2_STRIDE_REG; 0x108; Output channel2 line stride control register
+#regdef; G2D_OALPHA_CONTROL_REG; 0x120; Output alpha control register
+#regdef; G2D_DMA0_MBCTL_REG; 0x130; Input DMA0 micro block control register
+#regdef; G2D_DMA1_MBCTL_REG; 0x134; Input DMA1 micro block control register
+#regdef; G2D_DMA2_MBCTL_REG; 0x138; Input DMA2 micro block control register
+#regdef; G2D_DMA3_MBCTL_REG; 0x13c; Input DMA3 micro block control register
+#regdef; G2D_CMDQ_CTL_REG; 0x140; command queue control register
+#regdef; G2D_CMDQ_STS_REG; 0x144; command queue status register
+#regdef; G2D_CMDQ_ADDR_REG; 0x148; command queue storage start address register
+#regdef; G2D_CSC01_ADDR_REG; 0x180 12; CSC0/1 coefficient/constant start addr register0x180-0x1ac)
+#regdef; G2D_CSC2_ADDR_REG; 0x1c0 12; CSC2 coefficient/constant start addr register0x1c0-0x1ec)
+#regdef; G2D_SCALER_HFILTER_REG; 0x200 32; Scaling horizontal filtering coefficient ram block register0x200-0x27c)
+#regdef; G2D_SCALER_VFILTER_REG; 0x280 32; Scaling vertical filtering coefficient ram block register0x280-0x2fc)
+#regdef; G2D_PALETTE_TAB_REG; 0x400 256; Scaling horizontal filtering coefficient ram block register0x400-0x7fc)

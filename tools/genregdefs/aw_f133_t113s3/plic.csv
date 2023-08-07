@@ -1,4 +1,4 @@
-#type; PLIC
+#type; PLIC; Platform-Level Interrupt Controller (PLIC)
 #base; PLIC 0x10000000
 #regdef; PLIC_PRIO_REGn; 0x0000 1024; (0<n<256) PLIC Priority Register n - Interrupt Source Priority
 #regdef; PLIC_IP_REGn; 0x1000 32; (0≤n<9) PLIC Interrupt Pending Register n - Interrupt Pending Bits

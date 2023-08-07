@@ -11,7 +11,7 @@
  <peripherals>
   <peripheral>
   <name>AUDIO_CODEC</name>
-  <description></description>
+  <description>Audio Codec</description>
   <baseAddress>0x02030000</baseAddress>
   <interrupt>
    <name>AUDIO_CODEC</name>
@@ -1540,7 +1540,7 @@
   </peripheral>
   <peripheral>
   <name>CCU</name>
-  <description></description>
+  <description>Clock Controller Unit (CCU)</description>
   <baseAddress>0x02001000</baseAddress>
   <interrupt>
    <name>CCU_FERR</name>
@@ -2650,7 +2650,7 @@
   </peripheral>
   <peripheral>
   <name>CE_NS</name>
-  <description></description>
+  <description>Crypto Engine (CE)</description>
   <baseAddress>0x03040000</baseAddress>
   <interrupt>
    <name>CE_NS</name>
@@ -4526,7 +4526,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>ROUTE</name>
@@ -4680,7 +4680,7 @@
   </peripheral>
   <peripheral>
   <name>DE_TOP</name>
-  <description>Display Engine (DE)</description>
+  <description>Display Engine (DE) TOP</description>
   <baseAddress>0x05000000</baseAddress>
   <interrupt>
    <name>DE</name>
@@ -4808,7 +4808,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x070</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
    <register>
     <name>TOP_HADDR</name>
@@ -5174,7 +5174,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x2C0</dimIncrement>
+    <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -6944,7 +6944,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_MIXER</name>
-  <description>Graphic 2D (G2D) Engine Video Scaler</description>
+  <description>Graphic 2D (G2D) Engine Video Mixer</description>
   <baseAddress>0x05410100</baseAddress>
   <registers>
    <register>
@@ -6978,7 +6978,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_ROT</name>
-  <description></description>
+  <description>Graphic 2D Rotate</description>
   <baseAddress>0x05438000</baseAddress>
   <registers>
    <register>
@@ -7203,6 +7203,11 @@
   <name>G2D_TOP</name>
   <description>Graphic 2D top</description>
   <baseAddress>0x05410000</baseAddress>
+  <interrupt>
+   <name>G2D</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>G2D_SCLK_GATE</name>
@@ -7244,7 +7249,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_UI0</name>
-  <description></description>
+  <description>Graphic 2D UI surface</description>
   <baseAddress>0x05411000</baseAddress>
   <registers>
    <register>
@@ -7331,7 +7336,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_V0</name>
-  <description></description>
+  <description>Graphic 2D VI surface</description>
   <baseAddress>0x05410800</baseAddress>
   <registers>
    <register>
@@ -7482,7 +7487,7 @@
   </peripheral>
   <peripheral>
   <name>G2D_VSU</name>
-  <description>Also see 5.7 DE UIS Specification</description>
+  <description>Graphic 2D Video Scaler</description>
   <baseAddress>0x05418000</baseAddress>
   <registers>
    <register>
@@ -8038,7 +8043,7 @@
       <dimIncrement>0x008</dimIncrement>
      </cluster>
     </registers>
-    <dimIncrement>0x134</dimIncrement>
+    <dimIncrement>0x150</dimIncrement>
    </cluster>
    <cluster>
     <dim>7</dim>
@@ -8086,7 +8091,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0C4</dimIncrement>
+    <dimIncrement>0x0E0</dimIncrement>
    </cluster>
    <register>
     <name>PIO_POW_MOD_SEL</name>
@@ -8366,6 +8371,131 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>HSTIMER</name>
+  <description>High Speed Timer (HSTimer)</description>
+  <baseAddress>0x03008000</baseAddress>
+  <interrupt>
+   <name>HSTIMER0</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>HSTIMER1</name>
+   <value>72</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>HS_TMR_IRQ_EN_REG</name>
+    <displayName>HS_TMR_IRQ_EN_REG</displayName>
+    <description>HS Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR_IRQ_STAS_REG</name>
+    <displayName>HS_TMR_IRQ_STAS_REG</displayName>
+    <description>HS Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_CTRL_REG</name>
+    <displayName>HS_TMR0_CTRL_REG</displayName>
+    <description>HS Timer0 Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_INTV_LO_REG</name>
+    <displayName>HS_TMR0_INTV_LO_REG</displayName>
+    <description>HS Timer0 Interval Value Low Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_INTV_HI_REG</name>
+    <displayName>HS_TMR0_INTV_HI_REG</displayName>
+    <description>HS Timer0 Interval Value High Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_CURNT_LO_REG</name>
+    <displayName>HS_TMR0_CURNT_LO_REG</displayName>
+    <description>HS Timer0 Current Value Low Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR0_CURNT_HI_REG</name>
+    <displayName>HS_TMR0_CURNT_HI_REG</displayName>
+    <description>HS Timer0 Current Value High Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_CTRL_REG</name>
+    <displayName>HS_TMR1_CTRL_REG</displayName>
+    <description>HS Timer1 Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_INTV_LO_REG</name>
+    <displayName>HS_TMR1_INTV_LO_REG</displayName>
+    <description>HS Timer1 Interval Value Low Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_INTV_HI_REG</name>
+    <displayName>HS_TMR1_INTV_HI_REG</displayName>
+    <description>HS Timer1 Interval Value High Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_CURNT_LO_REG</name>
+    <displayName>HS_TMR1_CURNT_LO_REG</displayName>
+    <description>HS Timer1 Current Value Low Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HS_TMR1_CURNT_HI_REG</name>
+    <displayName>HS_TMR1_CURNT_HI_REG</displayName>
+    <description>HS Timer1 Current Value High Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>I2S1</name>
   <description></description>
   <baseAddress>0x02033000</baseAddress>
@@ -8614,42 +8744,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP0</name>
-    <displayName>I2S_PCM_RXCHMAP0</displayName>
-    <description>I2S/PCM RX Channel Mapping Register0</description>
-    <addressOffset>0x068</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP1</name>
-    <displayName>I2S_PCM_RXCHMAP1</displayName>
-    <description>I2S/PCM RX Channel Mapping Register1</description>
-    <addressOffset>0x06C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP2</name>
-    <displayName>I2S_PCM_RXCHMAP2</displayName>
-    <description>I2S/PCM RX Channel Mapping Register2</description>
-    <addressOffset>0x070</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>I2S_PCM_RXCHMAP3</name>
-    <displayName>I2S_PCM_RXCHMAP3</displayName>
-    <description>I2S/PCM RX Channel Mapping Register3</description>
-    <addressOffset>0x074</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000068</addressOffset>
+    <register>
+     <name>I2S_PCM_RXCHMAP</name>
+     <displayName>I2S_PCM_RXCHMAP</displayName>
+     <description>I2S/PCM RX Channel Mapping Register0..3</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
    <register>
     <name>MCLKCFG</name>
     <displayName>MCLKCFG</displayName>
@@ -9923,6 +10031,11 @@
   <name>MCTL_COM</name>
   <description></description>
   <baseAddress>0x03102000</baseAddress>
+  <interrupt>
+   <name>MCTL</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>MCTL_COM_WORK_MODE0</name>
@@ -10742,133 +10855,13 @@
       <dimIncrement>0x010</dimIncrement>
      </cluster>
     </registers>
-    <dimIncrement>0x0A8</dimIncrement>
+    <dimIncrement>0x200</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
   <peripheral derivedFrom="CPUX_MSGBOX">
   <name>DSP_MSGBOX</name>
   <baseAddress>0x01701000</baseAddress>
-  </peripheral>
-  <peripheral>
-  <name>MSI_MEMC</name>
-  <description></description>
-  <baseAddress>0x03102000</baseAddress>
-  <interrupt>
-   <name>MSI</name>
-   <value>59</value>
-   <description></description>
-  </interrupt>
-  <registers>
-   <register>
-    <name>MCTL_COM_WORK_MODE0</name>
-    <displayName>MCTL_COM_WORK_MODE0</displayName>
-    <description></description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_WORK_MODE1</name>
-    <displayName>MCTL_COM_WORK_MODE1</displayName>
-    <description></description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_DBGCR</name>
-    <displayName>MCTL_COM_DBGCR</displayName>
-    <description></description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_TMR</name>
-    <displayName>MCTL_COM_TMR</displayName>
-    <description></description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_CCCR</name>
-    <displayName>MCTL_COM_CCCR</displayName>
-    <description></description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_MAER0</name>
-    <displayName>MCTL_COM_MAER0</displayName>
-    <description></description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_MAER1</name>
-    <displayName>MCTL_COM_MAER1</displayName>
-    <description></description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_MAER2</name>
-    <displayName>MCTL_COM_MAER2</displayName>
-    <description></description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_REMAP0</name>
-    <displayName>MCTL_COM_REMAP0</displayName>
-    <description></description>
-    <addressOffset>0x500</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_REMAP1</name>
-    <displayName>MCTL_COM_REMAP1</displayName>
-    <description></description>
-    <addressOffset>0x504</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_REMAP2</name>
-    <displayName>MCTL_COM_REMAP2</displayName>
-    <description></description>
-    <addressOffset>0x508</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MCTL_COM_REMAP3</name>
-    <displayName>MCTL_COM_REMAP3</displayName>
-    <description></description>
-    <addressOffset>0x50C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
   </peripheral>
   <peripheral>
   <name>OWA</name>
@@ -11150,7 +11143,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0E0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -11629,7 +11622,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>2</dim>
+    <dim>4</dim>
     <addressOffset>0x000001C4</addressOffset>
     <register>
      <name>SOFTENTRY</name>
@@ -11640,7 +11633,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x008</dimIncrement>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
     <name>SUP_STAN_FLAG</name>
@@ -11771,6 +11764,21 @@
   <name>SMHC0</name>
   <description>SD-MMC Host Controller</description>
   <baseAddress>0x04020000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>SMHC_CTRL</name>
@@ -12137,10 +12145,40 @@
   <peripheral derivedFrom="SMHC0">
   <name>SMHC1</name>
   <baseAddress>0x04021000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="SMHC0">
   <name>SMHC2</name>
   <baseAddress>0x04022000</baseAddress>
+  <interrupt>
+   <name>SMHC0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SMHC2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>SPI0</name>
@@ -12151,175 +12189,6 @@
    <value>31</value>
    <description></description>
   </interrupt>
-  <registers>
-   <register>
-    <name>SPI_GCR</name>
-    <displayName>SPI_GCR</displayName>
-    <description>SPI Global Control Register</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TCR</name>
-    <displayName>SPI_TCR</displayName>
-    <description>SPI Transfer Control Register</description>
-    <addressOffset>0x008</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_IER</name>
-    <displayName>SPI_IER</displayName>
-    <description>SPI Interrupt Control Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_ISR</name>
-    <displayName>SPI_ISR</displayName>
-    <description>SPI Interrupt Status Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_FCR</name>
-    <displayName>SPI_FCR</displayName>
-    <description>SPI FIFO Control Register</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_FSR</name>
-    <displayName>SPI_FSR</displayName>
-    <description>SPI FIFO Status Register</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_WCR</name>
-    <displayName>SPI_WCR</displayName>
-    <description>SPI Wait Clock Register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_SAMP_DL</name>
-    <displayName>SPI_SAMP_DL</displayName>
-    <description>SPI Sample Delay Control Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_MBC</name>
-    <displayName>SPI_MBC</displayName>
-    <description>SPI Master Burst Counter Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_MTC</name>
-    <displayName>SPI_MTC</displayName>
-    <description>SPI Master Transmit Counter Register</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BCC</name>
-    <displayName>SPI_BCC</displayName>
-    <description>SPI Master Burst Control Register</description>
-    <addressOffset>0x038</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BATCR</name>
-    <displayName>SPI_BATCR</displayName>
-    <description>SPI Bit-Aligned Transfer Configure Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_BA_CCR</name>
-    <displayName>SPI_BA_CCR</displayName>
-    <description>SPI Bit-Aligned Clock Configuration Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TBR</name>
-    <displayName>SPI_TBR</displayName>
-    <description>SPI TX Bit Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_RBR</name>
-    <displayName>SPI_RBR</displayName>
-    <description>SPI RX Bit Register</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_NDMA_MODE_CTL</name>
-    <displayName>SPI_NDMA_MODE_CTL</displayName>
-    <description>SPI Normal DMA Mode Control Register</description>
-    <addressOffset>0x088</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_TXD</name>
-    <displayName>SPI_TXD</displayName>
-    <description>SPI TX Data Register</description>
-    <addressOffset>0x200</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SPI_RXD</name>
-    <displayName>SPI_RXD</displayName>
-    <description>SPI RX Data Register</description>
-    <addressOffset>0x300</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>SPI_DBI</name>
-  <description>Serial Peripheral Interface</description>
-  <baseAddress>0x04026000</baseAddress>
   <interrupt>
    <name>SPI1</name>
    <value>32</value>
@@ -12545,7 +12414,7 @@
    <register>
     <name>SPI_TXD</name>
     <displayName>SPI_TXD</displayName>
-    <description>SPI TX Data register</description>
+    <description>SPI TX Data Register</description>
     <addressOffset>0x200</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -12554,12 +12423,142 @@
    <register>
     <name>SPI_RXD</name>
     <displayName>SPI_RXD</displayName>
-    <description>SPI RX Data register</description>
+    <description>SPI RX Data Register</description>
     <addressOffset>0x300</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="SPI0">
+  <name>SPI1</name>
+  <baseAddress>0x04026000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>31</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="SPI0">
+  <name>SPI_DBI</name>
+  <baseAddress>0x04026000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>31</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>SPINLOCK</name>
+  <description>Spin Lock module</description>
+  <baseAddress>0x03005000</baseAddress>
+  <registers>
+   <register>
+    <name>SPINLOCK_SYSTATUS_REG</name>
+    <displayName>SPINLOCK_SYSTATUS_REG</displayName>
+    <description>Spinlock System Status Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_STATUS_REG</name>
+    <displayName>SPINLOCK_STATUS_REG</displayName>
+    <description>Spinlock Status Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_IRQ_EN_REG</name>
+    <displayName>SPINLOCK_IRQ_EN_REG</displayName>
+    <description>Spinlock Interrupt Enable Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_IRQ_STA_REG</name>
+    <displayName>SPINLOCK_IRQ_STA_REG</displayName>
+    <description>Spinlock Interrupt Status Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID0_REG</name>
+    <displayName>SPINLOCK_LOCKID0_REG</displayName>
+    <description>Spinlock Lockid0 Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID1_REG</name>
+    <displayName>SPINLOCK_LOCKID1_REG</displayName>
+    <description>Spinlock Lockid1 Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID2_REG</name>
+    <displayName>SPINLOCK_LOCKID2_REG</displayName>
+    <description>Spinlock Lockid2 Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID3_REG</name>
+    <displayName>SPINLOCK_LOCKID3_REG</displayName>
+    <description>Spinlock Lockid3 Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID4_REG</name>
+    <displayName>SPINLOCK_LOCKID4_REG</displayName>
+    <description>Spinlock Lockid4 Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>SPINLOCK_LOCK_REG</name>
+     <displayName>SPINLOCK_LOCK_REG</displayName>
+     <description>Spinlock Register N (N = 0 to 31)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>
@@ -12634,7 +12633,7 @@
   </peripheral>
   <peripheral>
   <name>TCON_LCD0</name>
-  <description></description>
+  <description>Timing Controller_LCD (TCON_LCD)</description>
   <baseAddress>0x05461000</baseAddress>
   <registers>
    <register>
@@ -12860,7 +12859,7 @@
     <register>
      <name>LCD_CEU_COEF_MUL_REG</name>
      <displayName>LCD_CEU_COEF_MUL_REG</displayName>
-     <description>LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10)</description>
+     <description>LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10) N=0: Rr, N=1: Rg, N=2: Rb, N=4: Gr, N=5: Gg, N=6: Gb, N=8: Br, N=9: Bg, N=10: Bb</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -12871,7 +12870,7 @@
    <register>
     <name>LCD_CEU_COEF_ADD0_REG</name>
     <displayName>LCD_CEU_COEF_ADD0_REG</displayName>
-    <description>LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2)</description>
+    <description>LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) N=0: Rc, N=1: Gc, N=2: Bc</description>
     <addressOffset>0x11C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -12909,60 +12908,20 @@
     </register>
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
-   <register>
-    <name>LCD_CPU_TRI0_REG</name>
-    <displayName>LCD_CPU_TRI0_REG</displayName>
-    <description>LCD CPU Panel Trigger Register0</description>
-    <addressOffset>0x160</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI1_REG</name>
-    <displayName>LCD_CPU_TRI1_REG</displayName>
-    <description>LCD CPU Panel Trigger Register1</description>
-    <addressOffset>0x164</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI2_REG</name>
-    <displayName>LCD_CPU_TRI2_REG</displayName>
-    <description>LCD CPU Panel Trigger Register2</description>
-    <addressOffset>0x168</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI3_REG</name>
-    <displayName>LCD_CPU_TRI3_REG</displayName>
-    <description>LCD CPU Panel Trigger Register3</description>
-    <addressOffset>0x16C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI4_REG</name>
-    <displayName>LCD_CPU_TRI4_REG</displayName>
-    <description>LCD CPU Panel Trigger Register4</description>
-    <addressOffset>0x170</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI5_REG</name>
-    <displayName>LCD_CPU_TRI5_REG</displayName>
-    <description>LCD CPU Panel Trigger Register5</description>
-    <addressOffset>0x174</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>6</dim>
+    <addressOffset>0x00000160</addressOffset>
+    <register>
+     <name>LCD_CPU_TRIx_REG</name>
+     <displayName>LCD_CPU_TRIx_REG</displayName>
+     <description>LCD CPU Panel Trigger Register0</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x018</dimIncrement>
+   </cluster>
    <register>
     <name>LCD_CMAP_CTL_REG</name>
     <displayName>LCD_CMAP_CTL_REG</displayName>
@@ -13502,6 +13461,11 @@
    <value>76</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>WATCHDOG</name>
+   <value>79</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TMR_IRQ_EN_REG</name>
@@ -13761,14 +13725,9 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TVD</name>
+  <name>TVD0</name>
   <description>Video Decoding</description>
   <baseAddress>0x05C01000</baseAddress>
-  <interrupt>
-   <name>TVD</name>
-   <value>123</value>
-   <description></description>
-  </interrupt>
   <registers>
    <register>
     <name>TVD_EN</name>
@@ -14053,8 +14012,13 @@
   </peripheral>
   <peripheral>
   <name>TVD_TOP</name>
-  <description></description>
+  <description>Video Decoding</description>
   <baseAddress>0x05C00000</baseAddress>
+  <interrupt>
+   <name>TVD</name>
+   <value>123</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TVD_TOP_MAP</name>
@@ -14142,8 +14106,446 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x030</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TVE_TOP</name>
+  <description>TV Output (TV_Encoder)</description>
+  <baseAddress>0x05600000</baseAddress>
+  <interrupt>
+   <name>TVE</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TVE_DAC_MAP</name>
+    <displayName>TVE_DAC_MAP</displayName>
+    <description>TV Encoder DAC MAP Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_STATUS</name>
+    <displayName>TVE_DAC_STATUS</displayName>
+    <description>TV Encoder DAC STAUTS Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG0</name>
+    <displayName>TVE_DAC_CFG0</displayName>
+    <description>TV Encoder DAC CFG0 Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG1</name>
+    <displayName>TVE_DAC_CFG1</displayName>
+    <description>TV Encoder DAC CFG1 Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG2</name>
+    <displayName>TVE_DAC_CFG2</displayName>
+    <description>TV Encoder DAC CFG2 Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_CFG3</name>
+    <displayName>TVE_DAC_CFG3</displayName>
+    <description>TV Encoder DAC CFG2 Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_DAC_TEST</name>
+    <displayName>TVE_DAC_TEST</displayName>
+    <description>TV Encoder DAC TEST Register</description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TV_Encoder</name>
+  <description>TV Encoder (display out interface = CVBS OUT)</description>
+  <baseAddress>0x05604000</baseAddress>
+  <interrupt>
+   <name>TV_Encoder</name>
+   <value>110</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TVE_000_REG</name>
+    <displayName>TVE_000_REG</displayName>
+    <description>TV Encoder Clock Gating Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_004_REG</name>
+    <displayName>TVE_004_REG</displayName>
+    <description>TV Encoder Configuration Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_008_REG</name>
+    <displayName>TVE_008_REG</displayName>
+    <description>TV Encoder DAC Register1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_00C_REG</name>
+    <displayName>TVE_00C_REG</displayName>
+    <description>TV Encoder Notch and DAC Delay Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_010_REG</name>
+    <displayName>TVE_010_REG</displayName>
+    <description>TV Encoder Chroma Frequency Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_014_REG</name>
+    <displayName>TVE_014_REG</displayName>
+    <description>TV Encoder Front/Back Porch Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_018_REG</name>
+    <displayName>TVE_018_REG</displayName>
+    <description>TV Encoder HD Mode VSYNC Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_01C_REG</name>
+    <displayName>TVE_01C_REG</displayName>
+    <description>TV Encoder Line Number Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_020_REG</name>
+    <displayName>TVE_020_REG</displayName>
+    <description>TV Encoder Level Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_024_REG</name>
+    <displayName>TVE_024_REG</displayName>
+    <description>TV Encoder DAC Register2</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_030_REG</name>
+    <displayName>TVE_030_REG</displayName>
+    <description>TV Encoder Auto Detection Enable Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_034_REG</name>
+    <displayName>TVE_034_REG</displayName>
+    <description>TV Encoder Auto Detection Interrupt Status Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_038_REG</name>
+    <displayName>TVE_038_REG</displayName>
+    <description>TV Encoder Auto Detection Status Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_03C_REG</name>
+    <displayName>TVE_03C_REG</displayName>
+    <description>TV Encoder Auto Detection De-bounce Setting Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_0F8_REG</name>
+    <displayName>TVE_0F8_REG</displayName>
+    <description>TV Encoder Auto Detect Configuration Register0</description>
+    <addressOffset>0x0F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_0FC_REG</name>
+    <displayName>TVE_0FC_REG</displayName>
+    <description>TV Encoder Auto Detect Configuration Register1</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_100_REG</name>
+    <displayName>TVE_100_REG</displayName>
+    <description>TV Encoder Color Burst Phase Reset Configuration Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_104_REG</name>
+    <displayName>TVE_104_REG</displayName>
+    <description>TV Encoder VSYNC Number Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_108_REG</name>
+    <displayName>TVE_108_REG</displayName>
+    <description>TV Encoder Notch Filter Frequency Register</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_10C_REG</name>
+    <displayName>TVE_10C_REG</displayName>
+    <description>TV Encoder Cb/Cr Level/Gain Register</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_110_REG</name>
+    <displayName>TVE_110_REG</displayName>
+    <description>TV Encoder Tint and Color Burst Phase Register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_114_REG</name>
+    <displayName>TVE_114_REG</displayName>
+    <description>TV Encoder Burst Width Register</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_118_REG</name>
+    <displayName>TVE_118_REG</displayName>
+    <description>TV Encoder Cb/Cr Gain Register</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_11C_REG</name>
+    <displayName>TVE_11C_REG</displayName>
+    <description>TV Encoder Sync and VBI Level Register</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_120_REG</name>
+    <displayName>TVE_120_REG</displayName>
+    <description>TV Encoder White Level Register</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_124_REG</name>
+    <displayName>TVE_124_REG</displayName>
+    <description>TV Encoder Video Active Line Register</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_128_REG</name>
+    <displayName>TVE_128_REG</displayName>
+    <description>TV Encoder Video Chroma BW and CompGain Register</description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_12C_REG</name>
+    <displayName>TVE_12C_REG</displayName>
+    <description>TV Encoder Register</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_130_REG</name>
+    <displayName>TVE_130_REG</displayName>
+    <description>TV Encoder Re-sync Parameters Register</description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_134_REG</name>
+    <displayName>TVE_134_REG</displayName>
+    <description>TV Encoder Slave Parameter Register</description>
+    <addressOffset>0x134</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_138_REG</name>
+    <displayName>TVE_138_REG</displayName>
+    <description>TV Encoder Configuration Register0</description>
+    <addressOffset>0x138</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_13C_REG</name>
+    <displayName>TVE_13C_REG</displayName>
+    <description>TV Encoder Configuration Register1</description>
+    <addressOffset>0x13C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_380_REG</name>
+    <displayName>TVE_380_REG</displayName>
+    <description>TV Encoder Low Pass Control Register</description>
+    <addressOffset>0x380</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_384_REG</name>
+    <displayName>TVE_384_REG</displayName>
+    <description>TV Encoder Low Pass Filter Control Register</description>
+    <addressOffset>0x384</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_388_REG</name>
+    <displayName>TVE_388_REG</displayName>
+    <description>TV Encoder Low Pass Gain Register</description>
+    <addressOffset>0x388</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_38C_REG</name>
+    <displayName>TVE_38C_REG</displayName>
+    <description>TV Encoder Low Pass Gain Control Register</description>
+    <addressOffset>0x38C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_390_REG</name>
+    <displayName>TVE_390_REG</displayName>
+    <description>TV Encoder Low Pass Shoot Control Register</description>
+    <addressOffset>0x390</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_394_REG</name>
+    <displayName>TVE_394_REG</displayName>
+    <description>TV Encoder Low Pass Coring Register</description>
+    <addressOffset>0x394</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TVE_3A0_REG</name>
+    <displayName>TVE_3A0_REG</displayName>
+    <description>TV Encoder Noise Reduction Register</description>
+    <addressOffset>0x3A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>
@@ -15307,7 +15709,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x060</dimIncrement>
+    <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

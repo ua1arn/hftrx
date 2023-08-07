@@ -67,6 +67,21 @@
 
 	.section .text
 	.code 32
+
+	.align 4, 0
+	.global aarch32_reset_handlers
+aarch32_reset_handlers:
+	.word 0
+	.word Reset_CPU1_Handler
+	.word Reset_CPU2_Handler
+	.word Reset_CPU3_Handler
+	.word 0
+	.word 0
+	.word 0
+	.word 0
+
+	.section .text
+	.code 32
 	.align 4, 0
 
   	.extern Reset_CPUn_Handler

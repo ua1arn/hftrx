@@ -1,0 +1,235 @@
+#type; CSI
+#base; CSI 0x05800800
+
+#type; CSIC_TOP
+#base; CSIC_TOP 0x05800800
+#irq; CSI_CMB 136
+#irq; CSI_TDM 137
+#irq; CSI_TOP_PKT 138
+#irqrv; CSI_CMB 120
+#irqrv; CSI_TDM 121
+#irqrv; CSI_TOP_PKT 122
+#regdef; CSIC_TOP_EN_REG; 0x0000; CSIC TOP Enable Register
+#regdef; CSIC_PTN_GEN_EN_REG; 0x0004; CSIC Pattern Generation Enable Register
+#regdef; CSIC_PTN_CTRL_REG; 0x0008; CSIC Pattern Control Register
+#regdef; CSIC_PTN_LEN_REG; 0x0020; CSIC Pattern Generation Length Register
+#regdef; CSIC_PTN_ADDR_REG; 0x0024; CSIC Pattern Generation Address Register
+#regdef; CSIC_PTN_ISP_SIZE_REG; 0x0028; CSIC Pattern ISP Size Register
+#regdef; CSIC_ISP0_INPUT0_SEL_REG; 0x0030; CSIC ISP0 Input0 Select Register
+#regdef; CSIC_ISP0_INPUT1_SEL_REG; 0x0034; CSIC ISP0 Input1 Select Register
+#regdef; CSIC_ISP0_INPUT2_SEL_REG; 0x0038; CSIC ISP0 Input2 Select Register
+#regdef; CSIC_ISP0_INPUT3_SEL_REG; 0x003C; CSIC ISP0 Input3 Select Register
+#regdef; CSIC_ISP1_INPUT0_SEL_REG; 0x0040; CSIC ISP1 Input0 Select Register
+#regdef; CSIC_ISP1_INPUT1_SEL_REG; 0x0044; CSIC ISP1 Input1 Select Register
+#regdef; CSIC_ISP1_INPUT2_SEL_REG; 0x0048; CSIC ISP1 Input2 Select Register
+#regdef; CSIC_ISP1_INPUT3_SEL_REG; 0x004C; CSIC ISP1 Input3 Select Register
+#regdef; CSIC_DMA0_INPUT_SEL_REG; 0x00A0; CSIC DMA0 Input Select Register
+#regdef; CSIC_DMA1_INPUT_SEL_REG; 0x00A4; CSIC DMA1 Input Select Register
+#regdef; CSIC_DMA2_INPUT_SEL_REG; 0x00A8; CSIC DMA2 Input Select Register
+#regdef; CSIC_DMA3_INPUT_SEL_REG; 0x00AC; CSIC DMA3 Input Select Register
+#regdef; CSIC_BIST_CS_REG; 0x00DC; CSIC BIST CS Register
+#regdef; CSIC_BIST_CONTROL_REG; 0x00E0; CSIC BIST Control Register
+#regdef; CSIC_BIST_START_REG; 0x00E4; CSIC BIST Start Register
+#regdef; CSIC_BIST_END_REG; 0x00E8; CSIC BIST End Register
+#regdef; CSIC_BIST_DATA_MASK_REG; 0x00EC; CSIC BIST Data Mask Register
+#regdef; CSIC_MBUS_REQ_MAX_REG; 0x00F0; CSIC MBUS REQ MAX Register
+#regdef; CSIC_MULF_MOD_REG; 0x0100; CSIC Multi-Frame Mode Register
+#regdef; CSIC_MULF_INT_REG; 0x0104; CSIC Multi-Frame Interrupt Register
+#regdef; CSIC_FEATURE_LIST_REG; 0x01F0; CSIC Feature List Register
+
+#type; CSIC_PARSER
+#base; CSIC_PARSER0 0x05820000
+#base; CSIC_PARSER1 0x05821000
+#base; CSIC_PARSER2 0x05822000
+#irq; CSIC_PARSER0 132
+#irq; CSIC_PARSER1 133
+#irq; CSIC_PARSER2 134
+#irqrv; CSIC_PARSER0 116
+#irqrv; CSIC_PARSER1 117
+#irqrv; CSIC_PARSER2 118
+#regdef; CSIC_PRS_EN_REG; 0x0000; CSIC Parser Enable Register
+#regdef; CSIC_PRS_NCSIC_IF_CFG_REG; 0x0004; CSIC Parser NCSIC Interface Configuration Register
+#regdef; CSIC_PRS_CAP_REG; 0x000C; CSIC Parser Capture Register
+#regdef; CSIC_PRS_SIGNAL_STA_REG; 0x0010; CSIC Parser Signal Status Register
+#regdef; CSIC_PRS_NCSIC_BT656_HEAD_CFG_REG; 0x0014; CSIC Parser NCSIC BT656 Header Configuration Register
+#regdef; CSIC_PRS_CH0_INFMT_REG; 0x0024; CSIC Parser Channel_0 Input Format Register
+#regdef; CSIC_PRS_CH0_OUTPUT_HSIZE_REG; 0x0028; CSIC Parser Channel_0 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH0_OUTPUT_VSIZE_REG; 0x002C; CSIC Parser Channel_0 Output Vertical Size Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA0_REG; 0x0030; CSIC Parser Channel_0 Input Parameter0 Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA1_REG; 0x0034; CSIC Parser Channel_0 Input Parameter1 Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA2_REG; 0x0038; CSIC Parser Channel_0 Input Parameter2 Register
+#regdef; CSIC_PRS_CH0_INPUT_PARA3_REG; 0x003C; CSIC Parser Channel_0 Input Parameter3 Register
+#regdef; CSIC_PRS_CH0_INT_EN_REG; 0x0040; CSIC Parser Channel_0 Interrupt Enable Register
+#regdef; CSIC_PRS_CH0_INT_STA_REG; 0x0044; CSIC Parser Channel_0 Interrupt Status Register
+#regdef; CSIC_PRS_CH0_LINE_TIME_REG; 0x0048; CSIC Parser Channel_0 Line Time Register
+#regdef; CSIC_PRS_CH1_INFMT_REG; 0x0124; CSIC Parser Channel_1 Input Format Register
+#regdef; CSIC_PRS_CH1_OUTPUT_HSIZE_REG; 0x0128; CSIC Parser Channel_1 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH1_OUTPUT_VSIZE_REG; 0x012C; CSIC Parser Channel_1 Output Vertical Size Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA0_REG; 0x0130; CSIC Parser Channel_1 Input Parameter0 Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA1_REG; 0x0134; CSIC Parser Channel_1 Input Parameter1 Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA2_REG; 0x0138; CSIC Parser Channel_1 Input Parameter2 Register
+#regdef; CSIC_PRS_CH1_INPUT_PARA3_REG; 0x013C; CSIC Parser Channel_1 Input Parameter3 Register
+#regdef; CSIC_PRS_CH1_INT_EN_REG; 0x0140; CSIC Parser Channel_1 Interrupt Enable Register
+#regdef; CSIC_PRS_CH1_INT_STA_REG; 0x0144; CSIC Parser Channel_1 Interrupt Status Register
+#regdef; CSIC_PRS_CH1_LINE_TIME_REG; 0x0148; CSIC Parser Channel_1 Line Time Register
+#regdef; CSIC_PRS_CH2_INFMT_REG; 0x0224; CSIC Parser Channel_2 Input Format Register
+#regdef; CSIC_PRS_CH2_OUTPUT_HSIZE_REG; 0x0228; CSIC Parser Channel_2 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH2_OUTPUT_VSIZE_REG; 0x022C; CSIC Parser Channel_2 Output Vertical Size Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA0_REG; 0x0230; CSIC Parser Channel_2 Input Parameter0 Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA1_REG; 0x0234; CSIC Parser Channel_2 Input Parameter1 Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA2_REG; 0x0238; CSIC Parser Channel_2 Input Parameter2 Register
+#regdef; CSIC_PRS_CH2_INPUT_PARA3_REG; 0x023C; CSIC Parser Channel_2 Input Parameter3 Register
+#regdef; CSIC_PRS_CH2_INT_EN_REG; 0x0240; CSIC Parser Channel_2 Interrupt Enable Register
+#regdef; CSIC_PRS_CH2_INT_STA_REG; 0x0244; CSIC Parser Channel_2 Interrupt Status Register
+#regdef; CSIC_PRS_CH2_LINE_TIME_REG; 0x0248; CSIC Parser Channel_2 Line Time Register
+#regdef; CSIC_PRS_CH3_INFMT_REG; 0x0324; CSIC Parser Channel_3 Input Format Register
+#regdef; CSIC_PRS_CH3_OUTPUT_HSIZE_REG; 0x0328; CSIC Parser Channel_3 Output Horizontal Size Register
+#regdef; CSIC_PRS_CH3_OUTPUT_VSIZE_REG; 0x032C; CSIC Parser Channel_3 Output Vertical Size Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA0_REG; 0x0330; CSIC Parser Channel_3 Input Parameter0 Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA1_REG; 0x0334; CSIC Parser Channel_3 Input Parameter1 Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA2_REG; 0x0338; CSIC Parser Channel_3 Input Parameter2 Register
+#regdef; CSIC_PRS_CH3_INPUT_PARA3_REG; 0x033C; CSIC Parser Channel_3 Input Parameter3 Register
+#regdef; CSIC_PRS_CH3_INT_EN_REG; 0x0340; CSIC Parser Channel_3 Interrupt Enable Register
+#regdef; CSIC_PRS_CH3_INT_STA_REG; 0x0344; CSIC Parser Channel_3 Interrupt Status Register
+#regdef; CSIC_PRS_CH3_LINE_TIME_REG; 0x0348; CSIC Parser Channel_3 Line Time Register
+#regdef; CSIC_PRS_NCSIC_RX_SIGNAL0_DLY_ADJ_REG; 0x0500; CSIC Parser NCSIC RX Signal0 Delay Adjust Register
+#regdef; CSIC_PRS_NCSIC_RX_SIGNAL5_DLY_ADJ_REG; 0x0514; CSIC Parser NCSIC RX Signal5 Delay Adjust Register
+#regdef; CSIC_PRS_NCSIC_RX_SIGNAL6_DLY_ADJ_REG; 0x0518; CSIC Parser NCSIC RX Signal6 Delay Adjust Register
+#regdef; CSIC_PRS_SYNC_EN_REG; 0x0520; CSIC Parser SYNC EN Register
+#regdef; CSIC_PRS_SYNC_CFG_REG; 0x0524; CSIC Parser SYNC CFG Register
+#regdef; CSIC_PRS_VS_WAIT_N_REG; 0x0528; CSIC Parser VS WAIT N Register
+#regdef; CSIC_PRS_VS_WAIT_M_REG; 0x052C; CSIC Parser VS WAIT M Register
+#regdef; CSIC_PRS_XSYNC_ENABLE_REG; 0x0540; CSIC Parser XSYNC ENABLE Register
+#regdef; CSIC_PRS_XVS_PERIOD_REG; 0x0544; CSIC Parser XVS Period Register
+#regdef; CSIC_PRS_XHS_PERIOD_REG; 0x0548; CSIC Parser XHS Period Register
+#regdef; CSIC_PRS_XVS_LENGTH_REG; 0x054C; CSIC Parser XVS LENGTH Register
+#regdef; CSIC_PRS_XHS_LENGTH_REG; 0x0550; CSIC Parser XHS LENGTH Register
+#regdef; CSIC_PRS_SYNC_DLY_REG; 0x0554; CSIC Parser SYNC DELAY Register
+
+#type; CSIC_DMA
+#base; CSIC_DMA0 0x05830000
+#base; CSIC_DMA1 0x05831000
+#base; CSIC_DMA2 0x05832000
+#base; CSIC_DMA3 0x05833000
+#irq; CSIC_DMA0 127
+#irq; CSIC_DMA1 128
+#irq; CSIC_DMA2 129
+#irq; CSIC_DMA3 130
+#irqrv; CSIC_DMA0 111
+#irqrv; CSIC_DMA1 112
+#irqrv; CSIC_DMA2 113
+#irqrv; CSIC_DMA3 114
+#regdef; CSIC_DMA_TOP_REG;  0x0000; CSIC DMA TOP Register
+#regdef; CSIC_DMA_MUL_CH_CFG_REG; 0x0004; CSIC DMA Multi-Channel Configuration Register
+#regdef; CSIC_DMA_FRM_CLK_CNT_REG; 0x0010; CSIC DMA Frame Rate Clock Counter Register
+#regdef; CSIC_DMA_ACC_ITNL_CLK_CNT_REG; 0x0014; CSIC DMA Accumulated and Internal Clock Counter Register
+#regdef; CSIC_DMA_FS_FRM_CNT_REG; 0x0020; CSIC DMA Fsync Frame Counter Register
+#regdef; CSIC_DMA_VI_TO_TH0_REG; 0x0040; CSIC DMA Video Input Timeout Threshold0 Register
+#regdef; CSIC_DMA_VI_TO_TH1_REG; 0x0044; CSIC DMA Video Input Timeout Threshold1 Register
+#regdef; CSIC_DMA_VI_TO_CNT_VAL_REG; 0x0048; CSIC DMA Video Input Timeout Counter Value Register
+#regdef; CSIC_DMA_VE_FRM_CNT_REG; 0x0050; CSIC DMA VE Frame Counter Value Register
+#regdef; CSIC_DMA_VE_LINE_CNT_REG; 0x0054; CSIC DMA VE Line Counter Value Register
+#regdef; CSIC_DMA_VE_CUR_FRM_ADDR_REG; 0x0058; CSIC DMA VE Current Frame Address Register
+#regdef; CSIC_DMA_VE_LAST_FRM_ADDR_REG; 0x005C; CSIC DMA VE Last Frame Address Register
+#regdef; CSIC_DMA_FIFO_STAT_REG; 0x0080; CSIC DMA FIFO Statistic Register
+#regdef; CSIC_DMA_FIFO_THRS_REG; 0x0084; CSIC DMA FIFO Threshold Register
+#regdef; CSIC_DMA_TOP_INT_EN_REG; 0x0100; CSIC DMA TOP Interrupt Enable Register
+#regdef; CSIC_DMA_TOP_INT_STA_REG; 0x0104; CSIC DMA TOP Interrupt Status Register
+#regdef; CSIC_DMA_FEATURE_REG; 0x01F4; CSIC DMA Feature List Register
+#regdef; CSIC_DMA_CH0_EN_REG; 0x0200; CSIC DMA Channel0 Enable Register
+#regdef; CSIC_DMA_CH0_CFG_REG; 0x0204; CSIC DMA Channel0 Configuration Register
+#regdef; CSIC_DMA_CH0_FRM_LOST_CNT_REG; 0x0208; CSIC DMA Channel0 Frame Lost Counter Register
+#regdef; CSIC_DMA_CH0_HSIZE_REG; 0x0210; CSIC DMA Channel0 Horizontal Size Register
+#regdef; CSIC_DMA_CH0_VSIZE_REG; 0x0214; CSIC DMA Channel0 Vertical Size Register
+#regdef; CSIC_DMA_CH0_F0_BUFA_REG; 0x0220; CSIC DMA Channel0 FIFO 0 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH0_F0_BUFA_RESULT_REG; 0x0224; CSIC DMA Channel0 FIFO 0 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH0_F1_BUFA_REG; 0x0228; CSIC DMA Channel0 FIFO 1 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH0_F1_BUFA_RESULT_REG; 0x022C; CSIC DMA Channel0 FIFO 1 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH0_F2_BUFA_REG; 0x0230; CSIC DMA Channel0 FIFO 2 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH0_F2_BUFA_RESULT_REG; 0x0234; CSIC DMA Channel0 FIFO 2 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH0_BUF_LEN_REG; 0x0238; CSIC DMA Channel0 Buffer Length Register
+#regdef; CSIC_DMA_CH0_FLIP_SIZE_REG; 0x023C; CSIC DMA Channel0 Flip Size Register
+#regdef; CSIC_DMA_CH0_CAP_STA_REG; 0x024C; CSIC DMA Channel0 Capture Status Register
+#regdef; CSIC_DMA_CH0_INT_EN_REG; 0x0250; CSIC DMA Channel0 Interrupt Enable Register
+#regdef; CSIC_DMA_CH0_INT_STA_REG; 0x0254; CSIC DMA Channel0 Interrupt Status Register
+#regdef; CSIC_DMA_CH0_LINE_CNT_REG; 0x0258; CSIC DMA Channel0 Line Counter Register
+#regdef; CSIC_DMA_CH0_LINE_STAT_REG; 0x0268; CSIC DMA Channel0 Line Statistic Register
+#regdef; CSIC_DMA_CH0_PCLK_STAT_REG; 0x0270; CSIC DMA Channel0 PCLK Statistic Register
+#regdef; CSIC_LBC_CH0_CONFIG_REG; 0x0300; CSIC LBC Channel0 Configure Register
+#regdef; CSIC_LBC_CH0_LINE_TAR_BIT0_REG; 0x0304; CSIC LBC Channel0 Line Target Bit0 Register
+#regdef; CSIC_LBC_CH0_LINE_TAR_BIT1_REG; 0x0308; CSIC LBC Channel0 Line Target Bit1 Register
+#regdef; CSIC_LBC_CH0_RC_ADV_REG; 0x030C; CSIC LBC Channel0 RC ADV Register
+#regdef; CSIC_LBC_CH0_MB_MIN_REG; 0x0310; CSIC LBC Channel0 MB MIN Register
+#regdef; CSIC_DMA_CH1_EN_REG; 0x0400; CSIC DMA Channel1 Enable Register
+#regdef; CSIC_DMA_CH1_CFG_REG; 0x0404; CSIC DMA Channel1 Configuration Register
+#regdef; CSIC_DMA_CH1_FRM_LOST_CNT_REG; 0x0408; CSIC DMA Channel1 Frame Lost Counter Register
+#regdef; CSIC_DMA_CH1_HSIZE_REG; 0x0410; CSIC DMA Channel1 Horizontal Size Register
+#regdef; CSIC_DMA_CH1_VSIZE_REG; 0x0414; CSIC DMA Channel1 Vertical Size Register
+#regdef; CSIC_DMA_CH1_F0_BUFA_REG; 0x0420; CSIC DMA Channel1 FIFO 0 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH1_F0_BUFA_RESULT_REG; 0x0424; CSIC DMA Channel1 FIFO 0 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH1_F1_BUFA_REG; 0x0428; CSIC DMA Channel1 FIFO 1 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH1_F1_BUFA_RESULT_REG; 0x042C; CSIC DMA Channel1 FIFO 1 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH1_F2_BUFA_REG; 0x0430; CSIC DMA Channel1 FIFO 2 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH1_F2_BUFA_RESULT_REG; 0x0434; CSIC DMA Channel1 FIFO 2 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH1_BUF_LEN_REG; 0x0438; CSIC DMA Channel1 Buffer Length Register
+#regdef; CSIC_DMA_CH1_FLIP_SIZE_REG; 0x043C; CSIC DMA Channel1 Flip Size Register
+#regdef; CSIC_DMA_CH1_CAP_STA_REG; 0x044C; CSIC DMA Channel1 Capture Status Register
+#regdef; CSIC_DMA_CH1_INT_EN_REG; 0x0450; CSIC DMA Channel1 Interrupt Enable Register
+#regdef; CSIC_DMA_CH1_INT_STA_REG; 0x0454; CSIC DMA Channel1 Interrupt Status Register
+#regdef; CSIC_DMA_CH1_LINE_CNT_REG; 0x0458; CSIC DMA Channel1 Line Counter Register
+#regdef; CSIC_DMA_CH1_LINE_STAT_REG; 0x0468; CSIC DMA Channel1 Line Statistic Register
+#regdef; CSIC_DMA_CH1_PCLK_STAT_REG; 0x0470; CSIC DMA Channel1 PCLK Statistic Register
+#regdef; CSIC_LBC_CH1_CONFIG_REG; 0x0500; CSIC LBC Channel1 Configure Register
+#regdef; CSIC_LBC_CH1_LINE_TAR_BIT0_REG; 0x0504; CSIC LBC Channel1 Line Target Bit0 Register
+#regdef; CSIC_LBC_CH1_LINE_TAR_BIT1_REG; 0x0508; CSIC LBC Channel1 Line Target Bit1 Register
+#regdef; CSIC_LBC_CH1_RC_ADV_REG; 0x050C; CSIC LBC Channel1 RC ADV Register
+#regdef; CSIC_LBC_CH1_MB_MIN_REG; 0x0510; CSIC LBC Channel1 MB MIN Register
+#regdef; CSIC_DMA_CH2_EN_REG; 0x0600; CSIC DMA Channel2 Enable Register
+#regdef; CSIC_DMA_CH2_CFG_REG; 0x0604; CSIC DMA Channel2 Configuration Register
+#regdef; CSIC_DMA_CH2_FRM_LOST_CNT_REG; 0x0608; CSIC DMA Channel2 Frame Lost Counter Register
+#regdef; CSIC_DMA_CH2_HSIZE_REG; 0x0610; CSIC DMA Channel2 Horizontal Size Register
+#regdef; CSIC_DMA_CH2_VSIZE_REG; 0x0614; CSIC DMA Channel2 Vertical Size Register
+#regdef; CSIC_DMA_CH2_F0_BUFA_REG; 0x0620; CSIC DMA Channel2 FIFO 0 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH2_F0_BUFA_RESULT_REG; 0x0624; CSIC DMA Channel2 FIFO 0 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH2_F1_BUFA_REG; 0x0628; CSIC DMA Channel2 FIFO 1 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH2_F1_BUFA_RESULT_REG; 0x062C; CSIC DMA Channel2 FIFO 1 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH2_F2_BUFA_REG; 0x0630; CSIC DMA Channel2 FIFO 2 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH2_F2_BUFA_RESULT_REG; 0x0634; CSIC DMA Channel2 FIFO 2 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH2_BUF_LEN_REG; 0x0638; CSIC DMA Channel2 Buffer Length Register
+#regdef; CSIC_DMA_CH2_FLIP_SIZE_REG; 0x063C; CSIC DMA Channel2 Flip Size Register
+#regdef; CSIC_DMA_CH2_CAP_STA_REG; 0x064C; CSIC DMA Channel2 Capture Status Register
+#regdef; CSIC_DMA_CH2_INT_EN_REG; 0x0650; CSIC DMA Channel2 Interrupt Enable Register
+#regdef; CSIC_DMA_CH2_INT_STA_REG; 0x0654; CSIC DMA Channel2 Interrupt Status Register
+#regdef; CSIC_DMA_CH2_LINE_CNT_REG; 0x0658; CSIC DMA Channel2 Line Counter Register
+#regdef; CSIC_DMA_CH2_LINE_STAT_REG; 0x0668; CSIC DMA Channel2 Line Statistic Register
+#regdef; CSIC_DMA_CH2_PCLK_STAT_REG; 0x0670; CSIC DMA Channel2 PCLK Statistic Register
+#regdef; CSIC_LBC_CH2_CONFIG_REG; 0x0700; CSIC LBC Channel2 Configure Register
+#regdef; CSIC_LBC_CH2_LINE_TAR_BIT0_REG; 0x0704; CSIC LBC Channel2 Line Target Bit0 Register
+#regdef; CSIC_LBC_CH2_LINE_TAR_BIT1_REG; 0x0708; CSIC LBC Channel2 Line Target Bit1 Register
+#regdef; CSIC_LBC_CH2_RC_ADV_REG; 0x070C; CSIC LBC Channel2 RC ADV Register
+#regdef; CSIC_LBC_CH2_MB_MIN_REG; 0x0710; CSIC LBC Channel2 MB MIN Register
+#regdef; CSIC_DMA_CH3_EN_REG; 0x0800; CSIC DMA Channel3 Enable Register
+#regdef; CSIC_DMA_CH3_CFG_REG; 0x0804; CSIC DMA Channel3 Configuration Register
+#regdef; CSIC_DMA_CH3_FRM_LOST_CNT_REG; 0x0808; CSIC DMA Channel3 Frame Lost Counter Register
+#regdef; CSIC_DMA_CH3_HSIZE_REG; 0x0810; CSIC DMA Channel3 Horizontal Size Register
+#regdef; CSIC_DMA_CH3_VSIZE_REG; 0x0814; CSIC DMA Channel3 Vertical Size Register
+#regdef; CSIC_DMA_CH3_F0_BUFA_REG; 0x0820; CSIC DMA Channel3 FIFO 0 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH3_F0_BUFA_RESULT_REG; 0x0824; CSIC DMA Channel3 FIFO 0 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH3_F1_BUFA_REG; 0x0828; CSIC DMA Channel3 FIFO 1 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH3_F1_BUFA_RESULT_REG; 0x082C; CSIC DMA Channel3 FIFO 1 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH3_F2_BUFA_REG; 0x0830; CSIC DMA Channel3 FIFO 2 Output Buffer-A Address Register
+#regdef; CSIC_DMA_CH3_F2_BUFA_RESULT_REG; 0x0834; CSIC DMA Channel3 FIFO 2 Output Buffer-A Address Result Register
+#regdef; CSIC_DMA_CH3_BUF_LEN_REG; 0x0838; CSIC DMA Channel3 Buffer Length Register
+#regdef; CSIC_DMA_CH3_FLIP_SIZE_REG; 0x083C; CSIC DMA Channel3 Flip Size Register
+#regdef; CSIC_DMA_CH3_CAP_STA_REG; 0x084C; CSIC DMA Channel3 Capture Status Register
+#regdef; CSIC_DMA_CH3_INT_EN_REG; 0x0850; CSIC DMA Channel3 Interrupt Enable Register
+#regdef; CSIC_DMA_CH3_INT_STA_REG; 0x0854; CSIC DMA Channel3 Interrupt Status Register
+#regdef; CSIC_DMA_CH3_LINE_CNT_REG; 0x0858; CSIC DMA Channel3 Line Counter Register
+#regdef; CSIC_DMA_CH3_LINE_STAT_REG; 0x0868; CSIC DMA Channel3 Line Statistic Register
+#regdef; CSIC_DMA_CH3_PCLK_STAT_REG; 0x0870; CSIC DMA Channel3 PCLK Statistic Register
+#regdef; CSIC_LBC_CH3_CONFIG_REG; 0x0900; CSIC LBC Channel3 Configure Register
+#regdef; CSIC_LBC_CH3_LINE_TAR_BIT0_REG; 0x0904; CSIC LBC Channel3 Line Target Bit0 Register
+#regdef; CSIC_LBC_CH3_LINE_TAR_BIT1_REG; 0x0908; CSIC LBC Channel3 Line Target Bit1 Register
+#regdef; CSIC_LBC_CH3_RC_ADV_REG; 0x090C; CSIC LBC Channel3 RC ADV Register
+#regdef; CSIC_LBC_CH3_MB_MIN_REG; 0x0910; CSIC LBC Channel3 MB MIN Register
+

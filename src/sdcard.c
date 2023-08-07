@@ -4807,6 +4807,15 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
 				0;
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	//#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
+	SMHCHARD_PTR->SMHC_CTYPE = (SMHCHARD_PTR->SMHC_CTYPE & ~ UINT32_C(0x03)) |
+		(use4bit ? UINT32_C(0x01) : UINT32_C(0x00)) |	// 00: 1-bit width, 01: 4-biut width
+		0;
+
+#elif CPUSTYLE_T507
+	#warning CPUSTYLE_T507 to be implemented
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -4968,6 +4977,13 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	// Wait Internal_Clock_Stable
 	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
 		;
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
+	SMHCHARD_PTR->SMHC_CTRL;
+
+#elif CPUSTYLE_T507
+	#warning CPUSTYLE_T507 to be implemented
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -5161,10 +5177,36 @@ void hardware_sdhost_initialize(void)
 
 	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
+
+	unsigned ix = 0;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+
+	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+
+#elif CPUSTYLE_T507
+	#warning CPUSTYLE_T507 to be implemented
+
+	unsigned ix = SMHCHARD_IX;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
+
+	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+
 #else
-
 	#error Wrong CPUSTYLE_xxx
-
 #endif
 }
 

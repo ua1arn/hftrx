@@ -24,19 +24,6 @@ typedef struct codechw
 	const char * label;
 } codechw_t;
 
-/* DMA word lemgth parameter */
-#define FPGAIF_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
-#define FPGARTS_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
-
-#if CODEC1_FRAMEBITS == 32
-	#define CODEC1_DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
-
-#else /*  CODEC1_FRAMEBITS == 64 */
-	// 2*32, 2*24
-	#define CODEC1_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
-
-#endif /*  CODEC1_FRAMEBITS == 64 */
-
 static void hardware_dummy_initialize(void)
 {
 
@@ -111,6 +98,19 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 }
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+/* DMA word length parameter */
+#define FPGAIF_DMA_SxCR_xSIZE		0x02u	// 10: word (32-bit)
+#define FPGARTS_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
+
+#if CODEC1_FRAMEBITS == 32
+	#define CODEC1_DMA_SxCR_xSIZE		0x01u	// 01: half-word (16-bit)
+
+#else /*  CODEC1_FRAMEBITS == 64 */
+	// 2*32, 2*24
+	#define CODEC1_DMA_SxCR_xSIZE		0x02u	// 10: word (32-bit)
+
+#endif /*  CODEC1_FRAMEBITS == 64 */
 
 #define DMA_SxCR_PL_VALUE 0u		// STM32xxx DMA Priority level
 
@@ -268,15 +268,15 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		SPI_I2SCFGR_I2SMOD |	// 1: I2S/PCM mode is selected
 
 #if CODEC1_FRAMEBITS == 64
-		//(1u << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
-		//(1u << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
-		//(1u << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
+		//(UINT32_C(1) << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
+		//(UINT32_C(1) << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
+		//(UINT32_C(1) << SPI_I2SCFGR_CHLEN_Pos) |		// 1: 32-bit wide audio channel
 		(2u << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
 #elif CODEC1_FRAMEBITS == 32
 	#if defined (SPI_I2SCFGR_FIXCH_Pos)
-		//(1u << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
-		(1u << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
+		//(UINT32_C(1) << SPI_I2SCFGR_DATFMT_Pos) |	// 1: the data inside the SPI2S_RXDR or SPI2S_TXDR are left aligned.
+		(UINT32_C(1) << SPI_I2SCFGR_FIXCH_Pos) |		// 1: the channel length in slave mode is supposed to be 16 or 32 bits (according to CHLEN)
 	#endif /* defined (SPI_I2SCFGR_FIXCH_Pos) */
 		//(0u << SPI_I2SCFGR_CHLEN_Pos) |		// 0: 16-bit wide audio channel
 		(0u << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
@@ -287,17 +287,8 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		(0u << SPI_I2SCFGR_DATLEN_Pos) |	// 00: 16-bit data length, 01: 24-bit data length, 10: 32-bit data length
 
 #endif /* CODEC1_FRAMEBITS == 64 */
-
 		(0u << SPI_I2SCFGR_CKPOL_Pos) |
-
-#if CODEC1_FORMATI2S_PHILIPS
 		(0u << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
-
-#else /* CODEC1_FORMATI2S_PHILIPS */
-		(1u << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
-
-#endif /* CODEC1_FORMATI2S_PHILIPS */
-
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		((i2sdiv << SPI_I2SCFGR_I2SDIV_Pos) & SPI_I2SCFGR_I2SDIV) |
 		(SPI_I2SCFGR_ODD * i2soddv) |
@@ -654,7 +645,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_codec1(void)		/* инициали
 		RCC->CFGR |= RCC_CFGR_I2SSRC;	// На STM32F446xx этого бита нет
 	#endif /* defined (STM32F446xx) */
 
-	//arm_hardware_pioc_altfn50(1u << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - перенесено в процессорно-зависимый header.
+	//arm_hardware_pioc_altfn50(UINT32_C(1) << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - перенесено в процессорно-зависимый header.
 #else /* WITHI2SCLOCKFROMPIN */
 
 	// Возможно использовать только режим с MCLK=256*Fs
@@ -1088,7 +1079,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_duplex_master =
 	DMA_I2S2_TX_initialize_codec1,				// DMA по передаче канал 0
 	hardware_i2s2_duplex_enable_codec1,
 	hardware_dummy_enable,
-	"i2s2-i2s2ext-audiocodechw"
+	"audiocodechw-i2s2-i2s2ext-duplex-master"
 };
 
 #else /* WITHI2SI2S2EXTFULLDUPLEXHW */
@@ -1102,7 +1093,7 @@ static const codechw_t audiocodechw_i2s2_duplex_slave =
 	DMA_I2S2_TX_initialize_codec1,					// DMA по передаче SPI2_TX
 	hardware_i2s2_duplex_enable_codec1,
 	hardware_dummy_enable,
-	"i2s2-duplex-audiocodechw-slave"
+	"audiocodechw-i2s2-duplex-slave"
 };
 
 // Используется I2S2 в дуплексном режиме
@@ -1114,7 +1105,7 @@ static const codechw_t audiocodechw_i2s2_duplex_master =
 	DMA_I2S2_TX_initialize_codec1,					// DMA по передаче SPI2_TX
 	hardware_i2s2_duplex_enable_codec1,
 	hardware_dummy_enable,
-	"i2s2-duplex-audiocodechw-master"
+	"audiocodechw-i2s2-duplex-master"
 };
 
 #endif /* WITHI2SI2S2EXTFULLDUPLEXHW */
@@ -1344,8 +1335,8 @@ static void hardware_sai1_sai2_clock_selection(void)
 		//	others: reserved, the kernel clock is disabled
 		//	Note: I2S_CKIN is an external clock taken from a pin.
 		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
-			(1u << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
-			(1u << RCC_D2CCIP1R_SAI23SEL_Pos) |
+			(UINT32_C(1) << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(UINT32_C(1) << RCC_D2CCIP1R_SAI23SEL_Pos) |
 			0;
 
 	#elif CPUSTYLE_STM32MP1
@@ -1575,10 +1566,8 @@ static void hardware_sai_a_tx_b_rx_initialize_codec1(SAI_Block_TypeDef * sai_A, 
 		((CODEC1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((CODEC1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if CODEC1_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* CODEC1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	sai_A->FRCR =
@@ -1683,10 +1672,8 @@ static void hardware_sai_a_tx_b_rx_initialize_fpga(SAI_Block_TypeDef * sai_A, SA
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	sai_A->FRCR =
@@ -1842,6 +1829,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream5->M0AR;
 			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -1850,6 +1838,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream5->M1AR;
 			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -1875,13 +1864,13 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M0AR);
-			DMA2_Stream1->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream1->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream1->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M1AR);
-			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream1->M1AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream1->M1AR);
 		}
 	}
@@ -2134,10 +2123,8 @@ static void hardware_sai1_master_duplex_initialize_v3d_fpga(void)		/* иници
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2259,10 +2246,8 @@ static void hardware_sai1_master_duplex_initialize_fpga(void)		/* инициал
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2381,10 +2366,8 @@ static void hardware_sai1_slave_duplex_initialize_fpga(void)		/* инициал�
 		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2490,6 +2473,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -2498,6 +2482,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
 			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -2614,13 +2599,13 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream4->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream4->M1AR =  dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream4->M1AR);
 		}
 	}
@@ -3134,10 +3119,8 @@ static void hardware_sai2_slave_duplex_initialize_WFM(void)
 		((WITHFPGARTS_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
 		((WITHFPGARTS_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGARTS_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGARTS_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI2_Block_A->FRCR =
@@ -3405,11 +3388,10 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif CPUSTYLE_ALLWINNER
 
-
-#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0u : (1u << ((ch) * 4)))
-#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0u : (1u << (((ch) - 8) * 4)))
+#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0u : (UINT32_C(1) << ((ch) * 4)))
+#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0u : (UINT32_C(1) << (((ch) - 8) * 4)))
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 static void (* dmac_handlers [16])(unsigned dmach);
@@ -3452,6 +3434,67 @@ static void DMAC_NS_IRQHandler(void)
 #endif /* ! CPUSTYLE_A64 */
 }
 
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+
+static uintptr_t DMA_suspend(unsigned dmach)
+{
+//	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+//	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
+//		;
+	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
+}
+
+static void DMA_resume(unsigned dmach, uintptr_t descbase)
+{
+//    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+}
+
+static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
+{
+	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
+	dmac_handlers [dmach] = handler;
+#if CPUSTYLE_T507
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+#elif CPUSTYLE_A64
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+#else /* CPUSTYLE_A64 */
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+#endif /* CPUSTYLE_A64 */
+}
+
+static void DMAC_clock_initialize(void)
+{
+#if CPUSTYLE_T507
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
+
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
+
+#elif CPUSTYLE_A64
+
+	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 6);	// DMA_GATING
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 6);	// DMA_RST
+
+#else /* CPUSTYLE_A64 */
+	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);		// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Gating MBUS Clock For DMA
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
+#endif /* CPUSTYLE_A64 */
+
+	DMAC->DMAC_AUTO_GATE_REG |= (UINT32_C(1) << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
+}
 
 static unsigned ratio2div(unsigned ratio)
 {
@@ -3499,7 +3542,6 @@ static unsigned width2fmt(unsigned width)
 {
 	switch (width)
 	{
-	default:
 	case 8:			return 0x01;
 	case 12:		return 0x02;
 	case 16:		return 0x03;
@@ -3507,7 +3549,55 @@ static unsigned width2fmt(unsigned width)
 	case 24:		return 0x05;
 	case 28:		return 0x06;
 	case 32:		return 0x07;
+	default:		TP(); return 0x07;
 	}
+}
+
+/* Установить для заданного канала I2S требуемый DINx и слот */
+static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, unsigned rxsdi)
+{
+#if CPUSTYLE_T507
+
+	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
+	/* в каждом регистре управления для восьми каналов */
+	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2Sn_SDINCHMAP1 - каналы 7..4
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2Sn_SDINCHMAP2 - каналы 11..8
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2Sn_SDINCHMAP3 - каналы 15..12
+
+	const portholder_t ALLMASK = 0x3F;
+	const portholder_t field =
+		((portholder_t) rxsdi << 4) |	// RX Channel Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
+		0;
+
+	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#elif CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	__IO uint32_t * const reg = i2s->I2S_PCM_RXCHMAP;
+	/* в каждом регистре управления для восьми каналов */
+	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
+	const portholder_t mask2 = power8((UINT32_C(1) << ch) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
+	const portholder_t mask1 = power8((UINT32_C(1) << ch) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
+	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
+
+	const portholder_t ALLMASK = 0x3F;
+	const portholder_t field =
+		((portholder_t) rxsdi << 4) |	// RX Channel Select (0..3 - SDI0..SDI3)
+		((portholder_t) slot << 0) |	// RX Channel Mapping (0..15 - sample position)
+		0;
+
+	reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#endif
 }
 
 /* I2S/PCM RX Channel Mapping Registers initialization */
@@ -3518,31 +3608,11 @@ static void I2S_fill_RXCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_A64
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	__IO uint32_t * const reg = & i2s->I2S_PCM_RXCHMAP0;
 	unsigned chnl;
 	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
-		/* в каждом регистре управления для восьми каналов */
-		const portholder_t mask3 = power8((1u << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
-		const portholder_t mask2 = power8((1u << chnl) >> 4);	// биты в I2S_PCM_RXCHMAP2 - каналы 7..4
-		const portholder_t mask1 = power8((1u << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1 - каналы 11..8
-		const portholder_t mask0 = power8((1u << chnl) >> 12);	// биты в I2S_PCM_RXCHMAP0 - каналы 15..12
-
-		const portholder_t ALLMASK = 0x3F;
-		const portholder_t field =
-			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
-			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
-			0;
-
-		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
-		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
-		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
-		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+		aw_i2s_setchsrc(i2s, chnl, chnl, rxsdi);
 	}
-#endif
 }
 
 /* I2S/PCM TX0 Channel Mapping Registers initialization */
@@ -3554,7 +3624,8 @@ static void I2S_fill_TXxCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+#elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
@@ -3562,8 +3633,8 @@ static void I2S_fill_TXxCHMAP(
 	unsigned chnl;
 	for (chnl = 0; chnl < NCH; ++ chnl)
 	{
-		const portholder_t mask1 = power4((1u << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
-		const portholder_t mask0 = power4((1u << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
+		const portholder_t mask1 = power4((UINT32_C(1) << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
+		const portholder_t mask0 = power4((UINT32_C(1) << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
 
 		const portholder_t ALLMASK = 0x0F;
 		const portholder_t field = (portholder_t) chnl << 0;
@@ -3591,24 +3662,64 @@ static void I2S_fill_TXxCHMAP(
 //	ASSERT(0);
 //}
 
-void I2S_PCMx_IrqHandler(void)
+//void I2S_PCMx_IrqHandler(void)
+//{
+////	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
+////	I2S1->I2S_PCM_ISTA = ista;
+////	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+//	ASSERT(0);
+//	for (;;)
+//		;
+//}
+
+#if CPUSTYLE_T507
+
+// 0..2
+static unsigned getAPBIFrx(unsigned ix)
 {
-//	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
-//	I2S1->I2S_PCM_ISTA = ista;
-//	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
-	ASSERT(0);
-	for (;;)
-		;
+	return 2;
 }
 
-static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NCH, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
+// 0..2
+static unsigned getAPBIFtx(unsigned ix)
+{
+	return 2;
+}
+
+
+#endif /* CPUSTYLE_T507 */
+
+
+static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
 {
 
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
 
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+	// CCU
 
+//	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
+//	PRINTF("allwnr_t507_get_apb1_freq=%u\n", (unsigned) allwnr_t507_get_apb1_freq());
+//	PRINTF("allwnr_t507_get_apb2_freq=%u\n", (unsigned) allwnr_t507_get_apb2_freq());
+
+	CCU->MBUS_CFG_REG |= (1u << 30);
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
+	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
+		(UINT32_C(3) << 24) |
+		(UINT32_C(3) << 8) |	// div8
+		0;
+	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
+	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
+
+	CCU->AUDIO_HUB_BGR_REG = UINT32_C(1) << 0;	// AUDIO_HUB_GATING
+	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
+
+	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
+//	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
+
+#elif CPUSTYLE_A64
+	// CCU
 	const unsigned irq = I2S_PCM0_IRQn + ix;
 
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S_PCM_0_CLK_REG + ix;
@@ -3621,28 +3732,28 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned CLK_SRC_SEL = 0x03;
 
 	* i2s_clk_reg =
-		(1u << 31) |	// SCLK_GATING.
+		(UINT32_C(1) << 31) |	// SCLK_GATING.
 		(CLK_SRC_SEL << 16) |	//
 		0;
 
-	CCU->BUS_CLK_GATING_REG2 |= 1u << (12 + ix);	// Gating Clock For I2S/PCM-2
-	CCU->BUS_SOFT_RST_REG3 |= 1u << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
+	CCU->BUS_CLK_GATING_REG2 |= UINT32_C(1) << (12 + ix);	// Gating Clock For I2S/PCM-2
+	CCU->BUS_SOFT_RST_REG3 |= UINT32_C(1) << (12 + ix);	// I2S/PCM x Reset. 1: De-assert.
 
 	uint_fast32_t clk;
 	switch (CLK_SRC_SEL)
 	{
 	default:
 	case 0:
-		clk = allwnra64_get_audiopll8x_freq();
+		clk = allwnr_a64_get_audiopll8x_freq();
 		break;
 	case 1:
-		clk = allwnra64_get_audiopll8x_freq() / 2;
+		clk = allwnr_a64_get_audiopll8x_freq() / 2;
 		break;
 	case 2:
-		clk = allwnra64_get_audiopll8x_freq() / 4;
+		clk = allwnr_a64_get_audiopll8x_freq() / 4;
 		break;
 	case 3:
-		clk = allwnra64_get_audiopll_freq();
+		clk = allwnr_a64_get_audiopll_freq();
 		break;
 	}
 
@@ -3650,34 +3761,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
 //	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
 
-	PRINTF("i2s%u: mclkf=%u, clk=%u\n", ix, mclkf, (unsigned) clk);
-	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
-	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
+//	PRINTF("i2s%u: mclkf=%u, bclkf=%u, clk=%u\n", ix, mclkf, bclkf, (unsigned) clk);
+//	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
+//	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
 
-#else
-	const unsigned irq = I2S_PCM1_IRQn + ix - 1;
-
-	arm_hardware_disable_handler(irq);
-	// ARMI2SRATE // I2S sample rate audio codec (human side)
-	// ARMI2SMCLK = ARMI2SRATE * 256
-	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
-	// ARMSAIMCLK = ARMSAIRATE * 256
-	// CODEC1_FRAMEBITS 64
-
-//	PRINTF("allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
-//	PRINTF("allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
-
-	//	i2s1: prei=2, value=30, mclkf=12288000, (clk=1536000000)
-	//	allwnrt113_get_audio0pll1x_freq = 24.571.428
-	//	allwnrt113_get_audio0pll4x_freq = 98.28.5714
-	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
-	//	allwnrt113_get_audio1pll1x_freq = 3072.000.000
-	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
-	//	allwnrt113_get_audio1pll_div5_freq = 614.400.000
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
 
 	// 0x00, 0x01, 0x03: 48000
 	// 0x02: ~ 48350
@@ -3717,17 +3806,120 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S1_CLK_REG + ix - 1;
 
 	* i2s_clk_reg =
-		(1u << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+		(UINT32_C(1) << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
 		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
 		0;
 
-	CCU->I2S_BGR_REG |= (1u << (0 + ix));	// Gating Clock for I2S/PCMx
-	CCU->I2S_BGR_REG |= (1u << (16 + ix));	// I2S/PCMx Reset
+	CCU->I2S_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Gating Clock for I2S/PCMx
+	CCU->I2S_BGR_REG |= (UINT32_C(1) << (16 + ix));	// I2S/PCMx Reset
+
+#else
+	#error Unhandled CPUSTYLE_xxx
 
 #endif
 
+#if CPUSTYLE_T507
+
+	/* Установка формата обмна */
+	// AHUB = top level
+	const unsigned damix = 0;
+	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
+	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
+	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
+	const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+
+	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
+	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
+	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+
+	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
+	(void) AHUB->AHUB_RST;
+	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
+
+	const unsigned txrx_offset = 1;	// Каналы I2S
+	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
+
+	// Каналы AHUB[0..1] - RX
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = (UINT32_C(1) << 3);	// RXn_DRQ
+
+	// Каналы AHUB[0..1] - TX
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL = (UINT32_C(1) << 3);	// TXn_DRQ
+
+	if (1)
+	{
+		/* I2S part */
+		i2s->I2Sn_CTL =
+			!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
+			1 * (UINT32_C(1) << (din + 12)) |	// SDI0_EN
+			1 * (UINT32_C(1) << (dout + 8)) |	// SDO0_EN
+			1 * (UINT32_C(1) << 4) |	// MODE_SEL 01: Left mode(offset 0: L-J Mode; offset 1: I2S mode)
+			0;
+		i2s->I2Sn_FMT0 =
+			0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+			0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+			((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+			ws * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+			ws * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+			0;
+		i2s->I2Sn_FMT1 = 0;
+		i2s->I2Sn_CLKD = 0;
+
+		i2s->I2Sn_CHCFG =
+			(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
+			(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_CHAN_NUM
+			0;
+
+
+		ASSERT(din < 4);
+		ASSERT(dout < 4);
+
+		i2s->I2Sn_SDOUT [0].I2Sn_SDOUTm_SLOTCTR =
+			(NSLOTS - 1) *  (UINT32_C(1) << 16) |	// SDOUTm_SLOT_NUM
+			txrx_offset * (UINT32_C(1) << 20) |	// SDOUTm_OFFSET
+			0xFFFF |	// SDOUTm_SLOT_EN
+			0;
+		i2s->I2Sn_SDOUT [1].I2Sn_SDOUTm_SLOTCTR =
+			0;
+		i2s->I2Sn_SDOUT [2].I2Sn_SDOUTm_SLOTCTR =
+			0;
+		i2s->I2Sn_SDOUT [3].I2Sn_SDOUTm_SLOTCTR =
+			0;
+
+		i2s->I2Sn_SDIN_SLOTCTR =
+			txrx_offset * (UINT32_C(1) << 20) |		// RX_OFFSET (need 1 for I2S mode)
+			(NSLOTS - 1) * (UINT32_C(1) << 16) |	// SDIN Slot number Select for each output
+			0;
+
+		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+
+		i2s->I2Sn_CTL |=
+			1 * (UINT32_C(1) << 2) |	// TXEN
+			1 * (UINT32_C(1) << 1) |	// RXEN
+			0;
+		i2s->I2Sn_CTL |=
+			1 * (UINT32_C(1) << 0) |	// GEN Globe Enable
+			0;
+	}
+
+	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
+	//PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
+	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
+
+#elif CPUSTYLE_A64
+	/* Установка формата обмна */
+	#warning CPUSTYLE_A64 to be implemented
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	/* Установка формата обмна */
+	// Каналы I2S
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
 	// Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -3736,11 +3928,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
 	i2s->I2S_PCM_FMT0 =
-		0 * (1u << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
-		0 * (1u << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
-		((framebits / 2) - 1) * (1u << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(framebits / NCH) * (1u << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(framebits / NCH) * (1u << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	i2s->I2S_PCM_FMT1 =
 		0;
@@ -3750,15 +3942,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		// Данные берутся/появляются в младшей части регистра FIFO
 		// I2S/PCM FIFO Control Register
 		i2s->I2S_PCM_FCTL = (i2s->I2S_PCM_FCTL & ~ (0x07uL)) |
-			1 * (1u << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
-			3 * (1u << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
+			1 * (UINT32_C(1) << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
+			3 * (UINT32_C(1) << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
 			0;
 	}
 
 	// I2S/PCM Channel Configuration Register
 	i2s->I2S_PCM_CHCFG =
-		(NCH - 1) * (1u << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
-		(NCH - 1) * (1u << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
 		0;
 
 	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
@@ -3769,40 +3961,35 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned ratio = 256 / framebits;
 	const unsigned div4 = 1;
 	i2s->I2S_PCM_CLKD =
-		1 * (1u << 8) |		// MCLKO_EN
-		ratio2div(div4) * (1u << 0) |		/* MCLKDIV */
-		ratio2div(ratio) * (1u << 4) |		/* BCLKDIV */
+		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
+		ratio2div(div4) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+		ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
 	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
 
-#if CODEC1_FORMATI2S_PHILIPS
-	const unsigned txrx_offset = 1;
-#else /* CODEC1_FORMATI2S_PHILIPS */
-	const unsigned txrx_offset = 0;
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 1;		// I2S format
 
 	ASSERT(din < 4);
 	ASSERT(dout < 4);
 	// I2S/PCM Control Register
 	i2s->I2S_PCM_CTL = 0;
 	i2s->I2S_PCM_CTL =
-		(1u << dout) * (1u << 8) |	// DOUT3_EN..DOUT0_EN
+		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
-		(1u << 4) |	// left mode, need offset=1 for I2S
+		(UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
 		0;
 
 	i2s->I2S_PCM_RXCHSEL =
-		txrx_offset * (1u << 20) |	// RX_OFFSET (need for I2S mode
-		(NCH - 1) * (1u << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
 
-
 	const portholder_t txchsel =
-		txrx_offset * (1u << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
-		(NCH - 1) * (1u << 16) |	// TX3 Channel (Slot) Number Select for Each Output
-		0xFFFF * (1u << 0) |		// TX3 Channel (Slot) Enable
+		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		0xFFFF * (UINT32_C(1) << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
 	i2s->I2S_PCM_TX0CHSEL = txchsel;
@@ -3811,21 +3998,58 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_fill_RXCHMAP(i2s, din, NCH);
-	I2S_fill_TXxCHMAP(i2s, 0, dout, NCH);	// I2S_PCM_TX0CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 1, dout, NCH);	// I2S_PCM_TX1CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 2, dout, NCH);	// I2S_PCM_TX2CHMAPx
-	I2S_fill_TXxCHMAP(i2s, 3, dout, NCH);	// I2S_PCM_TX3CHMAPx
+	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+	I2S_fill_TXxCHMAP(i2s, 0, dout, NSLOTS);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, dout, NSLOTS);	// I2S_PCM_TX3CHMAPx
 
 	i2s->I2S_PCM_INT = 0;
-	i2s->I2S_PCM_INT |= (1u << 7); // TX_DRQ
-	i2s->I2S_PCM_INT |= (1u << 3); // RX_DRQ
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 3); // RX_DRQ
 
-	i2s->I2S_PCM_INT |= (1u << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
-	i2s->I2S_PCM_INT |= (1u << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
-	arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
 
+#else
+	#error Unhandled CPUSTYLE_xxx
+#endif
+}
+
+static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
+{
+#if CPUSTYLE_T507
+	/* Соответствующий i2S не работает напрямую с DMA */
+	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
+	if (en)
+	{
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL |= (UINT32_C(1) << 4);	// TXn_START
+	}
+	else
+	{
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL &= ~ (UINT32_C(1) << 4);	// TXn_START
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL &= ~ (UINT32_C(1) << 4);	// RXn_START
+	}
+#else
+	if (en)
+	{
+		i2s->I2S_PCM_CTL |=
+			(UINT32_C(1) << 2) |	// TXEN
+			(UINT32_C(1) << 1) |	// RXEN
+			0;
+		i2s->I2S_PCM_CTL |= (UINT32_C(1) << 0); // GEN Globe Enable
+	}
+	else
+	{
+		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (UINT32_C(1) << 1); // RXEN
+	}
+#endif
 }
 
 #if CPUSTYLE_A64
@@ -3844,22 +4068,70 @@ static void hardware_i2s0_slave_duplex_initialize_codec1(void)
 
 #endif /* CPUSTYLE_A64 */
 
+#define CODEC1_NCH 2	/* всегда стерео */
+
+#if defined(I2S0) && WITHI2S0HW
+static void hardware_i2s0_enable(uint_fast8_t state)
+{
+	hardware_i2s_enable(0, I2S0, state);
+}
+
+// FPGA interface
+static void hardware_i2s0_master_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	I2S0HW_INITIALIZE(1);
+}
+
+static void hardware_i2s0_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	I2S0HW_INITIALIZE(0);
+}
+#endif /* defined(I2S0) && WITHI2S0HW */
+
+#if defined(I2S1) && WITHI2S1HW
+static void hardware_i2s1_enable(uint_fast8_t state)
+{
+	hardware_i2s_enable(1, I2S1, state);
+}
+
 // Codec initialize
 static void hardware_i2s1_master_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(1, I2S1, 1, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_initialize(1, I2S1, 1, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
 	I2S1HW_INITIALIZE(1);
 }
 
 static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(1, I2S1, 0, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_initialize(1, I2S1, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
 	I2S1HW_INITIALIZE(0);
+}
+
+static void hardware_i2s1_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(1, I2S1, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(0);
+}
+
+#endif /* defined(I2S1) && WITHI2S1HW */
+
+#if defined(I2S2) && WITHI2S2HW
+static void hardware_i2s2_enable(uint_fast8_t state)
+{
+	hardware_i2s_enable(2, I2S2, state);
 }
 
 static void hardware_i2s2_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(2, I2S2, 0, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_initialize(2, I2S2, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(0);
+}
+
+static void hardware_i2s2_slave_duplex_initialize_fpga(void)
+{
+	hardware_i2s_initialize(2, I2S2, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(0);
 }
 
@@ -3869,94 +4141,134 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 	hardware_i2s_initialize(2, I2S2, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(1);
 }
+#endif /* defined(I2S2) && WITHI2S2HW */
 
-static void hardware_i2s1_slave_duplex_initialize_fpga(void)
+
+#if WITHDEBUG && 0
+
+static uint32_t rxlastts;
+static uint32_t txlastts;
+static volatile uint32_t rxfreq;
+static volatile uint32_t txfreq;
+
+static void txstamp(unsigned samples)
 {
-	hardware_i2s_initialize(1, I2S1, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S1HW_INITIALIZE(0);
+#if WITHDEBUG
+	uint32_t last = txlastts;
+	txlastts = cpu_getdebugticks();
+	uint32_t d = txlastts - last;
+	txfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
+#endif /* WITHDEBUG */
 }
 
-static void hardware_i2s2_slave_duplex_initialize_fpga(void)
+static void rxstamp(unsigned samples)
 {
-	hardware_i2s_initialize(2, I2S2, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S2HW_INITIALIZE(0);
+#if WITHDEBUG
+	uint32_t last = rxlastts;
+	rxlastts = cpu_getdebugticks();
+	uint32_t d = rxlastts - last;
+	rxfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
+#endif /* WITHDEBUG */
 }
 
-static void hardware_i2s1_enable_codec1(uint_fast8_t state)
+static LCLSPINLOCK_t locklistprint = LCLSPINLOCK_INIT;
+static volatile uintptr_t printptr;
+
+void zdataprint(void)
 {
-	I2S_PCM_TypeDef * const i2s = I2S1;
-	if (state)
+#if WITHDEBUG
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& locklistprint);
+	uintptr_t pp = printptr;
+	printptr = 0;
+	LCLSPIN_UNLOCK(& locklistprint);
+	LowerIrql(oldIrql);
+
+	if (pp != 0)
 	{
-		i2s->I2S_PCM_CTL |=
-			(1u << 2) |	// TXEN
-			(1u << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (1u << 0); // GEN Globe Enable
+		PRINTF("rx buffer:\n");
+		//printhex32(0, (void *) xbuff, sizeof xbuff);
+		printhex32(0, (void *) pp, 128);
+
+		RiseIrql(IRQL_REALTIME, & oldIrql);
+		LCLSPIN_LOCK(& locklistprint);
+		release_dmabuffer32rx(pp);
+		LCLSPIN_UNLOCK(& locklistprint);
+		LowerIrql(oldIrql);
 	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (1u << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (1u << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (1u << 1); // RXEN
-	}
+#endif /* WITHDEBUG */
 }
 
-static void hardware_i2s2_enable_codec1(uint_fast8_t state)
+static void savetodebug(uintptr_t addr32)
 {
-	I2S_PCM_TypeDef * const i2s = I2S2;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(1u << 2) |	// TXEN
-			(1u << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (1u << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (1u << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (1u << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (1u << 1); // RXEN
-	}
+#if WITHDEBUG
+	uintptr_t p = allocate_dmabuffer32rx();
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& locklistprint);
+	uintptr_t oldpp = printptr;
+	printptr = p;
+	LCLSPIN_UNLOCK(& locklistprint);
+	LowerIrql(oldIrql);
+
+	if (oldpp != 0)
+		release_dmabuffer32rx(oldpp);
+
+	memcpy((void *) p, (void *) addr32, 128);
+
+#endif /* WITHDEBUG */
 }
 
-static void hardware_i2s1_enable_fpga(uint_fast8_t state)
+void zcountsprint(void)
 {
-	I2S_PCM_TypeDef * const i2s = I2S1;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(1u << 2) |	// TXEN
-			(1u << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (1u << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (1u << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (1u << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (1u << 1); // RXEN
-	}
+#if WITHDEBUG && CPUSTYLE_T507
+	//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
+	PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
+	PRINTF("APBIF_RX1FIFO_CNT=%08X, APBIF_TX1FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[1].APBIF_TXnFIFO_CNT);
+	PRINTF("APBIF_RX2FIFO_CNT=%08X, APBIF_TX2FIFO_CNT=%08X\n",
+			(unsigned) AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT,
+			(unsigned) AHUB->APBIF_TX[2].APBIF_TXnFIFO_CNT);
+#endif
 }
 
-static void hardware_i2s2_enable_fpga(uint_fast8_t state)
+void zfreqprint(void)
 {
-	I2S_PCM_TypeDef * const i2s = I2S2;
-	if (state)
+#if WITHDEBUG
+	unsigned ix = 0;	// I2S0
 	{
-		i2s->I2S_PCM_CTL |=
-			(1u << 2) |	// TXEN
-			(1u << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (1u << 0); // GEN Globe Enable
+		static uint32_t txlasc;
+		uint32_t lastc = txlasc;
+		txlasc = AHUB->APBIF_RX[getAPBIFrx(ix)].APBIF_RXnFIFO_CNT;
+		uint32_t df = cpu_getdebugticksfreq();
+		static uint32_t txlastts;
+		uint32_t last = txlastts;
+		txlastts = cpu_getdebugticks();
+		uint32_t d = txlastts - last;
+		uint32_t dc = txlasc - lastc;
+		PRINTF("rxiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
 	}
-	else
 	{
-		i2s->I2S_PCM_CTL &= ~ (1u << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (1u << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (1u << 1); // RXEN
+		static uint32_t txlasc;
+		uint32_t lastc = txlasc;
+		txlasc = AHUB->APBIF_TX[getAPBIFtx(ix)].APBIF_TXnFIFO_CNT;
+		uint32_t df = cpu_getdebugticksfreq();
+		static uint32_t txlastts;
+		uint32_t last = txlastts;
+		txlastts = cpu_getdebugticks();
+		uint32_t d = txlastts - last;
+		uint32_t dc = txlasc - lastc;
+		PRINTF("txiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
 	}
+#endif
+	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
 }
+
+#endif
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -3977,21 +4289,6 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 	case 32: 	return 0x02;
 	case 64: 	return 0x03;
 	}
-}
-
-static uintptr_t DMA_suspend(unsigned dmach)
-{
-//	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-//	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
-//		;
-	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-//	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-//	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
-}
-
-static void DMA_resume(unsigned dmach, uintptr_t descbase)
-{
-//    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 /* Приём от кодека */
@@ -4038,6 +4335,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
+
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
@@ -4046,6 +4344,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
+	processing_pipe32rx(addr);
 	processing_dmabuffer32rts(addr);
 	processing_dmabuffer32rx(addr);
 	release_dmabuffer32rx(addr);
@@ -4061,50 +4360,13 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	descraddr [ix] = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
-}
-
-
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01)	// 0x04: Queue, 0x02: Pkq, 0x01: half
-
-static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
-{
-	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
-	dmac_handlers [dmach] = handler;
-#if CPUSTYLE_A64
-	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
-
-	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-#else /* CPUSTYLE_A64 */
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
-	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
-#endif /* CPUSTYLE_A64 */
-}
-
-static void DMAC_clock_initialize(void)
-{
-#if CPUSTYLE_A64
-
-	CCU->BUS_CLK_GATING_REG0 |= (1u << 6);	// DMA_GATING
-	CCU->BUS_SOFT_RST_REG0 |= (1u << 6);	// DMA_RST
-
-#else /* CPUSTYLE_A64 */
-	CCU->MBUS_CLK_REG |= (1u << 30);		// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (1u << 16);		// DMA_RST 1: De-assert reset
-	CCU->DMA_BGR_REG |= (1u << 0);			// DMA_GATING 1: Pass clock
-#endif /* CPUSTYLE_A64 */
-
-	DMAC->DMAC_AUTO_GATE_REG |= (1u << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
-	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
 }
 
 enum
@@ -4121,27 +4383,72 @@ enum
 	DMAC_Ch_Total
 };
 
+static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
+{
+#if CPUSTYLE_T507
+//	static uint32_t v = 0xDEADBEEF;
+//	return (uintptr_t) & v;
+	(void) i2s;
+	return (uintptr_t) & AHUB->APBIF_RX [getAPBIFrx(ix)].APBIF_RXnFIFO;
+#else
+	(void) ix;
+	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
+#endif
+}
+
+static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
+{
+#if CPUSTYLE_T507
+	(void) i2s;
+	return (uintptr_t) & AHUB->APBIF_TX [getAPBIFtx(ix)].APBIF_TXnFIFO;
+#else
+	(void) ix;
+	return (uintptr_t) & i2s->I2S_PCM_TXFIFO;
+#endif
+}
+
+static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
+{
+#if CPUSTYLE_T507
+	return DMAC_SrcReqAHUB_drqr0_RX + getAPBIFrx(ix);
+#else
+	return DMAC_SrcReqI2S1_RX + ix - 1;
+#endif
+}
+
+static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
+{
+#if CPUSTYLE_T507
+	return DMAC_DstReqAHUB_drqt0_TX + getAPBIFtx(ix);
+#else
+	return DMAC_DstReqI2S1_TX + ix - 1;
+#endif
+}
+
+#if WITHI2S1HW
 static void DMAC_I2S1_RX_initialize_codec1(void)
 {
+	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S1_RX * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4186,25 +4493,27 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 
 static void DMAC_I2S1_TX_initialize_codec1(void)
 {
+	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S1_TX * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4246,28 +4555,33 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif /* WITHI2S1HW */
+
+#if WITHI2S2HW
 
 static void DMAC_I2S2_TX_initialize_codec1(void)
 {
+	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S2, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S2, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S2_TX * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4309,28 +4623,31 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-
+#endif
+#if WITHI2S1HW
 static void DMAC_I2S1_RX_initialize_fpga(void)
 {
+	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S1_RX * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4372,30 +4689,36 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
-#if ! CPUSTYLE_A64
+#if defined (I2S2) && WITHI2S2HW
+
+// Allwinner A64 not support RX on I2S2
+#if ! defined (CPUSTYLE_A64) && ! defined (CPUSTYLE_T507)
 
 static void DMAC_I2S2_RX_initialize_codec1(void)
 {
+	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S2, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S2, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S2_RX * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4440,25 +4763,27 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 
 static void DMAC_I2S2_RX_initialize_fpga(void)
 {
+	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S2, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S2, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S2_RX * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4500,29 +4825,35 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-#endif /* ! CPUSTYLE_A64 */
 
+#endif /* ! defined (CPUSTYLE_A64) */
+
+#endif /* defined (I2S2) */
+
+#if WITHI2S1HW
 static void DMAC_I2S1_TX_initialize_fpga(void)
 {
+	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S1_TX * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4564,28 +4895,32 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
+#if WITHI2S2HW
 static void DMAC_I2S2_TX_initialize_fpga(void)
 {
+	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S2, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S2, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S2_TX * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4627,18 +4962,20 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+#endif
 
+#if defined(I2S1) && WITHI2S1HW
 static const codechw_t audiocodechw_i2s1_duplex_master =
 {
 	hardware_i2s1_master_duplex_initialize_codec1,
 	hardware_dummy_initialize,
 	DMAC_I2S1_RX_initialize_codec1,
 	DMAC_I2S1_TX_initialize_codec1,
-	hardware_i2s1_enable_codec1,
+	hardware_i2s1_enable,
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-master"
 };
-
+#endif /* defined(I2S1) && WITHI2S1HW */
 
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
@@ -4691,7 +5028,7 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	//	10: PLL_AUDIO1(DIV5)
 
 	const portholder_t clk_reg =
-		(1u << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
@@ -4700,100 +5037,100 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
 	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
 
-	CCU->AUDIO_CODEC_BGR_REG |= (1u << 0);	// Gating Clock For AUDIO_CODEC
-	CCU->AUDIO_CODEC_BGR_REG |= (1u << 16);	// AUDIO_CODEC Reset
+	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
+	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
 #endif
 
 #if 1
 	// anatol
 
-	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (1u << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
-//	AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
-//	AUDIO_CODEC->ADC_DIG_CTRL |= (1u << 17)|(1u << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
+	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (UINT32_C(1) << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+//	AUDIO_CODEC->ADC_DIG_CTRL & ~ (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(15 << 0);
+//	AUDIO_CODEC->ADC_DIG_CTRL |= (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
 
-	//AUDIO_CODEC->ADC_DIG_CTRL & ~ (1u << 17)|(1u << 16)|(15 << 0);
+	//AUDIO_CODEC->ADC_DIG_CTRL & ~ (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(15 << 0);
 	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x0Fu)) |
-			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
-			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
+			(UINT32_C(1) << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
+			(UINT32_C(1) << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
 			((0x04 | 0x02 | 0x01) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
 	ASSERT(DMABUFFSTEP16RX == 3);
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
+	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (UINT32_C(1) << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
+	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 3);	// ADC_DRQ_EN
 
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
+	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 
 
-//	AUDIO_CODEC->ADC1_REG |= (1u << 23);  // LINEINL
-//	AUDIO_CODEC->ADC2_REG |= (1u << 23);  // LINEINR
-//	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
+//	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 23);  // LINEINL
+//	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 23);  // LINEINR
+//	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 30);	// MIC3_PGA_EN
 
     ///-----LDO-----
 	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
-//	AUDIO_CODEC->POWER_REG |= (1u << 31);	// ALDO_EN
-//	AUDIO_CODEC->POWER_REG |= (1u << 30);	// HPLDO_EN
+//	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 31);	// ALDO_EN
+//	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 30);	// HPLDO_EN
 	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
     ///-------------
 
 
 	// DAC Analog Control Register
-	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
+	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 15) | (UINT32_C(1) << 14);	// DACL_EN, DACR_EN
 
 
 	AUDIO_CODEC->RAMP_REG |=
-	   (1u << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
-	   (1u << 0) | // RD_EN Ramp Digital Enable
+	   (UINT32_C(1) << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
+	   (UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
 	   0;
 
 #if 0
 	/* LINEIN use */
 
 	// ADCx Analog Control Register
-	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
+	//AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// LEft ADC1 Channel Enable
+	//AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// Right ADC1 Channel Enable
 	// Left audio
-	AUDIO_CODEC->ADC1_REG &= ~ (1u << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
-	AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+	AUDIO_CODEC->ADC1_REG &= ~ (UINT32_C(1) << 27);	// FMINLEN FMINL Disable - R11 - fminL pin 94
+	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 23);	// LINEINLEN LINEINL Enable
 
 	// ADCx Analog Control Register
 	// Right audio
-	AUDIO_CODEC->ADC2_REG &= ~ (1u << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
-	AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
+	AUDIO_CODEC->ADC2_REG &= ~ (UINT32_C(1) << 27);	// FMINREN FMINR Disable - R10 - fminR pin 93
+	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 23);	// LINEINREN LINEINR Enable - R6 - lineinR - pin 95
 
 #elif 0
 	/* FMIN use */
 
 	// ADCx Analog Control Register
-	//AUDIO_CODEC->ADC1_REG |= (1u << 31);	// LEft ADC1 Channel Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 31);	// Right ADC1 Channel Enable
+	//AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// LEft ADC1 Channel Enable
+	//AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// Right ADC1 Channel Enable
 	// Left audio
-	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
-	AUDIO_CODEC->ADC1_REG &= ~ (1u << 23);	// LINEINLEN LINEINL Disable
+	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 27);	// FMINLEN FMINL Enable - R11 - fminL pin 94
+	AUDIO_CODEC->ADC1_REG &= ~ (UINT32_C(1) << 23);	// LINEINLEN LINEINL Disable
 
 	// Right audio
-	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
-	AUDIO_CODEC->ADC2_REG &= ~ (1u << 23);	// LINEINREN LINEINR Disable - R6 - lineinR - pin 95
+	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 27);	// FMINREN FMINR Enable - R10 - fminR pin 93
+	AUDIO_CODEC->ADC2_REG &= ~ (UINT32_C(1) << 23);	// LINEINREN LINEINR Disable - R6 - lineinR - pin 95
 
 #else
 
 	/* Do not use FM/LINE inputs */
 
 	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG &= ~ (1u << 31);	// LEft ADC1 Channel Disable
-	AUDIO_CODEC->ADC2_REG &= ~ (1u << 31);	// Right ADC1 Channel Disable
+	AUDIO_CODEC->ADC1_REG &= ~ (UINT32_C(1) << 31);	// LEft ADC1 Channel Disable
+	AUDIO_CODEC->ADC2_REG &= ~ (UINT32_C(1) << 31);	// Right ADC1 Channel Disable
 
 #endif
 
 	// ADC3 Analog Control Register
-	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
+	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 31);	// MIC3
 	// MIC3
-	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
-	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
+	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 30);	// MIC3_PGA_EN
+	//AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (0x0Fu << 8)) | (0x0Fu << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
 
 	// Установка усиления
@@ -4808,40 +5145,40 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 
 	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
 	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
-			(1u << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
-			(1u << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
+			(UINT32_C(1) << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
+			(UINT32_C(1) << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
 			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
 
 	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG |= (1u << 31);	// FMINL ADC1 Channel Enable
-	AUDIO_CODEC->ADC2_REG |= (1u << 31);	// FMINR
-	AUDIO_CODEC->ADC3_REG |= (1u << 31);	// MIC3
+	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// FMINL ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// FMINR
+	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 31);	// MIC3
 
 	// DAC Analog Control Register
 	// количество каналов должно соотыетствовать DMABUFFSTEP16TX
-	AUDIO_CODEC->DAC_REG |= (1u << 15) | (1u << 14);	// DACL_EN, DACR_EN
+	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 15) | (UINT32_C(1) << 14);	// DACL_EN, DACR_EN
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
-	AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 3);	// ADC_DRQ_EN
+	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (UINT32_C(1) << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
+	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 3);	// ADC_DRQ_EN
 
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
-	AUDIO_CODEC->AC_DAC_FIFOC |= (1u << 4);	// DAC_DRQ_EN
+	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 
 	// Установка аналоговых параметрв
 	AUDIO_CODEC->ADC_VOL_CTRL1 = 0x00FFFFFF;
 
-	AUDIO_CODEC->ADC1_REG |= (1u << 27);	// FMINLEN FMINL Enable
-	//AUDIO_CODEC->ADC1_REG |= (1u << 23);	// LINEINLEN LINEINL Enable
+	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 27);	// FMINLEN FMINL Enable
+	//AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 23);	// LINEINLEN LINEINL Enable
 
-	AUDIO_CODEC->ADC2_REG |= (1u << 27);	// FMINREN FMINR Enable
-	//AUDIO_CODEC->ADC2_REG |= (1u << 23);	// LINEINREN LINEINR Enable
+	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 27);	// FMINREN FMINR Enable
+	//AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 23);	// LINEINREN LINEINR Enable
 
-	AUDIO_CODEC->ADC3_REG |= (1u << 30);	// MIC3_PGA_EN
-	//AUDIO_CODEC->ADC3_REG |= (1u << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
+	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 30);	// MIC3_PGA_EN
+	//AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 
 #endif
 }
@@ -4851,13 +5188,13 @@ static void hardware_hwblock_enable_codec1(uint_fast8_t state)
 {
 	if (state)
 	{
-		AUDIO_CODEC->AC_DAC_DPC |= (1u << 31);		// DAC Digital Part Enable
-		AUDIO_CODEC->AC_ADC_FIFOC |= (1u << 28);	// ADC Digital Part Enable
+		AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);		// DAC Digital Part Enable
+		AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 28);	// ADC Digital Part Enable
 	}
 	else
 	{
-		AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1u << 28);	// ADC Digital Part Enable
-		AUDIO_CODEC->AC_DAC_DPC &= ~ (1u << 31);	// DAC Digital Part Enable
+		AUDIO_CODEC->AC_ADC_FIFOC &= ~ (UINT32_C(1) << 28);	// ADC Digital Part Enable
+		AUDIO_CODEC->AC_DAC_DPC &= ~ (UINT32_C(1) << 31);	// DAC Digital Part Enable
 	}
 }
 
@@ -4873,15 +5210,15 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqAudioCodec * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqAudioCodec * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -4936,15 +5273,15 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqAudioCodec * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqAudioCodec * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5000,25 +5337,30 @@ static const codechw_t audiocodechw_hwblock_duplex_master =
 
 #endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 
+#if defined(I2S1) && WITHI2S1HW
 static const codechw_t audiocodechw_i2s1_duplex_slave =
 {
 	hardware_i2s1_slave_duplex_initialize_codec1,
 	hardware_dummy_initialize,
 	DMAC_I2S1_RX_initialize_codec1,
 	DMAC_I2S1_TX_initialize_codec1,
-	hardware_i2s1_enable_codec1,
+	hardware_i2s1_enable,
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-slave"
 };
+#endif /* defined(I2S1) && WITHI2S1HW */
 
-#if ! CPUSTYLE_A64
+#if defined(I2S2) && WITHI2S2HW
+
+#if ! defined (CPUSTYLE_A64) && ! defined (CPUSTYLE_T507)
+
 static const codechw_t audiocodechw_i2s2_duplex_slave =
 {
-	hardware_i2s1_slave_duplex_initialize_codec1,
+	hardware_i2s2_slave_duplex_initialize_codec1,
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_codec1,
 	DMAC_I2S2_TX_initialize_codec1,
-	hardware_i2s2_enable_codec1,
+	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"audiocodechw-i2s2-duplex-slave"
 };
@@ -5029,7 +5371,7 @@ static const codechw_t fpgacodechw_i2s2_duplex_master =
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_fpga,
 	DMAC_I2S2_TX_initialize_fpga,
-	hardware_i2s2_enable_fpga,
+	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-master"
 };
@@ -5040,80 +5382,54 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S2_RX_initialize_fpga,
 	DMAC_I2S2_TX_initialize_fpga,
-	hardware_i2s2_enable_fpga,
+	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-slave"
 };
-#endif
 
+#endif /* ! defined (CPUSTYLE_A64) */
+
+#endif /* defined(I2S2) && WITHI2S2HW */
+
+#if defined(I2S1) && WITHI2S1HW
 static const codechw_t fpgacodechw_i2s1_duplex_slave =
 {
 	hardware_i2s1_slave_duplex_initialize_fpga,
 	hardware_dummy_initialize,
 	DMAC_I2S1_RX_initialize_fpga,
 	DMAC_I2S1_TX_initialize_fpga,
-	hardware_i2s1_enable_fpga,
+	hardware_i2s1_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s1-duplex-slave"
 };
 
-#if CPUSTYLE_A64
+#endif /* defined(I2S1) && WITHI2S1HW */
 
-// FPGA interface
-static void hardware_i2s0_master_duplex_initialize_fpga(void)
-{
-	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S0HW_INITIALIZE(1);
-}
-
-static void hardware_i2s0_slave_duplex_initialize_fpga(void)
-{
-	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S0HW_INITIALIZE(0);
-}
-
-
-static void hardware_i2s0_enable_fpga(uint_fast8_t state)
-{
-	state = 0;
-	I2S_PCM_TypeDef * const i2s = I2S0;
-	if (state)
-	{
-		i2s->I2S_PCM_CTL |=
-			(1u << 2) |	// TXEN
-			(1u << 1) |	// RXEN
-			0;
-		i2s->I2S_PCM_CTL |= (1u << 0); // GEN Globe Enable
-	}
-	else
-	{
-		i2s->I2S_PCM_CTL &= ~ (1u << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (1u << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (1u << 1); // RXEN
-	}
-}
+#if defined(I2S0) && WITHI2S0HW
 
 static void DMAC_I2S0_RX_initialize_fpga(void)
 {
+	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S0->I2S_PCM_RXFIFO;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S0, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqI2S0_RX * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5158,25 +5474,27 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 
 static void DMAC_I2S0_TX_initialize_fpga(void)
 {
+	const unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S0_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S0->I2S_PCM_TXFIFO;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S0, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (1u << 30) |	// BMODE_SEL
-		ddwt * (1u << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (1u << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 22) |	// DMA Destination Block Size
-		DMAC_DstReqI2S0_TX * (1u << 16) |	// DMA Destination DRQ Type
-		sdwt * (1u << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1u << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (1u << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1u << 0) |	// DMA Source DRQ Type
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
@@ -5225,7 +5543,7 @@ static const codechw_t fpgacodechw_i2s0_duplex_master =
 	hardware_dummy_initialize,
 	DMAC_I2S0_RX_initialize_fpga,
 	DMAC_I2S0_TX_initialize_fpga,
-	hardware_i2s0_enable_fpga,
+	hardware_i2s0_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s0-duplex-master"
 };
@@ -5236,12 +5554,12 @@ static const codechw_t fpgacodechw_i2s0_duplex_slave =
 	hardware_dummy_initialize,
 	DMAC_I2S0_RX_initialize_fpga,
 	DMAC_I2S0_TX_initialize_fpga,
-	hardware_i2s0_enable_fpga,
+	hardware_i2s0_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s0-duplex-slave"
 };
 
-#endif /* CPUSTYLE_A64 */
+#endif /* defined(I2S0) && WITHI2S0HW */
 
 #elif CPUSTYLE_R7S721
 	
@@ -5272,14 +5590,14 @@ enum
 #define R7S721_SSIF2_MASTER 1	// FGA I2S INTERFACE #2 (spectrum)
 
 #if CODEC1_FRAMEBITS == 64
-	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV4 * (1u << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
-	#define R7S721_SSIF0_SWL_val (3 * (1u << 16))	// SWL 3: 32 bit
-	#define R7S721_SSIF0_DWL_val (6 * (1u << 19))	// DWL 6: 32 bit
+	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV4 * (UINT32_C(1) << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
+	#define R7S721_SSIF0_SWL_val (3 * (UINT32_C(1) << 16))	// SWL 3: 32 bit
+	#define R7S721_SSIF0_DWL_val (6 * (UINT32_C(1) << 19))	// DWL 6: 32 bit
 
 #else /* CODEC1_FRAMEBITS == 64 */
-	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV8 * (1u << 4))	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
-	#define R7S721_SSIF0_SWL_val (1 * (1u << 16))	// SWL 1: 16 bit
-	#define R7S721_SSIF0_DWL_val (1 * (1u << 19))	// DWL 1: 16 bit
+	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV8 * (UINT32_C(1) << 4))	// 0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
+	#define R7S721_SSIF0_SWL_val (1 * (UINT32_C(1) << 16))	// SWL 1: 16 bit
+	#define R7S721_SSIF0_DWL_val (1 * (UINT32_C(1) << 19))	// DWL 1: 16 bit
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
@@ -5295,7 +5613,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma_audiorx(void)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC0.CHSTAT_n & (1U << DMAC0_CHSTAT_n_SR_SHIFT)) != 0;	// SR
+	const uint_fast8_t b = (DMAC0.CHSTAT_n & (UINT32_C(1) << DMAC0_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC0.N0DA_n;
@@ -5370,40 +5688,40 @@ static void r7s721_ssif0_dmarx_initialize_codec1_rx(void)
 	const uint_fast8_t reqd = 0;
 
 	DMAC0.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
-		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		0 * (1U << 21) |	// DAD	0: Increment destination address
-		1 * (1U << 20) |	// SAD	1: Fixed source address
-		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		1 * (1U << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+		0 * (UINT32_C(1) << 31) |	// DMS	0: Register mode
+		1 * (UINT32_C(1) << 30) |	// REN	1: Continues DMA transfers.
+		1 * (UINT32_C(1) << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (UINT32_C(1) << 28) |	// RSEL	0: Executes the Next0 Register Set
+		0 * (UINT32_C(1) << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (UINT32_C(1) << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (UINT32_C(1) << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (UINT32_C(1) << 21) |	// DAD	0: Increment destination address
+		1 * (UINT32_C(1) << 20) |	// SAD	1: Fixed source address
+		2 * (UINT32_C(1) << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		2 * (UINT32_C(1) << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		am * (UINT32_C(1) << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (UINT32_C(1) << 6) |	// LVL	1: Detects based on the level.
+		1 * (UINT32_C(1) << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (UINT32_C(1) << 3) |	// REQD		Request Direction
+		(id & 0x07) * (UINT32_C(1) << 0) |		// SEL	0: CH0/CH8
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
 	DMAC01.DMARS = (DMAC01.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
+		mid * (UINT32_C(1) << (2 + dmarsshift)) |		// MID
+		rid * (UINT32_C(1) << (0 + dmarsshift)) |		// RID
 		0;
 
-    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
+    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(UINT32_C(1) << 1) | */(UINT32_C(1) << 0))) |
+		//1 * (UINT32_C(1) << 1) |		// LVINT	1: Level output
+		1 * (UINT32_C(1) << 0) |		// PR		1: Round robin mode
 		0;
 
 	arm_hardware_set_handler_realtime(DMAINT0_IRQn, r7s721_ssif0_rxdma_audiorx);
 
-	DMAC0.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC0.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC0.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC0.CHCTRL_n = 1 * (UINT32_C(1) << 3);		// SWRST
+	DMAC0.CHCTRL_n = 1 * (UINT32_C(1) << 17);	// CLRINTMSK
+	DMAC0.CHCTRL_n = 1 * (UINT32_C(1) << 0);		// SETEN
 }
 
 // audio codec
@@ -5436,40 +5754,40 @@ static void r7s721_ssif0_dmatx_initialize_codec1_tx(void)
 	const uint_fast8_t reqd = 1;	
 
 	DMAC1.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
-		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		1 * (1U << 21) |	// DAD	1: Fixed destination address
-		0 * (1U << 20) |	// SAD	0: Increment source address
-		2 * (1U << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		1 * (1U << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+		0 * (UINT32_C(1) << 31) |	// DMS	0: Register mode
+		1 * (UINT32_C(1) << 30) |	// REN	1: Continues DMA transfers.
+		1 * (UINT32_C(1) << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (UINT32_C(1) << 28) |	// RSEL	0: Executes the Next0 Register Set
+		0 * (UINT32_C(1) << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (UINT32_C(1) << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (UINT32_C(1) << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		1 * (UINT32_C(1) << 21) |	// DAD	1: Fixed destination address
+		0 * (UINT32_C(1) << 20) |	// SAD	0: Increment source address
+		2 * (UINT32_C(1) << 16) |	// DDS	2: 32 bits, 1: 16 bits (Destination Data Size)
+		2 * (UINT32_C(1) << 12) |	// SDS	2: 32 bits, 1: 16 bits (Source Data Size)
+		am * (UINT32_C(1) << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (UINT32_C(1) << 6) |	// LVL	1: Detects based on the level.
+		1 * (UINT32_C(1) << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (UINT32_C(1) << 3) |	// REQD		Request Direction
+		(id & 0x07) * (UINT32_C(1) << 0) |		// SEL	0: CH0/CH8
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
 	DMAC01.DMARS = (DMAC01.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
+		mid * (UINT32_C(1) << (2 + dmarsshift)) |		// MID
+		rid * (UINT32_C(1) << (0 + dmarsshift)) |		// RID
 		0;
 
-    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
+    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(UINT32_C(1) << 1) | */(UINT32_C(1) << 0))) |
+		//1 * (UINT32_C(1) << 1) |		// LVINT	1: Level output
+		1 * (UINT32_C(1) << 0) |		// PR		1: Round robin mode
 		0;
 
 	arm_hardware_set_handler_realtime(DMAINT1_IRQn, r7s721_ssif0_txdma_audio);
 
-	DMAC1.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC1.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC1.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC1.CHCTRL_n = 1 * (UINT32_C(1) << 3);		// SWRST
+	DMAC1.CHCTRL_n = 1 * (UINT32_C(1) << 17);	// CLRINTMSK
+	DMAC1.CHCTRL_n = 1 * (UINT32_C(1) << 0);		// SETEN
 }
 
 // Возможно, удастся перейти на master - но надо решить проблему с очередями (FIFO) в FPGA
@@ -5481,7 +5799,7 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 {
 	const uint_fast8_t master = R7S721_SSIF0_MASTER;
     /* ---- Supply clock to the SSIF(channel 0) ---- */
-	CPG.STBCR11 &= ~ (1U << 5);	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
+	CPG.STBCR11 &= ~ (UINT32_C(1) << 5);	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
 
 	// I2S compatible
@@ -5490,33 +5808,29 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 
 	// Control Register (SSICR)
 	SSIF0.SSICR = 
-		R7S721_USE_AUDIO_CLK * (1u << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		0 * (1u << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
+		0 * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		R7S721_SSIF0_DWL_val |		// DWL
 		R7S721_SSIF0_SWL_val |		// SWL
-		master * (1u << 15) |		// SCKD		1: Serial bit clock is output, master mode.
-		master * (1u << 14) |		// SWSD		1: Serial word select is output, master mode.
-		0 * (1u << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
-		0 * (1u << 12) |		// SWSP		0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
-		0 * (1u << 11) |		// SPDP		0: Padding bits are low.
-		0 * (1u << 10) |		// SDTA
-		0 * (1u << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
-#if CODEC1_FORMATI2S_PHILIPS
-		0 * (1u << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* CODEC1_FORMATI2S_PHILIPS */
-		1 * (1u << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+		master * (UINT32_C(1) << 15) |		// SCKD		1: Serial bit clock is output, master mode.
+		master * (UINT32_C(1) << 14) |		// SWSD		1: Serial word select is output, master mode.
+		0 * (UINT32_C(1) << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (UINT32_C(1) << 12) |		// SWSP		0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
+		0 * (UINT32_C(1) << 11) |		// SPDP		0: Padding bits are low.
+		0 * (UINT32_C(1) << 10) |		// SDTA
+		0 * (UINT32_C(1) << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA (I2S)
 		master * R7S721_SSIF0_CKDIV_val |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
 	SSIF0.SSIFCR = 
-		2 * (1u << 6) |	// TTRG Transmit Data Trigger Number
-		2 * (1u << 4) |	// RTRG Receive Data Trigger Number
-		1 * (1u << 3) |		// TIE	Transmit Interrupt Enable
-		1 * (1u << 2) |		// RIE	Receive Interrupt Enable
-		//1 * (1u << 1) |		// TFRST Transmit FIFO Data Register Reset
-		//1 * (1u << 0) |		// RFRST Receive FIFO Data Register Reset
+		2 * (UINT32_C(1) << 6) |	// TTRG Transmit Data Trigger Number
+		2 * (UINT32_C(1) << 4) |	// RTRG Receive Data Trigger Number
+		1 * (UINT32_C(1) << 3) |		// TIE	Transmit Interrupt Enable
+		1 * (UINT32_C(1) << 2) |		// RIE	Receive Interrupt Enable
+		//1 * (UINT32_C(1) << 1) |		// TFRST Transmit FIFO Data Register Reset
+		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
@@ -5526,11 +5840,11 @@ static void r7s721_ssif0_rx_enable_codec1(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF0.SSICR |= (1u << 0); // REN
+		SSIF0.SSICR |= (UINT32_C(1) << 0); // REN
 	}
 	else
 	{
-		SSIF0.SSICR &= ~ (1u << 0); // REN
+		SSIF0.SSICR &= ~ (UINT32_C(1) << 0); // REN
 	}
 }
 
@@ -5538,11 +5852,11 @@ static void r7s721_ssif0_tx_enable_codec1(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF0.SSICR |= (1u << 1); // TEN
+		SSIF0.SSICR |= (UINT32_C(1) << 1); // TEN
 	}
 	else
 	{
-		SSIF0.SSICR &= ~ (1u << 1); // TEN
+		SSIF0.SSICR &= ~ (UINT32_C(1) << 1); // TEN
 	}
 }
 
@@ -5571,18 +5885,18 @@ static void r7s721_ssif1_txdma_fpgatx(void)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC3.CHSTAT_n & (1U << DMAC3_CHSTAT_n_SR_SHIFT)) != 0;	// SR
+	const uint_fast8_t b = (DMAC3.CHSTAT_n & (UINT32_C(1) << DMAC3_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC3.N0SA_n;
-		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.N0SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC3.N1SA_n;
-		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.N1SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
@@ -5599,12 +5913,13 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC2.CHSTAT_n & (1U << DMAC2_CHSTAT_n_SR_SHIFT)) != 0;	// SR
+	const uint_fast8_t b = (DMAC2.CHSTAT_n & (UINT32_C(1) << DMAC2_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC2.N0DA_n;
 		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
+		processing_pipe32rx(addr);
 		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
@@ -5614,6 +5929,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 		const uintptr_t addr = DMAC2.N1DA_n;
 		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
+		processing_pipe32rx(addr);
 		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
@@ -5651,40 +5967,40 @@ static void r7s721_ssif1_dmarx_initialize_fpga_rx(void)
 	const uint_fast8_t reqd = 0;
 
 	DMAC2.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
-		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		0 * (1U << 21) |	// DAD	0: Increment destination address
-		1 * (1U << 20) |	// SAD	1: Fixed source address
-		2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		1 * (1U << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+		0 * (UINT32_C(1) << 31) |	// DMS	0: Register mode
+		1 * (UINT32_C(1) << 30) |	// REN	1: Continues DMA transfers.
+		1 * (UINT32_C(1) << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (UINT32_C(1) << 28) |	// RSEL	0: Executes the Next0 Register Set
+		0 * (UINT32_C(1) << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (UINT32_C(1) << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (UINT32_C(1) << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (UINT32_C(1) << 21) |	// DAD	0: Increment destination address
+		1 * (UINT32_C(1) << 20) |	// SAD	1: Fixed source address
+		2 * (UINT32_C(1) << 16) |	// DDS	2: 32 bits (Destination Data Size)
+		2 * (UINT32_C(1) << 12) |	// SDS	2: 32 bits (Source Data Size)
+		am * (UINT32_C(1) << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (UINT32_C(1) << 6) |	// LVL	1: Detects based on the level.
+		1 * (UINT32_C(1) << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (UINT32_C(1) << 3) |	// REQD		Request Direction
+		(id & 0x07) * (UINT32_C(1) << 0) |		// SEL	0: CH0/CH8
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
 	DMAC23.DMARS = (DMAC23.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
+		mid * (UINT32_C(1) << (2 + dmarsshift)) |		// MID
+		rid * (UINT32_C(1) << (0 + dmarsshift)) |		// RID
 		0;
 
-    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
+    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(UINT32_C(1) << 1) | */(UINT32_C(1) << 0))) |
+		//1 * (UINT32_C(1) << 1) |		// LVINT	1: Level output
+		1 * (UINT32_C(1) << 0) |		// PR		1: Round robin mode
 		0;
 
 	arm_hardware_set_handler_realtime(DMAINT2_IRQn, r7s721_ssif1_rxdma_fpgarx);
 
-	DMAC2.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC2.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC2.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC2.CHCTRL_n = 1 * (UINT32_C(1) << 3);		// SWRST
+	DMAC2.CHCTRL_n = 1 * (UINT32_C(1) << 17);	// CLRINTMSK
+	DMAC2.CHCTRL_n = 1 * (UINT32_C(1) << 0);		// SETEN
 }
 
 // FPGA/IF codec
@@ -5717,40 +6033,40 @@ static void r7s721_ssif1_dmatx_initialize_fpga_tx(void)
 	const uint_fast8_t reqd = 1;	
 
 	DMAC3.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
-		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		1 * (1U << 21) |	// DAD	1: Fixed destination address
-		0 * (1U << 20) |	// SAD	0: Increment source address
-		2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		1 * (1U << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+		0 * (UINT32_C(1) << 31) |	// DMS	0: Register mode
+		1 * (UINT32_C(1) << 30) |	// REN	1: Continues DMA transfers.
+		1 * (UINT32_C(1) << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (UINT32_C(1) << 28) |	// RSEL	0: Executes the Next0 Register Set
+		0 * (UINT32_C(1) << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (UINT32_C(1) << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (UINT32_C(1) << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		1 * (UINT32_C(1) << 21) |	// DAD	1: Fixed destination address
+		0 * (UINT32_C(1) << 20) |	// SAD	0: Increment source address
+		2 * (UINT32_C(1) << 16) |	// DDS	2: 32 bits (Destination Data Size)
+		2 * (UINT32_C(1) << 12) |	// SDS	2: 32 bits (Source Data Size)
+		am * (UINT32_C(1) << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (UINT32_C(1) << 6) |	// LVL	1: Detects based on the level.
+		1 * (UINT32_C(1) << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (UINT32_C(1) << 3) |	// REQD		Request Direction
+		(id & 0x07) * (UINT32_C(1) << 0) |		// SEL	0: CH0/CH8
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
 	DMAC23.DMARS = (DMAC23.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
+		mid * (UINT32_C(1) << (2 + dmarsshift)) |		// MID
+		rid * (UINT32_C(1) << (0 + dmarsshift)) |		// RID
 		0;
 
-    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
+    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(UINT32_C(1) << 1) | */(UINT32_C(1) << 0))) |
+		//1 * (UINT32_C(1) << 1) |		// LVINT	1: Level output
+		1 * (UINT32_C(1) << 0) |		// PR		1: Round robin mode
 		0;
 
 	arm_hardware_set_handler_realtime(DMAINT3_IRQn, r7s721_ssif1_txdma_fpgatx);
 
-	DMAC3.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC3.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC3.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC3.CHCTRL_n = 1 * (UINT32_C(1) << 3);		// SWRST
+	DMAC3.CHCTRL_n = 1 * (UINT32_C(1) << 17);	// CLRINTMSK
+	DMAC3.CHCTRL_n = 1 * (UINT32_C(1) << 0);		// SETEN
 }
 
 // FGA I2S INTERFACE #1
@@ -5758,7 +6074,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 {
 	const uint_fast8_t master = R7S721_SSIF1_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
-	CPG.STBCR11 &= ~ (1U << 4);	// Module Stop 114	- 0: Channel 1 of the serial sound interface runs.
+	CPG.STBCR11 &= ~ (UINT32_C(1) << 4);	// Module Stop 114	- 0: Channel 1 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
 
 	// I2S compatible
@@ -5767,37 +6083,33 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 
 	// Control Register (SSICR)
 	SSIF1.SSICR = 
-		R7S721_USE_AUDIO_CLK * (1u << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (1u << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		6 * (1u << 19) |		// DWL 6: 32 bit
+		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
+		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
 #if WITHFPGAIF_FRAMEBITS == 64
-		3 * (1u << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #elif WITHFPGAIF_FRAMEBITS == 256
-		6 * (1u << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		6 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #endif /*  */
-		master * (1u << 15) |		// SCKD	1: Serial bit clock is output, master mode.
-		master * (1u << 14) |		// SWSD	1: Serial word select is output, master mode.
-		0 * (1u << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
-		0 * (1u << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
-		0 * (1u << 11) |		// SPDP 0: Padding bits are low.
-		0 * (1u << 10) |		// SDTA
-		0 * (1u << 9) |		// PDTA
-#if WITHFPGAIF_FORMATI2S_PHILIPS
-		0 * (1u << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (1u << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV1 * (1u << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+		master * (UINT32_C(1) << 15) |		// SCKD	1: Serial bit clock is output, master mode.
+		master * (UINT32_C(1) << 14) |		// SWSD	1: Serial word select is output, master mode.
+		0 * (UINT32_C(1) << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (UINT32_C(1) << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
+		0 * (UINT32_C(1) << 11) |		// SPDP 0: Padding bits are low.
+		0 * (UINT32_C(1) << 10) |		// SDTA
+		0 * (UINT32_C(1) << 9) |		// PDTA
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA - I2S
+		master * R7S721_SSIF_CKDIV1 * (UINT32_C(1) << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
 	SSIF1.SSIFCR = 
-		2 * (1u << 6) |	// TTRG Transmit Data Trigger Number
-		2 * (1u << 4) |	// RTRG Receive Data Trigger Number
-		1 * (1u << 3) |		// TIE	Transmit Interrupt Enable
-		1 * (1u << 2) |		// RIE	Receive Interrupt Enable
-		//1 * (1u << 1) |		// TFRST Transmit FIFO Data Register Reset
-		//1 * (1u << 0) |		// RFRST Receive FIFO Data Register Reset
+		2 * (UINT32_C(1) << 6) |	// TTRG Transmit Data Trigger Number
+		2 * (UINT32_C(1) << 4) |	// RTRG Receive Data Trigger Number
+		1 * (UINT32_C(1) << 3) |		// TIE	Transmit Interrupt Enable
+		1 * (UINT32_C(1) << 2) |		// RIE	Receive Interrupt Enable
+		//1 * (UINT32_C(1) << 1) |		// TFRST Transmit FIFO Data Register Reset
+		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
 
@@ -5809,11 +6121,11 @@ static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF1.SSICR |= ((1u << 0) | (1u << 1)); // REN TEN
+		SSIF1.SSICR |= ((UINT32_C(1) << 0) | (UINT32_C(1) << 1)); // REN TEN
 	}
 	else
 	{
-		SSIF1.SSICR &= ~ ((1u << 0) | (1u << 1)); // REN TEN
+		SSIF1.SSICR &= ~ ((UINT32_C(1) << 0) | (UINT32_C(1) << 1)); // REN TEN
 	}
 }
 
@@ -5843,7 +6155,7 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC4.CHSTAT_n & (1U << DMAC4_CHSTAT_n_SR_SHIFT)) != 0;	// SR
+	const uint_fast8_t b = (DMAC4.CHSTAT_n & (UINT32_C(1) << DMAC4_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
 		processing_dmabuffer32rts192(DMAC4.N0DA_n);
@@ -5885,40 +6197,40 @@ static void r7s721_ssif2_dmarx_initialize_WFM(void)
 	const uint_fast8_t reqd = 0;
 
 	DMAC4.CHCFG_n =
-		0 * (1U << 31) |	// DMS	0: Register mode
-		1 * (1U << 30) |	// REN	1: Continues DMA transfers.
-		1 * (1U << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
-		0 * (1U << 28) |	// RSEL	0: Executes the Next0 Register Set
-		0 * (1U << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
-		0 * (1U << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
-		tm * (1U << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
-		0 * (1U << 21) |	// DAD	0: Increment destination address
-		1 * (1U << 20) |	// SAD	1: Fixed source address
-		2 * (1U << 16) |	// DDS	2: 32 bits (Destination Data Size)
-		2 * (1U << 12) |	// SDS	2: 32 bits (Source Data Size)
-		am * (1U << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
-		lvl * (1U << 6) |	// LVL	1: Detects based on the level.
-		1 * (1U << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
-		reqd * (1U << 3) |	// REQD		Request Direction
-		(id & 0x07) * (1U << 0) |		// SEL	0: CH0/CH8
+		0 * (UINT32_C(1) << 31) |	// DMS	0: Register mode
+		1 * (UINT32_C(1) << 30) |	// REN	1: Continues DMA transfers.
+		1 * (UINT32_C(1) << 29) |	// RSW	1: Inverts RSEL automatically after a DMA transaction.
+		0 * (UINT32_C(1) << 28) |	// RSEL	0: Executes the Next0 Register Set
+		0 * (UINT32_C(1) << 27) |	// SBE	0: Stops the DMA transfer without sweeping the buffer (initial value).
+		0 * (UINT32_C(1) << 24) |	// DEM	0: Does not mask the DMA transfer end interrupt - прерывания каждый раз после TC
+		tm * (UINT32_C(1) << 22) |	// TM	0: Single transfer mode - берётся из Table 9.4
+		0 * (UINT32_C(1) << 21) |	// DAD	0: Increment destination address
+		1 * (UINT32_C(1) << 20) |	// SAD	1: Fixed source address
+		2 * (UINT32_C(1) << 16) |	// DDS	2: 32 bits (Destination Data Size)
+		2 * (UINT32_C(1) << 12) |	// SDS	2: 32 bits (Source Data Size)
+		am * (UINT32_C(1) << 8) |	// AM	1: ACK mode: Level mode (active until the transfer request from an on-chip peripheral module
+		lvl * (UINT32_C(1) << 6) |	// LVL	1: Detects based on the level.
+		1 * (UINT32_C(1) << 5) |		// HIEN	1: When LVL = 1: Detects a request when the signal is at the High level.
+		reqd * (UINT32_C(1) << 3) |	// REQD		Request Direction
+		(id & 0x07) * (UINT32_C(1) << 0) |		// SEL	0: CH0/CH8
 		0;
 
 	enum { dmarsshift = (id & 0x01) * 16 };
 	DMAC45.DMARS = (DMAC45.DMARS & ~ (0x1FFul << dmarsshift)) |
-		mid * (1U << (2 + dmarsshift)) |		// MID
-		rid * (1U << (0 + dmarsshift)) |		// RID
+		mid * (UINT32_C(1) << (2 + dmarsshift)) |		// MID
+		rid * (UINT32_C(1) << (0 + dmarsshift)) |		// RID
 		0;
 
-    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(1U << 1) | */(1U << 0))) |
-		//1 * (1U << 1) |		// LVINT	1: Level output
-		1 * (1U << 0) |		// PR		1: Round robin mode
+    DMAC07.DCTRL_0_7 = (DMAC07.DCTRL_0_7 & ~ (/*(UINT32_C(1) << 1) | */(UINT32_C(1) << 0))) |
+		//1 * (UINT32_C(1) << 1) |		// LVINT	1: Level output
+		1 * (UINT32_C(1) << 0) |		// PR		1: Round robin mode
 		0;
 
 	arm_hardware_set_handler_realtime(DMAINT4_IRQn, r7s721_ssif2_rxdma_WFMrx);
 
-	DMAC4.CHCTRL_n = 1 * (1U << 3);		// SWRST
-	DMAC4.CHCTRL_n = 1 * (1U << 17);	// CLRINTMSK
-	DMAC4.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC4.CHCTRL_n = 1 * (UINT32_C(1) << 3);		// SWRST
+	DMAC4.CHCTRL_n = 1 * (UINT32_C(1) << 17);	// CLRINTMSK
+	DMAC4.CHCTRL_n = 1 * (UINT32_C(1) << 0);		// SETEN
 }
 
 // FGA I2S INTERFACE #2
@@ -5927,7 +6239,7 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 {
 	const uint_fast8_t master = R7S721_SSIF2_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
-	CPG.STBCR11 &= ~ (1U << 3);	// Module Stop 113	- 0: Channel 2 of the serial sound interface runs.
+	CPG.STBCR11 &= ~ (UINT32_C(1) << 3);	// Module Stop 113	- 0: Channel 2 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
 
 	// I2S compatible
@@ -5936,37 +6248,33 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 
 	// Control Register (SSICR)
 	SSIF2.SSICR = 
-		R7S721_USE_AUDIO_CLK * (1u << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (1u << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		6 * (1u << 19) |		// DWL 6: 32 bit
+		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
+		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
 #if WITHFPGARTS_FRAMEBITS == 64
-		3 * (1u << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #elif WITHFPGARTS_FRAMEBITS == 256
-		6 * (1u << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		6 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #endif /*  */
-		master * (1u << 15) |		// SCKD	1: Serial bit clock is output, master mode.
-		master * (1u << 14) |		// SWSD	1: Serial word select is output, master mode.
-		0 * (1u << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
-		0 * (1u << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
-		0 * (1u << 11) |		// SPDP 0: Padding bits are low.
-		0 * (1u << 10) |		// SDTA
-		0 * (1u << 9) |		// PDTA
-#if WITHFPGARTS_FORMATI2S_PHILIPS
-		0 * (1u << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (1u << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV1 * (1u << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+		master * (UINT32_C(1) << 15) |		// SCKD	1: Serial bit clock is output, master mode.
+		master * (UINT32_C(1) << 14) |		// SWSD	1: Serial word select is output, master mode.
+		0 * (UINT32_C(1) << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (UINT32_C(1) << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
+		0 * (UINT32_C(1) << 11) |		// SPDP 0: Padding bits are low.
+		0 * (UINT32_C(1) << 10) |		// SDTA
+		0 * (UINT32_C(1) << 9) |		// PDTA
+		0 * (UINT32_C(1) << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA - I2S
+		master * R7S721_SSIF_CKDIV1 * (UINT32_C(1) << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
 	SSIF2.SSIFCR = 
-		//2 * (1u << 6) |	// TTRG Transmit Data Trigger Number
-		2 * (1u << 4) |	// RTRG Receive Data Trigger Number
-		//1 * (1u << 3) |		// TIE	Transmit Interrupt Enable
-		1 * (1u << 2) |		// RIE	Receive Interrupt Enable
-		//1 * (1u << 1) |		// TFRST Transmit FIFO Data Register Reset
-		//1 * (1u << 0) |		// RFRST Receive FIFO Data Register Reset
+		//2 * (UINT32_C(1) << 6) |	// TTRG Transmit Data Trigger Number
+		2 * (UINT32_C(1) << 4) |	// RTRG Receive Data Trigger Number
+		//1 * (UINT32_C(1) << 3) |		// TIE	Transmit Interrupt Enable
+		1 * (UINT32_C(1) << 2) |		// RIE	Receive Interrupt Enable
+		//1 * (UINT32_C(1) << 1) |		// TFRST Transmit FIFO Data Register Reset
+		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
 
@@ -5978,11 +6286,11 @@ static void r7s721_ssif2_rx_enable_WFM(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF2.SSICR |= (1u << 0); // REN
+		SSIF2.SSICR |= (UINT32_C(1) << 0); // REN
 	}
 	else
 	{
-		SSIF2.SSICR &= ~ (1u << 0); // REN
+		SSIF2.SSICR &= ~ (UINT32_C(1) << 0); // REN
 	}
 }
 
@@ -6036,14 +6344,9 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		"sai2-fpga spectrum for WFM"
 	};
 
-#elif CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	#warning Codecs not defined for CPUSTYLE_F133
-
-
-#elif CPUSTYLE_T113
-
-	#warning Codecs not defined for CPUSTYLE_T113
+	#warning Codecs not defined for CPUSTYLE_F133 || CPUSTYLE_F133
 
 #else
 

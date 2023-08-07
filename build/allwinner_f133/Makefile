@@ -20,7 +20,7 @@ TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-XFEL = ../../tools/xfel-windows-v1.2.9/xfel
+XFEL = ../../tools//xfel-windows-v1.3.2/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -254,7 +254,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean erase
 
 all: APP2 $(PROJECT)_app.f133
 
@@ -273,7 +273,10 @@ app_run: $(PROJECT)_app.f133
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.f133
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.f133
+	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.f133
+
+erase:
+	$(XFEL) spinor erase 0x00000000 1024
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

@@ -1,5 +1,9 @@
-#type; CCU
+#type; CCU; Clock Controller Unit (CCU)
 #base; CCU 0x03001000
+
+#irq; CLK_DET 73
+
+
 #regdef; PLL_CPUX_CTRL_REG; 0x0000; PLL_CPUX Control Register
 #regdef; PLL_DDR0_CTRL_REG; 0x0010; PLL_DDR0 Control Register
 #regdef; PLL_DDR1_CTRL_REG; 0x0018; PLL_DDR1 Control Register
@@ -108,6 +112,7 @@
 #regdef; USB0_CLK_REG; 0x0A70; USB0 Clock Register
 #regdef; USB1_CLK_REG; 0x0A74; USB1 Clock Register
 #regdef; USB2_CLK_REG; 0x0A78; USB2 Clock Register
+#regdef; USB3_CLK_REG; 0x0A7C; USB3 Clock Register
 #regdef; USB_BGR_REG; 0x0A8C; USB Bus Gating Reset Register
 #regdef; HDMI0_CLK_REG; 0x0B00; HDMI0 Clock Register
 #regdef; HDMI0_SLOW_CLK_REG; 0x0B04; HDMI0 Slow Clock Register

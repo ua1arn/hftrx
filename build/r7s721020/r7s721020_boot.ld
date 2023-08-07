@@ -5,7 +5,7 @@ MEMORY
 {
   FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 128k
   RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 1024k - 16k
-  TTB (rwx)  : ORIGIN = 0x202FC000, LENGTH = 16k
+  TTB (rwx)  : ORIGIN = 0x20200000 + 1024k - 16k, LENGTH = 16k
 }
 
 /* Library configurations */

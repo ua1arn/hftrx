@@ -590,23 +590,24 @@ void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX)
 	/*!< Atomic port state change */
 	void gpioX_setstate(
 		GPIO_TypeDef * gpio,
 		portholder_t mask,
 		portholder_t state
 		);
-	void
-	gpioX_onchangeinterrupt(
-			GPIO_TypeDef * gpio,
-			portholder_t ipins,
-			portholder_t raise, portholder_t fall,
-			uint32_t priority,
-			uint_fast8_t targetcpu,
-			void (* handler)(void)
-			);
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
+	/* Установка состояния выходов именно так как оно передано в state: 0: притянут у земле, 1: отпустили */
+	void gpioX_setopendrain(
+		GPIO_TypeDef * gpio,
+		portholder_t mask,
+		portholder_t state
+		);
+	portholder_t gpioX_getinputs(
+		GPIO_TypeDef * gpio
+		);
+
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_STM32MP1 }} CPUSTYLE_STM32H7XX) */
 
 
 portholder_t power2(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.

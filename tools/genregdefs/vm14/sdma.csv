@@ -1,6 +1,6 @@
-#type; SDMA
-#comment; Регистры блока управления SDMA
+#type; SDMA; Регистры блока управления SDMA
 #base; SDMA 0x37220000
+
 #regdef; DSR; 0x000; RO Состояние потока управления
 #regdef; DPC; 0x004; RO Счётчик команд потока управления
 #regdef; INTEN; 0x020; RW Разрешение прерываний
@@ -10,79 +10,24 @@
 #regdef; FSRD; 0x030; RO Сбой потока управления
 #regdef; FSRC; 0x034; RO Сбой потоков каналов
 #regdef; FTRD; 0x038; RO Тип сбоя потока управления
-#regdef; FTR0; 0x040; RO Тип ошибки канала 0
-#regdef; FTR1; 0x044; RO Тип ошибки канала 1
-#regdef; FTR2; 0x048; RO Тип ошибки канала 2
-#regdef; FTR3; 0x04C; RO Тип ошибки канала 3
-#regdef; FTR4; 0x050; RO Тип ошибки канала 4
-#regdef; FTR5; 0x054; RO Тип ошибки канала 5
-#regdef; FTR6; 0x058; RO Тип ошибки канала 6
-#regdef; FTR7; 0x05C; RO Тип ошибки канала 7
-#regdef; CSR0; 0x100; RO Статус канала 0
-#regdef; CPC0; 0x104; RO PC канала 0
-#regdef; CSR1; 0x108; RO Статус канала 1
-#regdef; CPC1; 0x10C; RO PC канала 1
-#regdef; CSR2; 0x110; RO Статус канала 2
-#regdef; CPC2; 0x114; RO PC канала 2
-#regdef; CSR3; 0x118; RO Статус канала 3
-#regdef; CPC3; 0x11C; RO PC канала 3
-#regdef; CSR4; 0x120; RO Статус канала 4
-#regdef; CPC4; 0x124; RO PC канала 4
-#regdef; CSR5; 0x128; RO Статус канала 5
-#regdef; CPC5; 0x12C; RO PC канала 5
-#regdef; CSR6; 0x130; RO Статус канала 6
-#regdef; CPC6; 0x134; RO PC канала 6
-#regdef; CSR7; 0x138; RO Статус канала 7
-#regdef; CPC7; 0x13C; RO PC канала 7
-#regdef; SAR0; 0x400; RO Адрес Источника для канала 0
-#regdef; DAR0; 0x404; RO Адрес Приёмника для канала 0
-#regdef; CCR0; 0x408; RO Регистр управления для канала 0
-#regdef; LC0_0; 0x40C; RO Счётчик циклов 0 для канала 0
-#regdef; LC1_0; 0x410; RO Счётчик циклов 1 для канала 0
-#regdef; SAR1; 0x420; RO Адрес Источника для канала 1
-#regdef; DAR1; 0x424; RO Адрес Приёмника для канала 1
-#regdef; CCR1; 0x428; RO Регистр управления для канала 1
-#regdef; LC0_1; 0x42C; RO Счётчик циклов 0 для канала 1
-#regdef; LC1_1; 0x430; RO Счётчик циклов 1 для канала 1
-#regdef; SAR2; 0x440; RO Адрес Источника для канала 2
-#regdef; DAR2; 0x444; RO Адрес Приёмника для канала 2
-#regdef; CCR2; 0x448; RO Регистр управления для канала 2
-#regdef; LC0_2; 0x44C; RO Счётчик циклов 0 для канала 2
-#regdef; LC1_2; 0x450; RO Счётчик циклов 1 для канала 2
-#regdef; SAR3; 0x460; RO Адрес Источника для канала 3
-#regdef; DAR3; 0x464; RO Адрес Приёмника для канала 3
-#regdef; CCR3; 0x468; RO Регистр управления для канала 3
-#regdef; LC0_3; 0x46C; RO Счётчик циклов 0 для канала 3
-#regdef; LC1_3; 0x470; RO Счётчик циклов 1 для канала 3
-#regdef; SAR4; 0x480; RO Адрес Источника для канала 4
-#regdef; DAR4; 0x484; RO Адрес Приёмника для канала 4
-#regdef; CCR4; 0x488; RO Регистр управления для канала 4
-#regdef; LC0_4; 0x48C; RO Счётчик циклов 0 для канала 4
-#regdef; LC1_4; 0x490; RO Счётчик циклов 1 для канала 4
-#regdef; SAR5; 0x4A0; RO Адрес Источника для канала 5
-#regdef; DAR5; 0x4A4; RO Адрес Приёмника для канала 5
-#regdef; CCR5; 0x4A8; RO Регистр управления для канала 5
-#regdef; LC0_5; 0x4AC; RO Счётчик циклов 0 для канала 5
-#regdef; LC1_5; 0x4B0; RO Счётчик циклов 1 для канала 5
-#regdef; SAR6; 0x4C0; RO Адрес Источника для канала 6
-#regdef; DAR6; 0x4C4; RO Адрес Приёмника для канала 6
-#regdef; CCR6; 0x4C8; RO Регистр управления для канала 6
-#regdef; LC0_6; 0x4CC; RO Счётчик циклов 0 для канала 6
-#regdef; LC1_6; 0x4D0; RO Счётчик циклов 1 для канала 6
-#regdef; SAR7; 0x4E0; RO Адрес Источника для канала 7
-#regdef; DAR7; 0x4E4; RO Адрес Приёмника для канала 7
-#regdef; CCR7; 0x4E8; RO Регистр управления для канала 7
-#regdef; LC0_7; 0x4EC; RO Счётчик циклов 0 для канала 7
-#regdef; LC1_7; 0x4F0; RO Счётчик циклов 1 для канала 7
+#regdef; FTR; 0x040 8; RO Тип ошибки канала 0..7
+#aggreg; CSR_CPC; 0x100 8; Статус и PC канала 0..7
+#regdef; CSR; 0x0; RO Статус канала 0..7
+#regdef; CPC; 0x4; RO PC канала 0..7
+#aggregend;
+#aggreg; CH; 0x400 8; Состояния каналов 0..7
+#regdef; SAR; 0x00; RO Адрес Источника для канала 0..7
+#regdef; DAR; 0x04; RO Адрес Приёмника для канала 0..7
+#regdef; CCR; 0x08; RO Регистр управления для канала 0..7
+#regdef; LC0; 0x0C; RO Счётчик циклов 0 для канала 0..7
+#regdef; LC1; 0x10; RO Счётчик циклов 1 для канала 0..7
+#regdef; padding 0; 0x020; Need for address arithmetics
+#aggregend;
 #regdef; DBGSTATUS; 0xD00; RO Debug Status Register
 #regdef; DBGCMD; 0xD04; WO Debug Command Register
 #regdef; DBGINST0; 0xD08; WO 0-ой регистр отладки
 #regdef; DBGINST1; 0xD0C; WO 1-ый регистр отладки
-#regdef; CR0; 0xE00; RO Регистр конфигурации 0
-#regdef; CR1; 0xE04; RO Регистр конфигурации 1
-#regdef; CR2; 0xE08; RO Регистр конфигурации 2
-#regdef; CR3; 0xE0C; RO Регистр конфигурации 3
-#regdef; CR4; 0xE10; RO Регистр конфигурации 4
+#regdef; CR; 0xE00 5; RO Регистр конфигурации 0..4
 #regdef; CRD; 0xE14; RO Конфигурация SDMA
 #regdef; WD; 0xE80; RW Сторожевой регистр
 #regdef; periph_id_n; 0xFE0; RO ID регистры периферии.

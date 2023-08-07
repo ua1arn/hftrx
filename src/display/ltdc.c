@@ -44,7 +44,9 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 	else
 	{
-#if defined (HARDWARE_LVDS_INITIALIZE) && WITHLVDSHW
+#if defined (HARDWARE_MIPIDSI_INITIALIZE) && WITHMIPIDSISHW
+		HARDWARE_MIPIDSI_INITIALIZE();
+#elif defined (HARDWARE_LVDS_INITIALIZE) && WITHLVDSHW
 		/* Configure the LCD Control pins */
 		HARDWARE_LVDS_INITIALIZE();
 #elif defined (HARDWARE_LTDC_INITIALIZE)
@@ -110,7 +112,7 @@ static void vdc5_wait(
 	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1u; \
+		mask = (mask << 1) | UINT32_C(1); \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
@@ -130,7 +132,7 @@ static void vdc5_wait(
 	const uint_fast8_t pos = (ipos); \
 	uint_fast32_t mask = 0; \
 	while (width --) \
-		mask = (mask << 1) | 1u; \
+		mask = (mask << 1) | UINT32_C(1); \
 	mask <<= (pos); \
 	val <<= (pos); \
 	ASSERT((val & mask) == val); \
@@ -355,7 +357,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
-	//vdc->GR2_CLUT ^= (1u << 16);	// GR2_CLT_SEL Switch to filled table
+	//vdc->GR2_CLUT ^= (UINT32_C(1) << 16);	// GR2_CLT_SEL Switch to filled table
 //#endif /* LCDMODE_MAIN_L8 */
 
 //#if LCDMODE_PIP_L8
@@ -1803,7 +1805,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	hardware_ltdc_main_set(layer0);
 }
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 
 #define T113_DE_BASE		DE_BASE
@@ -1941,8 +1943,8 @@ static uint32_t ptr_lo32(uintptr_t v)
 static void inline t113_de_enable(void)
 {
 	//struct de_glb_t * const glb = (struct de_glb_t *) DE_GLB_BASE;
-	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
-	while ((DE_GLB->GLB_DBUFFER & 1u) != 0)
+	DE_GLB->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
+	while ((DE_GLB->GLB_DBUFFER & UINT32_C(1)) != 0)
 		;
 }
 
@@ -1953,7 +1955,7 @@ static inline void t113_de_set_address_vi(uintptr_t vram)
 	DE_VI->CFG [VI_CFG_INDEX].ATTR =
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format << 8)|//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
-			(1u << 15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
+			(UINT32_C(1) << 15)|	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
 			0;
 	DE_VI->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram);
 	DE_VI->TOP_HADDR [0] = ptr_hi32(vram);
@@ -1972,7 +1974,7 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 			((vram != 0) << 0) |	// enable
 			(ui_vi_format<<8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
 			(255u << 24)|	// LAY_GLBALPHA
-			(1u << 16)| 	// LAY_PREMUL_CTL
+			(UINT32_C(1) << 16)| 	// LAY_PREMUL_CTL
 			0;
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
@@ -1995,23 +1997,23 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 
 	/* Global DE settings */
 
-	DE_TOP->RST_CFG &= ~ (1u << 0);
-	DE_TOP->RST_CFG |= 1u << 0;
-	DE_TOP->GATE_CFG |= 1u << 0;
-	DE_TOP->BUS_CFG |= 1u << 0;
-	DE_TOP->SEL_CFG &= ~ (1u << 0);	/* Already zero */
+	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
+	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
+	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
+	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
+	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* Already zero */
 
 	/* DE submodules */
 
 	DE_GLB->GLB_CTL =
-			(1u << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
-			(1u << 0) |		// EN RT enable/disable
+			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
 
 	DE_GLB->GLB_STS = 0x00u;
 
-	DE_GLB->GLB_DBUFFER = 1u;		// 1: register value be ready for update (self-cleaning bit)
-	while ((DE_GLB->GLB_DBUFFER & 1u) != 0)
+	DE_GLB->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
+	while ((DE_GLB->GLB_DBUFFER & UINT32_C(1)) != 0)
 		;
 	DE_GLB->GLB_SIZE = ovl_ui_mbsize;
 
@@ -2027,9 +2029,9 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 	// 0x03020100 - default state
 	DE_BLD->ROUTE =
 			(0u << 0) |		// pipe 0 from ch 0
-			(1u << 4) |		// pipe 1 from ch 1
-			(2u << 8) |		// pipe 2 from ch 2
-			(3u << 12) |	// pipe 3 from ch 3
+			(UINT32_C(1) << 4) |		// pipe 1 from ch 1
+			(UINT32_C(2) << 8) |		// pipe 2 from ch 2
+			(UINT32_C(3) << 12) |	// pipe 3 from ch 3
 			0;
 	DE_BLD->PREMULTIPLY = 0;
 	DE_BLD->BKCOLOR = 0 * 0xff771111;
@@ -2083,8 +2085,8 @@ static inline void t113_de_set_mode(const videomode_t * vdmode)
 		ui->CFG [UI_CFG_INDEX].ATTR =
 				//(1<<0)|		// enable - разрешаем при назначении адреса
 				(ui_vi_format << 8)| //верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
-				(0xffu << 24)|
-				(1u << 16)	|// LAY_PREMUL_CTL
+				(UINT32_C(0xff) << 24)|
+				(UINT32_C(1) << 16)	|// LAY_PREMUL_CTL
 				0;
 		ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 		ui->CFG [UI_CFG_INDEX].COORD = 0;
@@ -2139,7 +2141,7 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 		write32((uintptr_t) & tcon->frm_ctrl, TCON_FRM_MODE_VAL);
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 	}
 }
 
@@ -2148,39 +2150,64 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 // LVDS: mstep1, HV: step1: Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
-	//pdat->backlight = NULL;
-	//struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) TCON_LCD0_BASE;
-	uint32_t val;
+	uint32_t start_dly;
 
 	// ctrl
-	//val = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
-	val = 0x1F;
-	TCON_LCD0->LCD_CTL_REG =
-		//(1u << 31) |		// LCD_EN - done in t113_open_module_enable
-		(0x00u << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
-		(0x00u << 23) |		// LCD_RB_SWAP
-		((val & 0x1fu) << 4) |	// LCD_START_DLY
-		(0x00u << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
+	//start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
+	start_dly = 0x1F;
+	TCONLCD_PTR->LCD_CTL_REG =
+		//1 * (UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
+		0 * (UINT32_C(1) << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
+		0 * (UINT32_C(1) << 23) |		// LCD_RB_SWAP
+		1 * (UINT32_C(1) << 20) |		// LCD_INTERLACE_EN (has no effect)
+		((start_dly & 0x1fu) << 4) |	// LCD_START_DLY
+		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
 }
 
-static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned tconlcddiv)
+// What is DPSS_TOP_BGR_REG ?
+
+static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned preiPOW, unsigned tconlcddiv)
 {
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
+#if CPUSTYLE_T507
+
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
+
+	unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
+		0;
+	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset
+
+    local_delay_us(10);
+
+    TCON_LCD0->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+    TCON_LCD1->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+
+#else
 	/* Configure TCONLCD clock */
-    CCU->TCONLCD_CLK_REG = (CCU->TCONLCD_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
-		(0x01u << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
+    TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
+		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+		(preiPOW << 8) |	// FACTOR_N 0..3: 1..8
 		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
-    CCU->TCONLCD_CLK_REG |= (1u << 31);
+    TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
     local_delay_us(10);
 
-    CCU->TCONLCD_BGR_REG |= (1u << 0);	// Open the clock gate
+    CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
 
-    CCU->LVDS_BGR_REG |= (1u << 16); // LVDS0_RST: De-assert reset
-    CCU->TCONLCD_BGR_REG |= (1u << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+    CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
+#endif
 }
 
 // HV step2 - Clock configuration
@@ -2190,14 +2217,12 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
-	val = allwnrt113_get_tconlcd_freq() / display_getdotclock(vdmode);
-	PRINTF("ltdc divider = %u\n", (unsigned) val);
+	val = BOARD_TCONLCDFREQ / display_getdotclock(vdmode);
+	PRINTF("ltdc_divider=%u\n", val);
 	ASSERT(val >= 1 && val <= 127);
-//	write32((uintptr_t) & tcon->dclk,
-//			(0x0Fu << 28) | (val << 0));
-	TCON_LCD0->LCD_DCLK_REG = (
-			(0x0Fu << 28) |		// LCD_DCLK_EN
-			(val << 0)			// LCD_DCLK_DIV
+	TCONLCD_PTR->LCD_DCLK_REG = (
+			0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
+			val * (UINT32_C(1) << 0)			// LCD_DCLK_DIV
 			);
     local_delay_us(10);
 }
@@ -2205,9 +2230,21 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 // LVDS step2 - Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
-    TCON_LCD0->LCD_DCLK_REG =
-		(0x0Fu << 28) |	// LCD_DCLK_EN
-		(7 << 0) |	// LCD_DCLK_DIV
+    TCONLCD_PTR->LCD_DCLK_REG =
+		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
+		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
+		0;
+    local_delay_us(10);
+}
+
+// LVDS step2 - Clock configuration
+// TODO: this is only placeholder!
+
+static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode)
+{
+    TCONLCD_PTR->LCD_DCLK_REG =
+		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
+		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
 }
@@ -2217,42 +2254,44 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 {
 #if defined (LCD_LVDS_IF_REG_VALUE)
 
-	TCON_LCD0->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
 
 #else /* defined (LCD_LVDS_IF_REG_VALUE) */
 
-	TCON_LCD0->LCD_LVDS_IF_REG =
-	(1u << 31) |	/* LCD_LVDS_EN */
+	TCONLCD_PTR->LCD_LVDS_IF_REG =
+	(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
 	(0u << 30) |	/* LCD_LVDS_LINK: 0: single link */
-	(! 1u << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
+	(! UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
 	(0u << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
-	(1u << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
-	0 * (1u << 25) |		/* LCD_LVDS_DEBUG_EN */
-	0 * (1u << 24) |		/* LCD_LVDS_DEBUG_MODE */
-	0 * (1u << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
-	0 * 0x0F * (1u << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
+	(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
+	0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
+	0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
+	0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
+	0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
 	0;
 
 #endif /* defined (LCD_LVDS_IF_REG_VALUE) */
 }
 
+
 // step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 {
+#if ! CPUSTYLE_T507
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((0x07u << 24) | 0x0Fu << 0)) |
-		(0x02u << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
-		//(0x03u << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
-		((4u - 1) << 0) |
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0f) << 0)) |
+		(UINT32_C(2) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
+		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
+		((UINT32_C(4) - 1) << 0) |
 		0;
 
-	CCU->DSI_CLK_REG |= (1u << 31);		// DSI_CLK_GATING
+	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
 	(void) CCU->DSI_CLK_REG;
 
-	CCU->DSI_BGR_REG |= (1u << 0);	// DSI_GATING
-	CCU->DSI_BGR_REG |= (1u << 16);	// DSI_RST
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
 	(void) CCU->DSI_BGR_REG;
 
 //	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
@@ -2343,29 +2382,30 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 
 		// Step 6 LVDS controller configuration
 		// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] =
-			(0x0Fu << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
-			(0x01u << 24) |	// LVDS_HPREN_DRVC
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] =
+			(UINT32_C(0x0f) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+			(UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
 			(0x04u << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
-			(0x03u << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
+			(UINT32_C(3) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
 			0;
 		// test
-		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x01u << 16);	// LVDS_REG_DENC
-		//TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (0x0Fu << 12);	// LVDS_REG_DEN
+		//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
+		//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0f) << 12);	// LVDS_REG_DEN
 
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 30);	// en_ldo
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 30);	// en_ldo
 		local_delay_ms(1);
 
 		// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 31);	// ?LVDS_EN_MB start module voltage
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 31);	// ?LVDS_EN_MB start module voltage
 		local_delay_ms(1);
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 29);	// enable EN_LVDS
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 29);	// enable EN_LVDS
 		local_delay_ms(1);
-		TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num] |= (1u << 28);	// EN_24M
+		TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 		local_delay_ms(1);
 
-		//PRINTF("TCON_LCD0->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCON_LCD0->LCD_LVDS_ANA_REG [lvds_num]);
+		//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 	}
+#endif
 }
 
 // Set sequuence parameters
@@ -2381,26 +2421,30 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
+//	PRINTF("TCONLCD_PTR:\n");
+//	printhex32(TCON_LCD0_BASE, (void* ) TCON_LCD0_BASE, sizeof * TCONLCD_PTR);
 	// timing0 (window)
-	TCON_LCD0->LCD_BASIC0_REG = (
+	TCONLCD_PTR->LCD_BASIC0_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
 		);
 	// timing1
-	TCON_LCD0->LCD_BASIC1_REG =
-		((HTOTAL - 1) << 16) |
-		((LEFTMARGIN - 1) << 0) |
+	TCONLCD_PTR->LCD_BASIC1_REG =
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((LEFTMARGIN - 1) << 0) |	// HBP
 		0;
 	// timing2
-	TCON_LCD0->LCD_BASIC2_REG =
+	TCONLCD_PTR->LCD_BASIC2_REG =
 		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
 		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
 		0;
 	// timing3
-	TCON_LCD0->LCD_BASIC3_REG =
+	TCONLCD_PTR->LCD_BASIC3_REG =
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
 
+//	PRINTF("TCONLCD_PTR:\n");
+//	printhex32(TCON_LCD0_BASE, (void* ) TCON_LCD0_BASE, sizeof * TCONLCD_PTR);
 }
 
 // Step4 - Open IO output
@@ -2408,7 +2452,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 {
 	// io_tristate
 	//write32((uintptr_t) & tcon->io_tristate, 0);
-	TCON_LCD0->LCD_IO_TRI_REG = 0;
+	TCONLCD_PTR->LCD_IO_TRI_REG = 0;
 	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
 	{
@@ -2425,21 +2469,25 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		timing.den_active = ! vdmode->deneg;
 		timing.clk_active = 0;
 
+#if CPUSTYLE_T507
+		val = 0;
+#else
 		val =
-			(0x01u << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
-			(1u << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
+			(UINT32_C(1) << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
+			(UINT32_C(1) << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 			0;
+#endif
 
 		if (! timing.h_sync_active)
-			val |= (1u << 25);	// IO1_Inv
+			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
 		if (! timing.v_sync_active)
-			val |= (1u << 24);	// IO0_Inv
+			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
 		if (! timing.den_active)
-			val |= (1u << 27);	// IO3_Inv
+			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
 		if (! timing.clk_active)
-			val |= (1u << 26);	// IO2_Inv
+			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
 
-		TCON_LCD0->LCD_IO_POL_REG = val;
+		TCONLCD_PTR->LCD_IO_POL_REG = val;
 
 	}
 	//t113_tconlcd_set_dither(pdat);
@@ -2453,7 +2501,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 		/* режим и формат выхода */
-		TCON_LCD0->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 
 	}
 }
@@ -2466,8 +2514,8 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
-	TCON_LCD0->LCD_CTL_REG |= (1u << 31);	// LCD_EN
-	TCON_LCD0->LCD_GCTL_REG |= (1u << 31);	// LCD_EN
+	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 }
 
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
@@ -2514,22 +2562,91 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
+static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
+{
+#if ! CPUSTYLE_T507
+
+	unsigned prei = 0;
+	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
+	// step0 - CCU configuration
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
+	// step1 - same as step1 in HV mode: Select HV interface type
+	t113_select_HV_interface_type(vdmode);
+	// step2 - Clock configuration
+	t113_MIPIDSI_clock_configuration(vdmode);
+	// step3 - same as step3 in HV mode: Set sequuence parameters
+	t113_set_sequence_parameters(vdmode);
+	// step4 - same as step4 in HV mode: Open IO output
+	t113_open_IO_output(vdmode);
+	// step5 - set LVDS digital logic configuration
+	t113_set_LVDS_digital_logic(vdmode);
+	// step6 - LVDS controller configuration
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	t113_LVDS_controller_configuration(vdmode);
+	// step7 - same as step5 in HV mode: Set and open interrupt function
+	t113_set_and_open_interrupt_function(vdmode);
+	// step8 - same as step6 in HV mode: Open module enable
+	t113_open_module_enable(vdmode);
+
+	(void) DSI0->DSI_CTL;
+#endif
+}
+// What is DPSS_TOP_BGR_REG ?
+
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
-
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 	/* Configure DE clock */
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((0x07u << 24) | (0x03u << 8) | (0x0Fu << 0))) |
-		(0x02u << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
-		((4u - 1) << 0) |	// FACTOR_M 300 MHz
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0f) << 0)) |
+		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		(2 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
-    CCU->DE_CLK_REG |= (1u << 31);
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
-	//PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000000));
+	PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000 / 1000));
 
-    CCU->DE_BGR_REG |= (1u << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (1u << 16);		// De-assert reset
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	/* Configure DE clock */
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
+		2 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
+		(0u << 8) |	// FACTOR_N 0..3: 1..8
+		(4 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+		0;
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    local_delay_us(10);
+	//PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000 / 1000));
+
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+    local_delay_us(10);
+#else
+	#error Undefined CPUSTYLE_xxx
+#endif
+
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+	//#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
+	//#define SUNXI_DE2_MUX1_BASE			(SUNXI_DE2_BASE + 0x200000)
+
+ 	#define SUNXI_SRAMC_BASE 0x03000000
+    {
+    	uint32_t reg_value;
+
+    	/* set SRAM for video use (A64 only) */
+    	//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
+    	reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
+     	PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+    	reg_value &= ~(0x01 << 24);
+    	//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
+    	* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
+     	PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+
+    }
+#endif
 
 	t113_de_set_mode(vdmode);
 	t113_de_enable();
@@ -2539,6 +2656,8 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
 #if WITHLVDSHW
 	t113_tcon_lvds_initsteps(vdmode);
+#elif WITHMIPIDSISHW
+	t113_tcon_dsi_initsteps(vdmode);
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
 #endif /* WITHLVDSHW */
@@ -2602,9 +2721,9 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 static void hardware_ltdc_vsync(void)
 {
 
-	//TCON_LCD0->LCD_GINT0_REG |= (1u << 31); 		//Enable the Vertical Blank interrupt
-	TCON_LCD0->LCD_GINT0_REG &= ~ (1u << 15);         //clear LCD_VB_INT_FLAG
-	while((TCON_LCD0->LCD_GINT0_REG & (1u << 15)) == 0) //wait  LCD_VB_INT_FLAG
+	//TCON_LCD0->LCD_GINT0_REG |= (UINT32_C(1) << 31); 		//Enable the Vertical Blank interrupt
+	TCON_LCD0->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
+	while((TCON_LCD0->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
 		hardware_nonguiyield();
 }
 

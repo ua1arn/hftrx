@@ -357,6 +357,7 @@ elif CPUSTYLE_STM32F0XX
 	// RISC-V processor Allwinner D1 XuanTie C906
 
 	#define CPUSTYLE_RISCV		1		/* архитектура процессора RISC-V */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_f133.h"
 	//#include "irq_ctrl.h"
@@ -370,6 +371,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_A64
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a64.h"
 	#include "irq_ctrl.h"
@@ -384,6 +386,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_T507
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t507.h"
 	#include "irq_ctrl.h"
@@ -397,6 +400,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_V853X
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v853x.h"
 	#include "irq_ctrl.h"
@@ -410,6 +414,7 @@ elif CPUSTYLE_STM32F0XX
 #elif CPUSTYLE_T113
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t113s3.h"
 	#include "irq_ctrl.h"
@@ -512,12 +517,13 @@ void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
 uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
+uint_fast32_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 
 void tickers_initialize(void);
 void spool_systimerbundle1(void);
 void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
-void sysinit_pll_initialize(void);	// PLL initialize
+void sysinit_pll_initialize(int forced);	// PLL initialize
 void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
 void sysinit_pmic_initialize(void);	// инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void hardware_adc_startonescan(void);
@@ -939,8 +945,6 @@ void GPU_IRQHandler(void);	// STM32MP1 specific
 
 void r7s721_intc_initialize(void);
 
-void ALLW_GPIO_IRQ_Handler(void);	// Allwinner specific
-
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
 {
@@ -968,12 +972,12 @@ void hardware_tim21_initialize(void);
 
 void hardware_dcdcfreq_tim16_ch1_initialize(void);
 void hardware_dcdcfreq_tim17_ch1_initialize(void);
-void hardware_dcdcfreq_pwm5_initialize(unsigned pwmch);	/* Allwinner */
+void hardware_dcdcfreq_pwm_initialize(unsigned pwmch);	/* Allwinner */
 void hardware_dcdcfreq_tioc0a_mtu0_initialize(void);
 
 void hardware_dcdcfreq_tim16_ch1_setdiv(uint_fast32_t v);
 void hardware_dcdcfreq_tim17_ch1_setdiv(uint_fast32_t v);
-void hardware_dcdcfreq_pwm5_setdiv(unsigned pwmch, uint_fast32_t cycle);	/* Allwinner */
+void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle);	/* Allwinner */
 void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v);
 
 uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
@@ -1067,18 +1071,6 @@ void adcdone_del(adcdone_t * p);
 
 void bootloader_deffereddetach(void * arg);
 
-/* система отказа от передачи при аварийных ситуациях */
-typedef struct edgepin_tag
-{
-	LIST_ENTRY item;
-	uint_fast8_t state;
-	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
-	uint_fast8_t (* getpin)(void * ctx);
-} edgepin_t;
-
-void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
-uint_fast8_t edgepin_get(edgepin_t * egp);
-
 // targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
 // targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
 // targetxad2 - external SPI device (PA BOARD ADC)
@@ -1108,9 +1100,6 @@ void IRQ_Handler_GICv1(void);
 void IRQ_Handler_GICv2(void);
 void IRQ_Handler(void);			// No GIC
 
-void Reset_CPU1_Handler(void);	// crt_CortexA_CPUn.S located function
-void Reset_CPU2_Handler(void);	// crt_CortexA_CPUn.S located function
-void Reset_CPU3_Handler(void);	// crt_CortexA_CPUn.S located function
 void Reset_CPUn_Handler(void);
 
 // Set interrupt vector wrappers
@@ -1190,9 +1179,6 @@ void xcz_if_rx_init(void);
 void xcz_if_tx_init(void);
 void xcz_if_rx_enable(uint_fast8_t state);
 void xcz_if_tx_enable(uint_fast8_t state);
-uint32_t xcz_rx_iq_shift(uint8_t val);
-uint32_t xcz_rx_cic_shift(uint32_t val);
-uint32_t xcz_tx_shift(uint32_t val);
 void xcz_adcrand_set(uint8_t val);
 
 void xcz_dds_ftw(const uint_least64_t * value);	// Установка центральной частоты тракта основного приёмника
@@ -1312,52 +1298,21 @@ processmessages(
 	const FLASHMEM struct menudef * mp
 	);
 
-typedef struct dram_para_t
-{
-	//normal configuration
-	uint32_t        	dram_clk;
-	uint32_t        	dram_type;	//dram_type DDR2: 2 DDR3: 3 LPDDR2: 6 LPDDR3: 7 DDR3L: 31
-	//uint32_t        	lpddr2_type;	//LPDDR2 type S4:0 S2:1 NVM:2
-	uint32_t        	dram_zq;	//do not need
-	uint32_t		dram_odt_en;
-
-	//control configuration
-	uint32_t		dram_para1;
-	uint32_t		dram_para2;
-
-	//timing configuration
-	uint32_t		dram_mr0;
-	uint32_t		dram_mr1;
-	uint32_t		dram_mr2;
-	uint32_t		dram_mr3;
-	uint32_t		dram_tpr0;	//DRAMTMG0
-	uint32_t		dram_tpr1;	//DRAMTMG1
-	uint32_t		dram_tpr2;	//DRAMTMG2
-	uint32_t		dram_tpr3;	//DRAMTMG3
-	uint32_t		dram_tpr4;	//DRAMTMG4
-	uint32_t		dram_tpr5;	//DRAMTMG5
-   	uint32_t		dram_tpr6;	//DRAMTMG8
-
-	//reserved for future use
-	uint32_t		dram_tpr7;
-	uint32_t		dram_tpr8;
-	uint32_t		dram_tpr9;
-	uint32_t		dram_tpr10;
-	uint32_t		dram_tpr11;
-	uint32_t		dram_tpr12;
-	uint32_t		dram_tpr13;
-} dram_para_t;
-
-signed int init_DRAM(int type, dram_para_t *para); // s0
 
 uintptr_t getRamDiskBase(void);
 size_t getRamDiskSize(void);
+
+void lowinitialize(void);
+void applowinitialize(void);
+void initialize2(void);
+void application_mainloop(void);
+void application_initialize(void);
 
 #if LINUX_SUBSYSTEM
 	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
-#if (__CORTEX_A == 53U)
+#if (__CORTEX_A == 53U) && 1
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 
@@ -1404,5 +1359,9 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 }
 
 #endif /* (__CORTEX_A == 53U) */
+
+// Substitutions for t507 ddr ram init
+//#define i2c_read local_i2c_read
+//#define i2c_write local_i2c_write
 
 #endif // HARDWARE_H_INCLUDED

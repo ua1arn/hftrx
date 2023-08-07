@@ -1,0 +1,5 @@
+#type; VE
+#base; VE xxxx
+#irq; VE 98
+#irqv; VE 82
+

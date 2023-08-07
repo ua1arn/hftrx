@@ -1,0 +1,179 @@
+#type; G2D_TOP; Graphic 2D top
+#base; G2D_TOP 0x01480000
+
+#irq; G2D 122
+
+#regdef; G2D_SCLK_GATE  ; 0x00 ; G2D SCLK gate  
+#regdef; G2D_HCLK_GATE  ; 0x04 ; g2d HCLK gate  
+#regdef; G2D_AHB_RESET  ; 0x08 ; G2D AHB reset  
+#regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
+
+#type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
+#base; G2D_MIXER 0x01480100
+
+# G2D_TOP + 0x0100
+
+#regdef; G2D_MIXER_CTL; 0x00; G2D mixer control
+#regdef; G2D_MIXER_INT; 0x04; G2D mixer interrupt
+#regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock
+
+#type; G2D_BLD; Graphic 2D (G2D) Engine Blender
+#base; G2D_BLD 0x01480400
+
+#regdef; BLD_FILL_COLOR_CTL	; 0x000 ; BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106  
+#regdef; BLD_FILL_COLOR		; 0x010 4 ; BLD_FILLC  N=0..1 
+#regdef; BLD_CH_ISIZE     	; 0x020 4; BLD_CH_ISIZE N=0..1  
+#regdef; BLD_CH_OFFSET    	; 0x030 4 ; BLD_CH_OFFSET N=0..1
+#regdef; BLD_PREMUL_CTL    ; 0x040 ; BLD_PREMUL_CTL     
+#regdef; BLD_BK_COLOR      ; 0x044 ; BLD_BK_COLOR       
+#regdef; BLD_SIZE          ; 0x048 ; BLD_SIZE           
+#regdef; BLD_CTL           ; 0x04C ; BLD_CTL            
+#regdef; BLD_KEY_CTL       ; 0x050 ; BLD_KEY_CTL        
+#regdef; BLD_KEY_CON       ; 0x054 ; BLD_KEY_CON        
+#regdef; BLD_KEY_MAX       ; 0x058 ; BLD_KEY_MAX        
+#regdef; BLD_KEY_MIN       ; 0x05C ; BLD_KEY_MIN        
+#regdef; BLD_OUT_COLOR     ; 0x060 ; BLD_OUT_COLOR      
+#regdef; ROP_CTL           ; 0x080 ; ROP_CTL            
+#regdef; ROP_INDEX         ; 0x084 4; ROP_INDEX N=0..1     
+#regdef; BLD_CSC_CTL       ; 0x100 ; BLD_CSC_CTL        
+#regdef; BLD_CSC0_COEF00   ; 0x110 ; BLD_CSC0_COEF00    
+#regdef; BLD_CSC0_COEF01   ; 0x114 ; BLD_CSC0_COEF01    
+#regdef; BLD_CSC0_COEF02   ; 0x118 ; BLD_CSC0_COEF02    
+#regdef; BLD_CSC0_CONST0   ; 0x11C ; BLD_CSC0_CONST0    
+#regdef; BLD_CSC0_COEF10   ; 0x120 ; BLD_CSC0_COEF10    
+#regdef; BLD_CSC0_COEF11   ; 0x124 ; BLD_CSC0_COEF11    
+#regdef; BLD_CSC0_COEF12   ; 0x128 ; BLD_CSC0_COEF12    
+#regdef; BLD_CSC0_CONST1   ; 0x12C ; BLD_CSC0_CONST1    
+#regdef; BLD_CSC0_COEF20   ; 0x130 ; BLD_CSC0_COEF20    
+#regdef; BLD_CSC0_COEF21   ; 0x134 ; BLD_CSC0_COEF21    
+#regdef; BLD_CSC0_COEF22   ; 0x138 ; BLD_CSC0_COEF22    
+#regdef; BLD_CSC0_CONST2   ; 0x13C ; BLD_CSC0_CONST2    
+#regdef; BLD_CSC1_COEF00   ; 0x140 ; BLD_CSC1_COEF00    
+#regdef; BLD_CSC1_COEF01   ; 0x144 ; BLD_CSC1_COEF01    
+#regdef; BLD_CSC1_COEF02   ; 0x148 ; BLD_CSC1_COEF02    
+#regdef; BLD_CSC1_CONST0   ; 0x14C ; BLD_CSC1_CONST0    
+#regdef; BLD_CSC1_COEF10   ; 0x150 ; BLD_CSC1_COEF10    
+#regdef; BLD_CSC1_COEF11   ; 0x154 ; BLD_CSC1_COEF11    
+#regdef; BLD_CSC1_COEF12   ; 0x158 ; BLD_CSC1_COEF12    
+#regdef; BLD_CSC1_CONST1   ; 0x15C ; BLD_CSC1_CONST1    
+#regdef; BLD_CSC1_COEF20   ; 0x160 ; BLD_CSC1_COEF20    
+#regdef; BLD_CSC1_COEF21   ; 0x164 ; BLD_CSC1_COEF21    
+#regdef; BLD_CSC1_COEF22   ; 0x168 ; BLD_CSC1_COEF22    
+#regdef; BLD_CSC1_CONST2   ; 0x16C ; BLD_CSC1_CONST2    
+#regdef; BLD_CSC2_COEF00   ; 0x170 ; BLD_CSC2_COEF00    
+#regdef; BLD_CSC2_COEF01   ; 0x174 ; BLD_CSC2_COEF01    
+#regdef; BLD_CSC2_COEF02   ; 0x178 ; BLD_CSC2_COEF02    
+#regdef; BLD_CSC2_CONST0   ; 0x17C ; BLD_CSC2_CONST0    
+#regdef; BLD_CSC2_COEF10   ; 0x180 ; BLD_CSC2_COEF10    
+#regdef; BLD_CSC2_COEF11   ; 0x184 ; BLD_CSC2_COEF11    
+#regdef; BLD_CSC2_COEF12   ; 0x188 ; BLD_CSC2_COEF12    
+#regdef; BLD_CSC2_CONST1   ; 0x18C ; BLD_CSC2_CONST1    
+#regdef; BLD_CSC2_COEF20   ; 0x190 ; BLD_CSC2_COEF20    
+#regdef; BLD_CSC2_COEF21   ; 0x194 ; BLD_CSC2_COEF21    
+#regdef; BLD_CSC2_COEF22   ; 0x198 ; BLD_CSC2_COEF22    
+#regdef; BLD_CSC2_CONST2   ; 0x19C ; BLD_CSC2_CONST2    
+
+#type; G2D_VI; Graphic 2D VI surface
+#base; G2D_V0 0x01480800
+
+# G2D_TOP + 0x0800
+
+#regdef; V0_ATTCTL; 0x00; V0_ATTCTL
+#regdef; V0_MBSIZE; 0x04; Source rectangle size (may be empty)
+#regdef; V0_COOR; 0x08; Target window position
+#regdef; V0_PITCH0; 0x0C; V0_PITCH0
+#regdef; V0_PITCH1; 0x10; V0_PITCH1
+#regdef; V0_PITCH2; 0x14; V0_PITCH2
+#regdef; V0_LADD0; 0x18; V0_LADD0
+#regdef; V0_LADD1; 0x1C; V0_LADD1
+#regdef; V0_LADD2; 0x20; V0_LADD2
+#regdef; V0_FILLC; 0x24; V0_FILLC
+#regdef; V0_HADD; 0x28; [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32
+#regdef; V0_SIZE; 0x2C; Source window size (may not be empty)
+#regdef; V0_HDS_CTL0; 0x30; V0_HDS_CTL0
+#regdef; V0_HDS_CTL1; 0x34; V0_HDS_CTL1
+#regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
+#regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
+
+#type; G2D_ROT; Graphic 2D Rotate
+#base; G2D_ROT 0x014A8000
+
+#regdef; ROT_CTL; 0x00; ROT_CTL						
+#regdef; ROT_INT; 0x04; ROT_INT				
+#regdef; ROT_TIMEOUT; 0x08; ROT_TIMEOUT
+#regdef; ROT_IFMT; 0x20; Input data attribute register
+#regdef; ROT_ISIZE; 0x24; Input data size register
+#regdef; ROT_IPITCH0; 0x30; Input Y/RGB/ARGB memory pitch register
+#regdef; ROT_IPITCH1; 0x34; Input U/UV memory pitch register
+#regdef; ROT_IPITCH2; 0x38; Input V memory pitch register
+#regdef; ROT_ILADD0; 0x40; Input Y/RGB/ARGB memory address register0
+#regdef; ROT_IHADD0; 0x44; Input Y/RGB/ARGB memory address register1
+#regdef; ROT_ILADD1; 0x48; Input U/UV memory address register0
+#regdef; ROT_IHADD1; 0x4C; Input U/UV memory address register1
+#regdef; ROT_ILADD2; 0x50; Input V memory address register0
+#regdef; ROT_IHADD2; 0x54; Input V memory address register1
+#regdef; ROT_OSIZE; 0x84; Output data size register
+#regdef; ROT_OPITCH0; 0x90; Output Y/RGB/ARGB memory pitch register
+#regdef; ROT_OPITCH1; 0x94; Output U/UV memory pitch register
+#regdef; ROT_OPITCH2; 0x98; Output V memory pitch register
+#regdef; ROT_OLADD0; 0xA0; Output Y/RGB/ARGB memory address register0
+#regdef; ROT_OHADD0; 0xA4; Output Y/RGB/ARGB memory address register1
+#regdef; ROT_OLADD1; 0xA8; Output U/UV memory address register0
+#regdef; ROT_OHADD1; 0xAC; Output U/UV memory address register1
+#regdef; ROT_OLADD2; 0xB0; Output V memory address register0
+#regdef; ROT_OHADD2; 0xB4; Output V memory address register1
+
+#type; G2D_UI; Graphic 2D UI surface
+#base; G2D_UI0 0x01481000
+#base; G2D_UI1 0x01481800
+#base; G2D_UI2 0x01482000
+
+#regdef; UI_ATTR; 0x00; UIx_ATTR
+#regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
+#regdef; UI_COOR; 0x08; UIx_COOR
+#regdef; UI_PITCH; 0x0C; UIx_PITCH
+#regdef; UI_LADD; 0x10; UIx_LADD
+#regdef; UI_FILLC; 0x14; UIx_FILLC
+#regdef; UI_HADD; 0x18; UIx_HADD
+#regdef; UI_SIZE; 0x1C; UIx_SIZE
+
+#type; G2D_WB; Graphic 2D (G2D) Engine Write Back
+#base; G2D_WB 0x01483000
+
+# G2D_TOP + 0x3000
+
+#regdef; WB_ATT; 0x00; WB_ATT
+#regdef; WB_SIZE; 0x04; WB_SIZE
+#regdef; WB_PITCH0; 0x08; WB_PITCH0
+#regdef; WB_PITCH1; 0x0C; WB_PITCH1
+#regdef; WB_PITCH2; 0x10; WB_PITCH2
+#regdef; WB_LADD0; 0x14; WB_LADD0
+#regdef; WB_HADD0; 0x18; WB_HADD0
+#regdef; WB_LADD1; 0x1C; WB_LADD1
+#regdef; WB_HADD1; 0x20; WB_HADD1
+#regdef; WB_LADD2; 0x24; WB_LADD2
+#regdef; WB_HADD2; 0x28; WB_HADD2
+
+#type; G2D_VSU; Graphic 2D (G2D) Video Scaler
+#base; G2D_VSU 0x01488000
+
+# 5.12.3 Video Scaler Register - List Allwinner_DE2.0_Spec_V1.0.pdf
+# have different layout
+# Also see 5.7 DE UIS Specification
+
+#regdef; VS_CTRL; 0x000; VS_CTRL
+#regdef; VS_OUT_SIZE; 0x040; VS_OUT_SIZE
+#regdef; VS_GLB_ALPHA; 0x044; VS_GLB_ALPHA
+#regdef; VS_Y_SIZE; 0x080; VS_Y_SIZE
+#regdef; VS_Y_HSTEP; 0x088; VS_Y_HSTEP
+#regdef; VS_Y_VSTEP; 0x08C; VS_Y_VSTEP
+#regdef; VS_Y_HPHASE; 0x090; VS_Y_HPHASE
+#regdef; VS_Y_VPHASE0; 0x098; VS_Y_VPHASE0
+#regdef; VS_C_SIZE; 0x0C0; VS_C_SIZE
+#regdef; VS_C_HSTEP; 0x0C8; VS_C_HSTEP
+#regdef; VS_C_VSTEP; 0x0CC; VS_C_VSTEP
+#regdef; VS_C_HPHASE; 0x0D0; VS_C_HPHASE
+#regdef; VS_C_VPHASE0; 0x0D8; VS_C_VPHASE0
+#regdef; VS_Y_HCOEF; 0x200 64; VS_Y_HCOEF[N]. N=0..31
+#regdef; VS_Y_VCOEF; 0x300 64; VS_Y_VCOEF[N]. N=0..31
+#regdef; VS_C_HCOEF; 0x400 64; VS_C_HCOEF[N]. N=0..31

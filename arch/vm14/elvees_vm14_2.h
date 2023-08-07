@@ -8,33 +8,58 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
-    UART3_IRQn = 99,                                  /*!< UART Universal Asynchronous Receiver-Transmitter Interrupt */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
+    MFBSP0_DMAIRQ0_IRQn = 52,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    MFBSP0_DMAIRQ1_IRQn = 53,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    MFBSP1_DMAIRQ0_IRQn = 54,                         /*!< SWIC_MFBSP_DMA MFBSP1 */
+    MFBSP1_DMAIRQ1_IRQn = 55,                         /*!< SWIC_MFBSP_DMA MFBSP0 */
+    NFC_MPORTINT_IRQn = 71,                           /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
+    SWIC0DMA_IRQ0_IRQn = 80,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC0DMA_IRQ1_IRQn = 81,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC0DMA_IRQ2_IRQn = 82,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC0DMA_IRQ3_IRQn = 83,                          /*!< SWIC_MFBSP_DMA SWIC0 */
+    SWIC1DMA_IRQ0_IRQn = 84,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC1DMA_IRQ1_IRQn = 85,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC1DMA_IRQ2_IRQn = 86,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC1DMA_IRQ3_IRQn = 87,                          /*!< SWIC_MFBSP_DMA SWIC1 */
+    SWIC0_INT_IRQn = 88,                              /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
+    SWIC1_INT_IRQn = 89,                              /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
+    MFBSP0_RXIRQ_IRQn = 90,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP0_TXIRQ_IRQn = 91,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP0_SRQ_IRQn = 92,                             /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP1_RXIRQ_IRQn = 93,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP1_TXIRQ_IRQn = 94,                           /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    MFBSP1_SRQ_IRQn = 95,                             /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+    UART0_IRQn = 96,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    UART1_IRQn = 97,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    UART2_IRQn = 98,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    UART3_IRQn = 99,                                  /*!< UART Universal Asynchronous Receiver-Transmitter */
+    I2C0_IC_INTR_IRQn = 100,                          /*!< I2C  */
+    I2C1_IC_INTR_IRQn = 101,                          /*!< I2C  */
+    I2C2_IC_INTR_IRQn = 102,                          /*!< I2C  */
+    I2S0_IRQn = 104,                                  /*!< I2S Прерывание от I2S0 */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -43,23 +68,36 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Base */
-#define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT Base */
-#define NORMPORT_BASE ((uintptr_t) 0x38008000)        /*!< NORMPORT Base */
-#define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Base */
-#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Base */
-#define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Base */
-#define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Base */
-#define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Base */
-#define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Base */
-#define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Base */
-#define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Base */
-#define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!< GIC_INTERFACE Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR Base */
+#define SDMA_BASE ((uintptr_t) 0x37220000)            /*!< SDMA Регистры блока управления SDMA Base */
+#define NANDMPORT_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) Base */
+#define NFCM_BASE_BASE ((uintptr_t) 0x38007000)       /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) Base */
+#define NORMPORT_BASE ((uintptr_t) 0x38008000)        /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. Base */
+#define UART0_BASE ((uintptr_t) 0x38028000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define UART1_BASE ((uintptr_t) 0x38029000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define UART2_BASE ((uintptr_t) 0x3802A000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define UART3_BASE ((uintptr_t) 0x3802B000)           /*!< UART Universal Asynchronous Receiver-Transmitter Base */
+#define I2C0_BASE ((uintptr_t) 0x3802C000)            /*!< I2C  Base */
+#define I2C1_BASE ((uintptr_t) 0x3802D000)            /*!< I2C  Base */
+#define I2C2_BASE ((uintptr_t) 0x3802E000)            /*!< I2C  Base */
+#define I2S0_BASE ((uintptr_t) 0x38030000)            /*!< I2S Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. Base */
+#define GPIO0_BASE ((uintptr_t) 0x38034000)           /*!< GPIOBLOCK Регистры блока управления GPIO Base */
+#define GPIOA_BASE ((uintptr_t) 0x38034000)           /*!< GPIO Регистры блока управления GPIO Base */
+#define GPIOB_BASE ((uintptr_t) 0x3803400C)           /*!< GPIO Регистры блока управления GPIO Base */
+#define GPIOC_BASE ((uintptr_t) 0x38034018)           /*!< GPIO Регистры блока управления GPIO Base */
+#define GPIOD_BASE ((uintptr_t) 0x38034024)           /*!< GPIO Регистры блока управления GPIO Base */
+#define SWIC0_BASE ((uintptr_t) 0x38082000)           /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) Base */
+#define DMA_SWIC0_BASE ((uintptr_t) 0x38083000)       /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
+#define SWIC1_BASE ((uintptr_t) 0x38084000)           /*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) Base */
+#define DMA_SWIC1_BASE ((uintptr_t) 0x38085000)       /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
+#define MFBSP0_BASE ((uintptr_t) 0x38086000)          /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  Base */
+#define DMA_MFBSP0_BASE ((uintptr_t) 0x38087000)      /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
+#define MFBSP1_BASE ((uintptr_t) 0x38088000)          /*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  Base */
+#define DMA_MFBSP1_BASE ((uintptr_t) 0x38089000)      /*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP Base */
+#define CMCTR_BASE ((uintptr_t) 0x38094000)           /*!< CMCTR Контроллер управления синхронизацией Base */
+#define PMCTR_BASE ((uintptr_t) 0x38095000)           /*!< PMCTR Контроллер управления энергопотреблением Base */
+#define SMCTR_BASE ((uintptr_t) 0x38096000)           /*!< SMCTR общиме системные настройки микросхемы Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x39000100)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x39001000) /*!< GIC_DISTRIBUTOR  Base */
 
 /*
  * @brief CMCTR
@@ -142,12 +180,166 @@ typedef struct GPIOBLOCK_Type
     volatile uint32_t gpio_ls_sync;                   /*!< Offset 0x060 Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60 */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x064 */
 /*
+ * @brief I2C
+ */
+/*!< I2C  */
+typedef struct I2C_Type
+{
+    volatile uint32_t IC_CON;                         /*!< Offset 0x000 Регистр управления W/R (R для 4-ого бита) 0x7F 0x0 */
+    volatile uint32_t IC_TAR;                         /*!< Offset 0x004 Регистр адреса абонента W/R 0x1055 0x4 */
+    volatile uint32_t IC_SAR;                         /*!< Offset 0x008 Регистр slave-адреса. W/R 0x55 0x8 */
+    volatile uint32_t IC_HS_MADD;                     /*!< Offset 0x00C Регистр кода адреса мастера для high speed режима. W/R 0x1 0xС */
+    volatile uint32_t IC_DATA_CMD;                    /*!< Offset 0x010 Регистр управления передачей. W/R 0x0 0x10 */
+    volatile uint32_t IC_SS_SCL_HCNT;                 /*!< Offset 0x014 Старший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x190 0x14 */
+    volatile uint32_t IC_SS_SCL_LCNT;                 /*!< Offset 0x018 Младший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x1d6 0x18 */
+    volatile uint32_t IC_FS_SCL_HCNT;                 /*!< Offset 0x01C Старший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x3c 0x1C */
+    volatile uint32_t IC_FS_SCL_LCNT;                 /*!< Offset 0x020 Младший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x82 0x20 */
+    volatile uint32_t IC_HS_SCL_HCNT;                 /*!< Offset 0x024 Старший регистр счетчика предделителя частоты для high-speed режима. W/R 0x6 0x24 */
+    volatile uint32_t IC_HS_SCL_LCNT;                 /*!< Offset 0x028 Младший регистр счетчика предделителя частоты для high-speed режима. W/R 0x10 0x28 */
+    volatile uint32_t IC_INTR_STAT;                   /*!< Offset 0x02C Регистр статуса прерывания. R 0x0 0x2C */
+    volatile uint32_t IC_INTR_MASK;                   /*!< Offset 0x030 Регистр маски прерывания W/R 0x8ff 0X30 */
+    volatile uint32_t IC_RAW_INTR_STAT;               /*!< Offset 0x034 Регистр статуса необработанного прерывания R 0x0 0x34 */
+    volatile uint32_t IC_RX_TL;                       /*!< Offset 0x038 Регистр порога заполнения FIFO приемника. W/R 0x0 0x38 */
+    volatile uint32_t IC_TX_TL;                       /*!< Offset 0x03C Регистр порога заполнения FIFO передатчика. W/R 0x0 0x3C */
+    volatile uint32_t IC_CLT_INTR;                    /*!< Offset 0x040 Регистр сброса прерываний. R 0x0 0x40 */
+    volatile uint32_t C_CLR_RX_UNDER;                 /*!< Offset 0x044 Регистр сброса прерывания RX_UNDER R 0x0 0x44 */
+    volatile uint32_t IC_CLR_RX_OVER;                 /*!< Offset 0x048 Регистр сброса прерывания RX_OVER R 0x0 0x48 */
+    volatile uint32_t IC_CLR_TX_OVER;                 /*!< Offset 0x04C Регистр сброса прерывания TX_OVER R 0x0 0x4C */
+    volatile uint32_t IC_CLR_RD_REQ;                  /*!< Offset 0x050 Регистр сброса прерывания RD_REQ R 0x0 0x50 */
+    volatile uint32_t IC_CLR_TX_ABR;                  /*!< Offset 0x054 Регистр сброса прерывания TX_ABR R 0x0 0x54 */
+    volatile uint32_t IC_CLR_RX_DONE;                 /*!< Offset 0x058 Регистр сброса прерывания RX_DONE R 0x0 0x58 */
+    volatile uint32_t IC_CLR_ACTIVITY;                /*!< Offset 0x05C Регистр сброса прерывания ACTIVITY R 0x0 0x5C */
+    volatile uint32_t IC_CLR_STOP_DET;                /*!< Offset 0x060 Регистр сброса прерывания STOP_DET R 0x0 0x60 */
+    volatile uint32_t IC_CLR_START_DET;               /*!< Offset 0x064 Регистр сброса прерывания START_DET R 0x0 0x64 */
+    volatile uint32_t IC_CLR_GEN_CALL;                /*!< Offset 0x068 Регистр сброса прерывания GEN_CALL R 0x0 0x68 */
+    volatile uint32_t IC_ENABLE;                      /*!< Offset 0x06C Регистр включения шины. W/R 0x0 0x6C */
+    volatile uint32_t IC_STATUS;                      /*!< Offset 0x070 Регистр статуса шины. R 0x6 0x70 */
+    volatile uint32_t IC_TXFLR;                       /*!< Offset 0x074 Регистр уровня FIFO передатчика R 0x0 0x74 */
+    volatile uint32_t IC_RXFLR;                       /*!< Offset 0x078 Регистр уровня FIFO приемника R 0x0 0x78 */
+    volatile uint32_t IC_SDA_HOLD;                    /*!< Offset 0x07C Регистр времени удержания SDA. W/R 0x1 0x7C */
+    volatile uint32_t IC_TX_ABRT_SOURCE;              /*!< Offset 0x080 Регистр статуса обрыва передачи. R 0x0 0x80 */
+    volatile uint32_t IC_SLV_DATA_NACK_ONLY;          /*!< Offset 0x084 Регистр генерирования SLV_DATA_NACK W/R 0x0 0x84 */
+    volatile uint32_t IC_DMA_CR;                      /*!< Offset 0x088 Регистр контроля DMA интерфейса. W/R 0x0 0x88 */
+    volatile uint32_t IC_DMA_TDLR;                    /*!< Offset 0x08C Регистр передачи данных через DMA интерфейс. W/R 0x0 0x8C */
+    volatile uint32_t IC_DMA_RDLR;                    /*!< Offset 0x090 Регистр приема данных через DMA интерфейс. W/R 0x0 0x90 */
+    volatile uint32_t IC_SDA_SETUP;                   /*!< Offset 0x094 Регистр установки SDA W/R 0x64 0x94 */
+    volatile uint32_t IC_ACK_GENERAL_CALL;            /*!< Offset 0x098 Регистр вызова общего ACK W/R 0x1 0x98 */
+    volatile uint32_t IC_ENABLE_STATUS;               /*!< Offset 0x09C Регистр статуса включения R 0x0 0x9C */
+    volatile uint32_t IC_FS_SPKLEN;                   /*!< Offset 0x0A0 Регистр управления фильтрацией для standard-speed и fast.speed режимов W/R 0x5 0xA0 */
+    volatile uint32_t IC_HS_SPKLEN;                   /*!< Offset 0x0A4 Регистр управления фильтрацией для high.speed режима. W/R 0x1 0xA4 */
+} I2C_TypeDef; /* size of structure = 0x0A8 */
+/*
+ * @brief I2S
+ */
+/*!< I2S Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. */
+typedef struct I2S_Type
+{
+    volatile uint32_t IER;                            /*!< Offset 0x000 Регистр включения контроллера. W/R 0x0 0x0 */
+    volatile uint32_t IRER;                           /*!< Offset 0x004 Регистр включения блока приема. W/R 0x0 0x4 */
+    volatile uint32_t ITER;                           /*!< Offset 0x008 Регистр включения блока передачи. W/R 0x0 0x8 */
+    volatile uint32_t CER;                            /*!< Offset 0x00C Регистр включения тактовой частоты. W/R 0x0 0xC */
+    volatile uint32_t CCR;                            /*!< Offset 0x010 Регистр конфигурации тактовой частоты. W/R 0x10 0x10 */
+    volatile uint32_t RXFFR;                          /*!< Offset 0x014 Регистр сброса FIFO буферов блока приема. W 0x0 0x14 */
+    volatile uint32_t TXFFR;                          /*!< Offset 0x018 Регистр сброса FIFO буферов блока передачи. W 0x0 0x18 */
+             uint32_t reserved_0x01C;
+    volatile uint32_t LRBR0_LTHR0;                    /*!< Offset 0x020 Регистр «левого» слова приемника. R 0x0 0x20, Регистр «левого» слова нулевого передатчика. W 0x0 0x20 */
+    volatile uint32_t RRBR0;                          /*!< Offset 0x024 Регистр «правого» слова приемника. R 0x0 0x24, Регистр «правого» слова нулевого передатчика. W 0x0 0x24 */
+    volatile uint32_t RER0;                           /*!< Offset 0x028 Регистр включения приемника. W/R 0x1 0x28 */
+    volatile uint32_t TER0;                           /*!< Offset 0x02C Регистр включения нулевого передатчика. W/R 0x1 0x2C */
+    volatile uint32_t RCR0;                           /*!< Offset 0x030 Регистр конфигурации приемника. W/R 0x5 0x30 */
+    volatile uint32_t TCR0;                           /*!< Offset 0x034 Регистр конфигурации нулевого передатчика. W/R 0x5 0x34 */
+    volatile uint32_t ISR0;                           /*!< Offset 0x038 Регистр статуса прерывания нулевого канала. R 0x10 0x38 */
+    volatile uint32_t IMR0;                           /*!< Offset 0x03C Регистр маски прерывания нулевого канала. W/R 0x33 0x3C */
+    volatile uint32_t ROR0;                           /*!< Offset 0x040 Регистр переполнения FIFO приемника. R 0x0 0x40 */
+    volatile uint32_t TOR0;                           /*!< Offset 0x044 Регистр переполнения FIFO нулевого передатчика. R 0x0 0x44 */
+    volatile uint32_t RFCR0;                          /*!< Offset 0x048 Регистр конфигурации FIFO приемника. W/R 0x3 0x48 */
+    volatile uint32_t TFCR0;                          /*!< Offset 0x04C Регистр конфигурации FIFO нулевого передатчика. W/R 0x3 0x4C */
+    volatile uint32_t RFF0;                           /*!< Offset 0x050 Регистр сброса FIFO приемника. W 0x0 0x50 */
+    volatile uint32_t TFF0;                           /*!< Offset 0x054 Регистр сброса FIFO нулевого передатчика. W 0x0 0x54 */
+             uint32_t reserved_0x058 [0x0002];
+    volatile uint32_t LTHR1;                          /*!< Offset 0x060 Регистр «левого» слова первого передатчика. W 0x0 0x60 */
+    volatile uint32_t RTHR1;                          /*!< Offset 0x064 Регистр «правого» слова первого передатчика. W 0x0 0x64 */
+             uint32_t reserved_0x068;
+    volatile uint32_t TER1;                           /*!< Offset 0x06C Регистр включения первого передатчика W/R 0x1 0x6C */
+             uint32_t reserved_0x070;
+    volatile uint32_t TCR1;                           /*!< Offset 0x074 Регистр конфигурации первого передатчика. W/R 0x5 0x74 */
+    volatile uint32_t ISR1;                           /*!< Offset 0x078 Регистр статуса прерывания первого канала. R 0x10 0x78 */
+    volatile uint32_t IMR1;                           /*!< Offset 0x07C Регистр маски прерывания первого канала. W/R 0x33 0x7C */
+             uint32_t reserved_0x080;
+    volatile uint32_t TOR1;                           /*!< Offset 0x084 Регистр переполнения первого передатчика. R 0x0 0x84 */
+             uint32_t reserved_0x088;
+    volatile uint32_t TFCR1;                          /*!< Offset 0x08C Регистр конфигурации FIFO первого передатчика. W/R 0x3 0x8C */
+             uint32_t reserved_0x090;
+    volatile uint32_t TFF1;                           /*!< Offset 0x094 Регистр сброса FIFO первого передатчика. W 0x0 0x94 */
+             uint32_t reserved_0x098 [0x0002];
+    volatile uint32_t LTHR2;                          /*!< Offset 0x0A0 Регистр «левого» слова второго передатчика. W 0x0 0xA0 */
+    volatile uint32_t RTHR2;                          /*!< Offset 0x0A4 Регистр «правого» слова второго передатчика. W 0x0 0xA4 */
+             uint32_t reserved_0x0A8;
+    volatile uint32_t TER2;                           /*!< Offset 0x0AC Регистр включения второго передатчика W/R 0x1 0xAC */
+             uint32_t reserved_0x0B0;
+    volatile uint32_t TCR2;                           /*!< Offset 0x0B4 Регистр конфигурации второго передатчика. W/R 0x5 0xB4 */
+    volatile uint32_t ISR2;                           /*!< Offset 0x0B8 Регистр статуса прерывания второго канала. R 0x10 0xB8 */
+    volatile uint32_t IMR2;                           /*!< Offset 0x0BC Регистр маски прерывания второго канала. W/R 0x33 0xBC */
+             uint32_t reserved_0x0C0;
+    volatile uint32_t TOR2;                           /*!< Offset 0x0C4 Регистр переполнения второго передатчика. R 0x0 0xC4 */
+             uint32_t reserved_0x0C8;
+    volatile uint32_t TFCR2;                          /*!< Offset 0x0CC Регистр конфигурации FIFO второго передатчика. W/R 0x3 0xCC */
+             uint32_t reserved_0x0D0;
+    volatile uint32_t TFF2;                           /*!< Offset 0x0D4 Регистр сброса FIFO второго передатчика. W 0x0 0xD4 */
+             uint32_t reserved_0x0D8 [0x0002];
+    volatile uint32_t LTHR3;                          /*!< Offset 0x0E0 Регистр «левого» слова третьего передатчика. W 0x0 0xE0 */
+    volatile uint32_t RTHR3;                          /*!< Offset 0x0E4 Регистр «правого» слова третьего передатчика. W 0x0 0xE4 */
+             uint32_t reserved_0x0E8;
+    volatile uint32_t TER3;                           /*!< Offset 0x0EC Регистр включения третьего передатчика W/R 0x1 0xEC */
+             uint32_t reserved_0x0F0;
+    volatile uint32_t TCR3;                           /*!< Offset 0x0F4 Регистр конфигурации третьего передатчика. W/R 0x5 0xF4 */
+    volatile uint32_t ISR3;                           /*!< Offset 0x0F8 Регистр статуса прерывания третьего канала. R 0x10 0xF8 */
+    volatile uint32_t IMR3;                           /*!< Offset 0x0FC Регистр маски прерывания третьего канала. W/R 0x33 0xFC */
+             uint32_t reserved_0x100;
+    volatile uint32_t TOR3;                           /*!< Offset 0x104 Регистр переполнения третьего передатчика. R 0x0 0x104 */
+             uint32_t reserved_0x108;
+    volatile uint32_t TFCR3;                          /*!< Offset 0x10C Регистр конфигурации FIFO третьего передатчика. W/R 0x3 0x10C */
+             uint32_t reserved_0x110;
+    volatile uint32_t TFF3;                           /*!< Offset 0x114 Регистр сброса FIFO третьего передатчика. W 0x0 0x114 */
+             uint32_t reserved_0x118 [0x002A];
+    volatile uint32_t RXDMA;                          /*!< Offset 0x1C0 Регистр DMA приема. R 0x0 0x1C0 */
+             uint32_t reserved_0x1C4;
+    volatile uint32_t TXDMA;                          /*!< Offset 0x1C8 Регистр DMA передачи. W 0x0 0x1C8 */
+    volatile uint32_t RTXDMA;                         /*!< Offset 0x1CC Регистр сброса DMA передачи. W 0x0 0x1CC */
+             uint32_t reserved_0x1D0 [0x0008];
+    volatile uint32_t I2S_COMP_PARAM_2;               /*!< Offset 0x1F0 Второй регистр параметров компонента. R 0x48c 0x1F0 */
+    volatile uint32_t I2S_COMP_PARAM_1;               /*!< Offset 0x1F4 Первый регистр параметров компонента. R 0x24c067e 0x1F4 */
+    volatile uint32_t I2S_COMP_VERSION;               /*!< Offset 0x1F8 Регистр ревизии компонента. R 0x3130362a 0x1F8 */
+    volatile uint32_t I2S_COMP_TYPE;                  /*!< Offset 0x1FC Регистр типа компонента. R 0x445701a0 0x1FC */
+} I2S_TypeDef; /* size of structure = 0x200 */
+/*
+ * @brief MFBSP
+ */
+/*!< MFBSP МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  */
+typedef struct MFBSP_Type
+{
+    volatile uint32_t RX_TX_MFBSP;                    /*!< Offset 0x000 R Буфер приёма данных, W Буфер передачи данных */
+    volatile uint32_t CSR_MFBSP;                      /*!< Offset 0x004 R/W Регистр управления и состояния */
+    volatile uint32_t DIR_MFBSP;                      /*!< Offset 0x008 R/W Регистр управления направлением выводов порта ввода-вывода */
+    volatile uint32_t GPIO_DR;                        /*!< Offset 0x00C R/W Регистр данных порта ввода-вывода */
+    volatile uint32_t TCTR;                           /*!< Offset 0x010 R/W Регистр управления передатчиком */
+    volatile uint32_t RCTR;                           /*!< Offset 0x014 R/W Регистр управления приёмником  */
+    volatile uint32_t TSR;                            /*!< Offset 0x018 R/W Регистр состояния передатчика */
+    volatile uint32_t RSR;                            /*!< Offset 0x01C R/W Регистр состояния приёмника */
+    volatile uint32_t TCTR_RATE;                      /*!< Offset 0x020 (null) */
+    volatile uint32_t RCTR_RATE;                      /*!< Offset 0x024 (null) */
+    volatile uint32_t TSTART;                         /*!< Offset 0x028 R/W псевдорегистр ten – запуск/останов передатчика без изменения настроек передатчика */
+    volatile uint32_t RSTART;                         /*!< Offset 0x02C R/W псевдорегистр ren – запуск/останов приемника без изменения настроек приемника */
+    volatile uint32_t EMERG_MFBSP;                    /*!< Offset 0x030 R/W Регистр аварийного управления портом */
+    volatile uint32_t IMASK_MFBSP;                    /*!< Offset 0x034 R/W Регистр маски прерываний от порта */
+} MFBSP_TypeDef; /* size of structure = 0x038 */
+/*
  * @brief NANDMPORT
  */
 /*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) */
 typedef struct NANDMPORT_Type
 {
-    volatile uint32_t PACKET;                         /*!< Offset 0x000 (null) */
+    volatile uint32_t PACKET;                         /*!< Offset 0x000 0x0 RW Регистр настройки пакетов */
     volatile uint32_t MEMADDR1;                       /*!< Offset 0x004 RW Регистр адреса 1 */
     volatile uint32_t MEMADDR2;                       /*!< Offset 0x008 RW Регистр адреса 2 */
     volatile uint32_t COMMAND;                        /*!< Offset 0x00C RW Регистр команды */
@@ -270,90 +462,30 @@ typedef struct SDMA_Type
     volatile uint32_t FSRC;                           /*!< Offset 0x034 RO Сбой потоков каналов */
     volatile uint32_t FTRD;                           /*!< Offset 0x038 RO Тип сбоя потока управления */
              uint32_t reserved_0x03C;
-    volatile uint32_t FTR0;                           /*!< Offset 0x040 RO Тип ошибки канала 0 */
-    volatile uint32_t FTR1;                           /*!< Offset 0x044 RO Тип ошибки канала 1 */
-    volatile uint32_t FTR2;                           /*!< Offset 0x048 RO Тип ошибки канала 2 */
-    volatile uint32_t FTR3;                           /*!< Offset 0x04C RO Тип ошибки канала 3 */
-    volatile uint32_t FTR4;                           /*!< Offset 0x050 RO Тип ошибки канала 4 */
-    volatile uint32_t FTR5;                           /*!< Offset 0x054 RO Тип ошибки канала 5 */
-    volatile uint32_t FTR6;                           /*!< Offset 0x058 RO Тип ошибки канала 6 */
-    volatile uint32_t FTR7;                           /*!< Offset 0x05C RO Тип ошибки канала 7 */
+    volatile uint32_t FTR [0x008];                    /*!< Offset 0x040 RO Тип ошибки канала 0..7 */
              uint32_t reserved_0x060 [0x0028];
-    volatile uint32_t CSR0;                           /*!< Offset 0x100 RO Статус канала 0 */
-    volatile uint32_t CPC0;                           /*!< Offset 0x104 RO PC канала 0 */
-    volatile uint32_t CSR1;                           /*!< Offset 0x108 RO Статус канала 1 */
-    volatile uint32_t CPC1;                           /*!< Offset 0x10C RO PC канала 1 */
-    volatile uint32_t CSR2;                           /*!< Offset 0x110 RO Статус канала 2 */
-    volatile uint32_t CPC2;                           /*!< Offset 0x114 RO PC канала 2 */
-    volatile uint32_t CSR3;                           /*!< Offset 0x118 RO Статус канала 3 */
-    volatile uint32_t CPC3;                           /*!< Offset 0x11C RO PC канала 3 */
-    volatile uint32_t CSR4;                           /*!< Offset 0x120 RO Статус канала 4 */
-    volatile uint32_t CPC4;                           /*!< Offset 0x124 RO PC канала 4 */
-    volatile uint32_t CSR5;                           /*!< Offset 0x128 RO Статус канала 5 */
-    volatile uint32_t CPC5;                           /*!< Offset 0x12C RO PC канала 5 */
-    volatile uint32_t CSR6;                           /*!< Offset 0x130 RO Статус канала 6 */
-    volatile uint32_t CPC6;                           /*!< Offset 0x134 RO PC канала 6 */
-    volatile uint32_t CSR7;                           /*!< Offset 0x138 RO Статус канала 7 */
-    volatile uint32_t CPC7;                           /*!< Offset 0x13C RO PC канала 7 */
+    struct
+    {
+        volatile uint32_t CSR;                        /*!< Offset 0x100 RO Статус канала 0..7 */
+        volatile uint32_t CPC;                        /*!< Offset 0x104 RO PC канала 0..7 */
+    } CSR_CPC [0x008];                                /*!< Offset 0x100 Статус и PC канала 0..7 */
              uint32_t reserved_0x140 [0x00B0];
-    volatile uint32_t SAR0;                           /*!< Offset 0x400 RO Адрес Источника для канала 0 */
-    volatile uint32_t DAR0;                           /*!< Offset 0x404 RO Адрес Приёмника для канала 0 */
-    volatile uint32_t CCR0;                           /*!< Offset 0x408 RO Регистр управления для канала 0 */
-    volatile uint32_t LC0_0;                          /*!< Offset 0x40C RO Счётчик циклов 0 для канала 0 */
-    volatile uint32_t LC1_0;                          /*!< Offset 0x410 RO Счётчик циклов 1 для канала 0 */
-             uint32_t reserved_0x414 [0x0003];
-    volatile uint32_t SAR1;                           /*!< Offset 0x420 RO Адрес Источника для канала 1 */
-    volatile uint32_t DAR1;                           /*!< Offset 0x424 RO Адрес Приёмника для канала 1 */
-    volatile uint32_t CCR1;                           /*!< Offset 0x428 RO Регистр управления для канала 1 */
-    volatile uint32_t LC0_1;                          /*!< Offset 0x42C RO Счётчик циклов 0 для канала 1 */
-    volatile uint32_t LC1_1;                          /*!< Offset 0x430 RO Счётчик циклов 1 для канала 1 */
-             uint32_t reserved_0x434 [0x0003];
-    volatile uint32_t SAR2;                           /*!< Offset 0x440 RO Адрес Источника для канала 2 */
-    volatile uint32_t DAR2;                           /*!< Offset 0x444 RO Адрес Приёмника для канала 2 */
-    volatile uint32_t CCR2;                           /*!< Offset 0x448 RO Регистр управления для канала 2 */
-    volatile uint32_t LC0_2;                          /*!< Offset 0x44C RO Счётчик циклов 0 для канала 2 */
-    volatile uint32_t LC1_2;                          /*!< Offset 0x450 RO Счётчик циклов 1 для канала 2 */
-             uint32_t reserved_0x454 [0x0003];
-    volatile uint32_t SAR3;                           /*!< Offset 0x460 RO Адрес Источника для канала 3 */
-    volatile uint32_t DAR3;                           /*!< Offset 0x464 RO Адрес Приёмника для канала 3 */
-    volatile uint32_t CCR3;                           /*!< Offset 0x468 RO Регистр управления для канала 3 */
-    volatile uint32_t LC0_3;                          /*!< Offset 0x46C RO Счётчик циклов 0 для канала 3 */
-    volatile uint32_t LC1_3;                          /*!< Offset 0x470 RO Счётчик циклов 1 для канала 3 */
-             uint32_t reserved_0x474 [0x0003];
-    volatile uint32_t SAR4;                           /*!< Offset 0x480 RO Адрес Источника для канала 4 */
-    volatile uint32_t DAR4;                           /*!< Offset 0x484 RO Адрес Приёмника для канала 4 */
-    volatile uint32_t CCR4;                           /*!< Offset 0x488 RO Регистр управления для канала 4 */
-    volatile uint32_t LC0_4;                          /*!< Offset 0x48C RO Счётчик циклов 0 для канала 4 */
-    volatile uint32_t LC1_4;                          /*!< Offset 0x490 RO Счётчик циклов 1 для канала 4 */
-             uint32_t reserved_0x494 [0x0003];
-    volatile uint32_t SAR5;                           /*!< Offset 0x4A0 RO Адрес Источника для канала 5 */
-    volatile uint32_t DAR5;                           /*!< Offset 0x4A4 RO Адрес Приёмника для канала 5 */
-    volatile uint32_t CCR5;                           /*!< Offset 0x4A8 RO Регистр управления для канала 5 */
-    volatile uint32_t LC0_5;                          /*!< Offset 0x4AC RO Счётчик циклов 0 для канала 5 */
-    volatile uint32_t LC1_5;                          /*!< Offset 0x4B0 RO Счётчик циклов 1 для канала 5 */
-             uint32_t reserved_0x4B4 [0x0003];
-    volatile uint32_t SAR6;                           /*!< Offset 0x4C0 RO Адрес Источника для канала 6 */
-    volatile uint32_t DAR6;                           /*!< Offset 0x4C4 RO Адрес Приёмника для канала 6 */
-    volatile uint32_t CCR6;                           /*!< Offset 0x4C8 RO Регистр управления для канала 6 */
-    volatile uint32_t LC0_6;                          /*!< Offset 0x4CC RO Счётчик циклов 0 для канала 6 */
-    volatile uint32_t LC1_6;                          /*!< Offset 0x4D0 RO Счётчик циклов 1 для канала 6 */
-             uint32_t reserved_0x4D4 [0x0003];
-    volatile uint32_t SAR7;                           /*!< Offset 0x4E0 RO Адрес Источника для канала 7 */
-    volatile uint32_t DAR7;                           /*!< Offset 0x4E4 RO Адрес Приёмника для канала 7 */
-    volatile uint32_t CCR7;                           /*!< Offset 0x4E8 RO Регистр управления для канала 7 */
-    volatile uint32_t LC0_7;                          /*!< Offset 0x4EC RO Счётчик циклов 0 для канала 7 */
-    volatile uint32_t LC1_7;                          /*!< Offset 0x4F0 RO Счётчик циклов 1 для канала 7 */
-             uint32_t reserved_0x4F4 [0x0203];
+    struct
+    {
+        volatile uint32_t SAR;                        /*!< Offset 0x400 RO Адрес Источника для канала 0..7 */
+        volatile uint32_t DAR;                        /*!< Offset 0x404 RO Адрес Приёмника для канала 0..7 */
+        volatile uint32_t CCR;                        /*!< Offset 0x408 RO Регистр управления для канала 0..7 */
+        volatile uint32_t LC0;                        /*!< Offset 0x40C RO Счётчик циклов 0 для канала 0..7 */
+        volatile uint32_t LC1;                        /*!< Offset 0x410 RO Счётчик циклов 1 для канала 0..7 */
+                 uint32_t reserved_0x014 [0x0003];
+    } CH [0x008];                                     /*!< Offset 0x400 Состояния каналов 0..7 */
+             uint32_t reserved_0x500 [0x0200];
     volatile uint32_t DBGSTATUS;                      /*!< Offset 0xD00 RO Debug Status Register */
     volatile uint32_t DBGCMD;                         /*!< Offset 0xD04 WO Debug Command Register */
     volatile uint32_t DBGINST0;                       /*!< Offset 0xD08 WO 0-ой регистр отладки */
     volatile uint32_t DBGINST1;                       /*!< Offset 0xD0C WO 1-ый регистр отладки */
              uint32_t reserved_0xD10 [0x003C];
-    volatile uint32_t CR0;                            /*!< Offset 0xE00 RO Регистр конфигурации 0 */
-    volatile uint32_t CR1;                            /*!< Offset 0xE04 RO Регистр конфигурации 1 */
-    volatile uint32_t CR2;                            /*!< Offset 0xE08 RO Регистр конфигурации 2 */
-    volatile uint32_t CR3;                            /*!< Offset 0xE0C RO Регистр конфигурации 3 */
-    volatile uint32_t CR4;                            /*!< Offset 0xE10 RO Регистр конфигурации 4 */
+    volatile uint32_t CR [0x005];                     /*!< Offset 0xE00 RO Регистр конфигурации 0..4 */
     volatile uint32_t CRD;                            /*!< Offset 0xE14 RO Конфигурация SDMA */
              uint32_t reserved_0xE18 [0x001A];
     volatile uint32_t WD;                             /*!< Offset 0xE80 RW Сторожевой регистр */
@@ -383,6 +515,58 @@ typedef struct SMCTR_Type
     volatile uint32_t IOPULL_CTR;                     /*!< Offset 0x040 Регистры управления подтягивающими резисторами контактных площадок микросхемы */
     volatile uint32_t COMM_DLOCK;                     /*!< Offset 0x044 Регистр индикации зависания коммутатора микросхемы */
 } SMCTR_TypeDef; /* size of structure = 0x048 */
+/*
+ * @brief SWIC
+ */
+/*!< SWIC КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) */
+typedef struct SWIC_Type
+{
+    volatile uint32_t HW_VER;                         /*!< Offset 0x000 Номер версии контроллера RD 0x00 */
+    volatile uint32_t STATUS;                         /*!< Offset 0x004 Регистр состояния WR/RD 0x04 */
+    volatile uint32_t RX_CODE;                        /*!< Offset 0x008 Регистр управляющего символа, принятого из сети (маркера времени, кода распределенного прерывания, кода подтверждения распределенного прерывания или кода CC11) RD 0x08 */
+    volatile uint32_t MODE_CR;                        /*!< Offset 0x00C Регистр режима работы WR 0x0С */
+    volatile uint32_t TX_SPEED;                       /*!< Offset 0x010 Регистр коэффициента скорости передачи WR 0x10 */
+    volatile uint32_t TX_CODE;                        /*!< Offset 0x014 Регистр управляющего символа (маркера времени, кода распределенного прерывания, кода подтверждения, кода CC11) для передачи в сеть WR 0x14 */
+    volatile uint32_t RX_SPEED;                       /*!< Offset 0x018 Регистр скорости приема данных в канале SpaceWire RD 0x18 */
+             uint32_t reserved_0x01C;
+    volatile uint32_t CNT_RX_PACK;                    /*!< Offset 0x020 Регистр счетчика принятых пакетов ненулевой длины RD/WR 0x20 */
+    volatile uint32_t ISR_L;                          /*!< Offset 0x024 Младшие разряды регистра ISR RD/WR 0x24 */
+    volatile uint32_t ISR_H;                          /*!< Offset 0x028 Старшие разряды регистра ISR RD/WR 0x28 */
+    volatile uint32_t TRUE_TIME;                      /*!< Offset 0x02C Регистр, содержащий значение последнего правильного маркера времени и последнего принятого из сети маркера времени RD 0x2C */
+    volatile uint32_t TOUT_CODE;                      /*!< Offset 0x030 Регистр размера таймаутов RD/WR 0x30 */
+    volatile uint32_t ISR_tout_L;                     /*!< Offset 0x034 Младшие разряды регистра флагов таймаутов ISR RD/WR 0x34 */
+    volatile uint32_t ISR_tout_H;                     /*!< Offset 0x038 Старшие разряды регистра флагов таймаутов ISR RD/WR 0x38 */
+    volatile uint32_t LOG_ADDR;                       /*!< Offset 0x03C Регистр логического адреса RD/WR 0x3С */
+    volatile uint32_t ack_nonack_regime;              /*!< Offset 0x040 Регистр управления режимом распределенных прерываний (с подтверждениями или без подтверждений) RD/WR 0x40 */
+    volatile uint32_t isr_touts2;                     /*!< Offset 0x044 Регистр таймаутов кодов распределенных прерываний 2 RD/WR 0x44 */
+    volatile uint32_t ISR_handler_TERM_FUNCT;         /*!< Offset 0x048 Регистр флагов функций терминального узла –обработчика RD/WR 0x48 */
+    volatile uint32_t ISR_SPEC;                       /*!< Offset 0x04C Регистр рассылки управляющих кодов в специальный набор портов RD/WR 0x4C */
+    volatile uint32_t ISR_1101;                       /*!< Offset 0x050 Регистр флагов приема управляющих кодов, назначение которых не определено в текущей версии стандарта RD/WR 0x50 */
+    volatile uint32_t ISR_MACK_1101;                  /*!< Offset 0x054 Регистр маски портов, из которых не должны приниматься управляющие коды, назначение которых не определено в текущей версии стандарта RD/WR 0x54 */
+    volatile uint32_t INT_RESET;                      /*!< Offset 0x058 Регистр параметров команды внешнего сброса WR/RD 0x58 */
+    volatile uint32_t STATUS2;                        /*!< Offset 0x05C Регистр состояния 0x5C */
+    volatile uint32_t MODE_CR2;                       /*!< Offset 0x060 Регистр режима работы 2 0x60 */
+    volatile uint32_t Int_H_mack;                     /*!< Offset 0x064 Старшая половина регистра маски распределенных прерываний WR/RD 0x64 */
+    volatile uint32_t Int_L_mack;                     /*!< Offset 0x068 Младшая половина регистра маски распределенных прерываний WR/RD 0x68 */
+    volatile uint32_t Ack_H_mack;                     /*!< Offset 0x06C Старшая половина регистра маски кодов подтверждения WR/RD 0x6C */
+    volatile uint32_t Ackl_L_mack;                    /*!< Offset 0x070 Младшая половина регистра маски кодов подтверждения WR/RD 0x70 */
+    volatile uint32_t AUTO_SPEED_MANAGE;              /*!< Offset 0x074 Регистр параметров автоматической установки скорости передачи WR/RD 0x74 */
+    volatile uint32_t ISR_source_TERM_FUNCT;          /*!< Offset 0x078 Регистр флагов функций терминального узла –источника 0x78 */
+    volatile uint32_t ISR_spec_term_funct;            /*!< Offset 0x07C Регистр признака специальной функции для терминального узла обработчика 0x7C */
+    volatile uint32_t ISR_L_reset;                    /*!< Offset 0x080 Младшая половина регистра глобального сброса ISR 0x80 */
+    volatile uint32_t ISR_H_reset;                    /*!< Offset 0x084 Старшая половина регистра глобального сброса ISR 0x84 */
+} SWIC_TypeDef; /* size of structure = 0x088 */
+/*
+ * @brief SWIC_MFBSP_DMA
+ */
+/*!< SWIC_MFBSP_DMA Регистры встроенных DMA портов SWIC и MFBSP */
+typedef struct SWIC_MFBSP_DMA_Type
+{
+    volatile uint32_t CSR;                            /*!< Offset 0x000 Регистр управления и состояния (по чтению сброс битов «END» и «DONE») */
+    volatile uint32_t CP;                             /*!< Offset 0x004 Регистр указателя цепочки  */
+    volatile uint32_t IR;                             /*!< Offset 0x008 Регистр индекса */
+    volatile uint32_t RUN;                            /*!< Offset 0x00C На запись: Псевдорегистр управления состоянием бита RUN регистра CSR На чтение: Регистр управления и состояния без сброса битов «END» и «DONE» */
+} SWIC_MFBSP_DMA_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief UART
  */
@@ -418,16 +602,29 @@ typedef struct UART_Type
 
 #define SDMA ((SDMA_TypeDef *) SDMA_BASE)             /*!< SDMA Регистры блока управления SDMA register set access pointer */
 #define NANDMPORT ((NANDMPORT_TypeDef *) NANDMPORT_BASE)/*!< NANDMPORT КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) register set access pointer */
+#define NFCM_BASE ((NANDMPORT_TypeDef *) NFCM_BASE_BASE)/*!< NFCM_BASE КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT) register set access pointer */
 #define NORMPORT ((NORMPORT_TypeDef *) NORMPORT_BASE) /*!< NORMPORT контроллер внешней SRAM/NOR Flash памяти. register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2 Universal Asynchronous Receiver-Transmitter register set access pointer */
 #define UART3 ((UART_TypeDef *) UART3_BASE)           /*!< UART3 Universal Asynchronous Receiver-Transmitter register set access pointer */
+#define I2C0 ((I2C_TypeDef *) I2C0_BASE)              /*!< I2C0  register set access pointer */
+#define I2C1 ((I2C_TypeDef *) I2C1_BASE)              /*!< I2C1  register set access pointer */
+#define I2C2 ((I2C_TypeDef *) I2C2_BASE)              /*!< I2C2  register set access pointer */
+#define I2S0 ((I2S_TypeDef *) I2S0_BASE)              /*!< I2S0 Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S. register set access pointer */
 #define GPIO0 ((GPIOBLOCK_TypeDef *) GPIO0_BASE)      /*!< GPIO0 Регистры блока управления GPIO register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Регистры блока управления GPIO register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Регистры блока управления GPIO register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Регистры блока управления GPIO register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD Регистры блока управления GPIO register set access pointer */
+#define SWIC0 ((SWIC_TypeDef *) SWIC0_BASE)           /*!< SWIC0 КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) register set access pointer */
+#define DMA_SWIC0 ((SWIC_MFBSP_DMA_TypeDef *) DMA_SWIC0_BASE)/*!< DMA_SWIC0 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
+#define SWIC1 ((SWIC_TypeDef *) SWIC1_BASE)           /*!< SWIC1 КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC) register set access pointer */
+#define DMA_SWIC1 ((SWIC_MFBSP_DMA_TypeDef *) DMA_SWIC1_BASE)/*!< DMA_SWIC1 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
+#define MFBSP0 ((MFBSP_TypeDef *) MFBSP0_BASE)        /*!< MFBSP0 МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  register set access pointer */
+#define DMA_MFBSP0 ((SWIC_MFBSP_DMA_TypeDef *) DMA_MFBSP0_BASE)/*!< DMA_MFBSP0 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
+#define MFBSP1 ((MFBSP_TypeDef *) MFBSP1_BASE)        /*!< MFBSP1 МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP)  register set access pointer */
+#define DMA_MFBSP1 ((SWIC_MFBSP_DMA_TypeDef *) DMA_MFBSP1_BASE)/*!< DMA_MFBSP1 Регистры встроенных DMA портов SWIC и MFBSP register set access pointer */
 #define CMCTR ((CMCTR_TypeDef *) CMCTR_BASE)          /*!< CMCTR Контроллер управления синхронизацией register set access pointer */
 #define PMCTR ((PMCTR_TypeDef *) PMCTR_BASE)          /*!< PMCTR Контроллер управления энергопотреблением register set access pointer */
 #define SMCTR ((SMCTR_TypeDef *) SMCTR_BASE)          /*!< SMCTR общиме системные настройки микросхемы register set access pointer */

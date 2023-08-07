@@ -190,6 +190,14 @@ static void prog_fpga_initialize(
 	prog_fpga_freq2(target, & phase_0);
 	prog_fpga_freq1_rts(target, & phase_0);
 	prog_fpga_nblevel(target, INT32_MAX);	/* при таком значении NB не срабатывает */
+
+#if WITHIQSHIFT
+
+	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
+	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
+	iq_shift_tx(CALIBRATION_TX_SHIFT);
+
+#endif /* WITHIQSHIFT */
 }
 
 #endif /* FPGA_V1_C_INCLUDED */

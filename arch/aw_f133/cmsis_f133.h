@@ -8,71 +8,77 @@
 
 typedef enum IRQn
 {
-    UART0_IRQn = 18,                                  /*!< UART  Interrupt */
-    UART1_IRQn = 19,                                  /*!< UART  Interrupt */
-    UART2_IRQn = 20,                                  /*!< UART  Interrupt */
-    UART3_IRQn = 21,                                  /*!< UART  Interrupt */
-    UART4_IRQn = 22,                                  /*!< UART  Interrupt */
-    UART5_IRQn = 23,                                  /*!< UART  Interrupt */
-    TWI0_IRQn = 25,                                   /*!< TWI  Interrupt */
-    TWI1_IRQn = 26,                                   /*!< TWI  Interrupt */
-    TWI2_IRQn = 27,                                   /*!< TWI  Interrupt */
-    TWI3_IRQn = 28,                                   /*!< TWI  Interrupt */
-    SPI0_IRQn = 31,                                   /*!< SPI Serial Peripheral Interface Interrupt */
-    SPI1_IRQn = 32,                                   /*!< SPI_DBI Serial Peripheral Interface Interrupt */
-    LEDC_IRQn = 36,                                   /*!< LEDC LED Lamp Controller Interrupt */
-    CAN0_IRQn = 37,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
-    CAN1_IRQn = 38,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Interrupt */
-    OWA_IRQn = 39,                                    /*!< OWA One Wire Audio (TX only) Interrupt */
-    AUDIO_CODEC_IRQn = 41,                            /*!< AUDIO_CODEC  Interrupt */
-    I2S_PCM1_IRQn = 43,                               /*!< I2S_PCM  Interrupt */
-    I2S_PCM2_IRQn = 44,                               /*!< I2S_PCM  Interrupt */
-    USB0_DEVICE_IRQn = 45,                            /*!< USBOTG  Interrupt */
-    USB0_EHCI_IRQn = 46,                              /*!< USB_EHCI_Capability  Interrupt */
-    USB0_OHCI_IRQn = 47,                              /*!< USB_OHCI_Capability  Interrupt */
-    USB1_EHCI_IRQn = 49,                              /*!< USB_EHCI_Capability  Interrupt */
-    USB1_OHCI_IRQn = 50,                              /*!< USB_OHCI_Capability  Interrupt */
-    MSI_IRQn = 59,                                    /*!< MSI_MEMC  Interrupt */
-    EMAC_IRQn = 62,                                   /*!< EMAC  Interrupt */
-    CCU_FERR_IRQn = 64,                               /*!< CCU  Interrupt */
-    DMAC_NS_IRQn = 66,                                /*!< DMAC  Interrupt */
-    CE_NS_IRQn = 68,                                  /*!< CE  Interrupt */
-    HSTIMER0_IRQn = 71,                               /*!< HSTIMER High Speed Timer Interrupt */
-    HSTIMER1_IRQn = 72,                               /*!< HSTIMER High Speed Timer Interrupt */
-    GPADC_IRQn = 73,                                  /*!< GPADC  Interrupt */
-    THS_IRQn = 74,                                    /*!< THS Thermal Sensor Interrupt */
-    TIMER0_IRQn = 75,                                 /*!< TIMER  Interrupt */
-    TIMER1_IRQn = 76,                                 /*!< TIMER  Interrupt */
-    TPADC_IRQn = 78,                                  /*!< TPADC  Interrupt */
-    IOMMU_IRQn = 80,                                  /*!< IOMMU  Interrupt */
-    GPIOB_NS_IRQn = 85,                               /*!< GPIOINT  Interrupt */
-    GPIOC_NS_IRQn = 87,                               /*!< GPIOINT  Interrupt */
-    GPIOD_NS_IRQn = 89,                               /*!< GPIOINT  Interrupt */
-    GPIOE_NS_IRQn = 91,                               /*!< GPIOINT  Interrupt */
-    GPIOF_NS_IRQn = 93,                               /*!< GPIOINT  Interrupt */
-    GPIOG_NS_IRQn = 95,                               /*!< GPIOINT  Interrupt */
-    DE_IRQn = 103,                                    /*!< DE_TOP Display Engine (DE) Interrupt */
-    DI_IRQn = 104,                                    /*!< DI De-interlacer (DI) Interrupt */
-    DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface Interrupt */
-    TVE_IRQn = 110,                                   /*!< TVE TV Encoder Interrupt */
-    CSIC_DMA0_IRQn = 111,                             /*!< CSIC_DMA  Interrupt */
-    CSIC_DMA1_IRQn = 112,                             /*!< CSIC_DMA  Interrupt */
-    CSIC_PARSER0_IRQn = 116,                          /*!< CSIC_PARSER  Interrupt */
-    CSI_TOP_PKT_IRQn = 122,                           /*!< CSIC_TOP  Interrupt */
-    TVD_IRQn = 123,                                   /*!< TVD Video Decoding Interrupt */
-    C0_CTI0_IRQn = 176,                               /*!< C0_CPUX_CFG  Interrupt */
-    C0_CTI1_IRQn = 177,                               /*!< C0_CPUX_CFG  Interrupt */
-    C0_COMMTX0_IRQn = 180,                            /*!< C0_CPUX_CFG  Interrupt */
-    C0_COMMTX1_IRQn = 181,                            /*!< C0_CPUX_CFG  Interrupt */
-    C0_COMMRX0_IRQn = 184,                            /*!< C0_CPUX_CFG  Interrupt */
-    C0_COMMRX1_IRQn = 185,                            /*!< C0_CPUX_CFG  Interrupt */
-    C0_PMU0_IRQn = 188,                               /*!< C0_CPUX_CFG  Interrupt */
-    C0_PMU1_IRQn = 189,                               /*!< C0_CPUX_CFG  Interrupt */
-    C0_AXI_ERROR_IRQn = 192,                          /*!< C0_CPUX_CFG  Interrupt */
-    AXI_WR_IRQ_IRQn = 194,                            /*!< C0_CPUX_CFG  Interrupt */
-    AXI_RD_IRQ_IRQn = 195,                            /*!< C0_CPUX_CFG  Interrupt */
-    DBGPWRUPREQ_out_0_IRQn = 196,                     /*!< C0_CPUX_CFG  Interrupt */
-    DBGPWRUPREQ_out_1_IRQn = 197,                     /*!< C0_CPUX_CFG  Interrupt */
+    UART0_IRQn = 18,                                  /*!< UART  */
+    UART1_IRQn = 19,                                  /*!< UART  */
+    UART2_IRQn = 20,                                  /*!< UART  */
+    UART3_IRQn = 21,                                  /*!< UART  */
+    UART4_IRQn = 22,                                  /*!< UART  */
+    UART5_IRQn = 23,                                  /*!< UART  */
+    TWI0_IRQn = 25,                                   /*!< TWI  */
+    TWI1_IRQn = 26,                                   /*!< TWI  */
+    TWI2_IRQn = 27,                                   /*!< TWI  */
+    TWI3_IRQn = 28,                                   /*!< TWI  */
+    SPI0_IRQn = 31,                                   /*!< SPI Serial Peripheral Interface */
+    SPI1_IRQn = 32,                                   /*!< SPI Serial Peripheral Interface */
+    LEDC_IRQn = 36,                                   /*!< LEDC LED Lamp Controller */
+    CAN0_IRQn = 37,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) */
+    CAN1_IRQn = 38,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) */
+    OWA_IRQn = 39,                                    /*!< OWA One Wire Audio (TX only) */
+    AUDIO_CODEC_IRQn = 41,                            /*!< AUDIO_CODEC Audio Codec */
+    I2S_PCM1_IRQn = 43,                               /*!< I2S_PCM  */
+    I2S_PCM2_IRQn = 44,                               /*!< I2S_PCM  */
+    USB0_DEVICE_IRQn = 45,                            /*!< USBOTG  */
+    USB0_EHCI_IRQn = 46,                              /*!< USB_EHCI_Capability  */
+    USB0_OHCI_IRQn = 47,                              /*!< USB_OHCI_Capability  */
+    USB1_EHCI_IRQn = 49,                              /*!< USB_EHCI_Capability  */
+    USB1_OHCI_IRQn = 50,                              /*!< USB_OHCI_Capability  */
+    SMHC0_IRQn = 56,                                  /*!< SMHC SD-MMC Host Controller */
+    SMHC1_IRQn = 57,                                  /*!< SMHC SD-MMC Host Controller */
+    SMHC2_IRQn = 58,                                  /*!< SMHC SD-MMC Host Controller */
+    MCTL_IRQn = 59,                                   /*!< MCTL_COM  */
+    EMAC_IRQn = 62,                                   /*!< EMAC  */
+    CCU_FERR_IRQn = 64,                               /*!< CCU Clock Controller Unit (CCU) */
+    DMAC_NS_IRQn = 66,                                /*!< DMAC  */
+    CE_NS_IRQn = 68,                                  /*!< CE Crypto Engine (CE) */
+    HSTIMER0_IRQn = 71,                               /*!< HSTIMER High Speed Timer (HSTimer) */
+    HSTIMER1_IRQn = 72,                               /*!< HSTIMER High Speed Timer (HSTimer) */
+    GPADC_IRQn = 73,                                  /*!< GPADC  */
+    THS_IRQn = 74,                                    /*!< THS Thermal Sensor */
+    TIMER0_IRQn = 75,                                 /*!< TIMER  */
+    TIMER1_IRQn = 76,                                 /*!< TIMER  */
+    TPADC_IRQn = 78,                                  /*!< TPADC  */
+    WATCHDOG_IRQn = 79,                               /*!< TIMER  */
+    IOMMU_IRQn = 80,                                  /*!< IOMMU  */
+    GPIOB_NS_IRQn = 85,                               /*!< GPIOINT  */
+    GPIOC_NS_IRQn = 87,                               /*!< GPIOINT  */
+    GPIOD_NS_IRQn = 89,                               /*!< GPIOINT  */
+    GPIOE_NS_IRQn = 91,                               /*!< GPIOINT  */
+    GPIOF_NS_IRQn = 93,                               /*!< GPIOINT  */
+    GPIOG_NS_IRQn = 95,                               /*!< GPIOINT  */
+    DE_IRQn = 103,                                    /*!< DE_TOP Display Engine (DE) TOP */
+    DI_IRQn = 104,                                    /*!< DI De-interlacer (DI) */
+    G2D_IRQn = 105,                                   /*!< G2D_TOP Graphic 2D top */
+    TVE_IRQn = 107,                                   /*!< TVE_TOP TV Output (TV_Encoder) */
+    DSI0_IRQn = 108,                                  /*!< DSI MIPI DSI Display Interface */
+    TV_Encoder_IRQn = 110,                            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) */
+    CSIC_DMA0_IRQn = 111,                             /*!< CSIC_DMA  */
+    CSIC_DMA1_IRQn = 112,                             /*!< CSIC_DMA  */
+    CSIC_PARSER0_IRQn = 116,                          /*!< CSIC_PARSER  */
+    CSI_TOP_PKT_IRQn = 122,                           /*!< CSIC_TOP  */
+    TVD_IRQn = 123,                                   /*!< TVD_TOP Video Decoding */
+    C0_CTI0_IRQn = 176,                               /*!< C0_CPUX_CFG  */
+    C0_CTI1_IRQn = 177,                               /*!< C0_CPUX_CFG  */
+    C0_COMMTX0_IRQn = 180,                            /*!< C0_CPUX_CFG  */
+    C0_COMMTX1_IRQn = 181,                            /*!< C0_CPUX_CFG  */
+    C0_COMMRX0_IRQn = 184,                            /*!< C0_CPUX_CFG  */
+    C0_COMMRX1_IRQn = 185,                            /*!< C0_CPUX_CFG  */
+    C0_PMU0_IRQn = 188,                               /*!< C0_CPUX_CFG  */
+    C0_PMU1_IRQn = 189,                               /*!< C0_CPUX_CFG  */
+    C0_AXI_ERROR_IRQn = 192,                          /*!< C0_CPUX_CFG  */
+    AXI_WR_IRQ_IRQn = 194,                            /*!< C0_CPUX_CFG  */
+    AXI_RD_IRQ_IRQn = 195,                            /*!< C0_CPUX_CFG  */
+    DBGPWRUPREQ_out_0_IRQn = 196,                     /*!< C0_CPUX_CFG  */
+    DBGPWRUPREQ_out_1_IRQn = 197,                     /*!< C0_CPUX_CFG  */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -81,111 +87,116 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK Base */
-#define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO Base */
-#define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO Base */
-#define GPIOD_BASE ((uintptr_t) 0x02000090)           /*!< GPIO Base */
-#define GPIOE_BASE ((uintptr_t) 0x020000C0)           /*!< GPIO Base */
-#define GPIOF_BASE ((uintptr_t) 0x020000F0)           /*!< GPIO Base */
-#define GPIOG_BASE ((uintptr_t) 0x02000120)           /*!< GPIO Base */
-#define GPIOINTB_BASE ((uintptr_t) 0x02000220)        /*!< GPIOINT Base */
-#define GPIOINTC_BASE ((uintptr_t) 0x02000240)        /*!< GPIOINT Base */
-#define GPIOINTD_BASE ((uintptr_t) 0x02000260)        /*!< GPIOINT Base */
-#define GPIOINTE_BASE ((uintptr_t) 0x02000280)        /*!< GPIOINT Base */
-#define GPIOINTF_BASE ((uintptr_t) 0x020002A0)        /*!< GPIOINT Base */
-#define GPIOINTG_BASE ((uintptr_t) 0x020002C0)        /*!< GPIOINT Base */
-#define PWM_BASE ((uintptr_t) 0x02000C00)             /*!< PWM Base */
-#define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU Base */
-#define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX Base */
-#define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC Base */
-#define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
-#define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Base */
-#define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
-#define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
-#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Base */
-#define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
-#define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM Base */
-#define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM Base */
-#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA Base */
-#define TIMER_BASE ((uintptr_t) 0x02050000)           /*!< TIMER Base */
-#define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x02500400)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x02500800)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x02500C00)           /*!< UART Base */
-#define UART4_BASE ((uintptr_t) 0x02501000)           /*!< UART Base */
-#define UART5_BASE ((uintptr_t) 0x02501400)           /*!< UART Base */
-#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI Base */
-#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI Base */
-#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI Base */
-#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI Base */
-#define CAN0_BASE ((uintptr_t) 0x02504000)            /*!< CAN Base */
-#define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN Base */
-#define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG Base */
-#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC Base */
-#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Base */
-#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
-#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Base */
-#define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM Base */
-#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC Base */
-#define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC Base */
-#define MCTL_PHY_BASE ((uintptr_t) 0x03103000)        /*!< MCTL_PHY Base */
-#define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC Base */
-#define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC Base */
-#define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC Base */
-#define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Base */
-#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI_DBI Base */
-#define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG Base */
-#define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC Base */
-#define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI0_BASE ((uintptr_t) 0x04101400)        /*!< USB_OHCI_Capability Base */
-#define USBEHCI1_BASE ((uintptr_t) 0x04200000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability Base */
-#define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC Base */
-#define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC Base */
-#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Base */
-#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Base */
-#define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Base */
-#define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Base */
-#define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Base */
-#define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Base */
-#define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI Base */
-#define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Base */
-#define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Base */
-#define G2D_V0_BASE ((uintptr_t) 0x05410800)          /*!< G2D_VI Base */
-#define G2D_UI0_BASE ((uintptr_t) 0x05411000)         /*!< G2D_UI Base */
-#define G2D_UI1_BASE ((uintptr_t) 0x05411800)         /*!< G2D_UI Base */
-#define G2D_UI2_BASE ((uintptr_t) 0x05412000)         /*!< G2D_UI Base */
-#define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Base */
-#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Base */
-#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Base */
-#define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI Base */
-#define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY Base */
-#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP Base */
-#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Base */
-#define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV Base */
-#define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU Base */
-#define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP Base */
-#define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)    /*!< CSIC_PARSER Base */
-#define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)       /*!< CSIC_DMA Base */
-#define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA Base */
-#define TVD_TOP_BASE ((uintptr_t) 0x05C00000)         /*!< TVD_TOP Base */
-#define TVD_BASE ((uintptr_t) 0x05C01000)             /*!< TVD Base */
-#define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG Base */
-#define RISC_WDG_BASE ((uintptr_t) 0x06011000)        /*!< RISC_WDG Base */
-#define RISC_TIMESTAMP_BASE ((uintptr_t) 0x06012000)  /*!< RISC_TIMESTAMP Base */
-#define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM Base */
-#define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX Base */
-#define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Base */
-#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG Base */
-#define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)   /*!< C0_CPUX_MBIST Base */
-#define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Base */
-#define CLINT_BASE ((uintptr_t) 0x14000000)           /*!< CLINT Base */
+#define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
+#define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
+#define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO  Base */
+#define GPIOD_BASE ((uintptr_t) 0x02000090)           /*!< GPIO  Base */
+#define GPIOE_BASE ((uintptr_t) 0x020000C0)           /*!< GPIO  Base */
+#define GPIOF_BASE ((uintptr_t) 0x020000F0)           /*!< GPIO  Base */
+#define GPIOG_BASE ((uintptr_t) 0x02000120)           /*!< GPIO  Base */
+#define GPIOINTB_BASE ((uintptr_t) 0x02000220)        /*!< GPIOINT  Base */
+#define GPIOINTC_BASE ((uintptr_t) 0x02000240)        /*!< GPIOINT  Base */
+#define GPIOINTD_BASE ((uintptr_t) 0x02000260)        /*!< GPIOINT  Base */
+#define GPIOINTE_BASE ((uintptr_t) 0x02000280)        /*!< GPIOINT  Base */
+#define GPIOINTF_BASE ((uintptr_t) 0x020002A0)        /*!< GPIOINT  Base */
+#define GPIOINTG_BASE ((uintptr_t) 0x020002C0)        /*!< GPIOINT  Base */
+#define PWM_BASE ((uintptr_t) 0x02000C00)             /*!< PWM Pulse Width Modulation module Base */
+#define CCU_BASE ((uintptr_t) 0x02001000)             /*!< CCU Clock Controller Unit (CCU) Base */
+#define CIR_TX_BASE ((uintptr_t) 0x02003000)          /*!< CIR_TX  Base */
+#define LEDC_BASE ((uintptr_t) 0x02008000)            /*!< LEDC LED Lamp Controller Base */
+#define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC  Base */
+#define THS_BASE ((uintptr_t) 0x02009400)             /*!< THS Thermal Sensor Base */
+#define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC  Base */
+#define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU  Base */
+#define AUDIO_CODEC_BASE ((uintptr_t) 0x02030000)     /*!< AUDIO_CODEC Audio Codec Base */
+#define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC  Base */
+#define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
+#define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
+#define OWA_BASE ((uintptr_t) 0x02036000)             /*!< OWA One Wire Audio (TX only) Base */
+#define TIMER_BASE ((uintptr_t) 0x02050000)           /*!< TIMER  Base */
+#define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART  Base */
+#define UART1_BASE ((uintptr_t) 0x02500400)           /*!< UART  Base */
+#define UART2_BASE ((uintptr_t) 0x02500800)           /*!< UART  Base */
+#define UART3_BASE ((uintptr_t) 0x02500C00)           /*!< UART  Base */
+#define UART4_BASE ((uintptr_t) 0x02501000)           /*!< UART  Base */
+#define UART5_BASE ((uintptr_t) 0x02501400)           /*!< UART  Base */
+#define TWI0_BASE ((uintptr_t) 0x02502000)            /*!< TWI  Base */
+#define TWI1_BASE ((uintptr_t) 0x02502400)            /*!< TWI  Base */
+#define TWI2_BASE ((uintptr_t) 0x02502800)            /*!< TWI  Base */
+#define TWI3_BASE ((uintptr_t) 0x02502C00)            /*!< TWI  Base */
+#define CAN0_BASE ((uintptr_t) 0x02504000)            /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Base */
+#define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Base */
+#define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
+#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
+#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
+#define HSTIMER_BASE ((uintptr_t) 0x03008000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
+#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
+#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Crypto Engine (CE) Base */
+#define MCTL_COM_BASE ((uintptr_t) 0x03102000)        /*!< MCTL_COM  Base */
+#define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
+#define MCTL_PHY_BASE ((uintptr_t) 0x03103000)        /*!< MCTL_PHY  Base */
+#define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI1_BASE ((uintptr_t) 0x04026000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI_DBI_BASE ((uintptr_t) 0x04026000)         /*!< SPI Serial Peripheral Interface Base */
+#define USBOTG0_BASE ((uintptr_t) 0x04100000)         /*!< USBOTG  Base */
+#define USBPHY0_BASE ((uintptr_t) 0x04100400)         /*!< USBPHYC  Base */
+#define USBEHCI0_BASE ((uintptr_t) 0x04101000)        /*!< USB_EHCI_Capability  Base */
+#define USBOHCI0_BASE ((uintptr_t) 0x04101400)        /*!< USB_OHCI_Capability  Base */
+#define USBEHCI1_BASE ((uintptr_t) 0x04200000)        /*!< USB_EHCI_Capability  Base */
+#define USBOHCI1_BASE ((uintptr_t) 0x04200400)        /*!< USB_OHCI_Capability  Base */
+#define USBPHY1_BASE ((uintptr_t) 0x04200800)         /*!< USBPHYC  Base */
+#define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC  Base */
+#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Display Engine (DE) TOP Base */
+#define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
+#define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
+#define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
+#define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
+#define G2D_V0_BASE ((uintptr_t) 0x05410800)          /*!< G2D_VI Graphic 2D VI surface Base */
+#define G2D_UI0_BASE ((uintptr_t) 0x05411000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI1_BASE ((uintptr_t) 0x05411800)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI2_BASE ((uintptr_t) 0x05412000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_WB_BASE ((uintptr_t) 0x05413000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
+#define G2D_VSU_BASE ((uintptr_t) 0x05418000)         /*!< G2D_VSU Graphic 2D Video Scaler Base */
+#define G2D_ROT_BASE ((uintptr_t) 0x05438000)         /*!< G2D_ROT Graphic 2D Rotate Base */
+#define DSI0_BASE ((uintptr_t) 0x05450000)            /*!< DSI MIPI DSI Display Interface Base */
+#define DSI_DPHY_BASE ((uintptr_t) 0x05451000)        /*!< DSI_DPHY MIPI DSI Physical Interface Base */
+#define DISPLAY_TOP_BASE ((uintptr_t) 0x05460000)     /*!< DISPLAY_TOP display interface top (DISPLAY_TOP) Base */
+#define TCON_LCD0_BASE ((uintptr_t) 0x05461000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
+#define TCON_TV0_BASE ((uintptr_t) 0x05470000)        /*!< TCON_TV  Base */
+#define TVE_TOP_BASE ((uintptr_t) 0x05600000)         /*!< TVE_TOP TV Output (TV_Encoder) Base */
+#define TV_Encoder_BASE ((uintptr_t) 0x05604000)      /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
+#define CSI_BASE ((uintptr_t) 0x05800000)             /*!< CSI  Base */
+#define CSIC_CCU_BASE ((uintptr_t) 0x05800000)        /*!< CSIC_CCU  Base */
+#define CSIC_TOP_BASE ((uintptr_t) 0x05800800)        /*!< CSIC_TOP  Base */
+#define CSIC_PARSER0_BASE ((uintptr_t) 0x05801000)    /*!< CSIC_PARSER  Base */
+#define CSIC_DMA0_BASE ((uintptr_t) 0x05809000)       /*!< CSIC_DMA  Base */
+#define CSIC_DMA1_BASE ((uintptr_t) 0x05809200)       /*!< CSIC_DMA  Base */
+#define TVD_TOP_BASE ((uintptr_t) 0x05C00000)         /*!< TVD_TOP Video Decoding Base */
+#define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Video Decoding Base */
+#define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG RISC-V core configuration register Base */
+#define RISC_WDG_BASE ((uintptr_t) 0x06011000)        /*!< RISC_WDG  Base */
+#define RISC_TIMESTAMP_BASE ((uintptr_t) 0x06012000)  /*!< RISC_TIMESTAMP  Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
+#define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
+#define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
+#define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG  Base */
+#define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)   /*!< C0_CPUX_MBIST  Base */
+#define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Platform-Level Interrupt Controller (PLIC) Base */
+#define CLINT_BASE ((uintptr_t) 0x14000000)           /*!< CLINT  Base */
 
 /*
  * @brief AUDIO_CODEC
  */
-/*!< AUDIO_CODEC  */
+/*!< AUDIO_CODEC Audio Codec */
 typedef struct AUDIO_CODEC_Type
 {
     volatile uint32_t AC_DAC_DPC;                     /*!< Offset 0x000 DAC Digital Part Control Register */
@@ -387,7 +398,7 @@ typedef struct CAN_Type
 /*
  * @brief CCU
  */
-/*!< CCU  */
+/*!< CCU Clock Controller Unit (CCU) */
 typedef struct CCU_Type
 {
     volatile uint32_t PLL_CPU_CTRL_REG;               /*!< Offset 0x000 PLL_CPU Control Register */
@@ -598,7 +609,7 @@ typedef struct CCU_Type
 /*
  * @brief CE
  */
-/*!< CE  */
+/*!< CE Crypto Engine (CE) */
 typedef struct CE_Type
 {
     volatile uint32_t CE_TDA;                         /*!< Offset 0x000 Task Descriptor Address */
@@ -934,7 +945,7 @@ typedef struct DE_GLB_Type
 /*
  * @brief DE_TOP
  */
-/*!< DE_TOP Display Engine (DE) */
+/*!< DE_TOP Display Engine (DE) TOP */
 typedef struct DE_TOP_Type
 {
     volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
@@ -1265,7 +1276,7 @@ typedef struct G2D_BLD_Type
 /*
  * @brief G2D_MIXER
  */
-/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler */
+/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer */
 typedef struct G2D_MIXER_Type
 {
     volatile uint32_t G2D_MIXER_CTL;                  /*!< Offset 0x000 G2D mixer control */
@@ -1275,7 +1286,7 @@ typedef struct G2D_MIXER_Type
 /*
  * @brief G2D_ROT
  */
-/*!< G2D_ROT  */
+/*!< G2D_ROT Graphic 2D Rotate */
 typedef struct G2D_ROT_Type
 {
     volatile uint32_t ROT_CTL;                        /*!< Offset 0x000 ROT_CTL						 */
@@ -1323,7 +1334,7 @@ typedef struct G2D_TOP_Type
 /*
  * @brief G2D_UI
  */
-/*!< G2D_UI  */
+/*!< G2D_UI Graphic 2D UI surface */
 typedef struct G2D_UI_Type
 {
     volatile uint32_t UI_ATTR;                        /*!< Offset 0x000 UIx_ATTR */
@@ -1338,7 +1349,7 @@ typedef struct G2D_UI_Type
 /*
  * @brief G2D_VI
  */
-/*!< G2D_VI  */
+/*!< G2D_VI Graphic 2D VI surface */
 typedef struct G2D_VI_Type
 {
     volatile uint32_t V0_ATTCTL;                      /*!< Offset 0x000 V0_ATTCTL */
@@ -1361,7 +1372,7 @@ typedef struct G2D_VI_Type
 /*
  * @brief G2D_VSU
  */
-/*!< G2D_VSU Also see 5.7 DE UIS Specification */
+/*!< G2D_VSU Graphic 2D Video Scaler */
 typedef struct G2D_VSU_Type
 {
     volatile uint32_t VS_CTRL;                        /*!< Offset 0x000 VS_CTRL */
@@ -1488,7 +1499,7 @@ typedef struct GPIOINT_Type
 /*
  * @brief HSTIMER
  */
-/*!< HSTIMER High Speed Timer */
+/*!< HSTIMER High Speed Timer (HSTimer) */
 typedef struct HSTIMER_Type
 {
     volatile uint32_t HS_TMR_IRQ_EN_REG;              /*!< Offset 0x000 HS Timer IRQ Enable Register */
@@ -1538,10 +1549,7 @@ typedef struct I2S_PCM_Type
     volatile uint32_t I2S_PCM_TX3CHMAP0;              /*!< Offset 0x05C I2S/PCM TX3 Channel Mapping Register0 */
     volatile uint32_t I2S_PCM_TX3CHMAP1;              /*!< Offset 0x060 I2S/PCM TX3 Channel Mapping Register1 */
     volatile uint32_t I2S_PCM_RXCHSEL;                /*!< Offset 0x064 I2S/PCM RX Channel Select Register */
-    volatile uint32_t I2S_PCM_RXCHMAP0;               /*!< Offset 0x068 I2S/PCM RX Channel Mapping Register0 */
-    volatile uint32_t I2S_PCM_RXCHMAP1;               /*!< Offset 0x06C I2S/PCM RX Channel Mapping Register1 */
-    volatile uint32_t I2S_PCM_RXCHMAP2;               /*!< Offset 0x070 I2S/PCM RX Channel Mapping Register2 */
-    volatile uint32_t I2S_PCM_RXCHMAP3;               /*!< Offset 0x074 I2S/PCM RX Channel Mapping Register3 */
+    volatile uint32_t I2S_PCM_RXCHMAP [0x004];        /*!< Offset 0x068 I2S/PCM RX Channel Mapping Register0..3 */
              uint32_t reserved_0x078 [0x0002];
     volatile uint32_t MCLKCFG;                        /*!< Offset 0x080 ASRC MCLK Configuration Register */
     volatile uint32_t FsoutCFG;                       /*!< Offset 0x084 ASRC Out Sample Rate Configuration Register */
@@ -1826,28 +1834,6 @@ typedef struct MCTL_PHY_Type
     volatile uint32_t MCTL_PHY_ACIOCR1 [0x010];       /*!< Offset 0x210 0x210 + 0x4 * x */
 } MCTL_PHY_TypeDef; /* size of structure = 0x250 */
 /*
- * @brief MSI_MEMC
- */
-/*!< MSI_MEMC  */
-typedef struct MSI_MEMC_Type
-{
-    volatile uint32_t MCTL_COM_WORK_MODE0;            /*!< Offset 0x000  */
-    volatile uint32_t MCTL_COM_WORK_MODE1;            /*!< Offset 0x004  */
-    volatile uint32_t MCTL_COM_DBGCR;                 /*!< Offset 0x008  */
-    volatile uint32_t MCTL_COM_TMR;                   /*!< Offset 0x00C  */
-             uint32_t reserved_0x010;
-    volatile uint32_t MCTL_COM_CCCR;                  /*!< Offset 0x014  */
-             uint32_t reserved_0x018 [0x0002];
-    volatile uint32_t MCTL_COM_MAER0;                 /*!< Offset 0x020  */
-    volatile uint32_t MCTL_COM_MAER1;                 /*!< Offset 0x024  */
-    volatile uint32_t MCTL_COM_MAER2;                 /*!< Offset 0x028  */
-             uint32_t reserved_0x02C [0x0135];
-    volatile uint32_t MCTL_COM_REMAP0;                /*!< Offset 0x500  */
-    volatile uint32_t MCTL_COM_REMAP1;                /*!< Offset 0x504  */
-    volatile uint32_t MCTL_COM_REMAP2;                /*!< Offset 0x508  */
-    volatile uint32_t MCTL_COM_REMAP3;                /*!< Offset 0x50C  */
-} MSI_MEMC_TypeDef; /* size of structure = 0x510 */
-/*
  * @brief OWA
  */
 /*!< OWA One Wire Audio (TX only) */
@@ -1870,7 +1856,7 @@ typedef struct OWA_Type
 /*
  * @brief PLIC
  */
-/*!< PLIC  */
+/*!< PLIC Platform-Level Interrupt Controller (PLIC) */
 typedef struct PLIC_Type
 {
     volatile uint32_t PLIC_PRIO_REGn [0x400];         /*!< Offset 0x000 (0<n<256) PLIC Priority Register n - Interrupt Source Priority */
@@ -2003,6 +1989,17 @@ typedef struct RTC_Type
     volatile uint32_t RTC_SPI_CLK_CTRL_REG;           /*!< Offset 0x310 RTC SPI Clock Control Register */
 } RTC_TypeDef; /* size of structure = 0x314 */
 /*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG  */
+typedef struct R_CPUCFG_Type
+{
+             uint32_t reserved_0x000 [0x0070];
+    volatile uint32_t HOTPLUGFLAG;                    /*!< Offset 0x1C0 The Hotplug Flag Register is 0x070005C0. */
+    volatile uint32_t SOFTENTRY [0x004];              /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
+    volatile uint32_t SUP_STAN_FLAG;                  /*!< Offset 0x1D4 Super Standby Flag (bit 16) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1D8 */
+/*
  * @brief R_PRCM
  */
 /*!< R_PRCM  */
@@ -2109,39 +2106,6 @@ typedef struct SPI_Type
     volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
              uint32_t reserved_0x050 [0x000E];
     volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
-             uint32_t reserved_0x08C [0x005D];
-    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
-             uint32_t reserved_0x204 [0x003F];
-    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
-} SPI_TypeDef; /* size of structure = 0x304 */
-/*
- * @brief SPI_DBI
- */
-/*!< SPI_DBI Serial Peripheral Interface */
-typedef struct SPI_DBI_Type
-{
-             uint32_t reserved_0x000;
-    volatile uint32_t SPI_GCR;                        /*!< Offset 0x004 SPI Global Control Register */
-    volatile uint32_t SPI_TCR;                        /*!< Offset 0x008 SPI Transfer Control Register */
-             uint32_t reserved_0x00C;
-    volatile uint32_t SPI_IER;                        /*!< Offset 0x010 SPI Interrupt Control Register */
-    volatile uint32_t SPI_ISR;                        /*!< Offset 0x014 SPI Interrupt Status Register */
-    volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
-    volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
-    volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
-             uint32_t reserved_0x024;
-    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x028 SPI Sample Delay Control Register */
-             uint32_t reserved_0x02C;
-    volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
-    volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
-    volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
-             uint32_t reserved_0x03C;
-    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
-    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
-    volatile uint32_t SPI_TBR;                        /*!< Offset 0x048 SPI TX Bit Register */
-    volatile uint32_t SPI_RBR;                        /*!< Offset 0x04C SPI RX Bit Register */
-             uint32_t reserved_0x050 [0x000E];
-    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
              uint32_t reserved_0x08C [0x001D];
     volatile uint32_t DBI_CTL_0;                      /*!< Offset 0x100 DBI Control Register 0 */
     volatile uint32_t DBI_CTL_1;                      /*!< Offset 0x104 DBI Control Register 1 */
@@ -2153,10 +2117,10 @@ typedef struct SPI_DBI_Type
     volatile uint32_t DBI_DEBUG_0;                    /*!< Offset 0x124 DBI BEBUG 0 Register */
     volatile uint32_t DBI_DEBUG_1;                    /*!< Offset 0x128 DBI BEBUG 1 Register */
              uint32_t reserved_0x12C [0x0035];
-    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data register */
+    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
-    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data register */
-} SPI_DBI_TypeDef; /* size of structure = 0x304 */
+    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
+} SPI_TypeDef; /* size of structure = 0x304 */
 /*
  * @brief SYS_CFG
  */
@@ -2180,7 +2144,7 @@ typedef struct SYS_CFG_Type
 /*
  * @brief TCON_LCD
  */
-/*!< TCON_LCD  */
+/*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
 typedef struct TCON_LCD_Type
 {
     volatile uint32_t LCD_GCTL_REG;                   /*!< Offset 0x000 LCD Global Control Register */
@@ -2211,20 +2175,15 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_DEBUG_REG;                  /*!< Offset 0x0FC LCD Debug Register */
     volatile uint32_t LCD_CEU_CTL_REG;                /*!< Offset 0x100 LCD CEU Control Register */
              uint32_t reserved_0x104 [0x0003];
-    volatile uint32_t LCD_CEU_COEF_MUL_REG [0x003];   /*!< Offset 0x110 LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10) */
-    volatile uint32_t LCD_CEU_COEF_ADD0_REG;          /*!< Offset 0x11C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) */
+    volatile uint32_t LCD_CEU_COEF_MUL_REG [0x003];   /*!< Offset 0x110 LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10) N=0: Rr, N=1: Rg, N=2: Rb, N=4: Gr, N=5: Gg, N=6: Gb, N=8: Br, N=9: Bg, N=10: Bb */
+    volatile uint32_t LCD_CEU_COEF_ADD0_REG;          /*!< Offset 0x11C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) N=0: Rc, N=1: Gc, N=2: Bc */
              uint32_t reserved_0x120 [0x0003];
     volatile uint32_t LCD_CEU_COEF_ADD1_REG;          /*!< Offset 0x12C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) */
              uint32_t reserved_0x130 [0x0003];
     volatile uint32_t LCD_CEU_COEF_ADD2_REG;          /*!< Offset 0x13C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) */
     volatile uint32_t LCD_CEU_COEF_RANG_REG [0x003];  /*!< Offset 0x140 LCD CEU Coefficient Register2 0x0140+N*0x04 (N=0,1,2) */
              uint32_t reserved_0x14C [0x0005];
-    volatile uint32_t LCD_CPU_TRI0_REG;               /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
-    volatile uint32_t LCD_CPU_TRI1_REG;               /*!< Offset 0x164 LCD CPU Panel Trigger Register1 */
-    volatile uint32_t LCD_CPU_TRI2_REG;               /*!< Offset 0x168 LCD CPU Panel Trigger Register2 */
-    volatile uint32_t LCD_CPU_TRI3_REG;               /*!< Offset 0x16C LCD CPU Panel Trigger Register3 */
-    volatile uint32_t LCD_CPU_TRI4_REG;               /*!< Offset 0x170 LCD CPU Panel Trigger Register4 */
-    volatile uint32_t LCD_CPU_TRI5_REG;               /*!< Offset 0x174 LCD CPU Panel Trigger Register5 */
+    volatile uint32_t LCD_CPU_TRIx_REG [0x006];       /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
              uint32_t reserved_0x178 [0x0002];
     volatile uint32_t LCD_CMAP_CTL_REG;               /*!< Offset 0x180 LCD Color Map Control Register */
              uint32_t reserved_0x184 [0x0003];
@@ -2365,10 +2324,10 @@ typedef struct TPADC_Type
     volatile uint32_t TP_DATA_REG;                    /*!< Offset 0x024 TP Data Register */
 } TPADC_TypeDef; /* size of structure = 0x028 */
 /*
- * @brief TVD
+ * @brief TVD0
  */
-/*!< TVD Video Decoding */
-typedef struct TVD_Type
+/*!< TVD0 Video Decoding */
+typedef struct TVD0_Type
 {
     volatile uint32_t TVD_EN;                         /*!< Offset 0x000 TVD MODULE CONTROL Register */
     volatile uint32_t TVD_MODE;                       /*!< Offset 0x004 TVD MODE CONTROL Register */
@@ -2409,11 +2368,11 @@ typedef struct TVD_Type
     volatile uint32_t TVD_STATUS4;                    /*!< Offset 0x18C TVD DEBUG STATUS Register4 */
     volatile uint32_t TVD_STATUS5;                    /*!< Offset 0x190 TVD DEBUG STATUS Register5 */
     volatile uint32_t TVD_STATUS6;                    /*!< Offset 0x194 TVD DEBUG STATUS Register6 */
-} TVD_TypeDef; /* size of structure = 0x198 */
+} TVD0_TypeDef; /* size of structure = 0x198 */
 /*
  * @brief TVD_TOP
  */
-/*!< TVD_TOP  */
+/*!< TVD_TOP Video Decoding */
 typedef struct TVD_TOP_Type
 {
     volatile uint32_t TVD_TOP_MAP;                    /*!< Offset 0x000 TVD TOP MAP Register */
@@ -2434,10 +2393,26 @@ typedef struct TVD_TOP_Type
     } TVD_ADC [0x004];                                /*!< Offset 0x020 TVD ADC Registers N (N = 0 to 3) */
 } TVD_TOP_TypeDef; /* size of structure = 0x0A0 */
 /*
- * @brief TVE
+ * @brief TVE_TOP
  */
-/*!< TVE TV Encoder */
-typedef struct TVE_Type
+/*!< TVE_TOP TV Output (TV_Encoder) */
+typedef struct TVE_TOP_Type
+{
+             uint32_t reserved_0x000 [0x0008];
+    volatile uint32_t TVE_DAC_MAP;                    /*!< Offset 0x020 TV Encoder DAC MAP Register */
+    volatile uint32_t TVE_DAC_STATUS;                 /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
+    volatile uint32_t TVE_DAC_CFG0;                   /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
+    volatile uint32_t TVE_DAC_CFG1;                   /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
+    volatile uint32_t TVE_DAC_CFG2;                   /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
+    volatile uint32_t TVE_DAC_CFG3;                   /*!< Offset 0x034 TV Encoder DAC CFG2 Register */
+             uint32_t reserved_0x038 [0x002E];
+    volatile uint32_t TVE_DAC_TEST;                   /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
+} TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
+/*
+ * @brief TV_Encoder
+ */
+/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) */
+typedef struct TV_Encoder_Type
 {
     volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
     volatile uint32_t TVE_004_REG;                    /*!< Offset 0x004 TV Encoder Configuration Register */
@@ -2482,23 +2457,7 @@ typedef struct TVE_Type
     volatile uint32_t TVE_394_REG;                    /*!< Offset 0x394 TV Encoder Low Pass Coring Register */
              uint32_t reserved_0x398 [0x0002];
     volatile uint32_t TVE_3A0_REG;                    /*!< Offset 0x3A0 TV Encoder Noise Reduction Register */
-} TVE_TypeDef; /* size of structure = 0x3A4 */
-/*
- * @brief TVE_TOP
- */
-/*!< TVE_TOP  */
-typedef struct TVE_TOP_Type
-{
-             uint32_t reserved_0x000 [0x0008];
-    volatile uint32_t TVE_DAC_MAP;                    /*!< Offset 0x020 TV Encoder DAC MAP Register */
-    volatile uint32_t TVE_DAC_STATUS;                 /*!< Offset 0x024 TV Encoder DAC STAUTS Register */
-    volatile uint32_t TVE_DAC_CFG0;                   /*!< Offset 0x028 TV Encoder DAC CFG0 Register */
-    volatile uint32_t TVE_DAC_CFG1;                   /*!< Offset 0x02C TV Encoder DAC CFG1 Register */
-    volatile uint32_t TVE_DAC_CFG2;                   /*!< Offset 0x030 TV Encoder DAC CFG2 Register */
-    volatile uint32_t TVE_DAC_CFG3;                   /*!< Offset 0x034 TV Encoder DAC CFG2 Register */
-             uint32_t reserved_0x038 [0x002E];
-    volatile uint32_t TVE_DAC_TEST;                   /*!< Offset 0x0F0 TV Encoder DAC TEST Register */
-} TVE_TOP_TypeDef; /* size of structure = 0x0F4 */
+} TV_Encoder_TypeDef; /* size of structure = 0x3A4 */
 /*
  * @brief TWI
  */
@@ -2761,14 +2720,14 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTF ((GPIOINT_TypeDef *) GPIOINTF_BASE)  /*!< GPIOINTF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
-#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC LED Lamp Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define TPADC ((TPADC_TypeDef *) TPADC_BASE)          /*!< TPADC  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU  register set access pointer */
-#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
@@ -2789,17 +2748,18 @@ typedef struct USB_OHCI_Capability_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
-#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
-#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
+#define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
+#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Crypto Engine (CE) register set access pointer */
+#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S Crypto Engine (CE) register set access pointer */
 #define MCTL_COM ((MCTL_COM_TypeDef *) MCTL_COM_BASE) /*!< MCTL_COM  register set access pointer */
-#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define MCTL_PHY ((MCTL_PHY_TypeDef *) MCTL_PHY_BASE) /*!< MCTL_PHY  register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
-#define SPI_DBI ((SPI_DBI_TypeDef *) SPI_DBI_BASE)    /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
+#define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define SPI_DBI ((SPI_TypeDef *) SPI_DBI_BASE)        /*!< SPI_DBI Serial Peripheral Interface register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0  register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
@@ -2808,38 +2768,41 @@ typedef struct USB_OHCI_Capability_Type
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
-#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
-#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Scaler register set access pointer */
+#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
-#define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0  register set access pointer */
-#define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0  register set access pointer */
-#define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1  register set access pointer */
-#define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2  register set access pointer */
+#define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0 Graphic 2D VI surface register set access pointer */
+#define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Graphic 2D UI surface register set access pointer */
+#define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Graphic 2D UI surface register set access pointer */
+#define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Graphic 2D UI surface register set access pointer */
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
-#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Also see 5.7 DE UIS Specification register set access pointer */
-#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT  register set access pointer */
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D Video Scaler register set access pointer */
+#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
-#define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0  register set access pointer */
+#define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
+#define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */
+#define TV_Encoder ((TV_Encoder_TypeDef *) TV_Encoder_BASE)/*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
 #define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define CSIC_PARSER0 ((CSIC_PARSER_TypeDef *) CSIC_PARSER0_BASE)/*!< CSIC_PARSER0  register set access pointer */
 #define CSIC_DMA0 ((CSIC_DMA_TypeDef *) CSIC_DMA0_BASE)/*!< CSIC_DMA0  register set access pointer */
 #define CSIC_DMA1 ((CSIC_DMA_TypeDef *) CSIC_DMA1_BASE)/*!< CSIC_DMA1  register set access pointer */
-#define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP  register set access pointer */
-#define TVD ((TVD_TypeDef *) TVD_BASE)                /*!< TVD Video Decoding register set access pointer */
+#define TVD_TOP ((TVD_TOP_TypeDef *) TVD_TOP_BASE)    /*!< TVD_TOP Video Decoding register set access pointer */
+#define TVD0 ((TVD0_TypeDef *) TVD0_BASE)             /*!< TVD0 Video Decoding register set access pointer */
 #define RISC_CFG ((RISC_CFG_TypeDef *) RISC_CFG_BASE) /*!< RISC_CFG RISC-V core configuration register register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
-#define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC  register set access pointer */
+#define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC Platform-Level Interrupt Controller (PLIC) register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */
 
 

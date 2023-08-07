@@ -25,6 +25,9 @@
 
 #include "hardware.h"
 
+
+#if WITHUSBHW
+
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -57,7 +60,7 @@
 
 	#include "zynq7000_hal.h"
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	#include "t113s3_hal.h"
 
@@ -167,6 +170,8 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* WITHUSBHW */
 
 #endif /* __USB_DEVICE__H__ */
 

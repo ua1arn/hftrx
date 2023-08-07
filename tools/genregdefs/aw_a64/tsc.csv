@@ -1,4 +1,3 @@
-#type; TSC
+#type; TSC; Transport Stream Controller
 #base; TSC 0x01C06000
 #irq; TSC 113
-#comment; Transport Stream Controller

@@ -13,6 +13,8 @@
 
 /**
  * @brief ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
+ *
+ * sun50iw9p1
  */
 
 /******************************************************************************/
@@ -146,22 +148,38 @@ enum DMAC_SrcReqType
 {
 	DMAC_SrcReqSRAM = 0,
 	DMAC_SrcReqDRAM = 1,
-	DMAC_SrcReqI2S0_RX = 3,
-	DMAC_SrcReqI2S1_RX = 4,
-	DMAC_SrcReqNAND = 5,
-	DMAC_SrcReqUART0_RX = 6,
-	DMAC_SrcReqUART1_RX = 7,
-	DMAC_SrcReqUART2_RX = 8,
-	DMAC_SrcReqUART3_RX = 9,
-	DMAC_SrcReqUART4_RX = 10,
-	DMAC_SrcReqAudioCodec = 15,
-	DMAC_SrcReqUSB0_EP1 = 17,
-	DMAC_SrcReqUSB0_EP2 = 18,
-	DMAC_SrcReqUSB0_EP3 = 19,
-	DMAC_SrcReqUSB0_EP4 = 20,
-	DMAC_SrcReqUSB0_EP5 = 21,
-	DMAC_SrcReqSPI0_RX = 23,
-	DMAC_SrcReqSPI1_RX = 24
+
+	DMAC_SrcReqAHUB_drqr0_RX = 3,
+	DMAC_SrcReqAHUB_drqr1_RX,
+	DMAC_SrcReqAHUB_drqr2_RX,
+
+	DMAC_SrcReqDMIC = 7,
+	DMAC_SrcReqNAND = 10,
+	DMAC_SrcReqGPADC = 12,
+
+	DMAC_SrcReqUART0_RX = 14,
+	DMAC_SrcReqUART1_RX,
+	DMAC_SrcReqUART2_RX,
+	DMAC_SrcReqUART3_RX,
+	DMAC_SrcReqUART4_RX,
+	DMAC_SrcReqUART5_RX,
+
+	DMAC_SrcReqSPI0_RX = 22,
+	DMAC_SrcReqSPI1_RX,
+
+	DMAC_SrcReqUSB0_EP1 = 30,
+	DMAC_SrcReqUSB0_EP2,
+	DMAC_SrcReqUSB0_EP3,
+	DMAC_SrcReqUSB0_EP4,
+	DMAC_SrcReqUSB0_EP5,
+
+	DMAC_SrcReqTWI0_RX = 43,
+	DMAC_SrcReqTWI1_RX,
+	DMAC_SrcReqTWI2_RX,
+	DMAC_SrcReqTWI3_RX,
+	DMAC_SrcReqTWI4_RX,
+
+	DMAC_SrcReqS_TWI0_RX = 48	// S_TWI0
 };
 
 enum DMAC_DstReqType
@@ -169,23 +187,38 @@ enum DMAC_DstReqType
 	DMAC_DstReqSRAM = 0,
 	DMAC_DstReqDRAM = 1,
 	DMAC_DstReqOWA = 2,
-	DMAC_DstReqI2S0_TX = 3,
-	DMAC_DstReqI2S1_TX = 4,
-	DMAC_DstReqI2S2_TX = 27,
-	DMAC_DstReqNAND = 5,
-	DMAC_DstReqUART0_TX = 6,
-	DMAC_DstReqUART1_TX = 7,
-	DMAC_DstReqUART2_TX = 8,
-	DMAC_DstReqUART3_TX = 9,
-	DMAC_DstReqUART4_TX = 10,
-	DMAC_DstReqAudioCodec = 15,
-	DMAC_DstReqUSB0_EP1 = 17,
-	DMAC_DstReqUSB0_EP2 = 18,
-	DMAC_DstReqUSB0_EP3 = 19,
-	DMAC_DstReqUSB0_EP4 = 20,
-	DMAC_DstReqUSB0_EP5 = 21,
-	DMAC_DstReqSPI0_TX = 23,
-	DMAC_DstReqSPI1_TX = 24
+
+	DMAC_DstReqAHUB_drqt0_TX = 3,
+	DMAC_DstReqAHUB_drqt1_TX,
+	DMAC_DstReqAHUB_drqt2_TX,
+
+	DMAC_DstReqAudioCodec = 6,
+
+	DMAC_DstReqNAND = 10,
+
+	DMAC_DstReqUART0_TX = 14,
+	DMAC_DstReqUART1_TX,
+	DMAC_DstReqUART2_TX,
+	DMAC_DstReqUART3_TX,
+	DMAC_DstReqUART4_TX,
+	DMAC_DstReqUART5_TX,
+
+	DMAC_DstReqSPI0_TX = 22,
+	DMAC_DstReqSPI1_TX,
+
+	DMAC_DstReqUSB0_EP1 = 30,
+	DMAC_DstReqUSB0_EP2,
+	DMAC_DstReqUSB0_EP3,
+	DMAC_DstReqUSB0_EP4,
+	DMAC_DstReqUSB0_EP5,
+
+	DMAC_DstReqTWI0_TX = 43,
+	DMAC_DstReqTWI1_TX,
+	DMAC_DstReqTWI2_TX,
+	DMAC_DstReqTWI3_TX,
+	DMAC_DstReqTWI4_TX,
+
+	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
 };
 
 /** @addtogroup Exported_types

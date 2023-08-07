@@ -1,6 +1,6 @@
-#type; NORMPORT
+#type; NORMPORT; контроллер внешней SRAM/NOR Flash памяти.
 #base; NORMPORT 0x38008000
-#comment; контроллер внешней SRAM/NOR Flash памяти.
+
 #regdef; SMC_MEMC_STATUS; 0x1000; RO Регистр состояния контроллера
 #regdef; SMC_MEMIF_CFG; 0x1004; RO Регистр конфигурации интерфейса памяти
 #regdef; SMC_MEMC_CFG_SET; 0x1008; WO Регистр установки конфигурации контроллера

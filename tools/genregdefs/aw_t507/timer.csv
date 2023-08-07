@@ -1,0 +1,22 @@
+#type; TIMER
+#base; TIMER 0x03009000
+#irq; TIMER0 80
+#irq; TIMER1 81
+#irq; WATCHDOG 82
+#regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
+#regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register
+#regdef; TMR0_CTRL_REG; 0x0010; Timer 0 Control Register
+#regdef; TMR0_INTV_VALUE_REG; 0x0014; Timer 0 Interval Value Register
+#regdef; TMR0_CUR_VALUE_REG; 0x0018; Timer 0 Current Value Register
+#regdef; TMR1_CTRL_REG; 0x0020; Timer 1 Control Register
+#regdef; TMR1_INTV_VALUE_REG; 0x0024; Timer 1 Interval Value Register
+#regdef; TMR1_CUR_VALUE_REG; 0x0028; Timer 1 Current Value Register
+#regdef; WDOG_IRQ_EN_REG; 0x00A0; Watchdog IRQ Enable Register
+#regdef; WDOG_IRQ_STA_REG; 0x00A4; Watchdog Status Register
+#regdef; WDOG_CTRL_REG; 0x00B0; Watchdog Control Register
+#regdef; WDOG_CFG_REG; 0x00B4; Watchdog Configuration Register
+#regdef; WDOG_MODE_REG; 0x00B8; Watchdog Mode Register
+#regdef; AVS_CNT_CTL_REG; 0x00C0; AVS Control Register
+#regdef; AVS_CNT0_REG; 0x00C4; AVS Counter 0 Register
+#regdef; AVS_CNT1_REG; 0x00C8; AVS Counter 1 Register
+#regdef; AVS_CNT_DIV_REG; 0x00CC; AVS Divisor Register

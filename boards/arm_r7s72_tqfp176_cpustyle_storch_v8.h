@@ -755,17 +755,17 @@
 		const uint32_t DE = (1U << 7); /* P7_0 DE */ \
 		const uint32_t VS = (1U << 5); /* P7_5 VSYNC */ \
 		const uint32_t HS = (1U << 6); /* P7_6 HSYNC */ \
-		arm_hardware_pio7_outputs(MODE, (demode != 0) * MODE);	/* P7_0 MODE=demode */ \
+		arm_hardware_pio7_outputs(MODE, ((demode) != 0) * MODE);	/* P7_0 MODE=demode */ \
 		/* Synchronisation signals */ \
 		arm_hardware_pio7_alternative((1U << 4), R7S721_PIOALT_6);	/* P7_4 CLK LCD0_CLK */ \
 		/* MODE=1: DE MODE */ \
-		arm_hardware_pio7_outputs((demode != 0) * VS, VS);	/* P7_5 VSYNC */ \
-		arm_hardware_pio7_outputs((demode != 0) * HS, HS);	/* P7_6 HSYNC */ \
-		arm_hardware_pio7_alternative((demode != 0) * DE, R7S721_PIOALT_6); 	/* P7_7 DE */ \
+		arm_hardware_pio7_outputs(((demode) != 0) * VS, VS);	/* P7_5 VSYNC */ \
+		arm_hardware_pio7_outputs(((demode) != 0) * HS, HS);	/* P7_6 HSYNC */ \
+		arm_hardware_pio7_alternative(((demode) != 0) * DE, R7S721_PIOALT_6); 	/* P7_7 DE */ \
 		/* MODE=0: SYNC MODE */ \
-		arm_hardware_pio7_alternative((demode == 0) * VS, R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
-		arm_hardware_pio7_alternative((demode == 0) * HS, R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
-		arm_hardware_pio7_outputs((demode == 0) * DE, 0);	/* P7_7 DE=0 */ \
+		arm_hardware_pio7_alternative(((demode) == 0) * VS, R7S721_PIOALT_6);	/* P7_5 VSYNC */ \
+		arm_hardware_pio7_alternative(((demode) == 0) * HS, R7S721_PIOALT_6);	/* P7_6 HSYNC */ \
+		arm_hardware_pio7_outputs(((demode) == 0) * DE, 0);	/* P7_7 DE=0 */ \
 		/* BLUE */ \
 		arm_hardware_pio3_alternative((1U << 0), R7S721_PIOALT_3);	/* P3_0 LCD0_DATA0 B3 */ \
 		arm_hardware_pio3_alternative((1U << 1), R7S721_PIOALT_3);	/* P3_1 LCD0_DATA1 B4 */ \

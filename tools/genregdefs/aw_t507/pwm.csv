@@ -1,0 +1,24 @@
+#type; PWM; Pulse Width Modulation module
+#base; PWM 0x0300A000
+
+
+#regdef; PIER; 0x0000; PWM IRQ Enable Register
+#regdef; PISR; 0x0004; PWM IRQ Status Register
+#regdef; CIER; 0x0010; Capture IRQ Enable Register
+#regdef; CISR; 0x0014; Capture IRQ Status Register
+#regdef; PCCR; 0x0020 3; PWM01, PWM23, PWM45 Clock Configuration Register
+#regdef; PDZCR; 0x0030 3; PWM01, PWM23, PWM45 Dead Zone Control Register
+#regdef; PER; 0x0040; PWM Enable Register
+#regdef; CER; 0x0044; Capture Enable Register
+
+#aggreg; CH; 0x0060 6; Channels[0..5]
+
+#regdef; PCR; 0x0000; PWM Control Register
+#regdef; PPR; 0x0004; PWM Period Register
+#regdef; PCNTR; 0x0008; PWM Count Register
+#regdef; CCR; 0x000c; Capture Control Register
+#regdef; CRLR; 0x0010; Capture Rise Lock Register
+#regdef; CFLR; 0x0014; Capture Fall Lock Register
+#regdef; padding 0; 0x0020; fill space up to 0x20 bytes
+
+#aggregend;

@@ -580,6 +580,7 @@ unsigned long chipsizeDATAFLASH(void);
 extern char nameDATAFLASH [];
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
+void bootloader_verifyimage(unsigned long flashoffset, const uint8_t * dest, unsigned Len);
 void bootloader_chiperase(void);
 
 void nand_initialize(void);

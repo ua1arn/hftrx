@@ -134,6 +134,9 @@ bootloader_launch_app(uintptr_t ip)
 	__ISB();
 	__DSB();
 #endif
+
+	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+
 	(* (void (*)(void)) ip)();
 
 
@@ -269,6 +272,16 @@ void bootloader_fatfs_mainloop(void)
 
 #else /* WITHISBOOTLOADERFATFS */
 
+// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+void display2_keyboard_screen0(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
+
 void bootloader_mainloop(void)
 {
 	PRINTF("bootloader_mainloop:\n");
@@ -298,12 +311,18 @@ void bootloader_mainloop(void)
 	}
 #endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
-	PRINTF("bootloader_mainloop: loop\n");
+	PRINTF("bootloader_mainloop: loop [%p]\n", bootloader_mainloop);
+	PRINTF("bootloader_mainloop: loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+
 	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
+
+		if (kbready)
+			PRINTF("bkbch=%02x\n", kbch);
+
 		{
 			/* здесь можно добавить обработку каких-либо команд с debug порта */
 			char c;

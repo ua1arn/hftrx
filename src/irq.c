@@ -1579,7 +1579,7 @@ static void vectors_relocate(void)
 
 void EMPTY_Handler(void)
 {
-	PRINTF("EMPTY_Handler\n");
+	PRINTF("EMPTY_Handler (%p)\n", EMPTY_Handler);
 	const uint_fast16_t mcause = csr_read_mcause();
 	PRINTF("EMPTY_Handler: mcause=%u\n", (unsigned) mcause);
 	for (;;)
@@ -1588,7 +1588,7 @@ void EMPTY_Handler(void)
 
 void SYNCTRAP_Handler(void)
 {
-	PRINTF("SYNCTRAP_Handler\n");
+	PRINTF("SYNCTRAP_Handler (%p)\n", SYNCTRAP_Handler);
 	PRINTF("mepc=%p, mtval=%p\n", (void *) csr_read_mepc(), (void *) csr_read_mtval());
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
@@ -1615,7 +1615,8 @@ void SYNCTRAP_Handler(void)
 
 void VMSI_Handler(void)
 {
-	PRINTF("VMSI_Handler\n");
+	PRINTF("VMSI_Handler (%p)\n", VMSI_Handler);
+
 	const uint_fast16_t mcause = csr_read_mcause();
 	PRINTF("VMSI_Handler: mcause=%u, mepc=%p\n", (unsigned) mcause, (void *) csr_read_mepc());
 	for (;;)
@@ -1624,7 +1625,8 @@ void VMSI_Handler(void)
 
 void VMTI_Handler(void)
 {
-	PRINTF("VMTI_Handler\n");
+	PRINTF("VMTI_Handler (%p)\n", VMTI_Handler);
+
 	const uint_fast16_t mcause = csr_read_mcause();
 	PRINTF("VMTI_Handler: mcause=%u\n", (unsigned) mcause);
 	for (;;)
@@ -2360,13 +2362,13 @@ void cpu_initialize(void)
 	#endif /* CPUSTYLE_R7S721 */
 
 	#if WITHNESTEDINTERRUPTS
-		gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
-		gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
-		gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
+		gARM_OVERREALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
+		gARM_REALTIME_PRIORITY = GIC_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
+		gARM_SYSTEM_PRIORITY = GIC_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
 
-		gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
-		gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
-		gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ONLY_REALTIME = GIC_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ONLY_OVERREALTIME = GIC_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ALL_ENABLED = GIC_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
 
 		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 	#endif /* WITHNESTEDINTERRUPTS */

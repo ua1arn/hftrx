@@ -8,94 +8,85 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF Interrupt */
-    UART0_IRQn = 32,                                  /*!< UART  Interrupt */
-    UART1_IRQn = 33,                                  /*!< UART  Interrupt */
-    UART2_IRQn = 34,                                  /*!< UART  Interrupt */
-    UART3_IRQn = 35,                                  /*!< UART  Interrupt */
-    UART4_IRQn = 36,                                  /*!< UART  Interrupt */
-    TWI0_IRQn = 38,                                   /*!< TWI  Interrupt */
-    TWI1_IRQn = 39,                                   /*!< TWI  Interrupt */
-    TWI2_IRQn = 40,                                   /*!< TWI  Interrupt */
-    OWA_IRQn = 44,                                    /*!< OWA One Wire Audio Interrupt */
-    I2S_PCM0_IRQn = 45,                               /*!< I2S_PCM  Interrupt */
-    I2S_PCM1_IRQn = 46,                               /*!< I2S_PCM  Interrupt */
-    I2S_PCM2_IRQn = 47,                               /*!< I2S_PCM  Interrupt */
-    TIMER0_IRQn = 50,                                 /*!< TIMER  Interrupt */
-    TIMER1_IRQn = 51,                                 /*!< TIMER  Interrupt */
-    AUDIO_CODEC_IRQn = 61,                            /*!< AUDIO_CODEC  Interrupt */
-    R_TIMER0_IRQn = 65,                               /*!< R_TIMER  Interrupt */
-    R_TIMER1_IRQn = 66,                               /*!< R_TIMER  Interrupt */
-    R_WDOG_IRQn = 68,                                 /*!< R_WDOG  Interrupt */
-    R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  Interrupt */
-    R_UART_IRQn = 70,                                 /*!< UART  Interrupt */
-    R_RSB_IRQn = 71,                                  /*!< R_RSB Reduced Serial Bus Host Controller Interrupt */
-    R_TIMER2_IRQn = 74,                               /*!< R_TIMER  Interrupt */
-    MSI_IRQn = 75,                                    /*!< MSI_MEMC  Interrupt */
-    R_TIMER3_IRQn = 75,                               /*!< R_TIMER  Interrupt */
-    R_TWI_IRQn = 76,                                  /*!< TWI  Interrupt */
-    SMC_IRQn = 76,                                    /*!< SMC  Interrupt */
-    EMAC_IRQn = 78,                                   /*!< EMAC  Interrupt */
-    R_TWD_IRQn = 78,                                  /*!< R_TWD R_Trusted Watchdog Timer Interrupt */
-    MSGBOX_IRQn = 81,                                 /*!< MSGBOX  Interrupt */
-    DMAC_IRQn = 82,                                   /*!< DMAC  Interrupt */
-    GPADC_IRQn = 89,                                  /*!< GPADC  Interrupt */
-    SMHC0_IRQn = 92,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
-    SMHC1_IRQn = 93,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
-    SMHC2_IRQn = 94,                                  /*!< SMHC SD-MMC Host Controller Interrupt */
-    TPADC_IRQn = 94,                                  /*!< TPADC  Interrupt */
-    IOMMU_IRQn = 96,                                  /*!< IOMMU  Interrupt */
-    SPI0_IRQn = 97,                                   /*!< SPI Serial Peripheral Interface Interrupt */
-    SPI1_IRQn = 98,                                   /*!< SPI Serial Peripheral Interface Interrupt */
-    GPIOB_NS_IRQn = 101,                              /*!< GPIOINT  Interrupt */
-    GPIOB_S_IRQn = 102,                               /*!< GPIOINT  Interrupt */
-    NAND_IRQn = 102,                                  /*!< NDFC NAND Flash Controller Interface Interrupt */
-    NDFC_IRQn = 102,                                  /*!< NDFC NAND Flash Controller Interface Interrupt */
-    GPIOC_NS_IRQn = 103,                              /*!< GPIOINT  Interrupt */
-    USBOTG0_IRQn = 103,                               /*!< USBOTG USB OTG Dual-Role Device controller Interrupt */
-    GPIOC_S_IRQn = 104,                               /*!< GPIOINT  Interrupt */
-    USBEHCI0_IRQn = 104,                              /*!< USB_EHCI_Capability  Interrupt */
-    GPIOD_NS_IRQn = 105,                              /*!< GPIOINT  Interrupt */
-    USBOHCI0_IRQn = 105,                              /*!< USB_OHCI_Capability  Interrupt */
-    GPIOD_S_IRQn = 106,                               /*!< GPIOINT  Interrupt */
-    USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  Interrupt */
-    GPIOE_NS_IRQn = 107,                              /*!< GPIOINT  Interrupt */
-    USBOHCI1_IRQn = 107,                              /*!< USB_OHCI_Capability  Interrupt */
-    GPIOE_S_IRQn = 108,                               /*!< GPIOINT  Interrupt */
-    GPIOF_NS_IRQn = 109,                              /*!< GPIOINT  Interrupt */
-    GPIOF_S_IRQn = 110,                               /*!< GPIOINT  Interrupt */
-    GPIOG_NS_IRQn = 111,                              /*!< GPIOINT  Interrupt */
-    TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller Interrupt */
-    DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top Interrupt */
-    GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 Interrupt */
-    GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 Interrupt */
-    GPU_PP0_IRQn = 131,                               /*!< GPU Mali-400MP2 Interrupt */
-    GPU_PP0MMU_IRQn = 132,                            /*!< GPU Mali-400MP2 Interrupt */
-    GPU_PMU_IRQn = 133,                               /*!< GPU Mali-400MP2 Interrupt */
-    GPU_PP1_IRQn = 134,                               /*!< GPU Mali-400MP2 Interrupt */
-    GPU_PPMMU1_IRQn = 135,                            /*!< GPU Mali-400MP2 Interrupt */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
+    UART0_IRQn = 32,                                  /*!< UART  */
+    UART1_IRQn = 33,                                  /*!< UART  */
+    UART2_IRQn = 34,                                  /*!< UART  */
+    UART3_IRQn = 35,                                  /*!< UART  */
+    UART4_IRQn = 36,                                  /*!< UART  */
+    TWI0_IRQn = 38,                                   /*!< TWI  */
+    TWI1_IRQn = 39,                                   /*!< TWI  */
+    TWI2_IRQn = 40,                                   /*!< TWI  */
+    PB_EINT_IRQn = 43,                                /*!< GPIOINT PB_EINT interrupt  */
+    OWA_IRQn = 44,                                    /*!< OWA One Wire Audio */
+    I2S_PCM0_IRQn = 45,                               /*!< I2S_PCM  */
+    I2S_PCM1_IRQn = 46,                               /*!< I2S_PCM  */
+    I2S_PCM2_IRQn = 47,                               /*!< I2S_PCM  */
+    PG_EINT_IRQn = 49,                                /*!< GPIOINT PG_EINT interrupt */
+    TIMER0_IRQn = 50,                                 /*!< TIMER  */
+    TIMER1_IRQn = 51,                                 /*!< TIMER  */
+    PH_EINT_IRQn = 53,                                /*!< GPIOINT PH_EINT interrupt */
+    AUDIO_CODEC_IRQn = 61,                            /*!< AUDIO_CODEC  */
+    R_TIMER0_IRQn = 65,                               /*!< R_TIMER  */
+    R_TIMER1_IRQn = 66,                               /*!< R_TIMER  */
+    R_WDOG_IRQn = 68,                                 /*!< R_WDOG  */
+    R_CIR_RX_IRQn = 69,                               /*!< R_CIR_RX  */
+    R_UART_IRQn = 70,                                 /*!< UART  */
+    R_RSB_IRQn = 71,                                  /*!< R_RSB Reduced Serial Bus Host Controller */
+    R_TIMER2_IRQn = 74,                               /*!< R_TIMER  */
+    R_TIMER3_IRQn = 75,                               /*!< R_TIMER  */
+    R_TWI_IRQn = 76,                                  /*!< TWI  */
+    SMC_IRQn = 76,                                    /*!< SMC  */
+    R_PL_EINT_IRQn = 77,                              /*!< GPIOINT R_PL_EINT interrupt */
+    EMAC_IRQn = 78,                                   /*!< EMAC  */
+    R_TWD_IRQn = 78,                                  /*!< R_TWD R_Trusted Watchdog Timer */
+    MSGBOX_IRQn = 81,                                 /*!< MSGBOX  */
+    DMAC_IRQn = 82,                                   /*!< DMAC  */
+    GPADC_IRQn = 89,                                  /*!< GPADC  */
+    SMHC0_IRQn = 92,                                  /*!< SMHC SD-MMC Host Controller */
+    SMHC1_IRQn = 93,                                  /*!< SMHC SD-MMC Host Controller */
+    SMHC2_IRQn = 94,                                  /*!< SMHC SD-MMC Host Controller */
+    TPADC_IRQn = 94,                                  /*!< TPADC  */
+    IOMMU_IRQn = 96,                                  /*!< IOMMU  */
+    SPI0_IRQn = 97,                                   /*!< SPI Serial Peripheral Interface */
+    SPI1_IRQn = 98,                                   /*!< SPI Serial Peripheral Interface */
+    NAND_IRQn = 102,                                  /*!< NDFC NAND Flash Controller Interface */
+    USBOTG0_IRQn = 103,                               /*!< USBOTG USB OTG Dual-Role Device controller */
+    USBEHCI0_IRQn = 104,                              /*!< USB_EHCI_Capability  */
+    USBOHCI0_IRQn = 105,                              /*!< USB_OHCI_Capability  */
+    USBEHCI1_IRQn = 106,                              /*!< USB_EHCI_Capability  */
+    USBOHCI1_IRQn = 107,                              /*!< USB_OHCI_Capability  */
+    TSC_IRQn = 113,                                   /*!< TSC Transport Stream Controller */
+    DE_IRQn = 127,                                    /*!< DE_TOP Display Engine Top */
+    GPU_GP_IRQn = 129,                                /*!< GPU Mali-400MP2 */
+    GPU_GPMMU_IRQn = 130,                             /*!< GPU Mali-400MP2 */
+    GPU_PP0_IRQn = 131,                               /*!< GPU Mali-400MP2 */
+    GPU_PP0MMU_IRQn = 132,                            /*!< GPU Mali-400MP2 */
+    GPU_PMU_IRQn = 133,                               /*!< GPU Mali-400MP2 */
+    GPU_PP1_IRQn = 134,                               /*!< GPU Mali-400MP2 */
+    GPU_PPMMU1_IRQn = 135,                            /*!< GPU Mali-400MP2 */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -104,107 +95,106 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Base */
-#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR Base */
-#define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB Base */
-#define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD Base */
-#define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI Base */
-#define DE_UI1_BASE ((uintptr_t) 0x01103000)          /*!< DE_UI Base */
-#define DE_UI2_BASE ((uintptr_t) 0x01104000)          /*!< DE_UI Base */
-#define DE_UI3_BASE ((uintptr_t) 0x01105000)          /*!< DE_UI Base */
-#define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG Base */
-#define SRAMC_BASE ((uintptr_t) 0x01C00000)           /*!< SRAMC Base */
-#define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG Base */
-#define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC Base */
-#define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC Base */
-#define OWA_BASE ((uintptr_t) 0x01C02000)             /*!< OWA Base */
-#define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC Base */
-#define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Base */
-#define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 Base */
-#define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1 Base */
-#define SMHC0_BASE ((uintptr_t) 0x01C0F000)           /*!< SMHC Base */
-#define SMHC1_BASE ((uintptr_t) 0x01C10000)           /*!< SMHC Base */
-#define SMHC2_BASE ((uintptr_t) 0x01C11000)           /*!< SMHC Base */
-#define SID_BASE ((uintptr_t) 0x01C14000)             /*!< SID Base */
-#define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX Base */
-#define USBOTG0_BASE ((uintptr_t) 0x01C19000)         /*!< USBOTG Base */
-#define USBEHCI0_BASE ((uintptr_t) 0x01C1A000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI0_BASE ((uintptr_t) 0x01C1A400)        /*!< USB_OHCI_Capability Base */
-#define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC Base */
-#define USBEHCI1_BASE ((uintptr_t) 0x01C1B000)        /*!< USB_EHCI_Capability Base */
-#define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability Base */
-#define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC Base */
-#define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU Base */
-#define GPIOBLOCK_BASE ((uintptr_t) 0x01C20800)       /*!< GPIOBLOCK Base */
-#define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO Base */
-#define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO Base */
-#define GPIOD_BASE ((uintptr_t) 0x01C2086C)           /*!< GPIO Base */
-#define GPIOE_BASE ((uintptr_t) 0x01C20890)           /*!< GPIO Base */
-#define GPIOF_BASE ((uintptr_t) 0x01C208B4)           /*!< GPIO Base */
-#define GPIOG_BASE ((uintptr_t) 0x01C208D8)           /*!< GPIO Base */
-#define GPIOH_BASE ((uintptr_t) 0x01C208FC)           /*!< GPIO Base */
-#define GPIOINTB_BASE ((uintptr_t) 0x01C20A00)        /*!< GPIOINT Base */
-#define GPIOINTC_BASE ((uintptr_t) 0x01C20A20)        /*!< GPIOINT Base */
-#define GPIOINTD_BASE ((uintptr_t) 0x01C20A40)        /*!< GPIOINT Base */
-#define GPIOINTE_BASE ((uintptr_t) 0x01C20A60)        /*!< GPIOINT Base */
-#define GPIOINTF_BASE ((uintptr_t) 0x01C20A80)        /*!< GPIOINT Base */
-#define GPIOINTG_BASE ((uintptr_t) 0x01C20AA0)        /*!< GPIOINT Base */
-#define GPIOINTH_BASE ((uintptr_t) 0x01C20AC0)        /*!< GPIOINT Base */
-#define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER Base */
-#define PWM_BASE ((uintptr_t) 0x01C21400)             /*!< PWM Base */
-#define I2S0_BASE ((uintptr_t) 0x01C22000)            /*!< I2S_PCM Base */
-#define I2S1_BASE ((uintptr_t) 0x01C22400)            /*!< I2S_PCM Base */
-#define I2S2_BASE ((uintptr_t) 0x01C22800)            /*!< I2S_PCM Base */
-#define AUDIO_CODEC_BASE ((uintptr_t) 0x01C22C00)     /*!< AUDIO_CODEC Base */
-#define THS_BASE ((uintptr_t) 0x01C25000)             /*!< THS Base */
-#define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART Base */
-#define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART Base */
-#define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART Base */
-#define UART3_BASE ((uintptr_t) 0x01C28C00)           /*!< UART Base */
-#define UART4_BASE ((uintptr_t) 0x01C29000)           /*!< UART Base */
-#define TWI0_BASE ((uintptr_t) 0x01C2AC00)            /*!< TWI Base */
-#define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI Base */
-#define TWI2_BASE ((uintptr_t) 0x01C2B400)            /*!< TWI Base */
-#define EMAC_BASE ((uintptr_t) 0x01C30000)            /*!< EMAC Base */
-#define GPU_BASE ((uintptr_t) 0x01C40000)             /*!< GPU Base */
-#define DRAMCOM_BASE ((uintptr_t) 0x01C62000)         /*!< DRAMCOM Base */
-#define DRAMCTL0_BASE ((uintptr_t) 0x01C63000)        /*!< DRAMCTL0 Base */
-#define DRAMPHY0_BASE ((uintptr_t) 0x01C65000)        /*!< DRAMPHY0 Base */
-#define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Base */
-#define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE Base */
-#define MIPI_DSI_BASE ((uintptr_t) 0x01CA0000)        /*!< MIPI_DSI Base */
-#define MIPI_DSI_PHY_BASE ((uintptr_t) 0x01CA1000)    /*!< MIPI_DSI_PHY Base */
-#define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI Base */
-#define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI Base */
-#define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC Base */
-#define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER Base */
-#define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< R_INTC Base */
-#define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< R_WDOG Base */
-#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM Base */
-#define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< R_TWD Base */
-#define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< R_CPUCFG Base */
-#define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX Base */
-#define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< R_CIR_RX Base */
-#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< TWI Base */
-#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART Base */
-#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Base */
-#define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO Base */
-#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< R_PIO Base */
-#define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< R_RSB Base */
-#define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< R_PWM Base */
-#define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC Base */
-#define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC Base */
-#define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC Base */
-#define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU Base */
-#define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC Base */
-#define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC Base */
-#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Base */
-#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE Base */
-#define MSI_MEMC_BASE ((uintptr_t) 0x03102000)        /*!< MSI_MEMC Base */
-#define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC Base */
-#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Display Engine Top Base */
+#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR  Base */
+#define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB  Base */
+#define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD  Base */
+#define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI  Base */
+#define DE_UI1_BASE ((uintptr_t) 0x01103000)          /*!< DE_UI  Base */
+#define DE_UI2_BASE ((uintptr_t) 0x01104000)          /*!< DE_UI  Base */
+#define DE_UI3_BASE ((uintptr_t) 0x01105000)          /*!< DE_UI  Base */
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG  Base */
+#define SRAMC_BASE ((uintptr_t) 0x01C00000)           /*!< SRAMC  Base */
+#define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
+#define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC  Base */
+#define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC  Base */
+#define OWA_BASE ((uintptr_t) 0x01C02000)             /*!< OWA One Wire Audio Base */
+#define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC NAND Flash Controller Interface Base */
+#define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Transport Stream Controller Base */
+#define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface Base */
+#define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1 TCON1 HDMI Interface Base */
+#define SMHC0_BASE ((uintptr_t) 0x01C0F000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC1_BASE ((uintptr_t) 0x01C10000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC2_BASE ((uintptr_t) 0x01C11000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SID_BASE ((uintptr_t) 0x01C14000)             /*!< SID Security ID Base */
+#define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX  Base */
+#define USBOTG0_BASE ((uintptr_t) 0x01C19000)         /*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USBEHCI0_BASE ((uintptr_t) 0x01C1A000)        /*!< USB_EHCI_Capability  Base */
+#define USBOHCI0_BASE ((uintptr_t) 0x01C1A400)        /*!< USB_OHCI_Capability  Base */
+#define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
+#define USBEHCI1_BASE ((uintptr_t) 0x01C1B000)        /*!< USB_EHCI_Capability  Base */
+#define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability  Base */
+#define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
+#define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU  Base */
+#define GPIOBLOCK_BASE ((uintptr_t) 0x01C20800)       /*!< GPIOBLOCK  Base */
+#define GPIOB_BASE ((uintptr_t) 0x01C20824)           /*!< GPIO  Base */
+#define GPIOC_BASE ((uintptr_t) 0x01C20848)           /*!< GPIO  Base */
+#define GPIOD_BASE ((uintptr_t) 0x01C2086C)           /*!< GPIO  Base */
+#define GPIOE_BASE ((uintptr_t) 0x01C20890)           /*!< GPIO  Base */
+#define GPIOF_BASE ((uintptr_t) 0x01C208B4)           /*!< GPIO  Base */
+#define GPIOG_BASE ((uintptr_t) 0x01C208D8)           /*!< GPIO  Base */
+#define GPIOH_BASE ((uintptr_t) 0x01C208FC)           /*!< GPIO  Base */
+#define GPIOINTB_BASE ((uintptr_t) 0x01C20A00)        /*!< GPIOINT  Base */
+#define GPIOINTC_BASE ((uintptr_t) 0x01C20A20)        /*!< GPIOINT  Base */
+#define GPIOINTD_BASE ((uintptr_t) 0x01C20A40)        /*!< GPIOINT  Base */
+#define GPIOINTE_BASE ((uintptr_t) 0x01C20A60)        /*!< GPIOINT  Base */
+#define GPIOINTF_BASE ((uintptr_t) 0x01C20A80)        /*!< GPIOINT  Base */
+#define GPIOINTG_BASE ((uintptr_t) 0x01C20AA0)        /*!< GPIOINT  Base */
+#define GPIOINTH_BASE ((uintptr_t) 0x01C20AC0)        /*!< GPIOINT  Base */
+#define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER  Base */
+#define PWM_BASE ((uintptr_t) 0x01C21400)             /*!< PWM  Base */
+#define I2S0_BASE ((uintptr_t) 0x01C22000)            /*!< I2S_PCM  Base */
+#define I2S1_BASE ((uintptr_t) 0x01C22400)            /*!< I2S_PCM  Base */
+#define I2S2_BASE ((uintptr_t) 0x01C22800)            /*!< I2S_PCM  Base */
+#define AUDIO_CODEC_BASE ((uintptr_t) 0x01C22C00)     /*!< AUDIO_CODEC  Base */
+#define THS_BASE ((uintptr_t) 0x01C25000)             /*!< THS  Base */
+#define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
+#define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART  Base */
+#define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
+#define UART3_BASE ((uintptr_t) 0x01C28C00)           /*!< UART  Base */
+#define UART4_BASE ((uintptr_t) 0x01C29000)           /*!< UART  Base */
+#define TWI0_BASE ((uintptr_t) 0x01C2AC00)            /*!< TWI  Base */
+#define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI  Base */
+#define TWI2_BASE ((uintptr_t) 0x01C2B400)            /*!< TWI  Base */
+#define EMAC_BASE ((uintptr_t) 0x01C30000)            /*!< EMAC  Base */
+#define GPU_BASE ((uintptr_t) 0x01C40000)             /*!< GPU Mali-400MP2 Base */
+#define DRAMCOM_BASE ((uintptr_t) 0x01C62000)         /*!< DRAMCOM  Base */
+#define DRAMCTL0_BASE ((uintptr_t) 0x01C63000)        /*!< DRAMCTL0  Base */
+#define DRAMPHY0_BASE ((uintptr_t) 0x01C65000)        /*!< DRAMPHY0  Base */
+#define SPI0_BASE ((uintptr_t) 0x01C68000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI1_BASE ((uintptr_t) 0x01C69000)            /*!< SPI Serial Peripheral Interface Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define MIPI_DSI_BASE ((uintptr_t) 0x01CA0000)        /*!< MIPI_DSI  Base */
+#define MIPI_DSI_PHY_BASE ((uintptr_t) 0x01CA1000)    /*!< MIPI_DSI_PHY  Base */
+#define DI_BASE ((uintptr_t) 0x01E00000)              /*!< DI De-interlaced Base */
+#define HDMI_BASE ((uintptr_t) 0x01EE0000)            /*!< HDMI  Base */
+#define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC  Base */
+#define R_TIMER_BASE ((uintptr_t) 0x01F00800)         /*!< R_TIMER  Base */
+#define R_INTC_BASE ((uintptr_t) 0x01F00C00)          /*!< R_INTC  Base */
+#define R_WDOG_BASE ((uintptr_t) 0x01F01000)          /*!< R_WDOG  Base */
+#define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM  Base */
+#define R_TWD_BASE ((uintptr_t) 0x01F01800)           /*!< R_TWD R_Trusted Watchdog Timer Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x01F01C00)        /*!< R_CPUCFG  Base */
+#define CIR_RX_BASE ((uintptr_t) 0x01F02000)          /*!< CIR_RX  Base */
+#define R_CIR_RX_BASE ((uintptr_t) 0x01F02000)        /*!< R_CIR_RX  Base */
+#define R_TWI_BASE ((uintptr_t) 0x01F02400)           /*!< TWI  Base */
+#define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART  Base */
+#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
+#define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO  Base */
+#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< R_PIO  Base */
+#define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< R_RSB Reduced Serial Bus Host Controller Base */
+#define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< R_PWM  Base */
+#define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC  Base */
+#define GPADC_BASE ((uintptr_t) 0x02009000)           /*!< GPADC  Base */
+#define TPADC_BASE ((uintptr_t) 0x02009C00)           /*!< TPADC  Base */
+#define IOMMU_BASE ((uintptr_t) 0x02010000)           /*!< IOMMU  Base */
+#define DMIC_BASE ((uintptr_t) 0x02031000)            /*!< DMIC  Base */
+#define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
+#define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE  Base */
+#define CE_S_BASE ((uintptr_t) 0x03040800)            /*!< CE  Base */
+#define DDRPHYC_BASE ((uintptr_t) 0x03103000)         /*!< DDRPHYC  Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
 
 /*
  * @brief AUDIO_CODEC
@@ -1343,21 +1333,6 @@ typedef struct MSGBOX_Type
     volatile uint32_t MSGBOXM_MSG_REG [0x008];        /*!< Offset 0x180 Message Register For Message Queue N(N=0~7) */
 } MSGBOX_TypeDef; /* size of structure = 0x1A0 */
 /*
- * @brief MSI_MEMC
- */
-/*!< MSI_MEMC  */
-typedef struct MSI_MEMC_Type
-{
-    volatile uint32_t MEMC_REG_000;                   /*!< Offset 0x000 Reg_000 */
-    volatile uint32_t MEMC_REG_004;                   /*!< Offset 0x004 Reg_004 */
-    volatile uint32_t MEMC_REG_008;                   /*!< Offset 0x008 Reg_008 */
-    volatile uint32_t MEMC_REG_00C;                   /*!< Offset 0x00C Reg_00C */
-             uint32_t reserved_0x010 [0x0004];
-    volatile uint32_t MEMC_REG_020;                   /*!< Offset 0x020 Reg_020 */
-    volatile uint32_t MEMC_REG_024;                   /*!< Offset 0x024 Reg_024 */
-    volatile uint32_t MEMC_REG_028;                   /*!< Offset 0x028 Reg_028 */
-} MSI_MEMC_TypeDef; /* size of structure = 0x02C */
-/*
  * @brief NDFC
  */
 /*!< NDFC NAND Flash Controller Interface */
@@ -1957,56 +1932,6 @@ typedef struct TVD_TOP_Type
     } TVD_ADC [0x004];                                /*!< Offset 0x020 TVD ADC Registers N (N = 0 to 3) */
 } TVD_TOP_TypeDef; /* size of structure = 0x0A0 */
 /*
- * @brief TVE
- */
-/*!< TVE  */
-typedef struct TVE_Type
-{
-    volatile uint32_t TVE_000_REG;                    /*!< Offset 0x000 TV Encoder Clock Gating Register */
-    volatile uint32_t TVE_004_REG;                    /*!< Offset 0x004 TV Encoder Configuration Register */
-    volatile uint32_t TVE_008_REG;                    /*!< Offset 0x008 TV Encoder DAC Register1 */
-    volatile uint32_t TVE_00C_REG;                    /*!< Offset 0x00C TV Encoder Notch and DAC Delay Register */
-    volatile uint32_t TVE_010_REG;                    /*!< Offset 0x010 TV Encoder Chroma Frequency Register */
-    volatile uint32_t TVE_014_REG;                    /*!< Offset 0x014 TV Encoder Front/Back Porch Register */
-    volatile uint32_t TVE_018_REG;                    /*!< Offset 0x018 TV Encoder HD Mode VSYNC Register */
-    volatile uint32_t TVE_01C_REG;                    /*!< Offset 0x01C TV Encoder Line Number Register */
-    volatile uint32_t TVE_020_REG;                    /*!< Offset 0x020 TV Encoder Level Register */
-    volatile uint32_t TVE_024_REG;                    /*!< Offset 0x024 TV Encoder DAC Register2 */
-             uint32_t reserved_0x028 [0x0002];
-    volatile uint32_t TVE_030_REG;                    /*!< Offset 0x030 TV Encoder Auto Detection Enable Register */
-    volatile uint32_t TVE_034_REG;                    /*!< Offset 0x034 TV Encoder Auto Detection Interrupt Status Register */
-    volatile uint32_t TVE_038_REG;                    /*!< Offset 0x038 TV Encoder Auto Detection Status Register */
-    volatile uint32_t TVE_03C_REG;                    /*!< Offset 0x03C TV Encoder Auto Detection De-bounce Setting Register */
-             uint32_t reserved_0x040 [0x002E];
-    volatile uint32_t TVE_0F8_REG;                    /*!< Offset 0x0F8 TV Encoder Auto Detect Configuration Register0 */
-    volatile uint32_t TVE_0FC_REG;                    /*!< Offset 0x0FC TV Encoder Auto Detect Configuration Register1 */
-    volatile uint32_t TVE_100_REG;                    /*!< Offset 0x100 TV Encoder Color Burst Phase Reset Configuration Register */
-    volatile uint32_t TVE_104_REG;                    /*!< Offset 0x104 TV Encoder VSYNC Number Register */
-    volatile uint32_t TVE_108_REG;                    /*!< Offset 0x108 TV Encoder Notch Filter Frequency Register */
-    volatile uint32_t TVE_10C_REG;                    /*!< Offset 0x10C TV Encoder Cb/Cr Level/Gain Register */
-    volatile uint32_t TVE_110_REG;                    /*!< Offset 0x110 TV Encoder Tint and Color Burst Phase Register */
-    volatile uint32_t TVE_114_REG;                    /*!< Offset 0x114 TV Encoder Burst Width Register */
-    volatile uint32_t TVE_118_REG;                    /*!< Offset 0x118 TV Encoder Cb/Cr Gain Register */
-    volatile uint32_t TVE_11C_REG;                    /*!< Offset 0x11C TV Encoder Sync and VBI Level Register */
-    volatile uint32_t TVE_120_REG;                    /*!< Offset 0x120 TV Encoder White Level Register */
-    volatile uint32_t TVE_124_REG;                    /*!< Offset 0x124 TV Encoder Video Active Line Register */
-    volatile uint32_t TVE_128_REG;                    /*!< Offset 0x128 TV Encoder Video Chroma BW and CompGain Register */
-    volatile uint32_t TVE_12C_REG;                    /*!< Offset 0x12C TV Encoder Register */
-    volatile uint32_t TVE_130_REG;                    /*!< Offset 0x130 TV Encoder Re-sync Parameters Register */
-    volatile uint32_t TVE_134_REG;                    /*!< Offset 0x134 TV Encoder Slave Parameter Register */
-    volatile uint32_t TVE_138_REG;                    /*!< Offset 0x138 TV Encoder Configuration Register0 */
-    volatile uint32_t TVE_13C_REG;                    /*!< Offset 0x13C TV Encoder Configuration Register1 */
-             uint32_t reserved_0x140 [0x0090];
-    volatile uint32_t TVE_380_REG;                    /*!< Offset 0x380 TV Encoder Low Pass Control Register */
-    volatile uint32_t TVE_384_REG;                    /*!< Offset 0x384 TV Encoder Low Pass Filter Control Register */
-    volatile uint32_t TVE_388_REG;                    /*!< Offset 0x388 TV Encoder Low Pass Gain Register */
-    volatile uint32_t TVE_38C_REG;                    /*!< Offset 0x38C TV Encoder Low Pass Gain Control Register */
-    volatile uint32_t TVE_390_REG;                    /*!< Offset 0x390 TV Encoder Low Pass Shoot Control Register */
-    volatile uint32_t TVE_394_REG;                    /*!< Offset 0x394 TV Encoder Low Pass Coring Register */
-             uint32_t reserved_0x398 [0x0002];
-    volatile uint32_t TVE_3A0_REG;                    /*!< Offset 0x3A0 TV Encoder Noise Reduction Register */
-} TVE_TypeDef; /* size of structure = 0x3A4 */
-/*
  * @brief TVE_TOP
  */
 /*!< TVE_TOP  */
@@ -2330,7 +2255,6 @@ typedef struct USB_OHCI_Capability_Type
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS  register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S  register set access pointer */
-#define MSI_MEMC ((MSI_MEMC_TypeDef *) MSI_MEMC_BASE) /*!< MSI_MEMC  register set access pointer */
 #define DDRPHYC ((DDRPHYC_TypeDef *) DDRPHYC_BASE)    /*!< DDRPHYC  register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 

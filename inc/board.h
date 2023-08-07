@@ -382,6 +382,7 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* получ�
 adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить максимальное возможное значение от АЦП */
 
 const uint16_t * getrbfimage(size_t * count); /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint8_t * getrbfimagezip(size_t * count); /* получить расположение в памяти и количество элементов в массиве упакованного образа для загрузки FPGA */
 const uint32_t * getbitimage(size_t * count); /* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
 
 enum
@@ -396,6 +397,15 @@ typedef uint_fast8_t STTE_t;
 
 void board_fpga_reset(void);
 
+#if WITHIQSHIFT
+
+uint8_t iq_shift_cic_rx(uint8_t val);
+uint8_t iq_shift_fir_rx(uint8_t val);
+uint8_t iq_shift_tx(uint8_t val);
+void iq_cic_test(uint32_t val);
+uint32_t iq_cic_test_process(void);
+
+#endif /* WITHIQSHIFT */
 
 int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts);
 int stpmic1_regulator_enable(const char *name);
@@ -406,6 +416,20 @@ void ulpi_chip_initialize(void);
 void ulpi_chip_vbuson(uint_fast8_t state);
 void ulpi_chip_sethost(uint_fast8_t state);
 void ulpi_chip_debug(void);
+
+
+/* система отказа от передачи при аварийных ситуациях */
+typedef struct edgepin_tag
+{
+	LIST_ENTRY item;
+	uint8_t outstate;	/* результирующее состояние */
+	uint8_t prevstate;
+	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
+	uint_fast8_t (* getpin)(void * ctx);
+} edgepin_t;
+
+void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
+uint_fast8_t edgepin_get(edgepin_t * egp);
 
 #ifdef __cplusplus
 }

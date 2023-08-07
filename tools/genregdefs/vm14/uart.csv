@@ -1,5 +1,5 @@
-#type; UART
-#comment; Universal Asynchronous Receiver-Transmitter
+#type; UART; Universal Asynchronous Receiver-Transmitter
+
 #base; UART0 0x38028000
 #base; UART1 0x38029000
 #base; UART2 0x3802a000

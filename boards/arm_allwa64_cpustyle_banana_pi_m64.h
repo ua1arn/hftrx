@@ -27,11 +27,6 @@
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-#if WITHINTEGRATEDDSP
-	#define WITHI2S01HW	1
-	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
-#endif /* WITHINTEGRATEDDSP */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
@@ -51,7 +46,19 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define WITHSDRAM_AXP308	1	/* power management chip */
+
+
+	#define WITHSDRAM_AXP803	1	/* power management chip */
+
+	#define PMIC_I2C_W 0x68
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+	int axp803_initialize(void);
+
+	/* Контроллер питания AXP803 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		axp803_initialize(); \
+	} while (0)
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -103,14 +110,20 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
-	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	#if WITHINTEGRATEDDSP
+		#define WITHI2S0HW	1
+		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+
+		//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
+	//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -246,17 +259,20 @@
 	#define ENCODER2_BITA		(1u << 15)		// PG15
 	#define ENCODER2_BITB		(1u << 14)		// PG14
 
+	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
+	#define BOARD_GPIOG_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
+	#define BOARD_GPIOG_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
+	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
-			arm_hardware_piog_inputs(ENCODER_BITS); \
-			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_piog_inputs(ENCODER2_BITS); \
-			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_piog_inputs(BOARD_GPIOG_ENCODER_BITS); \
+			arm_hardware_piog_updown(BOARD_GPIOG_ENCODER_BITS, 0); \
+			arm_hardware_piog_onchangeinterrupt(BOARD_GPIOG_ENCODER_BITS, BOARD_GPIOG_ENCODER_BITS, BOARD_GPIOG_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_piog_inputs(BOARD_GPIOG_ENCODER2_BITS); \
+			arm_hardware_piog_updown(BOARD_GPIOG_ENCODER2_BITS, 0); \
+			arm_hardware_piog_onchangeinterrupt(0 * BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -565,6 +581,11 @@
 //
 //	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
+
+	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
@@ -639,34 +660,33 @@
 #if WITHTWISW || WITHTWIHW
 	// PL0 - S_TWI_SCK
 	// PL1 - S_TWI_SDA
-	#define TARGET_TWI_TWCK		(1u << 0)
-	#define TARGET_TWI_TWCK_PIN		(GPIOL->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
+	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOL, (v), 1 * (v)); } while (0)
 
-	#define TARGET_TWI_TWD		(1u << 1)
-	#define TARGET_TWI_TWD_PIN		(GPIOL->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_piol_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_piol_inputs(v); } while (0)
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
+	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOL))
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOL, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piol_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piol_inputs(TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
+		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
-		} while (0)
+		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+		arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
+	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI_SCK AF3 */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI_SDA AF3 */ \
-		} while (0) 
-	#define	TWIHARD_IX x3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_PTR xTWI3	/* 0 - TWI0, 1: TWI1... */
-
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AFx);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AFx);		/* PL1 - S_TWI0_SDA */ \
+	} while (0)
+	#define	TWIHARD_IX 0xxx	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI0xxx	/* 0 - TWI0, 1: TWI1... */
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -984,15 +1004,6 @@
 		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
 	} while (0)
 #endif
-
-	#if WITHISBOOTLOADER
-		int axp803_initialize(void);
-
-		/* Контроллер питания AXP803 */
-		#define BOARD_PMIC_INITIALIZE() do { \
-			axp803_initialize(); \
-		} while (0)
-	#endif /* WITHISBOOTLOADER */
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1u << 1)	/* PB1: ~USER_BOOT */

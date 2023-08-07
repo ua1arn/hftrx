@@ -1,0 +1,58 @@
+#type; SMHC; SD-MMC Host Controller
+#base; SMHC0 0x04020000
+#base; SMHC1 0x04021000
+#base; SMHC2 0x04022000
+
+#irq; SMHC0 67
+#irq; SMHC1 68
+#irq; SMHC2 69
+
+#regdef; SMHC_CTRL; 0x0000; Control Register
+#regdef; SMHC_CLKDIV; 0x0004; Clock Control Register
+#regdef; SMHC_TMOUT; 0x0008; Time Out Register
+#regdef; SMHC_CTYPE; 0x000C; Bus Width Register
+#regdef; SMHC_BLKSIZ; 0x0010; Block Size Register
+#regdef; SMHC_BYTCNT; 0x0014; Byte Count Register
+#regdef; SMHC_CMD; 0x0018; Command Register
+#regdef; SMHC_CMDARG; 0x001C; Command Argument Register
+#regdef; SMHC_RESP0; 0x0020; Response 0 Register
+#regdef; SMHC_RESP1; 0x0024; Response 1 Register
+#regdef; SMHC_RESP2; 0x0028; Response 2 Register
+#regdef; SMHC_RESP3; 0x002C; Response 3 Register
+#regdef; SMHC_INTMASK; 0x0030; Interrupt Mask Register
+#regdef; SMHC_MINTSTS; 0x0034; Masked Interrupt Status Register
+#regdef; SMHC_RINTSTS; 0x0038; Raw Interrupt Status Register
+#regdef; SMHC_STATUS; 0x003C; Status Register
+#regdef; SMHC_FIFOTH; 0x0040; FIFO Water Level Register
+#regdef; SMHC_FUNS; 0x0044; FIFO Function Select Register
+#regdef; SMHC_TCBCNT; 0x0048; Transferred Byte Count between Controller and Card
+#regdef; SMHC_TBBCNT; 0x004C; Transferred Byte Count between Host Memory and Internal FIFO
+#regdef; SMHC_DBGC; 0x0050; Current Debug Control Register
+#regdef; SMHC_CSDC; 0x0054; CRC Status Detect Control Register (Only for SMHC2)
+#regdef; SMHC_A12A; 0x0058; Auto Command 12 Argument Register
+#regdef; SMHC_NTSR; 0x005C; SD New Timing Set Register (Only for SMHC0, SMHC1)
+#regdef; SMHC_HWRST; 0x0078; Hardware Reset Register
+#regdef; SMHC_IDMAC; 0x0080; IDMAC Control Register
+#regdef; SMHC_DLBA; 0x0084; Descriptor List Base Address Register
+#regdef; SMHC_IDST; 0x0088; IDMAC Status Register
+#regdef; SMHC_IDIE; 0x008C; IDMAC Interrupt Enable Register
+#regdef; SMHC_THLD; 0x0100; Card Threshold Control Register
+#regdef; SMHC_SFC; 0x0104; Sample FIFO Control Register (Only for SMHC2)
+#regdef; SMHC_A23A; 0x0108; Auto Command 23 Argument Register (Only for SMHC2)
+#regdef; EMMC_DDR_SBIT_DET; 0x010C; eMMC4.5 DDR Start Bit Detection Control Register
+#regdef; SMHC_RES_CRC; 0x0110; Response CRC from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D7_CRC; 0x0114; CRC in Data7 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D6_CRC; 0x0118; CRC in Data6 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D5_CRC; 0x011C; CRC in Data5 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D4_CRC; 0x0120; CRC in Data4 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D3_CRC; 0x0124; CRC in Data3 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D2_CRC; 0x0128; CRC in Data2 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D1_CRC; 0x012C; CRC in Data1 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_D0_CRC; 0x0130; CRC in Data0 from Device (Only for SMHC0, SMHC1)
+#regdef; SMHC_CRC_STA; 0x0134; Write CRC Status Register (Only for SMHC0, SMHC1)
+#regdef; SMHC_EXT_CMD; 0x0138; Extended Command Register (Only for SMHC2)
+#regdef; SMHC_EXT_RESP; 0x013C; Extended Response Register (Only for SMHC2)
+#regdef; SMHC_DRV_DL; 0x0140; Drive Delay Control Register
+#regdef; SMHC_SMAP_DL; 0x0144; Sample Delay Control Register
+#regdef; SMHC_DS_DL; 0x0148; Data Strobe Delay Control Register (Only for SMHC2)
+#regdef; SMHC_FIFO; 0x0200; Read/Write FIFO

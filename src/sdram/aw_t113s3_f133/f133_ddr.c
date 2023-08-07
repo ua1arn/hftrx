@@ -1416,7 +1416,7 @@ int init_DRAM(int type, dram_para_t *para)
 			return 0;
 	}
 
-	return mem_size_mb;
+	return mem_size_mb != 0;
 }
 
 

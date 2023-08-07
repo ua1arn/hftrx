@@ -42,7 +42,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 #CORE = -mcpu=cortex-a53 -march=armv8-a
 CORE = -mcpu=cortex-a53
-#CORE += -mfloat-abi=hard 
+CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
 #CORE += -mfpu=neon-vfpv4
@@ -199,17 +199,21 @@ CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 # List ASM source files here
 #ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+ASRC_APP += $(ASRC_BOOT)
 
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
-OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
+OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
 
 SRCS = $(CSRC) $(CPPSRC) $(ASRC)
 OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 
 # Collect files for library
 
-# .S and .s files ugnored
+# .S and .s files ignored
 ZCSRC += $(call rwildcard, $(ZYNQLIBSRC), *.c)
 ZCPPSRC += $(call rwildcard, $(ZYNQLIBSRC), *.cpp)
 ZASRC += $(call rwildcard, $(ZYNQLIBSRC), *.S)
@@ -251,6 +255,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 all: bitstream_alinx_axu2cga.h $(PROJECT)_app.xyl32
+	echo $(OBJSA_APP)
 	-sh -c "cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32"
 
 bitstream_alinx_axu2cga.h: bitstream_alinx_axu2cga.bit
@@ -289,16 +294,16 @@ $(OBJSCPP) $(ZOBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJSA) $(ZOBJSA):
+$(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+%_app.elf: $(OBJS) $(OBJSA_APP)
+	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf

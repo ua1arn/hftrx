@@ -1,0 +1,9 @@
+#
+# https://github.com/mangopi-sbc/tina-u-boot-2018/tree/2a1965a2987be57994d7d73d9a70eea41da43063/drivers/video/sunxi/disp2/disp/de/lowlevel_v33x/de330
+#
+#type; DE33; Display Engine (DE)
+#base; DE 0x01000000
+
+#irq; DE 120; DE interrupt
+
+

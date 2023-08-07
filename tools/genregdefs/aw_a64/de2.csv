@@ -1,0 +1,98 @@
+#type; DE_TOP; Display Engine Top
+
+#base; DE_TOP 0x01000000
+#irq; DE 127
+#regdef; SCLK_GATE;	 	0x000;	DE SCLK Gating Register
+#regdef; HCLK_GATE;		0x004;	DE HCLK Gating Register
+#regdef; AHB_RESET;		0x008;	DE AHB Reset register
+#regdef; SCLK_DIV;		0x00C;	DE SCLK Division register
+#regdef; DE2TCON_MUX;	0x010;	MUX register
+#regdef; CMD_CTL;		0x014;	
+
+#type; DE_GLB
+#base; DE_GLB 0x1100000
+#regdef; GLB_CTL;	 	0x000;	Global control register
+#regdef; GLB_STS;		0x004;	Global status register
+#regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
+#regdef; GLB_SIZE;		0x00C;	Global size register
+
+#type; DE_BLD
+#base; DE_BLD 0x1101000
+#regdef; fcolor_ctl;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; attr; 0x004 4; Pipe [0..3]
+#regdef; fcolor;	0x000; BLD fill color register
+#regdef; insize;	0x004; BLD input memory size register
+#regdef; offset;	0x008; BLD input memory offset register
+#regdef; padding 0; 0x010; Need for address arithmetics
+#aggregend;
+#regdef; route;			0x080; 		BLD_CH_RTCTL Offset 0x080 BLD routing control register
+#regdef; premultiply; 	0x084; Offset 0x080 BLD pre-multiply control register
+#regdef; bkcolor; 0x088;
+#regdef; output_size; 0x08C;
+#regdef; bld_mode; 0x090 4; BLD_CTL
+#regdef; ck_ctl; 0x0B0;
+#regdef; ck_cfg; 0x0B4;
+#regdef; ck_max; 0x0C0 4;
+#regdef; ck_min; 0x0E0 4;
+#regdef; out_ctl; 0x0FC;
+
+#type; DE_CSR
+#base; DE_CSR 0x01020000
+#regdef; CSR_CTL; 0x000 Global control register
+#regdef; INT; 0x004; Interrupt register
+#regdef; IFMT; 0x020; Input data attribute register
+#regdef; IDATA_SIZE; 0x024; Input data size register
+#regdef; IDATA_MEN_PITCH0; 0x030; Input Y/RGB/ARGB memory pitch register
+#regdef; IDATA_MEN_PITCH1; 0x034; Input U/UV memory pitch register
+#regdef; IDATA_MEN_PITCH2; 0x038; Input V memory pitch register
+#regdef; IMEN_LADD0; 0x040; Input Y/RGB/ARGB memory address register0
+#regdef; IMEN_HADD0; 0x044; Input Y/RGB/ARGB memory address register1
+#regdef; IMEN_LADD1; 0x048; Input U/UV memory address register0
+#regdef; IMEN_HADD1; 0x04C; Input U/UV memory address register1
+#regdef; IMEN_LADD2; 0x050; Input V memory address register0
+#regdef; IMEN_HADD2; 0x054; Input V memory address register1
+#regdef; ODATA_SIZE; 0x084; Output data size register
+#regdef; ODATA_MEN_PITCH0; 0x090 Output Y/RGB/ARGB memory pitch register
+#regdef; ODATA_MEN_PITCH1; 0x094 Output U/UV memory pitch register
+#regdef; ODATA_MEN_PITCH2; 0x098 Output V memory pitch register
+#regdef; OMEN_LADD0; 0x0A0; Output Y/RGB/ARGB memory address register0
+#regdef; OMEN_HADD0; 0x0A4; Output Y/RGB/ARGB memory address register1
+#regdef; OMEN_LADD1; 0x0A8; Output U/UV memory address register0
+#regdef; OMEN_HADD1; 0x0AC; Output U/UV memory address register1
+#regdef; OMEN_LADD2; 0x0B0; Output V memory address register0
+#regdef; OMEN_HADD2; 0x0B4; Output V memory address register1
+
+#type; DE_VI
+#base; DE_VI 0x01102000
+#aggreg; cfg; 0x000 4;
+#regdef; attr; 0x000;
+#regdef; size; 0x004;
+#regdef; coord; 0x008;
+#regdef; pitch; 0x00C 3;
+#regdef; top_laddr; 0x018 3;
+#regdef; bot_laddr; 0x024 3;
+#aggregend;
+#regdef; fcolor; 0x0C0 4;
+#regdef; top_haddr; 0x0D0 3;
+#regdef; bot_haddr; 0x0DC 3;
+#regdef; ovl_size; 0x0E8 2;
+#regdef; hori; 0x0F0 2;
+#regdef; vert; 0x0F8 2;
+
+#type; DE_UI
+#base; DE_UI1 0x01103000
+#base; DE_UI2 0x01104000
+#base; DE_UI3 0x01105000
+#aggreg; cfg; 0x000 4;
+#regdef;  attr; 0x000; 
+#regdef;  size; 0x004; 
+#regdef;  coord; 0x008; 
+#regdef;  pitch; 0x00C; 
+#regdef;  top_laddr; 0x010; 
+#regdef;  bot_laddr; 0x014; 
+#regdef;  fcolor; 0x018; 
+#regdef; padding 0; 0x020; Need for address arithmetics
+#aggregend;
+#regdef;  top_haddr; 0x080; 
+#regdef;  bot_haddr; 0x084; 
+#regdef;  ovl_size; 0x088; 

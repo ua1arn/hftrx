@@ -232,17 +232,20 @@
 	#define ENCODER2_BITA		(1u << 5)		// PE5
 	#define ENCODER2_BITB		(1u << 4)		// PE4
 
+	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
+	#define BOARD_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
+	#define BOARD_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
+	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
-		arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-		gpioX_onchangeinterrupt(GPIOE, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt); \
-		arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
-		gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
+		arm_hardware_pioe_altfn20(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, 0); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+		arm_hardware_pioe_altfn20(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, 0); \
+		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 	} while (0)
 
 #endif
@@ -550,6 +553,10 @@
 //
 //	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
+	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
@@ -808,11 +815,11 @@
 	// PF6 - DC-DC synchro output
 	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		hardware_dcdcfreq_pwm5_initialize(HARDWARE_DCDC_PWMCH); \
+		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
 		arm_hardware_piof_altfn2((1U << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_pwm5_setdiv(HARDWARE_DCDC_PWMCH, f); \
+		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
@@ -880,15 +887,15 @@
 		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
 		const portholder_t MODEmask = (1U << 0); 	/* PD0 mode */ \
 		/* set LCD DE/SYNC mode */ \
-		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD0 = state */ \
+		arm_hardware_piod_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PD0 = state */ \
 		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
-		arm_hardware_piod_altfn20((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_altfn20((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
+		arm_hardware_piod_altfn20(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn20(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
 		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn20((demode != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
-		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_altfn20(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn20(1u << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
@@ -949,6 +956,12 @@
 		arm_hardware_piod_altfn50(1u << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
+
+	//#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
+
 #endif /* WITHLTDCHW */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
@@ -960,14 +973,13 @@
 
 	void stmpe811_interrupt_handler(void);
 
-	#define BOARD_STMPE811_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
+	#define BOARD_GPIOE_STMPE811_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
 	#define BOARD_STMPE811_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_STMPE811_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_STMPE811_INT_PIN, 0); \
-		/*arm_hardware_pioe_onchangeinterrupt(0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); */ \
-		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
+		arm_hardware_pioe_altfn20(BOARD_GPIOE_STMPE811_INT_PIN, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_STMPE811_INT_PIN, 0); \
+		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_STMPE811_INT_PIN, 1 * BOARD_GPIOE_STMPE811_INT_PIN, 0 * BOARD_GPIOE_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
@@ -979,27 +991,27 @@
 
 	void gt911_interrupt_handler(void);
 
-	#define BOARD_GT911_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
+	#define BOARD_GPIOE_GT911_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
 	#define BOARD_GT911_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
 	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
 	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
 
 	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pioe_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
+		arm_hardware_pioe_outputs2m(BOARD_GPIOE_GT911_INT_PIN, 1* BOARD_GPIOE_GT911_INT_PIN); \
 		arm_hardware_piod_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
 		 local_delay_ms(200);  \
 	} while (0)
 
 	#define BOARD_GT911_RESET_INITIO_2() do { \
-		arm_hardware_pioe_inputs(BOARD_GT911_INT_PIN); \
-		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
+		arm_hardware_pioe_inputs(BOARD_GPIOE_GT911_INT_PIN); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_GT911_INT_PIN, 0); \
 	} while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_GT911_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
-		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
+		arm_hardware_pioe_altfn20(BOARD_GPIOE_GT911_INT_PIN, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_GT911_INT_PIN, 0); \
+		arm_hardware_pioe_onchangeinterrupt0 * BOARD_GPIOE_GT911_INT_PIN, 1 * BOARD_GPIOE_GT911_INT_PIN, 0 * BOARD_GPIOE_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 	//gt911_interrupt_handler
 

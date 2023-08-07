@@ -19,7 +19,7 @@
 TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
-#XFEL = ../../tools/xfel-windows-v1.2.9/xfel
+#XFEL = ../../tools//xfel-windows-v1.3.2/xfel
 XFEL = xfel_fixed_t113-s3
 
 #UADEFS += -D"WITHSMPSYSTEM"
@@ -61,8 +61,6 @@ CORE += -mfpu=neon-vfpv4
 # Define optimisation level here
 #OPT = -Og
 OPT = -Ofast -flto
-#OPT = -Os -flto
-#OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -257,7 +255,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean erase
 
 all: APP2 $(PROJECT)_app.alw32
 
@@ -281,12 +279,10 @@ app_runXBOOT: xboot_t113_800.bin
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
-flash_old:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+erase:
+	$(XFEL) spinor erase 0x00000000 1024
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

@@ -6437,10 +6437,11 @@ void testpng(const void * pngbuffer)
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR
     \return               Configuration Base Address Register
+    MRC p15, 1, <Rt>, c15, c3, 0; Read CBAR into Rt
  */
 __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
 {
-	uint64_t result;
+	uint32_t result;
   __get_CP(15, 1, result, 15, 3, 0);
   return(result);
 }
@@ -6456,17 +6457,17 @@ __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
 void gpadc_initialize(void)
 {
 
-	CCU->GPADC_BGR_REG |= (1u << 16); // 1: De-assert reset  HOSC
-	CCU->GPADC_BGR_REG |= (1u << 0); // 1: Pass clock
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16); // 1: De-assert reset  HOSC
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0); // 1: Pass clock
 
 	GPADC->GP_SR_CON |= (0x2fu << 0);
 	GPADC->GP_CTRL |= (0x2u << 18); // continuous mode
 
-	GPADC->GP_CS_EN |= (1u << 0); // enable
+	GPADC->GP_CS_EN |= (UINT32_C(1) << 0); // enable
 
-	GPADC->GP_CTRL |= (1u << 17); // calibration
+	GPADC->GP_CTRL |= (UINT32_C(1) << 17); // calibration
 
-	GPADC->GP_CTRL |= (1u << 16);
+	GPADC->GP_CTRL |= (UINT32_C(1) << 16);
 
 	while ((GPADC->GP_DATA_INTS) & (1uL << 0))	///if 1 complete
 		;
@@ -6559,6 +6560,120 @@ static void zero2dsp(uint8_t * pdspmap, unsigned offs, unsigned size)
 
 #endif /* CPUSTYLE_T113 */
 
+#if CPUSTYLE_STM32MP1 && WITHETHHW && 1
+
+void ethhw_initialize(void)
+{
+	RCC->ETHCKSELR =
+			0 |
+			0;
+
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHMACEN_Msk;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHTXEN_Msk;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_ETHRXEN_Msk;
+	(void) RCC->MP_AHB6ENSETR;
+
+	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_ETHMACRST_Msk;	// assert reset
+	(void) RCC->AHB6RSTSETR;
+	RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_ETHMACRST_Msk;	// de-assert reset
+	(void) RCC->AHB6RSTCLRR;
+
+	HARDWARE_ETH_INITIALIZE();
+}
+
+void ethhw_deinitialize(void)
+{
+	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_ETHMACRST_Msk;	// assert reset
+	(void) RCC->AHB6RSTSETR;
+
+	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_ETHTXEN_Msk;
+	(void) RCC->MP_AHB6ENCLRR;
+	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_ETHRXEN_Msk;
+	(void) RCC->MP_AHB6ENCLRR;
+	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_ETHMACEN_Msk;
+	(void) RCC->MP_AHB6ENCLRR;
+}
+
+#define ETHHW_BUFFSIZE 4096
+
+void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
+{
+	desc [0] = (uintptr_t) buff1;
+	desc [1] = (uintptr_t) buff2;
+	desc [2] =
+		0 * (UINT32_C(1) << 31) | // IOC
+		0 * (UINT32_C(1) << 30) | // TTSE
+		ETHHW_BUFFSIZE * (UINT32_C(1) << 16) | // B2L = buffer 2 length
+		ETHHW_BUFFSIZE * (UINT32_C(1) << 0) | // B1L = buffer 1 length
+		0;
+
+	desc [3] =
+		1 * (UINT32_C(1) << 29) | // First Descriptor
+		1 * (UINT32_C(1) << 28) | // Last Descriptor
+		0;
+}
+
+#endif
+
+#if CPUSTYLE_T507 && 0
+//#define DE_BASE 0x01000000
+
+//#define DISP_IF_TOP_BASE 0x06510000
+//#define TCON_LCD0_BASE 0x06511000
+//#define TCON_LCD1_BASE 0x06512000
+
+void detest(void)
+{
+	const unsigned K64 = 64 * 1024;
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
+	{
+		/* Configure DE clock */
+	    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(3) << 8) & ~ (UINT32_C(0x0f) << 0)) |
+			0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
+			0 * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+			(4 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+			0;
+	    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);
+	    local_delay_us(10);
+		PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000000));
+
+	    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+	    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+	    local_delay_us(10);
+
+		memset((void *) DE_BASE + 0, 0xE5, 4 * 1024 * 1024);
+//		PRINTF("DE_BASE:\n");
+//		unsigned i;
+//		for (i = 0; i < 4 * 1024 * 1024; i += 4096)
+//		{
+//			printhex32(DE_BASE + i, (void *) (DE_BASE + i), 64);
+//		}
+	}
+	{
+		unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+		TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			1 * (UINT32_C(0x07) << 24) | // 001: PLL_VIDEO0(4X)
+			0;
+		TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+		CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+		CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+		CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset
+
+		PRINTF("TCON_LCD%d:\n", (int) TCONLCD_IX);
+		printhex32((uintptr_t) TCONLCD_PTR, (void *) TCONLCD_PTR, 256);
+	}
+ 	PRINTF("DISP_IF_TOP:\n");
+	printhex32(DISP_IF_TOP_BASE, DISP_IF_TOP, sizeof * DISP_IF_TOP);
+}
+
+#endif
+
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 void hightests(void)
@@ -6566,6 +6681,78 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+	//hmain();
+#if CPUSTYLE_T507 && 0
+	{
+		board_set_bglight(!1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
+		board_update();
+		detest();
+		PRINTF("hightests: [%p]\n", hightests);
+		PRINTF("hightests: CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+		PRINTF("hightests: ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000000));
+		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000000));
+	}
+#endif
+#if CPUSTYLE_STM32MP1 && WITHETHHW && 0
+	{
+		// Ethernet controller tests
+		ethhw_initialize();
+
+		TP();
+
+		ETH->MACCR |= ETH_MACCR_PS_Msk | ETH_MACCR_FES_Msk;	// Select 100 Mbps operation
+		ETH->MACCR |= ETH_MACCR_DM_Msk;	// Select duplex operation
+
+		PRINTF("ETH->MACCR=%08X\n", (unsigned) ETH->MACCR);
+		PRINTF("ETH->DMASBMR=%08X\n", (unsigned) ETH->DMASBMR);
+
+		static __attribute__((aligned(32))) uint8_t  dmac0tx_buff [2][ETHHW_BUFFSIZE];
+		static __attribute__((aligned(32))) uint8_t  dmac0rx_buff [2][ETHHW_BUFFSIZE];
+		static __attribute__((aligned(32))) uint8_t  dmac1tx_buff [2][ETHHW_BUFFSIZE];
+
+		static __attribute__((aligned(32))) volatile uint32_t  dmac0tx_desc [64];
+		static __attribute__((aligned(32))) volatile uint32_t  dmac0rx_desc [64];
+		static __attribute__((aligned(32))) volatile uint32_t  dmac1tx_desc [64];
+
+		ethhw_filldesc(dmac0tx_desc, dmac0tx_buff [0], dmac0tx_buff [1]);
+		ethhw_filldesc(dmac0rx_desc, dmac0rx_buff [0], dmac0rx_buff [1]);
+		ethhw_filldesc(dmac1tx_desc, dmac1tx_buff [0], dmac1tx_buff [1]);
+
+		dcache_clean_invalidate((uintptr_t) dmac0tx_desc, sizeof dmac0tx_desc);
+		dcache_clean_invalidate((uintptr_t) dmac0rx_desc, sizeof dmac0rx_desc);
+		dcache_clean_invalidate((uintptr_t) dmac1tx_desc, sizeof dmac1tx_desc);
+
+		dcache_clean_invalidate((uintptr_t) dmac0tx_buff, sizeof dmac0tx_buff);
+		dcache_clean_invalidate((uintptr_t) dmac0rx_buff, sizeof dmac0rx_buff);
+		dcache_clean_invalidate((uintptr_t) dmac1tx_buff, sizeof dmac1tx_buff);
+
+		// CH0: RX & TX
+		ETH->DMAC0TXDLAR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor list address register
+		ETH->DMAC0TXDTPR = (uintptr_t) dmac0tx_desc;	// Channel 0 Tx descriptor tail pointer register
+		ETH->DMAC0TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 0 Tx descriptor ring length register
+		ETH->DMAC0TXCR |= 0x01;	// Channel 0 transmit control register
+
+		ETH->DMAC0RXDLAR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor list address register
+		ETH->DMAC0RXDTPR = (uintptr_t) dmac0rx_desc;	// Channel 0 Rx descriptor tail pointer register
+		ETH->DMAC0RXRLR = // Channel 0 Rx descriptor ring length register
+			0 * (UINT32_C(17) << 0) |	// ARBS
+			1 * (UINT32_C(1) << 0) |	// RDRL
+			0;
+		ETH->DMAC0RXCR |= 0x01;	// Channel 0 receive control register
+
+		// CH1: TX
+		ETH->DMAC1TXDLAR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor list address register
+		ETH->DMAC1TXDTPR = (uintptr_t) dmac1tx_desc;	// Channel 1 Tx descriptor tail pointer register
+		ETH->DMAC1TXRLR = 1 * (UINT32_C(1) << 0);	// Channel 1 Tx descriptor ring length register
+		ETH->DMAC1TXCR |= 0x01;	// Channel 1 transmit control register
+
+		ETH->MACCR |= ETH_MACCR_TE_Msk;
+		ETH->MACCR |= ETH_MACCR_RE_Msk;
+
+		ethhw_deinitialize();
+	}
+#endif
 #if CPUSTYLE_T113 && 0
 	{
 		// HiFI4 DSP start test
@@ -6592,13 +6779,13 @@ void hightests(void)
 				((M - 1) << 0) |
 				0;
 
-		CCU->DSP_CLK_REG |= (1u << 31);	// DSP_CLK_GATING
+		CCU->DSP_CLK_REG |= (UINT32_C(1) << 31);	// DSP_CLK_GATING
 
 
-		CCU->DSP_BGR_REG |= (1u << 1);	// DSP_CFG_GATING
-		CCU->DSP_BGR_REG |= (1u << 17);	// DSP_CFG_RST
+		CCU->DSP_BGR_REG |= (UINT32_C(1) << 1);	// DSP_CFG_GATING
+		CCU->DSP_BGR_REG |= (UINT32_C(1) << 17);	// DSP_CFG_RST
 
-		CCU->DSP_BGR_REG &= ~ (1u << 16);	// DSP_RST
+		CCU->DSP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DSP_RST
 
 		// Map local sram to CPU
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x01;	/* DSP BOOT SRAM REMAP ENABLE 1: DSP 128K Local SRAM Remap for System Boot */
@@ -6628,14 +6815,14 @@ void hightests(void)
 
 		// DSP Start address change
 		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 if non-cached need
-		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 1);	// BIT_START_VEC_SEL
+		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 1);	// BIT_START_VEC_SEL
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
-		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 0);	// Set runstall
+		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 0);	// Set runstall
 
-		DSP0_CFG->DSP_CTRL_REG0 |= (1u << 2);	/* set dsp clken */
-		CCU->DSP_BGR_REG |= (1u << 16);	// DSP_RST
-		DSP0_CFG->DSP_CTRL_REG0 &= ~ (1u << 0);	// Clear runstall
+		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 2);	/* set dsp clken */
+		CCU->DSP_BGR_REG |= (UINT32_C(1) << 16);	// DSP_RST
+		DSP0_CFG->DSP_CTRL_REG0 &= ~ (UINT32_C(1) << 0);	// Clear runstall
 		(void) DSP0_CFG->DSP_CTRL_REG0;
 
 		/*
@@ -6659,7 +6846,7 @@ void hightests(void)
 #endif
 #if CPUSTYLE_VM14 && 0
 	{
-		unsigned mask = 1u << 24; // GC24 - DBGLED1
+		unsigned mask = UINT32_C(1) << 24; // GC24 - DBGLED1
 		for (;;)
 		{
 			arm_hardware_pioc_outputs(mask, 1 * mask);
@@ -6671,15 +6858,15 @@ void hightests(void)
 #endif
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 	{
-		CCU->GPADC_BGR_REG |= (1u << 16); 	// 1: De-assert reset  HOSC
-		CCU->GPADC_BGR_REG |= (1u << 0); 	// 1: Pass clock
+		CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16); 	// 1: De-assert reset  HOSC
+		CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0); 	// 1: Pass clock
 		GPADC->GP_SR_CON |= (0x2fu << 0);	// set the acquiring time of ADC
 		GPADC->GP_SR_CON |= (0x1dfu << 16);	// set the ADC sample frequency divider
 		GPADC->GP_CTRL |= (0x2u << 18); 		// set the continuous conversion mode
-		GPADC->GP_CS_EN |= (1u << 0); 		// enable the analog input channel
-		GPADC->GP_DATA_INTC |= (1u << 0);	// enable the GPADC data interrupt
+		GPADC->GP_CS_EN |= (UINT32_C(1) << 0); 		// enable the analog input channel
+		GPADC->GP_DATA_INTC |= (UINT32_C(1) << 0);	// enable the GPADC data interrupt
 		arm_hardware_set_handler_system(GPADC_IRQn, gpadc_inthandler);
-		GPADC->GP_CTRL |= (1u << 16);		// enable the ADC function
+		GPADC->GP_CTRL |= (UINT32_C(1) << 16);		// enable the ADC function
 		for(;;) {}
 	}
 #endif /* #if (CPUSTYLE_T113 || CPUSTYLE_F133) */
@@ -6721,49 +6908,56 @@ void hightests(void)
 		// Test: write byte to 0x02500000 = UART0 data tegister
 		static const uint32_t code [] = {
 				0x02500537, // 37 05 50 02
-				0x0230059B,	// 9B 05 30 02 │
+				0x0230059B,	// 9B 05 30 02
 				0x00B50023, // 23 00 B5 00
 				0x0000006F, // 6F 00 00 00,
 		};
 
-		* (volatile uint32_t *) 0x070005DC = 0*0xFA50392Fu;	// Hotplug Flag Register
+		* (volatile uint32_t *) 0x070005DC = 1*UINT32_C(0xFA50392F);	// Hotplug Flag Register
 		* (volatile uint32_t *) 0x070005E0 = (uintptr_t) code;	// Soft Entry Address Register
 
 		dcache_clean_all();
 
-		printhex(0x06000000, (void *) 0x06000000, 0x10000);
-		//CCU->RISC_GATING_REG
-		CCU->RISC_CFG_BGR_REG |= (1u << 16) | (1u << 0);
-		(void) CCU->RISC_CFG_BGR_REG;
-		PRINTF("CCU->RISC_CFG_BGR_REG=%08" PRIX32 "\n", CCU->RISC_CFG_BGR_REG);
+		//printhex32(0x070005DC, (void *) 0x070005DC, 4);
+		//printhex32(0x070005E0, (void *) 0x070005E0, 4);
+
+		//printhex(0x06000000, (void *) 0x06000000, 0x10000);
+		CCU->RISC_GATING_REG = 1*(UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
+		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
+
+		PRINTF("RISC_CFG->WORK_MODE_REG=%08" PRIX32 "\n", RISC_CFG->WORK_MODE_REG);
 
 		RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) code;
 		RISC_CFG->RISC_STA_ADD1_REG = 0;//(uint32_t) (uintptr_t) code >> 32;
 		//memset(RISC_CFG, ~ 0u, sizeof * RISC_CFG);
+
+		PRINTF("allwnrf133_get_riscv_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_freq());
 		PRINTF("CCU->RISC_GATING_REG=%08" PRIX32 ", CCU->RISC_CFG_BGR_REG=%08" PRIX32 "\n", CCU->RISC_GATING_REG, CCU->RISC_CFG_BGR_REG);
 		PRINTF("RISC_CFG->RISC_STA_ADD0_REG=%08" PRIX32 ", RISC_CFG->RISC_STA_ADD1_REG=%08" PRIX32 "\n", RISC_CFG->RISC_STA_ADD0_REG, RISC_CFG->RISC_STA_ADD1_REG);
 		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		local_delay_ms(3000);
-		//PRINTF("CCU->RISC_RST_REG=%08" PRIX32 "\n", CCU->RISC_RST_REG);
-		CCU->RISC_RST_REG = 0x16AA0001u;
-		(void) CCU->RISC_RST_REG;
-		//PRINTF("CCU->RISC_RST_REG=%08" PRIX32 "\n", CCU->RISC_RST_REG);
-		//ASSERT(CCU->RISC_RST_REG & 0x01u);
+		//((void (*) (void)) code)();		/* test code invokation for risc-v here */
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0x01;	/* tested on Allwinner F133 */
+		//TP();
+		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		for (;;)
 			;
 	}
 #endif
 #if 0 && CPUSTYLE_CA53
 	{
-		const uint_fast32_t cbar = __get_CA53_CBAR();
-		const uintptr_t periphbase = (uintptr_t) (cbar & 0xFFFC00000u) | (uintptr_t) (cbar & 0xFF) << 32;
+		const uint_fast32_t ca53_cbar = __get_CA53_CBAR();
+		const uint64_t periphbase = (uint64_t) (ca53_cbar & UINT32_C(0xFFFC0000)) | ((uint64_t) (ca53_cbar & UINT32_C(0xFF)) << 32);
 
+		//PRINTF("__get_CBAR()=%08X\n", (unsigned) __get_CBAR());
 		PRINTF("__get_CPUACTLR()=%08X\n", (unsigned) __get_CPUACTLR());
 		PRINTF("__get_CPUECTLR()=%08X\n", (unsigned) __get_CPUECTLR());
-		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) periphbase);			/* SYS_CFG_BASE */
+		PRINTF("__get_CA53_CBAR()=%08X\n", (unsigned) ca53_cbar);			/* SYS_CFG_BASE */
+		PRINTF("periphbase=%016" PRIX64 "\n", periphbase);			/* SYS_CFG_BASE */
 
 		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
 		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
+		//printhex(ca53_cbar, ca53_cbar, 256);
 
 		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
 		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
@@ -6782,7 +6976,7 @@ void hightests(void)
 		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
 		PRINTF("C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
 
-		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (1u << 4);	// GICCDISABLE
+		C0_CPUX_CFG->GENER_CTRL_REG0 &= ~ (UINT32_C(1) << 4);	// GICCDISABLE
 		C0_CPUX_CFG->C_CPU_STATUS |= (0x0Fu << 24);		// SMP
 		C0_CPUX_CFG->C_CTRL_REG0 |= (0x0Fu << 24);		// AA64nAA32 1: AArch64
 
@@ -7050,10 +7244,10 @@ void hightests(void)
 		TP();
 		PRINTF("allwnrt113_get_dsp_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsp_freq());
 
-//		CCU->DSP_BGR_REG |= 1u << 18;	// DSP_DBG_RST 1: De-assert
-//		CCU->DSP_BGR_REG |= 1u << 17;	// DSP_CFG_RST 1: De-assert
-//		CCU->DSP_BGR_REG |= 1u << 16;	// DSP_RST 1: De-assert
-//		CCU->DSP_BGR_REG |= 1u << 1;	// DSP_CFG_GATING 1: Pass
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 18;	// DSP_DBG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 17;	// DSP_CFG_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 16;	// DSP_RST 1: De-assert
+//		CCU->DSP_BGR_REG |= UINT32_C(1) << 1;	// DSP_CFG_GATING 1: Pass
 	}
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -7135,7 +7329,7 @@ void hightests(void)
 
 		for (int pos = 0; pos < 24; ++ pos)
 		{
-			COLORPIP_T c = TFTALPHA(255, 1u << pos);
+			COLORPIP_T c = TFTALPHA(255, UINT32_C(1) << pos);
 			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
 			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
 			local_delay_ms(2000);
@@ -7162,7 +7356,7 @@ void hightests(void)
 		// Allwinner t113-s3 boot mode display
 
 //		CCU->CE_CLK_REG |= (1uL << 31);	// CE_CLK_GATING
-//		CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 2);	// CE_MCLK_EN
+//		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 2);	// CE_MCLK_EN
 		// bits 27:16: eFUSE boot select status,
 		// bit 0: 0: GPIO boot select, 1: eFuse boot select
 		// The status of the GPIO boot select pin can be read by the bit[12:11] of the system configuration module (register: 0x03000024).
@@ -7174,7 +7368,7 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 	{
-		RTC->FBOOT_INFO_REG0 = (1u << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
+		RTC->FBOOT_INFO_REG0 = (UINT32_C(1) << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
 	}
 #endif
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
@@ -7346,16 +7540,16 @@ void hightests(void)
 #endif
 #if 0 && WITHDEBUG && WITHSMPSYSTEM
 	{
-		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, ARM_CA9_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
-		enum { TGCPUMASK1 = 1u << 1 };
-		enum { TGCPUMASK0 = 1u << 0 };
+		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, GIC_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
+		enum { TGCPUMASK1 = UINT32_C(1) << 1 };
+		enum { TGCPUMASK0 = UINT32_C(1) << 0 };
 		const int cpu = __get_MPIDR() & 0x03;
 
 		PRINTF("Main thread test: I am CPU=%d\n", cpu);
 		local_delay_ms(100);
 
-		arm_hardware_set_handler(SGI13_IRQn, SecondCPUTaskSGI13, BOARD_SGI_PRIO, 0x01u << 1);
-		arm_hardware_set_handler(SGI15_IRQn, SecondCPUTaskSGI15, BOARD_SGI_PRIO, 0x01u << 1);
+		arm_hardware_set_handler(SGI13_IRQn, SecondCPUTaskSGI13, BOARD_SGI_PRIO, UINT32_C(1) << 1);
+		arm_hardware_set_handler(SGI15_IRQn, SecondCPUTaskSGI15, BOARD_SGI_PRIO, UINT32_C(1) << 1);
 
 		for (;;)
 		{
@@ -9374,9 +9568,9 @@ void hightests(void)
 		//}
 		for (c = 0; c < 5; ++ c)
 		{
-			display_setbgcolor(TFTRGB(1u << (c + 3), 0, 0));
+			display_setbgcolor(TFTRGB(UINT32_C(1) << (c + 3), 0, 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), UINT32_C(1) << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -9389,9 +9583,9 @@ void hightests(void)
 		//}
 		for (c = 0; c < 6; ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, 1u << (c + 2), 0));
+			display_setbgcolor(TFTRGB(0, UINT32_C(1) << (c + 2), 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), 1u << (c + 2));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), UINT32_C(1) << (c + 2));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -9404,9 +9598,9 @@ void hightests(void)
 		//}
 		for (c = 0; c < 5; ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, 0, 1u << (c + 3)));
+			display_setbgcolor(TFTRGB(0, 0, UINT32_C(1) << (c + 3)));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), UINT32_C(1) << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -10404,7 +10598,7 @@ void vConfigureTickInterrupt(void)
 	// Set bits: IRQ enable and Auto reload
 	PTIM_SetControl(0x06U);
 
-	arm_hardware_set_handler(PrivTimer_IRQn, PTIM_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, 1u << 0);
+	arm_hardware_set_handler(PrivTimer_IRQn, PTIM_Handler, portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT, UINT32_C(1) << 0);
 
 	// Start the Private Timer
 	PTIM_SetControl(PTIM_GetControl() | 0x01);
@@ -11058,7 +11252,7 @@ void lowtests(void)
 		for (i = 0; i < 26; ++ i)
 		{
 			const int pos = 25 - i;
-			const unsigned mask = 1u << pos;
+			const unsigned mask = UINT32_C(1) << pos;
 			PRINTF("%c", (misa_val & mask) ? 'A' + pos : '-');
 		}
 		PRINTF("\n");

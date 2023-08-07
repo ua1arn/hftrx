@@ -20,7 +20,7 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-XFEL = ../../tools/xfel-windows-v1.2.9/xfel
+XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -268,7 +268,7 @@ bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 # Take from tc1_a64_boot.map
-SystemInitAddr = 0x00021de4
+SystemInitAddr = 0x000221b8
 
 # Invoke SystemInit 
 boot_run: fsbl_frz.alw32
@@ -281,12 +281,7 @@ app_run: $(PROJECT)_app.alw32 boot_run
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
-
-flash_old:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00040000 ddr3init.bin
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

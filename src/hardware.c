@@ -217,27 +217,6 @@ void xc7z_gpio_output(uint8_t pin)
 
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
-/* 
-	Машинно-независимый обработчик прерываний.
-	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
-*/
-RAMFUNC void spool_elkeybundle(void)
-{
-#if WITHELKEY
-	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
-#endif /* WITHELKEY */
-}
-
-/* 
-	Машинно-независимый обработчик прерываний.
-	Вызывается при изменении состояния входов электронного ключа,
-    входа манипуляции от CAT (CAT_DTR).
-*/
-RAMFUNC void spool_elkeyinputsbundle(void)
-{
-	//key_spool_inputs();	// опрос состояния электронного ключа и запоминание факта нажатия
-}
-
 
 static RAMDTCM LCLSPINLOCK_t tickerslock = LCLSPINLOCK_INIT;
 static RAMDTCM LCLSPINLOCK_t adcdoneslock = LCLSPINLOCK_INIT;
@@ -448,508 +427,6 @@ RAMFUNC void spool_adcdonebundle(void)
 	adcdones_event();
 }
 #endif /* WITHCPUADCHW */
-
-
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
-/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
-static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
-{
-#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-	if ((pr & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0)
-	{
-		spool_elkeyinputsbundle();
-	}
-#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
-#if WITHENCODER && defined (ENCODER_BITS)
-	if ((pr & ENCODER_BITS) != 0)
-	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
-	}
-#endif /* WITHENCODER && defined (ENCODER_BITS) */
-#if WITHENCODER2 && defined (ENCODER2_BITS)
-	if ((pr & ENCODER2_BITS) != 0)
-	{
-		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
-	}
-#endif /* WITHENCODER && ENCODER2_BITS */
-#if BOARD_GT911_INT_PIN
-	if ((pr & BOARD_GT911_INT_PIN) != 0)
-	{
-		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
-	}
-#endif /* BOARD_GT911_INT_PIN */
-#if BOARD_STMPE811_INT_PIN
-	if ((pr & BOARD_STMPE811_INT_PIN) != 0)
-	{
-		stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
-	}
-#endif /* BOARD_STMPE811_INT_PIN */
-#if WITHLFM && BOARD_PPSIN_BIT
-	if ((pr & BOARD_PPSIN_BIT) != 0)
-	{
-		spool_nmeapps();	/* прерывание по изменению сигнала на входе от PPS */
-	}
-#endif /* WITHLFM && BOARD_PPSIN_BIT */
-}
-
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */
-
-#if CPUSTYLE_STM32MP1
-
-	void EXTI0_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM0;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI1_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM1;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI2_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM2;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI3_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM3;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI4_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM4;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI5_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM5;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI6_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM6;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI7_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM7;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI8_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM8;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI9_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM9;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI10_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM10;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI11_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM11;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI12_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM12;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI13_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM13;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI14_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM14;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-	void EXTI15_IRQHandler(void)
-	{
-		const uint_fast32_t mask = EXTI_IMR1_IM15;
-		const portholder_t prf = EXTI->FPR1 & mask;
-		EXTI->FPR1 = prf;		// reset all faling requests
-		const portholder_t prr = EXTI->RPR1 & mask;
-		EXTI->RPR1 = prr;		// reset all rising requests
-		stm32fxxx_pinirq(prf | prr);
-	}
-
-#elif CPUSTYLE_STM32L0XX
-
-	void EXTI0_1_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-	void EXTI2_3_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-	void EXTI4_15_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (
-				EXTI_IMR_IM15 | EXTI_IMR_IM14 | EXTI_IMR_IM13 | EXTI_IMR_IM12 | 
-				EXTI_IMR_IM11 | EXTI_IMR_IM10 | EXTI_IMR_IM9 | EXTI_IMR_IM8 | 
-				EXTI_IMR_IM7 | EXTI_IMR_IM6 | EXTI_IMR_IM5 | EXTI_IMR_IM4
-				);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-#elif CPUSTYLE_STM32H7XX
-
-	void EXTI0_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-	
-
-	void EXTI1_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI2_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI3_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR3);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI4_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR4);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI9_5_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR9 | EXTI_PR1_PR8 | EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-	void EXTI15_10_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | EXTI_PR1_PR11 | EXTI_PR1_PR10);
-		EXTI_D1->PR1 = pr;		// reset all existing requests
-		(void) EXTI_D1->PR1;
-		stm32fxxx_pinirq(pr);
-	}
-
-#elif CPUSTYLE_STM32F
-
-	void EXTI0_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI0_1_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI1_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI2_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI2_3_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI4_15_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (
-				EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | 
-				EXTI_IMR_MR11 | EXTI_IMR_MR10 | EXTI_IMR_MR9 | EXTI_IMR_MR8 | 
-				EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5 | EXTI_IMR_MR4
-				);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI3_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI4_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-	void EXTI9_5_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-	void EXTI15_10_IRQHandler(void)
-	{
-		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
-		EXTI->PR = pr;		// reset all existing requests
-		//(void) EXTI->PR;
-		stm32fxxx_pinirq(pr);
-	}
-
-#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	void RAMFUNC_NONILINE
-	PIOA_Handler(void)
-	{
-		//display_menu_label(PSTR("PIOA_IrqHandler"));
-		//for (;;)
-		//	;
-		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
-		// all the interrupts that are pending when PIO_ISR is read must be handled.
-		const portholder_t state = PIOA->PIO_ISR;
-	#if WITHENCODER && defined (ENCODER_BITS)
-		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
-		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
-		}
-	#endif /* WITHENCODER && defined (ENCODER_BITS) */
-	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
-		{
-			spool_elkeyinputsbundle();
-		}
-	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
-	#if WITHNMEA
-		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
-		{
-			spool_nmeapps();
-		}
-	#endif /* WITHNMEA */
-	#if BOARD_GT911_INT_PIN
-		if ((state & BOARD_GT911_INT_PIN) != 0)
-		{
-			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
-		}
-	#endif /* BOARD_GT911_INT_PIN */
-	#if BOARD_STMPE811_INT_PIN
-		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
-		{
-			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
-		}
-	#endif /* BOARD_STMPE811_INT_PIN */
-	}
-
-#elif CPUSTYLE_AT91SAM7S
-
-	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void)
-	{
-		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
-		// all the interrupts that are pending when PIO_ISR is read must be handled.
-		const portholder_t state = AT91C_BASE_PIOA->PIO_ISR;
-	#if WITHENCODER && defined (ENCODER_BITS)
-		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
-		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
-		}
-	#endif /* WITHENCODER && defined (ENCODER_BITS) */
-	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
-		{
-			spool_elkeyinputsbundle();
-		}
-	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
-	#if WITHNMEA
-		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
-		{
-			spool_nmeapps();
-		}
-	#endif /* WITHNMEA */
-	#if BOARD_GT911_INT_PIN
-		if ((state & BOARD_GT911_INT_PIN) != 0)
-		{
-			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
-		}
-	#endif /* BOARD_GT911_INT_PIN */
-	#if BOARD_STMPE811_INT_PIN
-		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
-		{
-			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
-		}
-	#endif /* BOARD_STMPE811_INT_PIN */
-	}
-
-#elif CPUSTYLE_ATMEGA
-
-	ISR(INT0_vect)
-	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
-	}
-
-	ISR(INT1_vect)
-	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
-	}
-
-
-	// Timer 1 output compare A interrupt service routine
-	ISR(TIMER1_COMPA_vect)
-	{
-		spool_elkeybundle();
-	}
-	// Обработчик по изменению состояния входов PTT и электронного ключа
-	#if CPUSTYLE_ATMEGA_XXX4
-		#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
-			// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
-			ISR(PCIVECT)
-			{
-				spool_elkeyinputsbundle();
-			}
-		#endif /* (WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)) */
-		#if defined (FROMCAT_BIT_DTR) && defined (DTRPCICR_BIT) && (PCICR_BIT != DTRPCICR_BIT)
-			ISR(DTRPCIVECT)
-			{
-				spool_elkeyinputsbundle();	// по изменению PTT
-			}
-		#endif
-	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
-
-#else
-
-	//#warning Undefined CPUSTYLE_XXX encoder interrrupts handlers
-#endif
 
 //static volatile uint_fast8_t hardware_reqshutdown;
 /* возвращаем запрос на выключение - от компаратора питания */
@@ -1545,13 +1022,13 @@ r7s721_adi_irq_handler(void)
 	// ADC IRQ handler
 	//#warning Unhandled CPUSTYLE_T113
 #elif CPUSTYLE_A64
-// ADC IRQ handler
+	// ADC IRQ handler
 
 #elif CPUSTYLE_T507
-// ADC IRQ handler
+	// ADC IRQ handler
 
 #else
-	#error No CPUSTYLE_XXXXX defined
+	// ADC IRQ handler
 #endif
 
 
@@ -1661,7 +1138,7 @@ hardware_adc_startonescan(void)
 
 #else
 
-	#warning Undefined CPUSTYLE_XXX
+	//#warning Undefined CPUSTYLE_XXX
 
 #endif
 }
@@ -1935,6 +1412,81 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 #if (__CORTEX_A != 0) && (! defined(__aarch64__))
+
+/** \brief  Enable Floating Point Unit
+
+  Critical section, called from undef handler, so systick is disabled
+ */
+__STATIC_INLINE void __FPU_Enable_fixed(void)
+{
+  __ASM volatile(
+    //Permit access to VFP/NEON, registers by modifying CPACR
+    "        MRC     p15,0,R1,c1,c0,2  \n"
+	"        MOVW    R2, #:lower16:0x00F00000   \n"
+	"        MOVT    R2, #:upper16:0x00F00000   \n"
+	"        ORR     R1,R1,R2 \n"
+	"        MCR     p15,0,R1,c1,c0,2  \n"
+
+    //Ensure that subsequent instructions occur in the context of VFP/NEON access permitted
+    "        ISB                       \n"
+
+    //Enable VFP/NEON
+    "        VMRS    R1,FPEXC          \n"
+	"        MOVW    R2, #:lower16:0x40000000   \n"
+	"        MOVT    R2, #:upper16:0x40000000   \n"
+	"        ORR     R1,R1,R2 \n"
+    "        VMSR    FPEXC,R1          \n"
+
+    //Initialise VFP/NEON registers to 0
+    "        MOV     R2,#0             \n"
+
+    //Initialise D16 registers to 0
+    "        VMOV    D0, R2,R2         \n"
+    "        VMOV    D1, R2,R2         \n"
+    "        VMOV    D2, R2,R2         \n"
+    "        VMOV    D3, R2,R2         \n"
+    "        VMOV    D4, R2,R2         \n"
+    "        VMOV    D5, R2,R2         \n"
+    "        VMOV    D6, R2,R2         \n"
+    "        VMOV    D7, R2,R2         \n"
+    "        VMOV    D8, R2,R2         \n"
+    "        VMOV    D9, R2,R2         \n"
+    "        VMOV    D10,R2,R2         \n"
+    "        VMOV    D11,R2,R2         \n"
+    "        VMOV    D12,R2,R2         \n"
+    "        VMOV    D13,R2,R2         \n"
+    "        VMOV    D14,R2,R2         \n"
+    "        VMOV    D15,R2,R2         \n"
+
+#if (defined(__ARM_NEON) && (__ARM_NEON == 1))
+    //Initialise D32 registers to 0
+    "        VMOV    D16,R2,R2         \n"
+    "        VMOV    D17,R2,R2         \n"
+    "        VMOV    D18,R2,R2         \n"
+    "        VMOV    D19,R2,R2         \n"
+    "        VMOV    D20,R2,R2         \n"
+    "        VMOV    D21,R2,R2         \n"
+    "        VMOV    D22,R2,R2         \n"
+    "        VMOV    D23,R2,R2         \n"
+    "        VMOV    D24,R2,R2         \n"
+    "        VMOV    D25,R2,R2         \n"
+    "        VMOV    D26,R2,R2         \n"
+    "        VMOV    D27,R2,R2         \n"
+    "        VMOV    D28,R2,R2         \n"
+    "        VMOV    D29,R2,R2         \n"
+    "        VMOV    D30,R2,R2         \n"
+    "        VMOV    D31,R2,R2         \n"
+#endif
+
+    //Initialise FPSCR to a known state
+    "        VMRS    R1,FPSCR          \n"
+	"        MOVW    R2, #:lower16:0x00086060   \n"
+	"        MOVT    R2, #:upper16:0x00086060   \n"
+	"        AND     R1,R1,R2          \n" //Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+    "        VMSR    FPSCR,R1            "
+    : : : "cc", "r1", "r2"
+  );
+}
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2568,6 +2120,11 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 
 #endif /* CPUSTYLE_ARM_CM7 */
 
+// получение частоты, с которой инкрементируется счетчик
+uint_fast32_t cpu_getdebugticksfreq(void)
+{
+	return CPU_FREQ;
+}
 
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see SystemInit() in hardware.c
@@ -2824,6 +2381,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYLE_T507
+
+	// Все сравнения должны быть не точнее 1 MB
+	if (a < 0x00100000)			// SYSRAM, BROM
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+	// 1 GB DDR RAM memory size allowed
+	if (a >= 0x40000000)			//  DRAM - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #elif CPUSTYLE_F133
 
 	if (a < 0x00400000)
@@ -3030,7 +2598,10 @@ sysinit_fpu_initialize(void)
 #elif (__CORTEX_A != 0)
 
 	// FPU
-	__FPU_Enable();
+	__FPU_Enable_fixed();
+	L1C_DisableCaches();
+	L1C_DisableBTAC();
+	MMU_Disable();
 
 #elif CPUSTYLE_RISCV
 
@@ -3054,7 +2625,7 @@ sysinit_fpu_initialize(void)
 	{
 		GIC_Enable();
 	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
@@ -3365,7 +2936,7 @@ sysinit_mmu_initialize(void)
 
 // ОБщая для всех процессоров инициализация
 static void FLASHMEMINITFUNC
-sysinit_cache_initialize(void)
+sysinit_cache_core0_initialize(void)
 {
 #if defined (__CORTEX_M)
 	#if __ICACHE_PRESENT
@@ -3402,6 +2973,9 @@ sysinit_cache_initialize(void)
 			__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 			// set the CPUECTLR.SMPEN
 			__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+			// 4.5.28 Auxiliary Control Register
+			// bit6: L2ACTLR write access control
+			__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
 			__ISB();
 			__DSB();
 		#elif (__CORTEX_A == 7U)
@@ -3565,7 +3139,7 @@ sysinit_cache_initialize(void)
 
 /* инициадихации кеш-памяти, спцифические для CORE0 */
 static void FLASHMEMINITFUNC
-sysinit_cache_L2_cpu0_initialize(void)
+sysinit_cache_L2_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
@@ -3604,17 +3178,20 @@ SystemInit(void)
 {
 #if ! LINUX_SUBSYSTEM
 	sysinit_fpu_initialize();
-	sysinit_pll_initialize();	// PLL iniitialize
+#if ! WITHISBOOTLOADER_DDR
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+#endif
+	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysinit_pmic_initialize();
+	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
 	sysinit_perfmeter_initialize();
 	sysintt_sdram_initialize();
 #if ! WITHISBOOTLOADER_DDR
-	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
+	sysinit_cache_core0_initialize();	// caches iniitialize
+	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
 #endif /* ! LINUX_SUBSYSTEM */
 }
@@ -3641,7 +3218,7 @@ static void cortexa_cpuinfo(void)
 #if WITHSMPSYSTEM && ! WITHRTOS
 
 static void FLASHMEMINITFUNC
-sysinit_cache_cpu1_initialize(void)
+sysinit_cache_coreN_initialize(void)
 {
 #if (__CORTEX_A != 0)
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
@@ -3684,8 +3261,11 @@ sysinit_cache_cpu1_initialize(void)
 
 //#define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
 	(void) PWR->CR1;
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
@@ -3727,8 +3307,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 //#define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
@@ -3757,8 +3340,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //#define HARDWARE_NCORES 2
 
 // Invoke at SVC context
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
 	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
@@ -3770,7 +3356,7 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #elif CPUSTYLE_A64
 
-#define HARDWARE_NCORES 4
+//#define HARDWARE_NCORES 4
 
 
 // https://stackoverflow.com/questions/50120446/allwinner-a64-switch-from-aarch32-to-aarch64-by-warm-reset
@@ -3792,6 +3378,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void halt32(void)
 {
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = '#';
+	for (;;)
+		;
 	volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
 	base [0] = 0xDEADBEEF;
 	base [1] = __get_MPIDR() & 0x03; //0xABBA1980;
@@ -3820,19 +3411,20 @@ __STATIC_FORCEINLINE void __set_RVBAR(uint32_t rvbar)
 }
 
 // От состяния бита AA64nAA32 в C_CTRL_REG0 не зависит
-static void restart_core0_aarch64(void)
+static void restart_self_aarch64(void)
 {
 	// RMR - Reset Management Register
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
+	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
 
-	uint32_t result;
-	result = 0x03;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
 	//__set_CP(15, 0, result, 12, 0, 2);
 	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
 	// G8.2.123 RMR, Reset Management Register
-	__set_CP(15, 0, result, 12, 0, 2);	// RMR_EL1 - work okay
+	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
 	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
 	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
 
 	__ISB();
 	__WFI();
@@ -3842,30 +3434,61 @@ static void restart_core0_aarch64(void)
 }
 
 
-/*
-	#include <stdint.h>
-
-	void _start(void)
-	{
-		volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
-		base [0] = 0xDEADBEEF;
-		for (;;)
-			;
-	}
-*/
-
 // aarch64-none-elf-gcc.exe -mcpu=cortex-A53 -Os -c tt.c
 // aarch64-none-elf-ld -o tt.elf tt.o
 // aarch64-none-elf-objdump.exe -d tt.elf
 
-static const uint32_t halt64 [16] =
+//	#include <stdint.h>
+//
+//	void _start(void)
+//	{
+//		volatile uint32_t * const base = (volatile uint32_t *) 0x00044000;
+//		base [0] = 0xDEADBEEF;
+//		for (;;)
+//			;
+//	}
+
+static const uint32_t halt64_a [] =
 {
-		0xd2880000,        //mov     x0, #0x4000                     // #16384
-		0xf2a00080,        //movk    x0, #0x4, lsl #16
-		0x5297dde1,        //mov     w1, #0xbeef                     // #48879
-		0x72bbd5a1,        //movk    w1, #0xdead, lsl #16
-		0xb9000001,        //str     w1, [x0]
+		0xD2880000,        //mov     x0, #0x4000                     // #16384
+		0xF2A00080,        //movk    x0, #0x4, lsl #16
+		0x5297DDE1,        //mov     w1, #0xbeef                     // #48879
+		0x72BBD5A1,        //movk    w1, #0xdead, lsl #16
+		0xB9000001,        //str     w1, [x0]
 		0x14000000,        //b       400014 <_start+0x14>
+};
+
+//	#include <stdint.h>
+//	#include "../../arch/aw_a64/cmsis_a64.h"
+//	void _start(void)
+//	{
+//		while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+//			;
+//		UART0->UART_RBR_THR_DLL = '#';
+//		for (;;)
+//			;
+//	}
+
+static const uint32_t halt64_0 [] =
+{
+		0xD2900000,	// 	mov	x0, #0x8000                	// #32768
+		0xF2A03840,	// 	movk	x0, #0x1c2, lsl #16
+		0xB9407C01,	// 	ldr	w1, [x0, #124]
+		0x360FFFE1,	// 	tbz	w1, #1, 400008 <_start+0x8>
+		0x52800461,	// 	mov	w1, #0x23                  	// #35
+		0xB9000001,	// 	str	w1, [x0]
+		0x14000000,	// 	b	400018 <_start+0x18>
+};
+
+static const uint32_t halt64_1 [] =
+{
+		0xD2900000,	// 	mov	x0, #0x8000                	// #32768
+		0xF2A03840,	// 	movk	x0, #0x1c2, lsl #16
+		0xB9407C01,	// 	ldr	w1, [x0, #124]
+		0x360FFFE1,	// 	tbz	w1, #1, 400008 <_start+0x8>
+		0x528004A1,	// 	mov	w1, #0x23                  	// #35
+		0xB9000001,	// 	str	w1, [x0]
+		0x14000000,	// 	b	400018 <_start+0x18>
 };
 
 // H3: R_CPUCFG @ 0x01F01C00
@@ -3875,52 +3498,332 @@ static const uint32_t halt64 [16] =
  * Read 0x01F01C00+0x1A4 register Get soft_entry_address
  */
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf
-	//startfunc = (uintptr_t) halt64;
-	//startfunc = (uintptr_t) halt32;
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << (0 + targetcore);
 
-//	dcache_invalidate(0x44000, 64);
-//	dcache_clean((uintptr_t) halt64, sizeof halt64);
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
 
-//	PRINTF("  C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
-//	PRINTF("  C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
-//	PRINTF("  C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
-
-	//C0_CPUX_CFG->C_CTRL_REG0 |= (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));		// AA64nAA32 1: AArch64
+	C0_CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-//	C0_CPUX_CFG->RVBARADDR[targetcore].LOW = startfunc;
-//	C0_CPUX_CFG->RVBARADDR[targetcore].HIGH = startfunc >> 64;
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	// Не влияют
+	// Register width state.Determines which execution state the processor boots into after a cold reset.
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+
+	C0_CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
+}
+
+/* for AArch64 */
+static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
+{
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+	// aarch64
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	C0_CPUX_CFG->RVBARADDR [targetcore].LOW = startfunc;
+	C0_CPUX_CFG->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+//#pragma GCC diagnostic pop
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	//dcache_clean_invalidate(0x44000, 64 * 1024);
-	//__set_RVBAR(halt32);
-//	PRINTF("RVBAR=%08X startfunc=%p\n", (unsigned) __get_RVBAR(), (void *) startfunc);
-	//restart_core0_aarch64();
+	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (1u << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
+	restart_self_aarch64();
+}
 
-//	C0_CPUX_CFG->C_RST_CTRL |= (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
-//	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (16 + targetcore));	// warm boot mode ??? (3..0)
+#elif CPUSTYLE_H616
+// AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
+// H616 version
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
 
-	C0_CPUX_CFG->C_RST_CTRL &= ~ (1u << (0 + targetcore));	// CORE_RESET (3..0) assert
-	(void) C0_CPUX_CFG->C_RST_CTRL;
-	C0_CPUX_CFG->C_RST_CTRL |= (1u << (0 + targetcore));	// CORE_RESET (3..0) de-assert
-	(void) C0_CPUX_CFG->C_RST_CTRL;
+/* Memory regions */
+#define SUNXI_ROM_BASE			0x00000000
+#define SUNXI_ROM_SIZE			0x00010000
+#define SUNXI_SRAM_BASE			0x00020000
+#define SUNXI_SRAM_SIZE			0x00038000
+#define SUNXI_SRAM_A1_BASE		0x00020000
+#define SUNXI_SRAM_A1_SIZE		0x00008000
+#define SUNXI_SRAM_C_BASE		0x00028000
+#define SUNXI_SRAM_C_SIZE		0x00030000
+#define SUNXI_DEV_BASE			0x01000000
+#define SUNXI_DEV_SIZE			0x09000000
+#define SUNXI_DRAM_BASE			0x40000000
+#define SUNXI_DRAM_VIRT_BASE		SUNXI_DRAM_BASE
 
-//	PRINTF("2 C0_CPUX_CFG->C_CPU_STATUS=%08X\n", (unsigned) C0_CPUX_CFG->C_CPU_STATUS);
-//	PRINTF("2 C0_CPUX_CFG->C_RST_CTRL=%08X\n", (unsigned) C0_CPUX_CFG->C_RST_CTRL);
-//	PRINTF("2 C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
-//	local_delay_ms(250);
-	//printhex32((uintptr_t) halt64, halt64, sizeof halt64);
-	//printhex32(C0_CPUX_CFG_BASE, C0_CPUX_CFG, sizeof * C0_CPUX_CFG);
-//	PRINTF("Check for modification: targetcore=%u\n", targetcore);
-//	printhex32(0x44000, (void *) 0x44000, 32);
+/* Memory-mapped devices */
+//#define SUNXI_SYSCON_BASE		0x03000000
+//#define SUNXI_CCU_BASE			0x03001000
+//#define SUNXI_DMA_BASE			0x03002000
+////#define SUNXI_SID_BASE			0x03006000
+//#define SUNXI_SPC_BASE			0x03008000
+//#define SUNXI_WDOG_BASE			0x030090a0
+////#define SUNXI_PIO_BASE			0x0300b000
+//#define SUNXI_GICD_BASE			0x03021000
+//#define SUNXI_GICC_BASE			0x03022000
+//#define SUNXI_UART0_BASE		0x05000000
+//#define SUNXI_SPI0_BASE			0x05010000
+//#define SUNXI_R_CPUCFG_BASE		0x07000400
+//#define SUNXI_R_PRCM_BASE		0x07010000
+////#define SUNXI_R_WDOG_BASE		0x07020400
+//#define SUNXI_R_WDOG_BASE		SUNXI_WDOG_BASE
+//#define SUNXI_R_PIO_BASE		0x07022000
+//#define SUNXI_R_UART_BASE		0x07080000
+//#define SUNXI_R_I2C_BASE		0x07081400
+//#define SUNXI_R_RSB_BASE		0x07083000
+//#define SUNXI_CPUCFG_BASE		0x09010000
 
-//	for (;;)
-//		;
+// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h#L68
+// arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h
 
+#define SUNXI_DE3_BASE			0x01000000
+#define SUNXI_SS_BASE			0x01904000
+#define SUNXI_EMCE_BASE			0x01905000
+
+#define SUNXI_SRAMC_BASE		0x03000000
+#define SUNXI_CCM_BASE			0x03001000
+#define SUNXI_DMA_BASE			0x03002000
+/* SID address space starts at 0x03006000, but e-fuse is at offset 0x200 */
+#define SUNXI_SIDC_BASE			0x03006000
+//#define SUNXI_SID_BASE			0x03006200
+#define SUNXI_TIMER_BASE		0x03009000
+//#define SUNXI_PIO_BASE			0x0300B000
+#define SUNXI_PSI_BASE			0x0300C000
+
+#define SUNXI_GIC400_BASE		0x03020000
+#define SUNXI_IOMMU_BASE		0x030F0000
+
+#ifdef CONFIG_MACH_SUN50I_H6
+#define SUNXI_DRAM_COM_BASE		0x04002000
+#define SUNXI_DRAM_CTL0_BASE		0x04003000
+#define SUNXI_DRAM_PHY0_BASE		0x04005000
+#endif
+#define SUNXI_NFC_BASE			0x04011000
+#define SUNXI_MMC0_BASE			0x04020000
+#define SUNXI_MMC1_BASE			0x04021000
+#define SUNXI_MMC2_BASE			0x04022000
+#ifdef CONFIG_MACH_SUN50I_H616
+#define SUNXI_DRAM_COM_BASE		0x047FA000
+#define SUNXI_DRAM_CTL0_BASE		0x047FB000
+#define SUNXI_DRAM_PHY0_BASE		0x04800000
+#endif
+
+//#define SUNXI_UART0_BASE		0x05000000
+//#define SUNXI_UART1_BASE		0x05000400
+//#define SUNXI_UART2_BASE		0x05000800
+//#define SUNXI_UART3_BASE		0x05000C00
+#define SUNXI_TWI0_BASE			0x05002000
+#define SUNXI_TWI1_BASE			0x05002400
+#define SUNXI_TWI2_BASE			0x05002800
+#define SUNXI_TWI3_BASE			0x05002C00
+#define SUNXI_SPI0_BASE			0x05010000
+#define SUNXI_SPI1_BASE			0x05011000
+#define SUNXI_GMAC_BASE			0x05020000
+#define SUNXI_USB0_BASE			0x05100000
+#define SUNXI_XHCI_BASE			0x05200000
+#define SUNXI_USB3_BASE			0x05311000
+#define SUNXI_PCIE_BASE			0x05400000
+
+#define SUNXI_HDMI_BASE			0x06000000
+#define SUNXI_TCON_TOP_BASE		0x06510000
+#define SUNXI_TCON_LCD0_BASE		0x06511000
+#define SUNXI_TCON_TV0_BASE		0x06515000
+
+#define SUNXI_RTC_BASE			0x07000000
+#define SUNXI_R_CPUCFG_BASE		0x07000400
+#define SUNXI_PRCM_BASE			0x07010000
+#define SUNXI_R_WDOG_BASE		0x07020400
+#define SUNXI_R_PIO_BASE		0x07022000
+#define SUNXI_R_UART_BASE		0x07080000
+#define SUNXI_R_TWI_BASE		0x07081400
+
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
+
+//#define HARDWARE_NCORES 4
+
+#define R_CPUCFG_BASE 0x07000400
+
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	// AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
+	// CPUSTYLE_H616
+	// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/cpu/armv8/fel_utils.S#L39
+
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_RTC_BASE + 0x5c4 + targetcore * 4));
+
+	/* Не влияет: */
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+//	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+
+	* rvaddr = startfunc;
+	ASSERT(* rvaddr == startfunc);
+
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
+}
+
+/* for AArch64 */
+static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
+{
+	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= UINT32_C(1) << (targetcore + 24); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = startfunc;
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+//#pragma GCC diagnostic pop
+}
+
+#elif CPUSTYLE_T507
+
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
+
+/* Memory regions */
+#define SUNXI_ROM_BASE			0x00000000
+#define SUNXI_ROM_SIZE			0x00010000
+#define SUNXI_SRAM_BASE			0x00020000
+#define SUNXI_SRAM_SIZE			0x00038000
+#define SUNXI_SRAM_A1_BASE		0x00020000
+#define SUNXI_SRAM_A1_SIZE		0x00008000
+#define SUNXI_SRAM_C_BASE		0x00028000
+#define SUNXI_SRAM_C_SIZE		0x00030000
+#define SUNXI_DEV_BASE			0x01000000
+#define SUNXI_DEV_SIZE			0x09000000
+#define SUNXI_DRAM_BASE			0x40000000
+#define SUNXI_DRAM_VIRT_BASE		SUNXI_DRAM_BASE
+
+/* Memory-mapped devices */
+//#define SUNXI_SYSCON_BASE		0x03000000
+//#define SUNXI_CCU_BASE			0x03001000
+//#define SUNXI_DMA_BASE			0x03002000
+////#define SUNXI_SID_BASE			0x03006000
+//#define SUNXI_SPC_BASE			0x03008000
+//#define SUNXI_WDOG_BASE			0x030090a0
+////#define SUNXI_PIO_BASE			0x0300b000
+//#define SUNXI_GICD_BASE			0x03021000
+//#define SUNXI_GICC_BASE			0x03022000
+//#define SUNXI_UART0_BASE		0x05000000
+//#define SUNXI_SPI0_BASE			0x05010000
+//#define SUNXI_R_CPUCFG_BASE		0x07000400
+//#define SUNXI_R_PRCM_BASE		0x07010000
+////#define SUNXI_R_WDOG_BASE		0x07020400
+//#define SUNXI_R_WDOG_BASE		SUNXI_WDOG_BASE
+//#define SUNXI_R_PIO_BASE		0x07022000
+//#define SUNXI_R_UART_BASE		0x07080000
+//#define SUNXI_R_I2C_BASE		0x07081400
+//#define SUNXI_R_RSB_BASE		0x07083000
+//#define SUNXI_CPUCFG_BASE		0x09010000
+
+// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h#L68
+// arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h
+
+#define SUNXI_DE3_BASE			0x01000000
+#define SUNXI_SS_BASE			0x01904000
+#define SUNXI_EMCE_BASE			0x01905000
+
+#define SUNXI_SRAMC_BASE		0x03000000
+#define SUNXI_CCM_BASE			0x03001000
+#define SUNXI_DMA_BASE			0x03002000
+/* SID address space starts at 0x03006000, but e-fuse is at offset 0x200 */
+#define SUNXI_SIDC_BASE			0x03006000
+//#define SUNXI_SID_BASE			0x03006200
+#define SUNXI_TIMER_BASE		0x03009000
+//#define SUNXI_PIO_BASE			0x0300B000
+#define SUNXI_PSI_BASE			0x0300C000
+
+#define SUNXI_GIC400_BASE		0x03020000
+#define SUNXI_IOMMU_BASE		0x030F0000
+
+#ifdef CONFIG_MACH_SUN50I_H6
+#define SUNXI_DRAM_COM_BASE		0x04002000
+#define SUNXI_DRAM_CTL0_BASE		0x04003000
+#define SUNXI_DRAM_PHY0_BASE		0x04005000
+#endif
+//#define SUNXI_NFC_BASE			0x04011000
+//#define SUNXI_MMC0_BASE			0x04020000
+//#define SUNXI_MMC1_BASE			0x04021000
+//#define SUNXI_MMC2_BASE			0x04022000
+#ifdef CONFIG_MACH_SUN50I_H616
+#define SUNXI_DRAM_COM_BASE		0x047FA000
+#define SUNXI_DRAM_CTL0_BASE		0x047FB000
+#define SUNXI_DRAM_PHY0_BASE		0x04800000
+#endif
+
+//#define SUNXI_UART0_BASE		0x05000000
+//#define SUNXI_UART1_BASE		0x05000400
+//#define SUNXI_UART2_BASE		0x05000800
+//#define SUNXI_UART3_BASE		0x05000C00
+#define SUNXI_TWI0_BASE			0x05002000
+#define SUNXI_TWI1_BASE			0x05002400
+#define SUNXI_TWI2_BASE			0x05002800
+#define SUNXI_TWI3_BASE			0x05002C00
+#define SUNXI_SPI0_BASE			0x05010000
+#define SUNXI_SPI1_BASE			0x05011000
+#define SUNXI_GMAC_BASE			0x05020000
+#define SUNXI_USB0_BASE			0x05100000
+#define SUNXI_XHCI_BASE			0x05200000
+#define SUNXI_USB3_BASE			0x05311000
+#define SUNXI_PCIE_BASE			0x05400000
+
+#define SUNXI_HDMI_BASE			0x06000000
+#define SUNXI_TCON_TOP_BASE		0x06510000
+#define SUNXI_TCON_LCD0_BASE		0x06511000
+#define SUNXI_TCON_TV0_BASE		0x06515000
+
+#define SUNXI_RTC_BASE			0x07000000
+#define SUNXI_R_CPUCFG_BASE		0x07000400
+#define SUNXI_PRCM_BASE			0x07010000
+#define SUNXI_R_WDOG_BASE		0x07020400
+#define SUNXI_R_PIO_BASE		0x07022000
+#define SUNXI_R_UART_BASE		0x07080000
+#define SUNXI_R_TWI_BASE		0x07081400
+
+// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/common/sunxi_cpu_ops.c#L66
+
+//#define HARDWARE_NCORES 4
+
+#define R_CPUCFG_BASE 0x07000400
+
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+	// не влияет
+	//CPU_SUBSYS_CTRL_T507->CPUx_CTRL_REG [targetcore] = !0; // Register width state AA64NAA32 0: AArch32 1: AArch64
+
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+
+	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
+	ASSERT(* rvaddr == startfunc);
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+}
+
+/* for AArch64 */
+static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
+{
+	C0_CPUX_CFG_T507->C0_CPUx_CTRL_REG [targetcore] = 1; // 20, 24... AA64NAA32 0: AArch32 1: AArch64
+
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = startfunc;
+	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = startfunc >> 32;
+//#pragma GCC diagnostic pop
 }
 
 #elif CPUSTYLE_T113
@@ -3949,12 +3852,19 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 //#define HARDWARE_NCORES 2
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;
+	//R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	* rvaddr = startfunc;
+	ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
-	C0_CPUX_CFG->C0_RST_CTRL |= (1u << targetcore);
-	(void) C0_CPUX_CFG->C0_RST_CTRL;
+	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;
 }
 
 #elif CPUSTYLE_VM14
@@ -3985,8 +3895,11 @@ static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 // Страницы 74..78 документа Manual_1892VM14YA.pdf
 
-static void cortexa_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
     const uint32_t psmask = 0x03u << (targetcore * 8);	/* SCU_PWR mask */
 
 //    volatile uint32_t * const SPL_ADDR = (volatile uint32_t *) 0x2000fff4;
@@ -4034,6 +3947,9 @@ void Reset_CPUn_Handler(void)
 	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
 #elif (__CORTEX_A == 7U)
@@ -4047,13 +3963,13 @@ void Reset_CPUn_Handler(void)
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_cpu1_initialize();
+	sysinit_cache_core0_initialize();	// caches iniitialize
+	sysinit_cache_coreN_initialize();
 
 	{
 		GIC_Enable();
 	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_IPC_ONLY));
+		GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_IPC_ONLY));
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
@@ -4070,7 +3986,6 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
-
 	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	LCLSPIN_UNLOCK(& cpu1init);
@@ -4079,7 +3994,7 @@ void Reset_CPUn_Handler(void)
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 #if WITHNESTEDINTERRUPTS
-	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	GIC_SetInterfacePriorityMask(GIC_ENCODE_PRIORITY(PRI_USER));
 #endif /* WITHNESTEDINTERRUPTS */
 
 #if WITHLWIP
@@ -4097,6 +4012,9 @@ void Reset_CPUn_Handler(void)
 		}
 	}
 #endif /* CPUSTYLE_VM14 */
+
+	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
+
 	// Idle loop
 	for (;;)
 	{
@@ -4108,6 +4026,8 @@ void Reset_CPUn_Handler(void)
 void cpump_initialize(void)
 {
 #if 1
+	unsigned core;
+	extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
 
 	SystemCoreClock = CPU_FREQ;
 
@@ -4133,21 +4053,15 @@ void cpump_initialize(void)
 
 	cortexa_cpuinfo();
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
-	unsigned core;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
-		static uintptr_t fns [4] =
-		{
-			0,
-			(uintptr_t) Reset_CPU1_Handler,
-			(uintptr_t) Reset_CPU2_Handler,
-			(uintptr_t) Reset_CPU3_Handler,
-		};
-
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
-		cortexa_mp_cpuN_start(fns [core], core);
+
+		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
+		//aarch64_mp_cpuN_start((uintptr_t) halt64_0, __get_MPIDR() & 0x03);
+
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
 	}
@@ -4905,7 +4819,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 
 	static RAMHEAP uint8_t heapplace [38 * 1024uL * 1024uL];
 
-#elif (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
+#elif (CPUSTYLE_STM32MP1 || CPUSTYLE_T507 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 

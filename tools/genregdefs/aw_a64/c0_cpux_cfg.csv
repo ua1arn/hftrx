@@ -1,5 +1,6 @@
 #type; C0_CPUX_CFG
 #base; C0_CPUX_CFG 0x01700000
+
 #regdef; C_CTRL_REG0; 0x0000; Cluster Control Register0
 #regdef; C_CTRL_REG1; 0x0004; Cluster Control Register1
 #regdef; CACHE_CFG_REG0; 0x0008; Cache parameters configuration register0

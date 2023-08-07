@@ -35,6 +35,7 @@ int dbg_puts_impl_P(const FLASHMEM char * s);
 int dbg_puts_impl(const char * s);
 int dbg_putchar(int c);
 int dbg_getchar(char * r);
+void dbg_flush(void); // дождаться, пока будут переданы все символы, ы том числе и из FIFO
 
 #if WITHDEBUG
 	#define TP() \
@@ -110,6 +111,10 @@ int dbg_getchar(char * r);
 			hardware_uart0_enabletx(0); \
 		} while (0)
 
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
+
 #endif /* WITHDEBUG && WITHUART0HW && WITHDEBUG_USART0 */
 
 #if WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
@@ -147,6 +152,10 @@ int dbg_getchar(char * r);
 			(void) ctx; \
 			hardware_uart1_enabletx(0); \
 		} while (0)
+
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
 
 #endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1 */
 
@@ -186,6 +195,10 @@ int dbg_getchar(char * r);
 			hardware_uart2_enabletx(0); \
 		} while (0)
 
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
+
 #endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
 
 #if WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3
@@ -223,6 +236,10 @@ int dbg_getchar(char * r);
 			(void) ctx; \
 			hardware_uart3_enabletx(0); \
 		} while (0)
+
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
 
 #endif /* WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3 */
 
@@ -262,6 +279,10 @@ int dbg_getchar(char * r);
 			hardware_uart4_enabletx(0); \
 		} while (0)
 
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
+
 #endif /* WITHDEBUG && WITHUART4HW && WITHDEBUG_USART4 */
 
 #if WITHDEBUG && WITHUART5HW && WITHDEBUG_USART5
@@ -300,6 +321,10 @@ int dbg_getchar(char * r);
 			hardware_uart5_enabletx(0); \
 		} while (0)
 
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
+
 #endif /* WITHDEBUG && WITHUART5HW && WITHDEBUG_USART5 */
 
 #if WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6
@@ -337,6 +362,11 @@ int dbg_getchar(char * r);
 			(void) ctx; \
 			hardware_uart6_enabletx(0); \
 		} while (0)
+
+	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+	#define HARDWARE_DEBUG_FLUSH() do { \
+	} while (0)
+
 
 #endif /* WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6 */
 

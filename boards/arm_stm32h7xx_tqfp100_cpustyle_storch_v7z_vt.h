@@ -763,15 +763,15 @@
 		/* Bit clock */ \
 		arm_hardware_pioi_altfn50((1U << 14), GPIO_AF_LTDC14);	/* PI14 DCLK */ \
 		/* Control */ \
-		arm_hardware_piog_outputs(MODE, (demode != 0) * MODE);	/* PG12 MODE=state */ \
+		arm_hardware_piog_outputs(MODE, ((demode) != 0) * MODE);	/* PG12 MODE=state */ \
 		/* Synchronisation signals in SYNC MODE */ \
-		arm_hardware_piok_outputs((demode == 0) * DE, 0);	/* PK7 DE=0 (DISP, pin 31) */ \
-		arm_hardware_pioi_altfn50((demode == 0) * VS, GPIO_AF_LTDC14);	/* PI13 VSYNC */ \
-		arm_hardware_pioi_altfn50((demode == 0) * HS, GPIO_AF_LTDC14);	/* PI12 HSYNC */ \
+		arm_hardware_piok_outputs(((demode) == 0) * DE, 0);	/* PK7 DE=0 (DISP, pin 31) */ \
+		arm_hardware_pioi_altfn50(((demode) == 0) * VS, GPIO_AF_LTDC14);	/* PI13 VSYNC */ \
+		arm_hardware_pioi_altfn50(((demode) == 0) * HS, GPIO_AF_LTDC14);	/* PI12 HSYNC */ \
 		/* Synchronisation signals in DE mode*/ \
-		arm_hardware_piok_altfn50((demode != 0) * DE, GPIO_AF_LTDC14);	/* PK7 DE */ \
-		arm_hardware_pioi_outputs((demode != 0) * VS, VS);	/* PI13 VSYNC */ \
-		arm_hardware_pioi_outputs((demode != 0) * HS, HS);	/* PI12 HSYNC */ \
+		arm_hardware_piok_altfn50(((demode) != 0) * DE, GPIO_AF_LTDC14);	/* PK7 DE */ \
+		arm_hardware_pioi_outputs(((demode) != 0) * VS, VS);	/* PI13 VSYNC */ \
+		arm_hardware_pioi_outputs(((demode) != 0) * HS, HS);	/* PI12 HSYNC */ \
 		/* RED */ \
 		arm_hardware_piog_altfn50((1U << 13), GPIO_AF_LTDC14);		/* PG13 R0 */ \
 		arm_hardware_pioj_altfn50((1U << 0), GPIO_AF_LTDC14);		/* PJ0 R1 */ \

@@ -1,5 +1,6 @@
 #type; CPU_SUBSYS_CTRL
 #base; CPU_SUBSYS_CTRL 0x08100000
+
 #regdef; GENER_CTRL_REG0; 0x0000; General Control Register0
 #regdef; GIC_JTAG_RST_CTRL; 0x000C; GIC and JTAG Reset Control Register
 #regdef; C0_INT_EN; 0x0010; Cluster0 Interrupt Enable Control Register

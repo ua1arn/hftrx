@@ -277,4 +277,6 @@ void board_update_time(uint32_t sec);
 #define SYS_LIGHTWEIGHT_PROT 1
 typedef unsigned sys_prot_t;
 
+#define ETH_RX_BUFFER_SIZE 32768
+
 #endif /* __LWIPOPTS_H__ */

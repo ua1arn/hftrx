@@ -15,12 +15,13 @@
 
 ##############################################################################################
 # Start of default section
-#
+# sun50iw9p1 Allwinner T507 (HelperBoarf T507)
+
 TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-XFEL = ../../tools/xfel-windows-v1.2.9/xfel
+XFEL = ../../tools//xfel-windows-v1.3.2/xfel
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -28,7 +29,7 @@ PRJROOT := ../..
 OBJDIR = obj
 
 # Define project name here
-PROJECT = tc1_a64
+PROJECT = tc1_awt507
 
 # Define linker script file here
 LDSCRIPT_BOOT = ./allwnr_t507_boot.ld
@@ -58,9 +59,8 @@ CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Ofast -flto
-#OPT = -Os -flto
-OPT = -Ofast
+OPT = -Ofast -flto
+#OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -182,6 +182,16 @@ DINCDIR += \
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
+ifeq (1, 1)
+# unzipLIB
+# https://github.com/bitbank2/unzipLIB.git
+
+UNZIPLIBDIR = $(PRJROOT)/lib/unzipLIB
+DINCDIR += $(UNZIPLIBDIR)/src
+SRCDIRS += $(UNZIPLIBDIR)/src
+
+endif
+
 ifeq (1, 0)
 # FreeRTOS
 RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
@@ -268,20 +278,32 @@ bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 # Take from tc1_t507_boot.map
-SystemInitAddr = 0x00021de4
+SystemInitAddr_H616 = 0x000308a0
 
 # Invoke SystemInit 
-boot_run: fsbl_frz.alw32
-	$(XFEL) write 0x00018000 fsbl_frz.alw32
-	$(XFEL) exec $(SystemInitAddr)
+boot_run_h616: h616_fsbl_frz.alw32
+	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
+	$(XFEL) exec $(SystemInitAddr_H616)
 
-app_run: $(PROJECT)_app.alw32 boot_run
-	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+boot_run_t507:
+	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
+	$(XFEL) exec 0x00032c00
+
+app_run: $(PROJECT)_app.bin
+	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
 	$(XFEL) exec 0x40000100 
+
+# debug for bootloader - check .ld file
+_app_run: bootloader
+	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) exec 0x00028000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
-	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
+	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
+
+erase:
+	$(XFEL) spinor erase 0x00000000 1024
 
 flash_old:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
@@ -307,6 +329,7 @@ $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
+# add libsun50iw9p1_spinor.a 
 %_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@

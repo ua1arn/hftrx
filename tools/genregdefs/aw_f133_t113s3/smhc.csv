@@ -1,11 +1,15 @@
-#type; SMHC
+#type; SMHC; SD-MMC Host Controller
 #base; SMHC0 0x04020000
 #base; SMHC1 0x04021000
 #base; SMHC2 0x04022000
+
 #irq; SMHC0 72
 #irq; SMHC1 73
 #irq; SMHC2 74
-#comment; SD-MMC Host Controller
+#irqrv; SMHC0 56
+#irqrv; SMHC1 57
+#irqrv; SMHC2 58
+
 #regdef; SMHC_CTRL; 0x0000; Control Register
 #regdef; SMHC_CLKDIV; 0x0004; Clock Control Register
 #regdef; SMHC_TMOUT; 0x0008; Time Out Register

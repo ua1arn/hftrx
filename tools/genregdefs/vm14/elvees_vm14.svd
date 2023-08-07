@@ -520,14 +520,1161 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>I2C0</name>
+  <description></description>
+  <baseAddress>0x3802C000</baseAddress>
+  <interrupt>
+   <name>I2C0_IC_INTR</name>
+   <value>100</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2C1_IC_INTR</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2C2_IC_INTR</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>IC_CON</name>
+    <displayName>IC_CON</displayName>
+    <description>Регистр управления W/R (R для 4-ого бита) 0x7F 0x0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_TAR</name>
+    <displayName>IC_TAR</displayName>
+    <description>Регистр адреса абонента W/R 0x1055 0x4</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_SAR</name>
+    <displayName>IC_SAR</displayName>
+    <description>Регистр slave-адреса. W/R 0x55 0x8</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_HS_MADD</name>
+    <displayName>IC_HS_MADD</displayName>
+    <description>Регистр кода адреса мастера для high speed режима. W/R 0x1 0xС</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_DATA_CMD</name>
+    <displayName>IC_DATA_CMD</displayName>
+    <description>Регистр управления передачей. W/R 0x0 0x10</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_SS_SCL_HCNT</name>
+    <displayName>IC_SS_SCL_HCNT</displayName>
+    <description>Старший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x190 0x14</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_SS_SCL_LCNT</name>
+    <displayName>IC_SS_SCL_LCNT</displayName>
+    <description>Младший регистр счетчика предделителя частоты для standard.speed режима. W/R 0x1d6 0x18</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_FS_SCL_HCNT</name>
+    <displayName>IC_FS_SCL_HCNT</displayName>
+    <description>Старший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x3c 0x1C</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_FS_SCL_LCNT</name>
+    <displayName>IC_FS_SCL_LCNT</displayName>
+    <description>Младший регистр счетчика предделителя частоты для fast-speed режима. W/R 0x82 0x20</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_HS_SCL_HCNT</name>
+    <displayName>IC_HS_SCL_HCNT</displayName>
+    <description>Старший регистр счетчика предделителя частоты для high-speed режима. W/R 0x6 0x24</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_HS_SCL_LCNT</name>
+    <displayName>IC_HS_SCL_LCNT</displayName>
+    <description>Младший регистр счетчика предделителя частоты для high-speed режима. W/R 0x10 0x28</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_INTR_STAT</name>
+    <displayName>IC_INTR_STAT</displayName>
+    <description>Регистр статуса прерывания. R 0x0 0x2C</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_INTR_MASK</name>
+    <displayName>IC_INTR_MASK</displayName>
+    <description>Регистр маски прерывания W/R 0x8ff 0X30</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_RAW_INTR_STAT</name>
+    <displayName>IC_RAW_INTR_STAT</displayName>
+    <description>Регистр статуса необработанного прерывания R 0x0 0x34</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_RX_TL</name>
+    <displayName>IC_RX_TL</displayName>
+    <description>Регистр порога заполнения FIFO приемника. W/R 0x0 0x38</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_TX_TL</name>
+    <displayName>IC_TX_TL</displayName>
+    <description>Регистр порога заполнения FIFO передатчика. W/R 0x0 0x3C</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLT_INTR</name>
+    <displayName>IC_CLT_INTR</displayName>
+    <description>Регистр сброса прерываний. R 0x0 0x40</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C_CLR_RX_UNDER</name>
+    <displayName>C_CLR_RX_UNDER</displayName>
+    <description>Регистр сброса прерывания RX_UNDER R 0x0 0x44</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_RX_OVER</name>
+    <displayName>IC_CLR_RX_OVER</displayName>
+    <description>Регистр сброса прерывания RX_OVER R 0x0 0x48</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_TX_OVER</name>
+    <displayName>IC_CLR_TX_OVER</displayName>
+    <description>Регистр сброса прерывания TX_OVER R 0x0 0x4C</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_RD_REQ</name>
+    <displayName>IC_CLR_RD_REQ</displayName>
+    <description>Регистр сброса прерывания RD_REQ R 0x0 0x50</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_TX_ABR</name>
+    <displayName>IC_CLR_TX_ABR</displayName>
+    <description>Регистр сброса прерывания TX_ABR R 0x0 0x54</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_RX_DONE</name>
+    <displayName>IC_CLR_RX_DONE</displayName>
+    <description>Регистр сброса прерывания RX_DONE R 0x0 0x58</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_ACTIVITY</name>
+    <displayName>IC_CLR_ACTIVITY</displayName>
+    <description>Регистр сброса прерывания ACTIVITY R 0x0 0x5C</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_STOP_DET</name>
+    <displayName>IC_CLR_STOP_DET</displayName>
+    <description>Регистр сброса прерывания STOP_DET R 0x0 0x60</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_START_DET</name>
+    <displayName>IC_CLR_START_DET</displayName>
+    <description>Регистр сброса прерывания START_DET R 0x0 0x64</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CLR_GEN_CALL</name>
+    <displayName>IC_CLR_GEN_CALL</displayName>
+    <description>Регистр сброса прерывания GEN_CALL R 0x0 0x68</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_ENABLE</name>
+    <displayName>IC_ENABLE</displayName>
+    <description>Регистр включения шины. W/R 0x0 0x6C</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_STATUS</name>
+    <displayName>IC_STATUS</displayName>
+    <description>Регистр статуса шины. R 0x6 0x70</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_TXFLR</name>
+    <displayName>IC_TXFLR</displayName>
+    <description>Регистр уровня FIFO передатчика R 0x0 0x74</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_RXFLR</name>
+    <displayName>IC_RXFLR</displayName>
+    <description>Регистр уровня FIFO приемника R 0x0 0x78</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_SDA_HOLD</name>
+    <displayName>IC_SDA_HOLD</displayName>
+    <description>Регистр времени удержания SDA. W/R 0x1 0x7C</description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_TX_ABRT_SOURCE</name>
+    <displayName>IC_TX_ABRT_SOURCE</displayName>
+    <description>Регистр статуса обрыва передачи. R 0x0 0x80</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_SLV_DATA_NACK_ONLY</name>
+    <displayName>IC_SLV_DATA_NACK_ONLY</displayName>
+    <description>Регистр генерирования SLV_DATA_NACK W/R 0x0 0x84</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_DMA_CR</name>
+    <displayName>IC_DMA_CR</displayName>
+    <description>Регистр контроля DMA интерфейса. W/R 0x0 0x88</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_DMA_TDLR</name>
+    <displayName>IC_DMA_TDLR</displayName>
+    <description>Регистр передачи данных через DMA интерфейс. W/R 0x0 0x8C</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_DMA_RDLR</name>
+    <displayName>IC_DMA_RDLR</displayName>
+    <description>Регистр приема данных через DMA интерфейс. W/R 0x0 0x90</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_SDA_SETUP</name>
+    <displayName>IC_SDA_SETUP</displayName>
+    <description>Регистр установки SDA W/R 0x64 0x94</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_ACK_GENERAL_CALL</name>
+    <displayName>IC_ACK_GENERAL_CALL</displayName>
+    <description>Регистр вызова общего ACK W/R 0x1 0x98</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_ENABLE_STATUS</name>
+    <displayName>IC_ENABLE_STATUS</displayName>
+    <description>Регистр статуса включения R 0x0 0x9C</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_FS_SPKLEN</name>
+    <displayName>IC_FS_SPKLEN</displayName>
+    <description>Регистр управления фильтрацией для standard-speed и fast.speed режимов W/R 0x5 0xA0</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_HS_SPKLEN</name>
+    <displayName>IC_HS_SPKLEN</displayName>
+    <description>Регистр управления фильтрацией для high.speed режима. W/R 0x1 0xA4</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="I2C0">
+  <name>I2C1</name>
+  <baseAddress>0x3802D000</baseAddress>
+  <interrupt>
+   <name>I2C0_IC_INTR</name>
+   <value>100</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2C1_IC_INTR</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2C2_IC_INTR</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="I2C0">
+  <name>I2C2</name>
+  <baseAddress>0x3802E000</baseAddress>
+  <interrupt>
+   <name>I2C0_IC_INTR</name>
+   <value>100</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2C1_IC_INTR</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>I2C2_IC_INTR</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>I2S0</name>
+  <description>Контроллер I2S предназначен для обмена аудио-данными в стерео-формате по последовательной шине I2S.</description>
+  <baseAddress>0x38030000</baseAddress>
+  <interrupt>
+   <name>I2S0</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>IER</name>
+    <displayName>IER</displayName>
+    <description>Регистр включения контроллера. W/R 0x0 0x0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRER</name>
+    <displayName>IRER</displayName>
+    <description>Регистр включения блока приема. W/R 0x0 0x4</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ITER</name>
+    <displayName>ITER</displayName>
+    <description>Регистр включения блока передачи. W/R 0x0 0x8</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CER</name>
+    <displayName>CER</displayName>
+    <description>Регистр включения тактовой частоты. W/R 0x0 0xC</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCR</name>
+    <displayName>CCR</displayName>
+    <description>Регистр конфигурации тактовой частоты. W/R 0x10 0x10</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RXFFR</name>
+    <displayName>RXFFR</displayName>
+    <description>Регистр сброса FIFO буферов блока приема. W 0x0 0x14</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TXFFR</name>
+    <displayName>TXFFR</displayName>
+    <description>Регистр сброса FIFO буферов блока передачи. W 0x0 0x18</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LRBR0_LTHR0</name>
+    <displayName>LRBR0_LTHR0</displayName>
+    <description>Регистр «левого» слова приемника. R 0x0 0x20, Регистр «левого» слова нулевого передатчика. W 0x0 0x20</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RRBR0</name>
+    <displayName>RRBR0</displayName>
+    <description>Регистр «правого» слова приемника. R 0x0 0x24, Регистр «правого» слова нулевого передатчика. W 0x0 0x24</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RER0</name>
+    <displayName>RER0</displayName>
+    <description>Регистр включения приемника. W/R 0x1 0x28</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TER0</name>
+    <displayName>TER0</displayName>
+    <description>Регистр включения нулевого передатчика. W/R 0x1 0x2C</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCR0</name>
+    <displayName>RCR0</displayName>
+    <description>Регистр конфигурации приемника. W/R 0x5 0x30</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCR0</name>
+    <displayName>TCR0</displayName>
+    <description>Регистр конфигурации нулевого передатчика. W/R 0x5 0x34</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR0</name>
+    <displayName>ISR0</displayName>
+    <description>Регистр статуса прерывания нулевого канала. R 0x10 0x38</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMR0</name>
+    <displayName>IMR0</displayName>
+    <description>Регистр маски прерывания нулевого канала. W/R 0x33 0x3C</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ROR0</name>
+    <displayName>ROR0</displayName>
+    <description>Регистр переполнения FIFO приемника. R 0x0 0x40</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TOR0</name>
+    <displayName>TOR0</displayName>
+    <description>Регистр переполнения FIFO нулевого передатчика. R 0x0 0x44</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RFCR0</name>
+    <displayName>RFCR0</displayName>
+    <description>Регистр конфигурации FIFO приемника. W/R 0x3 0x48</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFCR0</name>
+    <displayName>TFCR0</displayName>
+    <description>Регистр конфигурации FIFO нулевого передатчика. W/R 0x3 0x4C</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RFF0</name>
+    <displayName>RFF0</displayName>
+    <description>Регистр сброса FIFO приемника. W 0x0 0x50</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFF0</name>
+    <displayName>TFF0</displayName>
+    <description>Регистр сброса FIFO нулевого передатчика. W 0x0 0x54</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LTHR1</name>
+    <displayName>LTHR1</displayName>
+    <description>Регистр «левого» слова первого передатчика. W 0x0 0x60</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTHR1</name>
+    <displayName>RTHR1</displayName>
+    <description>Регистр «правого» слова первого передатчика. W 0x0 0x64</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TER1</name>
+    <displayName>TER1</displayName>
+    <description>Регистр включения первого передатчика W/R 0x1 0x6C</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCR1</name>
+    <displayName>TCR1</displayName>
+    <description>Регистр конфигурации первого передатчика. W/R 0x5 0x74</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR1</name>
+    <displayName>ISR1</displayName>
+    <description>Регистр статуса прерывания первого канала. R 0x10 0x78</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMR1</name>
+    <displayName>IMR1</displayName>
+    <description>Регистр маски прерывания первого канала. W/R 0x33 0x7C</description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TOR1</name>
+    <displayName>TOR1</displayName>
+    <description>Регистр переполнения первого передатчика. R 0x0 0x84</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFCR1</name>
+    <displayName>TFCR1</displayName>
+    <description>Регистр конфигурации FIFO первого передатчика. W/R 0x3 0x8C</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFF1</name>
+    <displayName>TFF1</displayName>
+    <description>Регистр сброса FIFO первого передатчика. W 0x0 0x94</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LTHR2</name>
+    <displayName>LTHR2</displayName>
+    <description>Регистр «левого» слова второго передатчика. W 0x0 0xA0</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTHR2</name>
+    <displayName>RTHR2</displayName>
+    <description>Регистр «правого» слова второго передатчика. W 0x0 0xA4</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TER2</name>
+    <displayName>TER2</displayName>
+    <description>Регистр включения второго передатчика W/R 0x1 0xAC</description>
+    <addressOffset>0x0AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCR2</name>
+    <displayName>TCR2</displayName>
+    <description>Регистр конфигурации второго передатчика. W/R 0x5 0xB4</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR2</name>
+    <displayName>ISR2</displayName>
+    <description>Регистр статуса прерывания второго канала. R 0x10 0xB8</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMR2</name>
+    <displayName>IMR2</displayName>
+    <description>Регистр маски прерывания второго канала. W/R 0x33 0xBC</description>
+    <addressOffset>0x0BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TOR2</name>
+    <displayName>TOR2</displayName>
+    <description>Регистр переполнения второго передатчика. R 0x0 0xC4</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFCR2</name>
+    <displayName>TFCR2</displayName>
+    <description>Регистр конфигурации FIFO второго передатчика. W/R 0x3 0xCC</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFF2</name>
+    <displayName>TFF2</displayName>
+    <description>Регистр сброса FIFO второго передатчика. W 0x0 0xD4</description>
+    <addressOffset>0x0D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LTHR3</name>
+    <displayName>LTHR3</displayName>
+    <description>Регистр «левого» слова третьего передатчика. W 0x0 0xE0</description>
+    <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTHR3</name>
+    <displayName>RTHR3</displayName>
+    <description>Регистр «правого» слова третьего передатчика. W 0x0 0xE4</description>
+    <addressOffset>0x0E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TER3</name>
+    <displayName>TER3</displayName>
+    <description>Регистр включения третьего передатчика W/R 0x1 0xEC</description>
+    <addressOffset>0x0EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCR3</name>
+    <displayName>TCR3</displayName>
+    <description>Регистр конфигурации третьего передатчика. W/R 0x5 0xF4</description>
+    <addressOffset>0x0F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR3</name>
+    <displayName>ISR3</displayName>
+    <description>Регистр статуса прерывания третьего канала. R 0x10 0xF8</description>
+    <addressOffset>0x0F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMR3</name>
+    <displayName>IMR3</displayName>
+    <description>Регистр маски прерывания третьего канала. W/R 0x33 0xFC</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TOR3</name>
+    <displayName>TOR3</displayName>
+    <description>Регистр переполнения третьего передатчика. R 0x0 0x104</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFCR3</name>
+    <displayName>TFCR3</displayName>
+    <description>Регистр конфигурации FIFO третьего передатчика. W/R 0x3 0x10C</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TFF3</name>
+    <displayName>TFF3</displayName>
+    <description>Регистр сброса FIFO третьего передатчика. W 0x0 0x114</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RXDMA</name>
+    <displayName>RXDMA</displayName>
+    <description>Регистр DMA приема. R 0x0 0x1C0</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TXDMA</name>
+    <displayName>TXDMA</displayName>
+    <description>Регистр DMA передачи. W 0x0 0x1C8</description>
+    <addressOffset>0x1C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTXDMA</name>
+    <displayName>RTXDMA</displayName>
+    <description>Регистр сброса DMA передачи. W 0x0 0x1CC</description>
+    <addressOffset>0x1CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2S_COMP_PARAM_2</name>
+    <displayName>I2S_COMP_PARAM_2</displayName>
+    <description>Второй регистр параметров компонента. R 0x48c 0x1F0</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2S_COMP_PARAM_1</name>
+    <displayName>I2S_COMP_PARAM_1</displayName>
+    <description>Первый регистр параметров компонента. R 0x24c067e 0x1F4</description>
+    <addressOffset>0x1F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2S_COMP_VERSION</name>
+    <displayName>I2S_COMP_VERSION</displayName>
+    <description>Регистр ревизии компонента. R 0x3130362a 0x1F8</description>
+    <addressOffset>0x1F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2S_COMP_TYPE</name>
+    <displayName>I2S_COMP_TYPE</displayName>
+    <description>Регистр типа компонента. R 0x445701a0 0x1FC</description>
+    <addressOffset>0x1FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>MFBSP0</name>
+  <description>МНОГОФУНКЦИОНАЛЬНЫЙ БУФЕРИЗИРОВАННЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ПОРТ (MFBSP) </description>
+  <baseAddress>0x38086000</baseAddress>
+  <interrupt>
+   <name>MFBSP0_RXIRQ</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_TXIRQ</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_SRQ</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_RXIRQ</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_TXIRQ</name>
+   <value>94</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_SRQ</name>
+   <value>95</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>RX_TX_MFBSP</name>
+    <displayName>RX_TX_MFBSP</displayName>
+    <description>R Буфер приёма данных, W Буфер передачи данных</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSR_MFBSP</name>
+    <displayName>CSR_MFBSP</displayName>
+    <description>R/W Регистр управления и состояния</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DIR_MFBSP</name>
+    <displayName>DIR_MFBSP</displayName>
+    <description>R/W Регистр управления направлением выводов порта ввода-вывода</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPIO_DR</name>
+    <displayName>GPIO_DR</displayName>
+    <description>R/W Регистр данных порта ввода-вывода</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCTR</name>
+    <displayName>TCTR</displayName>
+    <description>R/W Регистр управления передатчиком</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCTR</name>
+    <displayName>RCTR</displayName>
+    <description>R/W Регистр управления приёмником </description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSR</name>
+    <displayName>TSR</displayName>
+    <description>R/W Регистр состояния передатчика</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSR</name>
+    <displayName>RSR</displayName>
+    <description>R/W Регистр состояния приёмника</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCTR_RATE</name>
+    <displayName>TCTR_RATE</displayName>
+    <description></description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCTR_RATE</name>
+    <displayName>RCTR_RATE</displayName>
+    <description></description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSTART</name>
+    <displayName>TSTART</displayName>
+    <description>R/W псевдорегистр ten – запуск/останов передатчика без изменения настроек передатчика</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RSTART</name>
+    <displayName>RSTART</displayName>
+    <description>R/W псевдорегистр ren – запуск/останов приемника без изменения настроек приемника</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMERG_MFBSP</name>
+    <displayName>EMERG_MFBSP</displayName>
+    <description>R/W Регистр аварийного управления портом</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IMASK_MFBSP</name>
+    <displayName>IMASK_MFBSP</displayName>
+    <description>R/W Регистр маски прерываний от порта</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="MFBSP0">
+  <name>MFBSP1</name>
+  <baseAddress>0x38088000</baseAddress>
+  <interrupt>
+   <name>MFBSP0_RXIRQ</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_TXIRQ</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_SRQ</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_RXIRQ</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_TXIRQ</name>
+   <value>94</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_SRQ</name>
+   <value>95</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
   <name>NANDMPORT</name>
   <description>КОНТРОЛЛЕР ПАМЯТИ ТИПА NAND FLASH (NANDMPORT)</description>
   <baseAddress>0x38007000</baseAddress>
+  <interrupt>
+   <name>NFC_MPORTINT</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PACKET</name>
     <displayName>PACKET</displayName>
-    <description></description>
+    <description>0x0 RW Регистр настройки пакетов</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -777,6 +1924,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="NANDMPORT">
+  <name>NFCM_BASE</name>
+  <baseAddress>0x38007000</baseAddress>
+  <interrupt>
+   <name>NFC_MPORTINT</name>
+   <value>71</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>NORMPORT</name>
@@ -1338,582 +2494,97 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>FTR0</name>
-    <displayName>FTR0</displayName>
-    <description>RO Тип ошибки канала 0</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR1</name>
-    <displayName>FTR1</displayName>
-    <description>RO Тип ошибки канала 1</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR2</name>
-    <displayName>FTR2</displayName>
-    <description>RO Тип ошибки канала 2</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR3</name>
-    <displayName>FTR3</displayName>
-    <description>RO Тип ошибки канала 3</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR4</name>
-    <displayName>FTR4</displayName>
-    <description>RO Тип ошибки канала 4</description>
-    <addressOffset>0x050</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR5</name>
-    <displayName>FTR5</displayName>
-    <description>RO Тип ошибки канала 5</description>
-    <addressOffset>0x054</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR6</name>
-    <displayName>FTR6</displayName>
-    <description>RO Тип ошибки канала 6</description>
-    <addressOffset>0x058</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FTR7</name>
-    <displayName>FTR7</displayName>
-    <description>RO Тип ошибки канала 7</description>
-    <addressOffset>0x05C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR0</name>
-    <displayName>CSR0</displayName>
-    <description>RO Статус канала 0</description>
-    <addressOffset>0x100</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC0</name>
-    <displayName>CPC0</displayName>
-    <description>RO PC канала 0</description>
-    <addressOffset>0x104</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR1</name>
-    <displayName>CSR1</displayName>
-    <description>RO Статус канала 1</description>
-    <addressOffset>0x108</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC1</name>
-    <displayName>CPC1</displayName>
-    <description>RO PC канала 1</description>
-    <addressOffset>0x10C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR2</name>
-    <displayName>CSR2</displayName>
-    <description>RO Статус канала 2</description>
-    <addressOffset>0x110</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC2</name>
-    <displayName>CPC2</displayName>
-    <description>RO PC канала 2</description>
-    <addressOffset>0x114</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR3</name>
-    <displayName>CSR3</displayName>
-    <description>RO Статус канала 3</description>
-    <addressOffset>0x118</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC3</name>
-    <displayName>CPC3</displayName>
-    <description>RO PC канала 3</description>
-    <addressOffset>0x11C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR4</name>
-    <displayName>CSR4</displayName>
-    <description>RO Статус канала 4</description>
-    <addressOffset>0x120</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC4</name>
-    <displayName>CPC4</displayName>
-    <description>RO PC канала 4</description>
-    <addressOffset>0x124</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR5</name>
-    <displayName>CSR5</displayName>
-    <description>RO Статус канала 5</description>
-    <addressOffset>0x128</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC5</name>
-    <displayName>CPC5</displayName>
-    <description>RO PC канала 5</description>
-    <addressOffset>0x12C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR6</name>
-    <displayName>CSR6</displayName>
-    <description>RO Статус канала 6</description>
-    <addressOffset>0x130</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC6</name>
-    <displayName>CPC6</displayName>
-    <description>RO PC канала 6</description>
-    <addressOffset>0x134</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CSR7</name>
-    <displayName>CSR7</displayName>
-    <description>RO Статус канала 7</description>
-    <addressOffset>0x138</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPC7</name>
-    <displayName>CPC7</displayName>
-    <description>RO PC канала 7</description>
-    <addressOffset>0x13C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR0</name>
-    <displayName>SAR0</displayName>
-    <description>RO Адрес Источника для канала 0</description>
-    <addressOffset>0x400</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR0</name>
-    <displayName>DAR0</displayName>
-    <description>RO Адрес Приёмника для канала 0</description>
-    <addressOffset>0x404</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR0</name>
-    <displayName>CCR0</displayName>
-    <description>RO Регистр управления для канала 0</description>
-    <addressOffset>0x408</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_0</name>
-    <displayName>LC0_0</displayName>
-    <description>RO Счётчик циклов 0 для канала 0</description>
-    <addressOffset>0x40C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_0</name>
-    <displayName>LC1_0</displayName>
-    <description>RO Счётчик циклов 1 для канала 0</description>
-    <addressOffset>0x410</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR1</name>
-    <displayName>SAR1</displayName>
-    <description>RO Адрес Источника для канала 1</description>
-    <addressOffset>0x420</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR1</name>
-    <displayName>DAR1</displayName>
-    <description>RO Адрес Приёмника для канала 1</description>
-    <addressOffset>0x424</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR1</name>
-    <displayName>CCR1</displayName>
-    <description>RO Регистр управления для канала 1</description>
-    <addressOffset>0x428</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_1</name>
-    <displayName>LC0_1</displayName>
-    <description>RO Счётчик циклов 0 для канала 1</description>
-    <addressOffset>0x42C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_1</name>
-    <displayName>LC1_1</displayName>
-    <description>RO Счётчик циклов 1 для канала 1</description>
-    <addressOffset>0x430</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR2</name>
-    <displayName>SAR2</displayName>
-    <description>RO Адрес Источника для канала 2</description>
-    <addressOffset>0x440</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR2</name>
-    <displayName>DAR2</displayName>
-    <description>RO Адрес Приёмника для канала 2</description>
-    <addressOffset>0x444</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR2</name>
-    <displayName>CCR2</displayName>
-    <description>RO Регистр управления для канала 2</description>
-    <addressOffset>0x448</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_2</name>
-    <displayName>LC0_2</displayName>
-    <description>RO Счётчик циклов 0 для канала 2</description>
-    <addressOffset>0x44C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_2</name>
-    <displayName>LC1_2</displayName>
-    <description>RO Счётчик циклов 1 для канала 2</description>
-    <addressOffset>0x450</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR3</name>
-    <displayName>SAR3</displayName>
-    <description>RO Адрес Источника для канала 3</description>
-    <addressOffset>0x460</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR3</name>
-    <displayName>DAR3</displayName>
-    <description>RO Адрес Приёмника для канала 3</description>
-    <addressOffset>0x464</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR3</name>
-    <displayName>CCR3</displayName>
-    <description>RO Регистр управления для канала 3</description>
-    <addressOffset>0x468</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_3</name>
-    <displayName>LC0_3</displayName>
-    <description>RO Счётчик циклов 0 для канала 3</description>
-    <addressOffset>0x46C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_3</name>
-    <displayName>LC1_3</displayName>
-    <description>RO Счётчик циклов 1 для канала 3</description>
-    <addressOffset>0x470</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR4</name>
-    <displayName>SAR4</displayName>
-    <description>RO Адрес Источника для канала 4</description>
-    <addressOffset>0x480</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR4</name>
-    <displayName>DAR4</displayName>
-    <description>RO Адрес Приёмника для канала 4</description>
-    <addressOffset>0x484</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR4</name>
-    <displayName>CCR4</displayName>
-    <description>RO Регистр управления для канала 4</description>
-    <addressOffset>0x488</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_4</name>
-    <displayName>LC0_4</displayName>
-    <description>RO Счётчик циклов 0 для канала 4</description>
-    <addressOffset>0x48C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_4</name>
-    <displayName>LC1_4</displayName>
-    <description>RO Счётчик циклов 1 для канала 4</description>
-    <addressOffset>0x490</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR5</name>
-    <displayName>SAR5</displayName>
-    <description>RO Адрес Источника для канала 5</description>
-    <addressOffset>0x4A0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR5</name>
-    <displayName>DAR5</displayName>
-    <description>RO Адрес Приёмника для канала 5</description>
-    <addressOffset>0x4A4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR5</name>
-    <displayName>CCR5</displayName>
-    <description>RO Регистр управления для канала 5</description>
-    <addressOffset>0x4A8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_5</name>
-    <displayName>LC0_5</displayName>
-    <description>RO Счётчик циклов 0 для канала 5</description>
-    <addressOffset>0x4AC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_5</name>
-    <displayName>LC1_5</displayName>
-    <description>RO Счётчик циклов 1 для канала 5</description>
-    <addressOffset>0x4B0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR6</name>
-    <displayName>SAR6</displayName>
-    <description>RO Адрес Источника для канала 6</description>
-    <addressOffset>0x4C0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR6</name>
-    <displayName>DAR6</displayName>
-    <description>RO Адрес Приёмника для канала 6</description>
-    <addressOffset>0x4C4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR6</name>
-    <displayName>CCR6</displayName>
-    <description>RO Регистр управления для канала 6</description>
-    <addressOffset>0x4C8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_6</name>
-    <displayName>LC0_6</displayName>
-    <description>RO Счётчик циклов 0 для канала 6</description>
-    <addressOffset>0x4CC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_6</name>
-    <displayName>LC1_6</displayName>
-    <description>RO Счётчик циклов 1 для канала 6</description>
-    <addressOffset>0x4D0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SAR7</name>
-    <displayName>SAR7</displayName>
-    <description>RO Адрес Источника для канала 7</description>
-    <addressOffset>0x4E0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DAR7</name>
-    <displayName>DAR7</displayName>
-    <description>RO Адрес Приёмника для канала 7</description>
-    <addressOffset>0x4E4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CCR7</name>
-    <displayName>CCR7</displayName>
-    <description>RO Регистр управления для канала 7</description>
-    <addressOffset>0x4E8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC0_7</name>
-    <displayName>LC0_7</displayName>
-    <description>RO Счётчик циклов 0 для канала 7</description>
-    <addressOffset>0x4EC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LC1_7</name>
-    <displayName>LC1_7</displayName>
-    <description>RO Счётчик циклов 1 для канала 7</description>
-    <addressOffset>0x4F0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <register>
+     <name>FTR</name>
+     <displayName>FTR</displayName>
+     <description>RO Тип ошибки канала 0..7</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <registers>
+     <register>
+      <name>CSR</name>
+      <displayName>CSR</displayName>
+      <description>RO Статус канала 0..7</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CPC</name>
+      <displayName>CPC</displayName>
+      <description>RO PC канала 0..7</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <registers>
+     <register>
+      <name>SAR</name>
+      <displayName>SAR</displayName>
+      <description>RO Адрес Источника для канала 0..7</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>DAR</name>
+      <displayName>DAR</displayName>
+      <description>RO Адрес Приёмника для канала 0..7</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CCR</name>
+      <displayName>CCR</displayName>
+      <description>RO Регистр управления для канала 0..7</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>LC0</name>
+      <displayName>LC0</displayName>
+      <description>RO Счётчик циклов 0 для канала 0..7</description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>LC1</name>
+      <displayName>LC1</displayName>
+      <description>RO Счётчик циклов 1 для канала 0..7</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x0A0</dimIncrement>
+   </cluster>
    <register>
     <name>DBGSTATUS</name>
     <displayName>DBGSTATUS</displayName>
@@ -1950,51 +2621,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>CR0</name>
-    <displayName>CR0</displayName>
-    <description>RO Регистр конфигурации 0</description>
-    <addressOffset>0xE00</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CR1</name>
-    <displayName>CR1</displayName>
-    <description>RO Регистр конфигурации 1</description>
-    <addressOffset>0xE04</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CR2</name>
-    <displayName>CR2</displayName>
-    <description>RO Регистр конфигурации 2</description>
-    <addressOffset>0xE08</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CR3</name>
-    <displayName>CR3</displayName>
-    <description>RO Регистр конфигурации 3</description>
-    <addressOffset>0xE0C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CR4</name>
-    <displayName>CR4</displayName>
-    <description>RO Регистр конфигурации 4</description>
-    <addressOffset>0xE10</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>5</dim>
+    <addressOffset>0x00000E00</addressOffset>
+    <register>
+     <name>CR</name>
+     <displayName>CR</displayName>
+     <description>RO Регистр конфигурации 0..4</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x014</dimIncrement>
+   </cluster>
    <register>
     <name>CRD</name>
     <displayName>CRD</displayName>
@@ -2156,6 +2796,629 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral>
+  <name>SWIC0</name>
+  <description>КОНТРОЛЛЕР ИНТЕРФЕЙСА SPACEWIRE (SWIC)</description>
+  <baseAddress>0x38082000</baseAddress>
+  <interrupt>
+   <name>SWIC0_INT</name>
+   <value>88</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1_INT</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>HW_VER</name>
+    <displayName>HW_VER</displayName>
+    <description>Номер версии контроллера RD 0x00</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STATUS</name>
+    <displayName>STATUS</displayName>
+    <description>Регистр состояния WR/RD 0x04</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RX_CODE</name>
+    <displayName>RX_CODE</displayName>
+    <description>Регистр управляющего символа, принятого из сети (маркера времени, кода распределенного прерывания, кода подтверждения распределенного прерывания или кода CC11) RD 0x08</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MODE_CR</name>
+    <displayName>MODE_CR</displayName>
+    <description>Регистр режима работы WR 0x0С</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TX_SPEED</name>
+    <displayName>TX_SPEED</displayName>
+    <description>Регистр коэффициента скорости передачи WR 0x10</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TX_CODE</name>
+    <displayName>TX_CODE</displayName>
+    <description>Регистр управляющего символа (маркера времени, кода распределенного прерывания, кода подтверждения, кода CC11) для передачи в сеть WR 0x14</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RX_SPEED</name>
+    <displayName>RX_SPEED</displayName>
+    <description>Регистр скорости приема данных в канале SpaceWire RD 0x18</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT_RX_PACK</name>
+    <displayName>CNT_RX_PACK</displayName>
+    <description>Регистр счетчика принятых пакетов ненулевой длины RD/WR 0x20</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_L</name>
+    <displayName>ISR_L</displayName>
+    <description>Младшие разряды регистра ISR RD/WR 0x24</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_H</name>
+    <displayName>ISR_H</displayName>
+    <description>Старшие разряды регистра ISR RD/WR 0x28</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TRUE_TIME</name>
+    <displayName>TRUE_TIME</displayName>
+    <description>Регистр, содержащий значение последнего правильного маркера времени и последнего принятого из сети маркера времени RD 0x2C</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TOUT_CODE</name>
+    <displayName>TOUT_CODE</displayName>
+    <description>Регистр размера таймаутов RD/WR 0x30</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_tout_L</name>
+    <displayName>ISR_tout_L</displayName>
+    <description>Младшие разряды регистра флагов таймаутов ISR RD/WR 0x34</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_tout_H</name>
+    <displayName>ISR_tout_H</displayName>
+    <description>Старшие разряды регистра флагов таймаутов ISR RD/WR 0x38</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LOG_ADDR</name>
+    <displayName>LOG_ADDR</displayName>
+    <description>Регистр логического адреса RD/WR 0x3С</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ack_nonack_regime</name>
+    <displayName>ack_nonack_regime</displayName>
+    <description>Регистр управления режимом распределенных прерываний (с подтверждениями или без подтверждений) RD/WR 0x40</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>isr_touts2</name>
+    <displayName>isr_touts2</displayName>
+    <description>Регистр таймаутов кодов распределенных прерываний 2 RD/WR 0x44</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_handler_TERM_FUNCT</name>
+    <displayName>ISR_handler_TERM_FUNCT</displayName>
+    <description>Регистр флагов функций терминального узла –обработчика RD/WR 0x48</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_SPEC</name>
+    <displayName>ISR_SPEC</displayName>
+    <description>Регистр рассылки управляющих кодов в специальный набор портов RD/WR 0x4C</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_1101</name>
+    <displayName>ISR_1101</displayName>
+    <description>Регистр флагов приема управляющих кодов, назначение которых не определено в текущей версии стандарта RD/WR 0x50</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_MACK_1101</name>
+    <displayName>ISR_MACK_1101</displayName>
+    <description>Регистр маски портов, из которых не должны приниматься управляющие коды, назначение которых не определено в текущей версии стандарта RD/WR 0x54</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INT_RESET</name>
+    <displayName>INT_RESET</displayName>
+    <description>Регистр параметров команды внешнего сброса WR/RD 0x58</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STATUS2</name>
+    <displayName>STATUS2</displayName>
+    <description>Регистр состояния 0x5C</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MODE_CR2</name>
+    <displayName>MODE_CR2</displayName>
+    <description>Регистр режима работы 2 0x60</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>Int_H_mack</name>
+    <displayName>Int_H_mack</displayName>
+    <description>Старшая половина регистра маски распределенных прерываний WR/RD 0x64</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>Int_L_mack</name>
+    <displayName>Int_L_mack</displayName>
+    <description>Младшая половина регистра маски распределенных прерываний WR/RD 0x68</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>Ack_H_mack</name>
+    <displayName>Ack_H_mack</displayName>
+    <description>Старшая половина регистра маски кодов подтверждения WR/RD 0x6C</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>Ackl_L_mack</name>
+    <displayName>Ackl_L_mack</displayName>
+    <description>Младшая половина регистра маски кодов подтверждения WR/RD 0x70</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AUTO_SPEED_MANAGE</name>
+    <displayName>AUTO_SPEED_MANAGE</displayName>
+    <description>Регистр параметров автоматической установки скорости передачи WR/RD 0x74</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_source_TERM_FUNCT</name>
+    <displayName>ISR_source_TERM_FUNCT</displayName>
+    <description>Регистр флагов функций терминального узла –источника 0x78</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_spec_term_funct</name>
+    <displayName>ISR_spec_term_funct</displayName>
+    <description>Регистр признака специальной функции для терминального узла обработчика 0x7C</description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_L_reset</name>
+    <displayName>ISR_L_reset</displayName>
+    <description>Младшая половина регистра глобального сброса ISR 0x80</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISR_H_reset</name>
+    <displayName>ISR_H_reset</displayName>
+    <description>Старшая половина регистра глобального сброса ISR 0x84</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="SWIC0">
+  <name>SWIC1</name>
+  <baseAddress>0x38084000</baseAddress>
+  <interrupt>
+   <name>SWIC0_INT</name>
+   <value>88</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1_INT</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>DMA_MFBSP0</name>
+  <description>Регистры встроенных DMA портов SWIC и MFBSP</description>
+  <baseAddress>0x38087000</baseAddress>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ0</name>
+   <value>52</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ1</name>
+   <value>53</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ0</name>
+   <value>54</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ1</name>
+   <value>55</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ0</name>
+   <value>80</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ1</name>
+   <value>81</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ2</name>
+   <value>82</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ3</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ0</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ1</name>
+   <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ2</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ3</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>CSR</name>
+    <displayName>CSR</displayName>
+    <description>Регистр управления и состояния (по чтению сброс битов «END» и «DONE»)</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CP</name>
+    <displayName>CP</displayName>
+    <description>Регистр указателя цепочки </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IR</name>
+    <displayName>IR</displayName>
+    <description>Регистр индекса</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RUN</name>
+    <displayName>RUN</displayName>
+    <description>На запись: Псевдорегистр управления состоянием бита RUN регистра CSR На чтение: Регистр управления и состояния без сброса битов «END» и «DONE»</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DMA_MFBSP0">
+  <name>DMA_MFBSP1</name>
+  <baseAddress>0x38089000</baseAddress>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ0</name>
+   <value>52</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ1</name>
+   <value>53</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ0</name>
+   <value>54</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ1</name>
+   <value>55</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ0</name>
+   <value>80</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ1</name>
+   <value>81</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ2</name>
+   <value>82</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ3</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ0</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ1</name>
+   <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ2</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ3</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="DMA_MFBSP0">
+  <name>DMA_SWIC0</name>
+  <baseAddress>0x38083000</baseAddress>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ0</name>
+   <value>52</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ1</name>
+   <value>53</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ0</name>
+   <value>54</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ1</name>
+   <value>55</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ0</name>
+   <value>80</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ1</name>
+   <value>81</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ2</name>
+   <value>82</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ3</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ0</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ1</name>
+   <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ2</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ3</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="DMA_MFBSP0">
+  <name>DMA_SWIC1</name>
+  <baseAddress>0x38085000</baseAddress>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ0</name>
+   <value>52</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP0_DMAIRQ1</name>
+   <value>53</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ0</name>
+   <value>54</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>MFBSP1_DMAIRQ1</name>
+   <value>55</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ0</name>
+   <value>80</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ1</name>
+   <value>81</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ2</name>
+   <value>82</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC0DMA_IRQ3</name>
+   <value>83</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ0</name>
+   <value>84</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ1</name>
+   <value>85</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ2</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SWIC1DMA_IRQ3</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>UART0</name>

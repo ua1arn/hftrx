@@ -48,7 +48,7 @@
 
 #if WITHISBOOTLOADER
 
-	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -94,22 +94,22 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
-	#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
-	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -120,10 +120,10 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 
-	#define WITHUSBHW_EHCI		USBEHCI1
-	#define WITHUSBHW_OHCI		USBOHCI1
+	//#define WITHUSBHW_EHCI		USBEHCI1
+	//#define WITHUSBHW_OHCI		USBOHCI1
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
@@ -163,33 +163,6 @@
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #endif /* WITHISBOOTLOADER */
-
-#if WITHENCODER
-
-	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOE->DATA)
-	#define ENCODER_BITA		(1u << 8)		// PE8
-	#define ENCODER_BITB		(1u << 7)		// PE7
-
-	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOE->DATA)
-	#define ENCODER2_BITA		(1u << 5)		// PE5
-	#define ENCODER2_BITB		(1u << 4)		// PE4
-
-
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	#define ENCODER_INITIALIZE() do { \
-		arm_hardware_pioe_altfn20(ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-		gpioX_onchangeinterrupt(GPIOE, ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt); \
-		arm_hardware_pioe_altfn20(ENCODER2_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
-		gpioX_onchangeinterrupt(GPIOE, 0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, spool_encinterrupt2); \
-	} while (0)
-
-#endif
 
 	// Инициализируются I2S1 в дуплексном режиме.
 	// аудиокодек
@@ -751,11 +724,11 @@
 	// PF6 - DC-DC synchro output
 	// PWM5 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		hardware_dcdcfreq_pwm5_initialize(HARDWARE_DCDC_PWMCH); \
+		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
 		arm_hardware_piof_altfn2((1U << 6), GPIO_CFG_AF6); /* PF6 - PWM5 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_pwm5_setdiv(HARDWARE_DCDC_PWMCH, f); \
+		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
@@ -822,15 +795,15 @@
 		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
 		const portholder_t MODEmask = (1U << 0); 	/* PD0 mode */ \
 		/* set LCD DE/SYNC mode */ \
-		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD0 = state */ \
+		arm_hardware_piod_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PD0 = state */ \
 		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs((demode == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
-		arm_hardware_piod_altfn20((demode == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_altfn20((demode == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
+		arm_hardware_piod_altfn20(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn20(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
 		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn20((demode != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
-		arm_hardware_piod_outputs((demode != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_outputs((demode != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_altfn20(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn20(1u << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
@@ -891,61 +864,6 @@
 	} while (0)
 
 #endif /* WITHLTDCHW */
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-
-	//	tsc interrupt XS26, pin 08
-	//	tsc/LCD reset, XS26, pin 22
-	//	tsc SCL: XS26, pin 01
-	//	tsc SDA: XS26, pin 02
-
-	void stmpe811_interrupt_handler(void);
-
-	#define BOARD_STMPE811_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_STMPE811_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
-
-	#define BOARD_STMPE811_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_STMPE811_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_STMPE811_INT_PIN, 0); \
-		/*arm_hardware_pioe_onchangeinterrupt(0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); */ \
-		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
-	} while (0)
-
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
-
-	/* PE9 TS_INT */
-	/* PD22 FPLCD_RESET */
-
-	void gt911_interrupt_handler(void);
-
-	#define BOARD_GT911_INT_PIN (1u << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_GT911_RESET_PIN (1u << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
-
-	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
-
-	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pioe_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
-		arm_hardware_piod_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
-		 local_delay_ms(200);  \
-	} while (0)
-
-	#define BOARD_GT911_RESET_INITIO_2() do { \
-		arm_hardware_pioe_inputs(BOARD_GT911_INT_PIN); \
-		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
-	} while (0)
-
-	#define BOARD_GT911_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_GT911_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GT911_INT_PIN, 0); \
-		gpioX_onchangeinterrupt(GPIOE, 0 * BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, gt911_interrupt_handler); \
-	} while (0)
-	//gt911_interrupt_handler
-
-#endif
-
 
 #if 0
 	#define BOARD_BLINK_BIT (0 * 1u << 22)	// PD22 (PWM7) - led on mq-r board (from VCC33

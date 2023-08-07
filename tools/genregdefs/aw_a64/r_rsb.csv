@@ -1,7 +1,7 @@
-#type; R_RSB
+#type; R_RSB; Reduced Serial Bus Host Controller
 #base; R_RSB 0x01F03400
 #irq; R_RSB 71
-#comment; Reduced Serial Bus Host Controller
+
 #regdef; RSB_CTRL; 0x0000; RSB Control Register
 #regdef; RSB_CCR; 0x0004; RSB Clock Control Register
 #regdef; RSB_INTE; 0x0008; RSB Interrupt Enable Register

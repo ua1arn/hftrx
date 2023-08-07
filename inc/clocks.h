@@ -191,11 +191,18 @@ uint_fast32_t allwnrt113_get_tcon0_freq(void);
 uint_fast32_t allwnrt113_get_tcon1_freq(void);
 uint_fast32_t allwnrt113_get_ths_freq(void);
 uint_fast32_t allwnrt113_get_nand_freq(void);
+uint_fast32_t allwnrt113_get_smhc0_freq(void);
+uint_fast32_t allwnrt113_get_smhc1_freq(void);
+uint_fast32_t allwnrt113_get_smhc2_freq(void);
 
 // Allwinner A64
 uint_fast32_t allwnr_a64_get_cpux_freq(void);
-uint_fast32_t allwnra64_get_audiopll8x_freq(void);
-uint_fast32_t allwnra64_get_audiopll_freq(void);
+uint_fast32_t allwnr_a64_get_audiopll8x_freq(void);
+uint_fast32_t allwnr_a64_get_audiopll_freq(void);
+uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
+uint_fast32_t allwnr_a64_get_mbus_freq(void);
+uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void);
+uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void);
 
 // Allwinner T507/T507-H/H616
 uint_fast32_t allwnr_t507_get_cpux_freq(void);
@@ -214,6 +221,9 @@ uint_fast32_t allwnr_t507_get_ce_freq(void);
 uint_fast32_t allwnr_t507_get_ve_freq(void);
 uint_fast32_t allwnr_t507_get_avs_freq(void);
 uint_fast32_t allwnr_t507_get_dram_freq(void);
+uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void);
+uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void);
+uint_fast32_t allwnr_t507_get_ahub_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
@@ -417,7 +427,7 @@ calcdivider(
 		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
 	};
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),

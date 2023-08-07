@@ -12,7 +12,7 @@
 #include <string.h>
 #include <math.h>
 
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYLE_ALLWINNER
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 portholder_t
 power4(uint_fast8_t v)
@@ -111,7 +111,7 @@ power8(uint_fast8_t v)
 	return r;
 }
 
-#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507) */
+#endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYLE_ALLWINNER */
 
 #if CPUSTYLE_R7S721
 
@@ -758,7 +758,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 // DRV: 0x00 = level0, 0x01 = level1, 0x02 - level2, 0x03 - level3
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
@@ -796,7 +796,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static LCLSPINLOCK_t gpiodata_locks [8] =
+static LCLSPINLOCK_t gpiodata_locks [16] =
 {
 	LCLSPINLOCK_INIT,	// GPIOA
 	LCLSPINLOCK_INIT,	// GPIOB - in T113-S3
@@ -806,6 +806,7 @@ static LCLSPINLOCK_t gpiodata_locks [8] =
 	LCLSPINLOCK_INIT,	// GPIOF - in T113-S3
 	LCLSPINLOCK_INIT,	// GPIOG - in T113-S3
 	LCLSPINLOCK_INIT,	// GPIOH
+	LCLSPINLOCK_INIT,	// GPIOI
 };
 
 static LCLSPINLOCK_t gpiodata_L_lock = LCLSPINLOCK_INIT;
@@ -815,9 +816,21 @@ static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 #if CPUSTYLE_A64
 	if (gpio == GPIOL)
 		return & gpiodata_L_lock;
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+
+#elif CPUSTYLE_T507
+	if (gpio == GPIOL)
+		return & gpiodata_L_lock;
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+
+#else
+	#error Unhandled CPUSTYLE_xxx
+
 #endif /* CPUSTYLE_A64 */
 
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 }
 
 
@@ -908,7 +921,14 @@ void gpioX_setstate(
 	gpioX_unlock(gpio, oldIrql);
 }
 
-static void gpioX_prog(
+portholder_t gpioX_getinputs(
+	GPIO_TypeDef * gpio
+	)
+{
+	return gpio->DATA;
+}
+
+static void gpioX_progUnsafe(
 	GPIO_TypeDef * gpio,
 	portholder_t iopins,
 	unsigned cfg,
@@ -925,8 +945,6 @@ static void gpioX_prog(
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 and DRV0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 and DRV1 bits */
 
-	IRQL_t oldIrql;
-	gpioX_lock(gpio, & oldIrql);
 
 	gpio->CFG [0] = (gpio->CFG [0] & ~ (cfg0 * 0x0F)) | (cfg * cfg0);
 	gpio->CFG [1] = (gpio->CFG [1] & ~ (cfg1 * 0x0F)) | (cfg * cfg1);
@@ -940,8 +958,6 @@ static void gpioX_prog(
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
 
-	gpioX_unlock(gpio, oldIrql);
-
 #else
 	const portholder_t mask0 = power4(iopins >> 0);		/* CFG0 and DRV0 bits */
 	const portholder_t mask1 = power4(iopins >> 8);		/* CFG1 and DRV1 bits */
@@ -950,9 +966,6 @@ static void gpioX_prog(
 
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
-
-	IRQL_t oldIrql;
-	gpioX_lock(gpio, & oldIrql);
 
 	gpio->CFG [0] = (gpio->CFG [0] & ~ (mask0 * 0x0F)) | (cfg * mask0);
 	gpio->CFG [1] = (gpio->CFG [1] & ~ (mask1 * 0x0F)) | (cfg * mask1);
@@ -967,8 +980,45 @@ static void gpioX_prog(
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
-	gpioX_unlock(gpio, oldIrql);
 #endif
+}
+
+static void gpioX_prog(
+	GPIO_TypeDef * gpio,
+	portholder_t iopins,
+	unsigned cfg,
+	unsigned drv,
+	unsigned pull
+	)
+{
+	IRQL_t oldIrql;
+	gpioX_lock(gpio, & oldIrql);
+	gpioX_progUnsafe(gpio, iopins, cfg, drv, pull);
+	gpioX_unlock(gpio, oldIrql);
+}
+
+/* Установка состояния выходов именно так как оно передано в state: 0: притянут у земле, 1: отпустили.
+ * при инициалищации программируем или на ввод или на вывод 0.
+ */
+void gpioX_setopendrain(
+	GPIO_TypeDef * gpio,
+	portholder_t mask,
+	portholder_t state
+	)
+{
+	const portholder_t zeroes = mask & ~ state;
+	const portholder_t ones = mask & state;
+	IRQL_t oldIrql;
+
+	/* на этом процессоре имитируем oprn drain перепрограммированием на вход */
+
+	gpioX_lock(gpio, & oldIrql);
+
+	gpioX_progUnsafe(gpio, ones | zeroes, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	gpio->DATA = (gpio->DATA & ~ zeroes);
+	gpioX_progUnsafe(gpio, zeroes, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+
+	gpioX_unlock(gpio, oldIrql);
 }
 
 static void gpioX_updown(
@@ -1021,6 +1071,27 @@ static void ALLW_GPIO_IRQ_Handler_GPIOA(void)
 	const unsigned status = GPIOINTA->EINT_STATUS;
 	GPIOINTA->EINT_STATUS = status;
 #endif /* defined (GPIOINTA) */
+
+#if BOARD_GPIOA_ENCODER_BITS
+	if ((status & BOARD_GPIOA_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOA_ENCODER_BITS */
+
+#if BOARD_GPIOA_ENCODER2_BITS
+	if ((status & BOARD_GPIOA_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOA_ENCODER2_BITS */
+
+#if BOARD_GPIOA_GT911_INT_PIN
+	if ((status & BOARD_GPIOA_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOA_GT911_INT_PIN */
+
+#if BOARD_GPIOA_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOA_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOA_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOB(void)
@@ -1029,6 +1100,27 @@ static void ALLW_GPIO_IRQ_Handler_GPIOB(void)
 	const unsigned status = GPIOINTB->EINT_STATUS;
 	GPIOINTB->EINT_STATUS = status;
 #endif /* defined (GPIOINTB) */
+
+#if BOARD_GPIOB_ENCODER_BITS
+	if ((status & BOARD_GPIOB_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOB_ENCODER_BITS */
+
+#if BOARD_GPIOB_ENCODER2_BITS
+	if ((status & BOARD_GPIOB_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOB_ENCODER2_BITS */
+
+#if BOARD_GPIOB_GT911_INT_PIN
+	if ((status & BOARD_GPIOB_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOB_GT911_INT_PIN */
+
+#if BOARD_GPIOB_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOB_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOB_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOC(void)
@@ -1037,95 +1129,251 @@ static void ALLW_GPIO_IRQ_Handler_GPIOC(void)
 	const unsigned status = GPIOINTC->EINT_STATUS;
 	GPIOINTC->EINT_STATUS = status;
 #endif /* defined (GPIOINTC) */
+
+#if BOARD_GPIOC_ENCODER_BITS
+	if ((status & BOARD_GPIOC_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOC_ENCODER_BITS */
+
+#if BOARD_GPIOC_ENCODER2_BITS
+	if ((status & BOARD_GPIOC_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOC_ENCODER2_BITS */
+
+#if BOARD_GPIOC_GT911_INT_PIN
+	if ((status & BOARD_GPIOC_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOC_GT911_INT_PIN */
+
+#if BOARD_GPIOC_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOC_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOC_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOD(void)
 {
+#if defined (GPIOINTD)
 	const unsigned status = GPIOINTD->EINT_STATUS;
 	GPIOINTD->EINT_STATUS = status;
+#endif /* defined (GPIOINTD) */
+
+#if BOARD_GPIOD_ENCODER_BITS
+	if ((status & BOARD_GPIOD_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOD_ENCODER_BITS */
+
+#if BOARD_GPIOD_ENCODER2_BITS
+	if ((status & BOARD_GPIOD_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOD_ENCODER2_BITS */
+
+#if BOARD_GPIOD_GT911_INT_PIN
+	if ((status & BOARD_GPIOD_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOD_GT911_INT_PIN */
+
+#if BOARD_GPIOD_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOD_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOD_STMPE811_INT_PIN */
 
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOE(void)
 {
+#if defined (GPIOINTE)
 	const unsigned status = GPIOINTE->EINT_STATUS;
 	GPIOINTE->EINT_STATUS = status;
+#endif /* defined (GPIOINTE) */
 
-#if ENCODER_BITS
-	if ((status & ENCODER_BITS) != 0)
+#if BOARD_GPIOE_ENCODER_BITS
+	if ((status & BOARD_GPIOE_ENCODER_BITS) != 0)
 		spool_encinterrupt();
-#endif /* ENCODER_BITS */
-#if BOARD_GT911_INT_PIN
-//	if ((status & ENCODER_BITS) != 0)
-//		xspool_encinterrupt();
-#endif /* BOARD_GT911_INT_PIN */
-#if BOARD_STMPE811_INT_PIN
-//	if ((status & ENCODER_BITS) != 0)
-//		xspool_encinterrupt();
-#endif /* BOARD_STMPE811_INT_PIN */
+#endif /* BOARD_GPIOE_ENCODER_BITS */
+
+#if BOARD_GPIOE_ENCODER2_BITS
+	if ((status & BOARD_GPIOE_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOE_ENCODER2_BITS */
+
+#if BOARD_GPIOE_GT911_INT_PIN
+	if ((status & BOARD_GPIOE_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOE_GT911_INT_PIN */
+
+#if BOARD_GPIOE_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOE_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOE_STMPE811_INT_PIN */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOF(void)
 {
+#if defined (GPIOINTF)
 	const unsigned status = GPIOINTF->EINT_STATUS;
 	GPIOINTF->EINT_STATUS = status;
+#endif /* defined (GPIOINTF) */
+
+#if BOARD_GPIOF_ENCODER_BITS
+	if ((status & BOARD_GPIOF_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOF_ENCODER_BITS */
+
+#if BOARD_GPIOF_ENCODER2_BITS
+	if ((status & BOARD_GPIOF_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOF_ENCODER2_BITS */
+
+#if BOARD_GPIOF_GT911_INT_PIN
+	if ((status & BOARD_GPIOF_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOF_GT911_INT_PIN */
+
+#if BOARD_GPIOF_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOF_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOF_STMPE811_INT_PIN */
 
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOG(void)
 {
+#if defined (GPIOINTG)
 	const unsigned status = GPIOINTG->EINT_STATUS;
 	GPIOINTG->EINT_STATUS = status;
+#endif /* defined (GPIOINTG) */
+
+#if BOARD_GPIOG_ENCODER_BITS
+	if ((status & BOARD_GPIOG_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOG_ENCODER_BITS */
+
+#if BOARD_GPIOG_ENCODER2_BITS
+	if ((status & BOARD_GPIOG_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOG_ENCODER2_BITS */
+
+#if BOARD_GPIOG_GT911_INT_PIN
+	if ((status & BOARD_GPIOG_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOG_GT911_INT_PIN */
+
+#if BOARD_GPIOG_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOG_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOG_STMPE811_INT_PIN */
 
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOH(void)
 {
-	ASSERT(0);
+#if defined (GPIOINTH)
+	const unsigned status = GPIOINTH->EINT_STATUS;
+	GPIOINTH->EINT_STATUS = status;
+#endif /* defined (GPIOINTH) */
+
+#if BOARD_GPIOH_ENCODER_BITS
+	if ((status & BOARD_GPIOH_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOH_ENCODER_BITS */
+
+#if BOARD_GPIOH_ENCODER2_BITS
+	if ((status & BOARD_GPIOH_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOH_ENCODER2_BITS */
+
+#if BOARD_GPIOH_GT911_INT_PIN
+	if ((status & BOARD_GPIOH_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOH_GT911_INT_PIN */
+
+#if BOARD_GPIOH_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOH_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOH_STMPE811_INT_PIN */
+
 }
 
-void ALLW_GPIO_IRQ_Handler(void)	// Allwinner specific
+static void ALLW_GPIO_IRQ_Handler_GPIOI(void)
 {
+#if defined (GPIOINTI)
+	const unsigned status = GPIOINTI->EINT_STATUS;
+	GPIOINTI->EINT_STATUS = status;
+#endif /* defined (GPIOINTI) */
+
+#if BOARD_GPIOI_ENCODER_BITS
+	if ((status & BOARD_GPIOI_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOI_ENCODER_BITS */
+
+#if BOARD_GPIOI_ENCODER2_BITS
+	if ((status & BOARD_GPIOI_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOI_ENCODER2_BITS */
+
+#if BOARD_GPIOI_GT911_INT_PIN
+	if ((status & BOARD_GPIOI_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOI_GT911_INT_PIN */
+
+#if BOARD_GPIOI_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOI_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOI_STMPE811_INT_PIN */
+
+}
+
+static void ALLW_GPIO_IRQ_Handler_GPIOL(void)
+{
+#if defined (GPIOINTL)
+	const unsigned status = GPIOINTL->EINT_STATUS;
+	GPIOINTL->EINT_STATUS = status;
+#endif /* defined (GPIOINTL) */
+
+#if BOARD_GPIOL_ENCODER_BITS
+	if ((status & BOARD_GPIOL_ENCODER_BITS) != 0)
+		spool_encinterrupt();
+#endif /* BOARD_GPIOL_ENCODER_BITS */
+
+#if BOARD_GPIOL_ENCODER2_BITS
+	if ((status & BOARD_GPIOL_ENCODER2_BITS) != 0)
+		spool_encinterrupt2();
+#endif /* BOARD_GPIOL_ENCODER2_BITS */
+
+#if BOARD_GPIOL_GT911_INT_PIN
+	if ((status & BOARD_GPIOL_GT911_INT_PIN) != 0)
+		gt911_interrupt_handler();
+#endif /* BOARD_GPIOL_GT911_INT_PIN */
+
+#if BOARD_GPIOL_STMPE811_INT_PIN
+	if ((status & BOARD_GPIOL_STMPE811_INT_PIN) != 0)
+		stmpe811_interrupt_handler();
+#endif /* BOARD_GPIOL_STMPE811_INT_PIN */
 
 }
 
 /* разрешение прерывания по изменению состояния указанных групп выводов */
-void
+static void
 gpioX_onchangeinterrupt(
 		GPIO_TypeDef * gpio,
+		GPIOINT_TypeDef * gpioint,
+		uint_fast16_t int_id,
 		portholder_t ipins,
 		portholder_t raise, portholder_t fall,
 		uint32_t priority,
 		uint_fast8_t targetcpu,
-		void (* handler_unused)(void)
+		void (* group_handler)(void)
 		)
 {
-#if CPUSTYLE_A64
-	const unsigned gpioix = gpio == GPIOL ? 0 : (gpio - (GPIO_TypeDef *) GPIOB_BASE + 1);
-	//GPIOINT_TypeDef * const ints = & GPIOBLOCK->GPIO_INTS [gpioix];
-	GPIOBLOCK_TypeDef * const blk = gpio == GPIOL ? GPIOBLOCK_L : GPIOBLOCK;
-#else /* CPUSTYLE_A64 */
-	const unsigned gpioix = gpio - (GPIO_TypeDef *) GPIOB_BASE + 1;
-	GPIOBLOCK_TypeDef * const blk = GPIOBLOCK;
-#endif /* CPUSTYLE_A64 */
 	unsigned pos;
 	//	0x0: Positive Edge
 	//	0x1: Negative Edge
 	//	0x2: High Level
 	//	0x3: Low Level
 	//	0x4: Double Edge (Positive/Negative)
-
-	static void (* const handlers [])(void) =
-	{
-		ALLW_GPIO_IRQ_Handler_GPIOA,
-		ALLW_GPIO_IRQ_Handler_GPIOB,
-		ALLW_GPIO_IRQ_Handler_GPIOC,
-		ALLW_GPIO_IRQ_Handler_GPIOD,
-		ALLW_GPIO_IRQ_Handler_GPIOE,
-		ALLW_GPIO_IRQ_Handler_GPIOF,
-		ALLW_GPIO_IRQ_Handler_GPIOG,
-		ALLW_GPIO_IRQ_Handler_GPIOH,
-	};
 	unsigned cfgbits = 0;	// default - high level
 
 	if (! raise && ! fall)
@@ -1145,10 +1393,10 @@ gpioX_onchangeinterrupt(
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
 
-	blk->GPIO_INTS [gpioix].EINT_CFG [0] = (blk->GPIO_INTS [gpioix].EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	blk->GPIO_INTS [gpioix].EINT_CFG [1] = (blk->GPIO_INTS [gpioix].EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	blk->GPIO_INTS [gpioix].EINT_CFG [2] = (blk->GPIO_INTS [gpioix].EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	blk->GPIO_INTS [gpioix].EINT_CFG [3] = (blk->GPIO_INTS [gpioix].EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	gpioint->EINT_CFG [0] = (gpioint->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+	gpioint->EINT_CFG [1] = (gpioint->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+	gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+	gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
@@ -1156,10 +1404,11 @@ gpioX_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		//gpiohandlers [gpioix] [pos] = handler;
-		arm_hardware_set_handler(GPIOB_NS_IRQn + gpioix * 2 - 2, handlers [gpioix], priority, targetcpu);	/* GPIOx_NS */
+
+		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 	}
 
-	blk->GPIO_INTS [gpioix].EINT_CTL |= ipins;
+	gpioint->EINT_CTL |= ipins;
 	// todo: EINT_STATUS = ipins; // for clear
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -1198,20 +1447,45 @@ static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 //	LowerIrql(irql);
 }
 
+void gpioX_setstate(
+	GPIO_TypeDef * gpio,
+	portholder_t opins,
+	portholder_t state
+	)
+{
+	gpio->gpio_swport_dr = (gpio->gpio_swport_dr & ~ opins) | (opins & state);
+	(void) gpio->gpio_swport_dr;
+}
+
+
+
 #endif
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
-	/* Установка начального состояния битов  в GPIO STM32F4X */
-	#define arm_stm32f4xx_hardware_pio_setstate(gpio, opins, initialstate) \
-	  do { \
-		const portholder_t op = (opins); \
-		const portholder_t is = (initialstate); \
-		(gpio)->BSRR = \
-			BSRR_S((is) & (op)) | /* set bits */ \
-			BSRR_C(~ (is) & (op)) | /* reset bits */ \
-			0; \
-		} while (0)
+	#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F
+		/*!< Atomic port state change */
+		void gpioX_setstate(
+			GPIO_TypeDef * gpio,
+			portholder_t opins,
+			portholder_t state
+			)
+		{
+			gpio->BSRR =
+				BSRR_S((state) & (opins)) | /* set bits */
+				BSRR_C(~ (state) & (opins)) | /* reset bits */
+				0;
+			(void) gpio->BSRR;
+		}
+
+		portholder_t gpioX_getinputs(
+			GPIO_TypeDef * gpio
+			)
+		{
+			return gpio->IDR;
+		}
+
+	#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32F1XX
 
@@ -1888,7 +2162,7 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOH);
 	gpioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -1968,7 +2242,7 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2048,7 +2322,7 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2120,7 +2394,7 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2185,7 +2459,7 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2238,7 +2512,7 @@ arm_hardware_piof_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2291,7 +2565,7 @@ arm_hardware_piog_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -2354,7 +2628,7 @@ arm_hardware_pioa_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 #elif CPUSTYLE_VM14
 
@@ -2416,7 +2690,7 @@ arm_hardware_piob_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 #elif CPUSTYLE_VM14
 
@@ -2478,7 +2752,7 @@ arm_hardware_pioc_analoginput(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 #elif CPUSTYLE_VM14
 
@@ -2523,7 +2797,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;	/* I/O port A clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOA, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -2532,7 +2806,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2541,7 +2815,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2550,7 +2824,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2559,7 +2833,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2570,7 +2844,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2584,7 +2858,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 	gpioX_setstate(GPIOA, opins, initialstate);
@@ -2628,7 +2902,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;	/* I/O port A clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOA, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -2637,7 +2911,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2646,7 +2920,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2655,7 +2929,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2664,7 +2938,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2675,7 +2949,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2689,7 +2963,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 	gpioX_setstate(GPIOA, opins, initialstate);
@@ -2732,7 +3006,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;	/* I/O port A clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOA, opins, 0, 3);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -2741,7 +3015,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2750,7 +3024,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2759,7 +3033,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2769,7 +3043,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2780,7 +3054,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2794,7 +3068,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 	gpioX_setstate(GPIOA, opins, initialstate);
@@ -2831,7 +3105,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;	/* I/O port B clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOB, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -2840,7 +3114,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2849,7 +3123,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2858,7 +3132,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2867,7 +3141,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2878,7 +3152,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2892,7 +3166,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 	GPIOB->gpio_swport_ctl &= ~ opins;
 	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -2936,7 +3210,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;	/* I/O port B clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOB, opins, 0, 3);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -2945,7 +3219,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2954,7 +3228,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2963,7 +3237,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2972,7 +3246,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2983,7 +3257,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -2997,7 +3271,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 	GPIOB->gpio_swport_ctl &= ~ opins;
 	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -3045,7 +3319,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;	/* I/O port C clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOC, opins, 0, 3);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -3054,7 +3328,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3063,7 +3337,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3072,7 +3346,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3081,7 +3355,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3092,7 +3366,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3106,7 +3380,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -3155,7 +3429,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPDEN;	/* I/O port D clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOD, opins, 0, 3);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -3164,7 +3438,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;	/* I/O port D clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3173,7 +3447,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3182,7 +3456,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3191,7 +3465,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3202,7 +3476,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3216,7 +3490,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 	GPIOD->gpio_swport_ctl &= ~ opins;
 	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -3265,7 +3539,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPEEN;	/* I/O port E clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов mode: 1: 10MHz, 2: 2MHzm 3: 50 MHz
 	arm_stm32f10x_hardware_pio_prog(GPIOE, opins, 0, 3);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -3274,7 +3548,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3283,7 +3557,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов speed: 00: 2 MHz Low speed, 01: 25 MHz Medium speed, 10: 50 MHz Fast speed, 11: 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3292,7 +3566,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3301,7 +3575,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов speed x0: 2 MHz Low speed, 01: 10 MHz Medium speed, 11: 50 MHz High speed
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3312,11 +3586,11 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOELPEN;	/* I/O port E clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -3352,7 +3626,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;	/* I/O port C clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOC, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов: Max. output speed 10 MHz */
 
@@ -3361,7 +3635,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3370,7 +3644,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3379,7 +3653,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3388,7 +3662,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3399,7 +3673,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3415,7 +3689,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -3439,7 +3713,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;	/* I/O port A clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOA, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -3448,7 +3722,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3457,7 +3731,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3466,7 +3740,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3475,7 +3749,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3486,7 +3760,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3502,7 +3776,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 	gpioX_setstate(GPIOA, opins, initialstate);
@@ -3526,7 +3800,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;	/* I/O port B clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOB, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -3535,7 +3809,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3544,7 +3818,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3553,7 +3827,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3562,7 +3836,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3573,7 +3847,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3589,7 +3863,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 	GPIOB->gpio_swport_ctl &= ~ opins;
 	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOB, opins, initialstate);
@@ -3614,7 +3888,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;	/* I/O port C clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOC, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -3623,7 +3897,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3632,7 +3906,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3641,7 +3915,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3650,7 +3924,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3661,13 +3935,13 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_setstate(GPIOC, opins, initialstate);
@@ -3703,7 +3977,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPDEN;	/* I/O port D clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOD, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -3712,7 +3986,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3721,7 +3995,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3730,7 +4004,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3739,7 +4013,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3750,13 +4024,13 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -3787,7 +4061,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPDEN;	/* I/O port D clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOD, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -3796,7 +4070,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3805,7 +4079,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3814,7 +4088,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3825,13 +4099,13 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOD, opins, initialstate);
@@ -3866,7 +4140,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPEEN;	/* I/O port E clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOE, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -3875,7 +4149,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3884,7 +4158,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3894,7 +4168,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOE->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3905,13 +4179,13 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOELPEN;	/* I/O port E clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -3932,7 +4206,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPEEN;	/* I/O port E clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOE, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -3941,7 +4215,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3950,7 +4224,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3959,7 +4233,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -3970,13 +4244,13 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOELPEN;	/* I/O port E clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_setstate(GPIOE, opins, initialstate);
@@ -4000,7 +4274,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPFEN;	/* I/O port F clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOF, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -4009,7 +4283,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4018,7 +4292,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4028,7 +4302,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOF->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4039,11 +4313,11 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOFLPEN;	/* I/O port F clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_setstate(GPIOF, opins, initialstate);
@@ -4065,7 +4339,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPFEN;	/* I/O port F clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOF, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4074,7 +4348,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4083,7 +4357,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4092,7 +4366,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4103,11 +4377,11 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOFLPEN;	/* I/O port F clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_setstate(GPIOF, opins, initialstate);
@@ -4133,7 +4407,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPGEN;	/* I/O port G clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOG, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -4142,7 +4416,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4151,7 +4425,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4161,7 +4435,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4172,11 +4446,11 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOGLPEN;	/* I/O port G clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -4197,7 +4471,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPGEN;	/* I/O port G clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOG, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4206,7 +4480,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4215,7 +4489,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4225,7 +4499,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4236,11 +4510,11 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOGLPEN;	/* I/O port G clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -4260,7 +4534,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPGEN;	/* I/O port G clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOG, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4269,7 +4543,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4278,7 +4552,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4288,7 +4562,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4299,11 +4573,11 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOGLPEN;	/* I/O port G clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_setstate(GPIOG, opins, initialstate);
@@ -4328,7 +4602,7 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPHEN;	/* I/O port H clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOH, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -4337,7 +4611,7 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4346,7 +4620,7 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4356,7 +4630,7 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4367,11 +4641,11 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOHLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOH, opins, initialstate);
@@ -4392,7 +4666,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPHEN;	/* I/O port H clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOH, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4401,7 +4675,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4410,7 +4684,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4419,7 +4693,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4430,7 +4704,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOHLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4458,7 +4732,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPIEN;	/* I/O port I clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOI, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -4467,7 +4741,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOIEN;	/* I/O port I clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4476,7 +4750,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOIEN;	/* I/O port I clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4486,7 +4760,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4497,7 +4771,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOILPEN;	/* I/O port I clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4522,7 +4796,7 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPIEN;	/* I/O port I clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOI, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4531,7 +4805,7 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOIEN;	/* I/O port I clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4540,7 +4814,7 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOIEN;	/* I/O port I clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4549,7 +4823,7 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOIEN;	/* I/O port I clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4560,11 +4834,11 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOILPEN;	/* I/O port I clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOI, opins, initialstate);
+	gpioX_setstate(GPIOI, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_setstate(GPIOI, opins, initialstate);
@@ -4590,7 +4864,7 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPKEN;	/* I/O port K clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOK, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -4599,7 +4873,7 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOKEN;	/* I/O port K clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOK, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4608,7 +4882,7 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOKEN;	/* I/O port K clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOK, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4618,7 +4892,7 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOK, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4629,7 +4903,7 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOKLPEN;	/* I/O port K clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4648,7 +4922,7 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPKEN;	/* I/O port K clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOK, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4657,7 +4931,7 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOKEN;	/* I/O port K clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOK, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4666,7 +4940,7 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOKEN;	/* I/O port K clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOK, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4675,7 +4949,7 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOKEN;	/* I/O port K clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOK, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4686,7 +4960,7 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOKLPEN;	/* I/O port K clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOK, opins, initialstate);
+	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4758,7 +5032,7 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPZEN;	/* I/O port Z clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -4767,7 +5041,7 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4776,7 +5050,7 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4786,7 +5060,7 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOZ->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4799,7 +5073,7 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 
 	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4818,7 +5092,7 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPZEN;	/* I/O port Z clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4827,7 +5101,7 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4836,7 +5110,7 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4846,7 +5120,7 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOZ->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4859,7 +5133,7 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 
 	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4877,7 +5151,7 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPGEN;	/* I/O port G clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
 
@@ -4886,7 +5160,7 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4895,7 +5169,7 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4905,7 +5179,7 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOZ->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4918,7 +5192,7 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 
 	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4936,7 +5210,7 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPZEN;	/* I/O port Z clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -4945,7 +5219,7 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -4954,7 +5228,7 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -4963,7 +5237,7 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOZEN;	/* I/O port Z clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -4976,7 +5250,7 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 
 	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
+	gpioX_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5077,7 +5351,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;	/* I/O port A clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOA, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5086,7 +5360,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5095,7 +5369,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5104,7 +5378,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5113,7 +5387,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;	/* I/O port A clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOA, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5124,15 +5398,14 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOA, opins, initialstate);
+	gpioX_setstate(GPIOA, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-	gpioX_setstate(GPIOA, opins, initialstate);
-	gpioX_prog(GPIOA, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOA, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5163,7 +5436,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;	/* I/O port B clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOB, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5172,7 +5445,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5181,7 +5454,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5190,7 +5463,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5199,7 +5472,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOBEN;	/* I/O port B clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOB, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5210,17 +5483,16 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOB, opins, initialstate);
+	gpioX_setstate(GPIOB, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
-	gpioX_setstate(GPIOB, opins, initialstate);
-	gpioX_prog(GPIOB, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOB, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5252,7 +5524,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;	/* I/O port C clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOC, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5261,7 +5533,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5270,7 +5542,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5279,7 +5551,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5288,7 +5560,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOCEN;	/* I/O port C clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOC, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5299,17 +5571,16 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOC, opins, initialstate);
+	gpioX_setstate(GPIOC, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
-	gpioX_setstate(GPIOC, opins, initialstate);
-	gpioX_prog(GPIOC, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOC, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5340,7 +5611,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPDEN;	/* I/O port D clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOD, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5349,7 +5620,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5358,7 +5629,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5367,7 +5638,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5376,7 +5647,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIODEN;	/* I/O port D clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOD, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5387,17 +5658,16 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOD, opins, initialstate);
+	gpioX_setstate(GPIOD, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
-	gpioX_setstate(GPIOD, opins, initialstate);
-	gpioX_prog(GPIOD, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOD, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5428,7 +5698,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPEEN;	/* I/O port E clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOE, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5437,7 +5707,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5446,7 +5716,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5455,7 +5725,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOEEN;	/* I/O port E clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOE, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5466,17 +5736,16 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOELPEN;	/* I/O port E clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOE, opins, initialstate);
+	gpioX_setstate(GPIOE, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
-	gpioX_setstate(GPIOE, opins, initialstate);
-	gpioX_prog(GPIOE, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOE, opins, initialstate);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -5496,7 +5765,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPFEN;	/* I/O port F clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOF, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5505,7 +5774,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5514,7 +5783,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5523,7 +5792,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOFEN;	/* I/O port F clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOF, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5534,15 +5803,14 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOFLPEN;	/* I/O port F clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
+	gpioX_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
-	gpioX_setstate(GPIOF, opins, initialstate);
-	gpioX_prog(GPIOF, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOF, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5559,7 +5827,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPGEN;	/* I/O port G clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOG, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5568,7 +5836,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5577,7 +5845,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5586,7 +5854,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->IOPENR |= RCC_IOPENR_GPIOGEN;	/* I/O port G clock enable */
 	(void) RCC->IOPENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOG, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5597,15 +5865,14 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOGLPEN;	/* I/O port G clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOG, opins, initialstate);
+	gpioX_setstate(GPIOG, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_setstate(GPIOG, opins, initialstate);
-	gpioX_prog(GPIOG, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOG, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5623,7 +5890,7 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPHEN;	/* I/O port H clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOH, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
 
@@ -5632,7 +5899,7 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5641,7 +5908,7 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5650,7 +5917,7 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->AHBENR |= RCC_AHBENR_GPIOHEN;	/* I/O port H clock enable */
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
 
@@ -5661,15 +5928,14 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOHLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOH, opins, initialstate);
+	gpioX_setstate(GPIOH, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_setstate(GPIOH, opins, initialstate);
-	gpioX_prog(GPIOH, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_setopendrain(GPIOH, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5903,7 +6169,7 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOA);
 	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -5986,7 +6252,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -6061,7 +6327,7 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -6137,7 +6403,7 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6209,7 +6475,7 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -6305,7 +6571,7 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6385,7 +6651,7 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 //	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6469,7 +6735,7 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6549,7 +6815,7 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6633,7 +6899,7 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6713,7 +6979,7 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6789,7 +7055,7 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6851,7 +7117,7 @@ arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -6909,7 +7175,7 @@ arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -6967,7 +7233,7 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -7029,7 +7295,7 @@ arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -7087,7 +7353,7 @@ arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -7145,7 +7411,7 @@ arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -7207,7 +7473,7 @@ arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -7265,7 +7531,7 @@ arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -7323,7 +7589,7 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -7378,7 +7644,7 @@ arm_hardware_pioh_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOH);
 	gpioX_prog(GPIOH, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -7436,7 +7702,7 @@ arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOH, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -7494,7 +7760,7 @@ arm_hardware_pioh_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOH, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -7552,7 +7818,7 @@ arm_hardware_pioh_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOH);
 	gpioX_prog(GPIOH, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -7607,7 +7873,7 @@ arm_hardware_pioi_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOH);
 	gpioX_prog(GPIOI, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -7665,7 +7931,7 @@ arm_hardware_pioi_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOI, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -7723,7 +7989,7 @@ arm_hardware_pioi_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOI, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -7781,7 +8047,7 @@ arm_hardware_pioi_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOI, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
@@ -8215,7 +8481,7 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->APB2ENR |= RCC_APB2ENR_IOPHEN;	/* I/O port H clock enable */
 	(void) RCC->APB2ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOL, opins, initialstate);
+	gpioX_setstate(GPIOL, opins, initialstate);
 	// Установка режима выводов
 	arm_stm32f10x_hardware_pio_prog(GPIOL, opins, 0, 1);	/* Установить CNF=0 и MODE=1 для указанных битов */
 
@@ -8224,7 +8490,7 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOLEN;	/* I/O port H clock enable */
 	(void) RCC->AHB1ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOL, opins, initialstate);
+	gpioX_setstate(GPIOL, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOL, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -8233,7 +8499,7 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOLEN;	/* I/O port H clock enable */
 	(void) RCC->AHB4ENR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOL, opins, initialstate);
+	gpioX_setstate(GPIOL, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOL, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -8243,7 +8509,7 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	//GPIOG->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
-	arm_stm32f4xx_hardware_pio_setstate(GPIOL, opins, initialstate);
+	gpioX_setstate(GPIOL, opins, initialstate);
 	// Установка режима выводов
 	stm32f30x_pioX_prog(GPIOL, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -8254,11 +8520,11 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOLLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
 	// Установка начального состояния битов
-	arm_stm32f4xx_hardware_pio_setstate(GPIOL, opins, initialstate);
+	gpioX_setstate(GPIOL, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOL, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOL);
 	gpioX_setstate(GPIOL, opins, initialstate);
@@ -8426,7 +8692,7 @@ arm_hardware_piol_altfn20(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOL, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
@@ -8495,6 +8761,67 @@ arm_hardware_piol_altfn50(unsigned long opins, unsigned af)
 #endif
 }
 
+void
+arm_hardware_piol_opendrain(unsigned long opins, unsigned long initialstate)
+{
+#if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
+
+	RCC->APB2ENR |= RCC_APB2ENR_IOPHEN;	/* I/O port H clock enable */
+	(void) RCC->APB2ENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOL, opins, initialstate);
+	// Установка режима выводов
+	arm_stm32f10x_hardware_pio_prog(GPIOL, opins, 1, 2);	/* CNF=2, MODE=2: Open drain, Max. output speed 2 MHz */
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX)
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOLEN;	/* I/O port L clock enable */
+	(void) RCC->AHB1ENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOL, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOL, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32H7XX)
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOLEN;	/* I/O port L clock enable */
+	(void) RCC->AHB4ENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOL, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOL, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX) && defined (RCC_AHBENR_GPIOHEN)
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOHEN;	/* I/O port H clock enable */
+	(void) RCC->AHBENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOH, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOH, opins, STM32F_GPIO_MODE_GPIO, 0, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB4ENSETR = RCC_MP_AHB4ENSETR_GPIOLEN;	/* I/O port L clock enable */
+	(void) RCC->MP_AHB4ENSETR;
+	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOLLPEN;	/* I/O port L clock enable */
+	(void) RCC->MP_AHB4LPENSETR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOL, opins, initialstate);
+	// Установка режима выводов
+	stm32mp1_pioX_prog(GPIOL, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 1);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOG);
+	gpioX_setopendrain(GPIOL, opins, initialstate);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+
 #endif /* defined (GPIOL) */
 
 #if defined (GPIOA)
@@ -8555,7 +8882,7 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
 	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -8638,7 +8965,7 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -8720,7 +9047,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -8801,7 +9128,7 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -8874,7 +9201,7 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -8935,7 +9262,7 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOF, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -8990,7 +9317,7 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOG, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 1, STM32MP1_GPIO_OT_OD);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
@@ -9020,7 +9347,7 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOA, up, down);
 
@@ -9052,7 +9379,7 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOB, up, down);
 
@@ -9084,7 +9411,7 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOC, up, down);
 
@@ -9116,7 +9443,7 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOD, up, down);
 
@@ -9148,7 +9475,7 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOE, up, down);
 
@@ -9175,7 +9502,7 @@ arm_hardware_piof_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOF, up, down);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOF, up, down);
 
@@ -9201,7 +9528,7 @@ arm_hardware_piog_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOG, up, down);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOG, up, down);
 
@@ -9227,7 +9554,7 @@ arm_hardware_pioh_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOH, up, down);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOH, up, down);
 
@@ -9253,7 +9580,7 @@ arm_hardware_pioi_updown(unsigned long up, unsigned long down)
 
 	tm32mp1_pioX_pupdr(GPIOI, up, down);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updown(GPIOI, up, down);
 
@@ -9347,7 +9674,7 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOA, ipins);
 
@@ -9379,7 +9706,7 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOB, ipins);
 
@@ -9411,7 +9738,7 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOC, ipins);
 
@@ -9443,7 +9770,7 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOD, ipins);
 
@@ -9475,7 +9802,7 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOE, ipins);
 
@@ -9502,7 +9829,7 @@ arm_hardware_piof_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOF, ipins);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOF, ipins);
 
@@ -9528,7 +9855,7 @@ arm_hardware_piog_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOG, ipins);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
 	gpioX_updownoff(GPIOG, ipins);
 
@@ -9555,7 +9882,7 @@ arm_hardware_pioh_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOH, ipins);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
     gpioX_updownoff(GPIOH, ipins);
 
@@ -9581,7 +9908,7 @@ arm_hardware_pioi_updownoff(unsigned long ipins)
 
 	arm_stm32mp1_hardware_pio_pupoff(GPIOI, ipins);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif CPUSTYLE_ALLWINNER
 
     gpioX_updownoff(GPIOI, ipins);
 
@@ -9702,9 +10029,17 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, tgcpu);	// PORT A
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOA, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
+
+#elif (CPUSTYLE_A64)
+
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9751,9 +10086,17 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOB, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
+
+#elif (CPUSTYLE_A64)
+
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9800,9 +10143,17 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_AT91SAM7S
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOC, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
+
+#elif (CPUSTYLE_A64)
+
+	//gpioX_onchangeinterrupt(GPIOC, GPIOINTC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9851,9 +10202,17 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, tgcpu);	// PORTD
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOD, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
+
+#elif (CPUSTYLE_A64)
+
+	//gpioX_onchangeinterrupt(GPIOD, GPIOINTD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif CPUSTYLE_VM14
 	#warning Undefined CPUSTYLE_VM14
@@ -9896,9 +10255,17 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, tgcpu);	// PORT E
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOE, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT E
+	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
+
+#elif (CPUSTYLE_A64)
+
+	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
+
+#elif (CPUSTYLE_T507)
+
+	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9934,9 +10301,17 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOF, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
+
+#elif (CPUSTYLE_A64)
+
+	//gpioX_onchangeinterrupt(GPIOF, GPIOINTF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9971,9 +10346,18 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOG, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
+
+
+#elif (CPUSTYLE_A64)
+
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10001,9 +10385,17 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT H
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOH, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
+
+#elif (CPUSTYLE_A64)
+
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10012,6 +10404,44 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 }
 
 #endif /* defined (GPIOH) */
+
+#if defined (GPIOI)
+// эти функции не меняют программирование выводов (на ввод или на вывод),
+// только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
+void
+arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+{
+#if CPUSTYLE_STM32F1XX
+
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT I
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority);	// PORT I
+
+#elif CPUSTYLE_STM32MP1
+
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PI, priority, tgcpu);	// PORT I
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
+
+#elif (CPUSTYLE_A64)
+
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI);	// PORT I
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+
+#endif /* defined (GPIOI) */
 
 #elif CPUSTYLE_TMS320F2833X
 
@@ -10142,3 +10572,527 @@ tms320_hardware_pioс_inputs(unsigned long ipins)
 }
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
+
+
+/*
+	Машинно-независимый обработчик прерываний.
+	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+*/
+RAMFUNC void spool_elkeybundle(void)
+{
+#if WITHELKEY
+	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+#endif /* WITHELKEY */
+}
+
+/*
+	Машинно-независимый обработчик прерываний.
+	Вызывается при изменении состояния входов электронного ключа,
+    входа манипуляции от CAT (CAT_DTR).
+*/
+RAMFUNC void spool_elkeyinputsbundle(void)
+{
+	//key_spool_inputs();	// опрос состояния электронного ключа и запоминание факта нажатия
+}
+
+
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
+/* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
+RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
+{
+#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+	if ((pr & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0)
+	{
+		spool_elkeyinputsbundle();
+	}
+#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+#if WITHENCODER && defined (ENCODER_BITS)
+	if ((pr & ENCODER_BITS) != 0)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+	}
+#endif /* WITHENCODER && defined (ENCODER_BITS) */
+#if WITHENCODER2 && defined (ENCODER2_BITS)
+	if ((pr & ENCODER2_BITS) != 0)
+	{
+		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+	}
+#endif /* WITHENCODER && ENCODER2_BITS */
+#if BOARD_GT911_INT_PIN
+	if ((pr & BOARD_GT911_INT_PIN) != 0)
+	{
+		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+	}
+#endif /* BOARD_GT911_INT_PIN */
+#if BOARD_STMPE811_INT_PIN
+	if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+	{
+		stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+	}
+#endif /* BOARD_STMPE811_INT_PIN */
+#if WITHLFM && BOARD_PPSIN_BIT
+	if ((pr & BOARD_PPSIN_BIT) != 0)
+	{
+		spool_nmeapps();	/* прерывание по изменению сигнала на входе от PPS */
+	}
+#endif /* WITHLFM && BOARD_PPSIN_BIT */
+}
+
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */
+
+#if CPUSTYLE_STM32MP1
+
+	void EXTI0_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM0;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI1_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM1;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM2;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM3;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM4;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI5_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM5;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI6_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM6;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI7_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM7;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI8_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM8;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI9_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM9;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI10_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM10;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI11_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM11;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI12_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM12;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI13_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM13;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI14_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM14;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+	void EXTI15_IRQHandler(void)
+	{
+		const uint_fast32_t mask = EXTI_IMR1_IM15;
+		const portholder_t prf = EXTI->FPR1 & mask;
+		EXTI->FPR1 = prf;		// reset all faling requests
+		const portholder_t prr = EXTI->RPR1 & mask;
+		EXTI->RPR1 = prr;		// reset all rising requests
+		stm32fxxx_pinirq(prf | prr);
+	}
+
+#elif CPUSTYLE_STM32L0XX
+
+	void EXTI0_1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM0 | EXTI_IMR_IM1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI2_3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_IM2 | EXTI_IMR_IM3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI4_15_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (
+				EXTI_IMR_IM15 | EXTI_IMR_IM14 | EXTI_IMR_IM13 | EXTI_IMR_IM12 |
+				EXTI_IMR_IM11 | EXTI_IMR_IM10 | EXTI_IMR_IM9 | EXTI_IMR_IM8 |
+				EXTI_IMR_IM7 | EXTI_IMR_IM6 | EXTI_IMR_IM5 | EXTI_IMR_IM4
+				);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+#elif CPUSTYLE_STM32H7XX
+
+	void EXTI0_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR0);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+
+	void EXTI1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR2);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR3);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR4);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI9_5_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR9 | EXTI_PR1_PR8 | EXTI_PR1_PR7 | EXTI_PR1_PR6 | EXTI_PR1_PR5);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI15_10_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR15 | EXTI_PR1_PR14 | EXTI_PR1_PR13 | EXTI_PR1_PR12 | EXTI_PR1_PR11 | EXTI_PR1_PR10);
+		EXTI_D1->PR1 = pr;		// reset all existing requests
+		(void) EXTI_D1->PR1;
+		stm32fxxx_pinirq(pr);
+	}
+
+#elif CPUSTYLE_STM32F
+
+	void EXTI0_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI0_1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR0 | EXTI_IMR_MR1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI1_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR1);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI2_3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR2 | EXTI_IMR_MR3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_15_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (
+				EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 |
+				EXTI_IMR_MR11 | EXTI_IMR_MR10 | EXTI_IMR_MR9 | EXTI_IMR_MR8 |
+				EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5 | EXTI_IMR_MR4
+				);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI3_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR3);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI4_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR4);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+	void EXTI9_5_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR9 | EXTI_IMR_MR8 | EXTI_IMR_MR7 | EXTI_IMR_MR6 | EXTI_IMR_MR5);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+	void EXTI15_10_IRQHandler(void)
+	{
+		const portholder_t pr = EXTI->PR & (EXTI_IMR_MR15 | EXTI_IMR_MR14 | EXTI_IMR_MR13 | EXTI_IMR_MR12 | EXTI_IMR_MR11 | EXTI_IMR_MR10);
+		EXTI->PR = pr;		// reset all existing requests
+		//(void) EXTI->PR;
+		stm32fxxx_pinirq(pr);
+	}
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	void RAMFUNC_NONILINE
+	PIOA_Handler(void)
+	{
+		//display_menu_label(PSTR("PIOA_IrqHandler"));
+		//for (;;)
+		//	;
+		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
+		// all the interrupts that are pending when PIO_ISR is read must be handled.
+		const portholder_t state = PIOA->PIO_ISR;
+	#if WITHENCODER && defined (ENCODER_BITS)
+		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
+		{
+			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		}
+	#endif /* WITHENCODER && defined (ENCODER_BITS) */
+	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
+		{
+			spool_elkeyinputsbundle();
+		}
+	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+	#if WITHNMEA
+		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
+		{
+			spool_nmeapps();
+		}
+	#endif /* WITHNMEA */
+	#if BOARD_GT911_INT_PIN
+		if ((state & BOARD_GT911_INT_PIN) != 0)
+		{
+			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_GT911_INT_PIN */
+	#if BOARD_STMPE811_INT_PIN
+		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+		{
+			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_STMPE811_INT_PIN */
+	}
+
+#elif CPUSTYLE_AT91SAM7S
+
+	RAMFUNC_NONILINE void AT91F_PIOA_IRQHandler(void)
+	{
+		// When the software reads PIO_ISR, all the interrupts are automatically cleared. This signifies that
+		// all the interrupts that are pending when PIO_ISR is read must be handled.
+		const portholder_t state = AT91C_BASE_PIOA->PIO_ISR;
+	#if WITHENCODER && defined (ENCODER_BITS)
+		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
+		{
+			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		}
+	#endif /* WITHENCODER && defined (ENCODER_BITS) */
+	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+		if ((state & (ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT)) != 0) // re-enable interrupt from PIO
+		{
+			spool_elkeyinputsbundle();
+		}
+	#endif /* WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT) */
+	#if WITHNMEA
+		if ((state & FROMCAT_BIT_DTR) != 0 && (FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) != 0)
+		{
+			spool_nmeapps();
+		}
+	#endif /* WITHNMEA */
+	#if BOARD_GT911_INT_PIN
+		if ((state & BOARD_GT911_INT_PIN) != 0)
+		{
+			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_GT911_INT_PIN */
+	#if BOARD_STMPE811_INT_PIN
+		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+		{
+			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_STMPE811_INT_PIN */
+	}
+
+#elif CPUSTYLE_ATMEGA
+
+	ISR(INT0_vect)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+	}
+
+	ISR(INT1_vect)
+	{
+		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+	}
+
+
+	// Timer 1 output compare A interrupt service routine
+	ISR(TIMER1_COMPA_vect)
+	{
+		spool_elkeybundle();
+	}
+	// Обработчик по изменению состояния входов PTT и электронного ключа
+	#if CPUSTYLE_ATMEGA_XXX4
+		#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
+			// PC7 - PTT input, PC6 & PC5 - eectronic key inputs
+			ISR(PCIVECT)
+			{
+				spool_elkeyinputsbundle();
+			}
+		#endif /* (WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)) */
+		#if defined (FROMCAT_BIT_DTR) && defined (DTRPCICR_BIT) && (PCICR_BIT != DTRPCICR_BIT)
+			ISR(DTRPCIVECT)
+			{
+				spool_elkeyinputsbundle();	// по изменению PTT
+			}
+		#endif
+	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+#else
+
+	//#warning Undefined CPUSTYLE_XXX encoder interrrupts handlers
+#endif

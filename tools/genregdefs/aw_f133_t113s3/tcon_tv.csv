@@ -1,5 +1,6 @@
 #type; TCON_TV
 #base; TCON_TV0 0x05470000
+
 #regdef; TV_GCTL_REG; 0x0000; TV Global Control Register
 #regdef; TV_GINT0_REG; 0x0004; TV Global Interrupt Register0
 #regdef; TV_GINT1_REG; 0x0008; TV Global Interrupt Register1

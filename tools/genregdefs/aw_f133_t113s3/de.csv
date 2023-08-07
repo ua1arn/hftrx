@@ -1,31 +1,30 @@
-#type; DE
+#type; DE; Display Engine (DE)
 #base; DE 0x05000000
-#comment; Display Engine (DE)
 
-#type; DE_TOP
+#type; DE_TOP; Display Engine (DE) TOP
 #base; DE_TOP 0x05000000
 #irq; DE 119
 #irqrv; DE 103
-#comment; Display Engine (DE)
+
 #regdef; GATE_CFG;	 	0x000;	SCLK_GATE DE SCLK Gating Register
 #regdef; BUS_CFG;		0x004;	? HCLK_GATE ? DE HCLK Gating Register
 #regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
 #regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
 #regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
 
-#type; DE_GLB
-#base; DE_GLB 0x5100000
-#comment; Display Engine (DE) - Global Control
+#type; DE_GLB; Display Engine (DE) - Global Control
+#base; DE_GLB 0x05100000
+
 #regdef; GLB_CTL;	 	0x000;	Global control register
 #regdef; GLB_STS;		0x004;	Global status register
 #regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
 #regdef; GLB_SIZE;		0x00C;	Global size register
 
-#type; DE_UI
+#type; DE_UI; Display Engine (DE) - UI surface
 #base; DE_UI1 0x05103000
 ##base; DE_UI2 0x05104000
 ##base; DE_UI3 0x05105000
-#comment; Display Engine (DE) - UI surface
+
 #aggreg; CFG; 0x000 4;
 #regdef;  ATTR; 0x000; 
 #regdef;  SIZE; 0x004; 
@@ -40,9 +39,9 @@
 #regdef;  BOT_HADDR; 0x084; 
 #regdef;  OVL_SIZE; 0x088; 
 
-#type; DE_BLD
-#base; DE_BLD 0x5101000
-#comment; Display Engine (DE) - Blender
+#type; DE_BLD; Display Engine (DE) - Blender
+#base; DE_BLD 0x05101000
+
 #regdef; FCOLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
 #aggreg; ATTR; 0x004 4; Pipe [0..3]
 #regdef; FCOLOR;	0x000; BLD fill color register
@@ -61,9 +60,9 @@
 #regdef; CK_MIN; 0x0E0 4;
 #regdef; OUT_CTL; 0x0FC;
 
-#type; DE_VI
+#type; DE_VI; Display Engine (DE) - VI surface
 #base; DE_VI 0x05102000
-#comment; Display Engine (DE) - VI surface
+
 #aggreg; CFG; 0x000 4;
 #regdef; ATTR; 0x000;
 #regdef; SIZE; 0x004;

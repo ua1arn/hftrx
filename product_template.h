@@ -266,7 +266,13 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
+	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
+	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Orange Pi Zero 2 - инициализатор DDR памяти на плате */
+	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
 	#include "boards/arm_allwt507_ctlstyle_helperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_helperboard_t507.h"
@@ -320,7 +326,6 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_ebaz4205_v2.h"	// плата EBAZ4205 с xc7z020 и 512 Мб DDR3
 #elif CPUSTYLE_VM14 && CTLSTYLE_STORCH_V7 && 1
-	#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
 	#include "boards/arm_vm14_ctlstyle_v0.h"	// 1892ВМ14Я ELVEES multicore.ru
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_vm14_cpustyle_v0.h"

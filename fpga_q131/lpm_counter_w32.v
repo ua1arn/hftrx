@@ -37,31 +37,27 @@
 `timescale 1 ps / 1 ps
 // synopsys translate_on
 module lpm_counter_w32 (
-	cin,
 	clock,
-	cout,
+	cnt_en,
 	q);
 
-	input	  cin;
 	input	  clock;
-	output	  cout;
+	input	  cnt_en;
 	output	[31:0]  q;
 
-	wire  sub_wire0;
-	wire [31:0] sub_wire1;
-	wire  cout = sub_wire0;
-	wire [31:0] q = sub_wire1[31:0];
+	wire [31:0] sub_wire0;
+	wire [31:0] q = sub_wire0[31:0];
 
 	lpm_counter	LPM_COUNTER_component (
-				.cin (cin),
 				.clock (clock),
-				.cout (sub_wire0),
-				.q (sub_wire1),
+				.cnt_en (cnt_en),
+				.q (sub_wire0),
 				.aclr (1'b0),
 				.aload (1'b0),
 				.aset (1'b0),
+				.cin (1'b1),
 				.clk_en (1'b1),
-				.cnt_en (1'b1),
+				.cout (),
 				.data ({32{1'b0}}),
 				.eq (),
 				.sclr (1'b0),
@@ -85,9 +81,9 @@ endmodule
 // Retrieval info: PRIVATE: ASET NUMERIC "0"
 // Retrieval info: PRIVATE: ASET_ALL1 NUMERIC "1"
 // Retrieval info: PRIVATE: CLK_EN NUMERIC "0"
-// Retrieval info: PRIVATE: CNT_EN NUMERIC "0"
-// Retrieval info: PRIVATE: CarryIn NUMERIC "1"
-// Retrieval info: PRIVATE: CarryOut NUMERIC "1"
+// Retrieval info: PRIVATE: CNT_EN NUMERIC "1"
+// Retrieval info: PRIVATE: CarryIn NUMERIC "0"
+// Retrieval info: PRIVATE: CarryOut NUMERIC "0"
 // Retrieval info: PRIVATE: Direction NUMERIC "0"
 // Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone III"
 // Retrieval info: PRIVATE: ModulusCounter NUMERIC "0"
@@ -104,13 +100,11 @@ endmodule
 // Retrieval info: CONSTANT: LPM_PORT_UPDOWN STRING "PORT_UNUSED"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "LPM_COUNTER"
 // Retrieval info: CONSTANT: LPM_WIDTH NUMERIC "32"
-// Retrieval info: USED_PORT: cin 0 0 0 0 INPUT NODEFVAL "cin"
 // Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
-// Retrieval info: USED_PORT: cout 0 0 0 0 OUTPUT NODEFVAL "cout"
+// Retrieval info: USED_PORT: cnt_en 0 0 0 0 INPUT NODEFVAL "cnt_en"
 // Retrieval info: USED_PORT: q 0 0 32 0 OUTPUT NODEFVAL "q[31..0]"
-// Retrieval info: CONNECT: @cin 0 0 0 0 cin 0 0 0 0
 // Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
-// Retrieval info: CONNECT: cout 0 0 0 0 @cout 0 0 0 0
+// Retrieval info: CONNECT: @cnt_en 0 0 0 0 cnt_en 0 0 0 0
 // Retrieval info: CONNECT: q 0 0 32 0 @q 0 0 32 0
 // Retrieval info: GEN_FILE: TYPE_NORMAL lpm_counter_w32.v TRUE
 // Retrieval info: GEN_FILE: TYPE_NORMAL lpm_counter_w32.inc FALSE

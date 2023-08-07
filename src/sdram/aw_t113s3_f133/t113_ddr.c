@@ -21,7 +21,7 @@
 
 #include "formats.h"
 #include "clocks.h"
-
+#include "t113_dram.h"
 // Sources taker from:
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
 //	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
@@ -55,17 +55,6 @@ static void write32ptr(void * addr, uint32_t value)
 static uint32_t read32ptr(void * addr)
 {
 	return read32((uintptr_t) addr);
-}
-
-////
-///
-char *memcpy_self(char *dst, char *src, int len)
-{
-	int i;
-	for (i = 0; i != len; i++) {
-		dst[i] = src[i];
-	}
-	return dst;
 }
 
 void sid_read_ldoB_cal(dram_para_t *para)
@@ -124,17 +113,19 @@ void dram_vol_set(dram_para_t *para)
 
 void dram_enable_all_master(void)
 {
-	write32(MSI_MEMC_BASE + 0x020, -1);
-	write32(MSI_MEMC_BASE + 0x024, 0xff);
-	write32(MSI_MEMC_BASE + 0x028, 0xffff);
+	MCTL_COM->MCTL_COM_MAER0 = 0xFFFFFFFF;
+	MCTL_COM->MCTL_COM_MAER1 = 0xFF;
+	MCTL_COM->MCTL_COM_MAER2 = 0xFFFF;
+
 	sdelay(10);
 }
 
 void dram_disable_all_master(void)
 {
-	write32(MSI_MEMC_BASE + 0x020, 1);
-	write32(MSI_MEMC_BASE + 0x024, 0);
-	write32(MSI_MEMC_BASE + 0x028, 0);
+	MCTL_COM->MCTL_COM_MAER0 = 1;
+	MCTL_COM->MCTL_COM_MAER1 = 0;
+	MCTL_COM->MCTL_COM_MAER2 = 0;
+
 	sdelay(10);
 }
 
@@ -678,7 +669,7 @@ int ccm_set_pll_ddr_clk(int index, dram_para_t *para)
 	unsigned int val, clk, n;
 	unsigned MHZ = allwnrt113_get_hosc_freq() / 1000000;
 
-	clk = (para->dram_tpr13 & (1 << 6)) ? para->dram_tpr9 : para->dram_clk;
+	clk = (para->dram_tpr13 & (UINT32_C(1) << 6)) ? para->dram_tpr9 : para->dram_clk;
 
 	// set VCO clock divider
 	n = (clk * 2) / MHZ;
@@ -758,7 +749,7 @@ void mctl_sys_init(dram_para_t *para)
 // The main purpose of this routine seems to be to copy an address configuration
 // from the dram_para1 and dram_para2 fields to the PHY configuration registers
 // (0x3102000, 0x3102004).
-// MSI_MEMC_BASE = 0x03102000
+// MCTL_COM_BASE = 0x03102000
 //
 void mctl_com_init(dram_para_t *para)
 {
@@ -767,12 +758,12 @@ void mctl_com_init(dram_para_t *para)
 	int			 i;
 
 	// purpose ??
-	val = read32(MSI_MEMC_BASE + 0x008) & 0xffffc0ff;
+	val = read32(MCTL_COM_BASE + 0x008) & 0xffffc0ff;
 	val |= 0x2000;
-	write32(MSI_MEMC_BASE + 0x008, val);
+	write32(MCTL_COM_BASE + 0x008, val);
 
 	// Set sdram type and word width
-	val = read32(MSI_MEMC_BASE + 0x000) & 0xff000fff;
+	val = read32(MCTL_COM_BASE + 0x000) & 0xff000fff;
 	val |= (para->dram_type & 0x7) << 16; // DRAM type
 	val |= (~para->dram_para2 & 0x1) << 12; // DQ width
 	if ((para->dram_type) != 6 && (para->dram_type) != 7) {
@@ -781,12 +772,12 @@ void mctl_com_init(dram_para_t *para)
 	} else {
 		val |= 0x480000; // type 6 and 7 must use 1T
 	}
-	write32(MSI_MEMC_BASE + 0x000, val);
+	write32(MCTL_COM_BASE + 0x000, val);
 
 	// init rank / bank / row for single/dual or two different ranks
 	val = para->dram_para2;
 	end = ((val & 0x100) && (((val >> 12) & 0xf) != 1)) ? 32 : 16;
-	ptr = MSI_MEMC_BASE;
+	ptr = MCTL_COM_BASE;
 
 	for (i = 0; i != end; i += 16) {
 		val = read32(ptr) & 0xfffff000;
@@ -818,23 +809,23 @@ void mctl_com_init(dram_para_t *para)
 	}
 
 	// set ODTMAP based on number of ranks in use
-	val = (read32(MSI_MEMC_BASE + 0x000) & 0x1) ? 0x303 : 0x201;
+	val = (read32(MCTL_COM_BASE + 0x000) & 0x1) ? 0x303 : 0x201;
 	write32(DDRPHYC_BASE + 0x120, val);
 
 	// set mctl reg 3c4 to zero when using half DQ
-	if (para->dram_para2 & (1 << 0)) {
+	if (para->dram_para2 & (UINT32_C(1) << 0)) {
 		write32(DDRPHYC_BASE + 0x3c4, 0);
 	}
 
 	// purpose ??
 	if (para->dram_tpr4) {
-		val = read32(MSI_MEMC_BASE + 0x000);
+		val = read32(MCTL_COM_BASE + 0x000);
 		val |= (para->dram_tpr4 << 25) & 0x06000000;
-		write32(MSI_MEMC_BASE + 0x000, val);
+		write32(MCTL_COM_BASE + 0x000, val);
 
-		val = read32(MSI_MEMC_BASE + 0x004);
+		val = read32(MCTL_COM_BASE + 0x004);
 		val |= ((para->dram_tpr4 >> 2) << 12) & 0x001ff000;
-		write32(MSI_MEMC_BASE + 0x004, val);
+		write32(MCTL_COM_BASE + 0x004, val);
 	}
 }
 
@@ -842,77 +833,100 @@ void mctl_com_init(dram_para_t *para)
 // It is unclear which lines are being remapped. It seems to pick
 // table cfg7 for the Nezha board.
 //
-static char cfg0[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static char cfg1[] = {1, 9, 3, 7, 8, 18, 4, 13, 5, 6, 10, 2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg2[] = {4, 9, 3, 7, 8, 18, 1, 13, 2, 6, 10, 5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg3[] = {1, 7, 8, 12, 10, 18, 4, 13, 5, 6, 3, 2, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg4[] = {4, 12, 10, 7, 8, 18, 1, 13, 2, 6, 3, 5, 9, 0, 0, 0, 21, 17, 20, 19, 11, 22};
-static char cfg5[] = {13, 2, 7, 9, 12, 19, 5, 1, 6, 3, 4, 8, 10, 0, 0, 0, 21, 22, 18, 17, 11, 20};
-static char cfg6[] = {3, 10, 7, 13, 9, 11, 1, 2, 4, 6, 8, 5, 12, 0, 0, 0, 20, 1, 0, 21, 22, 17};
-static char cfg7[] = {3, 2, 4, 7, 9, 1, 17, 12, 18, 14, 13, 8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11};
+
+// MCTL_COM_REMAP0,MCTL_COM_REMAP1,MCTL_COM_REMAP2, MCTL_COM_REMAP3 data
+
+static const uint8_t cfg0[] = { 0, 0, 0, 0, 0, 		0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 		0, 0, 0, 0, 0, 0};
+static const uint8_t cfg1[] = { 1, 9, 3, 7, 8, 		18, 4, 13, 5, 6, 10, 	2, 14, 12, 0, 0, 	21, 17, 20, 19, 11, 22};
+static const uint8_t cfg2[] = { 4, 9, 3, 7, 8, 		18, 1, 13, 2, 6, 10,	5, 14, 12, 0, 0, 	21, 17, 20, 19, 11, 22};
+static const uint8_t cfg3[] = { 1, 7, 8, 12, 10, 	18, 4, 13, 5, 6, 3, 	2, 9, 0, 0, 0, 		21, 17, 20, 19, 11, 22};
+static const uint8_t cfg4[] = { 4, 12, 10, 7, 8, 	18, 1, 13, 2, 6, 3, 	5, 9, 0, 0, 0, 		21, 17, 20, 19, 11, 22};
+static const uint8_t cfg5[] = { 13, 2, 7, 9, 12, 	19, 5, 1, 6, 3, 4, 		8, 10, 0, 0, 0, 	21, 22, 18, 17, 11, 20};	// T113-s3
+static const uint8_t cfg6[] = { 3, 10, 7, 13, 9, 	11, 1, 2, 4, 6, 8, 		5, 12, 0, 0, 0, 	20, 1, 0, 21, 22, 17};
+static const uint8_t cfg7[] = { 3, 2, 4, 7, 9, 1, 	17, 12, 18, 14, 13, 	8, 15, 6, 10, 5, 	19, 22, 16, 21, 20, 11};
+
+// MCTL_COM_REMAP2
+// 5 address remap fields
+static uint32_t pack_24_00(const uint8_t * pcfg)
+{
+	return (pcfg[4] << 20) | (pcfg[3] << 15) | (pcfg[2] << 10) | (pcfg[1] << 5) | (pcfg[0] << 0);
+}
+
+// MCTL_COM_REMAP0
+// 5 address remap fields
+static uint32_t pack_29_05(const uint8_t * pcfg)
+{
+	return (pcfg[4] << 25) | (pcfg[3] << 20) | (pcfg[2] << 15) | (pcfg[1] << 10) | (pcfg[0] << 5);
+}
+
+// MCTL_COM_REMAP1, MCTL_COM_REMAP3
+// 6 address remap fields
+static uint32_t pack_29_00(const uint8_t * pcfg)
+{
+	return (pcfg[5] << 25) | (pcfg[4] << 20) | (pcfg[3] << 15) | (pcfg[2] << 10) | (pcfg[1] << 5) | (pcfg[0] << 0);
+}
 
 void mctl_phy_ac_remapping(dram_para_t *para)
 {
 	unsigned int fuse, val;
+	const uint8_t * pcfg;
 
 	fuse = (read32(SID_BASE + 0x228) << 0x14) >> 0x1c;
 	PRINTF("ddr_efuse_type: 0x%x\n", fuse);
 
+	//SID->SID_DATA [0]
+	// T113-S3: 0x60 (sid=93406000 ac004814 01440821 5c6b1bcb)
+	// F133-A:  0x5C (sid=93005c00 ac004814 01425a4c 644c1dcb)
 	val = (unsigned int)(read32(SID_BASE + 0x200) << 0x10) >> 0x18;
 	PRINTF("mark_id: 0x%x\n", val);
 
 	if ((para->dram_tpr13 >> 18) & 0x3) {
-		memcpy_self(cfg0, cfg7, 22);
+		pcfg = cfg7;
 	} else {
 		switch (fuse) {
-#if 1
 			case 8:
-				memcpy_self(cfg0, cfg2, 22);
+				pcfg = cfg2;
 				break;
 			case 9:
-				memcpy_self(cfg0, cfg3, 22);
+				pcfg = cfg3;
 				break;
-#endif
 			case 10:
-				memcpy_self(cfg0, cfg5, 22);
+				// T113-s3, F133-A
+				pcfg = cfg5;
 				break;
-#if 1
 			case 11:
-				memcpy_self(cfg0, cfg4, 22);
+				pcfg = cfg4;
 				break;
 			default:
 			case 12:
-				memcpy_self(cfg0, cfg1, 22);
+				pcfg = cfg1;
 				break;
 			case 13:
 			case 14:
+				pcfg = cfg0;
 				break;
-#endif
 		}
 	}
 
 	if (para->dram_type == 2) {
 		if (fuse == 15)
 			return;
-		memcpy_self(cfg0, cfg6, 22);
+		pcfg = cfg6;
+		pcfg = cfg0;	// FIXME: for F133-A tested
 	}
 
 	if (para->dram_type == 2 || para->dram_type == 3) {
-		val = (cfg0[4] << 25) | (cfg0[3] << 20) | (cfg0[2] << 15) | (cfg0[1] << 10) | (cfg0[0] << 5);
-		write32(MSI_MEMC_BASE + 0x500, val);
 
-		val = (cfg0[10] << 25) | (cfg0[9] << 20) | (cfg0[8] << 15) | (cfg0[7] << 10) | (cfg0[6] << 5) | cfg0[5];
-		write32(MSI_MEMC_BASE + 0x504, val);
-
-		val = (cfg0[15] << 20) | (cfg0[14] << 15) | (cfg0[13] << 10) | (cfg0[12] << 5) | cfg0[11];
-		write32(MSI_MEMC_BASE + 0x508, val);
-
-		val = (cfg0[21] << 25) | (cfg0[20] << 20) | (cfg0[19] << 15) | (cfg0[18] << 10) | (cfg0[17] << 5) | cfg0[16];
-		write32(MSI_MEMC_BASE + 0x50c, val);
-
-		val = (cfg0[4] << 25) | (cfg0[3] << 20) | (cfg0[2] << 15) | (cfg0[1] << 10) | (cfg0[0] << 5) | 1;
-		write32(MSI_MEMC_BASE + 0x500, val);
+		MCTL_COM->MCTL_COM_REMAP0 = pack_29_05(pcfg + 0);	// 5 bytes used
+		MCTL_COM->MCTL_COM_REMAP1 = pack_29_00(pcfg + 5);	// 6 bytes used
+		MCTL_COM->MCTL_COM_REMAP2 = pack_24_00(pcfg + 11);	// 5 bytes used
+		MCTL_COM->MCTL_COM_REMAP3 = pack_29_00(pcfg + 16);	// 6 bytes used
+		if (para->dram_type != 2) {
+			// FIXME: for F133-A tested
+			MCTL_COM->MCTL_COM_REMAP0 |= UINT32_C(1) << 0;
+		}
 	}
+
 }
 
 // Init the controller channel. The key part is placing commands in the main
@@ -926,9 +940,9 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	dqs_gating_mode = (para->dram_tpr13 >> 2) & 0x3;
 
 	// set DDR clock to half of CPU clock
-	val = read32(MSI_MEMC_BASE + 0x00c) & 0xfffff000;
+	val = read32(MCTL_COM_BASE + 0x00c) & 0xfffff000;
 	val |= (para->dram_clk >> 1) - 1;
-	write32(MSI_MEMC_BASE + 0x00c, val);
+	write32(MCTL_COM_BASE + 0x00c, val);
 
 	// MRCTRL0 nibble 3 undocumented
 	val = read32(DDRPHYC_BASE + 0x108) & 0xfffff0ff;
@@ -1008,10 +1022,10 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	val = read32(DDRPHYC_BASE + 0x0c0);
 	val &= 0xf0000000;
-	val |= (para->dram_para2 & (1 << 12)) ? 0x03000001 : 0x01000007; // 0x01003087 XXX
+	val |= (para->dram_para2 & (UINT32_C(1) << 12)) ? 0x03000001 : 0x01000007; // 0x01003087 XXX
 	write32(DDRPHYC_BASE + 0x0c0, val);
 
-	if (R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) {
+	if (R_CPUCFG->SUP_STAN_FLAG & (UINT32_C(1) << 16)) {
 		val = read32(R_PRCM_BASE  + 0x0250);
 		val &= 0xfffffffd;
 		write32(R_PRCM_BASE  + 0x0250, val);
@@ -1045,7 +1059,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 		}
 
 	} else {
-		if ((R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) == 0) {
+		if ((R_CPUCFG->SUP_STAN_FLAG & (UINT32_C(1) << 16)) == 0) {
 			// prep DRAM init + PHY reset + d-cal + PLL init + z-cal
 			//			val = (para->dram_type == 3) ? 0x1f2	// + DRAM reset
 			//						     : 0x172;
@@ -1072,7 +1086,7 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 	while ((DDRPHYC->PHYC_REG_010 & 0x1) == 0) {
 	} // wait for IDONE
 
-	if (R_CPUCFG->SUP_STAN_FLAG & (1 << 16)) {
+	if (R_CPUCFG->SUP_STAN_FLAG & (UINT32_C(1) << 16)) {
 		val = read32(DDRPHYC_BASE + 0x10c);
 		val &= 0xf9ffffff;
 		val |= 0x04000000;
@@ -1155,9 +1169,9 @@ unsigned int mctl_channel_init(unsigned int ch_index, dram_para_t *para)
 
 	sdelay(10);
 
-	val = read32(MSI_MEMC_BASE + 0x014);
+	val = read32(MCTL_COM_BASE + 0x014);
 	val |= 0x80000000;
-	write32(MSI_MEMC_BASE + 0x014, val);
+	write32(MCTL_COM_BASE + 0x014, val);
 
 	sdelay(10);
 
@@ -1183,7 +1197,7 @@ int DRAMC_get_dram_size(void)
 {
 	unsigned int rval, temp, size0, size1;
 
-	rval = read32(MSI_MEMC_BASE + 0x000); // MC_WORK_MODE0
+	rval = MCTL_COM->MCTL_COM_WORK_MODE0;// read32(MCTL_COM_BASE + 0x000); // MC_WORK_MODE0
 
 	temp = (rval >> 8) & 0xf; // page size - 3
 	temp += (rval >> 4) & 0xf; // row width - 1
@@ -1196,7 +1210,7 @@ int DRAMC_get_dram_size(void)
 		return size0;
 	}
 
-	rval = read32(MSI_MEMC_BASE + 0x004); // MC_WORK_MODE1
+	rval = MCTL_COM->MCTL_COM_WORK_MODE1;// read32(MCTL_COM_BASE + 0x004); // MC_WORK_MODE1
 
 	temp = rval & 0x3;
 	if (temp == 0) { // two identical ranks
@@ -1223,7 +1237,7 @@ int dqs_gate_detect(dram_para_t *para)
 	unsigned int u1;
 	unsigned int u2;
 
-	if (DDRPHYC->PHYC_REG_010 & (1 << 22)) {
+	if (DDRPHYC->PHYC_REG_010 & (UINT32_C(1) << 22)) {
 		u1 = (uint32_t)(read32(DDRPHYC_BASE + 0x348) << 6) >> 0x1e;
 		u2 = (uint32_t)(read32(DDRPHYC_BASE + 0x3c8) << 6) >> 0x1e;
 
@@ -1301,12 +1315,12 @@ void mctl_vrefzq_init(dram_para_t *para)
 {
 	unsigned int val;
 
-	if ((para->dram_tpr13 & (1 << 17)) == 0) {
+	if ((para->dram_tpr13 & (UINT32_C(1) << 17)) == 0) {
 		val = read32(DDRPHYC_BASE + 0x110) & 0x80808080; // IOCVR0
 		val |= para->dram_tpr5;
 		write32(DDRPHYC_BASE + 0x110, val);
 
-		if ((para->dram_tpr13 & (1 << 16)) == 0) {
+		if ((para->dram_tpr13 & (UINT32_C(1) << 16)) == 0) {
 			val = read32(DDRPHYC_BASE + 0x114) & 0xffffff80; // IOCVR1
 			val |= para->dram_tpr6 & 0x7f;
 			write32(DDRPHYC_BASE + 0x114, val);
@@ -1346,7 +1360,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 {
 	unsigned int rval, i, j, rank, maxrank, offs, mc_work_mode;
 	unsigned int shft;
-	uintptr_t chk, ptr;
+	uint32_t chk, ptr;
 
 	if (mctl_core_init(para) == 0) {
 		PRINTF("[ERROR DEBUG] DRAM initialisation error : 0!\n");
@@ -1354,7 +1368,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 	}
 
 	maxrank		 = (para->dram_para2 & 0xf000) ? 2 : 1;
-	mc_work_mode = MSI_MEMC_BASE;
+	mc_work_mode = MCTL_COM_BASE;
 	offs		 = 0;
 
 	// write test pattern
@@ -1374,7 +1388,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		// Scan per address line, until address wraps (i.e. see shadow)
 		for (i = 11; i < 17; i++) {
-			chk = DRAM_SPACE_BASE + (1 << (i + 11));
+			chk = DRAM_SPACE_BASE + (UINT32_C(1) << (i + 11));
 			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
 				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
@@ -1398,10 +1412,10 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		if (rank == 1) {
 			// Set bank mode for rank0
-			rval = read32(MSI_MEMC_BASE + 0x000);
+			rval = read32(MCTL_COM_BASE + 0x000);
 			rval &= 0xfffff003;
 			rval |= 0x000006a4;
-			write32(MSI_MEMC_BASE + 0x000, rval);
+			write32(MCTL_COM_BASE + 0x000, rval);
 		}
 
 		// Set bank mode for current rank
@@ -1413,7 +1427,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 			;
 
 		// Test if bit A23 is BA2 or mirror XXX A22?
-		chk = DRAM_SPACE_BASE + (1 << 22);
+		chk = DRAM_SPACE_BASE + (UINT32_C(1) << 22);
 		ptr = DRAM_SPACE_BASE;
 		for (i = 0, j = 0; i < 64; i++) {
 			if (read32(chk) != (uint32_t) (((i & 1) ? ptr : ~ptr))) {
@@ -1435,10 +1449,10 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		if (rank == 1) {
 			// Set page mode for rank0
-			rval = read32(MSI_MEMC_BASE + 0x000);
+			rval = read32(MCTL_COM_BASE + 0x000);
 			rval &= 0xfffff003;
 			rval |= 0x00000aa0;
-			write32(MSI_MEMC_BASE + 0x000, rval);
+			write32(MCTL_COM_BASE + 0x000, rval);
 		}
 
 		// Set page mode for current rank
@@ -1451,7 +1465,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 
 		// Scan per address line, until address wraps (i.e. see shadow)
 		for (i = 9; i < 14; i++) {
-			chk = DRAM_SPACE_BASE + (1 << i);
+			chk = DRAM_SPACE_BASE + (UINT32_C(1) << i);
 			ptr = DRAM_SPACE_BASE;
 			for (j = 0; j < 64; j++) {
 				if (read32(chk) != (uint32_t) (((j & 1) ? ptr : ~ptr)))
@@ -1464,7 +1478,7 @@ int auto_scan_dram_size(dram_para_t *para) // s7
 		}
 		if (i > 13)
 			i = 13;
-		int pgsize = (i == 9) ? 0 : (1 << (i - 10));
+		int pgsize = (i == 9) ? 0 : (UINT32_C(1) << (i - 10));
 		PRINTF("[AUTO DEBUG] rank %d page size = %d KB\n", rank, pgsize);
 
 		// Store page size
@@ -1525,7 +1539,7 @@ int auto_scan_dram_rank_width(dram_para_t *para)
 
 	mctl_core_init(para);
 
-	if (DDRPHYC->PHYC_REG_010 & (1 << 20)) {
+	if (DDRPHYC->PHYC_REG_010 & (UINT32_C(1) << 20)) {
 		return 0;
 	}
 
@@ -1545,15 +1559,15 @@ int auto_scan_dram_rank_width(dram_para_t *para)
 //
 int auto_scan_dram_config(dram_para_t *para)
 {
-	if (((para->dram_tpr13 & (1 << 14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
+	if (((para->dram_tpr13 & (UINT32_C(1) << 14)) == 0) && (auto_scan_dram_rank_width(para) == 0)) {
 		PRINTF("[ERROR DEBUG] auto scan dram rank & width failed !\n");
 		return 0;
 	}
-	if (((para->dram_tpr13 & (1 << 0)) == 0) && (auto_scan_dram_size(para) == 0)) {
+	if (((para->dram_tpr13 & (UINT32_C(1) << 0)) == 0) && (auto_scan_dram_size(para) == 0)) {
 		PRINTF("[ERROR DEBUG] auto scan dram size failed !\n");
 		return 0;
 	}
-	if ((para->dram_tpr13 & (1 << 15)) == 0) {
+	if ((para->dram_tpr13 & (UINT32_C(1) << 15)) == 0) {
 		para->dram_tpr13 |= 0x6003;
 	}
 	return 1;
@@ -1628,7 +1642,7 @@ int init_DRAM(int type, dram_para_t *para) // s0
 
 #if 0
 	// Purpose ??
-	if (para->dram_tpr13 & (1 << 30)) {
+	if (para->dram_tpr13 & (UINT32_C(1) << 30)) {
 		rc = read32(&para->dram_tpr8);
 		if (rc == 0) {
 			rc = 0x10000200;
@@ -1656,13 +1670,13 @@ int init_DRAM(int type, dram_para_t *para) // s0
 		write32(DDRPHYC_BASE + 0x100, rc | 0x5000);
 	}
 
-	write32(DDRPHYC_BASE + 0x140, DDRPHYC->PHYC_REG_140 | (1 << 31));
-	if (para->dram_tpr13 & (1 << 8)) {
+	write32(DDRPHYC_BASE + 0x140, DDRPHYC->PHYC_REG_140 | (UINT32_C(1) << 31));
+	if (para->dram_tpr13 & (UINT32_C(1) << 8)) {
 		write32(DDRPHYC_BASE + 0x0b8, DDRPHYC->PHYC_REG_140 | 0x300);
 	}
 
 	rc = read32(DDRPHYC_BASE + 0x108);
-	if (para->dram_tpr13 & (1 << 16)) {
+	if (para->dram_tpr13 & (UINT32_C(1) << 16)) {
 		rc &= 0xffffdfff;
 	} else {
 		rc |= 0x00002000;
@@ -1677,14 +1691,14 @@ int init_DRAM(int type, dram_para_t *para) // s0
 	}
 
 	dram_enable_all_master();
-	if (para->dram_tpr13 & (1 << 28)) {
+	if (para->dram_tpr13 & (UINT32_C(1) << 28)) {
 		rc = R_CPUCFG->SUP_STAN_FLAG;
-		if ((rc & (1 << 16)) || dramc_simple_wr_test(mem_size, 4096)) {
+		if ((rc & (UINT32_C(1) << 16)) || dramc_simple_wr_test(mem_size, 4096)) {
 			return 0;
 		}
 	}
 
-	return mem_size;
+	return mem_size != 0;
 }
 
 #endif /* CPUSTYLE_T113 */

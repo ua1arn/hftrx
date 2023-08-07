@@ -8,9 +8,8 @@
 
 #include "xc7z_inc.h"
 
-static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
+static uintptr_t addr32rx;
 volatile uint8_t iq_ready = 0;
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 
 void xcz_fifo_phones_inthandler(void);
 
@@ -40,19 +39,30 @@ void xcz_rxtx_state(uint8_t tx)
 	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 0, (tx != 0));
 }
 
-void xcz_dds_ftw(const uint_least64_t * val)
-{
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 4, * val);
-	mirror_nco1 = * val;
-}
-
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 8, * val);
 	mirror_ncorts = * val;
 }
 
-uint32_t xcz_rx_iq_shift(uint8_t val) // 48
+void xcz_dds_ftw(const uint_least64_t * val)
+{
+	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 4, * val);
+	mirror_nco1 = * val;
+}
+
+void xcz_dds_ftw_sub(const uint_least64_t * val)
+{
+	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 28, * val);
+	mirror_nco2 = * val;
+}
+
+#if WITHIQSHIFT
+
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
+
+uint8_t iq_shift_fir_rx(uint8_t val) // 48
 {
 	if (val > 0)
 	{
@@ -64,13 +74,7 @@ uint32_t xcz_rx_iq_shift(uint8_t val) // 48
 	return rx_fir_shift;
 }
 
-void xcz_dds_ftw_sub(const uint_least64_t * val)
-{
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 28, * val);
-	mirror_nco2 = * val;
-}
-
-uint32_t xcz_rx_cic_shift(uint32_t val)
+uint8_t iq_shift_cic_rx(uint8_t val)
 {
 	if (val > 0)
 	{
@@ -82,7 +86,7 @@ uint32_t xcz_rx_cic_shift(uint32_t val)
 	return rx_cic_shift;
 }
 
-uint32_t xcz_tx_shift(uint32_t val)
+uint8_t iq_shift_tx(uint8_t val)
 {
 	if (val > 0)
 	{
@@ -94,10 +98,23 @@ uint32_t xcz_tx_shift(uint32_t val)
 	return tx_shift;
 }
 
-void xcz_cic_test(uint32_t val)
+void iq_cic_test(uint32_t val)
 {
 	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 24, !! val);
 }
+
+uint32_t iq_cic_test_process(void)
+{
+	int32_t * r = (int32_t *) addr32rx;
+	static int32_t max = 0;
+
+	if (iq_ready)
+		arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
+
+	return max;
+}
+
+#endif /* WITHIQSHIFT */
 
 #if WITHRTS96
 
@@ -111,14 +128,15 @@ void xcz_ah_preinit(void)
 
 	xcz_rxtx_state(1);
 	xcz_rxtx_state(0);
-	xcz_rx_iq_shift(CALIBRATION_IQ_FIR_RX_SHIFT);
-	xcz_rx_cic_shift(CALIBRATION_IQ_CIC_RX_SHIFT);
-	xcz_tx_shift(CALIBRATION_TX_SHIFT);
+
+#if WITHIQSHIFT
+	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
+	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
+	iq_shift_tx(CALIBRATION_TX_SHIFT);
+#endif /* WITHIQSHIFT */
 }
 
 // ****************** IF RX ******************
-
-static uintptr_t addr32rx;
 
 void xcz_if_rx_init(void)
 {
@@ -143,6 +161,7 @@ void xcz_fifo_if_rx_inthandler(void)
 		r[i] = Xil_In32(XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR);
 #endif /* IQMODEM_BLOCKMEMORY */
 
+	processing_pipe32rx(addr);
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);
 
@@ -160,17 +179,6 @@ void xcz_fifo_if_rx_inthandler(void)
 void xcz_if_rx_enable(uint_fast8_t state)
 {
 	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR, xcz_fifo_if_rx_inthandler);
-}
-
-uint32_t xcz_cic_test_process(void)
-{
-	int32_t * r = (int32_t *) addr32rx;
-	static int32_t max = 0;
-
-	if (iq_ready)
-		arm_max_no_idx_q31(r, DMABUFFSIZE32RX, & max);
-
-	return max;
 }
 
 // ****************** Audio MIC receive ******************
@@ -212,7 +220,7 @@ void xcz_dma_if_tx_inthandler(void)
 	xcz_fifo_mic_inthandler();
 
 #if WITHTX
-	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	const uintptr_t addr = processing_pipe32tx(getfilled_dmabuffer32tx_main());
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
