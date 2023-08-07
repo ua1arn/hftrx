@@ -2197,7 +2197,8 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 #if WITHFPGAPIPE_CODEC1
 
 // копирование полей из принятого от FPGA буфера
-uintptr_t RAMFUNC pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
+static uintptr_t RAMFUNC
+pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 	voice16rx_t * const vrx16 = CONTAINING_RECORD(addr16rx, voice16rx_t, rbuff);
@@ -2219,7 +2220,8 @@ uintptr_t RAMFUNC pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 }
 
 // копирование полей в передаваемый на FPGA буфер
-uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
+static uintptr_t RAMFUNC
+pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 	voice16tx_t * const vtx16 = CONTAINING_RECORD(addr16tx, voice16tx_t, tbuff);
@@ -2308,6 +2310,40 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 uintptr_t getfilled_dmabuffer32tx_sub(void)
 {
 	return allocate_dmabuffer32tx();
+}
+
+
+
+/* при необходимости копируем сэмплы от кодекв */
+uintptr_t processing_pipe32rx(uintptr_t addr)
+{
+#if WITHFPGAPIPE_CODEC1
+	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+#endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_RTS96
+	//processing_dmabuffer32rts(addr);
+#endif /* WITHFPGAPIPE_RTS96 */
+#if WITHFPGAPIPE_RTS192
+	//processing_dmabuffer32rts(addr);
+#endif /* WITHFPGAPIPE_RTS192 */
+	return addr;
+}
+
+/* при необходимости добавляем слоты для передачи на кодек */
+uintptr_t processing_pipe32tx(uintptr_t addr)
+{
+#if WITHFPGAPIPE_CODEC1
+	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	pipe_dmabuffer32tx(addr, addr16);
+	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
+#endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_NCORX0
+#endif /* WITHFPGAPIPE_NCORX0 */
+#if WITHFPGAPIPE_NCORX1
+#endif /* WITHFPGAPIPE_NCORX1 */
+#if WITHFPGAPIPE_NCORTS
+#endif /* WITHFPGAPIPE_NCORTS */
+	return addr;
 }
 
 // Отладочная функция для тестирования обмена с кодеком
