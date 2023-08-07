@@ -1575,7 +1575,7 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	// Часть, необходимая в конфигурациях без канала выдачи на кодек
 	while (ntx >= CNT16TX)
 	{
-#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHFPGAPIPECODEC1
+#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHFPGAPIPE_CODEC1
 		release_dmabuffer16tx(getfilled_dmabuffer16txphones());
 #endif /* ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
 		ntx -= CNT16TX;
@@ -2194,7 +2194,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
 }
 
-#if WITHFPGAPIPECODEC1
+#if WITHFPGAPIPE_CODEC1
 
 // копирование полей из принятого от FPGA буфера
 uintptr_t RAMFUNC pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
@@ -2247,7 +2247,7 @@ uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 	return addr32tx;
 }
 
-#endif /* WITHFPGAPIPECODEC1 */
+#endif /* WITHFPGAPIPE_CODEC1 */
 
 #if WITHRTS192
 // Этой функцией пользуются обработчики прерываний DMA
