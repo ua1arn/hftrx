@@ -3675,13 +3675,13 @@ static void I2S_fill_TXxCHMAP(
 #if CPUSTYLE_T507
 
 // 0..2
-static unsigned getapbifrxixbofi2s(unsigned ix)
+static unsigned getAPBIFrx(unsigned ix)
 {
 	return 2;
 }
 
 // 0..2
-static unsigned getapbiftxixbofi2s(unsigned ix)
+static unsigned getAPBIFtx(unsigned ix)
 {
 	return 2;
 }
@@ -3825,8 +3825,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	/* Установка формата обмна */
 	// AHUB = top level
 	const unsigned damix = 0;
-	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
-	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
+	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
@@ -4022,8 +4022,8 @@ static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t
 {
 #if CPUSTYLE_T507
 	/* Соответствующий i2S не работает напрямую с DMA */
-	const unsigned apbiftxix = getapbiftxixbofi2s(ix);	// APBIF_TXn index
-	const unsigned apbifrxix = getapbifrxixbofi2s(ix);	// APBIF_RXn index
+	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 	if (en)
 	{
 		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL |= (UINT32_C(1) << 4);	// RXn_START
@@ -4144,7 +4144,7 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 #endif /* defined(I2S2) && WITHI2S2HW */
 
 
-#if CPUSTYLE_T507 && 0
+#if WITHDEBUG && 0
 
 static uint32_t rxlastts;
 static uint32_t txlastts;
@@ -4222,7 +4222,7 @@ static void savetodebug(uintptr_t addr32)
 
 void zcountsprint(void)
 {
-#if CPUSTYLE_T507
+#if WITHDEBUG && CPUSTYLE_T507
 	//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
 	PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X\n",
 			(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
@@ -4238,12 +4238,12 @@ void zcountsprint(void)
 
 void zfreqprint(void)
 {
-#if CPUSTYLE_T507
+#if WITHDEBUG
 	unsigned ix = 0;	// I2S0
 	{
 		static uint32_t txlasc;
 		uint32_t lastc = txlasc;
-		txlasc = AHUB->APBIF_RX[getapbifrxixbofi2s(ix)].APBIF_RXnFIFO_CNT;
+		txlasc = AHUB->APBIF_RX[getAPBIFrx(ix)].APBIF_RXnFIFO_CNT;
 		uint32_t df = cpu_getdebugticksfreq();
 		static uint32_t txlastts;
 		uint32_t last = txlastts;
@@ -4255,7 +4255,7 @@ void zfreqprint(void)
 	{
 		static uint32_t txlasc;
 		uint32_t lastc = txlasc;
-		txlasc = AHUB->APBIF_TX[getapbiftxixbofi2s(ix)].APBIF_TXnFIFO_CNT;
+		txlasc = AHUB->APBIF_TX[getAPBIFtx(ix)].APBIF_TXnFIFO_CNT;
 		uint32_t df = cpu_getdebugticksfreq();
 		static uint32_t txlastts;
 		uint32_t last = txlastts;
@@ -4389,7 +4389,7 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 //	static uint32_t v = 0xDEADBEEF;
 //	return (uintptr_t) & v;
 	(void) i2s;
-	return (uintptr_t) & AHUB->APBIF_RX [getapbifrxixbofi2s(ix)].APBIF_RXnFIFO;
+	return (uintptr_t) & AHUB->APBIF_RX [getAPBIFrx(ix)].APBIF_RXnFIFO;
 #else
 	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
@@ -4400,7 +4400,7 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
 	(void) i2s;
-	return (uintptr_t) & AHUB->APBIF_TX [getapbiftxixbofi2s(ix)].APBIF_TXnFIFO;
+	return (uintptr_t) & AHUB->APBIF_TX [getAPBIFtx(ix)].APBIF_TXnFIFO;
 #else
 	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_TXFIFO;
@@ -4410,7 +4410,7 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
-	return DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix);
+	return DMAC_SrcReqAHUB_drqr0_RX + getAPBIFrx(ix);
 #else
 	return DMAC_SrcReqI2S1_RX + ix - 1;
 #endif
@@ -4419,7 +4419,7 @@ static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
-	return DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix);
+	return DMAC_DstReqAHUB_drqt0_TX + getAPBIFtx(ix);
 #else
 	return DMAC_DstReqI2S1_TX + ix - 1;
 #endif
