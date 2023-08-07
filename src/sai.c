@@ -114,20 +114,20 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 /* при необходимости копируем сэмплы от кодекв */
 uintptr_t processing_pipe32rx(uintptr_t addr)
 {
-#if WITHFPGAPIPE
+#if WITHFPGAPIPECODEC1
 	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
-#endif /* WITHFPGAPIPE */
+#endif /* WITHFPGAPIPECODEC1 */
 	return addr;
 }
 
 /* при необходимости добавляем слоты для передачи на кодек */
 uintptr_t processing_pipe32tx(uintptr_t addr)
 {
-#if WITHFPGAPIPE
+#if WITHFPGAPIPECODEC1
 	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
 	pipe_dmabuffer32tx(addr, addr16);
 	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
-#endif /* WITHFPGAPIPE */
+#endif /* WITHFPGAPIPECODEC1 */
 	return addr;
 }
 
