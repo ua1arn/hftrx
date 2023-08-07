@@ -3386,7 +3386,6 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYLE_ALLWINNER
 
-
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0u : (UINT32_C(1) << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0u : (UINT32_C(1) << (((ch) - 8) * 4)))
 
@@ -3431,6 +3430,67 @@ static void DMAC_NS_IRQHandler(void)
 #endif /* ! CPUSTYLE_A64 */
 }
 
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+
+static uintptr_t DMA_suspend(unsigned dmach)
+{
+//	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+//	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
+//		;
+	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
+}
+
+static void DMA_resume(unsigned dmach, uintptr_t descbase)
+{
+//    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+}
+
+static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
+{
+	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
+	dmac_handlers [dmach] = handler;
+#if CPUSTYLE_T507
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+#elif CPUSTYLE_A64
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+#else /* CPUSTYLE_A64 */
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+#endif /* CPUSTYLE_A64 */
+}
+
+static void DMAC_clock_initialize(void)
+{
+#if CPUSTYLE_T507
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
+
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
+
+#elif CPUSTYLE_A64
+
+	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 6);	// DMA_GATING
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 6);	// DMA_RST
+
+#else /* CPUSTYLE_A64 */
+	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);		// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Gating MBUS Clock For DMA
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
+#endif /* CPUSTYLE_A64 */
+
+	DMAC->DMAC_AUTO_GATE_REG |= (UINT32_C(1) << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
+}
 
 static unsigned ratio2div(unsigned ratio)
 {
@@ -3635,9 +3695,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	// CCU
 
+	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
+	PRINTF("allwnr_t507_get_apb1_freq=%u\n", (unsigned) allwnr_t507_get_apb1_freq());
+	PRINTF("allwnr_t507_get_apb2_freq=%u\n", (unsigned) allwnr_t507_get_apb2_freq());
+
+	CCU->MBUS_CFG_REG |= (1u << 30);
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
 	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
 		(UINT32_C(3) << 24) |
-		(UINT32_C(2) << 8) |	// div4
+		(UINT32_C(3) << 8) |	// div8
 		0;
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
@@ -3833,15 +3899,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			0;
 
 		i2s->I2Sn_SDIN_SLOTCTR =
-			txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-			(NSLOTS - 1) * (UINT32_C(1) << 16) |	//SDIN Slot number Select for each output
+			txrx_offset * (UINT32_C(1) << 20) |		// RX_OFFSET (need 1 for I2S mode)
+			(NSLOTS - 1) * (UINT32_C(1) << 16) |	// SDIN Slot number Select for each output
 			0;
 
-
-//		i2s->I2Sn_SDINCHMAP [0] = 0x03020100;
-//		i2s->I2Sn_SDINCHMAP [1] = 0x07060504;
-//		i2s->I2Sn_SDINCHMAP [2] = 0x0B0A0908;
-//		i2s->I2Sn_SDINCHMAP [3] = 0x0F0E0D0C;
 		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
 
 #if 0
@@ -4239,18 +4300,33 @@ void zcountsprint(void)
 void zfreqprint(void)
 {
 #if CPUSTYLE_T507
-	static uint32_t txlasc;
-	uint32_t lastc = txlasc;
-	txlasc = AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT;
-	uint32_t df = cpu_getdebugticksfreq();
-	static uint32_t txlastts;
-	uint32_t last = txlastts;
-	txlastts = cpu_getdebugticks();
-	uint32_t d = txlastts - last;
-	uint32_t dc = txlasc - lastc;
-	PRINTF("iofreq=%u\n", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
+	unsigned ix = 0;	// I2S0
+	{
+		static uint32_t txlasc;
+		uint32_t lastc = txlasc;
+		txlasc = AHUB->APBIF_RX[getapbifrxixbofi2s(ix)].APBIF_RXnFIFO_CNT;
+		uint32_t df = cpu_getdebugticksfreq();
+		static uint32_t txlastts;
+		uint32_t last = txlastts;
+		txlastts = cpu_getdebugticks();
+		uint32_t d = txlastts - last;
+		uint32_t dc = txlasc - lastc;
+		PRINTF("rxiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
+	}
+	{
+		static uint32_t txlasc;
+		uint32_t lastc = txlasc;
+		txlasc = AHUB->APBIF_TX[getapbiftxixbofi2s(ix)].APBIF_TXnFIFO_CNT;
+		uint32_t df = cpu_getdebugticksfreq();
+		static uint32_t txlastts;
+		uint32_t last = txlastts;
+		txlastts = cpu_getdebugticks();
+		uint32_t d = txlastts - last;
+		uint32_t dc = txlasc - lastc;
+		PRINTF("txiofreq=%u\n", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
+	}
 #endif
-	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
+	//PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
 }
 
 #endif
@@ -4274,21 +4350,6 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 	case 32: 	return 0x02;
 	case 64: 	return 0x03;
 	}
-}
-
-static uintptr_t DMA_suspend(unsigned dmach)
-{
-//	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-//	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
-//		;
-	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-//	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-//	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
-}
-
-static void DMA_resume(unsigned dmach, uintptr_t descbase)
-{
-//    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 /* Приём от кодека */
@@ -4386,6 +4447,8 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	savetodebug(addr);
 	DMA_resume(dmach, descbase);
 
+	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rts(addr);
 	processing_dmabuffer32rx(addr);
@@ -4412,54 +4475,21 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
 	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
-}
 
-
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
-
-static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
-{
-	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
-	dmac_handlers [dmach] = handler;
-#if CPUSTYLE_T507
-	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
-
-	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
-#elif CPUSTYLE_A64
-	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
-
-	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-#else /* CPUSTYLE_A64 */
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
-	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
-#endif /* CPUSTYLE_A64 */
-}
-
-static void DMAC_clock_initialize(void)
-{
-#if CPUSTYLE_T507
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
-
-	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
-
-#elif CPUSTYLE_A64
-
-	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 6);	// DMA_GATING
-	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 6);	// DMA_RST
-
-#else /* CPUSTYLE_A64 */
-	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);		// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
-#endif /* CPUSTYLE_A64 */
-
-	DMAC->DMAC_AUTO_GATE_REG |= (UINT32_C(1) << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
-	DMAC->DMAC_AUTO_GATE_REG |= 0x07;
+//
+//	static int n;
+//	if (++ n >= DMABUFSCALE)
+//	{
+//		uintptr_t addr = allocate_dmabuffer32rx();
+//		n = 0;
+//		/* Работа с только что принятыми данными */
+//		processing_dmabuffer32rts(addr);
+//		processing_dmabuffer32rx(addr);
+//		release_dmabuffer32rx(addr);
+//
+//		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
+//	}
+	//buffers_resampleuacin(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 }
 
 enum
@@ -5596,8 +5626,12 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
+static unsigned dmamode = 2;
 static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 {
+	int f1 = !!(dmamode & 0x01);
+	int f2 = !!(dmamode & 0x02);
+	int f3 = !!(dmamode & 0x04);
 	unsigned ix = 0;	// I2S0
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -5610,7 +5644,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
-		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		f1 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
@@ -5649,6 +5683,7 @@ static void DMAC_I2S0_RX_initialize_fpgapipe(void)
 	DMAC_clock_initialize();
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	DMAC->CH [dmach].DMAC_MODE_REGN = f2 * (1u << 2) | f3 * (1u << 3);
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)

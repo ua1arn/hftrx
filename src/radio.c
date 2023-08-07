@@ -10842,11 +10842,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 }
 
 static void speex_update_rx(void)

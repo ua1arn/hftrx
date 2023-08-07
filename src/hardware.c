@@ -4744,7 +4744,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 
 	static RAMHEAP uint8_t heapplace [38 * 1024uL * 1024uL];
 
-#elif (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
+#elif (CPUSTYLE_STM32MP1 || CPUSTYLE_T507 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 

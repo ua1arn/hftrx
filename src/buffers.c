@@ -223,28 +223,28 @@ void vfylist(LIST_HEAD2 * head)
 typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	void * tag2;
-	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
+	ALIGNX_BEGIN aubufv_t rbuff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 	void * tag3;
 } ALIGNX_END voice16rx_t;
 
 int_fast32_t buffers_dmabuffer16rxcachesize(void)
 {
-	return offsetof(voice16rx_t, item) - offsetof(voice16rx_t, buff);
+	return offsetof(voice16rx_t, item) - offsetof(voice16rx_t, rbuff);
 }
 //
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16tx_tag
 {
 	void * tag2;
-	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
+	ALIGNX_BEGIN aubufv_t tbuff [DMABUFFSIZE16TX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 	void * tag3;
 } ALIGNX_END voice16tx_t;
 
 int_fast32_t buffers_dmabuffer16txcachesize(void)
 {
-	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, buff);
+	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, tbuff);
 }
 
 // I/Q data to FPGA or IF CODEC
@@ -1190,7 +1190,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	const FLOAT_t sample = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
+	const FLOAT_t sample = adpt_input(& afcodecrx, p->rbuff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
 
 	// Использование данных.
 	v->ivqv [L] = sample;
@@ -1239,8 +1239,8 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
-	v->ivqv [R] = adpt_input(& afcodecrx, p->buff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
+	v->ivqv [L] = adpt_input(& afcodecrx, p->rbuff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
+	v->ivqv [R] = adpt_input(& afcodecrx, p->rbuff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
 
 	if (++ pos >= CNT16RX)
 	{
@@ -1261,7 +1261,7 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 	if (p == NULL)
 	{
 		uintptr_t addr = allocate_dmabuffer16tx();
-		p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+		p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		n = 0;
@@ -1270,8 +1270,8 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
+	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
+	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
 
 	if (++ n >= CNT16TX)
 	{
@@ -1480,15 +1480,15 @@ static RAMFUNC unsigned getsamplemsuacout(
 				static aubufv_t addsample [DMABUFFSTEP16RX];
 				enum { HALF = DMABUFFSIZE16RX / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((aufastbufv2x_t) p->buff [HALF - DMABUFFSTEP16RX + 0] + p->buff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((aufastbufv2x_t) p->buff [HALF - DMABUFFSTEP16RX + 1] + p->buff [HALF + 1]) / 2;	// Right
+				addsample [0] = ((aufastbufv2x_t) p->rbuff [HALF - DMABUFFSTEP16RX + 0] + p->rbuff [HALF + 0]) / 2;	// Left
+				addsample [1] = ((aufastbufv2x_t) p->rbuff [HALF - DMABUFFSTEP16RX + 1] + p->rbuff [HALF + 1]) / 2;	// Right
 
 				part = NPARTS - 3;
-				datas [0] = & p->buff [0];		// часть перед вставкой
+				datas [0] = & p->rbuff [0];		// часть перед вставкой
 				sizes [0] = HALF;
 				datas [1] = & addsample [0];	// вставляемые данные
 				sizes [1] = DMABUFFSTEP16RX;
-				datas [2] = & p->buff [HALF];	// часть после вставки
+				datas [2] = & p->rbuff [HALF];	// часть после вставки
 				sizes [2] = DMABUFFSIZE16RX - HALF;
 #endif
 			}
@@ -1500,7 +1500,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 #endif /* WITHBUFFERSDEBUG */
 				// убирается один сэмпл из выходного потока раз в SKIPPED блоков
 				part = NPARTS - 1;
-				datas [part] = & p->buff [DMABUFFSTEP16RX];	// пропускаем первый сэмпл
+				datas [part] = & p->rbuff [DMABUFFSTEP16RX];	// пропускаем первый сэмпл
 				sizes [part] = DMABUFFSIZE16RX - DMABUFFSTEP16RX;
 			}
 			else
@@ -1508,7 +1508,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 				LCLSPIN_UNLOCK(& locklist16rx);
 				// Ресэмплинг не требуется или нет запаса входных данных
 				part = NPARTS - 1;
-				datas [part] = & p->buff [0];
+				datas [part] = & p->rbuff [0];
 				sizes [part] = DMABUFFSIZE16RX;
 #if WITHBUFFERSDEBUG
 			++ nbnorm;
@@ -1538,7 +1538,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 static RAMFUNC void buffers_resample(void)
 {
 	const uintptr_t addr = allocate_dmabuffer16rx();	// выходной буфер
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	//
@@ -1546,7 +1546,7 @@ static RAMFUNC void buffers_resample(void)
 	unsigned pos;
 	for (pos = 0; pos < DMABUFFSIZE16RX; )
 	{
-		pos += getsamplemsuacout(& p->buff [pos], DMABUFFSIZE16RX - pos);	// Выборка из очеререди resample16rx
+		pos += getsamplemsuacout(& p->rbuff [pos], DMABUFFSIZE16RX - pos);	// Выборка из очеререди resample16rx
 	}
 
 	// направление получившегося буфера получателю.
@@ -1571,9 +1571,11 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
 		nrx -= CNT16RX;
 	}
+
+	// Часть, необходимая в конфигурациях без канала выдачи на кодек
 	while (ntx >= CNT16TX)
 	{
-#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! (WITHFPGAIF_FRAMEBITS == 512)
 		release_dmabuffer16tx(getfilled_dmabuffer16txphones());
 #endif /* ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
 		ntx -= CNT16TX;
@@ -1954,7 +1956,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->buff;
+		return (uintptr_t) & p->rbuff;
 	}
 #if WITHUSBUAC
 	else if (! IsListEmpty3(& resample16rx))
@@ -1980,7 +1982,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 	#endif /* WITHBUFFERSDEBUG */
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->buff;
+		return (uintptr_t) & p->rbuff;
 	}
 #endif /* WITHUSBUAC */
 	else
@@ -2004,7 +2006,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->buff;
+		return (uintptr_t) & p->tbuff;
 	}
 	else if (! IsListEmpty3(& voicesphones16tx) && ! IsListEmpty3(& voicesmoni16tx))
 	{
@@ -2033,13 +2035,13 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 
 		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
 		LCLSPIN_UNLOCK(& locklist16tx);
-		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
+		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 	#if WITHBUFFERSDEBUG
 		++ e3;
 	#endif /* WITHBUFFERSDEBUG */
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->buff;
+		return (uintptr_t) & p->tbuff;
 	}
 	else
 	{
@@ -2069,7 +2071,7 @@ void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
 void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
 	buffers_tonull16rx(p);
 }
 
@@ -2078,7 +2080,7 @@ void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
 void RAMFUNC release_dmabuffer16tx(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 	buffers_tonull16tx(p);
 }
 
@@ -2102,7 +2104,7 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 #if WITHBUFFERSDEBUG
 	++ n3;
 #endif /* WITHBUFFERSDEBUG */
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
@@ -2130,7 +2132,7 @@ static void processing_dmabuffer16rxuac(uintptr_t addr)
 #if WITHBUFFERSDEBUG
 	++ n2;
 #endif /* WITHBUFFERSDEBUG */
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
 	buffers_savefromuacout(p);
 }
 
@@ -2193,22 +2195,23 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 }
 
 #if WITHFPGAIF_FRAMEBITS == 512
+
 // копирование полей из принятого от FPGA буфера
-uintptr_t RAMFUNC pipe_dmabuffer32rx(uintptr_t addr32rx, uintptr_t addr16rx)
+uintptr_t RAMFUNC pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
 	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
 	unsigned i;
 
-	ASSERT((DMABUFFSIZE32RX / DMABUFFSTEP32RX) == (DMABUFFSIZE16RX / DMABUFFSTEP16RX));
+	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
 	ASSERT(sizeof * rx32 == sizeof * rx16);
-	for (i = 0; i < (DMABUFFSIZE32RX / DMABUFFSTEP32RX); ++ i)
+	for (i = 0; i < (unsigned) CNT32RX; ++ i)
 	{
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
 		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
 	}
-	return addr32rx;
+	return addr16rx;
 }
 
 // копирование полей в передаваемый на FPGA буфер
@@ -2218,12 +2221,12 @@ uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
 	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
 	unsigned i;
-	const FLOAT_t scale = 1;
+	const FLOAT_t scale = 1.0 / 32;
 
-	ASSERT((DMABUFFSIZE32TX / DMABUFFSTEP32TX) == (DMABUFFSIZE16TX / DMABUFFSTEP16TX));
+	ASSERT((unsigned) CNT32TX == (unsigned) CNT16TX);
 	ASSERT(DMABUFFSTEP16TX >= 2);
 	ASSERT(sizeof * tx32 == sizeof * tx16);
-	for (i = 0; i < (DMABUFFSIZE32TX / DMABUFFSTEP32TX); ++ i)
+	for (i = 0; i < (unsigned) CNT32TX; ++ i)
 	{
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
 		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
@@ -2329,9 +2332,9 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		PLIST_ENTRY t = RemoveTailList3(& voicesphones16tx);
 		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-		dsp_addsidetone(p->buff, (aubufv_t *) monibuf, 1);
+		dsp_addsidetone(p->tbuff, (aubufv_t *) monibuf, 1);
 		release_dmabuffer16tx(monibuf);
-		return (uintptr_t) & p->buff;	// алрес для DMA
+		return (uintptr_t) & p->tbuff;	// алрес для DMA
 	}
 	LCLSPIN_UNLOCK(& locklist16tx);
 
@@ -2340,10 +2343,10 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 #endif /* WITHBUFFERSDEBUG */
 
 	const uintptr_t addr = allocate_dmabuffer16tx();
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	dsp_addsidetone(p->buff, (aubufv_t *) monibuf, 0);
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
+	dsp_addsidetone(p->tbuff, (aubufv_t *) monibuf, 0);
 	release_dmabuffer16tx(monibuf);
-	return (uintptr_t) & p->buff;
+	return (uintptr_t) & p->tbuff;
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -2355,7 +2358,7 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 		PLIST_ENTRY t = RemoveTailList3(& voicesmoni16tx);
 		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-		return (uintptr_t) & p->buff;	// алрес для DMA
+		return (uintptr_t) & p->tbuff;	// алрес для DMA
 	}
 	LCLSPIN_UNLOCK(& locklist16tx);
 
@@ -2364,9 +2367,11 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 #endif /* WITHBUFFERSDEBUG */
 
 	const uintptr_t addr = allocate_dmabuffer16tx();
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	memset(p->buff, 0, sizeof p->buff); // Заполнение "тишиной"
-	return (uintptr_t) & p->buff;
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	memset(p->tbuff, 0, sizeof p->tbuff); // Заполнение "тишиной"
+	return (uintptr_t) & p->tbuff;
 }
 
 //////////////////////////////////////////
@@ -2430,14 +2435,14 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 	if (p == NULL)
 	{
 		uintptr_t addr = allocate_dmabuffer16tx();
-		p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+		p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 		n = 0;
 	}
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
+	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
+	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
 
 	if (++ n >= CNT16TX)
 	{
