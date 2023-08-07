@@ -20216,9 +20216,9 @@ hamradio_main_step(void)
 			}
 	#if WITHDEBUG
 			{
-				void zdataprint(void);
-				void zcountsprint(void);
-				void zfreqprint(void);
+//				void zdataprint(void);
+//				void zcountsprint(void);
+//				void zfreqprint(void);
 
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
@@ -20231,17 +20231,17 @@ hamradio_main_step(void)
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
-		#if CPUSTYLE_T507
-					case ' ':
-						zcountsprint();
-						break;
-					case 'f':
-						zfreqprint();
-						break;
-					case 'z':
-						zdataprint();
-						break;
-		#endif /* CPUSTYLE_T507 */
+//		#if CPUSTYLE_T507
+//					case ' ':
+//						zcountsprint();
+//						break;
+//					case 'f':
+//						zfreqprint();
+//						break;
+//					case 'z':
+//						zdataprint();
+//						break;
+//		#endif /* CPUSTYLE_T507 */
 		#if WITHDEBUG && WITHMENU
 					case 'm':
 						PRINTF("menu items:\n");

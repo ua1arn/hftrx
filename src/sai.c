@@ -3695,9 +3695,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #if CPUSTYLE_T507
 	// CCU
 
-	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
-	PRINTF("allwnr_t507_get_apb1_freq=%u\n", (unsigned) allwnr_t507_get_apb1_freq());
-	PRINTF("allwnr_t507_get_apb2_freq=%u\n", (unsigned) allwnr_t507_get_apb2_freq());
+//	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
+//	PRINTF("allwnr_t507_get_apb1_freq=%u\n", (unsigned) allwnr_t507_get_apb1_freq());
+//	PRINTF("allwnr_t507_get_apb2_freq=%u\n", (unsigned) allwnr_t507_get_apb2_freq());
 
 	CCU->MBUS_CFG_REG |= (1u << 30);
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
@@ -3712,7 +3712,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
 	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
-	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
+//	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 
 #elif CPUSTYLE_A64
 	// CCU
@@ -3757,9 +3757,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
 //	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
 
-	PRINTF("i2s%u: mclkf=%u, bclkf=%u, clk=%u\n", ix, mclkf, bclkf, (unsigned) clk);
-	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
-	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
+//	PRINTF("i2s%u: mclkf=%u, bclkf=%u, clk=%u\n", ix, mclkf, bclkf, (unsigned) clk);
+//	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
+//	PRINTF("CCU->MBUS_CLK_REG=%08X\n", (unsigned) CCU->MBUS_CLK_REG);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	//const unsigned irq = I2S_PCM1_IRQn + ix - 1;
@@ -3906,7 +3906,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
-	PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
+	//PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
 	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
 #elif CPUSTYLE_A64
@@ -4140,7 +4140,7 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 #endif /* defined(I2S2) && WITHI2S2HW */
 
 
-#if CPUSTYLE_T507 || 1
+#if CPUSTYLE_T507 && 0
 
 static uint32_t rxlastts;
 static uint32_t txlastts;
@@ -4329,7 +4329,6 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
-	rxstamp(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
@@ -4338,7 +4337,6 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	savetodebug(addr);
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
@@ -4352,7 +4350,6 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
-	txstamp(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
@@ -4370,7 +4367,6 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 /* Приём от FPGA (PIPE mode) */
 static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 {
-	rxstamp(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
 	enum { ix = DMAC_DESC_DST };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
@@ -4379,7 +4375,6 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	savetodebug(addr);
 	DMA_resume(dmach, descbase);
 
 	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
@@ -4395,7 +4390,6 @@ static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
 /* Передача в FPGA (PIPE mode)  */
 static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 {
-	txstamp(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = DMA_suspend(dmach);
 
