@@ -112,7 +112,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 
 
 /* при необходимости копируем сэмплы от кодекв */
-static uintptr_t processing_pipe32rx(uintptr_t addr)
+uintptr_t processing_pipe32rx(uintptr_t addr)
 {
 #if WITHFPGAPIPE
 	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
@@ -121,7 +121,7 @@ static uintptr_t processing_pipe32rx(uintptr_t addr)
 }
 
 /* при необходимости добавляем слоты для передачи на кодек */
-static uintptr_t processing_pipe32tx(uintptr_t addr)
+uintptr_t processing_pipe32tx(uintptr_t addr)
 {
 #if WITHFPGAPIPE
 	const uintptr_t addr16 = getfilled_dmabuffer16txphones();

@@ -161,6 +161,7 @@ void xcz_fifo_if_rx_inthandler(void)
 		r[i] = Xil_In32(XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR);
 #endif /* IQMODEM_BLOCKMEMORY */
 
+	processing_pipe32rx(addr);
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);
 
@@ -219,7 +220,7 @@ void xcz_dma_if_tx_inthandler(void)
 	xcz_fifo_mic_inthandler();
 
 #if WITHTX
-	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	const uintptr_t addr = processing_pipe32tx(getfilled_dmabuffer32tx_main());
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit

@@ -973,6 +973,8 @@ uintptr_t allocate_dmabuffer16tx(void);
 uintptr_t allocate_dmabuffer16rx(void);
 void release_dmabuffer16tx(uintptr_t addr);
 void release_dmabuffer16rx(uintptr_t addr);
+uintptr_t processing_pipe32tx(uintptr_t addr);
+uintptr_t processing_pipe32rx(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferx(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
