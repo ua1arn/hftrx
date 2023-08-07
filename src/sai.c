@@ -24,19 +24,6 @@ typedef struct codechw
 	const char * label;
 } codechw_t;
 
-/* DMA word lemgth parameter */
-#define FPGAIF_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
-#define FPGARTS_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
-
-#if CODEC1_FRAMEBITS == 32
-	#define CODEC1_DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
-
-#else /*  CODEC1_FRAMEBITS == 64 */
-	// 2*32, 2*24
-	#define CODEC1_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
-
-#endif /*  CODEC1_FRAMEBITS == 64 */
-
 static void hardware_dummy_initialize(void)
 {
 
@@ -111,6 +98,19 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 }
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+/* DMA word length parameter */
+#define FPGAIF_DMA_SxCR_xSIZE		0x02u	// 10: word (32-bit)
+#define FPGARTS_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
+
+#if CODEC1_FRAMEBITS == 32
+	#define CODEC1_DMA_SxCR_xSIZE		0x01u	// 01: half-word (16-bit)
+
+#else /*  CODEC1_FRAMEBITS == 64 */
+	// 2*32, 2*24
+	#define CODEC1_DMA_SxCR_xSIZE		0x02u	// 10: word (32-bit)
+
+#endif /*  CODEC1_FRAMEBITS == 64 */
 
 #define DMA_SxCR_PL_VALUE 0u		// STM32xxx DMA Priority level
 
