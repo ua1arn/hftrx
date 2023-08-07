@@ -4483,6 +4483,9 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 //		uintptr_t addr = allocate_dmabuffer32rx();
 //		n = 0;
 //		/* Работа с только что принятыми данными */
+//
+//		processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+//
 //		processing_dmabuffer32rts(addr);
 //		processing_dmabuffer32rx(addr);
 //		release_dmabuffer32rx(addr);

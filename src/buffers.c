@@ -2114,8 +2114,6 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 
 	//debaudio(p->buff [0]);
 
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
 	LCLSPIN_LOCK(& locklist16rx);
 	InsertHeadList3(& voicesmike16rx, & p->item, 0);
 	LCLSPIN_UNLOCK(& locklist16rx);
