@@ -1413,6 +1413,81 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #if (__CORTEX_A != 0) && (! defined(__aarch64__))
 
+/** \brief  Enable Floating Point Unit
+
+  Critical section, called from undef handler, so systick is disabled
+ */
+__STATIC_INLINE void __FPU_Enable_fixed(void)
+{
+  __ASM volatile(
+    //Permit access to VFP/NEON, registers by modifying CPACR
+    "        MRC     p15,0,R1,c1,c0,2  \n"
+	"        MOVW    R2, #:lower16:0x00F00000   \n"
+	"        MOVT    R2, #:upper16:0x00F00000   \n"
+	"        ORR     R1,R1,R2 \n"
+	"        MCR     p15,0,R1,c1,c0,2  \n"
+
+    //Ensure that subsequent instructions occur in the context of VFP/NEON access permitted
+    "        ISB                       \n"
+
+    //Enable VFP/NEON
+    "        VMRS    R1,FPEXC          \n"
+	"        MOVW    R2, #:lower16:0x40000000   \n"
+	"        MOVT    R2, #:upper16:0x40000000   \n"
+	"        ORR     R1,R1,R2 \n"
+    "        VMSR    FPEXC,R1          \n"
+
+    //Initialise VFP/NEON registers to 0
+    "        MOV     R2,#0             \n"
+
+    //Initialise D16 registers to 0
+    "        VMOV    D0, R2,R2         \n"
+    "        VMOV    D1, R2,R2         \n"
+    "        VMOV    D2, R2,R2         \n"
+    "        VMOV    D3, R2,R2         \n"
+    "        VMOV    D4, R2,R2         \n"
+    "        VMOV    D5, R2,R2         \n"
+    "        VMOV    D6, R2,R2         \n"
+    "        VMOV    D7, R2,R2         \n"
+    "        VMOV    D8, R2,R2         \n"
+    "        VMOV    D9, R2,R2         \n"
+    "        VMOV    D10,R2,R2         \n"
+    "        VMOV    D11,R2,R2         \n"
+    "        VMOV    D12,R2,R2         \n"
+    "        VMOV    D13,R2,R2         \n"
+    "        VMOV    D14,R2,R2         \n"
+    "        VMOV    D15,R2,R2         \n"
+
+#if (defined(__ARM_NEON) && (__ARM_NEON == 1))
+    //Initialise D32 registers to 0
+    "        VMOV    D16,R2,R2         \n"
+    "        VMOV    D17,R2,R2         \n"
+    "        VMOV    D18,R2,R2         \n"
+    "        VMOV    D19,R2,R2         \n"
+    "        VMOV    D20,R2,R2         \n"
+    "        VMOV    D21,R2,R2         \n"
+    "        VMOV    D22,R2,R2         \n"
+    "        VMOV    D23,R2,R2         \n"
+    "        VMOV    D24,R2,R2         \n"
+    "        VMOV    D25,R2,R2         \n"
+    "        VMOV    D26,R2,R2         \n"
+    "        VMOV    D27,R2,R2         \n"
+    "        VMOV    D28,R2,R2         \n"
+    "        VMOV    D29,R2,R2         \n"
+    "        VMOV    D30,R2,R2         \n"
+    "        VMOV    D31,R2,R2         \n"
+#endif
+
+    //Initialise FPSCR to a known state
+    "        VMRS    R1,FPSCR          \n"
+	"        MOVW    R2, #:lower16:0x00086060   \n"
+	"        MOVT    R2, #:upper16:0x00086060   \n"
+	"        AND     R1,R1,R2          \n" //Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+    "        VMSR    FPSCR,R1            "
+    : : : "cc", "r1", "r2"
+  );
+}
+
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
 
@@ -2523,7 +2598,7 @@ sysinit_fpu_initialize(void)
 #elif (__CORTEX_A != 0)
 
 	// FPU
-	__FPU_Enable();
+	__FPU_Enable_fixed();
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
