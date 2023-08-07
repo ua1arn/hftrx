@@ -117,6 +117,12 @@ uintptr_t processing_pipe32rx(uintptr_t addr)
 #if WITHFPGAPIPE_CODEC1
 	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
 #endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_RTS96
+	//processing_dmabuffer32rts(addr);
+#endif /* WITHFPGAPIPE_RTS96 */
+#if WITHFPGAPIPE_RTS192
+	//processing_dmabuffer32rts(addr);
+#endif /* WITHFPGAPIPE_RTS192 */
 	return addr;
 }
 
@@ -128,6 +134,12 @@ uintptr_t processing_pipe32tx(uintptr_t addr)
 	pipe_dmabuffer32tx(addr, addr16);
 	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
 #endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_NCORX0
+#endif /* WITHFPGAPIPE_NCORX0 */
+#if WITHFPGAPIPE_NCORX1
+#endif /* WITHFPGAPIPE_NCORX1 */
+#if WITHFPGAPIPE_NCORTS
+#endif /* WITHFPGAPIPE_NCORTS */
 	return addr;
 }
 
