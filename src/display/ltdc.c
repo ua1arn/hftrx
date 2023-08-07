@@ -2594,7 +2594,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 }
 // What is DPSS_TOP_BGR_REG ?
 
-static void hardware_de_initialize(const videomode_t * vdmode)
+static void hardware_de_initialize(void)
 {
 #if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 	/* Configure DE clock */
@@ -2667,7 +2667,7 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
 {
 	hardware_tcon_initialize(vdmode);
-	hardware_de_initialize(vdmode);
+	hardware_de_initialize();
 
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
