@@ -4238,7 +4238,7 @@ void zcountsprint(void)
 
 void zfreqprint(void)
 {
-#if WITHDEBUG
+#if WITHDEBUG && CPUSTYLE_T507
 	unsigned ix = 0;	// I2S0
 	{
 		static uint32_t txlasc;

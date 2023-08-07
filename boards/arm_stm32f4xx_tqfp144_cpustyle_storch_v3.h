@@ -78,8 +78,13 @@
 //#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-//#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
-//#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */
+
+//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
+#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
 #define LS020_RS_INITIALIZE() \
 	do { \

@@ -112,6 +112,14 @@
 #else /* WITHISBOOTLOADER */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+
+	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
+	#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+
 	#define WITHFPGAIF_SAI2_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
 #if CODEC1_IFC_MASTER
 	#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */

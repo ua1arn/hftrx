@@ -74,6 +74,13 @@
 	//#define WITHCPUDACHW	1	/* использование DAC - в renesas R7S72 нету */
 	#define WITHCPUADCHW 	1	/* использование ADC */
 
+	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
+	#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+	#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+
 	#define WITHI2S2HW	1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
 	#if WITHRTS192
