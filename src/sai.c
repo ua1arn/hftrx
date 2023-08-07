@@ -3863,8 +3863,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		/* I2S part */
 		i2s->I2Sn_CTL =
 			!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
-			1 * (UINT32_C(1) << 12) |	// SDI0_EN
-			1 * (UINT32_C(1) << 8) |	// SDO0_EN
+			1 * (UINT32_C(1) << (din + 12)) |	// SDI0_EN
+			1 * (UINT32_C(1) << (dout + 8)) |	// SDO0_EN
 			1 * (UINT32_C(1) << 4) |	// MODE_SEL 01: Left mode(offset 0: L-J Mode; offset 1: I2S mode)
 			0;
 		i2s->I2Sn_FMT0 =
@@ -3943,7 +3943,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #endif
 
 		// I2Sn_SDINCHMAP оставляем по умолчанию
-		printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, (void *) & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
+		//printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, (void *) & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
 		//printhex32((uintptr_t)i2s, i2s, sizeof * i2s);
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
