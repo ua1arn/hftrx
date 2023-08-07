@@ -4144,7 +4144,7 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 #endif /* defined(I2S2) && WITHI2S2HW */
 
 
-#if WITHDEBUG && 0
+#if WITHDEBUG && 1
 
 static uint32_t rxlastts;
 static uint32_t txlastts;
@@ -4343,6 +4343,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 
 	DMA_resume(dmach, descbase);
 
+	savetodebug(addr);
 	/* Работа с только что принятыми данными */
 	processing_pipe32rx(addr);
 	processing_dmabuffer32rts(addr);
