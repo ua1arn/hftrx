@@ -114,6 +114,7 @@
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#if WITHINTEGRATEDDSP
+		#define WITHFPGAPIPE 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
 		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
 		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
@@ -124,8 +125,7 @@
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
-		#define WITHFPGAPIPE_I2S0_DUPLEX_SLAVE	1		/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 	#endif /* WITHINTEGRATEDDSP */
 
 	////#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */

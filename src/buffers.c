@@ -1575,7 +1575,7 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	// Часть, необходимая в конфигурациях без канала выдачи на кодек
 	while (ntx >= CNT16TX)
 	{
-#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! (WITHFPGAIF_FRAMEBITS == 512)
+#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHFPGAPIPE
 		release_dmabuffer16tx(getfilled_dmabuffer16txphones());
 #endif /* ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
 		ntx -= CNT16TX;
@@ -2146,7 +2146,8 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
-	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	dsp_extbuffer32rx(p->buff);
 
 	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
@@ -2163,7 +2164,8 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	//debugcount_rx32rtsadc += CNT32RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32rts((const IFADCvalue_t *) addr);
+	voice32rts_t * const p = CONTAINING_RECORD(addr, voice32rts_t, buff);
+	dsp_extbuffer32rts(p->buff);
 }
 
 void release_dmabuffer32rx(uintptr_t addr)
@@ -2192,15 +2194,19 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
 }
 
-#if WITHFPGAIF_FRAMEBITS == 512
+#if WITHFPGAPIPE
 
 // копирование полей из принятого от FPGA буфера
 uintptr_t RAMFUNC pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
-	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
+	voice16rx_t * const vrx16 = CONTAINING_RECORD(addr16rx, voice16rx_t, rbuff);
+	ASSERT(vrx16->tag2 == vrx16);
+	ASSERT(vrx16->tag3 == vrx16);
+	voice32rx_t * const vrx32 = CONTAINING_RECORD(addr32rx, voice32rx_t, buff);
 	unsigned i;
+	IFADCvalue_t * const rx32 = vrx32->buff;
+	aubufv_t * const rx16 = vrx16->rbuff;
 
 	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
 	ASSERT(sizeof * rx32 == sizeof * rx16);
@@ -2216,8 +2222,15 @@ uintptr_t RAMFUNC pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
-	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
+	voice16tx_t * const vtx16 = CONTAINING_RECORD(addr16tx, voice16tx_t, tbuff);
+	ASSERT(vtx16->tag2 == vtx16);
+	ASSERT(vtx16->tag3 == vtx16);
+	voice32tx_t * const vtx32 = CONTAINING_RECORD(addr32tx, voice32tx_t, buff);
+	ASSERT(vtx32->tag2 == vtx32);
+	ASSERT(vtx32->tag3 == vtx32);
+
+	IFDACvalue_t * const tx32 = vtx32->buff;
+	aubufv_t * const tx16 = vtx16->tbuff;
 	unsigned i;
 	const FLOAT_t scale = 1.0 / 32;
 
@@ -2234,7 +2247,7 @@ uintptr_t RAMFUNC pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 	return addr32tx;
 }
 
-#endif /* WITHFPGAIF_FRAMEBITS == 512 */
+#endif /* WITHFPGAPIPE */
 
 #if WITHRTS192
 // Этой функцией пользуются обработчики прерываний DMA

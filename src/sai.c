@@ -110,6 +110,27 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 	return addr;
 }
 
+
+/* при необходимости копируем сэмплы от кодекв */
+static uintptr_t processing_pipe32rx(uintptr_t addr)
+{
+#if WITHFPGAPIPE
+	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+#endif /* WITHFPGAPIPE */
+	return addr;
+}
+
+/* при необходимости добавляем слоты для передачи на кодек */
+static uintptr_t processing_pipe32tx(uintptr_t addr)
+{
+#if WITHFPGAPIPE
+	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	pipe_dmabuffer32tx(addr, addr16);
+	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
+#endif /* WITHFPGAPIPE */
+	return addr;
+}
+
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 #define DMA_SxCR_PL_VALUE 0u		// STM32xxx DMA Priority level
@@ -1829,6 +1850,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream5->M0AR;
 			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -1837,6 +1859,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream5->M1AR;
 			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -1862,13 +1885,13 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M0AR);
-			DMA2_Stream1->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream1->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream1->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M1AR);
-			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream1->M1AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream1->M1AR);
 		}
 	}
@@ -2471,6 +2494,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -2479,6 +2503,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
 			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+			processing_pipe32rx(addr);
 			processing_dmabuffer32rts(addr);
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
@@ -2595,13 +2620,13 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream4->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream4->M1AR =  dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 			DRD(DMA2_Stream4->M1AR);
 		}
 	}
@@ -4340,6 +4365,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
+	processing_pipe32rx(addr);
 	processing_dmabuffer32rts(addr);
 	processing_dmabuffer32rx(addr);
 	release_dmabuffer32rx(addr);
@@ -4355,55 +4381,13 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	descraddr [ix] = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
-}
-
-/* Приём от FPGA (PIPE mode) */
-static void DMA_I2Sx_RX_Handler_fpgapipe(unsigned dmach)
-{
-	enum { ix = DMAC_DESC_DST };
-	const uintptr_t descbase = DMA_suspend(dmach);
-
-	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_invalidate32rx(allocate_dmabuffer32rx());
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-
-	DMA_resume(dmach, descbase);
-
-	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
-
-	/* Работа с только что принятыми данными */
-	processing_dmabuffer32rts(addr);
-	processing_dmabuffer32rx(addr);
-	release_dmabuffer32rx(addr);
-
-	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
-}
-
-/* Передача в FPGA (PIPE mode)  */
-static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
-{
-	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t descbase = DMA_suspend(dmach);
-
-	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
-	descraddr [ix] = dma_flush32tx(pipe_dmabuffer32tx(getfilled_dmabuffer32tx_main(), addr16));
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-
-	DMA_resume(dmach, descbase);
-
-	/* Работа с только что передаными данными */
-	release_dmabuffer32tx(addr);
-	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
 }
 
 enum
@@ -4430,6 +4414,24 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 #else
 	(void) ix;
 	return (uintptr_t) & i2s->I2S_PCM_RXFIFO;
+#endif
+}
+
+static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
+{
+#if CPUSTYLE_T507
+	return DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix);
+#else
+	return DMAC_SrcReqI2S1_RX + ix - 1;
+#endif
+}
+
+static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
+{
+#if CPUSTYLE_T507
+	return DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix);
+#else
+	return DMAC_DstReqI2S1_TX + ix - 1;
 #endif
 }
 
@@ -5419,8 +5421,8 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
-	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix); // T507
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S0, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5485,7 +5487,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, ix); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
-	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix); // T507
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S0, ix);
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -5540,141 +5542,6 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
-static unsigned dmamode = 2;
-static void DMAC_I2S0_RX_initialize_fpgapipe(void)
-{
-	int f1 = !!(dmamode & 0x01);
-	int f2 = !!(dmamode & 0x02);
-	int f3 = !!(dmamode & 0x04);
-	unsigned ix = 0;	// I2S0
-	const size_t dw = sizeof (IFADCvalue_t);
-	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S0_RX_Ch;
-	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
-	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
-	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_RXFIFO;
-	const unsigned srcDRQ = DMAC_SrcReqAHUB_drqr0_RX + getapbifrxixbofi2s(ix); // T507
-
-	const uint_fast32_t parameterDMAC = 0;
-	const uint_fast32_t configDMAC =
-		f1 * (UINT32_C(1) << 30) |	// BMODE_SEL
-		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
-		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
-		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
-		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
-		0;
-
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
-
-	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
-	DMAC->CH [dmach].DMAC_MODE_REGN = f2 * (1u << 2) | f3 * (1u << 3);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		TP();
-
-	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpgapipe);
-
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
-}
-
-static void DMAC_I2S0_TX_initialize_fpgapipe(void)
-{
-	unsigned ix = 0;	// I2S0
-	const size_t dw = sizeof (IFDACvalue_t);
-	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S0_TX_Ch;
-	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
-	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
-	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, 0); //(uintptr_t) & I2S0->I2S_PCM_TXFIFO;
-	const unsigned dstDRQ = DMAC_DstReqAHUB_drqt0_TX + getapbiftxixbofi2s(ix); // T507
-
-	const uint_fast32_t parameterDMAC = 0;
-	const uint_fast32_t configDMAC =
-		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
-		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
-		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
-		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
-		0;
-
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
-
-	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		TP();
-
-	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpgapipe);
-
-	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
-}
-
 static const codechw_t fpgacodechw_i2s0_duplex_master =
 {
 	hardware_i2s0_master_duplex_initialize_fpga,
@@ -5695,17 +5562,6 @@ static const codechw_t fpgacodechw_i2s0_duplex_slave =
 	hardware_i2s0_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s0-duplex-slave"
-};
-
-static const codechw_t fpgapipechw_i2s0_duplex_slave =
-{
-	hardware_i2s0_slave_duplex_initialize_fpga,
-	hardware_dummy_initialize,
-	DMAC_I2S0_RX_initialize_fpgapipe,
-	DMAC_I2S0_TX_initialize_fpgapipe,
-	hardware_i2s0_enable,
-	hardware_dummy_enable,
-	"fpgapipehw-i2s0-duplex-slave"
 };
 
 #endif /* defined(I2S0) && WITHI2S0HW */
@@ -6038,14 +5894,14 @@ static void r7s721_ssif1_txdma_fpgatx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC3.N0SA_n;
-		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.N0SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC3.N1SA_n;
-		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.N1SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
@@ -6068,6 +5924,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 		const uintptr_t addr = DMAC2.N0DA_n;
 		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
+		processing_pipe32rx(addr);
 		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
@@ -6077,6 +5934,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 		const uintptr_t addr = DMAC2.N1DA_n;
 		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
+		processing_pipe32rx(addr);
 		processing_dmabuffer32rts(addr);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
@@ -6688,9 +6546,6 @@ static const codechw_t * const channels [] =
 	#if WITHFPGAIF_I2S0_DUPLEX_SLAVE	// allwinner A64
 		& fpgacodechw_i2s0_duplex_slave,					// Интерфейс к IF кодеку/FPGA
 	#endif /* WITHFPGAIF_I2S0_DUPLEX_SLAVE */
-	#if WITHFPGAPIPE_I2S0_DUPLEX_SLAVE	// allwinner T507
-		& fpgapipechw_i2s0_duplex_slave,					// Интерфейс к IF кодеку/FPGA, транзитом в аудио кодек
-	#endif /* WITHFPGAPIPE_I2S0_DUPLEX_SLAVE */
 	#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER	// allwinner t113-s3 or F133
 		& audiocodechw_hwblock_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
 	#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
