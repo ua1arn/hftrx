@@ -3843,21 +3843,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// Каналы AHUB[0..1] - RX
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = (UINT32_C(1) << 3);	// RXn_DRQ
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0;
 
 	// Каналы AHUB[0..1] - TX
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL = (UINT32_C(1) << 3);	// TXn_DRQ
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0;
 
-	// Figure 9- 2. Audio HUB Crossbar Switch and Clients
-	// Need:
-	// APBIF TXDIF -> I2S0 RXDIF (transmit to external devices)
-	// I2S0 TXDIF -> APBIF RXDIF (receive from external devices)
-//	I2S0->I2Sn_CTL = 0;
-//	I2S1->I2Sn_CTL = 0;
-//	I2S2->I2Sn_CTL = 0;
-//	I2S3->I2Sn_CTL = 0;
 	if (1)
 	{
 		/* I2S part */
@@ -3905,46 +3895,6 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 		I2S_fill_RXCHMAP(i2s, din, NSLOTS);
 
-#if 0
-		// 0: 0xFF00FF00
-		// 1: 0xAAAAAAAA
-		// 2: 0xFFFFFFFF
-		// 3: 0xFFFFFFFF
-		// 4: counter
-		// 5: counter
-
-		// 256-bit pattern generator
-		// 0: 0xFFFFFFFF
-		// 1: 0xFFFFFFFF
-		// 2: 0xFF00FF00
-		// 3: 0xAAAAAAAA
-		// 4: inverted counter
-		// 5: inverted counter
-		// 6: counter
-		// 7: counter
-
-		unsigned sch0 = 0;
-		aw_i2s_setchsrc(i2s, 0, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 1, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 2, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 3, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 4, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 5, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 6, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 7, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 8, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 9, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 10, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 11, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 12, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 13, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 14, 	sch0, din);
-		aw_i2s_setchsrc(i2s, 15, 	sch0, din);
-#endif
-
-		// I2Sn_SDINCHMAP оставляем по умолчанию
-		//printhex32((uintptr_t) & i2s->I2Sn_SDINCHMAP, (void *) & i2s->I2Sn_SDINCHMAP, sizeof i2s->I2Sn_SDINCHMAP);
-		//printhex32((uintptr_t)i2s, i2s, sizeof * i2s);
 		i2s->I2Sn_CTL |=
 			1 * (UINT32_C(1) << 2) |	// TXEN
 			1 * (UINT32_C(1) << 1) |	// RXEN
@@ -3954,25 +3904,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			0;
 	}
 
-	//AHUB->DAM [damix].DAMn_CTRL = 1;
 	ASSERT(ix != 3);	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT = (UINT32_C(1) << (27 - ix));	// NOT SEQUENTIAL ! I2S0..I2S3 TXDIF
 	PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
 	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
-
-	// DAM setup
-//	printhex((uintptr_t) & AHUB->DAM [0], & AHUB->DAM [0], sizeof AHUB->DAM [0]);
-//	printhex((uintptr_t) & AHUB->DAM [1], & AHUB->DAM [1], sizeof AHUB->DAM [1]);
-
-//	AHUB->DAM [0].DAMn_CTRL = 0;
-//	AHUB->DAM [0].DAMn_RXx_SRC [0] = 0;
-//	AHUB->DAM [0].DAMn_RXx_SRC [1] = 0;
-//	AHUB->DAM [0].DAMn_RXx_SRC [2] = 0;
-//	AHUB->DAM [1].DAMn_CTRL = 0;
-//	AHUB->DAM [1].DAMn_RXx_SRC [0] = 0;
-//	AHUB->DAM [1].DAMn_RXx_SRC [1] = 0;
-//	AHUB->DAM [1].DAMn_RXx_SRC [2] = 0;
-//	memset(AHUB->DAM, 0, sizeof AHUB->DAM);
 
 #elif CPUSTYLE_A64
 	/* Установка формата обмна */
@@ -4323,10 +4258,10 @@ void zfreqprint(void)
 		txlastts = cpu_getdebugticks();
 		uint32_t d = txlastts - last;
 		uint32_t dc = txlasc - lastc;
-		PRINTF("txiofreq=%u\n", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
+		PRINTF("txiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
 	}
 #endif
-	//PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
+	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
 }
 
 #endif
@@ -4475,24 +4410,6 @@ static void DMA_I2Sx_TX_Handler_fpgapipe(unsigned dmach)
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
 	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
-
-//
-//	static int n;
-//	if (++ n >= DMABUFSCALE)
-//	{
-//		uintptr_t addr = allocate_dmabuffer32rx();
-//		n = 0;
-//		/* Работа с только что принятыми данными */
-//
-//		processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
-//
-//		processing_dmabuffer32rts(addr);
-//		processing_dmabuffer32rx(addr);
-//		release_dmabuffer32rx(addr);
-//
-//		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFFSTEP32RX);
-//	}
-	//buffers_resampleuacin(DMABUFFSIZE32TX / DMABUFFSTEP32TX);
 }
 
 enum
