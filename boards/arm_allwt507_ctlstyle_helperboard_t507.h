@@ -584,14 +584,14 @@
 		VREFIX = 17,		// Reference voltage
 	#endif /* WITHREFSENSOR */
 	#if WITHTEMPSENSOR
-		TEMPIX = 16,
+		TEMPIX = BOARD_ADCX1IN(6),
 	#endif /* WITHTEMPSENSOR */
 
 	#if WITHPOTWPM
-		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = WPM_POTIX,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
+		POTPOWER = WPM_POTIX,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 
 	//#define WITHALTERNATIVEFONTS    1
