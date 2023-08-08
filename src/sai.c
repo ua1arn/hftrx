@@ -4343,7 +4343,6 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 
 	DMA_resume(dmach, descbase);
 
-	//savetodebug(addr);
 	/* Работа с только что принятыми данными */
 	processing_pipe32rx(addr);
 	processing_dmabuffer32rts(addr);
