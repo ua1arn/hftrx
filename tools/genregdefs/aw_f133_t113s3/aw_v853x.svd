@@ -5496,8 +5496,8 @@
   <baseAddress>0x05101000</baseAddress>
   <registers>
    <register>
-    <name>FCOLOR_CTL</name>
-    <displayName>FCOLOR_CTL</displayName>
+    <name>BLD_EN_COLOR_CTL</name>
+    <displayName>BLD_EN_COLOR_CTL</displayName>
     <description>BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -5505,12 +5505,12 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>4</dim>
+    <dim>6</dim>
     <addressOffset>0x00000004</addressOffset>
     <registers>
      <register>
-      <name>FCOLOR</name>
-      <displayName>FCOLOR</displayName>
+      <name>BLD_FILL_COLOR</name>
+      <displayName>BLD_FILL_COLOR</displayName>
       <description>BLD fill color register</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -5518,8 +5518,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>INSIZE</name>
-      <displayName>INSIZE</displayName>
+      <name>BLD_CH_ISIZE</name>
+      <displayName>BLD_CH_ISIZE</displayName>
       <description>BLD input memory size register</description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -5527,8 +5527,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>OFFSET</name>
-      <displayName>OFFSET</displayName>
+      <name>BLD_CH_OFFSET</name>
+      <displayName>BLD_CH_OFFSET</displayName>
       <description>BLD input memory offset register</description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -5536,7 +5536,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x040</dimIncrement>
+    <dimIncrement>0x060</dimIncrement>
    </cluster>
    <register>
     <name>ROUTE</name>

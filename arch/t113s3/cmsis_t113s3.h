@@ -950,15 +950,15 @@ typedef struct DDRPHYC_Type
 /*!< DE_BLD Display Engine (DE) - Blender */
 typedef struct DE_BLD_Type
 {
-    volatile uint32_t FCOLOR_CTL;                     /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    volatile uint32_t BLD_EN_COLOR_CTL;               /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
     struct
     {
-        volatile uint32_t FCOLOR;                     /*!< Offset 0x004 BLD fill color register */
-        volatile uint32_t INSIZE;                     /*!< Offset 0x008 BLD input memory size register */
-        volatile uint32_t OFFSET;                     /*!< Offset 0x00C BLD input memory offset register */
+        volatile uint32_t BLD_FILL_COLOR;             /*!< Offset 0x004 BLD fill color register */
+        volatile uint32_t BLD_CH_ISIZE;               /*!< Offset 0x008 BLD input memory size register */
+        volatile uint32_t BLD_CH_OFFSET;              /*!< Offset 0x00C BLD input memory offset register */
                  uint32_t reserved_0x00C;
-    } ATTR [0x004];                                   /*!< Offset 0x004 Pipe [0..3] */
-             uint32_t reserved_0x044 [0x000F];
+    } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..3] - but six elements */
+             uint32_t reserved_0x064 [0x0007];
     volatile uint32_t ROUTE;                          /*!< Offset 0x080 BLD_CH_RTCTL Offset 0x080 BLD routing control register */
     volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
     volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */

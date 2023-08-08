@@ -1,8 +1,13 @@
 #type; DE; Display Engine (DE)
 #base; DE 0x05000000
 
+# Allwinner_DE3.0_Spec_V1.0.pdf
+
+# https://linux-sunxi.org/images/d/dd/Allwinner_DE3.0_Spec_V1.0.pdf
+
 #type; DE_TOP; Display Engine (DE) TOP
 #base; DE_TOP 0x05000000
+
 #irq; DE 119
 #irqrv; DE 103
 
@@ -42,11 +47,11 @@
 #type; DE_BLD; Display Engine (DE) - Blender
 #base; DE_BLD 0x05101000
 
-#regdef; FCOLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
-#aggreg; ATTR; 0x004 4; Pipe [0..3]
-#regdef; FCOLOR;	0x000; BLD fill color register
-#regdef; INSIZE;	0x004; BLD input memory size register
-#regdef; OFFSET;	0x008; BLD input memory offset register
+#regdef; BLD_EN_COLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; CH; 0x004 6; Pipe [0..3] - but six elements
+#regdef; BLD_FILL_COLOR;	0x000; BLD fill color register
+#regdef; BLD_CH_ISIZE;	0x004; BLD input memory size register
+#regdef; BLD_CH_OFFSET;	0x008; BLD input memory offset register
 #regdef; padding 0; 0x010; Need for address arithmetics
 #aggregend;
 #regdef; ROUTE;			0x080; 		BLD_CH_RTCTL Offset 0x080 BLD routing control register
