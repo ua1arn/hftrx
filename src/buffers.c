@@ -2191,7 +2191,9 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
+#if WITHWFM
 	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
+#endif /* WITHWFM */
 }
 
 #if WITHFPGAPIPE_CODEC1
