@@ -3523,7 +3523,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 		RBVAL8(0060, glob_tuner_L);
-		RBVAL8(0050, glob_tuner_С);
+		RBVAL8(0050, glob_tuner_C);
 
 	#elif WITHAUTOTUNER_AVBELNN_UA1CEI
 		// Плата управления LPF и тюнером от avbelnn
