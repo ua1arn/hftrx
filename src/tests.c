@@ -6795,14 +6795,23 @@ static void hardware_de_initialize(void)
 void detest(void)
 {
 	hardware_de_initialize();
+	unsigned offs = 0x8000;
+//	memset((void *) (offs + SUNXI_DE2_BASE), 0*0xFF, 1024);
+	printhex32(0 + offs, (void *) (offs + SUNXI_DE2_BASE), 1024);
+	printf("END\n");
+	return;
 	const unsigned K64 = 64 * 1024;
-	memset(SUNXI_DE2_BASE, 0XFF, 256);
+	memset((void *) SUNXI_DE2_BASE, 0XFF, 256);
 	PRINTF("SUNXI_DE2_BASE\n");
-	printhex32(SUNXI_DE2_BASE, SUNXI_DE2_BASE, 256);
+	printhex32(SUNXI_DE2_BASE, (void *) SUNXI_DE2_BASE, 256);
 
 	memset((void *) SUNXI_DE2_MUX0_BASE, 0XFF, 256);
 	PRINTF("SUNXI_DE2_MUX0_BASE\n");
 	printhex32(SUNXI_DE2_MUX0_BASE, (void *) SUNXI_DE2_MUX0_BASE, 256);
+
+	memset((void *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS), 0XFF, 256);
+	PRINTF("SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS\n");
+	printhex32(SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS, (void *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS), 256);
 
 	memset((void *) SUNXI_DE2_MUX1_BASE, 0XFF, 256);
 	PRINTF("SUNXI_DE2_MUX1_BASE\n");
