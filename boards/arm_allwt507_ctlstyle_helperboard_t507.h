@@ -110,7 +110,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER || 1
 
 	#define LCDMODE_DUMMY	1
 
@@ -283,7 +283,8 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHFPGAIF_FRAMEBITS 512	// Полный размер фрейма
+	#define WITHFPGAIF_FRAMEBITS 512	// Полный размер фрейма = 512 для WITHFPGAPIPE_CODEC1
+	//#define WITHFPGAIF_FRAMEBITS 256
 	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -311,7 +312,8 @@
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"	// для WITHFPGAPIPE_CODEC1
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch.h"
 	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch_pattern256.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
@@ -322,11 +324,11 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	////#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	////#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
@@ -582,14 +584,14 @@
 		VREFIX = 17,		// Reference voltage
 	#endif /* WITHREFSENSOR */
 	#if WITHTEMPSENSOR
-		TEMPIX = 16,
+		TEMPIX = BOARD_ADCX1IN(6),
 	#endif /* WITHTEMPSENSOR */
 
 	#if WITHPOTWPM
-		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = WPM_POTIX,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
+		POTPOWER = WPM_POTIX,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 
 	//#define WITHALTERNATIVEFONTS    1

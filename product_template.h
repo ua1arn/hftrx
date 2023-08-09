@@ -265,7 +265,7 @@
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
-#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Orange Pi Zero 2 - инициализатор DDR памяти на плате */
 	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"

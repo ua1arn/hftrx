@@ -99,12 +99,23 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
-	#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	#if WITHINTEGRATEDDSP
+
+		//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+		#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
+		#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+		#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+
+		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+		#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+	#endif /* WITHINTEGRATEDDSP */
 
 	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */

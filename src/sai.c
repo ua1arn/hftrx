@@ -4144,7 +4144,7 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 #endif /* defined(I2S2) && WITHI2S2HW */
 
 
-#if WITHDEBUG && 0
+#if WITHDEBUG && 1
 
 static uint32_t rxlastts;
 static uint32_t txlastts;
@@ -4238,7 +4238,7 @@ void zcountsprint(void)
 
 void zfreqprint(void)
 {
-#if WITHDEBUG
+#if WITHDEBUG && CPUSTYLE_T507
 	unsigned ix = 0;	// I2S0
 	{
 		static uint32_t txlasc;

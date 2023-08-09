@@ -304,7 +304,7 @@ extern "C" {
 
 		#elif WITHFPGAIF_FRAMEBITS == 512
 			// buff data layout: I main/I sub/Q main/Q sub
-			#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
 			#define DMABUFFSTEP32RTS	DMABUFFSTEP32RX		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
@@ -313,47 +313,45 @@ extern "C" {
 			#define DMABUF32RX1I	10		// RX1, I
 			#define DMABUF32RX1Q	11		// RX1, Q
 
-			#define DMABUFFSTEP32TX	16		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			#define DMABUFF32RX_CODEC1_LEFT 	12		/* индекс сэмпла левого канала от кодека (через PIPE) */
+			#define	DMABUFF32RX_CODEC1_RIGHT 	13		/* индекс сэмпла правого канала от кодека (через PIPE)  */
+			// ws=0: 00 02 04 06
+			// ws=1: 01 03 05 07
+
+			#if WITHRTS96
+				#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
+				#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
+				#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
+				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#endif /* WITHRTS96 */
+
+
+			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
+			// ws=0: even samples, ws=1: odd samples
+
+			#if WITHWFM
+				#define DMABUF32RXWFM0I	0		// WFM OLDEST
+				#define DMABUF32RXWFM0Q	1		// WFM
+				#define DMABUF32RXWFM1I	2		// WFM
+				#define DMABUF32RXWFM1Q	3		// WFM
+				#define DMABUF32RXWFM2I	4		// WFM
+				#define DMABUF32RXWFM2Q	5		// WFM
+				#define DMABUF32RXWFM3I	6		// WFM NEWEST
+				#define DMABUF32RXWFM3Q	7		// WFM
+			#endif /* WITHWFM */
+
+			#define DMABUFFSTEP32TX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
+
 			#define DMABUF32TXI	0		// TX, I
 			#define DMABUF32TXQ	1		// TX, Q
 
 			#define DMABUF32TX_NCO1		5		// NCO RX A
 			#define DMABUF32TX_NCO2		4		// NCO RX B
 			#define DMABUF32TX_NCORTS	7		// NCO RTS
-
-			// ws=0: 00 02 04 06
-			// ws=1: 01 03 05 07
-
-			#if WITHRTS96
-				#define DMABUF32RTS0I	12		// RTS0, I	// previous - oldest
-				#define DMABUF32RTS0Q	13		// RTS0, Q	// previous
-				#define DMABUF32RTS1I	14		// RTS1, I	// current	- nevest
-				#define DMABUF32RTS1Q	15		// RTS1, Q	// current
-			#endif /* WITHRTS96 */
-
-			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
-			// ws=0: even samples, ws=1: odd samples
-
-			// Slot S0, S4: Oldest sample (T-3)
-			// Slot S1, S5: Old sample (T-2)
-			// Slot S2, S6: Old sample (T-1)
-			// Slot S3, S7: Newest sample (T-0)
-			#define DMABUF32RXWFM0I	0		// WFM OLDEST
-			#define DMABUF32RXWFM0Q	1		// WFM
-			#define DMABUF32RXWFM1I	2		// WFM
-			#define DMABUF32RXWFM1Q	3		// WFM
-			#define DMABUF32RXWFM2I	4		// WFM
-			#define DMABUF32RXWFM2Q	5		// WFM
-			#define DMABUF32RXWFM3I	6		// WFM NEWEST
-			#define DMABUF32RXWFM3Q	7		// WFM
-
 			/* звук идет по PIPE */
 
 			#define DMABUFF32TX_CODEC1_LEFT 	14		/* индекс сэмпла левого канала к кодеку (через PIPE) */
 			#define	DMABUFF32TX_CODEC1_RIGHT 	15		/* индекс сэмпла правого канала к кодеку (через PIPE)  */
-
-			#define DMABUFF32RX_CODEC1_LEFT 	6		/* индекс сэмпла левого канала от кодека (через PIPE) */
-			#define	DMABUFF32RX_CODEC1_RIGHT 	7		/* индекс сэмпла правого канала от кодека (через PIPE)  */
 
 
 		#else

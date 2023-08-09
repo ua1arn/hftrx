@@ -88,6 +88,14 @@
 //#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
+
+//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
+#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+
 #define LS020_RS_INITIALIZE() do { \
 		arm_hardware_piof_outputs2m(LS020_RS, LS020_RS);	/* PF4 */ \
 		arm_hardware_piof_outputs((1U << 1), 0 * (1U << 1));		/* PF1 - enable backlight */ \
