@@ -2201,6 +2201,373 @@
   <baseAddress>0x012A1000</baseAddress>
   </peripheral>
   <peripheral>
+  <name>DE_BLS</name>
+  <description>Blue Level Stretch (BLS)</description>
+  <baseAddress>0x01111000</baseAddress>
+  <registers>
+   <register>
+    <name>BLS_CTRL_REG</name>
+    <displayName>BLS_CTRL_REG</displayName>
+    <description>BLS module control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BLS_SIZE_REG</name>
+    <displayName>BLS_SIZE_REG</displayName>
+    <description>BLS size register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BLS_WIN0_REG</name>
+    <displayName>BLS_WIN0_REG</displayName>
+    <description>BLS window setting register0</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BLS_WIN1_REG</name>
+    <displayName>BLS_WIN1_REG</displayName>
+    <description>BLS window setting register1</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000010</addressOffset>
+    <register>
+     <name>BLS_ATTLUT_REG</name>
+     <displayName>BLS_ATTLUT_REG</displayName>
+     <description>0x10+N*0x4 BLS attenuation LUT register, +N*0x4 (N = 0,1,2,3)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>BLS_POS_REG</name>
+    <displayName>BLS_POS_REG</displayName>
+    <description>BLS blue zone position register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000030</addressOffset>
+    <register>
+     <name>BLS_GAINLUT_REG</name>
+     <displayName>BLS_GAINLUT_REG</displayName>
+     <description>0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE_FCE</name>
+  <description>Fresh and Contrast Enhancement (FCE)</description>
+  <baseAddress>0x01110000</baseAddress>
+  <registers>
+   <register>
+    <name>GCTRL_REG</name>
+    <displayName>GCTRL_REG</displayName>
+    <description>Control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCE_SIZE_REG</name>
+    <displayName>FCE_SIZE_REG</displayName>
+    <description>Size setting register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCE_WIN0_REG</name>
+    <displayName>FCE_WIN0_REG</displayName>
+    <description>Window setting 0 register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCE_WIN1_REG</name>
+    <displayName>FCE_WIN1_REG</displayName>
+    <description>Window setting 1 register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HIST_SUM_REG</name>
+    <displayName>HIST_SUM_REG</displayName>
+    <description>Histogram sum register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HIST_STATUS_REG</name>
+    <displayName>HIST_STATUS_REG</displayName>
+    <description>Histogram status register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_STATUS_REG</name>
+    <displayName>CE_STATUS_REG</displayName>
+    <description>CE LUT status register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_CC_REG</name>
+    <displayName>CE_CC_REG</displayName>
+    <description>CE chroma compensation function setting register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTC_GAIN_REG</name>
+    <displayName>FTC_GAIN_REG</displayName>
+    <description>FTC gain setting register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTD_HUE_THR_REG</name>
+    <displayName>FTD_HUE_THR_REG</displayName>
+    <description>FTD hue threshold setting register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTD_CHROMA_THR_REG</name>
+    <displayName>FTD_CHROMA_THR_REG</displayName>
+    <description>FTD chroma threshold setting register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FTD_SLP_REG</name>
+    <displayName>FTD_SLP_REG</displayName>
+    <description>FTD slop setting register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_ENABLE_REG</name>
+    <displayName>CSC_ENABLE_REG</displayName>
+    <description>CSC enable setting register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_D0_REG</name>
+    <displayName>CSC_D0_REG</displayName>
+    <description>CSC Constant D0 Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_D1_REG</name>
+    <displayName>CSC_D1_REG</displayName>
+    <description>CSC Constant D1 Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_D2_REG</name>
+    <displayName>CSC_D2_REG</displayName>
+    <description>CSC Constant D2 Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C00_REG</name>
+    <displayName>CSC_C00_REG</displayName>
+    <description>CSC Coefficient 00 Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C01_REG</name>
+    <displayName>CSC_C01_REG</displayName>
+    <description>CSC Coefficient 01 Register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C02_REG</name>
+    <displayName>CSC_C02_REG</displayName>
+    <description>CSC Coefficient 02 Register</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C03_REG</name>
+    <displayName>CSC_C03_REG</displayName>
+    <description>CSC Constant 03 Register</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C10_REG</name>
+    <displayName>CSC_C10_REG</displayName>
+    <description>CSC Coefficient 10 Register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C11_REG</name>
+    <displayName>CSC_C11_REG</displayName>
+    <description>CSC Coefficient 11 Register</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C12_REG</name>
+    <displayName>CSC_C12_REG</displayName>
+    <description>CSC Coefficient 12 Register</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C13_REG</name>
+    <displayName>CSC_C13_REG</displayName>
+    <description>CSC Constant 13 Register</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C20_REG</name>
+    <displayName>CSC_C20_REG</displayName>
+    <description>CSC Coefficient 20 Register</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C21_REG</name>
+    <displayName>CSC_C21_REG</displayName>
+    <description>CSC Coefficient 21 Register</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C22_REG</name>
+    <displayName>CSC_C22_REG</displayName>
+    <description>CSC Coefficient 22 Register</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_C23_REG</name>
+    <displayName>CSC_C23_REG</displayName>
+    <description>CSC Constant 23 Register</description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>128</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>CE_LUT_REGN</name>
+     <displayName>CE_LUT_REGN</displayName>
+     <description>0x200+N*4 CE LUT register N (N=0:127)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x200</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>256</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>HIST_CNT_REGN</name>
+     <displayName>HIST_CNT_REGN</displayName>
+     <description>0x400+N*4 Histogram count register N (N=0:255)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DE_GLB</name>
   <description>Display Engine (DE) - Global Control</description>
   <baseAddress>0x01008100</baseAddress>
@@ -2622,6 +2989,331 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE_VSU</name>
+  <description>Video Scaler Unit (VSU)</description>
+  <baseAddress>0x01104000</baseAddress>
+  <registers>
+   <register>
+    <name>VSU_CTRL_REG</name>
+    <displayName>VSU_CTRL_REG</displayName>
+    <description>VSU Module Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_STATUS_REG</name>
+    <displayName>VSU_STATUS_REG</displayName>
+    <description>VSU Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_FIELD_CTRL_REG</name>
+    <displayName>VSU_FIELD_CTRL_REG</displayName>
+    <description>VSU Field Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SCALE_MODE_REG</name>
+    <displayName>VSU_SCALE_MODE_REG</displayName>
+    <description>VSU Scale Mode Setting Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_DIRECTION_THR_REG</name>
+    <displayName>VSU_DIRECTION_THR_REG</displayName>
+    <description>VSU Direction Detection Threshold Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_EDGE_THR_REG</name>
+    <displayName>VSU_EDGE_THR_REG</displayName>
+    <description>VSU Edge Detection Setting Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_EDSCALER_CTRL_REG</name>
+    <displayName>VSU_EDSCALER_CTRL_REG</displayName>
+    <description>VSU Edge-Direction Scaler Control Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_ANGLE_THR_REG</name>
+    <displayName>VSU_ANGLE_THR_REG</displayName>
+    <description>VSU Angle Reliability Setting Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_EN_REG</name>
+    <displayName>VSU_SHARP_EN_REG</displayName>
+    <description>VSU Sharpness Control Enable Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_CORING_REG</name>
+    <displayName>VSU_SHARP_CORING_REG</displayName>
+    <description>VSU Sharpness Control Coring Setting Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_GAIN0_REG</name>
+    <displayName>VSU_SHARP_GAIN0_REG</displayName>
+    <description>VSU Sharpness Control Gain Setting 0 Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_SHARP_GAIN1_REG</name>
+    <displayName>VSU_SHARP_GAIN1_REG</displayName>
+    <description>VSU Sharpness Control Gain Setting 1 Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_OUT_SIZE_REG</name>
+    <displayName>VSU_OUT_SIZE_REG</displayName>
+    <description>VSU Output Size Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_GLOBAL_ALPHA_REG</name>
+    <displayName>VSU_GLOBAL_ALPHA_REG</displayName>
+    <description></description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_SIZE_REG</name>
+    <displayName>VSU_Y_SIZE_REG</displayName>
+    <description>VSU Y Channel Size Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_HSTEP_REG</name>
+    <displayName>VSU_Y_HSTEP_REG</displayName>
+    <description>VSU Y Channel Horizontal Step Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_VSTEP_REG</name>
+    <displayName>VSU_Y_VSTEP_REG</displayName>
+    <description>VSU Y Channel Vertical Step Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_HPHASE_REG</name>
+    <displayName>VSU_Y_HPHASE_REG</displayName>
+    <description>VSU Y Channel Horizontal Initial Phase Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_VPHASE0_REG</name>
+    <displayName>VSU_Y_VPHASE0_REG</displayName>
+    <description>VSU Y Channel Vertical Initial Phase 0 Register</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_Y_VPHASE1_REG</name>
+    <displayName>VSU_Y_VPHASE1_REG</displayName>
+    <description>VSU Y Channel Vertical Initial Phase 1 Register</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_SIZE_REG</name>
+    <displayName>VSU_C_SIZE_REG</displayName>
+    <description>VSU C Channel Size Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_HSTEP_REG</name>
+    <displayName>VSU_C_HSTEP_REG</displayName>
+    <description>VSU C Channel Horizontal Step Register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_VSTEP_REG</name>
+    <displayName>VSU_C_VSTEP_REG</displayName>
+    <description>VSU C Channel Vertical Step Register</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_HPHASE_REG</name>
+    <displayName>VSU_C_HPHASE_REG</displayName>
+    <description>VSU C Channel Horizontal Initial Phase Register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_VPHASE0_REG</name>
+    <displayName>VSU_C_VPHASE0_REG</displayName>
+    <description>VSU C Channel Vertical Initial Phase 0 Register</description>
+    <addressOffset>0x0D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VSU_C_VPHASE1_REG</name>
+    <displayName>VSU_C_VPHASE1_REG</displayName>
+    <description>VSU C Channel Vertical Initial Phase 1 Register</description>
+    <addressOffset>0x0DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>VSU_Y_HCOEF0_REGN</name>
+     <displayName>VSU_Y_HCOEF0_REGN</displayName>
+     <description>0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000300</addressOffset>
+    <register>
+     <name>VSU_Y_HCOEF1_REGN</name>
+     <displayName>VSU_Y_HCOEF1_REGN</displayName>
+     <description>0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>VSU_Y_VCOEF_REGN</name>
+     <displayName>VSU_Y_VCOEF_REGN</displayName>
+     <description>0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000600</addressOffset>
+    <register>
+     <name>VSU_C_HCOEF0_REGN</name>
+     <displayName>VSU_C_HCOEF0_REGN</displayName>
+     <description>0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000700</addressOffset>
+    <register>
+     <name>VSU_C_HCOEF1_REGN</name>
+     <displayName>VSU_C_HCOEF1_REGN</displayName>
+     <description>0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000800</addressOffset>
+    <register>
+     <name>VSU_C_VCOEF_REGN</name>
+     <displayName>VSU_C_VCOEF_REGN</displayName>
+     <description>0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>
