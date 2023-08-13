@@ -51,9 +51,16 @@
 #regdef; GLB_CLK;		0x00C;	Global clock register
 #regdef; GLB_DBUFFER;	0x010;	Global double buffer control register
 
+# define DE2_BLD_BASE 0x1000
+# define DE2_CH_BASE 0x2000
+# define DE2_CH_SIZE 0x1000
 # define DE3_BLD_BASE 0x0800
 # define DE3_CH_BASE 0x1000
 # define DE3_CH_SIZE 0x0800
+#
+# channel base for de33 calculated as:
+# mixer->cfg->map[channel] * 0x20000 + DE2_CH_SIZE;
+
 
 #type; DE_BLD; Display Engine (DE) - Blender
 
@@ -85,8 +92,8 @@
 #type; DE_VI; Display Engine (DE) - VI surface
 
 #base; DE_VI1 0x01101000
-#base; DE_VI2 0x01121000
-#base; DE_VI3 0x01141000
+##base; DE_VI2 0x01121000
+##base; DE_VI3 0x01141000
 
 #aggreg; CFG; 0x000 4;
 #regdef; ATTR; 0x000;

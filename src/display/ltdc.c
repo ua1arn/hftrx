@@ -1962,10 +1962,10 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define UI_POS_BIT(ui) (1u << ((ui) + 9 - 1))
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
 	#define UI_LASTIX 3
-	#define VI_LASTIX 3
+	#define VI_LASTIX 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 	#define VI_POS_BIT(vi) (1u << ((vi) + 8 - 1))
-	#define UI_POS_BIT(ui) (1u << ((ui) + 11 - 1))
+	#define UI_POS_BIT(ui) (1u << ((ui) + 9 - 1))
 #endif
 
 static DE_VI_TypeDef * de3_getvi(int ix)
@@ -2057,21 +2057,25 @@ static inline void t113_de_set_address_vi(uintptr_t vram, int vich)
 	if (vi == NULL)
 		return;
 
+	if (vram == 0)
+	{
+		vi->CFG [VI_CFG_INDEX].ATTR = 0;
+		return;
+	}
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 #if 0
 		(UINT32_C(255) << 24) | // LAY_GLBALPHA
 		(UINT32_C(1) << 1) | 	// LAY_ALPHA _MODE: 0x1:Globe alpha enable
 #endif
-		(ui_format << 8) |	//нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
+		(ui_format << 8) |		// нижний слой: 32 bit ABGR 8:8:8:8 без пиксельной альфы
 		(UINT32_C(1) << 15) |	// Video_UI_SEL 0: Video Overlay(using Video Overlay Layer Input data format) 1: UI Overlay(using UI Overlay Layer Input data format)
 		//(UINT32_C(1) << 4) |	// LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
 		0;
-	vi->FCOLOR [0] = 0xFFFF0000;	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B
 
-	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram);	// The setting of this register is U/UV channel address.
 	vi->TOP_HADDR [0] = (ptr_hi32(vram) & 0xFF) << VI_CFG_INDEX;						// The setting of this register is U/UV channel address.
+	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
 	ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
@@ -2085,6 +2089,11 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 	if (ui == NULL)
 		return;
 
+	if (vram == 0)
+	{
+		ui->CFG [UI_CFG_INDEX].ATTR = 0;
+		return;
+	}
 	const uint_fast32_t attr =
 		((vram != 0) << 0) |	// enable
 		(ui_format << 8) | 		//верхний слой: 32 bit ABGR 8:8:8:8 с пиксельной альфой
@@ -2094,9 +2103,9 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 #endif
 		0;
 
-	ui->CFG [UI_CFG_INDEX].ATTR = attr;
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
+	ui->CFG [UI_CFG_INDEX].ATTR = attr;
 
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
@@ -2178,6 +2187,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 		vi->OVL_SIZE [0] = ovl_ui_mbsize;
 		vi->HORI [0] = 0;
 		vi->VERT [0] = 0;
+		vi->FCOLOR [0] = 0xFFFF0000;	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
 	}
 
 	int uich = 1;
@@ -2216,6 +2226,10 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 //	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 
 #if CPUSTYLE_T507
+
+//	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
+//	bld->CSC_CTL = 0;
+
 	* ((volatile uint32_t *) DE_VSU_BASE) = 0;
 	* ((volatile uint32_t *) DE_FCE_BASE) = 0;
 	* ((volatile uint32_t *) DE_BLS_BASE) = 0;
@@ -2752,29 +2766,23 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP before:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
- 	DE_TOP->DE_SCLK_GATE |= ~0u;//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
- 	DE_TOP->DE_HCLK_GATE |= ~0u;//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+ 	DE_TOP->DE_SCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+ 	DE_TOP->DE_HCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
 
  	// Only one bit writable
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
-
-	//memset((void *) DE_BASE, 0xFF, 64 * 1024);
-//	PRINTF("DE_TOP after:\n");
-	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
 	DE_GLB->GLB_CTL =
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
 
-	//PRINTF("1 DE_GLB->GLB_CLK=%08" PRIX32 "\n", DE_GLB->GLB_CLK);
 	DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
-	//PRINTF("2 DE_GLB->GLB_CLK=%08" PRIX32 "\n", DE_GLB->GLB_CLK);
 
 	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
 
-	DE_GLB->GLB_STS = 0x00u;
+	DE_GLB->GLB_STS = 0;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	/* Configure DE clock */
@@ -2817,7 +2825,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
 
-	DE_GLB->GLB_STS = 0x00u;
+	DE_GLB->GLB_STS = 0;
 
 #else
 	#error Undefined CPUSTYLE_xxx
@@ -2825,9 +2833,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	t113_de_update();
 
-	//t113_de_set_mode(vdmode, 1, COLORMAIN_RED);
-	//t113_de_set_mode(vdmode, 2, COLORMAIN_GREEN);
-	//t113_de_set_mode(vdmode, 3, COLORMAIN_BLUE);
 	t113_de_set_mode(vdmode, BLDIX, COLOR24(255, 255, 0));	// yellow
 
 	t113_de_update();
