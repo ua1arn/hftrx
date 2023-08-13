@@ -2292,8 +2292,6 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		0;
 }
 
-// What is DPSS_TOP_BGR_REG ?
-
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned preiPOW, unsigned tconlcddiv)
 {
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
@@ -2689,6 +2687,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
+// What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
 #if ! CPUSTYLE_T507
@@ -2719,7 +2718,6 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	(void) DSI0->DSI_CTL;
 #endif
 }
-// What is DPSS_TOP_BGR_REG ?
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
