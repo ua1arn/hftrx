@@ -161,7 +161,7 @@ void xcz_fifo_if_rx_inthandler(void)
 		r[i] = Xil_In32(XPAR_IQ_MODEM_FIFO_IQ_RX_BASEADDR);
 #endif /* IQMODEM_BLOCKMEMORY */
 
-	processing_pipe32rx(addr);
+	processing_pipe32rx(addr32rx);
 	processing_dmabuffer32rx(addr32rx);
 	processing_dmabuffer32rts(addr32rx);
 
