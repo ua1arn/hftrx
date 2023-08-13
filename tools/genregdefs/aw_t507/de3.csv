@@ -1,0 +1,152 @@
+#type; DE; Display Engine (DE)
+#base; DE 0x01000000
+
+# Allwinner_DE3.0_Spec_V1.0.pdf
+
+# https://linux-sunxi.org/images/d/dd/Allwinner_DE3.0_Spec_V1.0.pdf
+# https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
+
+#type; DE_TOP; Display Engine (DE) TOP (APB)
+#base; DE_TOP 0x01008000
+
+#irq; DE 120; DE interrupt
+
+##regdef; GATE_CFG;	 	0x000;	SCLK_GATE DE SCLK Gating Register
+##regdef; BUS_CFG;		0x004;	? HCLK_GATE ? DE HCLK Gating Register
+##regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
+##regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
+##regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
+
+#regdef; DE_SCLK_GATE; 0x000; DE SCLK Gating Register
+#regdef; DE_HCLK_GATE; 0x004; DE HCLK Gating Register
+#regdef; DE_AHB_RESET; 0x008; DE AHB Reset Register
+#regdef; DE_SCLK_DIV; 0x00C; DE SCLK Division Register
+#regdef; DE2TCON_MUX; 0x010; DE MUX Register
+#regdef; DE_CMD; 0x014; DE CMD Register
+#regdef; DE_BIST_CTL; 0x01C; DE Bist Control Register
+#regdef; DE_IP_CFG; 0x024; DE IP Configure Register
+
+# DE0 dedicated for TCON_LCD0/TCON_TV0, 
+# DE1 dedicated for TCON_LCD1/TCON_TV1 tv output blocks
+# 7.1.2. Block Diagram - Allwinner_T5_Series_User_Manual-v1.3.pdf
+
+#type; DE_GLB; Display Engine (DE) - Global Control
+
+#base; DE_GLB 0x01008100
+##base; DE0_GLB 0x01100000; RT-Mixer0
+##base; DE1_GLB 0x01200000; RT-Mixer1
+
+# https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
+# https://github.com/dumtux/Allwinner-H616.git
+
+# define SUN50I_MIXER_GLOBAL_CTL 0x0
+# define SUN50I_MIXER_GLOBAL_STATUS 0x4
+# define SUN50I_MIXER_GLOBAL_SIZE 0x8
+# define SUN50I_MIXER_GLOBAL_CLK 0xc
+# define SUN50I_MIXER_GLOBAL_DBUFF 0x10
+
+#regdef; GLB_CTL;	 	0x000;	Global control register
+#regdef; GLB_STS;		0x004;	Global status register
+#regdef; GLB_SIZE;		0x008;	Global size register
+#regdef; GLB_CLK;		0x00C;	Global clock register
+#regdef; GLB_DBUFFER;	0x010;	Global double buffer control register
+
+# define DE3_BLD_BASE 0x0800
+# define DE3_CH_BASE 0x1000
+# define DE3_CH_SIZE 0x0800
+
+#type; DE_BLD; Display Engine (DE) - Blender
+
+#base; DE_BLD1 0x01281000
+#base; DE_BLD2 0x012A1000
+
+# Blender with six inputs
+
+#regdef; BLD_EN_COLOR_CTL;	0x0000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; CH; 0x0004 6; Pipe [0..5]
+#regdef; BLD_FILL_COLOR;	0x0000; BLD fill color register
+#regdef; BLD_CH_ISIZE;	0x0004; BLD input memory size register
+#regdef; BLD_CH_OFFSET;	0x0008; BLD input memory offset register
+#regdef; padding 0; 0x0010; Need for address arithmetics
+#aggregend;
+#regdef; ROUTE;			0x0080; BLD_CH_RTCTL BLD routing control register (default value 0x00543210)
+#regdef; PREMULTIPLY; 	0x0084; BLD pre-multiply control register
+#regdef; BKCOLOR; 0x0088;
+#regdef; OUTPUT_SIZE; 0x008C;
+#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE
+#regdef; CK_CTL; 0x00B0;
+#regdef; CK_CFG; 0x00B4;
+#regdef; CK_MAX; 0x00C0 4;
+#regdef; CK_MIN; 0x00E0 4;
+#regdef; OUT_CTL; 0x00FC;
+#regdef; CSC_CTL; 0x0100; SUN50I_MIXER_BLEND_CSC_CTL 
+#regdef; CSC_COEFF; 0x0110 12; SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4)
+
+#type; DE_VI; Display Engine (DE) - VI surface
+
+#base; DE_VI1 0x01101000
+#base; DE_VI2 0x01121000
+#base; DE_VI3 0x01141000
+
+#aggreg; CFG; 0x000 4;
+#regdef; ATTR; 0x000;
+#regdef; SIZE; 0x004;
+#regdef; COORD; 0x008;
+#regdef; PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
+#regdef; TOP_LADDR; 0x018 3;
+#regdef; BOT_LADDR; 0x024 3;
+#aggregend;
+#regdef; FCOLOR; 0x0C0 4;
+#regdef; TOP_HADDR; 0x0D0 3;
+#regdef; BOT_HADDR; 0x0DC 3;
+#regdef; OVL_SIZE; 0x0E8 2; OVL_V overlay window size register
+#regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
+#regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
+
+#regdef; FBD_V_CTL; 0x300; OVL_V FBD control register
+
+#type; DE_UI; Display Engine (DE) - UI surface
+
+#base; DE_UI1   0x011C1000
+#base; DE_UI2   0x011E1000
+#base; DE_UI3   0x01201000  
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000; 
+#regdef;  SIZE; 0x004; 
+#regdef;  COORD; 0x008; 
+#regdef;  PITCH; 0x00C; 
+#regdef;  TOP_LADDR; 0x010; 
+#regdef;  BOT_LADDR; 0x014; 
+#regdef;  FCOLOR; 0x018; 
+#regdef; padding 0; 0x020; Need for address arithmetics
+#aggregend;
+#regdef;  TOP_HADDR; 0x080; 
+#regdef;  BOT_HADDR; 0x084; 
+#regdef;  OVL_SIZE; 0x088; 
+
+# RT-Mixer0 blocks
+
+#type; DE_VSU
+#base; DE_VSU 0x01104000
+
+#type; DE_FCE
+#base; DE_FCE 0x01110000
+
+#type; DE_BLS
+#base; DE_BLS 0x01111000
+
+
+#type; DE_XX
+
+#base; DE_XX0 0x01000000
+#base; DE_XX1 0x01001000
+#base; DE_XX2 0x01002000
+#base; DE_XX3 0x01003000
+
+#regdef; addr; 0x00E4 3; какое-то поле 32 бит
+#regdef; flags; 0x00F0; какое-то поле с работающими битами 0x00030010 (17, 16, 4)
+#regdef; value1; 0x00F4; какое-то поле 32 бит
+#regdef; flags2; 0x00F8; какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2)
+#regdef; value2; 0x00FC; какое-то поле 32 бит
+

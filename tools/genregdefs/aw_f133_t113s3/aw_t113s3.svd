@@ -4565,7 +4565,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>4</dim>
+    <dim>6</dim>
     <addressOffset>0x00000090</addressOffset>
     <register>
      <name>BLD_MODE</name>
@@ -4576,7 +4576,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x018</dimIncrement>
    </cluster>
    <register>
     <name>CK_CTL</name>
@@ -4839,8 +4839,16 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_UI1">
+  <name>DE_UI2</name>
+  <baseAddress>0x05104000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UI1">
+  <name>DE_UI3</name>
+  <baseAddress>0x05105000</baseAddress>
+  </peripheral>
   <peripheral>
-  <name>DE_VI</name>
+  <name>DE_VI1</name>
   <description>Display Engine (DE) - VI surface</description>
   <baseAddress>0x05102000</baseAddress>
   <registers>

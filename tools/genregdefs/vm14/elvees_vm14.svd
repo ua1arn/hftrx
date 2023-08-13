@@ -2583,7 +2583,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0A0</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <register>
     <name>DBGSTATUS</name>

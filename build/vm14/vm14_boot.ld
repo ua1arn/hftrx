@@ -5,8 +5,8 @@
 MEMORY
 {
   RAM (rwx)	 : ORIGIN = 0x20000000, 			LENGTH = 64K - 16K		/*  */
-  TTB (rwx)  : ORIGIN = 0x20000000 + 64K - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
-  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M		/*  */
+  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
+  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
 }
 
 /* Library configurations */

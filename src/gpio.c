@@ -10042,7 +10042,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA);	// PORT A
 
 #elif CPUSTYLE_VM14
-	#warning Undefined CPUSTYLE_VM14
+	//#warning Undefined CPUSTYLE_VM14
 
 	IRQL_t oldIrql;
 	gpioX_lock(GPIOA, & oldIrql);
@@ -10099,7 +10099,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB);	// PORT B
 
 #elif CPUSTYLE_VM14
-	#warning Undefined CPUSTYLE_VM14
+	//#warning Undefined CPUSTYLE_VM14
 
 	IRQL_t oldIrql;
 	gpioX_lock(GPIOB, & oldIrql);
@@ -10156,7 +10156,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC);	// PORT C
 
 #elif CPUSTYLE_VM14
-	#warning Undefined CPUSTYLE_VM14
+	//#warning Undefined CPUSTYLE_VM14
 
 	IRQL_t oldIrql;
 	gpioX_lock(GPIOC, & oldIrql);
@@ -10215,7 +10215,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD);	// PORT D
 
 #elif CPUSTYLE_VM14
-	#warning Undefined CPUSTYLE_VM14
+	//#warning Undefined CPUSTYLE_VM14
 
 	IRQL_t oldIrql;
 	gpioX_lock(GPIOD, & oldIrql);

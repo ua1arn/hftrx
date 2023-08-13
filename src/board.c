@@ -6,10 +6,10 @@
 //
 
 #include "hardware.h"
+#include "formats.h"
 #include "board.h"
 #include "audio.h"
 #include "gpio.h"
-#include "formats.h"
 #include "spi.h"
 #include "synthcalcs.h"
 #include "keyboard.h"

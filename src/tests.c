@@ -6734,72 +6734,14 @@ struct de_csc {
 	uint32_t coef34;
 };
 
-static void hardware_de_initialize(void)
-{
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
-	/* Configure DE clock */
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0f) << 0)) |
-		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
-		(2 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
-		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    local_delay_us(10);
-	PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000 / 1000));
-
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
-    local_delay_us(10);
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	/* Configure DE clock */
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
-		2 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
-		(4 - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
-		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    local_delay_us(10);
-	//PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000 / 1000));
-
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
-    local_delay_us(10);
-#else
-	#error Undefined CPUSTYLE_xxx
-#endif
-
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
-    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
-	//#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
-	//#define SUNXI_DE2_MUX1_BASE			(SUNXI_DE2_BASE + 0x200000)
-
- 	#define SUNXI_SRAMC_BASE 0x03000000
-    {
-    	uint32_t reg_value;
-
-    	/* set SRAM for video use (A64 only) */
-    	//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
-    	reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
-     	PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-    	reg_value &= ~(0x01 << 24);
-    	//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
-    	* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
-     	PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-
-    }
-#endif
-
-//	t113_de_set_mode(vdmode);
-//	t113_de_enable();
-}
 
 void detest(void)
 {
-	hardware_de_initialize();
 	unsigned offs = 0x8000;
 //	memset((void *) (offs + SUNXI_DE2_BASE), 0*0xFF, 1024);
-	printhex32(0 + offs, (void *) (offs + SUNXI_DE2_BASE), 1024);
+	printhex32(0 + offs, (void *) (offs + SUNXI_DE2_BASE), 256);
 	printf("END\n");
-	return;
+
 	const unsigned K64 = 64 * 1024;
 	memset((void *) SUNXI_DE2_BASE, 0XFF, 256);
 	PRINTF("SUNXI_DE2_BASE\n");
@@ -6812,6 +6754,10 @@ void detest(void)
 	memset((void *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS), 0XFF, 256);
 	PRINTF("SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS\n");
 	printhex32(SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS, (void *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS), 256);
+	PRINTF("struct de_vi:\n");
+	struct de_vi * vi = (struct de_vi *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS);
+	PRINTF("vi->cfg[0].attr=%08" PRIX32 "\n", vi->cfg[0].attr);
+	PRINTF("vi->cfg[0].size=%08" PRIX32 "\n", vi->cfg[0].size);
 
 	memset((void *) SUNXI_DE2_MUX1_BASE, 0XFF, 256);
 	PRINTF("SUNXI_DE2_MUX1_BASE\n");
@@ -6828,7 +6774,24 @@ void hightests(void)
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
-#if CPUSTYLE_T507 && 1
+#if 0
+	{
+		// cache line size test
+		static __ALIGNED(256) uint8_t data [256];
+		memset(data, 0xE5, sizeof data);
+		dcache_clean_all();
+		memset(data, 0x00, sizeof data);
+		__DSB();
+		__set_DCIMVAC((uintptr_t) data);	// Invalidate data cache line by address.
+		//dcache_invalidate((uintptr_t) data, 8);
+		//dcache_clean_all();
+		printhex((uintptr_t) data, data, sizeof data);
+		for (;;)
+			;
+
+	}
+#endif
+#if CPUSTYLE_T507 && 0
 	{
 		board_set_bglight(!1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
 		board_update();
@@ -7018,15 +6981,15 @@ void hightests(void)
 #endif /* #if (CPUSTYLE_T113 || CPUSTYLE_F133) */
 #if 0
 	{
-		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
-		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
-		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
-		DE_UI1->OVL_SIZE = ~ 0u;
-		//DE_UI2->OVL_SIZE = ~ 0u;
-		//DE_UI3->OVL_SIZE = ~ 0u;
-		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
-		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
-		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
+//		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
+//		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
+//		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
+//		DE_UI1->OVL_SIZE = ~ 0u;
+//		//DE_UI2->OVL_SIZE = ~ 0u;
+//		//DE_UI3->OVL_SIZE = ~ 0u;
+//		PRINTF("DE_UI1->OVL_SIZE=%08" PRIX32 "\n", DE_UI1->OVL_SIZE);
+//		//PRINTF("DE_UI2->OVL_SIZE=%08" PRIX32 "\n", DE_UI2->OVL_SIZE);
+//		//PRINTF("DE_UI3->OVL_SIZE=%08" PRIX32 "\n", DE_UI3->OVL_SIZE);
 
 		PRINTF("G2D_UI0->UI_ATTR=%08" PRIX32 "\n", G2D_UI0->UI_ATTR);
 		PRINTF("G2D_UI1->UI_ATTR=%08" PRIX32 "\n", G2D_UI1->UI_ATTR);

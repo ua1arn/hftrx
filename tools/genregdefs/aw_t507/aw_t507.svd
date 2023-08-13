@@ -2019,9 +2019,243 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DE_BLD1</name>
+  <description>Display Engine (DE) - Blender</description>
+  <baseAddress>0x01281000</baseAddress>
+  <registers>
+   <register>
+    <name>BLD_EN_COLOR_CTL</name>
+    <displayName>BLD_EN_COLOR_CTL</displayName>
+    <description>BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>6</dim>
+    <addressOffset>0x00000004</addressOffset>
+    <registers>
+     <register>
+      <name>BLD_FILL_COLOR</name>
+      <displayName>BLD_FILL_COLOR</displayName>
+      <description>BLD fill color register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>BLD_CH_ISIZE</name>
+      <displayName>BLD_CH_ISIZE</displayName>
+      <description>BLD input memory size register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>BLD_CH_OFFSET</name>
+      <displayName>BLD_CH_OFFSET</displayName>
+      <description>BLD input memory offset register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x060</dimIncrement>
+   </cluster>
+   <register>
+    <name>ROUTE</name>
+    <displayName>ROUTE</displayName>
+    <description>BLD_CH_RTCTL BLD routing control register (default value 0x00543210)</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PREMULTIPLY</name>
+    <displayName>PREMULTIPLY</displayName>
+    <description>BLD pre-multiply control register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BKCOLOR</name>
+    <displayName>BKCOLOR</displayName>
+    <description></description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OUTPUT_SIZE</name>
+    <displayName>OUTPUT_SIZE</displayName>
+    <description></description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>6</dim>
+    <addressOffset>0x00000090</addressOffset>
+    <register>
+     <name>BLD_MODE</name>
+     <displayName>BLD_MODE</displayName>
+     <description>BLD_CTL SUN8I_MIXER_BLEND_MODE</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x018</dimIncrement>
+   </cluster>
+   <register>
+    <name>CK_CTL</name>
+    <displayName>CK_CTL</displayName>
+    <description></description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CK_CFG</name>
+    <displayName>CK_CFG</displayName>
+    <description></description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000000C0</addressOffset>
+    <register>
+     <name>CK_MAX</name>
+     <displayName>CK_MAX</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000000E0</addressOffset>
+    <register>
+     <name>CK_MIN</name>
+     <displayName>CK_MIN</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>OUT_CTL</name>
+    <displayName>OUT_CTL</displayName>
+    <description></description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSC_CTL</name>
+    <displayName>CSC_CTL</displayName>
+    <description>SUN50I_MIXER_BLEND_CSC_CTL </description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>12</dim>
+    <addressOffset>0x00000110</addressOffset>
+    <register>
+     <name>CSC_COEFF</name>
+     <displayName>CSC_COEFF</displayName>
+     <description>SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x030</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_BLD1">
+  <name>DE_BLD2</name>
+  <baseAddress>0x012A1000</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>DE_GLB</name>
+  <description>Display Engine (DE) - Global Control</description>
+  <baseAddress>0x01008100</baseAddress>
+  <registers>
+   <register>
+    <name>GLB_CTL</name>
+    <displayName>GLB_CTL</displayName>
+    <description>Global control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_STS</name>
+    <displayName>GLB_STS</displayName>
+    <description>Global status register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_SIZE</name>
+    <displayName>GLB_SIZE</displayName>
+    <description>Global size register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_CLK</name>
+    <displayName>GLB_CLK</displayName>
+    <description>Global clock register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GLB_DBUFFER</name>
+    <displayName>GLB_DBUFFER</displayName>
+    <description>Global double buffer control register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DE_TOP</name>
-  <description>Display Engine (DE) TOP</description>
-  <baseAddress>0x01000000</baseAddress>
+  <description>Display Engine (DE) TOP (APB)</description>
+  <baseAddress>0x01008000</baseAddress>
   <interrupt>
    <name>DE</name>
    <value>120</value>
@@ -2029,51 +2263,443 @@
   </interrupt>
   <registers>
    <register>
-    <name>GATE_CFG</name>
-    <displayName>GATE_CFG</displayName>
-    <description>SCLK_GATE DE SCLK Gating Register</description>
+    <name>DE_SCLK_GATE</name>
+    <displayName>DE_SCLK_GATE</displayName>
+    <description>DE SCLK Gating Register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>BUS_CFG</name>
-    <displayName>BUS_CFG</displayName>
-    <description>? HCLK_GATE ? DE HCLK Gating Register</description>
+    <name>DE_HCLK_GATE</name>
+    <displayName>DE_HCLK_GATE</displayName>
+    <description>DE HCLK Gating Register</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>RST_CFG</name>
-    <displayName>RST_CFG</displayName>
-    <description>AHB_RESET DE AHB Reset register</description>
+    <name>DE_AHB_RESET</name>
+    <displayName>DE_AHB_RESET</displayName>
+    <description>DE AHB Reset Register</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DIV_CFG</name>
-    <displayName>DIV_CFG</displayName>
-    <description>SCLK_DIV DE SCLK Division register</description>
+    <name>DE_SCLK_DIV</name>
+    <displayName>DE_SCLK_DIV</displayName>
+    <description>DE SCLK Division Register</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SEL_CFG</name>
-    <displayName>SEL_CFG</displayName>
-    <description>? DE2TCON ? MUX register</description>
+    <name>DE2TCON_MUX</name>
+    <displayName>DE2TCON_MUX</displayName>
+    <description>DE MUX Register</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>DE_CMD</name>
+    <displayName>DE_CMD</displayName>
+    <description>DE CMD Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_BIST_CTL</name>
+    <displayName>DE_BIST_CTL</displayName>
+    <description>DE Bist Control Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_IP_CFG</name>
+    <displayName>DE_IP_CFG</displayName>
+    <description>DE IP Configure Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE_UI1</name>
+  <description>Display Engine (DE) - UI surface</description>
+  <baseAddress>0x011C1000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <register>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>SIZE</name>
+      <displayName>SIZE</displayName>
+      <description></description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>COORD</name>
+      <displayName>COORD</displayName>
+      <description></description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>PITCH</name>
+      <displayName>PITCH</displayName>
+      <description></description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>TOP_LADDR</name>
+      <displayName>TOP_LADDR</displayName>
+      <description></description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>BOT_LADDR</name>
+      <displayName>BOT_LADDR</displayName>
+      <description></description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>FCOLOR</name>
+      <displayName>FCOLOR</displayName>
+      <description></description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <register>
+    <name>TOP_HADDR</name>
+    <displayName>TOP_HADDR</displayName>
+    <description></description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BOT_HADDR</name>
+    <displayName>BOT_HADDR</displayName>
+    <description></description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OVL_SIZE</name>
+    <displayName>OVL_SIZE</displayName>
+    <description></description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_UI1">
+  <name>DE_UI2</name>
+  <baseAddress>0x011E1000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UI1">
+  <name>DE_UI3</name>
+  <baseAddress>0x01201000</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>DE_VI1</name>
+  <description>Display Engine (DE) - VI surface</description>
+  <baseAddress>0x01101000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <register>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>SIZE</name>
+      <displayName>SIZE</displayName>
+      <description></description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>COORD</name>
+      <displayName>COORD</displayName>
+      <description></description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <cluster>
+      <dim>3</dim>
+      <addressOffset>0x0000000C</addressOffset>
+      <register>
+       <name>PITCH</name>
+       <displayName>PITCH</displayName>
+       <description>ix=0: Y, ix=1: U/UV channel, ix=3: V channel </description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x00C</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>3</dim>
+      <addressOffset>0x00000018</addressOffset>
+      <register>
+       <name>TOP_LADDR</name>
+       <displayName>TOP_LADDR</displayName>
+       <description></description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x00C</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>3</dim>
+      <addressOffset>0x00000024</addressOffset>
+      <register>
+       <name>BOT_LADDR</name>
+       <displayName>BOT_LADDR</displayName>
+       <description></description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x00C</dimIncrement>
+     </cluster>
+    </registers>
+    <dimIncrement>0x0C0</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000000C0</addressOffset>
+    <register>
+     <name>FCOLOR</name>
+     <displayName>FCOLOR</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x000000D0</addressOffset>
+    <register>
+     <name>TOP_HADDR</name>
+     <displayName>TOP_HADDR</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x000000DC</addressOffset>
+    <register>
+     <name>BOT_HADDR</name>
+     <displayName>BOT_HADDR</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x000000E8</addressOffset>
+    <register>
+     <name>OVL_SIZE</name>
+     <displayName>OVL_SIZE</displayName>
+     <description>OVL_V overlay window size register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x000000F0</addressOffset>
+    <register>
+     <name>HORI</name>
+     <displayName>HORI</displayName>
+     <description>OVL_V horizontal down sample control register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x000000F8</addressOffset>
+    <register>
+     <name>VERT</name>
+     <displayName>VERT</displayName>
+     <description>OVL_V vertical down sample control register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <register>
+    <name>FBD_V_CTL</name>
+    <displayName>FBD_V_CTL</displayName>
+    <description>OVL_V FBD control register</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DE_VI2</name>
+  <baseAddress>0x01121000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DE_VI3</name>
+  <baseAddress>0x01141000</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>DE_XX0</name>
+  <description></description>
+  <baseAddress>0x01000000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x000000E4</addressOffset>
+    <register>
+     <name>addr</name>
+     <displayName>addr</displayName>
+     <description>какое-то поле 32 бит</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <register>
+    <name>flags</name>
+    <displayName>flags</displayName>
+    <description>какое-то поле с работающими битами 0x00030010 (17, 16, 4)</description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>value1</name>
+    <displayName>value1</displayName>
+    <description>какое-то поле 32 бит</description>
+    <addressOffset>0x0F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>flags2</name>
+    <displayName>flags2</displayName>
+    <description>какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2)</description>
+    <addressOffset>0x0F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>value2</name>
+    <displayName>value2</displayName>
+    <description>какое-то поле 32 бит</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_XX0">
+  <name>DE_XX1</name>
+  <baseAddress>0x01001000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_XX0">
+  <name>DE_XX2</name>
+  <baseAddress>0x01002000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_XX0">
+  <name>DE_XX3</name>
+  <baseAddress>0x01003000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DISP_IF_TOP</name>
@@ -4271,6 +4897,1035 @@
   <peripheral derivedFrom="I2S0">
   <name>I2S3</name>
   <baseAddress>0x05097500</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>IOMMU</name>
+  <description>IOMMU (I/O Memory management unit)</description>
+  <baseAddress>0x030F0000</baseAddress>
+  <interrupt>
+   <name>IOMMU</name>
+   <value>93</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>IOMMU_RESET_REG</name>
+    <displayName>IOMMU_RESET_REG</displayName>
+    <description>IOMMU ResetRegister</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_ENABLE_REG</name>
+    <displayName>IOMMU_ENABLE_REG</displayName>
+    <description>IOMMU EnableRegister</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_BYPASS_REG</name>
+    <displayName>IOMMU_BYPASS_REG</displayName>
+    <description>IOMMU BypassRegister</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_AUTO_GATING_REG</name>
+    <displayName>IOMMU_AUTO_GATING_REG</displayName>
+    <description>IOMMU Auto GatingRegister</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_WBUF_CTRL_REG</name>
+    <displayName>IOMMU_WBUF_CTRL_REG</displayName>
+    <description>IOMMU Write Buffer Control Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_OOO_CTRL_REG</name>
+    <displayName>IOMMU_OOO_CTRL_REG</displayName>
+    <description>IOMMU Out Of Order Control Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_4KB_BDY_PRT_CTRL_REG</name>
+    <displayName>IOMMU_4KB_BDY_PRT_CTRL_REG</displayName>
+    <description>IOMMU 4KB Boundary Protect Control Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TTB_REG</name>
+    <displayName>IOMMU_TTB_REG</displayName>
+    <description>IOMMU Translation Table BaseRegister</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_ENABLE_REG</name>
+    <displayName>IOMMU_TLB_ENABLE_REG</displayName>
+    <description>IOMMU TLB EnableRegister</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_PREFETCH_REG</name>
+    <displayName>IOMMU_TLB_PREFETCH_REG</displayName>
+    <description>IOMMU TLB PrefetchRegister</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_FLUSH_ENABLE_REG</name>
+    <displayName>IOMMU_TLB_FLUSH_ENABLE_REG</displayName>
+    <description>IOMMU TLB Flush Enable Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_IVLD_MODE_SEL_REG</name>
+    <displayName>IOMMU_TLB_IVLD_MODE_SEL_REG</displayName>
+    <description>IOMMU TLB Invalidation Mode Select Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_IVLD_STA_ADDR_REG</name>
+    <displayName>IOMMU_TLB_IVLD_STA_ADDR_REG</displayName>
+    <description>IOMMU TLB Invalidation Start Address Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_IVLD_END_ADDR_REG</name>
+    <displayName>IOMMU_TLB_IVLD_END_ADDR_REG</displayName>
+    <description>IOMMU TLB Invalidation End Address Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_IVLD_ADDR_REG</name>
+    <displayName>IOMMU_TLB_IVLD_ADDR_REG</displayName>
+    <description>IOMMU TLB Invalidation Address Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_IVLD_ADDR_MASK_REG</name>
+    <displayName>IOMMU_TLB_IVLD_ADDR_MASK_REG</displayName>
+    <description>IOMMU TLB Invalidation Address Mask Register</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_TLB_IVLD_ENABLE_REG</name>
+    <displayName>IOMMU_TLB_IVLD_ENABLE_REG</displayName>
+    <description>IOMMU TLB Invalidation Enable Register</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PC_IVLD_ADDR_REG</name>
+    <displayName>IOMMU_PC_IVLD_ADDR_REG</displayName>
+    <description>IOMMU PC Invalidation Address Register</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PC_IVLD_ENABLE_REG</name>
+    <displayName>IOMMU_PC_IVLD_ENABLE_REG</displayName>
+    <description>IOMMU</description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG0</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG0</displayName>
+    <description>IOMMU Domain Authority Control Register 0</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG1</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG1</displayName>
+    <description>IOMMU Domain Authority Control Register 1</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG2</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG2</displayName>
+    <description>IOMMU Domain Authority Control Register 2</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG3</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG3</displayName>
+    <description>IOMMU Domain Authority Control Register 3</description>
+    <addressOffset>0x0BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG4</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG4</displayName>
+    <description>IOMMU Domain Authority Control Register 4</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG5</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG5</displayName>
+    <description>IOMMU Domain Authority Control Register 5</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG6</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG6</displayName>
+    <description>IOMMU Domain Authority Control Register 6</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_CTRL_REG7</name>
+    <displayName>IOMMU_DM_AUT_CTRL_REG7</displayName>
+    <description>IOMMU Domain Authority Control Register 7</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_DM_AUT_OVWT_REG</name>
+    <displayName>IOMMU_DM_AUT_OVWT_REG</displayName>
+    <description>IOMMU Domain Authority Overwrite Register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ENABLE_REG</name>
+    <displayName>IOMMU_INT_ENABLE_REG</displayName>
+    <description>IOMMU Interrupt Enable Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_CLR_REG</name>
+    <displayName>IOMMU_INT_CLR_REG</displayName>
+    <description>IOMMU Interrupt Clear Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_STA_REG</name>
+    <displayName>IOMMU_INT_STA_REG</displayName>
+    <description>IOMMU Interrupt Status Register</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG0</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG0</displayName>
+    <description>IOMMU Interrupt Error Address Register 0</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG1</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG1</displayName>
+    <description>IOMMU Interrupt Error Address Register 1</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG2</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG2</displayName>
+    <description>IOMMU Interrupt Error Address Register 2</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG3</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG3</displayName>
+    <description>IOMMU Interrupt Error Address Register 3</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG4</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG4</displayName>
+    <description>IOMMU Interrupt Error Address Register 4</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG5</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG5</displayName>
+    <description>IOMMU Interrupt Error Address Register 5</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG6</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG6</displayName>
+    <description>IOMMU Interrupt Error Address Register 6</description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG7</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG7</displayName>
+    <description>IOMMU Interrupt Error Address Register 7</description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_ADDR_REG8</name>
+    <displayName>IOMMU_INT_ERR_ADDR_REG8</displayName>
+    <description>IOMMU Interrupt Error Address Register 8</description>
+    <addressOffset>0x134</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG0</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG0</displayName>
+    <description>IOMMU Interrupt Error Data Register 0</description>
+    <addressOffset>0x150</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG1</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG1</displayName>
+    <description>IOMMU Interrupt Error Data Register 1</description>
+    <addressOffset>0x154</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG2</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG2</displayName>
+    <description>IOMMU Interrupt Error Data Register 2</description>
+    <addressOffset>0x158</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG3</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG3</displayName>
+    <description>IOMMU Interrupt Error Data Register 3</description>
+    <addressOffset>0x15C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG4</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG4</displayName>
+    <description>IOMMU Interrupt Error Data Register 4</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG5</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG5</displayName>
+    <description>IOMMU Interrupt Error Data Register 5</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG6</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG6</displayName>
+    <description>IOMMU Interrupt Error Data Register 6</description>
+    <addressOffset>0x168</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG7</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG7</displayName>
+    <description>IOMMU Interrupt Error Data Register 7</description>
+    <addressOffset>0x170</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_INT_ERR_DATA_REG8</name>
+    <displayName>IOMMU_INT_ERR_DATA_REG8</displayName>
+    <description>IOMMU Interrupt Error Data Register 8</description>
+    <addressOffset>0x174</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_L1PG_INT_REG</name>
+    <displayName>IOMMU_L1PG_INT_REG</displayName>
+    <description>IOMMU L1 Page Table Interrupt Register</description>
+    <addressOffset>0x180</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_L2PG_INT_REG</name>
+    <displayName>IOMMU_L2PG_INT_REG</displayName>
+    <description>IOMMU L2 Page Table Interrupt Register</description>
+    <addressOffset>0x184</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_VA_REG</name>
+    <displayName>IOMMU_VA_REG</displayName>
+    <description>IOMMU Virtual Address Register</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_VA_DATA_REG</name>
+    <displayName>IOMMU_VA_DATA_REG</displayName>
+    <description>IOMMU Virtual Address Data Register</description>
+    <addressOffset>0x194</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_VA_CONFIG_REG</name>
+    <displayName>IOMMU_VA_CONFIG_REG</displayName>
+    <description>IOMMU Virtual Address Configuration Register</description>
+    <addressOffset>0x198</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ENABLE_REG</name>
+    <displayName>IOMMU_PMU_ENABLE_REG</displayName>
+    <description>IOMMU PMU Enable Register</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_CLR_REG</name>
+    <displayName>IOMMU_PMU_CLR_REG</displayName>
+    <description>IOMMU PMU Clear Register</description>
+    <addressOffset>0x210</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG0</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG0</displayName>
+    <description>IOMMU PMU Access Low Register 0</description>
+    <addressOffset>0x230</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG0</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG0</displayName>
+    <description>IOMMU PMU Access High Register 0</description>
+    <addressOffset>0x234</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG0</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG0</displayName>
+    <description>IOMMU PMU Hit Low Register 0</description>
+    <addressOffset>0x238</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG0</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG0</displayName>
+    <description>IOMMU PMU Hit High Register 0</description>
+    <addressOffset>0x23C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG1</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG1</displayName>
+    <description>IOMMU PMU Access Low Register 1</description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG1</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG1</displayName>
+    <description>IOMMU PMU Access High Register 1</description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG1</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG1</displayName>
+    <description>IOMMU PMU Hit Low Register 1</description>
+    <addressOffset>0x248</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG1</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG1</displayName>
+    <description>IOMMU PMU Hit High Register 1</description>
+    <addressOffset>0x24C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG2</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG2</displayName>
+    <description>IOMMU PMU Access Low Register 2</description>
+    <addressOffset>0x250</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG2</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG2</displayName>
+    <description>IOMMU PMU Access High Register 2</description>
+    <addressOffset>0x254</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG2</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG2</displayName>
+    <description>IOMMU PMU Hit Low Register 2</description>
+    <addressOffset>0x258</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG2</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG2</displayName>
+    <description>IOMMU PMU Hit High Register 2</description>
+    <addressOffset>0x25C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG3</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG3</displayName>
+    <description>IOMMU PMU Access Low Register 3</description>
+    <addressOffset>0x260</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG3</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG3</displayName>
+    <description>IOMMU PMU Access High Register 3</description>
+    <addressOffset>0x264</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG3</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG3</displayName>
+    <description>IOMMU PMU Hit Low Register 3</description>
+    <addressOffset>0x268</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG3</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG3</displayName>
+    <description>IOMMU PMU Hit High Register 3</description>
+    <addressOffset>0x26C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG4</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG4</displayName>
+    <description>IOMMU PMU Access Low Register 4</description>
+    <addressOffset>0x270</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG4</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG4</displayName>
+    <description>IOMMU PMU Access High Register 4</description>
+    <addressOffset>0x274</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG4</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG4</displayName>
+    <description>IOMMU PMU Hit Low Register 4</description>
+    <addressOffset>0x278</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG4</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG4</displayName>
+    <description>IOMMU PMU Hit High Register 4</description>
+    <addressOffset>0x27C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG5</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG5</displayName>
+    <description>IOMMU PMU Access Low Register 5</description>
+    <addressOffset>0x280</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG5</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG5</displayName>
+    <description>IOMMU PMU Access High Register 5</description>
+    <addressOffset>0x284</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG5</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG5</displayName>
+    <description>IOMMU PMU Hit Low Register 5</description>
+    <addressOffset>0x288</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG5</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG5</displayName>
+    <description>IOMMU PMU Hit High Register 5</description>
+    <addressOffset>0x28C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG6</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG6</displayName>
+    <description>IOMMU PMU Access Low Register 6</description>
+    <addressOffset>0x290</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG6</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG6</displayName>
+    <description>IOMMU PMU Access High Register 6</description>
+    <addressOffset>0x294</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG6</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG6</displayName>
+    <description>IOMMU PMU Hit Low Register 6</description>
+    <addressOffset>0x298</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG6</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG6</displayName>
+    <description>IOMMU PMU Hit High Register 6</description>
+    <addressOffset>0x29C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG7</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG7</displayName>
+    <description>IOMMU PMU Access Low Register 7</description>
+    <addressOffset>0x2D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG7</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG7</displayName>
+    <description>IOMMU PMU Access High Register 7</description>
+    <addressOffset>0x2D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG7</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG7</displayName>
+    <description>IOMMU PMU Hit Low Register 7</description>
+    <addressOffset>0x2D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG7</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG7</displayName>
+    <description>IOMMU PMU Hit High Register 7</description>
+    <addressOffset>0x2DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_LOW_REG8</name>
+    <displayName>IOMMU_PMU_ACCESS_LOW_REG8</displayName>
+    <description>IOMMU PMU Access Low Register 8</description>
+    <addressOffset>0x2E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ACCESS_HIGH_REG8</name>
+    <displayName>IOMMU_PMU_ACCESS_HIGH_REG8</displayName>
+    <description>IOMMU PMU Access High Register 8</description>
+    <addressOffset>0x2E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_LOW_REG8</name>
+    <displayName>IOMMU_PMU_HIT_LOW_REG8</displayName>
+    <description>IOMMU PMU Hit Low Register 8</description>
+    <addressOffset>0x2E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_HIT_HIGH_REG8</name>
+    <displayName>IOMMU_PMU_HIT_HIGH_REG8</displayName>
+    <description>IOMMU PMU Hit High Register 8</description>
+    <addressOffset>0x2EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG0</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG0</displayName>
+    <description>IOMMU Total Latency Low Register 0</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG0</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG0</displayName>
+    <description>IOMMU Total Latency High Register 0</description>
+    <addressOffset>0x304</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG0</name>
+    <displayName>IOMMU_PMU_ML_REG0</displayName>
+    <description>IOMMU Max Latency Register 0</description>
+    <addressOffset>0x308</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG1</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG1</displayName>
+    <description>IOMMU Total Latency Low Register 1</description>
+    <addressOffset>0x310</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG1</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG1</displayName>
+    <description>IOMMU Total Latency High Register 1</description>
+    <addressOffset>0x314</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG1</name>
+    <displayName>IOMMU_PMU_ML_REG1</displayName>
+    <description>IOMMU Max Latency Register 1</description>
+    <addressOffset>0x318</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG2</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG2</displayName>
+    <description>IOMMU Total Latency Low Register 2</description>
+    <addressOffset>0x320</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG2</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG2</displayName>
+    <description>IOMMU Total Latency High Register 2</description>
+    <addressOffset>0x324</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG2</name>
+    <displayName>IOMMU_PMU_ML_REG2</displayName>
+    <description>IOMMU Max Latency Register 2</description>
+    <addressOffset>0x328</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG3</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG3</displayName>
+    <description>IOMMU Total Latency Low Register 3</description>
+    <addressOffset>0x330</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG3</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG3</displayName>
+    <description>IOMMU Total Latency High Register 3</description>
+    <addressOffset>0x334</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG3</name>
+    <displayName>IOMMU_PMU_ML_REG3</displayName>
+    <description>IOMMU Max Latency Register 3</description>
+    <addressOffset>0x338</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG4</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG4</displayName>
+    <description>IOMMU Total Latency Low Register 4</description>
+    <addressOffset>0x340</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG4</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG4</displayName>
+    <description>IOMMU Total Latency High Register 4</description>
+    <addressOffset>0x344</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG4</name>
+    <displayName>IOMMU_PMU_ML_REG4</displayName>
+    <description>IOMMU Max Latency Register 4</description>
+    <addressOffset>0x348</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG5</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG5</displayName>
+    <description>IOMMU Total Latency Low Register 5</description>
+    <addressOffset>0x350</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG5</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG5</displayName>
+    <description>IOMMU Total Latency High Register 5</description>
+    <addressOffset>0x354</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG5</name>
+    <displayName>IOMMU_PMU_ML_REG5</displayName>
+    <description>IOMMU Max Latency Register 5</description>
+    <addressOffset>0x358</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_LOW_REG6</name>
+    <displayName>IOMMU_PMU_TL_LOW_REG6</displayName>
+    <description>IOMMU Total Latency Low Register 6</description>
+    <addressOffset>0x360</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_TL_HIGH_REG6</name>
+    <displayName>IOMMU_PMU_TL_HIGH_REG6</displayName>
+    <description>IOMMU Total Latency High Register 6</description>
+    <addressOffset>0x364</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IOMMU_PMU_ML_REG6</name>
+    <displayName>IOMMU_PMU_ML_REG6</displayName>
+    <description>IOMMU Max Latency Register 6</description>
+    <addressOffset>0x368</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
   </peripheral>
   <peripheral>
   <name>PWM</name>

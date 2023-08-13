@@ -153,8 +153,10 @@ typedef enum IRQn
 #define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Display Engine (DE) TOP Base */
 #define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DE_VI_BASE ((uintptr_t) 0x05102000)           /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VI1_BASE ((uintptr_t) 0x05102000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UI2_BASE ((uintptr_t) 0x05104000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UI3_BASE ((uintptr_t) 0x05105000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
@@ -920,8 +922,8 @@ typedef struct DE_BLD_Type
     volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
     volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */
     volatile uint32_t OUTPUT_SIZE;                    /*!< Offset 0x08C  */
-    volatile uint32_t BLD_MODE [0x004];               /*!< Offset 0x090 BLD_CTL */
-             uint32_t reserved_0x0A0 [0x0004];
+    volatile uint32_t BLD_MODE [0x006];               /*!< Offset 0x090 BLD_CTL */
+             uint32_t reserved_0x0A8 [0x0002];
     volatile uint32_t CK_CTL;                         /*!< Offset 0x0B0  */
     volatile uint32_t CK_CFG;                         /*!< Offset 0x0B4  */
              uint32_t reserved_0x0B8 [0x0002];
@@ -2771,8 +2773,10 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
-#define DE_VI ((DE_VI_TypeDef *) DE_VI_BASE)          /*!< DE_VI Display Engine (DE) - VI surface register set access pointer */
+#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */

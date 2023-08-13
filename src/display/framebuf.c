@@ -35,7 +35,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 }
 #pragma GCC diagnostic pop
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHMDMAHW
+#if CPUSTYLE_ALLWINNER && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
 
 	//#include "g2d_driver.h"
@@ -122,7 +122,7 @@ static void awxx_g2d_startandwait(void)
 	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		//PRINTF("hwaccel_rect_u16: timeout w/h: %u/%u\n", (unsigned) w, (unsigned) h);
+		PRINTF("awxx_g2d_startandwait: timeout G2D_MIXER->G2D_MIXER_CTL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTL);
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
@@ -623,7 +623,7 @@ void arm_hardware_mdma_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
-#elif WITHMDMAHW & (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
+#elif WITHMDMAHW & CPUSTYLE_ALLWINNER
 
 /* Использование G2D для формирования изображений */
 // https://github.com/tinalinux/linux-3.10/blob/46f73ef4efcb4014b25e5ad1eca750ad62a1d0ff/drivers/char/sunxi_g2d/g2d_driver.c
@@ -636,8 +636,6 @@ void arm_hardware_mdma_initialize(void)
 void arm_hardware_mdma_initialize(void)
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	#warning unhandled CPUSTYLE_T507 || CPUSTYLE_H616
-	#define G2D_BASE 0x01480000
 	{
 		// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
@@ -665,26 +663,26 @@ void arm_hardware_mdma_initialize(void)
 		local_delay_us(10);
 
 		/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
-//		G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
-//			divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
-//			divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
-//			0;
-//		(void) G2D_TOP->G2D_SCLK_DIV;
-//		//local_delay_us(10);
-//
-//		G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
-//		(void) G2D_TOP->G2D_SCLK_GATE;
-//		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
-//		(void) G2D_TOP->G2D_HCLK_GATE;
-//		G2D_TOP->G2D_AHB_RESET &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//		(void) G2D_TOP->G2D_AHB_RESET;
-//		G2D_TOP->G2D_AHB_RESET |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-//		(void) G2D_TOP->G2D_AHB_RESET;
-//
-//		local_delay_ms(10);
-//
-		PRINTF("G2D_BASE:\n");
-		printhex32(G2D_BASE, (void *) G2D_BASE, 256);
+		G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
+			divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
+			divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
+			0;
+		(void) G2D_TOP->G2D_SCLK_DIV;
+		//local_delay_us(10);
+
+		G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+		(void) G2D_TOP->G2D_SCLK_GATE;
+		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+		(void) G2D_TOP->G2D_HCLK_GATE;
+		G2D_TOP->G2D_AHB_RESET &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+		(void) G2D_TOP->G2D_AHB_RESET;
+		G2D_TOP->G2D_AHB_RESET |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+		(void) G2D_TOP->G2D_AHB_RESET;
+
+		local_delay_ms(10);
+
+		PRINTF("G2D_TOP:\n");
+		printhex32(G2D_TOP, (void *) G2D_TOP, 256);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -732,7 +730,7 @@ void arm_hardware_mdma_initialize(void)
 
 	local_delay_ms(10);
 #else
-#error Unhandled CPUSTYLE_xxx
+	#error Unhandled CPUSTYLE_xxx
 #endif
 	// peri:   allwnrt113_get_g2d_freq()=600000000
 	// video0: allwnrt113_get_g2d_freq()=297000000
@@ -986,7 +984,7 @@ hwaccel_rect_u16(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1145,7 +1143,7 @@ hwaccel_rect_u24(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 	#warinig Implement for (CPUSTYLE_T113 || CPUSTYLE_F133)
 	const unsigned stride = GXADJ(dx);
@@ -1287,7 +1285,7 @@ hwaccel_rect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1876,7 +1874,7 @@ void hwaccel_bitblt(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);

@@ -139,7 +139,7 @@
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -506,7 +506,7 @@
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); local_delay_us(1); } break; */\
 		default: { gpioX_setstate(GPIOI, (target), 0 * (target)); local_delay_us(1); } break; \
-		/*case targetnone: break; */\
+		case targetnone: break; \
 		} \
 	} while (0)
 
@@ -517,7 +517,7 @@
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); local_delay_us(1); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOI, (target), 1 * (target)); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); local_delay_us(1); } break; \
 		default: { gpioX_setstate(GPIOI, (target), 1 * (target)); local_delay_us(1); } break; \
-		/*case targetnone: break; */\
+		case targetnone: break; \
 		} \
 	} while (0)
 

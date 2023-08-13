@@ -1,0 +1,117 @@
+#type; IOMMU; IOMMU (I/O Memory management unit)
+#irq; IOMMU 93; IOMMU
+#base; IOMMU 0x030F0000
+
+#regdef; IOMMU_RESET_REG; 0x0010; IOMMU ResetRegister
+#regdef; IOMMU_ENABLE_REG; 0x0020; IOMMU EnableRegister
+#regdef; IOMMU_BYPASS_REG; 0x0030; IOMMU BypassRegister
+#regdef; IOMMU_AUTO_GATING_REG; 0x0040; IOMMU Auto GatingRegister
+#regdef; IOMMU_WBUF_CTRL_REG; 0x0044; IOMMU Write Buffer Control Register
+#regdef; IOMMU_OOO_CTRL_REG; 0x0048; IOMMU Out Of Order Control Register
+#regdef; IOMMU_4KB_BDY_PRT_CTRL_REG; 0x004C; IOMMU 4KB Boundary Protect Control Register
+#regdef; IOMMU_TTB_REG; 0x0050; IOMMU Translation Table BaseRegister
+#regdef; IOMMU_TLB_ENABLE_REG; 0x0060; IOMMU TLB EnableRegister
+#regdef; IOMMU_TLB_PREFETCH_REG; 0x0070; IOMMU TLB PrefetchRegister
+#regdef; IOMMU_TLB_FLUSH_ENABLE_REG; 0x0080; IOMMU TLB Flush Enable Register
+#regdef; IOMMU_TLB_IVLD_MODE_SEL_REG; 0x0084; IOMMU TLB Invalidation Mode Select Register
+#regdef; IOMMU_TLB_IVLD_STA_ADDR_REG; 0x0088; IOMMU TLB Invalidation Start Address Register
+#regdef; IOMMU_TLB_IVLD_END_ADDR_REG; 0x008C; IOMMU TLB Invalidation End Address Register
+#regdef; IOMMU_TLB_IVLD_ADDR_REG; 0x0090; IOMMU TLB Invalidation Address Register
+#regdef; IOMMU_TLB_IVLD_ADDR_MASK_REG; 0x0094; IOMMU TLB Invalidation Address Mask Register
+#regdef; IOMMU_TLB_IVLD_ENABLE_REG; 0x0098; IOMMU TLB Invalidation Enable Register
+#regdef; IOMMU_PC_IVLD_ADDR_REG; 0x00A0; IOMMU PC Invalidation Address Register
+#regdef; IOMMU_PC_IVLD_ENABLE_REG; 0x00A8; IOMMU; PC Invalidation Enable Register
+#regdef; IOMMU_DM_AUT_CTRL_REG0; 0x00B0; IOMMU Domain Authority Control Register 0
+#regdef; IOMMU_DM_AUT_CTRL_REG1; 0x00B4; IOMMU Domain Authority Control Register 1
+#regdef; IOMMU_DM_AUT_CTRL_REG2; 0x00B8; IOMMU Domain Authority Control Register 2
+#regdef; IOMMU_DM_AUT_CTRL_REG3; 0x00BC; IOMMU Domain Authority Control Register 3
+#regdef; IOMMU_DM_AUT_CTRL_REG4; 0x00C0; IOMMU Domain Authority Control Register 4
+#regdef; IOMMU_DM_AUT_CTRL_REG5; 0x00C4; IOMMU Domain Authority Control Register 5
+#regdef; IOMMU_DM_AUT_CTRL_REG6; 0x00C8; IOMMU Domain Authority Control Register 6
+#regdef; IOMMU_DM_AUT_CTRL_REG7; 0x00CC; IOMMU Domain Authority Control Register 7
+#regdef; IOMMU_DM_AUT_OVWT_REG; 0x00D0; IOMMU Domain Authority Overwrite Register
+#regdef; IOMMU_INT_ENABLE_REG; 0x0100; IOMMU Interrupt Enable Register
+#regdef; IOMMU_INT_CLR_REG; 0x0104; IOMMU Interrupt Clear Register
+#regdef; IOMMU_INT_STA_REG; 0x0108; IOMMU Interrupt Status Register
+#regdef; IOMMU_INT_ERR_ADDR_REG0; 0x0110; IOMMU Interrupt Error Address Register 0
+#regdef; IOMMU_INT_ERR_ADDR_REG1; 0x0114; IOMMU Interrupt Error Address Register 1
+#regdef; IOMMU_INT_ERR_ADDR_REG2; 0x0118; IOMMU Interrupt Error Address Register 2
+#regdef; IOMMU_INT_ERR_ADDR_REG3; 0x011C; IOMMU Interrupt Error Address Register 3
+#regdef; IOMMU_INT_ERR_ADDR_REG4; 0x0120; IOMMU Interrupt Error Address Register 4
+#regdef; IOMMU_INT_ERR_ADDR_REG5; 0x0124; IOMMU Interrupt Error Address Register 5
+#regdef; IOMMU_INT_ERR_ADDR_REG6; 0x0128; IOMMU Interrupt Error Address Register 6
+#regdef; IOMMU_INT_ERR_ADDR_REG7; 0x0130; IOMMU Interrupt Error Address Register 7
+#regdef; IOMMU_INT_ERR_ADDR_REG8; 0x0134; IOMMU Interrupt Error Address Register 8
+#regdef; IOMMU_INT_ERR_DATA_REG0; 0x0150; IOMMU Interrupt Error Data Register 0
+#regdef; IOMMU_INT_ERR_DATA_REG1; 0x0154; IOMMU Interrupt Error Data Register 1
+#regdef; IOMMU_INT_ERR_DATA_REG2; 0x0158; IOMMU Interrupt Error Data Register 2
+#regdef; IOMMU_INT_ERR_DATA_REG3; 0x015C; IOMMU Interrupt Error Data Register 3
+#regdef; IOMMU_INT_ERR_DATA_REG4; 0x0160; IOMMU Interrupt Error Data Register 4
+#regdef; IOMMU_INT_ERR_DATA_REG5; 0x0164; IOMMU Interrupt Error Data Register 5
+#regdef; IOMMU_INT_ERR_DATA_REG6; 0x0168; IOMMU Interrupt Error Data Register 6
+#regdef; IOMMU_INT_ERR_DATA_REG7; 0x0170; IOMMU Interrupt Error Data Register 7
+#regdef; IOMMU_INT_ERR_DATA_REG8; 0x0174; IOMMU Interrupt Error Data Register 8
+#regdef; IOMMU_L1PG_INT_REG; 0x0180; IOMMU L1 Page Table Interrupt Register
+#regdef; IOMMU_L2PG_INT_REG; 0x0184; IOMMU L2 Page Table Interrupt Register
+#regdef; IOMMU_VA_REG; 0x0190; IOMMU Virtual Address Register
+#regdef; IOMMU_VA_DATA_REG; 0x0194; IOMMU Virtual Address Data Register
+#regdef; IOMMU_VA_CONFIG_REG; 0x0198; IOMMU Virtual Address Configuration Register
+#regdef; IOMMU_PMU_ENABLE_REG; 0x0200; IOMMU PMU Enable Register
+#regdef; IOMMU_PMU_CLR_REG; 0x0210; IOMMU PMU Clear Register
+#regdef; IOMMU_PMU_ACCESS_LOW_REG0; 0x0230; IOMMU PMU Access Low Register 0
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG0; 0x0234; IOMMU PMU Access High Register 0
+#regdef; IOMMU_PMU_HIT_LOW_REG0; 0x0238; IOMMU PMU Hit Low Register 0
+#regdef; IOMMU_PMU_HIT_HIGH_REG0; 0x023C; IOMMU PMU Hit High Register 0
+#regdef; IOMMU_PMU_ACCESS_LOW_REG1; 0x0240; IOMMU PMU Access Low Register 1
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG1; 0x0244; IOMMU PMU Access High Register 1
+#regdef; IOMMU_PMU_HIT_LOW_REG1; 0x0248; IOMMU PMU Hit Low Register 1
+#regdef; IOMMU_PMU_HIT_HIGH_REG1; 0x024C; IOMMU PMU Hit High Register 1
+#regdef; IOMMU_PMU_ACCESS_LOW_REG2; 0x0250; IOMMU PMU Access Low Register 2
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG2; 0x0254; IOMMU PMU Access High Register 2
+#regdef; IOMMU_PMU_HIT_LOW_REG2; 0x0258; IOMMU PMU Hit Low Register 2
+#regdef; IOMMU_PMU_HIT_HIGH_REG2; 0x025C; IOMMU PMU Hit High Register 2
+#regdef; IOMMU_PMU_ACCESS_LOW_REG3; 0x0260; IOMMU PMU Access Low Register 3
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG3; 0x0264; IOMMU PMU Access High Register 3
+#regdef; IOMMU_PMU_HIT_LOW_REG3; 0x0268; IOMMU PMU Hit Low Register 3
+#regdef; IOMMU_PMU_HIT_HIGH_REG3; 0x026C; IOMMU PMU Hit High Register 3
+#regdef; IOMMU_PMU_ACCESS_LOW_REG4; 0x0270; IOMMU PMU Access Low Register 4
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG4; 0x0274; IOMMU PMU Access High Register 4
+#regdef; IOMMU_PMU_HIT_LOW_REG4; 0x0278; IOMMU PMU Hit Low Register 4
+#regdef; IOMMU_PMU_HIT_HIGH_REG4; 0x027C; IOMMU PMU Hit High Register 4
+#regdef; IOMMU_PMU_ACCESS_LOW_REG5; 0x0280; IOMMU PMU Access Low Register 5
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG5; 0x0284; IOMMU PMU Access High Register 5
+#regdef; IOMMU_PMU_HIT_LOW_REG5; 0x0288; IOMMU PMU Hit Low Register 5
+#regdef; IOMMU_PMU_HIT_HIGH_REG5; 0x028C; IOMMU PMU Hit High Register 5
+#regdef; IOMMU_PMU_ACCESS_LOW_REG6; 0x0290; IOMMU PMU Access Low Register 6
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG6; 0x0294; IOMMU PMU Access High Register 6
+#regdef; IOMMU_PMU_HIT_LOW_REG6; 0x0298; IOMMU PMU Hit Low Register 6
+#regdef; IOMMU_PMU_HIT_HIGH_REG6; 0x029C; IOMMU PMU Hit High Register 6
+#regdef; IOMMU_PMU_ACCESS_LOW_REG7; 0x02D0; IOMMU PMU Access Low Register 7
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG7; 0x02D4; IOMMU PMU Access High Register 7
+#regdef; IOMMU_PMU_HIT_LOW_REG7; 0x02D8; IOMMU PMU Hit Low Register 7
+#regdef; IOMMU_PMU_HIT_HIGH_REG7; 0x02DC; IOMMU PMU Hit High Register 7
+#regdef; IOMMU_PMU_ACCESS_LOW_REG8; 0x02E0; IOMMU PMU Access Low Register 8
+#regdef; IOMMU_PMU_ACCESS_HIGH_REG8; 0x02E4; IOMMU PMU Access High Register 8
+#regdef; IOMMU_PMU_HIT_LOW_REG8; 0x02E8; IOMMU PMU Hit Low Register 8
+#regdef; IOMMU_PMU_HIT_HIGH_REG8; 0x02EC; IOMMU PMU Hit High Register 8
+#regdef; IOMMU_PMU_TL_LOW_REG0; 0x0300; IOMMU Total Latency Low Register 0
+#regdef; IOMMU_PMU_TL_HIGH_REG0; 0x0304; IOMMU Total Latency High Register 0
+#regdef; IOMMU_PMU_ML_REG0; 0x0308; IOMMU Max Latency Register 0
+#regdef; IOMMU_PMU_TL_LOW_REG1; 0x0310; IOMMU Total Latency Low Register 1
+#regdef; IOMMU_PMU_TL_HIGH_REG1; 0x0314; IOMMU Total Latency High Register 1
+#regdef; IOMMU_PMU_ML_REG1; 0x0318; IOMMU Max Latency Register 1
+#regdef; IOMMU_PMU_TL_LOW_REG2; 0x0320; IOMMU Total Latency Low Register 2
+#regdef; IOMMU_PMU_TL_HIGH_REG2; 0x0324; IOMMU Total Latency High Register 2
+#regdef; IOMMU_PMU_ML_REG2; 0x0328; IOMMU Max Latency Register 2
+#regdef; IOMMU_PMU_TL_LOW_REG3; 0x0330; IOMMU Total Latency Low Register 3
+#regdef; IOMMU_PMU_TL_HIGH_REG3; 0x0334; IOMMU Total Latency High Register 3
+#regdef; IOMMU_PMU_ML_REG3; 0x0338; IOMMU Max Latency Register 3
+#regdef; IOMMU_PMU_TL_LOW_REG4; 0x0340; IOMMU Total Latency Low Register 4
+#regdef; IOMMU_PMU_TL_HIGH_REG4; 0x0344; IOMMU Total Latency High Register 4
+#regdef; IOMMU_PMU_ML_REG4; 0x0348; IOMMU Max Latency Register 4
+#regdef; IOMMU_PMU_TL_LOW_REG5; 0x0350; IOMMU Total Latency Low Register 5
+#regdef; IOMMU_PMU_TL_HIGH_REG5; 0x0354; IOMMU Total Latency High Register 5
+#regdef; IOMMU_PMU_ML_REG5; 0x0358; IOMMU Max Latency Register 5
+#regdef; IOMMU_PMU_TL_LOW_REG6; 0x0360; IOMMU Total Latency Low Register 6
+#regdef; IOMMU_PMU_TL_HIGH_REG6; 0x0364; IOMMU Total Latency High Register 6
+#regdef; IOMMU_PMU_ML_REG6; 0x0368; IOMMU Max Latency Register 6

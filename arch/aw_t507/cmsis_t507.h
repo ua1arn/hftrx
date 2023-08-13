@@ -69,6 +69,7 @@ typedef enum IRQn
     GPIOG_IRQn = 87,                                  /*!< GPIOINT GPIOG interrupt */
     GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
+    IOMMU_IRQn = 93,                                  /*!< IOMMU IOMMU */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
@@ -115,15 +116,23 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
-#define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Display Engine (DE) TOP Base */
-#define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define DE_GLB0_BASE ((uintptr_t) 0x01100000)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DE_VI_BASE ((uintptr_t) 0x01102000)           /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_UI1_BASE ((uintptr_t) 0x01103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UI2_BASE ((uintptr_t) 0x01104000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UI3_BASE ((uintptr_t) 0x01105000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_GLB1_BASE ((uintptr_t) 0x01200000)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_XX0_BASE ((uintptr_t) 0x01000000)          /*!< DE_XX  Base */
+#define DE_XX1_BASE ((uintptr_t) 0x01001000)          /*!< DE_XX  Base */
+#define DE_XX2_BASE ((uintptr_t) 0x01002000)          /*!< DE_XX  Base */
+#define DE_XX3_BASE ((uintptr_t) 0x01003000)          /*!< DE_XX  Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
+#define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU  Base */
+#define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE  Base */
+#define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS  Base */
+#define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_BLD1_BASE ((uintptr_t) 0x01281000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_BLD2_BASE ((uintptr_t) 0x012A1000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x01480400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
@@ -159,6 +168,7 @@ typedef enum IRQn
 #define GPIOINTI_BASE ((uintptr_t) 0x0300B300)        /*!< GPIOINT  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define IOMMU_BASE ((uintptr_t) 0x030F0000)           /*!< IOMMU IOMMU (I/O Memory management unit) Base */
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
@@ -562,17 +572,125 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
 } CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
 /*
+ * @brief DE_BLD
+ */
+/*!< DE_BLD Display Engine (DE) - Blender */
+typedef struct DE_BLD_Type
+{
+    volatile uint32_t BLD_EN_COLOR_CTL;               /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    struct
+    {
+        volatile uint32_t BLD_FILL_COLOR;             /*!< Offset 0x004 BLD fill color register */
+        volatile uint32_t BLD_CH_ISIZE;               /*!< Offset 0x008 BLD input memory size register */
+        volatile uint32_t BLD_CH_OFFSET;              /*!< Offset 0x00C BLD input memory offset register */
+                 uint32_t reserved_0x00C;
+    } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..5] */
+             uint32_t reserved_0x064 [0x0007];
+    volatile uint32_t ROUTE;                          /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
+    volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 BLD pre-multiply control register */
+    volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */
+    volatile uint32_t OUTPUT_SIZE;                    /*!< Offset 0x08C  */
+    volatile uint32_t BLD_MODE [0x006];               /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE */
+             uint32_t reserved_0x0A8 [0x0002];
+    volatile uint32_t CK_CTL;                         /*!< Offset 0x0B0  */
+    volatile uint32_t CK_CFG;                         /*!< Offset 0x0B4  */
+             uint32_t reserved_0x0B8 [0x0002];
+    volatile uint32_t CK_MAX [0x004];                 /*!< Offset 0x0C0  */
+             uint32_t reserved_0x0D0 [0x0004];
+    volatile uint32_t CK_MIN [0x004];                 /*!< Offset 0x0E0  */
+             uint32_t reserved_0x0F0 [0x0003];
+    volatile uint32_t OUT_CTL;                        /*!< Offset 0x0FC  */
+    volatile uint32_t CSC_CTL;                        /*!< Offset 0x100 SUN50I_MIXER_BLEND_CSC_CTL  */
+             uint32_t reserved_0x104 [0x0003];
+    volatile uint32_t CSC_COEFF [0x00C];              /*!< Offset 0x110 SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4) */
+} DE_BLD_TypeDef; /* size of structure = 0x140 */
+/*
+ * @brief DE_GLB
+ */
+/*!< DE_GLB Display Engine (DE) - Global Control */
+typedef struct DE_GLB_Type
+{
+    volatile uint32_t GLB_CTL;                        /*!< Offset 0x000 Global control register */
+    volatile uint32_t GLB_STS;                        /*!< Offset 0x004 Global status register */
+    volatile uint32_t GLB_SIZE;                       /*!< Offset 0x008 Global size register */
+    volatile uint32_t GLB_CLK;                        /*!< Offset 0x00C Global clock register */
+    volatile uint32_t GLB_DBUFFER;                    /*!< Offset 0x010 Global double buffer control register */
+} DE_GLB_TypeDef; /* size of structure = 0x014 */
+/*
  * @brief DE_TOP
  */
-/*!< DE_TOP Display Engine (DE) TOP */
+/*!< DE_TOP Display Engine (DE) TOP (APB) */
 typedef struct DE_TOP_Type
 {
-    volatile uint32_t GATE_CFG;                       /*!< Offset 0x000 SCLK_GATE DE SCLK Gating Register */
-    volatile uint32_t BUS_CFG;                        /*!< Offset 0x004 ? HCLK_GATE ? DE HCLK Gating Register */
-    volatile uint32_t RST_CFG;                        /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
-    volatile uint32_t DIV_CFG;                        /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
-    volatile uint32_t SEL_CFG;                        /*!< Offset 0x010 ? DE2TCON ? MUX register */
-} DE_TOP_TypeDef; /* size of structure = 0x014 */
+    volatile uint32_t DE_SCLK_GATE;                   /*!< Offset 0x000 DE SCLK Gating Register */
+    volatile uint32_t DE_HCLK_GATE;                   /*!< Offset 0x004 DE HCLK Gating Register */
+    volatile uint32_t DE_AHB_RESET;                   /*!< Offset 0x008 DE AHB Reset Register */
+    volatile uint32_t DE_SCLK_DIV;                    /*!< Offset 0x00C DE SCLK Division Register */
+    volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 DE MUX Register */
+    volatile uint32_t DE_CMD;                         /*!< Offset 0x014 DE CMD Register */
+             uint32_t reserved_0x018;
+    volatile uint32_t DE_BIST_CTL;                    /*!< Offset 0x01C DE Bist Control Register */
+             uint32_t reserved_0x020;
+    volatile uint32_t DE_IP_CFG;                      /*!< Offset 0x024 DE IP Configure Register */
+} DE_TOP_TypeDef; /* size of structure = 0x028 */
+/*
+ * @brief DE_UI
+ */
+/*!< DE_UI Display Engine (DE) - UI surface */
+typedef struct DE_UI_Type
+{
+    struct
+    {
+        volatile uint32_t ATTR;                       /*!< Offset 0x000  */
+        volatile uint32_t SIZE;                       /*!< Offset 0x004  */
+        volatile uint32_t COORD;                      /*!< Offset 0x008  */
+        volatile uint32_t PITCH;                      /*!< Offset 0x00C  */
+        volatile uint32_t TOP_LADDR;                  /*!< Offset 0x010  */
+        volatile uint32_t BOT_LADDR;                  /*!< Offset 0x014  */
+        volatile uint32_t FCOLOR;                     /*!< Offset 0x018  */
+                 uint32_t reserved_0x01C;
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
+    volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
+} DE_UI_TypeDef; /* size of structure = 0x08C */
+/*
+ * @brief DE_VI
+ */
+/*!< DE_VI Display Engine (DE) - VI surface */
+typedef struct DE_VI_Type
+{
+    struct
+    {
+        volatile uint32_t ATTR;                       /*!< Offset 0x000  */
+        volatile uint32_t SIZE;                       /*!< Offset 0x004  */
+        volatile uint32_t COORD;                      /*!< Offset 0x008  */
+        volatile uint32_t PITCH [0x003];              /*!< Offset 0x00C ix=0: Y, ix=1: U/UV channel, ix=3: V channel  */
+        volatile uint32_t TOP_LADDR [0x003];          /*!< Offset 0x018  */
+        volatile uint32_t BOT_LADDR [0x003];          /*!< Offset 0x024  */
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
+    volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
+    volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
+    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
+    volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
+    volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
+             uint32_t reserved_0x100 [0x0080];
+    volatile uint32_t FBD_V_CTL;                      /*!< Offset 0x300 OVL_V FBD control register */
+} DE_VI_TypeDef; /* size of structure = 0x304 */
+/*
+ * @brief DE_XX
+ */
+/*!< DE_XX  */
+typedef struct DE_XX_Type
+{
+             uint32_t reserved_0x000 [0x0039];
+    volatile uint32_t addr [0x003];                   /*!< Offset 0x0E4 какое-то поле 32 бит */
+    volatile uint32_t flags;                          /*!< Offset 0x0F0 какое-то поле с работающими битами 0x00030010 (17, 16, 4) */
+    volatile uint32_t value1;                         /*!< Offset 0x0F4 какое-то поле 32 бит */
+    volatile uint32_t flags2;                         /*!< Offset 0x0F8 какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2) */
+    volatile uint32_t value2;                         /*!< Offset 0x0FC какое-то поле 32 бит */
+} DE_XX_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DISP_IF_TOP
  */
@@ -899,6 +1017,154 @@ typedef struct I2S_PCM_Type
     volatile uint32_t I2Sn_SDINCHMAP [0x004];         /*!< Offset 0x074 I2Sn SDIN Channel Mapping 0..3 */
              uint32_t reserved_0x084 [0x001F];
 } I2S_PCM_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief IOMMU
+ */
+/*!< IOMMU IOMMU (I/O Memory management unit) */
+typedef struct IOMMU_Type
+{
+             uint32_t reserved_0x000 [0x0004];
+    volatile uint32_t IOMMU_RESET_REG;                /*!< Offset 0x010 IOMMU ResetRegister */
+             uint32_t reserved_0x014 [0x0003];
+    volatile uint32_t IOMMU_ENABLE_REG;               /*!< Offset 0x020 IOMMU EnableRegister */
+             uint32_t reserved_0x024 [0x0003];
+    volatile uint32_t IOMMU_BYPASS_REG;               /*!< Offset 0x030 IOMMU BypassRegister */
+             uint32_t reserved_0x034 [0x0003];
+    volatile uint32_t IOMMU_AUTO_GATING_REG;          /*!< Offset 0x040 IOMMU Auto GatingRegister */
+    volatile uint32_t IOMMU_WBUF_CTRL_REG;            /*!< Offset 0x044 IOMMU Write Buffer Control Register */
+    volatile uint32_t IOMMU_OOO_CTRL_REG;             /*!< Offset 0x048 IOMMU Out Of Order Control Register */
+    volatile uint32_t IOMMU_4KB_BDY_PRT_CTRL_REG;     /*!< Offset 0x04C IOMMU 4KB Boundary Protect Control Register */
+    volatile uint32_t IOMMU_TTB_REG;                  /*!< Offset 0x050 IOMMU Translation Table BaseRegister */
+             uint32_t reserved_0x054 [0x0003];
+    volatile uint32_t IOMMU_TLB_ENABLE_REG;           /*!< Offset 0x060 IOMMU TLB EnableRegister */
+             uint32_t reserved_0x064 [0x0003];
+    volatile uint32_t IOMMU_TLB_PREFETCH_REG;         /*!< Offset 0x070 IOMMU TLB PrefetchRegister */
+             uint32_t reserved_0x074 [0x0003];
+    volatile uint32_t IOMMU_TLB_FLUSH_ENABLE_REG;     /*!< Offset 0x080 IOMMU TLB Flush Enable Register */
+    volatile uint32_t IOMMU_TLB_IVLD_MODE_SEL_REG;    /*!< Offset 0x084 IOMMU TLB Invalidation Mode Select Register */
+    volatile uint32_t IOMMU_TLB_IVLD_STA_ADDR_REG;    /*!< Offset 0x088 IOMMU TLB Invalidation Start Address Register */
+    volatile uint32_t IOMMU_TLB_IVLD_END_ADDR_REG;    /*!< Offset 0x08C IOMMU TLB Invalidation End Address Register */
+    volatile uint32_t IOMMU_TLB_IVLD_ADDR_REG;        /*!< Offset 0x090 IOMMU TLB Invalidation Address Register */
+    volatile uint32_t IOMMU_TLB_IVLD_ADDR_MASK_REG;   /*!< Offset 0x094 IOMMU TLB Invalidation Address Mask Register */
+    volatile uint32_t IOMMU_TLB_IVLD_ENABLE_REG;      /*!< Offset 0x098 IOMMU TLB Invalidation Enable Register */
+             uint32_t reserved_0x09C;
+    volatile uint32_t IOMMU_PC_IVLD_ADDR_REG;         /*!< Offset 0x0A0 IOMMU PC Invalidation Address Register */
+             uint32_t reserved_0x0A4;
+    volatile uint32_t IOMMU_PC_IVLD_ENABLE_REG;       /*!< Offset 0x0A8 IOMMU */
+             uint32_t reserved_0x0AC;
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG0;         /*!< Offset 0x0B0 IOMMU Domain Authority Control Register 0 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG1;         /*!< Offset 0x0B4 IOMMU Domain Authority Control Register 1 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG2;         /*!< Offset 0x0B8 IOMMU Domain Authority Control Register 2 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG3;         /*!< Offset 0x0BC IOMMU Domain Authority Control Register 3 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG4;         /*!< Offset 0x0C0 IOMMU Domain Authority Control Register 4 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG5;         /*!< Offset 0x0C4 IOMMU Domain Authority Control Register 5 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG6;         /*!< Offset 0x0C8 IOMMU Domain Authority Control Register 6 */
+    volatile uint32_t IOMMU_DM_AUT_CTRL_REG7;         /*!< Offset 0x0CC IOMMU Domain Authority Control Register 7 */
+    volatile uint32_t IOMMU_DM_AUT_OVWT_REG;          /*!< Offset 0x0D0 IOMMU Domain Authority Overwrite Register */
+             uint32_t reserved_0x0D4 [0x000B];
+    volatile uint32_t IOMMU_INT_ENABLE_REG;           /*!< Offset 0x100 IOMMU Interrupt Enable Register */
+    volatile uint32_t IOMMU_INT_CLR_REG;              /*!< Offset 0x104 IOMMU Interrupt Clear Register */
+    volatile uint32_t IOMMU_INT_STA_REG;              /*!< Offset 0x108 IOMMU Interrupt Status Register */
+             uint32_t reserved_0x10C;
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG0;        /*!< Offset 0x110 IOMMU Interrupt Error Address Register 0 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG1;        /*!< Offset 0x114 IOMMU Interrupt Error Address Register 1 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG2;        /*!< Offset 0x118 IOMMU Interrupt Error Address Register 2 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG3;        /*!< Offset 0x11C IOMMU Interrupt Error Address Register 3 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG4;        /*!< Offset 0x120 IOMMU Interrupt Error Address Register 4 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG5;        /*!< Offset 0x124 IOMMU Interrupt Error Address Register 5 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG6;        /*!< Offset 0x128 IOMMU Interrupt Error Address Register 6 */
+             uint32_t reserved_0x12C;
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG7;        /*!< Offset 0x130 IOMMU Interrupt Error Address Register 7 */
+    volatile uint32_t IOMMU_INT_ERR_ADDR_REG8;        /*!< Offset 0x134 IOMMU Interrupt Error Address Register 8 */
+             uint32_t reserved_0x138 [0x0006];
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG0;        /*!< Offset 0x150 IOMMU Interrupt Error Data Register 0 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG1;        /*!< Offset 0x154 IOMMU Interrupt Error Data Register 1 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG2;        /*!< Offset 0x158 IOMMU Interrupt Error Data Register 2 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG3;        /*!< Offset 0x15C IOMMU Interrupt Error Data Register 3 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG4;        /*!< Offset 0x160 IOMMU Interrupt Error Data Register 4 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG5;        /*!< Offset 0x164 IOMMU Interrupt Error Data Register 5 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG6;        /*!< Offset 0x168 IOMMU Interrupt Error Data Register 6 */
+             uint32_t reserved_0x16C;
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG7;        /*!< Offset 0x170 IOMMU Interrupt Error Data Register 7 */
+    volatile uint32_t IOMMU_INT_ERR_DATA_REG8;        /*!< Offset 0x174 IOMMU Interrupt Error Data Register 8 */
+             uint32_t reserved_0x178 [0x0002];
+    volatile uint32_t IOMMU_L1PG_INT_REG;             /*!< Offset 0x180 IOMMU L1 Page Table Interrupt Register */
+    volatile uint32_t IOMMU_L2PG_INT_REG;             /*!< Offset 0x184 IOMMU L2 Page Table Interrupt Register */
+             uint32_t reserved_0x188 [0x0002];
+    volatile uint32_t IOMMU_VA_REG;                   /*!< Offset 0x190 IOMMU Virtual Address Register */
+    volatile uint32_t IOMMU_VA_DATA_REG;              /*!< Offset 0x194 IOMMU Virtual Address Data Register */
+    volatile uint32_t IOMMU_VA_CONFIG_REG;            /*!< Offset 0x198 IOMMU Virtual Address Configuration Register */
+             uint32_t reserved_0x19C [0x0019];
+    volatile uint32_t IOMMU_PMU_ENABLE_REG;           /*!< Offset 0x200 IOMMU PMU Enable Register */
+             uint32_t reserved_0x204 [0x0003];
+    volatile uint32_t IOMMU_PMU_CLR_REG;              /*!< Offset 0x210 IOMMU PMU Clear Register */
+             uint32_t reserved_0x214 [0x0007];
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG0;      /*!< Offset 0x230 IOMMU PMU Access Low Register 0 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG0;     /*!< Offset 0x234 IOMMU PMU Access High Register 0 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG0;         /*!< Offset 0x238 IOMMU PMU Hit Low Register 0 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG0;        /*!< Offset 0x23C IOMMU PMU Hit High Register 0 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG1;      /*!< Offset 0x240 IOMMU PMU Access Low Register 1 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG1;     /*!< Offset 0x244 IOMMU PMU Access High Register 1 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG1;         /*!< Offset 0x248 IOMMU PMU Hit Low Register 1 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG1;        /*!< Offset 0x24C IOMMU PMU Hit High Register 1 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG2;      /*!< Offset 0x250 IOMMU PMU Access Low Register 2 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG2;     /*!< Offset 0x254 IOMMU PMU Access High Register 2 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG2;         /*!< Offset 0x258 IOMMU PMU Hit Low Register 2 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG2;        /*!< Offset 0x25C IOMMU PMU Hit High Register 2 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG3;      /*!< Offset 0x260 IOMMU PMU Access Low Register 3 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG3;     /*!< Offset 0x264 IOMMU PMU Access High Register 3 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG3;         /*!< Offset 0x268 IOMMU PMU Hit Low Register 3 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG3;        /*!< Offset 0x26C IOMMU PMU Hit High Register 3 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG4;      /*!< Offset 0x270 IOMMU PMU Access Low Register 4 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG4;     /*!< Offset 0x274 IOMMU PMU Access High Register 4 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG4;         /*!< Offset 0x278 IOMMU PMU Hit Low Register 4 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG4;        /*!< Offset 0x27C IOMMU PMU Hit High Register 4 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG5;      /*!< Offset 0x280 IOMMU PMU Access Low Register 5 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG5;     /*!< Offset 0x284 IOMMU PMU Access High Register 5 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG5;         /*!< Offset 0x288 IOMMU PMU Hit Low Register 5 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG5;        /*!< Offset 0x28C IOMMU PMU Hit High Register 5 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG6;      /*!< Offset 0x290 IOMMU PMU Access Low Register 6 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG6;     /*!< Offset 0x294 IOMMU PMU Access High Register 6 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG6;         /*!< Offset 0x298 IOMMU PMU Hit Low Register 6 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG6;        /*!< Offset 0x29C IOMMU PMU Hit High Register 6 */
+             uint32_t reserved_0x2A0 [0x000C];
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG7;      /*!< Offset 0x2D0 IOMMU PMU Access Low Register 7 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG7;     /*!< Offset 0x2D4 IOMMU PMU Access High Register 7 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG7;         /*!< Offset 0x2D8 IOMMU PMU Hit Low Register 7 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG7;        /*!< Offset 0x2DC IOMMU PMU Hit High Register 7 */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW_REG8;      /*!< Offset 0x2E0 IOMMU PMU Access Low Register 8 */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH_REG8;     /*!< Offset 0x2E4 IOMMU PMU Access High Register 8 */
+    volatile uint32_t IOMMU_PMU_HIT_LOW_REG8;         /*!< Offset 0x2E8 IOMMU PMU Hit Low Register 8 */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH_REG8;        /*!< Offset 0x2EC IOMMU PMU Hit High Register 8 */
+             uint32_t reserved_0x2F0 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG0;          /*!< Offset 0x300 IOMMU Total Latency Low Register 0 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG0;         /*!< Offset 0x304 IOMMU Total Latency High Register 0 */
+    volatile uint32_t IOMMU_PMU_ML_REG0;              /*!< Offset 0x308 IOMMU Max Latency Register 0 */
+             uint32_t reserved_0x30C;
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG1;          /*!< Offset 0x310 IOMMU Total Latency Low Register 1 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG1;         /*!< Offset 0x314 IOMMU Total Latency High Register 1 */
+    volatile uint32_t IOMMU_PMU_ML_REG1;              /*!< Offset 0x318 IOMMU Max Latency Register 1 */
+             uint32_t reserved_0x31C;
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG2;          /*!< Offset 0x320 IOMMU Total Latency Low Register 2 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG2;         /*!< Offset 0x324 IOMMU Total Latency High Register 2 */
+    volatile uint32_t IOMMU_PMU_ML_REG2;              /*!< Offset 0x328 IOMMU Max Latency Register 2 */
+             uint32_t reserved_0x32C;
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG3;          /*!< Offset 0x330 IOMMU Total Latency Low Register 3 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG3;         /*!< Offset 0x334 IOMMU Total Latency High Register 3 */
+    volatile uint32_t IOMMU_PMU_ML_REG3;              /*!< Offset 0x338 IOMMU Max Latency Register 3 */
+             uint32_t reserved_0x33C;
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG4;          /*!< Offset 0x340 IOMMU Total Latency Low Register 4 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG4;         /*!< Offset 0x344 IOMMU Total Latency High Register 4 */
+    volatile uint32_t IOMMU_PMU_ML_REG4;              /*!< Offset 0x348 IOMMU Max Latency Register 4 */
+             uint32_t reserved_0x34C;
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG5;          /*!< Offset 0x350 IOMMU Total Latency Low Register 5 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG5;         /*!< Offset 0x354 IOMMU Total Latency High Register 5 */
+    volatile uint32_t IOMMU_PMU_ML_REG5;              /*!< Offset 0x358 IOMMU Max Latency Register 5 */
+             uint32_t reserved_0x35C;
+    volatile uint32_t IOMMU_PMU_TL_LOW_REG6;          /*!< Offset 0x360 IOMMU Total Latency Low Register 6 */
+    volatile uint32_t IOMMU_PMU_TL_HIGH_REG6;         /*!< Offset 0x364 IOMMU Total Latency High Register 6 */
+    volatile uint32_t IOMMU_PMU_ML_REG6;              /*!< Offset 0x368 IOMMU Max Latency Register 6 */
+} IOMMU_TypeDef; /* size of structure = 0x36C */
 /*
  * @brief PWM
  */
@@ -1380,7 +1646,20 @@ typedef struct USB_OHCI_Capability_Type
 
 /* Access pointers */
 
-#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP register set access pointer */
+#define DE_XX0 ((DE_XX_TypeDef *) DE_XX0_BASE)        /*!< DE_XX0  register set access pointer */
+#define DE_XX1 ((DE_XX_TypeDef *) DE_XX1_BASE)        /*!< DE_XX1  register set access pointer */
+#define DE_XX2 ((DE_XX_TypeDef *) DE_XX2_BASE)        /*!< DE_XX2  register set access pointer */
+#define DE_XX3 ((DE_XX_TypeDef *) DE_XX3_BASE)        /*!< DE_XX3  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
+#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
+#define DE_BLD1 ((DE_BLD_TypeDef *) DE_BLD1_BASE)     /*!< DE_BLD1 Display Engine (DE) - Blender register set access pointer */
+#define DE_BLD2 ((DE_BLD_TypeDef *) DE_BLD2_BASE)     /*!< DE_BLD2 Display Engine (DE) - Blender register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
@@ -1413,6 +1692,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define GPIOINTI ((GPIOINT_TypeDef *) GPIOINTI_BASE)  /*!< GPIOINTI  register set access pointer */
+#define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU IOMMU (I/O Memory management unit) register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */

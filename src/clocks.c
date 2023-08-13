@@ -6,12 +6,12 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "formats.h"	// for debug prints
 
 #include "board.h"
 #include "gpio.h"
 #include "clocks.h"
 #include "spi.h"
-#include "formats.h"	// for debug prints
 
 
 uint_fast32_t
@@ -2886,7 +2886,7 @@ uint_fast32_t allwnr_t507_get_g2d_freq(void)
 	//	SCLK = Clock Source/M.
 	//	0: 	PLL_DE
 	//	1: 	PLL_PERI0(2X)
-	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	switch ((clkreg >> 24) & 0x01)	/* CLK_SRC_SEL */
 	{
 	default:
 	case 0x00:
@@ -4023,19 +4023,204 @@ void allwnrt113_pll_initialize(void)
 
 // 1892ВМ14Я ELVEES multicore.ru
 
+/********MCOM-02 REGMAP DEFINE*******************************************/
+/***************************System Registers*****************************/
+
+#define DEFAULT_XTI_CLOCK (24)
+#define MIN_CPU_FREQ_MHZ DEFAULT_XTI_CLOCK
+#define MAX_CPU_FREQ_MHZ (912)
+#define MIN_DSP_FREQ_MHZ DEFAULT_XTI_CLOCK
+#define MAX_DSP_FREQ_MHZ (720)
+
+#define SYSFREQ 96
+
+//#define CMCTR_BASE 0x38094000
+#define CLK_I2C2_EN (1 << 18)
+#define CLK_I2C1_EN (1 << 17)
+#define CLK_I2C0_EN (1 << 16)
+
+#define DSPENC_EN (1 << 3)
+#define DSPEXT_EN (1 << 2)
+#define DSP1_EN (1 << 1)
+#define DSP0_EN (1 << 0)
+//#define SEL_APLL (*(volatile uint32_t *)(CMCTR_BASE + 0x100))
+//#define SEL_CPLL (*(volatile uint32_t *)(CMCTR_BASE + 0x104))
+//#define SEL_DPLL (*(volatile uint32_t *)(CMCTR_BASE + 0x108))
+//#define SEL_SPLL (*(volatile uint32_t *)(CMCTR_BASE + 0x10c))
+//#define SEL_VPLL (*(volatile uint32_t *)(CMCTR_BASE + 0x110))
+#define PLL_LOCK_BIT (1 << 31)
+
+/***************************GPIO******************************************/
+//#define GPIO0_BASE 0x38034000
+//#define GPIO0(a) (*(volatile uint32_t *)(GPIO0_BASE + (a)))
+//#define SWPORTA_DR 0x00
+//#define SWPORTA_DDR 0x04
+//#define SWPORTA_CTL 0x08
+//#define SWPORTB_DR 0x0c
+//#define SWPORTB_DDR 0x10
+//#define SWPORTB_CTL 0x14
+//#define SWPORTC_DR 0x18
+//#define SWPORTC_DDR 0x1c
+//#define SWPORTC_CTL 0x20
+//#define SWPORTD_DR 0x24
+//#define SWPORTD_DDR 0x28
+//#define SWPORTD_CTL 0x2c
+//
+//#define GPIOA29_I2C0_SDA (1 << 29)
+//#define GPIOA29_I2C0_SCL (1 << 30)
+//#define GPIOD22_I2C1_SDA (1 << 22)
+//#define GPIOD23_I2C1_SCL (1 << 23)
+//#define GPIOD24_I2C2_SDA (1 << 24)
+//#define GPIOD25_I2C2_SCL (1 << 25)
+
+/***FAN53555**************************************************************/
+/***5 A, 2.4MHz, Digitally Programmable TinyBuck Regulator****************/
+
+// в загрузчике пока нельзя использовать - память не инициализированна
+///***CPU FREQ TABLE********************************************************/
+//#define CPU_FREQ_VOLTAGE_SIZE 3
+//static const unsigned int CPU_FREQ_VOLTAGE[CPU_FREQ_VOLTAGE_SIZE][2]
+//    __attribute__((aligned(8))) = {
+//        //   MHz,   mV
+//        {816, 1040},
+//        {912, 1103},
+//        {1008, 1205}};
+//
+///***DSP FREQ TABLE********************************************************/
+//#define DSP_FREQ_VOLTAGE_SIZE 3
+//
+//static const unsigned int DSP_FREQ_VOLTAGE[CPU_FREQ_VOLTAGE_SIZE][2]
+//    __attribute__((aligned(8))) = {
+//        //   MHz,   mV
+//        {696, 1040},
+//        {768, 1103},
+//        {888, 1205}};
+
+
+static unsigned int getCurrentCPUFreq(void)
+{
+    int sel = (CMCTR->SEL_APLL & 0xFF);
+    if (sel > 0x3D)
+        sel = 0x3D;
+    return (sel + 1) * DEFAULT_XTI_CLOCK;
+}
+static unsigned int getCurrentDSPFreq(void)
+{
+    int sel = (CMCTR->SEL_DPLL & 0xFF);
+    if (sel > 0x3D)
+        sel = 0x3D;
+    return (sel + 1) * DEFAULT_XTI_CLOCK;
+}
+
+static void setCPUPLLFreq(unsigned int MHz)
+{
+    int sel = (MHz / DEFAULT_XTI_CLOCK) - 1;
+    if (sel < 0)
+        sel = 0;
+    CMCTR->SEL_APLL = sel;
+    while (!(CMCTR->SEL_APLL & PLL_LOCK_BIT))
+        ;
+}
+
+static void setDSPPLLFreq(unsigned int MHz)
+{
+    int sel = (MHz / DEFAULT_XTI_CLOCK) - 1;
+    if (sel < 0)
+        sel = 0;
+    CMCTR->SEL_DPLL = sel;
+    while (!(CMCTR->SEL_DPLL & PLL_LOCK_BIT))
+        ;
+}
+
+static int setSystemFreq(unsigned int MHz)
+{
+    int sel = (MHz / DEFAULT_XTI_CLOCK) - 1;
+    if (sel < 0)
+        sel = 0;
+
+    if (sel > 5) {
+        /* L3_PCLK can't be above 144 MHz */
+    	CMCTR->DIV_SYS1_CTR = 1;
+    }
+
+    if ((CMCTR->SEL_SPLL & 0xFF) != sel) {
+    	CMCTR->SEL_SPLL = sel;
+        while (!(CMCTR->SEL_SPLL & PLL_LOCK_BIT))
+            ;
+    }
+
+    if (sel <= 5) {
+    	CMCTR->DIV_SYS1_CTR = 0;
+    }
+
+    return 0;
+}
+
+
+static int setCPUFreq(unsigned int MHz)
+{
+    unsigned int last_freq;
+
+    if (MHz < MIN_CPU_FREQ_MHZ || MHz > MAX_CPU_FREQ_MHZ )
+    {
+        return 1;
+    }
+    // Save current CPU freq
+    last_freq = getCurrentCPUFreq();
+    // Set default CPU freq
+    setCPUPLLFreq(DEFAULT_XTI_CLOCK);
+
+    // Set CPU freq
+    setCPUPLLFreq(MHz);
+
+    (void) last_freq;
+    return 0;
+}
+
+static int setDSPFreq(unsigned int MHz)
+{
+    unsigned int last_freq;
+
+    if (MHz < MIN_DSP_FREQ_MHZ || MHz > MAX_DSP_FREQ_MHZ)
+    {
+        return 1;
+    }
+    // Enable DSP_CLK
+    CMCTR->GATE_DSP_CTR |= DSP0_EN | DSP1_EN | DSPEXT_EN | DSPENC_EN;
+
+    // Save current DSP freq
+    last_freq = getCurrentDSPFreq();
+    // Set default DSP freq
+    setDSPPLLFreq(DEFAULT_XTI_CLOCK);
+
+    // Set DSP freq
+    setDSPPLLFreq(MHz);
+
+    (void) last_freq;
+    return 0;
+}
+
+uint_fast32_t elveesvm14_get_arm_freq(void)
+{
+	return getCurrentCPUFreq() * 1000 * 1000;
+}
+
 static uint32_t elveesvm14_get_xtal_freq(void)
 {
 	return WITHCPUXTAL;
 
 }
-uint_fast32_t elveesvm14_get_arm_freq(void)
-{
-	return elveesvm14_get_xtal_freq();
-}
 
 uint_fast32_t elveesvm14_get_usart_freq(void)
 {
-	return elveesvm14_get_xtal_freq();
+	return SYSFREQ * 1000 * 1000; // elveesvm14_get_xtal_freq();
+}
+
+void vm14_pll_initialize(void)
+{
+	setSystemFreq(SYSFREQ);
+	//setCPUFreq(MAX_CPU_FREQ_MHZ);
+	//setCPUFreq(96);
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -4528,6 +4713,16 @@ void hardware_spi_io_delay(void)
 	//}
 	#endif /* CPUSTYLE_ATXMEGAXXXA4 */
 
+#elif CPUSTYLE_VM14
+	// Private timer use
+	void
+	PTIM_Handler(void)
+	{
+		PTIM_ClearEventFlag();
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 #elif CPUSTYLE_STM32F30X
 	#warning TODO: Add code for STM32F30X support
 
@@ -4764,6 +4959,21 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_T507
 	#warning Undefined CPUSTYLE_T507
+
+#elif CPUSTYLE_VM14
+	// Private timer use
+	// Disable Private Timer and set load value
+	PTIM_SetControl(0);
+	PTIM_SetCurrentValue(0);
+	PTIM_SetLoadValue(calcdivround2(CPU_FREQ, ticksfreq * 2));	// Private Timer runs with the system frequency / 2
+	// Set bits: IRQ enable and Auto reload
+	PTIM_SetControl(0x06U);
+
+	arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, PTIM_Handler);
+
+	// Start the Private Timer
+	PTIM_SetControl(PTIM_GetControl() | 0x01);
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
@@ -8294,6 +8504,13 @@ sysinit_pll_initialize(int forced)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
 	}
 
+	/* IOMMU off */
+	{
+		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
+		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
+		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
+	}
+
 	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
 
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
@@ -8339,6 +8556,8 @@ sysinit_pll_initialize(int forced)
 	PMCTR->CORE_PWR_UP = 1;
 	CMCTR->GATE_CORE_CTR |= (1u << 0);	// L0_EN
 	CMCTR->GATE_SYS_CTR |= (1u << 0);	// SYS_EN - Разрешение для тактовых частот L1_HCLK, L3_PCLK и связанных с ними частот
+
+	vm14_pll_initialize();
 
 #else
 	//#warning Undefined CPUSTYLE_xxx

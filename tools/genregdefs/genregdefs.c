@@ -395,18 +395,6 @@ static int istokencomment(void) {
 			|| 0;
 }
 
-static int nextline(FILE *fp) {
-	for (;;) {
-		char *s = fgets(token0, TKSZ, fp);
-		if (s != NULL) {
-			if (istokencomment())
-				continue;
-		}
-		return s != NULL;
-	}
-
-}
-
 /* trim field name */
 static void trimname(char *s) {
 	if (strchr(s, '\n') != NULL)
@@ -419,6 +407,28 @@ static void trimname(char *s) {
 		*strchr(s, '-') = '_';
 	if (strchr(s, '-') != NULL)
 		*strchr(s, '-') = '_';
+}
+
+/* trim spaces */
+static void trimheadspaces(char *s) {
+	char * dst = s;
+	while (* s == ' ' || * s == '\t')
+		++ s;
+	while ((* dst ++ = * s ++) != '\0')
+		;
+}
+
+static int nextline(FILE *fp) {
+	for (;;) {
+		char *s = fgets(token0, TKSZ, fp);
+		if (s != NULL) {
+			trimheadspaces(s);
+			if (istokencomment())
+				continue;
+		}
+		return s != NULL;
+	}
+
 }
 
 static struct regdfn*

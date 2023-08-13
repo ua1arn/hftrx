@@ -25,25 +25,6 @@
 #regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
 #regdef; GLB_SIZE;		0x00C;	Global size register
 
-#type; DE_UI; Display Engine (DE) - UI surface
-#base; DE_UI1 0x05103000
-##base; DE_UI2 0x05104000
-##base; DE_UI3 0x05105000
-
-#aggreg; CFG; 0x000 4;
-#regdef;  ATTR; 0x000; 
-#regdef;  SIZE; 0x004; 
-#regdef;  COORD; 0x008; 
-#regdef;  PITCH; 0x00C; 
-#regdef;  TOP_LADDR; 0x010; 
-#regdef;  BOT_LADDR; 0x014; 
-#regdef;  FCOLOR; 0x018; 
-#regdef; padding 0; 0x020; Need for address arithmetics
-#aggregend;
-#regdef;  TOP_HADDR; 0x080; 
-#regdef;  BOT_HADDR; 0x084; 
-#regdef;  OVL_SIZE; 0x088; 
-
 #type; DE_BLD; Display Engine (DE) - Blender
 #base; DE_BLD 0x05101000
 
@@ -58,7 +39,7 @@
 #regdef; PREMULTIPLY; 	0x084; Offset 0x080 BLD pre-multiply control register
 #regdef; BKCOLOR; 0x088;
 #regdef; OUTPUT_SIZE; 0x08C;
-#regdef; BLD_MODE; 0x090 4; BLD_CTL
+#regdef; BLD_MODE; 0x090 6; BLD_CTL
 #regdef; CK_CTL; 0x0B0;
 #regdef; CK_CFG; 0x0B4;
 #regdef; CK_MAX; 0x0C0 4;
@@ -66,7 +47,7 @@
 #regdef; OUT_CTL; 0x0FC;
 
 #type; DE_VI; Display Engine (DE) - VI surface
-#base; DE_VI 0x05102000
+#base; DE_VI1 0x05102000
 
 #aggreg; CFG; 0x000 4;
 #regdef; ATTR; 0x000;
@@ -82,3 +63,22 @@
 #regdef; OVL_SIZE; 0x0E8 2;
 #regdef; HORI; 0x0F0 2;
 #regdef; VERT; 0x0F8 2;
+
+#type; DE_UI; Display Engine (DE) - UI surface
+#base; DE_UI1 0x05103000
+#base; DE_UI2 0x05104000
+#base; DE_UI3 0x05105000
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000; 
+#regdef;  SIZE; 0x004; 
+#regdef;  COORD; 0x008; 
+#regdef;  PITCH; 0x00C; 
+#regdef;  TOP_LADDR; 0x010; 
+#regdef;  BOT_LADDR; 0x014; 
+#regdef;  FCOLOR; 0x018; 
+#regdef; padding 0; 0x020; Need for address arithmetics
+#aggregend;
+#regdef;  TOP_HADDR; 0x080; 
+#regdef;  BOT_HADDR; 0x084; 
+#regdef;  OVL_SIZE; 0x088; 
