@@ -433,7 +433,7 @@ elif CPUSTYLE_STM32F0XX
 	#include "elvees_vm14.h"
 	#include "irq_ctrl.h"
 
-	#define DCACHEROWSIZE 64
+	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))

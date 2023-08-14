@@ -19,6 +19,7 @@
 #include "usbch9.h"
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
+#include "bootloader.h"
 
 #include <string.h>
 #include <wchar.h>
