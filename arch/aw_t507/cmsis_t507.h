@@ -123,9 +123,9 @@ typedef enum IRQn
 #define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU  Base */
-#define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE  Base */
-#define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS  Base */
+#define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS Blue Level Stretch (BLS) Base */
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
@@ -603,6 +603,60 @@ typedef struct DE_BLD_Type
     volatile uint32_t CSC_COEFF [0x00C];              /*!< Offset 0x110 SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4) */
 } DE_BLD_TypeDef; /* size of structure = 0x140 */
 /*
+ * @brief DE_BLS
+ */
+/*!< DE_BLS Blue Level Stretch (BLS) */
+typedef struct DE_BLS_Type
+{
+    volatile uint32_t BLS_CTRL_REG;                   /*!< Offset 0x000 BLS module control register */
+    volatile uint32_t BLS_SIZE_REG;                   /*!< Offset 0x004 BLS size register */
+    volatile uint32_t BLS_WIN0_REG;                   /*!< Offset 0x008 BLS window setting register0 */
+    volatile uint32_t BLS_WIN1_REG;                   /*!< Offset 0x00C BLS window setting register1 */
+    volatile uint32_t BLS_ATTLUT_REG [0x004];         /*!< Offset 0x010 0x10+N*0x4 BLS attenuation LUT register, +N*0x4 (N = 0,1,2,3) */
+    volatile uint32_t BLS_POS_REG;                    /*!< Offset 0x020 BLS blue zone position register */
+             uint32_t reserved_0x024 [0x0003];
+    volatile uint32_t BLS_GAINLUT_REG [0x004];        /*!< Offset 0x030 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3) */
+} DE_BLS_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief DE_FCE
+ */
+/*!< DE_FCE Fresh and Contrast Enhancement (FCE) */
+typedef struct DE_FCE_Type
+{
+    volatile uint32_t GCTRL_REG;                      /*!< Offset 0x000 Control register */
+    volatile uint32_t FCE_SIZE_REG;                   /*!< Offset 0x004 Size setting register */
+    volatile uint32_t FCE_WIN0_REG;                   /*!< Offset 0x008 Window setting 0 register */
+    volatile uint32_t FCE_WIN1_REG;                   /*!< Offset 0x00C Window setting 1 register */
+             uint32_t reserved_0x010 [0x0004];
+    volatile uint32_t HIST_SUM_REG;                   /*!< Offset 0x020 Histogram sum register */
+    volatile uint32_t HIST_STATUS_REG;                /*!< Offset 0x024 Histogram status register */
+    volatile uint32_t CE_STATUS_REG;                  /*!< Offset 0x028 CE LUT status register */
+    volatile uint32_t CE_CC_REG;                      /*!< Offset 0x02C CE chroma compensation function setting register */
+    volatile uint32_t FTC_GAIN_REG;                   /*!< Offset 0x030 FTC gain setting register */
+    volatile uint32_t FTD_HUE_THR_REG;                /*!< Offset 0x034 FTD hue threshold setting register */
+    volatile uint32_t FTD_CHROMA_THR_REG;             /*!< Offset 0x038 FTD chroma threshold setting register */
+    volatile uint32_t FTD_SLP_REG;                    /*!< Offset 0x03C FTD slop setting register */
+    volatile uint32_t CSC_ENABLE_REG;                 /*!< Offset 0x040 CSC enable setting register */
+    volatile uint32_t CSC_D0_REG;                     /*!< Offset 0x044 CSC Constant D0 Register */
+    volatile uint32_t CSC_D1_REG;                     /*!< Offset 0x048 CSC Constant D1 Register */
+    volatile uint32_t CSC_D2_REG;                     /*!< Offset 0x04C CSC Constant D2 Register */
+    volatile uint32_t CSC_C00_REG;                    /*!< Offset 0x050 CSC Coefficient 00 Register */
+    volatile uint32_t CSC_C01_REG;                    /*!< Offset 0x054 CSC Coefficient 01 Register */
+    volatile uint32_t CSC_C02_REG;                    /*!< Offset 0x058 CSC Coefficient 02 Register */
+    volatile uint32_t CSC_C03_REG;                    /*!< Offset 0x05C CSC Constant 03 Register */
+    volatile uint32_t CSC_C10_REG;                    /*!< Offset 0x060 CSC Coefficient 10 Register */
+    volatile uint32_t CSC_C11_REG;                    /*!< Offset 0x064 CSC Coefficient 11 Register */
+    volatile uint32_t CSC_C12_REG;                    /*!< Offset 0x068 CSC Coefficient 12 Register */
+    volatile uint32_t CSC_C13_REG;                    /*!< Offset 0x06C CSC Constant 13 Register */
+    volatile uint32_t CSC_C20_REG;                    /*!< Offset 0x070 CSC Coefficient 20 Register */
+    volatile uint32_t CSC_C21_REG;                    /*!< Offset 0x074 CSC Coefficient 21 Register */
+    volatile uint32_t CSC_C22_REG;                    /*!< Offset 0x078 CSC Coefficient 22 Register */
+    volatile uint32_t CSC_C23_REG;                    /*!< Offset 0x07C CSC Constant 23 Register */
+             uint32_t reserved_0x080 [0x0060];
+    volatile uint32_t CE_LUT_REGN [0x080];            /*!< Offset 0x200 0x200+N*4 CE LUT register N (N=0:127) */
+    volatile uint32_t HIST_CNT_REGN [0x100];          /*!< Offset 0x400 0x400+N*4 Histogram count register N (N=0:255) */
+} DE_FCE_TypeDef; /* size of structure = 0x800 */
+/*
  * @brief DE_GLB
  */
 /*!< DE_GLB Display Engine (DE) - Global Control */
@@ -676,6 +730,59 @@ typedef struct DE_VI_Type
              uint32_t reserved_0x100 [0x0080];
     volatile uint32_t FBD_V_CTL;                      /*!< Offset 0x300 OVL_V FBD control register */
 } DE_VI_TypeDef; /* size of structure = 0x304 */
+/*
+ * @brief DE_VSU
+ */
+/*!< DE_VSU Video Scaler Unit (VSU) */
+typedef struct DE_VSU_Type
+{
+    volatile uint32_t VSU_CTRL_REG;                   /*!< Offset 0x000 VSU Module Control Register */
+             uint32_t reserved_0x004;
+    volatile uint32_t VSU_STATUS_REG;                 /*!< Offset 0x008 VSU Status Register */
+    volatile uint32_t VSU_FIELD_CTRL_REG;             /*!< Offset 0x00C VSU Field Control Register */
+    volatile uint32_t VSU_SCALE_MODE_REG;             /*!< Offset 0x010 VSU Scale Mode Setting Register */
+             uint32_t reserved_0x014 [0x0003];
+    volatile uint32_t VSU_DIRECTION_THR_REG;          /*!< Offset 0x020 VSU Direction Detection Threshold Register */
+    volatile uint32_t VSU_EDGE_THR_REG;               /*!< Offset 0x024 VSU Edge Detection Setting Register */
+    volatile uint32_t VSU_EDSCALER_CTRL_REG;          /*!< Offset 0x028 VSU Edge-Direction Scaler Control Register */
+    volatile uint32_t VSU_ANGLE_THR_REG;              /*!< Offset 0x02C VSU Angle Reliability Setting Register */
+    volatile uint32_t VSU_SHARP_EN_REG;               /*!< Offset 0x030 VSU Sharpness Control Enable Register */
+    volatile uint32_t VSU_SHARP_CORING_REG;           /*!< Offset 0x034 VSU Sharpness Control Coring Setting Register */
+    volatile uint32_t VSU_SHARP_GAIN0_REG;            /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
+    volatile uint32_t VSU_SHARP_GAIN1_REG;            /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
+    volatile uint32_t VSU_OUT_SIZE_REG;               /*!< Offset 0x040 VSU Output Size Register */
+    volatile uint32_t VSU_GLOBAL_ALPHA_REG;           /*!< Offset 0x044 (null) */
+             uint32_t reserved_0x048 [0x000E];
+    volatile uint32_t VSU_Y_SIZE_REG;                 /*!< Offset 0x080 VSU Y Channel Size Register */
+             uint32_t reserved_0x084;
+    volatile uint32_t VSU_Y_HSTEP_REG;                /*!< Offset 0x088 VSU Y Channel Horizontal Step Register */
+    volatile uint32_t VSU_Y_VSTEP_REG;                /*!< Offset 0x08C VSU Y Channel Vertical Step Register */
+    volatile uint32_t VSU_Y_HPHASE_REG;               /*!< Offset 0x090 VSU Y Channel Horizontal Initial Phase Register */
+             uint32_t reserved_0x094;
+    volatile uint32_t VSU_Y_VPHASE0_REG;              /*!< Offset 0x098 VSU Y Channel Vertical Initial Phase 0 Register */
+    volatile uint32_t VSU_Y_VPHASE1_REG;              /*!< Offset 0x09C VSU Y Channel Vertical Initial Phase 1 Register */
+             uint32_t reserved_0x0A0 [0x0008];
+    volatile uint32_t VSU_C_SIZE_REG;                 /*!< Offset 0x0C0 VSU C Channel Size Register */
+             uint32_t reserved_0x0C4;
+    volatile uint32_t VSU_C_HSTEP_REG;                /*!< Offset 0x0C8 VSU C Channel Horizontal Step Register */
+    volatile uint32_t VSU_C_VSTEP_REG;                /*!< Offset 0x0CC VSU C Channel Vertical Step Register */
+    volatile uint32_t VSU_C_HPHASE_REG;               /*!< Offset 0x0D0 VSU C Channel Horizontal Initial Phase Register */
+             uint32_t reserved_0x0D4;
+    volatile uint32_t VSU_C_VPHASE0_REG;              /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
+    volatile uint32_t VSU_C_VPHASE1_REG;              /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
+             uint32_t reserved_0x0E0 [0x0048];
+    volatile uint32_t VSU_Y_HCOEF0_REGN [0x020];      /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+             uint32_t reserved_0x280 [0x0020];
+    volatile uint32_t VSU_Y_HCOEF1_REGN [0x020];      /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
+             uint32_t reserved_0x380 [0x0020];
+    volatile uint32_t VSU_Y_VCOEF_REGN [0x020];       /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+             uint32_t reserved_0x480 [0x0060];
+    volatile uint32_t VSU_C_HCOEF0_REGN [0x020];      /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+             uint32_t reserved_0x680 [0x0020];
+    volatile uint32_t VSU_C_HCOEF1_REGN [0x020];      /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
+             uint32_t reserved_0x780 [0x0020];
+    volatile uint32_t VSU_C_VCOEF_REGN [0x020];       /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
+} DE_VSU_TypeDef; /* size of structure = 0x880 */
 /*
  * @brief DE_XX
  */
@@ -1651,6 +1758,9 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS ((DE_BLS_TypeDef *) DE_BLS_BASE)       /*!< DE_BLS Blue Level Stretch (BLS) register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */

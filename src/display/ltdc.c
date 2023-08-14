@@ -2292,8 +2292,6 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		0;
 }
 
-// What is DPSS_TOP_BGR_REG ?
-
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned preiPOW, unsigned tconlcddiv)
 {
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
@@ -2689,6 +2687,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
+// What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
 #if ! CPUSTYLE_T507
@@ -2719,7 +2718,6 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	(void) DSI0->DSI_CTL;
 #endif
 }
-// What is DPSS_TOP_BGR_REG ?
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
@@ -2762,16 +2760,30 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 
-
 //	PRINTF("DE_TOP before:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+//	memset(DE_TOP, 255, 256);
+//	PRINTF("DE_TOP fill 0xFF:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+//	memset(DE_TOP, 0, 256);
+//	PRINTF("DE_TOP fill 0x00:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+//
+// 	DE_TOP->DE_SCLK_DIV =
+//		7 * (UINT32_C(1) << 8) |	// wb-div
+//		7 * (UINT32_C(1) << 4) |	// mixer1-div
+//		7 * (UINT32_C(1) << 0) |	// mixer0-div
+//		0;
 
  	DE_TOP->DE_SCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
  	DE_TOP->DE_HCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
 
  	// Only one bit writable
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
-	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
+	DE_TOP->DE_AHB_RESET |= 0xFF; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
+
+//	PRINTF("DE_TOP AHB reset:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 	DE_GLB->GLB_CTL =
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
@@ -2780,9 +2792,16 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
 
+	//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
+	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
+	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
+
 	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
 
 	DE_GLB->GLB_STS = 0;
+
+//	PRINTF("DE_TOP AHB final:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	/* Configure DE clock */

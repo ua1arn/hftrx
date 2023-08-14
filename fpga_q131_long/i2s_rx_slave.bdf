@@ -21,7 +21,7 @@ applicable agreement for further details.
 (header "graphic" (version "1.4"))
 (pin
 	(input)
-	(rect 736 632 904 648)
+	(rect 840 360 1008 376)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
 	(text "shiftin1" (rect 5 0 41 12)(font "Arial" ))
 	(pt 168 8)
@@ -37,7 +37,7 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 736 424 904 440)
+	(rect 840 312 1008 328)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
 	(text "shiftin0" (rect 5 0 41 12)(font "Arial" ))
 	(pt 168 8)
@@ -53,7 +53,7 @@ applicable agreement for further details.
 )
 (pin
 	(input)
-	(rect 736 672 904 688)
+	(rect 888 672 1056 688)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
 	(text "sck" (rect 5 0 22 12)(font "Arial" ))
 	(pt 168 8)
@@ -69,7 +69,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1952 192 2128 208)
+	(rect 1768 328 1944 344)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "shiftout0" (rect 90 0 133 12)(font "Arial" ))
 	(pt 0 8)
@@ -85,7 +85,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1952 224 2128 240)
+	(rect 1768 360 1944 376)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "shiftout1" (rect 90 0 133 12)(font "Arial" ))
 	(pt 0 8)
@@ -101,7 +101,7 @@ applicable agreement for further details.
 )
 (pin
 	(output)
-	(rect 1944 408 2120 424)
+	(rect 1760 544 1936 560)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "slot01[63..0]" (rect 90 0 151 12)(font "Arial" ))
 	(pt 0 8)
@@ -338,36 +338,12 @@ applicable agreement for further details.
 	(pt 1312 416)
 )
 (connector
-	(pt 1952 232)
-	(pt 1536 232)
-)
-(connector
-	(pt 1536 232)
-	(pt 1536 592)
-)
-(connector
 	(pt 1536 592)
 	(pt 1456 592)
 )
 (connector
-	(pt 1952 200)
-	(pt 1520 200)
-)
-(connector
-	(pt 1520 384)
-	(pt 1520 200)
-)
-(connector
 	(pt 1520 384)
 	(pt 1456 384)
-)
-(connector
-	(pt 1312 432)
-	(pt 904 432)
-)
-(connector
-	(pt 1312 640)
-	(pt 904 640)
 )
 (connector
 	(pt 1312 400)
@@ -390,14 +366,30 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "qq[63..0]" (rect 1810 400 1853 412)(font "Arial" ))
-	(pt 1800 416)
-	(pt 1944 416)
+	(pt 1536 368)
+	(pt 1768 368)
+)
+(connector
+	(pt 1536 592)
+	(pt 1536 368)
+)
+(connector
+	(pt 1520 336)
+	(pt 1768 336)
+)
+(connector
+	(pt 1520 384)
+	(pt 1520 336)
+)
+(connector
+	(text "qq[63..0]" (rect 1626 536 1669 548)(font "Arial" ))
+	(pt 1616 552)
+	(pt 1760 552)
 	(bus)
 )
 (connector
 	(pt 1288 680)
-	(pt 904 680)
+	(pt 1056 680)
 )
 (connector
 	(pt 1288 400)
@@ -407,7 +399,30 @@ applicable agreement for further details.
 	(pt 1288 608)
 	(pt 1288 680)
 )
+(connector
+	(pt 1184 432)
+	(pt 1184 320)
+)
+(connector
+	(pt 1312 432)
+	(pt 1184 432)
+)
+(connector
+	(pt 1008 320)
+	(pt 1184 320)
+)
+(connector
+	(pt 1160 640)
+	(pt 1160 368)
+)
+(connector
+	(pt 1312 640)
+	(pt 1160 640)
+)
+(connector
+	(pt 1008 368)
+	(pt 1160 368)
+)
 (junction (pt 1288 608))
 (text "Word Select:\nThe word select line indicates the channel being transmitted:\nWS = 0; channel 1 (left);\nWS = 1; channel 2 (right)." (rect 1152 960 1495 1016)(font "Arial" (font_size 8)))
-(text "Input data state changed at faling edge of SCK" (rect 840 600 1104 614)(font "Arial" (font_size 8)))
-(text "Input data state changed at faling edge of SCK" (rect 848 392 1112 406)(font "Arial" (font_size 8)))
+(text "Input data state changed at faling edge of SCK" (rect 832 280 1096 294)(font "Arial" (font_size 8)))

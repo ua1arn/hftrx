@@ -134,15 +134,86 @@
 
 # RT-Mixer0 blocks
 
-#type; DE_VSU
+#type; DE_VSU; Video Scaler Unit (VSU)
 #base; DE_VSU 0x01104000
 
-#type; DE_FCE
+#regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
+#regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
+#regdef; VSU_FIELD_CTRL_REG; 0x000C; VSU Field Control Register
+#regdef; VSU_SCALE_MODE_REG; 0x0010; VSU Scale Mode Setting Register
+#regdef; VSU_DIRECTION_THR_REG; 0x0020; VSU Direction Detection Threshold Register
+#regdef; VSU_EDGE_THR_REG; 0x0024; VSU Edge Detection Setting Register
+#regdef; VSU_EDSCALER_CTRL_REG; 0x0028; VSU Edge-Direction Scaler Control Register
+#regdef; VSU_ANGLE_THR_REG; 0x002C; VSU Angle Reliability Setting Register
+#regdef; VSU_SHARP_EN_REG; 0x0030; VSU Sharpness Control Enable Register
+#regdef; VSU_SHARP_CORING_REG; 0x0034; VSU Sharpness Control Coring Setting Register
+#regdef; VSU_SHARP_GAIN0_REG; 0x0038; VSU Sharpness Control Gain Setting 0 Register
+#regdef; VSU_SHARP_GAIN1_REG; 0x003C; VSU Sharpness Control Gain Setting 1 Register
+#regdef; VSU_OUT_SIZE_REG; 0x0040; VSU Output Size Register
+#regdef; VSU_GLOBAL_ALPHA_REG; 0x0044 VSU Output Global Alpha Register
+#regdef; VSU_Y_SIZE_REG; 0x0080; VSU Y Channel Size Register
+#regdef; VSU_Y_HSTEP_REG; 0x0088; VSU Y Channel Horizontal Step Register
+#regdef; VSU_Y_VSTEP_REG; 0x008C; VSU Y Channel Vertical Step Register
+#regdef; VSU_Y_HPHASE_REG; 0x0090; VSU Y Channel Horizontal Initial Phase Register
+#regdef; VSU_Y_VPHASE0_REG; 0x0098; VSU Y Channel Vertical Initial Phase 0 Register
+#regdef; VSU_Y_VPHASE1_REG; 0x009C; VSU Y Channel Vertical Initial Phase 1 Register
+#regdef; VSU_C_SIZE_REG; 0x00C0; VSU C Channel Size Register
+#regdef; VSU_C_HSTEP_REG; 0x00C8; VSU C Channel Horizontal Step Register
+#regdef; VSU_C_VSTEP_REG; 0x00CC; VSU C Channel Vertical Step Register
+#regdef; VSU_C_HPHASE_REG; 0x00D0; VSU C Channel Horizontal Initial Phase Register
+#regdef; VSU_C_VPHASE0_REG; 0x00D8; VSU C Channel Vertical Initial Phase 0 Register
+#regdef; VSU_C_VPHASE1_REG; 0x00DC; VSU C Channel Vertical Initial Phase 1 Register
+#regdef; VSU_Y_HCOEF0_REGN; 0x200 32; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_Y_HCOEF1_REGN; 0x300 32; 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1
+#regdef; VSU_Y_VCOEF_REGN; 0x400 32; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; VSU_C_HCOEF0_REGN; 0x600 32; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
+#regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
+
+#type; DE_FCE; Fresh and Contrast Enhancement (FCE)
 #base; DE_FCE 0x01110000
 
-#type; DE_BLS
+#regdef; GCTRL_REG; 0x000; Control register
+#regdef; FCE_SIZE_REG; 0x004; Size setting register
+#regdef; FCE_WIN0_REG; 0x008; Window setting 0 register
+#regdef; FCE_WIN1_REG; 0x00C; Window setting 1 register
+#regdef; HIST_SUM_REG; 0x020; Histogram sum register
+#regdef; HIST_STATUS_REG; 0x024; Histogram status register
+#regdef; CE_STATUS_REG; 0x028; CE LUT status register
+#regdef; CE_CC_REG; 0x02C; CE chroma compensation function setting register
+#regdef; FTC_GAIN_REG; 0x030; FTC gain setting register
+#regdef; FTD_HUE_THR_REG; 0x034; FTD hue threshold setting register
+#regdef; FTD_CHROMA_THR_REG; 0x038; FTD chroma threshold setting register; 
+#regdef; FTD_SLP_REG; 0x03C; FTD slop setting register
+#regdef; CSC_ENABLE_REG; 0x040; CSC enable setting register
+#regdef; CSC_D0_REG; 0x044; CSC Constant D0 Register
+#regdef; CSC_D1_REG; 0x048; CSC Constant D1 Register
+#regdef; CSC_D2_REG; 0x04C; CSC Constant D2 Register
+#regdef; CSC_C00_REG; 0x050; CSC Coefficient 00 Register
+#regdef; CSC_C01_REG; 0x054; CSC Coefficient 01 Register
+#regdef; CSC_C02_REG; 0x058; CSC Coefficient 02 Register
+#regdef; CSC_C03_REG; 0x05C; CSC Constant 03 Register
+#regdef; CSC_C10_REG; 0x060; CSC Coefficient 10 Register
+#regdef; CSC_C11_REG; 0x064; CSC Coefficient 11 Register
+#regdef; CSC_C12_REG; 0x068; CSC Coefficient 12 Register
+#regdef; CSC_C13_REG; 0x06C; CSC Constant 13 Register
+#regdef; CSC_C20_REG; 0x070; CSC Coefficient 20 Register
+#regdef; CSC_C21_REG; 0x074; CSC Coefficient 21 Register
+#regdef; CSC_C22_REG; 0x078; CSC Coefficient 22 Register
+#regdef; CSC_C23_REG; 0x07C; CSC Constant 23 Register
+#regdef; CE_LUT_REGN; 0x200 128; 0x200+N*4 CE LUT register N (N=0:127)
+#regdef; HIST_CNT_REGN; 0x400 256; 0x400+N*4 Histogram count register N (N=0:255)
+
+#type; DE_BLS; Blue Level Stretch (BLS)
 #base; DE_BLS 0x01111000
 
+#regdef; BLS_CTRL_REG; 0x00; BLS module control register
+#regdef; BLS_SIZE_REG; 0x04; BLS size register
+#regdef; BLS_WIN0_REG; 0x08; BLS window setting register0
+#regdef; BLS_WIN1_REG; 0x0C; BLS window setting register1
+#regdef; BLS_ATTLUT_REG; 0x10 4; 0x10+N*0x4 BLS attenuation LUT register, +N*0x4 (N = 0,1,2,3)
+#regdef; BLS_POS_REG; 0x20; BLS blue zone position register
+#regdef; BLS_GAINLUT_REG; 0x30 4; 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3)
 
 #type; DE_XX
 
