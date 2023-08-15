@@ -177,7 +177,7 @@ static void notify(uint_fast8_t offset, uint_fast16_t state)
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
 
-static volatile uint16_t usb_cdc_control_state [INTERFACE_count];
+static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
 
 static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
@@ -186,7 +186,7 @@ static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
 
 static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
-static uint32_t dwDTERate [INTERFACE_count];
+static uint32_t dwDTERate [WITHUSBCDCACM_N];
 
 #define MAIN_CDC_OFFSET 0
 #if WITHUSBCDCACM_N > 1
@@ -206,7 +206,7 @@ uint_fast8_t usbd_cdc1_getrts(void)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -219,7 +219,7 @@ uint_fast8_t usbd_cdc1_getdtr(void)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -233,7 +233,7 @@ uint_fast8_t usbd_cdc2_getrts(void)
 	const unsigned offset = SECOND_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -250,7 +250,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 	const unsigned offset = SECOND_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -387,9 +387,10 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 		case CDC_SET_LINE_CODING:
 			{
 				const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev);
 				ASSERT(req->wLength == 7);
-				dwDTERate [interfacev] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
-				//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [interfacev], cdc_epXdatabuffout [6]);
+				dwDTERate [offset] = USBD_peek_u32(& cdc_epXdatabuffout [0]);
+				//PRINTF(PSTR("USBD_CDC_EP0_RxReady: CDC_SET_LINE_CODING: interfacev=%u, dwDTERate=%lu, bits=%u\n"), interfacev, dwDTERate [offset], cdc_epXdatabuffout [6]);
 			}
 			break;
 		default:
@@ -458,11 +459,12 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev);
 				switch (req->bRequest)
 				{
 				case CDC_GET_LINE_CODING:
-					//PRINTF(PSTR("USBD_CDC_Setup IN: CDC_GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [interfacev]);
-					USBD_poke_u32(& buff [0], dwDTERate [interfacev]); // dwDTERate
+					//PRINTF(PSTR("USBD_CDC_Setup IN: CDC_GET_LINE_CODING, dwDTERate=%lu\n"), (unsigned long) dwDTERate [offset]);
+					USBD_poke_u32(& buff [0], dwDTERate [offset]); // dwDTERate
 					buff [4] = 0;	// 1 stop bit
 					buff [5] = 0;	// parity=none
 					buff [6] = 8;	// bDataBits
@@ -509,12 +511,13 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 			{
+				const unsigned offset = USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev);
 				switch (req->bRequest)
 				{
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
 					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
-					usb_cdc_control_state [interfacev] = req->wValue;
+					usb_cdc_control_state [offset] = req->wValue;
 					ASSERT(req->wLength == 0);
 					break;
 
@@ -575,8 +578,8 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 		usbd_cdc_txenabled [offset] = 0;
 		//usbd_cdc_rxenabled [offset] = 0;
 		usbd_cdc_txstate [offset] = 0;
-		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
-		dwDTERate [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 115200;
+		usb_cdc_control_state [offset] = 0;
+		dwDTERate [offset] = 115200;
 
 		/* cdc Open EP IN */
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_IN_DATA_SIZE);
@@ -609,7 +612,7 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	/* при потере связи с host снять запрос на передачу */
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
- 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
+ 		usb_cdc_control_state [offset] = 0;
 	}
 	return USBD_OK;
 }
@@ -619,7 +622,7 @@ static void USBD_CDC_ColdInit(void)
 	uint_fast8_t offset;
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
- 		usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] = 0;
+ 		usb_cdc_control_state [offset] = 0;
 	}
 }
 

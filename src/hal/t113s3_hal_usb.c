@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+#if (CPUSTYLE_ALLWINNER) && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 #include "board.h"
 #include "audio.h"
@@ -2318,7 +2318,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
 
-static volatile uint16_t usb_cdc_control_state [INTERFACE_count];
+static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
 
 static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
@@ -2327,7 +2327,7 @@ static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
 
 static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
-static uint32_t dwDTERate [INTERFACE_count];
+//static uint32_t dwDTERate [WITHUSBCDCACM_N];
 
 #define MAIN_CDC_OFFSET 0
 #if WITHUSBCDCACM_N > 1
@@ -2347,7 +2347,7 @@ uint_fast8_t usbd_cdc1_getrts(void)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -2360,7 +2360,7 @@ uint_fast8_t usbd_cdc1_getdtr(void)
 	const unsigned offset = MAIN_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -2374,7 +2374,7 @@ uint_fast8_t usbd_cdc2_getrts(void)
 	const unsigned offset = SECOND_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_ACTIVATE_CARRIER) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -2391,7 +2391,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 	const unsigned offset = SECOND_CDC_OFFSET;
 	LCLSPIN_LOCK(& catlock);
 	const uint_fast8_t state =
-		((usb_cdc_control_state [USBD_CDCACM_IFC(INTERFACE_CDC_CONTROL, offset)] & CDC_DTE_PRESENT) != 0) ||
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
 	LCLSPIN_UNLOCK(& catlock);
 	return state;
@@ -4732,4 +4732,4 @@ HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
   return HAL_OK;
 }
 
-#endif /* (CPUSTYLE_A64 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHUSBHW && defined (WITHUSBHW_DEVICE) */
+#endif /* (CPUSTYLE_ALLWINNER) && WITHUSBHW && defined (WITHUSBHW_DEVICE) */

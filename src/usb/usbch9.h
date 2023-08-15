@@ -360,6 +360,7 @@ enum interfaces_tag
 #define USBD_CDCACM_OFFSET_BY_OUT_EP(ep, base) (((ep) - (base)) / 1)
 #define USBD_CDCACM_OFFSET_BY_IN_EP(ep, base) (((ep) - (base)) / 2)
 #define USBD_CDCACM_OFFSET_BY_INT_EP(ep, base) (((ep) - (base)) / 2)
+#define USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev) (((interfacev) - INTERFACE_CDC_base) / 2)	/* получить номер порта по номеру интерфейса */
 
 #define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)
 
