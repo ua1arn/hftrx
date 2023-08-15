@@ -6148,7 +6148,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(uint_fast8_t master, unsigned fr
 	// Control Register (SSICR)
 	SSIF1.SSICR = 
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		((framebits / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
 #if WITHFPGAIF_FRAMEBITS == 64
 		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
@@ -6333,7 +6333,7 @@ static void r7s721_ssif2_rx_initialize_WFM(uint_fast8_t master, unsigned framebi
 	// Control Register (SSICR)
 	SSIF2.SSICR = 
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		((framebits / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
 #if WITHFPGARTS_FRAMEBITS == 64
 		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
