@@ -5580,15 +5580,6 @@ enum
 	R7S721_SSIF_CKDIV128 = 7,
 };
 
-#if CODEC1_IFC_MASTER
-	#define R7S721_SSIF0_MASTER 0	// AUDIO CODEC I2S INTERFACE
-#else /* CODEC1_IFC_MASTER */
-	#define R7S721_SSIF0_MASTER 1	// AUDIO CODEC I2S INTERFACE
-#endif /* CODEC1_IFC_MASTER */
-
-#define R7S721_SSIF1_MASTER 1	// FGA I2S INTERFACE #1
-#define R7S721_SSIF2_MASTER 1	// FGA I2S INTERFACE #2 (spectrum)
-
 #if CODEC1_FRAMEBITS == 64
 	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV4 * (UINT32_C(1) << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
 	#define R7S721_SSIF0_SWL_val (3 * (UINT32_C(1) << 16))	// SWL 3: 32 bit
@@ -5863,7 +5854,8 @@ static void r7s721_ssif0_duplex_initialize_codec1(unsigned ix, struct st_ssif * 
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		0 * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		R7S721_SSIF0_DWL_val |		// DWL
-		R7S721_SSIF0_SWL_val |		// SWL
+		get_ssif_swl(framebits / 2) * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		//R7S721_SSIF0_SWL_val |		// SWL 3 or 1
 		master * (UINT32_C(1) << 15) |		// SCKD		1: Serial bit clock is output, master mode.
 		master * (UINT32_C(1) << 14) |		// SWSD		1: Serial word select is output, master mode.
 		0 * (UINT32_C(1) << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -6159,11 +6151,12 @@ static void r7s721_ssif1_duplex_initialize_fpga(unsigned ix, struct st_ssif * ss
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
-#if WITHFPGAIF_FRAMEBITS == 64
-		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
-#elif WITHFPGAIF_FRAMEBITS == 256
-		6 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
-#endif /*  */
+		get_ssif_swl(framebits / 2) * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+//#if WITHFPGAIF_FRAMEBITS == 64
+//		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+//#elif WITHFPGAIF_FRAMEBITS == 256
+//		6 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+//#endif /*  */
 		master * (UINT32_C(1) << 15) |		// SCKD	1: Serial bit clock is output, master mode.
 		master * (UINT32_C(1) << 14) |		// SWSD	1: Serial word select is output, master mode.
 		0 * (UINT32_C(1) << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
@@ -6342,11 +6335,12 @@ static void r7s721_ssif2_rx_initialize_WFM(unsigned ix, struct st_ssif * ssif, u
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
-#if WITHFPGARTS_FRAMEBITS == 64
-		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
-#elif WITHFPGARTS_FRAMEBITS == 256
-		6 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
-#endif /*  */
+		get_ssif_swl(framebits / 2) * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+//#if WITHFPGARTS_FRAMEBITS == 64
+//		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+//#elif WITHFPGARTS_FRAMEBITS == 256
+//		6 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+//#endif /*  */
 		master * (UINT32_C(1) << 15) |		// SCKD	1: Serial bit clock is output, master mode.
 		master * (UINT32_C(1) << 14) |		// SWSD	1: Serial word select is output, master mode.
 		0 * (UINT32_C(1) << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
