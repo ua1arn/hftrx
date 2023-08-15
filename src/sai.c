@@ -5601,6 +5601,59 @@ enum
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
+//	System Word Length
+//	These bits indicate the number of bits in a system word.
+//	000: 8 bits
+//	001: 16 bits
+//	010: 24 bits
+//	011: 32 bits
+//	100: 48 bits
+//	101: 64 bits
+//	110: 128 bits
+//	111: 256 bits
+
+static unsigned get_ssif_swl(unsigned systemwordlength)
+{
+	switch (systemwordlength)
+	{
+	default:	return 3;
+	case 8:		return 0;
+	case 16:	return 1;
+	case 24:	return 2;
+	case 32:	return 3;
+	case 48:	return 4;
+	case 64:	return 5;
+	case 128:	return 6;
+	case 256:	return 7;
+	}
+}
+
+//	Data Word Length
+//	These bits indicate the number of bits in a data word
+//	000: 8 bits
+//	001: 16 bits
+//	010: 18 bits
+//	011: 20 bits
+//	100: 22 bits
+//	101: 24 bits
+//	110: 32 bits
+//	111: Setting prohibited
+
+static unsigned get_ssif_dwl(unsigned datalength)
+{
+	switch (datalength)
+	{
+	default:	return 6;
+	case 8:		return 0;
+	case 16:	return 1;
+	case 18:	return 2;
+	case 20:	return 3;
+	case 22:	return 4;
+	case 24:	return 5;
+	case 32:	return 6;
+	}
+}
+
 #if WITHI2S2HW
 
 // audio codec
