@@ -5580,15 +5580,6 @@ enum
 	R7S721_SSIF_CKDIV128 = 7,
 };
 
-#if CODEC1_IFC_MASTER
-	#define R7S721_SSIF0_MASTER 0	// AUDIO CODEC I2S INTERFACE
-#else /* CODEC1_IFC_MASTER */
-	#define R7S721_SSIF0_MASTER 1	// AUDIO CODEC I2S INTERFACE
-#endif /* CODEC1_IFC_MASTER */
-
-#define R7S721_SSIF1_MASTER 1	// FGA I2S INTERFACE #1
-#define R7S721_SSIF2_MASTER 1	// FGA I2S INTERFACE #2 (spectrum)
-
 #if CODEC1_FRAMEBITS == 64
 	#define R7S721_SSIF0_CKDIV_val (R7S721_SSIF_CKDIV4 * (UINT32_C(1) << 4))	// 0010: AUDIOц/4: 12,288 -> 3.072 (48 kS, 32 bit, stereo)
 	#define R7S721_SSIF0_SWL_val (3 * (UINT32_C(1) << 16))	// SWL 3: 32 bit
@@ -5848,9 +5839,8 @@ static void r7s721_ssif0_dmatx_initialize_codec1_tx(void)
 // Правда, и в SLAVE нельзя сказать что работает - около пяти секунд проходит до начала нормальной раболты.
 
 // AUDIO CODEC I2S INTERFACE
-static void r7s721_ssif0_duplex_initialize_codec1(void)
+static void r7s721_ssif0_duplex_initialize_codec1(uint_fast8_t master, unsigned framebits, unsigned nslots)
 {
-	const uint_fast8_t master = R7S721_SSIF0_MASTER;
     /* ---- Supply clock to the SSIF(channel 0) ---- */
 	CPG.STBCR11 &= ~ (UINT32_C(1) << 5);	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
@@ -5886,6 +5876,17 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
+}
+
+static void r7s721_ssif0_duplex_initialize_codec1_master(void)
+{
+	r7s721_ssif0_duplex_initialize_codec1(1, CODEC1_FRAMEBITS, 2);
+	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+}
+
+static void r7s721_ssif0_duplex_initialize_codec1_slave(void)
+{
+	r7s721_ssif0_duplex_initialize_codec1(0, CODEC1_FRAMEBITS, 2);
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
@@ -5915,13 +5916,24 @@ static void r7s721_ssif0_tx_enable_codec1(uint_fast8_t state)
 
 static const codechw_t audiocodec_ssif0_duplex_master =
 {
-	r7s721_ssif0_duplex_initialize_codec1,
+	r7s721_ssif0_duplex_initialize_codec1_master,
 	hardware_dummy_initialize,
 	r7s721_ssif0_dmarx_initialize_codec1_rx,
 	r7s721_ssif0_dmatx_initialize_codec1_tx,
 	r7s721_ssif0_rx_enable_codec1,
 	r7s721_ssif0_tx_enable_codec1,
 	"audiocodechw-ssif0-duplex-master"
+};
+
+static const codechw_t audiocodec_ssif0_duplex_slave =
+{
+	r7s721_ssif0_duplex_initialize_codec1_slave,
+	hardware_dummy_initialize,
+	r7s721_ssif0_dmarx_initialize_codec1_rx,
+	r7s721_ssif0_dmatx_initialize_codec1_tx,
+	r7s721_ssif0_rx_enable_codec1,
+	r7s721_ssif0_tx_enable_codec1,
+	"audiocodechw-ssif0-duplex-slave"
 };
 #endif /* WITHI2S2HW */
 
@@ -6123,9 +6135,8 @@ static void r7s721_ssif1_dmatx_initialize_fpga_tx(void)
 }
 
 // FGA I2S INTERFACE #1
-static void r7s721_ssif1_duplex_initialize_fpga(void)
+static void r7s721_ssif1_duplex_initialize_fpga(uint_fast8_t master, unsigned framebits, unsigned nslots)
 {
-	const uint_fast8_t master = R7S721_SSIF1_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
 	CPG.STBCR11 &= ~ (UINT32_C(1) << 4);	// Module Stop 114	- 0: Channel 1 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
@@ -6137,7 +6148,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 	// Control Register (SSICR)
 	SSIF1.SSICR = 
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		((framebits / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
 #if WITHFPGAIF_FRAMEBITS == 64
 		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
@@ -6166,9 +6177,19 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 		0;
 
 
+}
+
+static void r7s721_ssif1_duplex_initialize_fpga_master(void)
+{
+	r7s721_ssif1_duplex_initialize_fpga(1, WITHFPGAIF_FRAMEBITS, WITHFPGAIF_FRAMEBITS / 32);
 	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
+static void r7s721_ssif1_duplex_initialize_fpga_slave(void)
+{
+	r7s721_ssif1_duplex_initialize_fpga(0, WITHFPGAIF_FRAMEBITS, WITHFPGAIF_FRAMEBITS / 32);
+	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+}
 
 static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 {
@@ -6184,13 +6205,24 @@ static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 
 static const codechw_t fpgacodechw_ssif1_duplex_master =
 {
-	r7s721_ssif1_duplex_initialize_fpga,
+	r7s721_ssif1_duplex_initialize_fpga_master,
 	hardware_dummy_initialize,
 	r7s721_ssif1_dmarx_initialize_fpga_rx,
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
 	r7s721_ssif1_duplex_enable_fpga,
 	hardware_dummy_enable,
 	"fpgacodechw-ssif1-duplex-master"
+};
+
+static const codechw_t fpgacodechw_ssif1_duplex_slave =
+{
+	r7s721_ssif1_duplex_initialize_fpga_slave,
+	hardware_dummy_initialize,
+	r7s721_ssif1_dmarx_initialize_fpga_rx,
+	r7s721_ssif1_dmatx_initialize_fpga_tx,
+	r7s721_ssif1_duplex_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-ssif1-duplex-slave"
 };
 
 #endif /* WITHSAI1HW */
@@ -6288,9 +6320,8 @@ static void r7s721_ssif2_dmarx_initialize_WFM(void)
 
 // FGA I2S INTERFACE #2
 // FPGA/spectrum channel
-static void r7s721_ssif2_rx_initialize_WFM(void)
+static void r7s721_ssif2_rx_initialize_WFM(uint_fast8_t master, unsigned framebits, unsigned nslots)
 {
-	const uint_fast8_t master = R7S721_SSIF2_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
 	CPG.STBCR11 &= ~ (UINT32_C(1) << 3);	// Module Stop 113	- 0: Channel 2 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
@@ -6302,7 +6333,7 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 	// Control Register (SSICR)
 	SSIF2.SSICR = 
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		((framebits / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
 #if WITHFPGARTS_FRAMEBITS == 64
 		3 * (UINT32_C(1) << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
@@ -6331,6 +6362,17 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 		0;
 
 
+}
+
+static void r7s721_ssif2_rx_initialize_WFM_master(void)
+{
+	r7s721_ssif2_rx_initialize_WFM(1, WITHFPGARTS_FRAMEBITS, 2);
+	HARDWARE_SSIF2_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+}
+
+static void r7s721_ssif2_rx_initialize_WFM_slave(void)
+{
+	r7s721_ssif2_rx_initialize_WFM(0, WITHFPGARTS_FRAMEBITS, 2);
 	HARDWARE_SSIF2_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
@@ -6349,13 +6391,24 @@ static void r7s721_ssif2_rx_enable_WFM(uint_fast8_t state)
 
 static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 {
-	r7s721_ssif2_rx_initialize_WFM,
+	r7s721_ssif2_rx_initialize_WFM_master,
 	hardware_dummy_initialize,
 	r7s721_ssif2_dmarx_initialize_WFM,
 	hardware_dummy_initialize,
 	r7s721_ssif2_rx_enable_WFM,
 	hardware_dummy_enable,
 	"spectrumhw-ssif2-rx-master"
+};
+
+static const codechw_t fpgaspectrumhw_ssif2_rx_slave =
+{
+	r7s721_ssif2_rx_initialize_WFM_slave,
+	hardware_dummy_initialize,
+	r7s721_ssif2_dmarx_initialize_WFM,
+	hardware_dummy_initialize,
+	r7s721_ssif2_rx_enable_WFM,
+	hardware_dummy_enable,
+	"spectrumhw-ssif2-rx-slave"
 };
 
 #endif /* WITHSAI2HW */
@@ -6508,12 +6561,18 @@ static const codechw_t * const channels [] =
 	#if WITHCODEC1_SSIF0_DUPLEX_MASTER
 		& audiocodec_ssif0_duplex_master,				// Интерфейс к НЧ кодеку
 	#endif /* WITHCODEC1_SSIF0_DUPLEX_MASTER */
+	#if WITHCODEC1_SSIF0_DUPLEX_SLAVE
+		& audiocodec_ssif0_duplex_slave,				// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_SSIF0_DUPLEX_SLAVE */
 	#if WITHFPGAIF_SSIF1_DUPLEX_MASTER
 		& fpgacodechw_ssif1_duplex_master,			// Интерфейс к IF кодеку/FPGA
 	#endif /* WITHFPGAIF_SSIF1_DUPLEX_MASTER */
 	#if WITHFPGARTS_SSIF2_RX_MASTER
 		& fpgaspectrumhw_ssif2_rx_master,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	#endif /* WITHFPGARTS_SSIF2_RX_MASTER */
+	#if WITHFPGARTS_SSIF2_RX_SLAVE
+		& fpgaspectrumhw_ssif2_rx_slave,			// Интерфейс к FPGA - широкополосный канал (WFM)
+	#endif /* WITHFPGARTS_SSIF2_RX_SLAVE */
 
 #elif CPUSTYLE_STM32F4XX
 		& audiocodechw_i2s2_i2s2ext_duplex_master,		// Интерфейс к НЧ кодеку
