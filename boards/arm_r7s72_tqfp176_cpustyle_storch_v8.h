@@ -89,8 +89,8 @@
 
 	#define WITHFPGAIF_SSIF1_DUPLEX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
 	//#define WITHFPGARTS_SSIF2_RX_MASTER	1	/* Получение RTS192 от FPGA через SAI2 */
-	#define WITHCODEC1_SSIF0_DUPLEX_MASTER	1		/* обмен с аудиокодеком через SSIF0 */
-	//#define WITHCODEC1_SSIF0_DUPLEX_SLAVE	1		/* обмен с аудиокодеком через SSIF0 */
+	//#define WITHCODEC1_SSIF0_DUPLEX_MASTER	1		/* обмен с аудиокодеком через SSIF0 - кодек SLAVE */
+	#define WITHCODEC1_SSIF0_DUPLEX_SLAVE	1		/* обмен с аудиокодеком через SSIF0 - кодек MASTER */
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 

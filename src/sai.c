@@ -5923,6 +5923,18 @@ static const codechw_t audiocodec_ssif0_duplex_master =
 	r7s721_ssif0_tx_enable_codec1,
 	"audiocodechw-ssif0-duplex-master"
 };
+
+static const codechw_t audiocodec_ssif0_duplex_slave =
+{
+	r7s721_ssif0_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	r7s721_ssif0_dmarx_initialize_codec1_rx,
+	r7s721_ssif0_dmatx_initialize_codec1_tx,
+	r7s721_ssif0_rx_enable_codec1,
+	r7s721_ssif0_tx_enable_codec1,
+	"audiocodechw-ssif0-duplex-slave"
+};
+
 #endif /* WITHI2S2HW */
 
 #if WITHSAI1HW
@@ -6193,6 +6205,17 @@ static const codechw_t fpgacodechw_ssif1_duplex_master =
 	"fpgacodechw-ssif1-duplex-master"
 };
 
+static const codechw_t fpgacodechw_ssif1_duplex_slave =
+{
+	r7s721_ssif1_duplex_initialize_fpga,
+	hardware_dummy_initialize,
+	r7s721_ssif1_dmarx_initialize_fpga_rx,
+	r7s721_ssif1_dmatx_initialize_fpga_tx,
+	r7s721_ssif1_duplex_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-ssif1-duplex-slave"
+};
+
 #endif /* WITHSAI1HW */
 
 #if WITHSAI2HW
@@ -6358,6 +6381,17 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 	"spectrumhw-ssif2-rx-master"
 };
 
+static const codechw_t fpgaspectrumhw_ssif2_rx_slave =
+{
+	r7s721_ssif2_rx_initialize_WFM,
+	hardware_dummy_initialize,
+	r7s721_ssif2_dmarx_initialize_WFM,
+	hardware_dummy_initialize,
+	r7s721_ssif2_rx_enable_WFM,
+	hardware_dummy_enable,
+	"spectrumhw-ssif2-rx-slave"
+};
+
 #endif /* WITHSAI2HW */
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -6508,12 +6542,21 @@ static const codechw_t * const channels [] =
 	#if WITHCODEC1_SSIF0_DUPLEX_MASTER
 		& audiocodec_ssif0_duplex_master,				// Интерфейс к НЧ кодеку
 	#endif /* WITHCODEC1_SSIF0_DUPLEX_MASTER */
+	#if WITHCODEC1_SSIF0_DUPLEX_SLAVE
+		& audiocodec_ssif0_duplex_slave,				// Интерфейс к НЧ кодеку
+	#endif /* WITHCODEC1_SSIF0_DUPLEX_SLAVE */
 	#if WITHFPGAIF_SSIF1_DUPLEX_MASTER
 		& fpgacodechw_ssif1_duplex_master,			// Интерфейс к IF кодеку/FPGA
 	#endif /* WITHFPGAIF_SSIF1_DUPLEX_MASTER */
+	#if WITHFPGAIF_SSIF1_DUPLEX_SLAVE
+		& fpgacodechw_ssif1_duplex_slave,			// Интерфейс к IF кодеку/FPGA
+	#endif /* WITHFPGAIF_SSIF1_DUPLEX_SLAVE */
 	#if WITHFPGARTS_SSIF2_RX_MASTER
 		& fpgaspectrumhw_ssif2_rx_master,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	#endif /* WITHFPGARTS_SSIF2_RX_MASTER */
+	#if WITHFPGARTS_SSIF2_RX_SLAVE
+		& fpgaspectrumhw_ssif2_rx_slave,			// Интерфейс к FPGA - широкополосный канал (WFM)
+	#endif /* WITHFPGARTS_SSIF2_RX_SLAVE */
 
 #elif CPUSTYLE_STM32F4XX
 		& audiocodechw_i2s2_i2s2ext_duplex_master,		// Интерфейс к НЧ кодеку
