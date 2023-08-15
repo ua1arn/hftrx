@@ -380,7 +380,7 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	//PRINTF(PSTR("1 USBD_CDC_EP0_RxReady: interfacev=%u: bRequest=%u, wLength=%u\n"), interfacev, req->bRequest, req->wLength);
-	if (usbd_cdc_iscontrol_ifc(interfacev))
+	if (usbd_cdc_iscontrol_ifc(interfacev) || usbd_cdc_isisdata_ifc(interfacev))
 	{
 		switch (req->bRequest)
 		{
