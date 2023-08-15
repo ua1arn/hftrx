@@ -336,13 +336,20 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_
 		//PRINTF("Cmd=%d,st=%02X (Addr=%08lX) ", Cmd, st, (unsigned long) Addr);
 	}
 #endif /* BOOTLOADER_APPSIZE */
-#endif /* WIHSPIDFHW || WIHSPIDFSW */
+	else
+	{
+		st = 0;	// зона вне FLASH ROM всегда готова. Почему-то приходит запрос с 0-м адресом...
+		st = dataflash_read_status();
+		//PRINTF("Cmd=%d,st0=%02X (Addr=%08lX) ", Cmd, st, (unsigned long) Addr);
+	}
+#else /* WIHSPIDFHW || WIHSPIDFSW */
 	else
 	{
 		st = 0;	// зона вне FLASH ROM всегда готова. Почему-то приходит запрос с 0-м адресом...
 		//st = dataflash_read_status();
 		//PRINTF("Cmd=%d,st0=%02X (Addr=%08lX) ", Cmd, st, (unsigned long) Addr);
 	}
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 
 	const unsigned FLASH_PROGRAM_TIME = (st & 0x01) ? 5 : 0;
 	const unsigned FLASH_ERASE_TIME = (st & 0x01) ? 5 : 0;

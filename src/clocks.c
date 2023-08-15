@@ -8347,14 +8347,14 @@ sysinit_pll_initialize(int forced)
 	//SPIBSC0.SPBCR = 0x200;
 	//SPIBSC0.DRCR = 0x0100;
 
-	/* Установить скорость обмена с SERIAL FLASH повыше */
-	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
-	{
-		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
-			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
-			0;
-	}
+//	/* Установить скорость обмена с SERIAL FLASH повыше */
+//	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
+//	{
+//		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+//			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+//			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+//			0;
+//	}
 
 #if WITHISBOOTLOADER
 	{
@@ -8362,7 +8362,7 @@ sysinit_pll_initialize(int forced)
 		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
 		// Нельзя отключить - botloader не может загрузить программу на выполнение по DFU.
 		// Странно, почему? Судя по описанию, области перекрываются...
-		CPG.SYSCR3 = (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
+		CPG.SYSCR3 |= (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
 		(void) CPG.SYSCR3;
 	}
 #endif /* WITHISBOOTLOADER */

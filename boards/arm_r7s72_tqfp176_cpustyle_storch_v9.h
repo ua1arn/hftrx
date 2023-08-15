@@ -12,29 +12,35 @@
 #ifndef ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V9_H_INCLUDED
 #define ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V9_H_INCLUDED 1
 
-#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. */
-
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-
-//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
-#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+#define WITHDEBUG_USART3	1
+#define WITHMODEM_USART3	1
+#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 #if WITHDEBUG
 	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
 	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
 #endif /* WITHDEBUG */
 
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER0
+	// Этот загрузчик только копирует образ загрузчика 2 на его место из memory-mapped QSPI FLASH и запускает его.
+	#define BOARG_BOOTLOADER_IMAGE "../build/r7s721020/tc1_r7s721020_boot.h"
+
+#elif WITHISBOOTLOADER
+
+
+	#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+	#define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
+	#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+	//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+	//#define WITHSPISW 	1	/* Использование программного управления SPI. */
+
+	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
@@ -45,14 +51,10 @@
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта #3 SCIF3 */
 
-	//#define WITHCAT_USART2	1
+	//#define WITHCAT_USART3	1
 	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART3	1
-	#define WITHMODEM_USART3	1
-	#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -66,6 +68,24 @@
 	#define WITHUSBWCID	1
 
 #else /* WITHISBOOTLOADER */
+
+
+	#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
+	#define WITHSPI32BIT	1		/* возможно использование 32-ти битных слов при обмене по SPI */
+	#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+	//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+	//#define WITHSPISW 	1	/* Использование программного управления SPI. */
+
+	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
+	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -554,6 +574,8 @@
 
 // RSPI0 used
 #define HW_SPIUSED (& RSPI1)
+#define HW_SPIUSED_IX 1		// 0: RSPI0, 1: RSPI1
+
 // MOSI & SCK port
 #define SPI_TARGET_SCLK_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)
 #define SPI_TARGET_SCLK_PORT_C(v) do {	R7S721_TARGET_PORT_C(6, v); } while (0)

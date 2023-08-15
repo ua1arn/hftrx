@@ -3,8 +3,9 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20200000 + 256K + 256,	LENGTH = 1024M - 256K - 16k - 256
-  TTB (rwx)  : ORIGIN = 0x20200000 + 256K + 1024M - 16k, 	LENGTH = 16k
+  FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 256K
+  RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 256K - 16k
+  TTB (rwx)  : ORIGIN = 0x20200000 + 256K - 16k, LENGTH = 16k
 }
 
 /* Library configurations */
@@ -42,51 +43,45 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(32);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(4);
 		KEEP(*(.startup0))
 		KEEP(*(.init))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 		*(.text*)
+		*(.rodata*)
 		. = ALIGN(4);
-	} > RAM
+	} > FLASH
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > RAM
+	} > FLASH
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > RAM
+	} > FLASH
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
 	 * uncomment .copy.table section and,
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
-
 	.copy.table :
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
-	/*
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
+	/*
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end__ = .;
-	} > RAM
+	} > FLASH
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -102,13 +97,17 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > RAM
+	} > FLASH
 
 	__etext = .;
 
-	.data :
+	.data : AT (__etext)
 	{
 		__data_start__ = .;
+		. = ALIGN(32);
+		KEEP(*(.isr_vector))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
 
 		/* .ctors */
 		*crtbegin.o(.ctors)
@@ -124,12 +123,12 @@ SECTIONS
  		*(SORT(.dtors.*))
  		*(.dtors)
 
-		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
 
-		KEEP(*(vtable))
+		*(vtable)
 		*(.data*)
+	   . = ALIGN(4);	/* one line added by ua1arn */
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -144,6 +143,7 @@ SECTIONS
 		KEEP(*(.init_array))
 		PROVIDE_HIDDEN (__init_array_end = .);
 
+
 		. = ALIGN(4);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
@@ -152,7 +152,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(64);
+		. = ALIGN(32);
 		/* All data end */
 		__data_end__ = .;
 
@@ -160,11 +160,11 @@ SECTIONS
 
 	.bss (NOLOAD):
 	{
+		. = ALIGN(32);
 		__bss_start__ = .;
-		. = ALIGN(64);
 		*(.bss*)
 		*(COMMON)
-		. = ALIGN(64);
+		. = ALIGN(32);
 		__bss_end__ = .;
 	} > RAM
 
@@ -177,7 +177,7 @@ SECTIONS
 		. = ALIGN(64);
 	} > RAM
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;
@@ -189,7 +189,7 @@ SECTIONS
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (NOLOAD):
+	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
 	} > RAM

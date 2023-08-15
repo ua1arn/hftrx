@@ -282,9 +282,31 @@ void display2_keyboard_screen0(
 
 }
 
+#if WITHISBOOTLOADER0
+
+static const uint8_t boot2image [] =
+{
+	#include BOARG_BOOTLOADER_IMAGE
+};
+
+void bootloader0_mainloop(void)
+{
+	const uintptr_t target = 0x20240100;	// The on-chip large-capacity RAM Page 4 base + 256K
+	PRINTF("bootloader0_mainloop [%p]: target=%p\n", bootloader0_mainloop, (void *) target);
+
+	TP();
+	memcpy((void *) target, boot2image, sizeof boot2image);
+
+	bootloader_launch_app(target);
+	for (;;)
+		;
+}
+
+#endif
+
 void bootloader_mainloop(void)
 {
-	PRINTF("bootloader_mainloop:\n");
+	PRINTF("1 bootloader_mainloop [%p]:\n", bootloader_mainloop);
 	board_set_bglight(1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
 	board_update();
 
@@ -301,9 +323,9 @@ void bootloader_mainloop(void)
 				PRINTF("bootloader_mainloop: No application image\n");
 				break;
 			}
-	#if WITHUSBHW
+#if WITHUSBHW
 			board_usb_deactivate();
-	#endif /* WITHUSBHW */
+#endif /* WITHUSBHW */
 			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
 			bootloader_launch_app(ip);
 
@@ -311,8 +333,8 @@ void bootloader_mainloop(void)
 	}
 #endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
-	PRINTF("bootloader_mainloop: loop [%p]\n", bootloader_mainloop);
-	PRINTF("bootloader_mainloop: loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+	PRINTF("bootloader_mainloop: wait user/USB loop [%p]\n", bootloader_mainloop);
+	PRINTF("bootloader_mainloop: user user/USB loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 
 	/* Обеспечение работы USB DFU */
 	for (;;)

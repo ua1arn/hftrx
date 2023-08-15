@@ -28,6 +28,7 @@ OBJDIR = obj
 PROJECT = tc1_r7s721020
 
 # Define linker script file here
+LDSCRIPT_BOOT0 = ./r7s721020_boot0.ld
 LDSCRIPT_BOOT = ./r7s721020_boot.ld
 LDSCRIPT_APP = ./r7s721020_app.ld
 ARCHDIR = $(PRJROOT)/arch/renesasRZA1
@@ -226,9 +227,11 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
+LDCOMMONOPTS = -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
-LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_BOOT0 = $(MCFLAGS) $(OPT) $(LDCOMMONOPTS) -T$(LDSCRIPT_BOOT0) -Wl,-Map=$(PROJECT)_boot0.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) $(LDCOMMONOPTS) -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_APP = $(MCFLAGS) $(OPT) $(LDCOMMONOPTS) -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -244,12 +247,15 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean BOOT0 BOOT2
 
 all: APP2 $(PROJECT)_app.nec32 app.hex
 
-bootloader: BOOT2 boot.hex
-  
+bootloader: BOOT0 boot.hex
+
+lib: BOOT2
+	./bin2c $(PROJECT)_boot.bin $(PROJECT)_boot.h
+
 app_run: IMAGE
 	./dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
 	./dfu-util --alt 2 --detach
@@ -261,8 +267,10 @@ IMAGE: $(PROJECT)_app.nec32
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
-boot.hex: $(PROJECT)_boot.bin
-	./bin2ihex -l 0x00000000 -s $(PROJECT)_boot.bin >$@
+BOOT0: $(PROJECT)_boot0.elf $(PROJECT)_boot0.bin $(PROJECT)_boot.h
+
+boot.hex: $(PROJECT)_boot0.bin
+	./bin2ihex -l 0x00000000 -s $(PROJECT)_boot0.bin >$@
 	
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
@@ -283,6 +291,10 @@ $(OBJSCPP):
 $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
+
+%_boot0.elf: $(OBJS) $(OBJSA_BOOT)
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT0) $(LIBS) -o $@
+	$(SIZE) $@
 
 %_boot.elf: $(OBJS) $(OBJSA_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@

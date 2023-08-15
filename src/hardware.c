@@ -22,10 +22,6 @@
 //#include "task.h"
 #endif /* WITHRTOS */
 
-#if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
-	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
-#endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
-
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 extern uint8_t bd_space[];
@@ -3137,6 +3133,20 @@ sysinit_cache_core0_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
+static void FLASHMEMINITFUNC
+sysinit_hwprepare_initialize(void)
+{
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
+#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+	L2C_Disable();
+	* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+	* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+#endif /* (__L2C_PRESENT == 1) */
+	L1C_DisableCaches();
+	MMU_Disable();
+#endif /* (__CORTEX_A != 0) */
+}
+
 /* инициадихации кеш-памяти, спцифические для CORE0 */
 static void FLASHMEMINITFUNC
 sysinit_cache_L2_initialize(void)
@@ -3177,6 +3187,7 @@ FLASHMEMINITFUNC
 SystemInit(void)
 {
 #if ! LINUX_SUBSYSTEM
+	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
 #if ! WITHISBOOTLOADER_DDR
 	sysinit_vbar_initialize();		// interrupt vectors relocate

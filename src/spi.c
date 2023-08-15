@@ -1508,7 +1508,6 @@ void hardware_spi_master_initialize(void)
 	// MISO0	P6_3	ALT3
 	// SSL00	P6_1	ALT3
 
-	uint_fast8_t mid = 0x48;
 	if (HW_SPIUSED == & RSPI0)
 	{
 		/* ---- Supply clock to the RSPI(channel 0) ---- */
@@ -1516,7 +1515,6 @@ void hardware_spi_master_initialize(void)
 		(void) CPG.STBCR10;			/* Dummy read */
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SPTI0 (transmit data empty)
-		mid = 0x48;
 	}
 	else if (HW_SPIUSED == & RSPI1)
 	{
@@ -1525,7 +1523,6 @@ void hardware_spi_master_initialize(void)
 		(void) CPG.STBCR10;			/* Dummy read */
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SPTI1 (transmit data empty)
-		mid = 0x49;
 	}
 	else if (HW_SPIUSED == & RSPI2)
 	{
@@ -1534,7 +1531,6 @@ void hardware_spi_master_initialize(void)
 		(void) CPG.STBCR10;			/* Dummy read */
 		// Values from Table 9.4 On-Chip Peripheral Module Requests
 		// SPTI2 (transmit data empty)
-		mid = 0x4a;
 	}
 
 	HW_SPIUSED->SPCR =		/* Control Register (SPCR) */
@@ -1565,6 +1561,7 @@ void hardware_spi_master_initialize(void)
 
 #if WITHSPIHWDMA
 	{
+		uint_fast8_t mid = 0x48 + HW_SPIUSED_IX;
 		enum { id = 15 };	// 15: DMAC15
 		// DMAC15
 		/* Set Destination Start Address */
@@ -3774,12 +3771,6 @@ void spi_initialize(void)
 
 #if WITHSPIHW
 	// аппаратный SPI
-
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
-#elif defined SPISPEEDUFAST
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
-#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR */
 
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 
@@ -5999,7 +5990,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
-		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 
 

@@ -97,6 +97,8 @@ main(void)
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();
+#elif WITHISBOOTLOADER0
+	bootloader0_mainloop();
 #elif WITHISBOOTLOADER
 	bootloader_mainloop();
 #elif 0

@@ -26,7 +26,9 @@
 //#define DEFAULTDIALFREQ	18112000
 //#define DEFAULTDIALFREQ	225000
 //#define DEFAULTDIALFREQ	14021000
-//#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
+//#define WITHISBOOTLOADER	1	/* Cобираем bootloader:  make lib. Далее открываем следующий define и выполняем make bootloader */
+
+//#define WITHISBOOTLOADER0	(WITHISBOOTLOADER && CPUSTYLE_R7S721)	/* Renesas specific option - FSBL. Открыть эту строку и запустить make bootloader */
 
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом

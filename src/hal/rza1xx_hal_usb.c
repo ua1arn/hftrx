@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721 && defined (WITHUSBHW_DEVICE)
 
 //#define WITHNEWUSBHAL 1
 
@@ -4781,6 +4781,9 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
   */
 HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
 {
+	USBx->INTENB0 = 0;
+	USBx->INTENB1 = 0;
+
 	return HAL_OK;
 }
 
@@ -5868,4 +5871,4 @@ usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 	*/
 }
 
-#endif /* CPUSTYLE_R7S721 */
+#endif /* CPUSTYLE_R7S721 && defined (WITHUSBHW_DEVICE) */

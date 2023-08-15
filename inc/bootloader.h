@@ -12,6 +12,7 @@
 
 void bootloader_fatfs_mainloop(void);
 void bootloader_mainloop(void);
+void bootloader0_mainloop(void);
 
 
 #if CPUSTYLE_STM32MP1
