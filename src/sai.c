@@ -5848,11 +5848,10 @@ static void r7s721_ssif0_dmatx_initialize_codec1_tx(void)
 // Правда, и в SLAVE нельзя сказать что работает - около пяти секунд проходит до начала нормальной раболты.
 
 // AUDIO CODEC I2S INTERFACE
-static void r7s721_ssif0_duplex_initialize_codec1(void)
+static void r7s721_ssif0_duplex_initialize_codec1(unsigned ix, struct st_ssif * ssif, uint_fast8_t master, unsigned framebits)
 {
-	const uint_fast8_t master = R7S721_SSIF0_MASTER;
     /* ---- Supply clock to the SSIF(channel 0) ---- */
-	CPG.STBCR11 &= ~ (UINT32_C(1) << 5);	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
+	CPG.STBCR11 &= ~ (UINT32_C(1) << (5 - ix));	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
 
 	// I2S compatible
@@ -5860,7 +5859,7 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 	// System word length = data word length
 
 	// Control Register (SSICR)
-	SSIF0.SSICR = 
+	ssif->SSICR =
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		0 * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		R7S721_SSIF0_DWL_val |		// DWL
@@ -5877,7 +5876,7 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 		0;
 
 	// FIFO Control Register (SSIFCR)
-	SSIF0.SSIFCR = 
+	ssif->SSIFCR =
 		2 * (UINT32_C(1) << 6) |	// TTRG Transmit Data Trigger Number
 		2 * (UINT32_C(1) << 4) |	// RTRG Receive Data Trigger Number
 		1 * (UINT32_C(1) << 3) |		// TIE	Transmit Interrupt Enable
@@ -5885,7 +5884,17 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 		//1 * (UINT32_C(1) << 1) |		// TFRST Transmit FIFO Data Register Reset
 		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
+}
 
+static void r7s721_ssif0_duplex_initialize_codec1_master(void)
+{
+	r7s721_ssif0_duplex_initialize_codec1(0, & SSIF0, 1, CODEC1_FRAMEBITS);
+	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+}
+
+static void r7s721_ssif0_duplex_initialize_codec1_slave(void)
+{
+	r7s721_ssif0_duplex_initialize_codec1(0, & SSIF0, 0, CODEC1_FRAMEBITS);
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
@@ -5915,7 +5924,7 @@ static void r7s721_ssif0_tx_enable_codec1(uint_fast8_t state)
 
 static const codechw_t audiocodec_ssif0_duplex_master =
 {
-	r7s721_ssif0_duplex_initialize_codec1,
+	r7s721_ssif0_duplex_initialize_codec1_master,
 	hardware_dummy_initialize,
 	r7s721_ssif0_dmarx_initialize_codec1_rx,
 	r7s721_ssif0_dmatx_initialize_codec1_tx,
@@ -5926,7 +5935,7 @@ static const codechw_t audiocodec_ssif0_duplex_master =
 
 static const codechw_t audiocodec_ssif0_duplex_slave =
 {
-	r7s721_ssif0_duplex_initialize_codec1,
+	r7s721_ssif0_duplex_initialize_codec1_slave,
 	hardware_dummy_initialize,
 	r7s721_ssif0_dmarx_initialize_codec1_rx,
 	r7s721_ssif0_dmatx_initialize_codec1_tx,
@@ -6135,11 +6144,10 @@ static void r7s721_ssif1_dmatx_initialize_fpga_tx(void)
 }
 
 // FGA I2S INTERFACE #1
-static void r7s721_ssif1_duplex_initialize_fpga(void)
+static void r7s721_ssif1_duplex_initialize_fpga(unsigned ix, struct st_ssif * ssif, uint_fast8_t master, unsigned framebits)
 {
-	const uint_fast8_t master = R7S721_SSIF1_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
-	CPG.STBCR11 &= ~ (UINT32_C(1) << 4);	// Module Stop 114	- 0: Channel 1 of the serial sound interface runs.
+	CPG.STBCR11 &= ~ (UINT32_C(1) << (5 - ix));	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
 
 	// I2S compatible
@@ -6147,7 +6155,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 	// System word length = data word length
 
 	// Control Register (SSICR)
-	SSIF1.SSICR = 
+	ssif->SSICR =
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
@@ -6168,7 +6176,7 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 		0;
 
 	// FIFO Control Register (SSIFCR)
-	SSIF1.SSIFCR = 
+	ssif->SSIFCR =
 		2 * (UINT32_C(1) << 6) |	// TTRG Transmit Data Trigger Number
 		2 * (UINT32_C(1) << 4) |	// RTRG Receive Data Trigger Number
 		1 * (UINT32_C(1) << 3) |		// TIE	Transmit Interrupt Enable
@@ -6176,11 +6184,19 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 		//1 * (UINT32_C(1) << 1) |		// TFRST Transmit FIFO Data Register Reset
 		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
+}
 
-
+static void r7s721_ssif1_duplex_initialize_fpga_master(void)
+{
+	r7s721_ssif1_duplex_initialize_fpga(1, & SSIF1, 1, WITHFPGAIF_FRAMEBITS);
 	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
+static void r7s721_ssif1_duplex_initialize_fpga_slave(void)
+{
+	r7s721_ssif1_duplex_initialize_fpga(1, & SSIF1, 0, WITHFPGAIF_FRAMEBITS);
+	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+}
 
 static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 {
@@ -6196,7 +6212,7 @@ static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 
 static const codechw_t fpgacodechw_ssif1_duplex_master =
 {
-	r7s721_ssif1_duplex_initialize_fpga,
+	r7s721_ssif1_duplex_initialize_fpga_master,
 	hardware_dummy_initialize,
 	r7s721_ssif1_dmarx_initialize_fpga_rx,
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
@@ -6207,7 +6223,7 @@ static const codechw_t fpgacodechw_ssif1_duplex_master =
 
 static const codechw_t fpgacodechw_ssif1_duplex_slave =
 {
-	r7s721_ssif1_duplex_initialize_fpga,
+	r7s721_ssif1_duplex_initialize_fpga_slave,
 	hardware_dummy_initialize,
 	r7s721_ssif1_dmarx_initialize_fpga_rx,
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
@@ -6311,11 +6327,10 @@ static void r7s721_ssif2_dmarx_initialize_WFM(void)
 
 // FGA I2S INTERFACE #2
 // FPGA/spectrum channel
-static void r7s721_ssif2_rx_initialize_WFM(void)
+static void r7s721_ssif2_rx_initialize_WFM(unsigned ix, struct st_ssif * ssif, uint_fast8_t master, unsigned framebits)
 {
-	const uint_fast8_t master = R7S721_SSIF2_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
-	CPG.STBCR11 &= ~ (UINT32_C(1) << 3);	// Module Stop 113	- 0: Channel 2 of the serial sound interface runs.
+	CPG.STBCR11 &= ~ (UINT32_C(1) << (5 - ix));	// Module Stop 115 0: Channel 0 of the serial sound interface runs.
 	(void) CPG.STBCR11;			/* Dummy read */
 
 	// I2S compatible
@@ -6323,7 +6338,7 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 	// System word length = data word length
 
 	// Control Register (SSICR)
-	SSIF2.SSICR = 
+	ssif->SSICR =
 		R7S721_USE_AUDIO_CLK * (UINT32_C(1) << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (UINT32_C(1) << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (UINT32_C(1) << 19) |		// DWL 6: 32 bit
@@ -6344,7 +6359,7 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 		0;
 
 	// FIFO Control Register (SSIFCR)
-	SSIF2.SSIFCR = 
+	ssif->SSIFCR =
 		//2 * (UINT32_C(1) << 6) |	// TTRG Transmit Data Trigger Number
 		2 * (UINT32_C(1) << 4) |	// RTRG Receive Data Trigger Number
 		//1 * (UINT32_C(1) << 3) |		// TIE	Transmit Interrupt Enable
@@ -6352,8 +6367,17 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 		//1 * (UINT32_C(1) << 1) |		// TFRST Transmit FIFO Data Register Reset
 		//1 * (UINT32_C(1) << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
+}
 
+static void r7s721_ssif2_rx_initialize_WFM_master(void)
+{
+	r7s721_ssif2_rx_initialize_WFM(2, & SSIF2, 1, WITHFPGARTS_FRAMEBITS);
+	HARDWARE_SSIF2_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
+}
 
+static void r7s721_ssif2_rx_initialize_WFM_slave(void)
+{
+	r7s721_ssif2_rx_initialize_WFM(2, & SSIF2, 0, WITHFPGARTS_FRAMEBITS);
 	HARDWARE_SSIF2_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
@@ -6372,7 +6396,7 @@ static void r7s721_ssif2_rx_enable_WFM(uint_fast8_t state)
 
 static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 {
-	r7s721_ssif2_rx_initialize_WFM,
+	r7s721_ssif2_rx_initialize_WFM_master,
 	hardware_dummy_initialize,
 	r7s721_ssif2_dmarx_initialize_WFM,
 	hardware_dummy_initialize,
@@ -6383,7 +6407,7 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 
 static const codechw_t fpgaspectrumhw_ssif2_rx_slave =
 {
-	r7s721_ssif2_rx_initialize_WFM,
+	r7s721_ssif2_rx_initialize_WFM_slave,
 	hardware_dummy_initialize,
 	r7s721_ssif2_dmarx_initialize_WFM,
 	hardware_dummy_initialize,
