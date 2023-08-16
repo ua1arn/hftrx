@@ -796,6 +796,7 @@ static void usb_set_eprx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t s
 	if (is_dpb) reg_val |= 0x1u << 4;
 	reg_val |= sz & 0xf;
 	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
+	//PRINTF("usb_set_eprx_fifo_size: sz=%u (size=%u)\n", (unsigned) sz, (unsigned) size);
 }
 
 static void usb_set_eptx_fifo_addr(pusb_struct pusb, uint32_t addr)
