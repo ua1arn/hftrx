@@ -2738,7 +2738,7 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
-	const uint32_t granulation = maxpktsz > 256 ? 256 : 8;
+	const uint32_t granulation = maxpktsz > 64 ? 256 : 8;
 	const uint32_t magic = 0;
 	const uint32_t alignedepfifosize = ((maxpktsz + magic + (granulation - 1)) & (~ (granulation - 1)));  //Align to USB_FIFO_ADDR_BLOCK
 	//const uint32_t is_dpb = 1;	// double buffer
