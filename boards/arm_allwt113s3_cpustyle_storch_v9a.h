@@ -85,13 +85,14 @@
 
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-
 	#define WITHUSBWCID	1
 
 	//#define WITHLWIP 1
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	//#define WITHUSBDMTP	1	/* MTP USB Device */
+	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #else /* WITHISBOOTLOADER */
 
