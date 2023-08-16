@@ -2739,35 +2739,32 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
-	const uint32_t granulation = maxpktsz > 64 ? 256 : 8;
-	const uint32_t magic = 0;
-	const uint32_t alignedepfifosize = ((maxpktsz + magic + (granulation - 1)) & (~ (granulation - 1)));  //Align to USB_FIFO_ADDR_BLOCK
-	//const uint32_t is_dpb = 1;	// double buffer
-	const uint32_t maxpayload = maxpktsz;
+	const uint32_t GRANULATION = 8;	/* адреса и размеры при задании параметров FIFO кратны 8 байт */
+	uint32_t alignedepfifosize = (!! is_dpb + 1) * ((maxpktsz + (GRANULATION - 1)) & ~ (GRANULATION - 1));
 	const uint32_t pktcnt = 1;
-//	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, is_dpb=%u, maxpktsz=%u\n", (unsigned) ep_no, (unsigned) ep_dir, (unsigned) pktcnt, (unsigned) is_dpb, (unsigned) maxpktsz);
-//	PRINTF("alignedepfifosize=%u, maxpktsz=%u\n", (unsigned) alignedepfifosize, (unsigned) maxpktsz);
+	//PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, is_dpb=%u, maxpktsz=%u\n", (unsigned) ep_no, (unsigned) ep_dir, (unsigned) pktcnt, (unsigned) is_dpb, (unsigned) maxpktsz);
+	//PRINTF("alignedepfifosize=%u, maxpktsz=%u\n", (unsigned) alignedepfifosize, (unsigned) maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
 		// IN
-		usb_set_eptx_maxpkt(pusb, maxpayload, pktcnt);
+		usb_set_eptx_maxpkt(pusb, maxpktsz, pktcnt);
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
-		usb_set_eptx_fifo_size(pusb, is_dpb, alignedepfifosize);
+		usb_set_eptx_fifo_size(pusb, is_dpb, alignedepfifosize);	// удвоенное в случае double buffer
 		usb_eptx_flush_fifo(pusb);
 		usb_eptx_flush_fifo(pusb);
 	}
 	else
 	{
 		// OUT
-		usb_set_eprx_maxpkt(pusb, maxpayload, pktcnt);
+		usb_set_eprx_maxpkt(pusb, maxpktsz, pktcnt);
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
-		usb_set_eprx_fifo_size(pusb, is_dpb, alignedepfifosize);
+		usb_set_eprx_fifo_size(pusb, is_dpb, alignedepfifosize);	// удвоенное в случае double buffer
 		usb_eprx_flush_fifo(pusb);
 		usb_eprx_flush_fifo(pusb);
 	}
-	/* двойной размер после округления - возможно double buffer */
-	fifo_addr += alignedepfifosize * (is_dpb ? 2 : 1);
+
+	fifo_addr += alignedepfifosize;	/* двойной размер после округления - double buffer уже учтено */
 	ASSERT(usb_get_active_ep(pusb) == ep_no);
 	return fifo_addr;
 }
