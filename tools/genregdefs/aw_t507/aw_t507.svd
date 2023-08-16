@@ -9179,38 +9179,20 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_TXFIFOSZ</name>
-    <displayName>USB_TXFIFOSZ</displayName>
-    <description>USB_TXFIFOSZ</description>
+    <name>USB_TXFIFO</name>
+    <displayName>USB_TXFIFO</displayName>
+    <description>USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)</description>
     <addressOffset>0x090</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_TXFIFOADD</name>
-    <displayName>USB_TXFIFOADD</displayName>
-    <description>USB_TXFIFOADD</description>
-    <addressOffset>0x092</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_RXFIFOSZ</name>
-    <displayName>USB_RXFIFOSZ</displayName>
-    <description>USB_RXFIFOSZ</description>
+    <name>USB_RXFIFO</name>
+    <displayName>USB_RXFIFO</displayName>
+    <description>USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)</description>
     <addressOffset>0x094</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_RXFIFOADD</name>
-    <displayName>USB_RXFIFOADD</displayName>
-    <description>USB_RXFIFOADD</description>
-    <addressOffset>0x096</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>

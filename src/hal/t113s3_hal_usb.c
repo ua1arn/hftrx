@@ -61,9 +61,6 @@
 #define USB_DEV_SEC_BITS   		9//
 #define USB_DEV_SEC_SIZE   		(0x1u << USB_DEV_SEC_BITS)//
 
-#define USB_EP_FIFO_SIZE		512
-#define USB_FIFO_ADDR_BLOCK		64//(USB_EP_FIFO_SIZE<<1)
-
 #define MAX_DDMA_SIZE			(16*1024*1024)  //16MB
 
 //#define USB_DEV0_TOTAL_CAP  	1//MB
@@ -777,32 +774,40 @@ static uint32_t aw_log2(uint32_t x)
 static void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size)
 {
 	uint8_t reg_val;
+	unsigned sz = aw_log2(size >> 3);
 
+	ASSERT((size & 0x07) == 0);
+	ASSERT(sz <= 9);
 	reg_val = 0;
 	if (is_dpb) reg_val |= 0x1u << 4;
 	reg_val |= aw_log2(size >> 3) & 0xf;
-	WITHUSBHW_DEVICE->USB_TXFIFOSZ = reg_val;
+	WITHUSBHW_DEVICE->USB_TXFIFO = (WITHUSBHW_DEVICE->USB_TXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
 }
 
 //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
 static void usb_set_eprx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t size)
 {
 	uint8_t reg_val;
+	unsigned sz = aw_log2(size >> 3);
 
+	ASSERT((size & 0x07) == 0);
+	ASSERT(sz <= 9);
 	reg_val = 0;
 	if (is_dpb) reg_val |= 0x1u << 4;
-	reg_val |= aw_log2(size >> 3) & 0xf;
-	WITHUSBHW_DEVICE->USB_RXFIFOSZ = reg_val;
+	reg_val |= sz & 0xf;
+	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
 }
 
 static void usb_set_eptx_fifo_addr(pusb_struct pusb, uint32_t addr)
 {
-	WITHUSBHW_DEVICE->USB_TXFIFOADD = (addr >> 3) & 0x1FFF;
+	ASSERT((addr & 0x07) == 0);
+	WITHUSBHW_DEVICE->USB_TXFIFO = (WITHUSBHW_DEVICE->USB_TXFIFO & ~ (UINT32_C(0x1FFF) << 16)) | (((addr >> 3) & 0x1FFF) << 16);
 }
 
 static void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr)
 {
-	WITHUSBHW_DEVICE->USB_RXFIFOADD = (addr >> 3) & 0x1FFF;
+	ASSERT((addr & 0x07) == 0);
+	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1FFF) << 16)) | (((addr >> 3) & 0x1FFF) << 16);
 }
 
 static void usb_fifo_accessed_by_cpu(pusb_struct pusb)
@@ -1322,7 +1327,8 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
 	uint32_t ep_save = usb_get_active_ep(pusb);
-	static uint32_t epout_timeout = 0;
+	static uint32_t epout_timeoutv[USB_MAX_EP_NO];
+
 #if WITHUSBDEV_DMAENABLE
 	__dma_setting_t  p;
 	uint32_t dram_addr;
@@ -1397,20 +1403,20 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 					pusb->eprx_xfer_addrv[ep_no-1] += xfer_count;
 					pusb->eprx_xfer_tranferredv[ep_no-1]  += xfer_count;
 					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
-					epout_timeout = 0;
+					epout_timeoutv[ep_no-1] = 0;
 				}
 				else
 				{
-					epout_timeout ++;
+					epout_timeoutv[ep_no-1] ++;
 
-					if (epout_timeout < 0x1000)
+					if (epout_timeoutv[ep_no-1] < 0x1000)
 					{
 						ret = USB_RETVAL_NOTCOMP;
 					}
 					else
 					{
 						ret = USB_RETVAL_COMPERR;
-						PRINTF("Error: RxPktRdy Timeout!!\n");
+						PRINTF("1 Error: RxPktRdy Timeout!!\n");
 					}
 				}
 #endif
@@ -1430,20 +1436,20 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 					pusb->eprx_xfer_tranferredv[ep_no-1]  += byte_count;
 					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 					ret = USB_RETVAL_COMPOK;
-					epout_timeout = 0;
+					epout_timeoutv[ep_no-1] = 0;
 				}
 				else
 				{
-					epout_timeout ++;
+					epout_timeoutv[ep_no-1] ++;
 
-					if (epout_timeout < 0x1000)
+					if (epout_timeoutv[ep_no-1] < 0x1000)
 					{
 						ret = USB_RETVAL_NOTCOMP;
 					}
 					else
 					{
 						ret = USB_RETVAL_COMPERR;
-						PRINTF("Error: RxPktRdy Timeout!!\n");
+						PRINTF("2 Error: RxPktRdy Timeout!!\n");
 					}
 				}
 			}
@@ -1538,20 +1544,20 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				pusb->eprx_xfer_addrv[ep_no-1] += xfer_count;
 				pusb->eprx_xfer_tranferredv[ep_no-1]  += xfer_count;
 				pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
-				epout_timeout = 0;
+				epout_timeoutv[ep_no-1] = 0;
 			}
 			else
 			{
-				epout_timeout ++;
+				epout_timeoutv[ep_no-1] ++;
 
-				if (epout_timeout < 0x1000)
+				if (epout_timeoutv[ep_no-1] < 0x1000)
 				{
 					ret = USB_RETVAL_NOTCOMP;
 				}
 				else
 				{
 					ret = USB_RETVAL_COMPERR;
-					PRINTF("Error: RxPktRdy Timeout!!\n");
+					PRINTF("3 Error: RxPktRdy Timeout!!\n");
 				}
 			}
 		}
@@ -2610,6 +2616,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
+  		///PRINTF("rx_count[%u,%u]=%08X\n", (unsigned) usb_get_active_ep(pusb), (unsigned) bo_ep_out, (unsigned) rx_count);
   		if (rx_count > UACOUT_AUDIO48_DATASIZE)
   		{
   			usb_eprx_flush_fifo(pusb);
@@ -2617,7 +2624,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   		}
   		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u, usbd_getuacoutmaxpacket()=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count, (unsigned) usbd_getuacoutmaxpacket());
   		//PRINTF("rx_count=%u\n", (unsigned) rx_count);
-  		//ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
+  		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
   		do
   		{
   			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, ulmin(rx_count, UACOUT_AUDIO48_DATASIZE), USB_PRTCL_ISO);
@@ -2731,13 +2738,14 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
-	const uint32_t alignedepfifosize = ((maxpktsz + 64 + (USB_FIFO_ADDR_BLOCK - 1)) & (~ (USB_FIFO_ADDR_BLOCK - 1)));  //Align to USB_FIFO_ADDR_BLOCK
+	const uint32_t granulation = maxpktsz > 256 ? 256 : 8;
+	const uint32_t magic = 0;
+	const uint32_t alignedepfifosize = ((maxpktsz + magic + (granulation - 1)) & (~ (granulation - 1)));  //Align to USB_FIFO_ADDR_BLOCK
 	//const uint32_t is_dpb = 1;	// double buffer
 	const uint32_t maxpayload = maxpktsz;
-	const uint32_t pktcnt = 1;//USB_EP_FIFO_SIZE + (maxpktsz - 1) / maxpktsz;
-
-	//PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, maxpktsz=%u\n", ep_no, ep_dir, pktcnt, maxpktsz);
-	//ASSERT(USB_EP_FIFO_SIZE >= maxpktsz);
+	const uint32_t pktcnt = 1;
+//	PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, is_dpb=%u, maxpktsz=%u\n", (unsigned) ep_no, (unsigned) ep_dir, (unsigned) pktcnt, (unsigned) is_dpb, (unsigned) maxpktsz);
+//	PRINTF("alignedepfifosize=%u, maxpktsz=%u\n", (unsigned) alignedepfifosize, (unsigned) maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
@@ -2759,6 +2767,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	}
 	/* двойной размер после округления - возможно double buffer */
 	fifo_addr += alignedepfifosize * (is_dpb ? 2 : 1);
+	ASSERT(usb_get_active_ep(pusb) == ep_no);
 	return fifo_addr;
 }
 
