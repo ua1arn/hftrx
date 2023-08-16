@@ -364,7 +364,7 @@ typedef ALIGNX_BEGIN struct uacin48_tag
 
 int_fast32_t buffers_dmabufferuacin48cachesize(void)
 {
-	return (DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+	return (UACIN_AUDIO48_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 }
 
 #if WITHRTS192
@@ -2550,7 +2550,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		p [0] = (uint8_t) (value >> 0);
 		break;
 	case 4:
-		p [2] = (uint8_t) (value >> 24);
+		p [3] = (uint8_t) (value >> 24);
 		p [2] = (uint8_t) (value >> 16);
 		p [1] = (uint8_t) (value >> 8);
 		p [0] = (uint8_t) (value >> 0);
