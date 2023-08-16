@@ -2740,17 +2740,19 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
 	const uint32_t GRANULATION = 8;	/* адреса и размеры при задании параметров FIFO кратны 8 байт */
-	uint32_t alignedepfifosize = (!! is_dpb + 1) * ((maxpktsz + (GRANULATION - 1)) & ~ (GRANULATION - 1));
+	const uint32_t magic = 0;
+	const uint32_t fifosize = magic + ((maxpktsz + (GRANULATION - 1)) & ~ (GRANULATION - 1));
+	const uint32_t fifosizex2 = (!! is_dpb + 1) * fifosize;
 	const uint32_t pktcnt = 1;
 	//PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, is_dpb=%u, maxpktsz=%u\n", (unsigned) ep_no, (unsigned) ep_dir, (unsigned) pktcnt, (unsigned) is_dpb, (unsigned) maxpktsz);
-	//PRINTF("alignedepfifosize=%u, maxpktsz=%u\n", (unsigned) alignedepfifosize, (unsigned) maxpktsz);
+	//PRINTF("fifosize=%u, maxpktsz=%u\n", (unsigned) fifosize, (unsigned) maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
 		// IN
 		usb_set_eptx_maxpkt(pusb, maxpktsz, pktcnt);
 		usb_set_eptx_fifo_addr(pusb, fifo_addr);
-		usb_set_eptx_fifo_size(pusb, is_dpb, alignedepfifosize);	// удвоенное в случае double buffer
+		usb_set_eptx_fifo_size(pusb, is_dpb, fifosizex2);	// удвоенное в случае double buffer
 		usb_eptx_flush_fifo(pusb);
 		usb_eptx_flush_fifo(pusb);
 	}
@@ -2759,12 +2761,13 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 		// OUT
 		usb_set_eprx_maxpkt(pusb, maxpktsz, pktcnt);
 		usb_set_eprx_fifo_addr(pusb, fifo_addr);
-		usb_set_eprx_fifo_size(pusb, is_dpb, alignedepfifosize);	// удвоенное в случае double buffer
+		usb_set_eprx_fifo_size(pusb, is_dpb, fifosizex2);	// удвоенное в случае double buffer
 		usb_eprx_flush_fifo(pusb);
 		usb_eprx_flush_fifo(pusb);
 	}
 
-	fifo_addr += alignedepfifosize;	/* двойной размер после округления - double buffer уже учтено */
+	fifo_addr += fifosizex2;	/* двойной размер после округления - double buffer уже учтено */
+	fifo_addr += fifosizex2;	/* двойной размер после округления - double buffer уже учтено */
 	ASSERT(usb_get_active_ep(pusb) == ep_no);
 	return fifo_addr;
 }
@@ -2787,7 +2790,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_OUT & 0x0F), EP_DIR_OUT, MTP_DATA_MAX_PACKET_SIZE, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
 		  /* Open INTR EP IN */
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 0, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, !0, fifo_addr);
 	}
 #endif /* WITHUSBDMTP */
 
@@ -2813,7 +2816,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			const uint_fast8_t pipein = USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F;
 			const uint_fast8_t pipeout = USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F;
 
-			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, 0, fifo_addr);
+			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, !0, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
 		}
@@ -2827,15 +2830,15 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
 	{
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN, usbd_getuacinmaxpacket(), 0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN, usbd_getuacinmaxpacket(), !0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN);
 	#if WITHUSBUACIN2
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN, usbd_getuacinrtsmaxpacket(), !0, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN);
 	#endif
 	}
 #endif /* WITHUSBUACIN */
-	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", fifo_addr);
+	PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
 	//ASSERT(fifo_addr < 8192);	/* 8 kB */
 }
