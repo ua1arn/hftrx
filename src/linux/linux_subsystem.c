@@ -464,7 +464,7 @@ void linux_iq_thread(void)
 		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
 			r[i] = * iq_fifo_rx;
 #endif /* IQMODEM_BLOCKMEMORY */
-		processing_pipe32rx(addr);
+		processing_pipe32rx(addr32rx);
 		processing_dmabuffer32rx(addr32rx);
 		processing_dmabuffer32rts(addr32rx);
 
@@ -485,7 +485,9 @@ void linux_iq_thread(void)
 
 	if (* iq_count_tx < DMABUFFSIZE32TX)
 	{
+#if WITHFT8
 		if (! ft8_get_state())
+#endif /* WITHFT8 */
 		{
 			uintptr_t addr_mic = allocate_dmabuffer16rx();
 			uint32_t * m = (uint32_t *) addr_mic;
