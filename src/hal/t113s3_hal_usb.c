@@ -2644,7 +2644,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   		{
 			// использование данных
 			//printhex(0, uacoutbuff, rx_count);
-			uacout_buffer_save(uacoutbuff, rx_count, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBITS);
+			uacout_buffer_save(uacoutbuff, rx_count, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
  		}
 	} while (0);
 

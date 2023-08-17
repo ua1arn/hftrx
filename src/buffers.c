@@ -3066,10 +3066,9 @@ void uacout_buffer_stop(void)
 // Работает на ARM_SYSTEM_PRIORITY
 /* вызыватся из realtime функции обработчика прерывания */
 // Работает на ARM_REALTIME_PRIORITY
-void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits)
+void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t usbsz)
 {
 	const size_t dmabuffer16size = DMABUFFSIZE16RX * sizeof (aubufv_t);	// размер в байтах
-	const size_t usbsz = (ibits + 7) / 8;
 
 	for (;;)
 	{
