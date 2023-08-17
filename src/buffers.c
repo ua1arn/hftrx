@@ -1372,7 +1372,7 @@ buffers_savetouacin96rts(voice96rts_t * p)
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFFSTEP96RTS;	// в буфере пары сэмплов по три байта
+	debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / UACIN_RTS96_SAMPLEBYTES / 2;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	
 	LCLSPIN_LOCK(& locklistrts);
@@ -1408,7 +1408,7 @@ buffers_savetouacin(uacin48_t * p)
 {
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / (DMABUFFSTEP_UACIN * UACIN_AUDIO48_SAMPLEBYTES);	// в буфере пары сэмплов по три байта
+	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / (UACIN_FMT_CHANNELS_AUDIO48 * UACIN_AUDIO48_SAMPLEBYTES);	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	LCLSPIN_LOCK(& locklistuacin48);
 	InsertHeadList2(& uacin48ready, & p->item);
