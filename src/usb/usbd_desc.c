@@ -2830,31 +2830,39 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 {
 	unsigned n = 0;
 
-#if WITHUSBUACIN
-	// Ввод звука в компьютер
+#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
+	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
+
+#elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
+	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
+	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
+	#if WITHRTS96 || WITHRTS192
+		n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, 1);
+	#endif /* WITHRTS96 || WITHRTS192 */
+
+#else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 	#if WITHUSBUACIN2
 		/* отдельные функции для передачи в компьютер спектра и звука */
 		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
 		#if WITHRTS96 || WITHRTS192
 			n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, 1);
-
 		#else /* WITHRTS96 || WITHRTS192 */
 			#error WITHRTS96 or WITHRTS192 required for WITHUSBUACIN2
-
 		#endif /* WITHRTS96 || WITHRTS192 */
 
-	#else /* WITHUSBUACIN2 */
+	#elif WITHUSBUACIN
 		/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
 		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUACIN */
 
-#if WITHUSBUACOUT
-	// Вывод звука из комьпютера
-	n += fill_UAC2_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
+	#if WITHUSBUACOUT
 
-#endif /* WITHUSBUACOUT */
+		n += fill_UAC2_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
+	#endif /* WITHUSBUACOUT */
+
+#endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 
 	return n;
 }
