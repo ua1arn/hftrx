@@ -767,7 +767,7 @@ static uint32_t aw_log2(uint32_t x)
 		val++;
  	}
 
- 	return x > (UINT32_C(1) << val) ? (val + 1) : val;
+ 	return (x > (UINT32_C(1) << val)) + val;
 }
 
 //[31:16]-fifo address; [15]-double buffer; [14:0]-fifo size
