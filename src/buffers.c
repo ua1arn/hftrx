@@ -2266,7 +2266,7 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 
 #if ! WITHTRANSPARENTIQ
 	unsigned i;
-	for (i = 0; i < DMABUFFSIZE192RTS; i += DMABUFFSTEP192RTS)
+	for (i = 0; i < DMABUFFSIZE32RTS; i += DMABUFFSTEP32RTS)
 	{
 		const int32_t * const b = (const int32_t *) & p->u.buff [i];
 
@@ -2826,13 +2826,13 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 				p = NULL;
 				return;
 			}
-			ch0 = transform_do32(& if2rts192out, ch0);
-			ch1 = transform_do32(& if2rts192out, ch1);
 
-			p->u.buff [n ++] = ch0;	// sample value
-			p->u.buff [n ++] = ch1;	// sample value
+			place_le(p->u.buff + n, transform_do32(& if2rts192out, ch0), UACIN_RTS192_SAMPLEBYTES);	// sample value
+			n += UACIN_RTS192_SAMPLEBYTES;
+			place_le(p->u.buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
+			n += UACIN_RTS192_SAMPLEBYTES;
 
-			if (n >= DMABUFFSIZE192RTS)
+			if (n >= UACIN_RTS192_DATASIZE)
 			{
 				buffers_savetouacin192rts(p);
 				p = NULL;
