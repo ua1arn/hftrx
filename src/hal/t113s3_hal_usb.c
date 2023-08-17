@@ -2740,7 +2740,7 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
 {
 	const uint32_t GRANULATION = 8;	/* адреса и размеры при задании параметров FIFO кратны 8 байт */
-	const uint32_t fifosize = UINT32_C(8) << aw_log2((maxpktsz + (GRANULATION - 1)) / GRANULATION);
+	const uint32_t fifosize = GRANULATION << aw_log2((maxpktsz + (GRANULATION - 1)) / GRANULATION);
 	const uint32_t pktcnt = 1;
 	//PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, is_dpb=%u, maxpktsz=%u\n", (unsigned) ep_no, (unsigned) ep_dir, (unsigned) pktcnt, (unsigned) is_dpb, (unsigned) maxpktsz);
 	//PRINTF("fifosize=%u, maxpktsz=%u\n", (unsigned) fifosize, (unsigned) maxpktsz);
