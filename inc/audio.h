@@ -526,10 +526,12 @@ extern "C" {
 	#define UACIN_RTS96_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
 #endif /* ! defined (UACIN_RTS96_SAMPLEBITS) */
 
-#if ! defined (UACIN_RTS192_SAMPLEBITS)
+#if CPUSTYLE_R7S721
+	#define UACIN_RTS192_SAMPLEBITS	32	/* должны быть 16, 24 или 32 */
+#elif ! defined (UACIN_RTS192_SAMPLEBITS)
 	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
 	// stereo, 32 bit samples
-	#define UACIN_RTS192_SAMPLEBITS	32	/* должны быть 16, 24 или 32 */
+	#define UACIN_RTS192_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
 #endif /* ! defined (UACIN_RTS192_SAMPLEBITS) */
 
 

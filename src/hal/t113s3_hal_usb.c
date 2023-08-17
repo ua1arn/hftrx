@@ -2743,7 +2743,7 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	const uint32_t fifosize = GRANULATION << aw_log2((maxpktsz + (GRANULATION - 1)) / GRANULATION);
 	const uint32_t pktcnt = 1;
 	//PRINTF("set_fifo_ep: ep_no=%02X, ep_dir=%d, pktcnt=%u, is_dpb=%u, maxpktsz=%u\n", (unsigned) ep_no, (unsigned) ep_dir, (unsigned) pktcnt, (unsigned) is_dpb, (unsigned) maxpktsz);
-	//PRINTF("fifosize=%u, maxpktsz=%u\n", (unsigned) fifosize, (unsigned) maxpktsz);
+	PRINTF("fifosize=%u, maxpktsz=%u\n", (unsigned) fifosize, (unsigned) maxpktsz);
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
@@ -2835,7 +2835,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#endif
 	}
 #endif /* WITHUSBUACIN */
-	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
+	PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
 	//ASSERT(fifo_addr < 8192);	/* 8 kB */
 }
@@ -3341,7 +3341,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 	return 0;
 }
 
-static void usb_dev_1ms_handler(PCD_HandleTypeDef *hpcd)
+static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
@@ -3406,32 +3406,6 @@ static void usb_dev_1ms_handler(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
-}
-
-static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
-{
-	usb_struct * const pusb = & hpcd->awxx_usb;
-
-	usb_dev_1ms_handler(hpcd);
-	return 0;
-	if (usb_is_high_speed(pusb))
-	{
-		//unsigned frame = usb_get_frame_number(pusb);
-		static unsigned frame;
-		++ frame;
-		if ((frame % 8) == 7)
-		{
-			//PRINTF("%03x ", frame);
-			usb_dev_1ms_handler(hpcd);
-		}
-	}
-	else
-	{
-		//unsigned frame = usb_get_frame_number(pusb);
-		//PRINTF("%03X ", frame);
-		usb_dev_1ms_handler(hpcd);
-	}
-	return 0;
 }
 
 #endif /* WITHWAWXXUSB */
