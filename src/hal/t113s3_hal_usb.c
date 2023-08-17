@@ -3412,6 +3412,8 @@ static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
+	usb_dev_1ms_handler(hpcd);
+	return 0;
 	if (usb_is_high_speed(pusb))
 	{
 		//unsigned frame = usb_get_frame_number(pusb);

@@ -499,25 +499,19 @@ extern "C" {
 
   */
 /* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
-//#define MSOUTSAMPLES	49 /* количество сэмплов за милисекунду в UAC OUT */
+//#define OUTSAMPLES_AUDIO48	49 /* количество сэмплов за милисекунду в UAC OUT */
 // без запаса - только для 48000
 #if WITHUSBDEV_HSDESC
-	#define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
-	#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
+	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за милисекунду в UAC OUT */
+	#define HSINTERVAL_AUDIO48 1	// endpoint descriptor parameters - для обеспечения 1 кГц периода
 	#define FSINTERVAL_AUDIO48 1
 
 #else /* WITHUSBDEV_HSDESC */
-	#define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
+	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за милисекунду в UAC OUT */
 	#define HSINTERVAL_AUDIO48 1//4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
 	#define FSINTERVAL_AUDIO48 1
 
 #endif /* WITHUSBDEV_HSDESC */
-
-#define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
-
-
-#define DMABUFFSTEP_UACIN	(UACIN_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
-#define DMABUFFSTEP_UACOUT	(UACOUT_FMT_CHANNELS_AUDIO48)		// 2 - каждому сэмплу соответствует два числа в  буфере для выдачи по USB в host
 
 /* Разрядности сэмплов в каналах USB AUDIO устрйоств. UACIN - в компьютер, UACOUT - из компьютера */
 #if ! defined (UACOUT_AUDIO48_SAMPLEBITS)
@@ -544,21 +538,12 @@ extern "C" {
 #define UACIN_RTS192_SAMPLEBYTES ((UACIN_RTS192_SAMPLEBITS + 7) / 8)
 #define UACOUT_AUDIO48_SAMPLEBYTES ((UACOUT_AUDIO48_SAMPLEBITS + 7) / 8)
 
-// stereo, 16 bit samples
-// По звуковому каналу передается стерео, 16 бит, 48 кГц - 288 байт размер данных в ендпонтт
-#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZE_UACIN * UACIN_AUDIO48_SAMPLEBYTES)
+/* Размры буферов ендпоинт в байтах */
+#define UACOUT_AUDIO48_DATASIZE	(OUTSAMPLES_AUDIO48 * UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48)
+#define UACIN_AUDIO48_DATASIZE ((OUTSAMPLES_AUDIO48 + 1) * UACIN_AUDIO48_SAMPLEBYTES * UACIN_FMT_CHANNELS_AUDIO48)
+#define UACIN_RTS96_DATASIZE ((OUTSAMPLES_AUDIO48 * 2 + 1) * UACIN_RTS96_SAMPLEBYTES * 2)
+#define UACIN_RTS192_DATASIZE ((OUTSAMPLES_AUDIO48 * 4 + 1) * UACIN_RTS192_SAMPLEBYTES * 2)
 
-
-
-// буфер приема потока данных от USB к модулятору
-#define UACOUT_AUDIO48_DATASIZE	(MSOUTSAMPLES * UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48)
-
-#define DMABUFFSIZE_UACIN_AJ (MSINSAMPLES * DMABUFFSTEP_UACIN)	/* размер под USB ENDPOINT PACKET SIZE В буфере помещаются пары значений - стерео кодек */
-
-/* количество сэмплов */
-#define DMABUFFSIZE_UACIN DMAHWEPADJUST(DMABUFFSIZE_UACIN_AJ, DMABUFFSTEP_UACIN * HARDWARE_RTSDMABYTES)
-
-#define UACIN_AUDIO48_DATASIZE (DMABUFFSIZE_UACIN * UACIN_AUDIO48_SAMPLEBYTES)
 
 #ifndef DMABUFCLUSTER
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
@@ -573,28 +558,13 @@ extern "C" {
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
 
-// Параметры для канала передачи Real Time Spectrum - stereo, 32 bit, 192 kS/S
-#define DMABUFFSTEP192RTS 8	// 8: стерео по 32 бит, 6: стерео по 24 бит
-#define DMABUFFSIZE192RTS_AJ (128/*288*/ * DMABUFFSTEP192RTS)
-
-#define DMABUFFSIZE192RTS DMAHWEPADJUST(DMABUFFSIZE192RTS_AJ, DMABUFFSTEP192RTS * HARDWARE_RTSDMABYTES)
-
-#define DMABUFFSTEP96RTS 6	// 6: стерео по 24 бит
-#define DMABUFFSIZE96RTS_AJ ((MSOUTSAMPLES * 2 + 1) * DMABUFFSTEP96RTS) //((96 + 4) * DMABUFFSTEP96RTS)		// 588 - должно быть кратно 4 байтам - для работы DMA в Renesas
-
-#define DMABUFFSIZE96RTS DMAHWEPADJUST(DMABUFFSIZE96RTS_AJ, DMABUFFSTEP96RTS * HARDWARE_RTSDMABYTES)
-
 #if WITHRTS96
-
-	#define UACIN_RTS96_DATASIZE		(DMABUFFSIZE96RTS * sizeof (uint8_t))
 
 	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
 	#define FSINTERVAL_RTS96 1
 
 #endif /* WITHRTS96 */
 #if WITHRTS192
-
-	#define UACIN_RTS192_DATASIZE		(DMABUFFSIZE192RTS * sizeof (int8_t))
 
 	#define HSINTERVAL_RTS192 3	// 500 us
 	#define FSINTERVAL_RTS192 1

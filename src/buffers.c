@@ -376,15 +376,15 @@ int_fast32_t buffers_dmabufferuacin48cachesize(void)
 		void * tag2;
 		ALIGNX_BEGIN union
 		{
-			uint8_t buff [DMABUFFSIZE192RTS];
-			uint8_t	filler [(DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
-		} u ALIGNX_END;		// спектр, 2*24*192 kS/S
+			uint8_t buff [UACIN_RTS192_DATASIZE];
+			uint8_t	filler [(UACIN_RTS192_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+		} u ALIGNX_END;
 		void * tag3;
 	} ALIGNX_END voice192rts_t;
 
 	int_fast32_t buffers_dmabuffer192rtscachesize(void)
 	{
-		return (DMABUFFSIZE192RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+		return (UACIN_RTS192_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 	}
 
 	static RAMBIGDTCM LIST_HEAD2 voicesfree192rts;
@@ -399,15 +399,15 @@ int_fast32_t buffers_dmabufferuacin48cachesize(void)
 		void * tag2;
 		ALIGNX_BEGIN union
 		{
-			uint8_t buff [DMABUFFSIZE96RTS];
-			uint8_t	 filler [(DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
-		} u ALIGNX_END;		// спектр, 2*24*192 kS/S
+			uint8_t buff [UACIN_RTS96_DATASIZE];
+			uint8_t	 filler [(UACIN_RTS96_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+		} u ALIGNX_END;
 		void * tag3;
 	} ALIGNX_END voice96rts_t;
 
 	int_fast32_t buffers_dmabuffer96rtscachesize(void)
 	{
-		return (DMABUFFSIZE96RTS + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+		return (UACIN_RTS96_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 	}
 
 	static RAMBIGDTCM LIST_HEAD2 uacin96rtsfree;
@@ -784,8 +784,8 @@ void buffers_initialize(void)
 	}
 
 	//ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
-	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
-	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
+//	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
+//	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
 
 	#if WITHRTS192
 	{
@@ -2687,7 +2687,6 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
-				ASSERT(DMABUFFSTEP96RTS == 6);
 			}
 			else if (! isrts96())
 			{
@@ -2701,7 +2700,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			place_le(p->u.buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
 			n += UACIN_RTS96_SAMPLEBYTES;
 
-			if (n >= DMABUFFSIZE96RTS)
+			if (n >= UACIN_RTS96_DATASIZE)
 			{
 				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
@@ -2955,13 +2954,14 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 
-		place_le(p->u.buff + (n + 0) * UACIN_AUDIO48_SAMPLEBYTES, ch0, UACIN_AUDIO48_SAMPLEBYTES); // sample value
-#if DMABUFFSTEP_UACIN > 1
-		place_le(p->u.buff + (n + 1) * UACIN_AUDIO48_SAMPLEBYTES, ch1, UACIN_AUDIO48_SAMPLEBYTES); // sample value
-#endif
-		n += DMABUFFSTEP_UACIN;
+		place_le(p->u.buff + n, ch0, UACIN_AUDIO48_SAMPLEBYTES); // sample value
+		n += UACIN_AUDIO48_SAMPLEBYTES;
+#if UACIN_FMT_CHANNELS_AUDIO48 > 1
+		place_le(p->u.buff + n, ch1, UACIN_AUDIO48_SAMPLEBYTES); // sample value
+		n += UACIN_AUDIO48_SAMPLEBYTES;
+#endif /* UACIN_FMT_CHANNELS_AUDIO48 */
 
-		if (n >= DMABUFFSIZE_UACIN)
+		if (n >= UACIN_AUDIO48_DATASIZE)
 		{
 			buffers_savetouacin(p);
 			p = NULL;
