@@ -322,7 +322,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X\n", __func__, req->bRequest, terminalID, controlID);
+	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	switch (req->bRequest)
 	{
 	default:
@@ -338,7 +338,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 			return USBD_poke_u8(buff, 0);
 		case 2:
 			// VOLUME
-			return USBD_poke_u16(buff, 0);
+			return USBD_poke_u16(buff, 0x7FFF);
 		default:
 			// Undefined control ID
 			TP();
@@ -354,7 +354,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 			return USBD_fill_range_lay1pb(buff, 0, 1, 1);
 		case 2:
 			// VOLUME
-			return USBD_fill_range_lay2pb(buff, 0, 100, 1);
+			return USBD_fill_range_lay2pb(buff, 0, 0x7FFF, 1);
 		default:
 			// Undefined control ID
 			TP();
@@ -413,7 +413,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	const uint_fast32_t denominator = FPGADECIMATION / 2;
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X\n", __func__, req->bRequest, terminalID, controlID);
+	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	switch (req->bRequest)
 	{
 	case 0x01:	// CURR
@@ -447,7 +447,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 	const uint_fast32_t freq = REFERENCE_FREQ;
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X\n", __func__, req->bRequest, terminalID, controlID);
+	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	switch (req->bRequest)
 	{
 	case 0x01:	// CURR
@@ -517,12 +517,12 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					0)
 			&& req->wIndex == 0x05)
 	{
-		PRINTF("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+		//PRINTF("MS USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 		return USBD_OK;
 	}
 #endif /* WITHUSBWCID */
 
-	PRINTF("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n", req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	//PRINTF("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n", req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
