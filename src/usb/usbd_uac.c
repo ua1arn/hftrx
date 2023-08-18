@@ -323,44 +323,52 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 
 	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
-	switch (req->bRequest)
+	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
-	default:
-		// Undefined request
-		TP();
-		return 0;
-
-	case 0x01:	// CURR
-		switch (controlID)
+		// IN
+		switch (req->bRequest)
 		{
-		case 1:
-			// MUTE
-			return USBD_poke_u8(buff, 0);
-		case 2:
-			// VOLUME
-			return USBD_poke_u16(buff, 0x7FFF);
 		default:
-			// Undefined control ID
+			// Undefined request
 			TP();
 			return 0;
-		}
-		break;
 
-	case 0x02:	// RANGE
-		switch (controlID)
-		{
-		case 1:
-			// MUTE
-			return USBD_fill_range_lay1pb(buff, 0, 1, 1);
-		case 2:
-			// VOLUME
-			return USBD_fill_range_lay2pb(buff, 0, 0x7FFF, 1);
-		default:
-			// Undefined control ID
-			TP();
-			return 0;
+		case 0x01:	// CURR
+			switch (controlID)
+			{
+			case 1:
+				// MUTE
+				return USBD_poke_u8(buff, 0);
+			case 2:
+				// VOLUME
+				return USBD_poke_u16(buff, 0x7FFF);
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			}
+			break;
+
+		case 0x02:	// RANGE
+			switch (controlID)
+			{
+			case 1:
+				// MUTE
+				return USBD_fill_range_lay1pb(buff, 0, 1, 1);
+			case 2:
+				// VOLUME
+				return USBD_fill_range_lay2pb(buff, 0, 0x7FFF, 1);
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			}
+			break;
 		}
-		break;
+	}
+	else
+	{
+		// OUT
 	}
 	return 0;
 }
@@ -380,23 +388,35 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
 	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
-	switch (req->bRequest)
+	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
-	case 0x01:	// CURR
-		switch (controlID)
+		// IN
+		switch (req->bRequest)
 		{
 		default:
-			// Undefined control ID
+			// Undefined request
 			TP();
 			return 0;
-		case 1:
-			// CM_NUMERATOR_CONTROL
-			return USBD_poke_u16(buff + 0, numerator); // numerator
-		case 2:
-			// CM_DENOMINATOR_CONTROL
-			return USBD_poke_u16(buff + 0, denominator); // denominator
+		case 0x01:	// CURR
+			switch (controlID)
+			{
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			case 1:
+				// CM_NUMERATOR_CONTROL
+				return USBD_poke_u16(buff + 0, numerator); // numerator
+			case 2:
+				// CM_DENOMINATOR_CONTROL
+				return USBD_poke_u16(buff + 0, denominator); // denominator
+			}
+			break;
 		}
-		break;
+	}
+	else
+	{
+		// OUT
 	}
 	return 0;
 }
@@ -414,23 +434,31 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
 	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
-	switch (req->bRequest)
+	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
-	case 0x01:	// CURR
-		switch (controlID)
+		// IN
+		switch (req->bRequest)
 		{
-		default:
-			// Undefined control ID
-			TP();
-			return 0;
-		case 1:
-			// CM_NUMERATOR_CONTROL
-			return USBD_poke_u16(buff + 0, numerator); // numerator
-		case 2:
-			// CM_DENOMINATOR_CONTROL
-			return USBD_poke_u16(buff + 0, denominator); // denominator
+		case 0x01:	// CURR
+			switch (controlID)
+			{
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			case 1:
+				// CM_NUMERATOR_CONTROL
+				return USBD_poke_u16(buff + 0, numerator); // numerator
+			case 2:
+				// CM_DENOMINATOR_CONTROL
+				return USBD_poke_u16(buff + 0, denominator); // denominator
+			}
+			break;
 		}
-		break;
+	}
+	else
+	{
+		// OUT
 	}
 	return 0;
 }
@@ -448,36 +476,44 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast32_t freq = REFERENCE_FREQ - 1;
 
 	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
-	switch (req->bRequest)
+	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
-	case 0x01:	// CURR
-		switch (controlID)
+		// IN
+		switch (req->bRequest)
 		{
-		default:
-			// Undefined control ID
-			TP();
-			return 0;
-		case 1:
-			// FREQ
-			return USBD_poke_u32(buff + 0, freq); // sample rate
-		case 2:
-			// VALID
-			return USBD_poke_u8(buff + 0, 1); // valid
+		case 0x01:	// CURR
+			switch (controlID)
+			{
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			case 1:
+				// FREQ
+				return USBD_poke_u32(buff + 0, freq); // sample rate
+			case 2:
+				// VALID
+				return USBD_poke_u8(buff + 0, 1); // valid
+			}
+			break;
+		case 0x02:	// RANGE
+			// The Clock Validity Control must have only the CUR attribute
+			switch (controlID)
+			{
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			case 1:
+				// FREQ
+				return USBD_fill_range_lay3pb(buff, freq, freq, 0);
+			}
+			break;
 		}
-		break;
-	case 0x02:	// RANGE
-		// The Clock Validity Control must have only the CUR attribute
-		switch (controlID)
-		{
-		default:
-			// Undefined control ID
-			TP();
-			return 0;
-		case 1:
-			// FREQ
-			return USBD_fill_range_lay3pb(buff, freq, freq, 0);
-		}
-		break;
+	}
+	else
+	{
+		// OUT
 	}
 	return 0;
 }
