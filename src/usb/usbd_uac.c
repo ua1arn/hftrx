@@ -379,7 +379,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const uint_fast32_t denominator = FPGADECIMATION;
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X\n", __func__, req->bRequest, terminalID, controlID);
+	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	switch (req->bRequest)
 	{
 	case 0x01:	// CURR
