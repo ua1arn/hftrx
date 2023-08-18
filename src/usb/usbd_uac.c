@@ -24,7 +24,7 @@
 
 
 // Fill Layout 1 Parameter Block
-static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
+static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t vmin, uint_fast8_t vmax, uint_fast8_t vres)
 {
 	unsigned n = 0;
 /*
@@ -35,15 +35,15 @@ static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
 */
 
 	n += USBD_poke_u16(b + n, 1);	// number of subranges
-	n += USBD_poke_u8(b + n, v);	// MIN
-	n += USBD_poke_u8(b + n, v);	// MAX
-	n += USBD_poke_u8(b + n, 0);	// RES
+	n += USBD_poke_u8(b + n, vmin);	// MIN
+	n += USBD_poke_u8(b + n, vmax);	// MAX
+	n += USBD_poke_u8(b + n, vres);	// RES
 
 	return n;
 }
 
 // Fill Layout 2 Parameter Block
-static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
+static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t vmin, uint_fast16_t vmax, uint_fast16_t vres)
 {
 	unsigned n = 0;
 /*
@@ -54,15 +54,15 @@ static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 */
 
 	n += USBD_poke_u16(b + n, 1);	// number of subranges
-	n += USBD_poke_u16(b + n, v);	// MIN
-	n += USBD_poke_u16(b + n, v);	// MAX
-	n += USBD_poke_u16(b + n, 0);	// RES
+	n += USBD_poke_u16(b + n, vmin);	// MIN
+	n += USBD_poke_u16(b + n, vmax);	// MAX
+	n += USBD_poke_u16(b + n, vres);	// RES
 
 	return n;
 }
 
 // Fill Layout 3 Parameter Block
-static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
+static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t vmin, uint_fast32_t vmax, uint_fast32_t vres)
 {
 	unsigned n = 0;
 /*
@@ -73,9 +73,9 @@ static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 */
 
 	n += USBD_poke_u16(b + n, 1);	// number of subranges
-	n += USBD_poke_u32(b + n, v);	// MIN
-	n += USBD_poke_u32(b + n, v);	// MAX
-	n += USBD_poke_u32(b + n, 0);	// RES
+	n += USBD_poke_u32(b + n, vmin);	// MIN
+	n += USBD_poke_u32(b + n, vmax);	// MAX
+	n += USBD_poke_u32(b + n, vres);	// RES
 
 	return n;
 }
@@ -335,12 +335,10 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 		{
 		case 1:
 			// MUTE
-			USBD_poke_u8(buff, 0);
-			return 1;
+			return USBD_poke_u8(buff, 0);
 		case 2:
 			// VOLUME
-			USBD_poke_u16(buff, 0);
-			return 2;
+			return USBD_poke_u16(buff, 0);
 		default:
 			// Undefined control ID
 			TP();
@@ -353,10 +351,10 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 		{
 		case 1:
 			// MUTE
-			return USBD_fill_range_lay1pb(buff, 0);
+			return USBD_fill_range_lay1pb(buff, 0, 1, 1);
 		case 2:
 			// VOLUME
-			return USBD_fill_range_lay2pb(buff, 0);
+			return USBD_fill_range_lay2pb(buff, 0, 100, 1);
 		default:
 			// Undefined control ID
 			TP();
@@ -477,7 +475,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 			return 0;
 		case 1:
 			// FREQ
-			return USBD_fill_range_lay3pb(buff, freq);
+			return USBD_fill_range_lay3pb(buff, freq / 2, freq, freq / 2);
 		}
 		break;
 	}
@@ -795,6 +793,13 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 			case TERMINAL_ID_SELECTOR_6:
 				USBD_UAC1_Selector_req(req, uac_ep0databuffout);
 				return USBD_OK;
+#if WITHUAC2
+			case TERMINAL_ID_CLKSOURCE + 0 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_CLKSOURCE + 1 * MAX_TERMINALS_IN_INTERFACE:
+			case TERMINAL_ID_CLKSOURCE + 2 * MAX_TERMINALS_IN_INTERFACE:
+				USBD_UAC2_ClockSource_req(req, uac_ep0databuffout);
+				break;
+#endif /* WITHUAC2 */
 
 			default:
 				{

@@ -451,7 +451,7 @@ extern "C" {
 	#define HARDWARE_RTSDMABYTES	1
 #endif /* CPUSTYLE_R7S721 */
 
-#if WITHUAC2
+#if 0//WITHUAC2
 	#define WITHUSENOFU_IN48 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_INRTS 			1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью
 	#define WITHUSENOFU_IN48_INRTS 		1	// 1 - без использования Feature Unit, 0 - с использованием, игнорирование управления громкостью

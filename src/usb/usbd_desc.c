@@ -428,12 +428,19 @@ static unsigned UAC2_clock_source(
 		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;       /* bDescriptorType(0x24): CS_INTERFACE */ 
-		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */ 
+		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */
 		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
+#if 1
+		// Взято из E1DA Cosmos ADC PCM32/384
+		* buff ++ = 0x03;
+		* buff ++ = 0x07;
+#else
+		// Не работает play tone
 		* buff ++ = 0;//0x01;       /* bmAttributes(0x01): internal fixed clock */
 		* buff ++ = 0x01;       /* was 0x07: bmControls(0x07):
 								clock frequency control: 0b11 - host programmable;                    
 								clock validity control: 0b01 - host read only */ 
+#endif
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
 		* buff ++ = STRING_ID_0;/* iClockSource(0x01): Not requested */
 	}
@@ -454,7 +461,7 @@ static unsigned UAC2_clock_multiplier(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast8_t bmControls = 0x05;	/* D3..2: Clock Denominator Control */
+		const uint_fast8_t bmControls = 0x05;	/* D1..0: Clock Numerator Control, D3..2: Clock Denominator Control */
 		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;  	/* bDescriptorType(0x24): CS_INTERFACE */
