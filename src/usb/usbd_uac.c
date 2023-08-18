@@ -475,7 +475,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 			return 0;
 		case 1:
 			// FREQ
-			return USBD_fill_range_lay3pb(buff, freq / 2, freq, freq / 2);
+			return USBD_fill_range_lay3pb(buff, freq, freq, 0);
 		}
 		break;
 	}
