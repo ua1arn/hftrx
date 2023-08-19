@@ -497,9 +497,15 @@ extern "C" {
 /* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
 //#define OUTSAMPLES_AUDIO48	49 /* количество сэмплов за милисекунду в UAC OUT */
 // без запаса - только для 48000
-#if WITHUSBDEV_HSDESC
-	#define OUTSAMPLES_AUDIO48	24 /* количество сэмплов за SOF в UAC OUT */
-	#define HSINTERVAL_AUDIO48 3	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
+
+#if WITHUSBDEV_HSDESC && CPUSTYLE_ALLWINNER
+	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за SOF в UAC OUT */
+	#define HSINTERVAL_AUDIO48 1	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
+	#define FSINTERVAL_AUDIO48 1
+
+#elif WITHUSBDEV_HSDESC
+	#define OUTSAMPLES_AUDIO48	12 /* количество сэмплов за SOF в UAC OUT */
+	#define HSINTERVAL_AUDIO48 2	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
 	#define FSINTERVAL_AUDIO48 1
 
 #else /* WITHUSBDEV_HSDESC */

@@ -388,34 +388,41 @@ static unsigned CDC_HeaderFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsi
 
 #if WITHUSBUAC
 
-	// IN/OUT path topology parameters
+// IN/OUT path topology parameters
 
-	static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
+static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
+	USB_ENDPOINT_USAGE_DATA |
+	USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
-	// UAC2 Windows 10
-	// For the Adaptive IN case the driver does not support a feedforward endpoint.
-	static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
+static const uint_fast8_t USBD_UAC1_OUT_EP_ATTRIBUTES =
+	USB_ENDPOINT_USAGE_DATA |
+	USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
-	static const uint_fast8_t USBD_UAC1_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
+// UAC2 Windows 10
+// For the asynchronous OUT case the driver supports explicit feedback only.
+static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
+	//USB_ENDPOINT_SYNC_ASYNCHRONOUS |
+	USB_ENDPOINT_USAGE_DATA |
+	//USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
+	USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
-	// UAC2 Windows 10
-	// For the asynchronous OUT case the driver supports explicit feedback only.
-	static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
+// UAC2 Windows 10
+// For the Adaptive IN case the driver does not support a feedforward endpoint.
+static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
+	//USB_ENDPOINT_SYNC_ASYNCHRONOUS |
+	USB_ENDPOINT_USAGE_DATA |
+	//USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
+	USB_ENDPOINT_TYPE_ISOCHRONOUS;
+
+// 4.7.2.1 Clock Source Descriptor
 
 //In the following code bmAttributes field is 0x01; 
 //which means that clock type is internal fixed clock.
-/* Clock Source Descriptor(4.7.2.1) */
 // AC Clock Source Descriptor
 // CS_SAM_FREQ_CONTROL = 1
 // CS_CLOCK_VALID_CONTROL = 2
+
+
 static unsigned UAC2_clock_source(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bClockID
@@ -442,7 +449,7 @@ static unsigned UAC2_clock_source(
 		* buff ++ = (1u << 2) | (3u << 0);	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
 #endif
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
-		* buff ++ = STRING_ID_0;/* iClockSource(0x01): Not requested */
+		* buff ++ = STRING_ID_0;/* iClockSource: Not requested */
 	}
 	return length;
 }
@@ -461,7 +468,8 @@ static unsigned UAC2_clock_multiplier(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast8_t bmControls = 0x05;	/* D1..0: Clock Numerator Control, D3..2: Clock Denominator Control */
+		// 1u: host-readeable parameters
+		const uint_fast8_t bmControls = (1u << 2) | (1u << 0);	/* D1..0: Clock Numerator Control, D3..2: Clock Denominator Control */
 		// Вызов для заполнения; а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;  	/* bDescriptorType(0x24): CS_INTERFACE */
@@ -469,7 +477,7 @@ static unsigned UAC2_clock_multiplier(
 		* buff ++ = bClockID;   	/* bClockID */
 		* buff ++ = bCSourceID;   	/* bCSourceID */
 		* buff ++ = bmControls;
-		* buff ++ = STRING_ID_0;	/* iClockSource(0x01): Not requested */
+		* buff ++ = STRING_ID_0;	/* iClockMultiplier: Not requested */
 	}
 	return length;
 }

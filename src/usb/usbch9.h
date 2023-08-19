@@ -103,6 +103,7 @@ enum
 {
 	ep0outxxx = 0x00,
 #if ! CPUSTYLE_ALLWINNER
+	// Если нет раздельной нумерайии IN и OUT endpoints - продолжаем сквозную
 	epoutbase = (epincount - 1) & 0x7F,
 #endif /* ! CPUSTYLE_ALLWINNER */
 

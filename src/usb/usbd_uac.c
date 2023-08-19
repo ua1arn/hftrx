@@ -369,6 +369,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	else
 	{
 		// OUT
+		printhex(0, buff, 16);
 	}
 	return 0;
 }
@@ -417,6 +418,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	else
 	{
 		// OUT
+		printhex(0, buff, 16);
 	}
 	return 0;
 }
@@ -459,6 +461,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	else
 	{
 		// OUT
+		printhex(0, buff, 16);
 	}
 	return 0;
 }
@@ -514,6 +517,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 	else
 	{
 		// OUT
+		printhex(0, buff, 16);
 	}
 	return 0;
 }
@@ -558,7 +562,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	}
 #endif /* WITHUSBWCID */
 
-	//PRINTF("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n", req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
+	PRINTF("USBD_UAC_Setup: bmRequest=%04X, bRequest=%02X, wIndex=%04X, wLength=%04X, wValue=%04X (interfacev=%02X)\n", req->bmRequest, req->bRequest, req->wIndex, req->wLength, req->wValue, interfacev);
 	unsigned len = 0;
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
 	{
@@ -794,6 +798,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	}
 	return USBD_OK;
 }
+
 static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 {
 	const USBD_SetupReqTypedef * const req = & pdev->request;
