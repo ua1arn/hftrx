@@ -476,7 +476,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	const uint_fast32_t freq = REFERENCE_FREQ - 1;
+	const uint_fast32_t freq = REFERENCE_FREQ;
 
 	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
