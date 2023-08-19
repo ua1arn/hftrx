@@ -500,18 +500,37 @@ extern "C" {
 
 #if WITHUSBDEV_HSDESC && CPUSTYLE_ALLWINNER
 	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за SOF в UAC OUT */
+
 	#define HSINTERVAL_AUDIO48 1	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
+	#define HSINTERVAL_RTS96 1
+	#define HSINTERVAL_RTS192 1
+
 	#define FSINTERVAL_AUDIO48 1
+	#define FSINTERVAL_AUDIO48 1
+	#define FSINTERVAL_RTS96 1
+	#define FSINTERVAL_RTS192 1
 
 #elif WITHUSBDEV_HSDESC
 	#define OUTSAMPLES_AUDIO48	12 /* количество сэмплов за SOF в UAC OUT */
+
 	#define HSINTERVAL_AUDIO48 2	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
+	#define HSINTERVAL_RTS96 2
+	#define HSINTERVAL_RTS192 2
+
 	#define FSINTERVAL_AUDIO48 1
+	#define FSINTERVAL_RTS96 1
+	#define FSINTERVAL_RTS192 1
 
 #else /* WITHUSBDEV_HSDESC */
 	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за милисекунду в UAC OUT */
-	#define HSINTERVAL_AUDIO48 1
+
+	#define HSINTERVAL_AUDIO48 1	// dummy parameter
+	#define HSINTERVAL_RTS96 1		// dummy parameter
+	#define HSINTERVAL_RTS192 1		// dummy parameter
+
 	#define FSINTERVAL_AUDIO48 1
+	#define FSINTERVAL_RTS96 1
+	#define FSINTERVAL_RTS192 1
 
 #endif /* WITHUSBDEV_HSDESC */
 
@@ -564,19 +583,6 @@ extern "C" {
 
 #define DMABUFFSTEP192RTS 2
 #define DMABUFFSIZE192RTS	(DMABUFCLUSTER * DMABUFFSTEP192RTS)		/* RTS192 data from I2S */
-
-#if WITHRTS96
-
-	#define HSINTERVAL_RTS96 4	// endpoint descriptor parameters
-	#define FSINTERVAL_RTS96 1
-
-#endif /* WITHRTS96 */
-#if WITHRTS192
-
-	#define HSINTERVAL_RTS192 3	// 500 us
-	#define FSINTERVAL_RTS192 1
-
-#endif /* WITHRTS192 */
 
 
 /*
