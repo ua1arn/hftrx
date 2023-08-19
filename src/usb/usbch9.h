@@ -219,14 +219,27 @@ enum
 {
 	TERMINAL_ID_UNDEFINED = 0,
 
-	TERMINAL_UACIN48 = 16,	// fill_UAC2_IN48_function, fill_UAC1_IN48_function
-	TERMINAL_UACOUT48 = 32,	// fill_UACOUT48_function
-	TERMINAL_UACIN48_UACINRTS = 48,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
-	TERMINAL_UACINRTS = 64,	// fill_UACINRTS_function
+	// Не индексируем по offset
+	TERMINAL_UACIN48,	// fill_UAC2_IN48_function, fill_UAC1_IN48_function
+	TERMINAL_UACOUT48,	// fill_UACOUT48_function
+	TERMINAL_UACIN48_UACINRTS,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
+	TERMINAL_UACINRTS,	// fill_UACINRTS_function
 
-	TERMINAL_ID_SELECTOR_6 = 79,	// Input selector - вынесено из-за неудобства использования: значение проверяется
+	// Не индексируем по offset
+	TERMINAL_ID_CLKMULTIPLIER_UACINOUT,	// shared in/our clock source
+	TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS,
+	TERMINAL_ID_CLKMULTIPLIER_UACINRTS,
+	TERMINAL_ID_CLKMULTIPLIER_UACIN48,
+	TERMINAL_ID_CLKMULTIPLIER_UACOUT48,
 
-	TERMINAL_ID_FU1a_IN = 80,	// UAC1
+	// Не индексируем по offset
+	TERMINAL_ID_SELECTOR_6,	// Input selector - вынесено из-за неудобства использования: значение проверяется
+
+	// Иидкусируеися по offset - далее ничего нет
+	TERMINAL_ID_indexbase,
+
+	TERMINAL_ID_CLKSOURCE,
+	TERMINAL_ID_FU1a_IN,	// UAC1
 	TERMINAL_ID_FU1b_IN,		// UAC1
 	TERMINAL_ID_FU1a_OUT,		// UAC1
 	TERMINAL_ID_FU1b_OUT,		// UAC1
@@ -234,19 +247,11 @@ enum
 	TERMINAL_ID_FU2b_IN,		// UAC2
 	TERMINAL_ID_FU2a_OUT,		// UAC2
 	TERMINAL_ID_FU2b_OUT,		// UAC2
-	TERMINAL_ID_CLKSOURCE,
-
-
-	TERMINAL_ID_CLKMULTIPLIER_UACINOUT = 222,	// shared in/our clock source
-	TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS,
-	TERMINAL_ID_CLKMULTIPLIER_UACINRTS,
-	TERMINAL_ID_CLKMULTIPLIER_UACIN48,
-	TERMINAL_ID_CLKMULTIPLIER_UACOUT48,
 
 	TERMINAL_ID_count_unused
 };
 
-#define MAX_TERMINALS_IN_INTERFACE 12
+#define MAX_TERMINALS_IN_INTERFACE (TERMINAL_ID_count_unused - TERMINAL_ID_indexbase)
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
 
