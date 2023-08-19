@@ -471,10 +471,6 @@ extern "C" {
 #define UACIN_CONFIG_IN48_INRTS 	(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
 #define UACOUT_CONFIG_OUT48 		(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
 
-// IN/OUT path topology parameters
-#define UAC2_IN_bNrChannels 2	//UAC_count_channels(wChannelConfig); 1: Only master channel controls, 3: master, left and right
-#define UAC2_OUT_bNrChannels 2	//UAC_count_channels(wChannelConfig); 1: Only master channel controls, 3: master, left and right
-
 // количество каналов в дескрипторах формата потока
 #define UACIN_FMT_CHANNELS_AUDIO48			2
 #define UACIN_FMT_CHANNELS_RTS				2	// I/Q всегда стерео

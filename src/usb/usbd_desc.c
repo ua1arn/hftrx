@@ -388,6 +388,8 @@ static unsigned CDC_HeaderFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsi
 
 #if WITHUSBUAC
 
+	// IN/OUT path topology parameters
+
 	static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
 		USB_ENDPOINT_USAGE_DATA |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
@@ -550,11 +552,10 @@ static unsigned UAC2_AudioControlIT_IN48(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// 4.3.2.1 Input Terminal Descriptor 
+		// Table 4-9: Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
-		const uint_fast16_t bmControls = 0x0003;
+		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -565,7 +566,7 @@ static unsigned UAC2_AudioControlIT_IN48(
 		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
 		* buff ++ = bCSourceID;						// bCSourceID
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = HI_24BY(wChannelConfig);
@@ -600,8 +601,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_IN48_INRTS;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
-		const uint_fast16_t bmControls = 0x0003;
+		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -612,7 +612,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
 		* buff ++ = bCSourceID;						// bCSourceID
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = HI_24BY(wChannelConfig);
@@ -642,8 +642,7 @@ static unsigned UAC2_AudioControlIT_INRTS(
 		// 4.3.2.1 Input Terminal Descriptor 
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast32_t wChannelConfig = UACIN_CONFIG_INRTS;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
-		const uint_fast16_t bmControls = 0x0003;
+		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -654,7 +653,7 @@ static unsigned UAC2_AudioControlIT_INRTS(
 		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
 		* buff ++ = bCSourceID;						// bCSourceID
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = HI_24BY(wChannelConfig);
@@ -687,11 +686,10 @@ static unsigned UAC2_AudioControlIT_OUT48(
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		// 4.3.2.1 Input Terminal Descriptor 
+		// Table 4-9: Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
-		const uint_fast32_t wChannelConfig = UACOUT_CONFIG_OUT48;
-		const uint_fast8_t bNrChannels = 2;//UAC2_OUT_bNrChannels; //3;//UAC_count_channels(wChannelConfig);
-		const uint_fast16_t bmControls = 0x0003;
+		const uint_fast32_t wChannelConfig = 1;//UACOUT_CONFIG_OUT48;
+		const uint_fast16_t bmControls = 0;//0x0003;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;									/* 0 bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* 1 bDescriptorType */
@@ -702,7 +700,7 @@ static unsigned UAC2_AudioControlIT_OUT48(
 		* buff ++ = TERMINAL_ID_UNDEFINED;					/* 6 bAssocTerminal */
 		* buff ++ = bCSourceID;								/* 7 bCSourceID */
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;							/* 8 bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);							/* 8 bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);                /* 9 wChannelConfig 0x0003  Front Left; Front Right */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = HI_24BY(wChannelConfig);
@@ -811,7 +809,7 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 		// and so on...
 		0;
 
-	const uint_fast8_t n = 3; //1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t n = 2; //1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
 	const uint_fast8_t length = 6 + 4 * n;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
@@ -1642,8 +1640,8 @@ static unsigned UAC2_AS_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigne
 		* buff ++ = HI_BYTE(bmFormats);
 		* buff ++ = HI_24BY(bmFormats);
 		* buff ++ = HI_32BY(bmFormats);
-		* buff ++ = 0x02;		/* bNrChannels   */
-		* buff ++ = LO_BYTE(bmChannelConfig);                  /* bmChannelConfig */
+		* buff ++ = UAC_count_channels(bmChannelConfig);		/* bNrChannels   */
+		* buff ++ = LO_BYTE(bmChannelConfig);                 /* bmChannelConfig */
 		* buff ++ = HI_BYTE(bmChannelConfig);
 		* buff ++ = HI_24BY(bmChannelConfig);
 		* buff ++ = HI_32BY(bmChannelConfig);
@@ -1889,7 +1887,6 @@ static unsigned UAC1_AC_IT_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast16_t wChannelConfig = UACIN_CONFIG_IN48;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -1899,7 +1896,7 @@ static unsigned UAC1_AC_IT_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = HI_BYTE(wTerminalType);
 		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
@@ -1935,7 +1932,7 @@ static unsigned UAC1_AC_IT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff, unsigne
 		* buff ++ = HI_BYTE(wTerminalType);
 		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
@@ -1966,7 +1963,7 @@ static unsigned UAC1_AC_IT_INRTS(uint_fast8_t fill, uint8_t * buff, unsigned max
 		* buff ++ = HI_BYTE(wTerminalType);
 		* buff ++ = TERMINAL_ID_UNDEFINED;        // bAssocTerminal No association
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;    /* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);    /* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
@@ -2005,7 +2002,7 @@ static unsigned UAC1_AC_IT_OUT48(
 		* buff ++ = HI_BYTE(wTerminalType);
 		* buff ++ = TERMINAL_ID_UNDEFINED;					/* bAssocTerminal */
 		// The bNrChannels, wChannelConfig and iChannelNames fields together constitute the cluster descriptor
-		* buff ++ = bNrChannels;							/* bNrChannels */
+		* buff ++ = UAC_count_channels(wChannelConfig);							/* bNrChannels */
 		* buff ++ = LO_BYTE(wChannelConfig);                /* wChannelConfig 0x0003  Front Left; Front Right */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
