@@ -1008,9 +1008,9 @@ static unsigned UAC2_Topology_inout_OUT48(
 {
 	unsigned n = 0;
 
-	// already done in UAC2_Topology_inout_IN48
-	//n += UAC2_ClockSource(fill, p + n, maxsize - n, bOSC);
-	//n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, bCSourceID, bOSC);
+	// Already done in UAC2_Topology_inout_IN48
+//	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
+//	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
 	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 	n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
@@ -1595,6 +1595,11 @@ static unsigned UAC2_AS_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigne
 	return length;
 }
 
+static uint_fast8_t indexid(uint_fast8_t base, uint_fast8_t offset)
+{
+	return base + offset * MAX_TERMINALS_IN_INTERFACE;
+}
+
 #if WITHUSBUACIN2
 
 static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
@@ -1608,9 +1613,9 @@ static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 	const tpgt_t rtsterms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU2a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU2b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
-			.bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE,
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
 			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINRTS,
 	};
 	const tpgt_t * const rtstermsv [] = { & rtsterms };
@@ -1662,9 +1667,9 @@ static unsigned fill_UAC2_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU2a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU2b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
-			.bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE,
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
 			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48,
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
@@ -1705,9 +1710,9 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU2a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU2b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
-			.bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE,
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
 			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS,
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
@@ -1765,9 +1770,9 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU2a_OUT + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU2b_OUT + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
-			.bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE,
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_OUT, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
+			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
 			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACOUT48,
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
@@ -2403,8 +2408,8 @@ static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 	const tpgt_t rtsterms =
 	{
 		.bTerminalID = terminalID,
-		.bFeatureUnitID = TERMINAL_ID_FU1a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-		.bFeatureUnit2ID = TERMINAL_ID_FU1b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
+		.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
+		.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const rtstermsv [] = { & rtsterms };
 	const uint_fast8_t epinrts = USB_ENDPOINT_IN(USBD_EP_RTS_IN);
@@ -2454,8 +2459,8 @@ static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU1a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU1b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
@@ -2493,8 +2498,8 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU1a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU1b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
 	const uint_fast8_t iInterfaceIN48_INRTS = STRING_ID_IN48_INRTS;
@@ -2550,8 +2555,8 @@ static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = TERMINAL_ID_FU1a_OUT + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU1b_OUT + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_OUT, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_OUT, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
 	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
@@ -2609,14 +2614,14 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalInID,
-			.bFeatureUnitID = TERMINAL_ID_FU1a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU1b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalOutID,
-			.bFeatureUnitID = TERMINAL_ID_FU1a_OUT + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU1b_OUT + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_OUT, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_OUT, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const termsv [] = { & miketerms,  & modulatorterms };
 	static const uac_pathfn_t paths [] =
@@ -2709,17 +2714,17 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalInID,
-			.bFeatureUnitID = TERMINAL_ID_FU2a_IN + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU2b_IN + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
-		    .bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE,
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+		    .bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
 		    .bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT,
 	};
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalOutID,
-			.bFeatureUnitID = TERMINAL_ID_FU2a_OUT + offset * MAX_TERMINALS_IN_INTERFACE,
-			.bFeatureUnit2ID = TERMINAL_ID_FU2b_OUT + offset * MAX_TERMINALS_IN_INTERFACE,	// промежуточный terminal этой топологии
-		    .bOSC = TERMINAL_ID_CLKSOURCE + offset * MAX_TERMINALS_IN_INTERFACE,
+			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_OUT, offset),
+			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
+		    .bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
 		    .bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT,
 	};
 	const tpgt_t * const termsv [] = { & miketerms,  & modulatorterms };
@@ -2727,8 +2732,6 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 	{
             UAC2_Topology_inout_IN48,
             UAC2_Topology_inout_OUT48,
-//			UAC2_TopologyIN48,
-//			UAC2_TopologyOUT48,
 	};
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN + offset);
 	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT + offset);
