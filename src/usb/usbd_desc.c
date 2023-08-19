@@ -430,16 +430,14 @@ static unsigned UAC2_clock_source(
 		* buff ++ = CS_INTERFACE;       /* bDescriptorType(0x24): CS_INTERFACE */ 
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */
 		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
-#if 1
+#if 0
 		// Взято из E1DA Cosmos ADC PCM32/384
-		* buff ++ = 0x03;
-		* buff ++ = 0x07;
+		* buff ++ = 0x03;	// bmAttributes
+		* buff ++ = 0x07;	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
 #else
 		// Не работает play tone
-		* buff ++ = 0;//0x01;       /* bmAttributes(0x01): internal fixed clock */
-		* buff ++ = 0x01;       /* was 0x07: bmControls(0x07):
-								clock frequency control: 0b11 - host programmable;                    
-								clock validity control: 0b01 - host read only */ 
+		* buff ++ = (0u << 2) | (3u << 0);	// bmAttributes
+		* buff ++ = (1u << 2) | (3u << 0);	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
 #endif
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
 		* buff ++ = STRING_ID_0;/* iClockSource(0x01): Not requested */
