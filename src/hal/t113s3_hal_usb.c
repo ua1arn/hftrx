@@ -1130,11 +1130,10 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
 
-	if ((dest_addr % 4) == 0 && (count % 4) == 0)
+	if ((dest_addr % 4) == 0 && count >= 4)
 	{
 		volatile uint32_t * dest = (volatile uint32_t *) dest_addr;
-		unsigned i;
-		for (i = 0; (i + 32) < count; i += 32)
+		for (; count >= 32; count -= 32)
 		{
 			* dest ++ = get_wvalue(pipe);
 			* dest ++ = get_wvalue(pipe);
@@ -1145,25 +1144,26 @@ static void usb_read_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t dest_ad
 			* dest ++ = get_wvalue(pipe);
 			* dest ++ = get_wvalue(pipe);
 		}
-		for (i = 0; i < count; i += 4)
+		for (; count >= 4; count -= 4)
 		{
 			* dest ++ = get_wvalue(pipe);
 		}
+		dest_addr = (uintptr_t) dest;
 	}
-	else if ((dest_addr % 2) == 0 && (count % 2) == 0)
+	if ((dest_addr % 2) == 0 && count >= 2)
 	{
 		volatile uint16_t * dest = (volatile uint16_t *) dest_addr;
-		unsigned i;
-		for (i = 0; i < count; i += 2)
+		for (; count >= 2; count -= 2)
 		{
 			* dest ++ = get_hvalue(pipe);
 		}
+		dest_addr = (uintptr_t) dest;
 	}
-	else
+	if (count != 0)
 	{
 		volatile uint8_t * dest = (volatile uint8_t *) dest_addr;
 		unsigned i;
-		for (i = 0; i < count; ++ i)
+		for (; count >= 1; count -= 1)
 		{
 			* dest ++ = get_bvalue(pipe);
 		}
@@ -1187,11 +1187,10 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 	usb_fifo_accessed_by_cpu(pusb);
 
 	const uintptr_t pipe = usb_get_ep_fifo_addr(pusb, ep_no);
-	if ((src_addr % 4) == 0 && (count % 4) == 0)
+	if ((src_addr % 4) == 0 && count >= 4)
 	{
 		volatile const uint32_t * src = (volatile uint32_t *) src_addr;
-		unsigned i;
-		for (i = 0; (i + 32) < count; i += 32)
+		for (; count >= 32; count -= 32)
 		{
 			put_wvalue(pipe, * src ++);
 			put_wvalue(pipe, * src ++);
@@ -1202,25 +1201,25 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 			put_wvalue(pipe, * src ++);
 			put_wvalue(pipe, * src ++);
 		}
-		for (i = 0; i < count; i += 4)
+		for (; count >= 4; count -= 4)
 		{
 			put_wvalue(pipe, * src ++);
 		}
+		src_addr = (uintptr_t) src;
 	}
-	else if ((src_addr % 2) == 0 && (count % 2) == 0)
+	if ((src_addr % 2) == 0 && count >= 2)
 	{
 		volatile const uint16_t * src = (volatile uint16_t *) src_addr;
-		unsigned i;
-		for (i = 0; i < count; i += 2)
+		for (; count >= 2; count -= 2)
 		{
 			put_hvalue(pipe, * src ++);
 		}
+		src_addr = (uintptr_t) src;
 	}
-	else
+	if (count != 0)
 	{
 		volatile const uint8_t * src = (volatile const uint8_t *) src_addr;
-		unsigned i;
-		for (i = 0; i < count; ++ i)
+		for (; count >= 1; count -= 1)
 		{
 			put_bvalue(pipe, * src ++);
 		}
