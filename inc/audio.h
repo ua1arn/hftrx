@@ -554,23 +554,28 @@ extern "C" {
 
 /* требования по выравниванию DMA про обмене с USB */
 #if CPUSTYLE_ALLWINNER
-	#define EPALIGN 1//4
+	#define EPALIGN 4
 #elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
 	#define EPALIGN 1//4
 #elif CPUSTYLE_R7S721
-	#define EPALIGN 1//8
+	#define EPALIGN 8
 #else
 	#define EPALIGN 1
 #endif
 
 // расчет количества байтов для endpoint
 // ga - требование выравнивания от DMA = EPALIGN
-// ss - требование выравнивания от канала связи = (sb) * (ch)
+// ss - требование выравнивания от канала связи
 
-// sn - sample number, ss - sample size, ga - granulation for address
-#define UAC_DATASIZEgr(sn, ss, ga) ( EPDSZALIGN((sn) * (ss) * (ga), (ga)) / (ga))
+// n - sample number, ng - sample number granulation, ss - sample size
+// выдаёт колчиество байтов
+#define UAC_DATASIZEgr(n, ng, ss) ( EPDSZALIGN((n), (ng)) * (ss))
+// ss - sample size, ga - granulation for size
+// выдаёт грануляцию количества сэмплов
+#define UAC_ng(ss, ga) (ga)	// пока затычка
 // sn - sample number, ss - sample size
-#define UAC_DATASIZE(sn, ss) (UAC_DATASIZEgr((sn), (ss), EPDSZALIGN((ss), EPALIGN)))
+// выдаёт колчиество байтов
+#define UAC_DATASIZE(n, ss) (UAC_DATASIZEgr(n, UAC_ng(ss, EPALIGN), ss))
 
 /* Размры буферов ендпоинт в байтах */
 
