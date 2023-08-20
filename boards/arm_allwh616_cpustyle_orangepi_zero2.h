@@ -150,8 +150,8 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
-		#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
+		#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+		#define UACIN_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
 		#define WITHUSBUACIN	1
 		#define WITHUSBUACOUT	1
 

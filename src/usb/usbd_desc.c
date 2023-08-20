@@ -1176,7 +1176,7 @@ static unsigned UAC2_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES;	//bSubslotSize
-		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES * 8;	//bBitResolution
 		/* 6 byte*/
 	}
 	return length;
@@ -1247,7 +1247,7 @@ static unsigned UAC2_FormatTypeDescroptor_IN48(uint_fast8_t fill, uint8_t * buff
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES;	//bSubslotSize
-		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES * 8;	//bBitResolution
 		/* 6 byte*/
 	}
 	return length;
@@ -1293,8 +1293,8 @@ static unsigned UAC2_FormatTypeDesc_RTS96(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (UACIN_RTS96_SAMPLEBITS + 7) / 8;	//bSubslotSize
-		* buff ++ = UACIN_RTS96_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
+		* buff ++ = UACIN_RTS96_SAMPLEBYTES;		//bSubslotSize
+		* buff ++ = UACIN_RTS96_SAMPLEBYTES * 8;	//bBitResolution
 		/* 6 byte*/
 	}
 	return length;
@@ -1342,8 +1342,8 @@ static unsigned UAC2_FormatTypeDescroptor_RTS192(uint_fast8_t fill, uint8_t * bu
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;			/* bDescriptorSubtype */
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = (UACIN_RTS192_SAMPLEBITS + 7) / 8;	//bSubslotSize
-		* buff ++ = UACIN_RTS192_SAMPLEBITS;	//bBitResolution   (32 bits per sample)
+		* buff ++ = UACIN_RTS192_SAMPLEBYTES;		//bSubslotSize
+		* buff ++ = UACIN_RTS192_SAMPLEBYTES * 8;	//bBitResolution
 		/* 6 byte*/
 	}
 	return length;
@@ -1415,7 +1415,7 @@ static unsigned UAC1_FormatTypeDesc_IN48(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
 		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = UACIN_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES * 8;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -1468,8 +1468,8 @@ static unsigned UAC1_FormatTypeDesc_RTS96(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
-		* buff ++ = (UACIN_RTS96_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = UACIN_RTS96_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACIN_RTS96_SAMPLEBYTES;		//bSubFrameSize
+		* buff ++ = UACIN_RTS96_SAMPLEBYTES * 8;	//bBitResolution
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -1524,8 +1524,8 @@ static unsigned UAC1_FormatTypeDesc_RTS192(uint_fast8_t fill, uint8_t * buff, un
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
-		* buff ++ = (UACIN_RTS192_SAMPLEBITS + 7) / 8; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = UACIN_RTS192_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACIN_RTS192_SAMPLEBYTES;		//bSubFrameSize
+		* buff ++ = UACIN_RTS192_SAMPLEBYTES * 8;	//bBitResolution
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
@@ -2283,7 +2283,7 @@ static unsigned UAC1_FormatTypeDesc_OUT48(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
 		* buff ++ = UACOUT_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
 		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = UACOUT_AUDIO48_SAMPLEBITS;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACOUT_AUDIO48_SAMPLEBYTES * 8;		/* bBitResolution (16-bits per sample) */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);

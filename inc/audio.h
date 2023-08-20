@@ -524,44 +524,54 @@ extern "C" {
 #endif /* WITHUSBDEV_HSDESC */
 
 /* Разрядности сэмплов в каналах USB AUDIO устрйоств. UACIN - в компьютер, UACOUT - из компьютера */
-#if ! defined (UACOUT_AUDIO48_SAMPLEBITS)
-	#define UACOUT_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
-#endif /* ! defined (UACOUT_AUDIO48_SAMPLEBITS) */
+#if ! defined (UACOUT_AUDIO48_SAMPLEBYTES)
+	#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+#endif /* ! defined (UACOUT_AUDIO48_SAMPLEBYTES) */
 
-#if ! defined (UACIN_AUDIO48_SAMPLEBITS)
-	#define UACIN_AUDIO48_SAMPLEBITS	16	/* должны быть 16, 24 или 32 */
-#endif /* ! defined (UACIN_AUDIO48_SAMPLEBITS) */
+#if ! defined (UACIN_AUDIO48_SAMPLEBYTES)
+	#define UACIN_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+#endif /* ! defined (UACIN_AUDIO48_SAMPLEBYTES) */
 
-#if ! defined (UACIN_RTS96_SAMPLEBITS)
-	#define UACIN_RTS96_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
-#endif /* ! defined (UACIN_RTS96_SAMPLEBITS) */
+#if ! defined (UACIN_RTS96_SAMPLEBYTES)
+	#define UACIN_RTS96_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+#endif /* ! defined (UACIN_RTS96_SAMPLEBYTES) */
 
-#if CPUSTYLE_R7S721
-	#define UACIN_RTS192_SAMPLEBITS	32	/* должны быть 16, 24 или 32 */
-#elif ! defined (UACIN_RTS192_SAMPLEBITS)
-	// По каналу real-time спектра стерео, 32 бит, 192 кГц - 288*2*4 = 2304 байта
-	// stereo, 32 bit samples
-	#define UACIN_RTS192_SAMPLEBITS	24	/* должны быть 16, 24 или 32 */
-#endif /* ! defined (UACIN_RTS192_SAMPLEBITS) */
+#if ! defined (UACIN_RTS192_SAMPLEBYTES)
+	#if CPUSTYLE_R7S721
+		#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
+	#else /* CPUSTYLE_R7S721 */
+		#define UACIN_RTS192_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+	#endif /* CPUSTYLE_R7S721 */
+#endif /* ! defined (UACIN_RTS192_SAMPLEBYTES) */
 
-#define UACIN_AUDIO48_SAMPLEBYTES ((UACIN_AUDIO48_SAMPLEBITS + 7) / 8)
-#define UACIN_RTS96_SAMPLEBYTES ((UACIN_RTS96_SAMPLEBITS + 7) / 8)
-#define UACIN_RTS192_SAMPLEBYTES ((UACIN_RTS192_SAMPLEBITS + 7) / 8)
-#define UACOUT_AUDIO48_SAMPLEBYTES ((UACOUT_AUDIO48_SAMPLEBITS + 7) / 8)
-
-#define EPDSZALIGN(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
+#define EP_align(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
 #define EPDSZMAX(a, b) ((a) > (b) ? (a) : (b))
 
-/* требования по выравниванию DMA про обмене с USB */
-#if CPUSTYLE_ALLWINNER
-	#define EPALIGN 4
-#elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
-	#define EPALIGN 1//4
-#elif CPUSTYLE_R7S721
-	#define EPALIGN 8
-#else
-	#define EPALIGN 1
-#endif
+#define UAC_n1c2g1 (2)	// 2 байта в ячейку 1
+#define UAC_n2c2g1 (4)	// 4 байта в ячейку 1
+#define UAC_n3c2g1 (6)	// 6 байт в ячейку 1
+#define UAC_n4c2g1 (8)	// 8 байт в ячейку 1
+
+#define UAC_n1c2g2 (1)	// 2 байта в ячейку 2
+#define UAC_n2c2g2 (1)	// 4 байта в ячейку 2
+#define UAC_n3c2g2 (1)	// 6 байт в ячейку 2
+#define UAC_n4c2g2 (1)	// 8 байт в ячейку 2
+
+#define UAC_n1c2g4 (2)	// 2 байта в ячейку 4
+#define UAC_n2c2g4 (1)	// 4 байта в ячейку 4
+#define UAC_n3c2g4 (2)	// 6 байт в ячейку 4
+#define UAC_n4c2g4 (2)	// 8 байт в ячейку 4
+
+#define UAC_n1c2g8 (4)	// 2 байта в ячейку 8
+#define UAC_n2c2g8 (2)	// 4 байта в ячейку 8
+#define UAC_n3c2g8 (4)	// 6 байт в ячейку 8
+#define UAC_n4c2g8 (1)	// 8 байт в ячейку 8
+
+// ss - sample size, ga - granulation for size
+// выдаёт грануляцию количества сэмплов
+#define UAC_ng(ss, ch, ga) (UAC_n ## ss ## c ## ch ## g ## ga)	// таблица
+
+
 
 // расчет количества байтов для endpoint
 // ga - требование выравнивания от DMA = EPALIGN
@@ -569,20 +579,27 @@ extern "C" {
 
 // n - sample number, ng - sample number granulation, ss - sample size
 // выдаёт колчиество байтов
-#define UAC_DATASIZEgr(n, ng, ss) ( EPDSZALIGN((n), (ng)) * (ss))
-// ss - sample size, ga - granulation for size
-// выдаёт грануляцию количества сэмплов
-#define UAC_ng(ss, ga) (ga)	// пока затычка
-// sn - sample number, ss - sample size
+#define UAC_DATASIZEgr(n, ng, ss) ( EP_align((n), (ng)) * (ss))
+
+// n - sample number, ss - sample size, ch - количество каналов
 // выдаёт колчиество байтов
-#define UAC_DATASIZE(n, ss) (UAC_DATASIZEgr(n, UAC_ng(ss, EPALIGN), ss))
+/* требования по выравниванию DMA про обмене с USB */
+#if CPUSTYLE_ALLWINNER
+	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 4), (ss) * (ch)))
+#elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
+	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 1), (ss) * (ch)))
+#elif CPUSTYLE_R7S721
+	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 8), (ss) * (ch)))
+#else
+	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 1), (ss) * (ch)))
+#endif
 
 /* Размры буферов ендпоинт в байтах */
 
-#define UACOUT_AUDIO48_DATASIZE	UAC_DATASIZE(OUTSAMPLES_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48)
-#define UACIN_AUDIO48_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES * UACIN_FMT_CHANNELS_AUDIO48)
-#define UACIN_RTS96_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 2 + 1, UACIN_RTS96_SAMPLEBYTES * UACIN_FMT_CHANNELS_RTS96)
-#define UACIN_RTS192_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 4 + 1, UACIN_RTS192_SAMPLEBYTES * UACIN_FMT_CHANNELS_RTS192)
+#define UACOUT_AUDIO48_DATASIZE	UAC_DATASIZE(OUTSAMPLES_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
+#define UACIN_AUDIO48_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES, UACIN_FMT_CHANNELS_AUDIO48)
+#define UACIN_RTS96_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 2 + 1, UACIN_RTS96_SAMPLEBYTES, UACIN_FMT_CHANNELS_RTS96)
+#define UACIN_RTS192_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 4 + 1, UACIN_RTS192_SAMPLEBYTES, UACIN_FMT_CHANNELS_RTS192)
 
 #ifndef DMABUFCLUSTER
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */

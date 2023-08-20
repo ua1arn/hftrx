@@ -902,19 +902,19 @@ static void adapterst_initialize(void)
 	adpt_initialize(& sdcardio, audiorec_getwidth(), 0, "sdcardio");
 #endif /* WITHUSEAUDIOREC */
 	/* канал звука USB AUDIO */
-	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBITS, 0, "uac48in");	/* Аудиоданные в компютер из трансивера */
-	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBITS, 0, "uac48out");	/* Аудиоданные из компютера в трансивер */
+	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uac48in");	/* Аудиоданные в компютер из трансивера */
+	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uac48out");	/* Аудиоданные из компютера в трансивер */
 	transform_initialize(& uac48out2afcodecrx, & uac48out, & afcodecrx);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin96, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT, "ifspectrumin96");
-	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBITS, 0, "rts96in");
+	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBYTES * 8, 0, "rts96in");
 	transform_initialize(& if2rts96out, & ifspectrumin96, & rts96in);
 #endif /* WITHRTS96 */
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin192, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT, "ifspectrumin192");
-	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBITS, 0, "rts192in");
+	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBYTES * 8, 0, "rts192in");
 	transform_initialize(& if2rts192out, & ifspectrumin192, & rts192in);
 #endif /* WITHRTS192 */
 	/* Преобразование выхода demodulator_FM() */
