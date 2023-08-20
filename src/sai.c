@@ -3729,7 +3729,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	01: PLL_AUDIO(8X)/2	- 98285714
 	//	10: PLL_AUDIO(8X)/4 - 49142857
 	//	11: PLL_AUDIO - 24571428
-	const unsigned CLK_SRC_SEL = 0x03;
+	const unsigned CLK_SRC_SEL = 0;// 0x03;
 
 	* i2s_clk_reg =
 		(UINT32_C(1) << 31) |	// SCLK_GATING.
@@ -4515,6 +4515,14 @@ static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
 	return DMAC_DstReqAHUB_drqt0_TX + getAPBIFtx(ix);
+#elif CPUSTYLE_A64
+	static const unsigned drq [] =
+	{
+		DMAC_DstReqI2S0_TX,
+		DMAC_DstReqI2S1_TX,
+		DMAC_DstReqI2S2_TX,
+	};
+	return drq [ix];
 #else
 	return DMAC_DstReqI2S1_TX + ix - 1;
 #endif
