@@ -567,7 +567,7 @@ extern "C" {
 #define UAC_n3c2g8 (4)	// 6 байт в ячейку 8
 #define UAC_n4c2g8 (1)	// 8 байт в ячейку 8
 
-// ss - sample size, ga - granulation for size
+// ss - sample size, ch - количество каналов, ga - granulation for size
 // выдаёт грануляцию количества сэмплов
 #define UAC_ng(ss, ch, ga) (UAC_n ## ss ## c ## ch ## g ## ga)	// таблица
 
