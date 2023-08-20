@@ -547,10 +547,10 @@ extern "C" {
 #define EP_align(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
 #define EPDSZMAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define UAC_n1c2g1 (2)	// 2 байта в ячейку 1
-#define UAC_n2c2g1 (4)	// 4 байта в ячейку 1
-#define UAC_n3c2g1 (6)	// 6 байт в ячейку 1
-#define UAC_n4c2g1 (8)	// 8 байт в ячейку 1
+#define UAC_n1c2g1 (1)	// 2 байта в ячейку 1
+#define UAC_n2c2g1 (1)	// 4 байта в ячейку 1
+#define UAC_n3c2g1 (1)	// 6 байт в ячейку 1
+#define UAC_n4c2g1 (1)	// 8 байт в ячейку 1
 
 #define UAC_n1c2g2 (1)	// 2 байта в ячейку 2
 #define UAC_n2c2g2 (1)	// 4 байта в ячейку 2
