@@ -3869,7 +3869,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 //	if (!pusb->ep0_flag) return 0;
 //	pusb->ep0_flag--;
 
-	usb_select_ep(pusb, 0);
+	//usb_select_ep(pusb, 0);
 	ep0_csr = usb_get_ep0_csr(pusb);
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
@@ -3936,7 +3936,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				if (ep0_setup->bmRequest&0x80)//in
 				{
 			    	PRINTF("usb_dev_ep0xfer_handler (not 8): ifc=%u, req=%02X, EP0 Rx Error Length = 0x%x\n", interfacev, ep0_setup->bRequest, (unsigned) ep0_count);
-					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy - добавил но не уверен в необходимовсти
 				  	usb_ep0_flush_fifo(pusb);
 
 				}
@@ -3945,7 +3944,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					// OUT
 					static uint8_t buff [512];
 					usb_read_ep_fifo(pusb, 0, (uintptr_t)buff, min(sizeof buff, ep0_count));
-					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
 				  	usb_ep0_flush_fifo(pusb);
 
 				  	// Parse setup packet on output
@@ -4298,7 +4296,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	usb_vbus_src(pusb, 0x0);
 	usb_force_vbus(pusb, 1);
 
-	usb_select_ep(pusb, 0);
+	//usb_select_ep(pusb, 0);
 	usb_ep0_flush_fifo(pusb);
 
 	//PRINTF("USB Device!!\n");
