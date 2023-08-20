@@ -2625,7 +2625,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   		}
   		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u, usbd_getuacoutmaxpacket()=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count, (unsigned) usbd_getuacoutmaxpacket());
   		//PRINTF("rx_count=%u\n", (unsigned) rx_count);
-  		ASSERT(UACOUT_AUDIO48_DATASIZE == rx_count || 0 == rx_count);
+  		ASSERT(UACOUT_AUDIO48_DATASIZE >= rx_count);
   		do
   		{
   			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, ulmin(rx_count, UACOUT_AUDIO48_DATASIZE), USB_PRTCL_ISO);
@@ -4014,11 +4014,16 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 				  		break;
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBUACIN && WITHWAWXXUSB
+#if WITHWAWXXUSB && WITHUSBUAC
+#if WITHUSBUACOUT
+					case INTERFACE_AUDIO_CONTROL_SPK:
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
 					case INTERFACE_AUDIO_CONTROL_MIKE:
 #if WITHUSBUACIN2
 					case INTERFACE_AUDIO_CONTROL_RTS:
 #endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 					  	// Parse setup packet on output
 					  	switch (ep0_setup->bRequest)
 					  	{
@@ -4032,7 +4037,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					  		break;
 					  	}
 				  		break;
-#endif /* WITHUSBUACIN */
+#endif /* WITHWAWXXUSB && WITHUSBUAC */
 
 					default:
 #if WITHWAWXXUSB

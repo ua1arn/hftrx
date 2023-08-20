@@ -445,7 +445,7 @@ static unsigned UAC2_ClockSource(
 		* buff ++ = 0x07;	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
 #else
 		* buff ++ = (0u << 2) | (3u << 0);	// bmAttributes
-		* buff ++ = (1u << 2) | (1u << 0);	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
+		* buff ++ = (1u << 2) | (3u << 0);	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
 #endif
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
 		* buff ++ = STRING_ID_0;/* iClockSource: Not requested */
