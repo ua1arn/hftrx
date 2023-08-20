@@ -3390,8 +3390,8 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYLE_ALLWINNER
 
-#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0u : (UINT32_C(1) << ((ch) * 4)))
-#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0u : (UINT32_C(1) << (((ch) - 8) * 4)))
+#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? UINT32_C(0) : (UINT32_C(1) << ((ch) * 4)))
+#define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 static void (* dmac_handlers [16])(unsigned dmach);
@@ -3916,6 +3916,101 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #elif CPUSTYLE_A64
 	/* Установка формата обмна */
 	#warning CPUSTYLE_A64 to be implemented
+	/* Установка формата обмна */
+	// Каналы I2S
+	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+
+	// Данные на выходе меняются по спадающему фронту (I2S complaint)
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 0, DIN sample data at positive edge;
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
+	i2s->I2S_PCM_FMT0 =
+		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		0;
+	i2s->I2S_PCM_FMT1 =
+		0;
+
+	if (framebits < 64)
+	{
+		// Данные берутся/появляются в младшей части регистра FIFO
+		// I2S/PCM FIFO Control Register
+		i2s->I2S_PCM_FCTL = (i2s->I2S_PCM_FCTL & ~ (0x07uL)) |
+			1 * (UINT32_C(1) << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
+			3 * (UINT32_C(1) << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
+			0;
+	}
+
+	// I2S/PCM Channel Configuration Register
+	i2s->I2S_PCM_CHCFG =
+		(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
+		0;
+
+	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
+	// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
+	// (pin P2-6) lrck = 53 khz
+	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
+	// BCLK = MCLK / BCLKDIV
+	const unsigned ratio = 256 / framebits;
+	const unsigned div4 = 1;
+	i2s->I2S_PCM_CLKD =
+		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
+		ratio2div(div4) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+		ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		0;
+
+	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
+
+	const unsigned txrx_offset = 1;		// I2S format
+
+	ASSERT(din < 4);
+	ASSERT(dout < 4);
+	// I2S/PCM Control Register
+	i2s->I2S_PCM_CTL = 0;
+	i2s->I2S_PCM_CTL =
+		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// DOUT3_EN..DOUT0_EN
+		((uint_fast32_t) master << 18) | // BCLK_OUT
+		((uint_fast32_t) master << 17) | // LRCK_OUT
+		(UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
+		0;
+
+	i2s->I2S_PCM_RXCHSEL =
+		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		0;
+
+	const portholder_t txchsel =
+		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
+		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		0xFFFF * (UINT32_C(1) << 0) |		// TX3 Channel (Slot) Enable
+		0;
+
+	i2s->I2S_PCM_TX0CHSEL = txchsel;
+	i2s->I2S_PCM_TX1CHSEL = txchsel;
+	i2s->I2S_PCM_TX2CHSEL = txchsel;
+	i2s->I2S_PCM_TX3CHSEL = txchsel;
+
+	/* Простое отображение каналов с последовательно увеличивающимся номером */
+	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+	I2S_fill_TXxCHMAP(i2s, 0, dout, NSLOTS);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, dout, NSLOTS);	// I2S_PCM_TX3CHMAPx
+
+	i2s->I2S_PCM_INT = 0;
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 3); // RX_DRQ
+
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
+//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
+
+	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Установка формата обмна */

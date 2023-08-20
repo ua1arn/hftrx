@@ -253,7 +253,7 @@ extern "C" {
 		#define DMABUF32RXWFM3I	6		// WFM NEWEST
 		#define DMABUF32RXWFM3Q	7		// WFM
 
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+	#elif CPUSTYLE_ALLWINNER
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
 		#if WITHFPGAIF_FRAMEBITS == 256
