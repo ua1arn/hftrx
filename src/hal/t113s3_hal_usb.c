@@ -59,13 +59,13 @@
 #endif /* WITHUSBDEV_HSDESC */
 
 #define USB_DEV_SEC_BITS   		9//
-#define USB_DEV_SEC_SIZE   		(0x1u << USB_DEV_SEC_BITS)//
+#define USB_DEV_SEC_SIZE   		(UINT32_C(1) << USB_DEV_SEC_BITS)//
 
 #define MAX_DDMA_SIZE			(16*1024*1024)  //16MB
 
 //#define USB_DEV0_TOTAL_CAP  	1//MB
 //#define USB_DEV0_SEC_BITS   	9//
-//#define USB_DEV0_SEC_SIZE   	(0x1u << USB_DEV0_SEC_BITS)//
+//#define USB_DEV0_SEC_SIZE   	(UINT32_C(1) << USB_DEV0_SEC_BITS)//
 //#define USB_DEV0_SEC_CNT    	(((USB_DEV0_TOTAL_CAP-1)<<11)|0xFFF)//
 
 //#define USB_BO_DEV0_MEM_BASE	0x80800000//
@@ -192,7 +192,7 @@ static void usb_iso_update_enable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 7);	// MUSB2_MASK_ISOUPD
+	reg_val |= (UINT32_C(1) << 7);	// MUSB2_MASK_ISOUPD
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -201,7 +201,7 @@ static void usb_iso_update_disable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 7);	// MUSB2_MASK_ISOUPD
+	reg_val &= ~ (UINT32_C(1) << 7);	// MUSB2_MASK_ISOUPD
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -210,7 +210,7 @@ static void usb_soft_connect(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 6);	// MUSB2_MASK_SOFTC
+	reg_val |= (UINT32_C(1) << 6);	// MUSB2_MASK_SOFTC
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -219,7 +219,7 @@ static void usb_soft_disconnect(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 6);	// MUSB2_MASK_SOFTC
+	reg_val &= ~ (UINT32_C(1) << 6);	// MUSB2_MASK_SOFTC
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -228,7 +228,7 @@ static void usb_high_speed_enable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 5);	// HSEN
+	reg_val |= (UINT32_C(1) << 5);	// HSEN
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -237,7 +237,7 @@ static void usb_high_speed_disable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 5);	// HSEN
+	reg_val &= ~ (UINT32_C(1) << 5);	// HSEN
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -251,7 +251,7 @@ static void usb_set_reset(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 3);
+	reg_val |= (UINT32_C(1) << 3);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -260,7 +260,7 @@ static void usb_clear_reset(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 3);
+	reg_val &= ~ (UINT32_C(1) << 3);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -269,7 +269,7 @@ static void usb_set_resume(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 2);
+	reg_val |= (UINT32_C(1) << 2);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -278,7 +278,7 @@ static void usb_clear_resume(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 2);
+	reg_val &= ~ (UINT32_C(1) << 2);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -288,7 +288,7 @@ static void usb_set_suspend(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 1);
+	reg_val |= (UINT32_C(1) << 1);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -297,7 +297,7 @@ static void usb_clear_suspend(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 1);
+	reg_val &= ~ (UINT32_C(1) << 1);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -312,7 +312,7 @@ static void usb_suspendm_enable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val |= (0x1u << 0);
+	reg_val |= (UINT32_C(1) << 0);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -321,7 +321,7 @@ static void usb_suspendm_disable(pusb_struct pusb)
 	uint8_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-	reg_val &= ~ (0x1u << 0);
+	reg_val &= ~ (UINT32_C(1) << 0);
 	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 }
 
@@ -474,7 +474,7 @@ static void usb_ep0_disable_ping(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val |= (0x1u << 8);
+	reg_val |= (UINT32_C(1) << 8);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -483,7 +483,7 @@ static void usb_ep0_enable_ping(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val &= ~ (0x1u << 8);
+	reg_val &= ~ (UINT32_C(1) << 8);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -492,7 +492,7 @@ static void usb_ep0_flush_fifo(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val |= (0x1u << 8);
+	reg_val |= (UINT32_C(1) << 8);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -506,7 +506,7 @@ static void usb_ep0_clear_naktimeout(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val &= ~ (0x1u << 7);
+	reg_val &= ~ (UINT32_C(1) << 7);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -515,7 +515,7 @@ static void usb_ep0_set_statuspkt(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val |= (0x1u << 6);
+	reg_val |= (UINT32_C(1) << 6);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -524,7 +524,7 @@ static void usb_ep0_clear_statuspkt(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val &= ~ (0x1u << 6);
+	reg_val &= ~ (UINT32_C(1) << 6);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -533,7 +533,7 @@ static void usb_ep0_set_reqpkt(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val |= (0x1u << 5);
+	reg_val |= (UINT32_C(1) << 5);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -542,7 +542,7 @@ static void usb_ep0_clear_setupend(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val |= (0x1u << 7);
+	reg_val |= (UINT32_C(1) << 7);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -551,7 +551,7 @@ static void usb_ep0_clear_rxpktrdy(pusb_struct pusb)
 	uint32_t reg_val;
 
 	reg_val = WITHUSBHW_DEVICE->USB_CSR0;
-	reg_val |= (0x1u << 6);
+	reg_val |= (UINT32_C(1) << 6);
 	WITHUSBHW_DEVICE->USB_CSR0 = reg_val;
 }
 
@@ -582,7 +582,7 @@ static void usb_set_eptx_csr(pusb_struct pusb, uint32_t csr)
 
 static void usb_eptx_flush_fifo(pusb_struct pusb)
 {
-	 WITHUSBHW_DEVICE->USB_CSR0 = (0x1u << 3);
+	 WITHUSBHW_DEVICE->USB_CSR0 = (UINT32_C(1) << 3);
 }
 
 static void usb_set_eprx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t pktcnt)
@@ -619,8 +619,8 @@ static void usb_set_eprx_csrhi(pusb_struct pusb, uint32_t csrhi)
 
 static void usb_eprx_flush_fifo(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_RXCSR = 0x1u << 4;
-	//put_hvalue(USBOTG0_BASE + USB_hRXCSR_OFF, 0x1u << 4);
+	WITHUSBHW_DEVICE->USB_RXCSR = UINT32_C(1) << 4;
+	//put_hvalue(USBOTG0_BASE + USB_hRXCSR_OFF, UINT32_C(1) << 4);
 }
 
 static uint32_t usb_get_ep0_count(pusb_struct pusb)
@@ -728,7 +728,7 @@ static uint32_t usb_is_host(pusb_struct pusb)
 //	uint32_t reg_val;
 //
 //	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-//	reg_val |= 0x1u << 9;
+//	reg_val |= UINT32_C(1) << 9;
 //	WITHUSBHW_DEVICE->USB_GCS = reg_val;
 //}
 //
@@ -779,7 +779,7 @@ static void usb_set_eptx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t s
 	ASSERT((size & 0x07) == 0);
 	ASSERT(sz <= 9);
 	reg_val = 0;
-	if (is_dpb) reg_val |= 0x1u << 4;
+	if (is_dpb) reg_val |= UINT32_C(1) << 4;
 	reg_val |= aw_log2(size >> 3) & 0xf;
 	WITHUSBHW_DEVICE->USB_TXFIFO = (WITHUSBHW_DEVICE->USB_TXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
 }
@@ -793,7 +793,7 @@ static void usb_set_eprx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t s
 	ASSERT((size & 0x07) == 0);
 	ASSERT(sz <= 9);
 	reg_val = 0;
-	if (is_dpb) reg_val |= 0x1u << 4;
+	if (is_dpb) reg_val |= UINT32_C(1) << 4;
 	reg_val |= sz & 0xf;
 	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
 	//PRINTF("usb_set_eprx_fifo_size: sz=%u (size=%u)\n", (unsigned) sz, (unsigned) size);
@@ -813,8 +813,8 @@ static void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr)
 
 static void usb_fifo_accessed_by_cpu(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_GCS &= ~ (0x1u << 24);	// FIFO_BUS_SEL
-	while ((WITHUSBHW_DEVICE->USB_GCS & (0x1u << 24)) != 0)	// FIFO_BUS_SEL
+	WITHUSBHW_DEVICE->USB_GCS &= ~ (UINT32_C(1) << 24);	// FIFO_BUS_SEL
+	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) != 0)	// FIFO_BUS_SEL
 		;
 }
 
@@ -826,7 +826,7 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 	if (ep_no>USB_MAX_EP_NO)
 		return;
 	reg_val = 0x1;	// FIFO_BUS_SEL
-	if (!is_tx) reg_val |= 0x1u << 1;	// RX endpoint flag
+	if (!is_tx) reg_val |= UINT32_C(1) << 1;	// RX endpoint flag
 	reg_val |= (ep_no-1) << 2;
 
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (0xFFu << 24)) | (reg_val << 24);
@@ -866,7 +866,7 @@ static void usb_set_eptx_haddr(pusb_struct pusb, uint32_t fifo, uint32_t haddr, 
 
 	reg_val = 0;
 	if (is_mtt)
-		reg_val |= 0x1u << 7;
+		reg_val |= UINT32_C(1) << 7;
 	reg_val |= haddr & 0x7F;
 
 	WITHUSBHW_DEVICE->FIFO [fifo].USB_TXHADDR = reg_val;
@@ -893,7 +893,7 @@ static void usb_set_eprx_haddr(pusb_struct pusb, uint32_t fifo, uint32_t haddr, 
 
 	reg_val = 0;
 	if (is_mtt)
-		reg_val |= 0x1u << 7;
+		reg_val |= UINT32_C(1) << 7;
 	reg_val |= haddr & 0x7F;
 
 	WITHUSBHW_DEVICE->FIFO [fifo].USB_RXHADDR = reg_val;
@@ -960,22 +960,22 @@ static uint32_t usb_get_fs_linestate(pusb_struct pusb)
 
 static void usb_iddig_pullup_enable(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_ISCR |= (0x1u << 17);
+	WITHUSBHW_DEVICE->USB_ISCR |= (UINT32_C(1) << 17);
 }
 
 static void usb_iddig_pullup_disable(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_ISCR &= ~ (0x1u << 17);
+	WITHUSBHW_DEVICE->USB_ISCR &= ~ (UINT32_C(1) << 17);
 }
 
 static void usb_dpdm_pullup_enable(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_ISCR |= (0x1u << 16);
+	WITHUSBHW_DEVICE->USB_ISCR |= (UINT32_C(1) << 16);
 }
 
 static void usb_dpdm_pullup_disable(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_ISCR &= ~ (0x1u << 16);
+	WITHUSBHW_DEVICE->USB_ISCR &= ~ (UINT32_C(1) << 16);
 }
 
 static void usb_release_id(pusb_struct pusb)
@@ -987,10 +987,10 @@ static void usb_force_id(pusb_struct pusb, uint32_t id)
 {
 
 	if (id)
-		WITHUSBHW_DEVICE->USB_ISCR |= (0x1u << 14);
+		WITHUSBHW_DEVICE->USB_ISCR |= (UINT32_C(1) << 14);
 	else
-		WITHUSBHW_DEVICE->USB_ISCR &= ~ (0x1u << 14);
-	WITHUSBHW_DEVICE->USB_ISCR |= (0x1u << 15);
+		WITHUSBHW_DEVICE->USB_ISCR &= ~ (UINT32_C(1) << 14);
+	WITHUSBHW_DEVICE->USB_ISCR |= (UINT32_C(1) << 15);
 
 }
 
@@ -1013,10 +1013,10 @@ static void usb_release_vbus(pusb_struct pusb)
 static void usb_force_vbus(pusb_struct pusb, uint32_t vbus)
 {
 	if (vbus)
-		WITHUSBHW_DEVICE->USB_ISCR |= (0x1u << 12);
+		WITHUSBHW_DEVICE->USB_ISCR |= (UINT32_C(1) << 12);
 	else
-		WITHUSBHW_DEVICE->USB_ISCR &= ~ (0x1u << 12);
-	WITHUSBHW_DEVICE->USB_ISCR |= (0x1u << 13);
+		WITHUSBHW_DEVICE->USB_ISCR &= ~ (UINT32_C(1) << 12);
+	WITHUSBHW_DEVICE->USB_ISCR |= (UINT32_C(1) << 13);
 }
 
 static void usb_drive_vbus(pusb_struct pusb, uint32_t vbus, uint32_t index)
@@ -1027,19 +1027,19 @@ static void usb_drive_vbus(pusb_struct pusb, uint32_t vbus, uint32_t index)
 //	//Set PB9 Output,USB0-DRV SET
 //	 temp = get_wvalue(0x01c20800+0x28);
 //	 temp &= ~ (0x7 << 4);
-//	 temp |= (0x1u << 1);
+//	 temp |= (UINT32_C(1) << 1);
 //	 put_wvalue(0x01c20800+0x28, temp);
 //
 //	 if (vbus)
 //	 {
 //	 	temp = get_wvalue(0x01c20800+0x34);
-//	 	temp |= (0x1u << 9);
+//	 	temp |= (UINT32_C(1) << 9);
 //	 	put_wvalue(0x01c20800+0x34,temp);
 //	 }
 //	 else
 //	 {
 //	 temp = get_wvalue(0x01c20800+0x34);
-//	 	temp &= ~ (0x1u << 9);
+//	 	temp &= ~ (UINT32_C(1) << 9);
 //	 	put_wvalue(0x01c20800+0x34,temp);
 //	 }
 	}
@@ -3874,16 +3874,16 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_DATA)  //Control IN Data Stage or Stage Status
 	{
-		if (ep0_csr & (0x1u << 0))	// RxPktRdy
+		if (ep0_csr & (UINT32_C(1) << 0))	// RxPktRdy
 		{
 			pusb->ep0_xfer_state = USB_EP0_SETUP;	// получили setup пакет
 		}
-		else if (ep0_csr & (0x1u << 4))	// SetupEnd
+		else if (ep0_csr & (UINT32_C(1) << 4))	// SetupEnd
 		{
 			usb_set_ep0_csr(pusb, 0x80);	// ServicedSetupEnd
 			PRINTF("usb_dev_ep0xfer_handler: WRN: EP0 Setup End!!\n");
 		}
-		else if (!(ep0_csr & (0x1u << 1)))	// ! TxPktRdy
+		else if (!(ep0_csr & (UINT32_C(1) << 1)))	// ! TxPktRdy
 		{
 			usb_ep0_complete_send_data(pusb);	// продолжаем пересылать, возможно несколько раз
 		}
@@ -3901,7 +3901,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
 #endif /* WITHWAWXXUSB */
 
-		if (ep0_csr & (0x1u << 0)) // RxPktRdy
+		if (ep0_csr & (UINT32_C(1) << 0)) // RxPktRdy
 		{
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
 
