@@ -142,11 +142,14 @@ typedef struct {
 	usb_device_msc device_msc;
 #endif /* WITHUSBDMSC */
 
+#if WITHUSBDEV_DMAENABLE || 1
 	//DMA Description
 	//DMADESC    dma;
-	uint32_t		 dma;
-	uint32_t		 dma_last_transfer;
-
+	uint32_t		 dmarxv[USB_MAX_EP_NO];
+	uint32_t		 dmatxv[USB_MAX_EP_NO];
+	uint32_t		 dmarx_last_transferv[USB_MAX_EP_NO];
+	uint32_t		 dmatx_last_transferv[USB_MAX_EP_NO];
+#endif /* WITHUSBDEV_DMAENABLE */
 	//Timer
 	#define USB_IDLE_TIMER								0x0
 	#define USB_DEVICE_VBUS_DET_TIMER			0x1

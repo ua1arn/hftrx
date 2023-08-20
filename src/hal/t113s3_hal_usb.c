@@ -92,7 +92,8 @@
 
 #define  wBoot_dma_QueryState(hdma)  0
 #define  wBoot_dma_stop(hdma)        do { } while (0)
-#define  wBoot_dma_request(sect)     0
+#define  wBoot_dma_requestrx(sect)     0
+#define  wBoot_dma_requesttx(sect)     0
 
 static usb_struct * volatile gpusb = NULL;
 
@@ -1360,17 +1361,17 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				uint32_t xfer_count=0;
 
 #if WITHUSBDEV_DMAENABLE
-				xfer_count = min(pusb->eprx_xfer_residue, USB_BO_DEV_BUF_SIZE);
-				pusb->dma_last_transfer = xfer_count;
+				xfer_count = min(pusb->eprx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
+				pusb->dmarx_last_transferv[ep_no-1] = xfer_count;
 				usb_fifo_accessed_by_dma(pusb, ep_no, 0);  //rx
 
-				dram_addr = usb_dev_get_buf_base(pusb, pusb->eprx_buf_tag);
+				dram_addr = usb_dev_get_buf_base(pusb, pusb->eprx_buf_tagv[ep_no-1]);
 
-				p.cfg.src_drq_type      = DDMA_SRC_USB0;
+				p.cfg.src_drq_type      = DMAC_SrcReqUSB0_EP1+ep_no-1;
 				p.cfg.src_addr_type     = 1;   //IO address
 				p.cfg.src_burst_length  = 1;   //burst length = 4
 				p.cfg.src_data_width    = 2;   //32bit
-				p.cfg.dst_drq_type      = DDMA_DST_SDRAM;
+				p.cfg.dst_drq_type      = DMAC_DstReqDRAM;
 				p.cfg.dst_addr_type     = 0;   //linear
 				p.cfg.dst_burst_length  = 1;   //burst length = 4
 				p.cfg.dst_data_width    = 2;   //32bit
@@ -1381,11 +1382,11 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				p.pgstp                 = 0;
 				p.cmt_blk_cnt           = USB2DRAM_PARAMS;
 
-				wBoot_dma_Setting(pusb->dma, (void *) & p);
-				//���Ƕ�����������ʱ��ˢ��Ŀ�ĵ�ַ��ԭ�����ˢ��DRAM(SRAM)
-				wlibc_CleanFlushDCacheRegion((void *)dram_addr, xfer_count);
+				wBoot_dma_Setting(pusb->dmarxv[ep_no-1], (void *) & p);
 
-				wBoot_dma_start(pusb->dma, usb_get_ep_fifo_addr(pusb, ep_no), dram_addr, xfer_count);
+				dcache_clean_invalidate(dram_addr, xfer_count);
+
+				wBoot_dma_start(pusb->dmarxv[ep_no-1], usb_get_ep_fifo_addr(pusb, ep_no), dram_addr, xfer_count);
 
 				usb_set_eprx_csrhi(pusb, (USB_RXCSR_AUTOCLR|USB_RXCSR_DMAREQEN)>>8);
 				pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
@@ -1461,26 +1462,26 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 #if WITHUSBDEV_DMAENABLE
 		if (!wBoot_dma_QueryState(pusb->dma))
 	 	{
-	 		uint32_t data_xfered = pusb->dma_last_transfer;
+	 		uint32_t data_xfered = pusb->dmarx_last_transferv[ep_no-1];
 
-		  	pdev->epx_xfer_residue -= data_xfered;
-		  	pusb->dma_last_transfer  = 0;
-		  	pdev->epx_buf_tag = pdev->epx_buf_tag ? 0:1;
+	 		pusb->eprx_xfer_residuev[ep_no-1] -= data_xfered;
+		  	pusb->dmarx_last_transferv[ep_no-1]  = 0;
+		  	pusb->eprx_buf_tagv[ep_no-1] = pusb->eprx_buf_tagv[ep_no-1] ? 0:1;
 
-		  	if (pdev->epx_xfer_residue)
+		  	if (pusb->eprx_xfer_residuev[ep_no-1])
 		  	{
-		  		uint32_t xfer_count = min(pdev->epx_xfer_residue, USB_BO_DEV_BUF_SIZE);
+		  		uint32_t xfer_count = min(pusb->eprx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
 
-				pusb->dma_last_transfer = xfer_count;
+				pusb->dmarx_last_transferv[ep_no-1] = xfer_count;
 		  		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
 
-		  		dram_addr = usb_dev_get_buf_base(pusb, pdev->epx_buf_tag);
+		  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eprx_buf_tagv[ep_no-1]);
 
-			    p.cfg.src_drq_type      = DDMA_SRC_USB0;
+			    p.cfg.src_drq_type      = DMAC_SrcReqUSB0_EP1+ep_no-1;
 			    p.cfg.src_addr_type     = 1;   //IO address
 			    p.cfg.src_burst_length  = 1;   //burst length = 4
 			    p.cfg.src_data_width    = 2;   //32bit
-			    p.cfg.dst_drq_type      = DDMA_DST_SDRAM;
+			    p.cfg.dst_drq_type      = DMAC_DstReqDRAM;
 			    p.cfg.dst_addr_type     = 0;   //linear
 			    p.cfg.dst_burst_length  = 1;   //burst length = 4
 			    p.cfg.dst_data_width    = 2;   //32bit
@@ -1491,11 +1492,11 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			    p.pgstp                 = 0;
 			    p.cmt_blk_cnt           = USB2DRAM_PARAMS;
 
-			    wBoot_dma_Setting(pusb->dma, (void *) & p);
+			    wBoot_dma_Setting(pusb->dmarxv[ep_no-1], (void *) & p);
 			    //���Ƕ�����������ʱ��ˢ��Ŀ�ĵ�ַ��ԭ�����ˢ��DRAM(SRAM)
-			    wlibc_CleanFlushDCacheRegion((void *)dram_addr, xfer_count);
+			    dcache_clean_invalidate(dram_addr, xfer_count);
 
-			    wBoot_dma_start(pusb->dma, usb_get_ep_fifo_addr(pusb, ep_no), dram_addr, xfer_count);
+			    wBoot_dma_start(pusb->dmarxv[ep_no-1], usb_get_ep_fifo_addr(pusb, ep_no), dram_addr, xfer_count);
 		  	}
 		  	else
 		  	{
@@ -1511,10 +1512,10 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			    ret = USB_RETVAL_COMPOK;
 		  	}
 
-			if (dram_copy(usb_dev_get_buf_base(pusb, pdev->epx_buf_tag? 0:1), pdev->epx_xfer_addr, data_xfered))
+			if (dram_copy(usb_dev_get_buf_base(pusb, pusb->eprx_buf_tagv[ep_no-1]? 0:1), pusb->eprx_xfer_addrv[ep_no-1], data_xfered))
 		  	{
-		  		pdev->epx_xfer_addr += data_xfered;
-		  		pdev->epx_xfer_tranferred += data_xfered;
+				pusb->eprx_xfer_addrv[ep_no-1] += data_xfered;
+				pusb->eprx_xfer_tranferredv[ep_no-1] += data_xfered;
 		  	}
 		  	else
 		  	{
@@ -1636,12 +1637,12 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 #if WITHUSBDEV_DMAENABLE
 				uint32_t xfer_count = 0;
 
-		 		xfer_count = min(pdev->eptx_xfer_residue, USB_BO_DEV_BUF_SIZE);
-		 		ping_pang_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tag);
-		 		if (dram_copy(pusb->eptx_xfer_addr, ping_pang_addr, xfer_count))
+		 		xfer_count = min(pusb->eptx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
+		 		ping_pang_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tagv[ep_no-1]);
+		 		if (dram_copy(pusb->eptx_xfer_addrv[ep_no-1], ping_pang_addr, xfer_count))
 	 			{
-	 				pdev->eptx_xfer_addrv[ep_no-1] += xfer_count;
-	 				pdev->eptx_xfer_residuev[ep_no-1] -= xfer_count;
+		 			pusb->eptx_xfer_addrv[ep_no-1] += xfer_count;
+		 			pusb->eptx_xfer_residuev[ep_no-1] -= xfer_count;
 	 			}
 		 		else
 	 			{
@@ -1656,13 +1657,13 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 					PRINTF("Error: FIFO Access Config Error!!\n");
 			    }
 
-		  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tag);
+		  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tagv[ep_no-1]);
 
-			    p.cfg.src_drq_type      = DDMA_DST_SDRAM;
+			    p.cfg.src_drq_type      = DMAC_SrcReqDRAM;
 			    p.cfg.src_addr_type     = 0;   //linear
 			    p.cfg.src_burst_length  = 1;   //burst length = 4
 			    p.cfg.src_data_width    = 2;   //32bit
-			    p.cfg.dst_drq_type      = DDMA_SRC_USB0;
+			    p.cfg.dst_drq_type      = DMAC_DstReqUSB0_EP1+ep_no-1;
 			    p.cfg.dst_addr_type     = 1;   //IO address
 			    p.cfg.dst_burst_length  = 1;   //burst length = 4
 			    p.cfg.dst_data_width    = 2;   //32bit
@@ -1673,38 +1674,38 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			    p.pgstp                 = 0;
 			    p.cmt_blk_cnt           = DRAM2USB_PARAMS;
 
-			    wBoot_dma_Setting(pusb->dma, (void *) & p);
-		        //����д������д��ʱ��ˢ��Ŀ�ĵ�ַ��ԭ�����ˢ��DRAM(SRAM)
-		        wlibc_CleanFlushDCacheRegion((void *)dram_addr, xfer_count);
+			    wBoot_dma_Setting(pusb->dmatxv[ep_no-1], (void *) & p);
 
-				wBoot_dma_start(pusb->dma, dram_addr, (uint32_t)ping_pang_addr, xfer_count);
+			    dcache_clean(dram_addr, xfer_count);
 
-			    pusb->eptx_buf_tagv[ep_no-1] = pusb->epx_buf_tagv[ep_no-1] ? 0:1;
+				wBoot_dma_start(pusb->dmatxv[ep_no-1], dram_addr, (uint32_t)ping_pang_addr, xfer_count);
 
-			    if (pusb->eptx_xfer_residue)
+			    pusb->eptx_buf_tagv[ep_no-1] = pusb->eptx_buf_tagv[ep_no-1] ? 0:1;
+
+			    if (pusb->eptx_xfer_residuev[ep_no-1])
 		    	{
 		    		xfer_count = min(pusb->eptx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
 
-		    		if (dram_copy(pdev->epx_xfer_addr, usb_dev_get_buf_base(pusb, pdev->eptx_buf_tag), xfer_count))
+		    		if (dram_copy(pusb->eptx_xfer_addrv[ep_no-1], usb_dev_get_buf_base(pusb, pusb->eptx_buf_tagv[ep_no-1]), xfer_count))
 	    			{
-	    				pusb->eptx_xfer_addrv[ep_no-1] += xfer_count;
-	    				pusb->eptx_xfer_residuev[ep_no-1] -= xfer_count;
+		    			pusb->eptx_xfer_addrv[ep_no-1] += xfer_count;
+		    			pusb->eptx_xfer_residuev[ep_no-1] -= xfer_count;
 	    			}
 		    		else
 	    			{
 	    				PRINTF("Error: storage to buffer copy error!!\n");
 			        	ret = USB_RETVAL_COMPERR;
 	    			}
-		    		pusb->dma_last_transfer = xfer_count;
+		    		pusb->dmatx_last_transferv[ep_no-1] = xfer_count;
 		    	}
 			    else
 		    	{
-		    		pusb->dma_last_transferv[ep_no-1] = 0;
+			    	pusb->dmatx_last_transferv[ep_no-1] = 0;
 		    	}
 
 		    	usb_set_eptx_csr(pusb, USB_TXCSR_AUTOSET|USB_TXCSR_TXFIFO|USB_TXCSR_DMAREQEN|USB_TXCSR_DMAREQMODE);
 
-				pusb->eptx_xfer_statev[ep_no-1][ep_no-1] = USB_EPX_DATA;
+				pusb->eptx_xfer_state[ep_no-1] = USB_EPX_DATA;
 #else
 				usb_fifo_accessed_by_cpu(pusb);
 				usb_write_ep_fifo(pusb, ep_no, pusb->eptx_xfer_addrv[ep_no-1], maxpkt);
@@ -1735,17 +1736,17 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 		case USB_EPX_DATA:
 		{
 #if WITHUSBDEV_DMAENABLE
-			if (!wBoot_dma_QueryState(pusb->dma))
+			if (!wBoot_dma_QueryState(pusb->dmatxv[ep_no-1]))
 		 	{
-		 		if (pusb->dma_last_transfer)
+		 		if (pusb->dmatx_last_transferv[ep_no-1])
 	 			{
-			  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tag);
+			  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eptx_buf_tagv[ep_no-1]);
 
-				    p.cfg.src_drq_type      = DDMA_DST_SDRAM;
+				    p.cfg.src_drq_type      = DMAC_SrcReqDRAM;
 				    p.cfg.src_addr_type     = 0;   //linear
 				    p.cfg.src_burst_length  = 1;   //burst length = 4
 				    p.cfg.src_data_width    = 2;   //32bit
-				    p.cfg.dst_drq_type      = DDMA_SRC_USB0;
+				    p.cfg.dst_drq_type      = DMAC_DstReqUSB0_EP1+ep_no-1;
 				    p.cfg.dst_addr_type     = 1;   //IO address
 				    p.cfg.dst_burst_length  = 1;   //burst length = 4
 				    p.cfg.dst_data_width    = 2;   //32bit
@@ -1756,19 +1757,19 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 				    p.pgstp                 = 0;
 				    p.cmt_blk_cnt           = DRAM2USB_PARAMS;
 
-				    wBoot_dma_Setting(pusb->dma, (void *) & p);
-			        //����д������д��ʱ��ˢ��Ŀ�ĵ�ַ��ԭ�����ˢ��DRAM(SRAM)
-			        wlibc_CleanFlushDCacheRegion((void *)dram_addr, pusb->dma_last_transferv[ep_no-1]);
+				    wBoot_dma_Setting(pusb->dmatxv[ep_no-1], (void *) & p);
 
-			        wBoot_dma_start(pusb->dma, dram_addr, usb_get_ep_fifo_addr(pusb, ep_no), pusb->dma_last_transferv[ep_no-1]);
+				    dcache_clean(dram_addr, pusb->dmatx_last_transferv[ep_no-1]);
 
-			    	pusb->epx_buf_tagv[ep_no-1] = pusb->epx_buf_tagv[ep_no-1] ? 0:1;
+			        wBoot_dma_start(pusb->dmatxv[ep_no-1], dram_addr, usb_get_ep_fifo_addr(pusb, ep_no), pusb->dmatx_last_transferv[ep_no-1]);
 
-			    	if (pusb->eptx_xfer_residue)//Copy Data from storage to buffer
+			    	pusb->eptx_buf_tagv[ep_no-1] = pusb->eptx_buf_tagv[ep_no-1] ? 0:1;
+
+			    	if (pusb->eptx_xfer_residuev[ep_no-1])//Copy Data from storage to buffer
 			    	{
-			    		uint32_t xfer_count = min(pusb->eptx_xfer_residue, USB_BO_DEV_BUF_SIZE);
+			    		uint32_t xfer_count = min(pusb->eptx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
 
-			    		if (dram_copy(pusb->eptx_xfer_addr, usb_dev_get_buf_base(pusb, pusb->epx_buf_tagv[ep_no-1]), xfer_count))
+			    		if (dram_copy(pusb->eptx_xfer_addrv[ep_no-1], usb_dev_get_buf_base(pusb, pusb->eptx_buf_tagv[ep_no-1]), xfer_count))
 		    			{
 		    				pusb->eptx_xfer_addrv[ep_no-1] += xfer_count;
 		    				pusb->eptx_xfer_residuev[ep_no-1] -= xfer_count;
@@ -1778,11 +1779,11 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 		    				PRINTF("Error: storage to buffer copy error!!\n");
 				        	ret = USB_RETVAL_COMPERR;
 		    			}
-			    		pusb->dma_last_transferv[ep_no-1] = xfer_count;
+			    		pusb->dmatx_last_transferv[ep_no-1] = xfer_count;
 			    	}
 			    	else
 			    	{
-			    		pusb->dma_last_transferv[ep_no-1] = 0;
+			    		pusb->dmatx_last_transferv[ep_no-1] = 0;
 			    	}
 	 			}
 	 			else
@@ -4201,13 +4202,32 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
+#if WITHUSBDEV_DMAENABLE
 	//dma
-	pusb->dma = wBoot_dma_request(1);
-	if (!pusb->dma)
 	{
-		PRINTF("usb error: request dma fail\n");
-	}
+		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+		const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
+		const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
 
+		pusb->dmatxv[bo_ep_rts_in-1] = wBoot_dma_requesttx(1);
+		if (!pusb->dmatxv[bo_ep_rts_in-1])
+		{
+			PRINTF("usb error: request dma fail\n");
+		}
+
+		pusb->dmatxv[bo_ep_in-1] = wBoot_dma_requesttx(1);
+		if (!pusb->dmatxv[bo_ep_in-1])
+		{
+			PRINTF("usb error: request dma fail\n");
+		}
+
+		pusb->dmarxv[bo_ep_out-1] = wBoot_dma_requestrx(1);
+		if (!pusb->dmarxv[bo_ep_out-1])
+		{
+			PRINTF("usb error: request dma fail\n");
+		}
+	}
+#endif /* WITHUSBDEV_DMAENABLE */
 }
 
 void usb_struct_init(PCD_HandleTypeDef *hpcd)
