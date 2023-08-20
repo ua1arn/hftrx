@@ -3956,7 +3956,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// (pin P2-6) lrck = 53 khz
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
-	const unsigned ratio = 256 / framebits;
+	const unsigned ratio = 1;// 256 / framebits;
 	const unsigned div4 = 1;
 	i2s->I2S_PCM_CLKD =
 		1 * (UINT32_C(1) << 8) |		// MCLKO_EN

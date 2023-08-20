@@ -6051,7 +6051,7 @@
   </peripheral>
   <peripheral>
   <name>I2S0</name>
-  <description></description>
+  <description>I2S/PCM Controller</description>
   <baseAddress>0x01C22000</baseAddress>
   <interrupt>
    <name>I2S_PCM0</name>

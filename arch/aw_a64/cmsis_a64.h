@@ -41,9 +41,9 @@ typedef enum IRQn
     TWI2_IRQn = 40,                                   /*!< TWI  */
     PB_EINT_IRQn = 43,                                /*!< GPIOINT PB_EINT interrupt  */
     OWA_IRQn = 44,                                    /*!< OWA One Wire Audio */
-    I2S_PCM0_IRQn = 45,                               /*!< I2S_PCM  */
-    I2S_PCM1_IRQn = 46,                               /*!< I2S_PCM  */
-    I2S_PCM2_IRQn = 47,                               /*!< I2S_PCM  */
+    I2S_PCM0_IRQn = 45,                               /*!< I2S_PCM I2S/PCM Controller */
+    I2S_PCM1_IRQn = 46,                               /*!< I2S_PCM I2S/PCM Controller */
+    I2S_PCM2_IRQn = 47,                               /*!< I2S_PCM I2S/PCM Controller */
     PG_EINT_IRQn = 49,                                /*!< GPIOINT PG_EINT interrupt */
     TIMER0_IRQn = 50,                                 /*!< TIMER  */
     TIMER1_IRQn = 51,                                 /*!< TIMER  */
@@ -143,9 +143,9 @@ typedef enum IRQn
 #define GPIOINTH_BASE ((uintptr_t) 0x01C20AC0)        /*!< GPIOINT  Base */
 #define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x01C21400)             /*!< PWM  Base */
-#define I2S0_BASE ((uintptr_t) 0x01C22000)            /*!< I2S_PCM  Base */
-#define I2S1_BASE ((uintptr_t) 0x01C22400)            /*!< I2S_PCM  Base */
-#define I2S2_BASE ((uintptr_t) 0x01C22800)            /*!< I2S_PCM  Base */
+#define I2S0_BASE ((uintptr_t) 0x01C22000)            /*!< I2S_PCM I2S/PCM Controller Base */
+#define I2S1_BASE ((uintptr_t) 0x01C22400)            /*!< I2S_PCM I2S/PCM Controller Base */
+#define I2S2_BASE ((uintptr_t) 0x01C22800)            /*!< I2S_PCM I2S/PCM Controller Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x01C22C00)     /*!< AUDIO_CODEC  Base */
 #define THS_BASE ((uintptr_t) 0x01C25000)             /*!< THS  Base */
 #define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
@@ -1135,7 +1135,7 @@ typedef struct HSTIMER_Type
 /*
  * @brief I2S_PCM
  */
-/*!< I2S_PCM  */
+/*!< I2S_PCM I2S/PCM Controller */
 typedef struct I2S_PCM_Type
 {
     volatile uint32_t I2S_PCM_CTL;                    /*!< Offset 0x000 I2S/PCM Control Register */
@@ -2220,9 +2220,9 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
-#define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
-#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
-#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
+#define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0 I2S/PCM Controller register set access pointer */
+#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1 I2S/PCM Controller register set access pointer */
+#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2 I2S/PCM Controller register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
