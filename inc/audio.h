@@ -549,16 +549,35 @@ extern "C" {
 #define UACIN_RTS192_SAMPLEBYTES ((UACIN_RTS192_SAMPLEBITS + 7) / 8)
 #define UACOUT_AUDIO48_SAMPLEBYTES ((UACOUT_AUDIO48_SAMPLEBITS + 7) / 8)
 
-#define EPDSZADJ(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
+#define EPDSZALIGN(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
+#define EPDSZMAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define UAC_DATASIZE(s, sb, ch) ((s) * (sb) * (ch))	// расчет количества байтов для endpoint
+/* требования по выравниванию DMA про обмене с USB */
+#if CPUSTYLE_ALLWINNER
+	#define EPALIGN 1//4
+#elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
+	#define EPALIGN 1//4
+#elif CPUSTYLE_R7S721
+	#define EPALIGN 1//8
+#else
+	#define EPALIGN 1
+#endif
+
+// расчет количества байтов для endpoint
+// ga - требование выравнивания от DMA = EPALIGN
+// ss - требование выравнивания от канала связи = (sb) * (ch)
+
+// sn - sample number, ss - sample size, ga - granulation for address
+#define UAC_DATASIZEgr(sn, ss, ga) ( EPDSZALIGN((sn) * (ss) * (ga), (ga)) / (ga))
+// sn - sample number, ss - sample size
+#define UAC_DATASIZE(sn, ss) (UAC_DATASIZEgr((sn), (ss), EPDSZALIGN((ss), EPALIGN)))
 
 /* Размры буферов ендпоинт в байтах */
 
-#define UACOUT_AUDIO48_DATASIZE	UAC_DATASIZE(OUTSAMPLES_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
-#define UACIN_AUDIO48_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES, UACIN_FMT_CHANNELS_AUDIO48)
-#define UACIN_RTS96_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 2 + 1, UACIN_RTS96_SAMPLEBYTES, UACIN_FMT_CHANNELS_RTS96)
-#define UACIN_RTS192_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 4 + 1, UACIN_RTS192_SAMPLEBYTES, UACIN_FMT_CHANNELS_RTS192)
+#define UACOUT_AUDIO48_DATASIZE	UAC_DATASIZE(OUTSAMPLES_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48)
+#define UACIN_AUDIO48_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES * UACIN_FMT_CHANNELS_AUDIO48)
+#define UACIN_RTS96_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 2 + 1, UACIN_RTS96_SAMPLEBYTES * UACIN_FMT_CHANNELS_RTS96)
+#define UACIN_RTS192_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 4 + 1, UACIN_RTS192_SAMPLEBYTES * UACIN_FMT_CHANNELS_RTS192)
 
 #ifndef DMABUFCLUSTER
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
