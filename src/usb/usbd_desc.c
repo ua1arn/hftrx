@@ -546,6 +546,7 @@ static unsigned UAC2_AC_InterfaceDesc(
 // Stereo signal source
 // Audio only
 // IN path topology
+// 4.7.2.4 Input Terminal Descriptor
 static unsigned UAC2_AudioControlIT_IN48(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bTerminalID,
@@ -592,6 +593,7 @@ static unsigned UAC2_AudioControlIT_IN48(
 // audio10.pdf: Table 4-3: Input Terminal Descriptor
 // Stereo signal source
 // Audio или RTS
+// 4.7.2.4 Input Terminal Descriptor
 static unsigned UAC2_AudioControlIT_IN48_INRTS(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bTerminalID,
@@ -633,6 +635,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 	return length;
 }
 
+// 4.7.2.4 Input Terminal Descriptor
 static unsigned UAC2_AudioControlIT_INRTS(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bTerminalID,
@@ -680,6 +683,8 @@ static unsigned UAC2_AudioControlIT_INRTS(
 // audio48 only
 // AC Input Terminal Descriptor
 // OOT path topology element
+// 4.7.2.4 Input Terminal Descriptor
+// FIXME: problem at UACOUT48
 static unsigned UAC2_AudioControlIT_OUT48(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
@@ -725,6 +730,7 @@ static unsigned UAC2_AudioControlIT_OUT48(
 // Audio Control Output Terminal Descriptor 
 // Audio или RTS
 // IN path topology
+// 4.7.2.5 Output Terminal Descriptor
 static unsigned UAC2_AudioControlOT_IN(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
@@ -856,6 +862,7 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 // 4.7.2.8 Feature Unit Descriptor
 // В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
 // OOT path topology
+// FIXME: problem at UACOUT48
 static unsigned UAC2_AudioFeatureUnit_OUT(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bUnitID,
@@ -923,7 +930,9 @@ static unsigned UAC2_AudioFeatureUnit_OUT(
 // bSourceID -> bTerminalID
 // audio48 only
 // OOT path topology - final element (modulator, speaker, ...)
-static unsigned UAC2_AudioControlOT_OUT(
+// 4.7.2.5 Output Terminal Descriptor
+// FIXME: problem at UACOUT48
+static unsigned UAC2_AudioControlOT_OUT48(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize, 
 	uint_fast8_t bTerminalID,
 	uint_fast8_t bSourceID,
@@ -1026,7 +1035,7 @@ static unsigned UAC2_Topology_inout_OUT48(
 
 	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 	n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
-	n += UAC2_AudioControlOT_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+	n += UAC2_AudioControlOT_OUT48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 
 	return n;
 }
@@ -1057,6 +1066,7 @@ static unsigned UAC2_TopologyIN48_INRTS(
 // OUT data flow
 // audio48 only
 // OOT path topology
+// FIXME: problem at UACOUT48
 static unsigned UAC2_TopologyOUT48(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize, 
 	const tpgt_t * tgpt,
@@ -1070,7 +1080,7 @@ static unsigned UAC2_TopologyOUT48(
 
 	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 	n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
-	n += UAC2_AudioControlOT_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+	n += UAC2_AudioControlOT_OUT48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 
 	return n;
 }
@@ -4604,9 +4614,7 @@ static unsigned fill_Configuration_compound(uint_fast8_t fill, uint8_t * p, unsi
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
-	#if 0
-		n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
-	#elif WITHUAC2
+	#if WITHUAC2
 		n += fill_UAC2_function(fill, p + n, maxsize - n, highspeed);
 	#else /* WITHUAC2 */
 		n += fill_UAC1_function(fill, p + n, maxsize - n, highspeed);
