@@ -153,9 +153,9 @@ enum
 {
 	STRING_ID_0 = 0, /* Language ID */
 
-	STRING_ID_1, /* Manufacturer */
-	STRING_ID_2, /* Product */
-	STRING_ID_3, /* SerialNumber */
+	STRING_ID_manuf, /* Manufacturer */
+	STRING_ID_prod, /* Product */
+	STRING_ID_sn, /* SerialNumber */
 
 #if WITHUSBCDCACM
 	// USB CDC strings
@@ -212,8 +212,8 @@ struct stringtempl
 
 static const struct stringtempl strtemplates [] =
 {
-	{ STRING_ID_1, "MicroGenSF", },		// Manufacturer
-	{ STRING_ID_2, PRODUCTSTR, },	// Product
+	{ STRING_ID_manuf, "MicroGenSF", },		// Manufacturer
+	{ STRING_ID_prod, PRODUCTSTR, },	// Product
 
 	{ STRING_ID_5, PRODUCTSTR " CDC EEM", },
 	{ STRING_ID_5a, PRODUCTSTR " CDC ECM", },
@@ -1084,12 +1084,13 @@ static unsigned UAC2_TopologyOUT48(
 {
 	unsigned n = 0;
 
+	// Already done in UAC2_Topology_inout_IN48
 	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	//n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
-	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bOSC, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
+	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 	n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
-	n += UAC2_AudioControlOT_OUT48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bOSC, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+	n += UAC2_AudioControlOT_OUT48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 
 	return n;
 }
@@ -4719,9 +4720,9 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		* buff ++ = HI_BYTE(iProductId);				/* 11:idProduct_hi */
 		* buff ++ = LO_BYTE(USB_FUNCTION_RELEASE_NO);   /* 12:bcdDevice_lo */
 		* buff ++ = HI_BYTE(USB_FUNCTION_RELEASE_NO);	/* 13:bcdDevice_hi */
-		* buff ++ = STRING_ID_1;                        /* 14:iManufacturer */
-		* buff ++ = STRING_ID_2;                        /* 15:iProduct */
-		* buff ++ = STRING_ID_3;                        /* 16:iSerialNumber */
+		* buff ++ = STRING_ID_manuf;                        /* 14:iManufacturer */
+		* buff ++ = STRING_ID_prod;                        /* 15:iProduct */
+		* buff ++ = STRING_ID_sn;                        /* 16:iSerialNumber */
 		* buff ++ = bNumConfigurations;                 /* 17:bNumConfigurations */
 	}
 	return length;
@@ -5506,7 +5507,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	{
 		// на трансиверае SW20xx минимальная привязка к уникальным особенностям трансивера
 		unsigned partlen;
-		const uint_fast8_t id = STRING_ID_3;
+		const uint_fast8_t id = STRING_ID_sn;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu"), (unsigned long) BUILD_ID);
 		// Unic serial number
@@ -5519,7 +5520,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #elif 0 //CPUSTYLE_STM32F && defined(UID_BASE)
 	{
 		unsigned partlen;
-		const uint_fast8_t id = STRING_ID_3;
+		const uint_fast8_t id = STRING_ID_sn;
 		const uint32_t * const base = (const uint32_t *) UID_BASE;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:%08lX%08lX%08lX_%lu_%lu"), (unsigned long) base [0], (unsigned long) base [1], (unsigned long) base [2], (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned long) BUILD_ID);
@@ -5533,7 +5534,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #else
 	{
 		unsigned partlen;
-		const uint_fast8_t id = STRING_ID_3;
+		const uint_fast8_t id = STRING_ID_sn;
 		char b [64];
 		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%lu"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned long) BUILD_ID);
 		// Unic serial number
