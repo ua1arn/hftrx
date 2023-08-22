@@ -788,7 +788,7 @@ static unsigned UAC_AudioSelectorUnit_IN(
 #endif
 
 // Audio Control Feature Unit Descriptor 
-// See 4.3.2.5 Feature Unit Descriptor for details
+// 4.7.2.8 Feature Unit Descriptor
 // В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
 // IN path topology
 static unsigned UAC2_AudioFeatureUnit_IN(
@@ -807,17 +807,24 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 	// 0x03 - If a Control is also Host programmable
 	// в нашем случае для предотвращения управления со стороны операционной системы
 	// говорим, что соответствющие элементы у нас есть...
-	const uint_fast32_t bmaControls =
-		1 * (0x01 << 0) |	// Mute Control
-		1 * (0x01 << 2) |	// Volume Control
+	const uint_fast32_t bmaControls0 =
+		1 * (0x03 << 0) |	// Mute Control
+		1 * (0x03 << 2) |	// Volume Control
 		0 * (0x01 << 4) |	// Bass Control
 		0 * (0x01 << 6) |	// Mid Control
 		0 * (0x01 << 8) |	// Treble Control
 		// and so on...
 		0;
 
-	const uint_fast8_t n = 2; //1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
-	const uint_fast8_t length = 6 + 4 * n;
+	const uint_fast32_t bmaControlsv [] =
+	{
+			bmaControls0,	// msater
+			0,				// left
+			0,				// righ
+	};
+
+	const uint_fast8_t ch = ARRAY_SIZE(bmaControlsv); //1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t length = 6 + 4 * ch;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -830,9 +837,9 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 		* buff ++ = AUDIO_CONTROL_FEATURE_UNIT;     /* 2 bDescriptorSubtype */
 		* buff ++ = bUnitID;             			/* 3 bUnitID */
 		* buff ++ = bSourceID;						/* 4 bSourceID */
-		for (i = 0; i < n; ++ i)
+		for (i = 0; i < ch; ++ i)
 		{
-			uint_fast32_t v = bmaControls;
+			uint_fast32_t v = bmaControlsv [i];
 			uint_fast8_t cs = 4;
 			while (cs --)
 			{
@@ -841,13 +848,12 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 			}
 		}
 		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
-		/* 6 + 4 * n bytes */
+		/* 6 + 4 * ch bytes */
 	}
 	return length;
 }
 
-// Audio Control Feature Unit Descriptor
-// See 4.3.2.5 Feature Unit Descriptor for details
+// 4.7.2.8 Feature Unit Descriptor
 // В нашем случае используется для подавления отображения раздельных элементов регулировки уровня по каналам
 // OOT path topology
 static unsigned UAC2_AudioFeatureUnit_OUT(
@@ -866,17 +872,23 @@ static unsigned UAC2_AudioFeatureUnit_OUT(
 	// 0x03 - If a Control is also Host programmable
 	// в нашем случае для предотвращения управления со стороны операционной системы
 	// говорим, что соответствющие элементы у нас есть...
-	const uint_fast32_t bmaControls = 
-		1 * (0x01 << 0) |	// Mute Control
-		1 * (0x01 << 2) |	// Volume Control
-		0 * (0x01 << 4) |	// Bass Control
-		0 * (0x01 << 6) |	// Mid Control
-		0 * (0x01 << 8) |	// Treble Control
+	const uint_fast32_t bmaControls0 =
+		1 * (0x03 << 0) |	// Mute Control
+		1 * (0x03 << 2) |	// Volume Control
+		0 * (0x03 << 4) |	// Bass Control
+		0 * (0x03 << 6) |	// Mid Control
+		0 * (0x03 << 8) |	// Treble Control
 		// and so on...
 		0;
 
-	const uint_fast8_t n = 3; // 1: Only master channel controls, 3: master, left and right
-	const uint_fast8_t length = 6 + 4 * n;
+	const uint_fast32_t bmaControlsv [] =
+	{
+			bmaControls0,
+			0,
+			0,
+	};
+	const uint_fast8_t ch = ARRAY_SIZE(bmaControlsv); // 1: Only master channel controls, 3: master, left and right
+	const uint_fast8_t length = 6 + 4 * ch;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -889,9 +901,9 @@ static unsigned UAC2_AudioFeatureUnit_OUT(
 		* buff ++ = AUDIO_CONTROL_FEATURE_UNIT;     /* 2 bDescriptorSubtype */
 		* buff ++ = bUnitID;             			/* 3 bUnitID */
 		* buff ++ = bSourceID;						/* 4 bSourceID */
-		for (i = 0; i < n; ++ i)
+		for (i = 0; i < ch; ++ i)
 		{
-			uint_fast32_t v = bmaControls;
+			uint_fast32_t v = bmaControlsv [i];
 			uint_fast8_t cs = 4;
 			while (cs --)
 			{
@@ -900,7 +912,7 @@ static unsigned UAC2_AudioFeatureUnit_OUT(
 			}
 		}
 		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
-		/* 6 + 4 * n bytes */
+		/* 6 + 4 * ch bytes */
 	}
 	return length;
 }
