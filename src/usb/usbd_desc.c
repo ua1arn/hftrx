@@ -141,6 +141,16 @@
 
 enum
 {
+	UACOFFS_IN48,
+	UACOFFS_INRTS,
+	UACOFFS_IN48_OUT48,
+	UACOFFS_OUT48,
+	UACOFFS_IN48_INRTS,
+	//
+	UACOFFS_count
+};
+enum
+{
 	STRING_ID_0 = 0, /* Language ID */
 
 	STRING_ID_1, /* Manufacturer */
@@ -157,23 +167,21 @@ enum
 #if WITHUSBCDCECM
 	STRING_ID_MACADDRESS,	// iMacAddress
 #endif /* WITHUSBCDCECM */
+
+#if 0
 	// USB UAC strings
 	STRING_ID_a0, /* by offset RX demodulator */
-	STRING_ID_a1, /* by offset spectrum */
-	STRING_ID_a2, /* by offset TX modulator*/
+	STRING_ID_aLAST = STRING_ID_a0 + UACOFFS_count - 1,
 
 	STRING_ID_d0,
-	STRING_ID_d1,
-	STRING_ID_d2,
+	STRING_ID_dLAST = STRING_ID_d0 + UACOFFS_count - 1,
 
 	STRING_ID_e0,
-	STRING_ID_e1,
-	STRING_ID_e2,
+	STRING_ID_eLAST = STRING_ID_e0 + UACOFFS_count - 1,
+#endif
 
-	STRING_ID_IN48,
-	STRING_ID_OUT48,
-	STRING_ID_INRTS,
-	STRING_ID_IN48_INRTS,
+	STRING_ID_MODE0,
+	STRING_ID_MODELAST = STRING_ID_MODE0 + UACOFFS_count - 1,
 
 	//STRING_ID_b,	// tag for USB Speaker Audio Feature Unit Descriptor
 
@@ -227,25 +235,26 @@ static const struct stringtempl strtemplates [] =
 	{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
 	{ STRING_ID_a1, PRODUCTSTR " Spectrum", },	// tag for Interface Descriptor 0/0 Audio
 #else /* WITHUSBUACINOUT */
-	{ STRING_ID_a0, PRODUCTSTR " RX Voice", },		// tag for Interface Descriptor 0/0 Audio
-	{ STRING_ID_a1, PRODUCTSTR " RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
-	{ STRING_ID_a2, PRODUCTSTR " TX Voice", },		// tag for Interface Descriptor 0/0 Audio
+//	{ STRING_ID_a0, PRODUCTSTR " RX Voice", },		// tag for Interface Descriptor 0/0 Audio
+//	{ STRING_ID_a1, PRODUCTSTR " RX Spectrum", },	// tag for Interface Descriptor 0/0 Audio
+//	{ STRING_ID_a2, PRODUCTSTR " TX Voice", },		// tag for Interface Descriptor 0/0 Audio
 #endif /* WITHUSBUACINOUT */
 
 	//{ STRING_ID_b, "xxx_id11", },	// tag for USB Speaker Audio Feature Unit Descriptor
 
-	{ STRING_ID_d0, "TX audio USB streaming", },	// вход модулятора (ASIO4ALL) - pin name
-	{ STRING_ID_d1, "TX audio USB streaming", },	// Audio Control Input Terminal Descriptor  - pin name
-	{ STRING_ID_d2, "TX audio USB streaming", },	// Audio Control Input Terminal Descriptor - pin name
+//	{ STRING_ID_d0, "TX audio USB streaming", },	// вход модулятора (ASIO4ALL) - pin name
+//	{ STRING_ID_d1, "TX audio USB streaming", },	// Audio Control Input Terminal Descriptor  - pin name
+//	{ STRING_ID_d2, "TX audio USB streaming", },	// Audio Control Input Terminal Descriptor - pin name
 
-	{ STRING_ID_e0, "RX audio USB streaming", },	// выход демодулятора (ASIO4ALL) - pin name
-	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
-	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
+//	{ STRING_ID_e0, "RX audio USB streaming", },	// выход демодулятора (ASIO4ALL) - pin name
+//	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
+//	{ STRING_ID_e1, "RX audio USB streaming", },	// Audio Control Output Terminal Descriptor  - pin name
 
-	{ STRING_ID_IN48, PRODUCTSTR " RX Voice", },	// MAC OS specific
-	{ STRING_ID_OUT48, PRODUCTSTR " TX Voice", },	// MAC OS specific
-	{ STRING_ID_INRTS, PRODUCTSTR " RX Spectrum", },	// MAC OS specific
-	{ STRING_ID_IN48_INRTS, PRODUCTSTR " RX Voice/Spectrum", },	// MAC OS specific
+	{ STRING_ID_MODE0 + UACOFFS_IN48_OUT48, PRODUCTSTR " TX/RX Voice", },	// MAC OS specific
+	{ STRING_ID_MODE0 + UACOFFS_IN48, PRODUCTSTR " RX Voice", },	// MAC OS specific
+	{ STRING_ID_MODE0 + UACOFFS_OUT48, PRODUCTSTR " TX Voice", },	// MAC OS specific
+	{ STRING_ID_MODE0 + UACOFFS_INRTS, PRODUCTSTR " RX Spectrum", },	// MAC OS specific
+	{ STRING_ID_MODE0 + UACOFFS_IN48_INRTS, PRODUCTSTR " RX Voice/Spectrum", },	// MAC OS specific
 
 	{ STRING_ID_Left, "USB", },	// tag for USB Speaker Audio Feature Unit Descriptor
 	{ STRING_ID_Right, "LSB", },	// tag for USB Speaker Audio Feature Unit Descriptor
@@ -505,7 +514,7 @@ static unsigned UAC2_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff,
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;	// bFunctionClass: Audio
 		* buff ++ = 0x00;		// bFunctionSubClass AUDIO_SUBCLASS_UNDEFINED
 		* buff ++ = AUDIO_PROTOCOL_IP_VERSION_02_00;	// bFunctionProtocol
-		* buff ++ = STRING_ID_a0 + offset;	// Interface string index
+		* buff ++ = STRING_ID_MODE0 + offset;	// Interface string index
 	}
 	return length;
 }
@@ -720,7 +729,7 @@ static unsigned UAC2_AudioControlIT_OUT48(
 		* buff ++ = STRING_ID_Left;							/* 13 iChannelNames */
 		* buff ++ = LO_BYTE(bmControls);					/* 14 bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = STRING_ID_d0 + offset;					/* 16 iTerminal - появляется как pop-up в панели управления ASIO4ALL */
+		* buff ++ = STRING_ID_MODE0 + offset;					/* 16 iTerminal - появляется как pop-up в панели управления ASIO4ALL */
 		/* 17 bytes*/
 	}
 	return length;
@@ -760,7 +769,7 @@ static unsigned UAC2_AudioControlOT_IN(
 		* buff ++ = bCSourceID;
 		* buff ++ = LO_BYTE(bmControls);			/* 9 bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = STRING_ID_e0 + offset;					// unused  (iTerminal)
+		* buff ++ = STRING_ID_MODE0 + offset;					// unused  (iTerminal)
 	}
 	return length;
 }
@@ -1076,11 +1085,11 @@ static unsigned UAC2_TopologyOUT48(
 	unsigned n = 0;
 
 	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	//n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
-	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
+	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bOSC, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 	n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
-	n += UAC2_AudioControlOT_OUT48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
+	n += UAC2_AudioControlOT_OUT48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bFeatureUnitID, tgpt->bOSC, offset);	/* AUDIO_TERMINAL_RADIO_TRANSMITTER Output Terminal Descriptor TERMINAL_ID_FU_5 -> TERMINAL_ID_OT_3 */
 
 	return n;
 }
@@ -1136,7 +1145,7 @@ static unsigned UAC2_HeaderDescriptor(
 		* buff ++ = AUDIO_CONTROL_HEADER;           /* 2 bDescriptorSubtype */
 		* buff ++ = LO_BYTE(bcdADC);				/* 3 bcdADC */
 		* buff ++ = HI_BYTE(bcdADC);
-		* buff ++ = 0xFF;							/* 4 bCategory (8: IO_BOX) Table A-7: Audio Function Category Codes */
+		* buff ++ = 0x02;							/* 4 bCategory (2:HOME_THEATER,  8:IO_BOX) Table A-7: Audio Function Category Codes */
 		* buff ++ = LO_BYTE(wTotalLength);			/* 6 wTotalLength */
 		* buff ++ = HI_BYTE(wTotalLength);
 		* buff ++ = 0x00;							/* 8 bmControls D1..0: Latency Control */
@@ -1799,7 +1808,7 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
 	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
-	const uint_fast8_t iInterfaceOUT48 = STRING_ID_OUT48;
+	const uint_fast8_t iInterfaceOUT48 = STRING_ID_MODE0 + offset;
 
 	n += UAC2_InterfaceAssociationDesc(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - modulator audio control interface
@@ -1845,7 +1854,7 @@ static unsigned UAC1_InterfaceAssociationDesc(uint_fast8_t fill, uint8_t * buff,
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;	// bFunctionClass: Audio
 		* buff ++ = 0x00;	// bFunctionSubClass
 		* buff ++ = 0x00;	// bFunctionProtocol
-		* buff ++ = STRING_ID_a0 + offset;	// Interface string index
+		* buff ++ = STRING_ID_MODE0 + offset;	// Interface string index
 	}
 	return length;
 }
@@ -2013,7 +2022,7 @@ static unsigned UAC1_AC_IT_OUT48(
 		* buff ++ = LO_BYTE(wChannelConfig);                /* wChannelConfig 0x0003  Front Left; Front Right */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = STRING_ID_d0 + offset;					/* iTerminal - появляется как pop-up в панели управления ASIO4ALL */
+		* buff ++ = STRING_ID_MODE0 + offset;					/* iTerminal - появляется как pop-up в панели управления ASIO4ALL */
 		/* 12 bytes*/
 	}
 	return length;
@@ -2046,7 +2055,7 @@ static unsigned UAC1_AC_OT_IN(
 		* buff ++ = HI_BYTE(wTerminalType);
 		* buff ++ = TERMINAL_ID_UNDEFINED;           // unused         (bAssocTerminal)
 		* buff ++ = bSourceID;                            // From Input Terminal.(bSourceID)
-		* buff ++ = STRING_ID_e0 + offset;					// unused  (iTerminal)
+		* buff ++ = STRING_ID_MODE0 + offset;					// unused  (iTerminal)
 	}
 	return length;
 }
@@ -2585,7 +2594,7 @@ static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
 	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
-	const uint_fast8_t iInterfaceOUT48 = STRING_ID_OUT48;
+	const uint_fast8_t iInterfaceOUT48 = STRING_ID_MODE0 + offset;
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 
@@ -2821,38 +2830,37 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
 	unsigned n = 0;
-	unsigned offset = 0;
 
 #if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
 	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
-	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_OUT48);
 
 #elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
-	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_OUT48);
 	#if WITHRTS96 || WITHRTS192
-		n += fill_UAC1_INRTS_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC1_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_INRTS);
 	#endif /* WITHRTS96 || WITHRTS192 */
 
 #else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 	#if WITHUSBUACIN2
 		/* отдельные функции для передачи в компьютер спектра и звука */
-		n += fill_UAC1_IN48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC1_IN48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48);
 		#if WITHRTS96 || WITHRTS192
-			n += fill_UAC1_INRTS_function(fill, p + n, maxsize - n, highspeed, offset ++);
+			n += fill_UAC1_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_INRTS);
 		#else /* WITHRTS96 || WITHRTS192 */
 			#error WITHRTS96 or WITHRTS192 required for WITHUSBUACIN2
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#elif WITHUSBUACIN
 		/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
-		n += fill_UAC1_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC1_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_INRTS);
 
 	#endif /* WITHUSBUACIN2 */
 
 	#if WITHUSBUACOUT
 
-		n += fill_UAC1_OUT48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC1_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_OUT48);
 	#endif /* WITHUSBUACOUT */
 
 #endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
@@ -2864,37 +2872,37 @@ static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
 	unsigned n = 0;
-	unsigned offset = 0;
+
 #if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
 	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
-	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_OUT48);
 
 #elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
-	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_OUT48);
 	#if WITHRTS96 || WITHRTS192
-		n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_INRTS);
 	#endif /* WITHRTS96 || WITHRTS192 */
 
 #else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 	#if WITHUSBUACIN2
 		/* отдельные функции для передачи в компьютер спектра и звука */
-		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC2_IN48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48);
 		#if WITHRTS96 || WITHRTS192
-			n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, offset ++);
+			n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_INRTS);
 		#else /* WITHRTS96 || WITHRTS192 */
 			#error WITHRTS96 or WITHRTS192 required for WITHUSBUACIN2
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#elif WITHUSBUACIN
 		/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
-		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_INRTS);
 
 	#endif /* WITHUSBUACIN2 */
 
 	#if WITHUSBUACOUT
 
-		n += fill_UAC2_OUT48_function(fill, p + n, maxsize - n, highspeed, offset ++);
+		n += fill_UAC2_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_OUT48);
 	#endif /* WITHUSBUACOUT */
 
 #endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
