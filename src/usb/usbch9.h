@@ -61,6 +61,9 @@ enum
 		USBD_EP_RTS_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 	#endif
 #endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT && WITHUAC2
+	//USBD_EP_AUDIO_IN_FB,	// ISOC OUT Аудиоданные от компьютера в TRX
+#endif /* WITHUSBUACOUT */
 
 #if WITHUSBCDCACM
 		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
