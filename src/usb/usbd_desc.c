@@ -2083,17 +2083,20 @@ static unsigned UAC1_AudioFeatureUnit(
 	// Причем, на этой страничке собраны все управляющие элементы со всех Feature Unit Descriptor
 	// в пути сигнала данного источника звука.
 	// Не может быть нулём.
-	const uint_fast32_t bmaControls =
+	const uint_fast32_t bmaControls0 =
 		AUDIO_CONTROL_MUTE |
 		AUDIO_CONTROL_VOLUME |
 		//AUDIO_CONTROL_AUTOMATIC_GAIN |
 		//AUDIO_CONTROL_GRAPHIC_EQUALIZER |
 		//AUDIO_CONTROL_LOUDNESS |		// "Custom" property page added
 		0;
-
-	const uint_fast8_t n = 1; // 1: Only master channel controls, 3: master, left and right
+	const uint_fast32_t bmaControlsv [] =
+	{
+		bmaControls0,
+	};
+	const uint_fast8_t ch = ARRAY_SIZE(bmaControlsv); // 1: Only master channel controls, 3: master, left and right
 	const uint_fast8_t bControlSize = 2;	/* Достаточно, чтобы вместить все определенные для bmaControls биты */
-	const uint_fast8_t length = 7 + bControlSize * n;
+	const uint_fast8_t length = 7 + bControlSize * ch;
 	ASSERT(maxsize >= length);
 	if (maxsize < length)
 		return 0;
@@ -2107,9 +2110,9 @@ static unsigned UAC1_AudioFeatureUnit(
 		* buff ++ = bUnitID;             			/* bUnitID */
 		* buff ++ = bSourceID;						/* bSourceID */
 		* buff ++ = bControlSize;                   /* bControlSize - колтчество элементов в следующем элементе, повторяющемся для каждого канала */
-		for (i = 0; i < n; ++ i)
+		for (i = 0; i < ch; ++ i)
 		{
-			uint_fast32_t v = bmaControls;
+			uint_fast32_t v = bmaControlsv [i];
 			uint_fast8_t cs = bControlSize;
 			while (cs --)
 			{
