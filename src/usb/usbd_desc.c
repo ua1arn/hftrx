@@ -442,15 +442,9 @@ static unsigned UAC2_ClockSource(
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = CS_INTERFACE;       /* bDescriptorType(0x24): CS_INTERFACE */ 
 		* buff ++ = 0x0A;       /* bDescriptorSubType(0x0A): CLOCK_SOURCE */
-		* buff ++ = bClockID;   /* bClockID(0x10): CLOCK_SOURCE_ID */
-#if 0
-		// Взято из E1DA Cosmos ADC PCM32/384
-		* buff ++ = 0x03;	// bmAttributes
-		* buff ++ = 0x07;	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
-#else
+		* buff ++ = bClockID;   /* bClockID: CLOCK_SOURCE_ID */
 		* buff ++ = (0u << 2) | (3u << 0);	// bmAttributes
-		* buff ++ = (1u << 2) | (3u << 0);	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
-#endif
+		* buff ++ = (1u << 2) | (1u << 0);	// bmControls D3..2: Clock Validity Control D1..0: Clock Frequency Control
 		* buff ++ = TERMINAL_ID_UNDEFINED;       /* bAssocTerminal(0x00) */ 
 		* buff ++ = STRING_ID_0;/* iClockSource: Not requested */
 	}
