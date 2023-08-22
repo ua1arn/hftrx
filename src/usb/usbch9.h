@@ -212,6 +212,17 @@ enum
 //	#error Unsupported USB hardware 
 //#endif
 
+enum
+{
+	UACOFFS_IN48,
+	UACOFFS_OUT48,
+	UACOFFS_IN48_OUT48,
+	UACOFFS_IN48_INRTS,
+	UACOFFS_INRTS,
+	//
+	UACOFFS_count
+};
+
 // Descriptor IDs
 // Идентификаторы могут быть произвольными числами (кроме нуля)
 // Применена автоматическая нумерация терминалов в каждой цепочке.
@@ -220,24 +231,13 @@ enum
 	TERMINAL_ID_UNDEFINED = 0,
 
 	// Не индексируем по offset
-	TERMINAL_UACIN48,	// fill_UAC2_IN48_function, fill_UAC1_IN48_function
-	TERMINAL_UACOUT48,	// fill_UACOUT48_function
-	TERMINAL_UACIN48_UACINRTS,	// fill_UACIN48_function or fill_UACIN48_INRTS_function
-	TERMINAL_UACINRTS,	// fill_UACINRTS_function
-
-	// Не индексируем по offset
-	TERMINAL_ID_CLKMULTIPLIER_UACINOUT,	// shared in/our clock source
-	TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS,
-	TERMINAL_ID_CLKMULTIPLIER_UACINRTS,
-	TERMINAL_ID_CLKMULTIPLIER_UACIN48,
-	TERMINAL_ID_CLKMULTIPLIER_UACOUT48,
-
-	// Не индексируем по offset
 	TERMINAL_ID_SELECTOR_6,	// Input selector - вынесено из-за неудобства использования: значение проверяется
 
 	// Иидкусируеися по offset - далее ничего нет
 	TERMINAL_ID_indexbase,
 
+	TERMINAL_ID_USBSTREAM,
+	TERMINAL_ID_CLKMULTIPLIER,
 	TERMINAL_ID_CLKSOURCE,
 	TERMINAL_ID_FU1a_IN,	// UAC1
 	TERMINAL_ID_FU1b_IN,		// UAC1
@@ -251,7 +251,7 @@ enum
 	TERMINAL_ID_count_unused
 };
 
-#define MAX_TERMINALS_IN_INTERFACE (TERMINAL_ID_count_unused - TERMINAL_ID_indexbase)
+#define UACTEix(base, offset) ((base) + (offset) * (TERMINAL_ID_count_unused - TERMINAL_ID_indexbase))
 
 #define TERMINAL_ID_SELECTOR_6_INPUTS 2
 

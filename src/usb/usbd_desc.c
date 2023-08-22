@@ -141,16 +141,6 @@
 
 enum
 {
-	UACOFFS_IN48,
-	UACOFFS_INRTS,
-	UACOFFS_IN48_OUT48,
-	UACOFFS_OUT48,
-	UACOFFS_IN48_INRTS,
-	//
-	UACOFFS_count
-};
-enum
-{
 	STRING_ID_0 = 0, /* Language ID */
 
 	STRING_ID_manuf, /* Manufacturer */
@@ -1627,33 +1617,27 @@ static unsigned UAC2_AS_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigne
 	return length;
 }
 
-static uint_fast8_t indexid(uint_fast8_t base, uint_fast8_t offset)
-{
-	return base + offset * MAX_TERMINALS_IN_INTERFACE;
-}
-
 #if WITHUSBUACIN2
 
 static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
-	uint_fast8_t ialt = 0;
-	unsigned n = 0;
 	const uint_fast8_t rtscontrolifv = INTERFACE_AUDIO_CONTROL_RTS;
 	const uint_fast8_t rtsifv = INTERFACE_AUDIO_RTS;
 	const uac_pathfn_t rtspath = UAC2_TopologyINRTS;
-	const uint_fast8_t terminalID = TERMINAL_UACINRTS;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t rtsterms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINRTS,
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_INRTS),
 	};
 	const tpgt_t * const rtstermsv [] = { & rtsterms };
 	const uint_fast8_t iInterfaceINRTS = STRING_ID_INRTS;
-
 	const uint_fast8_t epinrts = USB_ENDPOINT_IN(USBD_EP_RTS_IN);
+	uint_fast8_t ialt = 0;
+	unsigned n = 0;
 
 	n += UAC2_InterfaceAssociationDesc(fill, p + n, maxsize - n, rtscontrolifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 
@@ -1695,17 +1679,17 @@ static unsigned fill_UAC2_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiever out control interface */
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uac_pathfn_t mikepath = UAC2_TopologyIN48;
-	const uint_fast8_t terminalID = TERMINAL_UACIN48;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48,
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48),
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
-	const uint_fast8_t iInterfaceIN48 = STRING_ID_IN48;
+	const uint_fast8_t iInterfaceIN48 = STRING_ID_MODE0 + offset;
 
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
 
@@ -1738,17 +1722,17 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
 	const uac_pathfn_t mikepath = UAC2_TopologyIN48_INRTS;
-	const uint_fast8_t terminalID = TERMINAL_UACIN48_UACINRTS;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACIN48_UACINRTS,
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
+			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
-	const uint_fast8_t iInterfaceIN48_INRTS = STRING_ID_IN48_INRTS;
+	const uint_fast8_t iInterfaceIN48_INRTS = STRING_ID_MODE0 + offset;
 
 	n += UAC2_InterfaceAssociationDesc(fill, p + n, maxsize - n, controlifv, 2, offset);	/* INTERFACE_AUDIO_CONTROL_SPK Interface Association Descriptor Audio */
 	// INTERFACE_AUDIO_CONTROL_SPK - audio control interface
@@ -1798,14 +1782,14 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_SPK;	/* AUDIO transmitter input control interface */
 	const uint_fast8_t modulatorifv = INTERFACE_AUDIO_SPK;
 	const uac_pathfn_t modulatorpath = UAC2_TopologyOUT48;
-	const uint_fast8_t terminalID = TERMINAL_UACOUT48;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_OUT, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
-			.bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACOUT48,
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_OUT, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
+			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48),
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
 	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
@@ -2434,17 +2418,19 @@ static unsigned UAC1_AS_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigne
 
 #if WITHUSBUACIN2
 
-static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+static unsigned fill_UAC1_INRTS_function(
+		uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed,
+		uint_fast8_t offset)
 {
 	const uint_fast8_t rtscontrolifv = INTERFACE_AUDIO_CONTROL_RTS;
 	const uint_fast8_t rtsifv = INTERFACE_AUDIO_RTS;
 	const uac_pathfn_t rtspath = UAC1_TopologyINRTS;
-	const uint_fast8_t terminalID = TERMINAL_UACINRTS;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t rtsterms =
 	{
 		.bTerminalID = terminalID,
-		.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
-		.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
+		.bFeatureUnitID = UACTEix(TERMINAL_ID_FU1a_IN, offset),
+		.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const rtstermsv [] = { & rtsterms };
 	const uint_fast8_t epinrts = USB_ENDPOINT_IN(USBD_EP_RTS_IN);
@@ -2485,21 +2471,23 @@ static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 #if WITHUSBUACIN
 // AUDIO48 only IN (radio to host) audio function
-static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+static unsigned fill_UAC1_IN48_function(
+		uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed,
+		uint_fast8_t offset)
 {
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiever out control interface */
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uac_pathfn_t mikepath = UAC1_TopologyIN48;
-	const uint_fast8_t terminalID = TERMINAL_UACIN48_UACINRTS;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU1a_IN, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
-	const uint_fast8_t iInterfaceIN48 = STRING_ID_IN48;
+	const uint_fast8_t iInterfaceIN48 = STRING_ID_MODE0 + offset;
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 
@@ -2523,21 +2511,23 @@ static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 }
 
 /* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
-static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+static unsigned fill_UAC1_IN48_INRTS_function(
+		uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed,
+		uint_fast8_t offset)
 {
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
 	const uac_pathfn_t mikepath = UAC1_TopologyIN48_INRTS;
-	const uint_fast8_t terminalID = TERMINAL_UACIN48_UACINRTS;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU1a_IN, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
-	const uint_fast8_t iInterfaceIN48_INRTS = STRING_ID_IN48_INRTS;
+	const uint_fast8_t iInterfaceIN48_INRTS = STRING_ID_MODE0 + offset;
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
 
@@ -2581,17 +2571,19 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 
 #if WITHUSBUACOUT
 // AUDIO48 only OUT (host to radio) audio function
-static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+static unsigned fill_UAC1_OUT48_function(
+		uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed,
+		uint_fast8_t offset)
 {
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_SPK;	/* AUDIO transmitter input control interface */
 	const uint_fast8_t modulatorifv = INTERFACE_AUDIO_SPK;
 	const uac_pathfn_t modulatorpath = UAC1_TopologyOUT48;
-	const uint_fast8_t terminalID = TERMINAL_UACOUT48;
+	const uint_fast8_t terminalID = UACTEix(TERMINAL_ID_USBSTREAM, offset);
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_OUT, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_OUT, offset),	// промежуточный terminal этой топологии
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU1a_OUT, offset),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU1b_OUT, offset),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
 	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
@@ -2627,7 +2619,9 @@ typedef struct audiopath_tag
 
 #if WITHUSBUACIN && WITHUSBUACOUT
 /* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
-static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
+static unsigned fill_UAC1_IN48_OUT48_function(
+	uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed,
+	uint_fast8_t offset)
 {
 	unsigned n = 0;
 	uint_fast8_t ialt = 0;
@@ -2636,8 +2630,8 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiever out control interface */
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uint_fast8_t modulatorifv = INTERFACE_AUDIO_SPK;
-	const uint_fast8_t terminalInID = TERMINAL_UACIN48;
-	const uint_fast8_t terminalOutID = TERMINAL_UACOUT48;
+	const uint_fast8_t terminalInID = UACTEix(TERMINAL_ID_USBSTREAM, UACOFFS_IN48);
+	const uint_fast8_t terminalOutID = UACTEix(TERMINAL_ID_USBSTREAM, UACOFFS_OUT48);
 	const uint_fast8_t iInterfaceIN48 = STRING_ID_IN48;
 	const uint_fast8_t iInterfaceOUT48 = STRING_ID_OUT48;
 	const uint_fast8_t iInterfaceINRTS = STRING_ID_INRTS;
@@ -2649,14 +2643,14 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalInID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_IN, offset),	// промежуточный terminal этой топологии
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU1a_IN, UACOFFS_IN48),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU1b_IN, UACOFFS_IN48),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalOutID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU1a_OUT, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU1b_OUT, offset),	// промежуточный terminal этой топологии
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU1a_OUT, UACOFFS_OUT48),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU1b_OUT, UACOFFS_OUT48),	// промежуточный terminal этой топологии
 	};
 	const tpgt_t * const termsv [] = { & miketerms,  & modulatorterms };
 	static const uac_pathfn_t paths [] =
@@ -2664,8 +2658,8 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 			UAC1_TopologyIN48,
 			UAC1_TopologyOUT48,
 	};
-	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN + offset);
-	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT + offset);
+	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
+	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
 
 	ASSERT(controlifv + 1 == mikeifv);
 	ASSERT(controlifv + 2 == modulatorifv);
@@ -2724,10 +2718,8 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 
 // Объединенное устройство. Необюходимо в случае UAC2 из-за возможности применить shared clock source
 static unsigned fill_UAC2_IN48_OUT48_function(
-	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
-	int highspeed,
-	uint_fast8_t offset
-	)
+	uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed,
+	uint_fast8_t offset)
 {
 	unsigned n = 0;
 	uint_fast8_t ialt = 0;
@@ -2736,8 +2728,8 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiever out control interface */
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uint_fast8_t modulatorifv = INTERFACE_AUDIO_SPK;
-	const uint_fast8_t terminalInID = TERMINAL_UACIN48;
-	const uint_fast8_t terminalOutID = TERMINAL_UACOUT48;
+	const uint_fast8_t terminalInID = UACTEix(TERMINAL_ID_USBSTREAM, UACOFFS_IN48);
+	const uint_fast8_t terminalOutID = UACTEix(TERMINAL_ID_USBSTREAM, UACOFFS_OUT48);
 	const uint_fast8_t iInterfaceIN48 = STRING_ID_IN48;
 	const uint_fast8_t iInterfaceOUT48 = STRING_ID_OUT48;
 	const uint_fast8_t iInterfaceINRTS = STRING_ID_INRTS;
@@ -2749,17 +2741,17 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 	const tpgt_t miketerms =
 	{
 			.bTerminalID = terminalInID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_IN, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-		    .bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_IN48),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, UACOFFS_IN48),	// промежуточный terminal этой топологии
+		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 		    .bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT,
 	};
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalOutID,
-			.bFeatureUnitID = indexid(TERMINAL_ID_FU2a_OUT, offset),
-			.bFeatureUnit2ID = indexid(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
-		    .bOSC = indexid(TERMINAL_ID_CLKSOURCE, offset),
+			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_OUT, UACOFFS_OUT48),
+			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_OUT, UACOFFS_OUT48),	// промежуточный terminal этой топологии
+		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 		    .bCSourceID = TERMINAL_ID_CLKMULTIPLIER_UACINOUT,
 	};
 	const tpgt_t * const termsv [] = { & miketerms,  & modulatorterms };
@@ -2768,8 +2760,8 @@ static unsigned fill_UAC2_IN48_OUT48_function(
             UAC2_Topology_inout_IN48,
             UAC2_Topology_inout_OUT48,
 	};
-	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN + offset);
-	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT + offset);
+	const uint_fast8_t epin = USB_ENDPOINT_IN(USBD_EP_AUDIO_IN);
+	const uint_fast8_t epout = USB_ENDPOINT_OUT(USBD_EP_AUDIO_OUT);
 
 	ASSERT(controlifv + 1 == mikeifv);
 	ASSERT(controlifv + 2 == modulatorifv);
