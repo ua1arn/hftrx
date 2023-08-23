@@ -761,9 +761,9 @@ void adpt_initialize(
 {
 	int signpos = leftbit - 1;
 	/* Форматы с павающей точкой обеспечивают точное представление степеней двойки */
-	adp->inputK = POWF(2, - signpos);
-	adp->outputK = POWF(2, signpos) * db2ratio(- (FLOAT_t) 0.5);
-	adp->outputKexact = POWF(2, signpos);
+	adp->inputK = LDEXPF(1, - signpos);
+	adp->outputK = LDEXPF(1, signpos) * db2ratio(- (FLOAT_t) 0.03);
+	adp->outputKexact = LDEXPF(1, signpos);
 	adp->rightspace = rightspace;
 	adp->leftbit = leftbit;
 	adp->lshift32 = 32 - leftbit - rightspace;
