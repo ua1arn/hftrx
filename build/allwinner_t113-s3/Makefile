@@ -278,7 +278,7 @@ app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) exec 0x40000000 
 
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	-$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.alw32
 
 erase:
