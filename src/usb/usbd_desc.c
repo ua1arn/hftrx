@@ -628,7 +628,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
 		* buff ++ = LO_BYTE(bmControls);					/* bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = 0;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 		/* 17 bytes*/
 	}
 	return length;
@@ -670,7 +670,7 @@ static unsigned UAC2_AudioControlIT_INRTS(
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
 		* buff ++ = LO_BYTE(bmControls);					/* bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = STRING_ID_IQSPECTRUM;		// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = STRING_ID_MODE0 + offset;		// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 		/* 17 bytes*/
 	}
 	return length;
@@ -852,7 +852,7 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 				v >>= 8;
 			}
 		}
-		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
+		* buff ++ = STRING_ID_MODE0 + offset;                    /* 5+(ch+1)*4 iTerminal */
 		/* 6 + 4 * ch bytes */
 	}
 	return length;
@@ -917,7 +917,7 @@ static unsigned UAC2_AudioFeatureUnit_OUT(
 				v >>= 8;
 			}
 		}
-		* buff ++ = 0;//STRING_ID_b;                    /* 5+(ch+1)*4 iTerminal */
+		* buff ++ = STRING_ID_MODE0 + offset;                    /* 5+(ch+1)*4 iTerminal */
 		/* 6 + 4 * ch bytes */
 	}
 	return length;
@@ -1009,9 +1009,9 @@ static unsigned UAC2_Topology_inout_IN48(
 	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
 	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
-	n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  tgpt->bTerminalID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
-	n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bFeatureUnit2ID, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
 	n += UAC2_AudioControlIT_IN48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
+	n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bFeatureUnit2ID, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
+	n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  tgpt->bTerminalID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
 
 	return n;
 }
@@ -1655,10 +1655,10 @@ static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
 			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_INRTS),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
 	};
 	const tpgt_t * const rtstermsv [] = { & rtsterms };
-	const uint_fast8_t iInterfaceINRTS = STRING_ID_MODE0 + UACOFFS_INRTS;
+	const uint_fast8_t iInterfaceINRTS = STRING_ID_MODE0 + offset;
 	const uint_fast8_t epinrts = USB_ENDPOINT_IN(USBD_EP_RTS_IN);
 	uint_fast8_t ialt = 0;
 	unsigned n = 0;
@@ -1928,7 +1928,7 @@ static unsigned UAC1_AC_IT_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = 0;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
 	return length;
@@ -1964,7 +1964,7 @@ static unsigned UAC1_AC_IT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff, unsigne
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = 0;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
 	return length;
@@ -2151,7 +2151,7 @@ static unsigned UAC1_AudioFeatureUnit(
 				v >>= 8;
 			}
 		}
-		* buff ++ = 0;//STRING_ID_b;                    /* iTerminal */
+		* buff ++ = STRING_ID_MODE0 + offset;                    /* iTerminal */
 		/* 10 byte*/
 	}
 	return length;
