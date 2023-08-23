@@ -460,21 +460,19 @@ extern "C" {
 #define UACOUT_CONFIG_OUT48 		(AUDIO_CHANNEL_L | AUDIO_CHANNEL_R)
 
 // количество каналов в дескрипторах формата потока
-#define UACIN_FMT_CHANNELS_AUDIO48			2
-#define UACIN_FMT_CHANNELS_RTS				2	// I/Q всегда стерео
+#define UACIN_FMT_CHANNELS_AUDIO48			2	// приём стерео
 #define UACIN_FMT_CHANNELS_AUDIO48_RTS		2	// при совмещении аудио и I/Q всегда стерео
+#define UACIN_FMT_CHANNELS_RTS96 2				// I/Q всегда стерео
+#define UACIN_FMT_CHANNELS_RTS192 2				// I/Q всегда стерео
 
 #if WITHUABUACOUTAUDIO48MONO
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_FMT_CHANNELS_AUDIO48	1
+	#define UACOUT_FMT_CHANNELS_AUDIO48	1	// передача - моно
 #else /* WITHUABUACOUTAUDIO48MONO */
 	// количество каналов в дескрипторах формата потока
-	#define UACOUT_FMT_CHANNELS_AUDIO48	2
+	#define UACOUT_FMT_CHANNELS_AUDIO48	2	// передача - стерео
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
-
-#define UACIN_FMT_CHANNELS_RTS96 2	// всегда I/Q
-#define UACIN_FMT_CHANNELS_RTS192 2	// всегда I/Q
 
 /*
 	For full-/high-speed isochronous endpoints, this value

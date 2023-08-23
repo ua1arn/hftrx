@@ -1511,7 +1511,7 @@ static unsigned UAC1_FormatTypeDesc_RTS96(uint_fast8_t fill, uint8_t * buff, uns
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
+		* buff ++ = UACIN_FMT_CHANNELS_RTS96;		/* bNrChannels */
 		* buff ++ = UACIN_RTS96_SAMPLEBYTES;		//bSubFrameSize
 		* buff ++ = UACIN_RTS96_SAMPLEBYTES * 8;	//bBitResolution
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
@@ -1567,7 +1567,7 @@ static unsigned UAC1_FormatTypeDesc_RTS192(uint_fast8_t fill, uint8_t * buff, un
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACIN_FMT_CHANNELS_RTS;		/* bNrChannels */
+		* buff ++ = UACIN_FMT_CHANNELS_RTS192;		/* bNrChannels */
 		* buff ++ = UACIN_RTS192_SAMPLEBYTES;		//bSubFrameSize
 		* buff ++ = UACIN_RTS192_SAMPLEBYTES * 8;	//bBitResolution
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
