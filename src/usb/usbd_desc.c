@@ -839,9 +839,9 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 
 	const uint_fast32_t bmaControlsv [] =
 	{
-			bmaControls0,	// master
-			0,				// left
-			0,				// righ
+		bmaControls0,	// master
+		0,				// left
+		0,				// right
 	};
 
 	const uint_fast8_t ch = ARRAY_SIZE(bmaControlsv); //1 + UAC2_IN_bNrChannels; // 1: Only master channel controls, 3: master, left and right
@@ -905,9 +905,9 @@ static unsigned UAC2_AudioFeatureUnit_OUT(
 
 	const uint_fast32_t bmaControlsv [] =
 	{
-			bmaControls0,
-			0,
-			0,
+		bmaControls0,	// master
+		0,				// left
+		0,				// right
 	};
 	const uint_fast8_t ch = ARRAY_SIZE(bmaControlsv); // 1: Only master channel controls, 3: master, left and right
 	const uint_fast8_t length = 6 + 4 * ch;
@@ -1633,9 +1633,8 @@ static unsigned UAC2_AS_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigne
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wFormatTag = AUDIO_FORMAT_PCM;	/* wFormatTag */
-		const uint_fast32_t bmFormats = 0x00000001;
-		const uint_fast8_t bmControls = 0x03;
+		const uint_fast32_t bmFormats = 1u << 0;	// PCM
+		const uint_fast8_t bmControls = 0x00;	// D1..0: Active Alternate Setting Control
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		// Table 4-27: Class-Specific AS Interface Descriptor
 		* buff ++ = length;						  /* bLength */
