@@ -172,10 +172,11 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   hpcd->State = HAL_PCD_STATE_BUSY;
 
   /* Disable DMA mode for FS instance */
-  if ((USBx->CID & (0x1U << 8)) == 0U)
-  {
-    hpcd->Init.dma_enable = 0U;
-  }
+  // stm32mp1: all USB has DMA
+//  if ((USBx->CID & (0x1U << 8)) == 0U)
+//  {
+//    hpcd->Init.dma_enable = 0U;
+//  }
 
   /* Disable the Interrupts */
   __HAL_PCD_DISABLE(hpcd);
