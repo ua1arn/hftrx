@@ -1635,7 +1635,7 @@ static unsigned UAC2_AS_InterfaceDesc(uint_fast8_t fill, uint8_t * buff, unsigne
 		* buff ++ = HI_BYTE(bmChannelConfig);
 		* buff ++ = HI_24BY(bmChannelConfig);
 		* buff ++ = HI_32BY(bmChannelConfig);
-		* buff ++ = 0;	/* iChannelNames */
+		* buff ++ = STRING_ID_Left;	/* iChannelNames */
 		/* 16 byte*/
 	}
 	return length;
@@ -1950,7 +1950,6 @@ static unsigned UAC1_AC_IT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff, unsigne
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast16_t wChannelConfig = UACIN_CONFIG_IN48_INRTS;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -1981,7 +1980,6 @@ static unsigned UAC1_AC_IT_INRTS(uint_fast8_t fill, uint8_t * buff, unsigned max
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_RADIO_RECEIVER;
 		const uint_fast16_t wChannelConfig = UACIN_CONFIG_INRTS;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE; // CS_INTERFACE Descriptor Type
@@ -2020,7 +2018,6 @@ static unsigned UAC1_AC_IT_OUT48(
 		// 4.3.2.1 Input Terminal Descriptor
 		const uint_fast16_t wTerminalType = AUDIO_TERMINAL_USB_STREAMING;
 		const uint_fast16_t wChannelConfig = UACOUT_CONFIG_OUT48;
-		const uint_fast8_t bNrChannels = UAC_count_channels(wChannelConfig);
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;									/* bLength */
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;		/* bDescriptorType */
