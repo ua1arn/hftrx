@@ -2822,8 +2822,7 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 
 #endif /* WITHUSBUACINOUTRENESAS */
 
-	// OUT data flow: USB Speaker
-	// INTERFACE_AUDIO_SPK_1 - audio streaming interface
+	// OUT data flow: TX audo
 	n += UAC2_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, UACOUTALT_NONE, 0, offset, iInterfaceOUT48);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
 
 	n += UAC2_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, UACOUTALT_AUDIO48, 1, offset, iInterfaceOUT48);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */

@@ -3070,7 +3070,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
+	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
 		// IN
@@ -3136,7 +3136,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const uint_fast32_t denominator = FPGADECIMATION;
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
+	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
 		// IN
@@ -3183,7 +3183,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	const uint_fast32_t denominator = FPGADECIMATION / 2;
 	const uint_fast32_t numerator = DDS1_CLK_MUL;
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
+	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
 		// IN
@@ -3226,7 +3226,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
 	const uint_fast32_t freq = REFERENCE_FREQ;
 
-	PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
+	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
 	{
 		// IN
