@@ -699,10 +699,6 @@ static void setlevelindicator(long code)	// в кодах ЦАП
 static void 
 prog_gpioreg(void)
 {
-#if defined (PREAMP_MIO)
-	xc7z_gpio_output(PREAMP_MIO);
-	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
-#endif /* defined (PREAMP_MIO) */
 #if LS020_RESET
 	LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
 #endif /* LS020_RESET */
@@ -759,6 +755,15 @@ prog_gpioreg(void)
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	xcz_rxtx_state(glob_tx);
+#if defined (PREAMP_MIO)
+#if TARGET_RFADC_PGA_EMIO			// если есть управление PGA, LTC6401 всегда включено
+	xc7z_gpio_output(PREAMP_MIO);
+	xc7z_writepin(PREAMP_MIO, 1);
+#else
+	xc7z_gpio_output(PREAMP_MIO);
+	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+#endif /* TARGET_RFADC_PGA_EMIO */
+#endif /* defined (PREAMP_MIO) */
 #if defined (TARGET_RFADC_PGA_EMIO)
 	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
 	xc7z_writepin(TARGET_RFADC_PGA_EMIO, glob_preamp);

@@ -194,8 +194,8 @@
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
 	void gt911_interrupt_handler(void);
-	#define BOARD_GT911_INT_PIN 	46
-	#define BOARD_GT911_RESET_PIN 	39
+	#define BOARD_GT911_INT_PIN 	66
+	#define BOARD_GT911_RESET_PIN 	58
 
 	#define BOARD_GT911_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_RESET_PIN, 1); else xc7z_writepin(BOARD_GT911_RESET_PIN, 0);  } while (0)
 
@@ -214,7 +214,8 @@
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
 #endif /* WITHCPUTEMPERATURE */
 
-#define PREAMP_MIO	64
+#define PREAMP_MIO				64
+#define TARGET_RFADC_PGA_EMIO	65
 
 #define LS020_RS_INITIALIZE() \
 	do { \

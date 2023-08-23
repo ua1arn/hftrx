@@ -34,6 +34,7 @@ enum {
 	tx_state_pos 		= 24,
 	resetn_modem_pos 	= 25,
 	hw_vfo_sel_pos		= 26,
+	adc_rand_pos 		= 27,
 };
 
 void * get_highmem_ptr(uint32_t addr)
@@ -706,7 +707,8 @@ void update_modem_ctrl(void)
 {
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) | ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) | (!!tx_state << tx_state_pos)
-			| (!!resetn_modem << resetn_modem_pos) | (!!hw_vfo_sel << hw_vfo_sel_pos);
+			| (!!resetn_modem << resetn_modem_pos) | (!!hw_vfo_sel << hw_vfo_sel_pos)
+			| (! hamradio_get_gadcrand() << adc_rand_pos);
 
 	* modem_ctrl = v;
 }

@@ -21718,6 +21718,11 @@ void hamradio_set_gdactest(uint8_t v)
 
 #endif /* WITHDSPEXTDDC */
 
+uint32_t hamradio_get_gadcrand(void)
+{
+	return gadcrand != 0;
+}
+
 #if WITHUSEDUALWATCH
 uint_fast8_t hamradio_split_toggle(void)
 {
