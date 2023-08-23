@@ -823,7 +823,7 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 
 	const uint_fast32_t bmaControlsv [] =
 	{
-			bmaControls0,	// msater
+			bmaControls0,	// master
 			0,				// left
 			0,				// righ
 	};
@@ -852,7 +852,7 @@ static unsigned UAC2_AudioFeatureUnit_IN(
 				v >>= 8;
 			}
 		}
-		* buff ++ = STRING_ID_MODE0 + offset;                    /* 5+(ch+1)*4 iTerminal */
+		* buff ++ = STRING_ID_MODE0 + offset;                    /* 5+(ch+1)*4 iTerminal iFeature */
 		/* 6 + 4 * ch bytes */
 	}
 	return length;
