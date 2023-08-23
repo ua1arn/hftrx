@@ -582,18 +582,16 @@ extern "C" {
 // n - sample number, ss - sample size, ch - количество каналов
 // выдаёт колчиество байтов
 /* требования по выравниванию DMA про обмене с USB */
-#if CPUSTYLE_ALLWINNER
+#if CPUSTYLE_ALLWINNER || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
 	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 4), (ss) * (ch)))
-#elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
-	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 1), (ss) * (ch)))
 #elif CPUSTYLE_R7S721
 	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 8), (ss) * (ch)))
 #else
-	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 1), (ss) * (ch)))
+	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 4), (ss) * (ch)))
 #endif
 
 /* Размры буферов ендпоинт в байтах */
-
+// Добавление единицы для UACOUT требуется для нормальной работы UAC2 устройства.
 #define UACOUT_AUDIO48_DATASIZE	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
 #define UACIN_AUDIO48_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES, UACIN_FMT_CHANNELS_AUDIO48)
 #define UACIN_RTS96_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 2 + 1, UACIN_RTS96_SAMPLEBYTES, UACIN_FMT_CHANNELS_RTS96)
