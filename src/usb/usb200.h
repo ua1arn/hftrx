@@ -120,11 +120,11 @@
 #define AUDIO_INTERFACE_DESCRIPTOR_TYPE               0x24
 #define AUDIO_ENDPOINT_DESCRIPTOR_TYPE                0x25
 
-#define USB_ENDPOINT_TYPE_ASYNC_FEEDBACK  			  0x15
-#define USB_ENDPOINT_TYPE_ISOCHRONOUS                 0x01
-#define USB_ENDPOINT_TYPE_BULK		                  0x02
-#define USB_ENDPOINT_TYPE_INTERRUPT	                  0x03
-#define AUDIO_ENDPOINT_GENERAL                        0x01
+//#define USB_ENDPOINT_TYPE_ASYNC_FEEDBACK  			  0x15
+//#define USB_ENDPOINT_TYPE_ISOCHRONOUS                 0x01
+//#define USB_ENDPOINT_TYPE_BULK		                  0x02
+//#define USB_ENDPOINT_TYPE_INTERRUPT	                  0x03
+//#define AUDIO_ENDPOINT_GENERAL                        0x01
 
 //
 ///* USB 2.0 defined Feature Selectors (wValue in Set_Feature setup pkt) */

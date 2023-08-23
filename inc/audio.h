@@ -485,7 +485,7 @@ extern "C" {
 //#define OUTSAMPLES_AUDIO48	49 /* количество сэмплов за милисекунду в UAC OUT */
 // без запаса - только для 48000
 
-#if WITHUSBDEV_HSDESC && CPUSTYLE_ALLWINNER
+#if WITHUSBDEV_HSDESC //&& CPUSTYLE_ALLWINNER
 	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за SOF в UAC OUT */
 
 	#define HSINTERVAL_AUDIO48 1	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS

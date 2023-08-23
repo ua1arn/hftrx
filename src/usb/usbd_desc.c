@@ -389,29 +389,32 @@ static unsigned CDC_HeaderFunctionalDesc(uint_fast8_t fill, uint8_t * buff, unsi
 
 // IN/OUT path topology parameters
 
+// Isochronous, Adaptive, Data - FS in endpoint from UAC1 device
 static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
-	USB_ENDPOINT_USAGE_DATA |
-	USB_ENDPOINT_TYPE_ISOCHRONOUS;
+	USB_ENDPOINT_TYPE_ISOCHRONOUS |
+	USB_ENDPOINT_SYNC_ADAPTIVE |
+	USB_ENDPOINT_USAGE_DATA;
 
 static const uint_fast8_t USBD_UAC1_OUT_EP_ATTRIBUTES =
-	USB_ENDPOINT_USAGE_DATA |
-	USB_ENDPOINT_TYPE_ISOCHRONOUS;
-
-// UAC2 Windows 10
-// For the asynchronous OUT case the driver supports explicit feedback only.
-static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
-	//USB_ENDPOINT_SYNC_ASYNCHRONOUS |
-	USB_ENDPOINT_USAGE_DATA |
-	//USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
-	USB_ENDPOINT_TYPE_ISOCHRONOUS;
+	USB_ENDPOINT_TYPE_ISOCHRONOUS |
+	USB_ENDPOINT_SYNC_ADAPTIVE |
+	USB_ENDPOINT_USAGE_DATA;
 
 // UAC2 Windows 10
 // For the Adaptive IN case the driver does not support a feedforward endpoint.
+// Isochronous, Asynchronous, Data
 static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
-	//USB_ENDPOINT_SYNC_ASYNCHRONOUS |
-	USB_ENDPOINT_USAGE_DATA |
-	//USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
-	USB_ENDPOINT_TYPE_ISOCHRONOUS;
+	USB_ENDPOINT_TYPE_ISOCHRONOUS |
+	USB_ENDPOINT_SYNC_ASYNCHRONOUS |
+	USB_ENDPOINT_USAGE_DATA;
+
+// UAC2 Windows 10
+// For the asynchronous OUT case the driver supports explicit feedback only.
+// Isochronous, Adaptive, Data
+static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
+	USB_ENDPOINT_TYPE_ISOCHRONOUS |
+	USB_ENDPOINT_SYNC_ADAPTIVE |
+	USB_ENDPOINT_USAGE_DATA;
 
 
 // Отличаются назначения битов
