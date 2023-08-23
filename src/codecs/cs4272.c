@@ -6,13 +6,13 @@
 // UA1ARN
 //
 #include "hardware.h"
+
+#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
+
 #include "board.h"
 
 #include "formats.h"
 #include "spi.h"
-
-#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
-
 #include "audio.h"
 
 //

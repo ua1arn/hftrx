@@ -5,12 +5,14 @@
 // UA1ARN
 //
 #include "hardware.h"
-#include "board.h"
 
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
+
+
+#include "board.h"
 #include "formats.h"
 #include "spi.h"
 
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
 //
 // Управление кодеком TLV320AIC23B (WM8731)
 //

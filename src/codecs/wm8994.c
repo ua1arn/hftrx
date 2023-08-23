@@ -4,13 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-#include "../inc/spi.h"
 #include "hardware.h"
-#include "board.h"
-#include "formats.h"	// for debug prints
-
-
-//#include "./formats.h"
 
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_WM8994)
 //
@@ -19,6 +13,9 @@
 //
 #include "audio.h"
 #include "wm8994.h"
+#include "spi.h"
+#include "board.h"
+#include "formats.h"	// for debug prints
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define WM8994_SPIMODE		SPIC_MODE3

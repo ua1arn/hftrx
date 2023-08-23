@@ -16,15 +16,6 @@
 #include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
 
-#include "bootloader.h"
-
-#include "audio.h"
-#include "codecs.h"
-
-#if WITHFT8
-	#include "ft8.h"
-#endif /* WITHFT8 */
-
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */

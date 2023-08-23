@@ -4,10 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-#include "spi.h"
 #include "hardware.h"
-#include "board.h"
-#include "formats.h"	// for debug prints
 
 
 //#include "./formats.h"
@@ -17,6 +14,9 @@
 // Управление кодеком NOVOTON NAU8822L
 // https://www.nuvoton.com/products/smart-home-audio/audio-converters/audio-codec-series/nau8822lyg/
 
+#include "spi.h"
+#include "board.h"
+#include "formats.h"	// for debug prints
 #include "audio.h"
 #include "nau8822.h"
 
