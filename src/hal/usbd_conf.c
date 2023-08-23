@@ -1538,22 +1538,20 @@ USBD_StatusTypeDef USBD_LL_SetUSBAddress(USBD_HandleTypeDef *pdev, uint8_t dev_a
   */
 USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, const uint8_t *pbuf, uint32_t size)
 {
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBD_StatusTypeDef usb_status = USBD_OK;
+	HAL_StatusTypeDef hal_status = HAL_OK;
+	USBD_StatusTypeDef usb_status = USBD_OK;
 
-  //if (hpcd_USB_OTG.Init.dma_enable == 1U)
-  {
-		if (pbuf != NULL && size != 0)
-		{
-			ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
-			dcache_clean((uintptr_t) pbuf, size);
-		}
-  }
-  hal_status = HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
+	if (pbuf != NULL && size != 0)
+	{
+		ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
+		dcache_clean((uintptr_t) pbuf, size);
+	}
 
-  usb_status =  USBD_Get_USB_Status(hal_status);
+	hal_status = HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
 
-  return usb_status;
+	usb_status =  USBD_Get_USB_Status(hal_status);
+
+	return usb_status;
 }
 
 /**
@@ -1569,11 +1567,9 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_a
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBD_StatusTypeDef usb_status = USBD_OK;
 
-	//if (hpcd_USB_OTG.Init.dma_enable == 1U)
-	{
-		if (pbuf != NULL && size != 0)
-			dcache_clean_invalidate((uintptr_t) pbuf, size);
-	}
+	if (pbuf != NULL && size != 0)
+		dcache_clean_invalidate((uintptr_t) pbuf, size);
+
 	hal_status = HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
 
 	usb_status =  USBD_Get_USB_Status(hal_status);
