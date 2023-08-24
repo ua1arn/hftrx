@@ -685,6 +685,9 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 
 uintptr_t allocate_dmabuffer192rts(void);
+uintptr_t allocate_dmabufferuacout48(void);
+uintptr_t dma_invalidateuacout48(uintptr_t addr);
+void release_dmabufferuacout48(uintptr_t addr);
 
 /* +++ UAC OUT data save - использование данных от компьютера. */
 void uacout_buffer_initialize(void);
