@@ -473,17 +473,25 @@ extern "C" {
 	#define UACOUT_FMT_CHANNELS_AUDIO48	2	// передача - стерео
 #endif /* WITHUABUACOUTAUDIO48MONO */
 
-
 /*
-	For full-/high-speed isochronous endpoints, this value
-	must be in the range from 1 to 16. The bInterval value
-	is used as the exponent for a 2^(bInterval-1) value; e.g.,
-	a bInterval of 4 means a period of 8 (2^(4-1))."
+    For full-/high-speed isochronous endpoints, this value
+    must be in the range from 1 to 16. The bInterval value
+    is used as the exponent for a 2^(bInterval-1) value; e.g.,
+    a bInterval of 4 means a period of 8 (2^(4-1))."
 
   */
-/* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
-//#define OUTSAMPLES_AUDIO48	49 /* количество сэмплов за милисекунду в UAC OUT */
-// без запаса - только для 48000
+
+#define HSINTERVAL_1MS 4    // endpoint descriptor parameters - для обеспечения 1 ms периода
+#define FSINTERVAL_1MS 1
+
+#define HSINTERVAL_8MS 7    // endpoint descriptor parameters - для обеспечения 10 ms периода
+#define FSINTERVAL_8MS 8
+
+#define HSINTERVAL_32MS 9    // endpoint descriptor parameters - для обеспечения 32 ms периода
+#define FSINTERVAL_32MS 32
+
+#define HSINTERVAL_256MS 12    // endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
+#define FSINTERVAL_255MS 255
 
 #if WITHUSBDEV_HSDESC //&& CPUSTYLE_ALLWINNER
 	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за SOF в UAC OUT */
@@ -544,6 +552,11 @@ extern "C" {
 
 #define EP_align(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
 #define EPDSZMAX(a, b) ((a) > (b) ? (a) : (b))
+
+#define UAC_n1c1g1 (1)	// 1 байт в ячейку 1
+#define UAC_n2c1g1 (1)	// 2 байта в ячейку 1
+#define UAC_n3c1g1 (1)	// 3 байт в ячейку 1
+#define UAC_n4c1g1 (1)	// 4 байт в ячейку 1
 
 #define UAC_n1c2g1 (1)	// 2 байта в ячейку 1
 #define UAC_n2c2g1 (1)	// 4 байта в ячейку 1
@@ -613,26 +626,6 @@ extern "C" {
 #define DMABUFFSTEP192RTS 2
 #define DMABUFFSIZE192RTS	(DMABUFCLUSTER * DMABUFFSTEP192RTS)		/* RTS192 data from I2S */
 
-
-/*
-	For full-/high-speed isochronous endpoints, this value
-	must be in the range from 1 to 16. The bInterval value
-	is used as the exponent for a 2^(bInterval-1) value; e.g.,
-	a bInterval of 4 means a period of 8 (2^(4-1))."
-
-  */
-
-#define HSINTERVAL_1MS 4	// endpoint descriptor parameters - для обеспечения 10 ms периода
-#define FSINTERVAL_1MS 1
-
-#define HSINTERVAL_8MS 7	// endpoint descriptor parameters - для обеспечения 10 ms периода
-#define FSINTERVAL_8MS 8
-
-#define HSINTERVAL_32MS 9	// endpoint descriptor parameters - для обеспечения 32 ms периода
-#define FSINTERVAL_32MS 32
-
-#define HSINTERVAL_256MS 12	// endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
-#define FSINTERVAL_255MS 255
 
 enum
 {
