@@ -10,6 +10,7 @@
 #if (CPUSTYLE_ALLWINNER) && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 #include "board.h"
+#include "buffers.h"
 #include "audio.h"
 #include "formats.h"
 

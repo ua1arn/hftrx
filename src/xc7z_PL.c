@@ -1,5 +1,6 @@
 #include "hardware.h"
 #include "board.h"
+#include "buffers.h"
 #include "audio.h"
 #include "formats.h"
 #include <math.h>

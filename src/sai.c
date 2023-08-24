@@ -9,6 +9,7 @@
 #include "board.h"
 
 #include "audio.h"
+#include "buffers.h"
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"

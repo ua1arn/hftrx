@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "board.h"
 #include "audio.h"
+#include "buffers.h"
 #include "audio_reverb.h"
 #include "audio_compressor.h"
 #include "spi.h"

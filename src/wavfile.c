@@ -17,6 +17,7 @@
 #include "fatfs/ff.h"
 
 #include "audio.h"
+#include "buffers.h"
 #include "display/display.h"	// PACKEDCOLORPIP_T
 
 ///////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 #include "formats.h"
 
 #include "audio.h"
+#include "buffers.h"
 #include "codecs.h"
 #include "bootloader.h"
 

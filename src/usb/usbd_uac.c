@@ -9,10 +9,12 @@
 
 #if WITHUSBHW && WITHUSBUAC
 
+#include "formats.h"
+
 #include "board.h"
+#include "buffers.h"
 #include "audio.h"
 #include "src/display/display.h"
-#include "formats.h"
 
 #include "usb_device.h"
 #include "usbd_def.h"

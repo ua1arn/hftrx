@@ -3,12 +3,14 @@
  */
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "formats.h"	// for debug prints
-#include "board.h"
-#include "audio.h"
-#include "ft8.h"
 
 #if LINUX_SUBSYSTEM
+
+#include "formats.h"	// for debug prints
+#include "board.h"
+#include "buffers.h"
+#include "audio.h"
+#include "ft8.h"
 
 #include <pthread.h>
 #include <stdio.h>

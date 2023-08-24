@@ -14,6 +14,7 @@
 
 #include "mslist.h"
 #include "audio.h"
+#include "buffers.h"
 
 #if WITHUSBHW
 #include "usb/usb200.h"

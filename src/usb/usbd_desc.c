@@ -11,14 +11,17 @@
 
 #include "formats.h"
 #include "board.h"
+#include "buffers.h"
 #include "audio.h"
-#include "spi.h"
+
 #include "usb_device.h"
 #include "usbd_def.h"
 #include "usb200.h"
 #include "usbch9.h"
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
+
+#include "spi.h"
 #include "bootloader.h"
 
 #include <string.h>
