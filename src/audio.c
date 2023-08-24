@@ -873,7 +873,7 @@ adapter_t uac48in;	/* Аудиоданные в компютер из транс
 adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
-transform_t uac48out2afcodecrx;	// преобразование из выхода UAB AUDIO48 в формат кодека
+transform_t uac48out2afcodecrx;	// преобразование из выхода UAC AUDIO48 в формат кодека
 
 #if WITHUSEAUDIOREC
 adapter_t sdcardio;
