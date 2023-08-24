@@ -3391,6 +3391,23 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYLE_ALLWINNER
 
+
+/* DMA каналы на Allwinner. 0..7 */
+enum
+{
+	DMAC_FPGA_TX_Ch,
+	DMAC_FPGA_RX_Ch,
+	DMAC_AudioCodec_TX_Ch,
+	DMAC_AudioCodec_RX_Ch,
+	DMAC_USBUAC48_TX_Ch,
+	DMAC_USBUAC48_RX_Ch,
+	DMAC_USBUACRTS_TX_Ch,
+	//
+	DMAC_Ch_Total
+};
+
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? UINT32_C(0) : (UINT32_C(1) << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
 
@@ -3435,7 +3452,6 @@ static void DMAC_NS_IRQHandler(void)
 #endif /* ! CPUSTYLE_A64 */
 }
 
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
@@ -4465,20 +4481,6 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 	release_dmabuffer32tx(addr);
 }
 
-enum
-{
-	DMAC_I2S0_TX_Ch,
-	DMAC_I2S0_RX_Ch,
-	DMAC_I2S1_TX_Ch,
-	DMAC_I2S1_RX_Ch,
-	DMAC_AudioCodec_TX_Ch,// = DMAC_I2S1_TX_Ch,
-	DMAC_AudioCodec_RX_Ch,// = DMAC_I2S1_RX_Ch,
-	DMAC_I2S2_TX_Ch,
-	DMAC_I2S2_RX_Ch,
-	//
-	DMAC_Ch_Total
-};
-
 static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
 #if CPUSTYLE_T507
@@ -4535,7 +4537,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S1_RX_Ch;
+	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
@@ -4600,7 +4602,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S1_TX_Ch;
+	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
@@ -4668,7 +4670,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S2_TX_Ch;
+	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
@@ -4734,7 +4736,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S1_RX_Ch;
+	const unsigned dmach = DMAC_FPGA_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
@@ -4805,7 +4807,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S2_RX_Ch;
+	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
@@ -4870,7 +4872,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S2_RX_Ch;
+	const unsigned dmach = DMAC_FPGA_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
@@ -4940,7 +4942,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	const unsigned ix = 1;	// I2S1
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S1_TX_Ch;
+	const unsigned dmach = DMAC_FPGA_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
@@ -5007,7 +5009,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	const unsigned ix = 2;	// I2S2
 	const size_t dw = sizeof (IFDACvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMAC_I2S2_TX_Ch;
+	const unsigned dmach = DMAC_FPGA_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
