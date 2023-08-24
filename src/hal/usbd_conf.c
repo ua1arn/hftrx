@@ -911,6 +911,10 @@ static uint_fast16_t size2buff4(uint_fast16_t size)
 
 static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsize, uint_fast8_t bigbuff, uint_fast8_t dma)
 {
+#if CPUSTYLE_STM32MP1
+	dma = 1;
+	bigbuff = 1;
+#endif /* CPUSTYLE_STM32MP1 */
 	unsigned offset;
 	const int add3tx = bigbuff ? 3 : 1;	// tx fifo add places
 	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
