@@ -5122,7 +5122,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	/* Работа с только что принятыми данными */
 	//printhex(addr, addr, UACOUT_AUDIO48_DATASIZE);
 	//printhex(addr, addr, UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48);
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE - 0*UACOUT_FMT_CHANNELS_AUDIO48 * UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE - 1*UACOUT_FMT_CHANNELS_AUDIO48 * UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
 
 	//release_dmabufferuacout48(addr);
@@ -5187,7 +5187,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
 
-	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	DMAC->CH [dmach].DMAC_MODE_REGN = 1*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }

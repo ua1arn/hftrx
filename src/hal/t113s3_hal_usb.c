@@ -2698,8 +2698,9 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
 #else
 		usb_select_ep(pusb, ep_no);
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 1*USB_RXCSR_AUTOCLR);		// AutoClear
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
 #endif
 	}
