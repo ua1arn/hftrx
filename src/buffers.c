@@ -2920,6 +2920,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 		return (uintptr_t) & p->u.buff;
 	}
 	LCLSPIN_UNLOCK(& locklistuacin48);
+	//return allocate_dmabufferuacin48();	// fixme:
 	return 0;
 }
 

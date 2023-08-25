@@ -5223,21 +5223,21 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flushuacin48(getfilled_dmabufferuacin48());			// Source Address
+	descr0 [0] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flushuacin48(getfilled_dmabufferuacin48());			// Source Address
+	descr0 [1] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;			// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
 
 	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flushuacin48(getfilled_dmabufferuacin48());			// Source Address
+	descr0 [2] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
 	descr0 [2] [2] = portaddr;				// Destination Address
 	descr0 [2] [3] = NBYTES;				// Byte Counter
 	descr0 [2] [4] = parameterDMAC;			// Parameter
