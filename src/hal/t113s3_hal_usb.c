@@ -2560,16 +2560,6 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 	usb_select_ep(pusb, ep_save);
 }
 
-
-static void usb_struct_idle_cdc(pusb_struct pusb)
-{
-//	pdev->bo_state = USB_BO_IDLE;
-}
-
-static void usb_dev_bulk_xfer_cdc_initialize(pusb_struct pusb)
-{
-}
-
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC && WITHWAWXXUSB
@@ -2686,15 +2676,6 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 }
 
 
-static void usb_struct_idle_uac(pusb_struct pusb)
-{
-//	pdev->bo_state = USB_BO_IDLE;
-}
-
-static void usb_dev_iso_xfer_uac_initialize(pusb_struct pusb)
-{
-}
-
 #endif /* WITHUSBUAC */
 
 
@@ -2706,12 +2687,6 @@ static void usb_struct_idle(pusb_struct pusb)
 #if WITHUSBDMSC && WITHWAWXXUSB
 	usb_struct_idle_msc(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBCDCACM && WITHWAWXXUSB
-	usb_struct_idle_cdc(pusb);
-#endif /* WITHUSBCDCACM */
-#if WITHUSBUAC && WITHWAWXXUSB
-	usb_struct_idle_uac(pusb);
-#endif /* WITHUSBUAC */
 }
 
 static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
@@ -4224,12 +4199,6 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 #if WITHUSBDMSC && WITHWAWXXUSB
 	usb_dev_bulk_xfer_msc_initialize(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBCDCACM && WITHWAWXXUSB
-	usb_dev_bulk_xfer_cdc_initialize(pusb);
-#endif /* WITHUSBCDCACM */
-#if WITHUSBUAC && WITHWAWXXUSB
-	usb_dev_iso_xfer_uac_initialize(pusb);
-#endif /* WITHUSBUAC */
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
@@ -4282,7 +4251,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 #endif /* WITHUSBDEV_DMAENABLE */
 }
 
-void usb_struct_init(PCD_HandleTypeDef *hpcd)
+static void usb_struct_init(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	uint32_t i=0;
@@ -4347,7 +4316,11 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	//uint32_t i=0;
 	//uint32_t temp;
 
-	usb_struct_init(hpcd);
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+  	LCLSPIN_LOCK(& lockusbdev);
+
+  	usb_struct_init(hpcd);	// так же сбрасывается адрес в регистрах
 
 	//usb_set_phytune(pusb);
 	//usb_drive_vbus(pusb, 0, pusb->index);
@@ -4497,12 +4470,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
-	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
-	const uint32_t ep_save = usb_get_active_ep(pusb);
-
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
   	LCLSPIN_LOCK(& lockusbdev);
+
+	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
+	const uint32_t ep_save = usb_get_active_ep(pusb);
+
+
 	//sof interrupt
 
 	if (irqstatus & USB_BUSINT_SOF)
