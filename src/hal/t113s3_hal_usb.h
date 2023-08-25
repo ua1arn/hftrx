@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#define USB_MAX_EP_NO		5
+#define USB_MAX_EP_NO		5	// EP1..EP5
 
 typedef enum {
 	USB_RETVAL_NOTCOMP = 0,

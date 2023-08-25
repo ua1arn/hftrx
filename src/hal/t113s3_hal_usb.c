@@ -4248,18 +4248,19 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
 
-//#if WITHUSBUACIN
-//	{
-//		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
-//		DMAC_USB_TX_initialize_UACIN48(ep_no);
-//	}
-//#if WITHUSBUACIN2
-////	{
-////		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
-////		DMAC_USB_TX_initialize_UACINRTS(ep_no);
-////	}
-//#endif /* WITHUSBUACIN2 */
-//#endif /* WITHUSBUACIN */
+	// Инициализация DMA не мешает, так как разрешение DRQ у endpoint ставится не тут
+#if WITHUSBUACIN
+	{
+		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
+		DMAC_USB_TX_initialize_UACIN48(ep_no);
+	}
+#if WITHUSBUACIN2
+	{
+		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
+		DMAC_USB_TX_initialize_UACINRTS(ep_no);
+	}
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 #if WITHUSBUACOUT
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
