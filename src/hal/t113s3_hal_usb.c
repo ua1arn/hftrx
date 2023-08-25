@@ -713,7 +713,7 @@ static void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr)
 	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1FFF) << 16)) | (((addr >> 3) & 0x1FFF) << 16);
 }
 
-static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t is_tx)
+static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t is_rx)
 {
 	uint32_t reg_val;
 
@@ -723,7 +723,7 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 
 	reg_val = 0;
 	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
-	reg_val |= ! is_tx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
+	reg_val |= !! is_rx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
 	reg_val |= UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
 
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
@@ -1250,7 +1250,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 #if WITHUSBDEV_DMAENABLE
 				xfer_count = min(pusb->eprx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
 				pusb->dmarx_last_transferv[ep_no-1] = xfer_count;
-				usb_fifo_accessed_by_dma(pusb, ep_no, 0);  //rx
+				usb_fifo_accessed_by_dma(pusb, ep_no, 1);  //rx
 
 				dram_addr = usb_dev_get_buf_base(pusb, pusb->eprx_buf_tagv[ep_no-1]);
 
@@ -1360,7 +1360,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 		  		uint32_t xfer_count = min(pusb->eprx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
 
 				pusb->dmarx_last_transferv[ep_no-1] = xfer_count;
-		  		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
+		  		usb_fifo_accessed_by_dma(pusb, ep_no, 1);
 
 		  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eprx_buf_tagv[ep_no-1]);
 
@@ -1533,7 +1533,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			    	break;
 	 			}
 
-				usb_fifo_accessed_by_dma(pusb, ep_no, 1);
+				usb_fifo_accessed_by_dma(pusb, ep_no, 0);
 		 		if (!(usb_get_fifo_access_config(pusb) & 0x1))
 			    {
 					PRINTF("Error: FIFO Access Config Error!!\n");
@@ -2693,17 +2693,15 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_OUT, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
-
+		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
 #if 1
 		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
 #else
-
 		usb_select_ep(pusb, ep_no);
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
+		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
 #endif
-		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
 	}
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
@@ -2711,20 +2709,28 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
+#if 1
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
-//		usb_select_ep(pusb, ep_no);
-//		usb_fifo_accessed_by_dma(pusb, ep_no, 1);
-//    	usb_set_eptx_csr(pusb, USB_TXCSR_AUTOSET | USB_TXCSR_TXFIFO | USB_TXCSR_DMAREQEN | USB_TXCSR_DMAREQMODE | USB_TXCSR_ISO);
+#else
+		usb_select_ep(pusb, ep_no);
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOCLR);		// AutoClear
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+#endif
 	}
 #if WITHUSBUACIN2
 	{
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
+#if 1
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
-//		usb_select_ep(pusb, ep_no);
-//		usb_fifo_accessed_by_dma(pusb, ep_no, 1);
-//    	usb_set_eptx_csr(pusb, USB_TXCSR_AUTOSET | USB_TXCSR_TXFIFO | USB_TXCSR_DMAREQEN | USB_TXCSR_DMAREQMODE | USB_TXCSR_ISO);
+#else
+		usb_select_ep(pusb, ep_no);
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOCLR);		// AutoClear
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+#endif
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
