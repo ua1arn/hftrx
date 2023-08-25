@@ -2844,19 +2844,27 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBCDCACM */
 #if WITHUSBUACOUT
 	{
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_OUT & 0x0F), EP_DIR_OUT, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
-		set_ep_iso(pusb, (USBD_EP_AUDIO_OUT & 0x0F), EP_DIR_OUT);
+		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_OUT, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
+		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
+		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
 	}
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
 	{
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
-		set_ep_iso(pusb, (USBD_EP_AUDIO_IN & 0x0F), EP_DIR_IN);
-	#if WITHUSBUACIN2
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
-		set_ep_iso(pusb, (USBD_EP_RTS_IN & 0x0F), EP_DIR_IN);
-	#endif
+		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		set_ep_iso(pusb, ep_no, EP_DIR_IN);
+		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
 	}
+#if WITHUSBUACIN2
+	{
+		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
+		set_ep_iso(pusb, ep_no, EP_DIR_IN);
+		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+	}
+#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
 	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
@@ -4358,8 +4366,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-	usb_set_eptx_interrupt_enable(pusb, 0xffff);	// 0x003f
-	usb_set_eprx_interrupt_enable(pusb, 0xfffe);	// 0x003e
+	usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
@@ -4543,8 +4550,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
 		usb_clear_bus_interrupt_enable(pusb, 0xff);
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
-		usb_set_eptx_interrupt_enable(pusb, 0xffff);	// 0x003f
-		usb_set_eprx_interrupt_enable(pusb, 0xfffe);	// 0x003e
+		usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
 
 		awxx_setup_fifo(pusb);
 
