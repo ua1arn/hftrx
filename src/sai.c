@@ -5231,7 +5231,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = 0x03;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5326,7 +5326,7 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = 0x03;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
