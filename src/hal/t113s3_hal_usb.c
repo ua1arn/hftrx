@@ -358,6 +358,11 @@ static void usb_clear_eprx_interrupt_status(pusb_struct pusb, uint32_t bm)
 	WITHUSBHW_DEVICE->USB_INTRX = bm & 0xFFFF;
 }
 
+static uint32_t usb_get_eprx_interrupt_enable(pusb_struct pusb)
+{
+	return WITHUSBHW_DEVICE->USB_INTRXE & 0xFFFF;
+}
+
 static void usb_set_eptx_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
 	uint16_t reg_val;
@@ -374,6 +379,11 @@ static void usb_clear_eptx_interrupt_enable(pusb_struct pusb, uint32_t bm)
 	reg_val = WITHUSBHW_DEVICE->USB_INTTXE;
 	reg_val &= ~ (bm & 0xFFFF);
 	WITHUSBHW_DEVICE->USB_INTTXE = reg_val;
+}
+
+static uint32_t usb_get_eptx_interrupt_enable(pusb_struct pusb)
+{
+	return WITHUSBHW_DEVICE->USB_INTTXE & 0xFFFF;
 }
 
 static void usb_set_eprx_interrupt_enable(pusb_struct pusb, uint32_t bm)
@@ -2622,6 +2632,9 @@ static void awxx_setup_fifo(pusb_struct pusb)
 
 #if WITHUSBDMTP
 	{
+		const uint_fast8_t pipein = USBD_EP_MTP_IN & 0x0F;
+		const uint_fast8_t pipeout = USBD_EP_MTP_OUT & 0x0F;
+		const uint_fast8_t pipeint = USBD_EP_MTP_INT & 0x0F;
 		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
 		//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	#if WITHUSBDEV_HSDESC
@@ -2633,20 +2646,28 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#endif /* WITHUSBDEV_HSDESC */
 		  /* Open INTR EP IN */
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_INT & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
+
+		usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+		usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+		usb_set_eptx_interrupt_enable(pusb, 1u << pipeint);
 	}
 #endif /* WITHUSBDMTP */
 
 #if WITHUSBDMSC
 	{
+		const uint_fast8_t pipein = USBD_EP_MSC_IN & 0x0F;
+		const uint_fast8_t pipeout = USBD_EP_MSC_OUT & 0x0F;
 		//set_fifo_ep: ep_no=02, ep_attr=02, ep_dir=0, bIntfProtocol=50, maxpktsz=512
 		//set_fifo_ep: ep_no=01, ep_attr=02, ep_dir=1, bIntfProtocol=50, maxpktsz=512
 	#if WITHUSBDEV_HSDESC
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_HS, 1, fifo_addr);
 	#else /* WITHUSBDEV_HSDESC */
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_IN & 0x0F), EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
-		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MSC_OUT & 0x0F), EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
+		usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+		usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
 	}
 #endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
@@ -2661,6 +2682,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			fifo_addr = set_fifo_ep(pusb, pipeint, EP_DIR_IN, VIRTUAL_COM_PORT_INT_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
+
+			usb_set_eptx_interrupt_enable(pusb, 1u << pipein);
+			usb_set_eprx_interrupt_enable(pusb, 1u << pipeout);
+			usb_set_eptx_interrupt_enable(pusb, 1u << pipeint);
 		}
 	}
 #endif /* WITHUSBCDCACM */
@@ -4446,7 +4471,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		//tx interrupt
 		uint32_t temp;
 		uint32_t i;
-		temp = usb_get_eptx_interrupt_status(pusb);
+		temp = usb_get_eptx_interrupt_status(pusb) & (usb_get_eptx_interrupt_enable(pusb) | 0x01);
 		usb_clear_eptx_interrupt_status(pusb, temp);
 		if (temp&0x01)
 		{
@@ -4471,7 +4496,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		//rx interrupt
 		uint32_t temp;
 		uint32_t i;
-		temp = usb_get_eprx_interrupt_status(pusb);
+		temp = usb_get_eprx_interrupt_status(pusb)  & usb_get_eprx_interrupt_enable(pusb);
 		usb_clear_eprx_interrupt_status(pusb, temp);
 		if (temp&0xfffe)
 		{
