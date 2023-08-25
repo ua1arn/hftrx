@@ -16310,42 +16310,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_TXTI</name>
-    <displayName>USB_TXTI</displayName>
-    <description>USB_TXTI</description>
-    <addressOffset>0x08C</addressOffset>
-    <size>0x08</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_TXNAKLIMIT</name>
-    <displayName>USB_TXNAKLIMIT</displayName>
-    <description>USB_TXNAKLIMIT</description>
-    <addressOffset>0x08D</addressOffset>
-    <size>0x08</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_RXTI</name>
-    <displayName>USB_RXTI</displayName>
-    <description>USB_RXTI</description>
-    <addressOffset>0x08E</addressOffset>
-    <size>0x08</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_RXNAKLIMIT</name>
-    <displayName>USB_RXNAKLIMIT</displayName>
-    <description>USB_RXNAKLIMIT</description>
-    <addressOffset>0x08F</addressOffset>
-    <size>0x08</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>USB_TXFIFO</name>
     <displayName>USB_TXFIFO</displayName>
     <description>USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)</description>
