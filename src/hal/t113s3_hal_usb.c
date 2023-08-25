@@ -444,11 +444,6 @@ static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 	//put_bvalue(USBOTG0_BASE + USB_bINDEX_OFF, ep_no);
 }
 
-//static uint32_t usb_get_active_ep(pusb_struct pusb)
-//{
-//	return (WITHUSBHW_DEVICE->USB_GCS >> 16) & 0x0F; // EPIND
-//}
-
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
 {
 	WITHUSBHW_DEVICE->USB_TESTC = (WITHUSBHW_DEVICE->USB_TESTC & ~ 0x7FF) | (bm & 0x7FF);
@@ -1585,7 +1580,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 {
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
-	//const uint32_t ep_save = usb_get_active_ep(pusb);
+
 #if WITHUSBDEV_DMAENABLE
 	__dma_setting_t  p;
 	uint32_t dram_addr;
@@ -1606,7 +1601,6 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 
 			if (!maxpkt)
 			{
-				//usb_select_ep(pusb, ep_save);
 				return USB_RETVAL_COMPOK;
 			}
 
@@ -1815,7 +1809,6 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			pusb->eptx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 			break;
 	}
-	//usb_select_ep(pusb, ep_save);
 
 	return ret;
 }
@@ -2119,7 +2112,6 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 	const pCBWPKG pCBW = (pCBWPKG)(pusb->buffer);
 	const pCSWPKG pCSW = (pCSWPKG)(pusb->buffer);
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-	//const uint32_t ep_save = usb_get_active_ep(pusb);
 	USB_RETVAL fret = USB_RETVAL_NOTCOMP;
 
 	switch (pdev->bo_state)
@@ -2267,7 +2259,6 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 		default:
 			break;
 	}
-	//usb_select_ep(pusb, ep_save);
 
 	return ret;
 }
@@ -2485,7 +2476,6 @@ static void cdcXout_buffer_save(
 
 static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 {
-	//const uint32_t ep_save = usb_get_active_ep(pusb);
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	const uint32_t bo_ep_out = (USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F);
 	uint32_t rx_count=0;
@@ -2549,7 +2539,6 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 	} while (0);
 
-	//usb_select_ep(pusb, ep_save);
 }
 
 #endif /* WITHUSBCDCACM */
@@ -2569,7 +2558,6 @@ static uint_fast16_t uacinrtssize = 0;
 static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-	//const uint32_t ep_save = usb_get_active_ep(pusb);
 
 #if WITHUSBUACOUT && 1
 	do
@@ -2664,7 +2652,6 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
-	//usb_select_ep(pusb, ep_save);
 }
 
 
@@ -4466,8 +4453,6 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   	LCLSPIN_LOCK(& lockusbdev);
 
 	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
-	//const uint32_t ep_save = usb_get_active_ep(pusb);
-
 
 	//sof interrupt
 
