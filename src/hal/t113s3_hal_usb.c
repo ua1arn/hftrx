@@ -612,13 +612,11 @@ static uint32_t usb_get_eprx_csr(pusb_struct pusb)
 static void usb_set_eprx_csr(pusb_struct pusb, uint32_t csr)
 {
 	WITHUSBHW_DEVICE->USB_RXCSRHI = csr;
-	//put_hvalue(USBOTG0_BASE + USB_hRXCSR_OFF, csr);
 }
 
 static void usb_set_eprx_csrhi24(pusb_struct pusb, uint32_t csrhi)
 {
 	WITHUSBHW_DEVICE->USB_RXCSRHI = (WITHUSBHW_DEVICE->USB_RXCSRHI & ~ 0xFF00) | ((csrhi  & 0xFF) << 8);
-	//put_bvalue(USBOTG0_BASE + USB_hRXCSR_OFF + 1, csrhi);
 }
 
 static void usb_eprx_flush_fifo(pusb_struct pusb)
@@ -719,9 +717,9 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 {
 	uint32_t reg_val;
 
-	ASSERT(ep_no < USB_MAX_EP_NO);
-	if (ep_no>USB_MAX_EP_NO)
-		return;
+//	ASSERT(ep_no < USB_MAX_EP_NO);
+//	if (ep_no>USB_MAX_EP_NO)
+//		return;
 
 	reg_val = UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
 	reg_val |= ! is_tx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
@@ -730,6 +728,8 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
 	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) == 0)	// FIFO_BUS_SEL
 		;
+
+	PRINTF("usb_fifo_accessed_by_dma: ep=%02X, is_tx=%u, USB_GCS=%08" PRIX32 "\n", ep_no, is_tx, WITHUSBHW_DEVICE->USB_GCS);
 }
 
 static uint32_t usb_get_testc(pusb_struct pusb)
@@ -2693,12 +2693,16 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_OUT, usbd_getuacoutmaxpacket(), 1, fifo_addr);	// ISOC OUT Аудиоданные от компьютера в TRX
+
+#if 1
 		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
+#else
 
-		//usb_select_ep(pusb, ep_no);
-		//usb_set_eprx_csrhi24(pusb, (0*USB_RXCSR_AUTOCLR|0*USB_RXCSR_DMAREQEN|USB_RXCSR_ISO)>>8);
-		//usb_fifo_accessed_by_dma(pusb, ep_no, 0);
-
+		usb_select_ep(pusb, ep_no);
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
+		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
+#endif
 		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
 	}
 #endif /* WITHUSBUACOUT */
