@@ -560,10 +560,7 @@ static void usb_ep0_clear_rxpktrdy(pusb_struct pusb)
 
 static uint32_t usb_get_ep0_csr(pusb_struct pusb)
 {
-	uint32_t ret;
-
-	ret = WITHUSBHW_DEVICE->USB_CSR0;
-	return ret;
+	return WITHUSBHW_DEVICE->USB_CSR0;
 }
 
 /* read out FIFO status */
@@ -2856,6 +2853,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+//		usb_fifo_accessed_by_dma(pusb, ep_no, 1);
+//    	usb_set_eptx_csr(pusb, USB_TXCSR_AUTOSET | USB_TXCSR_TXFIFO | USB_TXCSR_DMAREQEN | USB_TXCSR_DMAREQMODE | USB_TXCSR_ISO);
 	}
 #if WITHUSBUACIN2
 	{
@@ -2863,6 +2862,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);	// ISOC IN Аудиоданные в компьютер из TRX
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+//		usb_fifo_accessed_by_dma(pusb, ep_no, 1);
+//    	usb_set_eptx_csr(pusb, USB_TXCSR_AUTOSET | USB_TXCSR_TXFIFO | USB_TXCSR_DMAREQEN | USB_TXCSR_DMAREQMODE | USB_TXCSR_ISO);
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
@@ -4257,7 +4258,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 //#endif /* WITHUSBUACIN2 */
 //#endif /* WITHUSBUACIN */
 
-#if WITHUSBDEV_DMAENABLE
+#if WITHUSBDEV_DMAENABLE && 0
 	//dma
 	{
 		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
