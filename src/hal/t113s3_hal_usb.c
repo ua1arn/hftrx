@@ -4381,6 +4381,9 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 
 	pusb->otg_dev = USB_OTG_B_DEVICE;
 
+  	LCLSPIN_UNLOCK(& lockusbdev);
+  	LowerIrql(oldIrql);
+
 	return;
 }
 
