@@ -3472,6 +3472,7 @@ static void DMA_resume(unsigned dmach, uintptr_t descbase)
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
+	ASSERT(DMAC_Ch_Total <= 8);
 	dmac_handlers [dmach] = handler;
 #if CPUSTYLE_T507
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
@@ -5358,7 +5359,6 @@ void DMAC_USB_TX_initialize_UACINRTS(void)
 }
 
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
-
 
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
