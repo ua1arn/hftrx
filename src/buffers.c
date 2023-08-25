@@ -814,7 +814,7 @@ void buffers_initialize(void)
 	#elif WITHRTS96
 	{
 		unsigned i;
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [4 * BUFOVERSIZE] ALIGNX_END;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [14 * BUFOVERSIZE] ALIGNX_END;
 
 		ASSERT(offsetof(uacin48_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin48_t, u.buff) == offsetof(voice96rts_t, u.buff));
