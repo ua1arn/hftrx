@@ -3406,7 +3406,7 @@ enum
 	DMAC_Ch_Total
 };
 
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -3461,6 +3461,8 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
+	local_delay_us(7);
+	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 //	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 //	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 //		;
@@ -5086,7 +5088,9 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 	return addr;
 }
 
-static ALIGNX_BEGIN uint8_t in48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
+static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
+static uintptr_t logger [32];
+static unsigned logindex;
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
@@ -5100,8 +5104,17 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 	DMA_resume(dmach, descbase);
 
+//	logger [logindex ++] = addr;
+//	if (logindex >= ARRAY_SIZE(logger))
+//	{
+//		printhex32(0, logger, sizeof logger);
+//		for (;;)
+//			;
+//	}
 	/* Работа с только что принятыми данными */
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	//printhex(addr, addr, UACOUT_AUDIO48_DATASIZE);
+	//printhex(addr, addr, UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48);
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE - UACOUT_FMT_CHANNELS_AUDIO48 * UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
 
 	//release_dmabufferuacout48(addr);
@@ -5137,21 +5150,21 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidateuacout48((uintptr_t) in48 [0]);				// Destination Address
+	descr0 [0] [2] = dma_invalidateuacout48((uintptr_t) out48 [0]);				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidateuacout48((uintptr_t) in48 [1]);				// Destination Address
+	descr0 [1] [2] = dma_invalidateuacout48((uintptr_t) out48 [1]);				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;				// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
 
 	descr0 [2] [0] = configDMAC;			// Cofigurarion
 	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidateuacout48((uintptr_t) in48 [2]);				// Destination Address
+	descr0 [2] [2] = dma_invalidateuacout48((uintptr_t) out48 [2]);				// Destination Address
 	descr0 [2] [3] = NBYTES;				// Byte Counter
 	descr0 [2] [4] = parameterDMAC;				// Parameter
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
@@ -5200,7 +5213,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
-	const size_t dw = 1;//sizeof (aubufv_t);
+	const size_t dw = 4;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
@@ -5286,7 +5299,7 @@ static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 
 void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 {
-	const size_t dw = 1;//sizeof (aubufv_t);
+	const size_t dw = 4;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
