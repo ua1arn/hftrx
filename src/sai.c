@@ -5101,7 +5101,6 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
-	printhex(addr, addr, 8);
 	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
 
@@ -5116,7 +5115,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE;
-	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->FIFO [ep];
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned srcDRQ = DMAC_SrcReqUSB0_EP1 + ep - 1;
 
 	const uint_fast32_t parameterDMAC = 0;
@@ -5207,7 +5206,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = UACIN_AUDIO48_DATASIZE;
-	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->FIFO [ep];
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
 	const uint_fast32_t parameterDMAC = 0;
@@ -5293,7 +5292,7 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = UACIN_RTS96_DATASIZE;
-	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->FIFO [ep];
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
 	const uint_fast32_t parameterDMAC = 0;
