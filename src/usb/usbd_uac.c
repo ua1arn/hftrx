@@ -163,7 +163,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_REALTIME, & oldIrql);
-		release_dmabufferx(uacinaddr);
+		release_dmabufferuacinX(uacinaddr);
 		LowerIrql(oldIrql);
 		uacinaddr = 0;
 	}
@@ -178,7 +178,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_REALTIME, & oldIrql);
-		release_dmabufferxrts(uacinrtsaddr);
+		release_dmabufferuacinrtsX(uacinrtsaddr);
 		LowerIrql(oldIrql);
 		uacinrtsaddr = 0;
 	}
@@ -891,12 +891,12 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		if (uacinaddr != 0)
 		{
 			RiseIrql(IRQL_REALTIME, & oldIrql);
-			release_dmabufferx(uacinaddr);
+			release_dmabufferuacinX(uacinaddr);
 			LowerIrql(oldIrql);
 		}
 
 		RiseIrql(IRQL_REALTIME, & oldIrql);
-		uacinaddr = getfilled_dmabufferx(& uacinsize);
+		uacinaddr = getfilled_dmabufferuacinX(& uacinsize);
 		LowerIrql(oldIrql);
 
 		if (uacinaddr != 0)
@@ -914,7 +914,7 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		if (uacinrtsaddr != 0)
 		{
 			RiseIrql(IRQL_REALTIME, & oldIrql);
-			release_dmabufferxrts(uacinrtsaddr);
+			release_dmabufferuacinrtsX(uacinrtsaddr);
 			LowerIrql(oldIrql);
 		}
 
@@ -994,7 +994,7 @@ const USBD_ClassTypeDef USBD_CLASS_UAC =
 };
 
 // USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 void __weak refreshDMA_uacin(void)
 {
 }

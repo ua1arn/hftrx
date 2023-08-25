@@ -1895,7 +1895,7 @@ dma_flushxrtstx(uintptr_t addr, unsigned long size)
 }
 
 // USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 void refreshDMA_uacin(void)
 {
 	if ((DMAC12.CHSTAT_n & DMAC12_CHSTAT_n_EN) != 0)
@@ -1912,7 +1912,7 @@ void refreshDMA_uacin(void)
 
 	// При наличии следующего блока - запускаем передачу
 	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferx(& size);	// для передачи в компьютер - может вернуть 0
+	const uintptr_t addr = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер - может вернуть 0
 	if (addr != 0)
 	{
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
@@ -1947,11 +1947,11 @@ static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
 	//__DMB();
 	ASSERT(DMAC12.N0SA_n != 0);
-	release_dmabufferx(DMAC12.N0SA_n);
+	release_dmabufferuacinX(DMAC12.N0SA_n);
 
 	// При наличии следующего блока - запускаем передачу
 	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferx(& size);	// для передачи в компьютер - может вернуть 0
+	const uintptr_t addr = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер - может вернуть 0
 	if (addr != 0)
 	{
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
@@ -2165,7 +2165,7 @@ static void r7s721_usb1_dma1_dmatx_stop(uint_fast8_t pipe)
 #else /* WITHDMAHW_UACIN */
 
 // USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 void refreshDMA_uacin(void)
 {
 }

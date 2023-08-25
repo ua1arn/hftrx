@@ -621,13 +621,13 @@ void release_dmabuffer16rx(uintptr_t addr);
 uintptr_t processing_pipe32tx(uintptr_t addr);
 uintptr_t processing_pipe32rx(uintptr_t addr);
 
-uintptr_t getfilled_dmabufferx(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-void release_dmabufferx(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 // WITHUSBUACIN2 specific
 uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-void release_dmabufferxrts(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinrtsX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
-void refreshDMA_uacin(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+void refreshDMA_uacin(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
@@ -687,9 +687,9 @@ uintptr_t allocate_dmabufferuacin192rts(void);
 void release_dmabufferuacin192rts(uintptr_t addr);
 uintptr_t getfilled_dmabufferuacin192rts(void);
 
-uintptr_t allocate_dmabufferuacin96rts(void);
-void release_dmabufferuacin96rts(uintptr_t addr);
-uintptr_t getfilled_dmabufferuacin96rts(void);
+uintptr_t allocate_dmabufferuacinrts96(void);
+void release_dmabufferuacinrts96(uintptr_t addr);
+uintptr_t getfilled_dmabufferuacinrts96(void);
 
 uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
