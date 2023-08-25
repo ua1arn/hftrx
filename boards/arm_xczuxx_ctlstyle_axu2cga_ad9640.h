@@ -10,9 +10,9 @@
 #ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED
 #define ARM_XCZUXX_CTLSTYLE_AXU2CGA_AD9640_H_INCLUDED 1
 
-	#if ! defined(XCZU2)
-		#error Wrong CPU selected. XCZU2 expected
-	#endif /* ! defined(XCZU2) */
+	#if ! defined(XCZU2CG)
+		#error Wrong CPU selected. XCZU2CG expected
+	#endif /* ! defined(XCZU2CG) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -65,9 +65,9 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
-//	#define CTLREGMODE_XCZU_V2	1
-//	#define WITHQRPBOARD_UA3REO	1
+//	#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_XCZU_V2	1
+	#define WITHQRPBOARD_UA3REO	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255

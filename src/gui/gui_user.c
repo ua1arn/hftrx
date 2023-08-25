@@ -6086,6 +6086,25 @@ static void window_menu_params_process(void)
 			}
 		}
 
+#if 1	// Добавить экранные кнопки "+" и "-" при необходимости
+		add_element("btn_p", 35, 35, 0, 0, "+");
+		add_element("btn_m", 35, 35, 0, 0, "-");
+
+		button_t * btn_p = find_gui_element(TYPE_BUTTON, win, "btn_p");
+		btn_p->x1 = xmax + 130 + interval;
+		btn_p->y1 = 0;
+		btn_p->visible = VISIBLE;
+		btn_p->payload = 1;
+		btn_p->index = 90;
+
+		button_t * btn_m = find_gui_element(TYPE_BUTTON, win, "btn_m");
+		btn_m->x1 = xmax + 130 + interval;
+		btn_m->y1 = 40;
+		btn_m->visible = VISIBLE;
+		btn_m->payload = -1;
+		btn_m->index = 91;
+#endif
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Edit param: choose...");
 		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
@@ -6099,16 +6118,21 @@ static void window_menu_params_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			if (bh_sel)
-				bh_sel->is_locked = BUTTON_NON_LOCKED;
+			if (bh->index < 90)
+			{
+				if (bh_sel)
+					bh_sel->is_locked = BUTTON_NON_LOCKED;
 
-			bh->is_locked = BUTTON_LOCKED;
-			bh_sel = bh;
-			sel = 1;
+				bh->is_locked = BUTTON_LOCKED;
+				bh_sel = bh;
+				sel = 1;
 
-			hamradio_get_multilinemenu_block_vals(& menuv, bh->payload, 1);
-			remove_end_line_spaces(menuv.name);
-			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s", bh_sel->text, menuv.name);
+				hamradio_get_multilinemenu_block_vals(& menuv, bh->payload, 1);
+				remove_end_line_spaces(menuv.name);
+				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s", bh_sel->text, menuv.name);
+			}
+			else if (bh->index == 90 || bh->index == 91)
+				gui_set_encoder2_rotate(bh->payload);
 		}
 		break;
 

@@ -16,10 +16,10 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
@@ -1040,5 +1040,7 @@ enum {
 			BOARD_USERBOOT_INITIALIZE(); \
 			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
+
+#define HARDWARE_DEBUG_FLUSH()	do {} while(0)
 
 #endif /* ARM_XCZUXX_CPUSTYLE_AXU2CGA_AD9640_H_INCLUDED */
