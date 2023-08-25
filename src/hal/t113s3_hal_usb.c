@@ -4184,7 +4184,9 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& lockusbdev);
+
 	usb_device_function(hpcd);
+
 	LCLSPIN_UNLOCK(& lockusbdev);
 	LowerIrql(oldIrql);
 }
@@ -4194,7 +4196,14 @@ void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 	PCD_HandleTypeDef * hpcd = pdev->pData;
 	ASSERT(hpcd != NULL);
 	usb_struct * const pusb = & hpcd->awxx_usb;
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& lockusbdev);
+
 	awxx_setup_fifo(pusb);
+
+	LCLSPIN_UNLOCK(& lockusbdev);
+	LowerIrql(oldIrql);
 }
 
 static void usb_params_init(PCD_HandleTypeDef *hpcd)
@@ -4625,6 +4634,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   	usb_select_ep(pusb, ep_save);
 
   	usb_device_function(hpcd);
+
   	LCLSPIN_UNLOCK(& lockusbdev);
   	LowerIrql(oldIrql);
 }
