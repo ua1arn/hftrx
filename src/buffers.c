@@ -2906,7 +2906,7 @@ RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
 // Этой функцией пользуются обработчики прерываний DMA
 // получить буфер для передачи в компьютер, через USB AUDIO
 // Если в данный момент нет готового буфера, возврат 0
-static uintptr_t getfilled_dmabufferuacin48(void)
+uintptr_t getfilled_dmabufferuacin48(void)
 {
 	LCLSPIN_LOCK(& locklistuacin48);
 	if (! IsListEmpty2(& uacin48ready))

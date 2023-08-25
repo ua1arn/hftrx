@@ -683,8 +683,6 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
-uintptr_t dma_invalidateuacout48(uintptr_t addr);
-
 uintptr_t allocate_dmabufferuacin192rts(void);
 void release_dmabufferuacin192rts(uintptr_t addr);
 uintptr_t getfilled_dmabufferuacin192rts(void);
@@ -697,6 +695,7 @@ uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 
 uintptr_t allocate_dmabufferuacin48(void);
+uintptr_t getfilled_dmabufferuacin48(void);
 void release_dmabufferuacin48(uintptr_t addr);
 
 /* +++ UAC OUT data save - использование данных от компьютера. */
@@ -710,6 +709,9 @@ void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернатив
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 uint_fast8_t buffers_get_uacoutalt(void);
 
+void DMAC_USB_RX_initialize_UACOUT48(void);
+void DMAC_USB_TX_initialize_UACIN48(void);
+void DMAC_USB_TX_initialize_UACINRTS(void);
 
 
 #endif /* INC_BUFFERS_H_ */
