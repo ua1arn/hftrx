@@ -2455,21 +2455,21 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 #if WITHUSBUAC && WITHWAWXXUSB
 
-/* Audio output */
-static uintptr_t uacinaddr = 0;
-static uint_fast16_t uacinsize = 0;
-
-#if WITHUSBUACIN2
-/* RTS output */
-static uintptr_t uacinrtsaddr = 0;
-static uint_fast16_t uacinrtssize = 0;
-#endif /* WITHUSBUACIN2 */
+///* Audio output */
+//static uintptr_t uacinaddr = 0;
+//static uint_fast16_t uacinsize = 0;
+//
+//#if WITHUSBUACIN2
+///* RTS output */
+//static uintptr_t uacinrtsaddr = 0;
+//static uint_fast16_t uacinrtssize = 0;
+//#endif /* WITHUSBUACIN2 */
 
 static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
-#if WITHUSBUACOUT && 1
+#if WITHUSBUACOUT && 0
 	do
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2522,7 +2522,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 
 #endif /* WITHUSBUACOUT */
 
-#if WITHUSBUACIN
+#if WITHUSBUACIN && 0
 	{
 
 		if (uacinaddr)

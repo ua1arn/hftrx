@@ -5222,7 +5222,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
-	const size_t dw = 4;//sizeof (aubufv_t);
+	const size_t dw = 1;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
@@ -5317,7 +5317,7 @@ static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 
 void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 {
-	const size_t dw = 4;//sizeof (aubufv_t);
+	const size_t dw = 1;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
