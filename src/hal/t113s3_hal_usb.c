@@ -717,19 +717,19 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 {
 	uint32_t reg_val;
 
-//	ASSERT(ep_no < USB_MAX_EP_NO);
-//	if (ep_no>USB_MAX_EP_NO)
-//		return;
+	ASSERT(ep_no < USB_MAX_EP_NO);
+	if (ep_no>USB_MAX_EP_NO)
+		return;
 
-	reg_val = UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
-	reg_val |= ! is_tx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
+	reg_val = 0;
 	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
+	reg_val |= ! is_tx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
+	reg_val |= UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
 
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
+
 	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) == 0)	// FIFO_BUS_SEL
 		;
-
-	PRINTF("usb_fifo_accessed_by_dma: ep=%02X, is_tx=%u, USB_GCS=%08" PRIX32 "\n", ep_no, is_tx, WITHUSBHW_DEVICE->USB_GCS);
 }
 
 static uint32_t usb_get_testc(pusb_struct pusb)
