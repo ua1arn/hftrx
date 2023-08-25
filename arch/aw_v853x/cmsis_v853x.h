@@ -2772,9 +2772,9 @@ typedef struct USBOTG_Type
              uint32_t reserved_0x058 [0x0009];
     volatile uint32_t USB_TESTC;                      /*!< Offset 0x07C USB_TESTC USB Test Control Register */
     volatile uint16_t USB_TXMAXP;                     /*!< Offset 0x080 USB_TXMAXP USB EP1~5 Tx Control and Status Register */
-    volatile uint16_t USB_CSR0;                       /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
+    volatile uint16_t USB_TXCSRHI;                    /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
     volatile uint16_t USB_RXMAXP;                     /*!< Offset 0x084 USB_RXMAXP USB EP1~5 Rx Control and Status Register */
-    volatile uint16_t USB_RXCSR;                      /*!< Offset 0x086 USB_RXCSR */
+    volatile uint16_t USB_RXCSRHI;                    /*!< Offset 0x086 USB_RXCSR */
     volatile uint16_t USB_RXCOUNT;                    /*!< Offset 0x088 USB_RXCOUNT */
     volatile uint16_t USB_RXPKTCNT;                   /*!< Offset 0x08A USB_RXPKTCNT */
     volatile uint8_t  USB_TXTI;                       /*!< Offset 0x08C USB_TXTI */
