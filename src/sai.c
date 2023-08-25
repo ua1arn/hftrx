@@ -5122,7 +5122,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	/* Работа с только что принятыми данными */
 	//printhex(addr, addr, UACOUT_AUDIO48_DATASIZE);
 	//printhex(addr, addr, UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48);
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE - 1*UACOUT_FMT_CHANNELS_AUDIO48 * UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
 
 	//release_dmabufferuacout48(addr);

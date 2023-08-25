@@ -2469,7 +2469,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
-#if WITHUSBUACOUT && 1
+#if WITHUSBUACOUT && 0
 	do
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
