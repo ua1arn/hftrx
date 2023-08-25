@@ -13,7 +13,6 @@
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
-#include "usb/usbch9.h"
 
 typedef struct codechw
 {
@@ -4559,6 +4558,9 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
@@ -4583,10 +4585,6 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -4624,6 +4622,9 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
@@ -4648,10 +4649,6 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -4692,6 +4689,9 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
@@ -4716,10 +4716,6 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -4759,6 +4755,9 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
@@ -4783,10 +4782,6 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -4830,6 +4825,9 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
@@ -4854,10 +4852,6 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -4895,6 +4889,9 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
@@ -4919,10 +4916,6 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -4965,6 +4958,9 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
@@ -4989,10 +4985,6 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5032,6 +5024,9 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
@@ -5056,10 +5051,6 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5112,9 +5103,8 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	release_dmabufferuacout48(addr);
 }
 
-void DMAC_USB_RX_initialize_UACOUT48(void)
+void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	const uint32_t ep = (USBD_EP_AUDIO_OUT & 0x0F);
 	const size_t dw = 1; //sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
@@ -5136,6 +5126,9 @@ void DMAC_USB_RX_initialize_UACOUT48(void)
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
@@ -5161,10 +5154,6 @@ void DMAC_USB_RX_initialize_UACOUT48(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5205,9 +5194,8 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	release_dmabufferuacin48(addr);
 }
 
-void DMAC_USB_TX_initialize_UACIN48(void)
+void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
-	const uint32_t ep = (USBD_EP_AUDIO_IN & 0x0F);
 	const size_t dw = 1;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
@@ -5229,6 +5217,9 @@ void DMAC_USB_TX_initialize_UACIN48(void)
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
@@ -5254,10 +5245,6 @@ void DMAC_USB_TX_initialize_UACIN48(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5293,9 +5280,8 @@ static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 	release_dmabufferuacin96rts(addr);
 }
 
-void DMAC_USB_TX_initialize_UACINRTS(void)
+void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 {
-	const uint32_t ep = (USBD_EP_RTS_IN & 0x0F);
 	const size_t dw = 1;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
@@ -5317,6 +5303,9 @@ void DMAC_USB_TX_initialize_UACINRTS(void)
 		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
@@ -5342,10 +5331,6 @@ void DMAC_USB_TX_initialize_UACINRTS(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5604,6 +5589,9 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 		DMAC_SrcReqAudioCodec * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
@@ -5628,10 +5616,6 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5667,6 +5651,9 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
@@ -5691,10 +5678,6 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5815,6 +5798,9 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
@@ -5839,10 +5825,6 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5880,6 +5862,9 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
@@ -5904,10 +5889,6 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC_clock_initialize();
-
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
