@@ -2469,7 +2469,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
-#if WITHUSBUACOUT && 0
+#if WITHUSBUACOUT && 1
 	do
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2716,6 +2716,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOCLR);		// AutoClear
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
@@ -2730,6 +2731,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOCLR);		// AutoClear
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
@@ -4263,6 +4265,8 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	pusb->role = USB_ROLE_DEV;
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
+	usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
+	usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
 	usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
 	usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
 
@@ -4453,8 +4457,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 		//Bus Reset may disable all interrupt enable, re-enable the interrupts need
 		usb_clear_bus_interrupt_enable(pusb, 0xff);
+		usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
+		usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
 		usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
+
+		buffers_set_uacoutalt(0);
+		buffers_set_uacinalt(0);
+		buffers_set_uacinrtsalt(0);
 
 		awxx_setup_fifo(pusb);
 

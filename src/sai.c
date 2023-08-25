@@ -5096,9 +5096,6 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 	return addr;
 }
 
-static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
-static uintptr_t logger [32];
-static unsigned logindex;
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
@@ -5108,21 +5105,12 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	//descraddr [ix] = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	//dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
-//	logger [logindex ++] = addr;
-//	if (logindex >= ARRAY_SIZE(logger))
-//	{
-//		printhex32(0, logger, sizeof logger);
-//		for (;;)
-//			;
-//	}
 	/* Работа с только что принятыми данными */
-	//printhex(addr, addr, UACOUT_AUDIO48_DATASIZE);
-	//printhex(addr, addr, UACOUT_AUDIO48_SAMPLEBYTES * UACOUT_FMT_CHANNELS_AUDIO48);
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
 
 	//release_dmabufferuacout48(addr);
@@ -5130,6 +5118,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
+	static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
 	const size_t dw = 4; //sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
