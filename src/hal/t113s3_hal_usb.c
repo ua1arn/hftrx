@@ -446,7 +446,6 @@ static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 static uint32_t usb_get_active_ep(pusb_struct pusb)
 {
 	return (WITHUSBHW_DEVICE->USB_GCS >> 16) & 0x0F; // EPIND
-	//return get_bvalue(USBOTG0_BASE + USB_bINDEX_OFF) & 0xf;
 }
 
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
@@ -1320,7 +1319,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 {
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
-	uint32_t ep_save = usb_get_active_ep(pusb);
 	static uint32_t epout_timeoutv[USB_MAX_EP_NO];
 
 #if WITHUSBDEV_DMAENABLE
@@ -1344,7 +1342,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 
 			if (!maxpkt)
 			{
-				usb_select_ep(pusb, ep_save);
 				return USB_RETVAL_COMPOK;
 			}
 
@@ -1569,15 +1566,12 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			break;
 	}
 
-	usb_select_ep(pusb, ep_save);
-
 	return ret;
 }
 
 static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintptr_t src_addr, uint32_t byte_count, uint32_t ep_type)
 {
   	USB_RETVAL ret = USB_RETVAL_COMPOK;
-	uint32_t ep_save = usb_get_active_ep(pusb);
 	usb_select_ep(pusb, ep_no);
     if ((USB_TXCSR_FIFONOTEMP & usb_get_eptx_csr(pusb)) == 0)
     {
@@ -1591,7 +1585,6 @@ static USB_RETVAL epx_in_handler_dev_iso(pusb_struct pusb, uint32_t ep_no, uintp
     {
     	ret = USB_RETVAL_NOTCOMP;
     }
-	usb_select_ep(pusb, ep_save);
 	return ret;
 }
 
@@ -1599,7 +1592,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 {
   	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
-	uint32_t ep_save = usb_get_active_ep(pusb);
+	const uint32_t ep_save = usb_get_active_ep(pusb);
 #if WITHUSBDEV_DMAENABLE
 	__dma_setting_t  p;
 	uint32_t dram_addr;
@@ -2407,6 +2400,9 @@ static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество дан
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
 {
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
 	{
@@ -2427,6 +2423,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 //  		}
 //  		while(ret == USB_RETVAL_NOTCOMP);
 	}
+	LowerIrql(oldIrql);
 }
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
@@ -2610,8 +2607,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   			break;
   		}
   		rx_count = usb_get_eprx_count(pusb);
-  		///PRINTF("rx_count[%u,%u]=%08X\n", (unsigned) usb_get_active_ep(pusb), (unsigned) bo_ep_out, (unsigned) rx_count);
-  		if (rx_count > UACOUT_AUDIO48_DATASIZE)
+   		if (rx_count > UACOUT_AUDIO48_DATASIZE)
   		{
   			usb_eprx_flush_fifo(pusb);
   			break;
@@ -2758,13 +2754,15 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 	}
 
 	fifo_addr += (!! is_dpb + 1) * fifosize;	/* двойной размер после округления - double buffer уже учтено */
-	ASSERT(usb_get_active_ep(pusb) == ep_no);
 	return fifo_addr;
 }
 
 static void awxx_setup_fifo(pusb_struct pusb)
 {
-	const uint32_t fifo_base = 0;
+    IRQL_t oldIrql;
+    RiseIrql(IRQL_SYSTEM, & oldIrql);
+
+    const uint32_t fifo_base = 0;
 	uint32_t fifo_addr = fifo_base;
 	enum { EP_DIR_IN = 1, EP_DIR_OUT = 0 };
 
@@ -2850,6 +2848,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
 	//ASSERT(fifo_addr < 8192);	/* 8 kB */
+    LowerIrql(oldIrql);
 }
 
 #if WITHUSBUAC
