@@ -96,6 +96,7 @@
 #define  wBoot_dma_requestrx(sect)     0
 #define  wBoot_dma_requesttx(sect)     0
 
+static LCLSPINLOCK_t lockusbdev = LCLSPINLOCK_INIT;
 static usb_struct * volatile gpusb = NULL;
 
 #if WITHUSBDMSC
@@ -2402,6 +2403,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& lockusbdev);
 
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
@@ -2423,6 +2425,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 //  		}
 //  		while(ret == USB_RETVAL_NOTCOMP);
 	}
+	LCLSPIN_UNLOCK(& lockusbdev);
 	LowerIrql(oldIrql);
 }
 
@@ -2759,9 +2762,6 @@ static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, u
 
 static void awxx_setup_fifo(pusb_struct pusb)
 {
-    IRQL_t oldIrql;
-    RiseIrql(IRQL_SYSTEM, & oldIrql);
-
     const uint32_t fifo_base = 0;
 	uint32_t fifo_addr = fifo_base;
 	enum { EP_DIR_IN = 1, EP_DIR_OUT = 0 };
@@ -2848,7 +2848,6 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
 	//ASSERT(fifo_addr < 8192);	/* 8 kB */
-    LowerIrql(oldIrql);
 }
 
 #if WITHUSBUAC
@@ -4184,7 +4183,9 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 	ASSERT(hpcd != NULL);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& lockusbdev);
 	usb_device_function(hpcd);
+	LCLSPIN_UNLOCK(& lockusbdev);
 	LowerIrql(oldIrql);
 }
 
@@ -4487,6 +4488,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
 	const uint32_t ep_save = usb_get_active_ep(pusb);
 
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+  	LCLSPIN_LOCK(& lockusbdev);
 	//sof interrupt
 
 	if (irqstatus & USB_BUSINT_SOF)
@@ -4621,6 +4625,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   	usb_select_ep(pusb, ep_save);
 
   	usb_device_function(hpcd);
+  	LCLSPIN_UNLOCK(& lockusbdev);
+  	LowerIrql(oldIrql);
 }
 
 /**
