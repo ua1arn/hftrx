@@ -627,84 +627,6 @@ static uint32_t usb_get_eprx_count(pusb_struct pusb)
 	return WITHUSBHW_DEVICE->USB_RXCOUNT & 0x1FFF;
 }
 
-/* host ? */
-static void usb_set_ep0_type(pusb_struct pusb, uint32_t speed)
-{
-	WITHUSBHW_DEVICE->USB_RXTI = (speed & 0x3) << 6;
-	//put_bvalue(USBOTG0_BASE + USB_bTXTYPE_OFF, (speed & 0x3) << 6);	// #define  USB_bRXTYPE_OFF      		(0x8E)
-}
-
-/* host ? */
-static void usb_set_eptx_type(pusb_struct pusb, uint32_t speed, uint32_t protocol, uint32_t ep_no)
-{
-	uint32_t reg_val;
-
-	ASSERT(ep_no < USB_MAX_EP_NO);
-	reg_val = (speed & 0x3) << 6;
-	reg_val |= (protocol & 0x3) << 4;
-	reg_val |= (ep_no & 0xf) << 0;
-	WITHUSBHW_DEVICE->USB_RXTI = reg_val;
-	//put_bvalue(USBOTG0_BASE + USB_bTXTYPE_OFF, reg_val);
-}
-
-/* host ? */
-static void usb_set_ep0_naklimit(pusb_struct pusb, uint32_t naklimit)
-{
-	WITHUSBHW_DEVICE->USB_RXNAKLIMIT = naklimit & 0x1f;
-	//put_bvalue(USBOTG0_BASE + USB_bTXINTERVAL_OFF, naklimit & 0x1f);	// #define  USB_bRXINTERVAL_OFF  		(0x8F)
-}
-
-/* host ? */
-static void usb_set_eptx_interval(pusb_struct pusb, uint32_t interval)
-{
-	WITHUSBHW_DEVICE->USB_RXNAKLIMIT = interval & 0xFF;
-	//put_bvalue(USBOTG0_BASE + USB_bTXINTERVAL_OFF, interval & 0xFF);
-}
-
-/* host ? */
-static void usb_set_eprx_type(pusb_struct pusb, uint32_t speed, uint32_t protocol, uint32_t ep_no)
-{
-	uint32_t reg_val;
-
-	ASSERT(ep_no < USB_MAX_EP_NO);
-	reg_val = (speed & 0x3) << 6;
-	reg_val |= (protocol & 0x3) << 4;
-	reg_val |= (ep_no & 0xf) << 0;
-	WITHUSBHW_DEVICE->USB_RXTI = reg_val;
-	//put_bvalue(USBOTG0_BASE + USB_bRXTYPE_OFF, reg_val);	// USB_bRXTYPE_OFF      		(0x8E)
-}
-
-/* host ? */
-static void usb_set_eprx_interval(pusb_struct pusb, uint32_t interval)
-{
-	WITHUSBHW_DEVICE->USB_RXNAKLIMIT = interval & 0xFF;
-	//put_bvalue(USBOTG0_BASE + USB_bRXINTERVAL_OFF, interval & 0xFF);
-}
-//
-//static uint32_t usb_get_core_config(pusb_struct pusb)
-//{
-//	return WITHUSBHW_DEVICE->USB_CORECONFIG;
-//	//return get_bvalue(USBOTG0_BASE + USB_bCORECONFIG_OFF);	// #define  USB_bCORECONFIG_OFF		(0xC0)
-//}
-
-/* host ? */
-static uint32_t usb_is_b_device(pusb_struct pusb)
-{
-	return (WITHUSBHW_DEVICE->USB_GCS >> 15) & 0x1;	// BDev
-}
-
-///* host ? */
-//static uint32_t usb_device_connected_is_fs(pusb_struct pusb)
-//{
-//	return (WITHUSBHW_DEVICE->USB_GCS >> 14) & 0x1;
-//}
-//
-///* host ? */
-//static uint32_t usb_device_connected_is_ls(pusb_struct pusb)
-//{
-//	return (WITHUSBHW_DEVICE->USB_GCS >> 13) & 0x1;
-//}
-
 // USB_VBUS_VBUSVLD
 static uint32_t usb_get_vbus_level(pusb_struct pusb)
 {
@@ -716,22 +638,6 @@ static uint32_t usb_is_host(pusb_struct pusb)
 	return (WITHUSBHW_DEVICE->USB_GCS >> 10) & 0x1;	// HostMode
 }
 
-///* host ? */
-//static void usb_set_hnp_request(pusb_struct pusb)
-//{
-//	uint32_t reg_val;
-//
-//	reg_val = WITHUSBHW_DEVICE->USB_GCS;
-//	reg_val |= UINT32_C(1) << 9;
-//	WITHUSBHW_DEVICE->USB_GCS = reg_val;
-//}
-//
-///* host ? */
-//static uint32_t usb_hnp_in_porcess(pusb_struct pusb)
-//{
-//	return (WITHUSBHW_DEVICE->USB_GCS >> 9) & 0x1;
-//}
-
 static void usb_start_session(pusb_struct pusb)
 {
 	WITHUSBHW_DEVICE->USB_GCS |= (1u << 8);	// Session
@@ -740,12 +646,6 @@ static void usb_start_session(pusb_struct pusb)
 static void usb_end_session(pusb_struct pusb)
 {
 	WITHUSBHW_DEVICE->USB_GCS &= ~ (1u << 8);	// Session
-}
-
-/* host ? */
-static uint32_t usb_check_session(pusb_struct pusb)
-{
-	return (WITHUSBHW_DEVICE->USB_GCS >> 8) & 0x1;
 }
 
 static uint32_t aw_log2(uint32_t x)
