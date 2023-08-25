@@ -3408,6 +3408,12 @@ enum
 
 #define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
+#define DMAC_DESC_SRC	1	/* адрес источника */
+#define DMAC_DESC_DST	2	/* адрес получателя */
+#define DMAC_DESC_PARAM	4	/* Parameter */
+#define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
+
+
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? UINT32_C(0) : (UINT32_C(1) << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
 
@@ -4383,11 +4389,6 @@ void zfreqprint(void)
 
 #endif
 
-#define DMAC_DESC_SRC	1	/* адрес источника */
-#define DMAC_DESC_DST	2	/* адрес получателя */
-#define DMAC_DESC_PARAM	4	/* Parameter */
-#define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
-
 #define DMAC_DESC_SIZE	8	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано 8 */
 
 // DMA Source/Destination Data Width
@@ -5109,7 +5110,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	const size_t dw = 1; //sizeof (aubufv_t);
+	const size_t dw = 4; //sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
