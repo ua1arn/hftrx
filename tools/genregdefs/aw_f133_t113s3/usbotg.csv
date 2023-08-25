@@ -13,9 +13,9 @@
 #regdef; USB_FNUM; 0x0054; USB Frame Number Register
 #regdef; USB_TESTC; 0x007c; USB_TESTC USB Test Control Register
 #regdef; USB_TXMAXP 2; 0x0080; USB_TXMAXP USB EP1~5 Tx Control and Status Register
-#regdef; USB_CSR0 2; 0x0082; [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL
+#regdef; USB_TXCSRHI 2; 0x0082; [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL
 #regdef; USB_RXMAXP 2; 0x0084; USB_RXMAXP USB EP1~5 Rx Control and Status Register
-#regdef; USB_RXCSR 2; 0x0086; USB_RXCSR
+#regdef; USB_RXCSRHI 2; 0x0086; USB_RXCSR
 #regdef; USB_RXCOUNT 2; 0x0088; USB_RXCOUNT
 #regdef; USB_RXPKTCNT 2; 0x008a; USB_RXPKTCNT
 #regdef; USB_TXTI 1; 0x008c; USB_TXTI

@@ -9098,8 +9098,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_CSR0</name>
-    <displayName>USB_CSR0</displayName>
+    <name>USB_TXCSRHI</name>
+    <displayName>USB_TXCSRHI</displayName>
     <description>[15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL</description>
     <addressOffset>0x082</addressOffset>
     <size>0x10</size>
@@ -9116,8 +9116,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_RXCSR</name>
-    <displayName>USB_RXCSR</displayName>
+    <name>USB_RXCSRHI</name>
+    <displayName>USB_RXCSRHI</displayName>
     <description>USB_RXCSR</description>
     <addressOffset>0x086</addressOffset>
     <size>0x10</size>

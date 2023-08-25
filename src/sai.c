@@ -5085,6 +5085,7 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 	return addr;
 }
 
+static ALIGNX_BEGIN uint8_t in48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
@@ -5093,14 +5094,17 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_invalidateuacout48(allocate_dmabufferuacout48());
+	//descraddr [ix] = dma_invalidateuacout48(allocate_dmabufferuacout48());
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
+	printhex(addr, addr, 8);
 	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-	release_dmabufferuacout48(addr);
+	dma_invalidateuacout48(addr);
+
+	//release_dmabufferuacout48(addr);
 }
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
@@ -5133,21 +5137,21 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
 	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+	descr0 [0] [2] = dma_invalidateuacout48((uintptr_t) in48 [0]);				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+	descr0 [1] [2] = dma_invalidateuacout48((uintptr_t) in48 [1]);				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = parameterDMAC;				// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
 
 	descr0 [2] [0] = configDMAC;			// Cofigurarion
 	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+	descr0 [2] [2] = dma_invalidateuacout48((uintptr_t) in48 [2]);				// Destination Address
 	descr0 [2] [3] = NBYTES;				// Byte Counter
 	descr0 [2] [4] = parameterDMAC;				// Parameter
 	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
