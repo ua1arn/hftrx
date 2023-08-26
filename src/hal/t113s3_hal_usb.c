@@ -2522,7 +2522,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 
 #endif /* WITHUSBUACOUT */
 
-#if WITHUSBUACIN && 0
+#if WITHUSBUACIN && 1
 	{
 
 		if (uacinaddr)
