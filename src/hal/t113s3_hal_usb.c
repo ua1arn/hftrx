@@ -2469,7 +2469,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
-#if WITHUSBUACOUT && 1
+#if WITHUSBUACOUT && 0
 	do
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
@@ -2713,7 +2713,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 1*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
 #endif
 	}
@@ -2730,7 +2730,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
@@ -2746,7 +2746,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}

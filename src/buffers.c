@@ -1332,7 +1332,7 @@ buffers_savetouacin192rts(voice192rts_t * p)
 	InsertHeadList2(& uacin192rts, & p->item);
 	LCLSPIN_UNLOCK(& locklistrts);
 
-	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
+	refreshDMA_uacinrts192();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull192rts(voice192rts_t * p)
@@ -1380,7 +1380,7 @@ buffers_savetouacinrts96(voice96rts_t * p)
 	InsertHeadList2(& uacinrts96ready, & p->item);
 	LCLSPIN_UNLOCK(& locklistrts);
 
-	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
+	refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull96rts(voice96rts_t * p)
@@ -1415,7 +1415,7 @@ buffers_savetouacin(uacin48_t * p)
 	InsertHeadList2(& uacin48ready, & p->item);
 	LCLSPIN_UNLOCK(& locklistuacin48);
 
-	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
+	refreshDMA_uacin48();		// если DMA  остановлено - начать обмен
 }
 
 #endif /* WITHUSBUAC */
