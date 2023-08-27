@@ -5089,6 +5089,10 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 };
 #endif /* defined(I2S1) && WITHI2S1HW */
 
+
+#define   USB2DRAM_PARAMS    	0x0f000f0f
+#define   DRAM2USB_PARAMS    	0x0f0f0f00
+
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 
 static uintptr_t dma_invalidateuacout48(uintptr_t addr)
@@ -5122,13 +5126,13 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
-	const size_t dw = 4; //sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	const size_t dw = 1;//sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
-	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE;
+	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned srcDRQ = DMAC_SrcReqUSB0_EP1 + ep - 1;
 
@@ -5231,7 +5235,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0x03;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5326,7 +5330,7 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0x03;
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit

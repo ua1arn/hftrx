@@ -2498,7 +2498,19 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
   		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u, usbd_getuacoutmaxpacket()=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count, (unsigned) usbd_getuacoutmaxpacket());
   		//PRINTF("rx_count=%u\n", (unsigned) rx_count);
   		ASSERT(UACOUT_AUDIO48_DATASIZE >= rx_count);
-  		do
+//  		if (0)
+//  		{
+//  	 		static uint8_t rxlog [4096];
+//  	 		static unsigned nlog;
+//  	  		rxlog [nlog++] = rx_count;
+//  	  		if (nlog >= ARRAY_SIZE(rxlog))
+//  	  		{
+//  	  			printhex(rxlog, rxlog, sizeof rxlog);
+//  	  			for (;;)
+//  	  				;
+//  	  		}
+//  		}
+   		do
   		{
   			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, ulmin(rx_count, UACOUT_AUDIO48_DATASIZE), USB_PRTCL_ISO);
   		}
@@ -2522,7 +2534,7 @@ static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
 
 #endif /* WITHUSBUACOUT */
 
-#if WITHUSBUACIN && 1
+#if WITHUSBUACIN && 0
 	{
 
 		if (uacinaddr)
@@ -2693,16 +2705,16 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	{
 		// ISOC OUT Аудиоданные от компьютера в TRX
 		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
-		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_OUT, usbd_getuacoutmaxpacket(), 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_OUT, UACOUT_AUDIO48_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
-#if 1
+#if 0
 		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
-		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
+		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
 #endif
 	}
 #endif /* WITHUSBUACOUT */
@@ -2712,14 +2724,14 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinmaxpacket(), 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
-#if 1
+#if 0
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
-		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
 #if WITHUSBUACIN2
@@ -2728,14 +2740,14 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
-#if 1
+#if 0
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
 #else
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
-		usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
 #endif /* WITHUSBUACIN2 */
@@ -3707,8 +3719,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-
-#if WITHUSBUACIN && 1
+#if WITHUSBUACIN && 0
 	{
 		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
@@ -4197,7 +4208,6 @@ static void usb_struct_init(PCD_HandleTypeDef *hpcd)
 		pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
 	}
 
-	usb_set_dev_addr(pusb, 0x00);
 	usb_struct_idle(pusb);
 
 	//pusb->timer = USB_IDLE_TIMER;
