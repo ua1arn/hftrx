@@ -3953,7 +3953,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 #if WITHUSBUACIN2
 	{
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
-		DMAC_USB_TX_initialize_UACINRTS(ep_no);
+		DMAC_USB_TX_initialize_UACINRTS96(ep_no);
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */

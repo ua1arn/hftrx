@@ -5344,7 +5344,7 @@ static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 }
 
 /* Передача в host */
-static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
+static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 {
 	ASSERT(dmach == DMAC_USBUACRTS_TX_Ch);
 	enum { ix = DMAC_DESC_SRC };
@@ -5407,7 +5407,7 @@ void refreshDMA_uacinrts192(void)
 {
 }
 
-void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
+void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 {
 	const unsigned NBYTES = UACIN_RTS96_DATASIZE;
 	const size_t dw = awusbadj(NBYTES);
@@ -5456,7 +5456,7 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	uacinrts96_descr0 [2] [5] = (uintptr_t) uacinrts96_descr0 [0];	// Link to next (loop)
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACINRTS);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACINRTS96);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
