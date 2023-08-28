@@ -5215,7 +5215,7 @@ static ALIGNX_BEGIN uint32_t uacin48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 
 static uintptr_t dma_flushuacin48(uintptr_t addr)
 {
-	dcache_clean(addr, UACIN_AUDIO48_DATASIZE);
+	dcache_clean(addr, UACIN_AUDIO48_DATASIZE_DMAC);
 	return addr;
 }
 
@@ -5291,7 +5291,7 @@ void refreshDMA_uacin48(void)
 
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
-	const unsigned NBYTES = UACIN_AUDIO48_DATASIZE;
+	const unsigned NBYTES = UACIN_AUDIO48_DATASIZE_DMAC;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
@@ -5349,7 +5349,7 @@ static ALIGNX_BEGIN uint32_t uacinrts96_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 
 static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 {
-	dcache_clean(addr, UACIN_RTS96_DATASIZE);
+	dcache_clean(addr, UACIN_RTS96_DATASIZE_DMAC);
 	return addr;
 }
 
@@ -5430,7 +5430,7 @@ void refreshDMA_uacinrts192(void)
 
 void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 {
-	const unsigned NBYTES = UACIN_RTS96_DATASIZE;
+	const unsigned NBYTES = UACIN_RTS96_DATASIZE_DMAC;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width

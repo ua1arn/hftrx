@@ -2596,7 +2596,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	{
 		// ISOC IN Аудиоданные в компьютер из TRX
 		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
-		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinmaxpacket(), 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_AUDIO48_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
@@ -2612,7 +2612,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	{
 		// ISOC IN Аудиоданные спектра в компьютер из TRX
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
-		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, usbd_getuacinrtsmaxpacket(), 1, fifo_addr);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_RTS96_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
 		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);

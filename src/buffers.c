@@ -358,15 +358,15 @@ typedef ALIGNX_BEGIN struct uacin48_tag
 	void * tag2;
 	ALIGNX_BEGIN union
 	{
-		uint8_t buff [UACIN_AUDIO48_DATASIZE];
-		uint8_t filler [(UACIN_AUDIO48_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+		uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC];
+		uint8_t filler [(UACIN_AUDIO48_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
 	} u ALIGNX_END;		// спектр, 2*24*192 kS/S
 	void * tag3;
 } ALIGNX_END uacin48_t;
 
 int_fast32_t buffers_dmabufferuacin48cachesize(void)
 {
-	return (UACIN_AUDIO48_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+	return (UACIN_AUDIO48_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 }
 
 #if WITHRTS192
@@ -401,15 +401,15 @@ int_fast32_t buffers_dmabufferuacin48cachesize(void)
 		void * tag2;
 		ALIGNX_BEGIN union
 		{
-			uint8_t buff [UACIN_RTS96_DATASIZE];
-			uint8_t	 filler [(UACIN_RTS96_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+			uint8_t buff [UACIN_RTS96_DATASIZE_DMAC];
+			uint8_t	 filler [(UACIN_RTS96_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
 		} u ALIGNX_END;
 		void * tag3;
 	} ALIGNX_END voice96rts_t;
 
 	int_fast32_t buffers_dmabuffer96rtscachesize(void)
 	{
-		return (UACIN_RTS96_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+		return (UACIN_RTS96_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 	}
 
 	static RAMBIGDTCM LIST_HEAD2 uacinrts96free;
@@ -696,262 +696,6 @@ deliverylist_t speexoutfloat;	// выход speex и фильтра
 deliverylist_t afdemodoutfloat;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
-
-// инициализация системы буферов
-void buffers_initialize(void)
-{
-#if WITHBUFFERSDEBUG
-	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
-	ticker_add(& buffticker);
-#endif /* WITHBUFFERSDEBUG */
-
-#if WITHINTEGRATEDDSP
-
-	deliverylist_initialize(& rtstargetsint, IRQL_REALTIME);
-	deliverylist_initialize(& speexoutfloat, IRQL_REALTIME);
-	deliverylist_initialize(& afdemodoutfloat, IRQL_REALTIME);
-
-
-#if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
-
-	// Обход user mode шумоподавителя
-	static subscribefloat_t afsample16register;
-	subscribefloat(& afdemodoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
-
-#else /* WITHSKIPUSERMODE */
-
-	static subscribefloat_t afsample16register;
-	static subscribefloat_t afsample16registertospeex;
-
-	subscribefloat(& speexoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
-	subscribefloat(& afdemodoutfloat, & afsample16registertospeex, NULL, savesampleout16tospeex);
-
-#endif /* WITHSKIPUSERMODE */
-
-	{
-		unsigned i;
-		enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * 2 * BUFOVERSIZE };
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
-
-		InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
-
-		InitializeListHead3(& voicesmike16rx, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП кодека
-		InitializeListHead3(& voicesusb16rx, VOICESMIKE16NORMAL);	// список оцифрованных после USB ресэмплинга
-		InitializeListHead2(& voicesfree16rx);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray16rx / sizeof voicesarray16rx [0]); ++ i)
-		{
-			voice16rx_t * const p = & voicesarray16rx [i];
-			p->tag2 = p;
-			p->tag3 = p;
-			InsertHeadList2(& voicesfree16rx, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklist16rx);
-
-	}
-	{
-		unsigned i;
-		// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
-		enum { NVCOICESFREE16TX = (16 * PHONESLEVEL + 16 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
-
-		InitializeListHead3(& voicesphones16tx, 3 * DMABUFSCALE);	// список для выдачи на ЦАП кодека
-		InitializeListHead3(& voicesmoni16tx, 2 * DMABUFSCALE);	// самопрослушивание
-		InitializeListHead2(& voicesfree16tx);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray16tx / sizeof voicesarray16tx [0]); ++ i)
-		{
-			voice16tx_t * const p = & voicesarray16tx [i];
-			p->tag2 = p;
-			p->tag3 = p;
-			InsertHeadList2(& voicesfree16tx, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklist16tx);
-	}
-	{
-		unsigned i;
-		static RAMBIGDTCM_MDMA uacin48_t uacin48array [24 * BUFOVERSIZE];
-
-		InitializeListHead2(& uacin48free);	// Незаполненные
-		InitializeListHead2(& uacin48ready);	// список для выдачи в канал USB AUDIO
-
-		for (i = 0; i < (sizeof uacin48array / sizeof uacin48array [0]); ++ i)
-		{
-			uacin48_t * const p = & uacin48array [i];
-			p->tag = BUFFTAG_UACIN48;
-			p->tag2 = p;
-			p->tag3 = p;
-			InsertHeadList2(& uacin48free, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklistuacin48);
-
-	}
-
-	//ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
-//	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
-//	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
-
-	#if WITHRTS192
-	{
-		unsigned i;
-		RAMBIG static RAM_D1 voice192rts_t voicesarray192rts [4 * BUFOVERSIZE];
-
-		ASSERT(offsetof(uacin48_t, item) == offsetof(voice192rts_t, item));
-		ASSERT(offsetof(uacin48_t, u.buff) == offsetof(voice192rts_t, u.buff));
-		ASSERT(offsetof(uacin48_t, tag) == offsetof(voice192rts_t, tag));
-
-		InitializeListHead2(& uacin192rts);		// список для выдачи в канал USB AUDIO - спектр
-		InitializeListHead2(& voicesfree192rts);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray192rts / sizeof voicesarray192rts [0]); ++ i)
-		{
-			voice192rts_t * const p = & voicesarray192rts [i];
-			p->tag = BUFFTAG_RTS192;
-			p->tag2 = p;
-			p->tag3 = p;
-			InsertHeadList2(& voicesfree192rts, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklistrts);
-		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
-
-	}
-	#elif WITHRTS96
-	{
-		unsigned i;
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [14 * BUFOVERSIZE] ALIGNX_END;
-
-		ASSERT(offsetof(uacin48_t, item) == offsetof(voice96rts_t, item));
-		ASSERT(offsetof(uacin48_t, u.buff) == offsetof(voice96rts_t, u.buff));
-		ASSERT(offsetof(uacin48_t, tag) == offsetof(voice96rts_t, tag));
-
-		InitializeListHead2(& uacinrts96ready);		// список для выдачи в канал USB AUDIO - спектр
-		InitializeListHead2(& uacinrts96free);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray96rts / sizeof voicesarray96rts [0]); ++ i)
-		{
-			voice96rts_t * const p = & voicesarray96rts [i];
-			p->tag = BUFFTAG_RTS96;
-			p->tag2 = p;
-			p->tag3 = p;
-			//PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
-			InsertHeadList2(& uacinrts96free, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklistrts);
-		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
-
-	}
-	#endif /* WITHRTS192 */
-	{
-		unsigned i;
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
-
-		InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
-		InitializeListHead2(& voicesfree32tx);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray32tx / sizeof voicesarray32tx [0]); ++ i)
-		{
-			voice32tx_t * const p = & voicesarray32tx [i];
-			p->tag2 = p;
-			p->tag3 = p;
-			InsertHeadList2(& voicesfree32tx, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklist32tx);
-	}
-	{
-		unsigned i;
-		// +2 - для отладочной печати содеожимого буферов
-	    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [2 + 6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
-
-		InitializeListHead2(& voicesfree32rx);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
-		{
-			voice32rx_t * const p = & voicesarray32rx [i];
-			InsertHeadList2(& voicesfree32rx, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklist32rx);
-	}
-
-
-#if WITHUSEAUDIOREC
-
-	{
-	#if CPUSTYLE_R7S721
-		static RAM_D1 recordswav48_t recordsarray16 [8];
-	#elif defined (STM32F767xx)
-		static RAM_D1 recordswav48_t recordsarray16 [8];
-	#elif defined (STM32F746xx)
-		static RAM_D1 recordswav48_t recordsarray16 [8];
-	#elif defined (STM32F429xx)
-		static RAM_D1 recordswav48_t recordsarray16 [8];
-	#elif defined (STM32H743xx)
-		static RAM_D1 recordswav48_t recordsarray16 [5];
-	#else
-		static RAM_D1 recordswav48_t recordsarray16 [8 * BUFOVERSIZE];
-	#endif
-		unsigned i;
-
-		/* Подготовка буферов для записи на SD CARD */
-		InitializeListHead2(& recordswav48ready);	// Заполненные - готовые для записи на SD CARD
-		InitializeListHead2(& recordswav48free);	// Незаполненные
-		for (i = 0; i < (sizeof recordsarray16 / sizeof recordsarray16 [0]); ++ i)
-		{
-			recordswav48_t * const p = & recordsarray16 [i];
-			InsertHeadList2(& recordswav48free, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& lockwav48);
-	}
-
-#endif /* WITHUSEAUDIOREC */
-
-#if WITHMODEM
-	{
-		unsigned i;
-		static modems8_t modemsarray8 [8];
-
-		/* Подготовка буферов для обмена с модемом */
-		InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
-		//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
-		InitializeListHead2(& modemsfree8);	// Незаполненные
-		for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
-		{
-			modems8_t * const p = & modemsarray8 [i];
-			//InitializeListHead2(& p->item);
-			InsertHeadList2(& modemsfree8, & p->item);
-		}
-	}
-#endif /* WITHMODEM */
-
-	{
-		unsigned i;
-		static RAMBIGDTCM denoise16_t speexarray16 [5];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
-
-		InitializeListHead2(& speexfree16);	// Незаполненные
-		InitializeListHead2(& speexready16);	// Для обработки
-
-		for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
-		{
-			denoise16_t * const p = & speexarray16 [i];
-			InsertHeadList2(& speexfree16, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& speexlock);
-	}
-
-#endif /* WITHINTEGRATEDDSP */
-
-	{
-		unsigned i;
-		/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
-		static RAMBIGDTCM message_t messagesarray8 [12];
-
-		/* Подготовка буферов для обмена с модемом */
-		InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке
-		InitializeListHead(& msgsfree8);	// Незаполненные
-		for (i = 0; i < (sizeof messagesarray8 / sizeof messagesarray8 [0]); ++ i)
-		{
-			message_t * const p = & messagesarray8 [i];
-			p->tag2 = p;
-			p->tag3 = p;
-			//InitializeListHead2(& p->item);
-			InsertHeadVList(& msgsfree8, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklistmsg8);
-	}
-}
 
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
@@ -1421,97 +1165,125 @@ buffers_savetouacin(uacin48_t * p)
 
 #endif /* WITHUSBUAC */
 
+enum { NPARTS = 3 };
+
+typedef struct rsmpl_tag
+{
+	lclspinlock_t * lock;
+	voice16rx_t * p;// = NULL;
+	uint_fast8_t part;// = 0;
+	aubufv_t * datas [NPARTS];// = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	unsigned sizes [NPARTS];// = { 0, 0 };			// количество сэмплов во входном буфере
+	unsigned skipsense;// = SKIPPED;
+	unsigned bufsize;
+	unsigned bufstep;
+	aubufv_t addsample [2];
+	LIST_HEAD3 * rx;//resample16rx
+	LIST_HEAD2 * freelist;//resample16rx
+	LIST_HEAD3 * outlist;
+} rsmpl_t;
+
+static rsmpl_t uacout48rsmpl =
+{
+		.lock = & locklist16rx,
+		.skipsense = SKIPPED,
+		.p = NULL,
+		.part = 0,
+		.bufsize = DMABUFFSIZE16RX,
+		.bufstep = DMABUFFSTEP16RX,
+		.rx = & resample16rx,
+		.freelist = & voicesfree16rx,
+		.outlist = & voicesusb16rx,
+};
+
+static rsmpl_t uacin48rsmpl;
+static rsmpl_t uacinrts96rsmpl;
+static rsmpl_t uacinrts192rsmpl;
+
 #if WITHUSBUAC
 
 // получает массив сэмплов
 // возвращает количество полученых сэмплов
 // Выборка из очереди resample16rx
 static RAMFUNC unsigned getsamplemsuacout(
+	rsmpl_t * rsmpl,
 	aubufv_t * buff,	// текущая позиция в целевом буфере
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
-	static voice16rx_t * p = NULL;
-	enum { NPARTS = 3 };
-	static uint_fast8_t part = 0;
-	static aubufv_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
-	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 
-	static unsigned skipsense = SKIPPED;
-
-	LCLSPIN_LOCK(& locklist16rx);
-	if (p == NULL)
+	LCLSPIN_LOCK(rsmpl->lock);
+	if (rsmpl->p == NULL)
 	{
-		if (GetReadyList3(& resample16rx) == 0)
+		if (GetReadyList3(rsmpl->rx) == 0)
 		{
 #if WITHBUFFERSDEBUG
 			++ nbzero;
 #endif /* WITHBUFFERSDEBUG */
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			LCLSPIN_UNLOCK(& locklist16rx);
+			LCLSPIN_UNLOCK(rsmpl->lock);
 			memset(buff, 0x00, size * sizeof (* buff));	// тишина
 			return size;	// ноль нельзя возвращать - зацикливается проуедура ресэмплинга
 		}
 		else
 		{
-			PLIST_ENTRY t = RemoveTailList3(& resample16rx);
-			p = CONTAINING_RECORD(t, voice16rx_t, item);
-			if (GetReadyList3(& resample16rx) == 0)
-				skipsense = SKIPPED;
-			const uint_fast8_t valid = GetReadyList3(& resample16rx) && skipsense == 0;
-			skipsense = (skipsense == 0) ? SKIPPED : skipsense - 1;
+			PLIST_ENTRY t = RemoveTailList3(rsmpl->rx);
+			rsmpl->p = CONTAINING_RECORD(t, voice16rx_t, item);
+			if (GetReadyList3(rsmpl->rx) == 0)	// готовность пропала
+				rsmpl->skipsense = SKIPPED;
+			const uint_fast8_t valid = GetReadyList3(rsmpl->rx) && rsmpl->skipsense == 0;
+			rsmpl->skipsense = (rsmpl->skipsense == 0) ? SKIPPED : rsmpl->skipsense - 1;
 
 			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPED / 2);
 			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPED / 2);
 
-			if (valid && GetCountList3(& resample16rx) <= LOW)
+			if (valid && GetCountList3(rsmpl->rx) <= LOW)
 			{
-				LCLSPIN_UNLOCK(& locklist16rx);
+				LCLSPIN_UNLOCK(rsmpl->lock);
 				// добавляется один сэмпл к выходному потоку раз в SKIPPED блоков
 #if WITHBUFFERSDEBUG
 				++ nbadd;
 #endif /* WITHBUFFERSDEBUG */
 
 #if 0
-				part = NPARTS - 2;
-				datas [part + 0] = & p->buff [0];	// дублируем первый сэмпл
-				sizes [part + 0] = DMABUFFSTEP16RX;
-				datas [part + 1] = & p->buff [0];
-				sizes [part + 1] = DMABUFFSIZE16RX;
+				rsmpl->part = NPARTS - 2;
+				rsmpl->datas [part + 0] = & rsmpl->p->buff [0];	// дублируем первый сэмпл
+				rsmpl->sizes [part + 0] = rsmpl->bufstep;
+				rsmpl->datas [part + 1] = & rsmpl->p->buff [0];
+				rsmpl->sizes [part + 1] = rsmpl->bufsize;
 #else
-				static aubufv_t addsample [DMABUFFSTEP16RX];
-				enum { HALF = DMABUFFSIZE16RX / 2 };
+				unsigned HALF = rsmpl->bufsize / 2;
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				addsample [0] = ((aufastbufv2x_t) p->rbuff [HALF - DMABUFFSTEP16RX + 0] + p->rbuff [HALF + 0]) / 2;	// Left
-				addsample [1] = ((aufastbufv2x_t) p->rbuff [HALF - DMABUFFSTEP16RX + 1] + p->rbuff [HALF + 1]) / 2;	// Right
+				rsmpl->addsample [0] = ((aufastbufv2x_t) rsmpl->p->rbuff [HALF - rsmpl->bufstep + 0] + rsmpl->p->rbuff [HALF + 0]) / 2;	// Left
+				rsmpl->addsample [1] = ((aufastbufv2x_t) rsmpl->p->rbuff [HALF - rsmpl->bufstep + 1] + rsmpl->p->rbuff [HALF + 1]) / 2;	// Right
 
-				part = NPARTS - 3;
-				datas [0] = & p->rbuff [0];		// часть перед вставкой
-				sizes [0] = HALF;
-				datas [1] = & addsample [0];	// вставляемые данные
-				sizes [1] = DMABUFFSTEP16RX;
-				datas [2] = & p->rbuff [HALF];	// часть после вставки
-				sizes [2] = DMABUFFSIZE16RX - HALF;
+				rsmpl->part = NPARTS - 3;
+				rsmpl->datas [0] = & rsmpl->p->rbuff [0];		// часть перед вставкой
+				rsmpl->sizes [0] = HALF;
+				rsmpl->datas [1] = & rsmpl->addsample [0];	// вставляемые данные
+				rsmpl->sizes [1] = rsmpl->bufstep;
+				rsmpl->datas [2] = & rsmpl->p->rbuff [HALF];	// часть после вставки
+				rsmpl->sizes [2] = rsmpl->bufsize - HALF;
 #endif
 			}
-			else if (valid && GetCountList3(& resample16rx) >= HIGH)
+			else if (valid && GetCountList3(rsmpl->rx) >= HIGH)
 			{
-				LCLSPIN_UNLOCK(& locklist16rx);
+				LCLSPIN_UNLOCK(rsmpl->lock);
 #if WITHBUFFERSDEBUG
 				++ nbdel;
 #endif /* WITHBUFFERSDEBUG */
 				// убирается один сэмпл из выходного потока раз в SKIPPED блоков
-				part = NPARTS - 1;
-				datas [part] = & p->rbuff [DMABUFFSTEP16RX];	// пропускаем первый сэмпл
-				sizes [part] = DMABUFFSIZE16RX - DMABUFFSTEP16RX;
+				rsmpl->part = NPARTS - 1;
+				rsmpl->datas [rsmpl->part] = & rsmpl->p->rbuff [rsmpl->bufstep];	// пропускаем первый сэмпл
+				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize - rsmpl->bufstep;
 			}
 			else
 			{
-				LCLSPIN_UNLOCK(& locklist16rx);
+				LCLSPIN_UNLOCK(rsmpl->lock);
 				// Ресэмплинг не требуется или нет запаса входных данных
-				part = NPARTS - 1;
-				datas [part] = & p->rbuff [0];
-				sizes [part] = DMABUFFSIZE16RX;
+				rsmpl->part = NPARTS - 1;
+				rsmpl->datas [rsmpl->part] = & rsmpl->p->rbuff [0];
+				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize;
 #if WITHBUFFERSDEBUG
 			++ nbnorm;
 #endif /* WITHBUFFERSDEBUG */
@@ -1520,24 +1292,28 @@ static RAMFUNC unsigned getsamplemsuacout(
 	}
 	else
 	{
-		LCLSPIN_UNLOCK(& locklist16rx);
+		/* нужное количество зон для вывода уже подготовленно */
+		LCLSPIN_UNLOCK(rsmpl->lock);
 	}
 
-	const unsigned chunk = ulmin32(sizes [part], size);
+	const unsigned chunk = ulmin32(rsmpl->sizes [rsmpl->part], size);
 
-	memcpy(buff, datas [part], chunk * sizeof (* buff));
+	memcpy(buff, rsmpl->datas [rsmpl->part], chunk * sizeof (* buff));
 
-	datas [part] += chunk;
-	if ((sizes [part] -= chunk) == 0 && ++ part >= NPARTS)
+	rsmpl->datas [rsmpl->part] += chunk;
+	if ((rsmpl->sizes [rsmpl->part] -= chunk) == 0 && ++ rsmpl->part >= NPARTS)
 	{
-		buffers_tonull16rx(p);	// освободили ранее полученый от UAC буфер
-		p = NULL;
+		// освобождаем ранее полученый от UAC буфер
+		LCLSPIN_LOCK(rsmpl->lock);
+		InsertHeadList2(rsmpl->freelist, & rsmpl->p->item);
+		LCLSPIN_UNLOCK(rsmpl->lock);
+		rsmpl->p = NULL;
 	}
 	return chunk;
 }
 
 // формирование одного буфера синхронного потока из N несинхронного
-static RAMFUNC void buffers_resample(void)
+static RAMFUNC void buffer_resample(rsmpl_t * rsmpl)
 {
 	const uintptr_t addr = allocate_dmabuffer16rx();	// выходной буфер
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
@@ -1546,18 +1322,31 @@ static RAMFUNC void buffers_resample(void)
 	//
 	// выполнение ресэмплинга
 	unsigned pos;
-	for (pos = 0; pos < DMABUFFSIZE16RX; )
+	for (pos = 0; pos < rsmpl->bufsize; )
 	{
-		pos += getsamplemsuacout(& p->rbuff [pos], DMABUFFSIZE16RX - pos);	// Выборка из очеререди resample16rx
+		pos += getsamplemsuacout(rsmpl, & p->rbuff [pos], rsmpl->bufsize - pos);	// Выборка из очеререди rsmpl->rx
 	}
 
 	// направление получившегося буфера получателю.
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	LCLSPIN_LOCK(& locklist16rx);
-	InsertHeadList3(& voicesusb16rx, & p->item, 0);
-	LCLSPIN_UNLOCK(& locklist16rx);
+	LCLSPIN_LOCK(rsmpl->lock);
+	InsertHeadList3(rsmpl->outlist, & p->item, 0);
+	LCLSPIN_UNLOCK(rsmpl->lock);
+}
+
+static void buffers_resample(void)
+{
+#if WITHUSBUACOUT
+	buffer_resample(& uacout48rsmpl);
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
+	//buffer_resample(& uacin48rsmpl);
+#if WITHUSBUACIN2
+	//buffer_resample(& uacinrts96rsmpl);
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 }
 
 // вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
@@ -3192,20 +2981,20 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = UACIN_AUDIO48_DATASIZE;
+		* sizep = UACIN_AUDIO48_DATASIZE_DMAC;
 		return getfilled_dmabufferuacin48();
 
 #if ! WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINALT_RTS96:
-		* sizep = UACIN_RTS96_DATASIZE;
+		* sizep = UACIN_RTS96_DATASIZE_DMAC;
 		return getfilled_dmabufferuacinrts96();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINALT_RTS192:
-		* sizep = UACIN_RTS192_DATASIZE;
+		* sizep = UACIN_RTS192_DATASIZE_DMAC;
 		return getfilled_dmabufferuacinrts192();
 #endif /* WITHRTS192 */
 
@@ -3235,13 +3024,13 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
-		* sizep = UACIN_RTS96_DATASIZE;
+		* sizep = UACIN_RTS96_DATASIZE_DMAC;
 		return getfilled_dmabufferuacinrts96();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINRTSALT_RTS192:
-		* sizep = UACIN_RTS192_DATASIZE;
+		* sizep = UACIN_RTS192_DATASIZE_DMAC;
 		return getfilled_dmabufferuacinrts192();
 #endif /* WITHRTS192 */
 
@@ -3358,4 +3147,263 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 }
 
 #endif /* WITHINTEGRATEDDSP */
+
+// инициализация системы буферов
+void buffers_initialize(void)
+{
+#if WITHBUFFERSDEBUG
+	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
+	ticker_add(& buffticker);
+#endif /* WITHBUFFERSDEBUG */
+
+#if WITHINTEGRATEDDSP
+
+	deliverylist_initialize(& rtstargetsint, IRQL_REALTIME);
+	deliverylist_initialize(& speexoutfloat, IRQL_REALTIME);
+	deliverylist_initialize(& afdemodoutfloat, IRQL_REALTIME);
+
+
+#if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
+
+	// Обход user mode шумоподавителя
+	static subscribefloat_t afsample16register;
+	subscribefloat(& afdemodoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
+
+#else /* WITHSKIPUSERMODE */
+
+	static subscribefloat_t afsample16register;
+	static subscribefloat_t afsample16registertospeex;
+
+	subscribefloat(& speexoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
+	subscribefloat(& afdemodoutfloat, & afsample16registertospeex, NULL, savesampleout16tospeex);
+
+#endif /* WITHSKIPUSERMODE */
+
+	{
+		unsigned i;
+		enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * 2 * BUFOVERSIZE };
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16rx_t voicesarray16rx [NVCOICESFREE16RX] ALIGNX_END;
+
+		InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
+
+		InitializeListHead3(& voicesmike16rx, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП кодека
+		InitializeListHead3(& voicesusb16rx, VOICESMIKE16NORMAL);	// список оцифрованных после USB ресэмплинга
+		InitializeListHead2(& voicesfree16rx);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray16rx / sizeof voicesarray16rx [0]); ++ i)
+		{
+			voice16rx_t * const p = & voicesarray16rx [i];
+			p->tag2 = p;
+			p->tag3 = p;
+			InsertHeadList2(& voicesfree16rx, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklist16rx);
+
+	}
+	{
+		unsigned i;
+		// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
+		enum { NVCOICESFREE16TX = (16 * PHONESLEVEL + 16 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
+
+		InitializeListHead3(& voicesphones16tx, 3 * DMABUFSCALE);	// список для выдачи на ЦАП кодека
+		InitializeListHead3(& voicesmoni16tx, 2 * DMABUFSCALE);	// самопрослушивание
+		InitializeListHead2(& voicesfree16tx);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray16tx / sizeof voicesarray16tx [0]); ++ i)
+		{
+			voice16tx_t * const p = & voicesarray16tx [i];
+			p->tag2 = p;
+			p->tag3 = p;
+			InsertHeadList2(& voicesfree16tx, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklist16tx);
+	}
+	{
+		unsigned i;
+		static RAMBIGDTCM_MDMA uacin48_t uacin48array [24 * BUFOVERSIZE];
+
+		InitializeListHead2(& uacin48free);	// Незаполненные
+		InitializeListHead2(& uacin48ready);	// список для выдачи в канал USB AUDIO
+
+		for (i = 0; i < (sizeof uacin48array / sizeof uacin48array [0]); ++ i)
+		{
+			uacin48_t * const p = & uacin48array [i];
+			p->tag = BUFFTAG_UACIN48;
+			p->tag2 = p;
+			p->tag3 = p;
+			InsertHeadList2(& uacin48free, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklistuacin48);
+
+	}
+
+	//ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
+//	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
+//	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
+
+	#if WITHRTS192
+	{
+		unsigned i;
+		RAMBIG static RAM_D1 voice192rts_t voicesarray192rts [4 * BUFOVERSIZE];
+
+		ASSERT(offsetof(uacin48_t, item) == offsetof(voice192rts_t, item));
+		ASSERT(offsetof(uacin48_t, u.buff) == offsetof(voice192rts_t, u.buff));
+		ASSERT(offsetof(uacin48_t, tag) == offsetof(voice192rts_t, tag));
+
+		InitializeListHead2(& uacin192rts);		// список для выдачи в канал USB AUDIO - спектр
+		InitializeListHead2(& voicesfree192rts);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray192rts / sizeof voicesarray192rts [0]); ++ i)
+		{
+			voice192rts_t * const p = & voicesarray192rts [i];
+			p->tag = BUFFTAG_RTS192;
+			p->tag2 = p;
+			p->tag3 = p;
+			InsertHeadList2(& voicesfree192rts, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklistrts);
+		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
+
+	}
+	#elif WITHRTS96
+	{
+		unsigned i;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [14 * BUFOVERSIZE] ALIGNX_END;
+
+		ASSERT(offsetof(uacin48_t, item) == offsetof(voice96rts_t, item));
+		ASSERT(offsetof(uacin48_t, u.buff) == offsetof(voice96rts_t, u.buff));
+		ASSERT(offsetof(uacin48_t, tag) == offsetof(voice96rts_t, tag));
+
+		InitializeListHead2(& uacinrts96ready);		// список для выдачи в канал USB AUDIO - спектр
+		InitializeListHead2(& uacinrts96free);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray96rts / sizeof voicesarray96rts [0]); ++ i)
+		{
+			voice96rts_t * const p = & voicesarray96rts [i];
+			p->tag = BUFFTAG_RTS96;
+			p->tag2 = p;
+			p->tag3 = p;
+			//PRINTF("Add p=%p, tag=%d, tag2=%p, tag3=%p\n", p, p->tag, p->tag2, p->tag3);
+			InsertHeadList2(& uacinrts96free, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklistrts);
+		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
+
+	}
+	#endif /* WITHRTS192 */
+	{
+		unsigned i;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
+
+		InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
+		InitializeListHead2(& voicesfree32tx);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray32tx / sizeof voicesarray32tx [0]); ++ i)
+		{
+			voice32tx_t * const p = & voicesarray32tx [i];
+			p->tag2 = p;
+			p->tag3 = p;
+			InsertHeadList2(& voicesfree32tx, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklist32tx);
+	}
+	{
+		unsigned i;
+		// +2 - для отладочной печати содеожимого буферов
+	    static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32rx_t voicesarray32rx [2 + 6 * BUFOVERSIZE] ALIGNX_END;	// без WFM надо 2
+
+		InitializeListHead2(& voicesfree32rx);	// Незаполненные
+		for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
+		{
+			voice32rx_t * const p = & voicesarray32rx [i];
+			InsertHeadList2(& voicesfree32rx, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklist32rx);
+	}
+
+
+#if WITHUSEAUDIOREC
+
+	{
+	#if CPUSTYLE_R7S721
+		static RAM_D1 recordswav48_t recordsarray16 [8];
+	#elif defined (STM32F767xx)
+		static RAM_D1 recordswav48_t recordsarray16 [8];
+	#elif defined (STM32F746xx)
+		static RAM_D1 recordswav48_t recordsarray16 [8];
+	#elif defined (STM32F429xx)
+		static RAM_D1 recordswav48_t recordsarray16 [8];
+	#elif defined (STM32H743xx)
+		static RAM_D1 recordswav48_t recordsarray16 [5];
+	#else
+		static RAM_D1 recordswav48_t recordsarray16 [8 * BUFOVERSIZE];
+	#endif
+		unsigned i;
+
+		/* Подготовка буферов для записи на SD CARD */
+		InitializeListHead2(& recordswav48ready);	// Заполненные - готовые для записи на SD CARD
+		InitializeListHead2(& recordswav48free);	// Незаполненные
+		for (i = 0; i < (sizeof recordsarray16 / sizeof recordsarray16 [0]); ++ i)
+		{
+			recordswav48_t * const p = & recordsarray16 [i];
+			InsertHeadList2(& recordswav48free, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& lockwav48);
+	}
+
+#endif /* WITHUSEAUDIOREC */
+
+#if WITHMODEM
+	{
+		unsigned i;
+		static modems8_t modemsarray8 [8];
+
+		/* Подготовка буферов для обмена с модемом */
+		InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
+		//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
+		InitializeListHead2(& modemsfree8);	// Незаполненные
+		for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
+		{
+			modems8_t * const p = & modemsarray8 [i];
+			//InitializeListHead2(& p->item);
+			InsertHeadList2(& modemsfree8, & p->item);
+		}
+	}
+#endif /* WITHMODEM */
+
+	{
+		unsigned i;
+		static RAMBIGDTCM denoise16_t speexarray16 [5];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+
+		InitializeListHead2(& speexfree16);	// Незаполненные
+		InitializeListHead2(& speexready16);	// Для обработки
+
+		for (i = 0; i < (sizeof speexarray16 / sizeof speexarray16 [0]); ++ i)
+		{
+			denoise16_t * const p = & speexarray16 [i];
+			InsertHeadList2(& speexfree16, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& speexlock);
+	}
+
+#endif /* WITHINTEGRATEDDSP */
+
+	{
+		unsigned i;
+		/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
+		static RAMBIGDTCM message_t messagesarray8 [12];
+
+		/* Подготовка буферов для обмена с модемом */
+		InitializeListHead(& msgsready8);	// Заполненные - готовые к обработке
+		InitializeListHead(& msgsfree8);	// Незаполненные
+		for (i = 0; i < (sizeof messagesarray8 / sizeof messagesarray8 [0]); ++ i)
+		{
+			message_t * const p = & messagesarray8 [i];
+			p->tag2 = p;
+			p->tag3 = p;
+			//InitializeListHead2(& p->item);
+			InsertHeadVList(& msgsfree8, & p->item);
+		}
+		LCLSPINLOCK_INITIALIZE(& locklistmsg8);
+	}
+
+	// Инициализация ресэмплеров
+
+}
 
