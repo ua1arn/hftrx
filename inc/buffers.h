@@ -472,11 +472,11 @@
 #define FSINTERVAL_255MS 255
 
 #if WITHUSBDEV_HSDESC //&& CPUSTYLE_ALLWINNER
-	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за SOF в UAC OUT */
+	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за SOF в UAC OUT */
 
-	#define HSINTERVAL_AUDIO48 1	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
-	#define HSINTERVAL_RTS96 1
-	#define HSINTERVAL_RTS192 1
+	#define HSINTERVAL_AUDIO48 4	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
+	#define HSINTERVAL_RTS96 4
+	#define HSINTERVAL_RTS192 4
 
 	#define FSINTERVAL_AUDIO48 1
 	#define FSINTERVAL_AUDIO48 1
