@@ -5254,13 +5254,11 @@ void refreshDMA_uacin48(void)
 	enum { ix = DMAC_DESC_SRC };
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
 
-	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
+	if (DMAC->DMAC_STA_REG & (UINT32_C(1) << dmach))
 		return;
-
-	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
-		return;
-
 	if (DMAC->CH [dmach].DMAC_EN_REGN)
+		return;
+	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
 		return;
 
 	// При наличии следующего блока - запускаем передачу
@@ -5376,13 +5374,11 @@ void refreshDMA_uacinrts96(void)
 	enum { ix = DMAC_DESC_SRC };
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 
-	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
+	if (DMAC->DMAC_STA_REG & (UINT32_C(1) << dmach))
 		return;
-
-	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
-		return;
-
 	if (DMAC->CH [dmach].DMAC_EN_REGN)
+		return;
+	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
 		return;
 
 	// При наличии следующего блока - запускаем передачу
