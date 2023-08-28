@@ -291,22 +291,23 @@ int_fast32_t buffers_dmabuffer32rtscachesize(void)
 
 #if 1
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
-	//enum { SKIPPED = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+	//enum { SKIPPEDBLOCKS = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 2000 сэмплов
-	enum { SKIPPED = 2000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+	enum { SKIPPEDBLOCKS = 2000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
 
 #else
 	// исправляемая погрешность = 0.1% - один сэмпл добавить/убрать на 1000 сэмплов
-	enum { SKIPPED = 1000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+	enum { SKIPPEDBLOCKS = 1000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
 #endif
 
-enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
-enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
+enum { RESAMPLE16NORMAL = SKIPPEDBLOCKS * 2 };	// Нормальное количество буферов в очереди
+
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
+enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
 enum { MIKELEVEL = 6 };
 enum { PHONESLEVEL = 6 };
 
@@ -359,14 +360,14 @@ typedef ALIGNX_BEGIN struct uacin48_tag
 	ALIGNX_BEGIN union
 	{
 		uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC];
-		uint8_t filler [(UACIN_AUDIO48_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+		uint8_t filler [EP_align(UACIN_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE)];
 	} u ALIGNX_END;		// спектр, 2*24*192 kS/S
 	void * tag3;
 } ALIGNX_END uacin48_t;
 
 int_fast32_t buffers_dmabufferuacin48cachesize(void)
 {
-	return (UACIN_AUDIO48_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+	return EP_align(UACIN_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE);
 }
 
 #if WITHRTS192
@@ -378,15 +379,15 @@ int_fast32_t buffers_dmabufferuacin48cachesize(void)
 		void * tag2;
 		ALIGNX_BEGIN union
 		{
-			uint8_t buff [UACIN_RTS192_DATASIZE];
-			uint8_t	filler [(UACIN_RTS192_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+			uint8_t buff [UACIN_RTS192_DATASIZE_DMAC];
+			uint8_t	filler [EP_align(UACIN_RTS192_DATASIZE_DMAC, DCACHEROWSIZE)];
 		} u ALIGNX_END;
 		void * tag3;
 	} ALIGNX_END voice192rts_t;
 
 	int_fast32_t buffers_dmabuffer192rtscachesize(void)
 	{
-		return (UACIN_RTS192_DATASIZE + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+		return EP_align(UACIN_RTS192_DATASIZE_DMAC, DCACHEROWSIZE);
 	}
 
 	static RAMBIGDTCM LIST_HEAD2 voicesfree192rts;
@@ -402,14 +403,14 @@ int_fast32_t buffers_dmabufferuacin48cachesize(void)
 		ALIGNX_BEGIN union
 		{
 			uint8_t buff [UACIN_RTS96_DATASIZE_DMAC];
-			uint8_t	 filler [(UACIN_RTS96_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE];
+			uint8_t	 filler [EP_align(UACIN_RTS96_DATASIZE_DMAC, DCACHEROWSIZE)];
 		} u ALIGNX_END;
 		void * tag3;
 	} ALIGNX_END voice96rts_t;
 
 	int_fast32_t buffers_dmabuffer96rtscachesize(void)
 	{
-		return (UACIN_RTS96_DATASIZE_DMAC + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
+		return EP_align(UACIN_RTS96_DATASIZE_DMAC, DCACHEROWSIZE);
 	}
 
 	static RAMBIGDTCM LIST_HEAD2 uacinrts96free;
@@ -865,7 +866,7 @@ RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
 		// Поместить в очередь принятых от USB UAC
 		InsertHeadList3(& resample16rx, & p->item, 0);
 
-		while (GetCountList3(& resample16rx) > (RESAMPLE16NORMAL + SKIPPED))
+		while (GetCountList3(& resample16rx) > (RESAMPLE16NORMAL + SKIPPEDBLOCKS))
 		{
 			// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
 			const PLIST_ENTRY t = RemoveTailList3(& resample16rx);
@@ -1169,24 +1170,24 @@ enum { NPARTS = 3 };
 
 typedef struct rsmpl_tag
 {
-	lclspinlock_t * lock;
+	lclspinlock_t * lock;//locklist16rx
 	voice16rx_t * p;// = NULL;
 	uint_fast8_t part;// = 0;
 	aubufv_t * datas [NPARTS];// = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	unsigned sizes [NPARTS];// = { 0, 0 };			// количество сэмплов во входном буфере
-	unsigned skipsense;// = SKIPPED;
+	unsigned skipsense;// = SKIPPEDBLOCKS;
 	unsigned bufsize;
 	unsigned bufstep;
 	aubufv_t addsample [2];
 	LIST_HEAD3 * rx;//resample16rx
 	LIST_HEAD2 * freelist;//resample16rx
-	LIST_HEAD3 * outlist;
+	LIST_HEAD3 * outlist;//voicesusb16rx
 } rsmpl_t;
 
 static rsmpl_t uacout48rsmpl =
 {
 		.lock = & locklist16rx,
-		.skipsense = SKIPPED,
+		.skipsense = SKIPPEDBLOCKS,
 		.p = NULL,
 		.part = 0,
 		.bufsize = DMABUFFSIZE16RX,
@@ -1230,17 +1231,17 @@ static RAMFUNC unsigned getsamplemsuacout(
 			PLIST_ENTRY t = RemoveTailList3(rsmpl->rx);
 			rsmpl->p = CONTAINING_RECORD(t, voice16rx_t, item);
 			if (GetReadyList3(rsmpl->rx) == 0)	// готовность пропала
-				rsmpl->skipsense = SKIPPED;
+				rsmpl->skipsense = SKIPPEDBLOCKS;
 			const uint_fast8_t valid = GetReadyList3(rsmpl->rx) && rsmpl->skipsense == 0;
-			rsmpl->skipsense = (rsmpl->skipsense == 0) ? SKIPPED : rsmpl->skipsense - 1;
+			rsmpl->skipsense = (rsmpl->skipsense == 0) ? SKIPPEDBLOCKS : rsmpl->skipsense - 1;
 
-			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPED / 2);
-			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPED / 2);
+			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPEDBLOCKS / 2);
+			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPEDBLOCKS / 2);
 
 			if (valid && GetCountList3(rsmpl->rx) <= LOW)
 			{
 				LCLSPIN_UNLOCK(rsmpl->lock);
-				// добавляется один сэмпл к выходному потоку раз в SKIPPED блоков
+				// добавляется один сэмпл к выходному потоку раз в SKIPPEDBLOCKS блоков
 #if WITHBUFFERSDEBUG
 				++ nbadd;
 #endif /* WITHBUFFERSDEBUG */
@@ -1272,7 +1273,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 #if WITHBUFFERSDEBUG
 				++ nbdel;
 #endif /* WITHBUFFERSDEBUG */
-				// убирается один сэмпл из выходного потока раз в SKIPPED блоков
+				// убирается один сэмпл из выходного потока раз в SKIPPEDBLOCKS блоков
 				rsmpl->part = NPARTS - 1;
 				rsmpl->datas [rsmpl->part] = & rsmpl->p->rbuff [rsmpl->bufstep];	// пропускаем первый сэмпл
 				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize - rsmpl->bufstep;
