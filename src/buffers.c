@@ -156,6 +156,7 @@ InsertHeadList3(PLIST_HEAD3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady
 static PLIST_ENTRY
 RemoveTailList3(PLIST_HEAD3 ListHead)
 {
+	//ASSERT(! IsListEmpty3(ListHead));
 	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);
 	(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 	return t;
@@ -814,7 +815,7 @@ void buffers_initialize(void)
 	#elif WITHRTS96
 	{
 		unsigned i;
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [4 * BUFOVERSIZE] ALIGNX_END;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [14 * BUFOVERSIZE] ALIGNX_END;
 
 		ASSERT(offsetof(uacin48_t, item) == offsetof(voice96rts_t, item));
 		ASSERT(offsetof(uacin48_t, u.buff) == offsetof(voice96rts_t, u.buff));
@@ -1332,7 +1333,7 @@ buffers_savetouacin192rts(voice192rts_t * p)
 	InsertHeadList2(& uacin192rts, & p->item);
 	LCLSPIN_UNLOCK(& locklistrts);
 
-	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
+	refreshDMA_uacinrts192();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull192rts(voice192rts_t * p)
@@ -1380,7 +1381,7 @@ buffers_savetouacinrts96(voice96rts_t * p)
 	InsertHeadList2(& uacinrts96ready, & p->item);
 	LCLSPIN_UNLOCK(& locklistrts);
 
-	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
+	refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull96rts(voice96rts_t * p)
@@ -1415,7 +1416,7 @@ buffers_savetouacin(uacin48_t * p)
 	InsertHeadList2(& uacin48ready, & p->item);
 	LCLSPIN_UNLOCK(& locklistuacin48);
 
-	refreshDMA_uacin();		// если DMA  остановлено - начать обмен
+	refreshDMA_uacin48();		// если DMA  остановлено - начать обмен
 }
 
 #endif /* WITHUSBUAC */

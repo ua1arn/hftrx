@@ -995,7 +995,19 @@ const USBD_ClassTypeDef USBD_CLASS_UAC =
 
 // USB AUDIO
 // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void __weak refreshDMA_uacin(void)
+void __weak refreshDMA_uacin48(void)
+{
+}
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void __weak refreshDMA_uacinrts96(void)
+{
+}
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void __weak refreshDMA_uacinrts192(void)
 {
 }
 

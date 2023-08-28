@@ -266,6 +266,8 @@ static volatile uint8_t usbd_cdc_txstate [WITHUSBCDCACM_N];	/* склько ос
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
 {
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpdev != NULL && usbd_cdc_txstate [offset] == 0)
 	{
@@ -282,6 +284,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 
 		usbd_cdc_txstate [offset] = 1;
 	}
+	LowerIrql(oldIrql);
 }
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */

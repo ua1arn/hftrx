@@ -1003,19 +1003,6 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 #define USB_RXCSR_FIFOFULL			(0x1u << 1)
 #define USB_RXCSR_RXPKTRDY			(0x1u << 0)
 
-// 0xF7
-#define USB_BUSINT_DEV_WORK ( \
-		0*USB_BUSINT_VBUSERROR | \
-		0*USB_BUSINT_SESSREQ | \
-		USB_BUSINT_DISCONN | \
-		USB_BUSINT_CONNECT | \
-		1*USB_BUSINT_SOF | \
-		USB_BUSINT_RESET | \
-		USB_BUSINT_RESUME | \
-		USB_BUSINT_SUSPEND | \
-		0)
-
-
 
 
 #ifdef __cplusplus

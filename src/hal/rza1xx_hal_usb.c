@@ -1896,7 +1896,7 @@ dma_flushxrtstx(uintptr_t addr, unsigned long size)
 
 // USB AUDIO
 // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacin(void)
+static void refreshDMA_uacin(void)
 {
 	if ((DMAC12.CHSTAT_n & DMAC12_CHSTAT_n_EN) != 0)
 	{
@@ -1937,6 +1937,28 @@ void refreshDMA_uacin(void)
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
 	}
 }
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacin48(void)
+{
+	refreshDMA_uacin();
+}
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacinrts96(void)
+{
+	refreshDMA_uacin();
+}
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacinrts192(void)
+{
+	refreshDMA_uacin();
+}
+
 
 // USB AUDIO
 // DMA по передаче USB0 DMA1 - обработчик прерывания
@@ -2163,12 +2185,6 @@ static void r7s721_usb1_dma1_dmatx_stop(uint_fast8_t pipe)
 }
 
 #else /* WITHDMAHW_UACIN */
-
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacin(void)
-{
-}
 
 #endif /* WITHDMAHW_UACIN */
 

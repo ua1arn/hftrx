@@ -18,10 +18,10 @@
 #regdef; USB_RXCSRHI 2; 0x0086; USB_RXCSR
 #regdef; USB_RXCOUNT 2; 0x0088; USB_RXCOUNT
 #regdef; USB_RXPKTCNT 2; 0x008a; USB_RXPKTCNT
-#regdef; USB_TXTI 1; 0x008c; USB_TXTI
-#regdef; USB_TXNAKLIMIT 1; 0x008d; USB_TXNAKLIMIT
-#regdef; USB_RXTI 1; 0x008e; USB_RXTI
-#regdef; USB_RXNAKLIMIT 1; 0x008f; USB_RXNAKLIMIT
+##regdef; USB_TXTI 1; 0x008c; USB_TXTI
+##regdef; USB_TXNAKLIMIT 1; 0x008d; USB_TXNAKLIMIT
+##regdef; USB_RXTI 1; 0x008e; USB_RXTI
+##regdef; USB_RXNAKLIMIT 1; 0x008f; USB_RXNAKLIMIT
 #regdef; USB_TXFIFO; 0x0090; USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)
 #regdef; USB_RXFIFO; 0x0094; USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)
 #aggreg; FIFO; 0x0098 16; FIFOs [0..5]

@@ -472,7 +472,7 @@
 #define FSINTERVAL_255MS 255
 
 #if WITHUSBDEV_HSDESC //&& CPUSTYLE_ALLWINNER
-	#define OUTSAMPLES_AUDIO48	9 /* количество сэмплов за SOF в UAC OUT */
+	#define OUTSAMPLES_AUDIO48	6 /* количество сэмплов за SOF в UAC OUT */
 
 	#define HSINTERVAL_AUDIO48 1	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
 	#define HSINTERVAL_RTS96 1
@@ -573,7 +573,9 @@
 // n - sample number, ss - sample size, ch - количество каналов
 // выдаёт колчиество байтов
 /* требования по выравниванию DMA про обмене с USB */
-#if CPUSTYLE_ALLWINNER || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
+#if 1
+	#define UAC_DATASIZE(n, ss, ch) ((n) * (ss) * (ch))
+#elif CPUSTYLE_ALLWINNER || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
 	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 4), (ss) * (ch)))
 #elif CPUSTYLE_R7S721
 	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 8), (ss) * (ch)))
@@ -583,6 +585,7 @@
 
 /* Размры буферов ендпоинт в байтах */
 // Добавление единицы для UACOUT требуется для нормальной работы UAC2 устройства.
+#define UACOUT_AUDIO48_DATASIZE_DMAC	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 0, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
 #define UACOUT_AUDIO48_DATASIZE	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
 #define UACIN_AUDIO48_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES, UACIN_FMT_CHANNELS_AUDIO48)
 #define UACIN_RTS96_DATASIZE 	UAC_DATASIZE(OUTSAMPLES_AUDIO48 * 2 + 1, UACIN_RTS96_SAMPLEBYTES, UACIN_FMT_CHANNELS_RTS96)
@@ -627,7 +630,9 @@ void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер
 uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinrtsX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
-void refreshDMA_uacin(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacin48(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacinrts96(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacinrts192(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);

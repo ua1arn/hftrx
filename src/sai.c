@@ -3406,10 +3406,12 @@ enum
 	DMAC_Ch_Total
 };
 
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 0)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE_UACIN (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
+#define DMAC_DESC_LEN	3	/* размер */
 #define DMAC_DESC_PARAM	4	/* Parameter */
 #define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
 
@@ -3419,6 +3421,22 @@ enum
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 static void (* dmac_handlers [16])(unsigned dmach);
+
+// Есть необработанное прерывание
+static int DMAC_has_done(unsigned dmach)
+{
+	const unsigned flag = 0x07;
+#if CPUSTYLE_A64
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
+
+	return !! (reg0 & DMAC_REG0_MASK(dmach) * flag);
+#else /* CPUSTYLE_A64 */
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+
+	return (reg0 & DMAC_REG0_MASK(dmach) * flag) || (reg1 & DMAC_REG1_MASK(dmach) * flag);
+#endif /* CPUSTYLE_A64 */
+}
 
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
@@ -3461,6 +3479,8 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
+	local_delay_us(7);
+	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 //	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 //	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 //		;
@@ -4594,6 +4614,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -4658,6 +4679,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -4725,6 +4747,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -4791,6 +4814,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -4861,6 +4885,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -4925,6 +4950,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -4994,6 +5020,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5060,6 +5087,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5078,15 +5106,22 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 };
 #endif /* defined(I2S1) && WITHI2S1HW */
 
+static unsigned awusbadj(unsigned nbytes)
+{
+	return (nbytes % 4) ? ((nbytes % 2) ? 1 : 2) : 4;
+}
+
+#define   USB2DRAM_PARAMS    	0x0f000f0f
+#define   DRAM2USB_PARAMS    	0x0f0f0f00
+
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 
 static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 {
-	dcache_clean_invalidate(addr, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate(addr, UACOUT_AUDIO48_DATASIZE_DMAC);
 	return addr;
 }
 
-static ALIGNX_BEGIN uint8_t in48 [3] [UACOUT_AUDIO48_DATASIZE] ALIGNX_END;
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
@@ -5096,13 +5131,12 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	//descraddr [ix] = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	//dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
-	printhex(addr, addr, 8);
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
 
 	//release_dmabufferuacout48(addr);
@@ -5110,13 +5144,14 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	const size_t dw = 4; //sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
+	const size_t dw = awusbadj(NBYTES);
+	static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
-	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE;
-	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->FIFO [ep];
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned srcDRQ = DMAC_SrcReqUSB0_EP1 + ep - 1;
 
 	const uint_fast32_t parameterDMAC = 0;
@@ -5136,29 +5171,29 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidateuacout48((uintptr_t) in48 [0]);				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	uacout48_descr0 [0] [0] = configDMAC;			// Cofigurarion
+	uacout48_descr0 [0] [1] = portaddr;				// Source Address
+	uacout48_descr0 [0] [2] = dma_invalidateuacout48((uintptr_t) out48 [0]);				// Destination Address
+	uacout48_descr0 [0] [3] = NBYTES;				// Byte Counter
+	uacout48_descr0 [0] [4] = parameterDMAC;			// Parameter
+	uacout48_descr0 [0] [5] = (uintptr_t) uacout48_descr0 [1];	// Link to next
 
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidateuacout48((uintptr_t) in48 [1]);				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
+	uacout48_descr0 [1] [0] = configDMAC;			// Cofigurarion
+	uacout48_descr0 [1] [1] = portaddr;				// Source Address
+	uacout48_descr0 [1] [2] = dma_invalidateuacout48((uintptr_t) out48 [1]);				// Destination Address
+	uacout48_descr0 [1] [3] = NBYTES;				// Byte Counter
+	uacout48_descr0 [1] [4] = parameterDMAC;				// Parameter
+	uacout48_descr0 [1] [5] = (uintptr_t) uacout48_descr0 [2];	// Link to next
 
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidateuacout48((uintptr_t) in48 [2]);				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;				// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
+	uacout48_descr0 [2] [0] = configDMAC;			// Cofigurarion
+	uacout48_descr0 [2] [1] = portaddr;				// Source Address
+	uacout48_descr0 [2] [2] = dma_invalidateuacout48((uintptr_t) out48 [2]);				// Destination Address
+	uacout48_descr0 [2] [3] = NBYTES;				// Byte Counter
+	uacout48_descr0 [2] [4] = parameterDMAC;				// Parameter
+	uacout48_descr0 [2] [5] = (uintptr_t) uacout48_descr0 [0];	// Link to next (loop)
 
-	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
+	uintptr_t descraddr = (uintptr_t) uacout48_descr0;
+	dcache_clean(descraddr, sizeof uacout48_descr0);
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
@@ -5167,6 +5202,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 1*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5175,6 +5211,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 
+static ALIGNX_BEGIN uint32_t uacin48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 
 static uintptr_t dma_flushuacin48(uintptr_t addr)
 {
@@ -5185,29 +5222,68 @@ static uintptr_t dma_flushuacin48(uintptr_t addr)
 /* Передача в host */
 static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 {
+	ASSERT(dmach == DMAC_USBUAC48_TX_Ch);
 	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	const uintptr_t descbase = (uintptr_t) uacin48_descr0;
+	const uintptr_t newdata = getfilled_dmabufferuacin48();
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flushuacin48(getfilled_dmabufferuacin48());			// Source Address
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	const uintptr_t oldaddr = descraddr [ix];
+	if (newdata != 0)
+	{
+		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
+		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
+		dcache_clean(descbase, sizeof uacin48_descr0);
 
-	DMA_resume(dmach, descbase);
+		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
+		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
+			;
+		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+	}
+
 
 	/* Работа с только что передаными данными */
-	release_dmabufferuacin48(addr);
+	release_dmabufferuacin48(oldaddr);
+}
+
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacin48(void)
+{
+	enum { ix = DMAC_DESC_SRC };
+	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
+
+	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
+		return;
+
+	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
+		return;
+
+	// При наличии следующего блока - запускаем передачу
+	const uintptr_t newdata = getfilled_dmabufferuacin48();	// для передачи в компьютер - может вернуть 0
+	if (newdata != 0)
+	{
+		const uintptr_t descbase = (uintptr_t) uacin48_descr0;
+		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
+		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
+		dcache_clean(descbase, sizeof uacin48_descr0);
+
+		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
+		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
+			;
+		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+	}
 }
 
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
-	const size_t dw = 1;//sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned NBYTES = UACIN_AUDIO48_DATASIZE;
+	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
-	const unsigned NBYTES = UACIN_AUDIO48_DATASIZE;
-	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->FIFO [ep];
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
 	const uint_fast32_t parameterDMAC = 0;
@@ -5227,40 +5303,43 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	uacin48_descr0 [0] [0] = configDMAC;			// Cofigurarion
+	//uacin48_descr0 [0] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
+	uacin48_descr0 [0] [2] = portaddr;				// Destination Address
+	uacin48_descr0 [0] [3] = NBYTES;				// Byte Counter
+	uacin48_descr0 [0] [4] = parameterDMAC;			// Parameter
+	uacin48_descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) uacin48_descr0 [1];	// Link to next
 
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
+	uacin48_descr0 [1] [0] = configDMAC;			// Cofigurarion
+	//uacin48_descr0 [1] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
+	uacin48_descr0 [1] [2] = portaddr;				// Destination Address
+	uacin48_descr0 [1] [3] = NBYTES;				// Byte Counter
+	uacin48_descr0 [1] [4] = parameterDMAC;			// Parameter
+	uacin48_descr0 [1] [5] = (uintptr_t) uacin48_descr0 [2];	// Link to next
 
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
+	uacin48_descr0 [2] [0] = configDMAC;			// Cofigurarion
+	//uacin48_descr0 [2] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
+	uacin48_descr0 [2] [2] = portaddr;				// Destination Address
+	uacin48_descr0 [2] [3] = NBYTES;				// Byte Counter
+	uacin48_descr0 [2] [4] = parameterDMAC;			// Parameter
+	uacin48_descr0 [2] [5] = (uintptr_t) uacin48_descr0 [0];	// Link to next (loop)
 
-	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		;
+//	uintptr_t descraddr = (uintptr_t) uacin48_descr0;
+//	dcache_clean(descraddr, sizeof uacin48_descr0);
+//
+//	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+//		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACIN48);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACIN48);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+	//DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static ALIGNX_BEGIN uint32_t uacinrts96_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 
 static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 {
@@ -5271,29 +5350,73 @@ static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 /* Передача в host */
 static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 {
+	ASSERT(dmach == DMAC_USBUACRTS_TX_Ch);
 	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	const uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
+	const uintptr_t newdata = getfilled_dmabufferuacinrts96();
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = dma_flushuacinrts96(getfilled_dmabufferuacinrts96());			// Source Address
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	const uintptr_t oldaddr = descraddr [ix];
+	if (newdata != 0)
+	{
+		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
+		uacinrts96_descr0 [0] [5] = 0xFFFFF800;	// Link to next
+		dcache_clean(descbase, sizeof uacinrts96_descr0);
 
-	DMA_resume(dmach, descbase);
+		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
+		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
+			;
+		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+	}
+
 
 	/* Работа с только что передаными данными */
-	release_dmabufferuacinrts96(addr);
+	release_dmabufferuacinrts96(oldaddr);
+}
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacinrts96(void)
+{
+	enum { ix = DMAC_DESC_SRC };
+	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
+
+	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
+		return;
+
+	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
+		return;
+
+	// При наличии следующего блока - запускаем передачу
+	const uintptr_t newdata = getfilled_dmabufferuacinrts96();
+	if (newdata != 0)
+	{
+		uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
+		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
+		uacinrts96_descr0 [0] [5] = 0xFFFFF800;	// Link to next
+		dcache_clean(descbase, sizeof uacinrts96_descr0);
+
+		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
+		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
+			;
+		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+	}
+}
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
+void refreshDMA_uacinrts192(void)
+{
 }
 
 void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 {
-	const size_t dw = 1;//sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned NBYTES = UACIN_RTS96_DATASIZE;
+	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
-	const unsigned NBYTES = UACIN_RTS96_DATASIZE;
-	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->FIFO [ep];
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
 	const uint_fast32_t parameterDMAC = 0;
@@ -5313,39 +5436,40 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flushuacinrts96(getfilled_dmabufferuacinrts96());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
+	uacinrts96_descr0 [0] [0] = configDMAC;			// Cofigurarion
+	//uacinrts96_descr0 [0] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
+	uacinrts96_descr0 [0] [2] = portaddr;				// Destination Address
+	uacinrts96_descr0 [0] [3] = NBYTES;				// Byte Counter
+	uacinrts96_descr0 [0] [4] = parameterDMAC;			// Parameter
+	uacinrts96_descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) uacinrts96_descr0 [1];	// Link to next
 
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flushuacinrts96(getfilled_dmabufferuacinrts96());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
+	uacinrts96_descr0 [1] [0] = configDMAC;			// Cofigurarion
+	//uacinrts96_descr0 [1] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
+	uacinrts96_descr0 [1] [2] = portaddr;				// Destination Address
+	uacinrts96_descr0 [1] [3] = NBYTES;				// Byte Counter
+	uacinrts96_descr0 [1] [4] = parameterDMAC;			// Parameter
+	uacinrts96_descr0 [1] [5] = (uintptr_t) uacinrts96_descr0 [2];	// Link to next
 
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flushuacinrts96(getfilled_dmabufferuacinrts96());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
+	uacinrts96_descr0 [2] [0] = configDMAC;			// Cofigurarion
+	//uacinrts96_descr0 [2] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
+	uacinrts96_descr0 [2] [2] = portaddr;				// Destination Address
+	uacinrts96_descr0 [2] [3] = NBYTES;				// Byte Counter
+	uacinrts96_descr0 [2] [4] = parameterDMAC;			// Parameter
+	uacinrts96_descr0 [2] [5] = (uintptr_t) uacinrts96_descr0 [0];	// Link to next (loop)
 
-	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-		;
+//	uintptr_t descraddr = (uintptr_t) uacinrts96_descr0;
+//	dcache_clean(descraddr, sizeof uacinrts96_descr0);
+//
+//	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+//		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACINRTS);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+	//DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
@@ -5629,6 +5753,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5691,6 +5816,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5838,6 +5964,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5902,6 +6029,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
