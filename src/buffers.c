@@ -1185,6 +1185,7 @@ typedef struct rsmpl_tag
 	LIST_HEAD3 * outlist;//voicesusb16rx
 	uintptr_t (*getoutputdmabuff)(void); // получить выходной буфер
 	aubufv_t * (* getdataptr)(PLIST_ENTRY pitem);
+	aubufv_t (* getaverage)(aubufv_t v1, aubufv_t v2);
 } rsmpl_t;
 
 static aubufv_t * uacin48rsmgetdata(PLIST_ENTRY pitem)
@@ -1194,6 +1195,11 @@ static aubufv_t * uacin48rsmgetdata(PLIST_ENTRY pitem)
 	ASSERT(p->tag3 == p);
 
 	return p->rbuff;
+}
+
+static aubufv_t uacin48average(aubufv_t v1, aubufv_t v2)
+{
+	return ((aufastbufv2x_t) v1 + v2) / 2;
 }
 
 static rsmpl_t uacout48rsmpl =
@@ -1208,6 +1214,7 @@ static rsmpl_t uacout48rsmpl =
 		.outlist = & voicesusb16rx,
 		.getoutputdmabuff = allocate_dmabuffer16rx,
 		.getdataptr = uacin48rsmgetdata,
+		.getaverage = uacin48average,
 };
 
 static rsmpl_t uacin48rsmpl;
@@ -1268,8 +1275,8 @@ static RAMFUNC unsigned getsamplemsuacout(
 #else
 				unsigned HALF = rsmpl->bufsize / 2;
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				rsmpl->addsample [0] = ((aufastbufv2x_t) rsmpl->pdata [HALF - rsmpl->bufstep + 0] + rsmpl->pdata [HALF + 0]) / 2;	// Left
-				rsmpl->addsample [1] = ((aufastbufv2x_t) rsmpl->pdata [HALF - rsmpl->bufstep + 1] + rsmpl->pdata [HALF + 1]) / 2;	// Right
+				rsmpl->addsample [0] = rsmpl->getaverage(rsmpl->pdata [HALF - rsmpl->bufstep + 0], rsmpl->pdata [HALF + 0]);	// Left
+				rsmpl->addsample [1] = rsmpl->getaverage(rsmpl->pdata [HALF - rsmpl->bufstep + 1], rsmpl->pdata [HALF + 1]);	// Right
 
 				rsmpl->part = NPARTS - 3;
 				rsmpl->datas [0] = & rsmpl->pdata [0];		// часть перед вставкой
