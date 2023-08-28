@@ -156,7 +156,7 @@ InsertHeadList3(PLIST_HEAD3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady
 static PLIST_ENTRY
 RemoveTailList3(PLIST_HEAD3 ListHead)
 {
-	//ASSERT(! IsListEmpty3(ListHead));
+	ASSERT(! IsListEmpty3(ListHead));
 	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);
 	(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 	return t;
@@ -2562,8 +2562,8 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #if WITHRTS96
 
-	// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
-	uintptr_t allocate_dmabufferuacinrts96(void)
+	// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
+	static uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		LCLSPIN_LOCK(& locklistrts);
 		if (! IsListEmpty2(& uacinrts96free))
@@ -2716,10 +2716,11 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #if WITHRTS192
 
+	// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
 	// Этой функцией пользуются обработчики прерываний DMA
 	// получить буфер для передачи в компьютер, через USB AUDIO
 	// Если в данный момент нет готового буфера, возврат 0
-	static uintptr_t getfilled_dmabufferuacin192rts(void)
+	static uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		LCLSPIN_LOCK(& locklistrts);
 		if (! IsListEmpty2(& uacin192rts))
@@ -2860,7 +2861,8 @@ void RAMFUNC release_dmabufferuacin48(uintptr_t addr)
 	buffers_tonulluacin(p);
 }
 
-RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
+// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
+static RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
 {
 	LCLSPIN_LOCK(& locklistuacin48);
 	if (! IsListEmpty2(& uacin48free))
@@ -3196,7 +3198,7 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 #if WITHRTS192
 	case UACINALT_RTS192:
 		* sizep = UACIN_RTS192_DATASIZE;
-		return getfilled_dmabufferuacin192rts();
+		return getfilled_dmabufferuacinrts192();
 #endif /* WITHRTS192 */
 
 #endif /* ! WITHUSBUACIN2 */
@@ -3232,7 +3234,7 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 #if WITHRTS192
 	case UACINRTSALT_RTS192:
 		* sizep = UACIN_RTS192_DATASIZE;
-		return getfilled_dmabufferuacin192rts();
+		return getfilled_dmabufferuacinrts192();
 #endif /* WITHRTS192 */
 
 #endif /* WITHUSBUACIN2 && WITHUSBHW */

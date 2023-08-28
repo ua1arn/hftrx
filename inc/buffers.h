@@ -688,18 +688,15 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
-uintptr_t allocate_dmabufferuacin192rts(void);
 void release_dmabufferuacin192rts(uintptr_t addr);
 uintptr_t getfilled_dmabufferuacin192rts(void);
 
-uintptr_t allocate_dmabufferuacinrts96(void);
 void release_dmabufferuacinrts96(uintptr_t addr);
 uintptr_t getfilled_dmabufferuacinrts96(void);
 
 uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 
-uintptr_t allocate_dmabufferuacin48(void);
 uintptr_t getfilled_dmabufferuacin48(void);
 void release_dmabufferuacin48(uintptr_t addr);
 
