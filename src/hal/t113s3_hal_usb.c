@@ -2453,132 +2453,6 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBUAC && WITHWAWXXUSB
-
-/* Audio output */
-static uintptr_t uacinaddr = 0;
-static uint_fast16_t uacinsize = 0;
-
-#if WITHUSBUACIN2
-/* RTS output */
-static uintptr_t uacinrtsaddr = 0;
-static uint_fast16_t uacinrtssize = 0;
-#endif /* WITHUSBUACIN2 */
-
-static void usb_dev_iso_xfer_uac(PCD_HandleTypeDef *hpcd)
-{
-	usb_struct * const pusb = & hpcd->awxx_usb;
-
-#if WITHUSBUACOUT && 0
-	do
-	{
-		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-		uint32_t rx_count=0;
-		static uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE];
-		const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
-
-		// Handle OUT pipe (from host to device)
-	 	if (!pusb->eprx_flag[bo_ep_out-1])
-		{
-			break;
-		}
-		pusb->eprx_flag[bo_ep_out-1]--;
-
-  		usb_select_ep(pusb, bo_ep_out);
-  		if (!(usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY))
-  		{
-  			break;
-  		}
-  		rx_count = usb_get_eprx_count(pusb);
-   		if (rx_count > UACOUT_AUDIO48_DATASIZE)
-  		{
-  			usb_eprx_flush_fifo(pusb);
-  			break;
-  		}
-  		//PRINTF("UACOUT_AUDIO48_DATASIZE=%u, rx_count=%u, usbd_getuacoutmaxpacket()=%u\n", (unsigned) UACOUT_AUDIO48_DATASIZE, (unsigned) rx_count, (unsigned) usbd_getuacoutmaxpacket());
-  		//PRINTF("rx_count=%u\n", (unsigned) rx_count);
-  		ASSERT(UACOUT_AUDIO48_DATASIZE >= rx_count);
-//  		if (0)
-//  		{
-//  	 		static uint8_t rxlog [4096];
-//  	 		static unsigned nlog;
-//  	  		rxlog [nlog++] = rx_count;
-//  	  		if (nlog >= ARRAY_SIZE(rxlog))
-//  	  		{
-//  	  			printhex(rxlog, rxlog, sizeof rxlog);
-//  	  			for (;;)
-//  	  				;
-//  	  		}
-//  		}
-   		do
-  		{
-  			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)uacoutbuff, ulmin(rx_count, UACOUT_AUDIO48_DATASIZE), USB_PRTCL_ISO);
-  		}
-  		while(ret == USB_RETVAL_NOTCOMP);
-
-  		if (ret == USB_RETVAL_COMPERR)
-  		{
-  			PRINTF("Error: RX UAC Error\n");
-  			break;
-  		}
-  		else
-  		{
-  			ret = USB_RETVAL_NOTCOMP;
-  		}
-  		{
-			// использование данных
-			//printhex(0, uacoutbuff, rx_count);
-			uacout_buffer_save(uacoutbuff, rx_count, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
- 		}
-	} while (0);
-
-#endif /* WITHUSBUACOUT */
-
-#if WITHUSBUACIN && 0
-	{
-
-		if (uacinaddr)
-		{
-			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-			const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
-			{
-				IRQL_t oldIrql;
-				RiseIrql(IRQL_REALTIME, & oldIrql);
-				release_dmabufferuacinX(uacinaddr);
-				LowerIrql(oldIrql);
-				uacinaddr = 0;
-			}
-		}
-	}
-
-#if WITHUSBUACIN2
-	{
-		if (uacinrtsaddr)
-		{
-			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-			const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
-			{
-				IRQL_t oldIrql;
-				RiseIrql(IRQL_REALTIME, & oldIrql);
-				release_dmabufferuacinrtsX(uacinrtsaddr);
-				LowerIrql(oldIrql);
-				uacinrtsaddr = 0;
-			}
-		}
-	}
-#endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUACIN */
-}
-
-
-#endif /* WITHUSBUAC */
-
 
 static void usb_struct_idle(pusb_struct pusb)
 {
@@ -2713,7 +2587,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 1*USB_RXCSR_DMAREQMODE);	// DMAReqMode
+		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
 #endif
 	}
@@ -2730,7 +2604,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
@@ -2746,7 +2620,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		usb_select_ep(pusb, ep_no);
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
@@ -3719,67 +3593,6 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-#if WITHUSBUACIN && 0
-	{
-		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-		const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-
-		if (uacinaddr == 0)
-		{
-			IRQL_t oldIrql;
-			RiseIrql(IRQL_REALTIME, & oldIrql);
-			uacinaddr = getfilled_dmabufferuacinX(& uacinsize);
-			LowerIrql(oldIrql);
-		}
-
-
-		if (uacinaddr)
-		{
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_in, uacinaddr, uacinsize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
-			{
-				IRQL_t oldIrql;
-				RiseIrql(IRQL_REALTIME, & oldIrql);
-				release_dmabufferuacinX(uacinaddr);
-				LowerIrql(oldIrql);
-				uacinaddr = 0;
-			}
-		}
-	}
-
-#if WITHUSBUACIN2
-	{
-		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-
-		if (uacinrtsaddr != 0)
-		{
-			IRQL_t oldIrql;
-			RiseIrql(IRQL_REALTIME, & oldIrql);
-			release_dmabufferuacinrtsX(uacinrtsaddr);
-			LowerIrql(oldIrql);
-		}
-
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
-		LowerIrql(oldIrql);
-		if (uacinrtsaddr)
-		{
-			USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-
-			ret = epx_in_handler_dev_iso(pusb, bo_ep_rts_in, uacinrtsaddr, uacinrtssize, USB_PRTCL_ISO);
-			if (ret == USB_RETVAL_COMPOK)
-			{
-				IRQL_t oldIrql;
-				RiseIrql(IRQL_REALTIME, & oldIrql);
-				release_dmabufferuacinrtsX(uacinrtsaddr);
-				LowerIrql(oldIrql);
-				uacinrtsaddr = 0;
-			}
-		}
-	}
-#endif /* WITHUSBUACIN2 */
-#endif /* WITHUSBUACIN */
 	return 0;
 }
 
@@ -4046,9 +3859,6 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 #if WITHUSBDMSC && WITHWAWXXUSB
 	usb_dev_bulk_xfer_msc(pusb);
 #endif /* WITHUSBDMSC */
-#if WITHUSBUAC && WITHWAWXXUSB
-	usb_dev_iso_xfer_uac(hpcd);
-#endif /* WITHUSBUAC */
 #if WITHUSBCDCACM && WITHWAWXXUSB
 	unsigned offset;
 	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
@@ -4154,32 +3964,6 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 	}
 #endif /* WITHUSBUACOUT */
 
-#if WITHUSBDEV_DMAENABLE && 0
-	//dma
-	{
-		const uint32_t bo_ep_rts_in = USBD_EP_RTS_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-		const uint32_t bo_ep_in = USBD_EP_AUDIO_IN & 0x0F;	// ISOC IN Аудиоданные в компьютер из TRX
-		const uint32_t bo_ep_out = (USBD_EP_AUDIO_OUT & 0x0F);
-
-		pusb->dmatxv[bo_ep_rts_in-1] = wBoot_dma_requesttx(1);
-		if (!pusb->dmatxv[bo_ep_rts_in-1])
-		{
-			PRINTF("usb error: request dma fail\n");
-		}
-
-		pusb->dmatxv[bo_ep_in-1] = wBoot_dma_requesttx(1);
-		if (!pusb->dmatxv[bo_ep_in-1])
-		{
-			PRINTF("usb error: request dma fail\n");
-		}
-
-		pusb->dmarxv[bo_ep_out-1] = wBoot_dma_requestrx(1);
-		if (!pusb->dmarxv[bo_ep_out-1])
-		{
-			PRINTF("usb error: request dma fail\n");
-		}
-	}
-#endif /* WITHUSBDEV_DMAENABLE */
 }
 
 static void usb_struct_init(PCD_HandleTypeDef *hpcd)
@@ -4223,22 +4007,19 @@ static void usb_struct_init(PCD_HandleTypeDef *hpcd)
 
 	return;
 }
-/*
-************************************************************************************************************
-*
-*                                             function
-*
-*    �������ƣ�
-*
-*    �����б�
-*
-*    ����ֵ  ��
-*
-*    ˵��    ��
-*
-*
-************************************************************************************************************
-*/
+
+// 0xF7
+#define USB_BUSINT_DEV_WORK ( \
+		0*USB_BUSINT_VBUSERROR | \
+		0*USB_BUSINT_SESSREQ | \
+		USB_BUSINT_DISCONN | \
+		USB_BUSINT_CONNECT | \
+		0*USB_BUSINT_SOF | \
+		USB_BUSINT_RESET | \
+		USB_BUSINT_RESUME | \
+		USB_BUSINT_SUSPEND | \
+		0)
+
 void usb_init(PCD_HandleTypeDef *hpcd)
 {
 
