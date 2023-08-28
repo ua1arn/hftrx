@@ -5260,7 +5260,7 @@ void refreshDMA_uacin48(void)
 	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
 		return;
 
-	if (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
+	if (DMAC->CH [dmach].DMAC_EN_REGN)
 		return;
 
 	// При наличии следующего блока - запускаем передачу
@@ -5327,16 +5327,6 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	uacin48_descr0 [2] [4] = parameterDMAC;			// Parameter
 	uacin48_descr0 [2] [5] = (uintptr_t) uacin48_descr0 [0];	// Link to next (loop)
 
-//	uintptr_t descraddr = (uintptr_t) uacin48_descr0;
-//	dcache_clean(descraddr, sizeof uacin48_descr0);
-//
-//	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-//		;
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = 0xFFFFF800;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
-		;
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACIN48);
 
@@ -5375,7 +5365,6 @@ static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 	}
 
-
 	/* Работа с только что передаными данными */
 	release_dmabufferuacinrts96(oldaddr);
 }
@@ -5387,13 +5376,13 @@ void refreshDMA_uacinrts96(void)
 	enum { ix = DMAC_DESC_SRC };
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 
-//	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
-//		return;
+	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
+		return;
 
 	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
 		return;
 
-	if (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
+	if (DMAC->CH [dmach].DMAC_EN_REGN)
 		return;
 
 	// При наличии следующего блока - запускаем передачу
@@ -5465,10 +5454,6 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	uacinrts96_descr0 [2] [3] = NBYTES;				// Byte Counter
 	uacinrts96_descr0 [2] [4] = parameterDMAC;			// Parameter
 	uacinrts96_descr0 [2] [5] = (uintptr_t) uacinrts96_descr0 [0];	// Link to next (loop)
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = 0xFFFFF800;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
-		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACINRTS);
