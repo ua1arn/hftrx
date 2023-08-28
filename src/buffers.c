@@ -476,7 +476,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistmsg8 = LCLSPINLOCK_INIT;
 #if WITHBUFFERSDEBUG
 
 static unsigned n1, n1wfm, n2, n3, n4, n5, n6, n7;
-static unsigned e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, purge16;
+static unsigned e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, purge16;
 static unsigned nbadd, nbdel, nbzero, nbnorm;
 
 static unsigned debugcount_ms10;	// с точностью 0.1 ms
@@ -528,23 +528,23 @@ void buffers_diagnostics(void)
 	LIST2PRINT(voicesready32tx);
 	PRINTF(PSTR("\n"));
 	LIST3PRINT(voicesmike16rx);
-	LIST3PRINT(voicesusb16rx);
 	LIST3PRINT(voicesphones16tx);
 	LIST3PRINT(voicesmoni16tx);
-	PRINTF(PSTR("\n"));
 
 	#if WITHUSBUACIN
 		#if WITHRTS192
-			//LIST2PRINT(voicesfree192rts);
-			//LIST2PRINT(uacin192rts);
+			LIST2PRINT(voicesfree192rts);
+			LIST2PRINT(uacin192rts);
 		#elif WITHRTS96
-			//LIST2PRINT(uacinrts96free);
-			//LIST2PRINT(uacinrts96ready);
+			LIST2PRINT(uacinrts96free);
+			LIST2PRINT(uacinrts96ready);
 		#endif
-		//LIST2PRINT(uacin48free);
-		//LIST2PRINT(uacin48ready);
+		LIST2PRINT(uacin48free);
+		LIST2PRINT(uacin48ready);
 	#endif /* WITHUSBUACIN */
+			PRINTF(PSTR("\n"));
 	#if WITHUSBUACOUT
+		LIST3PRINT(voicesusb16rx);
 		LIST3PRINT(resample16rx);
 		PRINTF(PSTR(" (NORMAL=%d), uacoutalt=%d, add=%u, del=%u, zero=%u, norm=%u "), RESAMPLE16NORMAL, uacoutalt, nbadd, nbdel, nbzero, nbnorm);
 	#endif /* WITHUSBUACOUT */
@@ -556,7 +556,7 @@ void buffers_diagnostics(void)
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
 	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u n7=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, n7, uacinalt, purge16);
-	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u e9=%u e10=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
+	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u e9=%u e10=%u e11=%u e12=%u e13=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13);
 
 	{
 		const unsigned ms10 = getresetval(& debugcount_ms10);
@@ -2586,6 +2586,9 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		}
 		else if (! IsListEmpty2(& uacinrts96ready))
 		{
+#if WITHBUFFERSDEBUG
+			++ e12;
+#endif /* WITHBUFFERSDEBUG */
 			// Ошибочная ситуация - если буферы не освобождены вовремя -
 			// берём из очереди готовых к передаче в компьютер по USB.
 			// Очередь очищается возможно не полностью.
@@ -2753,6 +2756,9 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		}
 		else if (! IsListEmpty2(& uacin192rts))
 		{
+#if WITHBUFFERSDEBUG
+			++ e13;
+#endif /* WITHBUFFERSDEBUG */
 			// Ошибочная ситуация - если буферы не освобождены вовремя -
 			// берём из очереди готовых к передаче в компьютер по USB.
 			// Очередь очищается возможно не полностью.
@@ -2879,6 +2885,9 @@ static RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
 	{
 		// Ошибочная ситуация - если буферы не освобождены вовремя -
 		// берём из очереди готовых к передаче
+#if WITHBUFFERSDEBUG
+		++ e11;
+#endif /* WITHBUFFERSDEBUG */
 
 		uint_fast8_t n = 3;
 		do
