@@ -105,6 +105,7 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 	return n;
 }
 
+// for descriptors fill
 uint_fast16_t usbd_getuacinmaxpacket(void)
 {
 	uint_fast16_t maxpacket = UACIN_AUDIO48_DATASIZE;
@@ -122,6 +123,7 @@ uint_fast16_t usbd_getuacinmaxpacket(void)
 
 #if WITHUSBUACIN2
 
+// for descriptors fill
 uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 {
 	uint_fast16_t maxpacket = 64;
@@ -136,6 +138,7 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 
 #endif /* WITHUSBUACIN2 */
 
+// for descriptors fill
 uint_fast16_t usbd_getuacoutmaxpacket(void)
 {
 	return UACOUT_AUDIO48_DATASIZE;
