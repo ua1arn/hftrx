@@ -1171,7 +1171,8 @@ enum { NPARTS = 3 };
 typedef struct rsmpl_tag
 {
 	lclspinlock_t * lock;//locklist16rx
-	voice16rx_t * p;// = NULL;
+	aubufv_t * pdata;// = NULL;
+	PLIST_ENTRY titem;
 	uint_fast8_t part;// = 0;
 	aubufv_t * datas [NPARTS];// = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
 	unsigned sizes [NPARTS];// = { 0, 0 };			// количество сэмплов во входном буфере
@@ -1183,20 +1184,30 @@ typedef struct rsmpl_tag
 	LIST_HEAD2 * freelist;//resample16rx
 	LIST_HEAD3 * outlist;//voicesusb16rx
 	uintptr_t (*getoutputdmabuff)(void); // получить выходной буфер
+	aubufv_t * (* getdataptr)(PLIST_ENTRY pitem);
 } rsmpl_t;
+
+static aubufv_t * uacin48rsmgetdata(PLIST_ENTRY pitem)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(pitem, voice16rx_t, item);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+
+	return p->rbuff;
+}
 
 static rsmpl_t uacout48rsmpl =
 {
 		.lock = & locklist16rx,
 		.skipsense = SKIPPEDBLOCKS,
-		.p = NULL,
-		.part = 0,
+		.pdata = NULL,
 		.bufsize = DMABUFFSIZE16RX,
 		.bufstep = DMABUFFSTEP16RX,
 		.rx = & resample16rx,
 		.freelist = & voicesfree16rx,
 		.outlist = & voicesusb16rx,
 		.getoutputdmabuff = allocate_dmabuffer16rx,
+		.getdataptr = uacin48rsmgetdata,
 };
 
 static rsmpl_t uacin48rsmpl;
@@ -1216,7 +1227,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 {
 
 	LCLSPIN_LOCK(rsmpl->lock);
-	if (rsmpl->p == NULL)
+	if (rsmpl->pdata == NULL)
 	{
 		if (GetReadyList3(rsmpl->rx) == 0)
 		{
@@ -1230,8 +1241,8 @@ static RAMFUNC unsigned getsamplemsuacout(
 		}
 		else
 		{
-			PLIST_ENTRY t = RemoveTailList3(rsmpl->rx);
-			rsmpl->p = CONTAINING_RECORD(t, voice16rx_t, item);
+			rsmpl->titem = RemoveTailList3(rsmpl->rx);
+			rsmpl->pdata = rsmpl->getdataptr(rsmpl->titem);
 			if (GetReadyList3(rsmpl->rx) == 0)	// готовность пропала
 				rsmpl->skipsense = SKIPPEDBLOCKS;
 			const uint_fast8_t valid = GetReadyList3(rsmpl->rx) && rsmpl->skipsense == 0;
@@ -1250,22 +1261,22 @@ static RAMFUNC unsigned getsamplemsuacout(
 
 #if 0
 				rsmpl->part = NPARTS - 2;
-				rsmpl->datas [part + 0] = & rsmpl->p->buff [0];	// дублируем первый сэмпл
+				rsmpl->datas [part + 0] = & rsmpl->pdata [0];	// дублируем первый сэмпл
 				rsmpl->sizes [part + 0] = rsmpl->bufstep;
-				rsmpl->datas [part + 1] = & rsmpl->p->buff [0];
+				rsmpl->datas [part + 1] = & rsmpl->pdata [0];
 				rsmpl->sizes [part + 1] = rsmpl->bufsize;
 #else
 				unsigned HALF = rsmpl->bufsize / 2;
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
-				rsmpl->addsample [0] = ((aufastbufv2x_t) rsmpl->p->rbuff [HALF - rsmpl->bufstep + 0] + rsmpl->p->rbuff [HALF + 0]) / 2;	// Left
-				rsmpl->addsample [1] = ((aufastbufv2x_t) rsmpl->p->rbuff [HALF - rsmpl->bufstep + 1] + rsmpl->p->rbuff [HALF + 1]) / 2;	// Right
+				rsmpl->addsample [0] = ((aufastbufv2x_t) rsmpl->pdata [HALF - rsmpl->bufstep + 0] + rsmpl->pdata [HALF + 0]) / 2;	// Left
+				rsmpl->addsample [1] = ((aufastbufv2x_t) rsmpl->pdata [HALF - rsmpl->bufstep + 1] + rsmpl->pdata [HALF + 1]) / 2;	// Right
 
 				rsmpl->part = NPARTS - 3;
-				rsmpl->datas [0] = & rsmpl->p->rbuff [0];		// часть перед вставкой
+				rsmpl->datas [0] = & rsmpl->pdata [0];		// часть перед вставкой
 				rsmpl->sizes [0] = HALF;
 				rsmpl->datas [1] = & rsmpl->addsample [0];	// вставляемые данные
 				rsmpl->sizes [1] = rsmpl->bufstep;
-				rsmpl->datas [2] = & rsmpl->p->rbuff [HALF];	// часть после вставки
+				rsmpl->datas [2] = & rsmpl->pdata [HALF];	// часть после вставки
 				rsmpl->sizes [2] = rsmpl->bufsize - HALF;
 #endif
 			}
@@ -1277,7 +1288,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 #endif /* WITHBUFFERSDEBUG */
 				// убирается один сэмпл из выходного потока раз в SKIPPEDBLOCKS блоков
 				rsmpl->part = NPARTS - 1;
-				rsmpl->datas [rsmpl->part] = & rsmpl->p->rbuff [rsmpl->bufstep];	// пропускаем первый сэмпл
+				rsmpl->datas [rsmpl->part] = & rsmpl->pdata [rsmpl->bufstep];	// пропускаем первый сэмпл
 				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize - rsmpl->bufstep;
 			}
 			else
@@ -1285,7 +1296,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 				LCLSPIN_UNLOCK(rsmpl->lock);
 				// Ресэмплинг не требуется или нет запаса входных данных
 				rsmpl->part = NPARTS - 1;
-				rsmpl->datas [rsmpl->part] = & rsmpl->p->rbuff [0];
+				rsmpl->datas [rsmpl->part] = & rsmpl->pdata [0];
 				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize;
 #if WITHBUFFERSDEBUG
 			++ nbnorm;
@@ -1308,9 +1319,9 @@ static RAMFUNC unsigned getsamplemsuacout(
 	{
 		// освобождаем ранее полученый от UAC буфер
 		LCLSPIN_LOCK(rsmpl->lock);
-		InsertHeadList2(rsmpl->freelist, & rsmpl->p->item);
+		InsertHeadList2(rsmpl->freelist, rsmpl->titem);
 		LCLSPIN_UNLOCK(rsmpl->lock);
-		rsmpl->p = NULL;
+		rsmpl->pdata = NULL;
 	}
 	return chunk;
 }
