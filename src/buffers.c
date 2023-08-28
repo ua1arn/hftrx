@@ -2705,7 +2705,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		place_le(p->u.buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
 		n += UACIN_RTS96_SAMPLEBYTES;
 
-		if (n >= UACIN_RTS96_DATASIZE)
+		if (n >= ARRAY_SIZE(p->u.buff))
 		{
 			ASSERT(p->tag == BUFFTAG_RTS96);
 			ASSERT(p->tag2 == p);
@@ -2841,7 +2841,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		place_le(p->u.buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
 		n += UACIN_RTS192_SAMPLEBYTES;
 
-		if (n >= UACIN_RTS192_DATASIZE)
+		if (n >= ARRAY_SIZE(p->u.buff))
 		{
 			buffers_savetouacin192rts(p);
 			p = NULL;
@@ -2974,7 +2974,7 @@ void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1)
 	n += UACIN_AUDIO48_SAMPLEBYTES;
 #endif /* UACIN_FMT_CHANNELS_AUDIO48 */
 
-	if (n >= UACIN_AUDIO48_DATASIZE)
+	if (n >= ARRAY_SIZE(p->u.buff))
 	{
 		buffers_savetouacin(p);
 		p = NULL;

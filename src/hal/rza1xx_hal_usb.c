@@ -2190,8 +2190,8 @@ static void r7s721_usb1_dma1_dmatx_stop(uint_fast8_t pipe)
 
 #if WITHDMAHW_UACOUT
 
-static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff0 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
-static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff0 [UACOUT_AUDIO48_DATASIZE_DMAC] USBALIGN_END;
+static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE_DMAC] USBALIGN_END;
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
@@ -2211,13 +2211,13 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-		dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
+		uacout_buffer_save(uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, UACOUT_AUDIO48_DATASIZE, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-		dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
+		uacout_buffer_save(uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 }
 
@@ -2228,8 +2228,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB200;
 
-	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
-	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -2243,8 +2243,8 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
-    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
+    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
+    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA0 (channel 0 receive FIFO full)
@@ -2318,8 +2318,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB201;
 
-	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE);
-	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
+	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -2333,8 +2333,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
-    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE;	// размер в байтах
+    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
+    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB1_DMA0 (channel 0 receive FIFO full)
@@ -5795,7 +5795,7 @@ usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;	// PIPE1
 		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
 		const uint_fast8_t dir = 0;
-		const uint_fast16_t maxpacket = usbd_getuacoutmaxpacket();
+		const uint_fast16_t maxpacket = UACOUT_AUDIO48_DATASIZE_DMAC;
 		const uint_fast8_t dblb = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
