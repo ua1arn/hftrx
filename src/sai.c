@@ -5144,7 +5144,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	static ALIGNX_BEGIN uint8_t out48 [3] [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	static ALIGNX_BEGIN uint8_t out48 [3] [EP_align(UACOUT_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE)] ALIGNX_END;
 	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
 	const size_t dw = awusbadj(NBYTES);
 	static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
