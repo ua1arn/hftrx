@@ -5233,7 +5233,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	{
 		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
 		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
-		dcache_clean(descbase, sizeof uacin48_descr0);
+		dcache_clean(descbase, sizeof uacin48_descr0 [0]);
 
 		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
 		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
@@ -5260,6 +5260,9 @@ void refreshDMA_uacin48(void)
 	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
 		return;
 
+	if (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
+		return;
+
 	// При наличии следующего блока - запускаем передачу
 	const uintptr_t newdata = getfilled_dmabufferuacin48();	// для передачи в компьютер - может вернуть 0
 	if (newdata != 0)
@@ -5267,7 +5270,7 @@ void refreshDMA_uacin48(void)
 		const uintptr_t descbase = (uintptr_t) uacin48_descr0;
 		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
 		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
-		dcache_clean(descbase, sizeof uacin48_descr0);
+		dcache_clean(descbase, sizeof uacin48_descr0 [0]);
 
 		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
 		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
@@ -5331,6 +5334,9 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 //	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
 //		;
 
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = 0xFFFFF800;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
+		;
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACIN48);
 
@@ -5361,7 +5367,7 @@ static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 	{
 		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
 		uacinrts96_descr0 [0] [5] = 0xFFFFF800;	// Link to next
-		dcache_clean(descbase, sizeof uacinrts96_descr0);
+		dcache_clean(descbase, sizeof uacinrts96_descr0 [0]);
 
 		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
 		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
@@ -5381,10 +5387,13 @@ void refreshDMA_uacinrts96(void)
 	enum { ix = DMAC_DESC_SRC };
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
 
-	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
-		return;
+//	if (DMAC->DMAC_STA_REG & UINT32_C(1) << dmach)
+//		return;
 
 	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
+		return;
+
+	if (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
 		return;
 
 	// При наличии следующего блока - запускаем передачу
@@ -5394,7 +5403,7 @@ void refreshDMA_uacinrts96(void)
 		uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
 		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
 		uacinrts96_descr0 [0] [5] = 0xFFFFF800;	// Link to next
-		dcache_clean(descbase, sizeof uacinrts96_descr0);
+		dcache_clean(descbase, sizeof uacinrts96_descr0 [0]);
 
 		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
 		while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
@@ -5457,12 +5466,9 @@ void DMAC_USB_TX_initialize_UACINRTS(uint32_t ep)
 	uacinrts96_descr0 [2] [4] = parameterDMAC;			// Parameter
 	uacinrts96_descr0 [2] [5] = (uintptr_t) uacinrts96_descr0 [0];	// Link to next (loop)
 
-//	uintptr_t descraddr = (uintptr_t) uacinrts96_descr0;
-//	dcache_clean(descraddr, sizeof uacinrts96_descr0);
-//
-//	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
-//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
-//		;
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = 0xFFFFF800;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != 0xFFFFF800)
+		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACIN, DMAC_USB_TX_handler_UACINRTS);
