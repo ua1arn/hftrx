@@ -5229,6 +5229,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t oldaddr = descraddr [ix];
+	descraddr [ix] = 0;
 	if (newdata != 0)
 	{
 		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
@@ -5241,9 +5242,9 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 	}
 
-
 	/* Работа с только что передаными данными */
-	release_dmabufferuacin48(oldaddr);
+	if (oldaddr)
+		release_dmabufferuacin48(oldaddr);
 }
 
 
@@ -5259,7 +5260,18 @@ void refreshDMA_uacin48(void)
 	if (DMAC->CH [dmach].DMAC_EN_REGN)
 		return;
 	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
-		return;
+	{
+		DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 1: Enabled
+		const uintptr_t descbase = (uintptr_t) uacin48_descr0;
+		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+		const uintptr_t oldaddr = descraddr [ix];
+		descraddr [ix] = 0;
+		DMAC->DMAC_IRQ_PEND_REG0 = DMAC_REG0_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
+		DMAC->DMAC_IRQ_PEND_REG1 = DMAC_REG1_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
+		/* Работа с только что передаными данными */
+		if (oldaddr)
+			release_dmabufferuacin48(oldaddr);
+	}
 
 	// При наличии следующего блока - запускаем передачу
 	const uintptr_t newdata = getfilled_dmabufferuacin48();	// для передачи в компьютер - может вернуть 0
@@ -5351,6 +5363,7 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t oldaddr = descraddr [ix];
+	descraddr [ix] = 0;
 	if (newdata != 0)
 	{
 		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
@@ -5364,7 +5377,8 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 	}
 
 	/* Работа с только что передаными данными */
-	release_dmabufferuacinrts96(oldaddr);
+	if (oldaddr)
+		release_dmabufferuacinrts96(oldaddr);
 }
 
 // USB AUDIO
@@ -5379,7 +5393,18 @@ void refreshDMA_uacinrts96(void)
 	if (DMAC->CH [dmach].DMAC_EN_REGN)
 		return;
 	if (DMAC_has_done(dmach))	// Есть необработанное прерывание
-		return;
+	{
+		DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 1: Enabled
+		const uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
+		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+		const uintptr_t oldaddr = descraddr [ix];
+		descraddr [ix] = 0;
+		DMAC->DMAC_IRQ_PEND_REG0 = DMAC_REG0_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
+		DMAC->DMAC_IRQ_PEND_REG1 = DMAC_REG1_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
+		/* Работа с только что передаными данными */
+		if (oldaddr)
+			release_dmabufferuacinrts96(oldaddr);
+	}
 
 	// При наличии следующего блока - запускаем передачу
 	const uintptr_t newdata = getfilled_dmabufferuacinrts96();
