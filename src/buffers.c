@@ -1182,6 +1182,7 @@ typedef struct rsmpl_tag
 	LIST_HEAD3 * rx;//resample16rx
 	LIST_HEAD2 * freelist;//resample16rx
 	LIST_HEAD3 * outlist;//voicesusb16rx
+	uintptr_t (*getoutputdmabuff)(void); // получить выходной буфер
 } rsmpl_t;
 
 static rsmpl_t uacout48rsmpl =
@@ -1195,6 +1196,7 @@ static rsmpl_t uacout48rsmpl =
 		.rx = & resample16rx,
 		.freelist = & voicesfree16rx,
 		.outlist = & voicesusb16rx,
+		.getoutputdmabuff = allocate_dmabuffer16rx,
 };
 
 static rsmpl_t uacin48rsmpl;
@@ -1316,7 +1318,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 // формирование одного буфера синхронного потока из N несинхронного
 static RAMFUNC void buffer_resample(rsmpl_t * rsmpl)
 {
-	const uintptr_t addr = allocate_dmabuffer16rx();	// выходной буфер
+	const uintptr_t addr = rsmpl->getoutputdmabuff();//allocate_dmabuffer16rx();	// выходной буфер
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
