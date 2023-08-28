@@ -156,6 +156,7 @@ InsertHeadList3(PLIST_HEAD3 ListHead, PLIST_ENTRY Entry, uint_fast8_t forceReady
 static PLIST_ENTRY
 RemoveTailList3(PLIST_HEAD3 ListHead)
 {
+	//ASSERT(! IsListEmpty3(ListHead));
 	const PLIST_ENTRY t = RemoveTailList2(& (ListHead)->item2);
 	(ListHead)->Rdy = fiforeadyupdate((ListHead)->Rdy, (ListHead)->item2.Count, (ListHead)->RdyLevel);
 	return t;

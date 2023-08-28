@@ -5222,6 +5222,7 @@ static uintptr_t dma_flushuacin48(uintptr_t addr)
 /* Передача в host */
 static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 {
+	ASSERT(dmach == DMAC_USBUAC48_TX_Ch);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = (uintptr_t) uacin48_descr0;
 	const uintptr_t newdata = getfilled_dmabufferuacin48();
@@ -5231,7 +5232,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	if (newdata != 0)
 	{
 		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
-		uacin48_descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) uacin48_descr0 [1];	// Link to next
+		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
 		dcache_clean(descbase, sizeof uacin48_descr0);
 
 		DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
@@ -5260,8 +5261,7 @@ void refreshDMA_uacin48(void)
 		return;
 
 	// При наличии следующего блока - запускаем передачу
-	uint_fast16_t size;
-	const uintptr_t newdata = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер - может вернуть 0
+	const uintptr_t newdata = getfilled_dmabufferuacin48();	// для передачи в компьютер - может вернуть 0
 	if (newdata != 0)
 	{
 		const uintptr_t descbase = (uintptr_t) uacin48_descr0;
@@ -5350,6 +5350,7 @@ static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 /* Передача в host */
 static void DMAC_USB_TX_handler_UACINRTS(unsigned dmach)
 {
+	ASSERT(dmach == DMAC_USBUACRTS_TX_Ch);
 	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
 	const uintptr_t newdata = getfilled_dmabufferuacinrts96();
