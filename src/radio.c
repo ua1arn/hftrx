@@ -21717,12 +21717,12 @@ void hamradio_set_gdactest(uint8_t v)
 	updateboard(1, 1);
 }
 
-#endif /* WITHDSPEXTDDC */
-
 uint32_t hamradio_get_gadcrand(void)
 {
 	return gadcrand != 0;
 }
+
+#endif /* WITHDSPEXTDDC */
 
 #if WITHUSEDUALWATCH
 uint_fast8_t hamradio_split_toggle(void)

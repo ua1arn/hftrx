@@ -584,6 +584,7 @@
 #endif
 
 // Получить размер для программирования FIFO endpoint - с учетом разбивки на микрофреймы
+// See also encodeMaxPacketSize function
 #define EPUF_Arj(n) ((n) <= 1024 ? (n) : (n) < 2048 ? ((n) + 1) / 2 : ((n) + 2) / 3)
 
 /* Размры буферов ендпоинт в байтах */

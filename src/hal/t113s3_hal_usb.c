@@ -4256,9 +4256,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_set_bus_interrupt_enable(pusb, USB_BUSINT_DEV_WORK);
 		usb_set_eptx_interrupt_enable(pusb, 1u << 0);	// EP0 interrupts
 
+#if WITHUSBUACOUT
 		buffers_set_uacoutalt(0);
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
 		buffers_set_uacinalt(0);
+#if WITHUSBUACIN2
 		buffers_set_uacinrtsalt(0);
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 
 		awxx_setup_fifo(pusb);
 

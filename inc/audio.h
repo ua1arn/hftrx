@@ -504,7 +504,10 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
 
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
+#if WITHINTEGRATEDDSP
 void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf);			// перед передачей по DMA в аудиокодек
+#endif /* WITHINTEGRATEDDSP */
+
 typedef FLOAT_t speexel_t;
 uint_fast8_t takespeexready_user(FLOAT_t * * dest);
 void releasespeexbuffer_user(FLOAT_t * t);
