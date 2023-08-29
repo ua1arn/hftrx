@@ -2628,7 +2628,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBUACIN */
 	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
-	//ASSERT(fifo_addr < 8192);	/* 8 kB */
+	ASSERT(fifo_addr <= 8192);	/* 8 kB */
 }
 
 #if WITHUSBUAC

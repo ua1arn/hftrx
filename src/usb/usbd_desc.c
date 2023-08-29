@@ -329,6 +329,7 @@ static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
 	// 01 = 1 additional (2 per microframe)
 	// 10 = 2 additional (3 per microframe)
 
+	ASSERT(size <= 3072);
 	if (size <= 1024)
 		return size;	// 1..1024
 	if (size <= 2048)
