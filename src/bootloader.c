@@ -7,6 +7,7 @@
 
 
 #include "hardware.h"
+#include "bootloader.h"
 #include "gui/gui.h"
 #include "board.h"
 #include "keyboard.h"
@@ -305,6 +306,7 @@ void bootloader_mainloop(void)
 
 	if (BOARD_IS_USERBOOT() == 0)
 	{
+		PRINTF("bootloader_mainloop: user boot button released\n");
 		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
 		do
 		{
@@ -321,6 +323,10 @@ void bootloader_mainloop(void)
 			bootloader_launch_app(ip);
 
 		} while (0);
+	}
+	else
+	{
+		PRINTF("bootloader_mainloop: user boot button holded\n");
 	}
 #endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
