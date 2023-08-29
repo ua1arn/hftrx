@@ -330,6 +330,7 @@ static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
 	// 10 = 2 additional (3 per microframe)
 
 	ASSERT(size <= 3072);
+	// FIXME:
 	if (size <= 1024)
 		return size;	// 1..1024
 	if (size <= 2048)
