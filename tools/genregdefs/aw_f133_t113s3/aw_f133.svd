@@ -15280,6 +15280,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>USB_EPATTR</name>
+    <displayName>USB_EPATTR</displayName>
+    <description>USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>USB_TXFIFO</name>
     <displayName>USB_TXFIFO</displayName>
     <description>USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes)</description>

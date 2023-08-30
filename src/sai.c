@@ -3490,7 +3490,7 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
-	local_delay_us(7);
+	local_delay_us(10);
 	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 //	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 //	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
@@ -3508,7 +3508,7 @@ static void DMA_resume(unsigned dmach, uintptr_t descbase)
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
-	ASSERT(DMAC_Ch_Total <= 8);
+	//ASSERT(DMAC_Ch_Total <= 8);
 	dmac_handlers [dmach] = handler;
 #if CPUSTYLE_T507
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
@@ -5213,7 +5213,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
 
-	DMAC->CH [dmach].DMAC_MODE_REGN = 1*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }

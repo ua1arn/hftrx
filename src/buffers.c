@@ -1943,6 +1943,15 @@ static void processing_dmabuffer16rxuac(uintptr_t addr)
 	++ n2;
 #endif /* WITHBUFFERSDEBUG */
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
+//	// Замена приходящего с USB тоном
+//	{
+//		unsigned i;
+//		for (i = 0; i < DMABUFFSIZE16RX; i += DMABUFFSTEP16RX)
+//		{
+//			p->rbuff [i + DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, get_lout());
+//			p->rbuff [i + DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, get_rout());
+//		}
+//	}
 	buffers_savefromuacout(p);
 }
 
