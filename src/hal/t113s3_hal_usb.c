@@ -3566,6 +3566,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
       		default:
+      			TP();
       			break;
     		}
 	      	break;
