@@ -3438,6 +3438,17 @@ static int DMAC_has_done(unsigned dmach)
 #endif /* CPUSTYLE_A64 */
 }
 
+static void DMAC_clear_pending(unsigned dmach)
+{
+	const unsigned flag = 0x07;
+#if CPUSTYLE_A64
+	DMAC->DMAC_IRQ_PEND_REG = DMAC_REG0_MASK(dmach) * flag;	// Write 1 to clear the pending status.
+#else /* CPUSTYLE_A64 */
+	DMAC->DMAC_IRQ_PEND_REG0 = DMAC_REG0_MASK(dmach) * flag;	// Write 1 to clear the pending status.
+	DMAC->DMAC_IRQ_PEND_REG1 = DMAC_REG1_MASK(dmach) * flag;	// Write 1 to clear the pending status.
+#endif /* CPUSTYLE_A64 */
+}
+
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
 {
@@ -5266,8 +5277,7 @@ void refreshDMA_uacin48(void)
 		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 		const uintptr_t oldaddr = descraddr [ix];
 		descraddr [ix] = 0;
-		DMAC->DMAC_IRQ_PEND_REG0 = DMAC_REG0_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
-		DMAC->DMAC_IRQ_PEND_REG1 = DMAC_REG1_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
+		DMAC_clear_pending(dmach);
 		/* Работа с только что передаными данными */
 		if (oldaddr)
 			release_dmabufferuacin48(oldaddr);
@@ -5399,8 +5409,7 @@ void refreshDMA_uacinrts96(void)
 		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 		const uintptr_t oldaddr = descraddr [ix];
 		descraddr [ix] = 0;
-		DMAC->DMAC_IRQ_PEND_REG0 = DMAC_REG0_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
-		DMAC->DMAC_IRQ_PEND_REG1 = DMAC_REG1_MASK(dmach) * 0x07;	// Write 1 to clear the pending status.
+		DMAC_clear_pending(dmach);
 		/* Работа с только что передаными данными */
 		if (oldaddr)
 			release_dmabufferuacinrts96(oldaddr);
