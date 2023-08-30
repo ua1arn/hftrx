@@ -583,7 +583,6 @@ int dbg_puts_impl(const char * s)
 // дождаться, пока будут переданы все символы, ы том числе и из FIFO
 void dbg_flush(void)
 {
-	local_delay_ms(500);
 	HARDWARE_DEBUG_FLUSH();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 }
 

@@ -356,17 +356,6 @@ enum interfaces_tag
 	INTERFACE_count				/* Значение для configuration descriptor */
 };
 
-#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
-#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
-#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
-#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
-#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
-#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
-#define INTERFACE_MTP_count 1	/* количество интерфейсов в одном MTP */
-#define INTERFACE_MSC_count 1	/* количество интерфейсов в одном MSC */
-
-//#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
-
 #define USBD_CDCACM_INT_EP(base, offset) ((base) + (offset) * 2)
 #define USBD_CDCACM_IN_EP(base, offset) ((base) + (offset) * 2)
 #define USBD_CDCACM_OUT_EP(base, offset) ((base) + (offset) * 1)
@@ -379,20 +368,14 @@ enum interfaces_tag
 
 #else /* WITHPLAINDESCROPTOR */
 
-	#if WITHUSBUAC
-		#if WITHUSBUACIN2
-			//#define INTERFACE_UAC_count 2	/* количество интерфейсов в одном UAC */
-		#else /* WITHUSBUACIN2 */
-			//#define INTERFACE_UAC_count 3	/* количество интерфейсов в одном UAC */
-		#endif /* WITHUSBUACIN2 */
-	#endif /* WITHUSBUAC */
-
 	#if WITHUSBRNDIS
 		enum
 		{
 
 			INTERFACE_RNDIS_CONTROL,	/* RNDIS control Interface */
 			INTERFACE_RNDIS_DATA,		/* RNDIS data Interface */
+			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBRNDIS */
 	#if WITHUSBUAC
@@ -431,6 +414,8 @@ enum interfaces_tag
 				INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 			#endif /* WITHUSBUACOUT */
 		#endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
+			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBUAC */
 	#if WITHUSBCDCACM
@@ -441,59 +426,61 @@ enum interfaces_tag
 			INTERFACE_CDC_CONTROL = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 			INTERFACE_CDC_DATA,		/* CDC ACM data Interface */
 			INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
+			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBCDCACM */
 	#if WITHUSBCDCEEM
 		enum
 		{
-			INTERFACE_CDCEEM_DATA		/* CDC ECM/CDC EEM data Interface */
+			INTERFACE_CDCEEM_DATA,		/* CDC ECM/CDC EEM data Interface */
+			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBCDCEEM */
 	#if WITHUSBCDCECM
 		enum
 		{
 			INTERFACE_CDCECM_CONTROL,	/* CDC ECM control Interface */
-			INTERFACE_CDCECM_DATA		/* CDC ECM/CDC EEM data Interface */
+			INTERFACE_CDCECM_DATA,		/* CDC ECM/CDC EEM data Interface */
+			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBCDCECM */
 	#if WITHUSBHID
 		enum
 		{
-			INTERFACE_HID_CONTROL	/* HID control Interface */
+			INTERFACE_HID_CONTROL,	/* HID control Interface */
 			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBHID */
 	#if WITHUSBDMTP
 		enum
 		{
-			INTERFACE_MTP_CONTROL	/* MTP control Interface */
+			INTERFACE_MTP_CONTROL,	/* MTP control Interface */
 			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBDMTP */
 
 	#if WITHUSBDMSC
 		enum
 		{
-			INTERFACE_MSC_CONTROL	/* MSC control Interface */
+			INTERFACE_MSC_CONTROL,	/* MSC control Interface */
 			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBDMSC */
 
 	#if WITHUSBDFU
 		enum
 		{
-			INTERFACE_DFU_CONTROL		/* DFU control Interface */
+			INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 			//
+			INTERFACE_count				/* Значение для configuration descriptor */
 		};
 	#endif /* WITHUSBDFU */
-
-	#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
-	#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
-	#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
-	#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
-	#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
-	#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
-	#define INTERFACE_MTP_count 1	/* количество интерфейсов в одном MTP */
 
 	enum
 	{
@@ -505,10 +492,20 @@ enum interfaces_tag
 		UNUSED2_cfgidx
 	};
 
-	#define INTERFACE_count 4 //(MAX(INTERFACE_RNDIS_count, INTERFACE_CDCECM_count))
+	//#define INTERFACE_count 4 //(MAX(INTERFACE_RNDIS_count, INTERFACE_CDCECM_count))
 
 #endif /* WITHPLAINDESCROPTOR */
 
+#define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
+#define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
+#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
+#define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
+#define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
+#define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */
+#define INTERFACE_MTP_count 1	/* количество интерфейсов в одном MTP */
+#define INTERFACE_MSC_count 1	/* количество интерфейсов в одном MSC */
+
+//#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
 enum
 {
@@ -546,7 +543,7 @@ enum
 	UACOUTALT_NONE = 0,
 	UACOUTALT_AUDIO48,
 
-	UACOUTALTALT_top
+	UACOUTALT_top
 };
 
 
