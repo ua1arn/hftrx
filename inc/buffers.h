@@ -529,68 +529,16 @@
 #endif /* ! defined (UACIN_RTS192_SAMPLEBYTES) */
 
 #define EP_align(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
-#define EPDSZMAX(a, b) ((a) > (b) ? (a) : (b))
-
-#define UAC_n1c1g1 (1)	// 1 байт в ячейку 1
-#define UAC_n2c1g1 (1)	// 2 байта в ячейку 1
-#define UAC_n3c1g1 (1)	// 3 байт в ячейку 1
-#define UAC_n4c1g1 (1)	// 4 байт в ячейку 1
-
-#define UAC_n1c2g1 (1)	// 2 байта в ячейку 1
-#define UAC_n2c2g1 (1)	// 4 байта в ячейку 1
-#define UAC_n3c2g1 (1)	// 6 байт в ячейку 1
-#define UAC_n4c2g1 (1)	// 8 байт в ячейку 1
-
-#define UAC_n1c2g2 (1)	// 2 байта в ячейку 2
-#define UAC_n2c2g2 (1)	// 4 байта в ячейку 2
-#define UAC_n3c2g2 (1)	// 6 байт в ячейку 2
-#define UAC_n4c2g2 (1)	// 8 байт в ячейку 2
-
-#define UAC_n1c2g4 (2)	// 2 байта в ячейку 4
-#define UAC_n2c2g4 (1)	// 4 байта в ячейку 4
-#define UAC_n3c2g4 (2)	// 6 байт в ячейку 4
-#define UAC_n4c2g4 (2)	// 8 байт в ячейку 4
-
-#define UAC_n1c2g8 (4)	// 2 байта в ячейку 8
-#define UAC_n2c2g8 (2)	// 4 байта в ячейку 8
-#define UAC_n3c2g8 (4)	// 6 байт в ячейку 8
-#define UAC_n4c2g8 (1)	// 8 байт в ячейку 8
-
-// ss - sample size, ch - количество каналов, ga - granulation for size
-// выдаёт грануляцию количества сэмплов
-#define UAC_ng(ss, ch, ga) (UAC_n ## ss ## c ## ch ## g ## ga)	// таблица
-
-
-
-// расчет количества байтов для endpoint
-// ga - требование выравнивания от DMA = EPALIGN
-// ss - требование выравнивания от канала связи
-
-// n - sample number, ng - sample number granulation, ss - sample size
-// выдаёт колчиество байтов
-#define UAC_DATASIZEgr(n, ng, ss) ( EP_align((n), (ng)) * (ss))
-
-// n - sample number, ss - sample size, ch - количество каналов
-// выдаёт колчиество байтов
-/* требования по выравниванию DMA про обмене с USB */
-#if 1
-	#define UAC_DATASIZE(n, ss, ch) ((n) * (ss) * (ch))
-#elif CPUSTYLE_ALLWINNER || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7
-	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 4), (ss) * (ch)))
-#elif CPUSTYLE_R7S721
-	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 8), (ss) * (ch)))
-#else
-	#define UAC_DATASIZE(n, ss, ch) (UAC_DATASIZEgr((n), UAC_ng(ss, ch, 4), (ss) * (ch)))
-#endif
+#define UAC_DATASIZE(n, ss, ch) ((n) * (ss) * (ch))
 
 // Получить размер для программирования FIFO endpoint - с учетом разбивки на микрофреймы
 // See also encodeMaxPacketSize function
 #define EPUF_Adj(n) ((n) <= 1024 ? (n) : (n) < 2048 ? ((n) + 1) / 2 : ((n) + 2) / 3)
 
-/* Размры буферов ендпоинт в байтах */
-// Добавление единицы для UACOUT требуется для нормальной работы UAC2 устройства.
+/* xxx_DMAC - Размры буферов ендпоинт в байтах */
+// Добавление единицы к размеру для UACOUT и UACIN требуется для нормальной работы UAC2 устройства.
+#define UACOUT_AUDIO48_DATASIZE		UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 0, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
 #define UACOUT_AUDIO48_DATASIZE_DMAC EPUF_Adj(UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 0, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48))
-#define UACOUT_AUDIO48_DATASIZE		UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACOUT_AUDIO48_SAMPLEBYTES, UACOUT_FMT_CHANNELS_AUDIO48)
 
 #define UACIN_AUDIO48_DATASIZE 		UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES, UACIN_FMT_CHANNELS_AUDIO48)
 #define UACIN_AUDIO48_DATASIZE_DMAC EPUF_Adj(UAC_DATASIZE(OUTSAMPLES_AUDIO48 + 1, UACIN_AUDIO48_SAMPLEBYTES, UACIN_FMT_CHANNELS_AUDIO48))

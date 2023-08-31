@@ -5208,6 +5208,8 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSBUACIN
+//	left = get_lout();
+//	right = get_rout();
 	savesampleuacin48(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
 #endif /* WITHUSBUACIN */
 }
