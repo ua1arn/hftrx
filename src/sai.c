@@ -3410,7 +3410,7 @@ enum
 #define DMAC_IRQ_EN_FLAG_VALUE_UACIN (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 #define DMAC_IRQ_EN_FLAG_VALUE_UACOUT (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
-#define DMAC_delay 0
+#define DMAC_delay 7
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -3497,7 +3497,7 @@ static uintptr_t DMA_suspend(unsigned dmach)
 	const uintptr_t v1 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	local_delay_us(10);
 	const uintptr_t v2 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	//ASSERT(v1 == v2);
+	ASSERT(v1 == v2);
 	return v2;
 //	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 //		;
