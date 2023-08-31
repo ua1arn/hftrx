@@ -3408,6 +3408,9 @@ enum
 
 #define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 #define DMAC_IRQ_EN_FLAG_VALUE_UACIN (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE_UACOUT (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+
+#define DMAC_delay 0x03
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -3490,19 +3493,19 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
+	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 	local_delay_us(10);
 	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-//	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 //	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 //		;
-	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+//	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
 //	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
 //	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
 }
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-//    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+    //DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
@@ -4577,7 +4580,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4642,7 +4645,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4710,7 +4713,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S2, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S2, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4777,7 +4780,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4848,7 +4851,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S2, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S2, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4913,7 +4916,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S2, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S2, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4983,7 +4986,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5050,7 +5053,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S2, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S2, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5133,39 +5136,46 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 	return addr;
 }
 
+static ALIGNX_BEGIN uint8_t out48 [3] [EP_align(UACOUT_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE)] ALIGNX_END;
+static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
+
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	//const uintptr_t descbase = DMA_suspend(dmach);
+	const uintptr_t descbase = (uintptr_t) uacout48_descr0;
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	//descraddr [ix] = dma_invalidateuacout48(allocate_dmabufferuacout48());
 	//dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	DMA_resume(dmach, descbase);
+	//DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
 	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 	dma_invalidateuacout48(addr);
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descbase;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descbase)
+		;
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 
 	//release_dmabufferuacout48(addr);
 }
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	static ALIGNX_BEGIN uint8_t out48 [3] [EP_align(UACOUT_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE)] ALIGNX_END;
 	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
 	const size_t dw = awusbadj(NBYTES);
-	static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned srcDRQ = DMAC_SrcReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5187,7 +5197,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	uacout48_descr0 [0] [2] = dma_invalidateuacout48((uintptr_t) out48 [0]);				// Destination Address
 	uacout48_descr0 [0] [3] = NBYTES;				// Byte Counter
 	uacout48_descr0 [0] [4] = parameterDMAC;			// Parameter
-	uacout48_descr0 [0] [5] = (uintptr_t) uacout48_descr0 [1];	// Link to next
+	uacout48_descr0 [0] [5] = 0xFFFFF800;//(uintptr_t) uacout48_descr0 [1];	// Link to next
 
 	uacout48_descr0 [1] [0] = configDMAC;			// Cofigurarion
 	uacout48_descr0 [1] [1] = portaddr;				// Source Address
@@ -5211,7 +5221,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE_UACOUT, DMAC_USB_RX_handler_UACOUT48);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5309,7 +5319,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5447,7 +5457,7 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5726,7 +5736,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_ADC_RXDATA;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5789,7 +5799,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_DAC_TXDATA;
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -5937,7 +5947,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S0, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -6002,7 +6012,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S0, ix);
 
-	const uint_fast32_t parameterDMAC = 0;
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
