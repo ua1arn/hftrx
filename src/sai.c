@@ -3410,7 +3410,7 @@ enum
 #define DMAC_IRQ_EN_FLAG_VALUE_UACIN (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 #define DMAC_IRQ_EN_FLAG_VALUE_UACOUT (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
-#define DMAC_delay 0x03
+#define DMAC_delay 0
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -3493,9 +3493,12 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
-	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+	const uintptr_t v1 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	local_delay_us(10);
-	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	const uintptr_t v2 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+	//ASSERT(v1 == v2);
+	return v2;
 //	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
 //		;
 //	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
@@ -3505,7 +3508,7 @@ static uintptr_t DMA_suspend(unsigned dmach)
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-    //DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
