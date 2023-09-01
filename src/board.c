@@ -10220,7 +10220,7 @@ uint32_t iq_cic_test_process(void)
 {
 	uint8_t data [5] = { 0 }, dummy [5] = { 0 };
 	prog_spi_exchange(targetfpga1, SPIC_SPEEDFAST, SPIC_MODE3, 50, dummy, data, ARRAY_SIZE(data));
-	return (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
+	return (data[1] << 24) | (data[2] << 16) | (data[3] << 8) | data[4];
 }
 
 void iq_cic_test(uint32_t val)

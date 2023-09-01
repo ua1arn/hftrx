@@ -15,7 +15,7 @@
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		63
-#define CALIBRATION_TX_SHIFT			23
+#define CALIBRATION_TX_SHIFT			28
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
