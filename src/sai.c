@@ -3410,7 +3410,7 @@ enum
 #define DMAC_IRQ_EN_FLAG_VALUE_UACIN (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 #define DMAC_IRQ_EN_FLAG_VALUE_UACOUT (0x01 << 2)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
-#define DMAC_delay 7
+#define DMAC_delay 0
 
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
@@ -3491,24 +3491,25 @@ static void DMAC_NS_IRQHandler(void)
 }
 
 
-static uintptr_t DMA_suspend(unsigned dmach)
+static uintptr_t DMA_suspend(unsigned dmach, unsigned NBYTES)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-	const uintptr_t v1 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	local_delay_us(10);
-	const uintptr_t v2 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-	ASSERT(v1 == v2);
-	return v2;
-//	while (DMAC->CH [dmach].DMAC_PAU_REGN == 0)
-//		;
-//	return DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-//	volatile uint32_t * const descraddr = (volatile uint32_t *) DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-//	return descraddr [DMAC_DESC_LINK];	/* для срабатывания по half packet - получаем неиспользуемый сейчас дескриптор */
+	// Ждём, пока канал приступит к следующему дескриптору
+	while (NBYTES == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
+		;
+
+	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+//	const uintptr_t v1 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+//	local_delay_us(10);
+//	const uintptr_t v2 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+//	ASSERT(v1 == v2);
+//	return v2;
+
+	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 }
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+    //DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
@@ -3516,15 +3517,15 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	//ASSERT(DMAC_Ch_Total <= 8);
 	dmac_handlers [dmach] = handler;
-#if CPUSTYLE_T507
+#if CPUSTYLE_A64
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
+
+	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+#elif CPUSTYLE_T507
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
 
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
-#elif CPUSTYLE_A64
-	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
-
-	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 #else /* CPUSTYLE_A64 */
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
@@ -3536,21 +3537,26 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 static void DMAC_clock_initialize(void)
 {
 #if CPUSTYLE_T507
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
 
 #elif CPUSTYLE_A64
 
 	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 6);	// DMA_GATING
 	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 6);	// DMA_RST
 
-#else /* CPUSTYLE_A64 */
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+	// T113-s3, F133-A
 	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);		// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Gating MBUS Clock For DMA
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
+
+#else
+	#error Unhandled CPUSTYLE_xxx
+
 #endif /* CPUSTYLE_A64 */
 
 	DMAC->DMAC_AUTO_GATE_REG |= (UINT32_C(1) << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
@@ -4447,7 +4453,10 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
+	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -4468,7 +4477,9 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	const size_t dw = sizeof (aubufv_t);
+	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
+	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -4485,7 +4496,9 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	const size_t dw = sizeof (IFDACvalue_t);
+	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
+	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -4507,7 +4520,9 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t descbase = DMA_suspend(dmach);
+	const size_t dw = sizeof (IFDACvalue_t);
+	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
+	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -5146,7 +5161,7 @@ static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	//const uintptr_t descbase = DMA_suspend(dmach);
+	//const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
 	const uintptr_t descbase = (uintptr_t) uacout48_descr0;
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
