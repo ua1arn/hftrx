@@ -3491,7 +3491,7 @@ static void DMAC_NS_IRQHandler(void)
 }
 
 
-static uintptr_t DMA_suspend(unsigned dmach, unsigned NBYTES)
+static uintptr_t DMA_suspend(unsigned dmach)
 {
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
@@ -4453,10 +4453,7 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const size_t dw = sizeof (aubufv_t);
-	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
-	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -4477,9 +4474,7 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };
-	const size_t dw = sizeof (aubufv_t);
-	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
-	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -4496,9 +4491,7 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const size_t dw = sizeof (IFDACvalue_t);
-	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -4520,9 +4513,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };
-	const size_t dw = sizeof (IFDACvalue_t);
-	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
+	const uintptr_t descbase = DMA_suspend(dmach);
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
@@ -5161,7 +5152,7 @@ static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	//const uintptr_t descbase = DMA_suspend(dmach, NBYTES);
+	//const uintptr_t descbase = DMA_suspend(dmach);
 	const uintptr_t descbase = (uintptr_t) uacout48_descr0;
 
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
