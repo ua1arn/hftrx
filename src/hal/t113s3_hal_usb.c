@@ -3053,6 +3053,8 @@ static uint32_t ep0_set_config_handler_dev(pusb_struct pusb)
 
 static unsigned gbaudrate = 115200;
 
+#if WITHUSBDFU
+
 // INTERFACE_DFU_CONTROL bRequest codes
 enum
 {
@@ -3065,17 +3067,20 @@ enum
   DFU_ABORT
 };
 
-static int dev_state = DFU_STATE_IDLE;
-static uint8_t dev_status [6];
+static int dfu_dev_state = DFU_STATE_IDLE;
+static uint8_t dfu_dev_status [6];
+
+#endif /* WITHUSBDFU */
 
 // После возврата отсюда ставим
 //	pusb->ep0_xfer_state = USB_EP0_DATA;
-static int32_t ep0_in_handler_dev(pusb_struct pusb)
+static int32_t ep0_in_handler(pusb_struct pusb)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
 	uint32_t temp = 0;
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 
+    pusb->ep0_xfer_residue = 0;
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	if ((ep0_setup->bmRequest & USB_REQ_TYPE_MASK)==USB_REQ_TYPE_STANDARD)
 	{
@@ -3218,7 +3223,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					{
 						// work ok
 						static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
-						//PRINTF("ep0_in_handler_dev: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
+						//PRINTF("ep0_in_handler: CDC_GET_LINE_CODING: ifc=%u, %02X\n", interfacev, LO_BYTE(ep0_setup->bRequest));
 						USBD_poke_u32(& buff [0], gbaudrate); // dwDTERate
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
@@ -3335,7 +3340,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 #if WITHUSBDFU
 			case INTERFACE_DFU_CONTROL:
 			{
-				PRINTF("ep0_in_handler_dev: INTERFACE_DFU_CONTROL: ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
+				PRINTF("ep0_in_handler: INTERFACE_DFU_CONTROL: ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
 				switch (ep0_setup->bRequest)
 				{
 				case DFU_DETACH:
@@ -3348,9 +3353,9 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					TP();
 					break;
 				case DFU_GETSTATUS:
-					dev_status[0] = 0;
-				    dev_status[4] = dev_state;
-					pusb->ep0_xfer_srcaddr = (uintptr_t) dev_status;
+					dfu_dev_status[0] = 0;
+				    dfu_dev_status[4] = dfu_dev_state;
+					pusb->ep0_xfer_srcaddr = (uintptr_t) dfu_dev_status;
 					pusb->ep0_xfer_residue = min(6, ep0_setup->wLength);
 					break;
 				case DFU_CLRSTATUS:
@@ -3364,7 +3369,7 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					break;
 				default:
 					pusb->ep0_xfer_residue = 0;
-					PRINTF("ep0_in_handler_dev: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					PRINTF("ep0_in_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 					break;
 				}
 			}
@@ -3400,8 +3405,8 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 				#define MTP_RESPONSE_SPECIFICATION_BY_GROUP_UNSUPPORTED             0xA807U
 				#define MTP_RESPONSE_OBJECT_PROP_NOT_SUPPORTED                      0xA80AU
 
-				//static int dev_state = DFU_STATE_IDLE;
-				static uint8_t dev_status [4];
+				//static int mtp_dev_state = DFU_STATE_IDLE;
+				static uint8_t mtp_dev_status [4];
 
 				switch (ep0_setup->bRequest)
 				{
@@ -3410,8 +3415,8 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 					PRINTF("ep0_in: INTERFACE_MTP_CONTROL MTP_REQ_RESET ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 					break;
 				case MTP_REQ_GET_DEVICE_STATUS:
-					USBD_poke_u32(dev_status, (MTP_RESPONSE_OK << 16) | 4);
-					pusb->ep0_xfer_srcaddr = (uintptr_t) dev_status;
+					USBD_poke_u32(mtp_dev_status, (MTP_RESPONSE_OK << 16) | 4);
+					pusb->ep0_xfer_srcaddr = (uintptr_t) mtp_dev_status;
 					pusb->ep0_xfer_residue = 4;//min(4, ep0_setup->wLength);
 					PRINTF("ep0_in: INTERFACE_MTP_CONTROL MTP_REQ_GET_DEVICE_STATUS ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
 					break;
@@ -3474,14 +3479,14 @@ static int32_t ep0_in_handler_dev(pusb_struct pusb)
 	return 0;
 }
 
-static int32_t ep0_out_handler_dev(pusb_struct pusb)
+static int32_t ep0_out_handler(pusb_struct pusb)
 {
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
 
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	switch (ep0_setup->bRequest)
 	{
-		case 0x01 :
+		case USB_REQ_CLEAR_FEATURE:
 			if (ep0_setup->wIndex&0x80)
 			{
 
@@ -3492,25 +3497,25 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 			}
 		  	break;
 
-		case 0x03 :
+		case USB_REQ_SET_FEATURE:
 			 switch (ep0_setup->wValue)
 			 {
 			 	case 0x0002:
-	          		switch (ep0_setup->wIndex)
+	          		switch (HI_BYTE(ep0_setup->wIndex))
 	          		{
-	           			case 0x0100:
+	           			case 0x01:
 	             			usb_set_test_mode(pusb, 0x02);
 	             			PRINTF("usb_device: Send Test J Now...\n");
 	            			break;
-						case 0x0200:
+						case 0x02:
 							usb_set_test_mode(pusb, 0x04);
 							PRINTF("usb_device: Send Test K Now...\n");
 							break;
-						case 0x0300:
+						case 0x03:
 							usb_set_test_mode(pusb, 0x01);
 							PRINTF("usb_device: Test SE0_NAK Now...\n");
 							break;
-						case 0x0400:
+						case 0x04:
 							usb_write_ep_fifo(pusb, 0, (uintptr_t)TestPkt, 53);
 							usb_set_ep0_csr(pusb, 0x02);
 							usb_set_test_mode(pusb, 0x08);
@@ -3533,20 +3538,24 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
 			}
 			break;
 
-		case 0x05 :
+		case USB_REQ_SET_ADDRESS:
 			usb_set_dev_addr(pusb, LO_BYTE(ep0_setup->wValue));
        		//PRINTF("usb_device: Set Address 0x%x\n", LO_BYTE(ep0_setup->wValue));
 			break;
-		case 0x07 :
+		case USB_REQ_SET_DESCRIPTOR:
        		PRINTF("usb_device: Set Descriptor\n");
       		break;
-    	case 0x09 :
+    	case USB_REQ_SET_CONFIGURATION:
        		//PRINTF("usb_device: Set Config\n");
      		ep0_set_config_handler_dev(pusb);
     		break;
-    	case 0x0B :
+    	case USB_REQ_SET_INTERFACE:
     		switch (interfacev)
     		{
+#if WITHUSBDFU
+       		case INTERFACE_DFU_CONTROL:
+       			break;
+#endif /* WITHUSBDFU */
 #if WITHUSBUACOUT
        		case INTERFACE_AUDIO_SPK:
     	       	//PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
@@ -3573,7 +3582,7 @@ static int32_t ep0_out_handler_dev(pusb_struct pusb)
     	case CDC_SET_LINE_CODING:
     		// work
     		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
-    		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler_dev
+    		pusb->ep0_xfer_state = USB_EP0_DATA;	// continue read parameters block in ep0_in_handler
 			pusb->ep0_xfer_residue = 0;
 	      	break;
     	case CDC_SET_CONTROL_LINE_STATE:
@@ -3636,14 +3645,13 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 	if (pusb->ep0_xfer_state == USB_EP0_SETUP)  //Setup or Control OUT Status Stage
 	{
-#if WITHWAWXXUSB
-		pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-#else /* WITHWAWXXUSB */
-		pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
-#endif /* WITHWAWXXUSB */
-
 		if (ep0_csr & (UINT32_C(1) << 0)) // RxPktRdy
 		{
+#if WITHWAWXXUSB
+			pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+#else /* WITHWAWXXUSB */
+			pSetupPKG ep0_setup = (pSetupPKG)(hpcd->Setup);
+#endif /* WITHWAWXXUSB */
 			uint32_t ep0_count = usb_get_ep0_count(pusb);
 
 			if (ep0_count == 8)
@@ -3657,7 +3665,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					usb_set_ep0_csr(pusb, 0x40);
 
 #if WITHWAWXXUSB
-					ep0_in_handler_dev(pusb);
+					ep0_in_handler(pusb);
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
@@ -3707,9 +3715,9 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 							TP();
 							break;
 						case DFU_GETSTATUS:
-							dev_status[0] = 0;
-						    dev_status[4] = dev_state;
-							pusb->ep0_xfer_srcaddr = (uintptr_t) dev_status;
+							dfu_dev_status[0] = 0;
+						    dfu_dev_status[4] = dfu_dev_state;
+							pusb->ep0_xfer_srcaddr = (uintptr_t) dfu_dev_status;
 							pusb->ep0_xfer_residue = min(6, ep0_setup->wLength);
 							break;
 						case DFU_CLRSTATUS:
@@ -3794,7 +3802,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else
 		{
 #if WITHWAWXXUSB
-			ep0_out_handler_dev(pusb);
+			ep0_out_handler(pusb);
 #else
 			HAL_PCD_SetupStageCallback(hpcd);
 #endif

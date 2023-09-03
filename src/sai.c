@@ -3498,7 +3498,6 @@ static uintptr_t DMA_suspend(unsigned dmach)
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;//dbg_putchar('a' + dmach);
 
-	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 //	const uintptr_t v1 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 //	local_delay_us(10);
 //	const uintptr_t v2 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
