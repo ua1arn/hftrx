@@ -1103,7 +1103,7 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 }
 
 
-static void usb_ep0_complete_send(pusb_struct pusb, uintptr_t addr, uint32_t len)
+static void usb_ep0_start_send(pusb_struct pusb, uintptr_t addr, uint32_t len)
 {
 	uint32_t is_last;
 	uint32_t byte_trans;
@@ -3072,9 +3072,10 @@ static uint8_t dfu_dev_status [6];
 
 #endif /* WITHUSBDFU */
 
+// в конц выполняем usb_ep0_start_send
 // После возврата отсюда ставим
 //	pusb->ep0_xfer_state = USB_EP0_DATA;
-static int32_t ep0_in_handler(pusb_struct pusb)
+static int32_t ep0_in_handler_all(pusb_struct pusb)
 {
 	static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;	// ответы
 	uint32_t temp = 0;
@@ -3474,15 +3475,14 @@ static int32_t ep0_in_handler(pusb_struct pusb)
 		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest & USB_REQ_TYPE_MASK);
 	}
 
-	usb_ep0_complete_send(pusb, pusb->ep0_xfer_srcaddr, pusb->ep0_xfer_residue);
+	usb_ep0_start_send(pusb, pusb->ep0_xfer_srcaddr, pusb->ep0_xfer_residue);
 
 	return 0;
 }
 
-static int32_t ep0_out_handler(pusb_struct pusb)
+static int32_t ep0_out_handler_all(pusb_struct pusb)
 {
 	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
-
 	const uint_fast8_t interfacev = LO_BYTE(ep0_setup->wIndex);
 	switch (ep0_setup->bRequest)
 	{
@@ -3600,6 +3600,59 @@ static int32_t ep0_out_handler(pusb_struct pusb)
 	return 0;
 }
 
+// Сперва проверяется RECIPNENT, потом TYPE
+static int32_t ep0_setup_out_handler(pusb_struct pusb)
+{
+	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+
+	switch (ep0_setup->bmRequest & 0x1F)
+	{
+	case USB_REQ_RECIPIENT_DEVICE:
+		ep0_out_handler_all(pusb);
+		break;
+	case USB_REQ_RECIPIENT_INTERFACE:
+		ep0_out_handler_all(pusb);
+		break;
+	case USB_REQ_RECIPIENT_ENDPOINT:
+		ep0_out_handler_all(pusb);
+		break;
+	default:
+		TP();
+		break;
+	}
+	return 0;
+}
+
+// Сперва проверяется RECIPNENT, потом TYPE
+static int32_t ep0_setup_in_handler(pusb_struct pusb)
+{
+	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+
+	switch (ep0_setup->bmRequest & 0x1F)
+	{
+	case USB_REQ_RECIPIENT_DEVICE:
+		ep0_in_handler_all(pusb);
+		break;
+	case USB_REQ_RECIPIENT_INTERFACE:
+		ep0_in_handler_all(pusb);
+		break;
+	case USB_REQ_RECIPIENT_ENDPOINT:
+		ep0_in_handler_all(pusb);
+		break;
+	default:
+		TP();
+		break;
+	}
+	return 0;
+}
+
+static int32_t ep0_setup_handler_all(pusb_struct pusb)
+{
+	pSetupPKG ep0_setup = (pSetupPKG)(pusb->buffer);
+
+	return 0;
+}
+
 static uint32_t usb_dev_sof_handler(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
@@ -3615,7 +3668,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 	uint32_t ep0_csr=0;
 	//uint32_t src_addr;
 
-	if (pusb->role != USB_ROLE_DEV) return 0;
 //	if (!pusb->ep0_flag) return 0;
 //	pusb->ep0_flag--;
 
@@ -3665,7 +3717,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 					usb_set_ep0_csr(pusb, 0x40);
 
 #if WITHWAWXXUSB
-					ep0_in_handler(pusb);
+					ep0_setup_in_handler(pusb);
 #else
 					HAL_PCD_SetupStageCallback(hpcd);
 #endif
@@ -3802,7 +3854,7 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 		else
 		{
 #if WITHWAWXXUSB
-			ep0_out_handler(pusb);
+			ep0_setup_out_handler(pusb);
 #else
 			HAL_PCD_SetupStageCallback(hpcd);
 #endif
@@ -3814,7 +3866,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 
 //static void usb_power_polling_dev(pusb_struct pusb)
 //{
-//	if (pusb->role != USB_ROLE_DEV) return;
 //  	if (pusb->connect) return;
 //
 //  	if (usb_get_vbus_level(pusb) == USB_VBUS_VBUSVLD)
@@ -3860,10 +3911,6 @@ static uint32_t usb_dev_ep0xfer_handler(PCD_HandleTypeDef *hpcd)
 static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 {
 	usb_struct * const pusb = & hpcd->awxx_usb;
-	if (pusb->role != USB_ROLE_DEV)
-	{
-		return 0;
-	}
 
 #if WITHUSBDMSC && WITHWAWXXUSB
 	usb_dev_bulk_xfer_msc(pusb);
@@ -3943,7 +3990,6 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 //	pusb->irq_no = GIC_SRC_USB0;
 //	pusb->drq_no = 0x04;
 
-	pusb->role = USB0_ROLE;  //USB_ROLE_HST; //USB_ROLE_UNK
 	pusb->speed = USB0_SPEED;
 
 #if WITHUSBDMSC && WITHWAWXXUSB
@@ -4064,8 +4110,6 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	usb_ep0_flush_fifo(pusb);
 
 	//PRINTF("USB Device!!\n");
-
-	pusb->role = USB_ROLE_DEV;
 
 	usb_clear_bus_interrupt_enable(pusb, 0xff);
 	usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
@@ -4907,7 +4951,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
-		usb_ep0_complete_send(pusb, (uintptr_t) pBuf, len);
+		usb_ep0_start_send(pusb, (uintptr_t) pBuf, len);
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
   }

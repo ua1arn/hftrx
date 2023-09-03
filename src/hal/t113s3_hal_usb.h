@@ -72,8 +72,6 @@ typedef struct {
 	//volatile uint32_t sof_count;
 
 	//USB user initial parameters
-	#define USB_ROLE_DEV		2
-	uint32_t role;
 	#define USB_SPEED_UNK		0
 	#define USB_SPEED_HS		1
 	#define USB_SPEED_FS		2
