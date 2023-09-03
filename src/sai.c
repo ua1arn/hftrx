@@ -4453,15 +4453,15 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const uintptr_t newaddr = dma_invalidate16rx(allocate_dmabuffer16rx());
-	const uintptr_t descbase = DMA_suspend(dmach);
-
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t newaddr = dma_invalidate16rx(allocate_dmabuffer16rx());
+
+	const uintptr_t descbase = DMA_suspend(dmach);
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = newaddr;
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-
 	DMA_resume(dmach, descbase);
+
 //	printhex32(addr, (void *) addr, DMABUFFSTEP16RX * sizeof (aubufv_t));
 //	for (;;)
 //		;
@@ -4475,14 +4475,13 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t newaddr = dma_flush16tx(getfilled_dmabuffer16txphones());
-	const uintptr_t descbase = DMA_suspend(dmach);
-
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t newaddr = dma_flush16tx(getfilled_dmabuffer16txphones());
+
+	const uintptr_t descbase = DMA_suspend(dmach);
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = newaddr;			// Source Address
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
@@ -4493,14 +4492,13 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_DST };
-	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());
-	const uintptr_t descbase = DMA_suspend(dmach);
-
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());
+
+	const uintptr_t descbase = DMA_suspend(dmach);
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = newaddr;
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что принятыми данными */
@@ -4516,14 +4514,13 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
 	enum { ix = DMAC_DESC_SRC };
-	const uintptr_t newaddr = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
-	const uintptr_t descbase = DMA_suspend(dmach);
-
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t newaddr = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+
+	const uintptr_t descbase = DMA_suspend(dmach);
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = newaddr;
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-
 	DMA_resume(dmach, descbase);
 
 	/* Работа с только что передаными данными */
