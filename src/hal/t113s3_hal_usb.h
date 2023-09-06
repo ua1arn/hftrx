@@ -952,56 +952,67 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 /* Common registers */
 
 //#define	MUSB2_REG_FADDR 0x0000		/* function address register */
-//#define	MUSB2_MASK_FADDR 0x7F
+//#define	USB_GCS_FADDR 0x7F
 
+// USB_GCS bits
 //#define	MUSB2_REG_POWER 0x0001		/* power register */
-#define	MUSB2_MASK_SUSPM_ENA 0x01
-#define	MUSB2_MASK_SUSPMODE 0x02
-#define	MUSB2_MASK_RESUME 0x04
-#define	MUSB2_MASK_RESET 0x08
-#define	MUSB2_MASK_HSMODE 0x10
-#define	MUSB2_MASK_HSENAB 0x20
-#define	MUSB2_MASK_SOFTC 0x40
-#define	MUSB2_MASK_ISOUPD 0x80
+#define	USB_GCS_SUSPM_ENA 	(UINT32_C(1) << 0)	// 0 SuspendMEn
+#define	USB_GCS_SUSPMODE 	(UINT32_C(1) << 1)	// 1 SuspendM
+#define	USB_GCS_RESUME 		(UINT32_C(1) << 2)	// 2 Resume
+#define	USB_GCS_RESET 		(UINT32_C(1) << 3)	// 3 Reset
+#define	USB_GCS_HSMODE 		(UINT32_C(1) << 4)	// 4 HSFLAG
+#define	USB_GCS_HSENAB 		(UINT32_C(1) << 5)	// 5 HSEN
+#define	USB_GCS_SOFTC 		(UINT32_C(1) << 6)	// 6 SoftConn
+#define	USB_GCS_ISOUPD 		(UINT32_C(1) << 7)	// 7 IsoUpdateEn
 
+// USB_TXCSR + 2
+//#define USB_CSRX_REQPKT            	(UINT32_C(1) << 21)
+#define USB_TXCSR_AUTOSET			(UINT32_C(1) << 15)	// 31 AutoSet
+#define USB_TXCSR_ISO				(UINT32_C(1) << 14)	// 30 ISO
+#define USB_TXCSR_TXFIFO			(UINT32_C(1) << 13)	// 29 Mode (0-TX, 0-RX)
+#define USB_TXCSR_DMAREQEN			(UINT32_C(1) << 12)	// 28 DMAReqEnab
+#define USB_TXCSR_DMAREQMODE		(UINT32_C(1) << 10)	// 26 DMAReqMode
 
-//#define USB_CSRX_REQPKT            	(0x1u << 21)
-#define USB_TXCSR_AUTOSET			(0x1u << 15)
-#define USB_TXCSR_ISO				(0x1u << 14)
-#define USB_TXCSR_TXFIFO			(0x1u << 13)
-#define USB_TXCSR_DMAREQEN			(0x1u << 12)
-#define USB_TXCSR_DMAREQMODE		(0x1u << 10)
-#define USB_TXCSR_RXSTALL			(0x1u << 5)
-#define USB_TXCSR_FLUSHFIFO			(0x1u << 3)
-#define USB_TXCSR_ERROR				(0x1u << 2)
-#define USB_TXCSR_FIFONOTEMP		(0x1u << 1)
-#define USB_TXCSR_TXPKTRDY			(0x1u << 0)
+#define USB_TXCSR_RXSTALL			(UINT32_C(1) << 5)		// 21 SendStall
+#define USB_TXCSR_FLUSHFIFO			(UINT32_C(1) << 3)		// 19 FlushFIFO
+#define USB_TXCSR_ERROR				(UINT32_C(1) << 2)		// 18 UnderRun
+#define USB_TXCSR_FIFONOTEMP		(UINT32_C(1) << 1)		// 17 FIFONotEmpty
+#define USB_TXCSR_TXPKTRDY			(UINT32_C(1) << 0)		// 16 TxPktRdy
 
-#define USB_BUSINT_VBUSERROR		(0x1u << 7)
-#define USB_BUSINT_SESSREQ			(0x1u << 6)
-#define USB_BUSINT_SESSEND			(0x1u << 5)
-#define USB_BUSINT_DISCONN			(0x1u << 5)
-#define USB_BUSINT_CONNECT			(0x1u << 4)
-#define USB_BUSINT_SOF				(0x1u << 3)
-#define USB_BUSINT_RESET			(0x1u << 2)
-#define USB_BUSINT_BABBLE			(0x1u << 2)
-#define USB_BUSINT_RESUME			(0x1u << 1)
-#define USB_BUSINT_SUSPEND			(0x1u << 0)
+#define USB_CSR0_FLUSHFIFO			(UINT32_C(1) << 8)		// 24 W FlushFIFO
+#define USB_CSR0_SERVICESETUPEND	(UINT32_C(1) << 7)		// 23 W ServicedSetupEnd
+#define USB_CSR0_SERVICERXPKTRDY	(UINT32_C(1) << 6)		// 22 W ServicedRxPktRdy
+#define USB_CSR0_SENDSTALL			(UINT32_C(1) << 5)		// 21 W SendStall
+#define USB_CSR0_SETUPEND			(UINT32_C(1) << 4)		// 20 R SetupEnd
+#define USB_CSR0_DATAEND			(UINT32_C(1) << 3)		// 19 W DataEnd
+#define USB_CSR0_SENTSTALL			(UINT32_C(1) << 2)		// 18 R/W SentStall
+#define USB_CSR0_TXPKTRDY			(UINT32_C(1) << 1)		// 17 R/W TxPktRdy
+#define USB_CSR0_RXPKTRDY			(UINT32_C(1) << 0)		// 16 R RxPktRdy
 
-#define USB_RXCSR_AUTOCLR			(0x1u << 15)
-#define USB_RXCSR_AUTOREQ			(0x1u << 14)  //for Host only
-#define USB_RXCSR_ISO				(0x1u << 14)  //for device only
-#define USB_RXCSR_DMAREQEN			(0x1u << 13)
-#define USB_RXCSR_PIDERROR			(0x1u << 12)  //for Host only
-#define USB_RXCSR_DMAREQMODE		(0x1u << 11)
-#define USB_RXCSR_RXSTALL			(0x1u << 6)   //for Host only
-#define USB_RXCSR_REQPKT			(0x1u << 5)   //for Host only
-#define USB_RXCSR_FLUSHFIFO			(0x1u << 4)
-#define USB_RXCSR_ERROR				(0x1u << 2)
-#define USB_RXCSR_FIFOFULL			(0x1u << 1)
-#define USB_RXCSR_RXPKTRDY			(0x1u << 0)
+// USB_RXCSR + 2
+#define USB_RXCSR_AUTOCLR			(UINT32_C(1) << 15)	// 31 AutoClear
+//#define USB_RXCSR_AUTOREQ			(UINT32_C(1) << 14)  	//for Host only
+#define USB_RXCSR_ISO				(UINT32_C(1) << 14)  	// 30 ISO
+#define USB_RXCSR_DMAREQEN			(UINT32_C(1) << 13)	// 29 DMAReqEnab
+//#define USB_RXCSR_PIDERROR			(UINT32_C(1) << 12)  	//for Host only
+#define USB_RXCSR_DMAREQMODE		(UINT32_C(1) << 11)	// 27 DMAReqMode
+//#define USB_RXCSR_RXSTALL			(UINT32_C(1) << 6)   	//for Host only
+//#define USB_RXCSR_REQPKT			(UINT32_C(1) << 5)   	//for Host only
+#define USB_RXCSR_FLUSHFIFO			(UINT32_C(1) << 4)		// 20 FlushFIFO
+#define USB_RXCSR_ERROR				(UINT32_C(1) << 2)		// 18 OverRun
+#define USB_RXCSR_FIFOFULL			(UINT32_C(1) << 1)		// 17 FIFOFull
+#define USB_RXCSR_RXPKTRDY			(UINT32_C(1) << 0)		// 16 RxPktRdy
 
-
+#define USB_BUSINT_VBUSERROR		(UINT32_C(1) << 7)
+#define USB_BUSINT_SESSREQ			(UINT32_C(1) << 6)
+#define USB_BUSINT_SESSEND			(UINT32_C(1) << 5)
+#define USB_BUSINT_DISCONN			(UINT32_C(1) << 5)
+#define USB_BUSINT_CONNECT			(UINT32_C(1) << 4)
+#define USB_BUSINT_SOF				(UINT32_C(1) << 3)
+#define USB_BUSINT_RESET			(UINT32_C(1) << 2)
+#define USB_BUSINT_BABBLE			(UINT32_C(1) << 2)
+#define USB_BUSINT_RESUME			(UINT32_C(1) << 1)
+#define USB_BUSINT_SUSPEND			(UINT32_C(1) << 0)
 
 #ifdef __cplusplus
 }
