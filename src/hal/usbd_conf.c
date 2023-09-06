@@ -420,8 +420,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYLE_T507
 
-	arm_hardware_disable_handler(USB20_OTG_OHCI_IRQn);
-	arm_hardware_disable_handler(USB20_OTG_EHCI_IRQn);
+	arm_hardware_disable_handler(USB20_HOST0_OHCI_IRQn);
+	arm_hardware_disable_handler(USB20_HOST0_EHCI_IRQn);
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
 	CCU->USB_BGR_REG |= (UINT32_C(1) << 8);	// USBOTG_GATING
@@ -432,9 +432,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
 	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 
-	//USBPHYC0->USB_CTRL = UINT32_C(0x4300CC01);	// мдадший бит не влияет
-
-
+	//USB20_OTG_PHYC->USB_CTRL = UINT32_C(0x4300CC01);	// младший бит не влияет... вообще ничего не влияет
+	//USBPHYC0->USB_CTRL =  UINT32_C(0x4300CC00);	// влияет!
 	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #elif CPUSTYLE_A64

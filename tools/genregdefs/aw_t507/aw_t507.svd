@@ -9348,7 +9348,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>USBPHYC0</name>
+  <name>USB20_OTG_PHYC</name>
   <description>HCI Contgroller and PHY Interface Description</description>
   <baseAddress>0x05100400</baseAddress>
   <registers>
@@ -9408,24 +9408,28 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="USBPHYC0">
+  <peripheral derivedFrom="USB20_OTG_PHYC">
+  <name>USBPHYC0</name>
+  <baseAddress>0x05101800</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="USB20_OTG_PHYC">
   <name>USBPHYC1</name>
   <baseAddress>0x05200800</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="USBPHYC0">
+  <peripheral derivedFrom="USB20_OTG_PHYC">
   <name>USBPHYC2</name>
   <baseAddress>0x05310800</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="USBPHYC0">
+  <peripheral derivedFrom="USB20_OTG_PHYC">
   <name>USBPHYC3</name>
   <baseAddress>0x05311800</baseAddress>
   </peripheral>
   <peripheral>
-  <name>USB20_OTG_EHCI</name>
+  <name>USB20_HOST0_EHCI</name>
   <description></description>
   <baseAddress>0x05101000</baseAddress>
   <interrupt>
-   <name>USB20_OTG_EHCI</name>
+   <name>USB20_HOST0_EHCI</name>
    <value>58</value>
    <description></description>
   </interrupt>
@@ -9546,11 +9550,11 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_EHCI">
+  <peripheral derivedFrom="USB20_HOST0_EHCI">
   <name>USB20_HOST1_EHCI</name>
   <baseAddress>0x05200000</baseAddress>
   <interrupt>
-   <name>USB20_OTG_EHCI</name>
+   <name>USB20_HOST0_EHCI</name>
    <value>58</value>
    <description></description>
   </interrupt>
@@ -9570,11 +9574,11 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_EHCI">
+  <peripheral derivedFrom="USB20_HOST0_EHCI">
   <name>USB20_HOST2_EHCI</name>
   <baseAddress>0x05310000</baseAddress>
   <interrupt>
-   <name>USB20_OTG_EHCI</name>
+   <name>USB20_HOST0_EHCI</name>
    <value>58</value>
    <description></description>
   </interrupt>
@@ -9594,11 +9598,11 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_EHCI">
+  <peripheral derivedFrom="USB20_HOST0_EHCI">
   <name>USB20_HOST3_EHCI</name>
   <baseAddress>0x05311000</baseAddress>
   <interrupt>
-   <name>USB20_OTG_EHCI</name>
+   <name>USB20_HOST0_EHCI</name>
    <value>58</value>
    <description></description>
   </interrupt>
@@ -9619,11 +9623,11 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>USB20_OTG_OHCI</name>
+  <name>USB20_HOST0_OHCI</name>
   <description></description>
   <baseAddress>0x05101400</baseAddress>
   <interrupt>
-   <name>USB20_OTG_OHCI</name>
+   <name>USB20_HOST0_OHCI</name>
    <value>59</value>
    <description></description>
   </interrupt>
@@ -9848,11 +9852,11 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_OHCI">
+  <peripheral derivedFrom="USB20_HOST0_OHCI">
   <name>USB20_HOST1_OHCI</name>
   <baseAddress>0x05200400</baseAddress>
   <interrupt>
-   <name>USB20_OTG_OHCI</name>
+   <name>USB20_HOST0_OHCI</name>
    <value>59</value>
    <description></description>
   </interrupt>
@@ -9872,11 +9876,11 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_OHCI">
+  <peripheral derivedFrom="USB20_HOST0_OHCI">
   <name>USB20_HOST2_OHCI</name>
   <baseAddress>0x05310400</baseAddress>
   <interrupt>
-   <name>USB20_OTG_OHCI</name>
+   <name>USB20_HOST0_OHCI</name>
    <value>59</value>
    <description></description>
   </interrupt>
@@ -9896,11 +9900,11 @@
    <description></description>
   </interrupt>
   </peripheral>
-  <peripheral derivedFrom="USB20_OTG_OHCI">
+  <peripheral derivedFrom="USB20_HOST0_OHCI">
   <name>USB20_HOST3_OHCI</name>
   <baseAddress>0x05311400</baseAddress>
   <interrupt>
-   <name>USB20_OTG_OHCI</name>
+   <name>USB20_HOST0_OHCI</name>
    <value>59</value>
    <description></description>
   </interrupt>
