@@ -4478,7 +4478,7 @@ static void spidf_iostart(
 		b [i ++] = 0x00;	// dummy byte
 
 
-	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE0);
+	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
 
 	// assert CS
 	prog_select(targetdataflash);
@@ -5940,15 +5940,17 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 {
 	const unsigned bw = 1u << buswID;
 	const unsigned ndmy = (((dw >> 5) & 0x07) * bw + ((dw >> 0) & 0x1F) * bw) / 8;
-	switch ((dw >> 8) & 0xFF)
+	const unsigned opcode = (dw >> 8) & 0xFF;
+	switch (opcode)
 	{
 	case 0x00:
 	case 0xFF:
 		//PRINTF("SFDP: %s not supported\n", title);
+		readxb [buswID] = 0x00;	// opcode
 		break;
 	default:
 		//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
-		readxb [buswID] = (dw >> 8) & 0xFF;	// opcode
+		readxb [buswID] = opcode;	// opcode
 		dmyb [buswID] = ndmy;	// dummy bytes
 		break;
 	}
