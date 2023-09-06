@@ -2347,6 +2347,12 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_T507
 
+	{
+		// PHY2 enable
+		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
+		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
+	}
+
 	if (0)
 	{
 
@@ -2420,7 +2426,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 18);	// USBOHCI2_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 18);	// USBOHCI2_RST
 
-		CCU->USB2_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY2_RST
+		//CCU->USB2_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY2_RST
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI2
