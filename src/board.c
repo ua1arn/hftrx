@@ -103,7 +103,7 @@ static uint_fast8_t 	glob_txcw;			// находимся в режиме пере
 static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилителя
 static uint_fast8_t 	glob_classamode;	/* использование режима клвсс А при передаче */
 
-static int_fast16_t		glob_adcoffset;		/* смещение для выходного сигнала с АЦП */
+//static int_fast16_t		glob_adcoffset;		/* смещение для выходного сигнала с АЦП */
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
@@ -5295,15 +5295,15 @@ board_set_adcfifo(uint_fast8_t v)
 }
 
 /* смещение для выходного сигнала с АЦП */
-void
-board_set_adcoffset(int_fast16_t n)
-{
-	if (glob_adcoffset != n)
-	{
-		glob_adcoffset = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_adcoffset(int_fast16_t n)
+//{
+//	if (glob_adcoffset != n)
+//	{
+//		glob_adcoffset = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
 
 void

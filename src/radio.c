@@ -3175,7 +3175,7 @@ struct nvmap
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
 	uint8_t gadcrand;	/* управление интерфейсом в LTC2208 */
 	uint8_t gadcfifo;
-	uint16_t gadcoffset;
+	//uint16_t gadcoffset;
 	uint8_t gdactest;
 	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
@@ -4568,12 +4568,12 @@ static int_fast32_t getlfmbias(void)
 #endif /* WITHLFM */
 
 static uint_fast16_t gzero;
-
-#define ADCOFFSETMID (512 / 2)
-static int_fast32_t getadcoffsbase(void)
-{
-	return - ADCOFFSETMID;
-}
+//
+//#define ADCOFFSETMID (512 / 2)
+//static int_fast32_t getadcoffsbase(void)
+//{
+//	return - ADCOFFSETMID;
+//}
 
 
 #if defined (REFERENCE_FREQ)
@@ -4698,7 +4698,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
 		static uint_fast8_t gadcfifo = 1;
-		static uint_fast16_t gadcoffset = ADCOFFSETMID;
+		//static uint_fast16_t gadcoffset = ADCOFFSETMID;
 		static uint_fast8_t gdactest;
 		#if WITHDACSTRAIGHT
 			static uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
@@ -11699,7 +11699,7 @@ updateboardZZZ(
 			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
 			board_set_adcfifo(gadcfifo);
-			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
+			//board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
