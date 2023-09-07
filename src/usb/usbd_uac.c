@@ -264,7 +264,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
 			return ulmin16(USBD_poke_u16(buff, VolRes), req->wLength);
 		default:
-			TP();	// here then connecting to Android
+			//TP();	// here then connecting to Android
 			return 0;
 		}
 	}
@@ -719,7 +719,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 				default:
-					TP();	// here then connecting to Android
+					//TP();	// here then connecting to Android
 					//PRINTF(PSTR("USBD_UAC_Setup: OUT: USB_REQ_TYPE_CLASS bRequest=%02X interfacev=%d, value=%d, wIndex=%04X, length=%d\n"), (unsigned) req->bRequest, (int) interfacev, (int) LO_BYTE(req->wValue), (unsigned) req->wIndex, (int) req->wLength);
 					break;
 
