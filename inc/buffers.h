@@ -582,6 +582,8 @@ void release_dmabuffer16rx(uintptr_t addr);
 uintptr_t processing_pipe32tx(uintptr_t addr);
 uintptr_t processing_pipe32rx(uintptr_t addr);
 
+uintptr_t allocate_dmabuffer192rts(void);
+
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 // WITHUSBUACIN2 specific
