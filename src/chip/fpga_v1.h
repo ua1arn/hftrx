@@ -27,6 +27,18 @@ board_fpga1_spi_send_frame(
 	prog_spi_io(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
 }
 
+// Read a frame of bytes via SPI
+static void
+board_fpga1_spi_exchange_frame(
+	spitarget_t target,
+	const uint8_t * tbuff,
+	uint8_t * rbuff,
+	unsigned int size
+	)
+{
+	prog_spi_exchange(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, tbuff, rbuff, size);
+}
+
 /* programming FPGA SPI registers */
 
 static void prog_fpga_valX(
@@ -160,6 +172,11 @@ static uint_fast32_t prog_fpga_getfqmeter(
 	uint_fast8_t v0, v1, v2, v3;
 	uint_fast8_t pps;
 
+#if USESPILOCK
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+#endif /* USESPILOCK */
+
 	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);	// В FPGA регистр тактируется не в прямую
 
 	v0 = spi_read_byte(target, 0x00);
@@ -170,12 +187,38 @@ static uint_fast32_t prog_fpga_getfqmeter(
 
 	spi_unselect(target);
 
+#if USESPILOCK
+	LowerIrql(oldIrql);
+#endif /* USESPILOCK */
+
 	(void) pps;
 	return 
 		(uint_fast32_t) v0 << 24 | 
 		(uint_fast32_t) v1 << 16 | 
 		(uint_fast32_t) v2 << 8 | 
 		(uint_fast32_t) v3 << 0 | 
+		0;
+}
+
+
+static uint_fast32_t prog_fpga_getfqmeterNew(
+	spitarget_t target		/* addressing to chip */
+	)
+{
+	static const uint8_t t [5] = { 0, 0, 0, 0, FPGA_DECODE_FQMETER, };
+	uint8_t r [5];
+	uint_fast8_t pps;
+
+	board_fpga1_spi_exchange_frame(target, t, r, sizeof t / sizeof t);
+
+	pps = r [4];	/* pps input state */
+
+	(void) pps;
+	return
+		(uint_fast32_t) r [0] << 24 |
+		(uint_fast32_t) r [1] << 16 |
+		(uint_fast32_t) r [2] << 8 |
+		(uint_fast32_t) r [3] << 0 |
 		0;
 }
 

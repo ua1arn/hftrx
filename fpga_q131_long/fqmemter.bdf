@@ -634,6 +634,62 @@ applicable agreement for further details.
 	)
 	(annotation_block (parameter)(rect 1280 96 1478 166))
 )
+(symbol
+	(rect 1072 -8 1104 8)
+	(text "VCC" (rect 7 0 27 10)(font "Arial" (font_size 6)))
+	(text "inst19" (rect 3 5 32 17)(font "Arial" )(invisible))
+	(port
+		(pt 16 16)
+		(output)
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 19 7 24 19)(font "Courier New" (bold))(invisible))
+		(line (pt 16 16)(pt 16 8))
+	)
+	(drawing
+		(line (pt 8 8)(pt 24 8))
+	)
+)
+(symbol
+	(rect 1072 56 1104 88)
+	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
+	(text "inst20" (rect 3 21 32 33)(font "Arial" )(invisible))
+	(port
+		(pt 16 0)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(line (pt 16 8)(pt 16 0))
+	)
+	(drawing
+		(line (pt 8 8)(pt 16 16))
+		(line (pt 16 16)(pt 24 8))
+		(line (pt 8 8)(pt 24 8))
+	)
+)
+(symbol
+	(rect 1152 -64 1200 -32)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst" (rect 3 21 20 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
 (connector
 	(pt 592 240)
 	(pt 800 240)
@@ -775,23 +831,8 @@ applicable agreement for further details.
 	(pt 416 432)
 )
 (connector
-	(pt 976 224)
-	(pt 992 224)
-	(bus)
-)
-(connector
 	(pt 1064 288)
 	(pt 1048 288)
-)
-(connector
-	(pt 1064 240)
-	(pt 992 240)
-	(bus)
-)
-(connector
-	(pt 992 240)
-	(pt 992 224)
-	(bus)
 )
 (connector
 	(pt 1048 288)
@@ -889,6 +930,67 @@ applicable agreement for further details.
 	(pt 576 432)
 	(pt 576 416)
 )
+(connector
+	(pt 1088 8)
+	(pt 1088 24)
+)
+(connector
+	(pt 1088 56)
+	(pt 1088 40)
+)
+(connector
+	(text "1" (rect 1098 8 1103 20)(font "Arial" ))
+	(pt 1088 24)
+	(pt 1120 24)
+)
+(connector
+	(text "0" (rect 1098 24 1103 36)(font "Arial" ))
+	(pt 1088 40)
+	(pt 1120 40)
+)
+(connector
+	(pt 976 224)
+	(pt 992 224)
+	(bus)
+)
+(connector
+	(pt 992 240)
+	(pt 992 224)
+	(bus)
+)
+(connector
+	(pt 992 240)
+	(pt 1032 240)
+	(bus)
+)
+(connector
+	(pt 1064 240)
+	(pt 1048 240)
+	(bus)
+)
+(connector
+	(pt 1048 240)
+	(pt 1048 176)
+	(bus)
+)
+(connector
+	(text "pattern[31..0]" (rect 1058 160 1124 172)(font "Arial" ))
+	(pt 1048 176)
+	(pt 1168 176)
+	(bus)
+)
+(connector
+	(text "pattern[31..0]" (rect 1202 -64 1268 -52)(font "Arial" ))
+	(pt 1200 -48)
+	(pt 1272 -48)
+	(bus)
+)
+(connector
+	(text "1,1,0,1,1,1,1,0,1,0,1,0,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1" (rect 866 -64 1164 -52)(font "Arial" ))
+	(pt 1152 -48)
+	(pt 856 -48)
+	(bus)
+)
 (junction (pt 592 128))
 (junction (pt 400 112))
 (junction (pt 400 176))
@@ -902,3 +1004,5 @@ applicable agreement for further details.
 (text "SPI MODE3:" (rect 120 -8 186 6)(font "Arial" (font_size 8)))
 (text "MISO data changed at faling edge." (rect 120 8 314 22)(font "Arial" (font_size 8)))
 (text "sampled at rising edge of SCLK" (rect 120 24 298 38)(font "Arial" (font_size 8)))
+(text "pattern[31..0]" (rect 1290 -48 1356 -36)(font "Arial" ))
+(text "DEADBEEF" (rect 912 -32 974 -18)(font "Arial" (font_size 8)))

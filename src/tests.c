@@ -5043,6 +5043,12 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0 && WITHFQMETER
+	{
+		const uint32_t v = board_get_fqmeter();
+		PRINTF("fq=%08" PRIX32 " (%" PRIu32 ")\n", v, v);
+	}
+#endif
 #if 0
 	{
 		// Display SOF frequency on USB device
