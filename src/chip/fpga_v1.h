@@ -170,21 +170,15 @@ static uint_fast32_t prog_fpga_getfqmeter(
 	)
 {
 	static const uint8_t t [5] = { 0, 0, 0, 0, FPGA_DECODE_FQMETER, };
-	uint8_t r [5];
+	uint8_t r [ARRAY_SIZE(t)];
 	uint_fast8_t pps;
 
-	ASSERT(ARRAY_SIZE(r) == ARRAY_SIZE(t));
 	board_fpga1_spi_exchange_frame(target, t, r, ARRAY_SIZE(r));
 
 	pps = r [4];	/* PPS input state */
 
 	(void) pps;
-	return
-		(uint_fast32_t) r [0] << 24 |
-		(uint_fast32_t) r [1] << 16 |
-		(uint_fast32_t) r [2] << 8 |
-		(uint_fast32_t) r [3] << 0 |
-		0;
+	return USBD_peek_u32_BE(r);
 }
 
 #endif /* WITHFQMETER */
