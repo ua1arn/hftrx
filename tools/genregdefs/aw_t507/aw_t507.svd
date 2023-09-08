@@ -9355,7 +9355,7 @@
    <register>
     <name>USB_CTRL</name>
     <displayName>USB_CTRL</displayName>
-    <description>HCI Interface Register </description>
+    <description>HCI Interface Register - REG_ISCR 0x00</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9364,7 +9364,7 @@
    <register>
     <name>PHY_CTRL</name>
     <displayName>PHY_CTRL</displayName>
-    <description>PHY Control Register</description>
+    <description>PHY Control Register </description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9373,7 +9373,7 @@
    <register>
     <name>HSIC_PHY_tune1</name>
     <displayName>HSIC_PHY_tune1</displayName>
-    <description>HSIC PHY Tune1 Register</description>
+    <description>HSIC PHY Tune1 Register </description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9382,7 +9382,7 @@
    <register>
     <name>HSIC_PHY_tune2</name>
     <displayName>HSIC_PHY_tune2</displayName>
-    <description>HSIC PHY Tune2 Register</description>
+    <description>HSIC PHY Tune2 Register - REG_PHY_OTGCTL 0x20</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9391,7 +9391,7 @@
    <register>
     <name>HSIC_PHY_tune3</name>
     <displayName>HSIC_PHY_tune3</displayName>
-    <description>HSIC PHY Tune3 Register</description>
+    <description>HSIC PHY Tune3 Register </description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -9400,7 +9400,7 @@
    <register>
     <name>USB_SPDCR</name>
     <displayName>USB_SPDCR</displayName>
-    <description>HCI SIE Port Disable Control Register</description>
+    <description>HCI SIE Port Disable Control Register </description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

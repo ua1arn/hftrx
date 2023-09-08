@@ -1,2 +1,7 @@
 #type; GPU; Mali G31 MP2
 #base; GPU 0x01800000
+
+#irq; GPU_EVENT 126; GPU_EVENT interrupt
+#irq; GPU_JOB 127; GPU_JOB interrupt
+#irq; GPU_MMU 128; GPU_MMU interrupt
+#irq; GPU 129; GPU interrupt

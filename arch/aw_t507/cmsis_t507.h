@@ -74,6 +74,10 @@ typedef enum IRQn
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
+    GPU_EVENT_IRQn = 126,                             /*!< GPU GPU_EVENT interrupt */
+    GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
+    GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
+    GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
     C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
@@ -1687,14 +1691,14 @@ typedef struct USBOTG_Type
 /*!< USBPHYC HCI Contgroller and PHY Interface Description */
 typedef struct USBPHYC_Type
 {
-    volatile uint32_t USB_CTRL;                       /*!< Offset 0x000 HCI Interface Register  */
+    volatile uint32_t USB_CTRL;                       /*!< Offset 0x000 HCI Interface Register - REG_ISCR 0x00 */
              uint32_t reserved_0x004 [0x0003];
-    volatile uint32_t PHY_CTRL;                       /*!< Offset 0x010 PHY Control Register */
+    volatile uint32_t PHY_CTRL;                       /*!< Offset 0x010 PHY Control Register  */
              uint32_t reserved_0x014 [0x0002];
-    volatile uint32_t HSIC_PHY_tune1;                 /*!< Offset 0x01C HSIC PHY Tune1 Register */
-    volatile uint32_t HSIC_PHY_tune2;                 /*!< Offset 0x020 HSIC PHY Tune2 Register */
-    volatile uint32_t HSIC_PHY_tune3;                 /*!< Offset 0x024 HSIC PHY Tune3 Register */
-    volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register */
+    volatile uint32_t HSIC_PHY_tune1;                 /*!< Offset 0x01C HSIC PHY Tune1 Register  */
+    volatile uint32_t HSIC_PHY_tune2;                 /*!< Offset 0x020 HSIC PHY Tune2 Register - REG_PHY_OTGCTL 0x20 */
+    volatile uint32_t HSIC_PHY_tune3;                 /*!< Offset 0x024 HSIC PHY Tune3 Register  */
+    volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register  */
 } USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief USB_EHCI_Capability
