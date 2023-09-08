@@ -44,6 +44,7 @@ typedef enum IRQn
     TWI4_IRQn = 42,                                   /*!< TWI  */
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface */
+    THS_IRQn = 51,                                    /*!< THS THS interrupt */
     AHUB_IRQn = 56,                                   /*!< AHUB AudioHub interrupt */
     USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller */
     USB20_HOST0_EHCI_IRQn = 58,                       /*!< USB_EHCI_Capability  */
@@ -187,6 +188,7 @@ typedef enum IRQn
 #define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
+#define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
 #define AHUB_BASE ((uintptr_t) 0x05097000)            /*!< AHUB Audio HUB Base */
 #define I2S0_BASE ((uintptr_t) 0x05097200)            /*!< I2S_PCM  Base */
 #define I2S1_BASE ((uintptr_t) 0x05097300)            /*!< I2S_PCM  Base */
@@ -1481,6 +1483,42 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_TRI_FIFO_BIST_REG;          /*!< Offset 0xFF8 LCD Trigger FIFO Bist Register */
 } TCON_LCD_TypeDef; /* size of structure = 0xFFC */
 /*
+ * @brief THS
+ */
+/*!< THS Thermal Sensor */
+typedef struct THS_Type
+{
+    volatile uint32_t THS_CTRL;                       /*!< Offset 0x000 THS Control Register */
+    volatile uint32_t THS_EN;                         /*!< Offset 0x004 THS Enable Register */
+    volatile uint32_t THS_PER;                        /*!< Offset 0x008 THS Period Control Register */
+             uint32_t reserved_0x00C;
+    volatile uint32_t THS_DATA_INTC;                  /*!< Offset 0x010 THS Data Interrupt Control Register */
+    volatile uint32_t THS_SHUT_INTC;                  /*!< Offset 0x014 THS Shut Interrupt Control Register */
+    volatile uint32_t THS_ALARM_INTC;                 /*!< Offset 0x018 THS Alarm Interrupt Control Register */
+             uint32_t reserved_0x01C;
+    volatile uint32_t THS_DATA_INTS;                  /*!< Offset 0x020 THS Data Interrupt Status Register */
+    volatile uint32_t THS_SHUT_INTS;                  /*!< Offset 0x024 THS Shut Interrupt Status Register */
+    volatile uint32_t THS_ALARMO_INTS;                /*!< Offset 0x028 THS Alarm off Interrupt Status Register */
+    volatile uint32_t THS_ALARM_INTS;                 /*!< Offset 0x02C THS Alarm Interrupt Status Register */
+    volatile uint32_t THS_FILTER;                     /*!< Offset 0x030 THS Median Filter Control Register */
+             uint32_t reserved_0x034 [0x0003];
+    volatile uint32_t THS0_ALARM_CTRL;                /*!< Offset 0x040 THS0 Alarm Threshold Control Register */
+    volatile uint32_t THS1_ALARM_CTRL;                /*!< Offset 0x044 THS1 Alarm Threshold Control Register */
+    volatile uint32_t THS2_ALARM_CTRL;                /*!< Offset 0x048 THS2 Alarm Threshold Control Register */
+    volatile uint32_t THS3_ALARM_CTRL;                /*!< Offset 0x04C THS3 Alarm Threshold Control Register */
+             uint32_t reserved_0x050 [0x000C];
+    volatile uint32_t THS01_SHUTDOWN_CTRL;            /*!< Offset 0x080 THS0 & THS1 Shutdown Threshold Control Register */
+    volatile uint32_t THS23_SHUTDOWN_CTRL;            /*!< Offset 0x084 THS2 & THS3 Shutdown Threshold Control Register */
+             uint32_t reserved_0x088 [0x0006];
+    volatile uint32_t THS01_CDATA;                    /*!< Offset 0x0A0 THS0 & THS1 Calibration Data */
+    volatile uint32_t THS23_CDATA;                    /*!< Offset 0x0A4 THS2 & THS3 Calibration Data */
+             uint32_t reserved_0x0A8 [0x0006];
+    volatile uint32_t THS0_DATA;                      /*!< Offset 0x0C0 THS0 Data Register */
+    volatile uint32_t THS1_DATA;                      /*!< Offset 0x0C4 THS1 Data Register */
+    volatile uint32_t THS2_DATA;                      /*!< Offset 0x0C8 THS2 Data Register */
+    volatile uint32_t THS3_DATA;                      /*!< Offset 0x0CC THS3 Data Register */
+} THS_TypeDef; /* size of structure = 0x0D0 */
+/*
  * @brief TIMER
  */
 /*!< TIMER  */
@@ -1815,6 +1853,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define AHUB ((AHUB_TypeDef *) AHUB_BASE)             /*!< AHUB Audio HUB register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
