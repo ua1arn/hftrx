@@ -173,9 +173,10 @@ static uint_fast32_t prog_fpga_getfqmeter(
 	uint8_t r [5];
 	uint_fast8_t pps;
 
-	board_fpga1_spi_exchange_frame(target, t, r, sizeof t / sizeof t [0]);
+	ASSERT(ARRAY_SIZE(r) == ARRAY_SIZE(t));
+	board_fpga1_spi_exchange_frame(target, t, r, ARRAY_SIZE(r));
 
-	pps = r [4];	/* pps input state */
+	pps = r [4];	/* PPS input state */
 
 	(void) pps;
 	return
