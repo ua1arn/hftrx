@@ -2351,6 +2351,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		// PHY2 enable
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
+		SetupUsbPhyc(USBPHYC2);
 	}
 
 	if (0)
