@@ -8053,114 +8053,62 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>THS0_ALARM_CTRL</name>
-    <displayName>THS0_ALARM_CTRL</displayName>
-    <description>THS0 Alarm Threshold Control Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS1_ALARM_CTRL</name>
-    <displayName>THS1_ALARM_CTRL</displayName>
-    <description>THS1 Alarm Threshold Control Register</description>
-    <addressOffset>0x044</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS2_ALARM_CTRL</name>
-    <displayName>THS2_ALARM_CTRL</displayName>
-    <description>THS2 Alarm Threshold Control Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS3_ALARM_CTRL</name>
-    <displayName>THS3_ALARM_CTRL</displayName>
-    <description>THS3 Alarm Threshold Control Register</description>
-    <addressOffset>0x04C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS01_SHUTDOWN_CTRL</name>
-    <displayName>THS01_SHUTDOWN_CTRL</displayName>
-    <description>THS0 &amp; THS1 Shutdown Threshold Control Register</description>
-    <addressOffset>0x080</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS23_SHUTDOWN_CTRL</name>
-    <displayName>THS23_SHUTDOWN_CTRL</displayName>
-    <description>THS2 &amp; THS3 Shutdown Threshold Control Register</description>
-    <addressOffset>0x084</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS01_CDATA</name>
-    <displayName>THS01_CDATA</displayName>
-    <description>THS0 &amp; THS1 Calibration Data</description>
-    <addressOffset>0x0A0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS23_CDATA</name>
-    <displayName>THS23_CDATA</displayName>
-    <description>THS2 &amp; THS3 Calibration Data</description>
-    <addressOffset>0x0A4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS0_DATA</name>
-    <displayName>THS0_DATA</displayName>
-    <description>THS0 Data Register</description>
-    <addressOffset>0x0C0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS1_DATA</name>
-    <displayName>THS1_DATA</displayName>
-    <description>THS1 Data Register</description>
-    <addressOffset>0x0C4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS2_DATA</name>
-    <displayName>THS2_DATA</displayName>
-    <description>THS2 Data Register</description>
-    <addressOffset>0x0C8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>THS3_DATA</name>
-    <displayName>THS3_DATA</displayName>
-    <description>THS3 Data Register</description>
-    <addressOffset>0x0CC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <register>
+     <name>THSx_ALARM_CTRL</name>
+     <displayName>THSx_ALARM_CTRL</displayName>
+     <description>THS0..THS3 Alarm Threshold Control Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000080</addressOffset>
+    <register>
+     <name>THSx_SHUTDOWN_CTRL</name>
+     <displayName>THSx_SHUTDOWN_CTRL</displayName>
+     <description>THS0 &amp; THS1, HS2 &amp; THS3  Shutdown Threshold Control Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x000000A0</addressOffset>
+    <register>
+     <name>THSx_CDATA</name>
+     <displayName>THSx_CDATA</displayName>
+     <description>THS0 &amp; THS1, THS2 &amp; THS3  Calibration Data</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000000C0</addressOffset>
+    <register>
+     <name>THSx_DATA</name>
+     <displayName>THSx_DATA</displayName>
+     <description>THS0..THS3 Data Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>

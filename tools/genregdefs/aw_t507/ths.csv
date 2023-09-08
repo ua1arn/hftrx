@@ -13,15 +13,7 @@
 #regdef; THS_ALARMO_INTS; 0x0028; THS Alarm off Interrupt Status Register
 #regdef; THS_ALARM_INTS; 0x002C; THS Alarm Interrupt Status Register
 #regdef; THS_FILTER; 0x0030; THS Median Filter Control Register
-#regdef; THS0_ALARM_CTRL; 0x0040; THS0 Alarm Threshold Control Register
-#regdef; THS1_ALARM_CTRL; 0x0044; THS1 Alarm Threshold Control Register
-#regdef; THS2_ALARM_CTRL; 0x0048; THS2 Alarm Threshold Control Register
-#regdef; THS3_ALARM_CTRL; 0x004C; THS3 Alarm Threshold Control Register
-#regdef; THS01_SHUTDOWN_CTRL; 0x0080; THS0 & THS1 Shutdown Threshold Control Register
-#regdef; THS23_SHUTDOWN_CTRL; 0x0084; THS2 & THS3 Shutdown Threshold Control Register
-#regdef; THS01_CDATA; 0x00A0; THS0 & THS1 Calibration Data
-#regdef; THS23_CDATA; 0x00A4; THS2 & THS3 Calibration Data
-#regdef; THS0_DATA; 0x00C0; THS0 Data Register
-#regdef; THS1_DATA; 0x00C4; THS1 Data Register
-#regdef; THS2_DATA; 0x00C8; THS2 Data Register
-#regdef; THS3_DATA; 0x00CC; THS3 Data Register
+#regdef; THSx_ALARM_CTRL; 0x0040 4; THS0..THS3 Alarm Threshold Control Register
+#regdef; THSx_SHUTDOWN_CTRL; 0x0080 2; THS0 & THS1, HS2 & THS3  Shutdown Threshold Control Register
+#regdef; THSx_CDATA; 0x00A0 2; THS0 & THS1, THS2 & THS3  Calibration Data
+#regdef; THSx_DATA; 0x00C0 4; THS0..THS3 Data Register

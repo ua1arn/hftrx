@@ -1502,21 +1502,13 @@ typedef struct THS_Type
     volatile uint32_t THS_ALARM_INTS;                 /*!< Offset 0x02C THS Alarm Interrupt Status Register */
     volatile uint32_t THS_FILTER;                     /*!< Offset 0x030 THS Median Filter Control Register */
              uint32_t reserved_0x034 [0x0003];
-    volatile uint32_t THS0_ALARM_CTRL;                /*!< Offset 0x040 THS0 Alarm Threshold Control Register */
-    volatile uint32_t THS1_ALARM_CTRL;                /*!< Offset 0x044 THS1 Alarm Threshold Control Register */
-    volatile uint32_t THS2_ALARM_CTRL;                /*!< Offset 0x048 THS2 Alarm Threshold Control Register */
-    volatile uint32_t THS3_ALARM_CTRL;                /*!< Offset 0x04C THS3 Alarm Threshold Control Register */
+    volatile uint32_t THSx_ALARM_CTRL [0x004];        /*!< Offset 0x040 THS0..THS3 Alarm Threshold Control Register */
              uint32_t reserved_0x050 [0x000C];
-    volatile uint32_t THS01_SHUTDOWN_CTRL;            /*!< Offset 0x080 THS0 & THS1 Shutdown Threshold Control Register */
-    volatile uint32_t THS23_SHUTDOWN_CTRL;            /*!< Offset 0x084 THS2 & THS3 Shutdown Threshold Control Register */
+    volatile uint32_t THSx_SHUTDOWN_CTRL [0x002];     /*!< Offset 0x080 THS0 & THS1, HS2 & THS3  Shutdown Threshold Control Register */
              uint32_t reserved_0x088 [0x0006];
-    volatile uint32_t THS01_CDATA;                    /*!< Offset 0x0A0 THS0 & THS1 Calibration Data */
-    volatile uint32_t THS23_CDATA;                    /*!< Offset 0x0A4 THS2 & THS3 Calibration Data */
+    volatile uint32_t THSx_CDATA [0x002];             /*!< Offset 0x0A0 THS0 & THS1, THS2 & THS3  Calibration Data */
              uint32_t reserved_0x0A8 [0x0006];
-    volatile uint32_t THS0_DATA;                      /*!< Offset 0x0C0 THS0 Data Register */
-    volatile uint32_t THS1_DATA;                      /*!< Offset 0x0C4 THS1 Data Register */
-    volatile uint32_t THS2_DATA;                      /*!< Offset 0x0C8 THS2 Data Register */
-    volatile uint32_t THS3_DATA;                      /*!< Offset 0x0CC THS3 Data Register */
+    volatile uint32_t THSx_DATA [0x004];              /*!< Offset 0x0C0 THS0..THS3 Data Register */
 } THS_TypeDef; /* size of structure = 0x0D0 */
 /*
  * @brief TIMER
