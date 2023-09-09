@@ -6874,7 +6874,7 @@ void hightests(void)
 
 		static const uint8_t dsp_code [] =
 		{
-		#include "../build/HiFi4/t0.txt"
+		#include "../build/HiFi4/app/main.txt"
 		};
 		//	SRAM A1			0x00020000---0x00027FFF		32 KB
 
@@ -6929,7 +6929,8 @@ void hightests(void)
 		SYS_CFG->DSP_BOOT_RAMMAP_REG = 0x00;	/* DSP BOOT SRAM REMAP ENABLE 0: DSP 128K Local SRAM Remap for DSP_SYS */
 
 		// DSP Start address change
-		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 if non-cached need
+		DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x00028800; //0x400000 if non-cached need
+		//DSP0_CFG->DSP_ALT_RESET_VEC_REG = 0x20028000; //0x400000 if non-cached need
 		DSP0_CFG->DSP_CTRL_REG0 |= (UINT32_C(1) << 1);	// BIT_START_VEC_SEL
 		//PRINTF("DSP_ALT_RESET_VEC_REG=%08" PRIX32 "\n", DSP0_CFG->DSP_ALT_RESET_VEC_REG);
 
