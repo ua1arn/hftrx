@@ -1,3 +1,5 @@
+
+#include "../../../arch/t113s3/allwnr_t113s3.h"
 //-------------------------------------------------------------------------------------------------
 
 #include <stdio.h>
@@ -5,69 +7,51 @@
 #include <string.h>
 #include <alloca.h>
 
-//-------------------------------------------------------------------------------------------------
 
-#define IO volatile
+void dbg_puts(const char * s);
+void dbg_putchar(uint_fast8_t c);
 
-#define u8 unsigned char
-#define u16 unsigned short int
-#define u32 unsigned int
-#define u64 unsigned long long
-
-//-------------------------------------------------------------------------------------------------
-
-#define TIMER_BASE_ADDR 0x02050000
-
-#define AVS_CNT0_REG (*(IO u32*)(TIMER_BASE_ADDR+0xC4)) /* AVS Counter 0 Register */
-
-//-------------------------------------------------------------------------------------------------
-
-#define UART_NUMBER 0 /* UART Number: 0..5 */
-
-#define UART_BASE (0x02500000+(0x400*UART_NUMBER))
-
-#define UART_THR  *(IO u32*)(UART_BASE+0x00) /* transmit holding register   */
-#define UART_LSR  *(IO u32*)(UART_BASE+0x14) /* line status register        */
-
-//-------------------------------------------------------------------------------------------------
-
-void UART_putc(u8 c)
+void UART_putc(uint_fast8_t c)
 {
-// if(c=='\n')c='\r';
+	if (c == '\n')
+	{
+		UART_putc('\r');
 
- if(c=='\n')UART_putc('\r'); //recursion call test
+	}
 
- while(!(UART_LSR&(1<<6)));
- UART_THR=c;
+	while ((UART0->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
+		;
+	UART0->UART_RBR_THR_DLL = c;
 }
+
 
 void UART_puts(const char *s)
 {
  while(*s)UART_putc(*s++);
 }
 
-void DelayUS(u32 us)
+void DelayUS(unsigned us)
 {
 	while (us --)
 		;//_NOP();
 	return;
- u32 t0=AVS_CNT0_REG;
- while(AVS_CNT0_REG-t0<(24UL/4)*us);
+// unsigned t0=AVS_CNT0_REG;
+// while(AVS_CNT0_REG-t0<(24UL/4)*us);
 }
 
-void DelayMS(u32 ms)
+void DelayMS(unsigned ms)
 {
  DelayUS(ms*1000);
 }
 
-void delay(IO u64 d)
+void delay(volatile uint64_t d)
 {
  while(d--);
 }
 
 const char HEX[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-char *puthex(char *a,u32 h)
+char *puthex(char *a,unsigned h)
 {
  *a++='0';
  *a++='x';
@@ -148,10 +132,10 @@ int main(void)
 
  UART_puts(puthex(a,0x12345678)); //must be correct text
 
- UART_puts(puthex(a,(u32)&__stack));
+ UART_puts(puthex(a,(unsigned)&__stack));
 
- UART_puts(puthex(a,(u32)&__heap_start));
- UART_puts(puthex(a,(u32)&__heap_end));
+ UART_puts(puthex(a,(unsigned)&__heap_start));
+ UART_puts(puthex(a,(unsigned)&__heap_end));
 
 #if 1
 
@@ -164,7 +148,7 @@ int main(void)
  strcpy(buf,"malloc String\n");
  UART_puts(buf);
 
- sprintf(buf,"Stack: 0x%X, Heap Start: 0x%X, Heap End: 0x%X",(u32)&__stack,(u32)&__heap_start,(u32)&__heap_end);
+ sprintf(buf,"Stack: 0x%X, Heap Start: 0x%X, Heap End: 0x%X",(unsigned)&__stack,(unsigned)&__heap_start,(unsigned)&__heap_end);
  UART_puts(buf);
 
  free(buf);

@@ -7,7 +7,7 @@ del *.txt
 
 pause
 
-set CARGS= -Ofast -std=c99 -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-variable
+set CARGS= -Ofast -std=c99 -ffunction-sections -fdata-sections -Wall -Wextra -Wno-unused-variable -I "../../../CMSIS_5/CMSIS/Core_A/Include" 
 
 xtensa-hifi4-elf-gcc -x assembler-with-cpp %CARGS% -c startup.S
 
