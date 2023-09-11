@@ -1,11 +1,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 extern int main(void);
-
-extern void *_sidata,*_sdata,*_edata;
-extern void *_sbss,*_ebss;
 
 /*
 extern void (*__preinit_array_start []) (void) __attribute__((weak));
@@ -29,15 +27,13 @@ static void __libc_init_array(void)
 }
 */
 
+extern char _sidata,_sdata,_edata; //set by linker
+extern char _sbss,_ebss;           //set by linker
+
 void libc_init(void)
 {
- void **pSource,**pDest;
-
- for(pSource=&_sidata,pDest=&_sdata;pDest!=&_edata;pSource++,pDest++)*pDest=*pSource; //copy LMA to VMA
- for(pDest=&_sbss;pDest!=&_ebss;pDest++)*pDest=0;                                     //clear BSS
-
-// __libc_init_array(); //constructor init (C++)
-
+ memcpy(&_sdata,&_sidata,&_edata-&_sdata); //copy LMA to VMA
+ memset(&_sbss,0,&_ebss-&_sbss);           //clear BSS
  main();
 }
 
@@ -51,7 +47,8 @@ extern char __heap_end;   //set by linker
 
 struct _reent *_EXFUN(__getreent,(void))
 {
- return (struct _reent*)0;
+	static struct _reent REENT; //memory space for srand() & rand()
+	return &REENT;
 }
 
 void *_sbrk(int incr)
