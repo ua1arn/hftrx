@@ -10,12 +10,13 @@
 // v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 // HelperBoard T507 Core Board
 
-#ifndef ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED
+#define ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
@@ -30,18 +31,16 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#if WITHDEBUG
-	#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-	#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-	#define WITHUART4HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-	#define WITHUART5HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#endif /* WITHDEBUG */
+#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART4HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART5HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
 
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_USART0	1
@@ -52,7 +51,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define BOARD_CONFIG_DRAM_CLK 800
 
@@ -729,8 +728,6 @@
 	#define	TWIHARD_IX 0x	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0x	/* 0 - TWI0, 1: TWI1... */
 
-
-
 #elif WITHTWISW || WITHTWIHW
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
@@ -765,106 +762,12 @@
 
 #endif /* WITHTWISW || WITHTWIHW */
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
-
-	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
-	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 14)	/* PE14 bit conneced to nCONFIG pin ALTERA FPGA */
-
-	/* inputs */
-	#define FPGA_CONF_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 16)	/* PE16 bit conneced to CONF_DONE pin ALTERA FPGA */
-
-	#define FPGA_NSTATUS_INPUT		gpioX_getinputs(GPIOE)
-	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 15)	/* PE15 bit conneced to NSTATUS pin ALTERA FPGA */
-
-	#define FPGA_INIT_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 17)	/* PE17 bit conneced to INIT_DONE pin ALTERA FPGA */
-
-	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
-	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
-			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
-			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
-		} while (0)
-
-	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
-	/*
-		After the option bit to enable INIT_DONE is programmed into the device (during the first
-		frame of configuration data), the INIT_DONE pin goes low.
-		When initialization is complete, the INIT_DONE pin is released and pulled high. 
-		This low-to-high transition signals that the device has entered user mode.
-	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
-
-#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
-
-#if WITHDSPEXTFIR
-	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-
-	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 2)	/* PE2 - fir CS ~FPGA_FIR_CLK */
-
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 3)	/* PE3 - fir1 WE */
-
-	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 0)	/* PE0 - fir2 WE */
-
-	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
-		} while (0)
-#endif /* WITHDSPEXTFIR */
-
-#if 1
-	/* получение состояния переполнения АЦП */
-	#define TARGET_FPGA_OVF_INPUT		gpioX_getinputs(GPIOE)
-	#define TARGET_FPGA_OVF_BIT			(UINT32_C(1) << 1)	// PE1
-	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
-	#define TARGET_FPGA_OVF_INITIALIZE() do { \
-				arm_hardware_pioe_inputs(TARGET_FPGA_OVF_BIT); \
-			} while (0)
-#endif
-
-#if WITHCPUDACHW
-	/* включить нужные каналы */
-	#define HARDWARE_DAC_INITIALIZE() do { \
-			DAC1->CR = DAC_CR_EN1; /* DAC1 enable */ \
-		} while (0)
-	#define HARDWARE_DAC_ALC(v) do { /* вывод 12-битного значения на ЦАП - канал 1 */ \
-			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
-		} while (0)
-
-#else /* WITHCPUDACHW */
-	#define HARDWARE_DAC_INITIALIZE() do { \
-		} while (0)
-
-#endif /* WITHCPUDACHW */
-
-#if WITHCPUADCHW
-	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-		} while (0)
-#endif /* WITHCPUADCHW */
-
 #if WITHUSBHW
 
-	#define TARGET_GPIOE_VBUSON_BIT (UINT32_C(1) << 18)	// PE18 - единицей включение питания для device
 	#define	USBD_EHCI_INITIALIZE() do { \
-		arm_hardware_pioe_outputs(TARGET_GPIOE_VBUSON_BIT, 0 * TARGET_GPIOE_VBUSON_BIT); \
 	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		gpioX_setstate(GPIOE, TARGET_GPIOE_VBUSON_BIT, !! (on) * TARGET_GPIOE_VBUSON_BIT); \
 	} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    
@@ -873,8 +776,6 @@
 	PB15     ------> USB_OTG_HS_DP 
 	*/
 	#define	USBD_HS_FS_INITIALIZE() do { \
-		/*arm_hardware_pioa_altfn50((UINT32_C(1) << 11) | (UINT32_C(1) << 12), AF_OTGFS);	*/		/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
-		/* arm_hardware_pioa_inputs(UINT32_C(1) << 9);	*/	/* PA9 - USB_OTG_FS_VBUS */ \
 		} while (0)
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
@@ -886,29 +787,6 @@
 	} while (0)
 
 #endif /* WITHUSBHW */
-
-#if WITHDCDCFREQCTL
-	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
-	#define WITHHWDCDCFREQMIN 400000L
-	#define WITHHWDCDCFREQMAX 1200000L
-	#define HARDWARE_DCDC_PWMCH 4	/* PWM4 */
-
-	// PI14 - DC-DC synchro output
-	// PWM5 AF6
-	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_pioi_altfn2((UINT32_C(1) << 14), GPIO_CFG_AF5); /* PI14 - PWM4 */ \
-	} while (0)
-	#define HARDWARE_DCDC_SETDIV(f) do { \
-		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
-	} while (0)
-#else /* WITHDCDCFREQCTL */
-	#define	HARDWARE_DCDC_INITIALIZE() do { \
-	} while (0)
-	#define HARDWARE_DCDC_SETDIV(f) do { \
-		(void) (f); \
-	} while (0)
-#endif /* WITHDCDCFREQCTL */
 
 	#if LCDMODE_LQ043T3DX02K
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
@@ -927,27 +805,6 @@
 		#define WITHLCDBACKLIGHTMIN	0
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
-
-	/* BL0: PA12. BL1: PA11, EN: PD28  */
-	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
-		const portholder_t BLPinMSB = UINT32_C(1) << 11; /* PA11 - MSB open drain */ \
-		const portholder_t BLPinLSB = UINT32_C(1) << 12; /* PA12 - LSB open drain */ \
-		arm_hardware_pioa_opendrain(BLPinMSB, BLPinMSB); /* минимальный ток */ \
-		arm_hardware_pioa_opendrain(BLPinLSB, BLPinLSB); /* минимальный ток */ \
-		arm_hardware_piod_outputs(ENmask, 0 * ENmask); \
-	} while (0)
-
-	/* установка яркости и включение/выключение преобразователя подсветки */
-	/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
-	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t ENmask = UINT32_C(1) << 28; /* PD28 */ \
-		const portholder_t BLPinMSB = UINT32_C(1) << 11; /* PA11 - MSB open drain */ \
-		const portholder_t BLPinLSB = UINT32_C(1) << 12; /* PA12 - LSB open drain */ \
-		gpioX_setopendrain(GPIOA, BLPinMSB, BLPinMSB * ! (level & 0x02)); /* Больший ток - нулём */ \
-		gpioX_setopendrain(GPIOA, BLPinLSB, BLPinLSB * ! (level & 0x01)); /* Больший ток - нулём */ \
-		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
-	} while (0)
 
 #if WITHLTDCHW
 
@@ -1080,20 +937,17 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 24)	// PD24 - Banana Pi M64 led0 RED - active "1" (default has pull-up)
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 14)	// PE14 - Banana Pi M64 led1 GREEN - active "1"
-	#define BOARD_BLINK_BIT2 (UINT32_C(1) << 15)	// PE15 - Banana Pi M64 led2 BLUE - active "1"
+	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 10)	// PA10 - VD24 - active "1"
+	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 11)	// PA11 - VD25 - active "1"
 
-#if 0
+#if 1
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piod_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
+		arm_hardware_pioa_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_pioa_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-		gpioX_setstate(GPIOD, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
+		gpioX_setstate(GPIOA, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		gpioX_setstate(GPIOA, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
 	} while (0)
 #endif
 
@@ -1106,15 +960,10 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*BOARD_BLINK_INITIALIZE(); */\
+			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
-			HARDWARE_BL_INITIALIZE(); \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
 			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
-#endif /* ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED */

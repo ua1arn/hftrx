@@ -1088,14 +1088,14 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	#endif /* ! defined (HARDWARE_UART2_ONRXCHAR) */
 
 	#if ! defined (HARDWARE_UART2_ONOVERFLOW)
-		// вызывается из обработчика прерываний UART1
+		// вызывается из обработчика прерываний UART2
 		#define HARDWARE_UART2_ONOVERFLOW() do { \
 				hardware_uart2_enablerx(1); \
 			} while (0)
 	#endif /* ! defined (HARDWARE_UART2_ONOVERFLOW) */
 
 	#if ! defined (HARDWARE_UART2_ONTXCHAR)
-		// вызывается из обработчика прерываний UART1
+		// вызывается из обработчика прерываний UART2
 		// по готовности передатчика
 		#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
 				hardware_uart2_enabletx(0); \
@@ -1103,6 +1103,90 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	#endif /* ! defined (HARDWARE_UART2_ONTXCHAR) */
 
 #endif /* WITHUART2HW */
+
+#if WITHUART3HW
+	// Заглушки, если есть последовательный порт #3, но нигде не используется.
+	#if ! defined (HARDWARE_UART3_ONRXCHAR)
+		// вызывается из обработчика прерываний CDC
+		// с принятым символом
+		#define HARDWARE_UART3_ONRXCHAR(c) do { \
+				(void) (c); \
+				hardware_uart3_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART3_ONRXCHAR) */
+
+	#if ! defined (HARDWARE_UART3_ONOVERFLOW)
+		// вызывается из обработчика прерываний UART3
+		#define HARDWARE_UART3_ONOVERFLOW() do { \
+				hardware_uart3_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART3_ONOVERFLOW) */
+
+	#if ! defined (HARDWARE_UART3_ONTXCHAR)
+		// вызывается из обработчика прерываний UART3
+		// по готовности передатчика
+		#define HARDWARE_UART3_ONTXCHAR(ctx) do { \
+				hardware_uart3_enabletx(0); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART3_ONTXCHAR) */
+
+#endif /* WITHUART3HW */
+
+#if WITHUART4HW
+	// Заглушки, если есть последовательный порт #4, но нигде не используется.
+	#if ! defined (HARDWARE_UART4_ONRXCHAR)
+		// вызывается из обработчика прерываний CDC
+		// с принятым символом
+		#define HARDWARE_UART4_ONRXCHAR(c) do { \
+				(void) (c); \
+				hardware_uart4_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART4_ONRXCHAR) */
+
+	#if ! defined (HARDWARE_UART4_ONOVERFLOW)
+		// вызывается из обработчика прерываний UART4
+		#define HARDWARE_UART4_ONOVERFLOW() do { \
+				hardware_uart4_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART4_ONOVERFLOW) */
+
+	#if ! defined (HARDWARE_UART4_ONTXCHAR)
+		// вызывается из обработчика прерываний UART4
+		// по готовности передатчика
+		#define HARDWARE_UART4_ONTXCHAR(ctx) do { \
+				hardware_uart4_enabletx(0); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART4_ONTXCHAR) */
+
+#endif /* WITHUART4HW */
+
+#if WITHUART5HW
+	// Заглушки, если есть последовательный порт #5, но нигде не используется.
+	#if ! defined (HARDWARE_UART5_ONRXCHAR)
+		// вызывается из обработчика прерываний CDC
+		// с принятым символом
+		#define HARDWARE_UART5_ONRXCHAR(c) do { \
+				(void) (c); \
+				hardware_uart5_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART5_ONRXCHAR) */
+
+	#if ! defined (HARDWARE_UART5_ONOVERFLOW)
+		// вызывается из обработчика прерываний UART5
+		#define HARDWARE_UART5_ONOVERFLOW() do { \
+				hardware_uart5_enablerx(1); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART5_ONOVERFLOW) */
+
+	#if ! defined (HARDWARE_UART5_ONTXCHAR)
+		// вызывается из обработчика прерываний UART5
+		// по готовности передатчика
+		#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
+				hardware_uart5_enabletx(0); \
+			} while (0)
+	#endif /* ! defined (HARDWARE_UART5_ONTXCHAR) */
+
+#endif /* WITHUART5HW */
 
 #if WITHUSBCDCACM
 	// Заглушки, если есть виртуальный последовательный порт, но нигде не используется.

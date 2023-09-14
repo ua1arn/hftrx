@@ -5676,7 +5676,7 @@ hardware_uart3_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 

@@ -9,8 +9,24 @@
 // v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 // HelperBoard T507 Core Board
 
-#ifndef ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_T507_CTL_XHELPERBOARD_H_INCLUDED
+#define ARM_ALW_T507_CTL_XHELPERBOARD_H_INCLUDED 1
+
+#define WITHCTRLBOARDT507 1
+
+void user_uart0_onrxchar(uint_fast8_t c);
+void user_uart1_onrxchar(uint_fast8_t c);
+void user_uart2_onrxchar(uint_fast8_t c);
+void user_uart3_onrxchar(uint_fast8_t c);
+void user_uart4_onrxchar(uint_fast8_t c);
+void user_uart5_onrxchar(uint_fast8_t c);
+
+//#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar(c); } while (0)
+#define HARDWARE_UART1_ONRXCHAR(c) do { user_uart1_onrxchar(c); } while (0)
+#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar(c); } while (0)
+#define HARDWARE_UART3_ONRXCHAR(c) do { user_uart3_onrxchar(c); } while (0)
+#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar(c); } while (0)
+#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar(c); } while (0)
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -101,7 +117,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER || 1
 
 	#define LCDMODE_DUMMY	1
 
@@ -701,4 +717,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_T507_CTL_XHELPERBOARD_H_INCLUDED */
