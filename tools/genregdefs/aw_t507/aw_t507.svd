@@ -1840,6 +1840,163 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CE_NS</name>
+  <description>The Crypto Engine (CE) module</description>
+  <baseAddress>0x01904000</baseAddress>
+  <interrupt>
+   <name>CE_NS</name>
+   <value>123</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CE_S</name>
+   <value>124</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>CE_TDA</name>
+    <displayName>CE_TDA</displayName>
+    <description>Task Descriptor Address</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_ICR</name>
+    <displayName>CE_ICR</displayName>
+    <description>Interrupt Control Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_ISR</name>
+    <displayName>CE_ISR</displayName>
+    <description>Interrupt Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_TLR</name>
+    <displayName>CE_TLR</displayName>
+    <description>Task Load Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_TSR</name>
+    <displayName>CE_TSR</displayName>
+    <description>Task Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_ESR</name>
+    <displayName>CE_ESR</displayName>
+    <description>Error Status Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_SCSA</name>
+    <displayName>CE_SCSA</displayName>
+    <description>Symmetric Algorithm DMA Current Source Address</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_SCDA</name>
+    <displayName>CE_SCDA</displayName>
+    <description>Symmetric Algorithm DMA Current Destination Address</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_HCSA</name>
+    <displayName>CE_HCSA</displayName>
+    <description>HASH Algorithm DMA Current Source Address</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_HCDA</name>
+    <displayName>CE_HCDA</displayName>
+    <description>HASH Algorithm DMA Current Destination Address</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_ACSA</name>
+    <displayName>CE_ACSA</displayName>
+    <description>Asymmetric Algorithm DMA Current Source Address</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_ACDA</name>
+    <displayName>CE_ACDA</displayName>
+    <description>Asymmetric Algorithm DMA Current Destination Address</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_XCSA</name>
+    <displayName>CE_XCSA</displayName>
+    <description>XTS Algorithm DMA Current Source Address</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_XCDA</name>
+    <displayName>CE_XCDA</displayName>
+    <description>XTS Algorithm DMA Current Destination Address</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="CE_NS">
+  <name>CE_S</name>
+  <baseAddress>0x01904800</baseAddress>
+  <interrupt>
+   <name>CE_NS</name>
+   <value>123</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CE_S</name>
+   <value>124</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
   <name>CPU_SUBSYS_CTRL_H616</name>
   <description>H616 CPU Subsystem Control Register List</description>
   <baseAddress>0x08100000</baseAddress>

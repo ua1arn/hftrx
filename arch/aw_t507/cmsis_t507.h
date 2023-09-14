@@ -75,6 +75,8 @@ typedef enum IRQn
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
+    CE_NS_IRQn = 123,                                 /*!< CE CE_NS interrupt */
+    CE_S_IRQn = 124,                                  /*!< CE CE interrupt */
     GPU_EVENT_IRQn = 126,                             /*!< GPU GPU_EVENT interrupt */
     GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
     GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
@@ -147,6 +149,8 @@ typedef enum IRQn
 #define G2D_VSU_BASE ((uintptr_t) 0x01488000)         /*!< G2D_VSU Graphic 2D (G2D) Video Scaler Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
+#define CE_NS_BASE ((uintptr_t) 0x01904000)           /*!< CE The Crypto Engine (CE) module Base */
+#define CE_S_BASE ((uintptr_t) 0x01904800)            /*!< CE The Crypto Engine (CE) module Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
@@ -539,6 +543,32 @@ typedef struct CCU_Type
              uint32_t reserved_0xF14 [0x0003];
     volatile uint32_t CCU_24M_27M_CLK_OUTPUT_REG;     /*!< Offset 0xF20 24M or 27M Clock Output Register */
 } CCU_TypeDef; /* size of structure = 0xF24 */
+/*
+ * @brief CE
+ */
+/*!< CE The Crypto Engine (CE) module */
+typedef struct CE_Type
+{
+    volatile uint32_t CE_TDA;                         /*!< Offset 0x000 Task Descriptor Address */
+             uint32_t reserved_0x004;
+    volatile uint32_t CE_ICR;                         /*!< Offset 0x008 Interrupt Control Register */
+    volatile uint32_t CE_ISR;                         /*!< Offset 0x00C Interrupt Status Register */
+    volatile uint32_t CE_TLR;                         /*!< Offset 0x010 Task Load Register */
+    volatile uint32_t CE_TSR;                         /*!< Offset 0x014 Task Status Register */
+    volatile uint32_t CE_ESR;                         /*!< Offset 0x018 Error Status Register */
+             uint32_t reserved_0x01C [0x0002];
+    volatile uint32_t CE_SCSA;                        /*!< Offset 0x024 Symmetric Algorithm DMA Current Source Address */
+    volatile uint32_t CE_SCDA;                        /*!< Offset 0x028 Symmetric Algorithm DMA Current Destination Address */
+             uint32_t reserved_0x02C [0x0002];
+    volatile uint32_t CE_HCSA;                        /*!< Offset 0x034 HASH Algorithm DMA Current Source Address */
+    volatile uint32_t CE_HCDA;                        /*!< Offset 0x038 HASH Algorithm DMA Current Destination Address */
+             uint32_t reserved_0x03C [0x0002];
+    volatile uint32_t CE_ACSA;                        /*!< Offset 0x044 Asymmetric Algorithm DMA Current Source Address */
+    volatile uint32_t CE_ACDA;                        /*!< Offset 0x048 Asymmetric Algorithm DMA Current Destination Address */
+             uint32_t reserved_0x04C [0x0002];
+    volatile uint32_t CE_XCSA;                        /*!< Offset 0x054 XTS Algorithm DMA Current Source Address */
+    volatile uint32_t CE_XCDA;                        /*!< Offset 0x058 XTS Algorithm DMA Current Destination Address */
+} CE_TypeDef; /* size of structure = 0x05C */
 /*
  * @brief CPU_SUBSYS_CTRL_H616
  */
@@ -1806,6 +1836,8 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D (G2D) Video Scaler register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
+#define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */
+#define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S The Crypto Engine (CE) module register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
