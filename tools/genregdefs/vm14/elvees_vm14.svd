@@ -1926,7 +1926,7 @@
   </registers>
   </peripheral>
   <peripheral derivedFrom="NANDMPORT">
-  <name>NFCM_BASE</name>
+  <name>NFCM</name>
   <baseAddress>0x38007000</baseAddress>
   <interrupt>
    <name>NFC_MPORTINT</name>
