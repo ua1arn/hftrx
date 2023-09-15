@@ -22,6 +22,14 @@
 	#define ENHTEST 0
 #endif
 
+#define TPR10_CA_BIT_DELAY	BIT_U32(16)
+#define TPR10_DX_BIT_DELAY0	BIT_U32(17)
+#define TPR10_DX_BIT_DELAY1	BIT_U32(18)
+#define TPR10_WRITE_LEVELING	BIT_U32(20)
+#define TPR10_READ_CALIBRATION	BIT_U32(21)
+#define TPR10_READ_TRAINING	BIT_U32(22)
+#define TPR10_WRITE_TRAINING	BIT_U32(23)
+
 #define CONFIG_SYS_SDRAM_BASE 0x40000000
 
 /* SID address space starts at 0x03006000, but e-fuse is at offset 0x200 */
@@ -49,6 +57,47 @@
 #define SUNXI_PRCM_BASE			0x07010000
 
 #define SUNXI_CCM_BASE CCU_BASE
+
+
+// https://github.com/engSinteck/A133_Image/blob/125333364cdacc364a5ea855019756a03a3043dd/longan/brandy/arisc/ar100s/include/driver/dram.h#L83
+
+typedef struct dram_para
+{
+	uint32_t clk;
+	uint32_t /*enum sunxi_dram_type */type;
+	uint32_t dx_odt;
+	uint32_t dx_dri;
+	uint32_t ca_dri;
+	uint32_t para0;
+	uint32_t para1;
+	uint32_t para2;
+	uint32_t mr0;
+	uint32_t mr1;
+	uint32_t mr2;
+	uint32_t mr3;
+	uint32_t mr4;
+	uint32_t mr5;
+	uint32_t mr6;
+	uint32_t mr11;
+	uint32_t mr12;
+	uint32_t mr13;
+	uint32_t mr14;
+	uint32_t mr16;
+	uint32_t mr17;
+	uint32_t mr22;
+	uint32_t tpr0;
+	uint32_t tpr1;
+	uint32_t tpr2;
+	uint32_t tpr3;
+	uint32_t tpr6;
+	uint32_t tpr10;
+	uint32_t tpr11;
+	uint32_t tpr12;
+	uint32_t tpr13;
+	uint32_t tpr14;
+
+	uint32_t odt_en;
+} dram_para_t;
 
 // CONFIG_DRAM_SUN50I_H616_UNKNOWN_FEATURE
 // CONFIG_DRAM_ODT_EN
@@ -300,8 +349,6 @@ static inline int ns_to_t(int nanoseconds)
 
 	return DIV_ROUND_UP(ctrl_freq * (uint_fast64_t) nanoseconds, 1000);
 }
-
-void mctl_set_timing_params(struct xdram_para *para);
 
 
 struct sunxi_ccm_reg {
@@ -645,69 +692,74 @@ void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
-void mctl_set_timing_params(struct xdram_para *para)
+void mctl_set_timing_params(const struct dram_para *para)
 {
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
 
-	uint8_t tccd		= 2;			/* JEDEC: 4nCK */
-	uint8_t tfaw		= ns_to_t(50);		/* JEDEC: 30 ns w/ 1K pages */
+	uint8_t tccd		= 4;			/* JEDEC: 4nCK */
+	uint8_t tfaw		= ns_to_t(36);		/* JEDEC: 30 ns w/ 1K pages */
 	uint8_t trrd		= max(ns_to_t(6), 4);	/* JEDEC: max(6 ns, 4nCK) */
-	uint8_t trcd		= ns_to_t(15);		/* JEDEC: 13.5 ns */
-	uint8_t trc		= ns_to_t(53);		/* JEDEC: 49.5 ns */
+	uint8_t trcd		= ns_to_t(17);		/* JEDEC: 13.5 ns */
+	uint8_t trc		= ns_to_t(60);		/* JEDEC: 49.5 ns */
 	uint8_t txp		= max(ns_to_t(6), 3);	/* JEDEC: max(6 ns, 3nCK) */
-	uint8_t trtp		= max(ns_to_t(8), 2);	/* JEDEC: max(7.5 ns, 4nCK) */
-	uint8_t trp		= ns_to_t(15);		/* JEDEC: >= 13.75 ns */
-	uint8_t tras		= ns_to_t(38);		/* JEDEC >= 36 ns, <= 9*trefi */
+	uint8_t trtp		= max(ns_to_t(8), 4);	/* JEDEC: max(7.5 ns, 4nCK) */
+	uint8_t trp		= ns_to_t(20);		/* JEDEC: >= 13.75 ns */
+	uint8_t tras		= ns_to_t(40);		/* JEDEC >= 36 ns, <= 9*trefi */
 	uint16_t trefi	= ns_to_t(7800) / 32;	/* JEDEC: 7.8us@Tcase <= 85C */
 	uint16_t trfc	= ns_to_t(350);		/* JEDEC: 160 ns for 2Gb */
-	uint16_t txsr	= 4;			/* ? */
+	uint16_t txsr	= 69;			/* ? */
 
-	uint8_t tmrw		= 0;			/* ? */
-	uint8_t tmrd		= 4;			/* JEDEC: 4nCK */
+	uint8_t tmrw		= 6;			/* ? */
+	uint8_t tmrd		= 6;			/* JEDEC: 4nCK */
 	uint8_t tmod		= max(ns_to_t(15), 12);	/* JEDEC: max(15 ns, 12nCK) */
-	uint8_t tcke		= max(ns_to_t(6), 3);	/* JEDEC: max(5.625 ns, 3nCK) */
-	uint8_t tcksrx	= max(ns_to_t(10), 4);	/* JEDEC: max(10 ns, 5nCK) */
-	uint8_t tcksre	= max(ns_to_t(10), 4);	/* JEDEC: max(10 ns, 5nCK) */
-	uint8_t tckesr	= tcke + 1;		/* JEDEC: tCKE(min) + 1nCK */
-	uint8_t trasmax	= (para->clk / 2) / 15;	/* JEDEC: tREFI * 9 */
-	uint8_t txs		= ns_to_t(360) / 32;	/* JEDEC: max(5nCK,tRFC+10ns) */
+	uint8_t tcke		= max(ns_to_t(6), 6);	/* JEDEC: max(5.625 ns, 3nCK) */
+	uint8_t tcksrx	= max(ns_to_t(5), 2);	/* JEDEC: max(10 ns, 5nCK) */
+	uint8_t tcksre	= max(ns_to_t(5), 2);	/* JEDEC: max(10 ns, 5nCK) */
+	uint8_t tckesr	= tcke;		/* JEDEC: tCKE(min) + 1nCK */
+	uint8_t trasmax	= (para->clk / 2) / 32;	/* JEDEC: tREFI * 9 */
+	uint8_t txs		= ns_to_t(380) / 32;	/* JEDEC: max(5nCK,tRFC+10ns) */
 	uint8_t txsdll	= 16;			/* JEDEC: 512 nCK */
 	uint8_t txsabort	= 4;			/* ? */
 	uint8_t txsfast	= 4;			/* ? */
-	uint8_t tcl		= 7;			/* JEDEC: CL / 2 => 6 */
+	uint8_t tcl		= 10;			/* JEDEC: CL / 2 => 6 */
 	uint8_t tcwl		= 5;			/* JEDEC: 8 */
 	uint8_t t_rdata_en	= 9;			/* ? */
 
-	uint8_t twtp		= 14;			/* (WL + BL / 2 + tWR) / 2 */
-	uint8_t twr2rd	= trtp + 7;		/* (WL + BL / 2 + tWTR) / 2 */
-	uint8_t trd2wr	= 5;			/* (RL + BL / 2 + 2 - WL) / 2 */
+	uint8_t twtp		= 24;			/* (WL + BL / 2 + tWR) / 2 */
+	uint8_t twr2rd	= trtp + 14;		/* (WL + BL / 2 + tWTR) / 2 */
+	uint8_t trd2wr	= 18;			/* (RL + BL / 2 + 2 - WL) / 2 */
 
 	/* set DRAM timing */
-	writel(0x180f0c10,&mctl_ctl->dramtmg[0]); //100
-	writel(0x00030418, &mctl_ctl->dramtmg[1]); //104
-	writel(0x050a1212, &mctl_ctl->dramtmg[2]); //108
-	writel(0x0060600c, &mctl_ctl->dramtmg[3]); //10c
-	writel(0x07040408, &mctl_ctl->dramtmg[4]); //110
-	writel(0x02020606, &mctl_ctl->dramtmg[5]); //114
+	writel((twtp << 24) | (tfaw << 16) | (trasmax << 8) | tras,
+	       &mctl_ctl->dramtmg[0]);
+	writel((txp << 16) | (trtp << 8) | trc, &mctl_ctl->dramtmg[1]);
+	writel((tcwl << 24) | (tcl << 16) | (trd2wr << 8) | twr2rd,
+	       &mctl_ctl->dramtmg[2]);
+	writel((tmrw << 20) | (tmrd << 12) | tmod, &mctl_ctl->dramtmg[3]);
+	writel((trcd << 24) | (tccd << 16) | (trrd << 8) | trp,
+	       &mctl_ctl->dramtmg[4]);
+	writel((tcksrx << 24) | (tcksre << 16) | (tckesr << 8) | tcke,
+	       &mctl_ctl->dramtmg[5]);
 	/* Value suggested by ZynqMP manual and used by libdram */
-	writel(0x02020005, &mctl_ctl->dramtmg[6]); //118
-	writel(0x04041004, &mctl_ctl->dramtmg[8]); //120
-	writel(0x00020208, &mctl_ctl->dramtmg[9]); //124
-	writel(0xE0C05, &mctl_ctl->dramtmg[10]);   //128
-	writel(0x440C021C, &mctl_ctl->dramtmg[11]); //12c
-	writel(8, &mctl_ctl->dramtmg[12]);         //130
-	writel(0xA100002, &mctl_ctl->dramtmg[13]); //134
-	writel(0x45, &mctl_ctl->dramtmg[14]);      //138
+	writel((txp + 2) | 0x02020000, &mctl_ctl->dramtmg[6]);
+	writel((txsfast << 24) | (txsabort << 16) | (txsdll << 8) | txs,
+	       &mctl_ctl->dramtmg[8]);
+	writel(0x00020208, &mctl_ctl->dramtmg[9]);
+	writel(0xE0C05, &mctl_ctl->dramtmg[10]);
+	writel(0x440C021C, &mctl_ctl->dramtmg[11]);
+	writel(8, &mctl_ctl->dramtmg[12]);
+	writel(0xA100002, &mctl_ctl->dramtmg[13]);
+	writel(txsr, &mctl_ctl->dramtmg[14]);
 
-	writel(0x203f0, &mctl_ctl->init[0]);        //0do
-	writel(0x1f20000, &mctl_ctl->init[1]);      //0d4
-	writel(0xd05, &mctl_ctl->init[2]);          //0d8
-	writel(0x0034001b, &mctl_ctl->init[3]);     //0dc
-	writel(0x00330000, &mctl_ctl->init[4]);     //0e0
-	writel(0x00100004, &mctl_ctl->init[5]);     //0e4
-	writel(0x00040072, &mctl_ctl->init[6]);     //0e8
-	writel(0x00240009, &mctl_ctl->init[7]);     //0ec
+	writel(0x203f0, &mctl_ctl->init[0]);
+	writel(0x1f20000, &mctl_ctl->init[1]);
+	writel(0xd05, &mctl_ctl->init[2]);
+	writel(0x0034001b, &mctl_ctl->init[3]);
+	writel(0x00330000, &mctl_ctl->init[4]);
+	writel(0x00100004, &mctl_ctl->init[5]);
+	writel(0x00040072, &mctl_ctl->init[6]);
+	writel(0x00240009, &mctl_ctl->init[7]);
 
 	writel(0, &mctl_ctl->dfimisc);
 	clrsetbits_le32(&mctl_ctl->rankctl, 0xff0, 0x660);
@@ -792,7 +844,7 @@ static void mbus_configure_port(uint8_t port,
 			   | (bwl0 << 16) );
 	const uint32_t cfg1 = ((uint32_t)bwl2 << 16) | (bwl1 & 0xffff);
 
-	PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", port, cfg0, cfg1);
+	PRINTF("MBUS port %d cfg0 %08x cfg1 %08x\n", (int) port, (unsigned) cfg0, (unsigned) cfg1);
 	writel_relaxed(cfg0, &mctl_com->master[port].cfg0);
 	writel_relaxed(cfg1, &mctl_com->master[port].cfg1);
 }
@@ -829,7 +881,7 @@ static void mctl_set_master_priority(void)
 	MBUS_CONF(39, (1 == 1),    HIGH, 2, 8192, 5500, 5000);
 	MBUS_CONF(40, (1 == 1),    HIGH, 2,  100,   64,   32);
 
-	dmb();
+	__DMB();
 }
 
 static void mctl_sys_init(uint32_t clk_rate)
@@ -929,7 +981,9 @@ static void mctl_set_addrmap(const struct dram_config *config)
 		mctl_ctl->addrmap[4] = 0;
 		break;
 	default:
-		panic("Unsupported DRAM configuration: column number invalid\n");
+		PRINTF("Unsupported DRAM configuration: column number invalid\n");
+		for (;;)
+			;
 	}
 
 	/* Rows */
@@ -960,7 +1014,9 @@ static void mctl_set_addrmap(const struct dram_config *config)
 		mctl_ctl->addrmap[7] = (cols - 3) | ((cols - 3) << 8);
 		break;
 	default:
-		panic("Unsupported DRAM configuration: row number invalid\n");
+		PRINTF("Unsupported DRAM configuration: row number invalid\n");
+		for (;;)
+			;
 	}
 
 	/* Bank groups, DDR4 only */
@@ -1066,7 +1122,7 @@ static void mctl_phy_configure_odt(const struct dram_para *para)
 	else
 		writel_relaxed(val, SUNXI_DRAM_PHY0_BASE + 0x444);
 
-	dmb();
+	__DMB();
 }
 
 static int mctl_phy_write_leveling(const struct dram_config *config)
@@ -1458,7 +1514,7 @@ static void mctl_phy_bit_delay_compensation(const struct dram_para *para)
 		writel_relaxed(val, SUNXI_DRAM_PHY0_BASE + 0x6a0);
 		writel_relaxed(val, SUNXI_DRAM_PHY0_BASE + 0x760);
 
-		dmb();
+		__DMB();
 
 		setbits_le32(SUNXI_DRAM_PHY0_BASE + 0x60, 1);
 	}
@@ -1555,7 +1611,7 @@ static void mctl_phy_bit_delay_compensation(const struct dram_para *para)
 		writel_relaxed(val, SUNXI_DRAM_PHY0_BASE + 0x69c);
 		writel_relaxed(val, SUNXI_DRAM_PHY0_BASE + 0x75c);
 
-		dmb();
+		__DMB();
 
 		setbits_le32(SUNXI_DRAM_PHY0_BASE + 0x54, 0x80);
 	}
@@ -1643,7 +1699,7 @@ static int mctl_phy_init(const struct dram_para *para,
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
-	uint32_t val, val2, *ptr, mr0, mr2;
+	uint32_t val, val2 = 0, *ptr, mr0, mr2;
 	int i;
 
 	if (para->type == SUNXI_DRAM_TYPE_LPDDR4)
@@ -2062,7 +2118,9 @@ static void mctl_auto_detect_rank_width(const struct dram_para *para,
 	if (mctl_core_init(para, config))
 		return;
 
-	panic("This DRAM setup is currently not supported.\n");
+	PRINTF("This DRAM setup is currently not supported.\n");
+	for (;;)
+		;
 }
 
 static void mctl_auto_detect_dram_size(const struct dram_para *para,
@@ -2100,6 +2158,7 @@ static unsigned long mctl_calc_size(const struct dram_config *config)
 	return (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
 }
 
+#if 0
 static const struct dram_para para = {
 	.clk = CONFIG_DRAM_CLK,
 #ifdef CONFIG_SUNXI_DRAM_H616_DDR3_1333
@@ -2120,29 +2179,9 @@ static const struct dram_para para = {
 	.tpr12 = CONFIG_DRAM_SUN50I_H616_TPR12,
 };
 
-unsigned long sunxi_dram_init(void)
-{
-	struct sunxi_prcm_reg *const prcm =
-		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
-	struct dram_config config;
-	unsigned long size;
+#else
 
-	setbits_le32(&prcm->res_cal_ctrl, BIT_U32(8));
-	clrbits_le32(&prcm->ohms240, 0x3f);
-
-	mctl_auto_detect_rank_width(&para, &config);
-	mctl_auto_detect_dram_size(&para, &config);
-
-	mctl_core_init(&para, &config);
-
-	size = mctl_calc_size(&config);
-
-	mctl_set_master_priority();
-
-	return size;
-};
-
-static struct dram_para lpddr4 =
+static struct dram_para para =
 {
 		.clk       = 792,
 		.type      = SUNXI_DRAM_TYPE_LPDDR4,
@@ -2178,88 +2217,65 @@ static struct dram_para lpddr4 =
 		.tpr14     = 0x00000000,
 };
 
-void xmctl_set_timing_params(struct xdram_para *para)
+#endif
+
+unsigned long sunxi_dram_init(void)
 {
-	libdram_mctl_com_set_channel_timing(& lpddr4);
-}
+	struct sunxi_prcm_reg *const prcm =
+		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
+	struct dram_config config;
+	unsigned long size;
 
-/*
- * (C) Copyright 2012
- *     wangflord@allwinnertech.com
- *
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program;
- *
- */
-#define STAMP_VALUE                     0x5F0A6C39
+	setbits_le32(&prcm->res_cal_ctrl, BIT_U32(8));
+	clrbits_le32(&prcm->ohms240, 0x3f);
 
+	mctl_auto_detect_rank_width(&para, &config);
+	mctl_auto_detect_dram_size(&para, &config);
 
-typedef struct
+	mctl_core_init(&para, &config);
+
+	size = mctl_calc_size(&config);
+
+	mctl_set_master_priority();
+
+	return size;
+};
+
+static struct dram_para lpddr4ssss =
 {
-	unsigned int		ChannelCnt;
-	unsigned int        ChipCnt;                            //the count of the total nand flash chips are currently connecting on the CE pin
-    unsigned int       ChipConnectInfo;                    //chip connect information, bit == 1 means there is a chip connecting on the CE pin
-	unsigned int		RbCnt;
-	unsigned int		RbConnectInfo;						//the connect  information of the all rb  chips are connected
-    unsigned int        RbConnectMode;						//the rb connect  mode
-	unsigned int        BankCntPerChip;                     //the count of the banks in one nand chip, multiple banks can support Inter-Leave
-    unsigned int        DieCntPerChip;                      //the count of the dies in one nand chip, block management is based on Die
-    unsigned int        PlaneCntPerDie;                     //the count of planes in one die, multiple planes can support multi-plane operation
-    unsigned int        SectorCntPerPage;                   //the count of sectors in one single physic page, one sector is 0.5k
-    unsigned int       PageCntPerPhyBlk;                   //the count of physic pages in one physic block
-    unsigned int       BlkCntPerDie;                       //the count of the physic blocks in one die, include valid block and invalid block
-    unsigned int       OperationOpt;                       //the mask of the operation types which current nand flash can support support
-    unsigned int        FrequencePar;                       //the parameter of the hardware access clock, based on 'MHz'
-    unsigned int        EccMode;                            //the Ecc Mode for the nand flash chip, 0: bch-16, 1:bch-28, 2:bch_32
-    unsigned char       NandChipId[8];                      //the nand chip id of current connecting nand chip
-    unsigned int       ValidBlkRatio;                      //the ratio of the valid physical blocks, based on 1024
-	unsigned int 		good_block_ratio;					//good block ratio get from hwscan
-	unsigned int		ReadRetryType;						//the read retry type
-	unsigned int       DDRType;
-	unsigned int		Reserved[32];
-}boot_nand_para_t0;
-
-
-//ͨ�õģ���GPIO��ص����ݽṹ
-typedef struct _normal_gpio_cfg
-{
-    unsigned char      port;                       //�˿ں�
-    unsigned char      port_num;                   //�˿��ڱ��
-    char      mul_sel;                    //���ܱ��
-    char      pull;                       //����״̬
-    char      drv_level;                  //������������
-    char      data;                       //�����ƽ
-    unsigned char      reserved[2];                //����λ����֤����
-}
-normal_gpio_cfg;
-
-/******************************************************************************/
-/*                              file head of Boot0                            */
-/******************************************************************************/
-typedef struct _boot0_private_head_t
-{
-	unsigned int            prvt_head_size;
-	char                    prvt_head_vsn[4];       // the version of boot0_private_head_t
-	unsigned int            dram_para[32];          // DRAM patameters for initialising dram. Original values is arbitrary,
-	int						uart_port;              // UART���������
-	normal_gpio_cfg         uart_ctrl[2];           // UART������(���Դ�ӡ��)������Ϣ
-	int                     enable_jtag;            // 1 : enable,  0 : disable
-    normal_gpio_cfg	        jtag_gpio[5];           // ����JTAG��ȫ��GPIO��Ϣ
-    normal_gpio_cfg         storage_gpio[32];       // �洢�豸 GPIO��Ϣ
-    char                    storage_data[512 - sizeof(normal_gpio_cfg) * 32];      // �û�����������Ϣ
-    //boot_nand_connect_info_t    nand_connect_info;
-}boot0_private_head_t;
+		.clk       = 792,
+		.type      = SUNXI_DRAM_TYPE_LPDDR4,
+		.dx_odt    = 0x08080808,
+		.dx_dri    = 0x0e0e0e0e,
+		.ca_dri    = 0x0e0e,
+		.para0     = 0x7887bbbb,
+		.para1     = 0x30fa,
+		.para2     = 0x0000,
+		.mr0       = 0x0,
+		.mr1       = 0x34,
+		.mr2       = 0x1b,
+		.mr3       = 0x33,
+		.mr4       = 0x3,
+		.mr5       = 0x0,
+		.mr6       = 0x0,
+		.mr11      = 0x04,
+		.mr12      = 0x72,
+		.mr13      = 0x0,
+		.mr14      = 0x9,
+		.mr16      = 0x0,
+		.mr17      = 0x0,
+		.mr22      = 0x24,
+		.tpr0      = 0x00000000,
+		.tpr1      = 0x00000000,
+		.tpr2      = 0x0,
+		.tpr3      = 0x0,
+		.tpr6      = 0x40808080,
+		.tpr10     = 0x402f6633,
+		.tpr11     = 0x00000000,
+		.tpr12     = 0x00000000,
+		.tpr13     = 0x02000c60,
+		.tpr14     = 0x00000000,
+};
 
 
 int xdramc_simple_wr_test(unsigned int mem_mb, int len)
@@ -2347,16 +2363,9 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 	return sizeee;	// OK
 }
 
-boot0_private_head_t  BT0_head;
-//extern int debug_mode;
-
-int init_DRAM(int, struct dram_para *);
-int sunxi_board_init(void);
 
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	ASSERT(sizeof BT0_head.dram_para == sizeof lpddr4);
-	memcpy(& BT0_head.dram_para, & lpddr4, sizeof BT0_head.dram_para);
 	// https://artmemtech.com/
 	// artmem atl4b0832
 	long int memsize;
@@ -2369,7 +2378,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//memsize = init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
 	//PRINTF("arm_hardware_sdram_initialize: v=%ld, %ld MB\n", memsize, memsize / 1024 / 1024);
 	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
-	memsize =   sunxi_dram_init(& lpddr4) * 1024 * 1024;
+	memsize =   sunxi_dram_init() * 1024 * 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
