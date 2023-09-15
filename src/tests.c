@@ -6775,11 +6775,20 @@ void detest(void)
 
 #if CPUSTYLE_VM14
 
+static void vm14nand_command(unsigned command, unsigned nbumaddr)
+{
+	NANDMPORT->COMMAND =
+			(command & 0xFFFF) |    // код команды
+			(nbumaddr << 28) |
+			(1u << 23) |	// page sie = 2048
+			0;
+}
+
 static void vm14nand_sendcommand(unsigned command, unsigned programm, unsigned nbumaddr)
 {
 	NANDMPORT->INTERRUPT_STATUS = 0xFF;          // для сброса необходимо записать 1 в соответствующее поле (0xFF тоже сработает)
 	NANDMPORT->INTERRUPT_STATUS_EN = 0xFF;      // разрешаем статус прерывания все
-	NANDMPORT->COMMAND = command | (nbumaddr << 28);                         // код команды
+	vm14nand_command(command, nbumaddr);
 	NANDMPORT->PROGRAM = programm;                 // команда
 	while ((NANDMPORT->INTERRUPT_STATUS & 0x4) == 0)  // ждем пока установится статус прерывания Transfer Complete
 	{
@@ -6805,11 +6814,7 @@ static void vm14nand_sendcommand2(unsigned command, unsigned programm, unsigned 
 {
 	NANDMPORT->INTERRUPT_STATUS = 0xFF;          // для сброса необходимо записать 1 в соответствующее поле (0xFF тоже сработает)
 	NANDMPORT->INTERRUPT_STATUS_EN = 0xFF;      // разрешаем статус прерывания все
-	NANDMPORT->COMMAND = command |           // код команды
-			(nbumaddr << 28) |
-			//(1u << 19) |	// синхронный режим
-			//(1u << 20) |	// синхронный режим 1
-			0;
+	vm14nand_command(command, nbumaddr);
 	NANDMPORT->PROGRAM = programm;                 // команда
 //	TP();
 //	while (NANDMPORT->INTERRUPT_STATUS != (1u << 1))  // buff_rd_rdy_reg
@@ -10691,7 +10696,9 @@ void hightests(void)
 	}
 #endif
 
+#if WITHLTDCHW && LCDMODE_LTDC
 	display_nextfb();	// Скрыть результаты теста, разнести рисуемый и ообрадаемый буферы
+#endif /* WITHLTDCHW && LCDMODE_LTDC */
 }
 #if WITHRTOS
 
