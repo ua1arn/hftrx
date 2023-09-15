@@ -2158,7 +2158,18 @@ static unsigned long mctl_calc_size(const struct dram_config *config)
 	return (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
 }
 
-#if 0
+#if 1
+
+#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
+#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
+#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
+#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0x7887bbbb
+#define CONFIG_DRAM_SUN50I_H616_TPR0 0x0
+#define CONFIG_DRAM_SUN50I_H616_TPR2 0x0
+#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402e0000
+#define CONFIG_DRAM_SUN50I_H616_TPR11 0x22262622
+#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0b0c0d0b
+
 static const struct dram_para para = {
 	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
 #ifdef CONFIG_SUNXI_DRAM_H616_DDR3_1333
@@ -2238,6 +2249,7 @@ unsigned long sunxi_dram_init(void)
 
 	mctl_set_master_priority();
 
+	return 1024;
 	return size;
 };
 
@@ -2369,6 +2381,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	// https://artmemtech.com/
 	// artmem atl4b0832
 	long int memsize;
+	long int memsizeMB;
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	//return;
 	TP();
@@ -2378,12 +2391,13 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//memsize = init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
 	//PRINTF("arm_hardware_sdram_initialize: v=%ld, %ld MB\n", memsize, memsize / 1024 / 1024);
 	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
-	memsize =   sunxi_dram_init() * 1024 * 1024;
+	memsizeMB =   sunxi_dram_init();
+	memsize = memsizeMB * 1024 * 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
 
-	if (xdramc_simple_wr_test(4, 32))
+	if (xdramc_simple_wr_test(memsizeMB, 64))
 	{
 		PRINTF("xdramc_simple_wr_test failed\n");
 	}
@@ -2392,26 +2406,28 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		PRINTF("xdramc_simple_wr_test passed\n");
 	}
 
-	int e;
-	for (e = 0; e < 0; ++ e)
 	{
-		unsigned uret;
-		unsigned size = 64 * 1024 * 1024;
-		int partfortest = 16;
-		uret = ddr_check_rand(size / partfortest);
-		if (uret != (size / partfortest)) {
-			PRINTF("DDR random test: 0x%08x does not match DT config: 0x%08x\n",
-			      uret, size / partfortest);
-			for(;;)
-				;
+		int e;
+		for (e = 0; e < 4; ++ e)
+		{
+			unsigned uret;
+			unsigned size = memsize * 1024 * 1024;
+			int partfortest = 4;
+			uret = ddr_check_rand(size / partfortest);
+			if (uret != (size / partfortest)) {
+				PRINTF("DDR random test: 0x%08x does not match DT config: 0x%08x\n",
+				      uret, size / partfortest);
+				for(;;)
+					;
+			}
+			//TP();
 		}
-		TP();
 	}
 
 	//	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
 	//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 	//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
-	printhex32(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
+	//printhex32(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
 
