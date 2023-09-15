@@ -36,11 +36,11 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUART4HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
-#define WITHUART5HW	1	/* Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта UART1 */
+#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта UART2 */
+#define WITHUART3HW	1	/* Используется периферийный контроллер последовательного порта UART3 */
+#define WITHUART4HW	1	/* Используется периферийный контроллер последовательного порта UART4 */
+#define WITHUART5HW	1	/* Используется периферийный контроллер последовательного порта UART5 */
 
 void user_uart0_onrxchar(uint_fast8_t c);
 void user_uart1_onrxchar(uint_fast8_t c);
@@ -49,12 +49,26 @@ void user_uart3_onrxchar(uint_fast8_t c);
 void user_uart4_onrxchar(uint_fast8_t c);
 void user_uart5_onrxchar(uint_fast8_t c);
 
+void user_uart0_ontxchar(void * ctx);
+void user_uart1_ontxchar(void * ctx);
+void user_uart2_ontxchar(void * ctx);
+void user_uart3_ontxchar(void * ctx);
+void user_uart4_ontxchar(void * ctx);
+void user_uart5_ontxchar(void * ctx);
+
 //#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar(c); } while (0)
 #define HARDWARE_UART1_ONRXCHAR(c) do { user_uart1_onrxchar(c); } while (0)
 #define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar(c); } while (0)
 #define HARDWARE_UART3_ONRXCHAR(c) do { user_uart3_onrxchar(c); } while (0)
 #define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar(c); } while (0)
 #define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar(c); } while (0)
+
+//#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar(ctx); } while (0)
+#define HARDWARE_UART1_ONTXCHAR(ctx) do { user_uart1_ontxchar(ctx); } while (0)
+#define HARDWARE_UART2_ONTXCHAR(ctx) do { user_uart2_ontxchar(ctx); } while (0)
+#define HARDWARE_UART3_ONTXCHAR(ctx) do { user_uart3_ontxchar(ctx); } while (0)
+#define HARDWARE_UART4_ONTXCHAR(ctx) do { user_uart4_ontxchar(ctx); } while (0)
+#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar(ctx); } while (0)
 
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_USART0	1

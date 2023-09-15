@@ -18,7 +18,17 @@ void user_uart0_onrxchar(uint_fast8_t c)
 
 }
 
+void user_uart0_ontxchar(void * ctx)
+{
+
+}
+
 void user_uart1_onrxchar(uint_fast8_t c)
+{
+
+}
+
+void user_uart1_ontxchar(void * ctx)
 {
 
 }
@@ -28,7 +38,17 @@ void user_uart2_onrxchar(uint_fast8_t c)
 
 }
 
+void user_uart2_ontxchar(void * ctx)
+{
+
+}
+
 void user_uart3_onrxchar(uint_fast8_t c)
+{
+
+}
+
+void user_uart3_ontxchar(void * ctx)
 {
 
 }
@@ -39,11 +59,23 @@ void user_uart4_onrxchar(uint_fast8_t c)
 
 }
 
+void user_uart4_ontxchar(void * ctx)
+{
+
+}
+
 void user_uart5_onrxchar(uint_fast8_t c)
 {
 
 }
 
+void user_uart5_ontxchar(void * ctx)
+{
+
+}
+
+/////////////////////////
+///
 void ctlboardt507_mainloop(void)
 {
 	PRINTF("ctlboardt507_mainloop [%p]\n", ctlboardt507_mainloop);
