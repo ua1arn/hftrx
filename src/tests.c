@@ -6855,7 +6855,7 @@ void vm14nand_readdata(unsigned address, uint8_t * p, int len)
 	unsigned long blockaddr = 0;	// 0..2047
 	unsigned long pageaddr = 0;		// 0..31
 
-	NANDMPORT->MEMADDR1 = address;
+	NANDMPORT->MEMADDR1 = 0;
 	NANDMPORT->MEMADDR2 = 0;
 	// PAGE READ
 	TP();
@@ -6981,8 +6981,8 @@ void vm14nand_eraseblock(unsigned baddress)
 	vm14nand_sendcommand2(0xD0, (1u << 2), 0);
 	local_delay_ms(100);
 
-	vm14nand_sendcommand2(0xD060, (1u << 2), 3);
-	local_delay_ms(100);
+//	vm14nand_sendcommand2(0xD060, (1u << 2), 3);
+//	local_delay_ms(100);
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -7016,7 +7016,7 @@ void hightests(void)
 
 		// read NAND data
 		{
-			unsigned sector = 1;
+			unsigned sector = 0;
 			vm14nand_eraseblock(sector);
 			vm14nand_readstatus();
 			uint8_t b [2048] = { 0 };
