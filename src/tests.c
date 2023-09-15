@@ -10700,6 +10700,7 @@ void hightests(void)
 	display_nextfb();	// Скрыть результаты теста, разнести рисуемый и ообрадаемый буферы
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 }
+
 #if WITHRTOS
 
 #include "FreeRTOS.h"
