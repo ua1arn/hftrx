@@ -99,6 +99,8 @@ main(void)
 	bootloader_fatfs_mainloop();
 #elif WITHISBOOTLOADER0
 	bootloader0_mainloop();
+#elif WITHCTRLBOARDT507
+	ctlboardt507_mainloop();
 #elif WITHISBOOTLOADER
 	bootloader_mainloop();
 #elif 0

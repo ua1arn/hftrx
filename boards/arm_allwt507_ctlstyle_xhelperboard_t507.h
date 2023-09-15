@@ -14,20 +14,6 @@
 
 #define WITHCTRLBOARDT507 1
 
-void user_uart0_onrxchar(uint_fast8_t c);
-void user_uart1_onrxchar(uint_fast8_t c);
-void user_uart2_onrxchar(uint_fast8_t c);
-void user_uart3_onrxchar(uint_fast8_t c);
-void user_uart4_onrxchar(uint_fast8_t c);
-void user_uart5_onrxchar(uint_fast8_t c);
-
-//#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar(c); } while (0)
-#define HARDWARE_UART1_ONRXCHAR(c) do { user_uart1_onrxchar(c); } while (0)
-#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar(c); } while (0)
-#define HARDWARE_UART3_ONRXCHAR(c) do { user_uart3_onrxchar(c); } while (0)
-#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar(c); } while (0)
-#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar(c); } while (0)
-
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
