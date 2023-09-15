@@ -2160,7 +2160,7 @@ static unsigned long mctl_calc_size(const struct dram_config *config)
 
 #if 0
 static const struct dram_para para = {
-	.clk = CONFIG_DRAM_CLK,
+	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
 #ifdef CONFIG_SUNXI_DRAM_H616_DDR3_1333
 	.type = SUNXI_DRAM_TYPE_DDR3,
 #elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR3)
