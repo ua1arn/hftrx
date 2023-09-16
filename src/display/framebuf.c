@@ -155,6 +155,12 @@ static void t507_rcq(uintptr_t buff, unsigned len)
 	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
 
+// 0x01: ABGR_8888
+static unsigned awxx_get_srcformat(unsigned keyflag)
+{
+	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
+}
+
 #if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 
 static void awxx_vsu_load(void)
@@ -172,7 +178,8 @@ hwaccel_rotcopy(
 	uint_fast32_t tsizehw
 	)
 {
-//	ASSERT(ssizehw == tsizehw);
+	ASSERT((G2D_ROT->ROT_CTL & (1u << 31)) == 0);
+	ASSERT(ssizehw == tsizehw);
 	G2D_ROT->ROT_CTL = 0;
 	G2D_ROT->ROT_IFMT = VI_ImageFormat;
 	G2D_ROT->ROT_ISIZE = ssizehw;
@@ -212,52 +219,31 @@ static void t113_fillrect(
 	uint_fast32_t tsizehw,
 	unsigned alpha,
 	COLOR24_T color24,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет
 	)
 {
-#if 0
-	#warning T507/H616 FILLRECT should be implemented
-	//t507_rcq(taddr, 64);
+	color = COLORPIP_BLUE;
+	const size_t px = sizeof (PACKEDCOLORPIP_T);
+	ASSERT(w >= 2);
+	ASSERT(h >= 1);
+	* (PACKEDCOLORPIP_T *) (taddr + 0) = color;
+	* (PACKEDCOLORPIP_T *) (taddr + px) = color;
+	dcache_clean(taddr, px);
 
-	enum { sh = 2, sw = 2 };
-	static const PACKEDCOLORPIP_T dc [4] = { 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, };
-
-	unsigned sstride = 8;
-	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
-	const uintptr_t saddr = (uintptr_t) & dc;
-
-	G2D_ROT->ROT_CTL = 0;
-	G2D_ROT->ROT_IFMT = VI_ImageFormat;
-	G2D_ROT->ROT_IPITCH0 = sstride;
-//	G2D_ROT->ROT_IPITCH1 = sstride;
-//	G2D_ROT->ROT_IPITCH2 = sstride;
-	G2D_ROT->ROT_ISIZE = ssizehw;
-	G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
-	G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
-//	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
-//	G2D_ROT->ROT_IHADD1 = ptr_hi32(saddr) & 0xff;
-//	G2D_ROT->ROT_ILADD2 = ptr_lo32(saddr);
-//	G2D_ROT->ROT_IHADD2 = ptr_hi32(saddr) & 0xff;
-
-	G2D_ROT->ROT_OPITCH0 = tstride;
-//	G2D_ROT->ROT_OPITCH1 = tstride;
-//	G2D_ROT->ROT_OPITCH2 = tstride;
-	G2D_ROT->ROT_OSIZE = tsizehw;
-	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
-	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
-//	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
-//	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
-//	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
-//	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
-
-	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
-	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
-	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
-
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
-	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
-
-#endif
+	if (w > 2)
+	{
+		// Заполнение по горизонтали
+		const uint_fast32_t horovlsizehw = ((h - 1) << 16) | ((w - 2 - 1) << 0);
+		hwaccel_rotcopy(taddr, tstride, horovlsizehw, taddr + px * 2, tstride, horovlsizehw);
+	}
+	if (h > 1)
+	{
+		// Заполнение по вертикали
+		const uint_fast32_t vertovlsizehw = ((h - 1 - 1) << 16) | ((w - 1) << 0);
+		hwaccel_rotcopy(taddr, tstride, vertovlsizehw, taddr + tstride, tstride, vertovlsizehw);
+	}
 }
 
 #else
@@ -299,12 +285,6 @@ static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
 //	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
 //	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
 	return COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
-}
-
-// 0x01: ABGR_8888
-static unsigned awxx_get_srcformat(unsigned keyflag)
-{
-	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
 /* Создание режима блендера BLD_CTL */
@@ -487,6 +467,8 @@ static void t113_fillrect(
 	uint_fast32_t tsizehw,
 	unsigned alpha,
 	COLOR24_T color24,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
 	COLORPIP_T pipecolor	// цвет
 	)
 {
@@ -1187,7 +1169,7 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), color);
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1479,13 +1461,12 @@ hwaccel_rect_u32(
 		return;
 	}
 
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), color);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
