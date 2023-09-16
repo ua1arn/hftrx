@@ -61,6 +61,9 @@ static uint32_t ptr_lo32(uintptr_t v)
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 #endif
 
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+
+#else
 /* Отключаем все источники */
 static void awxx_g2d_reset(void)
 {
@@ -85,6 +88,7 @@ static void awxx_g2d_reset(void)
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
+#endif
 
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
@@ -127,6 +131,36 @@ static void awxx_g2d_startandwait(void)
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
 }
+
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+
+static void t507_rcq(uintptr_t buff)
+{
+	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
+	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
+	ASSERT(G2D_TOP->RCQ_HEADER_LOW_ADDR == ptr_lo32(buff));
+	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
+}
+
+static void awxx_vsu_load(void)
+{
+}
+
+// RCQ
+static void t113_fillrect(
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	COLOR24_T color
+	)
+{
+	#warning T507 RCQ FILLRECT should be implemented
+
+	t507_rcq(taddr);
+}
+
+#else
 
 static unsigned awxx_get_ui_attr(unsigned srcFormat)
 {
@@ -389,6 +423,7 @@ static void t113_fillrect(
 
 	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
 }
+#endif
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
@@ -681,6 +716,9 @@ void arm_hardware_mdma_initialize(void)
 
 		local_delay_ms(10);
 
+		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
+
+		if (0)
 		{
 			uintptr_t base = 0x01480000;
 			unsigned size = 256 * 1024;
@@ -699,10 +737,10 @@ void arm_hardware_mdma_initialize(void)
 				printhex32((base + offs), (void *) (base + offs), sizeof pattern);
 			}
 		}
-		memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
+		//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
 		PRINTF("G2D_TOP:\n");
 		printhex32(G2D_TOP_BASE, G2D_TOP, sizeof * G2D_TOP);
-		memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
+		//memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
 		PRINTF("G2D_MIXER:\n");
 		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
 	}
@@ -1896,6 +1934,10 @@ void hwaccel_bitblt(
 
 	__DMB();
 
+#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+	// RCQ
+	#warning T507/H616 RCQ BITBLT should be implemented
+
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Копирование - использование G2D для формирования изображений */
 
@@ -2113,7 +2155,11 @@ void hwaccel_stretchblt(
 	ASSERT(dx >= w);
 	ASSERT(dy >= h);
 
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && 1
+#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+	// RCQ
+	#warning T507/H616 RCQ STRETCH BLT should be implemented
+
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 //	memset(G2D_V0, 0, sizeof * G2D_V0);
