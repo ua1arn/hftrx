@@ -1332,7 +1332,15 @@ typedef struct G2D_TOP_Type
     volatile uint32_t G2D_HCLK_GATE;                  /*!< Offset 0x004 g2d HCLK gate   */
     volatile uint32_t G2D_AHB_RST;                    /*!< Offset 0x008 G2D AHB reset   */
     volatile uint32_t G2D_SCLK_DIV;                   /*!< Offset 0x00C G2D SCLK div    */
-} G2D_TOP_TypeDef; /* size of structure = 0x010 */
+    volatile uint32_t G2D_VERSION;                    /*!< Offset 0x010  */
+             uint32_t reserved_0x014 [0x0003];
+    volatile uint32_t RCQ_IRQ_CTL;                    /*!< Offset 0x020  */
+    volatile uint32_t RCQ_STATUS;                     /*!< Offset 0x024  */
+    volatile uint32_t RCQ_CTRL;                       /*!< Offset 0x028  */
+    volatile uint32_t RCQ_HEADER_LOW_ADDR;            /*!< Offset 0x02C  */
+    volatile uint32_t RCQ_HEADER_HIGH_ADDR;           /*!< Offset 0x030  */
+    volatile uint32_t RCQ_HEADER_LEN;                 /*!< Offset 0x034 Low 16 bit - length */
+} G2D_TOP_TypeDef; /* size of structure = 0x038 */
 /*
  * @brief G2D_UI
  */

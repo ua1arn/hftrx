@@ -132,10 +132,9 @@ static void awxx_g2d_startandwait(void)
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
 }
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
-
 static void t507_rcq(uintptr_t buff, unsigned len)
 {
+	G2D_TOP->RCQ_CTRL = 0;
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
 	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
 	G2D_TOP->RCQ_HEADER_LEN = len;
@@ -143,6 +142,8 @@ static void t507_rcq(uintptr_t buff, unsigned len)
 	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
 	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
+
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 
 static void awxx_vsu_load(void)
 {
@@ -157,7 +158,7 @@ static void t113_fillrect(
 	COLOR24_T color
 	)
 {
-	#warning T507 RCQ FILLRECT should be implemented
+	//#warning T507 RCQ FILLRECT should be implemented
 
 	//t507_rcq(taddr, 64);
 }
@@ -718,8 +719,10 @@ void arm_hardware_mdma_initialize(void)
 
 		local_delay_ms(10);
 
+		// G2D version=01010100
 		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
+		memset(G2D_TOP, 0xFF, 256 * 1024);
 		if (0)
 		{
 			uintptr_t base = 0x01480000;
@@ -728,7 +731,7 @@ void arm_hardware_mdma_initialize(void)
 			static const uint8_t pattern [256];
 			unsigned offs;
 
-			for (offs = 0; offs < size; offs += sizeof pattern)
+			for (offs = 0 * 1024; offs < size; offs += sizeof pattern)
 			{
 				if (memcmp((void *) (base + offs), pattern, sizeof pattern) == 0)
 				{
@@ -740,13 +743,19 @@ void arm_hardware_mdma_initialize(void)
 			}
 		}
 		//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
+		//t507_rcq(0xDEADBEEF, 64);
 		PRINTF("G2D_TOP:\n");
-		printhex32(G2D_TOP_BASE, G2D_TOP, sizeof * G2D_TOP);
+		printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 		//memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
 		PRINTF("G2D_MIXER:\n");
 		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
-		PRINTF("G2D_VSU:\n");
-		printhex32(G2D_VSU_BASE, G2D_VSU, sizeof * G2D_VSU);
+
+//		PRINTF("G2D_VSU:\n");
+//		//memset(G2D_VSU, 0xFF, sizeof * G2D_VSU);
+//		printhex32(G2D_VSU_BASE, G2D_VSU, sizeof * G2D_VSU);
+//		PRINTF("G2D_BLD:\n");
+//		//memset(G2D_BLD, 0xFF, sizeof * G2D_VSU);
+//		printhex32(G2D_BLD_BASE, G2D_BLD, sizeof * G2D_BLD);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -793,6 +802,14 @@ void arm_hardware_mdma_initialize(void)
 	(void) G2D_TOP->G2D_AHB_RST;
 
 	local_delay_ms(10);
+
+	// G2D version=01100114
+	PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
+
+	//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
+	t507_rcq(0xDEADBEEF, 64);
+	PRINTF("G2D_TOP:\n");
+	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif
@@ -1048,7 +1065,7 @@ hwaccel_rect_u16(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1207,7 +1224,7 @@ hwaccel_rect_u24(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif 0 //WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Использование G2D для формирования изображений */
 	#warinig Implement for (CPUSTYLE_T113 || CPUSTYLE_F133)
 	const unsigned stride = GXADJ(dx);
@@ -1349,7 +1366,7 @@ hwaccel_rect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1938,11 +1955,11 @@ void hwaccel_bitblt(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
 	// RCQ
 	#warning T507/H616 RCQ BITBLT should be implemented
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -2159,11 +2176,11 @@ void hwaccel_stretchblt(
 	ASSERT(dx >= w);
 	ASSERT(dy >= h);
 
-#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
 	// RCQ
 	#warning T507/H616 RCQ STRETCH BLT should be implemented
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Использование G2D для формирования изображений */
 
 //	memset(G2D_V0, 0, sizeof * G2D_V0);

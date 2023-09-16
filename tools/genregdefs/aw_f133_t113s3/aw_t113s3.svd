@@ -7253,6 +7253,69 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>G2D_VERSION</name>
+    <displayName>G2D_VERSION</displayName>
+    <description></description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCQ_IRQ_CTL</name>
+    <displayName>RCQ_IRQ_CTL</displayName>
+    <description></description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCQ_STATUS</name>
+    <displayName>RCQ_STATUS</displayName>
+    <description></description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCQ_CTRL</name>
+    <displayName>RCQ_CTRL</displayName>
+    <description></description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCQ_HEADER_LOW_ADDR</name>
+    <displayName>RCQ_HEADER_LOW_ADDR</displayName>
+    <description></description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCQ_HEADER_HIGH_ADDR</name>
+    <displayName>RCQ_HEADER_HIGH_ADDR</displayName>
+    <description></description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RCQ_HEADER_LEN</name>
+    <displayName>RCQ_HEADER_LEN</displayName>
+    <description>Low 16 bit - length</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>
