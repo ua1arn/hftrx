@@ -134,12 +134,14 @@ static void awxx_g2d_startandwait(void)
 
 #if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 
-static void t507_rcq(uintptr_t buff)
+static void t507_rcq(uintptr_t buff, unsigned len)
 {
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
 	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
+	G2D_TOP->RCQ_HEADER_LEN = len;
 	ASSERT(G2D_TOP->RCQ_HEADER_LOW_ADDR == ptr_lo32(buff));
 	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
+	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
 
 static void awxx_vsu_load(void)
@@ -157,7 +159,7 @@ static void t113_fillrect(
 {
 	#warning T507 RCQ FILLRECT should be implemented
 
-	t507_rcq(taddr);
+	//t507_rcq(taddr, 64);
 }
 
 #else
@@ -743,6 +745,8 @@ void arm_hardware_mdma_initialize(void)
 		//memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
 		PRINTF("G2D_MIXER:\n");
 		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
+		PRINTF("G2D_VSU:\n");
+		printhex32(G2D_VSU_BASE, G2D_VSU, sizeof * G2D_VSU);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)

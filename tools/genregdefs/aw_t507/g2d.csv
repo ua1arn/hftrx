@@ -1,3 +1,16 @@
+# define G2D_TOP        (0x00000)
+# define G2D_MIXER      (0x00100)
+# define G2D_BLD        (0x00400)
+# define G2D_V0         (0x00800)
+# define G2D_UI0        (0x01000)
+# define G2D_UI1        (0x01800)
+# define G2D_UI2        (0x02000)
+# define G2D_WB         (0x03000)
+# define G2D_VSU        (0x08000)
+# define G2D_ROT        (0x28000)
+# define G2D_GSU        (0x30000)
+
+
 #type; G2D_TOP; Graphic 2D top
 #base; G2D_TOP 0x01480000
 
