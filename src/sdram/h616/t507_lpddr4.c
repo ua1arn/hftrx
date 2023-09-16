@@ -13,14 +13,7 @@
 #if WITHSDRAMHW && CPUSTYLE_T507 && ! CPUSTYLE_H616
 
 #include "formats.h"
-
 #include <string.h>
-
-#if CPUSTYLE_H616
-	#define ENHTEST 1
-#else
-	#define ENHTEST 0
-#endif
 
 #define TPR10_CA_BIT_DELAY	BIT_U32(16)
 #define TPR10_DX_BIT_DELAY0	BIT_U32(17)
