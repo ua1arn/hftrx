@@ -114,6 +114,7 @@ static int hwacc_waitdone(void)
 		if (-- n == 0)
 		{
 			PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
+			PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
 			return 0;
 		}
 	}
@@ -722,7 +723,7 @@ void arm_hardware_mdma_initialize(void)
 		// G2D version=01010100
 		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
-		memset(G2D_TOP, 0xFF, 256 * 1024);
+		//memset(G2D_TOP, 0xFF, 256 * 1024);
 		if (0)
 		{
 			uintptr_t base = 0x01480000;
@@ -1955,9 +1956,51 @@ void hwaccel_bitblt(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
+#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 	// RCQ
-	#warning T507/H616 RCQ BITBLT should be implemented
+	enum { PIXEL_SIZE = sizeof * src };
+	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const uintptr_t taddr = (uintptr_t) dst;
+	const uintptr_t saddr = (uintptr_t) src;
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
+	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
+
+	G2D_ROT->ROT_CTL = 0;
+	G2D_ROT->ROT_IFMT = VI_ImageFormat;
+	G2D_ROT->ROT_IPITCH0 = sstride;
+//	G2D_ROT->ROT_IPITCH1 = sstride;
+//	G2D_ROT->ROT_IPITCH2 = sstride;
+	G2D_ROT->ROT_ISIZE = ssizehw;
+	G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
+	G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
+//	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
+//	G2D_ROT->ROT_IHADD1 = ptr_hi32(saddr) & 0xff;
+//	G2D_ROT->ROT_ILADD2 = ptr_lo32(saddr);
+//	G2D_ROT->ROT_IHADD2 = ptr_hi32(saddr) & 0xff;
+
+	G2D_ROT->ROT_OPITCH0 = tstride;
+//	G2D_ROT->ROT_OPITCH1 = tstride;
+//	G2D_ROT->ROT_OPITCH2 = tstride;
+	G2D_ROT->ROT_OSIZE = tsizehw;
+	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
+	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
+//	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
+//	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
+//	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
+//	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
+
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
+
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);	// ENABLE
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);
+	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
+	G2D_ROT->ROT_CTL &= ~ (UINT32_C(1) << 31);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Копирование - использование G2D для формирования изображений */
