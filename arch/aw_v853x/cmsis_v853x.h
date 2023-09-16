@@ -1087,11 +1087,11 @@ typedef struct DE_BLD_Type
                  uint32_t reserved_0x00C;
     } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..3] - but six elements */
              uint32_t reserved_0x064 [0x0007];
-    volatile uint32_t ROUTE;                          /*!< Offset 0x080 BLD_CH_RTCTL Offset 0x080 BLD routing control register */
-    volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 Offset 0x080 BLD pre-multiply control register */
+    volatile uint32_t ROUTE;                          /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
+    volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 BLD pre-multiply control register */
     volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */
     volatile uint32_t OUTPUT_SIZE;                    /*!< Offset 0x08C  */
-    volatile uint32_t BLD_MODE [0x006];               /*!< Offset 0x090 BLD_CTL */
+    volatile uint32_t BLD_MODE [0x006];               /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE */
              uint32_t reserved_0x0A8 [0x0002];
     volatile uint32_t CK_CTL;                         /*!< Offset 0x0B0  */
     volatile uint32_t CK_CFG;                         /*!< Offset 0x0B4  */
@@ -1157,16 +1157,16 @@ typedef struct DE_VI_Type
         volatile uint32_t ATTR;                       /*!< Offset 0x000  */
         volatile uint32_t SIZE;                       /*!< Offset 0x004  */
         volatile uint32_t COORD;                      /*!< Offset 0x008  */
-        volatile uint32_t PITCH [0x003];              /*!< Offset 0x00C  */
+        volatile uint32_t PITCH [0x003];              /*!< Offset 0x00C ix=0: Y, ix=1: U/UV channel, ix=3: V channel  */
         volatile uint32_t TOP_LADDR [0x003];          /*!< Offset 0x018  */
         volatile uint32_t BOT_LADDR [0x003];          /*!< Offset 0x024  */
     } CFG [0x004];                                    /*!< Offset 0x000  */
     volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
     volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
     volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8  */
-    volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0  */
-    volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8  */
+    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
+    volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
+    volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DMAC

@@ -35,12 +35,12 @@
 #regdef; BLD_CH_OFFSET;	0x008; BLD input memory offset register
 #regdef; padding 0; 0x010; Need for address arithmetics
 #aggregend;
-#regdef; ROUTE;			0x080; 		BLD_CH_RTCTL Offset 0x080 BLD routing control register
-#regdef; PREMULTIPLY; 	0x084; Offset 0x080 BLD pre-multiply control register
+#regdef; ROUTE;			0x0080; BLD_CH_RTCTL BLD routing control register (default value 0x00543210)
+#regdef; PREMULTIPLY; 	0x0084; BLD pre-multiply control register
 #regdef; BKCOLOR; 0x088;
 #regdef; OUTPUT_SIZE; 0x08C;
-#regdef; BLD_MODE; 0x090 6; BLD_CTL
-#regdef; CK_CTL; 0x0B0;
+#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE
+#regdef; CK_CTL; 0x00B0;
 #regdef; CK_CFG; 0x0B4;
 #regdef; CK_MAX; 0x0C0 4;
 #regdef; CK_MIN; 0x0E0 4;
@@ -53,16 +53,16 @@
 #regdef; ATTR; 0x000;
 #regdef; SIZE; 0x004;
 #regdef; COORD; 0x008;
-#regdef; PITCH; 0x00C 3;
+#regdef; PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
 #regdef; TOP_LADDR; 0x018 3;
 #regdef; BOT_LADDR; 0x024 3;
 #aggregend;
 #regdef; FCOLOR; 0x0C0 4;
 #regdef; TOP_HADDR; 0x0D0 3;
 #regdef; BOT_HADDR; 0x0DC 3;
-#regdef; OVL_SIZE; 0x0E8 2;
-#regdef; HORI; 0x0F0 2;
-#regdef; VERT; 0x0F8 2;
+#regdef; OVL_SIZE; 0x0E8 2; OVL_V overlay window size register
+#regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
+#regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
 
 #type; DE_UI; Display Engine (DE) - UI surface
 #base; DE_UI1 0x05103000

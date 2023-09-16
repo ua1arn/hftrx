@@ -5541,7 +5541,7 @@
    <register>
     <name>ROUTE</name>
     <displayName>ROUTE</displayName>
-    <description>BLD_CH_RTCTL Offset 0x080 BLD routing control register</description>
+    <description>BLD_CH_RTCTL BLD routing control register (default value 0x00543210)</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5550,7 +5550,7 @@
    <register>
     <name>PREMULTIPLY</name>
     <displayName>PREMULTIPLY</displayName>
-    <description>Offset 0x080 BLD pre-multiply control register</description>
+    <description>BLD pre-multiply control register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5580,7 +5580,7 @@
     <register>
      <name>BLD_MODE</name>
      <displayName>BLD_MODE</displayName>
-     <description>BLD_CTL</description>
+     <description>BLD_CTL SUN8I_MIXER_BLEND_MODE</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -5899,7 +5899,7 @@
       <register>
        <name>PITCH</name>
        <displayName>PITCH</displayName>
-       <description></description>
+       <description>ix=0: Y, ix=1: U/UV channel, ix=3: V channel </description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
        <access>read-write</access>
@@ -5986,7 +5986,7 @@
     <register>
      <name>OVL_SIZE</name>
      <displayName>OVL_SIZE</displayName>
-     <description></description>
+     <description>OVL_V overlay window size register</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -6000,7 +6000,7 @@
     <register>
      <name>HORI</name>
      <displayName>HORI</displayName>
-     <description></description>
+     <description>OVL_V horizontal down sample control register</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -6014,7 +6014,7 @@
     <register>
      <name>VERT</name>
      <displayName>VERT</displayName>
-     <description></description>
+     <description>OVL_V vertical down sample control register</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
