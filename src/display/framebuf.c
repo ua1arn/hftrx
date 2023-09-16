@@ -682,7 +682,9 @@ void arm_hardware_mdma_initialize(void)
 		local_delay_ms(10);
 
 		PRINTF("G2D_TOP:\n");
-		printhex32(G2D_TOP, (void *) G2D_TOP, 256);
+		printhex32(G2D_TOP_BASE, G2D_TOP, sizeof * G2D_TOP);
+		PRINTF("G2D_MIXER:\n");
+		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
