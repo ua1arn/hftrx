@@ -5293,6 +5293,7 @@ void refreshDMA_uacin48(void)
 	if (newdata != 0)
 	{
 		const uintptr_t descbase = (uintptr_t) uacin48_descr0;
+		ASSERT(uacin48_descr0 [0] [ix] == 0);
 		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
 		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
 		dcache_clean(descbase, sizeof uacin48_descr0 [0]);
@@ -5425,6 +5426,7 @@ void refreshDMA_uacinrts96(void)
 	if (newdata != 0)
 	{
 		uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
+		ASSERT(uacinrts96_descr0 [0] [ix] == 0);
 		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
 		uacinrts96_descr0 [0] [5] = 0xFFFFF800;	// Link to next
 		dcache_clean(descbase, sizeof uacinrts96_descr0 [0]);
