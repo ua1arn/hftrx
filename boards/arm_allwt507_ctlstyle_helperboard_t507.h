@@ -663,7 +663,7 @@
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
-			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
+			PASENSEIX = BOARD_ADCX1IN(5),		// MCP3208 CH5 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -674,7 +674,7 @@
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
-			FWD = BOARD_ADCX1IN(4), REF = BOARD_ADCX1IN(5),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
+			FWD = BOARD_ADCX1IN(3), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
