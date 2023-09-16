@@ -216,33 +216,46 @@ hwaccel_rotcopy(
 static void t113_fillrect(
 	uintptr_t taddr,
 	uint_fast32_t tstride,
-	uint_fast32_t tsizehw,
-	unsigned alpha,
-	COLOR24_T color24,
+	uint_fast32_t tsizehw_unused,
+	unsigned alpha_unused,
+	COLOR24_T color24_unused,
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет
 	)
 {
-	color = COLORPIP_BLUE;
 	const size_t px = sizeof (PACKEDCOLORPIP_T);
 	ASSERT(w >= 2);
 	ASSERT(h >= 1);
-	* (PACKEDCOLORPIP_T *) (taddr + 0) = color;
-	* (PACKEDCOLORPIP_T *) (taddr + px) = color;
-	dcache_clean(taddr, px);
+	//color = COLORPIP_BLUE;
 
-	if (w > 2)
+	if (w > 1)
 	{
 		// Заполнение по горизонтали
-		const uint_fast32_t horovlsizehw = ((h - 1) << 16) | ((w - 2 - 1) << 0);
-		hwaccel_rotcopy(taddr, tstride, horovlsizehw, taddr + px * 2, tstride, horovlsizehw);
-	}
-	if (h > 1)
-	{
-		// Заполнение по вертикали
-		const uint_fast32_t vertovlsizehw = ((h - 1 - 1) << 16) | ((w - 1) << 0);
-		hwaccel_rotcopy(taddr, tstride, vertovlsizehw, taddr + tstride, tstride, vertovlsizehw);
+//		const uint_fast32_t horovlsizehw = ((1 - 1) << 16) | ((w - 1 - 1) << 0);
+//		* (volatile PACKEDCOLORPIP_T *) taddr = color;
+//		dcache_clean_invalidate(taddr, px);
+//		hwaccel_rotcopy(taddr, tstride, horovlsizehw, taddr + px, tstride, horovlsizehw);
+		unsigned pos;
+		for (pos = 0; pos < w; ++ pos)
+		{
+			* (volatile PACKEDCOLORPIP_T *) (taddr + pos * px) = color;
+		}
+		dcache_clean_invalidate(taddr, px * w);
+		if (h > 1)
+		{
+			// Заполнение по вертикали
+//			const uint_fast32_t vertovlsizehw = ((h - 1 - 1) << 16) | ((w - 1) << 0);
+//			hwaccel_rotcopy(taddr, tstride, vertovlsizehw, taddr + tstride, tstride, vertovlsizehw);
+			unsigned row;
+			for (row = 1; row < h; ++ row)
+			{
+//				memcpy((void *) (taddr + (tstride * row)), (void *) taddr + (tstride * (row - 1)), px * w);
+//				dcache_clean_invalidate(taddr + (tstride * row), px * w);
+				const uint_fast32_t r1ovlsizehw = ((1 - 1) << 16) | ((w - 1) << 0);
+				hwaccel_rotcopy(taddr, tstride, r1ovlsizehw, taddr + (tstride * row), tstride, r1ovlsizehw);
+			}
+		}
 	}
 }
 

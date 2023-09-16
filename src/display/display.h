@@ -336,7 +336,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
 
 	#else /* LCDMODE_MAIN_L8 */
-
 		//#define LCDMODE_RGB565 1
 		typedef uint_fast16_t COLORPIP_T;
 		typedef uint16_t PACKEDCOLORPIP_T;
@@ -358,21 +357,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		#define COLORPIP_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
 
 	#endif /* LCDMODE_MAIN_L8 */
-
-	#if LCDMODE_PIP_L8
-		typedef uint8_t PACKEDCOLORPIP_T;
-		typedef uint_fast8_t COLORPIP_T;
-
-	#elif LCDMODE_PIP_RGB565
-		typedef uint16_t PACKEDCOLORPIP_T;
-		typedef uint_fast16_t COLORPIP_T;
-
-	#else /* LCDMODE_PIP_RGB565 */
-		/* если только MAIN - тип PIP соответствует */
-		typedef PACKEDCOLORPIP_T PACKEDCOLORPIP_T;
-		typedef COLORPIP_T COLORPIP_T;
-
-	#endif /* LCDMODE_PIP_L8 */
 
 #endif /* LCDMODE_LTDC */
 
