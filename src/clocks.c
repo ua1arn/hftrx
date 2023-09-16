@@ -2422,7 +2422,8 @@ static void allwnr_t507_module_pll_enable(volatile uint32_t * reg)
 }
 
 void allwnr_t507_pll_initialize(int forced)
-{}
+{
+}
 
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
@@ -8522,6 +8523,12 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
+
+//	CCU->MBUS_CFG_REG = 0;
+//	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 31);	// CLK_GATING
+//	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);	// MBUS_RST
+	CCU->MBUS_CFG_REG = 0xC1000002;	// MBUS freq = 400 MHz (01: PLL_PERI0(2X) / 3)
+	//CCU->MBUS_CFG_REG = 0xC0000000;
 
 #if CPUSTYLE_H616
 	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
