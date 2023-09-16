@@ -5293,6 +5293,12 @@ void refreshDMA_uacin48(void)
 	if (newdata != 0)
 	{
 		const uintptr_t descbase = (uintptr_t) uacin48_descr0;
+		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+		ASSERT(DMAC->CH [dmach].DMAC_EN_REGN == 0);
+		const uintptr_t oldaddr = descraddr [ix];
+		if (oldaddr)
+			release_dmabufferuacin48(oldaddr);
+		descraddr [ix] = 0;
 		ASSERT(uacin48_descr0 [0] [ix] == 0);
 		uacin48_descr0 [0] [ix] = dma_flushuacin48(newdata);			// Source Address
 		uacin48_descr0 [0] [5] = 0xFFFFF800;	// Link to next
@@ -5426,6 +5432,12 @@ void refreshDMA_uacinrts96(void)
 	if (newdata != 0)
 	{
 		uintptr_t descbase = (uintptr_t) uacinrts96_descr0;
+		volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+		ASSERT(DMAC->CH [dmach].DMAC_EN_REGN == 0);
+		const uintptr_t oldaddr = descraddr [ix];
+		descraddr [ix] = 0;
+		if (oldaddr)
+			release_dmabufferuacinrts96(oldaddr);
 		ASSERT(uacinrts96_descr0 [0] [ix] == 0);
 		uacinrts96_descr0 [0] [ix] = dma_flushuacinrts96(newdata);			// Source Address
 		uacinrts96_descr0 [0] [5] = 0xFFFFF800;	// Link to next
