@@ -6,14 +6,14 @@
 
 #regdef; G2D_SCLK_GATE  ; 0x00 ; G2D SCLK gate  
 #regdef; G2D_HCLK_GATE  ; 0x04 ; g2d HCLK gate  
-#regdef; G2D_AHB_RESET  ; 0x08 ; G2D AHB reset  
+#regdef; G2D_AHB_RST  ; 0x08 ; G2D AHB reset  
 #regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
 
 #type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
 #base; G2D_MIXER 0x05410100
 
-#regdef; G2D_MIXER_CTL; 0x00; G2D mixer control
-#regdef; G2D_MIXER_INT; 0x04; G2D mixer interrupt
+#regdef; G2D_MIXER_CTRL; 0x00; G2D mixer control
+#regdef; G2D_MIXER_INTERRUPT; 0x04; G2D mixer interrupt
 #regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock
 
 #type; G2D_BLD; Graphic 2D (G2D) Engine Blender

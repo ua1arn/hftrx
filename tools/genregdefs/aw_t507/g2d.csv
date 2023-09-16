@@ -3,19 +3,34 @@
 
 #irq; G2D 122
 
-#regdef; G2D_SCLK_GATE  ; 0x00 ; G2D SCLK gate  
-#regdef; G2D_HCLK_GATE  ; 0x04 ; g2d HCLK gate  
-#regdef; G2D_AHB_RESET  ; 0x08 ; G2D AHB reset  
-#regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
+# https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/arch/arm64/boot/dts/sunxi/sun50iw9p1-myir.dtsi#L1460
+
+# https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/char/sunxi_g2d/g2d_rcq/g2d_top_type.h#L111
+
+# struct g2d_top_reg
+
+#regdef; G2D_SCLK_GATE;	0x000;
+#regdef; G2D_HCLK_GATE;	0x004;
+#regdef; G2D_AHB_RST;	0x008;
+#regdef; G2D_SCLK_DIV;	0x00C;
+#regdef; G2D_VERSION;	0x010;
+#regdef; RCQ_IRQ_CTL;	0x020;
+#regdef; RCQ_STATUS;	0x024;
+#regdef; RCQ_CTRL;		0x028;
+#regdef; RCQ_HEADER_LOW_ADDR;	0x02C;
+#regdef; RCQ_HEADER_HIGH_ADDR;	0x030;
+#regdef; RCQ_HEADER_LEN;	0x034;	Low 16 bit - length
 
 #type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
 #base; G2D_MIXER 0x01480100
 
 # G2D_TOP + 0x0100
 
-#regdef; G2D_MIXER_CTL; 0x00; G2D mixer control
-#regdef; G2D_MIXER_INT; 0x04; G2D mixer interrupt
-#regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock
+# https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/char/sunxi_g2d/g2d_rcq/g2d_top_type.h#L153
+# struct g2d_mixer_glb_reg
+
+#regdef; G2D_MIXER_CTRL;	0x000;
+#regdef; G2D_MIXER_INTERRUPT;	0x004;
 
 #type; G2D_BLD; Graphic 2D (G2D) Engine Blender
 #base; G2D_BLD 0x01480400

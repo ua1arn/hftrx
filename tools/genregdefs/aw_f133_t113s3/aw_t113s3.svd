@@ -6956,8 +6956,8 @@
   <baseAddress>0x05410100</baseAddress>
   <registers>
    <register>
-    <name>G2D_MIXER_CTL</name>
-    <displayName>G2D_MIXER_CTL</displayName>
+    <name>G2D_MIXER_CTRL</name>
+    <displayName>G2D_MIXER_CTRL</displayName>
     <description>G2D mixer control</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -6965,8 +6965,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>G2D_MIXER_INT</name>
-    <displayName>G2D_MIXER_INT</displayName>
+    <name>G2D_MIXER_INTERRUPT</name>
+    <displayName>G2D_MIXER_INTERRUPT</displayName>
     <description>G2D mixer interrupt</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -7236,8 +7236,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>G2D_AHB_RESET</name>
-    <displayName>G2D_AHB_RESET</displayName>
+    <name>G2D_AHB_RST</name>
+    <displayName>G2D_AHB_RST</displayName>
     <description>G2D AHB reset  </description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>

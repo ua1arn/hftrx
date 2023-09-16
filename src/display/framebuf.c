@@ -64,7 +64,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 /* Отключаем все источники */
 static void awxx_g2d_reset(void)
 {
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
 
 	//	memset(G2D_V0, 0, sizeof * G2D_V0);
 	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
@@ -73,8 +73,8 @@ static void awxx_g2d_reset(void)
 	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 	//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-	//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	G2D_VSU->VS_CTRL = 0;
 	G2D_ROT->ROT_CTL = 0;
@@ -94,11 +94,11 @@ static int hwacc_waitdone(void)
 	for (;;)
 	{
 		const uint_fast32_t MASK = (1u << 0);	/* FINISH_IRQ */
-		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INT;
+		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
 		if (((mixer_int & MASK) != 0))
 		{
-			G2D_MIXER->G2D_MIXER_INT = MASK;
+			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
 			break;
 		}
 		if (((rot_int & MASK) != 0))
@@ -109,7 +109,7 @@ static int hwacc_waitdone(void)
 		hardware_nonguiyield();
 		if (-- n == 0)
 		{
-			PRINTF("G2D_MIXER->G2D_MIXER_CTL=%08X, G2D_MIXER->G2D_MIXER_INT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTL, (unsigned) G2D_MIXER->G2D_MIXER_INT);
+			PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
 			return 0;
 		}
 	}
@@ -119,13 +119,13 @@ static int hwacc_waitdone(void)
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_startandwait(void)
 {
-	G2D_MIXER->G2D_MIXER_CTL |= (1u << 31);	/* start the module */
+	G2D_MIXER->G2D_MIXER_CTRL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("awxx_g2d_startandwait: timeout G2D_MIXER->G2D_MIXER_CTL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTL);
+		PRINTF("awxx_g2d_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
 		ASSERT(0);
 	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1u << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
 }
 
 static unsigned awxx_get_ui_attr(unsigned srcFormat)
@@ -674,15 +674,35 @@ void arm_hardware_mdma_initialize(void)
 		(void) G2D_TOP->G2D_SCLK_GATE;
 		G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 		(void) G2D_TOP->G2D_HCLK_GATE;
-		G2D_TOP->G2D_AHB_RESET &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_AHB_RESET;
-		G2D_TOP->G2D_AHB_RESET |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-		(void) G2D_TOP->G2D_AHB_RESET;
+		G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+		(void) G2D_TOP->G2D_AHB_RST;
+		G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+		(void) G2D_TOP->G2D_AHB_RST;
 
 		local_delay_ms(10);
 
+		{
+			uintptr_t base = 0x01480000;
+			unsigned size = 256 * 1024;
+			//memset((void *) base, 0xFF, size);
+			static const uint8_t pattern [256];
+			unsigned offs;
+
+			for (offs = 0; offs < size; offs += sizeof pattern)
+			{
+				if (memcmp((void *) (base + offs), pattern, sizeof pattern) == 0)
+				{
+					PRINTF(".");
+					continue;
+				}
+				PRINTF("at %08X:\n", base + offs);
+				printhex32((base + offs), (void *) (base + offs), sizeof pattern);
+			}
+		}
+		memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
 		PRINTF("G2D_TOP:\n");
 		printhex32(G2D_TOP_BASE, G2D_TOP, sizeof * G2D_TOP);
+		memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
 		PRINTF("G2D_MIXER:\n");
 		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
 	}
@@ -725,10 +745,10 @@ void arm_hardware_mdma_initialize(void)
 	(void) G2D_TOP->G2D_SCLK_GATE;
 	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_HCLK_GATE;
-	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	(void) G2D_TOP->G2D_AHB_RESET;
-	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	(void) G2D_TOP->G2D_AHB_RESET;
+	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RST;
+	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RST;
 
 	local_delay_ms(10);
 #else
@@ -1004,7 +1024,7 @@ hwaccel_rect_u16(
 		return;
 	}
 
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
@@ -1151,7 +1171,7 @@ hwaccel_rect_u24(
 	const unsigned stride = GXADJ(dx);
 	(void) G2D;
 
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
 #else
 	// программная реализация
@@ -1901,10 +1921,10 @@ void hwaccel_bitblt(
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	ASSERT((G2D_MIXER->G2D_MIXER_CTL & (1uL << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
 	awxx_g2d_reset(); /* Отключаем все источники */
 
@@ -2103,8 +2123,8 @@ void hwaccel_stretchblt(
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 //	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 
@@ -2123,8 +2143,8 @@ void hwaccel_stretchblt(
 
 	awxx_g2d_reset();	/* Отключаем все источники */
 
-//	G2D_TOP->G2D_AHB_RESET &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RESET |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 
 	if (w != sw || h != sh)
