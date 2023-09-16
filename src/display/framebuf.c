@@ -1997,10 +1997,10 @@ void hwaccel_bitblt(
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
 
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);	// ENABLE
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
 	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
-	G2D_ROT->ROT_CTL &= ~ (UINT32_C(1) << 31);
+	//G2D_ROT->ROT_CTL &= ~ (UINT32_C(1) << 31);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Копирование - использование G2D для формирования изображений */
