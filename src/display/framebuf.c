@@ -135,7 +135,7 @@ static void awxx_g2d_startandwait(void)
 
 static void t507_rcq(uintptr_t buff, unsigned len)
 {
-	G2D_TOP->RCQ_CTRL = 0;
+	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
 	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
 	G2D_TOP->RCQ_HEADER_LEN = len;
@@ -150,18 +150,58 @@ static void awxx_vsu_load(void)
 {
 }
 
-// RCQ
 static void t113_fillrect(
 	uintptr_t taddr,
 	uint_fast32_t tstride,
 	uint_fast32_t tsizehw,
 	unsigned alpha,
-	COLOR24_T color
+	COLOR24_T color24,
+	COLORPIP_T color	// цвет
 	)
 {
-	//#warning T507 RCQ FILLRECT should be implemented
-
+	#warning T507/H616 FILLRECT should be implemented
 	//t507_rcq(taddr, 64);
+
+	enum { sh = 2, sw = 2 };
+	static const PACKEDCOLORPIP_T dc [4] = { 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, };
+
+	unsigned sstride = 8;
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
+	const uintptr_t saddr = (uintptr_t) & dc;
+
+	G2D_ROT->ROT_CTL = 0;
+	G2D_ROT->ROT_IFMT = VI_ImageFormat;
+	G2D_ROT->ROT_IPITCH0 = sstride;
+//	G2D_ROT->ROT_IPITCH1 = sstride;
+//	G2D_ROT->ROT_IPITCH2 = sstride;
+	G2D_ROT->ROT_ISIZE = ssizehw;
+	G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
+	G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
+//	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
+//	G2D_ROT->ROT_IHADD1 = ptr_hi32(saddr) & 0xff;
+//	G2D_ROT->ROT_ILADD2 = ptr_lo32(saddr);
+//	G2D_ROT->ROT_IHADD2 = ptr_hi32(saddr) & 0xff;
+
+	G2D_ROT->ROT_OPITCH0 = tstride;
+//	G2D_ROT->ROT_OPITCH1 = tstride;
+//	G2D_ROT->ROT_OPITCH2 = tstride;
+	G2D_ROT->ROT_OSIZE = tsizehw;
+	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
+	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
+//	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
+//	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
+//	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
+//	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
+
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
+
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
+	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
+	//G2D_ROT->ROT_CTL &= ~ (UINT32_C(1) << 31);
+
 }
 
 #else
@@ -390,7 +430,8 @@ static void t113_fillrect(
 	uint_fast32_t tstride,
 	uint_fast32_t tsizehw,
 	unsigned alpha,
-	COLOR24_T color
+	COLOR24_T color24,
+	COLORPIP_T pipecolor	// цвет
 	)
 {
 
@@ -407,7 +448,7 @@ static void t113_fillrect(
 
 	/* Используем для заполнения BLD_FILLC0 цвет и прозрачность
 	 */
-	G2D_BLD->BLD_FILL_COLOR [0] = (alpha << 24) | (color & 0xFFFFFF); // цвет и alpha канал
+	G2D_BLD->BLD_FILL_COLOR [0] = (alpha << 24) | (color24 & 0xFFFFFF); // цвет и alpha канал
 
 	G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 	G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
@@ -1090,7 +1131,7 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)));
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1388,7 +1429,7 @@ hwaccel_rect_u32(
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF));
+	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1957,7 +1998,7 @@ void hwaccel_bitblt(
 	__DMB();
 
 #elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
-	// RCQ
+
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
@@ -1971,10 +2012,10 @@ void hwaccel_bitblt(
 
 	G2D_ROT->ROT_CTL = 0;
 	G2D_ROT->ROT_IFMT = VI_ImageFormat;
+	G2D_ROT->ROT_ISIZE = ssizehw;
 	G2D_ROT->ROT_IPITCH0 = sstride;
 //	G2D_ROT->ROT_IPITCH1 = sstride;
 //	G2D_ROT->ROT_IPITCH2 = sstride;
-	G2D_ROT->ROT_ISIZE = ssizehw;
 	G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
 	G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
 //	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
@@ -2220,8 +2261,8 @@ void hwaccel_stretchblt(
 	ASSERT(dy >= h);
 
 #if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
-	// RCQ
-	#warning T507/H616 RCQ STRETCH BLT should be implemented
+
+	#warning T507/H616 STRETCH BLT should be implemented
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Использование G2D для формирования изображений */

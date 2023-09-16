@@ -1828,7 +1828,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
 #define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	// https://github.com/RMerl/asuswrt-merlin.ng/blob/master/release/src-rt-5.04axhnd.675x/bootloaders/u-boot-2019.07/arch/arm/include/asm/arch-sunxi/display2.h#L16
 	// struct de_clk
@@ -2225,7 +2225,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 //	write32(DE_BASE + T113_DE_MUX_FCC, 0);
 //	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
 
-#if CPUSTYLE_T507
+#if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 //	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
 //	bld->CSC_CTL = 0;
@@ -2295,7 +2295,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned preiPOW, unsigned tconlcddiv)
 {
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
-#if CPUSTYLE_T507
+#if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -2402,7 +2402,7 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 // step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 {
-#if ! CPUSTYLE_T507
+#if ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
@@ -2594,7 +2594,8 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		timing.den_active = ! vdmode->deneg;
 		timing.clk_active = 0;
 
-#if CPUSTYLE_T507
+#if 0//(CPUSTYLE_T507 || CPUSTYLE_H616)
+		// вызывает сдвиг на пиксель
 		val = 0;
 #else
 		val =
@@ -2690,7 +2691,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
-#if ! CPUSTYLE_T507
+#if ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	unsigned prei = 0;
 	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
