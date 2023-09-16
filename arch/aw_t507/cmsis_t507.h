@@ -140,10 +140,6 @@ typedef enum IRQn
 #define DE_BLD2_BASE ((uintptr_t) 0x012A1000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
-#define G2D_V0_BASE ((uintptr_t) 0x01480800)          /*!< G2D_VI Graphic 2D VI surface Base */
-#define G2D_UI0_BASE ((uintptr_t) 0x01481000)         /*!< G2D_UI Graphic 2D UI surface Base */
-#define G2D_UI1_BASE ((uintptr_t) 0x01481800)         /*!< G2D_UI Graphic 2D UI surface Base */
-#define G2D_UI2_BASE ((uintptr_t) 0x01482000)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
 #define CE_NS_BASE ((uintptr_t) 0x01904000)           /*!< CE The Crypto Engine (CE) module Base */
@@ -942,44 +938,6 @@ typedef struct G2D_TOP_Type
     volatile uint32_t RCQ_HEADER_LEN;                 /*!< Offset 0x034 Low 16 bit - length */
 } G2D_TOP_TypeDef; /* size of structure = 0x038 */
 /*
- * @brief G2D_UI
- */
-/*!< G2D_UI Graphic 2D UI surface */
-typedef struct G2D_UI_Type
-{
-    volatile uint32_t UI_ATTR;                        /*!< Offset 0x000 UIx_ATTR */
-    volatile uint32_t UI_MBSIZE;                      /*!< Offset 0x004 UIx_MBSIZE */
-    volatile uint32_t UI_COOR;                        /*!< Offset 0x008 UIx_COOR */
-    volatile uint32_t UI_PITCH;                       /*!< Offset 0x00C UIx_PITCH */
-    volatile uint32_t UI_LADD;                        /*!< Offset 0x010 UIx_LADD */
-    volatile uint32_t UI_FILLC;                       /*!< Offset 0x014 UIx_FILLC */
-    volatile uint32_t UI_HADD;                        /*!< Offset 0x018 UIx_HADD */
-    volatile uint32_t UI_SIZE;                        /*!< Offset 0x01C UIx_SIZE */
-} G2D_UI_TypeDef; /* size of structure = 0x020 */
-/*
- * @brief G2D_VI
- */
-/*!< G2D_VI Graphic 2D VI surface */
-typedef struct G2D_VI_Type
-{
-    volatile uint32_t V0_ATTCTL;                      /*!< Offset 0x000 V0_ATTCTL */
-    volatile uint32_t V0_MBSIZE;                      /*!< Offset 0x004 Source rectangle size (may be empty) */
-    volatile uint32_t V0_COOR;                        /*!< Offset 0x008 Target window position */
-    volatile uint32_t V0_PITCH0;                      /*!< Offset 0x00C V0_PITCH0 */
-    volatile uint32_t V0_PITCH1;                      /*!< Offset 0x010 V0_PITCH1 */
-    volatile uint32_t V0_PITCH2;                      /*!< Offset 0x014 V0_PITCH2 */
-    volatile uint32_t V0_LADD0;                       /*!< Offset 0x018 V0_LADD0 */
-    volatile uint32_t V0_LADD1;                       /*!< Offset 0x01C V0_LADD1 */
-    volatile uint32_t V0_LADD2;                       /*!< Offset 0x020 V0_LADD2 */
-    volatile uint32_t V0_FILLC;                       /*!< Offset 0x024 V0_FILLC */
-    volatile uint32_t V0_HADD;                        /*!< Offset 0x028 [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32 */
-    volatile uint32_t V0_SIZE;                        /*!< Offset 0x02C Source window size (may not be empty) */
-    volatile uint32_t V0_HDS_CTL0;                    /*!< Offset 0x030 V0_HDS_CTL0 */
-    volatile uint32_t V0_HDS_CTL1;                    /*!< Offset 0x034 V0_HDS_CTL1 */
-    volatile uint32_t V0_VDS_CTL0;                    /*!< Offset 0x038 V0_VDS_CTL0 */
-    volatile uint32_t V0_VDS_CTL1;                    /*!< Offset 0x03C V0_VDS_CTL1 */
-} G2D_VI_TypeDef; /* size of structure = 0x040 */
-/*
  * @brief GPIO
  */
 /*!< GPIO  */
@@ -1720,10 +1678,6 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_BLD2 ((DE_BLD_TypeDef *) DE_BLD2_BASE)     /*!< DE_BLD2 Display Engine (DE) - Blender register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
-#define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0 Graphic 2D VI surface register set access pointer */
-#define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Graphic 2D UI surface register set access pointer */
-#define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Graphic 2D UI surface register set access pointer */
-#define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Graphic 2D UI surface register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S The Crypto Engine (CE) module register set access pointer */

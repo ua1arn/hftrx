@@ -122,15 +122,26 @@ static int hwacc_waitdone(void)
 }
 
 /* Запускаем и ждём завершения обработки */
-static void awxx_g2d_startandwait(void)
+static void awxx_g2d_rtmix_startandwait(void)
 {
 	G2D_MIXER->G2D_MIXER_CTRL |= (1u << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
-		PRINTF("awxx_g2d_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
+}
+
+static void awxx_g2d_rot_startandwait(void)
+{
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
+	if (hwacc_waitdone() == 0)
+	{
+		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+		ASSERT(0);
+	}
+	ASSERT((G2D_ROT->ROT_CTL & (1u << 31)) == 0);
 }
 
 static void t507_rcq(uintptr_t buff, unsigned len)
@@ -159,6 +170,7 @@ static void t113_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
+#if 0
 	#warning T507/H616 FILLRECT should be implemented
 	//t507_rcq(taddr, 64);
 
@@ -198,10 +210,9 @@ static void t113_fillrect(
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
 
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
-	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
-	//G2D_ROT->ROT_CTL &= ~ (UINT32_C(1) << 31);
+	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
 
+#endif
 }
 
 #else
@@ -466,7 +477,7 @@ static void t113_fillrect(
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
-	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
+	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
 }
 #endif
 
@@ -2039,9 +2050,7 @@ void hwaccel_bitblt(
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
 
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
-	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
-	//G2D_ROT->ROT_CTL &= ~ (UINT32_C(1) << 31);
+	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Копирование - использование G2D для формирования изображений */
@@ -2190,7 +2199,7 @@ void hwaccel_bitblt(
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
-	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
+	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
 
 #else
 	// программная реализация
@@ -2427,7 +2436,7 @@ void hwaccel_stretchblt(
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_SIZE = tsizehw;
 
-	awxx_g2d_startandwait();		/* Запускаем и ждём завершения обработки */
+	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
 
 #else
 

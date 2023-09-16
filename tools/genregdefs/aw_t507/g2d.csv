@@ -45,39 +45,39 @@
 #regdef; G2D_MIXER_CTRL;	0x000;
 #regdef; G2D_MIXER_INTERRUPT;	0x004;
 
-#type; G2D_VI; Graphic 2D VI surface
-#base; G2D_V0 0x01480800
+##type; G2D_VI; Graphic 2D VI surface
+##base; G2D_V0 0x01480800
 
-#regdef; V0_ATTCTL; 0x00; V0_ATTCTL
-#regdef; V0_MBSIZE; 0x04; Source rectangle size (may be empty)
-#regdef; V0_COOR; 0x08; Target window position
-#regdef; V0_PITCH0; 0x0C; V0_PITCH0
-#regdef; V0_PITCH1; 0x10; V0_PITCH1
-#regdef; V0_PITCH2; 0x14; V0_PITCH2
-#regdef; V0_LADD0; 0x18; V0_LADD0
-#regdef; V0_LADD1; 0x1C; V0_LADD1
-#regdef; V0_LADD2; 0x20; V0_LADD2
-#regdef; V0_FILLC; 0x24; V0_FILLC
-#regdef; V0_HADD; 0x28; [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32
-#regdef; V0_SIZE; 0x2C; Source window size (may not be empty)
-#regdef; V0_HDS_CTL0; 0x30; V0_HDS_CTL0
-#regdef; V0_HDS_CTL1; 0x34; V0_HDS_CTL1
-#regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
-#regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
+##regdef; V0_ATTCTL; 0x00; V0_ATTCTL
+##regdef; V0_MBSIZE; 0x04; Source rectangle size (may be empty)
+##regdef; V0_COOR; 0x08; Target window position
+##regdef; V0_PITCH0; 0x0C; V0_PITCH0
+##regdef; V0_PITCH1; 0x10; V0_PITCH1
+##regdef; V0_PITCH2; 0x14; V0_PITCH2
+##regdef; V0_LADD0; 0x18; V0_LADD0
+##regdef; V0_LADD1; 0x1C; V0_LADD1
+##regdef; V0_LADD2; 0x20; V0_LADD2
+##regdef; V0_FILLC; 0x24; V0_FILLC
+##regdef; V0_HADD; 0x28; [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32
+##regdef; V0_SIZE; 0x2C; Source window size (may not be empty)
+##regdef; V0_HDS_CTL0; 0x30; V0_HDS_CTL0
+##regdef; V0_HDS_CTL1; 0x34; V0_HDS_CTL1
+##regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
+##regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
 
-#type; G2D_UI; Graphic 2D UI surface
-#base; G2D_UI0 0x01481000
-#base; G2D_UI1 0x01481800
-#base; G2D_UI2 0x01482000
+##type; G2D_UI; Graphic 2D UI surface
+##base; G2D_UI0 0x01481000
+##base; G2D_UI1 0x01481800
+##base; G2D_UI2 0x01482000
 
-#regdef; UI_ATTR; 0x00; UIx_ATTR
-#regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
-#regdef; UI_COOR; 0x08; UIx_COOR
-#regdef; UI_PITCH; 0x0C; UIx_PITCH
-#regdef; UI_LADD; 0x10; UIx_LADD
-#regdef; UI_FILLC; 0x14; UIx_FILLC
-#regdef; UI_HADD; 0x18; UIx_HADD
-#regdef; UI_SIZE; 0x1C; UIx_SIZE
+##regdef; UI_ATTR; 0x00; UIx_ATTR
+##regdef; UI_MBSIZE; 0x04; UIx_MBSIZE
+##regdef; UI_COOR; 0x08; UIx_COOR
+##regdef; UI_PITCH; 0x0C; UIx_PITCH
+##regdef; UI_LADD; 0x10; UIx_LADD
+##regdef; UI_FILLC; 0x14; UIx_FILLC
+##regdef; UI_HADD; 0x18; UIx_HADD
+##regdef; UI_SIZE; 0x1C; UIx_SIZE
 
 #type; G2D_ROT; Graphic 2D Rotate
 #base; G2D_ROT 0x014A8000
