@@ -279,7 +279,7 @@ bootloader: BOOT2
 	
 # Take from tc1_t507_boot.map
 SystemInitAddr_H616 = 0x000308a0
-SystemInitAddr_T507 = 0x0002f480
+SystemInitAddr_T507 = 0x0002db84
 
 # Invoke SystemInit 
 ddrinit_h616: h616_fsbl_frz.alw32
@@ -289,7 +289,6 @@ ddrinit_h616: h616_fsbl_frz.alw32
 ddrinit_t507:
 	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr_T507)
-	$(XFEL) version
 
 app_run: $(PROJECT)_app.bin ddrinit_t507
 	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
