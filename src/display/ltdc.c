@@ -2933,7 +2933,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getvi(1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
 		0;
 
 	t113_de_update();
@@ -2953,10 +2953,10 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	// 5.10.9.1 BLD fill color control register
 	// BLD_EN_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-		((layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
-		((layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
-		((layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
+		((de3_getvi(1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getui(1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+		((de3_getui(2) != NULL) * (layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
+		((de3_getui(3) != NULL) * (layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
 		0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
@@ -2970,8 +2970,8 @@ void hardware_ltdc_main_set(uintptr_t p1)
 	//t113_de_set_address_ui(p1, 1);
 
 	de3_getbld(BLDIX)->BLD_EN_COLOR_CTL =
-			((p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-			//((p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+			((de3_getvi(1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+			//((de3_getui(1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
 			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
