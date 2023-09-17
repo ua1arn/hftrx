@@ -54,8 +54,8 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
 CORE = -mcpu=cortex-a53
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv4
-CORE += -mfpu=vfpv4
+CORE += -mfpu=neon-vfpv4
+#CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 #OPT = -Og
