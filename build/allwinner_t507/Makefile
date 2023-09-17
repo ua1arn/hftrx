@@ -60,7 +60,7 @@ CORE += -mfpu=vfpv4
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Os
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -279,7 +279,7 @@ bootloader: BOOT2
 	
 # Take from tc1_t507_boot.map
 SystemInitAddr_H616 = 0x000308a0
-SystemInitAddr_T507 = 0x0002db84
+SystemInitAddr_T507 = 0x0002c1e4
 
 # Invoke SystemInit 
 ddrinit_h616: h616_fsbl_frz.alw32

@@ -2390,6 +2390,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	//dbp();
 	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
 
+#if 0
 	if (xdramc_simple_wr_test(memsizeMB, 64))
 	{
 		PRINTF("xdramc_simple_wr_test failed\n");
@@ -2416,7 +2417,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 			//TP();
 		}
 	}
-
+#endif
 	//	memset((void *) CONFIG_SYS_SDRAM_BASE, 0, 128u << 20);
 	//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 	//	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
