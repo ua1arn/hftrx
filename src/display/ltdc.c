@@ -1955,14 +1955,14 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define BLDIX 1
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
-	#define UI_LASTIX 1
 	#define VI_LASTIX 1
+	#define UI_LASTIX 1
 	/* BLD_EN_COLOR_CTL positions 8..11 */
 	#define VI_POS_BIT(vi) (1u << ((vi) + 8 - 1))
 	#define UI_POS_BIT(ui) (1u << ((ui) + 9 - 1))
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
-	#define UI_LASTIX 3
 	#define VI_LASTIX 1
+	#define UI_LASTIX 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 	#define VI_POS_BIT(vi) (1u << ((vi) + 8 - 1))
 	#define UI_POS_BIT(ui) (1u << ((ui) + 9 - 1))

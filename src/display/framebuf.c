@@ -181,7 +181,7 @@ hwaccel_rotcopy(
 	)
 {
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
-	ASSERT(ssizehw == tsizehw);
+
 	G2D_ROT->ROT_CTL = 0;
 	G2D_ROT->ROT_IFMT = VI_ImageFormat;
 	G2D_ROT->ROT_ISIZE = ssizehw;
