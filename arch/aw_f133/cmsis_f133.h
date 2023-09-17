@@ -1337,9 +1337,9 @@ typedef struct G2D_TOP_Type
     volatile uint32_t RCQ_IRQ_CTL;                    /*!< Offset 0x020  */
     volatile uint32_t RCQ_STATUS;                     /*!< Offset 0x024  */
     volatile uint32_t RCQ_CTRL;                       /*!< Offset 0x028  */
-    volatile uint32_t RCQ_HEADER_LOW_ADDR;            /*!< Offset 0x02C  */
-    volatile uint32_t RCQ_HEADER_HIGH_ADDR;           /*!< Offset 0x030  */
-    volatile uint32_t RCQ_HEADER_LEN;                 /*!< Offset 0x034 Low 16 bit - length */
+    volatile uint32_t RCQ_HEADER_LOW_ADDR;            /*!< Offset 0x02C Register Configuration Queue Header bits 31..0 */
+    volatile uint32_t RCQ_HEADER_HIGH_ADDR;           /*!< Offset 0x030 Register Configuration Queue Header bits 39..32 */
+    volatile uint32_t RCQ_HEADER_LEN;                 /*!< Offset 0x034 Register Configuration Queue length bits 15..0 */
 } G2D_TOP_TypeDef; /* size of structure = 0x038 */
 /*
  * @brief G2D_UI

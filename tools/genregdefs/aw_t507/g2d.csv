@@ -30,9 +30,9 @@
 #regdef; RCQ_IRQ_CTL;	0x020;
 #regdef; RCQ_STATUS;	0x024;
 #regdef; RCQ_CTRL;		0x028;
-#regdef; RCQ_HEADER_LOW_ADDR;	0x02C;
-#regdef; RCQ_HEADER_HIGH_ADDR;	0x030;
-#regdef; RCQ_HEADER_LEN;	0x034;	Low 16 bit - length
+#regdef; RCQ_HEADER_LOW_ADDR;	0x02C; Register Configuration Queue Header bits 31..0
+#regdef; RCQ_HEADER_HIGH_ADDR;	0x030; Register Configuration Queue Header bits 39..32
+#regdef; RCQ_HEADER_LEN;	0x034; Register Configuration Queue length bits 15..0
 
 #type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
 #base; G2D_MIXER 0x01480100
