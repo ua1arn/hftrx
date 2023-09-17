@@ -628,7 +628,7 @@ static unsigned UAC2_AudioControlIT_IN48(
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
 		* buff ++ = LO_BYTE(bmControls);					/* bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = 0;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = 0;//STRING_ID_MODE0 + offset;					// unused  (iTerminal)
 		/* 17 bytes*/
 	}
 	return length;
@@ -675,7 +675,7 @@ static unsigned UAC2_AudioControlIT_IN48_INRTS(
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
 		* buff ++ = LO_BYTE(bmControls);					/* bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = 0;//STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 		/* 17 bytes*/
 	}
 	return length;
@@ -1007,7 +1007,7 @@ static unsigned UAC2_AudioControlOT_OUT48(
 		* buff ++ = bCSourceID;						/* 8 bCSourceID */
 		* buff ++ = LO_BYTE(bmControls);			/* 9 bmControls */
 		* buff ++ = HI_BYTE(bmControls);
-		* buff ++ = STRING_ID_0;                    /* 11 iTerminal*/
+		* buff ++ = 0;//STRING_ID_MODE0 + offset;					// unused  (iTerminal)
 		/* 9 byte*/
 	}
 	return length;
@@ -1976,7 +1976,7 @@ static unsigned UAC1_AC_IT_IN48(uint_fast8_t fill, uint8_t * buff, unsigned maxs
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = 0;//STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
 	return length;
@@ -2011,7 +2011,7 @@ static unsigned UAC1_AC_IT_IN48_INRTS(uint_fast8_t fill, uint8_t * buff, unsigne
 		* buff ++ = LO_BYTE(wChannelConfig);   /* bmChannelConfig size = 4 bytes Mono sets no position bits */
 		* buff ++ = HI_BYTE(wChannelConfig);
 		* buff ++ = STRING_ID_Left;							/* iChannelNames */
-		* buff ++ = STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
+		* buff ++ = 0;//STRING_ID_MODE0 + offset;						// iTerminal - Index of a string descriptor, describing the Input Terminal. Receiver Output
 
 	}
 	return length;
@@ -2231,7 +2231,7 @@ static unsigned UAC1_AC_OT_OUT(
 		* buff ++ = HI_BYTE(wTerminalType);
 		* buff ++ = TERMINAL_ID_UNDEFINED;          /* 6 bAssocTerminal */
 		* buff ++ = bSourceID;						/* 7 bSourceID */
-		* buff ++ = 0;                    /* 8 iTerminal*/
+		* buff ++ = 0;//STRING_ID_MODE0 + offset;					// unused  (iTerminal)
 		/* 9 byte*/
 	}
 	return length;
