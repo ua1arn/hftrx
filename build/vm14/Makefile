@@ -19,8 +19,6 @@
 TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
-XFEL = ../../tools//xfel-windows-v1.3.2/xfel
-
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
