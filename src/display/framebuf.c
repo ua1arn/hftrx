@@ -67,7 +67,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 /* Отключаем все источники */
 static void awxx_g2d_reset(void)
 {
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 	//	memset(G2D_V0, 0, sizeof * G2D_V0);
 	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
@@ -76,8 +76,8 @@ static void awxx_g2d_reset(void)
 	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 	//	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-	//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	G2D_VSU->VS_CTRL = 0;
 	G2D_ROT->ROT_CTL = 0;
@@ -97,7 +97,7 @@ static int hwacc_waitdone(void)
 	unsigned n = 0x2000000;
 	for (;;)
 	{
-		const uint_fast32_t MASK = (1u << 0);	/* FINISH_IRQ */
+		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
 		if (((mixer_int & MASK) != 0))
@@ -124,13 +124,13 @@ static int hwacc_waitdone(void)
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rtmix_startandwait(void)
 {
-	G2D_MIXER->G2D_MIXER_CTRL |= (1u << 31);	/* start the module */
+	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	if (hwacc_waitdone() == 0)
 	{
 		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
 		ASSERT(0);
 	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1u << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
 static void awxx_g2d_rot_startandwait(void)
@@ -141,10 +141,10 @@ static void awxx_g2d_rot_startandwait(void)
 		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
 		ASSERT(0);
 	}
-	ASSERT((G2D_ROT->ROT_CTL & (1u << 31)) == 0);
+	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 }
 
-static void t507_rcq(uintptr_t buff, unsigned len)
+static void awxx_rcq(uintptr_t buff, unsigned len)
 {
 	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
@@ -178,7 +178,7 @@ hwaccel_rotcopy(
 	uint_fast32_t tsizehw
 	)
 {
-	ASSERT((G2D_ROT->ROT_CTL & (1u << 31)) == 0);
+	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 	ASSERT(ssizehw == tsizehw);
 	G2D_ROT->ROT_CTL = 0;
 	G2D_ROT->ROT_IFMT = VI_ImageFormat;
@@ -264,13 +264,13 @@ static void t113_fillrect(
 static unsigned awxx_get_ui_attr(unsigned srcFormat)
 {
 	unsigned ui_attr = 0;
-	ui_attr = 255 << 24;
+	ui_attr = UINT32_C(255) << 24;
 	//	if (img->bpremul)
 	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
 	ui_attr |= srcFormat << 8;
 	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//ui_attr |= (1u << 4);	/* Use FILLC register */
+	//ui_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
 	ui_attr |= 1;
 	return ui_attr;
 }
@@ -278,12 +278,12 @@ static unsigned awxx_get_ui_attr(unsigned srcFormat)
 static unsigned awxx_get_vi_attr(unsigned srcFormat)
 {
 	unsigned vi_attr = 0;
-	vi_attr = 255 << 24;
+	vi_attr = UINT32_C(255) << 24;
 	vi_attr |= srcFormat << 8;
-	vi_attr |= 1u << 15;
+	vi_attr |= UINT32_C(1) << 15;
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//vi_attr |= (1u << 4);	/* Use FILLC register */
+	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
 	vi_attr |= 1;
 	return vi_attr;
 }
@@ -506,8 +506,8 @@ static void t113_fillrect(
 
 	// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
 	G2D_BLD->BLD_FILL_COLOR_CTL =
-		(1u << 8) |    	// P0_EN: Pipe0 enable
-		(1u << 0) |		// P0_FCEN: Pipe0 fill color enable
+		(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
+		(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
 		0;
 
 	/* Write-back settings */
@@ -535,7 +535,7 @@ static void t113_fillrect(
 #define MDMA_DATA	(MDMA_Channel1->CSAR)	// регистр выделенного канала MDMA используется для хранения значения цвета. Переиферия не кэшируется.
 
 #ifndef DMA2D_CR_LOM
-	#define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
+	#define DMA2D_CR_LOM	(UINT32_C(1) << 6)	/* documented but missing in headers. */
 #endif
 
 #define MDMA_CCR_PL_VALUE 0u	// PL: priority 0..3: min..max
@@ -836,12 +836,12 @@ void arm_hardware_mdma_initialize(void)
 			}
 		}
 		//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
-		//t507_rcq(0xDEADBEEF, 64);
-		PRINTF("G2D_TOP:\n");
-		printhex32(G2D_TOP_BASE, G2D_TOP, 256);
+		//awxx_rcq(0xDEADBEEF, 64);
+//		PRINTF("G2D_TOP:\n");
+//		printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 		//memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
-		PRINTF("G2D_MIXER:\n");
-		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
+//		PRINTF("G2D_MIXER:\n");
+//		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
 
 //		PRINTF("G2D_VSU:\n");
 //		//memset(G2D_VSU, 0xFF, sizeof * G2D_VSU);
@@ -857,41 +857,41 @@ void arm_hardware_mdma_initialize(void)
 	unsigned M = 5;	/* M = 1..32 */
 	unsigned divider = 0;
 
-	CCU->MBUS_CLK_REG |= (1u << 30);				// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (1u << 10);	// Gating MBUS Clock For G2D
+	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
 	//local_delay_us(10);
 
 	// User manual say about 250 MHz default.
 	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
-		0x00 * (1u << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
-		(M - 1) * (1u << 0) | // FACTOR_M
+		0x00 * (UINT32_C(1) << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
+		(M - 1) * (UINT32_C(1) << 0) | // FACTOR_M
 		0;
-	CCU->G2D_CLK_REG |= (1u << 31);	// G2D_CLK_GATING
+	CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 	local_delay_us(10);
 	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000000));
 
 	//CCU->G2D_BGR_REG = 0;
-	CCU->G2D_BGR_REG |= (1u << 0);		/* Enable gating clock for G2D 1: Pass */
-	CCU->G2D_BGR_REG &= ~ (1u << 16);	/* G2D reset 0: Assert */
-	CCU->G2D_BGR_REG |= (1u << 16);	/* G2D reset 1: De-assert */
+	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
+	CCU->G2D_BGR_REG &= ~ (UINT32_C(1) << 16);	/* G2D reset 0: Assert */
+	CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);	/* G2D reset 1: De-assert */
 	(void) CCU->G2D_BGR_REG;
 	local_delay_us(10);
 
 	/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
 	G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
-		divider * (1u << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
-		divider * (1u << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
+		divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
+		divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
 		0;
 	(void) G2D_TOP->G2D_SCLK_DIV;
 	//local_delay_us(10);
 
-	G2D_TOP->G2D_SCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_SCLK_GATE;
-	G2D_TOP->G2D_HCLK_GATE |= (1u << 1) | (1u << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_HCLK_GATE;
-	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
-	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
 
 	local_delay_ms(10);
@@ -900,9 +900,9 @@ void arm_hardware_mdma_initialize(void)
 	PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
-	t507_rcq(0xDEADBEEF, 64);
-	PRINTF("G2D_TOP:\n");
-	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
+	awxx_rcq(0xDEADBEEF, 64);
+//	PRINTF("G2D_TOP:\n");
+//	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif
@@ -2086,8 +2086,8 @@ void hwaccel_bitblt(
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
@@ -2100,14 +2100,14 @@ void hwaccel_bitblt(
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 		G2D_BLD->BLD_KEY_CTL =
 			(0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
-			(1u << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
+			(UINT32_C(1) << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
 			0;
 
 		/* 5.10.9.11 BLD color key configuration register */
 		G2D_BLD->BLD_KEY_CON =
-			0 * (1u << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
-			0 * (1u << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
-			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
 			0;
 
 		G2D_BLD->BLD_KEY_MAX = keycolor24;
@@ -2142,8 +2142,8 @@ void hwaccel_bitblt(
 		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable
-			(1u << 9) |	// 9: P1_EN Pipe1 enable
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
+			(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -2182,8 +2182,8 @@ void hwaccel_bitblt(
 		G2D_BLD->BLD_KEY_CON = 0;
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable - VI0
-			//(1u << 9) |	// 9: P1_EN Pipe1 enable - UI2
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
+			//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -2195,7 +2195,7 @@ void hwaccel_bitblt(
 
 
 	//G2D_BLD->BLD_FILLC0 = ~ 0;
-	//G2D_BLD->BLD_PREMUL_CTL |= (1u << 0);	// 0 or 1 - sel 1 or sel 0
+	//G2D_BLD->BLD_PREMUL_CTL |= (UINT32_C(1) << 0);	// 0 or 1 - sel 1 or sel 0
 	G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
 	G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
 	G2D_BLD->BLD_BK_COLOR = 0;
@@ -2307,8 +2307,8 @@ void hwaccel_stretchblt(
 //	memset(G2D_BLD, 0, sizeof * G2D_BLD);
 //	memset(G2D_WB, 0, sizeof * G2D_WB);
 
-//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 //	PRINTF("colpip_stretchblt (resize): w/h=%d/%d, sdx/sdy=%d/%d\n", w, h, sdx, sdy);
 
@@ -2327,8 +2327,8 @@ void hwaccel_stretchblt(
 
 	awxx_g2d_reset();	/* Отключаем все источники */
 
-//	G2D_TOP->G2D_AHB_RST &= ~ ((1u << 1) | (1u << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-//	G2D_TOP->G2D_AHB_RST |= (1u << 1) | (1u << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 
 	if (w != sw || h != sh)
@@ -2365,14 +2365,14 @@ void hwaccel_stretchblt(
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
 		G2D_BLD->BLD_KEY_CTL =
 			0 * (0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
-			(1u << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
+			(UINT32_C(1) << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
 			0;
 
 		/* 5.10.9.11 BLD color key configuration register */
 		G2D_BLD->BLD_KEY_CON =
-			0 * (1u << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
-			0 * (1u << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
-			0 * (1u << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
 			0;
 
 		G2D_BLD->BLD_KEY_MAX = keycolor24;
@@ -2407,8 +2407,8 @@ void hwaccel_stretchblt(
 		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable
-			(1u << 9) |	// 9: P1_EN Pipe1 enable
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
+			(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
 			0;
 
 		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -2446,7 +2446,7 @@ void hwaccel_stretchblt(
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(1u << 8) |	// 8: P0_EN Pipe0 enable
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
 			0;
 
 		G2D_BLD->ROP_CTL = 0x000000F0; /* 0x000000F0 */
