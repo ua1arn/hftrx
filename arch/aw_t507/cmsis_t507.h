@@ -133,6 +133,8 @@ typedef enum IRQn
 #define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
@@ -1671,6 +1673,8 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
 #define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS ((DE_BLS_TypeDef *) DE_BLS_BASE)       /*!< DE_BLS Blue Level Stretch (BLS) register set access pointer */
+#define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */

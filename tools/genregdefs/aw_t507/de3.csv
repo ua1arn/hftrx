@@ -92,16 +92,16 @@
 #type; DE_VI; Display Engine (DE) - VI surface
 
 #base; DE_VI1 0x01101000
-##base; DE_VI2 0x01121000
-##base; DE_VI3 0x01141000
+#base; DE_VI2 0x01121000
+#base; DE_VI3 0x01141000
 
 #aggreg; CFG; 0x000 4;
-#regdef; ATTR; 0x000;
-#regdef; SIZE; 0x004;
-#regdef; COORD; 0x008;
-#regdef; PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
-#regdef; TOP_LADDR; 0x018 3;
-#regdef; BOT_LADDR; 0x024 3;
+#regdef;  ATTR; 0x000;
+#regdef;  SIZE; 0x004;
+#regdef;  COORD; 0x008;
+#regdef;  PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
+#regdef;  TOP_LADDR; 0x018 3;
+#regdef;  BOT_LADDR; 0x024 3;
 #aggregend;
 #regdef; FCOLOR; 0x0C0 4;
 #regdef; TOP_HADDR; 0x0D0 3;
@@ -126,11 +126,11 @@
 #regdef;  TOP_LADDR; 0x010; 
 #regdef;  BOT_LADDR; 0x014; 
 #regdef;  FCOLOR; 0x018; 
-#regdef; padding 0; 0x020; Need for address arithmetics
+#regdef;  padding 0; 0x020; Need for address arithmetics
 #aggregend;
-#regdef;  TOP_HADDR; 0x080; 
-#regdef;  BOT_HADDR; 0x084; 
-#regdef;  OVL_SIZE; 0x088; 
+#regdef; TOP_HADDR; 0x080; 
+#regdef; BOT_HADDR; 0x084; 
+#regdef; OVL_SIZE; 0x088; 
 
 # RT-Mixer0 blocks
 

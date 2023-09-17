@@ -3148,6 +3148,14 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DE_VI2</name>
+  <baseAddress>0x01121000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DE_VI3</name>
+  <baseAddress>0x01141000</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_VSU</name>
   <description>Video Scaler Unit (VSU)</description>
