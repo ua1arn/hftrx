@@ -80,7 +80,7 @@
 #regdef; PREMULTIPLY; 	0x0084; BLD pre-multiply control register
 #regdef; BKCOLOR; 0x0088;
 #regdef; OUTPUT_SIZE; 0x008C;
-#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE
+#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more)
 #regdef; CK_CTL; 0x00B0;
 #regdef; CK_CFG; 0x00B4;
 #regdef; CK_MAX; 0x00C0 4;
