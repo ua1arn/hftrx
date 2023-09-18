@@ -132,6 +132,33 @@
 #regdef; BOT_HADDR; 0x084; 
 #regdef; OVL_SIZE; 0x088; 
 
+#regdef; FBD_UI_CTL; 0x300; OVL_UI FBD control register
+#regdef; FBD_UI_STA; 0x304; OVL_UI FBD status register
+#regdef; FBD_UI_SIZE; 0x308; OVL_UI FBD image size register
+#regdef; FBD_UI_BLOCK_SIZE; 0x30C; OVL_UI FBD block size register
+#regdef; FBD_UI_SRC_CROP; 0x310; OVL_UI FBD source crop register
+#regdef; FBD_UI_OVL_CROP; 0x314; OVL_UI FBD overlay crop register
+#regdef; FBD_UI_FMT; 0x318; OVL_UI FBD input format register
+#regdef; FBD_UI_HD_LADDR; 0x320; OVL_UI FBD header low address register
+#regdef; FBD_UI_HD_HADDR; 0x324; OVL_UI FBD header high address register
+#regdef; FBD_UI_PL_LADDR; 0x328; OVL_UI FBD payload low address register
+#regdef; FBD_UI_PL_HADDR; 0x32C; OVL_UI FBD payload high address register
+#regdef; FBD_UI_OVL_SIZE; 0x330; OVL_UI FBD overlay window size register
+#regdef; FBD_UI_COOR; 0x334; OVL_UI FBD memory block coordinate register
+#regdef; FBD_UI_BGC; 0x338; OVL_UI FBD memory block coordinate register
+#regdef; FBD_UI_FC; 0x33C; OVL_UI FBD overlay window size register
+
+#regdef; OVL_UI_FBD_DBG0; 0x340; OVL_UI FBD dbg0 register
+#regdef; OVL_UI_FBD_DBG1; 0x344; OVL_UI FBD dbg1 register
+#regdef; OVL_UI_FBD_DBG2; 0x348; OVL_UI FBD dbg2 register
+#regdef; OVL_UI_FBD_DBG3; 0x34C; OVL_UI FBD dbg3 register
+
+#regdef; OVL_UI_FBD_BIST_STATUS; 0x380; OVL_UI FBD bist register
+#regdef; OVL_UI_FBD_BIST_START_ADDR; 0x384; OVL_UI FBD bist start address register
+#regdef; OVL_UI_FBD_BIST_END_ADDR; 0x388; OVL_UI FBD bist end address register
+#regdef; OVL_UI_FBD_BIST_MARK; 0x38C; OVL_UI FBD bist data mark register
+
+
 # RT-Mixer0 blocks
 
 #type; DE_VSU; Video Scaler Unit (VSU)
@@ -170,6 +197,7 @@
 #regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
 #regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
 
+# define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)
 #base; DE_FCE 0x01110000
 
@@ -204,6 +232,7 @@
 #regdef; CE_LUT_REGN; 0x200 128; 0x200+N*4 CE LUT register N (N=0:127)
 #regdef; HIST_CNT_REGN; 0x400 256; 0x400+N*4 Histogram count register N (N=0:255)
 
+# define SUN50I_MIXER_BLS_EN			0x71800
 #type; DE_BLS; Blue Level Stretch (BLS)
 #base; DE_BLS 0x01111000
 

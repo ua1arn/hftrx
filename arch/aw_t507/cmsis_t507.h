@@ -737,7 +737,33 @@ typedef struct DE_UI_Type
     volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
     volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
     volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
-} DE_UI_TypeDef; /* size of structure = 0x08C */
+             uint32_t reserved_0x08C [0x009D];
+    volatile uint32_t FBD_UI_CTL;                     /*!< Offset 0x300 OVL_UI FBD control register */
+    volatile uint32_t FBD_UI_STA;                     /*!< Offset 0x304 OVL_UI FBD status register */
+    volatile uint32_t FBD_UI_SIZE;                    /*!< Offset 0x308 OVL_UI FBD image size register */
+    volatile uint32_t FBD_UI_BLOCK_SIZE;              /*!< Offset 0x30C OVL_UI FBD block size register */
+    volatile uint32_t FBD_UI_SRC_CROP;                /*!< Offset 0x310 OVL_UI FBD source crop register */
+    volatile uint32_t FBD_UI_OVL_CROP;                /*!< Offset 0x314 OVL_UI FBD overlay crop register */
+    volatile uint32_t FBD_UI_FMT;                     /*!< Offset 0x318 OVL_UI FBD input format register */
+             uint32_t reserved_0x31C;
+    volatile uint32_t FBD_UI_HD_LADDR;                /*!< Offset 0x320 OVL_UI FBD header low address register */
+    volatile uint32_t FBD_UI_HD_HADDR;                /*!< Offset 0x324 OVL_UI FBD header high address register */
+    volatile uint32_t FBD_UI_PL_LADDR;                /*!< Offset 0x328 OVL_UI FBD payload low address register */
+    volatile uint32_t FBD_UI_PL_HADDR;                /*!< Offset 0x32C OVL_UI FBD payload high address register */
+    volatile uint32_t FBD_UI_OVL_SIZE;                /*!< Offset 0x330 OVL_UI FBD overlay window size register */
+    volatile uint32_t FBD_UI_COOR;                    /*!< Offset 0x334 OVL_UI FBD memory block coordinate register */
+    volatile uint32_t FBD_UI_BGC;                     /*!< Offset 0x338 OVL_UI FBD memory block coordinate register */
+    volatile uint32_t FBD_UI_FC;                      /*!< Offset 0x33C OVL_UI FBD overlay window size register */
+    volatile uint32_t OVL_UI_FBD_DBG0;                /*!< Offset 0x340 OVL_UI FBD dbg0 register */
+    volatile uint32_t OVL_UI_FBD_DBG1;                /*!< Offset 0x344 OVL_UI FBD dbg1 register */
+    volatile uint32_t OVL_UI_FBD_DBG2;                /*!< Offset 0x348 OVL_UI FBD dbg2 register */
+    volatile uint32_t OVL_UI_FBD_DBG3;                /*!< Offset 0x34C OVL_UI FBD dbg3 register */
+             uint32_t reserved_0x350 [0x000C];
+    volatile uint32_t OVL_UI_FBD_BIST_STATUS;         /*!< Offset 0x380 OVL_UI FBD bist register */
+    volatile uint32_t OVL_UI_FBD_BIST_START_ADDR;     /*!< Offset 0x384 OVL_UI FBD bist start address register */
+    volatile uint32_t OVL_UI_FBD_BIST_END_ADDR;       /*!< Offset 0x388 OVL_UI FBD bist end address register */
+    volatile uint32_t OVL_UI_FBD_BIST_MARK;           /*!< Offset 0x38C OVL_UI FBD bist data mark register */
+} DE_UI_TypeDef; /* size of structure = 0x390 */
 /*
  * @brief DE_VI
  */
