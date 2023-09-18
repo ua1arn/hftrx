@@ -7205,6 +7205,33 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>LBC_ENC_CTL</name>
+    <displayName>LBC_ENC_CTL</displayName>
+    <description>Encode control (bit 31 - is lossy)</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LBC_CTL</name>
+    <displayName>LBC_CTL</displayName>
+    <description></description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LBC_DEC_CTL</name>
+    <displayName>LBC_DEC_CTL</displayName>
+    <description>Decode control (bit 31 - is lossy) </description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

@@ -163,12 +163,6 @@ static unsigned awxx_get_srcformat(unsigned keyflag)
 	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
-
-static void awxx_vsu_load(void)
-{
-}
-
 /* Коприрование с применением блока G2D_ROT */
 static void
 hwaccel_rotcopy(
@@ -213,6 +207,12 @@ hwaccel_rotcopy(
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
 
+}
+
+#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+
+static void awxx_vsu_load(void)
+{
 }
 
 static void t113_fillrect(

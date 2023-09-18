@@ -1321,7 +1321,11 @@ typedef struct G2D_ROT_Type
     volatile uint32_t ROT_OHADD1;                     /*!< Offset 0x0AC Output U/UV memory address register1 */
     volatile uint32_t ROT_OLADD2;                     /*!< Offset 0x0B0 Output V memory address register0 */
     volatile uint32_t ROT_OHADD2;                     /*!< Offset 0x0B4 Output V memory address register1 */
-} G2D_ROT_TypeDef; /* size of structure = 0x0B8 */
+             uint32_t reserved_0x0B8 [0x0004];
+    volatile uint32_t LBC_ENC_CTL;                    /*!< Offset 0x0C8 Encode control (bit 31 - is lossy) */
+    volatile uint32_t LBC_CTL;                        /*!< Offset 0x0CC  */
+    volatile uint32_t LBC_DEC_CTL;                    /*!< Offset 0x0D0 Decode control (bit 31 - is lossy)  */
+} G2D_ROT_TypeDef; /* size of structure = 0x0D4 */
 /*
  * @brief G2D_TOP
  */

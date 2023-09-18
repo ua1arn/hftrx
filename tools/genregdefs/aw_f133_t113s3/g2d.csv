@@ -179,3 +179,10 @@
 #regdef; ROT_OHADD1; 0xAC; Output U/UV memory address register1
 #regdef; ROT_OLADD2; 0xB0; Output V memory address register0
 #regdef; ROT_OHADD2; 0xB4; Output V memory address register1
+
+# https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/char/sunxi_g2d/g2d_rcq/g2d_rotate.c#L318
+
+#regdef; LBC_ENC_CTL; 0xC8; Encode control (bit 31 - is lossy)
+#regdef; LBC_CTL; 0xCC;
+#regdef; LBC_DEC_CTL; 0xD0; Decode control (bit 31 - is lossy) 
+
