@@ -64,7 +64,7 @@
 #regdef; DI_BGR_REG; 0x062C; DI Bus Gating Reset Register
 #regdef; G2D_CLK_REG; 0x0630; G2D Clock Register
 #regdef; G2D_BGR_REG; 0x063C; G2D Bus Gating Reset Register
-#regdef; GPU_CLK_REG; 0x0670; GPU Clock Register
+#regdef; GPU_CLK0_REG; 0x0670; GPU Clock0 Register
 #regdef; GPU_CLK1_REG; 0x0674; GPU Clock1 Register
 #regdef; GPU_BGR_REG; 0x067C; GPU Bus Gating Reset Register
 #regdef; CE_CLK_REG; 0x0680; CE Clock Register

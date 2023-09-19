@@ -418,7 +418,7 @@ typedef struct CCU_Type
              uint32_t reserved_0x634 [0x0002];
     volatile uint32_t G2D_BGR_REG;                    /*!< Offset 0x63C G2D Bus Gating Reset Register */
              uint32_t reserved_0x640 [0x000C];
-    volatile uint32_t GPU_CLK_REG;                    /*!< Offset 0x670 GPU Clock Register */
+    volatile uint32_t GPU_CLK0_REG;                   /*!< Offset 0x670 GPU Clock0 Register */
     volatile uint32_t GPU_CLK1_REG;                   /*!< Offset 0x674 GPU Clock1 Register */
              uint32_t reserved_0x678;
     volatile uint32_t GPU_BGR_REG;                    /*!< Offset 0x67C GPU Bus Gating Reset Register */
@@ -620,7 +620,7 @@ typedef struct DE_BLD_Type
     volatile uint32_t PREMULTIPLY;                    /*!< Offset 0x084 BLD pre-multiply control register */
     volatile uint32_t BKCOLOR;                        /*!< Offset 0x088  */
     volatile uint32_t OUTPUT_SIZE;                    /*!< Offset 0x08C  */
-    volatile uint32_t BLD_MODE [0x006];               /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE */
+    volatile uint32_t BLD_MODE [0x006];               /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more) */
              uint32_t reserved_0x0A8 [0x0002];
     volatile uint32_t CK_CTL;                         /*!< Offset 0x0B0  */
     volatile uint32_t CK_CFG;                         /*!< Offset 0x0B4  */

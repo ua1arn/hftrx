@@ -3027,6 +3027,31 @@ uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
 	}
 }
 
+uint_fast32_t allwnr_t507_get_pll_peri_bak_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->GPU_CLK1_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+//	PLL_PERI_BAK = Clock M
+//	Clock Source is from PLL_PERI0(2X)
+	return allwnr_t507_get_pll_peri0_x2_freq() / M;
+}
+
+uint_fast32_t allwnr_t507_get_gpu_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->GPU_CLK0_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
+	switch ((clkreg >> 24) & 0x01)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 0: PLL_GPU0
+		return allwnr_t507_get_pll_gpu0_freq() / M;
+	case 0x01:
+		// 1: PLL_PERI_BAK_CLK(PLL_PERI_BAK_CLK is from GPU_CLK1_REG)
+		return allwnr_t507_get_pll_peri_bak_freq() / M;
+	}
+}
+
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
 	return WITHCPUXTAL;

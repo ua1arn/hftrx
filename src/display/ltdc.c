@@ -3044,7 +3044,35 @@ unsigned long display_getdotclock(const videomode_t * vdmode)
 
 #endif /* WITHLTDCHW */
 
-#if WITHGPUHW
+#if WITHGPUHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+
+void GPU_IRQHandler(void)
+{
+	PRINTF("GPU_IRQHandler\n");
+}
+
+// Graphic processor unit
+void board_gpu_initialize(void)
+{
+	PRINTF("board_gpu_initialize start.\n");
+
+	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
+	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+	CCU->GPU_BGR_REG |= (UINT32_C(1) << 0);	// Clock Gating
+	CCU->GPU_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert Reset
+	CCU->GPU_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset
+
+	PRINTF("allwnr_t507_get_gpu_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_gpu_freq() / 1000 / 1000);
+	printhex32(GPU_BASE, (void *) GPU_BASE, 256);
+
+//
+	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
+
+	PRINTF("board_gpu_initialize done.\n");
+}
+
+#elif CPUSTYLE_STM32MP1
 
 void GPU_IRQHandler(void)
 {

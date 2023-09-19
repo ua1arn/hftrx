@@ -1154,9 +1154,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GPU_CLK_REG</name>
-    <displayName>GPU_CLK_REG</displayName>
-    <description>GPU Clock Register</description>
+    <name>GPU_CLK0_REG</name>
+    <displayName>GPU_CLK0_REG</displayName>
+    <description>GPU Clock0 Register</description>
     <addressOffset>0x670</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2265,7 +2265,7 @@
     <register>
      <name>BLD_MODE</name>
      <displayName>BLD_MODE</displayName>
-     <description>BLD_CTL SUN8I_MIXER_BLEND_MODE</description>
+     <description>BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
