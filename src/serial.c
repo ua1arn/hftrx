@@ -130,7 +130,7 @@ int nmea_putc(int c)
 {
 #if WITHNMEAOVERREALTIME
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
+	RiseIrql(IRQL_OVERREALTIME, & oldIrql);
 	qput(c);
 	LowerIrql(oldIrql;);
 #else /* WITHNMEAOVERREALTIME */
@@ -5552,34 +5552,14 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
 
-	SCIF1.SCSMR = (SCIF1.SCSMR & ~ 0x03) |
+	SCIF2.SCSMR = (SCIF2.SCSMR & ~ 0x03) |
 		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
 		0;
-	SCIF1.SCEMR = (SCIF1.SCEMR & ~ (0x80 | 0x01)) |
+	SCIF2.SCEMR = (SCIF2.SCEMR & ~ (0x80 | 0x01)) |
 		0 * 0x80 |						// BGDM
 		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
 		0;
-	SCIF1.SCBRR = value;	/* Bit rate register */
-
-#elif CPUSTYLE_XC7Z
-
-	  uint32_t r; // Temporary value variable
-	  r = UART1->CR;
-	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
-	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	  UART1->CR = r;
-	  const unsigned long sel_clk = xc7z_get_uart_freq();
-	  const unsigned long bdiv = 8;
-	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
-	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
-	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
-
-	  r = UART1->CR;
-	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
-	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	  UART1->CR = r;
+	SCIF2.SCBRR = value;	/* Bit rate register */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
