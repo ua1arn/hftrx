@@ -211,9 +211,22 @@ hwaccel_rotcopy(
 
 #if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 
-static void awxx_vsu_load(void)
+static COLORPIP_T bgcolor;
+static PACKEDCOLORPIP_T bgscreen [GXSIZE(DIM_X, DIM_Y)];
+
+/* Заполнение цветом фона - будет использоваться для аппаратной оптимизайии заполнения копированием */
+static void aw_g2d_fills(void)
 {
+	bgcolor = display_getbgcolor();
+	// программная реализация
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(bgscreen); ++ i)
+	{
+		bgscreen [i] = bgcolor;
+	}
+	PRINTF("aw_g2d_fills: bgcolor=%08X\n", (unsigned) bgcolor);
 }
+
 
 static void t113_fillrect(
 	uintptr_t taddr,
@@ -339,7 +352,7 @@ static uint_fast32_t awxx_bld_ctl2(
 #define VSU_PHASE_FRAC_REG_SHIFT 1
 #define VSU_FB_FRAC_BITWIDTH     32
 
-static void awxx_vsu_load(void)
+static void aw_g2d_fills(void)
 {
 //	if (fmt > G2D_FORMAT_IYUV422_Y1U0Y0V0)
 //		write_wvalue(VS_CTRL, 0x10101);
@@ -914,7 +927,7 @@ void arm_hardware_mdma_initialize(void)
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
 
-	awxx_vsu_load();	/* stretchblt filters load */
+	aw_g2d_fills();	/* stretchblt filters load */
 	 //mixer_set_reg_base(G2D_BASE);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
