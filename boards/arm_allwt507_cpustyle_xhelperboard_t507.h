@@ -688,8 +688,8 @@ void user_uart5_ontxchar(void * ctx);
 #define HARDWARE_UART5_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 2; /* PH2 UART5-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK, 0); \
 	} while (0)
 

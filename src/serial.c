@@ -4646,7 +4646,7 @@ xxxx!;
 	UART5->UART_LCR &= ~ 0x1f;
 	UART5->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
 
-	HARDWARE_UART5_INITIALIZE();
+	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
@@ -4678,7 +4678,7 @@ xxxx!;
 	UART5->UART_LCR &= ~ 0x1f;
 	UART5->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
 
-	HARDWARE_UART1_INITIALIZE();
+	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
 	if (debug == 0)
 	{
