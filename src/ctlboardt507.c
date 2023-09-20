@@ -9,6 +9,7 @@
 #include "formats.h"
 #include "bootloader.h"
 #include "board.h"
+#include "gpio.h"
 
 #if WITHCTRLBOARDT507
 
@@ -80,27 +81,32 @@ void ctlboardt507_mainloop(void)
 {
 	PRINTF("ctlboardt507_mainloop [%p]\n", ctlboardt507_mainloop);
 
-	hardware_uart1_initialize(0);
+	hardware_uart0_initialize(1);
+	hardware_uart0_set_speed(9600);
+	hardware_uart0_enablerx(0);
+	hardware_uart0_enabletx(0);
+
+	hardware_uart1_initialize(1);
 	hardware_uart1_set_speed(9600);
 	hardware_uart1_enablerx(0);
 	hardware_uart1_enabletx(0);
 
-	hardware_uart2_initialize(0);
+	hardware_uart2_initialize(1);
 	hardware_uart2_set_speed(9600);
 	hardware_uart2_enablerx(0);
 	hardware_uart2_enabletx(0);
 
-	hardware_uart3_initialize(0);
+	hardware_uart3_initialize(1);
 	hardware_uart3_set_speed(9600);
 	hardware_uart3_enablerx(0);
 	hardware_uart3_enabletx(0);
 
-	hardware_uart4_initialize(0);
+	hardware_uart4_initialize(1);
 	hardware_uart4_set_speed(9600);
 	hardware_uart4_enablerx(0);
 	hardware_uart4_enabletx(0);
 
-	hardware_uart5_initialize(0);
+	hardware_uart5_initialize(1);
 	hardware_uart5_set_speed(9600);
 	hardware_uart5_enablerx(0);
 	hardware_uart5_enabletx(0);
@@ -109,11 +115,28 @@ void ctlboardt507_mainloop(void)
 	PRINTF("ctlboardt507_mainloop: wait user loop [%p]\n", ctlboardt507_mainloop);
 	PRINTF("ctlboardt507_mainloop: wait user loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 
+	int state = 0;
 	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
+
+		if (hardware_uart0_putchar('0'))
+			;
+		if (hardware_uart1_putchar('1'))
+			;
+		if (hardware_uart2_putchar('2'))
+			;
+		if (hardware_uart3_putchar('3'))
+			;
+		if (hardware_uart4_putchar('4'))
+			;
+		if (hardware_uart5_putchar('5'))
+			;
+
+		state = ! state;
+		gpioX_setstate(GPIOA, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1);
 
 		if (kbready)
 			PRINTF("bkbch=%02x\n", kbch);
