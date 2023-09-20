@@ -13,6 +13,7 @@
 #include <inttypes.h>	// format specifiers for printing
 
 #include "hardware.h"
+#include "serial.h"
 
 #ifdef __cplusplus
 extern "C" {

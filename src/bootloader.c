@@ -254,7 +254,7 @@ void bootloader_fatfs_mainloop(void)
 	board_usb_deactivate();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
-	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %08lX\n", IMAGENAME, ip);
+	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %p\n", IMAGENAME, (void *) ip);
 #if WITHDEBUG
 	local_delay_ms(100);
 #endif /* WITHDEBUG */

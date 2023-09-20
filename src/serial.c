@@ -6,16 +6,12 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "keyboard.h"
-
+#include "serial.h"
+#include "formats.h"	// for debug prints
+#include "board.h"
+#include "gpio.h"
 #include <string.h>
 #include <math.h>
-
-#include "board.h"
-
-#include "formats.h"	// for debug prints
-#include "spi.h"
-
 
 #if defined(STM32F401xC)
 
@@ -49,7 +45,7 @@
 #endif
 
 // Set interrupt vector wrapper
-static void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
+void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
 {
 #if WITHNMEAOVERREALTIME
 		arm_hardware_set_handler_overrealtime(int_id, handler);
@@ -2553,12 +2549,6 @@ hardware_uart2_getchar(char * cp)
 		return 0;
 	* cp = SCIF2.SCFRDR;
 	SCIF2.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
-
-#elif CPUSTYLE_XC7Z
-
-	if ((UART2->SR & XUARTPS_SR_RXEMPTY) != 0)
-		return 0;
-	* cp = UART2->FIFO;
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
