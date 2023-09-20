@@ -8412,7 +8412,8 @@ sysinit_pll_initialize(int forced)
 		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
 		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
 
-		SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
+		// Нельзя - перестает работать DEBUG
+		//SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
 
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
