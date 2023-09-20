@@ -1040,9 +1040,9 @@ void hardware_uart0_initialize(uint_fast8_t debug)
 
 	const unsigned ix = 0;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (1u << 20);	// APER_CLK_CTRL.UART0_CPU_1XCLKACT
+	SCLR->APER_CLK_CTRL |= (1u << (20 + ix));	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
-	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F33U)) |
+	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
 			(0x00u << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01 << ix) |	// CLKACT0 - UART 0 reference clock active
@@ -2137,9 +2137,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	const unsigned ix = 1;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (1u << 20);	// APER_CLK_CTRL.UART1_CPU_1XCLKACT
-	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
-	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F33U)) |
+    SCLR->APER_CLK_CTRL |= (1u << (20 + ix));    // APER_CLK_CTRL.UART1_CPU_1XCLKACT
+    //EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
+	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
 			(0x00u << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01 << ix) |	// CLKACT1 - UART 1 reference clock active
