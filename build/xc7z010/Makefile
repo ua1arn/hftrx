@@ -23,7 +23,7 @@ TRGT = $(TRGT2)-
 PRJROOT := ../..
 OBJDIR = obj
 
-ZINQ_BOOT_DIR := E:
+ZINQ_BOOT_DIR := F:
 XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z010.elf
 
 #
@@ -66,7 +66,8 @@ DADEFS = -D__ASSEMBLY__=1
 ARCHDIR = $(PRJROOT)/arch/zynq
 
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
-ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+#ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
+ZYNQLIBSRC += $(LWIPDIR)/ports/xilinx
 
 # full qualified name
 ZYNQLIB = zynq7010.a
@@ -74,7 +75,7 @@ ZYNQLIB = zynq7010.a
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+#LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
@@ -145,7 +146,7 @@ SRCDIRS += $(PRJROOT)/lvgl/src
 DINCDIR += $(PRJROOT)/lvgl/src
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # LuPng
 SRCDIRS += $(LUPNGDIR)
 DINCDIR += $(LUPNGDIR)
