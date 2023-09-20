@@ -114,4 +114,39 @@ void usbd_cdc_send(const void * buff, size_t length);	/* временное ре
 uint_fast8_t usbd_cdc_ready(void);	/* временное решение для передачи */
 
 
+#if defined(STM32F401xC)
+
+
+#elif CPUSTYLE_STM32F4XX
+
+#elif CPUSTYLE_STM32F7XX
+
+	#define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
+	#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
+	#define BOARD_USART3_FREQ 	(stm32f7xx_get_usart3_freq())
+
+#elif CPUSTYLE_STM32H7XX
+
+	// See Table 8. Register boundary addresses
+	#define BOARD_USART1_FREQ 	(stm32h7xx_get_usart1_6_freq())
+	#define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
+	#define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
+
+#elif CPUSTYLE_STM32MP1
+
+	//#define BOARD_USART1_FREQ 	(stm32mp1_uart1_get_freq())
+	//#define BOARD_USART2_FREQ 	(stm32mp1_uart2_4_get_freq())
+	//#define BOARD_USART3_FREQ 	(stm32mp1_uart3_5_get_freq())
+	//#define BOARD_UART4_FREQ 	(stm32mp1_uart2_4_get_freq())
+	//#define BOARD_UART5_FREQ 	(stm32mp1_uart3_5_get_freq())
+	//#define BOARD_USART6_FREQ 	(stm32mp1_usart6_get_freq())
+	//#define BOARD_UART7_FREQ 	(stm32mp1_uart7_8_get_freq())
+	//#define BOARD_UART8_FREQ 	(stm32mp1_uart7_8_get_freq())
+
+#endif
+
+struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; };
+
+extern const FLASHMEM struct spcr_spsr_tag scemr_scsmr [];
+
 #endif /* INC_SERIAL_H_ */

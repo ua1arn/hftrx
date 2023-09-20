@@ -657,7 +657,7 @@
 		gpio_peripherial(TARGET_UART1_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_49 UART1_RXD */ \
 	} while (0)
 
-#endif /* WITHUART2HW */
+#endif /* WITHUART1HW */
 
 #if WITHKEYBOARD
 
