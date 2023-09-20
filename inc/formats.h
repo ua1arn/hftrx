@@ -114,6 +114,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart0_flush(); \
 	} while (0)
 
 #endif /* WITHDEBUG && WITHUART0HW && WITHDEBUG_USART0 */
@@ -156,6 +157,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart1_flush(); \
 	} while (0)
 
 #endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1 */
@@ -198,6 +200,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart2_flush(); \
 	} while (0)
 
 #endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
@@ -240,6 +243,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart3_flush(); \
 	} while (0)
 
 #endif /* WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3 */
@@ -282,6 +286,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart4_flush(); \
 	} while (0)
 
 #endif /* WITHDEBUG && WITHUART4HW && WITHDEBUG_USART4 */
@@ -324,6 +329,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart5_flush(); \
 	} while (0)
 
 #endif /* WITHDEBUG && WITHUART5HW && WITHDEBUG_USART5 */
@@ -366,8 +372,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 	#define HARDWARE_DEBUG_FLUSH() do { \
+		hardware_uart6_flush(); \
 	} while (0)
-
 
 #endif /* WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6 */
 

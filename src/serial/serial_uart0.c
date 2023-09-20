@@ -461,7 +461,11 @@ void hardware_uart0_tx(void * ctx, uint_fast8_t c)
 #endif
 }
 
+/* дождаться, когда буде все передано */
+void hardware_uart0_flush(void)
+{
 
+}
 
 /* приём символа, если готов порт */
 uint_fast8_t
