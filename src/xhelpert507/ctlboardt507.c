@@ -11,6 +11,8 @@
 #include "board.h"
 #include "gpio.h"
 
+#include "xhelper507.h"
+
 #if WITHCTRLBOARDT507
 
 // отладка - RS232
