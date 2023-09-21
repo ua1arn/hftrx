@@ -366,7 +366,7 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+		#if CPUSTYLE_XC7Z
 			return SPI_TARGET_MISO_PIN != 0;
 		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;

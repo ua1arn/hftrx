@@ -196,7 +196,7 @@
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
 #endif /* WITHCPUTEMPERATURE */
 
-//#define PREAMP_MIO	69
+#define PREAMP_MIO				69
 #define TARGET_RFADC_PGA_EMIO	66
 #define TARGET_RFADC_RAND_EMIO	68
 

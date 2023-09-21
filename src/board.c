@@ -753,12 +753,12 @@ prog_gpioreg(void)
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xcz_rxtx_state(glob_tx);
 #if defined (PREAMP_MIO)
 #if TARGET_RFADC_PGA_EMIO			// если есть управление PGA, LTC6401 всегда включено
 	xc7z_gpio_output(PREAMP_MIO);
-	xc7z_writepin(PREAMP_MIO, 1);
+	xc7z_writepin(PREAMP_MIO, 0);
 #else
 	xc7z_gpio_output(PREAMP_MIO);
 	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
@@ -772,7 +772,11 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_DAC_SLEEP_EMIO);
 	xc7z_writepin(TARGET_DAC_SLEEP_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
-#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM*/
+#if defined (TARGET_RFADC_RAND_EMIO)
+	xc7z_gpio_output(TARGET_RFADC_RAND_EMIO);
+	xc7z_writepin(TARGET_RFADC_RAND_EMIO, glob_adcrand);
+#endif /* defined (TARGET_RFADC_RAND_EMIO) */
+#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 }
 
 /* 
@@ -7655,7 +7659,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	boart_tgl_firprofile(ifir);
 }
 
-#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
+#endif /* CPUSTYLE_XC7Z */
 
 #endif /* WITHDSPEXTFIR */
 

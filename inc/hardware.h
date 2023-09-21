@@ -460,24 +460,6 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
-#elif CPUSTYLE_XCZU
-	// Zynq UltraScale+ Device
-	// r0p4-50rel0
-	// XCZU2..XCZU9, XCZU11
-
-	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-
-#if ! LINUX_SUBSYSTEM
-	#include "arch/zynqmp/zynquscale.h"
-	#include "irq_ctrl.h"
-#endif /* ! LINUX_SUBSYSTEM */
-
-	#define DCACHEROWSIZE 32
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
-	#define ALIGNX_END /* nothing */
-
 #elif \
 	defined (CPUSTYLE_UBLAZE) || \
 	0
@@ -1046,7 +1028,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if CPUSTYLE_XC7Z
 
 #define AX_PWM_AXI_SLV_REG0_OFFSET 0
 #define AX_PWM_AXI_SLV_REG1_OFFSET 4
@@ -1087,7 +1069,7 @@ void xcz_dds_rts(const uint_least64_t * value);// Установка центр�
 
 void nmea_parser_init(void);
 
-#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
+#endif /* CPUSTYLE_XC7Z */
 
 /* получить 32-бит значение */
 uint_fast32_t

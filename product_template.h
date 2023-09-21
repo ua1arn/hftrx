@@ -258,10 +258,6 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RK1AQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
-#elif CPUSTYLE_UBLAZE && CTLSTYLE_STORCH_V7
-	#include "boards/u_blaze_ctlstyle_v0.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/u_blaze_cpustyle_v0.h"
 #elif (CPUSTYLE_A64) && CTLSTYLE_STORCH_V7 && 1
 	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
@@ -304,14 +300,6 @@
 	#include "boards/arm_allwt113s3_ctlstyle_tboard_v0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_tboard_v0.h"
-#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_xczuxx_ctlstyle_axu2cga_ad9640.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_xczuxx_cpustyle_axu2cga_ad9640.h"
-#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
-	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_xczu2_cpustyle_alinx_axu2cga.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
 	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020

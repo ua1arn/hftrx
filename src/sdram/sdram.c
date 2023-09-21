@@ -678,7 +678,7 @@ void arm_hardware_sdram_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 /* Opcode exit is 0 all the time */
 #define OPCODE_EXIT       0U

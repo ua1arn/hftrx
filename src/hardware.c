@@ -477,7 +477,7 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#elif WITHENCODER2 && CPUSTYLE_XC7Z
 	return ((gpio_readpin(ENCODER2_BITA) != 0) * 2 + (gpio_readpin(ENCODER2_BITB) != 0));
 #else /* WITHENCODER2 */
 	return 0;
@@ -1237,8 +1237,6 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_R7S721
 	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
-	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_XCZU
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
@@ -2331,30 +2329,6 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYLE_XCZU
-
-	// Все сравнения должны быть не точнее 1 MB
-
-	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return addrbase | TTB_PARA_DEVICE;
-
-	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
-
-	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-	return addrbase | TTB_PARA_DEVICE;
-
 #elif CPUSTYLE_T113
 
 	if (a < 0x00400000)
@@ -3327,42 +3301,6 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
 	__SEV();
-}
-
-#elif CPUSTYLE_XCZU
-
-/* RST_FPD_APU Address and mask definations */
-#define xXRESETPS_CRF_APB_BASE         (0XFD1A0000U)
-#define xXRESETPS_CRF_APB_RST_FPD_APU \
-				  ((xXRESETPS_CRF_APB_BASE) + ((uint32_t)0X00000104U))
-
-#define xACPU3_PWRON_RESET_MASK    ((uint32_t)0X00002000U)
-#define xACPU2_PWRON_RESET_MASK    ((uint32_t)0X00001000U)
-#define xACPU1_PWRON_RESET_MASK    ((uint32_t)0X00000800U)
-#define xACPU0_PWRON_RESET_MASK    ((uint32_t)0X00000400U)
-#define xAPU_L2_RESET_MASK         ((uint32_t)0X00000100U)
-#define xACPU3_RESET_MASK          ((uint32_t)0X00000008U)
-#define xACPU2_RESET_MASK          ((uint32_t)0X00000004U)
-#define xACPU1_RESET_MASK          ((uint32_t)0X00000002U)
-#define xACPU0_RESET_MASK          ((uint32_t)0X00000001U)
-
-#define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
-
-//#define HARDWARE_NCORES 2
-
-// Invoke at SVC context
-static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
-	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
-
-	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
 }
 
 #elif CPUSTYLE_A64

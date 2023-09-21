@@ -1,6 +1,0 @@
-all: {         
-
-[bootloader] tc1_xczu2_boot.elf
-
-}
-

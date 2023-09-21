@@ -1,7 +1,0 @@
-/*lcd_dis_system_top*/
-the_ROM_image:
-{
-[bootloader] fsbl_ant.elf
-bitstream_ant.bit
-tc1_xc7z010_app.elf
-}
