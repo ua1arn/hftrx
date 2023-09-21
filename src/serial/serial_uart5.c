@@ -243,7 +243,7 @@ void hardware_uart5_tx(void * ctx, uint_fast8_t c)
 }
 
 /* дождаться, когда буде все передано */
-void hardware_uart4_flush(void)
+void hardware_uart5_flush(void)
 {
 
 }
