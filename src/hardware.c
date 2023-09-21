@@ -69,7 +69,7 @@ void xc7z_hardware_initialize(void)
 
 	HARDWARE_DCDC_SETDIV(0);
 
-#if ! WITHISBOOTLOADER
+#if WITHTHERMOLEVEL
 	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
 	XAdcPs_CfgInitialize(& xc7z_xadc, xadccfg, xadccfg->BaseAddress);
 
@@ -81,7 +81,7 @@ void xc7z_hardware_initialize(void)
 	}
 
 	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
-#endif /* ! WITHISBOOTLOADER */
+#endif /* WITHTHERMOLEVEL */
 }
 
 void xcz_dcdc_sync(uint32_t freq)
@@ -105,12 +105,12 @@ void xcz_dcdc_sync(uint32_t freq)
 
 float xc7z_get_cpu_temperature(void)
 {
-#if ! WITHISBOOTLOADER
+#if WITHTHERMOLEVEL
 	uint32_t TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
 	return XAdcPs_RawToTemperature(TempRawData);
 #else
 	return 0;
-#endif /* ! WITHISBOOTLOADER */
+#endif /* WITHTHERMOLEVEL */
 }
 
 

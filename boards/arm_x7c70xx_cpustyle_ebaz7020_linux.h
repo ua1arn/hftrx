@@ -210,9 +210,9 @@
 
 #endif
 
-#if WITHCPUTEMPERATURE
+#if WITHTHERMOLEVEL
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
-#endif /* WITHCPUTEMPERATURE */
+#endif /* WITHTHERMOLEVEL */
 
 #define PREAMP_MIO	35
 

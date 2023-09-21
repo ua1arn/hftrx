@@ -643,7 +643,7 @@ void linux_subsystem_init(void)
 
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
 
-#if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
+#if WITHTHERMOLEVEL && CPUSTYLE_XCZU
 #include "../sysmon/xsysmonpsu.h"
 static XSysMonPsu xczu_sysmon;
 
@@ -652,7 +652,7 @@ float xczu_get_cpu_temperature(void)
 	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
 	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
 }
-#endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
+#endif /* WITHTHERMOLEVEL && CPUSTYLE_XCZU */
 
 void linux_user_init(void)
 {
@@ -671,7 +671,7 @@ void linux_user_init(void)
 	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
-#if WITHCPUTEMPERATURE && CPUSTYLE_XCZU
+#if WITHTHERMOLEVEL && CPUSTYLE_XCZU
 	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
 	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
 	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
@@ -681,7 +681,7 @@ void linux_user_init(void)
 	}
 	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
 	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
-#endif /* WITHCPUTEMPERATURE && CPUSTYLE_XCZU */
+#endif /* WITHTHERMOLEVEL && CPUSTYLE_XCZU */
 
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);

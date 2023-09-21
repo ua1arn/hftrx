@@ -304,7 +304,7 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
-		#define WITHCPUTEMPERATURE		1
+		#define WITHTHERMOLEVEL		1
 		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */

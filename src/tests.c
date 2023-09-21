@@ -8269,11 +8269,11 @@ void hightests(void)
 			rendertest2(DIM_X, DIM_Y);
 			display_flush();		// наблюдаем процесс
 			const time_t end = time(NULL);
-#if WITHCPUTEMPERATURE
+#if WITHTHERMOLEVEL
 		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
-#else /* WITHCPUTEMPERATURE */
+#else /* WITHTHERMOLEVEL */
 		PRINTF("tiger: cnt=%u, %d s\n", cnt, (int) (end - start));
-#endif /* WITHCPUTEMPERATURE */
+#endif /* WITHTHERMOLEVEL */
 		}
 		PS_destruct(tiger);
 
