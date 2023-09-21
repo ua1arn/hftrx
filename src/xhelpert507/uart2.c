@@ -15,8 +15,9 @@
 
 #if WITHCTRLBOARDT507
 
+// БИНС поправки
+// RS-485
 
-// отладка - RS232
 void user_uart2_onrxchar(uint_fast8_t c)
 {
 
@@ -30,7 +31,7 @@ void user_uart2_ontxchar(void * ctx)
 void user_uart2_initialize(void)
 {
 	hardware_uart2_initialize(1);
-	hardware_uart2_set_speed(9600);
+	hardware_uart2_set_speed(38400);
 	hardware_uart2_enablerx(0);
 	hardware_uart2_enabletx(0);
 }

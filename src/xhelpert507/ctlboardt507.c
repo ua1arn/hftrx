@@ -38,6 +38,8 @@ void ctlboardt507_mainloop(void)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
+
+#if 0
 		int fl = 0;
 		if (hardware_uart0_putchar('0'))
 			;
@@ -57,7 +59,7 @@ void ctlboardt507_mainloop(void)
 			state = ! state;
 			gpioX_setstate(GPIOA, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1);
 		}
-
+#endif
 		if (kbready)
 			PRINTF("bkbch=%02x\n", kbch);
 

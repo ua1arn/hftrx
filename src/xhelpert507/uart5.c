@@ -15,8 +15,9 @@
 
 #if WITHCTRLBOARDT507
 
+// давление
+// RS-485
 
-// отладка - RS232
 void user_uart5_onrxchar(uint_fast8_t c)
 {
 

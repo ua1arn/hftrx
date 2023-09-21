@@ -15,8 +15,9 @@
 
 #if WITHCTRLBOARDT507
 
-
+// компас - RS232
 // отладка - RS232
+
 void user_uart0_onrxchar(uint_fast8_t c)
 {
 
@@ -29,8 +30,8 @@ void user_uart0_ontxchar(void * ctx)
 
 void user_uart0_initialize(void)
 {
-	hardware_uart0_initialize(1);
-	hardware_uart0_set_speed(9600);
+	hardware_uart0_initialize(0);
+	hardware_uart0_set_speed(115200);
 	hardware_uart0_enablerx(0);
 	hardware_uart0_enabletx(0);
 }

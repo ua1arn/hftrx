@@ -15,8 +15,9 @@
 
 #if WITHCTRLBOARDT507
 
+// БИНС основной
+// RS-422
 
-// отладка - RS232
 void user_uart3_onrxchar(uint_fast8_t c)
 {
 
@@ -30,7 +31,7 @@ void user_uart3_ontxchar(void * ctx)
 void user_uart3_initialize(void)
 {
 	hardware_uart3_initialize(1);
-	hardware_uart3_set_speed(9600);
+	hardware_uart3_set_speed(921600);
 	hardware_uart3_enablerx(0);
 	hardware_uart3_enabletx(0);
 }
