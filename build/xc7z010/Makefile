@@ -65,9 +65,10 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
+#ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010_zm
 #ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
-ZYNQLIBSRC += $(LWIPDIR)/ports/xilinx
+#ZYNQLIBSRC += $(LWIPDIR)/ports/xilinx
 
 # full qualified name
 ZYNQLIB = zynq7010.a
@@ -285,8 +286,11 @@ bitstream_4205_10.h: bitstream_4205_10.bit
 	
 bootloader: bitstreams BOOT2
   
-app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
-	xsct.bat app_run_4205.tcl 
+#app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
+#	xsct.bat app_run_4205.tcl
+	
+app_run: $(PROJECT)_app.elf bitstream_zm_10.bit app_run_zm.tcl
+	xsct.bat app_run_zm.tcl  
   
 #app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
 #	xsct.bat app_run_ant10.tcl  
