@@ -67,9 +67,10 @@ void xc7z_hardware_initialize(void)
 	xc7z_writepin(TARGET_RFADC_DITH_EMIO, 0);
 #endif /* WITHPS7BOARD_MYC_Y7Z020 */
 
+#if WITHTHERMOLEVEL
+
 	HARDWARE_DCDC_SETDIV(0);
 
-#if WITHTHERMOLEVEL
 	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
 	XAdcPs_CfgInitialize(& xc7z_xadc, xadccfg, xadccfg->BaseAddress);
 
