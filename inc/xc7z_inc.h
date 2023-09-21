@@ -1,6 +1,19 @@
 #if LINUX_SUBSYSTEM
 	/* No Vivado headers used */
 
+#elif defined(XC7Z010) && WITHPS7BOARD_ZM10
+	#include "lib/zynq/src_7010_zm/xparameters.h"
+	#include "lib/zynq/src_7010_zm/xil_exception.h"
+	#include "lib/zynq/src_7010_zm/xil_types.h"
+	#if WITHETHHW
+		#include "lib/zynq/src_7010_zm/emacps_v3_14/xemacps.h"
+	#endif /* WITHETHHW */
+	#include "lib/zynq/src_7010_zm/axivdma_v6_9/xaxivdma.h"
+	#include "lib/zynq/src_7010_zm/gpiops_v3_9/xgpiops.h"
+	#include "lib/zynq/src_7010_zm/iicps_v3_13/xiicps.h"
+	#include "lib/zynq/src_7010_zm/vtc_v8_3/xvtc.h"
+	#include "lib/zynq/src_7010_zm/xadcps_v2_6/xadcps.h"
+	#include "lib/zynq/src_7010_zm/dmaps_v2_8/xdmaps.h"
 #elif defined(XC7Z010)
 	#include "lib/zynq/src_7010/xparameters.h"
 	#include "lib/zynq/src_7010/xil_exception.h"
