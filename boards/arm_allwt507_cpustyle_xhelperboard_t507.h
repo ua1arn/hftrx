@@ -14,9 +14,9 @@
 #define ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED 1
 
 
-//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
@@ -144,7 +144,7 @@ void user_uart5_ontxchar(void * ctx);
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#if WITHINTEGRATEDDSP
 
@@ -172,11 +172,10 @@ void user_uart5_ontxchar(void * ctx);
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-
-	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+//	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+//	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -190,9 +189,9 @@ void user_uart5_ontxchar(void * ctx);
 
 //	#define WITHTINYUSB 1
 //	#define BOARD_TUH_RHPORT 1
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
+//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
+//	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
@@ -520,17 +519,18 @@ void user_uart5_ontxchar(void * ctx);
 	#define OE_CTL1_BIT	(UINT32_C(1) << 13)	/* PI13 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
+//
+//	#define targetext1		(0*UINT32_C(1) << 9)		// PI9 ext1 on front panel CSEXT1
+//	#define targetnvram		(0*UINT32_C(1) << 10)		// PI10 nvram FM25W356
+//	#define targetcodec1	(0*UINT32_C(1) << 0)		// PI0 on-board codec1 NAU8822L
+//	#define targetfpga1		(0*UINT32_C(1) << 12)		// PI12 FPGA control registers CS1
+//	//#define targetrtc1		(0*UINT32_C(1) << 10)		// PIx RTC DS1305 RTC_CS
+//
+//	#define targetadck		(0*UINT32_C(1) << 8)	// PI8 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
+//	#define targetxad2		(0*UINT32_C(1) << 11)	// PI11 ext2 external SPI device (PA BOARD ADC) CSEXT2
 
-	#define targetext1		(UINT32_C(1) << 9)		// PI9 ext1 on front panel CSEXT1
-	#define targetnvram		(UINT32_C(1) << 10)		// PI10 nvram FM25W356
-	#define targetctl1		(UINT32_C(1) << 15)		// PI15 board control registers chain
-	#define targetcodec1	(UINT32_C(1) << 0)		// PI0 on-board codec1 NAU8822L
-	#define targetfpga1		(UINT32_C(1) << 12)		// PI12 FPGA control registers CS1
-	//#define targetrtc1		(UINT32_C(1) << 10)		// PIx RTC DS1305 RTC_CS
-
-	#define targetadc2		(UINT32_C(1) << 7)	// PI7 on-board ADC MCP3208-BI/SL chip select (potentiometers, swr-meter) ADC1CS
-	#define targetadck		(UINT32_C(1) << 8)	// PI8 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
-	#define targetxad2		(UINT32_C(1) << 11)	// PI11 ext2 external SPI device (PA BOARD ADC) CSEXT2
+	#define targetctl1		(UINT32_C(1) << 9)		// PH9 board control registers chain
+	#define targetadc2		(UINT32_C(1) << 5)		// PH5 on-board ADC MCP3208-BI/SL chip select (potentiometers, swr-meter) ADC1CS
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
@@ -541,7 +541,7 @@ void user_uart5_ontxchar(void * ctx);
 		switch (target) { \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); local_delay_us(1); } break; */\
-		default: { gpioX_setstate(GPIOI, (target), 0 * (target)); local_delay_us(1); } break; \
+		default: { gpioX_setstate(GPIOH, (target), 0 * (target)); local_delay_us(1); } break; \
 		case targetnone: break; \
 		} \
 	} while (0)
@@ -551,25 +551,16 @@ void user_uart5_ontxchar(void * ctx);
 		switch (target) { \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); local_delay_us(1); } break; */\
-		case targetctl1: { gpioX_setstate(GPIOI, (target), 1 * (target)); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); local_delay_us(1); } break; \
-		default: { gpioX_setstate(GPIOI, (target), 1 * (target)); local_delay_us(1); } break; \
+		/*case targetctl1: { gpioX_setstate(GPIOH, (target), 1 * (target)); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); local_delay_us(1); } break; */ \
+		default: { gpioX_setstate(GPIOH, (target), 1 * (target)); local_delay_us(1); } break; \
 		case targetnone: break; \
 		} \
 	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioi_outputs(targetext1, 1 * targetext1); /*  */ \
-		arm_hardware_pioi_outputs(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioi_outputs(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioi_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioi_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
-		/*arm_hardware_pioi_outputs(targetrtc1, 0 * targetrtc1);*/ /*  */ \
-		arm_hardware_pioi_outputs(targetadc2, 1 * targetadc2); /*  */ \
-		arm_hardware_pioi_outputs(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioi_outputs(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioh_outputs(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioh_outputs(targetadc2, 1 * targetadc2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port
