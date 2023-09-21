@@ -3882,6 +3882,7 @@ static void nand_cs_activate(void)
 static void nand_cs_deactivate(void)
 {
 	nand_csb_set(1);
+	nand_data_out(0xFF);
 }
 
 static void nand_write(uint_fast8_t v)
@@ -3966,6 +3967,18 @@ void nand_read_id(void)
 }
 
 
+void nand_read_status(void)
+{
+	uint8_t v [1];
+	// Read Status
+	nand_cs_activate();
+	nand_write_command(0x70);
+	nand_read(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	PRINTF("NAND status=%02X\n", v [0]);
+}
+
 void nand_readfull(void)
 {
 	//PRINTF("nand_readfull:\n");
@@ -4005,7 +4018,7 @@ void nand_readfull(void)
 
 void nand_initialize(void)
 {
-	//PRINTF("nand_initialize:\n");
+	PRINTF("nand_initialize:\n");
 	HARDWARE_NAND_INITIALIZE();
 
 	nand_wp_set(0);		// CHip write protected
@@ -4018,15 +4031,19 @@ void nand_initialize(void)
 
 	nand_reset();
 
-	//PRINTF("nand_initialize: done\n");
+	PRINTF("nand_initialize: done\n");
 }
 
 void nand_tests(void)
 {
-	//PRINTF("nand_tests:\n");
+	PRINTF("nand_tests:\n");
+	//nand_read_status();
 	nand_read_id();
+	nand_read_status();
+	nand_read_id();
+
 	//nand_readfull();
-	//PRINTF("nand_tests: done\n");
+	PRINTF("nand_tests: done\n");
 }
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
