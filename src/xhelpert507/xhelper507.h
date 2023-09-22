@@ -16,5 +16,13 @@ void user_uart3_initialize(void);
 void user_uart4_initialize(void);
 void user_uart5_initialize(void);
 
+void uart0_spool(void);
+void uart1_spool(void);
+void uart2_spool(void);
+void uart3_spool(void);
+void uart4_spool(void);
+void uart5_spool(void);
+
+void uart3_req(void);
 
 #endif /* SRC_XHELPERT507_XHELPER507_H_ */

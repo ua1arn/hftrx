@@ -36,5 +36,9 @@ void user_uart5_initialize(void)
 	hardware_uart5_enabletx(0);
 }
 
+void uart5_spool(void)
+{
+}
+
 #endif /* WITHCTRLBOARDT507 */
 

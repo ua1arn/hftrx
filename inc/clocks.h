@@ -153,6 +153,7 @@ unsigned long hardware_get_apb2_tim_freq(void);
 // Allwinner t113-s3
 uint_fast32_t allwnrt113_get_hosc_freq(void);
 uint_fast32_t allwnrt113_get_usart_freq(void);
+uint_fast32_t allwnrt113_get_twi_freq(void);
 uint_fast32_t allwnrt113_get_spi0_freq(void);
 uint_fast32_t allwnrt113_get_spi1_freq(void);
 uint_fast32_t allwnrt113_get_arm_freq(void);

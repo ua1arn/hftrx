@@ -3057,9 +3057,16 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 	return WITHCPUXTAL;
 }
 
+// The working clock of UART is APB2
 uint_fast32_t allwnrt113_get_usart_freq(void)
 {
-	return WITHCPUXTAL;
+     return allwnr_t507_get_apb2_freq();
+}
+
+// The working clock of TWI is APB2.
+uint_fast32_t allwnrt113_get_twi_freq(void)
+{
+	return allwnr_t507_get_apb2_freq();
 }
 
 
@@ -8548,6 +8555,8 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
+
+	CCU->APB2_CFG_REG = 0x03000100;	// allwnr_t507_get_apb2_freq()=300 MHz
 
 //	CCU->MBUS_CFG_REG = 0;
 //	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 31);	// CLK_GATING

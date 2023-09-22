@@ -6,14 +6,15 @@
  */
 
 #include "hardware.h"
+
+#if WITHCTRLBOARDT507
+
 #include "formats.h"
 #include "bootloader.h"
 #include "board.h"
 #include "gpio.h"
-
 #include "xhelper507.h"
 
-#if WITHCTRLBOARDT507
 
 /////////////////////////
 ///
@@ -31,6 +32,7 @@ void ctlboardt507_mainloop(void)
 
 	PRINTF("ctlboardt507_mainloop: wait user loop [%p]\n", ctlboardt507_mainloop);
 	PRINTF("ctlboardt507_mainloop: wait user loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+	PRINTF("ctlboardt507_mainloop: wait user loop, allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 
 	int state = 0;
 	/* Обеспечение работы USB DFU */
@@ -39,27 +41,13 @@ void ctlboardt507_mainloop(void)
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
 
-#if 0
-		int fl = 0;
-		if (hardware_uart0_putchar('0'))
-			;
-		if (hardware_uart1_putchar('1'))
-			;
-		if (hardware_uart2_putchar('2'))
-			;
-		if (hardware_uart3_putchar('3'))
-			;
-		if (hardware_uart4_putchar('4'))
-			;
-		if (hardware_uart5_putchar('5'))
-			fl = 1;
+		uart0_spool();
+		uart1_spool();
+		uart2_spool();
+		uart3_spool();
+		uart4_spool();
+		uart5_spool();
 
-		if (fl)
-		{
-			state = ! state;
-			gpioX_setstate(GPIOA, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1);
-		}
-#endif
 		if (kbready)
 			PRINTF("bkbch=%02x\n", kbch);
 
@@ -71,6 +59,9 @@ void ctlboardt507_mainloop(void)
 				switch (c)
 				{
 				case 0x00:
+					break;
+				case ' ':
+					uart3_req();
 					break;
 				default:
 					PRINTF("bkey=%02X\n", (unsigned char) c);
