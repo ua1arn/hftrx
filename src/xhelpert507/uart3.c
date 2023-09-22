@@ -211,16 +211,21 @@ static unsigned culateCRC8(unsigned v, unsigned wCRCWord) {
     return wCRCTable [(v ^ wCRCWord) & 0xFF];
 }
 
+static unsigned uartX_putc_crc8(int c, unsigned crc)
+{
+	nmeaX_putc(c);
+	crc = culateCRC8(c, crc);
+	return crc;
+}
+
 static void uartX_write_crc8(const uint8_t * buff, size_t n)
 {
 	unsigned crc = 0xFF;
 	while (n --)
 	{
-		const uint8_t c = * buff ++;
-		nmeaX_putc(c);
-		crc = culateCRC8(c, crc);
+		crc = uartX_putc_crc8(* buff ++, crc);
 	}
-	nmeaX_putc(crc);
+	uartX_putc_crc8(crc, 0);
 }
 
 void uart3_req(void)
