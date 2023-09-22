@@ -99,8 +99,6 @@
 	{
 		const uint_fast32_t ier = UART3->UART_DLH_IER;
 		const uint_fast32_t usr = UART3->UART_USR;
-		if ((UART3->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
-
 		if (ier & (1u << 0))	// ERBFI Enable Received Data Available Interrupt
 		{
 			if (usr & (1u << 3))	// RX FIFO Not Empty

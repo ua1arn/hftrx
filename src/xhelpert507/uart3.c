@@ -161,7 +161,7 @@ void user_uart3_initialize(void)
 {
 	hardware_uart3_initialize(0);
 	hardware_uart3_set_speed(921600);
-	hardware_uart3_enablerx(0*1);
+	hardware_uart3_enablerx(1);
 	hardware_uart3_enabletx(0);
 }
 
