@@ -244,6 +244,7 @@
 			//#define WITHLFM					1
 			//#define WITHNMEA				1
 			//#define WITHEXTRFBOARDTEST		1
+			#define WITHBUFFERSSMALLDEBUG	1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

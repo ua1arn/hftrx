@@ -519,7 +519,7 @@ getresetval(volatile unsigned * p)
 
 void buffers_diagnostics(void)
 {
-#if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
+#if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG && ! WITHBUFFERSSMALLDEBUG
 
 	LIST2PRINT(speexfree16);
 	LIST2PRINT(voicesfree32tx);
@@ -556,6 +556,19 @@ void buffers_diagnostics(void)
 #endif
 
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG
+#if WITHBUFFERSSMALLDEBUG
+	const unsigned ms10 = getresetval(& debugcount_ms10);
+	const unsigned mikeadc = getresetval(& debugcount_mikeadc);
+	const unsigned phonesdac = getresetval(& debugcount_phonesdac);
+	const unsigned rx32adc = getresetval(& debugcount_rx32adc);
+	const unsigned tx32dac = getresetval(& debugcount_tx32dac);
+	PRINTF(PSTR("FREQ: mikeadc=%u, phonesdac=%u, rx32adc=%u, tx32dac=%u\n"),
+		mikeadc * 10000 / ms10,
+		phonesdac * 10000 / ms10,
+		rx32adc * 10000 / ms10,
+		tx32dac * 10000 / ms10
+		);
+#else
 	PRINTF(PSTR("n1=%u n1wfm=%u n2=%u n3=%u n4=%u n5=%u n6=%u n7=%u uacinalt=%d, purge16=%u\n"), n1, n1wfm, n2, n3, n4, n5, n6, n7, uacinalt, purge16);
 	PRINTF(PSTR("e1=%u e2=%u e3=%u e4=%u e5=%u e6=%u e7=%u e8=%u e9=%u e10=%u e11=%u e12=%u e13=%u\n"), e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13);
 
@@ -581,6 +594,7 @@ void buffers_diagnostics(void)
 			tx32dac * 10000 / ms10
 			);
 	}
+#endif /* WITHBUFFERSSMALLDEBUG */
 #endif
 }
 
