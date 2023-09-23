@@ -3105,6 +3105,72 @@ uint_fast32_t allwnrt113_get_twi_freq(void)
 	return allwnr_t507_get_apb2_freq();
 }
 
+uint_fast32_t allwnrt113_get_smhc0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SMHC0_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SMHC0_CLK = Clock Source/M/N.
+	const uint_fast32_t pgdiv = M * N;	// post-gate dividers: clkdiv4 and clkdiv2y
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 00: HOSC */
+		return allwnrt113_get_hosc_freq() / pgdiv;
+	case 0x01:
+		/* 01: PLL_PERI0(2X) */
+		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
+	case 0x02:
+		/* 01: PLL_PERI1(2X) */
+		return allwnr_t507_get_pll_peri1_x2_freq() / pgdiv;
+	}
+}
+
+uint_fast32_t allwnrt113_get_smhc1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SMHC1_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SMHC0_CLK = Clock Source/M/N.
+	const uint_fast32_t pgdiv = M * N;	// post-gate dividers: clkdiv4 and clkdiv2y
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 00: HOSC */
+		return allwnrt113_get_hosc_freq() / pgdiv;
+	case 0x01:
+		/* 01: PLL_PERI0(2X) */
+		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
+	case 0x02:
+		/* 01: PLL_PERI1(2X) */
+		return allwnr_t507_get_pll_peri1_x2_freq() / pgdiv;
+	}
+}
+
+uint_fast32_t allwnrt113_get_smhc2_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SMHC2_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SMHC0_CLK = Clock Source/M/N.
+	const uint_fast32_t pgdiv = M * N;	// post-gate dividers: clkdiv4 and clkdiv2y
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 00: HOSC */
+		return allwnrt113_get_hosc_freq() / pgdiv;
+	case 0x01:
+		/* 01: PLL_PERI0(2X) */
+		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
+	case 0x02:
+		/* 01: PLL_PERI1(2X) */
+		return allwnr_t507_get_pll_peri1_x2_freq() / pgdiv;
+	}
+}
+
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 

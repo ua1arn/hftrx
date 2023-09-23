@@ -336,6 +336,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
+	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
 
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
