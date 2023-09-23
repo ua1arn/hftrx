@@ -6,11 +6,13 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#if WITHSDHCHW
+
 #include "formats.h"	/* sprintf() replacement */
+#include "gpio.h"
 #include <ctype.h>
 #include <string.h>
 
-#if WITHSDHCHW
 
 enum
 {
@@ -5018,6 +5020,7 @@ void hardware_sdhost_initialize(void)
 
     arm_hardware_set_handler_system(DMAINT14_IRQn, r7s721_sdhi0_dma_handler);
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 
 #elif CPUSTYLE_STM32F4XX
@@ -5039,6 +5042,7 @@ void hardware_sdhost_initialize(void)
 	arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
 	arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
 	SDIO->POWER = 3 * SDIO_POWER_PWRCTRL_0;
@@ -5062,6 +5066,7 @@ void hardware_sdhost_initialize(void)
 	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
 	arm_hardware_set_handler_system(DMA2_Stream6_IRQn, DMA2_Stream6_IRQHandler);
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
@@ -5072,6 +5077,7 @@ void hardware_sdhost_initialize(void)
 	(void) RCC->AHB3ENR;
 	__DSB();
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
@@ -5106,6 +5112,7 @@ void hardware_sdhost_initialize(void)
 	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_SDMMC1LPEN;   // подаем тактирование на SDMMC1
 	(void) RCC->MP_AHB6LPENSETR;
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
@@ -5165,6 +5172,7 @@ void hardware_sdhost_initialize(void)
 			(0x00uL << 3) |	// SDMA select
 			0;
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
 
@@ -5180,7 +5188,7 @@ void hardware_sdhost_initialize(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
 
-	unsigned ix = 0;
+	unsigned ix = SMHCHARD_IX;
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
 	(void) CCU->SMHC_BGR_REG;
 	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
@@ -5190,6 +5198,8 @@ void hardware_sdhost_initialize(void)
 
 	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
+	HARDWARE_SDIO_INITIALIZE();
 
 #elif CPUSTYLE_T507
 	#warning CPUSTYLE_T507 to be implemented
@@ -5204,6 +5214,8 @@ void hardware_sdhost_initialize(void)
 
 	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
+	HARDWARE_SDIOSENSE_INITIALIZE();
+	HARDWARE_SDIO_INITIALIZE();
 
 #else
 	#error Wrong CPUSTYLE_xxx

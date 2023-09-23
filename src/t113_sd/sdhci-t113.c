@@ -531,11 +531,10 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
 //	SMHCHARD_CCU_CLK_REG |= (1u << 31);
 //	SMHCHARD_CCU_CLK_REG |= (1u << 31);
 //	hardware_sdhost_initialize();
-	HARDWARE_SDIOSENSE_INITIALIZE();
-	HARDWARE_SDIO_INITIALIZE();
  //Порты настроены в PIO.c (без настройки портов - НЕ работает)
 
- if(!sdhci_t113_detect(sdhci))return 0; //если слот без карты - неудачно!
+ if(!sdhci_t113_detect(sdhci)) //если слот без карты - неудачно!
+	 return 0;
 
  memset(&HCI,0,sizeof(HCI));
  memset(&CARD,0,sizeof(CARD));
