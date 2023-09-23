@@ -193,11 +193,6 @@ static inline void WaitAfterReset(void)
 */
 }
 
-static inline void WaitAfterCmd(void)
-{
-// while(read32(SMHCHARD_BASE + SD_CMDR)&(1UL<<31));
-}
-
 int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	uint32_t cmdval = SDXC_START;
@@ -250,7 +245,8 @@ int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 	if(dat)
 		write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) | 0x80000000);
 	write32(SMHCHARD_BASE + SD_CMDR, cmdval | cmd->cmdidx);
-        WaitAfterCmd();
+	while (read32(SMHCHARD_BASE + SD_CMDR)&SDXC_START)
+		 ;
 
 //	timeout = ktime_add_ms(ktime_get(),1);
 	do {
@@ -450,7 +446,8 @@ int sdhci_t113_update_clk(void)
 	uint32_t cmd = (1U << 31) | (1 << 21) | (1 << 13);
 
 	write32(SMHCHARD_BASE + SD_CMDR, cmd);
-        WaitAfterCmd();
+	while(read32(SMHCHARD_BASE + SD_CMDR)&SDXC_START)
+		;
 
 //	ktime_t timeout = ktime_add_ms(ktime_get(), 1);
 
@@ -461,7 +458,7 @@ int sdhci_t113_update_clk(void)
 			return 0;
                 }*/
 
-	} while(read32(SMHCHARD_BASE + SD_CMDR) & 0x80000000);
+	} while(read32(SMHCHARD_BASE + SD_CMDR) & SDXC_START);
 
 	write32(SMHCHARD_BASE + SD_RISR, read32(SMHCHARD_BASE + SD_RISR));
 	return 1;

@@ -259,7 +259,7 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		cmd.resptype = MMC_RSP_R3;
 	 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 		{
-			TP();
+			PRINTF("sdhci_t113_transfer error\n");
 			return 0;
 		}
 	} while (!(cmd.response[0] & OCR_BUSY) && retries--);
