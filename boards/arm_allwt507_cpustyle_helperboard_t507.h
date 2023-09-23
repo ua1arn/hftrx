@@ -327,6 +327,9 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 #if WITHSDHCHW
+
+	#define USERFIRSTSBLOCK 0
+
 	// HelerBoard T505 ports:
 	// SMHC0: SDC0 - TF CARD
 	// SMHC1: SDC1 - SDIO

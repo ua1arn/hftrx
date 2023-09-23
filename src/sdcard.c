@@ -6,12 +6,13 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#if WITHSDHCHW
-
 #include "formats.h"	/* sprintf() replacement */
 #include "gpio.h"
 #include <ctype.h>
 #include <string.h>
+
+#if WITHSDHCHW && ! CPUSTYLE_ALLWINNER
+
 
 
 enum
@@ -28,9 +29,9 @@ typedef uint_fast8_t events_t;
 
 static int WaitEvents(events_t e, int type);
 
-#endif /* WITHSDHCHW */
+#endif /* WITHSDHCHW && ! CPUSTYLE_ALLWINNER */
 
-#if WITHUSESDCARD
+#if WITHUSESDCARD && ! CPUSTYLE_ALLWINNER
 
 #include "board.h"
 #include "sdcard.h"
@@ -5290,5 +5291,5 @@ void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
  #endif
 }
 
-#endif /* WITHSDHCHW */
+#endif /* WITHSDHCHW && ! CPUSTYLE_ALLWINNER */
 

@@ -16,7 +16,7 @@ extern "C" {
 //#include "Gate.h"
 //#include "timer.h"
 
-#include "sdmmc.h"
+#include "aw-sdmmc.h"
 
 //#define SMHC0_BASE 0x04020000
 

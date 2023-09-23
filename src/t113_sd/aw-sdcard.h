@@ -27,7 +27,7 @@ struct sdcard_t
 int sdcard_init(void);
 
 uint64_t mmc_read_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt);
-uint64_t mmc_write_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt);
+uint64_t mmc_write_blocks(const uint8_t * buf, uint64_t start, uint64_t blkcnt);
 
 #ifdef __cplusplus
 }

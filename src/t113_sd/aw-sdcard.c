@@ -3,6 +3,15 @@
 #if CPUSTYLE_ALLWINNER && WITHSDHCHW
 
 #include "formats.h"
+#include "gpio.h"
+
+#if WITHUSESDCARD
+
+#include "aw-sdcard.h"
+#include "../fatfs/ff.h"
+#include "../fatfs/diskio.h"		/* FatFs lower layer API */
+
+#endif /* WITHUSESDCARD */
 
 /*
  * driver/sd/sdcard.c
@@ -465,7 +474,7 @@ uint64_t mmc_read_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt)
 	return blkcnt;
 }
 
-uint64_t mmc_write_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt)
+uint64_t mmc_write_blocks(const uint8_t * buf, uint64_t start, uint64_t blkcnt)
 {
 	struct sdhci_t *hci=&HCI;
 	struct sdcard_t *card=&CARD;
@@ -485,7 +494,7 @@ uint64_t mmc_write_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt)
 		cmd.cmdarg = start * card->write_bl_len;
 
 	cmd.resptype = MMC_RSP_R1;
-	dat.buf = buf;
+	dat.buf = (uint8_t *) buf;
 	dat.flag = MMC_DATA_WRITE;
 	dat.blksz = card->write_bl_len;
 	dat.blkcnt = blkcnt;
@@ -814,23 +823,293 @@ int sdcard_init(void)
 	cmd.resptype = MMC_RSP_R1;
 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 		return 0;
+//
+//	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
+//	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
+//	PRINTF("  Version: %s\n", sdcard_version_string(card));
+//	PRINTF("  Capacity: %d MB\n", (int) (card->capacity / 1024 / 1024));
+//	if(card->high_capacity)
+//		PRINTF("  High capacity card\n");
+//	PRINTF("  CID: %08X-%08X-%08X-%08X\n", (unsigned) card->cid[0], (unsigned) card->cid[1], (unsigned) card->cid[2], (unsigned) card->cid[3]);
+//	PRINTF("  CSD: %08X-%08X-%08X-%08X\n", (unsigned) card->csd[0], (unsigned) card->csd[1], (unsigned) card->csd[2], (unsigned) card->csd[3]);
+//	PRINTF("  Max transfer speed: %u HZ\n", (unsigned) card->tran_speed);
+//	PRINTF("  Manufacturer ID: %02X\n", extract_mid(card));
+//	PRINTF("  OEM/Application ID: %04X\n", extract_oid(card));
+//	PRINTF("  Product name: '%c%c%c%c%c'\n", (int) (card->cid[0] & 0xff), (int) (card->cid[1] >> 24), (int) ((card->cid[1] >> 16) & 0xff), (int) (card->cid[1] >> 8) & 0xff, (int) (card->cid[1] & 0xff));
+//	PRINTF("  Product revision: %u.%u\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
+//	PRINTF("  Serial no: %0u\n", extract_psn(card));
+//	PRINTF("  Manufacturing date: %u.%u\n", extract_year(card), extract_month(card));
 
-	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
-	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
-	PRINTF("  Version: %s\n", sdcard_version_string(card));
-	PRINTF("  Capacity: %d MB\n", (int) (card->capacity / 1024 / 1024));
-	if(card->high_capacity)
-		PRINTF("  High capacity card\n");
-	PRINTF("  CID: %08X-%08X-%08X-%08X\n", (unsigned) card->cid[0], (unsigned) card->cid[1], (unsigned) card->cid[2], (unsigned) card->cid[3]);
-	PRINTF("  CSD: %08X-%08X-%08X-%08X\n", (unsigned) card->csd[0], (unsigned) card->csd[1], (unsigned) card->csd[2], (unsigned) card->csd[3]);
-	PRINTF("  Max transfer speed: %u HZ\n", (unsigned) card->tran_speed);
-	PRINTF("  Manufacturer ID: %02X\n", extract_mid(card));
-	PRINTF("  OEM/Application ID: %04X\n", extract_oid(card));
-	PRINTF("  Product name: '%c%c%c%c%c'\n", (int) (card->cid[0] & 0xff), (int) (card->cid[1] >> 24), (int) ((card->cid[1] >> 16) & 0xff), (int) (card->cid[1] >> 8) & 0xff, (int) (card->cid[1] & 0xff));
-	PRINTF("  Product revision: %u.%u\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
-	PRINTF("  Serial no: %0u\n", extract_psn(card));
-	PRINTF("  Manufacturing date: %u.%u\n", extract_year(card), extract_month(card));
 	return 1;
+}
+
+
+#if WITHUSESDCARD
+
+static
+DSTATUS SD_Initialize (
+	BYTE drv				/* Physical drive nmuber (0..) */
+)
+{
+	//PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
+	if (1)
+	{
+#if WITHSDHCHW
+		if (HARDWARE_SDIOSENSE_CD() == 0)
+		{
+			PRINTF(PSTR("SD_Initialize: STA_NODISK\n"));
+			return STA_NODISK;
+		}
+		//if (HARDWARE_SDIOSENSE_WP() != 0)
+		//	return STA_PROTECT;
+		int ec = sdcard_init();
+		return (ec == 0) ? 0 : STA_NODISK;	// STA_NOINIT or STA_NODISK or STA_PROTECT
+#endif /* WITHSDHCHW */
+	}
+	return STA_NODISK;
+}
+
+
+static
+DSTATUS SD_Status (
+	BYTE drv		/* Physical drive nmuber (0..) */
+)
+{
+	//PRINTF(PSTR("SD_Status: drv=%d\n"), (int) drv);
+	if (1)
+	{
+#if WITHSDHCHW
+		if (HARDWARE_SDIOSENSE_CD() == 0)
+			return STA_NODISK;
+		if (HARDWARE_SDIOSENSE_WP() != 0)
+			return STA_PROTECT;
+		return 0;	// STA_NOINIT or STA_NODISK or STA_PROTECT
+#endif /* WITHSDHCHW */
+	}
+	return STA_NODISK;
+}
+
+/* запись буферизированных данных на носитель */
+static
+DRESULT SD_Sync(BYTE drv)
+{
+	struct sdhci_t *hci=&HCI;
+	struct sdcard_t *card=&CARD;
+	if (mmc_poll_for_busy(hci, card, 1000))
+		return RES_ERROR;
+	return RES_OK;
+}
+
+
+// write a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_write(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	const BYTE *buff,	/* Data to be written */
+	LBA_t sector,		/* Sector address (LBA) */
+	UINT count			/* Number of sectors to write */
+	)
+{
+	struct sdhci_t *hci=&HCI;
+	struct sdcard_t *card=&CARD;
+	sector += USERFIRSTSBLOCK;
+
+	if (! mmc_write_blocks(buff, sector, count))
+		return RES_ERROR;
+
+	return RES_OK;
+}
+
+// read a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_read(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	BYTE *buff,		/* Data buffer to store read data */
+	LBA_t sector,	/* Sector address (LBA) */
+	UINT count		/* Number of sectors to read */
+	)
+{
+	struct sdhci_t *hci=&HCI;
+	struct sdcard_t *card=&CARD;
+	sector += USERFIRSTSBLOCK;
+
+	if (! mmc_read_blocks(buff, sector, count))
+		return RES_ERROR;
+	return RES_OK;
+}
+static int multisectorWriteProblems(UINT count)
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+	if (count > 1)
+	{
+		return 1;
+	}
+#endif /* CPUSTYLE_XXX */
+	return 0;
+}
+
+static int multisectorReadProblems(UINT count)
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	if (count > 1)
+	{
+		return 1;
+	}
+#endif /* CPUSTYLE_XXX */
+	return 0;
+}
+
+// write a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_writeMisalign(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	const BYTE *buff,	/* Data to be written */
+	LBA_t sector,		/* Sector address (LBA) */
+	UINT count			/* Number of sectors to write */
+	)
+{
+	if (multisectorWriteProblems(count) || ((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	{
+		while (count --)
+		{
+			static FATFSALIGN_BEGIN BYTE tmpbuf[FF_MAX_SS] FATFSALIGN_END;
+			const BYTE *abuff = buff;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				memcpy(tmpbuf, buff, FF_MAX_SS);
+				abuff = tmpbuf;
+			}
+
+			DRESULT ec = SD_disk_write(drv, abuff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			buff += FF_MAX_SS;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+	return SD_disk_write(drv, buff, sector, count);
+}
+
+// read a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_readMisalign(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	BYTE *buff,		/* Data buffer to store read data */
+	LBA_t sector,	/* Sector address (LBA) */
+	UINT count		/* Number of sectors to read */
+	)
+{
+	if (multisectorReadProblems(count) || ((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	{
+		while (count --)
+		{
+			static FATFSALIGN_BEGIN BYTE tmpbuf[FF_MAX_SS] FATFSALIGN_END;
+			BYTE *abuff = buff;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				abuff = tmpbuf;
+			}
+
+			DRESULT ec = SD_disk_read(drv, abuff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				memcpy(buff, tmpbuf, FF_MAX_SS);
+			}
+			buff += FF_MAX_SS;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+	return SD_disk_read(drv, buff, sector, count);
+}
+
+
+// for _USE_MKFS
+static
+DRESULT SD_Get_Block_Size (
+	BYTE drv,		/* Physical drive nmuber (0..) */
+	DWORD  *buff	/* Data buffer to store read data */
+	)
+{
+	struct sdhci_t *hci=&HCI;
+	struct sdcard_t *card=&CARD;
+//	enum { KB = 1024, MB = KB * KB };
+//	static const unsigned long aus [16] =
+//	{
+//		0,
+//		16 * KB,	// 1h 16 KB
+//		32 * KB,
+//		64 * KB,
+//		128 * KB,
+//		256 * KB,
+//		512 * KB,
+//		1 * MB,
+//		2 * MB,
+//		4 * MB,
+//		8 * MB,
+//		12 * MB,
+//		16 * MB,
+//		24 * MB,
+//		32 * MB,
+//		64 * MB,
+//	};
+//	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
+//
+//	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
+//	{
+//		const unsigned au = array_get_bits(sdhost_sdcard_SDSTATUS, 512, 431, 4);	// [431:428] AU_SIZE
+//		const unsigned es = array_get_bits(sdhost_sdcard_SDSTATUS, 512, 423, 16);	// [423:408] ERASE_SIZE
+//		PRINTF(PSTR("ioctl: GET_BLOCK_SIZE: AU_SIZE=0x%02x, ERASE_SIZE=0x%04x\n"), au, es);
+//		* buff = aus [au] * es;
+//		return RES_OK;
+//	}
+	return RES_ERROR;
+}
+
+// for _USE_MKFS
+static
+DRESULT SD_Get_Sector_Count (
+	BYTE drv,		/* Physical drive nmuber (0..) */
+	LBA_t  *buff	/* Data buffer to store read data */
+	)
+{
+	struct sdhci_t *hci=&HCI;
+	struct sdcard_t *card=&CARD;
+	LBA_t val = card->capacity / FF_MAX_SS;
+	if (val > USERFIRSTSBLOCK)
+	{
+		//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
+		* buff = val - USERFIRSTSBLOCK;
+		return RES_OK;
+	}
+	return RES_ERROR;
+}
+
+const struct drvfunc SD_drvfunc =
+{
+	SD_Initialize,
+	SD_Status,
+	SD_Sync,
+	SD_disk_writeMisalign,
+	SD_disk_readMisalign,
+	SD_Get_Sector_Count,
+	SD_Get_Block_Size,
+};
+
+#endif
+
+void sdcardhw_initialize(void)
+{
+	//PRINTF(PSTR("sdcardhw_initialize\n"));
+	HARDWARE_SDIOSENSE_INITIALIZE();
+	HARDWARE_SDIOPOWER_INITIALIZE();
+	//sd_power_cycle();
+
+	//PRINTF(PSTR("sdcardhw_initialize: done.\n"));
+	return;
 }
 
 #endif /* CPUSTYLE_ALLWINNER && WITHSDHCHW */

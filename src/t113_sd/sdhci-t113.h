@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "sdhci.h"
-#include "sdcard.h"
+#include "aw-sdhci.h"
+#include "aw-sdcard.h"
 
 extern struct sdhci_t HCI;
 extern struct sdcard_t CARD;
