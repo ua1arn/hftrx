@@ -80,7 +80,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART0
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart0_initialize(1); \
+			hardware_uart0_initialize(1, DEBUGSPEED); \
+			hardware_uart0_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart0_set_speed(baudrate); \
@@ -123,7 +124,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART1
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart1_initialize(1); \
+			hardware_uart1_initialize(1, DEBUGSPEED); \
+			hardware_uart1_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart1_set_speed(baudrate); \
@@ -166,7 +168,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART2
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart2_initialize(1); \
+			hardware_uart2_initialize(1, DEBUGSPEED); \
+			hardware_uart2_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart2_set_speed(baudrate); \
@@ -209,7 +212,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART3
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart3_initialize(1); \
+			hardware_uart3_initialize(1, DEBUGSPEED); \
+			hardware_uart3_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart3_set_speed(baudrate); \
@@ -252,7 +256,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART4
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart4_initialize(1); \
+			hardware_uart4_initialize(1, DEBUGSPEED); \
+			hardware_uart4_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart4_set_speed(baudrate); \
@@ -295,7 +300,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART5
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart5_initialize(1); \
+			hardware_uart5_initialize(1, DEBUGSPEED); \
+			hardware_uart5_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart5_set_speed(baudrate); \
@@ -338,7 +344,8 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// Отладочные функции работают через USART6
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
-			hardware_uart6_initialize(1); \
+			hardware_uart6_initialize(1, DEBUGSPEED); \
+			hardware_uart6_set_speed(DEBUGSPEED); \
 		} while (0)
 	#define HARDWARE_DEBUG_SET_SPEED(baudrate) do { \
 			hardware_uart6_set_speed(baudrate); \

@@ -304,7 +304,7 @@ hardware_uart7_putchar(uint_fast8_t c)
 	return 1;
 }
 
-void hardware_uart7_initialize(uint_fast8_t debug)
+void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
 {
 #if CPUSTYLE_STM32F1XX
 

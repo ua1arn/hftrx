@@ -2247,7 +2247,16 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 	}
 }
 
-uint_fast32_t allwnrt113_get_usart_freq(void)
+// A64
+// The clock of the UART is from X
+uint_fast32_t allwnrt113_get_uart_freq(void)
+{
+	return allwnrt113_get_hosc_freq();
+}
+
+// A64
+// The clock of the UART is from X
+uint_fast32_t allwnrt113_get_twi_freq(void)
 {
 	return allwnrt113_get_hosc_freq();
 }
@@ -3058,7 +3067,7 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 }
 
 // The working clock of UART is APB2
-uint_fast32_t allwnrt113_get_usart_freq(void)
+uint_fast32_t allwnrt113_get_uart_freq(void)
 {
      return allwnr_t507_get_apb2_freq();
 }
@@ -3759,11 +3768,15 @@ uint_fast32_t allwnrt113_get_ahb_freq(void)
 	return allwnrt113_get_hosc_freq();
 }
 
-uint_fast32_t allwnrt113_get_usart_freq(void)
+// T113
+// The clock of the UART is from APB1.
+uint_fast32_t allwnrt113_get_uart_freq(void)
 {
 	return allwnrt113_get_apb1_freq();
 }
 
+// T113
+// The clock of the TWI is from APB1.
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
 	return allwnrt113_get_apb1_freq();

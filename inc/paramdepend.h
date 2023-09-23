@@ -749,8 +749,7 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_a64_get_cpux_freq())
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
 	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
@@ -796,8 +795,7 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
 	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
@@ -842,8 +840,7 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnrt113_get_arm_freq())
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
 	#define CPU_PL1_FREQ (allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 200
@@ -928,8 +925,7 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
 	#define CPU_FREQ	(allwnrf133_get_riscv_freq())
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
-	#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+	#define BOARD_USART_FREQ (allwnrt113_get_uart_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
