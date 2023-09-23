@@ -69,9 +69,9 @@ static char * sdcard_version_string(struct sdcard_t * card)
 	major = (card->version >> 8) & 0xf;
 	minor = (card->version >> 4) & 0xf;
 	micro = card->version & 0xf;
-	n = sprintf(version, "%u.%u", major, minor);
+	n = local_snprintf_P(version, ARRAY_SIZE(version), "%u.%u", major, minor);
 	if(micro)
-		sprintf(version + n, "%u", micro);
+		local_snprintf_P(version + n, ARRAY_SIZE(version) - n, "%u", micro);
 	return version;
 }
 
@@ -206,9 +206,15 @@ static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 			if(card->version == SD_VERSION_2)
 				cmd.cmdarg |= OCR_HCS;
 			cmd.resptype = MMC_RSP_R3;
-			if(!sdhci_t113_transfer(hci, &cmd, NULL) || (cmd.response[0] & OCR_BUSY))
+			if(!sdhci_t113_transfer(hci, &cmd, NULL))
+			{
+				//PRINTF("1 wait not okay\n");
+				return 0;
+			}
+			if((cmd.response[0] & OCR_BUSY))
+			{
 				break;
-
+			}
 		}
 	} while(retries--);
 
@@ -237,7 +243,7 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	struct sdhci_cmd_t cmd = { 0 };
 	int retries = 100;
 
-	if(!go_idle_state(hci))
+	if (!go_idle_state(hci))
 	{
 		TP();
 		return 0;
@@ -315,7 +321,10 @@ static int mmc_status(struct sdhci_t * hci, struct sdcard_t * card) //ï¿½ï¿½ï¿½ï
 	} while(retries-- > 0);
 
 	if(retries > 0)
+	{
+		//PRINTF("1 status=%08X\n", cmd.response[0]);
 		return ((cmd.response[0] >> 9) & 0xf);
+	}
 
 	return -1;
 }
@@ -349,7 +358,10 @@ static int mmc_status2(struct sdhci_t * hci, struct sdcard_t * card)
 	} while (!ret && retries--);
 
 	if (ret)
+	{
+		//PRINTF("2 status=%08X\n", cmd.response[0]);
 		return  cmd.response[0];
+	}
 
 	return -1;
 }
@@ -524,7 +536,7 @@ int sdcard_init(void)
         if(!sdhci_t113_init(hci))
         {
         	PRINTF("No SD card\n");
-        	return 0; //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SMHC0. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!
+        	return 0;
         }
       	PRINTF("SD card present:\n");
 
@@ -544,21 +556,22 @@ int sdcard_init(void)
 
 	if(!go_idle_state(hci))
 	{
-		TP();
+		PRINTF("bad go_idle_state\n");
 		return 0;
 	}
 
-	sd_send_if_cond(hci, card);
+	if (!sd_send_if_cond(hci, card))
+		PRINTF("bad sd_send_if_cond\n");
 
 	if(!sd_send_op_cond(hci, card))
 	{
+		PRINTF("bad sd_send_op_cond\n");
 		if(!mmc_send_op_cond(hci, card))
 		{
 			TP();
 			return 0;
 		}
 	}
-	TP();
 
 	if(hci->isspi)
 	{

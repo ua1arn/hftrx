@@ -538,13 +538,13 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
 //	SMHCHARD_PTR->SMHC_HWRST |= UINT32_C(1) << 0;
 //	local_delay_ms(10);
 
- if(!sdhci_t113_detect(sdhci)) //если слот без карты - неудачно!
-	 return 0;
-
  memset(&HCI,0,sizeof(HCI));
  HCI.base = SMHCHARD_BASE;
  HCI.instance = SMHCHARD_PTR;
  memset(&CARD,0,sizeof(CARD));
+
+ if(!sdhci_t113_detect(sdhci)) //если слот без карты - неудачно!
+	 return 0;
 
  sdhci_t113_clock();                        //клок, гейт, ресет
 

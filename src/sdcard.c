@@ -4816,7 +4816,20 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 		0;
 
 #elif CPUSTYLE_T507
-	#warning CPUSTYLE_T507 to be implemented
+
+	switch(use4bit ? 4 : 1)
+	{
+	case 1:
+		SMHCHARD_PTR->SMHC_CTYPE = 0;
+		break;
+	case 4:
+		SMHCHARD_PTR->SMHC_CTYPE = 1;
+		break;
+	case 8:
+		SMHCHARD_PTR->SMHC_CTYPE = 2;
+		break;
+	default:
+	}
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -5202,7 +5215,7 @@ void hardware_sdhost_initialize(void)
 	HARDWARE_SDIO_INITIALIZE();
 
 #elif CPUSTYLE_T507
-	#warning CPUSTYLE_T507 to be implemented
+	//#warning CPUSTYLE_T507 to be implemented
 
 	unsigned ix = SMHCHARD_IX;
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
@@ -5213,6 +5226,9 @@ void hardware_sdhost_initialize(void)
 	(void) CCU->SMHC_BGR_REG;
 
 	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
 
 	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();
