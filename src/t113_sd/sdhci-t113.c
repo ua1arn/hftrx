@@ -191,6 +191,9 @@ static inline void WaitAfterReset(void)
  }
  while((s&SDXC_FIFO_RESET)||(s&SDXC_SOFT_RESET)); //ждём пока оба бита FIFO_RST и SOFT_RST не сбросятся
 */
+	while (read32(SMHCHARD_BASE + SD_GCTL) & (SDXC_FIFO_RESET | SDXC_SOFT_RESET))
+		;
+
 }
 
 static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
@@ -243,7 +246,10 @@ static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t *
 	write32(SMHCHARD_BASE + SD_CAGR, cmd->cmdarg);
 
 	if(dat)
-		write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) | 0x80000000);
+		write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) | 0x80000000u);
+	else
+		write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) & ~ 0x80000000u);
+
 	write32(SMHCHARD_BASE + SD_CMDR, cmdval | cmd->cmdidx);
 	while (read32(SMHCHARD_BASE + SD_CMDR)&SDXC_START)
 		 ;
