@@ -4087,6 +4087,9 @@ void allwnrt113_pll_initialize(void)
 	allwnrt113_module_pll_enable(& CCU->PLL_VE_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
+
+	CCU->APB1_CLK_REG = 0x03000102;	// allwnrt113_get_uart_freq()=100 MHz
+
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
