@@ -391,8 +391,8 @@
 	#define HARDWARE_SDIO_CD_BIT	(UINT32_C(1) << 6)	/* PF6 - SDC0_DET */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
-			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PF6 - SDC0_DET */ \
-			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
+			arm_hardware_piof_inputs(HARDWARE_SDIO_CD_BIT); /* PF6 - SDC0_DET */ \
+			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 

@@ -6904,13 +6904,6 @@ void hightests(void)
 
 	}
 #endif
-#if 1 && 1
-	{
-		PRINTF("hightests: [%p]\n", hightests);
-		PRINTF("hightests: CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
-		PRINTF("allwnrt113_get_uart_freq()=%u MHz\n", (unsigned) (allwnrt113_get_uart_freq() / 1000000));
-	}
-#endif
 #if CPUSTYLE_STM32MP1 && WITHETHHW && 0
 	{
 		// Ethernet controller tests

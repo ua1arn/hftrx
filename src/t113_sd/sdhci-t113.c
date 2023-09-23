@@ -1,8 +1,9 @@
 #include "hardware.h"
 
-#if CPUSTYLE_ALLWINNER
+#if CPUSTYLE_ALLWINNER && WITHSDHCHW
 
 #include "formats.h"
+#include "gpio.h"
 
 /*
  * driver/sdhci-t113.c
@@ -470,10 +471,11 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 {
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
 
-        uint32_t ratio=( /*HOSC_CLOCK*/ PLLPERI1X_CLOCK_DIV /(2*clock));
+        uint32_t ratio=( /*HOSC_CLOCK*/ SMHCHARD_FREQ /(2*clock));
 
 	if((ratio & 0xff) != ratio)
         {
+		PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
 		return 0;
         }
 
@@ -482,6 +484,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 
 	if(!sdhci_t113_update_clk())
         {
+		PRINTF("sdhci_t113_setclock: sdhci_t113_update_clk failure\n");
 		return 0;
         }
 
@@ -489,6 +492,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 
 	if(!sdhci_t113_update_clk())
         {
+		PRINTF("sdhci_t113_setclock: sdhci_t113_update_clk failure\n");
 		return 0;
         }
 
@@ -522,6 +526,11 @@ struct sdcard_t CARD;
 
 int sdhci_t113_init(struct sdhci_t * sdhci)
 {
+//	SMHCHARD_CCU_CLK_REG |= (1u << 31);
+//	SMHCHARD_CCU_CLK_REG |= (1u << 31);
+//	hardware_sdhost_initialize();
+	HARDWARE_SDIOSENSE_INITIALIZE();
+	HARDWARE_SDIO_INITIALIZE();
  //Порты настроены в PIO.c (без настройки портов - НЕ работает)
 
  if(!sdhci_t113_detect(sdhci))return 0; //если слот без карты - неудачно!
@@ -533,9 +542,9 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
 
  sdhci->voltage   = MMC_VDD_27_36;
  sdhci->width     = MMC_BUS_WIDTH_4;
- sdhci->clock     = PLLPERI1X_CLOCK_DIV; //HOSC_CLOCK
+ sdhci->clock     = SMHCHARD_FREQ; //HOSC_CLOCK
  sdhci->isspi     = 0;
 
  return 1;
 }
-#endif /* CPUSTYLE_ALLWINNER */
+#endif /* CPUSTYLE_ALLWINNER && WITHSDHCHW */

@@ -20,9 +20,9 @@ extern "C" {
 
 //#define SMHC0_BASE 0x04020000
 
-#define SLOW_CLOCK             400000UL //400 kHz
-#define HOSC_CLOCK           24000000UL // 24 MHz
-#define PLLPERI1X_CLOCK_DIV 100000000UL //100 MHz
+//#define SLOW_CLOCK             400000UL //400 kHz
+//#define HOSC_CLOCK           24000000UL // 24 MHz
+//#define PLLPERI1X_CLOCK_DIV 100000000UL //100 MHz
 
 //#define FALSE 0
 //#define TRUE  1

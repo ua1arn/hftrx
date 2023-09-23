@@ -1,6 +1,6 @@
 #include "hardware.h"
 
-#if CPUSTYLE_ALLWINNER
+#if CPUSTYLE_ALLWINNER && WITHSDHCHW
 
 #include "formats.h"
 
@@ -135,7 +135,7 @@ static unsigned int extract_year(struct sdcard_t * card)
 
 static int go_idle_state(struct sdhci_t * hci)
 {
-	struct sdhci_cmd_t cmd = { 0 }; //выравнивание
+	struct sdhci_cmd_t cmd = { 0 }; //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 	cmd.cmdidx = MMC_GO_IDLE_STATE;
 	cmd.cmdarg = 0;
@@ -180,6 +180,7 @@ static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
                 {
+			PRINTF("sd_send_op_cond: sdhci_t113_transfer failure\n");
 	 		continue;
                 }
 
@@ -237,13 +238,19 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	int retries = 100;
 
 	if(!go_idle_state(hci))
+	{
+		TP();
 		return 0;
+	}
 
 	cmd.cmdidx = MMC_SEND_OP_COND;
 	cmd.cmdarg = 0;
 	cmd.resptype = MMC_RSP_R3;
  	if(!sdhci_t113_transfer(hci, &cmd, NULL))
- 		return 0;
+	{
+		TP();
+		return 0;
+	}
 
 	do {
 		cmd.cmdidx = MMC_SEND_OP_COND;
@@ -251,11 +258,17 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		cmd.cmdarg |= OCR_HCS;
 		cmd.resptype = MMC_RSP_R3;
 	 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
-	 		return 0;
+		{
+			TP();
+			return 0;
+		}
 	} while (!(cmd.response[0] & OCR_BUSY) && retries--);
 
 	if(retries <= 0)
+	{
+		TP();
 		return 0;
+	}
 
 	if(hci->isspi)
 	{
@@ -263,7 +276,10 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		cmd.cmdarg = 0;
 		cmd.resptype = MMC_RSP_R3;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+			TP();
 			return 0;
+		}
 	}
 	card->version = MMC_VERSION_UNKNOWN;
 	card->ocr = cmd.response[0];
@@ -272,7 +288,7 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	return 1;
 }
 
-static int mmc_status(struct sdhci_t * hci, struct sdcard_t * card) //некорректно работает в функции mmc_write_blocks, завершается неудачно (таймаут)
+static int mmc_status(struct sdhci_t * hci, struct sdcard_t * card) //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ mmc_write_blocks, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 {
 	struct sdhci_cmd_t cmd = { 0 };
 
@@ -495,7 +511,7 @@ uint64_t mmc_write_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt)
 	}
 
 	/* Waiting for the ready status */
-	if(mmc_poll_for_busy(hci,card,1000))return 0; //тайм-аут 1 с.
+	if(mmc_poll_for_busy(hci,card,1000))return 0; //пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅ 1 пїЅ.
 
 	return blkcnt;
 }
@@ -505,7 +521,12 @@ int sdcard_init(void)
         struct sdhci_t  *hci =&HCI;
         struct sdcard_t *card=&CARD;
 
-        if(!sdhci_t113_init(hci))return 0; //инит железа SMHC0. Если слот без карты - неудачно!
+        if(!sdhci_t113_init(hci))
+        {
+        	PRINTF("No SD card\n");
+        	return 0; //пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ SMHC0. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
+        }
+      	PRINTF("SD card present:\n");
 
 	struct sdhci_cmd_t cmd = { 0 };
 	struct sdhci_data_t dat = { 0 };
@@ -522,15 +543,22 @@ int sdcard_init(void)
 	sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 
 	if(!go_idle_state(hci))
+	{
+		TP();
 		return 0;
+	}
 
 	sd_send_if_cond(hci, card);
 
 	if(!sd_send_op_cond(hci, card))
 	{
 		if(!mmc_send_op_cond(hci, card))
+		{
+			TP();
 			return 0;
+		}
 	}
+	TP();
 
 	if(hci->isspi)
 	{
@@ -774,22 +802,22 @@ int sdcard_init(void)
 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 		return 0;
 
-	PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
+	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
 	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
 	PRINTF("  Version: %s\n", sdcard_version_string(card));
-	PRINTF("  Capacity: %s\n", ssize(scap, card->capacity));
+	//PRINTF("  Capacity: %s\n", ssize(scap, card->capacity));
 	if(card->high_capacity)
 		PRINTF("  High capacity card\n");
-	PRINTF("  CID: %08X-%08X-%08X-%08X\n", card->cid[0], card->cid[1], card->cid[2], card->cid[3]);
-	PRINTF("  CSD: %08X-%08X-%08X-%08X\n", card->csd[0], card->csd[1], card->csd[2], card->csd[3]);
-	PRINTF("  Max transfer speed: %u HZ\n", card->tran_speed);
+	PRINTF("  CID: %08X-%08X-%08X-%08X\n", (unsigned) card->cid[0], (unsigned) card->cid[1], (unsigned) card->cid[2], (unsigned) card->cid[3]);
+	PRINTF("  CSD: %08X-%08X-%08X-%08X\n", (unsigned) card->csd[0], (unsigned) card->csd[1], (unsigned) card->csd[2], (unsigned) card->csd[3]);
+	PRINTF("  Max transfer speed: %u HZ\n", (unsigned) card->tran_speed);
 	PRINTF("  Manufacturer ID: %02X\n", extract_mid(card));
 	PRINTF("  OEM/Application ID: %04X\n", extract_oid(card));
-	PRINTF("  Product name: '%c%c%c%c%c'\n", card->cid[0] & 0xff, (card->cid[1] >> 24), (card->cid[1] >> 16) & 0xff, (card->cid[1] >> 8) & 0xff, card->cid[1] & 0xff);
+	PRINTF("  Product name: '%c%c%c%c%c'\n", (int) (card->cid[0] & 0xff), (int) (card->cid[1] >> 24), (int) ((card->cid[1] >> 16) & 0xff), (int) (card->cid[1] >> 8) & 0xff, (int) (card->cid[1] & 0xff));
 	PRINTF("  Product revision: %u.%u\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
 	PRINTF("  Serial no: %0u\n", extract_psn(card));
 	PRINTF("  Manufacturing date: %u.%u\n", extract_year(card), extract_month(card));
 	return 1;
 }
 
-#endif /* CPUSTYLE_ALLWINNER */
+#endif /* CPUSTYLE_ALLWINNER && WITHSDHCHW */
