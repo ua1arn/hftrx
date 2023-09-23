@@ -6623,156 +6623,6 @@ void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
 
 #endif
 
-#if CPUSTYLE_T507 && 1
-
-#define SUNXI_DE2_BASE 0x01000000
-
-#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
-#define SUNXI_DE2_MUX1_BASE			(SUNXI_DE2_BASE + 0x200000)
-
-#define SUNXI_DE2_MUX_GLB_REGS			0x00000
-#define SUNXI_DE2_MUX_BLD_REGS			0x01000
-#define SUNXI_DE2_MUX_CHAN_REGS			0x02000
-//#define SUNXI_DE2_MUX_CHAN_SZ			0x1000
-#define SUNXI_DE2_MUX_VSU_REGS			0x20000
-#define SUNXI_DE2_MUX_GSU1_REGS			0x30000
-#define SUNXI_DE2_MUX_GSU2_REGS			0x40000
-#define SUNXI_DE2_MUX_GSU3_REGS			0x50000
-#define SUNXI_DE2_MUX_FCE_REGS			0xa0000
-#define SUNXI_DE2_MUX_BWS_REGS			0xa2000
-#define SUNXI_DE2_MUX_LTI_REGS			0xa4000
-#define SUNXI_DE2_MUX_PEAK_REGS			0xa6000
-#define SUNXI_DE2_MUX_ASE_REGS			0xa8000
-#define SUNXI_DE2_MUX_FCC_REGS			0xaa000
-#define SUNXI_DE2_MUX_DCSC_REGS			0xb0000
-
-/* internal clock settings */
-struct de_clk {
-	uint32_t gate_cfg;
-	uint32_t bus_cfg;
-	uint32_t rst_cfg;
-	uint32_t div_cfg;
-	uint32_t sel_cfg;
-};
-
-/* global control */
-struct de_glb {
-	uint32_t ctl;
-	uint32_t status;
-	uint32_t dbuff;
-	uint32_t size;
-};
-
-/* alpha blending */
-struct de_bld {
-	uint32_t fcolor_ctl;
-	struct {
-		uint32_t fcolor;
-		uint32_t insize;
-		uint32_t offset;
-		uint32_t dum;
-	} attr[4];
-	uint32_t dum0[15];
-	uint32_t route;
-	uint32_t premultiply;
-	uint32_t bkcolor;
-	uint32_t output_size;
-	uint32_t bld_mode[4];
-	uint32_t dum1[4];
-	uint32_t ck_ctl;
-	uint32_t ck_cfg;
-	uint32_t dum2[2];
-	uint32_t ck_max[4];
-	uint32_t dum3[4];
-	uint32_t ck_min[4];
-	uint32_t dum4[3];
-	uint32_t out_ctl;
-};
-
-/* VI channel */
-struct de_vi {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch[3];
-		uint32_t top_laddr[3];
-		uint32_t bot_laddr[3];
-	} cfg[4];
-	uint32_t fcolor[4];
-	uint32_t top_haddr[3];
-	uint32_t bot_haddr[3];
-	uint32_t ovl_size[2];
-	uint32_t hori[2];
-	uint32_t vert[2];
-};
-
-struct de_ui {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch;
-		uint32_t top_laddr;
-		uint32_t bot_laddr;
-		uint32_t fcolor;
-		uint32_t dum;
-	} cfg[4];
-	uint32_t top_haddr;
-	uint32_t bot_haddr;
-	uint32_t ovl_size;
-};
-
-struct de_csc {
-	uint32_t csc_ctl;
-	uint8_t res[0xc];
-	uint32_t coef11;
-	uint32_t coef12;
-	uint32_t coef13;
-	uint32_t coef14;
-	uint32_t coef21;
-	uint32_t coef22;
-	uint32_t coef23;
-	uint32_t coef24;
-	uint32_t coef31;
-	uint32_t coef32;
-	uint32_t coef33;
-	uint32_t coef34;
-};
-
-
-void detest(void)
-{
-	unsigned offs = 0x8000;
-//	memset((void *) (offs + SUNXI_DE2_BASE), 0*0xFF, 1024);
-	printhex32(0 + offs, (void *) (offs + SUNXI_DE2_BASE), 256);
-	printf("END\n");
-
-	const unsigned K64 = 64 * 1024;
-	memset((void *) SUNXI_DE2_BASE, 0XFF, 256);
-	PRINTF("SUNXI_DE2_BASE\n");
-	printhex32(SUNXI_DE2_BASE, (void *) SUNXI_DE2_BASE, 256);
-
-	memset((void *) SUNXI_DE2_MUX0_BASE, 0XFF, 256);
-	PRINTF("SUNXI_DE2_MUX0_BASE\n");
-	printhex32(SUNXI_DE2_MUX0_BASE, (void *) SUNXI_DE2_MUX0_BASE, 256);
-
-	memset((void *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS), 0XFF, 256);
-	PRINTF("SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS\n");
-	printhex32(SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS, (void *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS), 256);
-	PRINTF("struct de_vi:\n");
-	struct de_vi * vi = (struct de_vi *) (SUNXI_DE2_MUX0_BASE + SUNXI_DE2_MUX_BLD_REGS);
-	PRINTF("vi->cfg[0].attr=%08" PRIX32 "\n", vi->cfg[0].attr);
-	PRINTF("vi->cfg[0].size=%08" PRIX32 "\n", vi->cfg[0].size);
-
-	memset((void *) SUNXI_DE2_MUX1_BASE, 0XFF, 256);
-	PRINTF("SUNXI_DE2_MUX1_BASE\n");
-	printhex32(SUNXI_DE2_MUX1_BASE, (void *) SUNXI_DE2_MUX1_BASE, 256);
-}
-
-#endif
-
-
 #if CPUSTYLE_VM14
 
 static void vm14nand_command(unsigned command, unsigned nbumaddr)
@@ -7054,16 +6904,11 @@ void hightests(void)
 
 	}
 #endif
-#if CPUSTYLE_T507 && 0
+#if 1 && 1
 	{
-		board_set_bglight(!1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
-		board_update();
-		detest();
 		PRINTF("hightests: [%p]\n", hightests);
 		PRINTF("hightests: CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
-		PRINTF("hightests: ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
-		PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000000));
-		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000000));
+		PRINTF("allwnrt113_get_uart_freq()=%u MHz\n", (unsigned) (allwnrt113_get_uart_freq() / 1000000));
 	}
 #endif
 #if CPUSTYLE_STM32MP1 && WITHETHHW && 0
