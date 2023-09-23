@@ -366,8 +366,14 @@ void user_uart5_ontxchar(void * ctx);
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 #if WITHSDHCHW
+	// HelerBoard T505 ports:
+	// SMHC0: SDC0 - TF CARD
+	// SMHC1: SDC1 - SDIO
+	// SMHC2: SDC2 - eMMC
+
 	#define	SMHCHARD_IX 0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
+	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 
 	#if WITHSDHCHW4BIT
