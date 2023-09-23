@@ -402,11 +402,10 @@ int t113_transfer_data(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 	return ret;
 }
 
-// 1: no disk
-int sdhci_t113_detect(struct sdhci_t * sdhci) //PF6 - SDC0_DET (на плате подтянут резистором 10 кОм на питание +3.3V)
+// retuen 0: no disk
+int sdhci_t113_detect(struct sdhci_t * sdhci)
 {
- //if((PF_DAT>>6)&1)return 0;                  //PF6 = 1 - карты нет в слоте, PF6 = 0 - карта есть
- return HARDWARE_SDIOSENSE_CD() == 0;
+ return HARDWARE_SDIOSENSE_CD() != 0;
 }
 
 int sdhci_t113_reset(struct sdhci_t * sdhci)

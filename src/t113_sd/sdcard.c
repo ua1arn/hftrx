@@ -266,7 +266,7 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 	if(retries <= 0)
 	{
-		TP();
+		PRINTF("mmc_send_op_cond: no valid response\n");
 		return 0;
 	}
 
