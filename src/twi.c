@@ -1574,7 +1574,7 @@ void i2c_initialize(void)
 	hardware_iicps_configure();			// Peripheral
 }
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64)
+#elif (CPUSTYLE_ALLWINNER)
 
 
 
@@ -1646,6 +1646,8 @@ static void write32(uintptr_t a, uint32_t v)
 {
 	* (volatile uint32_t *) a = v;
 }
+
+// TODO: use allwnrt113_get_twi_freq()
 
 static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
 	uint64_t pclk = 100000000;	//clk_get_rate(pdat->clk);
@@ -1730,7 +1732,7 @@ static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1 | 1)) != I2C_STAT_TX_AR_ACK)
+	if (t113_i2c_send_data(pdat, (uint8_t)((msg->addr << 1) | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
 
 	write32(pdat->virt + TWI_CNTR, pdat_i2c.io->TWI_CNTR | (1 << 2));

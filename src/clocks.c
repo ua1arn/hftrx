@@ -2059,6 +2059,7 @@ uint_fast32_t allwnr_a64_get_audiopll_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M * P);
 }
 
+// The PLL_PERIPH0(2X) should be fixed to 1.2GHz
 uint_fast64_t allwnrt113_get_pll_periph0_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
@@ -2070,6 +2071,7 @@ uint_fast64_t allwnrt113_get_pll_periph0_x2_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  * K;
 }
 
+// The PLL_PERIPH1(2X) should be fixed to 1.2GHz
 uint_fast64_t allwnrt113_get_pll_periph1_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH1_CTRL_REG;
@@ -2080,6 +2082,7 @@ uint_fast64_t allwnrt113_get_pll_periph1_x2_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  * K;
 }
 
+// The PLL_PERIPH1(2X) should be fixed to 1.2GHz,
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void)
 {
 	// PLL_HSIC = (24MHz*N)/M.
@@ -2187,14 +2190,14 @@ uint_fast32_t allwnr_a64_get_mbus_freq(void)
 	}
 }
 
-uint_fast32_t allwnr_a64_get_axi_freq(void)
+static uint_fast32_t allwnr_a64_get_axi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
 	const uint_fast32_t clkdiv = 1u << ((clkreg >> 0) & 0x03);	// AXI_CLK_DIV_RATIO
 	return allwnr_a64_get_cpux_freq() / clkdiv;
 }
 
-uint_fast32_t allwnr_a64_get_apb_freq(void)
+static uint_fast32_t allwnr_a64_get_apb_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CPUX_AXI_CFG_REG;
 	const uint_fast32_t clkdiv = 1u << ((clkreg >> 8) & 0x03);	// CPU_APB_CLK_DIV
@@ -2247,18 +2250,42 @@ uint_fast32_t allwnrt113_get_spi1_freq(void)
 	}
 }
 
-// A64
-// The clock of the UART is from X
-uint_fast32_t allwnrt113_get_uart_freq(void)
+uint_fast32_t allwnr_a64_get_apb2_freq(void)
 {
-	return allwnrt113_get_hosc_freq();
+	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	//	00: OSC24M
+	//	01: PLL_PERIPH0(1X)
+	//	10: PLL_PERIPH1(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: LOSC
+		return allwnrt113_get_losc_freq() / (M * N);
+	case 0x01:
+		// 01: OSC24M
+		return allwnrt113_get_hosc_freq() / (M * N);
+	case 0x02:
+	case 0x03:
+		// 1X: PLL_PERIPH0(2X)
+		return allwnrt113_get_pll_periph0_x2_freq() / (M * N);
+	}
 }
 
 // A64
-// The clock of the UART is from X
+// The clock of the UART is from APB2
+uint_fast32_t allwnrt113_get_uart_freq(void)
+{
+	return allwnr_a64_get_apb2_freq();
+}
+
+// A64
+// The clock of the TWI is from APB2
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
-	return allwnrt113_get_hosc_freq();
+	return allwnr_a64_get_apb2_freq();
 }
 
 uint_fast32_t allwnrt113_get_hdmi_freq(void)
@@ -8507,7 +8534,6 @@ sysinit_pll_initialize(int forced)
 	USBPHY0->HCI_ICR = 0;
 	USBPHY1->HCI_ICR = 0;
 
-
 	allwnr_a64_pll_initialize();
 
 	//	The PLL_PERIPH0(1X) = 24MHz*N*K/2.
@@ -8526,6 +8552,8 @@ sysinit_pll_initialize(int forced)
 
 	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
+	//CCU->APB2_CFG_REG = 0x02000303;	// PLL_PERIPH0(2X) / 8 / 4 - allwnr_a64_get_apb2_freq()=300 MHz
+	CCU->APB2_CFG_REG = 0x02000304;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
 	allwnr_a64_mbus_initialize();
 
 #elif CPUSTYLE_T113
