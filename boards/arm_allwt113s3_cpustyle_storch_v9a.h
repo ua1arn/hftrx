@@ -495,6 +495,7 @@
 	#define targetext1		(UINT32_C(1) << 0)		// PG0 ext1 on front panel CSEXT1
 	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B
 	#define targetctl1		(UINT32_C(1) << 11)		// PG11 board control registers chain
+	#define targetctl1OE	(UINT32_C(1) << 1)		// PG1 board control registers chain output enable
 	#define targetcodec1	(UINT32_C(1) << 6)		// PG6 on-board codec1 NAU8822L
 	#define targetfpga1		(UINT32_C(1) << 2)		// PG2 FPGA control registers CS1
 	#define targetrtc1		(UINT32_C(1) << 10)		// PG10 RTC DS1305 RTC_CS
@@ -512,6 +513,7 @@
 		switch (target) { \
 		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
 		case targetrtc1: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
+		case targetctl1: { gpioX_setstate(GPIOG, (targetctl1), 0 * (targetctl1)); gpioX_setstate(GPIOG, (targetctl1OE), 0 * (targetctl1OE)); } break; \
 		default: { gpioX_setstate(GPIOG, (target), 0 * (target)); } break; \
 		case targetnone: break; \
 		} \
@@ -533,6 +535,7 @@
 		arm_hardware_piog_outputs(targetext1, 1 * targetext1); /*  */ \
 		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
 		arm_hardware_piog_outputs(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_piog_outputs(targetctl1OE, 1 * targetctl1OE); /*  */ \
 		arm_hardware_piog_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
 		arm_hardware_piog_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
 		arm_hardware_piog_outputs(targetrtc1, 0 * targetrtc1); /*  */ \
