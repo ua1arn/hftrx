@@ -805,7 +805,7 @@ int sdcard_init(void)
 	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
 	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
 	PRINTF("  Version: %s\n", sdcard_version_string(card));
-	//PRINTF("  Capacity: %s\n", ssize(scap, card->capacity));
+	PRINTF("  Capacity: %d MB\n", (int) (card->capacity / 1024 / 1024));
 	if(card->high_capacity)
 		PRINTF("  High capacity card\n");
 	PRINTF("  CID: %08X-%08X-%08X-%08X\n", (unsigned) card->cid[0], (unsigned) card->cid[1], (unsigned) card->cid[2], (unsigned) card->cid[3]);
