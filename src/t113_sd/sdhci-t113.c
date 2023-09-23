@@ -193,7 +193,7 @@ static inline void WaitAfterReset(void)
 */
 }
 
-int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
+static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	uint32_t cmdval = SDXC_START;
 	uint32_t status = 0;
@@ -297,7 +297,7 @@ int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 	return 1;
 }
 
-int read_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
+static int read_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 {
 	uint64_t count = blkcount * blksize;
 	uint32_t * tmp = buf;
@@ -339,7 +339,7 @@ int read_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 	return 1;
 }
 
-int write_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
+static int write_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 {
 	uint64_t count = blkcount * blksize;
 	uint32_t * tmp = buf;
@@ -380,7 +380,7 @@ int write_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 	return 1;
 }
 
-int t113_transfer_data(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
+static int t113_transfer_data(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	uint32_t dlen = (uint32_t)(dat->blkcnt * dat->blksz);
 	int ret = 0;
@@ -471,7 +471,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 
 	if((ratio & 0xff) != ratio)
         {
-		PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
+		//PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
 		return 0;
         }
 
