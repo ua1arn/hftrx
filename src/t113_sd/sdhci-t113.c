@@ -181,22 +181,22 @@ enum {
 #define SDXC_SEND_AUTO_STOPCCSD		(1 << 9)
 #define SDXC_CEATA_DEV_IRQ_ENABLE	(1 << 10)
 
-static inline void WaitAfterReset(void)
+static inline void WaitAfterReset(struct sdhci_t * sdhci)
 {
 /*
  uint32_t s;
  do
  {
-  s=read32(SMHCHARD_BASE + SD_GCTL);
+  s=read32(sdhci->base + SD_GCTL);
  }
  while((s&SDXC_FIFO_RESET)||(s&SDXC_SOFT_RESET)); //ждём пока оба бита FIFO_RST и SOFT_RST не сбросятся
 */
-	while (read32(SMHCHARD_BASE + SD_GCTL) & (SDXC_FIFO_RESET | SDXC_SOFT_RESET))
+	while (read32(sdhci->base + SD_GCTL) & (SDXC_FIFO_RESET | SDXC_SOFT_RESET))
 		;
 
 }
 
-static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
+static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	uint32_t cmdval = SDXC_START;
 	uint32_t status = 0;
@@ -208,13 +208,13 @@ static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t *
 //		timeout = ktime_add_ms(ktime_get(), 1);
 
 		do {
-			status = read32(SMHCHARD_BASE + SD_STAR);
+			status = read32(sdhci->base + SD_STAR);
 
 /*			if(ktime_after(ktime_get(), timeout))
 			{
-				write32(SMHCHARD_BASE + SD_GCTL, SDXC_HARDWARE_RESET);
-				write32(SMHCHARD_BASE + SD_RISR, 0xffffffff);
-                                WaitAfterReset();
+				write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
+				write32(sdhci->base + SD_RISR, 0xffffffff);
+                                WaitAfterReset(sdhci);
 
 				return 0;
 			}*/
@@ -243,26 +243,26 @@ static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t *
 	if(cmd->cmdidx == MMC_WRITE_MULTIPLE_BLOCK || cmd->cmdidx == MMC_READ_MULTIPLE_BLOCK)
 		cmdval |= SDXC_SEND_AUTO_STOP;
 
-	write32(SMHCHARD_BASE + SD_CAGR, cmd->cmdarg);
+	write32(sdhci->base + SD_CAGR, cmd->cmdarg);
 
 	if(dat)
-		write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) | 0x80000000u);
+		sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);
 	else
-		write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) & ~ 0x80000000u);
+		sdhci->instance->SMHC_CTRL &= ~ (UINT32_C(1) << 31);
 
-	write32(SMHCHARD_BASE + SD_CMDR, cmdval | cmd->cmdidx);
-	while (read32(SMHCHARD_BASE + SD_CMDR)&SDXC_START)
+	write32(sdhci->base + SD_CMDR, cmdval | cmd->cmdidx);
+	while (read32(sdhci->base + SD_CMDR)&SDXC_START)
 		 ;
 
 //	timeout = ktime_add_ms(ktime_get(),1);
 	do {
-		status = read32(SMHCHARD_BASE + SD_RISR);
+		status = read32(sdhci->base + SD_RISR);
 
 /*		if(ktime_after(ktime_get(), timeout) || (status & SDXC_INTERRUPT_ERROR_BIT))
 		{
-			write32(SMHCHARD_BASE + SD_GCTL, SDXC_HARDWARE_RESET);
-			write32(SMHCHARD_BASE + SD_RISR, 0xffffffff);
-                        WaitAfterReset();
+			write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
+			write32(sdhci->base + SD_RISR, 0xffffffff);
+                        WaitAfterReset(sdhci);
 
 			return 0;
 		}*/
@@ -274,13 +274,13 @@ static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t *
 //		timeout = ktime_add_ms(ktime_get(), 1);
 
 		do {
-			status = read32(SMHCHARD_BASE + SD_STAR);
+			status = read32(sdhci->base + SD_STAR);
 
 /*			if(ktime_after(ktime_get(), timeout))
 			{
-				write32(SMHCHARD_BASE + SD_GCTL, SDXC_HARDWARE_RESET);
-				write32(SMHCHARD_BASE + SD_RISR, 0xffffffff);
-                                WaitAfterReset();
+				write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
+				write32(sdhci->base + SD_RISR, 0xffffffff);
+                                WaitAfterReset(sdhci);
 
 				return 0;
 			}*/
@@ -290,41 +290,41 @@ static int t113_transfer_command(struct sdhci_cmd_t * cmd, struct sdhci_data_t *
 
 	if(cmd->resptype & MMC_RSP_136)
 	{
-		cmd->response[0] = read32(SMHCHARD_BASE + SD_RESP3);
-		cmd->response[1] = read32(SMHCHARD_BASE + SD_RESP2);
-		cmd->response[2] = read32(SMHCHARD_BASE + SD_RESP1);
-		cmd->response[3] = read32(SMHCHARD_BASE + SD_RESP0);
+		cmd->response[0] = read32(sdhci->base + SD_RESP3);
+		cmd->response[1] = read32(sdhci->base + SD_RESP2);
+		cmd->response[2] = read32(sdhci->base + SD_RESP1);
+		cmd->response[3] = read32(sdhci->base + SD_RESP0);
 	}
 	else
 	{
-		cmd->response[0] = read32(SMHCHARD_BASE + SD_RESP0);
+		cmd->response[0] = read32(sdhci->base + SD_RESP0);
 	}
-	write32(SMHCHARD_BASE + SD_RISR, 0xffffffff);
+	write32(sdhci->base + SD_RISR, 0xffffffff);
 	return 1;
 }
 
-static int read_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
+static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 {
 	uint64_t count = blkcount * blksize;
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
 
-	status = read32(SMHCHARD_BASE + SD_STAR);
-	err = read32(SMHCHARD_BASE + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
+	status = read32(sdhci->base + SD_STAR);
+	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	while((!err) && (count >= sizeof(uint32_t)))
 	{
 		if(!(status & SDXC_FIFO_EMPTY))
 		{
-			*(tmp) = read32(SMHCHARD_BASE + SD_FIFO);
+			*(tmp) = read32(sdhci->base + SD_FIFO);
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
-		status = read32(SMHCHARD_BASE + SD_STAR);
-		err = read32(SMHCHARD_BASE + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
+		status = read32(sdhci->base + SD_STAR);
+		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
 
 	do {
-		status = read32(SMHCHARD_BASE + SD_RISR);
+		status = read32(sdhci->base + SD_RISR);
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
 		if(blkcount > 1)
 			done = status & SDXC_AUTO_COMMAND_DONE;
@@ -336,7 +336,7 @@ static int read_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
         {
 		return 0;
         }
-	write32(SMHCHARD_BASE + SD_RISR, 0xffffffff);
+	write32(sdhci->base + SD_RISR, 0xffffffff);
 
 	if(count)
         {
@@ -345,28 +345,28 @@ static int read_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 	return 1;
 }
 
-static int write_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
+static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 {
 	uint64_t count = blkcount * blksize;
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
 
-	status = read32(SMHCHARD_BASE + SD_STAR);
-	err = read32(SMHCHARD_BASE + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
+	status = read32(sdhci->base + SD_STAR);
+	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	while(!err && count)
 	{
 		if(!(status & SDXC_FIFO_FULL))
 		{
-			write32(SMHCHARD_BASE + SD_FIFO, *tmp);
+			write32(sdhci->base + SD_FIFO, *tmp);
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
-		status = read32(SMHCHARD_BASE + SD_STAR);
-		err = read32(SMHCHARD_BASE + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
+		status = read32(sdhci->base + SD_STAR);
+		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
 
 	do {
-		status = read32(SMHCHARD_BASE + SD_RISR);
+		status = read32(sdhci->base + SD_RISR);
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
 		if(blkcount > 1)
 			done = status & SDXC_AUTO_COMMAND_DONE;
@@ -377,33 +377,33 @@ static int write_bytes(uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
 		return 0;
 
-	write32(SMHCHARD_BASE + SD_GCTL, read32(SMHCHARD_BASE + SD_GCTL) | SDXC_FIFO_RESET);
-	write32(SMHCHARD_BASE + SD_RISR, 0xffffffff);
-        WaitAfterReset();
+	write32(sdhci->base + SD_GCTL, read32(sdhci->base + SD_GCTL) | SDXC_FIFO_RESET);
+	write32(sdhci->base + SD_RISR, 0xffffffff);
+        WaitAfterReset(sdhci);
 
 	if(count)
 		return 0;
 	return 1;
 }
 
-static int t113_transfer_data(struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
+static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	uint32_t dlen = (uint32_t)(dat->blkcnt * dat->blksz);
 	int ret = 0;
 
-	write32(SMHCHARD_BASE + SD_BKSR, dat->blksz);
-	write32(SMHCHARD_BASE + SD_BYCR, dlen);
+	write32(sdhci->base + SD_BKSR, dat->blksz);
+	write32(sdhci->base + SD_BYCR, dlen);
 	if(dat->flag & MMC_DATA_READ)
 	{
-		if(!t113_transfer_command(cmd, dat))
+		if(!t113_transfer_command(sdhci, cmd, dat))
 			return 0;
-		ret = read_bytes((uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
+		ret = read_bytes(sdhci, (uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
 	}
 	else if(dat->flag & MMC_DATA_WRITE)
 	{
-		if(!t113_transfer_command(cmd, dat))
+		if(!t113_transfer_command(sdhci, cmd, dat))
 			return 0;
-		ret = write_bytes((uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
+		ret = write_bytes(sdhci, (uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
 	}
 	return ret;
 }
@@ -416,8 +416,8 @@ int sdhci_t113_detect(struct sdhci_t * sdhci)
 
 int sdhci_t113_reset(struct sdhci_t * sdhci)
 {
-	write32(SMHCHARD_BASE + SD_GCTL, SDXC_HARDWARE_RESET);
-        WaitAfterReset();
+	write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
+        WaitAfterReset(sdhci);
 
 	return 1;
 }
@@ -432,13 +432,13 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 	switch(width)
 	{
 	case MMC_BUS_WIDTH_1:
-		write32(SMHCHARD_BASE + SD_BWDR, SDXC_WIDTH1);
+		write32(sdhci->base + SD_BWDR, SDXC_WIDTH1);
 		break;
 	case MMC_BUS_WIDTH_4:
-		write32(SMHCHARD_BASE + SD_BWDR, SDXC_WIDTH4);
+		write32(sdhci->base + SD_BWDR, SDXC_WIDTH4);
 		break;
 	case MMC_BUS_WIDTH_8:
-		write32(SMHCHARD_BASE + SD_BWDR, SDXC_WIDTH8);
+		write32(sdhci->base + SD_BWDR, SDXC_WIDTH8);
 		break;
 	default:
 		return 0;
@@ -446,12 +446,12 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 	return 1;
 }
 
-int sdhci_t113_update_clk(void)
+int sdhci_t113_update_clk(struct sdhci_t * sdhci)
 {
 	uint32_t cmd = (1U << 31) | (1 << 21) | (1 << 13);
 
-	write32(SMHCHARD_BASE + SD_CMDR, cmd);
-	while(read32(SMHCHARD_BASE + SD_CMDR)&SDXC_START)
+	write32(sdhci->base + SD_CMDR, cmd);
+	while(read32(sdhci->base + SD_CMDR)&SDXC_START)
 		;
 
 //	ktime_t timeout = ktime_add_ms(ktime_get(), 1);
@@ -463,9 +463,9 @@ int sdhci_t113_update_clk(void)
 			return 0;
                 }*/
 
-	} while(read32(SMHCHARD_BASE + SD_CMDR) & SDXC_START);
+	} while(read32(sdhci->base + SD_CMDR) & SDXC_START);
 
-	write32(SMHCHARD_BASE + SD_RISR, read32(SMHCHARD_BASE + SD_RISR));
+	write32(sdhci->base + SD_RISR, read32(sdhci->base + SD_RISR));
 	return 1;
 }
 
@@ -481,18 +481,18 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		return 0;
         }
 
-	write32(SMHCHARD_BASE + SD_CKCR, read32(SMHCHARD_BASE + SD_CKCR) & ~(1 << 16));
-	write32(SMHCHARD_BASE + SD_CKCR, ratio);
+	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(1 << 16));
+	write32(sdhci->base + SD_CKCR, ratio);
 
-	if(!sdhci_t113_update_clk())
+	if(!sdhci_t113_update_clk(sdhci))
         {
 		PRINTF("sdhci_t113_setclock: sdhci_t113_update_clk failure\n");
 		return 0;
         }
 
-	write32(SMHCHARD_BASE + SD_CKCR, read32(SMHCHARD_BASE + SD_CKCR) | (3 << 16));
+	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) | (3 << 16));
 
-	if(!sdhci_t113_update_clk())
+	if(!sdhci_t113_update_clk(sdhci))
         {
 		PRINTF("sdhci_t113_setclock: sdhci_t113_update_clk failure\n");
 		return 0;
@@ -504,9 +504,9 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 int sdhci_t113_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
 	if(!dat)
-		return t113_transfer_command(cmd, dat);
+		return t113_transfer_command(sdhci, cmd, dat);
 
-	return t113_transfer_data(cmd, dat);
+	return t113_transfer_data(sdhci, cmd, dat);
 }
 
 //-----------------------------------------------------------------------------------
@@ -533,10 +533,17 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
 //	hardware_sdhost_initialize();
  //Порты настроены в PIO.c (без настройки портов - НЕ работает)
 
+//	SMHCHARD_PTR->SMHC_HWRST &= ~ UINT32_C(1) << 0;
+//	local_delay_ms(10);
+//	SMHCHARD_PTR->SMHC_HWRST |= UINT32_C(1) << 0;
+//	local_delay_ms(10);
+
  if(!sdhci_t113_detect(sdhci)) //если слот без карты - неудачно!
 	 return 0;
 
  memset(&HCI,0,sizeof(HCI));
+ HCI.base = SMHCHARD_BASE;
+ HCI.instance = SMHCHARD_PTR;
  memset(&CARD,0,sizeof(CARD));
 
  sdhci_t113_clock();                        //клок, гейт, ресет

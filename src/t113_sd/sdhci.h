@@ -96,6 +96,8 @@ struct sdhci_t
 	uint32_t width;
 	uint32_t clock;
 	int isspi;
+	uintptr_t base;
+	SMHC_TypeDef * instance;
 };
 
 #ifdef __cplusplus
