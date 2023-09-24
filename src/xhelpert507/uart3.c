@@ -19,42 +19,9 @@
 // RS-422
 
 // Очереди символов для обмена
-enum { txqSZ = 512 };
-static uint8_t txqueue [txqSZ];
-static volatile unsigned txqp, txqg;
 
-// Передать символ в host
-static uint_fast8_t	txqput(uint_fast8_t c)
-{
-	unsigned qpt = txqp;
-	const unsigned next = (qpt + 1) % txqSZ;
-	if (next != txqg)
-	{
-		txqueue [qpt] = c;
-		txqp = next;
-		hardware_uart3_enabletx(1);
-		return 1;
-	}
-	return 0;
-}
-
-// Получить символ в host
-static uint_fast8_t txqget(uint_fast8_t * pc)
-{
-	if (txqp != txqg)
-	{
-		* pc = txqueue [txqg];
-		txqg = (txqg + 1) % txqSZ;
-		return 1;
-	}
-	return 0;
-}
-
-// получить состояние очереди передачи
-static uint_fast8_t txqempty(void)
-{
-	return txqp == txqg;
-}
+static u8queue_t txq;
+static u8queue_t rxq;
 
 static int nmeaX_putc(int c)
 {
@@ -63,7 +30,7 @@ static int nmeaX_putc(int c)
 
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		f = txqput(c);
+		f = uint8_queue_put(& txq, c);
 		LowerIrql(oldIrql);
 	} while (! f);
 	return c;
@@ -93,47 +60,6 @@ static void uartX_format(const char * format, ...)
 	va_end(ap);
 }
 
-////////////////
-///
-// Очереди символов для обмена
-enum { rxqSZ = 512 };
-static uint8_t rxqueue [rxqSZ];
-static volatile unsigned rxqp, rxqg;
-
-// Передать символ в host
-static uint_fast8_t	rxqput(uint_fast8_t c)
-{
-	unsigned qpt = rxqp;
-	const unsigned next = (qpt + 1) % rxqSZ;
-	if (next != rxqg)
-	{
-		rxqueue [qpt] = c;
-		rxqp = next;
-		return 1;
-	}
-	return 0;
-}
-
-// Получить символ в host
-static uint_fast8_t rxqget(uint_fast8_t * pc)
-{
-	if (rxqp != rxqg)
-	{
-		* pc = rxqueue [rxqg];
-		rxqg = (rxqg + 1) % rxqSZ;
-		return 1;
-	}
-	return 0;
-}
-
-// получить состояние очереди передачи
-static uint_fast8_t rxqempty(void)
-{
-	return rxqp == rxqg;
-}
-
-////////////////
-///
 
 
 /* вызывается из обработчика прерываний */
@@ -141,10 +67,10 @@ static uint_fast8_t rxqempty(void)
 void user_uart3_ontxchar(void * ctx)
 {
 	uint_fast8_t c;
-	if (txqget(& c))
+	if (uint8_queue_get(& txq, & c))
 	{
 		hardware_uart3_tx(ctx, c);
-		if (txqempty())
+		if (uint8_queue_empty(& txq))
 			hardware_uart3_enabletx(0);
 	}
 	else
@@ -158,13 +84,15 @@ void user_uart3_onrxchar(uint_fast8_t c)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-    rxqput(c);
+	uint8_queue_put(& rxq, c);
 	LowerIrql(oldIrql);
 }
 
 void user_uart3_initialize(void)
 {
-	hardware_uart3_initialize(0);
+	uint8_queue_init(& txq);
+	uint8_queue_init(& rxq);
+	hardware_uart3_initialize(0, 921600);
 	hardware_uart3_set_speed(921600);
 	hardware_uart3_enablerx(1);
 	hardware_uart3_enabletx(0);
@@ -177,7 +105,7 @@ void uart3_spool(void)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-    f = rxqget(& c);
+    f = uint8_queue_get(& rxq, & c);
 	LowerIrql(oldIrql);
 
 	if (f)

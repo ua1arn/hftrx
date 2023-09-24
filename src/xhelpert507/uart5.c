@@ -30,7 +30,7 @@ void user_uart5_ontxchar(void * ctx)
 
 void user_uart5_initialize(void)
 {
-	hardware_uart5_initialize(1);
+	hardware_uart5_initialize(1, 9600);
 	hardware_uart5_set_speed(9600);
 	hardware_uart5_enablerx(0);
 	hardware_uart5_enabletx(0);
