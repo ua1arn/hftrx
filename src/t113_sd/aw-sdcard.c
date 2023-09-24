@@ -13,6 +13,10 @@
 
 #endif /* WITHUSESDCARD */
 
+#ifndef LOCAL_MIN
+#define LOCAL_MIN(x,y)  (((x)<(y))?(x):(y))
+#endif
+
 /*
  * driver/sd/sdcard.c
  *
@@ -45,15 +49,15 @@
 
 #define UNSTUFF_BITS(resp, start, size)								\
 	({																\
-		const int __size = size;									\
+		const int __size = (size);									\
 		const uint32_t __mask = (__size < 32 ? 1 << __size : 0) - 1;	\
 		const int __off = 3 - ((start) / 32);						\
 		const int __shft = (start) & 31;							\
 		uint32_t __res;												\
 																	\
-		__res = resp[__off] >> __shft;								\
+		__res = (resp)[__off] >> __shft;								\
 		if(__size + __shft > 32)									\
-			__res |= resp[__off-1] << ((32 - __shft) % 32);			\
+			__res |= (resp)[__off-1] << ((32 - __shft) % 32);			\
 		__res & __mask;												\
 	})
 
@@ -325,7 +329,7 @@ static int mmc_status(struct sdhci_t * hci, struct sdcard_t * card) //ï¿½ï¿½ï¿½ï
 			break;
                 }
 
-		udelay(1);
+		//local_delay_us(1);
 
 	} while(retries-- > 0);
 
@@ -399,7 +403,7 @@ int mmc_poll_for_busy(struct sdhci_t * hci, struct sdcard_t * card, int timeout_
 		if (timeout_ms-- <= 0)
 			break;
 
-		udelay(1000);
+		local_delay_us(1000);
 	}
 
 	if (timeout_ms <= 0) {
@@ -755,7 +759,7 @@ int sdcard_init(void)
 
 	if(hci->isspi)
 	{
-		sdhci_t113_setclock(hci, min(card->tran_speed, hci->clock));
+		sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 		sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 	}
 	else
@@ -779,7 +783,7 @@ int sdcard_init(void)
 			if(!sdhci_t113_transfer(hci, &cmd, NULL))
 				return 0;
 
-			sdhci_t113_setclock(hci, min(card->tran_speed, hci->clock));
+			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
 			if((hci->width & MMC_BUS_WIDTH_8) || (hci->width & MMC_BUS_WIDTH_4))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_4);
@@ -807,7 +811,7 @@ int sdcard_init(void)
 			if(!sdhci_t113_transfer(hci, &cmd, NULL))
 				return 0;
 
-			sdhci_t113_setclock(hci, min(card->tran_speed, hci->clock));
+			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
 			if(hci->width & MMC_BUS_WIDTH_8)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
@@ -895,6 +899,7 @@ DRESULT SD_Sync(BYTE drv)
 {
 	struct sdhci_t *hci=&HCI;
 	struct sdcard_t *card=&CARD;
+	/* Waiting for the ready status */
 	if (mmc_poll_for_busy(hci, card, 1000))
 		return RES_ERROR;
 	return RES_OK;
@@ -937,6 +942,7 @@ DRESULT SD_disk_read(
 		return RES_ERROR;
 	return RES_OK;
 }
+
 static int multisectorWriteProblems(UINT count)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
@@ -1034,29 +1040,29 @@ DRESULT SD_Get_Block_Size (
 	DWORD  *buff	/* Data buffer to store read data */
 	)
 {
+	return RES_ERROR;
 	struct sdhci_t *hci=&HCI;
 	struct sdcard_t *card=&CARD;
-//	enum { KB = 1024, MB = KB * KB };
-//	static const unsigned long aus [16] =
-//	{
-//		0,
-//		16 * KB,	// 1h 16 KB
-//		32 * KB,
-//		64 * KB,
-//		128 * KB,
-//		256 * KB,
-//		512 * KB,
-//		1 * MB,
-//		2 * MB,
-//		4 * MB,
-//		8 * MB,
-//		12 * MB,
-//		16 * MB,
-//		24 * MB,
-//		32 * MB,
-//		64 * MB,
-//	};
-//	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
+	enum { KB = 1024, MB = KB * KB };
+	static const unsigned long aus [16] =
+	{
+		0,
+		16 * KB,	// 1h 16 KB
+		32 * KB,
+		64 * KB,
+		128 * KB,
+		256 * KB,
+		512 * KB,
+		1 * MB,
+		2 * MB,
+		4 * MB,
+		8 * MB,
+		12 * MB,
+		16 * MB,
+		24 * MB,
+		32 * MB,
+		64 * MB,
+	};
 //
 //	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 //	{
@@ -1066,7 +1072,44 @@ DRESULT SD_Get_Block_Size (
 //		* buff = aus [au] * es;
 //		return RES_OK;
 //	}
+	struct sdhci_cmd_t cmd = { 0 };
+	struct sdhci_data_t dat = { 0 };
+	int retries = 100;
+
+	cmd.cmdidx = MMC_APP_CMD;
+	cmd.cmdarg = 0;
+	cmd.resptype = MMC_RSP_R1;
+
+	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+            {
+		PRINTF("SD_Get_Block_Size: sdhci_t113_transfer failure\n");
+		return RES_ERROR;
+           }
+	TP();
+	static uint32_t buffer [512 / 4];
+	cmd.cmdidx = SD_CMD_APP_STATUS; // ACMD13
+	cmd.cmdarg = 0;
+	cmd.resptype = MMC_RSP_R1;
+
+	dat.buf = (uint8_t *) buffer;
+	dat.flag = MMC_DATA_READ;
+	dat.blksz = 512;
+	dat.blkcnt = 1;
+
+	if(!sdhci_t113_transfer(hci, &cmd, &dat))
+            {
+		PRINTF("SD_Get_Block_Size: sdhci_t113_transfer failure\n");
+		return RES_ERROR;
+           }
+	TP();
+	printhex(0, buffer, sizeof buffer);
 	return RES_ERROR;
+
+	const unsigned au = UNSTUFF_BITS(buffer, 428, 4);	// [431:428] AU_SIZE
+	const unsigned es = UNSTUFF_BITS(buffer, 408, 16);	// [423:408] ERASE_SIZE
+	PRINTF(PSTR("ioctl: GET_BLOCK_SIZE: AU_SIZE=0x%02x, ERASE_SIZE=0x%04x\n"), au, es);
+	* buff = aus [au] * es;
+	return RES_OK;
 }
 
 // for _USE_MKFS

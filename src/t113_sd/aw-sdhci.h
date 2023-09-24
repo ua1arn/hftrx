@@ -44,11 +44,6 @@ static inline void write32(uint32_t r,uint32_t v)
 
 //#include "delay.h"
 
-#define udelay local_delay_us
-
-#ifndef min
-#define min(x,y)  (((x)<(y))?(x):(y))
-#endif
 
 //#define LOG(...)
 
