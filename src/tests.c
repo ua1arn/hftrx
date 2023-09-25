@@ -6824,7 +6824,7 @@ void vm14nand_eraseblock(unsigned baddress)
 
 	NANDMPORT->MEMADDR1 = baddress;
 	NANDMPORT->MEMADDR2 = 0;
-	// PAGE READ
+	// PAGE ERASE
 	TP();
 	vm14nand_sendcommand2(0x60, (1u << 2), 3);
 	local_delay_ms(100);
@@ -6833,6 +6833,69 @@ void vm14nand_eraseblock(unsigned baddress)
 
 //	vm14nand_sendcommand2(0xD060, (1u << 2), 3);
 //	local_delay_ms(100);
+}
+// MT29F32G08AFACBWP-ITZ
+#define SYSTEM_BUS_CLK 144
+#define NAND_BUS_FREQ  96
+
+void vm41nandtest(void)
+{
+	CMCTR->GATE_SYS_CTR &= ~(1u << 21);
+	CMCTR->DIV_NFC_CTR = SYSTEM_BUS_CLK / NAND_BUS_FREQ;
+	//setSystemFreq(SYSTEM_BUS_CLK);
+	CMCTR->GATE_SYS_CTR |= (1u << 21);
+	PRINTF("NAND test commands: z, i, n, p, e, r, w\n");
+	unsigned sector = 0;
+	uint8_t buff [2048] = { 0 };
+	for (;;)
+	{
+		char c;
+		if (dbg_getchar(& c))
+		{
+			switch (c)
+			{
+			case 'z':
+				PRINTF("Reset\n");
+				vm14nand_reset();
+				break;
+			case 'i':
+				PRINTF("Read IDs\n");
+				vm14nand_readid(0x00);
+				vm14nand_readid(0x20);
+				vm14nand_readstatus();
+				break;
+			case 'n':
+				sector += 1;
+				PRINTF("sector = %u\n", sector);
+				break;
+			case 'p':
+				if (sector)
+					sector -= 1;
+				PRINTF("sector = %u\n", sector);
+				break;
+			case 'e':
+				PRINTF("Erase block %u\n", sector);
+				vm14nand_eraseblock(sector);
+				break;
+			case 'r':
+				PRINTF("Read sector = %u\n", sector);
+				vm14nand_readdata(sector, buff, sizeof buff);
+				printhex(0, buff, sizeof buff);
+				break;
+			case 'w':
+				PRINTF("Write sector = %u\n", sector);
+				memset(buff, 0xE5, sizeof buff);
+				buff [0] = sector >> 8;
+				buff [1] = sector;
+				//memset(b, 0xE5, sizeof b);
+				vm14nand_writedata(sector, buff, sizeof buff);
+				break;
+			default:
+				PRINTF("Undefined command %02X\n", c);
+				break;
+			}
+		}
+	}
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -6847,44 +6910,8 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
 #if CPUSTYLE_VM14 && 1
-	// MT29F32G08AFACBWP-ITZ
-	#define SYSTEM_BUS_CLK 144
-	#define NAND_BUS_FREQ  96
 	{
-		CMCTR->GATE_SYS_CTR &= ~(1u << 21);
-		CMCTR->DIV_NFC_CTR = SYSTEM_BUS_CLK / NAND_BUS_FREQ;
-		//setSystemFreq(SYSTEM_BUS_CLK);
-		CMCTR->GATE_SYS_CTR |= (1u << 21);
-
-		vm14nand_reset();
-		vm14nand_readid(0x00);
-		vm14nand_readid(0x20);
-		vm14nand_readstatus();
-
-#if 0
-
-
-		// read NAND data
-		{
-			unsigned sector = 0;
-			vm14nand_eraseblock(sector);
-			vm14nand_readstatus();
-			uint8_t b [2048] = { 0 };
-			memcpy(b, "Sector %u                                   ", 16);
-			//memset(b, 0xE5, sizeof b);
-			vm14nand_writedata(sector, b, sizeof b);
-		}
-#endif
-
-		unsigned sect;
-		for (sect = 0; sect < 32; ++ sect)
-		{
-			PRINTF("Sector = %u\n", sect);
-			uint8_t b [2048];
-			//memset(b, 0xE5, sizeof b);
-			vm14nand_readdata(sect, b, sizeof b);
-			printhex(0, b, sizeof b);
-		}
+		vm41nandtest();
 	}
 #endif
 #if 0
