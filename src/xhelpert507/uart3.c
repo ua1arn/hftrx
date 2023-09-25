@@ -202,7 +202,7 @@ void uart3_req(void)
 	//readregisters(DEVADDR, 11, 4);
 	//read_HWVersion();
 	//read_CONTROL_0();
-	readregisters(DEVADDR, 15, 3);
+	readregisters(DEVADDR, 70, 1);
 }
 
 static unsigned rxpeek_uint32(const uint8_t * b)
@@ -239,12 +239,13 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 	{
 		switch (rxregbase)
 		{
-		case 0x00:
-			PRINTF("ID_NUMBER=%04X\n", rxpeek_uint32(b));
+		case 0:
+			PRINTF("ID_NUMBER=%08X\n", rxpeek_uint32(b));
 			break;
-		case 0x01:
-			PRINTF("FW_VERSION=%04X\n", rxpeek_uint32(b));
+		case 1:
+			PRINTF("FW_VERSION=%08X\n", rxpeek_uint32(b));
 			break;
+
 		case 15:
 			PRINTF("TYPICAL_LATITUDE=%f\n", rxpeek_float32(b));
 			break;
@@ -254,6 +255,32 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 		case 17:
 			PRINTF("TYPICAL_HEIGHT=%f\n", rxpeek_float32(b));
 			break;
+		case 18:
+			PRINTF("INIT_HEADING=%f\n", rxpeek_float32(b));
+			break;
+
+		case 19: case 20: case 21:
+			PRINTF("ANTENNA_DISTANCE[%u]=%f\n", rxregbase - 19, rxpeek_float32(b));
+			break;
+
+		case 54: case 55: case 56:
+			PRINTF("GYRO_CALIBRATION_COEFFICIENT[%u]=%f\n", rxregbase - 54, rxpeek_float32(b));
+			break;
+
+		case 57: case 58: case 59:
+		case 60: case 61: case 62:
+		case 63: case 64: case 65:
+			PRINTF("MAG_CALIBRATION_MATRIX[%u]=%f\n", rxregbase - 57, rxpeek_float32(b));
+			break;
+
+		case 70: // SYSTEM_TIME
+			PRINTF("SYSTEM_TIME=%08X\n", rxpeek_uint32(b));
+			break;
+
+		default:
+			PRINTF("Undefined register %u %08X\n", rxregbase, rxpeek_uint32(b));
+			break;
+
 		}
 	}
 }
@@ -334,8 +361,8 @@ void uart3_spool(void)
 			rxcrc = culateCRC8(c, rxcrc);
 			if (rxcrc == 0)
 			{
-				PRINTF("Registers: base=%u, n=%u\n", rxregbase, rxnumregs);
-				printhex(0, rxbuff, rxreg);
+//				PRINTF("Registers: base=%u, n=%u\n", rxregbase, rxnumregs);
+//				printhex(0, rxbuff, rxreg);
 				parseanswers(rxbuff, rxregbase, rxnumregs);
 			}
 			else
