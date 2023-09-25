@@ -58,6 +58,7 @@ static int nmeaX_putc(int c)
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = uint8_queue_put(& txq, c);
+		hardware_uart1_enabletx(1);
 		LowerIrql(oldIrql);
 	} while (! f);
 	return c;
@@ -86,8 +87,8 @@ static uint16_t crc16(unsigned v, unsigned crc)
 
 
 
-static unsigned culateCRC16(unsigned v, unsigned wCRCWord) {
-
+static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
+{
     static const uint16_t wCRCTable[] =
     {
 		0x0000, 0x8005, 0x800F, 0x000A, 0x801B, 0x001E, 0x0014, 0x8011, 0x8033, 0x0036, 0x003C, 0x8039, 0x0028, 0x802D, 0x8027, 0x0022,
@@ -114,6 +115,7 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord) {
 static unsigned uartX_putc_crc16(int c, unsigned crc)
 {
 	nmeaX_putc(c);
+	PRINTF("tx:%02X ", c & 0xFF);
 	crc = crc16(c, crc);
 	return crc;
 }
@@ -135,7 +137,7 @@ void uart1_req(void)
 {
 	uint8_t b [32];
 	unsigned arg1 = 0;
-	b [0] = 0x01;	// command code
+	b [0] = 0x69;	// command code - readout actual position
 	b [1] = 0x01;	// target id
 	b [2] = arg1 >> 8;	// arg1 high byte
 	b [3] = arg1 >> 0;	// arg1 low byte
@@ -150,7 +152,7 @@ static void uart1_dpc_spool(void * ctx)
 //	if (++ spoolcode >= ARRAY_SIZE(spooltable))
 //		spoolcode = 0;
 	uart1_req();
-	//TP();
+	TP();
 }
 
 static ticker_t uart1_ticker;
@@ -168,11 +170,16 @@ void user_uart1_initialize(void)
 {
 	hardware_uart1_initialize(0, 115200);
 	hardware_uart1_set_speed(115200);
+
+
 	hardware_uart1_enablerx(1);
 	hardware_uart1_enabletx(0);
 
+//	for (;;)
+//		nmeaX_putc(0xF0);
+
 	dpclock_initialize(& uart1_dpc_lock);
-	ticker_initialize(& uart1_ticker, NTICKS(1500), uart1_timer_event, NULL);
+	ticker_initialize(& uart1_ticker, NTICKS(1000), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
 }
 
@@ -191,7 +198,7 @@ void uart1_spool(void)
 
 	if (f)
 	{
-		PRINTF("%02X ", c);
+		PRINTF("rx:%02X ", c & 0xFF);
 	}
 }
 

@@ -32,6 +32,7 @@ static int nmeaX_putc(int c)
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = uint8_queue_put(& txq, c);
+		hardware_uart3_enabletx(1);
 		LowerIrql(oldIrql);
 	} while (! f);
 	return c;
