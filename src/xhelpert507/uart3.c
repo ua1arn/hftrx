@@ -199,10 +199,65 @@ void read_CONTROL_0(void)
 
 void uart3_req(void)
 {
-	readregisters(DEVADDR, 0, 4);
-	//readVersion();
+	//readregisters(DEVADDR, 11, 4);
+	//read_HWVersion();
 	//read_CONTROL_0();
+	readregisters(DEVADDR, 15, 3);
 }
+
+static unsigned rxpeek_uint32(const uint8_t * b)
+{
+	unsigned v = 0;
+
+	v = v * 256 + b [3];
+	v = v * 256 + b [2];
+	v = v * 256 + b [1];
+	v = v * 256 + b [0];
+
+	return v;
+}
+
+static float rxpeek_float32(const uint8_t * b)
+{
+	union
+	{
+		float f;
+		uint8_t b [sizeof (float)];
+	} u;
+
+	u.b [0] = b [0];
+	u.b [1] = b [1];
+	u.b [2] = b [2];
+	u.b [3] = b [3];
+
+	return u.f;
+}
+
+static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumregs)
+{
+	for (; rxnumregs --; ++ rxregbase, b += 4)
+	{
+		switch (rxregbase)
+		{
+		case 0x00:
+			PRINTF("ID_NUMBER=%04X\n", rxpeek_uint32(b));
+			break;
+		case 0x01:
+			PRINTF("FW_VERSION=%04X\n", rxpeek_uint32(b));
+			break;
+		case 15:
+			PRINTF("TYPICAL_LATITUDE=%f\n", rxpeek_float32(b));
+			break;
+		case 16:
+			PRINTF("TYPICAL_LONGITUDE=%f\n", rxpeek_float32(b));
+			break;
+		case 17:
+			PRINTF("TYPICAL_HEIGHT=%f\n", rxpeek_float32(b));
+			break;
+		}
+	}
+}
+
 
 enum states
 {
@@ -279,7 +334,9 @@ void uart3_spool(void)
 			rxcrc = culateCRC8(c, rxcrc);
 			if (rxcrc == 0)
 			{
+				PRINTF("Registers: base=%u, n=%u\n", rxregbase, rxnumregs);
 				printhex(0, rxbuff, rxreg);
+				parseanswers(rxbuff, rxregbase, rxnumregs);
 			}
 			else
 			{
