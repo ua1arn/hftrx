@@ -127,7 +127,8 @@ static void uartX_write_crc8(const uint8_t * buff, size_t n)
 	{
 		crc = uartX_putc_crc8(* buff ++, crc);
 	}
-	uartX_putc_crc8(crc, 0);
+	crc = uartX_putc_crc8(crc, crc);
+	ASSERT(crc == 0);
 }
 
 static unsigned mbuff_uint8(uint8_t * b, uint_fast8_t v)
@@ -298,7 +299,7 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 			PRINTF("MAG_CALIBRATION_MATRIX[%u]=%f\n", rxregbase - 57, rxpeek_float32(b));
 			break;
 
-		case 70: // SYSTEM_TIME
+		case 129: // SYSTEM_TIME
 			PRINTF("SYSTEM_TIME=%08X\n", rxpeek_uint32(b));
 			break;
 
@@ -384,7 +385,7 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 			PRINTF("GPS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase - 123, rxpeek_float32(b));
 			break;
 
-		case 127: case 128: case 129:
+		case 205: case 206: case 207:
 			PRINTF("TEST_MAG[%u]=%08X\n", rxregbase - 127, rxpeek_uint32(b));
 			break;
 
@@ -486,9 +487,30 @@ void uart3_spool(void)
 
 }
 
-static void uart3_dpc_spool(void * ctx)
+static void spool_lat(void)
+{
+	readregisters(DEVADDR, 114, 2);	// RAW_GYRO
+}
+
+static void spool_gyro(void)
 {
 	readregisters(DEVADDR, 74, 3);	// RAW_GYRO
+}
+
+static int spoolcode;
+
+static void (* spooltable [])(void) =
+{
+	spool_gyro,
+	spool_lat,
+};
+
+static void uart3_dpc_spool(void * ctx)
+{
+	spooltable [spoolcode]();
+	if (++ spoolcode >= ARRAY_SIZE(spooltable))
+		spoolcode = 0;
+	//TP();
 }
 
 static ticker_t uart3_ticker;

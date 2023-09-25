@@ -58,11 +58,11 @@ void ctlboardt507_mainloop(void)
 			{
 				switch (c)
 				{
-				case 0x00:
-					break;
-				case ' ':
-					uart3_req();
-					break;
+//				case 0x00:
+//					break;
+//				case ' ':
+//					uart1_req();
+//					break;
 				default:
 					PRINTF("bkey=%02X\n", (unsigned char) c);
 					break;
