@@ -89,16 +89,6 @@ void user_uart3_onrxchar(uint_fast8_t c)
 	LowerIrql(oldIrql);
 }
 
-void user_uart3_initialize(void)
-{
-	uint8_queue_init(& txq);
-	uint8_queue_init(& rxq);
-	hardware_uart3_initialize(0, 921600);
-	hardware_uart3_set_speed(921600);
-	hardware_uart3_enablerx(1);
-	hardware_uart3_enabletx(0);
-}
-
 static unsigned culateCRC8(unsigned v, unsigned wCRCWord) {
 
     static const uint8_t wCRCTable[] = {
@@ -233,6 +223,26 @@ static float rxpeek_float32(const uint8_t * b)
 	return u.f;
 }
 
+static double rxpeek_float64(const uint8_t * b)
+{
+	union
+	{
+		double f;
+		uint8_t b [sizeof (double)];
+	} u;
+
+	u.b [0] = b [0];
+	u.b [1] = b [1];
+	u.b [2] = b [2];
+	u.b [3] = b [3];
+	u.b [4] = b [4];
+	u.b [5] = b [5];
+	u.b [6] = b [6];
+	u.b [7] = b [7];
+
+	return u.f;
+}
+
 static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumregs)
 {
 	for (; rxnumregs --; ++ rxregbase, b += 4)
@@ -244,6 +254,21 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 			break;
 		case 1:
 			PRINTF("FW_VERSION=%08X\n", rxpeek_uint32(b));
+			break;
+		case 2:
+			PRINTF("DEVICE SAVE AND RESET=%08X\n", rxpeek_uint32(b));
+			break;
+		case 3:
+			PRINTF("CONTROL_0=%08X\n", rxpeek_uint32(b));
+			break;
+		case 4:
+			PRINTF("CONTROL_1=%08X\n", rxpeek_uint32(b));
+			break;
+
+		case 5: case 6: case 7:
+		case 8: case 9: case 10:
+		case 11: case 12: case 13:
+			PRINTF("ROTATION MATRIX[%u]=%f\n", rxregbase - 5, rxpeek_float32(b));
 			break;
 
 		case 15:
@@ -277,6 +302,92 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 			PRINTF("SYSTEM_TIME=%08X\n", rxpeek_uint32(b));
 			break;
 
+		case 74: case 75: case 76:
+			PRINTF("RAW_GYRO[%u]=%08X\n", rxregbase - 74, rxpeek_uint32(b));
+			break;
+
+		case 77: case 78: case 79:
+			PRINTF("RAW_MAG[%u]=%08X\n", rxregbase - 77, rxpeek_uint32(b));
+			break;
+
+		case 80:
+			PRINTF("ACC_TEMP=%f\n", rxpeek_float32(b));
+			break;
+
+		case 81: case 82: case 83:
+			PRINTF("GYRO_TEMP[%u]=%f\n", rxregbase - 81, rxpeek_float32(b));
+			break;
+
+		case 84: case 85: case 86:
+			PRINTF("CALIB_ACC[%u]=%f\n", rxregbase - 84, rxpeek_float32(b));
+			break;
+
+		case 87: case 88: case 89:
+			PRINTF("CALIB_GYRO[%u]=%f\n", rxregbase - 87, rxpeek_float32(b));
+			break;
+
+		case 90: case 91: case 92:
+			PRINTF("CALIB_MAG[%u]=%f\n", rxregbase - 90, rxpeek_float32(b));
+			break;
+
+		case 93:
+			PRINTF("BAR_PRESS=%f\n", rxpeek_float32(b));
+			break;
+
+		case 94:
+			PRINTF("BAR_ALT=%f\n", rxpeek_float32(b));
+			break;
+
+		case 95: case 96: case 97:
+			PRINTF("HEADING_PITCH_ROLL[%u]=%f\n", rxregbase - 95, rxpeek_float32(b));
+			break;
+
+		case 98: case 99: case 100: case 101:
+			PRINTF("QUAT[%u]=%f\n", rxregbase - 98, rxpeek_float32(b));
+			break;
+
+		case 102: case 103: case 104:
+		case 105: case 106: case 107:
+		case 108: case 109: case 110:
+			PRINTF("ORIENTATION MATRIX[%u]=%f\n", rxregbase - 102, rxpeek_float32(b));
+			break;
+
+		case 111: case 112: case 113:
+			PRINTF("EAST_NORTH_VERTICAL_VELOCITY[%u]=%f\n", rxregbase - 111, rxpeek_float32(b));
+			break;
+
+		case 114:
+			PRINTF("OUT_LAT=%f\n", rxpeek_float64(b));
+			b += 4; rxregbase += 1;
+			break;
+
+		case 116:
+			PRINTF("OUT_LON=%f\n", rxpeek_float64(b));
+			b += 4; rxregbase += 1;
+			break;
+
+		case 118:
+			PRINTF("OUT_HEI=%f\n", rxpeek_float32(b));
+			break;
+
+		case 119:
+			PRINTF("GPS_LAT=%f\n", rxpeek_float64(b));
+			b += 4; rxregbase += 1;
+			break;
+
+		case 121:
+			PRINTF("GPS_LON=%f\n", rxpeek_float64(b));
+			b += 4; rxregbase += 1;
+			break;
+
+		case 123: case 124: case 125: case 126:
+			PRINTF("GPS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase - 123, rxpeek_float32(b));
+			break;
+
+		case 127: case 128: case 129:
+			PRINTF("TEST_MAG[%u]=%08X\n", rxregbase - 127, rxpeek_uint32(b));
+			break;
+
 		default:
 			PRINTF("Undefined register %u %08X\n", rxregbase, rxpeek_uint32(b));
 			break;
@@ -284,7 +395,6 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 		}
 	}
 }
-
 
 enum states
 {
@@ -376,6 +486,36 @@ void uart3_spool(void)
 
 }
 
+static void uart3_dpc_spool(void * ctx)
+{
+	readregisters(DEVADDR, 74, 3);	// RAW_GYRO
+}
+
+static ticker_t uart3_ticker;
+static dpclock_t uart3_dpc_lock;
+
+/* system-mode function */
+static void uart3_timer_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc(& uart3_dpc_lock, uart3_dpc_spool, NULL);
+}
+
+void user_uart3_initialize(void)
+{
+	uint8_queue_init(& txq);
+	uint8_queue_init(& rxq);
+	hardware_uart3_initialize(0, 921600);
+	hardware_uart3_set_speed(921600);
+	hardware_uart3_enablerx(1);
+	hardware_uart3_enabletx(0);
+
+	dpclock_initialize(& uart3_dpc_lock);
+	ticker_initialize(& uart3_ticker, NTICKS(1500), uart3_timer_event, NULL);
+	ticker_add(& uart3_ticker);
+
+}
 
 #endif /* WITHCTRLBOARDT507 */
 
