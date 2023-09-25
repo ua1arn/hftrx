@@ -7,11 +7,12 @@
 
 #if WITHUSESDCARD
 
-#include "aw-sdcard.h"
+#include "sdcard.h"
 #include "../fatfs/ff.h"
 #include "../fatfs/diskio.h"		/* FatFs lower layer API */
 
 #endif /* WITHUSESDCARD */
+#include "aw-sdcard.h"
 
 #ifndef LOCAL_MIN
 #define LOCAL_MIN(x,y)  (((x)<(y))?(x):(y))
@@ -45,7 +46,6 @@
  *
  */
 
-#include "sdcard.h"
 
 #define UNSTUFF_BITS(resp, start, size)								\
 	({																\
