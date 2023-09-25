@@ -17,6 +17,7 @@
 
 // БИНС основной
 // RS-422
+#define DEVADDR 1
 
 // Очереди символов для обмена
 
@@ -98,23 +99,6 @@ void user_uart3_initialize(void)
 	hardware_uart3_enabletx(0);
 }
 
-void uart3_spool(void)
-{
-	uint_fast8_t c;
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-    f = uint8_queue_get(& rxq, & c);
-	LowerIrql(oldIrql);
-
-	if (f)
-		PRINTF("%02X ", c);
-
-}
-
-
-
 static unsigned culateCRC8(unsigned v, unsigned wCRCWord) {
 
     static const uint8_t wCRCTable[] = {
@@ -156,14 +140,156 @@ static void uartX_write_crc8(const uint8_t * buff, size_t n)
 	uartX_putc_crc8(crc, 0);
 }
 
+static unsigned mbuff_uint8(uint8_t * b, uint_fast8_t v)
+{
+	b [0] = v;
+	return 1;
+}
+
+static unsigned mbuff_uint32(uint8_t * b, uint_fast32_t v)
+{
+	b [0] = v >> 0;
+	b [1] = v >> 8;
+	b [2] = v >> 16;
+	b [3] = v >> 24;
+	return 4;
+}
+
+static unsigned mbuff_float32(uint8_t * b, float v)
+{
+	union
+	{
+		float f;
+		uint8_t b [sizeof (float)];
+	} u;
+	u.f = v;
+	b [0] = u.b [0];
+	b [1] = u.b [1];
+	b [2] = u.b [2];
+	b [3] = u.b [3];
+	return 4;
+}
+
+void readregisters(unsigned devaddr, unsigned reg, unsigned numregs)
+{
+	uint8_t b [32];
+	unsigned n = 0;
+
+	n += mbuff_uint8(b + n, 0xFB);	// preamble
+	n += mbuff_uint8(b + n, devaddr);	// address
+	n += mbuff_uint8(b + n, reg);	// register address
+	n += mbuff_uint8(b + n, numregs);	// read one register
+
+	uartX_write_crc8(b, n);
+}
+
+// FB 01 01 01 02 00 00 00 7F
+void read_HWVersion(void)
+{
+	readregisters(DEVADDR, 0x01, 1);
+}
+
+// CONTROL_0
+// FB 01 03 01 01 54 00 01  03
+void read_CONTROL_0(void)
+{
+	readregisters(DEVADDR, 0x03, 1);
+}
+
+
 void uart3_req(void)
 {
-	static const uint8_t req [] =
-	{
-			0xFB, 0x01,  0x00,  0x01, //0x79,
-	};
+	readregisters(DEVADDR, 0, 4);
+	//readVersion();
+	//read_CONTROL_0();
+}
 
-	uartX_write_crc8(req, sizeof req);
+enum states
+{
+	WAITPREAMBLE,
+	WAITDEVADDR,
+	WAITDEVREG,
+	WAITNUMREGS,
+	RXREGS,
+	WAITCRC
+
+	//
+	//allStates
+};
+
+enum states st = WAITPREAMBLE;
+static unsigned rxcrc;
+static unsigned rxregbase;
+static unsigned rxreg;
+static unsigned rxnumregs;
+static uint8_t rxbuff [128];
+
+void uart3_spool(void)
+{
+	uint_fast8_t c;
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+    f = uint8_queue_get(& rxq, & c);
+	LowerIrql(oldIrql);
+
+	if (f)
+	{
+		//PRINTF("%02X ", c);
+		switch (st)
+		{
+		case WAITPREAMBLE:
+			if (c == 0xFB)
+			{
+				rxcrc = culateCRC8(c, 0xFF);
+				st = WAITDEVADDR;
+			}
+			break;
+		case WAITDEVADDR:
+			rxcrc = culateCRC8(c, rxcrc);
+			if (c == DEVADDR)
+				st = WAITDEVREG;
+			else
+				st = WAITPREAMBLE;
+			break;
+		case WAITDEVREG:
+			rxcrc = culateCRC8(c, rxcrc);
+			rxregbase = c;	// start register of device
+			st = WAITNUMREGS;
+			break;
+		case WAITNUMREGS:
+			rxcrc = culateCRC8(c, rxcrc);
+			rxnumregs = (c & 0x7F);
+			rxreg = 0;
+			st = RXREGS;
+			break;
+		case RXREGS:
+			rxcrc = culateCRC8(c, rxcrc);
+			if (rxreg >= ARRAY_SIZE(rxbuff))
+				st = WAITPREAMBLE;
+			else
+			{
+				rxbuff [rxreg ++] = c;
+				if (rxreg >= (rxnumregs * 4))
+					st = WAITCRC;
+			}
+			break;
+		case WAITCRC:
+			rxcrc = culateCRC8(c, rxcrc);
+			if (rxcrc == 0)
+			{
+				printhex(0, rxbuff, rxreg);
+			}
+			else
+			{
+				PRINTF("bad CRC\n");
+			}
+			st = WAITPREAMBLE;
+			break;
+		}
+	}
+
 }
 
 
