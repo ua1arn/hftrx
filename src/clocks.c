@@ -8666,7 +8666,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 
-	CCU->APB2_CFG_REG = 0x03000100;	// allwnr_t507_get_apb2_freq()=300 MHz
+	CCU->APB2_CFG_REG = 0x03000002;	// allwnr_t507_get_apb2_freq()=200 MHz
 
 //	CCU->MBUS_CFG_REG = 0;
 //	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 31);	// CLK_GATING
