@@ -115,7 +115,7 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
 static unsigned uartX_putc_crc16(int c, unsigned crc)
 {
 	nmeaX_putc(c);
-	PRINTF("tx:%02X ", c & 0xFF);
+	//PRINTF("tx:%02X ", c & 0xFF);
 	crc = crc16(c, crc);
 	return crc;
 }
@@ -133,29 +133,36 @@ static void uartX_write_crc16(const uint8_t * buff, size_t n)
 	ASSERT(crc == 0);
 }
 
-void uart1_req(void)
+static void uart1_req(int targetId)
 {
 	uint8_t b [32];
 	unsigned arg1 = 0;
 	b [0] = 0x69;	// command code - readout actual position
-	b [1] = 0x01;	// target id
+	b [1] = targetId; //0x01;	// target id
 	b [2] = arg1 >> 8;	// arg1 high byte
 	b [3] = arg1 >> 0;	// arg1 low byte
 
 	uartX_write_crc16(b, 4);
 }
 
-
+static int phase;
 static void uart1_dpc_spool(void * ctx)
 {
 //	spooltable [spoolcode]();
 //	if (++ spoolcode >= ARRAY_SIZE(spooltable))
 //		spoolcode = 0;
-	uart1_req();
-	TP();
+	phase = ! phase;
+	uart1_req(phase ? 1 : 2);
+	//TP();
+}
+
+
+static void uart1_dpc_pkg_spool(void * ctx)
+{
 }
 
 static ticker_t uart1_ticker;
+static ticker_t uart1_pkg_ticker;
 static dpclock_t uart1_dpc_lock;
 
 /* system-mode function */
@@ -164,6 +171,18 @@ static void uart1_timer_event(void * ctx)
 	(void) ctx;	// приходит NULL
 
 	board_dpc(& uart1_dpc_lock, uart1_dpc_spool, NULL);
+}
+
+static unsigned package_tout;
+
+/* system-mode function */
+static void uart1_timer_pkg_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+	if (++ package_tout)
+	{
+		board_dpc(& uart1_dpc_lock, uart1_dpc_pkg_spool, NULL);
+	}
 }
 
 void user_uart1_initialize(void)
@@ -179,8 +198,10 @@ void user_uart1_initialize(void)
 //		nmeaX_putc(0xF0);
 
 	dpclock_initialize(& uart1_dpc_lock);
-	ticker_initialize(& uart1_ticker, NTICKS(1000), uart1_timer_event, NULL);
+	ticker_initialize(& uart1_ticker, NTICKS(750), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
+//	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
+//	ticker_add(& uart1_pkg_ticker);
 }
 
 // 3.1 Set Point Command
@@ -198,7 +219,7 @@ void uart1_spool(void)
 
 	if (f)
 	{
-		PRINTF("rx:%02X ", c & 0xFF);
+		PRINTF("rx1:%02X ", c & 0xFF);
 	}
 }
 

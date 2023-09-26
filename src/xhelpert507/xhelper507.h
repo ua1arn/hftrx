@@ -23,13 +23,6 @@ void uart3_spool(void);
 void uart4_spool(void);
 void uart5_spool(void);
 
-void uart0_req(void);
-void uart1_req(void);
-void uart2_req(void);
-void uart3_req(void);
-void uart4_req(void);
-void uart5_req(void);
-
 enum { qSZ = 512 };
 typedef struct u8queue
 {
