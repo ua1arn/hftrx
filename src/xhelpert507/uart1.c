@@ -133,11 +133,10 @@ static void uartX_write_crc16(const uint8_t * buff, size_t n)
 	ASSERT(crc == 0);
 }
 
-static void uart1_req(int targetId)
+static void uart1_req(int targetId, int arg1)
 {
 	uint8_t b [32];
-	unsigned arg1 = 0;
-	b [0] = 0x69;	// command code - readout actual position
+	b [0] = 0x76;	// command code - Set Point Command
 	b [1] = targetId; //0x01;	// target id
 	b [2] = arg1 >> 8;	// arg1 high byte
 	b [3] = arg1 >> 0;	// arg1 low byte
@@ -146,13 +145,24 @@ static void uart1_req(int targetId)
 }
 
 static int phase;
+static int pos [4] =
+{
+		+ 1000,
+		+ 1000,
+		- 1000,
+		- 1000,
+};
+
+static int freshness [2];
 static void uart1_dpc_spool(void * ctx)
 {
 //	spooltable [spoolcode]();
 //	if (++ spoolcode >= ARRAY_SIZE(spooltable))
 //		spoolcode = 0;
-	phase = ! phase;
-	uart1_req(phase ? 1 : 2);
+	phase = (phase + 1) % 4;
+	int ch = phase & 1;
+	++ freshness [ch];
+	uart1_req(ch ? 1 : 2, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF));
 	//TP();
 }
 
@@ -198,7 +208,7 @@ void user_uart1_initialize(void)
 //		nmeaX_putc(0xF0);
 
 	dpclock_initialize(& uart1_dpc_lock);
-	ticker_initialize(& uart1_ticker, NTICKS(750), uart1_timer_event, NULL);
+	ticker_initialize(& uart1_ticker, NTICKS(2000), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
 //	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
 //	ticker_add(& uart1_pkg_ticker);
@@ -219,7 +229,7 @@ void uart1_spool(void)
 
 	if (f)
 	{
-		PRINTF("rx1:%02X ", c & 0xFF);
+		//PRINTF("rx1:%02X ", c & 0xFF);
 	}
 }
 
