@@ -209,7 +209,7 @@ static void uartX_write(const uint8_t * buff, size_t n)
 }
 
 
-static float rxpeek_float32(const uint8_t * b)
+static float rxpeek_float32_BE(const uint8_t * b)
 {
 	union
 	{
@@ -239,7 +239,7 @@ static int parsepacket(const uint8_t * p, unsigned sz)
 	unsigned len = p [2];
 	if (len != 4)
 		return 0;
-	float pr = rxpeek_float32(p + 3);
+	float pr = rxpeek_float32_BE(p + 3);
 
 	PRINTF("Pressure=%f, depth=%f\n", pr, pr * 101.97162005);
 	return 1;
