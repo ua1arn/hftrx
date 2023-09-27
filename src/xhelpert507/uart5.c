@@ -242,6 +242,7 @@ static int parsepacket(const uint8_t * p, unsigned sz)
 	float pr = rxpeek_float32_BE(p + 3);
 
 	PRINTF("Pressure=%f, depth=%f\n", pr, pr * 101.97162005);
+	xbsave_pressure(pr);
 	return 1;
 }
 

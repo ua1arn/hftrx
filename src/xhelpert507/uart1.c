@@ -300,6 +300,7 @@ static int prseanswer(const uint8_t * p, unsigned sz)
 	case 0x49:	// Readout actual position answer
 		id = p [1];
 		pos = (int32_t) (((uint32_t) (p [2] * 256 + p [3]) << 20)) >> 20;
+		xbsave_position(id, pos);
 		PRINTF("Position: id=%u, pos=%d\n", id, pos);
 		return 1;
 	}
