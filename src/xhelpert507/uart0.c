@@ -21,6 +21,20 @@
 #define RXTOUT 50
 
 
+const uint8_t PREAMBLE_DATA = 0x55;
+const uint8_t SIZE_DATA     = 11;
+
+enum
+{
+
+    TIME             = 0x50,
+    ACCELERATION     = 0x51,
+    ANGULAR_VELOCITY = 0x52,
+    ANGLE            = 0x53,
+    MAGNETIC         = 0x54,
+    QUATERNION       = 0x55
+};
+
 // Очереди символов для обмена
 
 static u8queue_t txq;
@@ -88,15 +102,36 @@ void user_uart0_ontxchar(void * ctx)
 	}
 }
 
+
+static void uart0_dpc_spool(void * ctx)
+{
+	//TP();
+}
+
+static ticker_t uart0_ticker;
+static dpclock_t uart0_dpc_lock;
+
+/* system-mode function */
+static void uart0_timer_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc(& uart0_dpc_lock, uart0_dpc_spool, NULL);
+}
+
 void user_uart0_initialize(void)
 {
 	uint8_queue_init(& txq);
 	uint8_queue_init(& rxq);
 
-	hardware_uart0_initialize(0, 115200, 8, 0, 0);
-	hardware_uart0_set_speed(115200);
+	hardware_uart0_initialize(0, 9600, 8, 0, 0);
+	hardware_uart0_set_speed(9600);
 	hardware_uart0_enablerx(1);
 	hardware_uart0_enabletx(0);
+
+	dpclock_initialize(& uart0_dpc_lock);
+	ticker_initialize(& uart0_ticker, NTICKS(PERIODSPOOL), uart0_timer_event, NULL);
+	ticker_add(& uart0_ticker);
 }
 
 void uart0_spool(void)
