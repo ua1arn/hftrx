@@ -18,7 +18,7 @@
 // давление
 // RS-485 9600 8O1 (ODD PARITY!)
 
-#define PERIODSPOOL 500
+#define PERIODSPOOL 2500
 #define RXTOUT 100
 
 static u8queue_t txq;
