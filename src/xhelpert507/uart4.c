@@ -318,7 +318,6 @@ static void nmeaX_parsechar(uint_fast8_t c, unsigned chn)
 
 void uart4_spool(void)
 {
-#if ! (WITHDEBUG && WITHDEBUG_USART4)
 	uint_fast8_t c;
 	uint_fast8_t f;
 	IRQL_t oldIrql;
@@ -348,7 +347,6 @@ void uart4_spool(void)
 		nmea_send(state, len);
 
 	}
-#endif /* ! (WITHDEBUG && WITHDEBUG_USART4) */
 }
 
 
@@ -356,9 +354,10 @@ static ticker_t uart3_pkg_ticker;
 
 void user_uart4_initialize(void)
 {
-#if ! (WITHDEBUG && WITHDEBUG_USART4)
 	uint8_queue_init(& rxq);
 	uint8_queue_init(& txq);
+
+#if ! (WITHDEBUG && WITHDEBUG_USART4)
 
 	hardware_uart4_initialize(0, UARTSPEED, 8, 0, 0);
 	hardware_uart4_set_speed(UARTSPEED);

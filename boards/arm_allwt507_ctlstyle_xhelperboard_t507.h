@@ -233,6 +233,8 @@
 //	#define BOARD_BITIMAGE_NAME_COMPRESSED "t1_v9m_velo.rbf"	/* требуемый файл в архиве */
 //	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 //	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define FORMATFROMLIBRARY 	1
 
 #else /* WITHISBOOTLOADER */
 
