@@ -22,72 +22,9 @@
 #define RXTOUT 100
 
 static u8queue_t txq;
-static u8queue_t rxq;
 
-void user_uart5_onrxchar(uint_fast8_t c)
-{
-	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	uint8_queue_put(& rxq, c);
-	LowerIrql(oldIrql);
-}
-
-static int volatile txc;
-void user_uart5_ontxchar(void * ctx)
-{
-	++ txc;
-	uint_fast8_t c;
-	if (uint8_queue_get(& txq, & c))
-	{
-		hardware_uart5_tx(ctx, c);
-		if (uint8_queue_empty(& txq))
-			hardware_uart5_enabletx(0);
-	}
-	else
-	{
-		hardware_uart5_enabletx(0);
-	}
-}
-
-static int nmeaX_putc(int c)
-{
-	IRQL_t oldIrql;
-	uint_fast8_t f;
-
-	do {
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		f = uint8_queue_put(& txq, c);
-		hardware_uart5_enabletx(1);
-		LowerIrql(oldIrql);
-	} while (! f);
-	return c;
-}
-
-static void uartX_write(const uint8_t * buff, size_t n)
-{
-	while (n --)
-	{
-		const uint8_t c = * buff ++;
-		nmeaX_putc(c);
-	}
-}
-
-void uart5_spool(void)
-{
-	uint_fast8_t c;
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-    f = uint8_queue_get(& rxq, & c);
-	LowerIrql(oldIrql);
-
-	if (f)
-	{
-		//PRINTF("rx5:%02X ", c & 0xFF);
-	}
-}
+#define STARTCRCVAL 0xFFFF
 
 static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
 {
@@ -135,6 +72,216 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
     return wCRCWord;
 }
 
+typedef struct rxlist
+{
+	LIST_ENTRY item;
+	uint8_t buff [128];
+	unsigned count;
+	unsigned crc;
+} rxlist_t;
+
+static LIST_ENTRY rxlistfree;
+static LIST_ENTRY rxlistready;
+static rxlist_t * rxp = NULL;
+
+static void uartX_rxlist_initilize(void)
+{
+	unsigned i;
+	static rxlist_t lists [3];
+
+	InitializeListHead(& rxlistfree);
+	InitializeListHead(& rxlistready);
+	for (i = 0; i < ARRAY_SIZE(lists); ++ i)
+	{
+		rxlist_t * const p = & lists [i];
+		InsertTailList(& rxlistfree, & p->item);
+	}
+}
+
+static void nextlist(void)
+{
+	if (! IsListEmpty(& rxlistfree))
+	{
+		LIST_ENTRY * v = RemoveHeadList(& rxlistfree);
+		rxlist_t * const p = CONTAINING_RECORD(v, rxlist_t, item);
+		p->crc = 0xFFFF;
+		p->count = 0;
+		//
+		rxp = p;
+	}
+	else if (! IsListEmpty(& rxlistready))
+	{
+		LIST_ENTRY * v = RemoveHeadList(& rxlistready);
+		rxlist_t * const p = CONTAINING_RECORD(v, rxlist_t, item);
+		p->crc = STARTCRCVAL;
+		p->count = 0;
+		//
+		rxp = p;
+	}
+	else
+	{
+		rxp = NULL;
+	}
+}
+
+static unsigned package_tout;
+
+void user_uart5_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+
+	package_tout = 0;
+	if (rxp != NULL)
+	{
+		if (rxp->count < ARRAY_SIZE(rxp->buff))
+		{
+			rxp->buff [rxp->count ++] = c;
+			rxp->crc = culateCRC16(c, rxp->crc);
+		}
+	}
+	LowerIrql(oldIrql);
+}
+
+/* обработка тиков 5 ms */
+/* system-mode function */
+static void uart5_timer_pkg_event(void * ctx)
+{
+	const unsigned n = NTICKS(RXTOUT);	// пауза между приходом символов
+
+	(void) ctx;	// приходит NULL
+	if (package_tout < n)
+	{
+		if (++ package_tout >= n)
+		{
+			if (rxp->count != 0 && rxp->crc == 0)
+			{
+				/* приято до паузы, проверка CRC рошла */
+				InsertHeadList(& rxlistready, & rxp->item);
+				nextlist();
+			}
+			else
+			{
+				rxp->count = 0;
+				rxp->crc = STARTCRCVAL;
+			}
+		}
+	}
+}
+
+void user_uart5_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart5_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart5_enabletx(0);
+	}
+	else
+	{
+		hardware_uart5_enabletx(0);
+	}
+}
+
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart5_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+
+static float rxpeek_float32(const uint8_t * b)
+{
+	union
+	{
+		float f;
+		uint8_t b [sizeof (float)];
+	} u;
+
+	u.b [3] = b [0];
+	u.b [2] = b [1];
+	u.b [1] = b [2];
+	u.b [0] = b [3];
+
+	return u.f;
+}
+
+//	00000000  01 03 04 BA 96 02 0D FF A2                       .........
+//	Pressure=0.000000, depth=0.000000
+
+static int parsepacket(const uint8_t * p, unsigned sz)
+{
+	if (sz < 9)
+		return 0;
+	if (p [0] != 0x01)
+		return 0;
+	if (p [1] != 0x03)
+		return 0;
+	unsigned len = p [2];
+	if (len != 4)
+		return 0;
+	float pr = rxpeek_float32(p + 3);
+
+	PRINTF("Pressure=%f, depth=%f\n", pr, pr * 101.97162005);
+	return 1;
+}
+
+static ticker_t uart5_ticker;
+static ticker_t uart5_pkg_ticker;
+static dpclock_t uart5_dpc_lock;
+
+void uart5_spool(void)
+{
+	rxlist_t * p;
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	if (!IsListEmpty(& rxlistready))
+	{
+		LIST_ENTRY * v = RemoveTailList(& rxlistready);
+		p = CONTAINING_RECORD(v, rxlist_t, item);
+	}
+	else
+	{
+		p = NULL;
+	}
+	LowerIrql(oldIrql);
+
+	if (p != NULL)
+	{
+		/* использование принятого блока */
+
+		//printhex(0, p->buff, p->count);
+		parsepacket(p->buff, p->count);
+
+		/* поместить блок в список своюодных */
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		InsertHeadList(& rxlistfree, & p->item);
+		LowerIrql(oldIrql);
+	}
+}
+
 static unsigned uartX_putc_crc16(int c, unsigned crc)
 {
 	nmeaX_putc(c);
@@ -144,7 +291,7 @@ static unsigned uartX_putc_crc16(int c, unsigned crc)
 
 static void uartX_write_crc16(const uint8_t * buff, size_t n)
 {
-	unsigned crc = 0xFFFF;
+	unsigned crc = STARTCRCVAL;
 	while (n --)
 	{
 		crc = uartX_putc_crc16(* buff ++, crc);
@@ -191,10 +338,17 @@ static void uart5_timer_event(void * ctx)
 
 void user_uart5_initialize(void)
 {
+	uartX_rxlist_initilize();
+	nextlist();
+	uint8_queue_init(& txq);
+
 	hardware_uart5_initialize(0, 9600, 8, 1, 1);	// 8-O-1
 	hardware_uart5_set_speed(9600);
 	hardware_uart5_enablerx(1);
 	hardware_uart5_enabletx(0);
+
+	ticker_initialize(& uart5_pkg_ticker, 1, uart5_timer_pkg_event, NULL);
+	ticker_add(& uart5_pkg_ticker);
 
 	dpclock_initialize(& uart5_dpc_lock);
 	ticker_initialize(& uart5_ticker, NTICKS(PERIODSPOOL), uart5_timer_event, NULL);

@@ -91,8 +91,6 @@ static void uartX_format(const char * format, ...)
 	va_end(ap);
 }
 
-
-
 typedef struct rxlist
 {
 	LIST_ENTRY item;
