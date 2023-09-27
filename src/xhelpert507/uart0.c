@@ -146,7 +146,7 @@ void uart0_spool(void)
 
 	if (f)
 	{
-		PRINTF("rx0:%02X ", c);
+		PRINTF("%02X ", c);
 
 	}
 }
