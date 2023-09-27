@@ -205,7 +205,7 @@ void xcz_fifo_mic_inthandler(void)
 void xcz_audio_rx_enable(uint_fast8_t state)
 {
 #if WITHTX
-//	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR, xcz_fifo_mic_inthandler);
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR, xcz_fifo_mic_inthandler);
 #endif /* WITHTX */
 }
 
@@ -218,8 +218,6 @@ void xcz_if_tx_init(void)
 
 void xcz_dma_if_tx_inthandler(void)
 {
-	xcz_fifo_mic_inthandler();
-
 #if WITHTX
 	const uintptr_t addr = processing_pipe32tx(getfilled_dmabuffer32tx_main());
 	uint32_t * r = (uint32_t *) addr;
