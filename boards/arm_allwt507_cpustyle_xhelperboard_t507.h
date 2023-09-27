@@ -93,7 +93,7 @@ void user_uart5_ontxchar(void * ctx);
 
 #if WITHISBOOTLOADER
 
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define BOARD_CONFIG_DRAM_CLK 792
 	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
@@ -730,6 +730,8 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t TXMASK = UINT32_C(1) << 6; /* PG6 UART1-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 7; /* PG7 UART1-RX - pull-up RX data */  \
 		arm_hardware_pioh_outputs(UINT32_C(1) << 4, 0); /* PH4 BT_RESETN */ \
+		arm_hardware_piog_outputs(UINT32_C(1) << 14, 0); /* PG14 AP_WKE */ \
+		arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); /* PG12 BT_WAKE */ \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_updown(RXMASK, 0); \
