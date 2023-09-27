@@ -17,7 +17,7 @@
 
 // управление
 // отладка
-// RS-485
+// RS-485 9600 8N1
 
 //#define PERIODSPOOL 2000
 #define RXTOUT 100

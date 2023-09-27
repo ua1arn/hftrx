@@ -15,7 +15,7 @@
 
 #if WITHCTRLBOARDT507
 
-// компас - RS232
+// компас - RS232 9600 8N1
 
 #define PERIODSPOOL 2000
 #define RXTOUT 50
@@ -119,6 +119,23 @@ static void uart0_timer_event(void * ctx)
 	board_dpc(& uart0_dpc_lock, uart0_dpc_spool, NULL);
 }
 
+void uart0_spool(void)
+{
+	uint_fast8_t c;
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+    f = uint8_queue_get(& rxq, & c);
+	LowerIrql(oldIrql);
+
+	if (f)
+	{
+		//PRINTF("%02X ", c);
+
+	}
+}
+
 void user_uart0_initialize(void)
 {
 	uint8_queue_init(& txq);
@@ -134,20 +151,4 @@ void user_uart0_initialize(void)
 	ticker_add(& uart0_ticker);
 }
 
-void uart0_spool(void)
-{
-	uint_fast8_t c;
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-    f = uint8_queue_get(& rxq, & c);
-	LowerIrql(oldIrql);
-
-	if (f)
-	{
-		PRINTF("%02X ", c);
-
-	}
-}
 #endif /* WITHCTRLBOARDT507 */

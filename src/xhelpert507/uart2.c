@@ -16,7 +16,7 @@
 #if WITHCTRLBOARDT507
 
 // БИНС поправки
-// RS-485
+// RS-485 38400 8N1
 
 #define PERIODSPOOL 2000
 //#define RXTOUT 50

@@ -16,7 +16,7 @@
 #include "mslist.h"
 
 // руль машинка
-// RS-485
+// RS-485 115200 8N1
 
 #define PERIODSPOOL 2000
 #define RXTOUT 50
@@ -303,6 +303,7 @@ void uart1_spool(void)
 		/* использование принятого блока */
 		printhex(0, p->buff, p->count);
 
+		/* поместить блок в список своюодных */
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		InsertHeadList(& rxlistfree, & p->item);
 		LowerIrql(oldIrql);
@@ -314,6 +315,7 @@ void user_uart1_initialize(void)
 {
 	uartX_rxlist_initilize();
 	nextlist();
+	uint8_queue_init(& txq);
 
 	hardware_uart1_initialize(0, 115200, 8, 0, 0);
 	hardware_uart1_set_speed(115200);

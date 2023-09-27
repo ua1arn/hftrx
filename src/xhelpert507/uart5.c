@@ -16,7 +16,7 @@
 #if WITHCTRLBOARDT507
 
 // давление
-// RS-485
+// RS-485 9600 8O1 (ODD PARITY!)
 
 #define PERIODSPOOL 500
 #define RXTOUT 100
@@ -85,7 +85,7 @@ void uart5_spool(void)
 
 	if (f)
 	{
-		PRINTF("rx5:%02X ", c & 0xFF);
+		//PRINTF("rx5:%02X ", c & 0xFF);
 	}
 }
 
