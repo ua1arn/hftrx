@@ -32,14 +32,39 @@ static const uint_fast32_t starttxmin = NTICKS(10);
 static const uint_fast32_t starttxamx = NTICKS(100);
 static volatile uint_fast32_t lasttxticks;
 
+static int answerrequest;
+
+static int answerrequested(void)
+{
+	int v;
+	uint_fast32_t t;
+
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	t = lasttxticks;
+	/* Проверка попадания во временное окно начала ответа мастеру */
+	v = (t >= starttxmin && t < starttxamx) && answerrequest;
+
+	LowerIrql(oldIrql);
+
+	if (v)
+		answerrequest = 0;
+
+	return v;
+}
 
 static void serialtouts(void * ctx)
 {
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	uint_fast32_t v = lasttxticks;
 	if (v < starttxamx)
 	{
 		lasttxticks = v + 1;
 	}
+	LowerIrql(oldIrql);
 }
 
 void user_uart4_onrxchar(uint_fast8_t c)
@@ -54,6 +79,9 @@ void user_uart4_onrxchar(uint_fast8_t c)
 
 void user_uart4_ontxchar(void * ctx)
 {
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	uint_fast8_t c;
 	if (uint8_queue_get(& txq, & c))
 	{
@@ -65,8 +93,7 @@ void user_uart4_ontxchar(void * ctx)
 	{
 		hardware_uart4_enabletx(0);
 	}
-
-
+	LowerIrql(oldIrql);
 }
 
 static int nmeaX_putc(int c)
@@ -188,8 +215,6 @@ static uint_fast16_t nmea_chars[NMEA_CHN];		// количество символ
 
 static char nmea_buff [NMEA_CHN] [NMEA_PARAMS] [NMEA_CHARS];
 
-static int answerrequest;
-
 /* Завершён прием строки и проверена контрорльная сумма. начинаем разбирать. */
 static void nmea_done(unsigned chn)
 {
@@ -275,26 +300,6 @@ static void nmeaX_parsechar(uint_fast8_t c, unsigned chn)
 		}
 		break;
 	}
-}
-
-static int answerrequested(void)
-{
-	int v;
-	uint_fast32_t t;
-
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	t = lasttxticks;
-	/* Проверка попадания во временное окно начала ответа мастеру */
-	v = (t >= starttxmin && t < starttxamx) && answerrequest;
-
-	LowerIrql(oldIrql);
-
-	if (v)
-		answerrequest = 0;
-
-	return v;
 }
 
 void uart4_spool(void)
