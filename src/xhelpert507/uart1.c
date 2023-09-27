@@ -6,14 +6,40 @@
  */
 
 #include "hardware.h"
-#include "formats.h"
-#include "bootloader.h"
-#include "board.h"
-#include "gpio.h"
-
-#include "xhelper507.h"
 
 #if WITHCTRLBOARDT507
+
+#include "formats.h"
+#include "board.h"
+#include "gpio.h"
+#include "xhelper507.h"
+#include "mslist.h"
+
+typedef struct rxlist
+{
+	LIST_ENTRY item;
+	uint8_t buff [128];
+	unsigned count;
+	unsigned crc;
+} rxlist_t;
+
+static LIST_ENTRY rxlistfree;
+static LIST_ENTRY rxlistready;
+
+static void uartX_rxlistinit(void)
+{
+	unsigned i;
+	static rxlist_t lists [3];
+
+	InitializeListHead(& rxlistfree);
+	InitializeListHead(& rxlistready);
+	for (i = 0; i < ARRAY_SIZE(lists); ++ i)
+	{
+		//InsertTailList(& rxlistfree, Entry)
+	}
+
+
+}
 
 // руль машинка
 // RS-485
@@ -147,12 +173,16 @@ static void uart1_req(int targetId, int arg1)
 }
 
 static int phase;
-static int pos [4] =
+static int pos [8] =
 {
-		+ 1000,
-		+ 1000,
-		- 1000,
-		- 1000,
+		+ 1023,
+		+ 1023,
+		0,
+		0,
+		- 1023,
+		- 1023,
+		0,
+		0,
 };
 
 static int freshness [2];
@@ -161,7 +191,7 @@ static void uart1_dpc_spool(void * ctx)
 //	spooltable [spoolcode]();
 //	if (++ spoolcode >= ARRAY_SIZE(spooltable))
 //		spoolcode = 0;
-	phase = (phase + 1) % 4;
+	phase = (phase + 1) % 8;
 	int ch = phase & 1;
 	++ freshness [ch];
 	uart1_req(ch ? 1 : 2, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF));
