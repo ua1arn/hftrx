@@ -257,15 +257,15 @@ static int freshness [2];
 // 3.1 Set Point Command
 static void uart1_dpc_spool(void * ctx)
 {
-//	spooltable [spoolcode]();
-//	if (++ spoolcode >= ARRAY_SIZE(spooltable))
-//		spoolcode = 0;
-	phase = (phase + 1) % 8;
+	if (phase >= ARRAY_SIZE(pos))
+		return;
+
 	int ch = phase & 1;
 	++ freshness [ch];
 	uart1_req(ch ? 1 : 2, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF));
 	//TP();
-}
+	++ phase;
+    //phase = (phase + 1) % 8;}
 
 static ticker_t uart1_ticker;
 static ticker_t uart1_pkg_ticker;
