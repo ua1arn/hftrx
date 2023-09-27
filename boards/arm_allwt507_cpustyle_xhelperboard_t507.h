@@ -60,28 +60,26 @@ void user_uart3_ontxchar(void * ctx);
 void user_uart4_ontxchar(void * ctx);
 void user_uart5_ontxchar(void * ctx);
 
+#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar(c); } while (0)
 #define HARDWARE_UART1_ONRXCHAR(c) do { user_uart1_onrxchar(c); } while (0)
 #define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar(c); } while (0)
 #define HARDWARE_UART3_ONRXCHAR(c) do { user_uart3_onrxchar(c); } while (0)
-#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar(c); } while (0)
 #define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar(c); } while (0)
 
+#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar(ctx); } while (0)
 #define HARDWARE_UART1_ONTXCHAR(ctx) do { user_uart1_ontxchar(ctx); } while (0)
 #define HARDWARE_UART2_ONTXCHAR(ctx) do { user_uart2_ontxchar(ctx); } while (0)
 #define HARDWARE_UART3_ONTXCHAR(ctx) do { user_uart3_ontxchar(ctx); } while (0)
-#define HARDWARE_UART4_ONTXCHAR(ctx) do { user_uart4_ontxchar(ctx); } while (0)
 #define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar(ctx); } while (0)
 
 #if WITHDEBUG
 
-	//#define WITHCAT_USART2		1
-	#define WITHDEBUG_USART0	1
-	//#define WITHNMEA_USART5		1	/* порт подключения GPS/GLONASS */
+	#define WITHDEBUG_USART4	1
 
 #else
 
-	#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar(ctx); } while (0)
-	#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar(c); } while (0)
+	#define HARDWARE_UART4_ONTXCHAR(ctx) do { user_uart4_ontxchar(ctx); } while (0)
+	#define HARDWARE_UART4_ONRXCHAR(c) do { user_uart4_onrxchar(c); } while (0)
 
 #endif
 

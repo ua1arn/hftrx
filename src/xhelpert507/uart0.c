@@ -20,26 +20,99 @@
 #define PERIODSPOOL 2000
 #define RXTOUT 50
 
+
+// Очереди символов для обмена
+
+static u8queue_t txq;
+static u8queue_t rxq;
+
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart0_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+static void uartX_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmeaX_putc(b [i]);
+
+	va_end(ap);
+}
+
 void user_uart0_onrxchar(uint_fast8_t c)
 {
+	IRQL_t oldIrql;
 
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
 }
 
 void user_uart0_ontxchar(void * ctx)
 {
-
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart0_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart0_enabletx(0);
+	}
+	else
+	{
+		hardware_uart0_enabletx(0);
+	}
 }
 
 void user_uart0_initialize(void)
 {
-	hardware_uart0_initialize(1, 115200, 8, 0, 0);
+	uint8_queue_init(& txq);
+	uint8_queue_init(& rxq);
+
+	hardware_uart0_initialize(0, 115200, 8, 0, 0);
 	hardware_uart0_set_speed(115200);
-	hardware_uart0_enablerx(0);
+	hardware_uart0_enablerx(1);
 	hardware_uart0_enabletx(0);
 }
 
 void uart0_spool(void)
 {
-}
+	uint_fast8_t c;
+	uint_fast8_t f;
+	IRQL_t oldIrql;
 
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+    f = uint8_queue_get(& rxq, & c);
+	LowerIrql(oldIrql);
+
+	if (f)
+	{
+		PRINTF("rx0:%02X ", c);
+
+	}
+}
 #endif /* WITHCTRLBOARDT507 */
