@@ -229,6 +229,20 @@ static void nmea_done(unsigned chn)
 	{
 		// разбор управляющих паарметров маяка и цифровых выходов
 	}
+	else if (
+		//nmea_param [chn] >= NMEA_PARAMS &&
+		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLPOS") == 0 &&
+		1)
+	{
+		// разбор управляющих паарметров маяка и цифровых выходов
+		long id = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
+		long pos = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
+		if (pos > 1023)
+			pos = 1023;
+		else if (pos < - 1023)
+			pos = - 1023;
+		xbsave_setpos(id, pos);
+	}
 	answerrequest = 1;
 }
 

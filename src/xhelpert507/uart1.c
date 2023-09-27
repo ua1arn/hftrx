@@ -286,6 +286,29 @@ static void uart1_dpc_spool(void * ctx)
     //phase = (phase + 1) % 8;}
 }
 
+void xbsave_setpos(unsigned id, int abspos)	// set point
+{
+	const unsigned demobase = ARRAY_SIZE(pos);
+	if (phase < demobase)
+		return;
+
+	int ch;
+	switch (id)
+	{
+	case 1:
+		ch = 0;
+		break;
+	case 2:
+		ch = 1;
+		break;
+	default:
+		return;
+	}
+
+	++ freshness [ch];
+	uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (abspos & 0xFFF)); // 0x76 - command code - Set Point Command
+}
+
 static int prseanswer(const uint8_t * p, unsigned sz)
 {
 	unsigned id;
