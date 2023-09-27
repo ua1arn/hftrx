@@ -532,7 +532,7 @@ void user_uart3_initialize(void)
 {
 	uint8_queue_init(& txq);
 	uint8_queue_init(& rxq);
-	hardware_uart3_initialize(0, 921600);
+	hardware_uart3_initialize(0, 921600, 8, 0, 0);
 	hardware_uart3_set_speed(921600);
 	hardware_uart3_enablerx(1);
 	hardware_uart3_enabletx(0);

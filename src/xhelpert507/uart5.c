@@ -191,7 +191,7 @@ static void uart5_timer_event(void * ctx)
 
 void user_uart5_initialize(void)
 {
-	hardware_uart5_initialize(0, 9600);
+	hardware_uart5_initialize(0, 9600, 8, 1, 1);	// 8-O-1
 	hardware_uart5_set_speed(9600);
 	hardware_uart5_enablerx(1);
 	hardware_uart5_enabletx(0);

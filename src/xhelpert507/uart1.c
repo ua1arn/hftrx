@@ -199,7 +199,7 @@ static void uart1_timer_pkg_event(void * ctx)
 
 void user_uart1_initialize(void)
 {
-	hardware_uart1_initialize(0, 115200);
+	hardware_uart1_initialize(0, 115200, 8, 0, 0);
 	hardware_uart1_set_speed(115200);
 
 

@@ -353,7 +353,7 @@ hardware_uart5_putchar(uint_fast8_t c)
 	return 1;
 }
 
-void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
+void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -541,8 +541,12 @@ xxxx!;
 	UART5->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART5->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
-	UART5->UART_LCR &= ~ 0x1f;
-	UART5->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+	UART5->UART_LCR &= ~ 0x3f;
+	UART5->UART_LCR |=
+			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
+			(!! parity << 3) |	// bit3 1: parity enable
+			0;
 
 	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
 
@@ -551,7 +555,7 @@ xxxx!;
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	const unsigned ix = 5;
 
@@ -573,13 +577,11 @@ xxxx!;
 	UART5->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART5->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
-	UART5->UART_LCR &= ~ 0x1f;
+	UART5->UART_LCR &= ~ 0x3f;
 	UART5->UART_LCR |=
-			(0x3 << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-#if WITHCTRLBOARDT507
-			(0x1 << 4) |	// 0 - even, 1 - odd
-			(0x1 << 3) |	// 1: parity enable
-#endif /* WITHCTRLBOARDT507 */
+			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
+			(!! parity << 3) |	// bit3 1: parity enable
 			0;
 
 	HARDWARE_UART5_INITIALIZE();	/* Присоединить периферию к выводам */
