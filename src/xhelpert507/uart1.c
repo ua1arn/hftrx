@@ -15,91 +15,12 @@
 #include "xhelper507.h"
 #include "mslist.h"
 
-typedef struct rxlist
-{
-	LIST_ENTRY item;
-	uint8_t buff [128];
-	unsigned count;
-	unsigned crc;
-} rxlist_t;
-
-static LIST_ENTRY rxlistfree;
-static LIST_ENTRY rxlistready;
-
-static void uartX_rxlistinit(void)
-{
-	unsigned i;
-	static rxlist_t lists [3];
-
-	InitializeListHead(& rxlistfree);
-	InitializeListHead(& rxlistready);
-	for (i = 0; i < ARRAY_SIZE(lists); ++ i)
-	{
-		//InsertTailList(& rxlistfree, Entry)
-	}
-
-
-}
-
 // руль машинка
 // RS-485
 
 #define PERIODSPOOL 2000
 #define RXTOUT 50
 
-static u8queue_t txq;
-static u8queue_t rxq;
-
-
-
-/* вызывается из обработчика прерываний */
-// компорт готов передавать
-void user_uart1_ontxchar(void * ctx)
-{
-	uint_fast8_t c;
-	if (uint8_queue_get(& txq, & c))
-	{
-		hardware_uart1_tx(ctx, c);
-		if (uint8_queue_empty(& txq))
-			hardware_uart1_enabletx(0);
-	}
-	else
-	{
-		hardware_uart1_enabletx(0);
-	}
-}
-
-void user_uart1_onrxchar(uint_fast8_t c)
-{
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	uint8_queue_put(& rxq, c);
-	LowerIrql(oldIrql);
-}
-
-static int nmeaX_putc(int c)
-{
-	IRQL_t oldIrql;
-	uint_fast8_t f;
-
-	do {
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		f = uint8_queue_put(& txq, c);
-		hardware_uart1_enabletx(1);
-		LowerIrql(oldIrql);
-	} while (! f);
-	return c;
-}
-
-static void uartX_write(const uint8_t * buff, size_t n)
-{
-	while (n --)
-	{
-		const uint8_t c = * buff ++;
-		nmeaX_putc(c);
-	}
-}
 
 static uint16_t crc16(unsigned v, unsigned crc)
  {
@@ -113,7 +34,7 @@ static uint16_t crc16(unsigned v, unsigned crc)
 	return crc;
 }
 
-
+#define STARTCRCVAL 0xFFFF
 
 static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
 {
@@ -138,6 +59,151 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
     };
 
     return wCRCTable [(v ^ wCRCWord) & 0xFF];
+}
+
+static u8queue_t txq;
+//static u8queue_t rxq;
+
+
+typedef struct rxlist
+{
+	LIST_ENTRY item;
+	uint8_t buff [128];
+	unsigned count;
+	unsigned crc;
+} rxlist_t;
+
+static LIST_ENTRY rxlistfree;
+static LIST_ENTRY rxlistready;
+static rxlist_t * rxp = NULL;
+
+static void uartX_rxlist_initilize(void)
+{
+	unsigned i;
+	static rxlist_t lists [3];
+
+	InitializeListHead(& rxlistfree);
+	InitializeListHead(& rxlistready);
+	for (i = 0; i < ARRAY_SIZE(lists); ++ i)
+	{
+		rxlist_t * const p = & lists [i];
+		InsertTailList(& rxlistfree, & p->item);
+	}
+}
+
+static void nextlist(void)
+{
+	if (! IsListEmpty(& rxlistfree))
+	{
+		LIST_ENTRY * v = RemoveHeadList(& rxlistfree);
+		rxlist_t * const p = CONTAINING_RECORD(v, rxlist_t, item);
+		p->crc = 0xFFFF;
+		p->count = 0;
+		//
+		rxp = p;
+	}
+	else if (! IsListEmpty(& rxlistready))
+	{
+		LIST_ENTRY * v = RemoveHeadList(& rxlistready);
+		rxlist_t * const p = CONTAINING_RECORD(v, rxlist_t, item);
+		p->crc = STARTCRCVAL;
+		p->count = 0;
+		//
+		rxp = p;
+	}
+	else
+	{
+		rxp = NULL;
+	}
+}
+
+
+/* вызывается из обработчика прерываний */
+// компорт готов передавать
+void user_uart1_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart1_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart1_enabletx(0);
+	}
+	else
+	{
+		hardware_uart1_enabletx(0);
+	}
+}
+
+static unsigned package_tout;
+
+/* обработка принятого символа */
+void user_uart1_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+
+	package_tout = 0;
+	if (rxp != NULL)
+	{
+		if (rxp->count < ARRAY_SIZE(rxp->buff))
+		{
+			rxp->buff [rxp->count ++] = c;
+			rxp->crc = crc16(c, rxp->crc);
+		}
+	}
+	LowerIrql(oldIrql);
+}
+
+/* обработка тиков 5 ms */
+/* system-mode function */
+static void uart1_timer_pkg_event(void * ctx)
+{
+	const unsigned n = NTICKS(RXTOUT);	// пауза между приходом символов
+
+	(void) ctx;	// приходит NULL
+	if (package_tout < n)
+	{
+		if (++ package_tout >= n)
+		{
+			if (rxp->count != 0 && rxp->crc == 0)
+			{
+				/* приято до паузы, проверка CRC рошла */
+				InsertHeadList(& rxlistready, & rxp->item);
+				nextlist();
+			}
+			else
+			{
+				rxp->count = 0;
+				rxp->crc = STARTCRCVAL;
+			}
+		}
+	}
+}
+
+
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart1_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
 }
 
 static unsigned uartX_putc_crc16(int c, unsigned crc)
@@ -186,6 +252,9 @@ static int pos [8] =
 };
 
 static int freshness [2];
+
+// периодическая выдача команд опроса
+// 3.1 Set Point Command
 static void uart1_dpc_spool(void * ctx)
 {
 //	spooltable [spoolcode]();
@@ -196,11 +265,6 @@ static void uart1_dpc_spool(void * ctx)
 	++ freshness [ch];
 	uart1_req(ch ? 1 : 2, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF));
 	//TP();
-}
-
-
-static void uart1_dpc_pkg_spool(void * ctx)
-{
 }
 
 static ticker_t uart1_ticker;
@@ -215,54 +279,54 @@ static void uart1_timer_event(void * ctx)
 	board_dpc(& uart1_dpc_lock, uart1_dpc_spool, NULL);
 }
 
-static unsigned package_tout;
-
-/* system-mode function */
-static void uart1_timer_pkg_event(void * ctx)
+void uart1_spool(void)
 {
-	(void) ctx;	// приходит NULL
-	if (++ package_tout)
+	rxlist_t * p;
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	if (!IsListEmpty(& rxlistready))
 	{
-		board_dpc(& uart1_dpc_lock, uart1_dpc_pkg_spool, NULL);
+		LIST_ENTRY * v = RemoveTailList(& rxlistready);
+		p = CONTAINING_RECORD(v, rxlist_t, item);
+	}
+	else
+	{
+		p = NULL;
+	}
+	LowerIrql(oldIrql);
+
+	if (p != NULL)
+	{
+		/* использование принятого блока */
+		printhex(0, p->buff, p->count);
+
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		InsertHeadList(& rxlistfree, & p->item);
+		LowerIrql(oldIrql);
 	}
 }
 
+
 void user_uart1_initialize(void)
 {
+	uartX_rxlist_initilize();
+	nextlist();
+
 	hardware_uart1_initialize(0, 115200, 8, 0, 0);
 	hardware_uart1_set_speed(115200);
-
 
 	hardware_uart1_enablerx(1);
 	hardware_uart1_enabletx(0);
 
-//	for (;;)
-//		nmeaX_putc(0xF0);
+	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
+	ticker_add(& uart1_pkg_ticker);
 
 	dpclock_initialize(& uart1_dpc_lock);
 	ticker_initialize(& uart1_ticker, NTICKS(PERIODSPOOL), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
-//	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
-//	ticker_add(& uart1_pkg_ticker);
-}
-
-// 3.1 Set Point Command
-// http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
-
-void uart1_spool(void)
-{
-	uint_fast8_t c;
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-    f = uint8_queue_get(& rxq, & c);
-	LowerIrql(oldIrql);
-
-	if (f)
-	{
-		//PRINTF("rx1:%02X ", c & 0xFF);
-	}
 }
 
 #endif /* WITHCTRLBOARDT507 */

@@ -16,7 +16,6 @@
 #if WITHCTRLBOARDT507
 
 // компас - RS232
-// отладка - RS232
 
 #define PERIODSPOOL 2000
 #define RXTOUT 50
@@ -33,21 +32,14 @@ void user_uart0_ontxchar(void * ctx)
 
 void user_uart0_initialize(void)
 {
-#if ! (WITHDEBUG && WITHDEBUG_USART0)
-
-	hardware_uart0_initialize(0);
+	hardware_uart0_initialize(1, 115200, 8, 0, 0);
 	hardware_uart0_set_speed(115200);
 	hardware_uart0_enablerx(0);
 	hardware_uart0_enabletx(0);
-
-#endif
 }
 
 void uart0_spool(void)
 {
-#if ! (WITHDEBUG && WITHDEBUG_USART0)
-
-#endif
 }
 
 #endif /* WITHCTRLBOARDT507 */
