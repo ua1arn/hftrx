@@ -18,6 +18,9 @@
 // БИНС поправки
 // RS-485
 
+#define PERIODSPOOL 2000
+//#define RXTOUT 50
+
 void user_uart2_onrxchar(uint_fast8_t c)
 {
 

@@ -18,6 +18,9 @@
 // управление
 // RS-485
 
+//#define PERIODSPOOL 2000
+#define RXTOUT 100
+
 void user_uart4_onrxchar(uint_fast8_t c)
 {
 

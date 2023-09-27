@@ -15,9 +15,11 @@
 
 #if WITHCTRLBOARDT507
 
-
 // руль машинка
 // RS-485
+
+#define PERIODSPOOL 2000
+#define RXTOUT 50
 
 static u8queue_t txq;
 static u8queue_t rxq;
@@ -208,7 +210,7 @@ void user_uart1_initialize(void)
 //		nmeaX_putc(0xF0);
 
 	dpclock_initialize(& uart1_dpc_lock);
-	ticker_initialize(& uart1_ticker, NTICKS(2000), uart1_timer_event, NULL);
+	ticker_initialize(& uart1_ticker, NTICKS(PERIODSPOOL), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
 //	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
 //	ticker_add(& uart1_pkg_ticker);

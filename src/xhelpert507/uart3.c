@@ -19,6 +19,9 @@
 // RS-422
 #define DEVADDR 1
 
+#define PERIODSPOOL 750
+#define RXTOUT 50
+
 // Очереди символов для обмена
 
 static u8queue_t txq;
@@ -535,7 +538,7 @@ void user_uart3_initialize(void)
 	hardware_uart3_enabletx(0);
 
 	dpclock_initialize(& uart3_dpc_lock);
-	ticker_initialize(& uart3_ticker, NTICKS(1500), uart3_timer_event, NULL);
+	ticker_initialize(& uart3_ticker, NTICKS(PERIODSPOOL), uart3_timer_event, NULL);
 	ticker_add(& uart3_ticker);
 
 }

@@ -577,7 +577,7 @@ xxxx!;
 	UART5->UART_LCR |=
 			(0x3 << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
 #if WITHCTRLBOARDT507
-			(0x0 << 4) |	// 0 - even, 1 - odd
+			(0x1 << 4) |	// 0 - even, 1 - odd
 			(0x1 << 3) |	// 1: parity enable
 #endif /* WITHCTRLBOARDT507 */
 			0;

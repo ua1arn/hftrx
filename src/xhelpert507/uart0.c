@@ -18,6 +18,9 @@
 // компас - RS232
 // отладка - RS232
 
+#define PERIODSPOOL 2000
+#define RXTOUT 50
+
 void user_uart0_onrxchar(uint_fast8_t c)
 {
 

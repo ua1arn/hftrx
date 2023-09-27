@@ -18,12 +18,14 @@
 // давление
 // RS-485
 
+#define PERIODSPOOL 500
+#define RXTOUT 100
+
 static u8queue_t txq;
 static u8queue_t rxq;
-static volatile int rxc;
+
 void user_uart5_onrxchar(uint_fast8_t c)
 {
-	++ rxc;
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -50,7 +52,6 @@ void user_uart5_ontxchar(void * ctx)
 
 static int nmeaX_putc(int c)
 {
-	PRINTF("tx5:%02X ", c & 0xFF);
 	IRQL_t oldIrql;
 	uint_fast8_t f;
 
@@ -174,8 +175,6 @@ static void uart5_req(void)
 static void uart5_dpc_spool(void * ctx)
 {
 	uart5_req();
-	//TP();
-	PRINTF("rxc=%d\n", rxc);
 }
 
 static ticker_t uart5_ticker;
@@ -198,7 +197,7 @@ void user_uart5_initialize(void)
 	hardware_uart5_enabletx(0);
 
 	dpclock_initialize(& uart5_dpc_lock);
-	ticker_initialize(& uart5_ticker, NTICKS(500), uart5_timer_event, NULL);
+	ticker_initialize(& uart5_ticker, NTICKS(PERIODSPOOL), uart5_timer_event, NULL);
 	ticker_add(& uart5_ticker);
 }
 
