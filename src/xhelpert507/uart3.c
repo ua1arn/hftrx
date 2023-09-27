@@ -259,13 +259,13 @@ static unsigned mbuff_float32(uint8_t * b, float v)
 
 void readregisters(unsigned devaddr, unsigned reg, unsigned numregs)
 {
-	uint8_t b [32];
+	uint8_t b [8];
 	unsigned n = 0;
 
 	n += mbuff_uint8(b + n, 0xFB);	// preamble
-	n += mbuff_uint8(b + n, devaddr);	// address
+	n += mbuff_uint8(b + n, devaddr);	// device address
 	n += mbuff_uint8(b + n, reg);	// register address
-	n += mbuff_uint8(b + n, numregs);	// read one register
+	n += mbuff_uint8(b + n, numregs & 0x7F);	// number of registers read
 
 	uartX_write_crc8(b, n);
 }
@@ -340,149 +340,169 @@ static double rxpeek_float64(const uint8_t * b)
 	return u.f;
 }
 
-static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumregs)
+enum
 {
-	for (; rxnumregs --; ++ rxregbase, b += 4)
+	REGT_UINT32,
+	REGT_FLOAT32,
+	REGT_FLOAT64,
+};
+
+static int getregtype(unsigned reg)
+{
+	switch (reg)
+	{
+	case 0x00:
+		return REGT_UINT32;
+
+	default:
+		return REGT_UINT32;
+	}
+}
+
+static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
+{
+	const unsigned lastreg = rxregbase + rxnumregs;
+	for (; rxregbase < lastreg; ++ rxregbase, b += 4)
 	{
 		switch (rxregbase)
 		{
 		case 0:
-			PRINTF("ID_NUMBER=%08X\n", rxpeek_uint32(b));
+			PRINTF("%-3u: ID_NUMBER=%08X\n", rxregbase, rxpeek_uint32(b));
 			break;
 		case 1:
-			PRINTF("FW_VERSION=%08X\n", rxpeek_uint32(b));
+			PRINTF("%-3u: FW_VERSION=%08X\n", rxregbase, rxpeek_uint32(b));
 			break;
 		case 2:
-			PRINTF("DEVICE SAVE AND RESET=%08X\n", rxpeek_uint32(b));
+			PRINTF("%-3u: DEVICE SAVE AND RESET=%08X\n", rxregbase, rxpeek_uint32(b));
 			break;
 		case 3:
-			PRINTF("CONTROL_0=%08X\n", rxpeek_uint32(b));
+			PRINTF("%-3u: CONTROL_0=%08X\n", rxregbase, rxpeek_uint32(b));
 			break;
 		case 4:
-			PRINTF("CONTROL_1=%08X\n", rxpeek_uint32(b));
+			PRINTF("%-3u: CONTROL_1=%08X\n", rxregbase, rxpeek_uint32(b));
 			break;
 
 		case 5: case 6: case 7:
 		case 8: case 9: case 10:
 		case 11: case 12: case 13:
-			PRINTF("ROTATION MATRIX[%u]=%f\n", rxregbase - 5, rxpeek_float32(b));
+			PRINTF("%-3u: ROTATION MATRIX[%u]=%f\n", rxregbase, rxregbase - 5, rxpeek_float32(b));
 			break;
 
 		case 15:
-			PRINTF("TYPICAL_LATITUDE=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: TYPICAL_LATITUDE=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 		case 16:
-			PRINTF("TYPICAL_LONGITUDE=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: TYPICAL_LONGITUDE=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 		case 17:
-			PRINTF("TYPICAL_HEIGHT=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: TYPICAL_HEIGHT=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 		case 18:
-			PRINTF("INIT_HEADING=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: INIT_HEADING=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 
 		case 19: case 20: case 21:
-			PRINTF("ANTENNA_DISTANCE[%u]=%f\n", rxregbase - 19, rxpeek_float32(b));
+			PRINTF("%-3u: ANTENNA_DISTANCE[%u]=%f\n", rxregbase, rxregbase - 19, rxpeek_float32(b));
 			break;
 
 		case 54: case 55: case 56:
-			PRINTF("GYRO_CALIBRATION_COEFFICIENT[%u]=%f\n", rxregbase - 54, rxpeek_float32(b));
+			PRINTF("%-3u: GYRO_CALIBRATION_COEFFICIENT[%u]=%f\n", rxregbase, rxregbase - 54, rxpeek_float32(b));
 			break;
 
 		case 57: case 58: case 59:
 		case 60: case 61: case 62:
 		case 63: case 64: case 65:
-			PRINTF("MAG_CALIBRATION_MATRIX[%u]=%f\n", rxregbase - 57, rxpeek_float32(b));
+			PRINTF("%-3u: MAG_CALIBRATION_MATRIX[%u]=%f\n", rxregbase, rxregbase - 57, rxpeek_float32(b));
 			break;
 
 		case 129: // SYSTEM_TIME
-			PRINTF("SYSTEM_TIME=%08X\n", rxpeek_uint32(b));
+			PRINTF("%-3u: SYSTEM_TIME=%08X\n", rxregbase, rxpeek_uint32(b));
 			break;
 
 		case 74: case 75: case 76:
-			PRINTF("RAW_GYRO[%u]=%08X\n", rxregbase - 74, rxpeek_uint32(b));
+			PRINTF("%-3u: RAW_GYRO[%u]=%08X\n", rxregbase, rxregbase - 74, rxpeek_uint32(b));
 			break;
 
 		case 77: case 78: case 79:
-			PRINTF("RAW_MAG[%u]=%08X\n", rxregbase - 77, rxpeek_uint32(b));
+			PRINTF("%-3u: RAW_MAG[%u]=%08X\n", rxregbase, rxregbase - 77, rxpeek_uint32(b));
 			break;
 
 		case 80:
-			PRINTF("ACC_TEMP=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: ACC_TEMP=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 
 		case 81: case 82: case 83:
-			PRINTF("GYRO_TEMP[%u]=%f\n", rxregbase - 81, rxpeek_float32(b));
+			PRINTF("%-3u: GYRO_TEMP[%u]=%f\n", rxregbase, rxregbase - 81, rxpeek_float32(b));
 			break;
 
 		case 84: case 85: case 86:
-			PRINTF("CALIB_ACC[%u]=%f\n", rxregbase - 84, rxpeek_float32(b));
+			PRINTF("%-3u: CALIB_ACC[%u]=%f\n", rxregbase, rxregbase - 84, rxpeek_float32(b));
 			break;
 
 		case 87: case 88: case 89:
-			PRINTF("CALIB_GYRO[%u]=%f\n", rxregbase - 87, rxpeek_float32(b));
+			PRINTF("%-3u: CALIB_GYRO[%u]=%f\n", rxregbase, rxregbase - 87, rxpeek_float32(b));
 			break;
 
 		case 90: case 91: case 92:
-			PRINTF("CALIB_MAG[%u]=%f\n", rxregbase - 90, rxpeek_float32(b));
+			PRINTF("%-3u: CALIB_MAG[%u]=%f\n", rxregbase, rxregbase - 90, rxpeek_float32(b));
 			break;
 
 		case 93:
-			PRINTF("BAR_PRESS=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: BAR_PRESS=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 
 		case 94:
-			PRINTF("BAR_ALT=%f\n", rxpeek_float32(b));
+			PRINTF("%-3u: BAR_ALT=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 
 		case 95: case 96: case 97:
-			PRINTF("HEADING_PITCH_ROLL[%u]=%f\n", rxregbase - 95, rxpeek_float32(b));
+			PRINTF("%-3u: HEADING_PITCH_ROLL[%u]=%f\n", rxregbase, rxregbase - 95, rxpeek_float32(b));
 			break;
 
 		case 98: case 99: case 100: case 101:
-			PRINTF("QUAT[%u]=%f\n", rxregbase - 98, rxpeek_float32(b));
+			PRINTF("%-3u: QUAT[%u]=%f\n", rxregbase, rxregbase - 98, rxpeek_float32(b));
 			break;
 
 		case 102: case 103: case 104:
 		case 105: case 106: case 107:
 		case 108: case 109: case 110:
-			PRINTF("ORIENTATION MATRIX[%u]=%f\n", rxregbase - 102, rxpeek_float32(b));
+			PRINTF("%-3u: ORIENTATION MATRIX[%u]=%f\n", rxregbase, rxregbase - 102, rxpeek_float32(b));
 			break;
 
 		case 111: case 112: case 113:
-			PRINTF("EAST_NORTH_VERTICAL_VELOCITY[%u]=%f\n", rxregbase - 111, rxpeek_float32(b));
+			PRINTF("%-3u: EAST_NORTH_VERTICAL_VELOCITY[%u]=%f\n", rxregbase, rxregbase - 111, rxpeek_float32(b));
 			break;
 
-		case 114:
-			PRINTF("OUT_LAT=%f\n", rxpeek_float64(b));
+		case 173:
+			PRINTF("%-3u: OUT_LAT=%f\n", rxregbase, rxpeek_float64(b));
 			b += 4; rxregbase += 1;
 			break;
 
-		case 116:
-			PRINTF("OUT_LON=%f\n", rxpeek_float64(b));
+		case 175:
+			PRINTF("%-3u: OUT_LON=%f\n", rxregbase, rxpeek_float64(b));
 			b += 4; rxregbase += 1;
 			break;
 
-		case 118:
-			PRINTF("OUT_HEI=%f\n", rxpeek_float32(b));
+		case 177:
+			PRINTF("%-3u: OUT_HEI=%f\n", rxregbase, rxpeek_float32(b));
 			break;
 
 		case 119:
-			PRINTF("GPS_LAT=%f\n", rxpeek_float64(b));
+			PRINTF("%-3u: GPS_LAT=%f\n", rxregbase, rxpeek_float64(b));
 			b += 4; rxregbase += 1;
 			break;
 
 		case 121:
-			PRINTF("GPS_LON=%f\n", rxpeek_float64(b));
+			PRINTF("%-3u: GPS_LON=%f\n", rxregbase, rxpeek_float64(b));
 			b += 4; rxregbase += 1;
 			break;
 
 		case 123: case 124: case 125: case 126:
-			PRINTF("GPS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase - 123, rxpeek_float32(b));
+			PRINTF("%-3u: GPS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase, rxregbase - 123, rxpeek_float32(b));
 			break;
 
 		case 205: case 206: case 207:
-			PRINTF("TEST_MAG[%u]=%08X\n", rxregbase - 127, rxpeek_uint32(b));
+			PRINTF("%-3u: TEST_MAG[%u]=%08X\n", rxregbase, rxregbase - 127, rxpeek_uint32(b));
 			break;
 
 		default:
@@ -493,25 +513,27 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, unsigned rxnumre
 	}
 }
 
-enum states
+static int parsepacket(const uint8_t * p, unsigned sz)
 {
-	WAITPREAMBLE,
-	WAITDEVADDR,
-	WAITDEVREG,
-	WAITNUMREGS,
-	RXREGS,
-	WAITCRC
+	unsigned rxregbase;
+	unsigned rxreg;
+	unsigned rxnumregs;
 
-	//
-	//allStates
-};
+	if (sz < 5)
+		return 0;
+	if (p [0] != 0xFB)	// preamble
+		return 0;
+	if (p [1] != DEVADDR)	// address
+		return 0;
+	rxregbase = p [2];
+	rxnumregs = p [3] & 0x7F;
 
-enum states st = WAITPREAMBLE;
-static unsigned rxcrc;
-static unsigned rxregbase;
-static unsigned rxreg;
-static unsigned rxnumregs;
-static uint8_t rxbuff [128];
+	if (sz < (5 + rxnumregs * 4))
+		return 0;
+
+	parseanswers(p + 4, rxregbase, rxnumregs);
+	return 1;
+}
 
 
 static ticker_t uart3_ticker;
@@ -540,7 +562,9 @@ void uart3_spool(void)
 	if (p != NULL)
 	{
 		/* использование принятого блока */
-		printhex(0, p->buff, p->count);
+
+		//printhex(0, p->buff, p->count);
+		////parsepacket(p->buff, p->count);
 
 		/* поместить блок в список своюодных */
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -551,12 +575,18 @@ void uart3_spool(void)
 
 static void spool_lat(void)
 {
-	readregisters(DEVADDR, 114, 2);	// RAW_GYRO
+	readregisters(DEVADDR, 173, 5);	// OUT_LAT, OUT_LON, OUT_HEI
 }
 
 static void spool_gyro(void)
 {
 	readregisters(DEVADDR, 74, 3);	// RAW_GYRO
+}
+
+// TYPICAL_LATITUDE
+static void spool_typical(void)
+{
+	readregisters(DEVADDR, 0x0F, 3);	// TYPICAL_LATITUDE
 }
 
 static int spoolcode;
@@ -565,6 +595,7 @@ static void (* spooltable [])(void) =
 {
 	spool_gyro,
 	spool_lat,
+	spool_typical,
 };
 
 static void uart3_dpc_spool(void * ctx)

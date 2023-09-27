@@ -227,10 +227,10 @@ static void uartX_write_crc16(const uint8_t * buff, size_t n)
 	ASSERT(crc == 0);
 }
 
-static void uart1_req(int targetId, int arg1)
+static void uart1_req(int targetId, uint_fast8_t cmd, int arg1)
 {
 	uint8_t b [32];
-	b [0] = 0x76;	// command code - Set Point Command
+	b [0] = cmd;
 	b [1] = targetId; //0x01;	// target id
 	b [2] = arg1 >> 8;	// arg1 high byte
 	b [3] = arg1 >> 0;	// arg1 low byte
@@ -239,7 +239,7 @@ static void uart1_req(int targetId, int arg1)
 }
 
 static int phase;
-static int pos [8] =
+static int pos [] =
 {
 		+ 1023,
 		+ 1023,
@@ -249,6 +249,8 @@ static int pos [8] =
 		- 1023,
 		0,
 		0,
+//		+ 277,
+//		- 277,
 };
 
 static int freshness [2];
@@ -257,15 +259,52 @@ static int freshness [2];
 // 3.1 Set Point Command
 static void uart1_dpc_spool(void * ctx)
 {
-	if (phase >= ARRAY_SIZE(pos))
-		return;
-
+	const unsigned demobase = ARRAY_SIZE(pos);
 	int ch = phase & 1;
+	if (phase >= demobase)
+	{
+		switch (phase)
+		{
+		case demobase + 0:
+			uart1_req(ch ? 1 : 2, 0x69, 0); // 0x69 - command code - Readout actual position
+			phase = demobase + 1;
+			break;
+
+		case demobase + 1:
+			uart1_req(ch ? 1 : 2, 0x69, 0); // 0x69 - command code - Readout actual position
+			phase = demobase + 0;
+			break;
+
+		}
+		return;
+	}
+
 	++ freshness [ch];
-	uart1_req(ch ? 1 : 2, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF));
+	uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF)); // 0x76 - command code - Set Point Command
 	//TP();
 	++ phase;
     //phase = (phase + 1) % 8;}
+}
+
+static int prseanswer(const uint8_t * p, unsigned sz)
+{
+	unsigned id;
+	int pos;
+	//unsigned val;
+	if (sz < 6)
+		return 0;
+	id = p [1];
+	switch (p [0])
+	{
+	case 0x56:	// Set point answer
+	case 0x49:	// Readout actual position answer
+		id = p [1];
+		pos = (int32_t) (((uint32_t) (p [2] * 256 + p [3]) << 20)) >> 20;
+		PRINTF("Position: id=%u, pos=%d\n", id, pos);
+		return 1;
+	}
+	return 0;
+}
 
 static ticker_t uart1_ticker;
 static ticker_t uart1_pkg_ticker;
@@ -301,8 +340,8 @@ void uart1_spool(void)
 	if (p != NULL)
 	{
 		/* использование принятого блока */
-		printhex(0, p->buff, p->count);
-
+		//printhex(0, p->buff, p->count);
+		prseanswer(p->buff, p->count);
 		/* поместить блок в список своюодных */
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		InsertHeadList(& rxlistfree, & p->item);
