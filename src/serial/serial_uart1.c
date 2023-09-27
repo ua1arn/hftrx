@@ -140,7 +140,7 @@
 		}
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	static RAMFUNC_NONILINE void UART1_IRQHandler(void)
 	{
@@ -288,7 +288,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 	else
 		 UART1->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if (state)
 		UART1->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -396,7 +396,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	UART1->IER = mask;
 	UART1->IDR = ~ mask;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if (state)
 		 UART1->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -474,7 +474,7 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 	UART1->FIFO = c;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	UART1->UART_RBR_THR_DLL = c;
 
@@ -577,7 +577,7 @@ hardware_uart1_getchar(char * cp)
 		return 0;
 	* cp = UART1->FIFO;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if ((UART1->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -675,7 +675,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	UART1->FIFO = c;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if ((UART1->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -1044,7 +1044,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	const unsigned ix = 1;
 
@@ -1251,7 +1251,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 

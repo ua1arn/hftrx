@@ -105,7 +105,7 @@
 		HARDWARE_UART5_ONTXCHAR(& SCIF5);
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	static RAMFUNC_NONILINE void UART5_IRQHandler(void)
 	{
@@ -161,7 +161,7 @@ void hardware_uart5_enabletx(uint_fast8_t state)
 	else
 		SCIF5.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if (state)
 		UART5->UART_DLH_IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
@@ -198,7 +198,7 @@ void hardware_uart5_enablerx(uint_fast8_t state)
 	else
 		SCIF5.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if (state)
 		UART5->UART_DLH_IER |= (1u << 0);	// ERBFI Enable Received Data Available Interrupt
@@ -232,7 +232,7 @@ void hardware_uart5_tx(void * ctx, uint_fast8_t c)
 	SCIF5.SCFTDR = c;
 	SCIF5.SCFSR = (uint16_t) ~ (1U << SCIF5_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	UART5->UART_RBR_THR_DLL = c;
 
@@ -292,7 +292,7 @@ hardware_uart5_getchar(char * cp)
 	* cp = SCIF5.SCFRDR;
 	SCIF5.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if ((UART5->UART_USR & (1u << 3)) == 0)	// RX FIFO Not Empty
 		return 0;
@@ -340,7 +340,7 @@ hardware_uart5_putchar(uint_fast8_t c)
 	SCIF5.SCFTDR = c;
 	SCIF5.SCFSR = (uint16_t) ~ (1U << SCIF5_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	if ((UART5->UART_USR & (1u << 1)) == 0)	// TX FIFO Not Full
 		return 0;
@@ -551,7 +551,7 @@ xxxx!;
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	const unsigned ix = 5;
 
@@ -631,7 +631,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF5.SCBRR = value;	/* Bit rate register */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
 
