@@ -677,7 +677,7 @@ static unsigned calctregcount(unsigned reg, unsigned argcount)
 	unsigned tregcount;
 
 	for (tregcount = 0; argcount --; reg += xbreginc(reg))
-		;
+		tregcount += xbreginc(reg);
 
 	return tregcount;
 }
