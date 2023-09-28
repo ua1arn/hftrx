@@ -18,7 +18,7 @@
 // руль машинка
 // RS-485 115200 8N1
 
-#define PERIODSPOOL 2000
+#define PERIODSPOOL 750
 #define RXTOUT 50
 
 
@@ -255,23 +255,26 @@ static int pos [] =
 
 static int freshness [2];
 
+static int needPos [2];
+
 // периодическая выдача команд опроса
 // 3.1 Set Point Command
 static void uart1_dpc_spool(void * ctx)
 {
 	const unsigned demobase = ARRAY_SIZE(pos);
 	int ch = phase & 1;
+	++ freshness [ch];
 	if (phase >= demobase)
 	{
 		switch (phase)
 		{
 		case demobase + 0:
-			uart1_req(ch ? 1 : 2, 0x69, 0); // 0x69 - command code - Readout actual position
+			uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (needPos [ch] & 0xFFF)); // 0x76 - command code - Set Point Command
 			phase = demobase + 1;
 			break;
 
 		case demobase + 1:
-			uart1_req(ch ? 1 : 2, 0x69, 0); // 0x69 - command code - Readout actual position
+			uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (needPos [ch] & 0xFFF)); // 0x76 - command code - Set Point Command
 			phase = demobase + 0;
 			break;
 
@@ -279,7 +282,6 @@ static void uart1_dpc_spool(void * ctx)
 		return;
 	}
 
-	++ freshness [ch];
 	uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF)); // 0x76 - command code - Set Point Command
 	//TP();
 	++ phase;
@@ -304,9 +306,7 @@ void xbsave_setpos(unsigned id, int abspos)	// set point
 	default:
 		return;
 	}
-
-	++ freshness [ch];
-	uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (abspos & 0xFFF)); // 0x76 - command code - Set Point Command
+	needPos [ch] = abspos;
 }
 
 static int prseanswer(const uint8_t * p, unsigned sz)
@@ -322,9 +322,9 @@ static int prseanswer(const uint8_t * p, unsigned sz)
 	case 0x56:	// Set point answer
 	case 0x49:	// Readout actual position answer
 		id = p [1];
-		pos = (int32_t) (((uint32_t) (p [2] * 256 + p [3]) << 20)) >> 20;
+		pos = (int32_t) ((((uint32_t) p [2] * 256 + p [3]) << 20)) >> 20;
 		xbsave_position(id, pos);
-		PRINTF("Position: id=%u, pos=%d\n", id, pos);
+		//PRINTF("Position: id=%u, pos=%d\n", id, pos);
 		return 1;
 	}
 	return 0;
