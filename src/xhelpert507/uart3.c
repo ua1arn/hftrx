@@ -358,18 +358,114 @@ static double rxpeek_float64_LE(const uint8_t * b)
 	return u.f;
 }
 
-enum
+enum regtypes
 {
 	REGT_UINT32,
 	REGT_FLOAT32,
 	REGT_FLOAT64,
 };
 
-static int getregtype(unsigned reg)
+static enum regtypes getregtype(unsigned reg)
 {
 	switch (reg)
 	{
-	case 0x00:
+	case 0:
+		return REGT_UINT32;
+	case 1:
+		return REGT_UINT32;
+	case 2:
+		return REGT_UINT32;
+	case 3:
+		return REGT_UINT32;
+	case 4:
+		return REGT_UINT32;
+	case 5: case 6: case 7:
+	case 8: case 9: case 10:
+	case 11: case 12: case 13:
+		return REGT_FLOAT32;
+	case 14:
+		return REGT_UINT32;
+	case 15:
+		return REGT_FLOAT32;
+	case 16:
+		return REGT_FLOAT32;
+	case 17:
+		return REGT_FLOAT32;
+	case 18:
+		return REGT_FLOAT32;
+	case 19: case 20: case 21:
+		return REGT_FLOAT32;
+	case 54: case 55: case 56:
+		return REGT_FLOAT32;
+	case 57: case 58: case 59:
+	case 60: case 61: case 62:
+	case 63: case 64: case 65:
+		return REGT_FLOAT32;
+	case 66: case 67: case 68:
+		return REGT_FLOAT32;
+	case 128:
+		return REGT_UINT32;
+	case 129: // SYSTEM_TIME
+		return REGT_UINT32;
+	case 130: case 131: case 132:
+		return REGT_UINT32;
+	case 133: case 134: case 135:
+		return REGT_UINT32;
+	case 136: case 137: case 138:
+		return REGT_UINT32;
+	case 139:
+		return REGT_FLOAT32;
+	case 140: case 141: case 142:
+		return REGT_FLOAT32;
+	case 143: case 144: case 145:
+		return REGT_FLOAT32;
+	case 146: case 147: case 148:
+		return REGT_FLOAT32;
+	case 149: case 150: case 151:
+		return REGT_FLOAT32;
+	case 152:
+		return REGT_FLOAT32;
+	case 153:
+		return REGT_FLOAT32;
+	case 154: case 155: case 156:
+		return REGT_FLOAT32;
+	case 157: case 158: case 159: case 160:
+		return REGT_FLOAT32;
+	case 161: case 162: case 163:
+	case 164: case 165: case 166:
+	case 167: case 168: case 169:
+		return REGT_FLOAT32;
+	case 170: case 171: case 172:
+		return REGT_FLOAT32;
+	case 173:	// float64
+		return REGT_FLOAT64;
+	case 175:	// float64
+		return REGT_FLOAT64;
+	case 177:
+		return REGT_FLOAT32;
+	case 178:	// float64
+		return REGT_FLOAT64;
+	case 180:
+		return REGT_FLOAT64;
+	case 182: case 183: case 184: case 185:
+		return REGT_FLOAT32;
+	case 186: case 187: case 188:
+		return REGT_FLOAT32;
+	case 189: case 190: case 191:
+		return REGT_FLOAT32;
+	case 192: // EXT_GNSS_FLAG
+		return REGT_UINT32;
+	case 193:
+		return REGT_UINT32;
+	case 194:
+		return REGT_UINT32;
+	case 195:
+		return REGT_UINT32;
+	case 196: case 197: case 198:
+	case 199: case 200: case 201:
+	case 202: case 203: case 204:
+		return REGT_UINT32;
+	case 205: case 206: case 207:
 		return REGT_UINT32;
 
 	default:
@@ -377,10 +473,24 @@ static int getregtype(unsigned reg)
 	}
 }
 
+// register increment size
+int xbreginc(unsigned reg)
+{
+	switch (getregtype(reg))
+	{
+	case REGT_UINT32:
+	case REGT_FLOAT32:
+		return 1;
+	case REGT_FLOAT64:
+		return 2;
+	}
+	return 1;
+}
+
 static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 {
 	const unsigned lastreg = rxregbase + rxnumregs;
-	for (; rxregbase < lastreg; ++ rxregbase, b += 4)
+	for (; rxregbase < lastreg; b += 4 * xbreginc(rxregbase), rxregbase += xbreginc(rxregbase))
 	{
 		switch (rxregbase)
 		{
@@ -518,12 +628,10 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 		case 173:	// float64
 			PRINTF("%-3u: OUT_LAT=%f\n", rxregbase, rxpeek_float64_LE(b));
 			xbsavebins_float64(rxregbase, rxpeek_float64_LE(b));
-			b += 4; rxregbase += 1;
 			break;
 		case 175:	// float64
 			PRINTF("%-3u: OUT_LON=%f\n", rxregbase, rxpeek_float64_LE(b));
 			xbsavebins_float64(rxregbase, rxpeek_float64_LE(b));
-			b += 4; rxregbase += 1;
 			break;
 		case 177:
 			PRINTF("%-3u: OUT_HEI=%f\n", rxregbase, rxpeek_float32_LE(b));
@@ -532,12 +640,10 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 		case 178:	// float64
 			PRINTF("%-3u: GPS_LAT=%f\n", rxregbase, rxpeek_float64_LE(b));
 			xbsavebins_float64(rxregbase, rxpeek_float64_LE(b));
-			b += 4; rxregbase += 1;
 			break;
 		case 180:
 			PRINTF("%-3u: GPS_LON=%f\n", rxregbase, rxpeek_float64_LE(b));
 			xbsavebins_float64(rxregbase, rxpeek_float64_LE(b));
-			b += 4; rxregbase += 1;
 			break;
 		case 182: case 183: case 184: case 185:
 			PRINTF("%-3u: GNSS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase, rxregbase - 182, rxpeek_float32_LE(b));
@@ -586,6 +692,83 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 		}
 	}
 }
+
+static unsigned calctregcount(unsigned reg, unsigned argcount)
+{
+	unsigned tregcount;
+
+	for (tregcount = 0; argcount --; reg += xbreginc(reg))
+		;
+
+	return tregcount;
+}
+
+void xbsetregF(unsigned reg, unsigned argcount, const double * pv)
+{
+	const unsigned tregcount = calctregcount(reg, argcount);
+	uint8_t b [4 + 8 * MAXPACKREGS];
+	unsigned n = 0;
+	unsigned i;
+
+	n += mbuff_uint8(b + n, 0xFB);	// preamble
+	n += mbuff_uint8(b + n, DEVADDR);	// device address
+	n += mbuff_uint8(b + n, reg);	// register address
+	n += mbuff_uint8(b + n, tregcount | 0x80);	// number of registers write
+
+	for (i = 0; i < argcount && i < MAXPACKREGS; ++ i)
+	{
+		switch (getregtype(reg))
+		{
+		case REGT_FLOAT64:
+			n += mbuff_float64_LE(b + n, pv [i]);
+			break;
+		case REGT_FLOAT32:
+			n += mbuff_float32_LE(b + n, pv [i]);
+			break;
+		case REGT_UINT32:
+			n += mbuff_uint32_LE(b + n, pv [i]);
+			break;
+		default:
+			break;
+		}
+	}
+
+	uartX_write_crc8(b, n);
+}
+
+void xbsetregI(unsigned reg, unsigned argcount, const long * pv)
+{
+	const unsigned tregcount = calctregcount(reg, argcount);
+	uint8_t b [4 + 8 * MAXPACKREGS];
+	unsigned n = 0;
+	unsigned i;
+
+	n += mbuff_uint8(b + n, 0xFB);	// preamble
+	n += mbuff_uint8(b + n, DEVADDR);	// device address
+	n += mbuff_uint8(b + n, reg);	// register address
+	n += mbuff_uint8(b + n, tregcount | 0x80);	// number of registers write
+
+	for (i = 0; i < argcount && i < MAXPACKREGS; ++ i)
+	{
+		switch (getregtype(reg))
+		{
+		case REGT_FLOAT64:
+			n += mbuff_float64_LE(b + n, pv [i]);
+			break;
+		case REGT_FLOAT32:
+			n += mbuff_float32_LE(b + n, pv [i]);
+			break;
+		case REGT_UINT32:
+			n += mbuff_uint32_LE(b + n, pv [i]);
+			break;
+		default:
+			break;
+		}
+	}
+
+	uartX_write_crc8(b, n);
+}
+
 
 static int parsepacket(const uint8_t * p, unsigned sz)
 {

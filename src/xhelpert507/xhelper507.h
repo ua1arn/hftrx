@@ -45,5 +45,11 @@ void xbsavebins_int32(unsigned reg, int32_t v);
 void xbsavebins_float64(unsigned reg, double v);
 
 void xbsavemagn(double roll, double pitch, double jaw);
+int xbreginc(unsigned reg);	// register increment size
+
+#define MAXPACKREGS 10
+
+void xbsetregF(unsigned reg, unsigned argcount, const double * pv);
+void xbsetregI(unsigned reg, unsigned argcount, const long * pv);
 
 #endif /* SRC_XHELPERT507_XHELPER507_H_ */
