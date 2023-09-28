@@ -249,7 +249,7 @@ static void nmea_done(unsigned chn)
 		// получение float/double
 		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
 		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
-		if (binsreg < 255 && binsargcount > 1 && binsargcount <= 10)
+		if (binsreg < 255 && binsargcount >= 1 && binsargcount <= 10)
 			answerrequest = ANSW_BINSF;
 	}
 	else if (
@@ -261,7 +261,7 @@ static void nmea_done(unsigned chn)
 		// получение integer
 		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
 		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
-		if (binsreg < 255 && binsargcount > 1 && binsargcount <= 10)
+		if (binsreg < 255 && binsargcount >= 1 && binsargcount <= 10)
 			answerrequest = ANSW_BINSI;
 	}
 	else if (
@@ -273,7 +273,7 @@ static void nmea_done(unsigned chn)
 		// установка float/double
 		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
 		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
-		if (binsreg < 255 && binsargcount > 1 && binsargcount <= MAXPACKREGS)
+		if (binsreg < 255 && binsargcount >= 1 && binsargcount <= MAXPACKREGS)
 		{
 			answerrequest = ANSW_BINSSETF;
 			static double setvalF [MAXPACKREGS];		// значения для установки
@@ -294,7 +294,7 @@ static void nmea_done(unsigned chn)
 		// установка integer
 		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
 		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
-		if (binsreg < 255 && binsargcount > 1 && binsargcount <= MAXPACKREGS)
+		if (binsreg < 255 && binsargcount >= 1 && binsargcount <= MAXPACKREGS)
 		{
 			answerrequest = ANSW_BINSSETI;
 			static long setvalI [MAXPACKREGS];		// значения для установки
