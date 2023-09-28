@@ -366,13 +366,13 @@ void xbsavebins_int32(unsigned reg, int32_t v)
 		binsmirrI [reg] = v;
 }
 
-static double groll, gpitch, gjav;
+static double groll, gpitch, gjaw;
 
-void xbsavemagn(double roll, double pitch, double jav)
+void xbsavemagn(double roll, double pitch, double jaw)
 {
 	groll = roll;
 	gpitch = pitch;
-	gjav = jav;
+	gjaw = jaw;
 	PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jav);
 }
 
@@ -415,7 +415,7 @@ void uart4_spool(void)
 					"*",
 					groll,
 					gpitch,
-					gjav
+					gjaw
 					//
 				);
 			nmea_send(state, len);

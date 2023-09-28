@@ -198,10 +198,10 @@ void uart0_spool(void)
 					{
 						float roll = convert(varray [2], varray [3], 32768, 180);
 						float pitch = convert(varray [4], varray [5], 32768, 180);
-						float jav = convert(varray [6], varray [7], 32768, 180);
+						float jaw = convert(varray [6], varray [7], 32768, 180);
 
 						//printhex(0, varray, 11);
-						xbsavemagn(roll, pitch, jav);
+						xbsavemagn(roll, pitch, jaw);
 					}
 					break;
 				}

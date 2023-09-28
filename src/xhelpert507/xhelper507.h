@@ -44,6 +44,6 @@ void xbsavebins_float32(unsigned reg, float v);
 void xbsavebins_int32(unsigned reg, int32_t v);
 void xbsavebins_float64(unsigned reg, double v);
 
-void xbsavemagn(double roll, double pitch, double jav);
+void xbsavemagn(double roll, double pitch, double jaw);
 
 #endif /* SRC_XHELPERT507_XHELPER507_H_ */
