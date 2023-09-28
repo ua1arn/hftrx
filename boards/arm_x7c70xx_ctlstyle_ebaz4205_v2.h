@@ -243,6 +243,7 @@
 			#define IQMODEM_BLOCKMEMORY		1
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
+			#define WITHBUFFERSSMALLDEBUG	1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
