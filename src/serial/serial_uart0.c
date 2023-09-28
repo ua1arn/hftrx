@@ -965,8 +965,12 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
 	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
 	//
-	UART0->UART_LCR &= ~ 0x1f;
-	UART0->UART_LCR |= (0x3 << 0) | (0 << 2) | (0x0 << 3);	//DAT_LEN_8_BITS ONE_STOP_BIT NO_PARITY
+	UART0->UART_LCR &= ~ 0x3f;
+	UART0->UART_LCR |=
+			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+			(! odd << 4) |	// bit4 0 – нечетность,
+			(!! parity << 3) |	// bit3 1: parity enable
+			0;
 
 	(void) UART0->UART_LCR;
 
