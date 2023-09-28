@@ -73,15 +73,17 @@ void ctlboardt507_mainloop(void)
 	}
 }
 
-void uint8_queue_init(u8queue_t * q)
+void uint8_queue_init(u8queue_t * q, uint8_t * buff, unsigned sz)
 {
 	q->qg = q->qp = 0;
+	q->size = sz;
+	q->buffer = buff;
 }
 
 uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c)
 {
 	unsigned qpt = q->qp;
-	const unsigned next = (qpt + 1) % qSZ;
+	const unsigned next = (qpt + 1) % q->size;
 	if (next != q->qg)
 	{
 		q->buffer [qpt] = c;
@@ -97,7 +99,7 @@ uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc)
 	if (q->qp != q->qg)
 	{
 		* pc = q->buffer [q->qg];
-		q->qg = (q->qg + 1) % qSZ;
+		q->qg = (q->qg + 1) % q->size;
 		return 1;
 	}
 	return 0;

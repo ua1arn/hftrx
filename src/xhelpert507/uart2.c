@@ -130,7 +130,8 @@ static void uartX_write_crc8(const uint8_t * buff, size_t n)
 
 void user_uart2_initialize(void)
 {
-	uint8_queue_init(& txq);
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 
 	hardware_uart2_initialize(0, 38400, 8, 0, 0);
 	hardware_uart2_set_speed(38400);

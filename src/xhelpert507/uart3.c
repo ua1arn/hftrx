@@ -879,7 +879,8 @@ void user_uart3_initialize(void)
 {
 	uartX_rxlist_initilize();
 	nextlist();
-	uint8_queue_init(& txq);
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 
 	hardware_uart3_initialize(0, 921600, 8, 0, 0);
 	hardware_uart3_set_speed(921600);

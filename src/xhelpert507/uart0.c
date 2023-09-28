@@ -223,8 +223,10 @@ void uart0_spool(void)
 
 void user_uart0_initialize(void)
 {
-	uint8_queue_init(& txq);
-	uint8_queue_init(& rxq);
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	static uint8_t rxb [512];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
 	hardware_uart0_initialize(0, 9600, 8, 0, 0);
 	hardware_uart0_set_speed(9600);

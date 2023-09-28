@@ -22,7 +22,7 @@
 // отладка
 // RS-485 9600 8N1
 
-#define UARTSPEED 115200
+#define UARTSPEED 9600
 
 static u8queue_t txq;
 static u8queue_t rxq;
@@ -871,8 +871,10 @@ static ticker_t uart3_pkg_ticker;
 
 void user_uart4_initialize(void)
 {
-	uint8_queue_init(& rxq);
-	uint8_queue_init(& txq);
+	static uint8_t rxb [256];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+	static uint8_t txb [2048];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 
 #if ! (WITHDEBUG && WITHDEBUG_USART4)
 
@@ -883,6 +885,9 @@ void user_uart4_initialize(void)
 
 	ticker_initialize(& uart3_pkg_ticker, 1, serialtouts, NULL);
 	ticker_add(& uart3_pkg_ticker);
+
+	static const char msg [] = "Hello!\n";
+	nmeaX_puts_impl(msg, ARRAY_SIZE(msg));
 
 #endif /* ! (WITHDEBUG && WITHDEBUG_USART4) */
 }
