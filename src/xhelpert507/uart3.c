@@ -19,12 +19,13 @@
 // RS-422, 921600 8N1
 #define DEVADDR 1
 
-#define PERIODSPOOL 750
+#define PERIODSPOOL 200
 #define RXTOUT 50
 
 #define STARTCRCVAL 0xFF
 
-static unsigned culateCRC8(unsigned v, unsigned wCRCWord) {
+static unsigned culateCRC8(unsigned v, unsigned wCRCWord)
+{
 
     static const uint8_t wCRCTable[] =
     {
@@ -288,28 +289,6 @@ void readregisters(unsigned devaddr, unsigned reg, unsigned numregs)
 	uartX_write_crc8(b, n);
 }
 
-// FB 01 01 01 02 00 00 00 7F
-void read_HWVersion(void)
-{
-	readregisters(DEVADDR, 0x01, 1);
-}
-
-// CONTROL_0
-// FB 01 03 01 01 54 00 01  03
-void read_CONTROL_0(void)
-{
-	readregisters(DEVADDR, 0x03, 1);
-}
-
-
-void uart3_req(void)
-{
-	//readregisters(DEVADDR, 11, 4);
-	//read_HWVersion();
-	//read_CONTROL_0();
-	readregisters(DEVADDR, 70, 1);
-}
-
 static unsigned rxpeek_uint32_LE(const uint8_t * b)
 {
 	unsigned v = 0;
@@ -474,7 +453,7 @@ static enum regtypes getregtype(unsigned reg)
 }
 
 // register increment size
-int xbreginc(unsigned reg)
+static int xbreginc(unsigned reg)
 {
 	switch (getregtype(reg))
 	{
@@ -830,54 +809,51 @@ void uart3_spool(void)
 	}
 }
 
+static void spool_part0(void)
+{
+	const unsigned start = 0;	// 0..21 - до USER_PACKAGE
+	const unsigned top = 22;
+	readregisters(DEVADDR, start, top - start);
+}
 
-//	Отсортированно по номерам:
-//
-//	1 Акселерометр X ! 143
-//	2 Акселерометр Y ! 144
-//	3 Акселерометр Z ! 145
-//	4 Угловая скорость X ! 146
-//	5 Угловая скорость Y ! 147
-//	6 Угловая скорость Z ! 148
-//	17 Магнитометр X ! 149
-//	18 Магнитометр Y ! 150
-//	19 Магнитометр Z ! 151
-//
-//	16 Давление в корпусе ! 152 BAR_PRESS
-//	9 Курс ! 154 HEADING_PITCH_ROLL
-//	7 Дифферент ! 155
-//	8 Крен ! 156
-//
-//	10 Восточный вектор скорости ! 170 EAST_NORTH_VERTICAL_VELOCITY
-//	11 Северный вектор скорости ! 171
-//	12 Вертикальная скорость ! 172
-//	13 Расчетная лат (широта) ! 173 OUT_LAT
-//	14 Расчетная лон (долгота) ! 175 OUT_LON
-//	15 Расчетная высота ! 177 OUT_HEI
 
 static void spool_part1(void)
 {
-	readregisters(DEVADDR, 143, 9);
+	const unsigned start = 54;	//GYRO_CALIBRATION_COEFFICIENT...
+	const unsigned top = 69;
+	readregisters(DEVADDR, start, top - start);
 }
 
 static void spool_part2(void)
 {
-	readregisters(DEVADDR, 152, 5);
+	const unsigned start = 128;	// 0..21 - до USER_PACKAGE
+	const unsigned top = 152;
+	readregisters(DEVADDR, start, top - start);
 }
 
-// TYPICAL_LATITUDE
 static void spool_part3(void)
 {
-	readregisters(DEVADDR, 170, 9);
+	const unsigned start = 152;	// 0..21 - до USER_PACKAGE
+	const unsigned top = 178;
+	readregisters(DEVADDR, start, top - start);
+}
+
+static void spool_part4(void)
+{
+	const unsigned start = 178;	// 0..21 - до USER_PACKAGE
+	const unsigned top = 208;
+	readregisters(DEVADDR, start, top - start);
 }
 
 static int spoolcode;
 
 static void (* spooltable [])(void) =
 {
+	spool_part0,
 	spool_part1,
 	spool_part2,
 	spool_part3,
+	spool_part4,
 };
 
 static void uart3_dpc_spool(void * ctx)

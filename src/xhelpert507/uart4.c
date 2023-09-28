@@ -222,7 +222,7 @@ enum
 
 
 	//
-	NMEA_PARAMS = 5
+	NMEA_PARAMS = 15
 };
 
 static uint_fast8_t nmea_state [NMEA_CHN]; //= NMEAST_INITIALIZED;
@@ -247,8 +247,8 @@ static void nmea_done(unsigned chn)
 	{
 		// БИНС
 		// получение float/double
-		binsreg = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
-		binsargcount = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
+		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
+		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
 		if (binsreg < 255 && binsargcount > 1 && binsargcount <= 10)
 			answerrequest = ANSW_BINSF;
 	}
@@ -259,19 +259,10 @@ static void nmea_done(unsigned chn)
 	{
 		// БИНС
 		// получение integer
-		binsreg = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
-		binsargcount = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
+		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
+		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
 		if (binsreg < 255 && binsargcount > 1 && binsargcount <= 10)
 			answerrequest = ANSW_BINSI;
-	}
-	else if (
-		//nmea_param [chn] >= NMEA_PARAMS &&
-		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLR4") == 0 &&
-		1)
-	{
-		// БИНС
-		// получение группы параметров
-		answerrequest = ANSW_BINSGROUP;
 	}
 	else if (
 		//nmea_param [chn] >= NMEA_PARAMS &&
@@ -280,8 +271,8 @@ static void nmea_done(unsigned chn)
 	{
 		// БИНС
 		// установка float/double
-		binsreg = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
-		binsargcount = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
+		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
+		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
 		if (binsreg < 255 && binsargcount > 1 && binsargcount <= MAXPACKREGS)
 		{
 			answerrequest = ANSW_BINSSETF;
@@ -301,8 +292,8 @@ static void nmea_done(unsigned chn)
 	{
 		// БИНС
 		// установка integer
-		binsreg = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
-		binsargcount = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
+		binsreg = strtoul(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
+		binsargcount = strtoul(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
 		if (binsreg < 255 && binsargcount > 1 && binsargcount <= MAXPACKREGS)
 		{
 			answerrequest = ANSW_BINSSETI;
@@ -310,10 +301,37 @@ static void nmea_done(unsigned chn)
 			unsigned i;
 			for (i = 0; i < binsargcount; ++ i)
 			{
-				setvalI [i] = strtol(nmea_buff [chn][PARAM_NAMETAG + 3 + i], NULL, 10);
+				setvalI [i] = strtoul(nmea_buff [chn][PARAM_NAMETAG + 3 + i], NULL, 10);
 			}
 			xbsetregI(binsreg, binsargcount, setvalI);	// установить группу регистров
 		}
+	}
+	else if (
+		//nmea_param [chn] >= NMEA_PARAMS &&
+		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLR4") == 0 &&
+		1)
+	{
+		// БИНС
+		// получение группы параметров
+		answerrequest = ANSW_BINSGROUP;
+	}
+	else if (
+		nmea_param [chn] >= (MAXPACKREGSEXT + 1) &&
+		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLR5") == 0 &&
+		1)
+	{
+		// БИНС
+		// установка float/double параметров РЕГИСТРЫ ВНЕШНЕЙ КОРРЕКЦИИ
+
+		answerrequest = MAXPACKREGSEXT;
+		static double setvalF [MAXPACKREGSEXT];		// значения для установки
+		unsigned i;
+		for (i = 0; i < MAXPACKREGSEXT; ++ i)
+		{
+			setvalF [i] = strtod(nmea_buff [chn][PARAM_NAMETAG + 1 + i], NULL);
+		}
+		xbsetregEXTF(setvalF);	// установить группу регистров РЕГИСТРЫ ВНЕШНЕЙ КОРРЕКЦИИ
+		answerrequest = ANSW_BINSGROUP;
 	}
 	else if (
 		//nmea_param [chn] >= NMEA_PARAMS &&
