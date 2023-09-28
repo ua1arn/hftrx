@@ -36,6 +36,7 @@ enum answtype
 {
 	ANSW_NONE,
 	ANSW_BINS,
+	ANSW_MAGN,
 	ANSW_RUDDER
 };
 
@@ -238,8 +239,16 @@ static void nmea_done(unsigned chn)
 		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLRQ") == 0 &&
 		1)
 	{
-		// разбор управляющих паарметров маяка и цифровых выходов
+		// БИНС
 		answerrequest = ANSW_BINS;
+	}
+	else if (
+		//nmea_param [chn] >= NMEA_PARAMS &&
+		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLMQ") == 0 &&
+		1)
+	{
+		// компас
+		answerrequest = ANSW_MAGN;
 	}
 	else if (
 		//nmea_param [chn] >= NMEA_PARAMS &&
@@ -357,6 +366,16 @@ void xbsavebins_int32(unsigned reg, int32_t v)
 		binsmirrI [reg] = v;
 }
 
+static double groll, gpitch, gjav;
+
+void xbsavemagn(double roll, double pitch, double jav)
+{
+	groll = roll;
+	gpitch = pitch;
+	gjav = jav;
+	PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jav);
+}
+
 void uart4_spool(void)
 {
 	static char state [1024];
@@ -384,6 +403,19 @@ void uart4_spool(void)
 					"*",
 					positions [0],
 					positions [1]
+					//
+				);
+			nmea_send(state, len);
+		}
+		break;
+	case ANSW_MAGN:
+		{
+			size_t len = local_snprintf_P(state, ARRAY_SIZE(state),
+					"TAMS,%g,%g,%g"
+					"*",
+					groll,
+					gpitch,
+					gjav
 					//
 				);
 			nmea_send(state, len);

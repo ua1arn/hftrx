@@ -119,6 +119,27 @@ static void uart0_timer_event(void * ctx)
 	board_dpc(& uart0_dpc_lock, uart0_dpc_spool, NULL);
 }
 
+enum codes
+{
+	VTIME             = 0x50,
+	VACCELERATION     = 0x51,
+	VANGULAR_VELOCITY = 0x52,
+	VANGLE            = 0x53,
+	VMAGNETIC         = 0x54,
+	VQUATERNION       = 0x55
+};
+
+static int state;
+static int valuet;
+
+static uint8_t varray [11];
+static unsigned cks;
+
+static double convert(uint8_t low, uint8_t high, double a, int b) {
+
+    return (uint16_t) (high * 256 + low) * b / a;
+}
+
 void uart0_spool(void)
 {
 	uint_fast8_t c;
@@ -131,6 +152,70 @@ void uart0_spool(void)
 
 	if (f)
 	{
+		varray [state] = c;
+		switch (state)
+		{
+		case 0:
+			if (c == 0x55)
+				++ state;
+			cks = c;
+			break;
+		case 1:
+			switch (c)
+			{
+			case VTIME:
+			case VACCELERATION:
+			case VANGULAR_VELOCITY:
+			case VANGLE:
+			case VMAGNETIC:
+			case VQUATERNION:
+				valuet = c;
+				++ state;
+				cks += c;
+				break;
+			default:
+				state = 0;
+				break;
+			}
+			break;
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+			cks += c;
+			++ state;
+			break;
+		case 10:
+			if ((cks & 0xFF) == c)
+			{
+				switch (valuet)
+				{
+				case VANGLE:
+					{
+						float roll = convert(varray [2], varray [3], 32768, 180);
+						float pitch = convert(varray [4], varray [5], 32768, 180);
+						float jav = convert(varray [6], varray [7], 32768, 180);
+
+						//printhex(0, varray, 11);
+						xbsavemagn(roll, pitch, jav);
+					}
+					break;
+				}
+				//printhex(0, varray, 11);
+			}
+			else
+			{
+				// Wrong ckecksum, wait nex sync
+//				PRINTF("cks = %02X ", cks & 0xFF);
+//				printhex(0, varray, 11);
+			}
+			state = 0;
+			break;
+		}
 		//PRINTF("%02X ", c);
 
 	}

@@ -187,6 +187,7 @@ void user_uart5_ontxchar(void * ctx)
 
 static int nmeaX_putc(int c)
 {
+	//PRINTF("\\x%02X", (c & 0xFF));
 	IRQL_t oldIrql;
 	uint_fast8_t f;
 
