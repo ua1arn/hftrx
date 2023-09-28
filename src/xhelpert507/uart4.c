@@ -32,9 +32,16 @@ static const uint_fast32_t starttxmin = NTICKS(10);
 static const uint_fast32_t starttxamx = NTICKS(100);
 static volatile uint_fast32_t lasttxticks;
 
-static int answerrequest;
+enum answtype
+{
+	ANSW_NONE,
+	ANSW_BINS,
+	ANSW_RUDDER
+};
 
-static int answerrequested(void)
+static enum answtype answerrequest = ANSW_NONE;
+
+static enum answtype answerrequested(void)
 {
 	int v;
 	uint_fast32_t t;
@@ -44,14 +51,18 @@ static int answerrequested(void)
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	t = lasttxticks;
 	/* Проверка попадания во временное окно начала ответа мастеру */
-	v = (t >= starttxmin && t < starttxamx) && answerrequest;
+	v = (t >= starttxmin && t < starttxamx);
 
 	LowerIrql(oldIrql);
 
 	if (v)
-		answerrequest = 0;
-
-	return v;
+	{
+		int f;
+		f = answerrequest;
+		answerrequest = ANSW_NONE;
+		return f;
+	}
+	return ANSW_NONE;
 }
 
 static void serialtouts(void * ctx)
@@ -224,26 +235,35 @@ static void nmea_done(unsigned chn)
 	}
 	else if (
 		//nmea_param [chn] >= NMEA_PARAMS &&
-		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLREQ") == 0 &&
+		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLRQ") == 0 &&
 		1)
 	{
 		// разбор управляющих паарметров маяка и цифровых выходов
+		answerrequest = ANSW_BINS;
 	}
 	else if (
 		//nmea_param [chn] >= NMEA_PARAMS &&
-		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLPOS") == 0 &&
+		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLPS") == 0 &&
 		1)
 	{
-		// разбор управляющих паарметров маяка и цифровых выходов
-		long id = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
-		long pos = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
-		if (pos > 1023)
-			pos = 1023;
-		else if (pos < - 1023)
-			pos = - 1023;
-		xbsave_setpos(id, pos);
+		// разбор управляющих паарметров положения рулей
+		long pos1 = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
+		long pos2 = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
+
+		if (pos1 > 1023)
+			pos1 = 1023;
+		else if (pos1 < - 1023)
+			pos1 = - 1023;
+
+		if (pos2 > 1023)
+			pos2 = 1023;
+		else if (pos2 < - 1023)
+			pos2 = - 1023;
+
+		xbsave_setpos(1, pos1);
+		xbsave_setpos(2, pos2);
+		answerrequest = ANSW_RUDDER;
 	}
-	answerrequest = 1;
 }
 
 static unsigned char hex2int(uint_fast8_t c)
@@ -315,9 +335,31 @@ static void nmeaX_parsechar(uint_fast8_t c, unsigned chn)
 		break;
 	}
 }
+static double binsmirrF [256];
+static int binsmirrI [256];
+
+void xbsavebins_float32(unsigned reg, float v)
+{
+	if (reg < ARRAY_SIZE(binsmirrF))
+		binsmirrF [reg] = v;
+}
+
+void xbsavebins_float64(unsigned reg, double v)
+{
+	if (reg < ARRAY_SIZE(binsmirrF))
+		binsmirrF [reg] = v;
+}
+
+
+void xbsavebins_int32(unsigned reg, int32_t v)
+{
+	if (reg < ARRAY_SIZE(binsmirrI))
+		binsmirrI [reg] = v;
+}
 
 void uart4_spool(void)
 {
+	static char state [1024];
 	uint_fast8_t c;
 	uint_fast8_t f;
 	IRQL_t oldIrql;
@@ -331,21 +373,74 @@ void uart4_spool(void)
 		nmeaX_parsechar(c & 0xFF, 0);
 	}
 
-	if (answerrequested())
+	switch (answerrequested())
 	{
-		answerrequest = 0;
-		static char state [512];
-		size_t len = local_snprintf_P(state, sizeof state / sizeof state [0],
-				"TLSTS,%f,%d,%d,%d"
-				"*",
-				gpressure,
-				positions [0],
-				positions [1],
-				//
-				1	// active flag
-			);
-		nmea_send(state, len);
+	case ANSW_NONE:
+		return;
+	case ANSW_RUDDER:
+		{
+			size_t len = local_snprintf_P(state, ARRAY_SIZE(state),
+					"TAPS,%d,%d"
+					"*",
+					positions [0],
+					positions [1]
+					//
+				);
+			nmea_send(state, len);
+		}
+		break;
+	case ANSW_BINS:
+		{
+			//	1 Акселерометр X ! 143
+			//	2 Акселерометр Y ! 144
+			//	3 Акселерометр Z ! 145
+			//	4 Угловая скорость X ! 146
+			//	5 Угловая скорость Y ! 147
+			//	6 Угловая скорость Z ! 148
+			//	7 Дифферент ! 155
+			//	8 Крен ! 156
+			//	9 Курс ! 154 HEADING_PITCH_ROLL
+			//	10 Восточный вектор скорости ! 170 EAST_NORTH_VERTICAL_VELOCITY
+			//	11 Северный вектор скорости ! 171
+			//	12 Вертикальная скорость ! 172
+			//	13 Расчетная лат (широта) ! 173 OUT_LAT
+			//	14 Расчетная лон (долгота) ! 175 OUT_LON
+			//	15 Расчетная высота ! 177 OUT_HEI
+			//	16 Давление в корпусе ! 152 BAR_PRESS
+			//	17 Магнитометр X ! 149
+			//	18 Магнитометр Y ! 150
+			//	19 Магнитометр Z ! 151
+			//
 
+			size_t len = local_snprintf_P(state, ARRAY_SIZE(state),
+					"TARQ,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g"
+					",%g"
+					"*",
+					binsmirrF [143], //	1 Акселерометр X ! 143
+					binsmirrF [144], //	2 Акселерометр Y ! 144
+					binsmirrF [145], //	3 Акселерометр Z ! 145
+					binsmirrF [146], //	4 Угловая скорость X ! 146
+					binsmirrF [147], //	5 Угловая скорость Y ! 147
+					binsmirrF [148], //	6 Угловая скорость Z ! 148
+					binsmirrF [155], //	7 Дифферент ! 155
+					binsmirrF [156], //	8 Крен ! 156
+					binsmirrF [154], //	9 Курс ! 154 HEADING_PITCH_ROLL
+					binsmirrF [170], //	10 Восточный вектор скорости ! 170 EAST_NORTH_VERTICAL_VELOCITY
+					binsmirrF [171], //	11 Северный вектор скорости ! 171
+					binsmirrF [172], //	12 Вертикальная скорость ! 172
+					binsmirrF [173], //	13 Расчетная лат (широта) ! 173 OUT_LAT
+					binsmirrF [175], //	14 Расчетная лон (долгота) ! 175 OUT_LON
+					binsmirrF [177], //	15 Расчетная высота ! 177 OUT_HEI
+					binsmirrF [152], //	16 Давление в корпусе ! 152 BAR_PRESS
+					binsmirrF [149], //	17 Магнитометр X ! 149
+					binsmirrF [150], //	18 Магнитометр Y ! 150
+					binsmirrF [151], //	19 Магнитометр Z ! 151
+					gpressure
+					//
+				);
+			nmea_send(state, len);
+		}
+		break;
 	}
 }
 

@@ -40,5 +40,8 @@ void xbsave_pressure(float v);
 void xbsave_position(unsigned id, int pos);
 void xbsave_setpos(unsigned id, int pos);	// set point
 
+void xbsavebins_float32(unsigned reg, float v);
+void xbsavebins_int32(unsigned reg, int32_t v);
+void xbsavebins_float64(unsigned reg, double v);
 
 #endif /* SRC_XHELPERT507_XHELPER507_H_ */
