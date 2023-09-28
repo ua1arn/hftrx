@@ -405,7 +405,9 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 		case 11: case 12: case 13:
 			PRINTF("%-3u: ROTATION MATRIX[%u]=%f\n", rxregbase, rxregbase - 5, rxpeek_float32_LE(b));
 			break;
-
+		case 14:
+			PRINTF("%-3u: DEVUCE_DATE=%08X\n", rxregbase, rxpeek_uint32_LE(b));
+			break;
 		case 15:
 			PRINTF("%-3u: TYPICAL_LATITUDE=%f\n", rxregbase, rxpeek_float32_LE(b));
 			break;
@@ -418,107 +420,110 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 		case 18:
 			PRINTF("%-3u: INIT_HEADING=%f\n", rxregbase, rxpeek_float32_LE(b));
 			break;
-
 		case 19: case 20: case 21:
 			PRINTF("%-3u: ANTENNA_DISTANCE[%u]=%f\n", rxregbase, rxregbase - 19, rxpeek_float32_LE(b));
 			break;
-
 		case 54: case 55: case 56:
 			PRINTF("%-3u: GYRO_CALIBRATION_COEFFICIENT[%u]=%f\n", rxregbase, rxregbase - 54, rxpeek_float32_LE(b));
 			break;
-
 		case 57: case 58: case 59:
 		case 60: case 61: case 62:
 		case 63: case 64: case 65:
 			PRINTF("%-3u: MAG_CALIBRATION_MATRIX[%u]=%f\n", rxregbase, rxregbase - 57, rxpeek_float32_LE(b));
 			break;
-
+		case 66: case 67: case 68:
+			PRINTF("%-3u: MAG_CALIBRATION_COEFFICIENT[%u]=%f\n", rxregbase, rxregbase - 66, rxpeek_float32_LE(b));
+			break;
+		case 128:
+			PRINTF("%-3u: DEV_STATUS=%08X\n", rxregbase, rxpeek_uint32_LE(b));
+			break;
 		case 129: // SYSTEM_TIME
 			PRINTF("%-3u: SYSTEM_TIME=%08X\n", rxregbase, rxpeek_uint32_LE(b));
 			break;
-
-		case 74: case 75: case 76:
-			PRINTF("%-3u: RAW_GYRO[%u]=%08X\n", rxregbase, rxregbase - 74, rxpeek_uint32_LE(b));
+		case 130: case 131: case 132:
+			PRINTF("%-3u: RAW_ACC[%u]=%08X\n", rxregbase, rxregbase - 130, rxpeek_uint32_LE(b));
 			break;
-
-		case 77: case 78: case 79:
-			PRINTF("%-3u: RAW_MAG[%u]=%08X\n", rxregbase, rxregbase - 77, rxpeek_uint32_LE(b));
+		case 133: case 134: case 135:
+			PRINTF("%-3u: RAW_GYRO[%u]=%08X\n", rxregbase, rxregbase - 133, rxpeek_uint32_LE(b));
 			break;
-
-		case 80:
+		case 136: case 137: case 138:
+			PRINTF("%-3u: RAW_MAG[%u]=%08X\n", rxregbase, rxregbase - 136, rxpeek_uint32_LE(b));
+			break;
+		case 139:
 			PRINTF("%-3u: ACC_TEMP=%f\n", rxregbase, rxpeek_float32_LE(b));
 			break;
-
-		case 81: case 82: case 83:
-			PRINTF("%-3u: GYRO_TEMP[%u]=%f\n", rxregbase, rxregbase - 81, rxpeek_float32_LE(b));
+		case 140: case 141: case 142:
+			PRINTF("%-3u: GYRO_TEMP[%u]=%f\n", rxregbase, rxregbase - 140, rxpeek_float32_LE(b));
 			break;
-
-		case 84: case 85: case 86:
-			PRINTF("%-3u: CALIB_ACC[%u]=%f\n", rxregbase, rxregbase - 84, rxpeek_float32_LE(b));
+		case 143: case 144: case 145:
+			PRINTF("%-3u: CALIB_ACC[%u]=%f\n", rxregbase, rxregbase - 143, rxpeek_float32_LE(b));
 			break;
-
-		case 87: case 88: case 89:
-			PRINTF("%-3u: CALIB_GYRO[%u]=%f\n", rxregbase, rxregbase - 87, rxpeek_float32_LE(b));
+		case 146: case 147: case 148:
+			PRINTF("%-3u: CALIB_GYRO[%u]=%f\n", rxregbase, rxregbase - 146, rxpeek_float32_LE(b));
 			break;
-
-		case 90: case 91: case 92:
-			PRINTF("%-3u: CALIB_MAG[%u]=%f\n", rxregbase, rxregbase - 90, rxpeek_float32_LE(b));
+		case 149: case 150: case 151:
+			PRINTF("%-3u: CALIB_MAG[%u]=%f\n", rxregbase, rxregbase - 149, rxpeek_float32_LE(b));
 			break;
-
-		case 93:
+		case 152:
 			PRINTF("%-3u: BAR_PRESS=%f\n", rxregbase, rxpeek_float32_LE(b));
 			break;
-
-		case 94:
+		case 153:
 			PRINTF("%-3u: BAR_ALT=%f\n", rxregbase, rxpeek_float32_LE(b));
 			break;
-
-		case 95: case 96: case 97:
+		case 154: case 155: case 156:
 			PRINTF("%-3u: HEADING_PITCH_ROLL[%u]=%f\n", rxregbase, rxregbase - 95, rxpeek_float32_LE(b));
 			break;
-
-		case 98: case 99: case 100: case 101:
-			PRINTF("%-3u: QUAT[%u]=%f\n", rxregbase, rxregbase - 98, rxpeek_float32_LE(b));
+		case 157: case 158: case 159: case 160:
+			PRINTF("%-3u: QUAT[%u]=%f\n", rxregbase, rxregbase - 157, rxpeek_float32_LE(b));
 			break;
-
-		case 102: case 103: case 104:
-		case 105: case 106: case 107:
-		case 108: case 109: case 110:
-			PRINTF("%-3u: ORIENTATION MATRIX[%u]=%f\n", rxregbase, rxregbase - 102, rxpeek_float32_LE(b));
+		case 161: case 162: case 163:
+		case 164: case 165: case 166:
+		case 167: case 168: case 169:
+			PRINTF("%-3u: ORIENTATION MATRIX[%u]=%f\n", rxregbase, rxregbase - 161, rxpeek_float32_LE(b));
 			break;
-
-		case 111: case 112: case 113:
-			PRINTF("%-3u: EAST_NORTH_VERTICAL_VELOCITY[%u]=%f\n", rxregbase, rxregbase - 111, rxpeek_float32_LE(b));
+		case 170: case 171: case 172:
+			PRINTF("%-3u: EAST_NORTH_VERTICAL_VELOCITY[%u]=%f\n", rxregbase, rxregbase - 170, rxpeek_float32_LE(b));
 			break;
-
-		case 173:
+		case 173:	// float64
 			PRINTF("%-3u: OUT_LAT=%f\n", rxregbase, rxpeek_float64_LE(b));
 			b += 4; rxregbase += 1;
 			break;
-
-		case 175:
+		case 175:	// float64
 			PRINTF("%-3u: OUT_LON=%f\n", rxregbase, rxpeek_float64_LE(b));
 			b += 4; rxregbase += 1;
 			break;
-
 		case 177:
 			PRINTF("%-3u: OUT_HEI=%f\n", rxregbase, rxpeek_float32_LE(b));
 			break;
-
-		case 119:
+		case 178:	// float64
 			PRINTF("%-3u: GPS_LAT=%f\n", rxregbase, rxpeek_float64_LE(b));
 			b += 4; rxregbase += 1;
 			break;
-
-		case 121:
+		case 180:
 			PRINTF("%-3u: GPS_LON=%f\n", rxregbase, rxpeek_float64_LE(b));
 			b += 4; rxregbase += 1;
 			break;
-
-		case 123: case 124: case 125: case 126:
-			PRINTF("%-3u: GPS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase, rxregbase - 123, rxpeek_float32_LE(b));
+		case 182: case 183: case 184: case 185:
+			PRINTF("%-3u: GNSS_HEI_SOG_COG_vVEL[%u]=%f\n", rxregbase, rxregbase - 182, rxpeek_float32_LE(b));
 			break;
-
+		case 186: case 187: case 188:
+			PRINTF("%-3u: GPS_EAST_NORTH_VERTICAL_VELOCITY[%u]=%f\n", rxregbase, rxregbase - 186, rxpeek_float32_LE(b));
+			break;
+		case 189: case 190: case 191:
+			PRINTF("%-3u: EXT_GNSS_LAT_LON_HEI_STD[%u]=%f\n", rxregbase, rxregbase - 189, rxpeek_float32_LE(b));
+			break;
+		case 192: // EXT_GNSS_FLAG
+			PRINTF("%-3u: EXT_GNSS_FLAG=%08X\n", rxregbase, rxpeek_uint32_LE(b));
+		case 193:
+			PRINTF("%-3u: EXT_GNSS_LATENCY=%08X\n", rxregbase, rxpeek_uint32_LE(b));
+		case 194:
+			PRINTF("%-3u: EXT_GNSS_TIME=%08X\n", rxregbase, rxpeek_uint32_LE(b));
+		case 195:
+			PRINTF("%-3u: MAG_QUALITY,=%08X\n", rxregbase, rxpeek_uint32_LE(b));
+		case 196: case 197: case 198:
+		case 199: case 200: case 201:
+		case 202: case 203: case 204:
+			PRINTF("%-3u: LON_LAT_HEI_Ve_Vn_Vu_HEADING_PITCH_ROLL_SD[%u]=%08X\n", rxregbase, rxregbase - 196, rxpeek_uint32_LE(b));
 		case 205: case 206: case 207:
 			PRINTF("%-3u: TEST_MAG[%u]=%08X\n", rxregbase, rxregbase - 127, rxpeek_uint32_LE(b));
 			break;
