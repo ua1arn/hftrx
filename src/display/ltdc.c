@@ -2298,13 +2298,14 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
-    PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
-
 	unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << (0 + ix));	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << (16 + ix));	// DISPLAY_IF_TOP_RST De-assert
+
+//    DISP_IF_TOP->MODULE_GATING = ~ 0u;
+    PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
@@ -2317,6 +2318,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #if WITHLVDSHW
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 #endif /* WITHLVDSHW */
 
     local_delay_us(10);
