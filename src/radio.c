@@ -13207,6 +13207,27 @@ const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 #endif /* WITHFIXEDBFO */
 }
 
+
+// Four-character wide printed current RX/TX bandwidth value
+// FIXME: stub implementation
+const char * hamradio_get_rxbw_value4(void)
+{
+	//const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	static char s [5];
+	int width = 1000; //bwseti_getwidth(bwseti);
+	if (width >= 1000000)
+		width = (1000000 - 1);
+	int_fast16_t w100 = (width + 50) / 100;
+	if (w100 < 10)	// до 1 кГц
+		local_snprintf_P(s, ARRAY_SIZE(s), ".%02d ", w100 * 10);
+	else if (w100 < 100)	// 1 кГц..9 кГц
+		local_snprintf_P(s, ARRAY_SIZE(s), "%1d.%1dk", w100 / 10, w100 % 10);
+	else	// 10 и более кГц
+		local_snprintf_P(s, ARRAY_SIZE(s), "%3dk", w100 / 10);
+
+	return s;
+}
+
 #endif /* WITHIF4DSP */
 
 // RX preamplifier
