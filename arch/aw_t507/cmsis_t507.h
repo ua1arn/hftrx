@@ -71,6 +71,7 @@ typedef enum IRQn
     GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
     IOMMU_IRQn = 93,                                  /*!< IOMMU IOMMU */
+    HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
@@ -207,6 +208,7 @@ typedef enum IRQn
 #define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC3_BASE ((uintptr_t) 0x05311800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
+#define HDMI_TX0_BASE ((uintptr_t) 0x06000000)        /*!< HDMI_TX  Base */
 #define DISP_IF_TOP_BASE ((uintptr_t) 0x06510000)     /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
@@ -1357,8 +1359,7 @@ typedef struct TCON_LCD_Type
              uint32_t reserved_0x1F4 [0x0003];
     volatile uint32_t mux_ctrl;                       /*!< Offset 0x200 https://github.com/yodaos-project/yodaos/blob/d0d7bbc277c0fc1c64e2e0a1c82fe6e63f6eb954/boot/rpi/drivers/video/sunxi/lcdc.c#L204C16-L204C16 */
              uint32_t reserved_0x204 [0x0007];
-    volatile uint32_t LCD_LVDS0_ANA_REG;              /*!< Offset 0x220 LCD LVDS Analog Register 0 */
-    volatile uint32_t LCD_LVDS1_ANA_REG;              /*!< Offset 0x224 LCD LVDS Analog Register 1 */
+    volatile uint32_t LCD_LVDS_ANA_REG [0x002];       /*!< Offset 0x220 LCD LVDS Analog Register 0/1 LCD_LVDS0_ANA_REG LCD_LVDS1_ANA_REG */
              uint32_t reserved_0x228 [0x0005];
     volatile uint32_t LCD_FSYNC_GEN_CTRL_REG;         /*!< Offset 0x23C Module Enable and Output Value Register */
     volatile uint32_t LCD_FSYNC_GEN_DLY_REG;          /*!< Offset 0x240 Fsync Active Time Register */
