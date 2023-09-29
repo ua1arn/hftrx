@@ -4154,7 +4154,20 @@ void allwnrt113_pll_initialize(void)
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
 
-	CCU->APB1_CLK_REG = 0x03000102;	// allwnrt113_get_uart_freq()=100 MHz
+	// APB1 frequency set
+	{
+		// Automatic divisors calculation
+		unsigned clksrc = 3;	// 11: PLL_PERI(1X)
+		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+		unsigned dvalue;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 1 | 2), & dvalue, 1);
+		CCU->APB1_CLK_REG =
+			(UINT32_C(1) << 31) |
+			clksrc * (UINT32_C(1) << 24) |
+			prei * (UINT32_C(1) << 8) |
+			dvalue * (UINT32_C(1) << 0) |
+			0;
+	}
 
 }
 

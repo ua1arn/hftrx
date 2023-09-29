@@ -31,9 +31,13 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+
 #define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define WITHSDHC0HW	1		/* TF CARD */
+
 //#define WITHSDHC1HW	1		/* SDIO */
+
+//#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 7-bit bus width */
 //#define WITHSDHC2HW	1		/* EMMC */
 
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
@@ -432,8 +436,8 @@
 			arm_hardware_pioc_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF3);	/* PC11 - SDC2-D5	*/ \
 			arm_hardware_pioc_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF3);	/* PC14 - SDC2-D6	*/ \
 			arm_hardware_pioc_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3);	/* PC16 - SDC2-D7	*/ \
-			arm_hardware_pioc_outputs(UINT32_C(1) << 0, 0 * UINT32_C(1) << 0); /* PC0 - SDC2-DS */ \
-			arm_hardware_pioc_outputs(UINT32_C(1) << 1, 1 * UINT32_C(1) << 1); /* PC1 - SDC2-RST */ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); /* PC0 - SDC2-DS */ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); /* PC1 - SDC2-RST */ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \

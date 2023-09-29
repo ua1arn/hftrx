@@ -5200,9 +5200,24 @@ void hardware_sdhost_initialize(void)
 	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
-	#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
 
 	unsigned ix = SMHCHARD_IX;
+
+	{
+		// Automatic divisors calculation
+		unsigned clksrc = 1;	// 001: PLL_PERI(1X)
+		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+		unsigned dvalue;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_peripll1x_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
+		SMHCHARD_CCU_CLK_REG =
+			//(UINT32_C(1) << 31) |
+			clksrc * (UINT32_C(1) << 24) |
+			prei * (UINT32_C(1) << 8) |
+			dvalue * (UINT32_C(1) << 0) |
+			0;
+		SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
+
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
 	(void) CCU->SMHC_BGR_REG;
 	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
@@ -5210,15 +5225,33 @@ void hardware_sdhost_initialize(void)
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
 	(void) CCU->SMHC_BGR_REG;
 
-	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
 
 	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();
 
 #elif CPUSTYLE_T507
-	//#warning CPUSTYLE_T507 to be implemented
 
 	unsigned ix = SMHCHARD_IX;
+
+	{
+		// Automatic divisors calculation
+		unsigned clksrc = 1;	// 01: PLL_PERI0(2X)
+		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+		unsigned dvalue;
+		unsigned prei = calcdivider(calcdivround2(allwnr_t507_get_pll_peri0_x2_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
+		SMHCHARD_CCU_CLK_REG =
+			//(UINT32_C(1) << 31) |
+			clksrc * (UINT32_C(1) << 24) |
+			prei * (UINT32_C(1) << 8) |
+			dvalue * (UINT32_C(1) << 0) |
+			0;
+		SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
+
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
 	(void) CCU->SMHC_BGR_REG;
 	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
@@ -5226,7 +5259,7 @@ void hardware_sdhost_initialize(void)
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 16); // SMHCx_RESET
 	(void) CCU->SMHC_BGR_REG;
 
-	SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
 
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);

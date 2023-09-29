@@ -100,7 +100,7 @@
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-	#define WITHETHHW 1	/* Hardware Ethernet controller */
+	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
@@ -334,6 +334,8 @@
 
 #if WITHSDHCHW
 
+	#define	USERFIRSTSBLOCK 0
+
 	#define	SMHCHARD_IX 0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
@@ -389,7 +391,7 @@
 			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
-
+	// HARDWARE_SDIOSENSE_CD: 1-has disk. 0-no disk
 	#define HARDWARE_SDIOSENSE_CD() ((GPIOF->DATA & HARDWARE_SDIO_CD_BIT) == 0)	/* == 0: no disk. получить состояние датчика CARD PRESENT */
 	#define HARDWARE_SDIOSENSE_WP() 0//((GPIOG->DATA & HARDWARE_SDIO_WP_BIT) != 0)	/* != 0: write protected получить состояние датчика CARD WRITE PROTECT */
 

@@ -305,7 +305,7 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 
 static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 {
-	uint64_t count = blkcount * blksize;
+	uint64_t count = (uint64_t) blkcount * blksize;
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
 
@@ -347,7 +347,7 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 
 static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount, uint32_t blksize)
 {
-	uint64_t count = blkcount * blksize;
+	uint64_t count = (uint64_t) blkcount * blksize;
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
 
@@ -417,7 +417,7 @@ int sdhci_t113_detect(struct sdhci_t * sdhci)
 int sdhci_t113_reset(struct sdhci_t * sdhci)
 {
 	write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
-        WaitAfterReset(sdhci);
+	WaitAfterReset(sdhci);
 
 	return 1;
 }
@@ -549,7 +549,13 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
  sdhci_t113_clock();                        //клок, гейт, ресет
 
  sdhci->voltage   = MMC_VDD_27_36;
+#if WITHSDHCHW8BIT
+ sdhci->width     = MMC_BUS_WIDTH_8;
+#elif WITHSDHCHW8BIT
  sdhci->width     = MMC_BUS_WIDTH_4;
+#else
+ sdhci->width     = MMC_BUS_WIDTH_1;
+#endif
  sdhci->clock     = SMHCHARD_FREQ; //HOSC_CLOCK
  sdhci->isspi     = 0;
 
