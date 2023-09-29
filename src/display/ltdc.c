@@ -2637,6 +2637,7 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 {
 }
 
+
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
@@ -2647,7 +2648,7 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
-	unsigned divider = 1;//allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
+	unsigned divider = 1;//BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
 	// step1 - Select HV interface type
@@ -2667,7 +2668,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
-	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
+	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
 	// step1 - same as step1 in HV mode: Select HV interface type
@@ -2691,10 +2692,9 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
-#if ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	unsigned prei = 0;
-	unsigned divider = allwnrt113_get_video0pllx4_freq() / (display_getdotclock(vdmode) * 7);
+	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
 	// step1 - same as step1 in HV mode: Select HV interface type
@@ -2708,16 +2708,18 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step5 - set LVDS digital logic configuration
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
+#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#else
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	(void) DSI0->DSI_CTL;
+#endif
 	t113_LVDS_controller_configuration(vdmode);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 
-	(void) DSI0->DSI_CTL;
-#endif
 }
 
 static void hardware_de_initialize(const videomode_t * vdmode)
