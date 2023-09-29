@@ -23,6 +23,7 @@
 #include "src/touch/touch.h"
 
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
+#define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_LVDS_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 
 static void ltdc_tfcon_cfg(const videomode_t * vdmode)
@@ -2297,6 +2298,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
+    PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
+
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert
@@ -2311,6 +2314,10 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset
+
+#if WITHLVDSHW
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+#endif /* WITHLVDSHW */
 
     local_delay_us(10);
 
@@ -2329,7 +2336,10 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
 
+#if WITHLVDSHW || WITHDSIHW
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+#endif /* WITHLVDSHW || WITHDSIHW */
+
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
 #endif
@@ -2398,30 +2408,6 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 #endif /* defined (LCD_LVDS_IF_REG_VALUE) */
 }
 
-
-// step6 - LVDS controller configuration
-static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
-{
-#if ! (CPUSTYLE_T507 || CPUSTYLE_H616)
-	// __de_dsi_dphy_dev_t
-	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
-
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0f) << 0)) |
-		(UINT32_C(2) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
-		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
-		((UINT32_C(4) - 1) << 0) |
-		0;
-
-	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
-	(void) CCU->DSI_CLK_REG;
-
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
-	(void) CCU->DSI_BGR_REG;
-
-//	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
-//	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
-
 #if 0
 	// 0x0545103C - bit 0 is "1"
 	// __de_dsi_dphy_dev_t taken from
@@ -2479,6 +2465,31 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 	PRINTF("CON_LCD0->COMBO_PHY_REG0=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG0);
 	PRINTF("CON_LCD0->COMBO_PHY_REG1=%08X\n", (unsigned) DSI_DPHY->COMBO_PHY_REG1);
 #endif
+
+
+// step6 - LVDS controller configuration
+static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
+{
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+	// __de_dsi_dphy_dev_t
+	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
+
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0f) << 0)) |
+		(UINT32_C(2) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
+		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
+		((UINT32_C(4) - 1) << 0) |
+		0;
+
+	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
+	(void) CCU->DSI_CLK_REG;
+
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
+	(void) CCU->DSI_BGR_REG;
+
+//	PRINTF("allwnrt113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnrt113_get_dsi_freq());
+//	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
+
 	{
 		// Taken from https://github.com/mangopi-sbc/tina-linux-5.4/blob/a0e8ac494c8b05e2a4f8eb9a2f687e39db463ffe/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_dsi_type.h#L977
 
@@ -2498,6 +2509,8 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 		DSI_DPHY->DPHY_ANA1 = 0x0;
 
 	}
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+
 	unsigned lvds_num;
 	for (lvds_num = 0; lvds_num < 1; ++ lvds_num)
 	{
@@ -2530,7 +2543,6 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 
 		//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 	}
-#endif
 }
 
 // Set sequuence parameters

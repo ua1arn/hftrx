@@ -7101,24 +7101,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>LCD_LVDS0_ANA_REG</name>
-    <displayName>LCD_LVDS0_ANA_REG</displayName>
-    <description>LCD LVDS Analog Register 0</description>
-    <addressOffset>0x220</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_LVDS1_ANA_REG</name>
-    <displayName>LCD_LVDS1_ANA_REG</displayName>
-    <description>LCD LVDS Analog Register 1</description>
-    <addressOffset>0x224</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000220</addressOffset>
+    <register>
+     <name>LCD_LVDS_ANA_REG</name>
+     <displayName>LCD_LVDS_ANA_REG</displayName>
+     <description>LCD LVDS Analog Register 0/1 LCD_LVDS0_ANA_REG LCD_LVDS1_ANA_REG</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
    <register>
     <name>LCD_FSYNC_GEN_CTRL_REG</name>
     <displayName>LCD_FSYNC_GEN_CTRL_REG</displayName>
