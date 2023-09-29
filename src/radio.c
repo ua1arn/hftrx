@@ -13214,7 +13214,7 @@ const char * hamradio_get_rxbw_value4(void)
 {
 	//const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	static char s [5];
-	int width = 1000; //bwseti_getwidth(bwseti);
+	int width = 10; // 10=1kHz //bwseti_getwidth(bwseti);
 	if (width >= 1000000)
 		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
