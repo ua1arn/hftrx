@@ -25,9 +25,11 @@
 #regdef; TV_SAFE_PERIOD_REG; 0x01F0; TV Safe Period Register
 #regdef; TV_FILL_CTL_REG; 0x0300; TV Fill Data Control Register
 
-#regdef; TV_FILL_BEGIN_REG; 0x0304; TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2)
-#regdef; TV_FILL_END_REG; 0x0308; TV Fill Data End Register  0x0308+N*0x0C(N=0..2)
-#regdef; TV_FILL_DATA_REG; 0x030C+N*0x0C(N= TV Fill Data Value Register  0x030C+N*0x0C(N=0..2)
+#aggreg; TV_FILL; 0x0304 3; V Fill Data 0..2
+#regdef; TV_FILL_BEGIN_REG; 0x00; TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2)
+#regdef; TV_FILL_END_REG; 0x04; TV Fill Data End Register  0x0308+N*0x0C(N=0..2)
+#regdef; TV_FILL_DATA_REG; 0x08; TV Fill Data Value Register  0x030C+N*0x0C(N=0..2)
+#aggregend;
 
 #regdef; TV_DATA_IO_POL0_REG; 0x0330; TV Data IO Polarity0 Register
 #regdef; TV_DATA_IO_POL1_REG; 0x0334; TV Data IO Polarity1 Register

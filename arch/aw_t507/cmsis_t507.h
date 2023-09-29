@@ -1406,10 +1406,13 @@ typedef struct TCON_TV1_Type
     volatile uint32_t TV_SAFE_PERIOD_REG;             /*!< Offset 0x1F0 TV Safe Period Register */
              uint32_t reserved_0x1F4 [0x0043];
     volatile uint32_t TV_FILL_CTL_REG;                /*!< Offset 0x300 TV Fill Data Control Register */
-    volatile uint32_t TV_FILL_BEGIN_REG;              /*!< Offset 0x304 TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2) */
-    volatile uint32_t TV_FILL_END_REG;                /*!< Offset 0x308 TV Fill Data End Register  0x0308+N*0x0C(N=0..2) */
-    volatile uint32_t TV_FILL_DATA_REG;               /*!< Offset 0x30C (null) */
-             uint32_t reserved_0x310 [0x0008];
+    struct
+    {
+        volatile uint32_t TV_FILL_BEGIN_REG;          /*!< Offset 0x304 TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2) */
+        volatile uint32_t TV_FILL_END_REG;            /*!< Offset 0x308 TV Fill Data End Register  0x0308+N*0x0C(N=0..2) */
+        volatile uint32_t TV_FILL_DATA_REG;           /*!< Offset 0x30C TV Fill Data Value Register  0x030C+N*0x0C(N=0..2) */
+    } TV_FILL [0x003];                                /*!< Offset 0x304 V Fill Data 0..2 */
+             uint32_t reserved_0x328 [0x0002];
     volatile uint32_t TV_DATA_IO_POL0_REG;            /*!< Offset 0x330 TV Data IO Polarity0 Register */
     volatile uint32_t TV_DATA_IO_POL1_REG;            /*!< Offset 0x334 TV Data IO Polarity1 Register */
     volatile uint32_t TV_DATA_TRI0_REG;               /*!< Offset 0x338 TV Data IO Trigger0 Register */

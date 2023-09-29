@@ -7386,33 +7386,40 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>TV_FILL_BEGIN_REG</name>
-    <displayName>TV_FILL_BEGIN_REG</displayName>
-    <description>TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2)</description>
-    <addressOffset>0x304</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TV_FILL_END_REG</name>
-    <displayName>TV_FILL_END_REG</displayName>
-    <description>TV Fill Data End Register  0x0308+N*0x0C(N=0..2)</description>
-    <addressOffset>0x308</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TV_FILL_DATA_REG</name>
-    <displayName>TV_FILL_DATA_REG</displayName>
-    <description></description>
-    <addressOffset>0x30C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x00000304</addressOffset>
+    <registers>
+     <register>
+      <name>TV_FILL_BEGIN_REG</name>
+      <displayName>TV_FILL_BEGIN_REG</displayName>
+      <description>TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2)</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>TV_FILL_END_REG</name>
+      <displayName>TV_FILL_END_REG</displayName>
+      <description>TV Fill Data End Register  0x0308+N*0x0C(N=0..2)</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>TV_FILL_DATA_REG</name>
+      <displayName>TV_FILL_DATA_REG</displayName>
+      <description>TV Fill Data Value Register  0x030C+N*0x0C(N=0..2)</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x024</dimIncrement>
+   </cluster>
    <register>
     <name>TV_DATA_IO_POL0_REG</name>
     <displayName>TV_DATA_IO_POL0_REG</displayName>
