@@ -18,7 +18,7 @@
 // руль машинка
 // RS-485 115200 8N1
 
-#define PERIODSPOOL 750
+#define PERIODSPOOL 500
 #define RXTOUT 50
 
 
@@ -243,10 +243,20 @@ static int pos [] =
 {
 		+ 1023,
 		+ 1023,
+		+ 1023,
+		+ 1023,
+		+ 1023,
+		+ 1023,
+		0,
+		0,
 		0,
 		0,
 		- 1023,
 		- 1023,
+		- 1023,
+		- 1023,
+		0,
+		0,
 		0,
 		0,
 //		+ 277,
@@ -256,6 +266,7 @@ static int pos [] =
 static int freshness [2];
 
 static int needPos [2];
+static const int ids [2] = { 1, 2 };
 
 // периодическая выдача команд опроса
 // 3.1 Set Point Command
@@ -269,12 +280,12 @@ static void uart1_dpc_spool(void * ctx)
 		switch (phase)
 		{
 		case demobase + 0:
-			uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (needPos [ch] & 0xFFF)); // 0x76 - command code - Set Point Command
+			uart1_req(ids [ch], 0x76, ((freshness [ch] & 0x0F) << 12) | (needPos [ch] & 0xFFF)); // 0x76 - command code - Set Point Command
 			phase = demobase + 1;
 			break;
 
 		case demobase + 1:
-			uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (needPos [ch] & 0xFFF)); // 0x76 - command code - Set Point Command
+			uart1_req(ids [ch], 0x76, ((freshness [ch] & 0x0F) << 12) | (needPos [ch] & 0xFFF)); // 0x76 - command code - Set Point Command
 			phase = demobase + 0;
 			break;
 
@@ -282,7 +293,7 @@ static void uart1_dpc_spool(void * ctx)
 		return;
 	}
 
-	uart1_req(ch ? 1 : 2, 0x76, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF)); // 0x76 - command code - Set Point Command
+	uart1_req(ids [ch], 0x76, ((freshness [ch] & 0x0F) << 12) | (pos [phase] & 0xFFF)); // 0x76 - command code - Set Point Command
 	//TP();
 	++ phase;
     //phase = (phase + 1) % 8;}

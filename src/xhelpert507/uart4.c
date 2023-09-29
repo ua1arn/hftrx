@@ -464,7 +464,7 @@ void xbsavemagn(double roll, double pitch, double jaw)
 	groll = roll;
 	gpitch = pitch;
 	gjaw = jaw;
-	PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jav);
+	PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jaw);
 }
 
 static char state [1024];
