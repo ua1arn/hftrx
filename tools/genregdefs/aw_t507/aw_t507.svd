@@ -7182,6 +7182,299 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>TCON_TV0</name>
+  <description></description>
+  <baseAddress>0x06515000</baseAddress>
+  <interrupt>
+   <name>TCON_TV0</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TCON_TV1</name>
+   <value>99</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TV_GCTL_REG</name>
+    <displayName>TV_GCTL_REG</displayName>
+    <description>TV Global Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_GINT0_REG</name>
+    <displayName>TV_GINT0_REG</displayName>
+    <description>TV Global Interrupt Register0</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_GINT1_REG</name>
+    <displayName>TV_GINT1_REG</displayName>
+    <description>TV Global Interrupt Register1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_SRC_CTL_REG</name>
+    <displayName>TV_SRC_CTL_REG</displayName>
+    <description>TV Source Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_IO_POL_REG</name>
+    <displayName>TV_IO_POL_REG</displayName>
+    <description>TV IO Polarity Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_IO_TRI_REG</name>
+    <displayName>TV_IO_TRI_REG</displayName>
+    <description>TV IO Control Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_CTL_REG</name>
+    <displayName>TV_CTL_REG</displayName>
+    <description>TV Control Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_BASIC0_REG</name>
+    <displayName>TV_BASIC0_REG</displayName>
+    <description>TV Basic Timing Register0</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_BASIC1_REG</name>
+    <displayName>TV_BASIC1_REG</displayName>
+    <description>TV Basic Timing Register1</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_BASIC2_REG</name>
+    <displayName>TV_BASIC2_REG</displayName>
+    <description>TV Basic Timing Register2</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_BASIC3_REG</name>
+    <displayName>TV_BASIC3_REG</displayName>
+    <description>TV Basic Timing Regi ster3</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_BASIC4_REG</name>
+    <displayName>TV_BASIC4_REG</displayName>
+    <description>TV Basic Timing Register4</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_BASIC5_REG</name>
+    <displayName>TV_BASIC5_REG</displayName>
+    <description>TV Basic Timing Register5</description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_ECC_FIFO_REG</name>
+    <displayName>TV_ECC_FIFO_REG</displayName>
+    <description>TV ECC FIFO Register</description>
+    <addressOffset>0x0F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_DEBUG_REG</name>
+    <displayName>TV_DEBUG_REG</displayName>
+    <description>TV Debug Register</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_CEU_CTL_REG</name>
+    <displayName>TV_CEU_CTL_REG</displayName>
+    <description>TV CEU Control Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>11</dim>
+    <addressOffset>0x00000110</addressOffset>
+    <register>
+     <name>TV_CEU_COEF_MUL_REG</name>
+     <displayName>TV_CEU_COEF_MUL_REG</displayName>
+     <description>TV CEU Coefficient MUL R egister (N=0..10)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x02C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x00000140</addressOffset>
+    <register>
+     <name>TV_CEU_COEF_RANG_REG</name>
+     <displayName>TV_CEU_COEF_RANG_REG</displayName>
+     <description>TV CEU Coefficient Range R egister (N=0,1,2)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <register>
+    <name>TV_SAFE_PERIOD_REG</name>
+    <displayName>TV_SAFE_PERIOD_REG</displayName>
+    <description>TV Safe Period Register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_FILL_CTL_REG</name>
+    <displayName>TV_FILL_CTL_REG</displayName>
+    <description>TV Fill Data Control Register</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_FILL_BEGIN_REG</name>
+    <displayName>TV_FILL_BEGIN_REG</displayName>
+    <description>TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2)</description>
+    <addressOffset>0x304</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_FILL_END_REG</name>
+    <displayName>TV_FILL_END_REG</displayName>
+    <description>TV Fill Data End Register  0x0308+N*0x0C(N=0..2)</description>
+    <addressOffset>0x308</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_FILL_DATA_REG</name>
+    <displayName>TV_FILL_DATA_REG</displayName>
+    <description></description>
+    <addressOffset>0x30C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_DATA_IO_POL0_REG</name>
+    <displayName>TV_DATA_IO_POL0_REG</displayName>
+    <description>TV Data IO Polarity0 Register</description>
+    <addressOffset>0x330</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_DATA_IO_POL1_REG</name>
+    <displayName>TV_DATA_IO_POL1_REG</displayName>
+    <description>TV Data IO Polarity1 Register</description>
+    <addressOffset>0x334</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_DATA_TRI0_REG</name>
+    <displayName>TV_DATA_TRI0_REG</displayName>
+    <description>TV Data IO Trigger0 Register</description>
+    <addressOffset>0x338</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_DATA_TRI1_REG</name>
+    <displayName>TV_DATA_TRI1_REG</displayName>
+    <description>TV Data IO Trigger1 Register</description>
+    <addressOffset>0x33C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_PIXELDEPTH_MODE_REG</name>
+    <displayName>TV_PIXELDEPTH_MODE_REG</displayName>
+    <description>TV Pixel</description>
+    <addressOffset>0x340</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="TCON_TV0">
+  <name>TCON_TV1</name>
+  <baseAddress>0x06516000</baseAddress>
+  <interrupt>
+   <name>TCON_TV0</name>
+   <value>98</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TCON_TV1</name>
+   <value>99</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
   <name>THS</name>
   <description>Thermal Sensor</description>
   <baseAddress>0x05070400</baseAddress>

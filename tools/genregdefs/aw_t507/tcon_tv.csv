@@ -1,0 +1,36 @@
+#type; TCON_TV1 
+#base; TCON_TV0 0x06515000
+#base; TCON_TV1 0x06516000
+#irq; TCON_TV0 98
+#irq; TCON_TV1 99
+
+#regdef; TV_GCTL_REG; 0x0000; TV Global Control Register
+#regdef; TV_GINT0_REG; 0x0004; TV Global Interrupt Register0
+#regdef; TV_GINT1_REG; 0x0008; TV Global Interrupt Register1
+#regdef; TV_SRC_CTL_REG; 0x0040; TV Source Control Register
+#regdef; TV_IO_POL_REG; 0x0088; TV IO Polarity Register
+#regdef; TV_IO_TRI_REG; 0x008C; TV IO Control Register
+#regdef; TV_CTL_REG; 0x0090; TV Control Register
+#regdef; TV_BASIC0_REG; 0x0094; TV Basic Timing Register0
+#regdef; TV_BASIC1_REG; 0x0098; TV Basic Timing Register1
+#regdef; TV_BASIC2_REG; 0x009C; TV Basic Timing Register2
+#regdef; TV_BASIC3_REG; 0x00A0; TV Basic Timing Regi ster3
+#regdef; TV_BASIC4_REG; 0x00A4; TV Basic Timing Register4
+#regdef; TV_BASIC5_REG; 0x00A8; TV Basic Timing Register5
+#regdef; TV_ECC_FIFO_REG; 0x00F8; TV ECC FIFO Register
+#regdef; TV_DEBUG_REG; 0x00FC; TV Debug Register
+#regdef; TV_CEU_CTL_REG; 0x0100; TV CEU Control Register
+#regdef; TV_CEU_COEF_MUL_REG; 0x0110 11; TV CEU Coefficient MUL R egister (N=0..10)
+#regdef; TV_CEU_COEF_RANG_REG; 0x0140 3; TV CEU Coefficient Range R egister (N=0,1,2)
+#regdef; TV_SAFE_PERIOD_REG; 0x01F0; TV Safe Period Register
+#regdef; TV_FILL_CTL_REG; 0x0300; TV Fill Data Control Register
+
+#regdef; TV_FILL_BEGIN_REG; 0x0304; TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2)
+#regdef; TV_FILL_END_REG; 0x0308; TV Fill Data End Register  0x0308+N*0x0C(N=0..2)
+#regdef; TV_FILL_DATA_REG; 0x030C+N*0x0C(N= TV Fill Data Value Register  0x030C+N*0x0C(N=0..2)
+
+#regdef; TV_DATA_IO_POL0_REG; 0x0330; TV Data IO Polarity0 Register
+#regdef; TV_DATA_IO_POL1_REG; 0x0334; TV Data IO Polarity1 Register
+#regdef; TV_DATA_TRI0_REG; 0x0338; TV Data IO Trigger0 Register
+#regdef; TV_DATA_TRI1_REG; 0x033C; TV Data IO Trigger1 Register
+#regdef; TV_PIXELDEPTH_MODE_REG; 0x0340; TV Pixel; depth Mode Register

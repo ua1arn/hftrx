@@ -2300,9 +2300,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 	unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << (0 + ix));	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << (16 + ix));	// DISPLAY_IF_TOP_RST De-assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
 //    DISP_IF_TOP->MODULE_GATING = ~ 0u;
     PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);

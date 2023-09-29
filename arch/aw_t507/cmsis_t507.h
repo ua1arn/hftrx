@@ -74,6 +74,8 @@ typedef enum IRQn
     HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
+    TCON_TV0_IRQn = 98,                               /*!< TCON_TV1  */
+    TCON_TV1_IRQn = 99,                               /*!< TCON_TV1  */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     CE_NS_IRQn = 123,                                 /*!< CE CE_NS interrupt */
@@ -212,6 +214,8 @@ typedef enum IRQn
 #define DISP_IF_TOP_BASE ((uintptr_t) 0x06510000)     /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
+#define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV1  Base */
+#define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV1  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
@@ -1370,6 +1374,49 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_TRI_FIFO_BIST_REG;          /*!< Offset 0xFF8 LCD Trigger FIFO Bist Register */
 } TCON_LCD_TypeDef; /* size of structure = 0xFFC */
 /*
+ * @brief TCON_TV1
+ */
+/*!< TCON_TV1  */
+typedef struct TCON_TV1_Type
+{
+    volatile uint32_t TV_GCTL_REG;                    /*!< Offset 0x000 TV Global Control Register */
+    volatile uint32_t TV_GINT0_REG;                   /*!< Offset 0x004 TV Global Interrupt Register0 */
+    volatile uint32_t TV_GINT1_REG;                   /*!< Offset 0x008 TV Global Interrupt Register1 */
+             uint32_t reserved_0x00C [0x000D];
+    volatile uint32_t TV_SRC_CTL_REG;                 /*!< Offset 0x040 TV Source Control Register */
+             uint32_t reserved_0x044 [0x0011];
+    volatile uint32_t TV_IO_POL_REG;                  /*!< Offset 0x088 TV IO Polarity Register */
+    volatile uint32_t TV_IO_TRI_REG;                  /*!< Offset 0x08C TV IO Control Register */
+    volatile uint32_t TV_CTL_REG;                     /*!< Offset 0x090 TV Control Register */
+    volatile uint32_t TV_BASIC0_REG;                  /*!< Offset 0x094 TV Basic Timing Register0 */
+    volatile uint32_t TV_BASIC1_REG;                  /*!< Offset 0x098 TV Basic Timing Register1 */
+    volatile uint32_t TV_BASIC2_REG;                  /*!< Offset 0x09C TV Basic Timing Register2 */
+    volatile uint32_t TV_BASIC3_REG;                  /*!< Offset 0x0A0 TV Basic Timing Regi ster3 */
+    volatile uint32_t TV_BASIC4_REG;                  /*!< Offset 0x0A4 TV Basic Timing Register4 */
+    volatile uint32_t TV_BASIC5_REG;                  /*!< Offset 0x0A8 TV Basic Timing Register5 */
+             uint32_t reserved_0x0AC [0x0013];
+    volatile uint32_t TV_ECC_FIFO_REG;                /*!< Offset 0x0F8 TV ECC FIFO Register */
+    volatile uint32_t TV_DEBUG_REG;                   /*!< Offset 0x0FC TV Debug Register */
+    volatile uint32_t TV_CEU_CTL_REG;                 /*!< Offset 0x100 TV CEU Control Register */
+             uint32_t reserved_0x104 [0x0003];
+    volatile uint32_t TV_CEU_COEF_MUL_REG [0x00B];    /*!< Offset 0x110 TV CEU Coefficient MUL R egister (N=0..10) */
+             uint32_t reserved_0x13C;
+    volatile uint32_t TV_CEU_COEF_RANG_REG [0x003];   /*!< Offset 0x140 TV CEU Coefficient Range R egister (N=0,1,2) */
+             uint32_t reserved_0x14C [0x0029];
+    volatile uint32_t TV_SAFE_PERIOD_REG;             /*!< Offset 0x1F0 TV Safe Period Register */
+             uint32_t reserved_0x1F4 [0x0043];
+    volatile uint32_t TV_FILL_CTL_REG;                /*!< Offset 0x300 TV Fill Data Control Register */
+    volatile uint32_t TV_FILL_BEGIN_REG;              /*!< Offset 0x304 TV Fill Data Begin Register 0x0304+N*0x0C(N=0..2) */
+    volatile uint32_t TV_FILL_END_REG;                /*!< Offset 0x308 TV Fill Data End Register  0x0308+N*0x0C(N=0..2) */
+    volatile uint32_t TV_FILL_DATA_REG;               /*!< Offset 0x30C (null) */
+             uint32_t reserved_0x310 [0x0008];
+    volatile uint32_t TV_DATA_IO_POL0_REG;            /*!< Offset 0x330 TV Data IO Polarity0 Register */
+    volatile uint32_t TV_DATA_IO_POL1_REG;            /*!< Offset 0x334 TV Data IO Polarity1 Register */
+    volatile uint32_t TV_DATA_TRI0_REG;               /*!< Offset 0x338 TV Data IO Trigger0 Register */
+    volatile uint32_t TV_DATA_TRI1_REG;               /*!< Offset 0x33C TV Data IO Trigger1 Register */
+    volatile uint32_t TV_PIXELDEPTH_MODE_REG;         /*!< Offset 0x340 TV Pixel */
+} TCON_TV1_TypeDef; /* size of structure = 0x344 */
+/*
  * @brief THS
  */
 /*!< THS Thermal Sensor */
@@ -1752,6 +1799,8 @@ typedef struct USB_OHCI_Capability_Type
 #define DISP_IF_TOP ((DISP_IF_TOP_TypeDef *) DISP_IF_TOP_BASE)/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
+#define TCON_TV0 ((TCON_TV1_TypeDef *) TCON_TV0_BASE) /*!< TCON_TV0  register set access pointer */
+#define TCON_TV1 ((TCON_TV1_TypeDef *) TCON_TV1_BASE) /*!< TCON_TV1  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
