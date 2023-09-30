@@ -1,4 +1,4 @@
-#type; TCON_TV1 
+#type; TCON_TV; TV Output
 #base; TCON_TV0 0x06515000
 #base; TCON_TV1 0x06516000
 #irq; TCON_TV0 98

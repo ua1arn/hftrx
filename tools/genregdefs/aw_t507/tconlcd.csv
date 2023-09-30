@@ -29,9 +29,9 @@
 #regdef; LCD_IO_TRI_REG; 0x008C; LCD IO Control Register
 #regdef; LCD_DEBUG_REG; 0x00FC; LCD Debug Register
 #regdef; LCD_CEU_CTL_REG; 0x0100; LCD CEU Control Register
-#regdef; LCD_CEU_COEF_MUL_REG; 0x0110; LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04
-#regdef; LCD_CEU_COEF_ADD_REG; 0x011C; LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10
-#regdef; LCD_CEU_COEF_RANG_REG; 0x0140; LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04
+#regdef; LCD_CEU_COEF_MUL_REG; 0x0110 1; LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04
+#regdef; LCD_CEU_COEF_ADD_REG; 0x011C 3; LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10
+#regdef; LCD_CEU_COEF_RANG_REG; 0x0140 3; LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04
 #regdef; LCD_CPU_TRI0_REG; 0x0160; LCD CPU Panel Trigger Register0
 #regdef; LCD_CPU_TRI1_REG; 0x0164; LCD CPU Panel Trigger Register1
 #regdef; LCD_CPU_TRI2_REG; 0x0168; LCD CPU Panel Trigger Register2
@@ -39,7 +39,7 @@
 #regdef; LCD_CPU_TRI4_REG; 0x0170; LCD CPU Panel Trigger Register4
 #regdef; LCD_CPU_TRI5_REG; 0x0174; LCD CPU Panel Trigger Register5
 #regdef; LCD_CMAP_CTL_REG; 0x0180; LCD Color Map Control Register
-#regdef; LCD_CMAP_ODD0_REG; 0x0190; LCD Color Map Odd L ine Register0
+#regdef; LCD_CMAP_ODD0_REG; 0x0190; LCD Color Map Odd Line Register0
 #regdef; LCD_CMAP_ODD1_REG; 0x0194; LCD Color Map Odd Line Register1
 #regdef; LCD_CMAP_EVEN0_REG; 0x0198; LCD Color Map Even Line Register0
 #regdef; LCD_CMAP_EVEN1_REG; 0x019C; LCD Color Map Even Line Register1

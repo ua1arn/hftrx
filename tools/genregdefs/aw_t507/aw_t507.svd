@@ -6957,33 +6957,48 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>LCD_CEU_COEF_MUL_REG</name>
-    <displayName>LCD_CEU_COEF_MUL_REG</displayName>
-    <description>LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04</description>
-    <addressOffset>0x110</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CEU_COEF_ADD_REG</name>
-    <displayName>LCD_CEU_COEF_ADD_REG</displayName>
-    <description>LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10</description>
-    <addressOffset>0x11C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CEU_COEF_RANG_REG</name>
-    <displayName>LCD_CEU_COEF_RANG_REG</displayName>
-    <description>LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04</description>
-    <addressOffset>0x140</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00000110</addressOffset>
+    <register>
+     <name>LCD_CEU_COEF_MUL_REG</name>
+     <displayName>LCD_CEU_COEF_MUL_REG</displayName>
+     <description>LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x004</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x0000011C</addressOffset>
+    <register>
+     <name>LCD_CEU_COEF_ADD_REG</name>
+     <displayName>LCD_CEU_COEF_ADD_REG</displayName>
+     <description>LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x00000140</addressOffset>
+    <register>
+     <name>LCD_CEU_COEF_RANG_REG</name>
+     <displayName>LCD_CEU_COEF_RANG_REG</displayName>
+     <description>LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x00C</dimIncrement>
+   </cluster>
    <register>
     <name>LCD_CPU_TRI0_REG</name>
     <displayName>LCD_CPU_TRI0_REG</displayName>
@@ -7050,7 +7065,7 @@
    <register>
     <name>LCD_CMAP_ODD0_REG</name>
     <displayName>LCD_CMAP_ODD0_REG</displayName>
-    <description>LCD Color Map Odd L ine Register0</description>
+    <description>LCD Color Map Odd Line Register0</description>
     <addressOffset>0x190</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7183,7 +7198,7 @@
   </peripheral>
   <peripheral>
   <name>TCON_TV0</name>
-  <description></description>
+  <description>TV Output</description>
   <baseAddress>0x06515000</baseAddress>
   <interrupt>
    <name>TCON_TV0</name>

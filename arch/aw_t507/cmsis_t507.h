@@ -74,8 +74,8 @@ typedef enum IRQn
     HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
-    TCON_TV0_IRQn = 98,                               /*!< TCON_TV1  */
-    TCON_TV1_IRQn = 99,                               /*!< TCON_TV1  */
+    TCON_TV0_IRQn = 98,                               /*!< TCON_TV TV Output */
+    TCON_TV1_IRQn = 99,                               /*!< TCON_TV TV Output */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     CE_NS_IRQn = 123,                                 /*!< CE CE_NS interrupt */
@@ -214,8 +214,8 @@ typedef enum IRQn
 #define DISP_IF_TOP_BASE ((uintptr_t) 0x06510000)     /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
-#define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV1  Base */
-#define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV1  Base */
+#define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV TV Output Base */
+#define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
@@ -1339,12 +1339,12 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_DEBUG_REG;                  /*!< Offset 0x0FC LCD Debug Register */
     volatile uint32_t LCD_CEU_CTL_REG;                /*!< Offset 0x100 LCD CEU Control Register */
              uint32_t reserved_0x104 [0x0003];
-    volatile uint32_t LCD_CEU_COEF_MUL_REG;           /*!< Offset 0x110 LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04 */
+    volatile uint32_t LCD_CEU_COEF_MUL_REG [0x001];   /*!< Offset 0x110 LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04 */
              uint32_t reserved_0x114 [0x0002];
-    volatile uint32_t LCD_CEU_COEF_ADD_REG;           /*!< Offset 0x11C LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10 */
-             uint32_t reserved_0x120 [0x0008];
-    volatile uint32_t LCD_CEU_COEF_RANG_REG;          /*!< Offset 0x140 LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04 */
-             uint32_t reserved_0x144 [0x0007];
+    volatile uint32_t LCD_CEU_COEF_ADD_REG [0x003];   /*!< Offset 0x11C LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10 */
+             uint32_t reserved_0x128 [0x0006];
+    volatile uint32_t LCD_CEU_COEF_RANG_REG [0x003];  /*!< Offset 0x140 LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04 */
+             uint32_t reserved_0x14C [0x0005];
     volatile uint32_t LCD_CPU_TRI0_REG;               /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
     volatile uint32_t LCD_CPU_TRI1_REG;               /*!< Offset 0x164 LCD CPU Panel Trigger Register1 */
     volatile uint32_t LCD_CPU_TRI2_REG;               /*!< Offset 0x168 LCD CPU Panel Trigger Register2 */
@@ -1354,7 +1354,7 @@ typedef struct TCON_LCD_Type
              uint32_t reserved_0x178 [0x0002];
     volatile uint32_t LCD_CMAP_CTL_REG;               /*!< Offset 0x180 LCD Color Map Control Register */
              uint32_t reserved_0x184 [0x0003];
-    volatile uint32_t LCD_CMAP_ODD0_REG;              /*!< Offset 0x190 LCD Color Map Odd L ine Register0 */
+    volatile uint32_t LCD_CMAP_ODD0_REG;              /*!< Offset 0x190 LCD Color Map Odd Line Register0 */
     volatile uint32_t LCD_CMAP_ODD1_REG;              /*!< Offset 0x194 LCD Color Map Odd Line Register1 */
     volatile uint32_t LCD_CMAP_EVEN0_REG;             /*!< Offset 0x198 LCD Color Map Even Line Register0 */
     volatile uint32_t LCD_CMAP_EVEN1_REG;             /*!< Offset 0x19C LCD Color Map Even Line Register1 */
@@ -1374,10 +1374,10 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_TRI_FIFO_BIST_REG;          /*!< Offset 0xFF8 LCD Trigger FIFO Bist Register */
 } TCON_LCD_TypeDef; /* size of structure = 0xFFC */
 /*
- * @brief TCON_TV1
+ * @brief TCON_TV
  */
-/*!< TCON_TV1  */
-typedef struct TCON_TV1_Type
+/*!< TCON_TV TV Output */
+typedef struct TCON_TV_Type
 {
     volatile uint32_t TV_GCTL_REG;                    /*!< Offset 0x000 TV Global Control Register */
     volatile uint32_t TV_GINT0_REG;                   /*!< Offset 0x004 TV Global Interrupt Register0 */
@@ -1418,7 +1418,7 @@ typedef struct TCON_TV1_Type
     volatile uint32_t TV_DATA_TRI0_REG;               /*!< Offset 0x338 TV Data IO Trigger0 Register */
     volatile uint32_t TV_DATA_TRI1_REG;               /*!< Offset 0x33C TV Data IO Trigger1 Register */
     volatile uint32_t TV_PIXELDEPTH_MODE_REG;         /*!< Offset 0x340 TV Pixel */
-} TCON_TV1_TypeDef; /* size of structure = 0x344 */
+} TCON_TV_TypeDef; /* size of structure = 0x344 */
 /*
  * @brief THS
  */
@@ -1802,8 +1802,8 @@ typedef struct USB_OHCI_Capability_Type
 #define DISP_IF_TOP ((DISP_IF_TOP_TypeDef *) DISP_IF_TOP_BASE)/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
-#define TCON_TV0 ((TCON_TV1_TypeDef *) TCON_TV0_BASE) /*!< TCON_TV0  register set access pointer */
-#define TCON_TV1 ((TCON_TV1_TypeDef *) TCON_TV1_BASE) /*!< TCON_TV1  register set access pointer */
+#define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
+#define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
