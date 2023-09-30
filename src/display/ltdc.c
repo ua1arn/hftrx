@@ -2312,8 +2312,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
-//		(prei << 8) |	// FACTOR_N 0..3: 1..8
-//		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
@@ -2525,6 +2523,7 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 }
 
+// https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/u-boot/arch/arm/include/asm/arch-sunxi/lcdc.h#L105
 // step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsigned lvds_num)
 {
