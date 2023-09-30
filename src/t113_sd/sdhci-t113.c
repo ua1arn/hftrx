@@ -481,7 +481,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		return 0;
         }
 
-	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(1 << 16));
+	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(1 << 16));	// card clock off
 	write32(sdhci->base + SD_CKCR, ratio);
 
 	if(!sdhci_t113_update_clk(sdhci))
