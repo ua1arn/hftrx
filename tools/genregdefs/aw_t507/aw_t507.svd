@@ -6915,7 +6915,7 @@
    <register>
     <name>LCD_LVDS_IF_REG</name>
     <displayName>LCD_LVDS_IF_REG</displayName>
-    <description>LCD LVDS Configure Register</description>
+    <description>LCD LVDS Configure Register - AKA tcon0_lvds_ctl</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -7108,9 +7108,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>mux_ctrl</name>
-    <displayName>mux_ctrl</displayName>
-    <description>https://github.com/yodaos-project/yodaos/blob/d0d7bbc277c0fc1c64e2e0a1c82fe6e63f6eb954/boot/rpi/drivers/video/sunxi/lcdc.c#L204C16-L204C16</description>
+    <name>tcon_mul_ctl</name>
+    <displayName>tcon_mul_ctl</displayName>
+    <description>https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691</description>
     <addressOffset>0x200</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

@@ -1332,7 +1332,7 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_CPU_RD0_REG;                /*!< Offset 0x068 LCD CPU Panel Read Data Register0 */
     volatile uint32_t LCD_CPU_RD1_REG;                /*!< Offset 0x06C LCD CPU Panel Read Data Register1 */
              uint32_t reserved_0x070 [0x0005];
-    volatile uint32_t LCD_LVDS_IF_REG;                /*!< Offset 0x084 LCD LVDS Configure Register */
+    volatile uint32_t LCD_LVDS_IF_REG;                /*!< Offset 0x084 LCD LVDS Configure Register - AKA tcon0_lvds_ctl */
     volatile uint32_t LCD_IO_POL_REG;                 /*!< Offset 0x088 LCD IO Polarity Register */
     volatile uint32_t LCD_IO_TRI_REG;                 /*!< Offset 0x08C LCD IO Control Register */
              uint32_t reserved_0x090 [0x001B];
@@ -1361,7 +1361,7 @@ typedef struct TCON_LCD_Type
              uint32_t reserved_0x1A0 [0x0014];
     volatile uint32_t LCD_SAFE_PERIOD_REG;            /*!< Offset 0x1F0 LCD Safe Period Register */
              uint32_t reserved_0x1F4 [0x0003];
-    volatile uint32_t mux_ctrl;                       /*!< Offset 0x200 https://github.com/yodaos-project/yodaos/blob/d0d7bbc277c0fc1c64e2e0a1c82fe6e63f6eb954/boot/rpi/drivers/video/sunxi/lcdc.c#L204C16-L204C16 */
+    volatile uint32_t tcon_mul_ctl;                   /*!< Offset 0x200 https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691 */
              uint32_t reserved_0x204 [0x0007];
     volatile uint32_t LCD_LVDS_ANA_REG [0x002];       /*!< Offset 0x220 LCD LVDS Analog Register 0/1 LCD_LVDS0_ANA_REG LCD_LVDS1_ANA_REG */
              uint32_t reserved_0x228 [0x0005];

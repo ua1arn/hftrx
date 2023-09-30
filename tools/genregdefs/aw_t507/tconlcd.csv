@@ -6,6 +6,8 @@
 #irq; TCON_LCD0 96; TCON_LCD0 interrupt
 #irq; TCON_LCD1 97; TCON_LCD1 interrupt
 
+# https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L610
+
 #regdef; LCD_GCTL_REG; 0x0000; LCD Global Control Register
 #regdef; LCD_GINT0_REG; 0x0004; LCD Global Interrupt Register0
 #regdef; LCD_GINT1_REG; 0x0008; LCD Global Interrupt Register1
@@ -24,7 +26,7 @@
 #regdef; LCD_CPU_WR_REG; 0x0064; LCD CPU Panel Write Data Regist er
 #regdef; LCD_CPU_RD0_REG; 0x0068; LCD CPU Panel Read Data Register0
 #regdef; LCD_CPU_RD1_REG; 0x006C; LCD CPU Panel Read Data Register1
-#regdef; LCD_LVDS_IF_REG; 0x0084; LCD LVDS Configure Register
+#regdef; LCD_LVDS_IF_REG; 0x0084; LCD LVDS Configure Register - AKA tcon0_lvds_ctl
 #regdef; LCD_IO_POL_REG; 0x0088; LCD IO Polarity Register
 #regdef; LCD_IO_TRI_REG; 0x008C; LCD IO Control Register
 #regdef; LCD_DEBUG_REG; 0x00FC; LCD Debug Register
@@ -44,7 +46,7 @@
 #regdef; LCD_CMAP_EVEN0_REG; 0x0198; LCD Color Map Even Line Register0
 #regdef; LCD_CMAP_EVEN1_REG; 0x019C; LCD Color Map Even Line Register1
 #regdef; LCD_SAFE_PERIOD_REG; 0x01F0; LCD Safe Period Register
-#regdef; mux_ctrl; 0x0200; https://github.com/yodaos-project/yodaos/blob/d0d7bbc277c0fc1c64e2e0a1c82fe6e63f6eb954/boot/rpi/drivers/video/sunxi/lcdc.c#L204C16-L204C16
+#regdef; tcon_mul_ctl; 0x0200; https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691
 #regdef; LCD_LVDS_ANA_REG; 0x0220 2; LCD LVDS Analog Register 0/1 LCD_LVDS0_ANA_REG LCD_LVDS1_ANA_REG
 #regdef; LCD_FSYNC_GEN_CTRL_REG; 0x023C; Module Enable and Output Value Register
 #regdef; LCD_FSYNC_GEN_DLY_REG; 0x0240; Fsync Active Time Register

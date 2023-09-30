@@ -1,4 +1,8 @@
+# https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
+
 #type; HDMI_TX 
 #base; HDMI_TX0 0x06000000
 #irq; HDMI_TX0 95
+
+
 
