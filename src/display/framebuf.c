@@ -783,7 +783,6 @@ void arm_hardware_mdma_initialize(void)
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	{
-		// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
 		unsigned M = 2;	/* M = 1..32 */
 		unsigned divider = 0;
@@ -830,40 +829,6 @@ void arm_hardware_mdma_initialize(void)
 		// G2D version=01010100
 		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
-		//memset(G2D_TOP, 0xFF, 256 * 1024);
-		if (0)
-		{
-			uintptr_t base = 0x01480000;
-			unsigned size = 256 * 1024;
-			//memset((void *) base, 0xFF, size);
-			static const uint8_t pattern [256];
-			unsigned offs;
-
-			for (offs = 0 * 1024; offs < size; offs += sizeof pattern)
-			{
-				if (memcmp((void *) (base + offs), pattern, sizeof pattern) == 0)
-				{
-					PRINTF(".");
-					continue;
-				}
-				PRINTF("at %08X:\n", base + offs);
-				printhex32((base + offs), (void *) (base + offs), sizeof pattern);
-			}
-		}
-		//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
-		//awxx_rcq(0xDEADBEEF, 64);
-//		PRINTF("G2D_TOP:\n");
-//		printhex32(G2D_TOP_BASE, G2D_TOP, 256);
-		//memset(G2D_MIXER, 0xFF, sizeof * G2D_MIXER);
-//		PRINTF("G2D_MIXER:\n");
-//		printhex32(G2D_MIXER_BASE, G2D_MIXER, sizeof * G2D_MIXER);
-
-//		PRINTF("G2D_VSU:\n");
-//		//memset(G2D_VSU, 0xFF, sizeof * G2D_VSU);
-//		printhex32(G2D_VSU_BASE, G2D_VSU, sizeof * G2D_VSU);
-//		PRINTF("G2D_BLD:\n");
-//		//memset(G2D_BLD, 0xFF, sizeof * G2D_VSU);
-//		printhex32(G2D_BLD_BASE, G2D_BLD, sizeof * G2D_BLD);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
