@@ -122,7 +122,7 @@ typedef enum IRQn
 
 #define DSP0_CFG_BASE ((uintptr_t) 0x01700000)        /*!< DSP_CFG  Base */
 #define DSP_WDG_BASE ((uintptr_t) 0x01700400)         /*!< DSP_WDG  Base */
-#define DSP_INTC_BASE ((uintptr_t) 0x01700800)        /*!< DSP_INTC  Base */
+#define DSP_INTC_BASE ((uintptr_t) 0x01700800)        /*!< DSP_INTC XTensa HiFi4 Interrupt Controller Base */
 #define DSP_TZMA_BASE ((uintptr_t) 0x01700C00)        /*!< DSP_TZMA  Base */
 #define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Message Box Base */
 #define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)     /*!< xDSP_MSGBOX  Base */
@@ -1230,6 +1230,29 @@ typedef struct DSP_CFG_Type
     volatile uint32_t DSP_JTRST_REG;                  /*!< Offset 0x01C DSP JTAG CONFIG RESET Register */
     volatile uint32_t DSP_VER_REG;                    /*!< Offset 0x020 DSP Version Register */
 } DSP_CFG_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief DSP_INTC
+ */
+/*!< DSP_INTC XTensa HiFi4 Interrupt Controller */
+typedef struct DSP_INTC_Type
+{
+    volatile uint32_t VECTOR;                         /*!< Offset 0x000  */
+    volatile uint32_t BASE_ADDR;                      /*!< Offset 0x004  */
+             uint32_t reserved_0x008;
+    volatile uint32_t CONTROL;                        /*!< Offset 0x00C  */
+             uint32_t reserved_0x010;
+    volatile uint32_t PENDING [0x003];                /*!< Offset 0x014  */
+             uint32_t reserved_0x020 [0x0008];
+    volatile uint32_t ENABLE [0x003];                 /*!< Offset 0x040  */
+             uint32_t reserved_0x04C;
+    volatile uint32_t MASK [0x003];                   /*!< Offset 0x050  */
+             uint32_t reserved_0x05C [0x0005];
+    volatile uint32_t FAST_FORCING;                   /*!< Offset 0x070  */
+             uint32_t reserved_0x074 [0x0003];
+    volatile uint32_t PRIORITY [0x002];               /*!< Offset 0x080  */
+             uint32_t reserved_0x088 [0x000E];
+    volatile uint32_t GROUP_CONFIG [0x004];           /*!< Offset 0x0C0  */
+} DSP_INTC_TypeDef; /* size of structure = 0x0D0 */
 /*
  * @brief EMAC
  */
@@ -2802,6 +2825,7 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define DSP0_CFG ((DSP_CFG_TypeDef *) DSP0_CFG_BASE)  /*!< DSP0_CFG  register set access pointer */
+#define DSP_INTC ((DSP_INTC_TypeDef *) DSP_INTC_BASE) /*!< DSP_INTC XTensa HiFi4 Interrupt Controller register set access pointer */
 #define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */

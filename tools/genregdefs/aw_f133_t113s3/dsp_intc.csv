@@ -1,2 +1,12 @@
-#type; DSP_INTC
+#type; DSP_INTC; XTensa HiFi4 Interrupt Controller
 #base; DSP_INTC 0x01700800
+
+#regdef; VECTOR; 0x00;
+#regdef; BASE_ADDR; 0x04;
+#regdef; CONTROL; 0x0C;
+#regdef; PENDING; 0x14 3;
+#regdef; ENABLE; 0x40 3;
+#regdef; MASK; 0x50 3;
+#regdef; FAST_FORCING; 0x70;
+#regdef; PRIORITY; 0x80 2;
+#regdef; GROUP_CONFIG; 0xC0 4;
