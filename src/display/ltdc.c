@@ -2304,11 +2304,16 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
-//    DISP_IF_TOP->MODULE_GATING = ~ 0u;
+//	CCU->DISPLAY_IF_TOP_BGR_REG |= ~ 0u;
+//    PRINTF("CCU->DISPLAY_IF_TOP_BGR_REG=%08X\n", (unsigned) CCU->DISPLAY_IF_TOP_BGR_REG);
+
+    //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
+//		(preiPOW << 8) |	// FACTOR_N 0..3: 1..8
+//		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
@@ -2316,9 +2321,17 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
 
+//	CCU->TCON_LCD_BGR_REG |= ~ 0u;
+//    PRINTF("CCU->TCON_LCD_BGR_REG=%08X\n", (unsigned) CCU->TCON_LCD_BGR_REG);
+
 #if WITHLVDSHW
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
+//    CCU->LVDS_BGR_REG |= ~ 0u;
+//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+//    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
+//    CCU->HDMI_BGR_REG |= ~ 0u;
+//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 #endif /* WITHLVDSHW */
 
     local_delay_us(10);
