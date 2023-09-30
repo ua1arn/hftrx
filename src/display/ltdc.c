@@ -2293,9 +2293,9 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		0;
 }
 
-static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned preiPOW, unsigned tconlcddiv)
+static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider)
 {
-    tconlcddiv = ulmax16(1, ulmin16(16, tconlcddiv));	// Make range in 1..16
+    divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	unsigned ix = TCONLCD_IX;	// TCON_LCD0
@@ -2312,8 +2312,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
-//		(preiPOW << 8) |	// FACTOR_N 0..3: 1..8
-//		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+//		(prei << 8) |	// FACTOR_N 0..3: 1..8
+//		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
@@ -2343,8 +2343,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	/* Configure TCONLCD clock */
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
 		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(preiPOW << 8) |	// FACTOR_N 0..3: 1..8
-		((tconlcddiv - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		(prei << 8) |	// FACTOR_N 0..3: 1..8
+		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
     TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
     local_delay_us(10);
