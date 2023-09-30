@@ -235,10 +235,11 @@ uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c)
 
 uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc)
 {
-	if (q->qp != q->qg)
+	unsigned qgt = q->qg;
+	if (q->qp != qgt)
 	{
-		* pc = q->buffer [q->qg];
-		q->qg = (q->qg + 1) % q->size;
+		* pc = q->buffer [qgt];
+		q->qg = (qgt + 1) % q->size;
 		return 1;
 	}
 	return 0;
