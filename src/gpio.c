@@ -804,7 +804,7 @@ static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
 		return & gpiodata_L_lock;
 	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 	if (gpio == GPIOL)
 		return & gpiodata_L_lock;
 	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
@@ -864,7 +864,7 @@ void sysinit_gpio_initialize(void)
 	reg_val |= (1u << 0);
 	writel(reg_val, R_PRCM_BASE+0x28);
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 #endif /* CPUSTYLE_A64 */
 }
@@ -922,7 +922,7 @@ static void gpioX_progUnsafe(
 	unsigned pull
 	)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
@@ -4694,7 +4694,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_ALLWINNER)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOH, opins, initialstate);
@@ -4761,7 +4761,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_ALLWINNER)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOI, opins, initialstate);
@@ -8562,7 +8562,7 @@ arm_hardware_piol_inputs(unsigned long ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOL, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_ALLWINNER)
 
 	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
@@ -8620,7 +8620,7 @@ arm_hardware_piol_altfn2(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOL, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_ALLWINNER)
 
 	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
@@ -8736,7 +8736,7 @@ arm_hardware_piol_altfn50(unsigned long opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOL, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
-#elif (CPUSTYLE_A64 || CPUSTYLE_T507)
+#elif (CPUSTYLE_ALLWINNER)
 
 	//gpioX_poweron(GPIOL);
 	gpioX_prog(GPIOL, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);

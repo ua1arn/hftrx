@@ -3184,9 +3184,9 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 
 #else /* WITHLTDCHW */
 
-unsigned long display_getdotclock(const videomode_t * vdmode)
+uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 {
-	return 1000000uL;
+	return UINT32_C(1000000);
 }
 
 #endif /* WITHLTDCHW */
