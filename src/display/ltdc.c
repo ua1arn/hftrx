@@ -2312,16 +2312,29 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
     if (needfreq != 0)
     {
-    	// lvds mode
-    	PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz\n", (unsigned) (needfreq / 1000 / 1000));
+    	// LVDS mode
+       	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+		const uint_fast32_t M = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M
+		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
+		uint_fast32_t N = calcdivround2(needfreq * M * 4, allwnrt113_get_hosc_freq());
+		N = ulmin16(N, 255);
+		N = ulmax16(N, 1);
+		CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
+		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
+		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
+		while ((CCU->PLL_VIDEO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
+			;
+		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
+
+		PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz\n", (unsigned) (needfreq / 1000 / 1000));
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-    		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
+			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
     }
     else
     {
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-    		2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+    		3 * (UINT32_C(1) << 24) | // 011: PLL_VIDEO1(4X)
     		0;
     }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
