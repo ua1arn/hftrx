@@ -2351,7 +2351,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #else
 	/* Configure TCONLCD clock */
-    TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
+    TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
 		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
 		(prei << 8) |	// FACTOR_N 0..3: 1..8
 		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
@@ -2404,7 +2404,7 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode)
 {
     TCONLCD_PTR->LCD_DCLK_REG =
-		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
+		(UINT32_C(0x0F) << 28) |	// LCD_DCLK_EN
 		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
@@ -2498,7 +2498,7 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0f) << 0)) |
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
 		(UINT32_C(2) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
 		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
 		((UINT32_C(4) - 1) << 0) |
@@ -2547,14 +2547,14 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 	// Step 6 LVDS controller configuration
 	// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
 	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] =
-		(UINT32_C(0x0f) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+		(UINT32_C(0x0F) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
 		(UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
 		(0x04u << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
 		(UINT32_C(3) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
 		0;
 	// test
 	//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
-	//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0f) << 12);	// LVDS_REG_DEN
+	//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0F) << 12);	// LVDS_REG_DEN
 
 	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 30);	// en_ldo
 	local_delay_ms(1);
@@ -2766,9 +2766,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 {
 #if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 	// PLL_VIDEO1 may be used for LVDS synchronization
-	/* Configure DE clock */
+	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	unsigned divider = 1;
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0f) << 0)) |
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
@@ -2849,16 +2849,15 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
-	/* Configure DE clock */
+	/* Configure DE clock (no FACTOR_N on this CPU) */
 	unsigned divider = 4;
-   CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
-		2 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(4X)
-		(0u << 8) |	// FACTOR_N 0..3: 1..8
+	CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
+		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
-	//PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000 / 1000));
+	PRINTF("allwnrt113_get_de_freq()=%u MHz\n", (unsigned) (allwnrt113_get_de_freq() / 1000 / 1000));
 
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
