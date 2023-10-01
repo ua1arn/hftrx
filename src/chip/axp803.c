@@ -905,6 +905,49 @@ static int axp858_set_aldo(int aldo_num, unsigned int mvolt)
 				AXP858_OUTPUT_CTRL2_ALDO1_EN << (aldo_num - 1));
 }
 
+static int axp858_set_bldo_1_3(int bldo_num, unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (bldo_num < 1 || bldo_num > 3)
+		return -1;
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL2,
+				AXP858_OUTPUT_CTRL2_BLDO1_EN << (bldo_num - 1));
+
+	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
+	ret = pmic_bus_write(AXP858_BLDO1_CTRL + bldo_num - 1, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP858_OUTPUT_CTRL2,
+			AXP858_OUTPUT_CTRL2_BLDO1_EN << (bldo_num - 1));
+}
+
+static int axp858_set_bldo_4_5(int bldo_num, unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (bldo_num < 4 || bldo_num > 5)
+		return -1;
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL3,
+				AXP858_OUTPUT_CTRL3_BLDO4_EN << (bldo_num - 4 - 1));
+
+	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
+	ret = pmic_bus_write(AXP858_BLDO1_CTRL + bldo_num - 1, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
+			AXP858_OUTPUT_CTRL3_BLDO4_EN << (bldo_num - 4 - 1));
+}
+
+
 /* TODO: re-work other AXP drivers to consolidate ALDO functions. */
 static int axp858_set_aldo1(unsigned int mvolt)
 {
@@ -930,6 +973,12 @@ static int axp858_set_aldo5(unsigned int mvolt)
 {
 	return axp858_set_aldo(5, mvolt);
 }
+
+static int axp858_set_bldo1(unsigned int mvolt)
+{
+	return axp858_set_bldo_1_3(1, mvolt);
+}
+
 
 // int axp858_set_dldo(int dldo_num, unsigned int mvolt)
 // {
@@ -1083,6 +1132,7 @@ int axp853_initialize(void)
 	VERIFY(0 == axp858_set_aldo3(2500));		// VPP DRAM
 	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
 	VERIFY(0 == axp858_set_aldo5(3300));		// VCC-PE
+	VERIFY(0 == axp858_set_bldo1(1800));		// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
 
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control
