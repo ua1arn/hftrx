@@ -2334,7 +2334,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     else
     {
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-    		3 * (UINT32_C(1) << 24) | // 011: PLL_VIDEO1(4X)
+    		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
     		0;
     }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
