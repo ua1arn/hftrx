@@ -350,6 +350,19 @@ void display_1fmenu(
 	);
 
 
+void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
+void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */
+void board_set_topdbwf(int_fast16_t v);			/* верхний предел FFT */
+void board_set_bottomdbwf(int_fast16_t v);		/* нижний предел FFT */
+void board_set_zoomxpow2(uint_fast8_t v);		/* уменьшение отображаемого участка спектра */
+void board_set_wflevelsep(uint_fast8_t v); 		/* чувствительность водопада регулируется отдельной парой параметров */
+void board_set_view_style(uint_fast8_t v);		/* стиль отображения спектра и панорамы */
+void board_set_view3dss_mark(uint_fast8_t v);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
+void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
+void board_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 #ifdef __cplusplus

@@ -767,7 +767,7 @@ typedef struct videomode_tag
 
 extern const videomode_t vdmode0;
 void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
-unsigned long display_getdotclock(const videomode_t * vdmode);
+uint_fast32_t display_getdotclock(const videomode_t * vdmode);
 
 void hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */

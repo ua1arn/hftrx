@@ -791,6 +791,7 @@ void arm_hardware_mdma_initialize(void)
 		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
 		//local_delay_us(10);
 
+		// PLL_VIDEO1 may be used for LVDS synchronization
 		// User manual say about 250 MHz default.
 		CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
 			0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL. Clock Source Select 0: PLL_DE 1: PLL_PERI0(2X)
@@ -798,7 +799,7 @@ void arm_hardware_mdma_initialize(void)
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 		local_delay_us(10);
-		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000000));
+		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
 
 		//CCU->G2D_BGR_REG = 0;
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -841,6 +842,7 @@ void arm_hardware_mdma_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 10);	// Gating MBUS Clock For G2D
 	//local_delay_us(10);
 
+	// PLL_VIDEO1 may be used for LVDS synchronization
 	// User manual say about 250 MHz default.
 	CCU->G2D_CLK_REG = (CCU->G2D_CLK_REG & ~ ((0x07u << 24) | (0x1Fu << 0))) |
 		0x00 * (UINT32_C(1) << 24) |	// 000: PLL_PERI(2X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(4X), 011: PLL_AUDIO1(DIV2)
@@ -848,7 +850,7 @@ void arm_hardware_mdma_initialize(void)
 		0;
 	CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 	local_delay_us(10);
-	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000000));
+	PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000 / 1000));
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */

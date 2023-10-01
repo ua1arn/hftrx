@@ -2293,7 +2293,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		0;
 }
 
-static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider)
+static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
@@ -2309,11 +2309,23 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
-
-	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
-		0;
+    PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
+    if (needfreq != 0)
+    {
+    	// lvds mode
+    	PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz\n", (unsigned) (needfreq / 1000 / 1000));
+    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+    		1 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO0(4X)
+    		0;
+    }
+    else
+    {
+    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+    		2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+    		0;
+    }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
 
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
@@ -2345,6 +2357,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
     TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
     local_delay_us(10);
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
@@ -2368,10 +2381,10 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	val = BOARD_TCONLCDFREQ / display_getdotclock(vdmode);
 	PRINTF("ltdc_divider=%u\n", val);
 	ASSERT(val >= 1 && val <= 127);
-	TCONLCD_PTR->LCD_DCLK_REG = (
-			0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
-			val * (UINT32_C(1) << 0)			// LCD_DCLK_DIV
-			);
+	TCONLCD_PTR->LCD_DCLK_REG =
+		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
+		val * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
+		0;
     local_delay_us(10);
 }
 
@@ -2379,8 +2392,8 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
     TCONLCD_PTR->LCD_DCLK_REG =
-		(UINT32_C(0x0f) << 28) |	// LCD_DCLK_EN
-		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
+		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
+		7 * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
 }
@@ -2669,12 +2682,13 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 }
 
+// Paraleal RGB mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	unsigned prei = 0;
-	unsigned divider = 1;//BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
+	unsigned divider = 1;
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider, 0);
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2694,7 +2708,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	unsigned prei = 0;
 	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider, display_getdotclock(vdmode) * 7);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2721,7 +2735,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	unsigned prei = 0;
 	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider);
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider, display_getdotclock(vdmode) * 7);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2751,6 +2765,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
 #if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock */
 	unsigned divider = 1;
     CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0f) << 0)) |
@@ -2833,6 +2848,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
+	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock */
 	unsigned divider = 4;
    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0f) << 0))) |
@@ -3047,7 +3063,7 @@ void hardware_ltdc_L8_palette(void)
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 /* Получить желаемую частоту pixel clock для данного видеорежима. */
-unsigned long display_getdotclock(const videomode_t * vdmode)
+uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -3059,7 +3075,7 @@ unsigned long display_getdotclock(const videomode_t * vdmode)
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-	return (unsigned long) vdmode->fps * HTOTAL * VTOTAL;
+	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
 	//return vdmode->ltdc_dotclk;
 }
 
