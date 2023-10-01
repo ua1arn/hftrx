@@ -2764,7 +2764,31 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_A64
+
+	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	//#define SUNXI_SRAMC_BASE 0x03000000
+    // Under CONFIG_MACH_SUN50I
+ 	{
+		uint32_t reg_value;
+
+		/* set SRAM for video use */
+		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
+		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
+		////PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+		reg_value &= ~(0x01 << 24);
+		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
+		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
+		////PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+
+	}
+#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
+	/* Set ahb gating to pass */
+//	setbits_le32(&ccm->ahb_reset1_cfg, 1 << AHB_RESET_OFFSET_DE);
+//	setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_DE);
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	unsigned divider = 1;
@@ -2781,24 +2805,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
-
-	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
-
-	/* переключить память к DE & VI */
-	//#define SUNXI_SRAMC_BASE 0x03000000
-	{
-		uint32_t reg_value;
-
-		/* set SRAM for video use (A64 only) */
-		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
-		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
-		////PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-		reg_value &= ~(0x01 << 24);
-		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
-		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
-		////PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-
-	}
 
  	/* Global DE settings */
 
@@ -2826,7 +2832,91 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= 0xFF; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
-//	PRINTF("DE_TOP AHB reset:\n");
+	PRINTF("DE_TOP AHB reset:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+
+	DE_GLB->GLB_CTL =
+			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+			(UINT32_C(1) << 0) |		// EN RT enable/disable
+			0;
+
+	DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
+
+	//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
+	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
+	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
+
+	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
+
+	DE_GLB->GLB_STS = 0;
+
+//	PRINTF("DE_TOP AHB final:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	//#define SUNXI_SRAMC_BASE 0x03000000
+    // Under CONFIG_MACH_SUN50I
+ 	{
+		uint32_t reg_value;
+
+		/* set SRAM for video use */
+		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
+		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
+		////PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+		reg_value &= ~(0x01 << 24);
+		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
+		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
+		////PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+
+	}
+	// PLL_VIDEO1 may be used for LVDS synchronization
+	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
+	unsigned divider = 1;
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+		0;
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    local_delay_us(10);
+
+	PRINTF("allwnr_t507_get_de_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_de_freq() / 1000 / 1000));
+	PRINTF("allwnr_t507_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_mbus_freq() / 1000 / 1000));
+
+    CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+    local_delay_us(10);
+
+ 	/* Global DE settings */
+
+	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
+
+//	PRINTF("DE_TOP before:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+//	memset(DE_TOP, 255, 256);
+//	PRINTF("DE_TOP fill 0xFF:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+//	memset(DE_TOP, 0, 256);
+//	PRINTF("DE_TOP fill 0x00:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+//
+// 	DE_TOP->DE_SCLK_DIV =
+//		7 * (UINT32_C(1) << 8) |	// wb-div
+//		7 * (UINT32_C(1) << 4) |	// mixer1-div
+//		7 * (UINT32_C(1) << 0) |	// mixer0-div
+//		0;
+
+ 	DE_TOP->DE_SCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+ 	DE_TOP->DE_HCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+
+ 	// Only one bit writable
+ 	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+	DE_TOP->DE_AHB_RESET |= 0xFF; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
+
+	PRINTF("DE_TOP AHB reset:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 	DE_GLB->GLB_CTL =
