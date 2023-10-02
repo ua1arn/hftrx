@@ -3014,32 +3014,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	t113_de_update();
 }
 
-#if WITHDEBUG
-void de_dump(void)
-{
-	int skip = 0;
-	static uint8_t pattern [512];
-	unsigned offs;
-	for (offs = 0x8000 ; offs < 4 * 1024 * 1024; offs += 512)
-	{
-		* (volatile uint32_t *) (DE_BASE + offs) |= 1;
-		if (memcmp(pattern, (void *) (DE_BASE + offs), 512) == 0)
-		{
-			++ skip;
-			PRINTF(".");
-			continue;
-		}
-		if (skip)
-		{
-			skip = 0;
-			PRINTF("\n");
-		}
-		printhex32(DE_BASE + offs, (void *) (DE_BASE + offs), 512);
-		PRINTF("---\n");
-	}
-}
-#endif /* WITHDEBUG */
-
 static void hardware_tcon_initialize(const videomode_t * vdmode)
 {
 #if WITHLVDSHW
@@ -3201,6 +3175,39 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 #endif /* WITHLTDCHW */
 
 #if WITHGPUHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#define GPU_CTRLBASE (GPU_BASE + 0x10000)
+
+#if WITHDEBUG
+
+//	01810000  000000FF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF 0003FFFF
+//	01810020  00000000 00000000 00000000 00000000 FFFFFFFF 00000007 00000000 00000000
+//	01810040  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+//	01810060  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+
+void gpu_dump(void)
+{
+	int skip = 0;
+	static uint8_t pattern [512];
+	unsigned offs;
+	for (offs = 0x8000 * 2; offs < 4 * 256 * 1024; offs += 512)
+	{
+		* (volatile uint32_t *) (GPU_BASE + offs) |= 1;
+		if (memcmp(pattern, (void *) (GPU_BASE + offs), 512) == 0)
+		{
+			++ skip;
+			PRINTF(".");
+			continue;
+		}
+		if (skip)
+		{
+			skip = 0;
+			PRINTF("\n");
+		}
+		printhex32(GPU_BASE + offs, (void *) (GPU_BASE + offs), 512);
+		PRINTF("---\n");
+	}
+}
+#endif /* WITHDEBUG */
 
 void GPU_IRQHandler(void)
 {
@@ -3220,7 +3227,8 @@ void board_gpu_initialize(void)
 	CCU->GPU_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset
 
 	PRINTF("allwnr_t507_get_gpu_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_gpu_freq() / 1000 / 1000);
-	printhex32(GPU_BASE, (void *) GPU_BASE, 256);
+	//memset((void *) GPU_CTRLBASE, 0xFF, 4);
+	//gpu_dump();
 
 //
 	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
