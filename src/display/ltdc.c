@@ -2662,19 +2662,17 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 	// 5.1.6.20 0x0088 LCD IO Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
 	{
+		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+
+		h_sync_active = vdmode->vsyncneg;
+		v_sync_active = vdmode->hsyncneg;
+		den_active = ! vdmode->deneg;
+		clk_active = 0;
+
 		uint32_t val;
-		struct {
-			int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-			int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-			int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-			int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
-		} timing;
-
-		timing.h_sync_active = vdmode->vsyncneg;
-		timing.v_sync_active = vdmode->hsyncneg;
-		timing.den_active = ! vdmode->deneg;
-		timing.clk_active = 0;
-
 #if 0//(CPUSTYLE_T507 || CPUSTYLE_H616)
 		// вызывает сдвиг на пиксель
 		val = 0;
@@ -2685,13 +2683,13 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 			0;
 #endif
 
-		if (! timing.h_sync_active)
+		if (! h_sync_active)
 			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
-		if (! timing.v_sync_active)
+		if (! v_sync_active)
 			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
-		if (! timing.den_active)
+		if (! den_active)
 			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
-		if (! timing.clk_active)
+		if (! clk_active)
 			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
 
 		TCONLCD_PTR->LCD_IO_POL_REG = val;
