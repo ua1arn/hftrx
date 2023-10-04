@@ -40,7 +40,7 @@
 #regdef; PLL_DDR_CFG_REG; 0x00F8; PLL_DDR Configuration Register
 #regdef; MBUS_RST_REG; 0x00FC; MBUS Reset Register
 #regdef; DRAM_CLK_GATING_REG; 0x0100; DRAM Clock Gating Register
-#regdef; DE_CLK_REG; 0x0104 DE Clock Register
+#regdef; DE_CLK_REG; 0x0104; DE Clock Register
 #regdef; TCON0_CLK_REG; 0x0118; TCON0 Clock Register
 #regdef; TCON1_CLK_REG; 0x011C; TCON1 Clock Register
 #regdef; DEINTERLACE_CLK_REG; 0x0124; DEINTERLACE Clock Register

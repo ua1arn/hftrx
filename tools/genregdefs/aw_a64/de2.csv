@@ -1,3 +1,6 @@
+#type; DE; Display Engine (DE)
+#base; DE 0x01000000
+
 #type; DE_TOP; Display Engine Top
 
 #base; DE_TOP 0x01000000
@@ -18,23 +21,24 @@
 
 #type; DE_BLD
 #base; DE_BLD 0x1101000
-#regdef; fcolor_ctl;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
-#aggreg; attr; 0x004 4; Pipe [0..3]
-#regdef; fcolor;	0x000; BLD fill color register
-#regdef; insize;	0x004; BLD input memory size register
-#regdef; offset;	0x008; BLD input memory offset register
-#regdef; padding 0; 0x010; Need for address arithmetics
+
+#regdef; BLD_EN_COLOR_CTL;	0x0000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; CH; 0x0004 6; Pipe [0..5]
+#regdef; BLD_FILL_COLOR;	0x0000; BLD fill color register
+#regdef; BLD_CH_ISIZE;	0x0004; BLD input memory size register
+#regdef; BLD_CH_OFFSET;	0x0008; BLD input memory offset register
+#regdef; padding 0; 0x0010; Need for address arithmetics
 #aggregend;
-#regdef; route;			0x080; 		BLD_CH_RTCTL Offset 0x080 BLD routing control register
-#regdef; premultiply; 	0x084; Offset 0x080 BLD pre-multiply control register
-#regdef; bkcolor; 0x088;
-#regdef; output_size; 0x08C;
-#regdef; bld_mode; 0x090 4; BLD_CTL
-#regdef; ck_ctl; 0x0B0;
-#regdef; ck_cfg; 0x0B4;
-#regdef; ck_max; 0x0C0 4;
-#regdef; ck_min; 0x0E0 4;
-#regdef; out_ctl; 0x0FC;
+#regdef; ROUTE;			0x0080; BLD_CH_RTCTL BLD routing control register (default value 0x00543210)
+#regdef; PREMULTIPLY; 	0x0084; BLD pre-multiply control register
+#regdef; BKCOLOR; 0x0088;
+#regdef; OUTPUT_SIZE; 0x008C;
+#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more)
+#regdef; CK_CTL; 0x00B0;
+#regdef; CK_CFG; 0x00B4;
+#regdef; CK_MAX; 0x00C0 4;
+#regdef; CK_MIN; 0x00E0 4;
+#regdef; OUT_CTL; 0x00FC;
 
 #type; DE_CSR
 #base; DE_CSR 0x01020000
@@ -63,36 +67,40 @@
 #regdef; OMEN_HADD2; 0x0B4; Output V memory address register1
 
 #type; DE_VI
-#base; DE_VI 0x01102000
-#aggreg; cfg; 0x000 4;
-#regdef; attr; 0x000;
-#regdef; size; 0x004;
-#regdef; coord; 0x008;
-#regdef; pitch; 0x00C 3;
-#regdef; top_laddr; 0x018 3;
-#regdef; bot_laddr; 0x024 3;
+#base; DE_VI1 0x01102000
+#base; DE_VI2 0x01102000
+#base; DE_VI3 0x01102000
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000;
+#regdef;  SIZE; 0x004;
+#regdef;  COORD; 0x008;
+#regdef;  PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
+#regdef;  TOP_LADDR; 0x018 3;
+#regdef;  BOT_LADDR; 0x024 3;
 #aggregend;
-#regdef; fcolor; 0x0C0 4;
-#regdef; top_haddr; 0x0D0 3;
-#regdef; bot_haddr; 0x0DC 3;
-#regdef; ovl_size; 0x0E8 2;
-#regdef; hori; 0x0F0 2;
-#regdef; vert; 0x0F8 2;
+#regdef; FCOLOR; 0x0C0 4;
+#regdef; TOP_HADDR; 0x0D0 3;
+#regdef; BOT_HADDR; 0x0DC 3;
+#regdef; OVL_SIZE; 0x0E8 2; OVL_V overlay window size register
+#regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
+#regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
 
 #type; DE_UI
 #base; DE_UI1 0x01103000
 #base; DE_UI2 0x01104000
 #base; DE_UI3 0x01105000
-#aggreg; cfg; 0x000 4;
-#regdef;  attr; 0x000; 
-#regdef;  size; 0x004; 
-#regdef;  coord; 0x008; 
-#regdef;  pitch; 0x00C; 
-#regdef;  top_laddr; 0x010; 
-#regdef;  bot_laddr; 0x014; 
-#regdef;  fcolor; 0x018; 
-#regdef; padding 0; 0x020; Need for address arithmetics
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000; 
+#regdef;  SIZE; 0x004; 
+#regdef;  COORD; 0x008; 
+#regdef;  PITCH; 0x00C; 
+#regdef;  TOP_LADDR; 0x010; 
+#regdef;  BOT_LADDR; 0x014; 
+#regdef;  FCOLOR; 0x018; 
+#regdef;  padding 0; 0x020; Need for address arithmetics
 #aggregend;
-#regdef;  top_haddr; 0x080; 
-#regdef;  bot_haddr; 0x084; 
-#regdef;  ovl_size; 0x088; 
+#regdef; TOP_HADDR; 0x080; 
+#regdef; BOT_HADDR; 0x084; 
+#regdef; OVL_SIZE; 0x088; 

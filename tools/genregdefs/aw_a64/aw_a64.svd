@@ -2149,7 +2149,7 @@
    <register>
     <name>DE_CLK_REG</name>
     <displayName>DE_CLK_REG</displayName>
-    <description></description>
+    <description>DE Clock Register</description>
     <addressOffset>0x104</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3376,8 +3376,8 @@
   <baseAddress>0x01101000</baseAddress>
   <registers>
    <register>
-    <name>fcolor_ctl</name>
-    <displayName>fcolor_ctl</displayName>
+    <name>BLD_EN_COLOR_CTL</name>
+    <displayName>BLD_EN_COLOR_CTL</displayName>
     <description>BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -3385,12 +3385,12 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>4</dim>
+    <dim>6</dim>
     <addressOffset>0x00000004</addressOffset>
     <registers>
      <register>
-      <name>fcolor</name>
-      <displayName>fcolor</displayName>
+      <name>BLD_FILL_COLOR</name>
+      <displayName>BLD_FILL_COLOR</displayName>
       <description>BLD fill color register</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -3398,8 +3398,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>insize</name>
-      <displayName>insize</displayName>
+      <name>BLD_CH_ISIZE</name>
+      <displayName>BLD_CH_ISIZE</displayName>
       <description>BLD input memory size register</description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -3407,8 +3407,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>offset</name>
-      <displayName>offset</displayName>
+      <name>BLD_CH_OFFSET</name>
+      <displayName>BLD_CH_OFFSET</displayName>
       <description>BLD input memory offset register</description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -3416,29 +3416,29 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x040</dimIncrement>
+    <dimIncrement>0x060</dimIncrement>
    </cluster>
    <register>
-    <name>route</name>
-    <displayName>route</displayName>
-    <description>BLD_CH_RTCTL Offset 0x080 BLD routing control register</description>
+    <name>ROUTE</name>
+    <displayName>ROUTE</displayName>
+    <description>BLD_CH_RTCTL BLD routing control register (default value 0x00543210)</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>premultiply</name>
-    <displayName>premultiply</displayName>
-    <description>Offset 0x080 BLD pre-multiply control register</description>
+    <name>PREMULTIPLY</name>
+    <displayName>PREMULTIPLY</displayName>
+    <description>BLD pre-multiply control register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>bkcolor</name>
-    <displayName>bkcolor</displayName>
+    <name>BKCOLOR</name>
+    <displayName>BKCOLOR</displayName>
     <description></description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
@@ -3446,8 +3446,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>output_size</name>
-    <displayName>output_size</displayName>
+    <name>OUTPUT_SIZE</name>
+    <displayName>OUTPUT_SIZE</displayName>
     <description></description>
     <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
@@ -3455,22 +3455,22 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>4</dim>
+    <dim>6</dim>
     <addressOffset>0x00000090</addressOffset>
     <register>
-     <name>bld_mode</name>
-     <displayName>bld_mode</displayName>
-     <description>BLD_CTL</description>
+     <name>BLD_MODE</name>
+     <displayName>BLD_MODE</displayName>
+     <description>BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x018</dimIncrement>
    </cluster>
    <register>
-    <name>ck_ctl</name>
-    <displayName>ck_ctl</displayName>
+    <name>CK_CTL</name>
+    <displayName>CK_CTL</displayName>
     <description></description>
     <addressOffset>0x0B0</addressOffset>
     <size>0x20</size>
@@ -3478,8 +3478,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ck_cfg</name>
-    <displayName>ck_cfg</displayName>
+    <name>CK_CFG</name>
+    <displayName>CK_CFG</displayName>
     <description></description>
     <addressOffset>0x0B4</addressOffset>
     <size>0x20</size>
@@ -3490,8 +3490,8 @@
     <dim>4</dim>
     <addressOffset>0x000000C0</addressOffset>
     <register>
-     <name>ck_max</name>
-     <displayName>ck_max</displayName>
+     <name>CK_MAX</name>
+     <displayName>CK_MAX</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -3504,8 +3504,8 @@
     <dim>4</dim>
     <addressOffset>0x000000E0</addressOffset>
     <register>
-     <name>ck_min</name>
-     <displayName>ck_min</displayName>
+     <name>CK_MIN</name>
+     <displayName>CK_MIN</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -3515,8 +3515,8 @@
     <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
-    <name>out_ctl</name>
-    <displayName>out_ctl</displayName>
+    <name>OUT_CTL</name>
+    <displayName>OUT_CTL</displayName>
     <description></description>
     <addressOffset>0x0FC</addressOffset>
     <size>0x20</size>
@@ -3858,8 +3858,8 @@
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <register>
-      <name>attr</name>
-      <displayName>attr</displayName>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
       <description></description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -3867,8 +3867,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>size</name>
-      <displayName>size</displayName>
+      <name>SIZE</name>
+      <displayName>SIZE</displayName>
       <description></description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -3876,8 +3876,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>coord</name>
-      <displayName>coord</displayName>
+      <name>COORD</name>
+      <displayName>COORD</displayName>
       <description></description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -3885,8 +3885,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>pitch</name>
-      <displayName>pitch</displayName>
+      <name>PITCH</name>
+      <displayName>PITCH</displayName>
       <description></description>
       <addressOffset>0x00C</addressOffset>
       <size>0x20</size>
@@ -3894,8 +3894,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>top_laddr</name>
-      <displayName>top_laddr</displayName>
+      <name>TOP_LADDR</name>
+      <displayName>TOP_LADDR</displayName>
       <description></description>
       <addressOffset>0x010</addressOffset>
       <size>0x20</size>
@@ -3903,8 +3903,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>bot_laddr</name>
-      <displayName>bot_laddr</displayName>
+      <name>BOT_LADDR</name>
+      <displayName>BOT_LADDR</displayName>
       <description></description>
       <addressOffset>0x014</addressOffset>
       <size>0x20</size>
@@ -3912,8 +3912,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>fcolor</name>
-      <displayName>fcolor</displayName>
+      <name>FCOLOR</name>
+      <displayName>FCOLOR</displayName>
       <description></description>
       <addressOffset>0x018</addressOffset>
       <size>0x20</size>
@@ -3924,8 +3924,8 @@
     <dimIncrement>0x080</dimIncrement>
    </cluster>
    <register>
-    <name>top_haddr</name>
-    <displayName>top_haddr</displayName>
+    <name>TOP_HADDR</name>
+    <displayName>TOP_HADDR</displayName>
     <description></description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
@@ -3933,8 +3933,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>bot_haddr</name>
-    <displayName>bot_haddr</displayName>
+    <name>BOT_HADDR</name>
+    <displayName>BOT_HADDR</displayName>
     <description></description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
@@ -3942,8 +3942,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>ovl_size</name>
-    <displayName>ovl_size</displayName>
+    <name>OVL_SIZE</name>
+    <displayName>OVL_SIZE</displayName>
     <description></description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
@@ -3961,7 +3961,7 @@
   <baseAddress>0x01105000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_VI</name>
+  <name>DE_VI1</name>
   <description></description>
   <baseAddress>0x01102000</baseAddress>
   <registers>
@@ -3970,8 +3970,8 @@
     <addressOffset>0x00000000</addressOffset>
     <registers>
      <register>
-      <name>attr</name>
-      <displayName>attr</displayName>
+      <name>ATTR</name>
+      <displayName>ATTR</displayName>
       <description></description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
@@ -3979,8 +3979,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>size</name>
-      <displayName>size</displayName>
+      <name>SIZE</name>
+      <displayName>SIZE</displayName>
       <description></description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
@@ -3988,8 +3988,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>coord</name>
-      <displayName>coord</displayName>
+      <name>COORD</name>
+      <displayName>COORD</displayName>
       <description></description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
@@ -4000,9 +4000,9 @@
       <dim>3</dim>
       <addressOffset>0x0000000C</addressOffset>
       <register>
-       <name>pitch</name>
-       <displayName>pitch</displayName>
-       <description></description>
+       <name>PITCH</name>
+       <displayName>PITCH</displayName>
+       <description>ix=0: Y, ix=1: U/UV channel, ix=3: V channel </description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
        <access>read-write</access>
@@ -4014,8 +4014,8 @@
       <dim>3</dim>
       <addressOffset>0x00000018</addressOffset>
       <register>
-       <name>top_laddr</name>
-       <displayName>top_laddr</displayName>
+       <name>TOP_LADDR</name>
+       <displayName>TOP_LADDR</displayName>
        <description></description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
@@ -4028,8 +4028,8 @@
       <dim>3</dim>
       <addressOffset>0x00000024</addressOffset>
       <register>
-       <name>bot_laddr</name>
-       <displayName>bot_laddr</displayName>
+       <name>BOT_LADDR</name>
+       <displayName>BOT_LADDR</displayName>
        <description></description>
        <addressOffset>0x000</addressOffset>
        <size>0x20</size>
@@ -4045,8 +4045,8 @@
     <dim>4</dim>
     <addressOffset>0x000000C0</addressOffset>
     <register>
-     <name>fcolor</name>
-     <displayName>fcolor</displayName>
+     <name>FCOLOR</name>
+     <displayName>FCOLOR</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -4059,8 +4059,8 @@
     <dim>3</dim>
     <addressOffset>0x000000D0</addressOffset>
     <register>
-     <name>top_haddr</name>
-     <displayName>top_haddr</displayName>
+     <name>TOP_HADDR</name>
+     <displayName>TOP_HADDR</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -4073,8 +4073,8 @@
     <dim>3</dim>
     <addressOffset>0x000000DC</addressOffset>
     <register>
-     <name>bot_haddr</name>
-     <displayName>bot_haddr</displayName>
+     <name>BOT_HADDR</name>
+     <displayName>BOT_HADDR</displayName>
      <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -4087,9 +4087,9 @@
     <dim>2</dim>
     <addressOffset>0x000000E8</addressOffset>
     <register>
-     <name>ovl_size</name>
-     <displayName>ovl_size</displayName>
-     <description></description>
+     <name>OVL_SIZE</name>
+     <displayName>OVL_SIZE</displayName>
+     <description>OVL_V overlay window size register</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -4101,9 +4101,9 @@
     <dim>2</dim>
     <addressOffset>0x000000F0</addressOffset>
     <register>
-     <name>hori</name>
-     <displayName>hori</displayName>
-     <description></description>
+     <name>HORI</name>
+     <displayName>HORI</displayName>
+     <description>OVL_V horizontal down sample control register</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -4115,9 +4115,9 @@
     <dim>2</dim>
     <addressOffset>0x000000F8</addressOffset>
     <register>
-     <name>vert</name>
-     <displayName>vert</displayName>
-     <description></description>
+     <name>VERT</name>
+     <displayName>VERT</displayName>
+     <description>OVL_V vertical down sample control register</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -4126,6 +4126,14 @@
     <dimIncrement>0x008</dimIncrement>
    </cluster>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DE_VI2</name>
+  <baseAddress>0x01102000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DE_VI3</name>
+  <baseAddress>0x01102000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DMAC</name>
@@ -9509,8 +9517,8 @@
   <baseAddress>0x01C0C000</baseAddress>
   <registers>
    <register>
-    <name>TCON_GCTL_REG</name>
-    <displayName>TCON_GCTL_REG</displayName>
+    <name>LCD_GCTL_REG</name>
+    <displayName>LCD_GCTL_REG</displayName>
     <description>TCON global control register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -9518,8 +9526,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_GINT0_REG</name>
-    <displayName>TCON_GINT0_REG</displayName>
+    <name>LCD_GINT0_REG</name>
+    <displayName>LCD_GINT0_REG</displayName>
     <description>TCON global interrupt register0</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -9527,8 +9535,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_GINT1_REG</name>
-    <displayName>TCON_GINT1_REG</displayName>
+    <name>LCD_GINT1_REG</name>
+    <displayName>LCD_GINT1_REG</displayName>
     <description>TCON global interrupt register1</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -9536,8 +9544,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_FRM_CTL_REG</name>
-    <displayName>TCON0_FRM_CTL_REG</displayName>
+    <name>LCD_FRM_CTL_REG</name>
+    <displayName>LCD_FRM_CTL_REG</displayName>
     <description>TCON FRM control register</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
@@ -9548,8 +9556,8 @@
     <dim>6</dim>
     <addressOffset>0x00000014</addressOffset>
     <register>
-     <name>TCON0_FRM_SEED_REG</name>
-     <displayName>TCON0_FRM_SEED_REG</displayName>
+     <name>LCD_FRM_SEED_REG</name>
+     <displayName>LCD_FRM_SEED_REG</displayName>
      <description>TCON FRM seed register (N=0,1,2,3,4,5)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -9562,8 +9570,8 @@
     <dim>4</dim>
     <addressOffset>0x0000002C</addressOffset>
     <register>
-     <name>TCON0_FRM_TAB_REG</name>
-     <displayName>TCON0_FRM_TAB_REG</displayName>
+     <name>LCD_FRM_TAB_REG</name>
+     <displayName>LCD_FRM_TAB_REG</displayName>
      <description>TCON FRM table register (N=0,1,2,3)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -9573,8 +9581,8 @@
     <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
-    <name>TCON0_3D_FIFO_REG</name>
-    <displayName>TCON0_3D_FIFO_REG</displayName>
+    <name>LCD_3D_FIFO_REG</name>
+    <displayName>LCD_3D_FIFO_REG</displayName>
     <description>TCON0 3D fifo register</description>
     <addressOffset>0x03C</addressOffset>
     <size>0x20</size>
@@ -9582,8 +9590,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_CTL_REG</name>
-    <displayName>TCON0_CTL_REG</displayName>
+    <name>LCD_CTL_REG</name>
+    <displayName>LCD_CTL_REG</displayName>
     <description>TCON0 control register</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
@@ -9591,8 +9599,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_DCLK_REG</name>
-    <displayName>TCON0_DCLK_REG</displayName>
+    <name>LCD_DCLK_REG</name>
+    <displayName>LCD_DCLK_REG</displayName>
     <description>TCON0 data clock register</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
@@ -9600,8 +9608,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_BASIC0_REG</name>
-    <displayName>TCON0_BASIC0_REG</displayName>
+    <name>LCD_BASIC0_REG</name>
+    <displayName>LCD_BASIC0_REG</displayName>
     <description>TCON0 basic timing register0</description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
@@ -9609,8 +9617,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_BASIC1_REG</name>
-    <displayName>TCON0_BASIC1_REG</displayName>
+    <name>LCD_BASIC1_REG</name>
+    <displayName>LCD_BASIC1_REG</displayName>
     <description>TCON0 basic timing register</description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
@@ -9618,8 +9626,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_BASIC2_REG</name>
-    <displayName>TCON0_BASIC2_REG</displayName>
+    <name>LCD_BASIC2_REG</name>
+    <displayName>LCD_BASIC2_REG</displayName>
     <description>TCON0 basic timing register2</description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
@@ -9627,8 +9635,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_BASIC3_REG</name>
-    <displayName>TCON0_BASIC3_REG</displayName>
+    <name>LCD_BASIC3_REG</name>
+    <displayName>LCD_BASIC3_REG</displayName>
     <description>TCON0 basic timing register3</description>
     <addressOffset>0x054</addressOffset>
     <size>0x20</size>
@@ -9636,8 +9644,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_HV_IF_REG</name>
-    <displayName>TCON0_HV_IF_REG</displayName>
+    <name>LCD_HV_IF_REG</name>
+    <displayName>LCD_HV_IF_REG</displayName>
     <description>TCON0 hv panel interface register</description>
     <addressOffset>0x058</addressOffset>
     <size>0x20</size>
@@ -9645,8 +9653,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_CPU_IF_REG</name>
-    <displayName>TCON0_CPU_IF_REG</displayName>
+    <name>LCD_CPU_IF_REG</name>
+    <displayName>LCD_CPU_IF_REG</displayName>
     <description>TCON0 cpu panel interface register</description>
     <addressOffset>0x060</addressOffset>
     <size>0x20</size>
@@ -9654,8 +9662,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_CPU_WR_REG</name>
-    <displayName>TCON0_CPU_WR_REG</displayName>
+    <name>LCD_CPU_WR_REG</name>
+    <displayName>LCD_CPU_WR_REG</displayName>
     <description>TCON0 cpu panel write data register</description>
     <addressOffset>0x064</addressOffset>
     <size>0x20</size>
@@ -9663,8 +9671,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_CPU_RD0_REG</name>
-    <displayName>TCON0_CPU_RD0_REG</displayName>
+    <name>LCD_CPU_RD0_REG</name>
+    <displayName>LCD_CPU_RD0_REG</displayName>
     <description>TCON0 cpu panel read data register0</description>
     <addressOffset>0x068</addressOffset>
     <size>0x20</size>
@@ -9672,8 +9680,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_CPU_RD1_REG</name>
-    <displayName>TCON0_CPU_RD1_REG</displayName>
+    <name>LCD_CPU_RD1_REG</name>
+    <displayName>LCD_CPU_RD1_REG</displayName>
     <description>TCON0 cpu panel read data register1</description>
     <addressOffset>0x06C</addressOffset>
     <size>0x20</size>
@@ -9681,8 +9689,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_LVDS_IF_REG</name>
-    <displayName>TCON0_LVDS_IF_REG</displayName>
+    <name>LCD_LVDS_IF_REG</name>
+    <displayName>LCD_LVDS_IF_REG</displayName>
     <description>TCON0 lvds panel interface register</description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
@@ -9690,8 +9698,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_IO_POL_REG</name>
-    <displayName>TCON0_IO_POL_REG</displayName>
+    <name>LCD_IO_POL_REG</name>
+    <displayName>LCD_IO_POL_REG</displayName>
     <description>TCON0 IO polarity register</description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
@@ -9699,8 +9707,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_IO_TRI_REG</name>
-    <displayName>TCON0_IO_TRI_REG</displayName>
+    <name>LCD_IO_TRI_REG</name>
+    <displayName>LCD_IO_TRI_REG</displayName>
     <description>TCON0 IO trigger register</description>
     <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
@@ -9756,8 +9764,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON0_LVDS_ANA0_REG</name>
-    <displayName>TCON0_LVDS_ANA0_REG</displayName>
+    <name>LCD_LVDS_ANA0_REG</name>
+    <displayName>LCD_LVDS_ANA0_REG</displayName>
     <description>TCON LVDS analog register0</description>
     <addressOffset>0x220</addressOffset>
     <size>0x20</size>
@@ -9768,8 +9776,8 @@
     <dim>256</dim>
     <addressOffset>0x00000400</addressOffset>
     <register>
-     <name>TCON0_GAMMA_TABLE_REG</name>
-     <displayName>TCON0_GAMMA_TABLE_REG</displayName>
+     <name>LCD_GAMMA_TABLE_REG</name>
+     <displayName>LCD_GAMMA_TABLE_REG</displayName>
      <description>Gamma Table 0x400-0x7FF</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -9779,8 +9787,8 @@
     <dimIncrement>0x400</dimIncrement>
    </cluster>
    <register>
-    <name>TCON0_3D_FIFO_BIST_REG</name>
-    <displayName>TCON0_3D_FIFO_BIST_REG</displayName>
+    <name>LCD_3D_FIFO_BIST_REG</name>
+    <displayName>LCD_3D_FIFO_BIST_REG</displayName>
     <description></description>
     <addressOffset>0xFF4</addressOffset>
     <size>0x20</size>

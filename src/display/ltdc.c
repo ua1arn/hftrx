@@ -1866,7 +1866,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	# define SUNXI_DE2_MUX_DCSC_REGS		0xb0000
 
 #else
-	#error Undefined CPUSTYLE_xxx
+	//#error Undefined CPUSTYLE_xxx
 #endif
 // 1.5 Register Description
 //struct de_clk_t {
@@ -1999,7 +1999,7 @@ static DE_UI_TypeDef * de3_getui(int ix)
 
 static DE_BLD_TypeDef * de3_getbld(int ix)
 {
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	return DE_BLD;
 
@@ -2363,7 +2363,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     TCON_LCD0->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
     TCON_LCD1->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
-#else
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Configure TCONLCD clock */
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
 		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
@@ -2382,6 +2382,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
+
+#else
+
 #endif
 }
 
@@ -2582,8 +2585,9 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 //	local_delay_ms(1);
 //	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 //	local_delay_ms(1);
+	PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 
-#else
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
 	// Step 5 LVDS digital logic configuration
@@ -2610,8 +2614,10 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 	local_delay_ms(1);
 	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 	local_delay_ms(1);
-#endif
 	PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
+
+#else
+#endif
 }
 
 // Set sequuence parameters
@@ -2790,10 +2796,13 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
-#else
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
 	(void) DSI0->DSI_CTL;
+#else
+
 #endif
 	t113_DSI_controller_configuration(vdmode);
 	t113_LVDS_controller_configuration(vdmode, 0);
@@ -2820,11 +2829,11 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		/* set SRAM for video use */
 		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
 		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
-		////PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+		//PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
 		reg_value &= ~ (UINT32_C(1) << 24);
 		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
 		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
-		////PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
+		//PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
 
 	}
 #warning TODO: Enable ahb_reset1_cfg and ahb_gate1
@@ -2833,19 +2842,22 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_DE);
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
-	unsigned divider = 1;
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+	unsigned divider = 8;
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_PERIPH0(2X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
 
-	PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
-	PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
+    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12);	// DE_GATING
+    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
 
-    CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+//	PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
+//	PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
+
+//    CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
+//    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
 
  	/* Global DE settings */
@@ -2867,14 +2879,14 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //		7 * (UINT32_C(1) << 0) |	// mixer0-div
 //		0;
 
- 	DE_TOP->DE_SCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
- 	DE_TOP->DE_HCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+ 	DE_TOP->SCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+ 	DE_TOP->HCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
 
  	// Only one bit writable
- 	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
-	DE_TOP->DE_AHB_RESET |= 0xFF; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
+ 	DE_TOP->AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+	DE_TOP->AHB_RESET |=(UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
-	PRINTF("DE_TOP AHB reset:\n");
+//	PRINTF("DE_TOP AHB reset:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 	DE_GLB->GLB_CTL =
@@ -2882,16 +2894,18 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
 
-	DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
+	//DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
 
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
 
-	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
+	//ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
+
 
 	DE_GLB->GLB_STS = 0;
 
+    return;
 //	PRINTF("DE_TOP AHB final:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
