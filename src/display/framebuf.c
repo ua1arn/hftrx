@@ -242,10 +242,10 @@ static void t113_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	if (0) //(w > 1 && color == bgcolor)
+	if (w > 1 && h > 1 && color == bgcolor)
 	{
-		const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);
-		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof bgscreen [0], ssizehw, taddr, tstride, tsizehw);
+		const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// NOT USED!
+		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), tsizehw, taddr, tstride, tsizehw);
 	}
 	else
 	{
@@ -1130,7 +1130,7 @@ hwaccel_rect_u16(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
@@ -1431,7 +1431,7 @@ hwaccel_rect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
