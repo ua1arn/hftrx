@@ -2410,7 +2410,8 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 {
 	const unsigned APBdiv = 4;
-	const unsigned AXIdiv = 2;
+	const unsigned AXIdiv = 3;	// default - 2 = PSI to MEMORY interface
+
 	// switch CPU clock to OSC24M
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
 		0x00 * (UINT32_C(1) << 24) |	// OSC24
@@ -2743,7 +2744,7 @@ uint_fast32_t allwnr_t507_get_apb_freq(void)
 uint_fast32_t allwnr_t507_get_psi_ahb1_ahb2_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_AHB1_AHB2_CFG_REG;
-	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0xFF);	// FACTOR_N
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);	// FACTOR_M
 	const uint_fast32_t divider = N * M;
 	//	PSI_AHB1_AHB2_CLK = Clock Source M/N
@@ -8679,6 +8680,8 @@ sysinit_pll_initialize(int forced)
 		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
 	}
 
+	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+
 	set_t507_pll_cpux_axi(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
 
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
@@ -8688,6 +8691,20 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 
+	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
+
+
+	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
+	// old default=0x03000102
+	// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
+	// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
+	// is a peripheral bus interconnect device based on AHB and APB protocol
+	CCU->PSI_AHB1_AHB2_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+		(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
+		0;
+	//CCU->PSI_AHB1_AHB2_CFG_REG = 0x03000102;	// allwnr_t507_get_psi_ahb1_ahb2_freq()=100 MHz
 	CCU->APB2_CFG_REG = 0x03000002;	// allwnr_t507_get_apb2_freq()=200 MHz
 
 //	CCU->MBUS_CFG_REG = 0;
