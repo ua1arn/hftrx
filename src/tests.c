@@ -6900,6 +6900,91 @@ void vm41nandtest(void)
 
 #endif /* CPUSTYLE_VM14 */
 
+#if CPUSTYLE_ALLWINNER
+
+int wrongbase(uintptr_t base)
+{
+	return 0;
+	if (base >= 0x01004000 && base < 0x01008000)
+		return 1;
+//	if (base < 0x01300000)
+//		return 0;
+//	if (base < (0x01300000 + 0xA0000))
+//		return 1;
+	if (base >= (0x01300000 + 0))
+		return 1;
+//	PRINTF("pr=0x%08X ", base);
+	return 0;
+}
+
+static DE_BLD_TypeDef * blds [32];
+unsigned nblds = 0;
+void testde(void)
+{
+//	{
+//		uint32_t volatile * const p = (uint32_t volatile *) DE_VI1_BASE;
+//		uint32_t v = * p;
+//		* p = ~ 0u;
+//		PRINTF("VI SIGN=%08X\n", * p);
+//		* p = v;
+//	}
+//	{
+//		uint32_t volatile * const p = (uint32_t volatile *) DE_UI1_BASE;
+//		uint32_t v = * p;
+//		* p = ~ 0u;
+//		PRINTF("UI SIGN=%08X\n", * p);
+//		* p = v;
+//	}
+//	{
+//		uint32_t volatile * const p = (uint32_t volatile *) (DE_BLD1_BASE + 0x80);
+//		//uint32_t v = * p;
+//		//* p = ~ 0u;
+//		PRINTF("BLD SIGN=%08X\n", * p);
+//		//* p = v;
+//	}
+//	memset(DE_BASE, 0xFF, 4 * 1024 * 1024);
+//	printhex32(DE_BLD1_BASE, DE_BLD1, sizeof * DE_BLD1);
+	const uint32_t signUI = 0xFFB31F17;	// UI signature
+	const uint32_t signVI = 0xFFB39F17;	// UI signature
+	uintptr_t base = DE_BASE;
+	uintptr_t top = base + 4 * 1024 * 1024;
+	unsigned bld = 0;
+	for (;base < top; base += 256)
+	{
+		if (wrongbase(base))
+			continue;
+		uint32_t volatile * const p = (uint32_t volatile *) base;
+		uint32_t v = * p;
+		* p = ~ 0u;
+		uint32_t dprobe = * p;
+		* p = v;
+		if (* (uint32_t volatile *) (base + 0x00) == 0x003F3F && * (uint32_t volatile *) (base + 0x80) == 0x00FFFFFF/*0x00543210*/)
+		{
+			++ bld;
+			PRINTF("found BLD at 0x%08X\n", (unsigned) base);
+			((DE_BLD_TypeDef *) base)->BKCOLOR = bld;
+			blds [nblds ++] = ((DE_BLD_TypeDef *) base);
+		}
+		else if (signUI == dprobe)
+		{
+			PRINTF("found UI at 0x%08X\n", (unsigned) base);
+		}
+		else if (signVI == dprobe)
+		{
+			PRINTF("found VI at 0x%08X\n", (unsigned) base);
+		}
+		else if ((dprobe & 0xFFF00000) == 0xFFB00000)
+		{
+			PRINTF("found XX (%08X) at 0x%08X\n", (unsigned) dprobe, (unsigned) base);
+		}
+	}
+	unsigned i;
+	for (i = 0; i < nblds; ++ i)
+	{
+		PRINTF("naskr bld%u (%p)= %08X\n", i, blds [i], blds [i]->BKCOLOR);
+	}
+}
+#endif
 
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
@@ -7234,6 +7319,17 @@ void hightests(void)
 		testpng(Cobra_png);
 		for (;;)
 			;
+	}
+#endif
+#if 1 && (CPUSTYLE_T507 || CPUSTYLE_H616)
+	{
+		PRINTF("PSI_AHB1_AHB2_CFG_REG=%08X\n", (unsigned) CCU->PSI_AHB1_AHB2_CFG_REG);
+		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+		PRINTF("allwnr_t507_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_mbus_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_psi_ahb1_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_psi_ahb1_ahb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 	}
 #endif
 #if 0 && LCDMODE_LTDC

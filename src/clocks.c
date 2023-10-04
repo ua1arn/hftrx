@@ -2410,7 +2410,7 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 {
 	const unsigned APBdiv = 4;
-	const unsigned AXIdiv = 3;	// default - 2 = PSI to MEMORY interface
+	const unsigned AXIdiv = 2;//3;	// default - 2 = PSI to MEMORY interface
 
 	// switch CPU clock to OSC24M
 	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
@@ -8706,12 +8706,19 @@ sysinit_pll_initialize(int forced)
 		0;
 	//CCU->PSI_AHB1_AHB2_CFG_REG = 0x03000102;	// allwnr_t507_get_psi_ahb1_ahb2_freq()=100 MHz
 	CCU->APB2_CFG_REG = 0x03000002;	// allwnr_t507_get_apb2_freq()=200 MHz
+	//CCU->APB2_CFG_REG = 0x03000001;	// allwnr_t507_get_apb2_freq()=300 MHz
 
 //	CCU->MBUS_CFG_REG = 0;
 //	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 31);	// CLK_GATING
 //	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);	// MBUS_RST
 	CCU->MBUS_CFG_REG = 0xC1000002;	// MBUS freq = 400 MHz (01: PLL_PERI0(2X) / 3)
 	//CCU->MBUS_CFG_REG = 0xC0000000;
+
+	CCU->APB1_CFG_REG =
+		0x02 * (UINT32_C(1) << 24) |	// 10: PSI
+		//(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
+		0;
 
 #if CPUSTYLE_H616
 	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
