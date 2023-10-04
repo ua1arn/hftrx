@@ -35,6 +35,38 @@ static uint32_t ptr_lo32(uintptr_t v)
 }
 #pragma GCC diagnostic pop
 
+
+static void softfill(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	)
+{
+	// программная реализация
+	const unsigned t = GXADJ(dx) - w;
+	while (h --)
+	{
+		unsigned n = w;
+		while (n)
+		{
+			switch (n)
+			{
+			default:
+				* buffer ++ = color; -- n;
+			case 3:
+				* buffer ++ = color; -- n;
+			case 2:
+				* buffer ++ = color; -- n;
+			case 1:
+				* buffer ++ = color; -- n;
+			}
+		}
+		buffer += t;
+	}
+}
+
 #if CPUSTYLE_ALLWINNER && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
 
@@ -249,16 +281,7 @@ static void t113_fillrect(
 	}
 	else
 	{
-		// программная реализация
-		const unsigned t = GXADJ(dx) - w;
-		while (h --)
-		{
-			unsigned n = w;
-			while (n --)
-				* buffer ++ = color;
-			buffer += t;
-		}
-
+		softfill(buffer, dx, w, h, color);	// программная реализация
 	}
 }
 
@@ -478,7 +501,7 @@ static void aw_g2d_prepare(void)
 }
 
 static void t113_fillrect(
-	uint32_t * __restrict buffer,
+	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
 	uint_fast32_t tstride,
@@ -1137,14 +1160,7 @@ hwaccel_rect_u16(
 	{
 		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		const size_t t = GXADJ(dx) - w;
-		while (h --)
-		{
-			unsigned n = w;
-			while (n --)
-				* buffer ++ = color;
-			buffer += t;
-		}
+		softfill(buffer, dx, w, h, color);	// программная реализация
 		return;
 	}
 
@@ -1157,15 +1173,8 @@ hwaccel_rect_u16(
 	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
-	// программная реализация
-	const unsigned t = GXADJ(dx) - w;
-	while (h --)
-	{
-		unsigned n = w;
-		while (n --)
-			* buffer ++ = color;
-		buffer += t;
-	}
+
+	softfill(buffer, dx, w, h, color);	// программная реализация
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
@@ -1298,19 +1307,8 @@ hwaccel_rect_u24(
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
 #else
-	// программная реализация
 
-	const unsigned t = GXADJ(dx) - w;
-	//buffer += (GXADJ(dx) * row) + col;
-	while (h --)
-	{
-		//PACKEDCOLORPIP_T * const startmem = buffer;
-
-		unsigned n = w;
-		while (n --)
-			* buffer ++ = color;
-		buffer += t;
-	}
+	softfill(buffer, dx, w, h, color);	// программная реализация
 
 #endif
 }
@@ -1454,15 +1452,8 @@ hwaccel_rect_u32(
 	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
-	// программная реализация
-	const unsigned t = GXADJ(dx) - w;
-	while (h --)
-	{
-		unsigned n = w;
-		while (n --)
-			* buffer ++ = color;
-		buffer += t;
-	}
+
+	softfill(buffer, dx, w, h, color);	// программная реализация
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
