@@ -2409,9 +2409,13 @@ uint_fast32_t allwnrt113_get_nand_freq(void)
 
 static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 {
+	const unsigned APBdiv = 4;
+	const unsigned AXIdiv = 2;
 	// switch CPU clock to OSC24M
-	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
+	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
 		0x00 * (UINT32_C(1) << 24) |	// OSC24
+		(APBdiv - 1) * (UINT32_C(1) << 8) |		// CPUX_APB_FACTOR_N = APB divider
+		(AXIdiv - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider
 		0;
 	// Programming PLL
 	// Stop PLL
@@ -2429,8 +2433,13 @@ static void set_t507_pll_cpux_axi(unsigned N, unsigned Ppow)
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
 	// switch CPU clock to PLL_CPUX
-	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24)) |
+	//	CPUX Clock = Clock Source
+	//	CPUX_AXI Clock = Clock Source/M
+	//	CPUX_APB Clock = Clock Source/N
+	CCU->CPUX_AXI_CFG_REG = (CCU->CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
 		0x03 * (UINT32_C(1) << 24) |	// 011: PLL_CPUX
+		(APBdiv - 1) * (UINT32_C(1) << 8) |		// CPUX_APB_FACTOR_N = APB divider
+		(AXIdiv - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider
 		0;
 }
 

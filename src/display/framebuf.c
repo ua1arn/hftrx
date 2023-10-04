@@ -2009,7 +2009,7 @@ void hwaccel_bitblt(
 
 	__DMB();
 
-#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#elif WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	enum { PIXEL_SIZE = sizeof * src };
 	const unsigned tstride = GXADJ(tdx) * PIXEL_SIZE;
@@ -2024,7 +2024,7 @@ void hwaccel_bitblt(
 
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw);
 
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Копирование - использование G2D для формирования изображений */
 
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
@@ -2241,7 +2241,7 @@ void hwaccel_stretchblt(
 	ASSERT(dx >= w);
 	ASSERT(dy >= h);
 
-#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
+#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 
 	//#warning T507/H616 STRETCH BLT should be implemented
 
