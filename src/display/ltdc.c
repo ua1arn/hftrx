@@ -2821,7 +2821,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
 		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
 		////PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-		reg_value &= ~(0x01 << 24);
+		reg_value &= ~ (UINT32_C(1) << 24);
 		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
 		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
 		////PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
