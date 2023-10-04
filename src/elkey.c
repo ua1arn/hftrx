@@ -9,9 +9,8 @@
 
 
 #include "hardware.h"
+#include "formats.h"	// for debug prints
 #include "board.h"
-#include "formats.h"
-#include "spi.h"
 
 #if WITHELKEY
 // 

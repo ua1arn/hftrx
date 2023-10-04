@@ -11,7 +11,6 @@
 #include "board.h"
 #include "gpio.h"
 #include "clocks.h"
-#include "spi.h"
 
 
 uint_fast32_t

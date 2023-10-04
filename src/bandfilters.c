@@ -6,9 +6,9 @@
 //
 
 #include "hardware.h"
+#include "formats.h"	// for debug prints
 #include "board.h"
 #include "synthcalcs.h"
-#include "formats.h"
 
 // На 8-битном микропроцессоре для ускорения вычислений
 // частота округляется (отбрасываются младшие 16 бит).

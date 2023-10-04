@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"
+#include "formats.h"	// for debug prints
 #include "board.h"
 
 // Названия фильтров для отображения на дисплее

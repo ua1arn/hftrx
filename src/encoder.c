@@ -9,7 +9,7 @@
 #include "encoder.h"
 #include "keyboard.h"	/* функция опроса электронного ключа */
 //#include "display.h"	/* test */
-#include "formats.h"	/* test */
+#include "formats.h"	// for debug prints
 
 #include <stdint.h>
 #include <stdlib.h>
