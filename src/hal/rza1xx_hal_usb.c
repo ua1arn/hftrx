@@ -17,6 +17,7 @@
 #include "audio.h"
 #include "formats.h"
 #include "gpio.h"
+#include "buffers.h"
 
 #include "src/gui/gui.h"
 #include "src/display/display.h"
