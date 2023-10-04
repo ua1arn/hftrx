@@ -121,8 +121,6 @@ uint_fast16_t usbd_getuacinmaxpacket(void)
 	return maxpacket;
 }
 
-#if WITHUSBUACIN2
-
 // for descriptors fill
 uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 {
@@ -135,8 +133,6 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 #endif /* WITHRTS192 */
 	return maxpacket;
 }
-
-#endif /* WITHUSBUACIN2 */
 
 // for descriptors fill
 uint_fast16_t usbd_getuacoutmaxpacket(void)

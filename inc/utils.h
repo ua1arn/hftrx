@@ -104,4 +104,64 @@ uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c);
 uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc);
 uint_fast8_t uint8_queue_empty(const u8queue_t * q);
 
+
+/* поддержка побитового формирования значений для вывода в SPI устройство. */
+typedef uint8_t rbtype_t;
+extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в байте по его номеру.
+
+#define RBBIT(bitpos, v) do { \
+		if ((v) != 0) \
+			rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (bitpos) / 8] |= rbvalues [(bitpos) % 8]; \
+	} while (0)
+
+// Для ширины поля до 8 бит
+#define RBVAL(rightbitpos, v, width)  do { \
+		uint_fast8_t v2_507 = (v); \
+		uint_fast8_t p_508 = (rightbitpos); \
+		uint_fast8_t i_509; \
+		for (i_509 = 0; i_509 < (width); ++ i_509, v2_507 >>= 1, ++ p_508) \
+		{	RBBIT(p_508, v2_507 & 0x01); \
+		}	\
+	} while (0)
+
+// Для ширины поля до 16 бит
+#define RBVAL_W16(rightbitpos, v, width) do { \
+		uint_fast16_t v2_515 = (v); \
+		uint_fast8_t p_516 = (rightbitpos); \
+		uint_fast8_t i; \
+		for (i = 0; i < (width); ++ i, v2_515 >>= 1, ++ p_516) \
+		{	RBBIT(p, v2_515 & 0x01); \
+		}	\
+	} while (0)
+
+// For set values in 8-bit alligned places
+#define RBVAL8(rightbitpos, v) do { \
+		rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (rightbitpos) / 8] = (v); \
+	} while (0)
+
+#define RBNULL(rightbitpos, width) do { \
+		(void) (rightbitpos); \
+		(void) (width); \
+	} while (0)
+
+// 	Example of usage:
+//
+//	rbtype_t rbbuff [4] = { 0 };
+//
+//	RBVAL(0, bit0val, 1);
+//	RBVAL(1, bit123val, 3);
+//	RBVAL(4, bit12val, 2);
+//
+//	spi_select(target, CTLREG_SPIMODE);
+//	spi_progval8_p1(target, rbbuff [0]);
+//	spi_progval8_p2(target, rbbuff [1]);
+//	spi_progval8_p2(target, rbbuff [2]);
+//	spi_progval8_p2(target, rbbuff [3]);
+// 	spi_complete(target);
+//	spi_unselect(target);
+
+/* Таблица разворота младших восьми бит */
+//extern const FLASHMEM unsigned char revbittable [256];
+uint_fast8_t revbits8(uint_fast8_t v);	// Функция разворота младших восьми бит
+
 #endif /* INC_UTILS_H_ */
