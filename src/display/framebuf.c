@@ -235,7 +235,6 @@ hwaccel_rotcopy(
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
-
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
 
@@ -276,8 +275,9 @@ static void t113_fillrect(
 {
 	if (w > 1 && h > 1 && color == bgcolor)
 	{
-		const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// NOT USED!
-		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), tsizehw, taddr, tstride, tsizehw);
+		//const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
+		const uint_fast32_t ssizehw = tsizehw;
+		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw);
 	}
 	else
 	{
@@ -2241,7 +2241,7 @@ void hwaccel_stretchblt(
 	ASSERT(dx >= w);
 	ASSERT(dy >= h);
 
-#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if WITHMDMAHW && (CPUSTYLE_T507 || CPUSTYLE_H616) && 0
 
 	//#warning T507/H616 STRETCH BLT should be implemented
 
