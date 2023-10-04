@@ -6902,17 +6902,42 @@ void vm41nandtest(void)
 
 #if CPUSTYLE_ALLWINNER
 
+
+static void de_dump(void)
+{
+	memset(DE_BASE, 0xFF, 4 * 1024 * 1024);
+	int skip = 0;
+	static uint8_t pattern [256];
+	unsigned offs;
+	for (offs = 0; offs < 4 * 1024 * 1024; offs += 4096)
+	{
+		* (volatile uint32_t *) (DE_BASE + offs) |= 1;
+		if (memcmp(pattern, (void *) (DE_BASE + offs), sizeof pattern) == 0)
+		{
+			++ skip;
+			PRINTF(".");
+			continue;
+		}
+		if (skip)
+		{
+			skip = 0;
+			PRINTF("\n");
+		}
+		printhex32(DE_BASE + offs, (void *) (DE_BASE + offs), 256);
+		PRINTF("---\n");
+	}
+}
+
 int wrongbase(uintptr_t base)
 {
-	return 0;
-	if (base >= 0x01004000 && base < 0x01008000)
-		return 1;
+//	if (base >= 0x05102800 && base < 0x05200000)
+//		return 1;
 //	if (base < 0x01300000)
 //		return 0;
 //	if (base < (0x01300000 + 0xA0000))
 //		return 1;
-	if (base >= (0x01300000 + 0))
-		return 1;
+//	if (base >= (0x01300000 + 0))
+//		return 1;
 //	PRINTF("pr=0x%08X ", base);
 	return 0;
 }
@@ -6942,41 +6967,66 @@ void testde(void)
 //		PRINTF("BLD SIGN=%08X\n", * p);
 //		//* p = v;
 //	}
-//	memset(DE_BASE, 0xFF, 4 * 1024 * 1024);
-//	printhex32(DE_BLD1_BASE, DE_BLD1, sizeof * DE_BLD1);
-	const uint32_t signUI = 0xFFB31F17;	// UI signature
-	const uint32_t signVI = 0xFFB39F17;	// UI signature
+	PRINTF("UI1:\n");
+	memset(DE_UI1_BASE, 255, 256);
+	printhex32(DE_UI1_BASE, DE_UI1_BASE, 256);
+//	PRINTF("UI2:\n");
+//	memset(DE_UI2_BASE, 255, 256);
+//	printhex32(DE_UI2_BASE, DE_UI2_BASE, 256);
+//	PRINTF("UI3:\n");
+//	memset(DE_UI3_BASE, 255, 256);
+//	printhex32(DE_UI3_BASE, DE_UI3_BASE, 256);
+	PRINTF("VI1:\n");
+	memset(DE_VI1_BASE, 255, 256);
+	printhex32(DE_VI1_BASE, DE_VI1_BASE, 256);
+
+	//printhex32(DE_BASE, DE_BASE, 4 * 1024 * 1024);
+//	const uint32_t signUI = 0xFFB31F17;	// UI signature
+//	const uint32_t signVI = 0xFFB39F17;	// VI signature
+	const uint32_t signUI = 0xFFB3BF1F;	// UI signature 113
+	const uint32_t signVI = 0xFFB3BF1F;	// VI signature 113
 	uintptr_t base = DE_BASE;
 	uintptr_t top = base + 4 * 1024 * 1024;
 	unsigned bld = 0;
-	for (;base < top; base += 256)
+	for (;base < top; base += 4096)
 	{
 		if (wrongbase(base))
 			continue;
 		uint32_t volatile * const p = (uint32_t volatile *) base;
-		uint32_t v = * p;
-		* p = ~ 0u;
-		uint32_t dprobe = * p;
-		* p = v;
-		if (* (uint32_t volatile *) (base + 0x00) == 0x003F3F && * (uint32_t volatile *) (base + 0x80) == 0x00FFFFFF/*0x00543210*/)
+//		uint32_t v = * p;
+//		* p = ~ 0u;
+//		uint32_t dprobe = * p;
+//		* p = v;
+//		TP();
+		if (* (uint32_t volatile *) (base + 0x80) == 0x00543210)
 		{
 			++ bld;
-			PRINTF("found BLD at 0x%08X\n", (unsigned) base);
+			PRINTF("found BLD6 at 0x%08X\n", (unsigned) base);
 			((DE_BLD_TypeDef *) base)->BKCOLOR = bld;
 			blds [nblds ++] = ((DE_BLD_TypeDef *) base);
 		}
-		else if (signUI == dprobe)
+		else if (* (uint32_t volatile *) (base + 0x80) == 0x00003210)
 		{
-			PRINTF("found UI at 0x%08X\n", (unsigned) base);
+			++ bld;
+			PRINTF("found BLD4 at 0x%08X\n", (unsigned) base);
+			((DE_BLD_TypeDef *) base)->BKCOLOR = bld;
+			blds [nblds ++] = ((DE_BLD_TypeDef *) base);
 		}
-		else if (signVI == dprobe)
-		{
-			PRINTF("found VI at 0x%08X\n", (unsigned) base);
-		}
-		else if ((dprobe & 0xFFF00000) == 0xFFB00000)
-		{
-			PRINTF("found XX (%08X) at 0x%08X\n", (unsigned) dprobe, (unsigned) base);
-		}
+//		if (bld == 4)
+//			break;
+//		else if (signUI == dprobe)
+//		{
+//			PRINTF("found UI at 0x%08X\n", (unsigned) base);
+//		}
+//		else if (signVI == dprobe)
+//		{
+//			PRINTF("found VI at 0x%08X\n", (unsigned) base);
+//		}
+//		else if ((dprobe & 0xFFF00000) == 0xFFB00000)
+//		{
+//			PRINTF("found XX (%08X) at 0x%08X\n", (unsigned) dprobe, (unsigned) base);
+//		}
+//		TP();
 	}
 	unsigned i;
 	for (i = 0; i < nblds; ++ i)
@@ -7332,6 +7382,14 @@ void hightests(void)
 		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 	}
 #endif
+#if 0
+	{
+		TP();
+		//de_dump();
+		testde();
+		TP();
+	}
+#endif
 #if 0 && LCDMODE_LTDC
 	{
 		enum { picy = 110, picx = 150 };
@@ -7361,7 +7419,7 @@ void hightests(void)
 //		PRINTF("test: g=%08X\n", COLORPIP_G(keycolor));
 //		PRINTF("test: b=%08X\n", COLORPIP_B(keycolor));
 
-		unsigned picalpha = 255;
+		unsigned picalpha = 128;
 		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
 		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
 		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
@@ -7386,7 +7444,7 @@ void hightests(void)
 		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
 
 		/* непрозрачный фон */
-		unsigned bgalpha = 255;
+		unsigned bgalpha = 128;
 		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
@@ -7510,13 +7568,16 @@ void hightests(void)
 				);
 
 		// нужно если программно заполняли
-//		dcache_clean((uintptr_t) layer0, sizeof layer0);
-//		dcache_clean((uintptr_t) layer1, sizeof layer1);
+		dcache_clean((uintptr_t) layer0_a, sizeof layer0_a);
+		dcache_clean((uintptr_t) layer0_b, sizeof layer0_b);
+		dcache_clean((uintptr_t) layer1, sizeof layer1);
 //
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
 
+		TP();
+		testde();
 		TP();
 
 		int phase = 0;
@@ -7538,7 +7599,7 @@ void hightests(void)
 			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
 			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
 
-			hardware_ltdc_main_set4((uintptr_t) drawlayer, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+			hardware_ltdc_main_set4((uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
 
 			phase = ! phase;
 			c = (c + 1) % 256;

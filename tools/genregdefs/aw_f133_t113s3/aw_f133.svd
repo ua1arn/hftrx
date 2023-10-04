@@ -4830,14 +4830,6 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_UI1">
-  <name>DE_UI2</name>
-  <baseAddress>0x05104000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="DE_UI1">
-  <name>DE_UI3</name>
-  <baseAddress>0x05105000</baseAddress>
-  </peripheral>
   <peripheral>
   <name>DE_VI1</name>
   <description>Display Engine (DE) - VI surface</description>

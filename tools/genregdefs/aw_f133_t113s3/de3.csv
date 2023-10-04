@@ -66,8 +66,8 @@
 
 #type; DE_UI; Display Engine (DE) - UI surface
 #base; DE_UI1 0x05103000
-#base; DE_UI2 0x05104000
-#base; DE_UI3 0x05105000
+##base; DE_UI2 0x05104000
+##base; DE_UI3 0x05105000
 
 #aggreg; CFG; 0x000 4;
 #regdef;  ATTR; 0x000; 

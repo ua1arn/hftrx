@@ -155,8 +155,6 @@ typedef enum IRQn
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_VI1_BASE ((uintptr_t) 0x05102000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UI2_BASE ((uintptr_t) 0x05104000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UI3_BASE ((uintptr_t) 0x05105000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
@@ -2782,8 +2780,6 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
-#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
-#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
