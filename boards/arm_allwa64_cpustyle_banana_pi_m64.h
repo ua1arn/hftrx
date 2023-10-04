@@ -57,6 +57,7 @@
 
 	/* Контроллер питания AXP803 */
 	#define BOARD_PMIC_INITIALIZE() do { \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
 		axp803_initialize(); \
 	} while (0)
 
@@ -109,6 +110,10 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
+
+	#define BOARD_PMIC_INITIALIZE() do { \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
+	} while (0)
 
 	#if WITHINTEGRATEDDSP
 
