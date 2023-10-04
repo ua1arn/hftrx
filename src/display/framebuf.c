@@ -209,13 +209,13 @@ hwaccel_rotcopy(
 
 }
 
-#if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
+#if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 static COLORPIP_T bgcolor;
 static PACKEDCOLORPIP_T bgscreen [GXSIZE(DIM_X, DIM_Y)];
 
-/* Заполнение цветом фона - будет использоваться для аппаратной оптимизайии заполнения копированием */
-static void aw_g2d_fills(void)
+/* Заполнение цветом фона - будет использоваться для аппаратной оптимизации заполнения копированием */
+static void aw_g2d_prepare(void)
 {
 	bgcolor = display_getbgcolor();
 	// программная реализация
@@ -224,14 +224,17 @@ static void aw_g2d_fills(void)
 	{
 		bgscreen [i] = bgcolor;
 	}
-	PRINTF("aw_g2d_fills: bgcolor=%08X\n", (unsigned) bgcolor);
+	dcache_clean_invalidate((uintptr_t) bgscreen, sizeof bgscreen);
+	PRINTF("aw_g2d_prepare: bgcolor=%08X\n", (unsigned) bgcolor);
 }
 
 
 static void t113_fillrect(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
 	uint_fast32_t tstride,
-	uint_fast32_t tsizehw_unused,
+	uint_fast32_t tsizehw,
 	unsigned alpha_unused,
 	COLOR24_T color24_unused,
 	uint_fast16_t w,	// ширниа
@@ -239,38 +242,23 @@ static void t113_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	const size_t px = sizeof (PACKEDCOLORPIP_T);
-	ASSERT(w >= 2);
-	ASSERT(h >= 1);
-	//color = COLORPIP_BLUE;
-
-	if (w > 1)
+	if (0) //(w > 1 && color == bgcolor)
 	{
-		// Заполнение по горизонтали
-//		const uint_fast32_t horovlsizehw = ((1 - 1) << 16) | ((w - 1 - 1) << 0);
-//		* (volatile PACKEDCOLORPIP_T *) taddr = color;
-//		dcache_clean_invalidate(taddr, px);
-//		hwaccel_rotcopy(taddr, tstride, horovlsizehw, taddr + px, tstride, horovlsizehw);
-		unsigned pos;
-		for (pos = 0; pos < w; ++ pos)
+		const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);
+		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof bgscreen [0], ssizehw, taddr, tstride, tsizehw);
+	}
+	else
+	{
+		// программная реализация
+		const unsigned t = GXADJ(dx) - w;
+		while (h --)
 		{
-			* (volatile PACKEDCOLORPIP_T *) (taddr + pos * px) = color;
+			unsigned n = w;
+			while (n --)
+				* buffer ++ = color;
+			buffer += t;
 		}
-		dcache_clean_invalidate(taddr, px * w);
-		if (h > 1)
-		{
-			// Заполнение по вертикали
-//			const uint_fast32_t vertovlsizehw = ((h - 1 - 1) << 16) | ((w - 1) << 0);
-//			hwaccel_rotcopy(taddr, tstride, vertovlsizehw, taddr + tstride, tstride, vertovlsizehw);
-			unsigned row;
-			for (row = 1; row < h; ++ row)
-			{
-//				memcpy((void *) (taddr + (tstride * row)), (void *) taddr + (tstride * (row - 1)), px * w);
-//				dcache_clean_invalidate(taddr + (tstride * row), px * w);
-				const uint_fast32_t r1ovlsizehw = ((1 - 1) << 16) | ((w - 1) << 0);
-				hwaccel_rotcopy(taddr, tstride, r1ovlsizehw, taddr + (tstride * row), tstride, r1ovlsizehw);
-			}
-		}
+
 	}
 }
 
@@ -352,7 +340,7 @@ static uint_fast32_t awxx_bld_ctl2(
 #define VSU_PHASE_FRAC_REG_SHIFT 1
 #define VSU_FB_FRAC_BITWIDTH     32
 
-static void aw_g2d_fills(void)
+static void aw_g2d_prepare(void)
 {
 //	if (fmt > G2D_FORMAT_IYUV422_Y1U0Y0V0)
 //		write_wvalue(VS_CTRL, 0x10101);
@@ -490,6 +478,8 @@ static void aw_g2d_fills(void)
 }
 
 static void t113_fillrect(
+	uint32_t * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
 	uint_fast32_t tstride,
 	uint_fast32_t tsizehw,
@@ -894,7 +884,7 @@ void arm_hardware_mdma_initialize(void)
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
 
-	aw_g2d_fills();	/* stretchblt filters load */
+	aw_g2d_prepare();	/* stretchblt filters load */
 	 //mixer_set_reg_base(G2D_BASE);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
@@ -1164,7 +1154,7 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
+	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
@@ -1461,7 +1451,7 @@ hwaccel_rect_u32(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
+	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 	// программная реализация
