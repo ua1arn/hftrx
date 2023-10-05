@@ -867,7 +867,9 @@ DSTATUS SD_Initialize (
 		//if (HARDWARE_SDIOSENSE_WP() != 0)
 		//	return STA_PROTECT;
 		int ec = sdcard_init();
-		return (ec == 0) ? 0 : STA_NODISK;	// STA_NOINIT or STA_NODISK or STA_PROTECT
+		if (ec == 0)
+			PRINTF(PSTR("SD_Initialize: sdcard_init failure\n"));
+		return (ec != 0) ? 0 : STA_NODISK;	// STA_NOINIT or STA_NODISK or STA_PROTECT
 #endif /* WITHSDHCHW */
 	}
 	return STA_NODISK;

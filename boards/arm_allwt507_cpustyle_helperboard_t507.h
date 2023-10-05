@@ -423,7 +423,7 @@
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnrt113_get_smhc2_freq())
 
-	#if WITHSDHCHW4BIT
+	#if WITHSDHCHW8BIT || WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
 			arm_hardware_pioc_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF3);	/* PC6 - SDC2-CMD	*/ \
 			arm_hardware_pioc_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PC5 - SDC2-CLK	*/ \
