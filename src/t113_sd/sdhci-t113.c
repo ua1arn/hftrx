@@ -535,26 +535,26 @@ void sdhci_t113_clock(void)
 		/* Delay calibration */
 		SMHCHARD_PTR->SMHC_SAMP_DL = 0xA0;
 		SMHCHARD_PTR->SMHC_SAMP_DL = 0;
-		SMHCHARD_PTR->SMHC_SAMP_DL |= (1u << 15);
-		while ((SMHCHARD_PTR->SMHC_SAMP_DL & (1u << 14)) == 0)
+		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 15);
+		while ((SMHCHARD_PTR->SMHC_SAMP_DL & (UINT32_C(1) << 14)) == 0)
 			;
 		PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
-		SMHCHARD_PTR->SMHC_SAMP_DL = (SMHCHARD_PTR->SMHC_SAMP_DL & ~ (0x3F << 0)) |
+		SMHCHARD_PTR->SMHC_SAMP_DL = (SMHCHARD_PTR->SMHC_SAMP_DL & ~ (UINT32_C(0x3F) << 0)) |
 			((SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F) |
 			0;
-		SMHCHARD_PTR->SMHC_SAMP_DL |= (1u << 7);	// Sample Delay Software Enable
+		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
 
 		/* Delay calibration */
 		SMHCHARD_PTR->SMHC_DS_DL = 0xA0;
 		SMHCHARD_PTR->SMHC_DS_DL = 0;
-		SMHCHARD_PTR->SMHC_DS_DL |= (1u << 15);
-		while ((SMHCHARD_PTR->SMHC_DS_DL & (1u << 14)) == 0)
+		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 15);
+		while ((SMHCHARD_PTR->SMHC_DS_DL & (UINT32_C(1) << 14)) == 0)
 			;
 		PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
-		SMHCHARD_PTR->SMHC_DS_DL = (SMHCHARD_PTR->SMHC_DS_DL & ~ (0x3F << 0)) |
+		SMHCHARD_PTR->SMHC_DS_DL = (SMHCHARD_PTR->SMHC_DS_DL & ~ (UINT32_C(0x3F) << 0)) |
 			((SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F) |
 			0;
-		SMHCHARD_PTR->SMHC_DS_DL |= (1u << 7);	// Sample Delay Software Enable
+		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
 	}
 }
 
@@ -563,8 +563,8 @@ struct sdcard_t CARD;
 
 int sdhci_t113_init(struct sdhci_t * sdhci)
 {
-//	SMHCHARD_CCU_CLK_REG |= (1u << 31);
-//	SMHCHARD_CCU_CLK_REG |= (1u << 31);
+//	SMHCHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+//	SMHCHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);
 //	hardware_sdhost_initialize();
  //Порты настроены в PIO.c (без настройки портов - НЕ работает)
 
