@@ -933,6 +933,49 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 #endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
+#if WITHNMEA && WITHUART1HW && WITHNMEA_USART0
+	// Модемные функции работают через USART0
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_INITIALIZE() do { \
+			hardware_uart0_initialize(0, DEBUGSPEED, 8, 0, 0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
+			hardware_uart0_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLETX(v) do { \
+			hardware_uart0_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLERX(v) do { \
+			hardware_uart0_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_NMEA_TX(ctx, c) do { \
+			hardware_uart0_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний UART0
+	// с принятым символом
+	#define HARDWARE_UART0_ONRXCHAR(c) do { \
+			nmea_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	#define HARDWARE_UART0_ONOVERFLOW() do { \
+			nmea_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	// по готовности передатчика
+	#define HARDWARE_UART0_ONTXCHAR(ctx) do { \
+			nmea_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHNMEA && WITHUART1HW && WITHMODEM_USART1 */
+
 #if WITHNMEA && WITHUART1HW && WITHNMEA_USART1
 	// Модемные функции работают через USART1
 	// Вызывается из user-mode программы

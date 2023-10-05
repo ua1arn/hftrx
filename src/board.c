@@ -776,6 +776,10 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_RFADC_RAND_EMIO);
 	xc7z_writepin(TARGET_RFADC_RAND_EMIO, glob_adcrand);
 #endif /* defined (TARGET_RFADC_RAND_EMIO) */
+#if defined (TARGET_OPA2674_CTRL_EMIO)
+	xc7z_gpio_output(TARGET_OPA2674_CTRL_EMIO);
+	xc7z_writepin(TARGET_OPA2674_CTRL_EMIO, ! glob_tx);
+#endif /* defined (TARGET_DAC_SLEEP_EMIO) */
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 }
 
@@ -4555,7 +4559,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
-#elif CTLREGMODE_XCZU && WITHQRPBOARD_UA3REO
+#elif CTLREGMODE_UA3REO_EXTBOARD
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
@@ -4615,29 +4619,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 		spi_unselect(target);
 	}
-
-	{
-		spitarget_t target = targetctl1;
-		spi_select(target, CTLREG_SPIMODE);
-		rbtype_t rbbuff [1] = { 0 };
-
-		RBBIT(007, 1);
-		RBBIT(006, glob_tsc_reset);
-		RBBIT(005, 0);	// glob_adcrand
-		RBBIT(004, 0);	// adc pga
-		RBBIT(003, glob_dither);	// adc dith
-		RBBIT(002, 0);	// ltc6401 always on
-		RBVAL(000, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-//		RBBIT(001, 0);
-//		RBBIT(000, 0);
-
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-
-		spi_unselect(target);
-	}
-
-	//xcz_rxtx_state(glob_tx);
-	//xcz_adcrand_set(glob_adcrand);
 }
 
 #elif CTLREGMODE_XCZU_V2

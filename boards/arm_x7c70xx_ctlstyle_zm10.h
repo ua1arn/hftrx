@@ -65,8 +65,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
-	//#define CTLREGMODE_ZYNQ_4205	1
+	//#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_UA3REO_EXTBOARD	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -241,8 +241,8 @@
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			//#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-			//#define WITHLFM					1
-			//#define WITHNMEA				1
+			#define WITHLFM					1
+			#define WITHNMEA				1
 			//#define WITHEXTRFBOARDTEST		1
 			#define WITHBUFFERSSMALLDEBUG	1
 #endif

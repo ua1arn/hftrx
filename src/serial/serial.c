@@ -26,7 +26,18 @@ void serial_set_handler(uint_fast16_t int_id, void (* handler)(void))
 
 #if WITHNMEA && ! LINUX_SUBSYSTEM
 
-static void UART0_IRQHandler(void);
+//static void UART0_IRQHandler(void);
+
+static void UART0_IRQHandler(void)
+{
+	char c;
+	UART0->ISR = UART0->IMR;	// clear interrupt status
+
+	while (hardware_uart0_getchar(& c))
+	{
+		HARDWARE_UART0_ONRXCHAR(c);
+	}
+}
 
 // Очереди символов для обмена с согласующим устройством
 enum { qSZ = 512 };

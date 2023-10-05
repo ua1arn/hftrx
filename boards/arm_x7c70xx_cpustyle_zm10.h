@@ -37,19 +37,19 @@
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		50
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
-#define CALIBRATION_TX_SHIFT			23
+#define CALIBRATION_TX_SHIFT			28
 
-//#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
+#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 
 //#define WITHCAT_USART0		1
 #define WITHDEBUG_USART1	1
-//#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHNMEA
 
-	#define BOARD_PPSIN_BIT	48
+	#define BOARD_PPSIN_BIT	64
 	#define NMEA_INITIALIZE() do { \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
 		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
@@ -197,6 +197,7 @@
 #endif /* WITHTHERMOLEVEL */
 
 #define PREAMP_MIO				69
+#define TARGET_OPA2674_CTRL_EMIO	65
 #define TARGET_RFADC_PGA_EMIO	66
 #define TARGET_RFADC_RAND_EMIO	68
 
@@ -257,8 +258,8 @@
 	// Выводы подключения енкодера #1
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		29
-	#define ENCODER2_BITB		28
+	#define ENCODER2_BITA		58
+	#define ENCODER2_BITB		59
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -573,9 +574,8 @@
 
 #if WITHSPIHW || WITHSPISW
 
-	#define TARGET_EXT_MIO	57
-
-	#define targetext		TARGET_EXT_MIO
+	#define targetextctl	57
+	#define targetnvram		63
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
@@ -589,13 +589,15 @@
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			xc7z_writepin(TARGET_EXT_MIO, 1);		\
+			xc7z_writepin(targetextctl, 1);		\
+			xc7z_writepin(targetnvram, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			xc7z_gpio_output(TARGET_EXT_MIO); \
+			xc7z_gpio_output(targetextctl); \
+			xc7z_gpio_output(targetnvram); \
 		} while (0)
 
 	// MOSI & SCK port
@@ -632,32 +634,24 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART0HW
-	// RXD: mio46 D16
-	// TXD: mio47 B14
-	// ebaz4205 board
 	// WITHUART0HW
 	#define HARDWARE_UART0_INITIALIZE() do { \
-		MIO_SET_MODE(47, 0x000016E0uL);	/*  MIO_PIN_47 UART0_TXD */ \
-		MIO_SET_MODE(46, 0x000016E1uL);	/*  MIO_PIN_46 UART0_RXD */ \
 		} while (0)
 
-#endif /* WITHUART1HW */
+#endif /* WITHUART0HW */
 
 #if WITHUART1HW
-	// RXD: U3.V13
-	// TXD: U3.U12
-	// ebaz4205 board
 	// WITHUART1HW
 	#define HARDWARE_UART1_INITIALIZE() do { \
-		MIO_SET_MODE(8, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
-		MIO_SET_MODE(9, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
+		MIO_SET_MODE(8, 0x000016E0uL);	/*  MIO_PIN_8 UART1_TXD */ \
+		MIO_SET_MODE(9, 0x000016E1uL);	/*  MIO_PIN_9 UART1_RXD */ \
 		} while (0)
 
 #endif /* WITHUART2HW */
 
 #if WITHKEYBOARD
 
-	#define TARGET_ENC2BTN_BIT_MIO 		38
+	#define TARGET_ENC2BTN_BIT_MIO 		60
 
 #if WITHENCODER2
 	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
