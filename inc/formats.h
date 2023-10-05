@@ -388,7 +388,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// CAT функции работают через USART1
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart1_initialize(0); \
+			hardware_uart1_initialize(0, DEBUGSPEED, 8, 0, 0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
@@ -452,7 +452,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// CAT функции работают через USART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart2_initialize(0); \
+			hardware_uart2_initialize(0, DEBUGSPEED, 8, 0, 0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
@@ -512,7 +512,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// CAT7 функции работают через UART7
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
-			hardware_uart7_initialize(0); \
+			hardware_uart7_initialize(0, DEBUGSPEED, 8, 0, 0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_SET_SPEED(baudrate) do { \
@@ -559,7 +559,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 	// CAT7 функции работают через UART5
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
-			hardware_uart5_initialize(0); \
+			hardware_uart5_initialize(0, DEBUGSPEED, 8, 0, 0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_SET_SPEED(baudrate) do { \
