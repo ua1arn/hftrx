@@ -452,6 +452,8 @@ static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
+	if ((EHCIx->USBSTS & EHCI_USBSTS_HCH) != 0)
+		return;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
 	{
 		ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
@@ -463,6 +465,8 @@ static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
+	if ((EHCIx->USBSTS & EHCI_USBSTS_HCH) != 0)
+		return;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
 	{
 		ASSERT((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0);
@@ -2374,9 +2378,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
 
+#if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
+#endif
 
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
 		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
@@ -2400,10 +2406,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 21);	// USBEHCI1_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
-
+#if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 17);	// USBOHCI1_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 17);	// USBOHCI1_RST
+#endif
 
 		CCU->USB1_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY1_RST
 		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
@@ -2428,9 +2435,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 22);	// USBEHCI2_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 22);	// USBEHCI2_RST
 
+#if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 2);	// USBOHCI2_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 18);	// USBOHCI2_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 18);	// USBOHCI2_RST
+#endif
 
 		//CCU->USB2_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY2_RST
 		CCU->USB2_CLK_REG = (CCU->USB2_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
