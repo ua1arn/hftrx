@@ -49,7 +49,7 @@
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
+#define WITHDEBUG_UART2	1
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)

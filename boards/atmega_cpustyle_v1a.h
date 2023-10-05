@@ -22,8 +22,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART0		1
-#define WITHDEBUG_USART0	1
-#define WITHMODEM_USART0	1
+#define WITHDEBUG_UART0	1
+#define WITHMODEM_UART0	1
 
 //#if ! defined (__AVR_ATmega644P__)
 //	#error ATMEGA644P configuration (Project->Configuration Options) should be selected

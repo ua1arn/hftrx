@@ -42,7 +42,7 @@
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
 //#define WITHCAT_USART1		1
-#define WITHDEBUG_USART2	1
+#define WITHDEBUG_UART2	1
 //#define WITHTINYUSB 1
 #define BOARD_TUH_RHPORT 1
 

@@ -46,7 +46,7 @@
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART0		1
-#define WITHDEBUG_USART0	1
+#define WITHDEBUG_UART0	1
 
 #if WITHISBOOTLOADER
 

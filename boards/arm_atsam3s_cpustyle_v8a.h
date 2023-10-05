@@ -25,8 +25,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
+#define WITHDEBUG_UART2	1
+#define WITHMODEM_UART2	1
 
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */

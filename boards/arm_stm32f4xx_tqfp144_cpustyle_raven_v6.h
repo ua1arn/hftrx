@@ -63,7 +63,7 @@
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
-	#define WITHDEBUG_USART2	1
+	#define WITHDEBUG_UART2	1
 
 #else
 
@@ -71,8 +71,8 @@
 	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 
 	#define WITHCAT_USART1		1
-	#define WITHDEBUG_USART1	1
-	#define WITHMODEM_USART1	1
+	#define WITHDEBUG_UART1	1
+	#define WITHMODEM_UART1	1
 
 	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \

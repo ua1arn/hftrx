@@ -19,8 +19,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART0		1
-#define WITHDEBUG_USART0	1
-#define WITHMODEM_USART0	1
+#define WITHDEBUG_UART0	1
+#define WITHMODEM_UART0	1
 
 // Плата UA3DKC Сергей (ATMega32, FM25040, Si570+AD9834+WH2002) - ref 40 MHz
 

@@ -19,8 +19,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART0		1
-#define WITHDEBUG_USART0	1
-#define WITHMODEM_USART0	1
+#define WITHDEBUG_UART0	1
+#define WITHMODEM_UART0	1
 
 // Плата Простой синтезатор на Si570 и AD9834 http://www.cqham.ru/forum/showthread.php?23945-Простой-синтезатор-на-Si570-и-AD9834
 

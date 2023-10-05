@@ -39,7 +39,7 @@
 
 	#if 0
 		//#define WITHUART2HW	1	/* Выход через PA2 Используется периферийный контроллер последовательного порта #2 */
-		//#define WITHDEBUG_USART2	1
+		//#define WITHDEBUG_UART2	1
 		#define HARDWARE_UART2_INITIALIZE() do { \
 				arm_hardware_pioa_altfn2((1U << 2), AF_USART2); /* PA2: TX DATA line (2 MHz) */ \
 			} while (0)
@@ -50,8 +50,8 @@
 	#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 */
 
 	#define WITHCAT_USART1		1
-	#define WITHMODEM_USART1	1
-	#define WITHMODEM_USART1	1
+	#define WITHMODEM_UART1	1
+	#define WITHMODEM_UART1	1
 
 	#if 0
 		#define HARDWARE_UART1_INITIALIZE() do { \

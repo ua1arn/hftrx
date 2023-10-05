@@ -30,8 +30,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHMODEM_USART1	1
+#define WITHDEBUG_UART1	1
+#define WITHMODEM_UART1	1
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
 //#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */

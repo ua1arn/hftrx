@@ -52,7 +52,7 @@
 #define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
+#define WITHDEBUG_UART2	1
 
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 //#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
@@ -297,7 +297,7 @@
 
 #endif /* (WITHCAT && WITHCAT_USART2) */
 
-#if (WITHNMEA && WITHNMEA_USART1)
+#if (WITHNMEA && WITHNMEA_UART1)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
@@ -311,7 +311,7 @@
 			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)
 
-#endif /* (WITHNMEA && WITHNMEA_USART1) */
+#endif /* (WITHNMEA && WITHNMEA_UART1) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

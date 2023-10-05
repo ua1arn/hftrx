@@ -876,7 +876,7 @@ void user_uart4_initialize(void)
 	static uint8_t txb [2048];
 	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 
-#if ! (WITHDEBUG && WITHDEBUG_USART4)
+#if ! (WITHDEBUG && WITHDEBUG_UART4)
 
 	hardware_uart4_initialize(0, UARTSPEED, 8, 0, 0);
 	hardware_uart4_set_speed(UARTSPEED);
@@ -889,7 +889,7 @@ void user_uart4_initialize(void)
 	static const char msg [] = "Hello!\n";
 	nmeaX_puts_impl(msg, ARRAY_SIZE(msg));
 
-#endif /* ! (WITHDEBUG && WITHDEBUG_USART4) */
+#endif /* ! (WITHDEBUG && WITHDEBUG_UART4) */
 }
 
 #endif /* WITHCTRLBOARDT507 */

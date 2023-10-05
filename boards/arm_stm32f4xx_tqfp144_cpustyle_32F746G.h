@@ -71,7 +71,7 @@
 //#define WITHCAT_USART2		1
 //#define WITHDEBUG_CDC	1
 //#define WITHDEBUG			1
-#define WITHDEBUG_USART1	1
+#define WITHDEBUG_UART1	1
 
 #ifdef WITHUSBHW_DEVICE
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -323,7 +323,7 @@
 
 #endif /* (WITHCAT && WITHCAT_USART2) */
 
-#if (WITHNMEA && WITHNMEA_USART1)
+#if (WITHNMEA && WITHNMEA_UART1)
 	// CAT data lites
 	// RXD at PB7, TXD at PA9
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
@@ -337,7 +337,7 @@
 			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)
 
-#endif /* (WITHNMEA && WITHNMEA_USART1) */
+#endif /* (WITHNMEA && WITHNMEA_UART1) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

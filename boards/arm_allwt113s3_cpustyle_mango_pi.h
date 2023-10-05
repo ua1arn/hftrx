@@ -38,7 +38,7 @@
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART0		1
-#define WITHDEBUG_USART0	1
+#define WITHDEBUG_UART0	1
 //#define WITHTINYUSB 1
 #define BOARD_TUH_RHPORT 1
 

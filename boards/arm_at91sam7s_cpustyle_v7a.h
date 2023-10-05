@@ -29,8 +29,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
-#define WITHMODEM_USART2	1
+#define WITHDEBUG_UART2	1
+#define WITHMODEM_UART2	1
 
 // Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 //#define LCD_DATA_PORT			AT91C_BASE_PIOA->PIO_ODSR		// enabled by PIO_OWSR bits can be written was PORTA

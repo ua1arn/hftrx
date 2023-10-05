@@ -40,7 +40,7 @@
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-#define WITHDEBUG_USART1	1
+#define WITHDEBUG_UART1	1
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)

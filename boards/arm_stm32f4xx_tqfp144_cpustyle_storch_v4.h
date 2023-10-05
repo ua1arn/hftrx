@@ -56,27 +56,27 @@
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC	1
-	//#define WITHMODEM_USART2	1
+	//#define WITHMODEM_UART2	1
 	//#define WITHCAT_USART2		1
-	#define WITHDEBUG_USART2	1
+	#define WITHDEBUG_UART2	1
 
 #elif WITHMODEM
 
 	//#define WITHMODEM_CDC	1
-	#define WITHMODEM_USART2	1
+	#define WITHMODEM_UART2	1
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT_USART2		1
-	//#define WITHDEBUG_USART2	1
+	//#define WITHDEBUG_UART2	1
 
 #else
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC	1
-	#define WITHMODEM_USART2	1
+	#define WITHMODEM_UART2	1
 	//#define WITHCAT_USART2		1
-	#define WITHDEBUG_USART2	1
+	#define WITHDEBUG_UART2	1
 
 #endif
 

@@ -6900,7 +6900,7 @@ void vm41nandtest(void)
 
 #endif /* CPUSTYLE_VM14 */
 
-#if CPUSTYLE_ALLWINNER
+#if CPUSTYLE_ALLWINNER && 0
 
 
 static void de_dump(void)

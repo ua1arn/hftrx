@@ -49,7 +49,7 @@
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
-#define WITHDEBUG_USART1	1
+#define WITHDEBUG_UART1	1
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */

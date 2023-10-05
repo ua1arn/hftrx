@@ -37,7 +37,7 @@
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 
 //#define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
+#define WITHDEBUG_UART1	1
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
 

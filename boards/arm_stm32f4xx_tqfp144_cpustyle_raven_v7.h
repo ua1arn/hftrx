@@ -63,7 +63,7 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT_USART2		1
 	#define WITHMODEM_CDC	1
-	#define WITHDEBUG_USART2	1
+	#define WITHDEBUG_UART2	1
 
 #else
 
@@ -72,8 +72,8 @@
 
 	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHCAT_USART1		1
-	#define WITHDEBUG_USART1	1
-	#define WITHMODEM_USART1	1
+	#define WITHDEBUG_UART1	1
+	#define WITHMODEM_UART1	1
 #endif
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
@@ -306,7 +306,7 @@
 
 #endif /* (WITHCAT && WITHCAT_USART2) */
 
-#if (WITHNMEA && WITHNMEA_USART1)
+#if (WITHNMEA && WITHNMEA_UART1)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
@@ -320,7 +320,7 @@
 			arm_hardware_pioa_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY); \
 		} while (0)
 
-#endif /* (WITHNMEA && WITHNMEA_USART1) */
+#endif /* (WITHNMEA && WITHNMEA_UART1) */
 
 #if (WITHCAT && WITHCAT_CDC)
 

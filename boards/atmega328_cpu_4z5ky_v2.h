@@ -25,8 +25,8 @@
 
 //#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #define WITHCAT_USART1		1
-#define WITHDEBUG_USART1	1
-#define WITHMODEM_USART1	1
+#define WITHDEBUG_UART1	1
+#define WITHMODEM_UART1	1
 
 #if LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 

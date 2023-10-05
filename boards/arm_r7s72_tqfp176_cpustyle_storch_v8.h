@@ -12,8 +12,8 @@
 #ifndef ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED
 #define ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V8_H_INCLUDED 1
 
-#define WITHDEBUG_USART3	1
-#define WITHMODEM_USART3	1
+#define WITHDEBUG_UART3	1
+#define WITHMODEM_UART3	1
 
 #if WITHDEBUG
 	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
@@ -381,7 +381,7 @@
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
-#if (WITHNMEA && WITHNMEA_USART1)
+#if (WITHNMEA && WITHNMEA_UART1)
 	// CAT data lites
 	// RXD at P6_14, TXD at P6_15
 
@@ -412,7 +412,7 @@
 			arm_hardware_pio2_onchangeinterrupt(FROMCAT_BIT_DTR, FROMCAT_BIT_DTR, ARM_SYSTEM_PRIORITY, r7s721_nmea_interrupt); \
 		} while (0)
 
-#endif /* (WITHNMEA && WITHNMEA_USART1) */
+#endif /* (WITHNMEA && WITHNMEA_UART1) */
 
 	#define HARDWARE_UART0_INITIALIZE() do { \
 			arm_hardware_pio6_alternative(1U << 14, R7S721_PIOALT_5);	/* P6_14: RXD0: RX DATA line */ \

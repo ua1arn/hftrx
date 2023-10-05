@@ -76,7 +76,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 #endif /* WITHDEBUG */
 
-#if WITHDEBUG && WITHUART0HW && WITHDEBUG_USART0
+#if WITHDEBUG && WITHUART0HW && WITHDEBUG_UART0
 	// Отладочные функции работают через USART0
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -118,9 +118,9 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart0_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART0HW && WITHDEBUG_USART0 */
+#endif /* WITHDEBUG && WITHUART0HW && WITHDEBUG_UART0 */
 
-#if WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1
+#if WITHDEBUG && WITHUART1HW && WITHDEBUG_UART1
 	// Отладочные функции работают через USART1
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -162,9 +162,9 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart1_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1 */
+#endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_UART1 */
 
-#if WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2
+#if WITHDEBUG && WITHUART2HW && WITHDEBUG_UART2
 	// Отладочные функции работают через USART2
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -206,9 +206,9 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart2_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_USART2 */
+#endif /* WITHDEBUG && WITHUART2HW && WITHDEBUG_UART2 */
 
-#if WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3
+#if WITHDEBUG && WITHUART3HW && WITHDEBUG_UART3
 	// Отладочные функции работают через USART3
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -250,9 +250,9 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart3_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART3HW && WITHDEBUG_USART3 */
+#endif /* WITHDEBUG && WITHUART3HW && WITHDEBUG_UART3 */
 
-#if WITHDEBUG && WITHUART4HW && WITHDEBUG_USART4
+#if WITHDEBUG && WITHUART4HW && WITHDEBUG_UART4
 	// Отладочные функции работают через USART4
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -294,9 +294,9 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart4_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART4HW && WITHDEBUG_USART4 */
+#endif /* WITHDEBUG && WITHUART4HW && WITHDEBUG_UART4 */
 
-#if WITHDEBUG && WITHUART5HW && WITHDEBUG_USART5
+#if WITHDEBUG && WITHUART5HW && WITHDEBUG_UART5
 	// Отладочные функции работают через USART5
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -338,9 +338,9 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart5_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART5HW && WITHDEBUG_USART5 */
+#endif /* WITHDEBUG && WITHUART5HW && WITHDEBUG_UART5 */
 
-#if WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6
+#if WITHDEBUG && WITHUART6HW && WITHDEBUG_UART6
 	// Отладочные функции работают через USART6
 	// Вызывается из user-mode программы при запрещённых прерываниях.
 	#define HARDWARE_DEBUG_INITIALIZE() do { \
@@ -382,7 +382,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		hardware_uart6_flush(); \
 	} while (0)
 
-#endif /* WITHDEBUG && WITHUART6HW && WITHDEBUG_USART6 */
+#endif /* WITHDEBUG && WITHUART6HW && WITHDEBUG_UART6 */
 
 #if WITHCAT && WITHUART1HW && WITHCAT_USART1
 	// CAT функции работают через USART1

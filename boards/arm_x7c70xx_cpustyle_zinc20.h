@@ -42,7 +42,7 @@
 #define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
-#define WITHDEBUG_USART0	1
+#define WITHDEBUG_UART0	1
 
 #if WITHISBOOTLOADER
 

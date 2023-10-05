@@ -74,7 +74,7 @@ void user_uart5_ontxchar(void * ctx);
 
 #if WITHDEBUG
 
-	#define WITHDEBUG_USART4	1
+	#define WITHDEBUG_UART4	1
 
 #else
 
@@ -84,7 +84,7 @@ void user_uart5_ontxchar(void * ctx);
 #endif
 
 
-#if ! WITHDEBUG_USART0
+#if ! WITHDEBUG_UART0
 #endif
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)

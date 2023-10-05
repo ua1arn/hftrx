@@ -60,7 +60,7 @@
 //#define WITHCAT_USART2		1
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
-#define WITHDEBUG_USART2	1
+#define WITHDEBUG_UART2	1
 
 //#define WITHUAC2		1	/* UAC2 support */
 #define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
