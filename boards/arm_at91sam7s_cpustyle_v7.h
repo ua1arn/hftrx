@@ -23,7 +23,6 @@
 #define WITHCAT_USART1		1
 #define WITHDEBUG_USART1	1
 #define WITHMODEM_USART1	1
-#define WITHNMEA_USART1		1
 
 // Выводы подключения ЖКИ индикатора WH2002 или аналогичного HD44780.
 //#define LCD_DATA_PORT			AT91C_BASE_PIOA->PIO_ODSR		// enabled by PIO_OWSR bits can be written was PORTA

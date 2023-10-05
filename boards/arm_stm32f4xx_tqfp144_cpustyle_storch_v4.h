@@ -59,7 +59,6 @@
 	//#define WITHMODEM_USART2	1
 	//#define WITHCAT_USART2		1
 	#define WITHDEBUG_USART2	1
-	//#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #elif WITHMODEM
 
@@ -70,7 +69,7 @@
 	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT_USART2		1
 	//#define WITHDEBUG_USART2	1
-	//#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+
 #else
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -78,7 +77,6 @@
 	#define WITHMODEM_USART2	1
 	//#define WITHCAT_USART2		1
 	#define WITHDEBUG_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #endif
 

@@ -149,7 +149,6 @@
 	#define WITHCAT_USART1		1
 	#define WITHDEBUG_USART1	1
 	#define WITHMODEM_USART1	1
-	#define WITHNMEA_USART1		1
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт

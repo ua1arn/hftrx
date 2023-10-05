@@ -88,12 +88,6 @@ main(void)
 #if LINUX_SUBSYSTEM
 	linux_user_init();
 #endif /* LINUX_SUBSYSTEM */
-#if WITHNMEA && CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
-	HARDWARE_NMEA_INITIALIZE();
-	HARDWARE_NMEA_SET_SPEED(115200L);
-	HARDWARE_NMEA_ENABLERX(1);
-	nmea_parser_init(); // пока тут
-#endif /* WITHNMEA && CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();

@@ -431,6 +431,21 @@ typedef struct edgepin_tag
 void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
 uint_fast8_t edgepin_get(edgepin_t * egp);
 
+void nmeatuner_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
+void nmeatuner_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void nmeatuner_rxoverflow(void);							/* вызывается из обработчика прерываний */
+void nmeatuner_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
+void nmealfm_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
+void nmealfm_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void nmealfm_rxoverflow(void);							/* вызывается из обработчика прерываний */
+void nmealfm_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
+void nmeamodem_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
+void nmeamodem_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void nmeamodem_rxoverflow(void);							/* вызывается из обработчика прерываний */
+void nmeamodem_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

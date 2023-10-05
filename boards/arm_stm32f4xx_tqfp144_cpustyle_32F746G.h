@@ -72,7 +72,6 @@
 //#define WITHDEBUG_CDC	1
 //#define WITHDEBUG			1
 #define WITHDEBUG_USART1	1
-//#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
 #ifdef WITHUSBHW_DEVICE
 	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */

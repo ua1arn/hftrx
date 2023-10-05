@@ -21,7 +21,6 @@
 #define WITHCAT_USART0		1
 #define WITHDEBUG_USART0	1
 #define WITHMODEM_USART0	1
-#define WITHNMEA_USART0		1
 
 // Плата Простой синтезатор на Si570 и AD9834 http://www.cqham.ru/forum/showthread.php?23945-Простой-синтезатор-на-Si570-и-AD9834
 

@@ -22,7 +22,6 @@
 #define WITHCAT_USART0		1
 #define WITHDEBUG_USART0	1
 #define WITHMODEM_USART0	1
-#define WITHNMEA_USART0		1
 
 // Аппаратура контроллера в корпусе DIP40/TQFP44 с общими выводами для HD44780 и I2C (нельзя одновременно использовать)
 // Новый контроллер Explorer-а

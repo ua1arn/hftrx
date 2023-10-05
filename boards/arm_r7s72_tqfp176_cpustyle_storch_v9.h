@@ -14,7 +14,6 @@
 
 #define WITHDEBUG_USART3	1
 #define WITHMODEM_USART3	1
-#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 #if WITHDEBUG
 	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */
@@ -98,7 +97,6 @@
 	//#define WITHMODEM_CDC		1
 	#define WITHDEBUG_USART3	1
 	#define WITHMODEM_USART3	1
-	#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
 	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */

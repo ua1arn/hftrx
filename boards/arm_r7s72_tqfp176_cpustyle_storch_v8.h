@@ -14,7 +14,6 @@
 
 #define WITHDEBUG_USART3	1
 #define WITHMODEM_USART3	1
-#define WITHNMEA_USART3		1	/* порт подключения GPS/GLONASS */
 
 #if WITHDEBUG
 	//#define WITHUART0HW	1	/* Используется периферийный контроллер последовательного порта #0 SCIF0 */

@@ -36,7 +36,6 @@
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART4	1
-#define WITHNMEA_USART4		1	/* порт подключения GPS/GLONASS */
 
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
 //#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5

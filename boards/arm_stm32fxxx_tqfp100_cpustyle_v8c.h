@@ -34,7 +34,6 @@
 	//#define WITHCAT_USART2		1
 	//#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 */
 	#define WITHDEBUG_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -53,7 +52,6 @@
 	#define WITHCAT_USART2		1
 	#define WITHDEBUG_USART2	1
 	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1
 
 #endif
 

@@ -45,7 +45,6 @@
 
 //#define WITHCAT_USART0		1
 #define WITHDEBUG_USART0	1
-#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 //#define WITHTINYUSB 1
 #define BOARD_TUH_RHPORT 1
 

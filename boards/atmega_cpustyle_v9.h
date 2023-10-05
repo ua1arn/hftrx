@@ -24,7 +24,6 @@
 #define WITHCAT_USART0		1
 #define WITHDEBUG_USART0	1
 #define WITHMODEM_USART0	1
-#define WITHNMEA_USART0		1
 
 //#if ! defined (__AVR_ATmega644P__)
 //	#error ATMEGA644P configuration (Project->Configuration Options) should be selected

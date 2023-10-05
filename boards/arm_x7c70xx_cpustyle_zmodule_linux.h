@@ -62,7 +62,6 @@
 
 //#define WITHCAT_USART1		1
 //#define WITHDEBUG_USART2	1
-//#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHNMEA

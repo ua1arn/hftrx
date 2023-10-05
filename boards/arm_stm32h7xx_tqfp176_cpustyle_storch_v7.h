@@ -65,7 +65,6 @@
 #define WITHMODEM_CDC	1
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #if WITHINTEGRATEDDSP && WITHUSBHW
 

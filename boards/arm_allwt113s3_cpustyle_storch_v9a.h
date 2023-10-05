@@ -7,7 +7,7 @@
 //
 
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// rmainunit_sv9f.pcb, rmainunit_sv9g.pcb Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// rmainunit_sv9f.pcb rmainunit_sv9u.pcb Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
 #ifndef ARM_ALWT113S3_CPUSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_ALWT113S3_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
@@ -40,7 +40,6 @@
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART0	1
-#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 //#define WITHTINYUSB 1
 #define BOARD_TUH_RHPORT 1
 

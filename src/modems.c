@@ -845,7 +845,7 @@ uint_fast8_t processmodem(void)
 
 /* вызывается из обработчика прерываний */
 // принятый символ с последовательного порта
-void modem_parsechar(uint_fast8_t c)
+void nmeamodem_parsechar(uint_fast8_t c)
 {
 	c &= 0xFF;
 	switch (nmeaparser_state)
@@ -1024,15 +1024,24 @@ void modem_parsechar(uint_fast8_t c)
 
 /* вызывается из обработчика прерываний */
 // произошла потеря символа (символов) при получении данных с CAT компорта
-void modem_rxoverflow(void)
+void nmeamodem_rxoverflow(void)
 {
 	++ rxerrchar;
 }
 /* вызывается из обработчика прерываний */
-void modem_disconnect(void)
+void nmeamodem_disconnect(void)
 {
 	
 }
+
+void nmeamodem_initialize(void)
+{
+	HARDWARE_MODEM_INITIALIZE();
+	HARDWARE_MODEM_SET_SPEED(19200L);
+	HARDWARE_MODEM_ENABLERX(1);
+
+}
+
 
 /* вызывается из обработчика прерываний */
 // компорт готов передавать

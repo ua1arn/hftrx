@@ -481,7 +481,7 @@ ua1ceituner_send(void *);
 
 /* вызывается из обработчика прерываний */
 // принятый символ с последовательного порта
-void nmea_parsechar(uint_fast8_t c)
+void nmeatuner_parsechar(uint_fast8_t c)
 {
 	switch (nmeaparser_state)
 	{
@@ -612,6 +612,15 @@ ua1ceituner_send(void * not_used)
 			glob_tuner_bypass ? 0 : glob_tuner_L,
 			glob_tuner_bypass
 		);
+}
+
+void nmeatuner_initialize(void)
+{
+	nmeaparser_state = NMEAST_INITIALIZED;
+
+	HARDWARE_NMEA_INITIALIZE(250000L);
+	HARDWARE_NMEA_SET_SPEED(250000L);
+	HARDWARE_NMEA_ENABLERX(1);
 }
 
 #endif /* WITHAUTOTUNER_UA1CEI */

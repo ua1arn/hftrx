@@ -13337,7 +13337,7 @@ uif_key_click_xxxx(void)
 // ****************
 // NMEA parser
 // dummy function
-#if WITHNMEA && ! WITHAUTOTUNER_UA1CEI && 1
+#if WITHNMEA && WITHLFM
 
 enum nmea_states
 {
@@ -13441,7 +13441,7 @@ void update_rtc_by_nmea_time(void)
 #endif /* defined (RTC1_TYPE) */
 }
 
-void nmea_parsechar(uint_fast8_t c)
+void nmealfm_parsechar(uint_fast8_t c)
 {
 	//dbg_putchar(c);
 	switch (nmea_state)
@@ -13518,6 +13518,31 @@ void nmea_parsechar(uint_fast8_t c)
 	}
 }
 
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с компорта
+void nmealfm_rxoverflow(void)
+{
+	nmea_state = NMEAST_INITIALIZED;
+}
+/* вызывается из обработчика прерываний */
+void nmealfm_disconnect(void)
+{
+	nmea_state = NMEAST_INITIALIZED;
+}
+
+void nmealfm_initialize(void)
+{
+	const uint_fast32_t baudrate = UINT32_C(115200);
+	nmea_state = NMEAST_INITIALIZED;
+
+#if ! LINUX_SUBSYSTEM
+
+	HARDWARE_NMEA_INITIALIZE(baudrate);
+	HARDWARE_NMEA_SET_SPEED(baudrate);
+	HARDWARE_NMEA_ENABLERX(1);
+	HARDWARE_NMEA_ENABLETX(0);
+#endif /*  ! LINUX_SUBSYSTEM */
+}
 
 static timeholder_t th;
 // Обработчик вызывается при приходе очередного импульса PPS
@@ -19479,23 +19504,17 @@ applowinitialize(void)
 
 #if WITHNMEA && WITHAUTOTUNER_UA1CEI
 
-	HARDWARE_NMEA_INITIALIZE();
-	HARDWARE_NMEA_SET_SPEED(250000L);
-	HARDWARE_NMEA_ENABLERX(1);
+	nmeatuner_initialize();
 
-#elif WITHNMEA && ! CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#elif WITHNMEA
 
-	HARDWARE_NMEA_INITIALIZE();
-	HARDWARE_NMEA_SET_SPEED(115200L);
-	HARDWARE_NMEA_ENABLERX(1);
+	nmealfm_initialize();
 
 #endif /* WITHNMEA */
 
 #if WITHMODEM
 
-	HARDWARE_MODEM_INITIALIZE();
-	HARDWARE_MODEM_SET_SPEED(19200L);
-	HARDWARE_MODEM_ENABLERX(1);
+	nmeamodem_initialize();
 
 #endif /* WITHMODEM */
 

@@ -27,7 +27,6 @@
 #define WITHCAT_USART2		1
 #define WITHDEBUG_USART2	1
 #define WITHMODEM_USART2	1
-#define WITHNMEA_USART2		1
 
 #define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */

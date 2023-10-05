@@ -43,7 +43,6 @@
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
 #define WITHDEBUG_USART0	1
-#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 

@@ -24,7 +24,6 @@
 #define WITHCAT_USART0		1
 #define WITHDEBUG_USART0	1
 #define WITHMODEM_USART0	1
-#define WITHNMEA_USART0		1
 
 #define SPI_BIDIRECTIONAL 	1	/* ввод данных по SPI идет через тот же самый pin, что и вывод */
 

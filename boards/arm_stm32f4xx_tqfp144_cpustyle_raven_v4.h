@@ -69,7 +69,6 @@
 
 	#define WITHCAT_USART1		1
 	#define WITHMODEM_USART1	1
-	#define WITHNMEA_USART1		1
 	#define WITHDEBUG_USART1	1
 
 	#define HARDWARE_UART1_INITIALIZE() do { \

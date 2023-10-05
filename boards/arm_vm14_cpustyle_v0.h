@@ -47,7 +47,6 @@
 
 //#define WITHCAT_USART0		1
 #define WITHDEBUG_USART0	1
-#define WITHNMEA_USART0		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 

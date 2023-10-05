@@ -35,10 +35,6 @@ void modem_rxoverflow(void);						/* вызывается из обработч�
 void modem_disconnect(void);						/* вызывается из обработчика прерываний */
 void modem_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
-void nmea_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
-void nmea_rxoverflow(void);							/* вызывается из обработчика прерываний */
-void nmea_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
-
 void nmea_format(const char * format, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int nmea_putc(int c);
 

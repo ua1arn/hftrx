@@ -29,7 +29,6 @@
 #define WITHCAT_USART1		1
 #define WITHDEBUG_USART1	1
 #define WITHMODEM_USART1	1
-#define WITHNMEA_USART1		1
 
 	//#define LS020_RESET_PORT_S(v)	do { PORTC.OUTSET = (v); } while (0)
 	//#define LS020_RESET_PORT_C(v)	do { PORTC.OUTCLR = (v); } while (0)
