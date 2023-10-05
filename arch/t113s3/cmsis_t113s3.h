@@ -2171,7 +2171,7 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_EXT_CMD;                   /*!< Offset 0x138 Extended Command Register */
     volatile uint32_t SMHC_EXT_RESP;                  /*!< Offset 0x13C Extended Response Register */
     volatile uint32_t SMHC_DRV_DL;                    /*!< Offset 0x140 Drive Delay Control Register */
-    volatile uint32_t SMHC_SMAP_DL;                   /*!< Offset 0x144 Sample Delay Control Register */
+    volatile uint32_t SMHC_SAMP_DL;                   /*!< Offset 0x144 Sample Delay Control Register */
     volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x148 Data Strobe Delay Control Register */
     volatile uint32_t SMHC_HS400_DL;                  /*!< Offset 0x14C HS400 Delay Control Register */
              uint32_t reserved_0x150 [0x002C];

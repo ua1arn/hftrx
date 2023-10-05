@@ -1636,7 +1636,7 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_CRC_STA;                   /*!< Offset 0x134 CRC status from device in write operation(only for SMHC0&1) */
              uint32_t reserved_0x138 [0x0002];
     volatile uint32_t SMHC_DRV_DL;                    /*!< Offset 0x140 Drive delay control Register */
-    volatile uint32_t SMHC_SMAP_DL;                   /*!< Offset 0x144 Sample delay control Register */
+    volatile uint32_t SMHC_SAMP_DL;                   /*!< Offset 0x144 Sample delay control Register */
     volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x148 Data strobe delay control Register */
              uint32_t reserved_0x14C [0x002D];
     volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/ Write FIFO */

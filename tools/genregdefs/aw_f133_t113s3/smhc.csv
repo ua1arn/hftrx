@@ -46,7 +46,7 @@
 #regdef; SMHC_EXT_CMD; 0x0138; Extended Command Register
 #regdef; SMHC_EXT_RESP; 0x013C; Extended Response Register
 #regdef; SMHC_DRV_DL; 0x0140; Drive Delay Control Register
-#regdef; SMHC_SMAP_DL; 0x0144; Sample Delay Control Register
+#regdef; SMHC_SAMP_DL; 0x0144; Sample Delay Control Register
 #regdef; SMHC_DS_DL; 0x0148; Data Strobe Delay Control Register
 #regdef; SMHC_HS400_DL; 0x014C; HS400 Delay Control Register
 #regdef; SMHC_FIFO; 0x0200; Read/Write FIFO

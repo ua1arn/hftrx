@@ -49,6 +49,6 @@
 #regdef; SMHC_D0_CRC; 0x0130; CRC in data0 form device(only for SMHC0&1)
 #regdef; SMHC_CRC_STA; 0x0134; CRC status from device in write operation(only for SMHC0&1)
 #regdef; SMHC_DRV_DL; 0x0140; Drive delay control Register
-#regdef; SMHC_SMAP_DL; 0x0144; Sample delay control Register
+#regdef; SMHC_SAMP_DL; 0x0144; Sample delay control Register
 #regdef; SMHC_DS_DL; 0x0148; Data strobe delay control Register
 #regdef; SMHC_FIFO; 0x0200; Read/ Write FIFO

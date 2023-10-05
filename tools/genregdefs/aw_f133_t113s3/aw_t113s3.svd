@@ -12308,8 +12308,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_SMAP_DL</name>
-    <displayName>SMHC_SMAP_DL</displayName>
+    <name>SMHC_SAMP_DL</name>
+    <displayName>SMHC_SAMP_DL</displayName>
     <description>Sample Delay Control Register</description>
     <addressOffset>0x144</addressOffset>
     <size>0x20</size>
