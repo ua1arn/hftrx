@@ -586,9 +586,9 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
  sdhci_t113_clock();                        //клок, гейт, ресет
 
  sdhci->voltage   = MMC_VDD_27_36;
-#if WITHSDHCHW8BIT
+#if 0//WITHSDHCHW8BIT
  sdhci->width     = MMC_BUS_WIDTH_8;
-#elif WITHSDHCHW4BIT
+#elif 0//WITHSDHCHW4BIT
  sdhci->width     = MMC_BUS_WIDTH_4;
 #else
  sdhci->width     = MMC_BUS_WIDTH_1;
