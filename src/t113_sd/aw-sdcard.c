@@ -767,6 +767,7 @@ int sdcard_init(void)
 	{
 		if(card->version & SD_VERSION_SD)
 		{
+			PRINTF("Processng SD parameters, card->version=%08X\n", (unsigned) card->version);
 			if((hci->width & MMC_BUS_WIDTH_8) || (hci->width & MMC_BUS_WIDTH_4))
 				width = 2;
 			else
@@ -786,15 +787,26 @@ int sdcard_init(void)
 
 			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
-			if((hci->width & MMC_BUS_WIDTH_8) || (hci->width & MMC_BUS_WIDTH_4))
+			if (0)
+				;
+#if WITHSDHCHW8BIT
+			else if((hci->width & MMC_BUS_WIDTH_8))
+				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
+#endif /* WITHSDHCHW8BIT */
+			else if((hci->width & MMC_BUS_WIDTH_4))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_4);
 			else
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 		}
 		else if(card->version & MMC_VERSION_MMC)
 		{
-			if(hci->width & MMC_BUS_WIDTH_8)
+			PRINTF("Processng MMC parameters, card->version=%08X\n", (unsigned) card->version);
+			if (0)
+				;
+#if WITHSDHCHW8BIT
+			else if(hci->width & MMC_BUS_WIDTH_8)
 				width = 2;
+#endif /* WITHSDHCHW8BIT */
 			else if(hci->width & MMC_BUS_WIDTH_4)
 				width = 1;
 			else
@@ -810,16 +822,27 @@ int sdcard_init(void)
 			cmd.cmdarg = width;
 			cmd.resptype = MMC_RSP_R1;
 			if(!sdhci_t113_transfer(hci, &cmd, NULL))
+			{
+				PRINTF("Can not set card width to code %i\n", width);
 				return 0;
+			}
 
 			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
-			if(hci->width & MMC_BUS_WIDTH_8)
+			if (0)
+				;
+#if WITHSDHCHW8BIT
+			else if(hci->width & MMC_BUS_WIDTH_8)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
+#endif /* WITHSDHCHW8BIT */
 			else if(hci->width & MMC_BUS_WIDTH_4)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_4);
 			else if(hci->width & MMC_BUS_WIDTH_1)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
+		}
+		else
+		{
+			PRINTF("Undefined card card->version=%08X\n", (unsigned) card->version);
 		}
 	}
 

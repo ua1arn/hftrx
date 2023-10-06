@@ -181,7 +181,7 @@ enum {
 #define SDXC_SEND_AUTO_STOPCCSD		(1 << 9)
 #define SDXC_CEATA_DEV_IRQ_ENABLE	(1 << 10)
 
-static inline void WaitAfterReset(struct sdhci_t * sdhci)
+static void WaitAfterReset(struct sdhci_t * sdhci)
 {
 /*
  uint32_t s;
@@ -378,8 +378,9 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 		return 0;
 
 	write32(sdhci->base + SD_GCTL, read32(sdhci->base + SD_GCTL) | SDXC_FIFO_RESET);
+	WaitAfterReset(sdhci);
+
 	write32(sdhci->base + SD_RISR, 0xffffffff);
-        WaitAfterReset(sdhci);
 
 	if(count)
 		return 0;
@@ -429,6 +430,7 @@ int sdhci_t113_setvoltage(struct sdhci_t * sdhci, uint32_t voltage)
 
 int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 {
+	PRINTF("sdhci_t113_setwidth: %d bits\n", (int) width);
 	switch(width)
 	{
 	case MMC_BUS_WIDTH_1:
@@ -586,7 +588,7 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
  sdhci->voltage   = MMC_VDD_27_36;
 #if WITHSDHCHW8BIT
  sdhci->width     = MMC_BUS_WIDTH_8;
-#elif WITHSDHCHW8BIT
+#elif WITHSDHCHW4BIT
  sdhci->width     = MMC_BUS_WIDTH_4;
 #else
  sdhci->width     = MMC_BUS_WIDTH_1;
