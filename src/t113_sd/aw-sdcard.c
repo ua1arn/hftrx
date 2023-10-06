@@ -274,6 +274,7 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	do {
 		cmd.cmdidx = MMC_SEND_OP_COND;
 		cmd.cmdarg = hci->isspi ? 0 : (card->ocr & OCR_VOLTAGE_MASK) | (card->ocr & OCR_ACCESS_MODE);
+		cmd.cmdarg = 0x00FF8080;//hci->isspi ? 0 : (card->ocr & OCR_VOLTAGE_MASK) | (card->ocr & OCR_ACCESS_MODE); // eMMC test
 		cmd.cmdarg |= OCR_HCS;
 		cmd.resptype = MMC_RSP_R3;
 	 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
