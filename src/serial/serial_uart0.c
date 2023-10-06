@@ -874,12 +874,17 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
+	HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
+
+	if (debug == 0)
+	{
+	   serial_set_handler(USART0_IRQn, USART0_IRQHandler);
+	}
+
 	r = UART0->CR;
 	r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
 	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	UART0->CR = r;
-
-	HARDWARE_UART0_INITIALIZE();	/* Присоединить периферию к выводам */
 
 #elif CPUSTYLE_A64
 
