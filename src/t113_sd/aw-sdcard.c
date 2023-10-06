@@ -771,7 +771,7 @@ int sdcard_init(void)
 			PRINTF("Processing SD parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
 				;
-#if 0//WITHSDHCHW8BIT
+#if WITHSDHCHW8BIT
 			else if ((hci->width & MMC_BUS_WIDTH_8))
 				width = 3;
 #endif
@@ -797,7 +797,7 @@ int sdcard_init(void)
 
 			if (0)
 				;
-#if 0//WITHSDHCHW8BIT
+#if WITHSDHCHW8BIT
 			else if((hci->width & MMC_BUS_WIDTH_8))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
 #endif /* WITHSDHCHW8BIT */
@@ -811,7 +811,7 @@ int sdcard_init(void)
 			PRINTF("Processing MMC parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
 				;
-#if 0//WITHSDHCHW8BIT
+#if WITHSDHCHW8BIT
 			else if(hci->width & MMC_BUS_WIDTH_8)
 				width = 3;
 #endif /* WITHSDHCHW8BIT */
@@ -845,7 +845,7 @@ int sdcard_init(void)
 
 			if (0)
 				;
-#if 0//WITHSDHCHW8BIT
+#if WITHSDHCHW8BIT
 			else if(hci->width & MMC_BUS_WIDTH_8)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
 #endif /* WITHSDHCHW8BIT */
@@ -865,22 +865,22 @@ int sdcard_init(void)
 	cmd.resptype = MMC_RSP_R1;
 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 		return 0;
-//
-//	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
-//	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
-//	PRINTF("  Version: %s\n", sdcard_version_string(card));
-//	PRINTF("  Capacity: %d MB\n", (int) (card->capacity / 1024 / 1024));
-//	if(card->high_capacity)
-//		PRINTF("  High capacity card\n");
-//	PRINTF("  CID: %08X-%08X-%08X-%08X\n", (unsigned) card->cid[0], (unsigned) card->cid[1], (unsigned) card->cid[2], (unsigned) card->cid[3]);
-//	PRINTF("  CSD: %08X-%08X-%08X-%08X\n", (unsigned) card->csd[0], (unsigned) card->csd[1], (unsigned) card->csd[2], (unsigned) card->csd[3]);
-//	PRINTF("  Max transfer speed: %u HZ\n", (unsigned) card->tran_speed);
-//	PRINTF("  Manufacturer ID: %02X\n", extract_mid(card));
-//	PRINTF("  OEM/Application ID: %04X\n", extract_oid(card));
-//	PRINTF("  Product name: '%c%c%c%c%c'\n", (int) (card->cid[0] & 0xff), (int) (card->cid[1] >> 24), (int) ((card->cid[1] >> 16) & 0xff), (int) (card->cid[1] >> 8) & 0xff, (int) (card->cid[1] & 0xff));
-//	PRINTF("  Product revision: %u.%u\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
-//	PRINTF("  Serial no: %0u\n", extract_psn(card));
-//	PRINTF("  Manufacturing date: %u.%u\n", extract_year(card), extract_month(card));
+
+	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
+	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
+	PRINTF("  Version: %s\n", sdcard_version_string(card));
+	PRINTF("  Capacity: %d MB\n", (int) (card->capacity / 1024 / 1024));
+	if(card->high_capacity)
+		PRINTF("  High capacity card\n");
+	PRINTF("  CID: %08X-%08X-%08X-%08X\n", (unsigned) card->cid[0], (unsigned) card->cid[1], (unsigned) card->cid[2], (unsigned) card->cid[3]);
+	PRINTF("  CSD: %08X-%08X-%08X-%08X\n", (unsigned) card->csd[0], (unsigned) card->csd[1], (unsigned) card->csd[2], (unsigned) card->csd[3]);
+	PRINTF("  Max transfer speed: %u HZ\n", (unsigned) card->tran_speed);
+	PRINTF("  Manufacturer ID: %02X\n", extract_mid(card));
+	PRINTF("  OEM/Application ID: %04X\n", extract_oid(card));
+	PRINTF("  Product name: '%c%c%c%c%c'\n", (int) (card->cid[0] & 0xff), (int) (card->cid[1] >> 24), (int) ((card->cid[1] >> 16) & 0xff), (int) (card->cid[1] >> 8) & 0xff, (int) (card->cid[1] & 0xff));
+	PRINTF("  Product revision: %u.%u\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
+	PRINTF("  Serial no: %0u\n", extract_psn(card));
+	PRINTF("  Manufacturing date: %u.%u\n", extract_year(card), extract_month(card));
 
 	return 1;
 }

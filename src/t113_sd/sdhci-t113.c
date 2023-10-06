@@ -438,11 +438,14 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 		break;
 	case MMC_BUS_WIDTH_4:
 		write32(sdhci->base + SD_BWDR, SDXC_WIDTH4);
+		write32(sdhci->base + SD_BWDR, SDXC_WIDTH1);
 		break;
 	case MMC_BUS_WIDTH_8:
 		write32(sdhci->base + SD_BWDR, SDXC_WIDTH8);
+		write32(sdhci->base + SD_BWDR, SDXC_WIDTH1);
 		break;
 	default:
+		ASSERT(0);
 		return 0;
 	}
 	return 1;
@@ -586,9 +589,9 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
  sdhci_t113_clock();                        //клок, гейт, ресет
 
  sdhci->voltage   = MMC_VDD_27_36;
-#if 0//WITHSDHCHW8BIT
+#if WITHSDHCHW8BIT
  sdhci->width     = MMC_BUS_WIDTH_8;
-#elif 0//WITHSDHCHW4BIT
+#elif WITHSDHCHW4BIT
  sdhci->width     = MMC_BUS_WIDTH_4;
 #else
  sdhci->width     = MMC_BUS_WIDTH_1;
