@@ -878,7 +878,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	if (debug == 0)
 	{
-	   serial_set_handler(USART0_IRQn, USART0_IRQHandler);
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
 	r = UART0->CR;

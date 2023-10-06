@@ -51,7 +51,7 @@
 	// Модемные функции работают через USART0
 	// Вызывается из user-mode программы
 	#define HARDWARE_NMEA_INITIALIZE(baudrate) do { \
-			hardware_uart0_initialize(0, baudrate, 8, 0, 0); \
+			hardware_uart0_initialize(1, baudrate, 8, 0, 0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
@@ -618,18 +618,18 @@
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		xc7z_writepin((target), 0); \
+		gpio_writepin((target), 0); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		xc7z_writepin((target), 1); \
+		gpio_writepin((target), 1); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			xc7z_writepin(targetextctl, 1);		\
-			xc7z_writepin(targetnvram, 1);		\
+			gpio_writepin(targetextctl, 1);		\
+			gpio_writepin(targetnvram, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
@@ -644,18 +644,18 @@
 	#define	SPI_MOSI_MIO 	55
 	#define	SPI_MISO_MIO 	56
 
-	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
-	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
+	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
+	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_MOSI_C()	do { xc7z_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
-	#define SPI_MOSI_S()	do { xc7z_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
+	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
+	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-		xc7z_gpio_output(SPI_SCLK_MIO); \
-		xc7z_gpio_output(SPI_MOSI_MIO); \
-		xc7z_gpio_input(SPI_MISO_MIO); \
+		gpio_output2(SPI_SCLK_MIO, 1, 0); \
+		gpio_output2(SPI_MOSI_MIO, 1, 0); \
+		gpio_output2(SPI_MISO_MIO, 1, 0); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
