@@ -13541,6 +13541,8 @@ void nmealfm_initialize(void)
 	HARDWARE_NMEA_SET_SPEED(baudrate);
 	HARDWARE_NMEA_ENABLERX(1);
 	HARDWARE_NMEA_ENABLETX(0);
+	nmea_parser0_init();
+
 #endif /*  ! LINUX_SUBSYSTEM */
 }
 

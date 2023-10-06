@@ -134,6 +134,12 @@
 		}
 	}
 
+	void nmea_parser0_init(void)
+	{
+		NMEA_INITIALIZE();
+		serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
+
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
