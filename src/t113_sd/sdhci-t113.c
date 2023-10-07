@@ -154,7 +154,7 @@ enum {
 #define SDXC_SDIO_INTERRUPT			(1 << 16)
 #define SDXC_CARD_INSERT			(1 << 30)
 #define SDXC_CARD_REMOVE			(1 << 31)
-#define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | SDXC_END_BIT_ERROR)
+#define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | 0*SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | 0*SDXC_END_BIT_ERROR)
 #define SDXC_INTERRUPT_DONE_BIT		(SDXC_AUTO_COMMAND_DONE | SDXC_DATA_OVER | SDXC_COMMAND_DONE | SDXC_VOLTAGE_CHANGE_DONE)
 
 /*
@@ -322,7 +322,7 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 		status = read32(sdhci->base + SD_STAR);
 		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
-
+	PRINTF("1 rd err=%08X, count=%u\n", err, count);
 	do {
 		status = read32(sdhci->base + SD_RISR);
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
@@ -334,12 +334,15 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
         {
+		TP();
+		PRINTF("2 rd err=%08X, count=%u\n", err, count);
 		return 0;
         }
 	write32(sdhci->base + SD_RISR, 0xffffffff);
 
 	if(count)
         {
+		TP();
 		return 0;
         }
 	return 1;
@@ -364,6 +367,7 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 		status = read32(sdhci->base + SD_STAR);
 		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
+	PRINTF("1 wr err=%08X, count=%u\n", err, count);
 
 	do {
 		status = read32(sdhci->base + SD_RISR);
@@ -375,7 +379,10 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 	} while(!done && !err);
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
+	{
+		PRINTF("2 wr err=%08X, count=%u\n", err, count);
 		return 0;
+	}
 
 	write32(sdhci->base + SD_GCTL, read32(sdhci->base + SD_GCTL) | SDXC_FIFO_RESET);
 	WaitAfterReset(sdhci);
@@ -389,6 +396,10 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 
 static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
+	write32(sdhci->base + SD_GCTL, SDXC_FIFO_RESET);
+	WaitAfterReset(sdhci);
+
+	PRINTF("t113_transfer_data\n");
 	uint32_t dlen = (uint32_t)(dat->blkcnt * dat->blksz);
 	int ret = 0;
 
