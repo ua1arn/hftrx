@@ -326,6 +326,7 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	//#define RTC1_TYPE RTC_TYPE_DS1307
+	#define RTC1_TYPE RTC_TYPE_GPS
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */

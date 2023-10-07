@@ -13561,6 +13561,41 @@ spool_nmeapps(void)
 #endif /* WITHLFM */
 }
 
+#if RTC_TYPE_GPS
+
+uint_fast8_t board_rtc_chip_initialize(void)
+{
+	return 0;
+}
+
+void board_rtc_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * seconds
+	)
+{
+	* seconds = nmea_time.seconds;
+	* minute = nmea_time.minutes;
+	* hour = nmea_time.hours;
+	* dayofmonth = nmea_time.day;
+	* month = nmea_time.month;
+	* year = 2000 + nmea_time.year;
+}
+
+void board_rtc_setdatetime(
+	uint_fast16_t year,
+	uint_fast8_t month,
+	uint_fast8_t dayofmonth,
+	uint_fast8_t hours,
+	uint_fast8_t minutes,
+	uint_fast8_t seconds
+	) {}
+
+#endif /* RTC_TYPE_GPS */
+
 #endif /* WITHNMEA */
 
 // S-METER, SWR-METER, POWER-METER

@@ -1268,6 +1268,7 @@ extern "C" {
 #define RTC_TYPE_STM32F0xx	54	/* STM32F0xx internal RTC peripherial */
 #define RTC_TYPE_STM32L0xx	55	/* STM32L0xx internal RTC peripherial */
 #define RTC_TYPE_LINUX		56	/* Linux local time */
+#define RTC_TYPE_GPS		57	/* GPS time */
 
 #define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046 - use TSC_TYPE_XPT2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
@@ -2716,6 +2717,10 @@ extern "C" {
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046)
 	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046) */
+
+#if defined RTC_TYPE_GPS && ! defined WITHNMEA
+	#error RTC_TYPE_GPS and WITHNMEA can be used in same time
+#endif /* defined RTC_TYPE_GPS && ! defined WITHNMEA */
 
 #ifdef __cplusplus
 }
