@@ -560,7 +560,7 @@ int sdcard_init(void)
 	char scap[32];
 	uint64_t csize, cmult;
 	uint32_t unit, time;
-	int width;
+	uint32_t width;
 	int status;
 
 	sdhci_t113_reset(hci);
@@ -764,7 +764,7 @@ int sdcard_init(void)
 		sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 		sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 	}
-	else
+	else if (1)
 	{
 		if(card->version & SD_VERSION_SD)
 		{
@@ -809,24 +809,37 @@ int sdcard_init(void)
 		else if(card->version & MMC_VERSION_MMC)
 		{
 			PRINTF("Processing MMC parameters, card->version=%08X\n", (unsigned) card->version);
+
+			/*
+			 * https://linux.codingbelief.com/zh/storage/flash_memory/emmc/emmc_commands.html
+			 * bit 183 in ext_csd - bus width
+			 * [31:26] Set to 0, [25:24] Access, [23:16] Index, [15:8] Value, [7:3] Set to 0, [2:0] Cmd Set
+			 */
 			if (0)
 				;
 #if WITHSDHCHW8BIT
 			else if(hci->width & MMC_BUS_WIDTH_8)
-				width = 3;
+			{
+				//width = 3;
+				width = 0x03B70200;	// Set 8bit width
+			}
 #endif /* WITHSDHCHW8BIT */
 			else if(hci->width & MMC_BUS_WIDTH_4)
-				width = 2;
+			{
+				//width = 2;
+				width = 0x03B70100;	// Set 4bit width
+			}
 			else
+			{
 				width = 0;
-
+				//width = 0;	// !!!!!!!!!!!
+			}
 			cmd.cmdidx = MMC_APP_CMD;
 			cmd.cmdarg = card->rca << 16;
 			cmd.resptype = MMC_RSP_R5;
 			if(!sdhci_t113_transfer(hci, &cmd, NULL))
 				return 0;
 
-			// ACMD6 op: (’00’=1bit or ’10’=4 bits bus)
 			cmd.cmdidx = SD_CMD_SWITCH_FUNC;
 			cmd.cmdarg = width;
 			cmd.resptype = MMC_RSP_R1;

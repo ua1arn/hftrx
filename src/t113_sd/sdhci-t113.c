@@ -438,11 +438,9 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 		break;
 	case MMC_BUS_WIDTH_4:
 		write32(sdhci->base + SD_BWDR, SDXC_WIDTH4);
-		write32(sdhci->base + SD_BWDR, SDXC_WIDTH1);
 		break;
 	case MMC_BUS_WIDTH_8:
 		write32(sdhci->base + SD_BWDR, SDXC_WIDTH8);
-		write32(sdhci->base + SD_BWDR, SDXC_WIDTH1);
 		break;
 	default:
 		ASSERT(0);
