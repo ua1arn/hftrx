@@ -336,15 +336,13 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
         {
-		TP();
-		PRINTF("2 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+		PRINTF("2 rd err=%08X, done=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
         }
-	write32(sdhci->base + SD_RISR, 0xffffffff);
 
 	if(count)
         {
-		PRINTF("3 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+		PRINTF("3 rd err=%08X, done=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
         }
 	return 1;
@@ -387,11 +385,6 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 		return 0;
 	}
 
-	write32(sdhci->base + SD_GCTL, read32(sdhci->base + SD_GCTL) | SDXC_FIFO_RESET);
-	WaitAfterReset(sdhci);
-
-	write32(sdhci->base + SD_RISR, 0xffffffff);
-
 	if(count)
 	{
 		PRINTF("3 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
@@ -402,8 +395,10 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 
 static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
-	write32(sdhci->base + SD_GCTL, SDXC_FIFO_RESET);
+	write32(sdhci->base + SD_GCTL, read32(sdhci->base + SD_GCTL) | SDXC_FIFO_RESET);
 	WaitAfterReset(sdhci);
+
+	write32(sdhci->base + SD_RISR, 0xffffffff);
 
 	uint32_t dlen = (uint32_t)(dat->blkcnt * dat->blksz);
 	int ret = 0;
@@ -432,7 +427,7 @@ static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, 
 // retuen 0: no disk
 int sdhci_t113_detect(struct sdhci_t * sdhci)
 {
- return HARDWARE_SDIOSENSE_CD() != 0;
+	return HARDWARE_SDIOSENSE_CD() != 0;
 }
 
 int sdhci_t113_reset(struct sdhci_t * sdhci)
