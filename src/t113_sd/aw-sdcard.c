@@ -765,7 +765,7 @@ int sdcard_init(void)
 		if(card->version & SD_VERSION_SD)
 		{
 			uint32_t width;
-			PRINTF("Processing SD parameters, card->version=%08X\n", (unsigned) card->version);
+			//PRINTF("Processing SD parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
 				;
 #if WITHSDHCHW8BIT
@@ -806,7 +806,7 @@ int sdcard_init(void)
 		else if(card->version & MMC_VERSION_MMC)
 		{
 			uint32_t width;
-			PRINTF("Processing MMC parameters, card->version=%08X\n", (unsigned) card->version);
+			//PRINTF("Processing MMC parameters, card->version=%08X\n", (unsigned) card->version);
 
 			/*
 			 * https://linux.codingbelief.com/zh/storage/flash_memory/emmc/emmc_commands.html

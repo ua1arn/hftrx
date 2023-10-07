@@ -309,20 +309,22 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
 
-	status = read32(sdhci->base + SD_STAR);
-	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
-	while((!err) && (count >= sizeof(uint32_t)))
+	while (count >= sizeof(uint32_t))
 	{
-		if(!(status & SDXC_FIFO_EMPTY))
+		if ((read32(sdhci->base + SD_STAR) & SDXC_FIFO_EMPTY) == 0)
 		{
 			*(tmp) = read32(sdhci->base + SD_FIFO);
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
-		status = read32(sdhci->base + SD_STAR);
-		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
-	//PRINTF("1 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+
+	status = read32(sdhci->base + SD_STAR);
+	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
+	if (err)
+	{
+		PRINTF("1 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+	}
 	do {
 		status = read32(sdhci->base + SD_RISR);
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
@@ -354,9 +356,7 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
 
-	status = read32(sdhci->base + SD_STAR);
-	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
-	while(!err && count)
+	while (count >= sizeof(uint32_t))
 	{
 		if(!(status & SDXC_FIFO_FULL))
 		{
@@ -364,10 +364,13 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
-		status = read32(sdhci->base + SD_STAR);
-		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
-	//PRINTF("1 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+	status = read32(sdhci->base + SD_STAR);
+	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
+	if (err)
+	{
+		PRINTF("1 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+	}
 
 	do {
 		status = read32(sdhci->base + SD_RISR);
