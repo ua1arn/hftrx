@@ -449,6 +449,7 @@ uint64_t mmc_read_blocks(uint8_t * buf, uint64_t start, uint64_t blkcnt)
 
 	if(!sdhci_t113_transfer(hci, &cmd, &dat))
         {
+		TP();
 		return 0;
         }
 /*
@@ -560,7 +561,6 @@ int sdcard_init(void)
 	char scap[32];
 	uint64_t csize, cmult;
 	uint32_t unit, time;
-	uint32_t width;
 	int status;
 
 	sdhci_t113_reset(hci);
@@ -571,19 +571,15 @@ int sdcard_init(void)
 
 	if(!go_idle_state(hci))
 	{
-		PRINTF("bad go_idle_state\n");
 		return 0;
 	}
 
-	if (!sd_send_if_cond(hci, card))
-		PRINTF("bad sd_send_if_cond\n");
+	sd_send_if_cond(hci, card);
 
 	if(!sd_send_op_cond(hci, card))
 	{
-		PRINTF("bad sd_send_op_cond\n");
 		if(!mmc_send_op_cond(hci, card))
 		{
-			TP();
 			return 0;
 		}
 	}
@@ -764,10 +760,11 @@ int sdcard_init(void)
 		sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 		sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 	}
-	else if (1)
+	else
 	{
 		if(card->version & SD_VERSION_SD)
 		{
+			uint32_t width;
 			PRINTF("Processing SD parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
 				;
@@ -808,6 +805,7 @@ int sdcard_init(void)
 		}
 		else if(card->version & MMC_VERSION_MMC)
 		{
+			uint32_t width;
 			PRINTF("Processing MMC parameters, card->version=%08X\n", (unsigned) card->version);
 
 			/*
@@ -845,12 +843,12 @@ int sdcard_init(void)
 			cmd.resptype = MMC_RSP_R1;
 			if(!sdhci_t113_transfer(hci, &cmd, NULL))
 			{
-				PRINTF("Can not set card width to code %i\n", width);
+				//PRINTF("Can not set card width to code %i\n", width);
 				return 0;
 			}
 			else
 			{
-				PRINTF("Successfully set card width to code %i\n", width);
+				//PRINTF("Successfully set card width to code %i\n", width);
 
 			}
 
@@ -1093,9 +1091,24 @@ DRESULT SD_Get_Block_Size (
 	DWORD  *buff	/* Data buffer to store read data */
 	)
 {
-	return RES_ERROR;
 	struct sdhci_t *hci=&HCI;
 	struct sdcard_t *card=&CARD;
+
+
+//	uint32_t cmult = UNSTUFF_BITS(card->csd, 47, 3);	// Device size multiplier [49:47]
+//	uint32_t csize = UNSTUFF_BITS(card->csd, 62, 12);	// Device size [73:62]
+//	uint64_t capacity = (csize + 1) << (cmult + 2);
+//	capacity *= 1 << UNSTUFF_BITS(card->csd, 80, 4);	// Maximum read data block length [83:80]
+//
+//	uint32_t egmult = UNSTUFF_BITS(card->csd, 35, 5);	// Erase group size multiplier [41:37]
+//	uint32_t egsize = UNSTUFF_BITS(card->csd, 42, 5);	// Erase group size [46:42]
+//
+//	PRINTF("Erase group size multiplier=%u\n", egmult);
+//	PRINTF("Erase group size=%u\n", egsize);
+
+	* buff = 32768;
+	return RES_OK;
+
 	enum { KB = 1024, MB = KB * KB };
 	static const unsigned long aus [16] =
 	{
@@ -1135,10 +1148,9 @@ DRESULT SD_Get_Block_Size (
 
 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
             {
-		PRINTF("SD_Get_Block_Size: sdhci_t113_transfer failure\n");
+		PRINTF("app SD_Get_Block_Size: sdhci_t113_transfer failure\n");
 		return RES_ERROR;
            }
-	TP();
 	static uint32_t buffer [512 / 4];
 	cmd.cmdidx = SD_CMD_APP_STATUS; // ACMD13
 	cmd.cmdarg = 0;
@@ -1146,12 +1158,14 @@ DRESULT SD_Get_Block_Size (
 
 	dat.buf = (uint8_t *) buffer;
 	dat.flag = MMC_DATA_READ;
-	dat.blksz = 512;
+	dat.blksz = 64;
 	dat.blkcnt = 1;
 
+	TP();
 	if(!sdhci_t113_transfer(hci, &cmd, &dat))
             {
-		PRINTF("SD_Get_Block_Size: sdhci_t113_transfer failure\n");
+		TP();
+		PRINTF("dat SD_Get_Block_Size: sdhci_t113_transfer failure\n");
 		return RES_ERROR;
            }
 	TP();
@@ -1177,7 +1191,7 @@ DRESULT SD_Get_Sector_Count (
 	LBA_t val = card->capacity / FF_MAX_SS;
 	if (val > USERFIRSTSBLOCK)
 	{
-		//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
+		PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
 		* buff = val - USERFIRSTSBLOCK;
 		return RES_OK;
 	}

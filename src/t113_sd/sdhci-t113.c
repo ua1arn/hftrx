@@ -322,7 +322,7 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 		status = read32(sdhci->base + SD_STAR);
 		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
-	PRINTF("1 rd err=%08X, count=%u\n", err, count);
+	//PRINTF("1 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 	do {
 		status = read32(sdhci->base + SD_RISR);
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
@@ -335,14 +335,14 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
         {
 		TP();
-		PRINTF("2 rd err=%08X, count=%u\n", err, count);
+		PRINTF("2 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
         }
 	write32(sdhci->base + SD_RISR, 0xffffffff);
 
 	if(count)
         {
-		TP();
+		PRINTF("3 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
         }
 	return 1;
@@ -367,7 +367,7 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 		status = read32(sdhci->base + SD_STAR);
 		err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
 	}
-	PRINTF("1 wr err=%08X, count=%u\n", err, count);
+	//PRINTF("1 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 
 	do {
 		status = read32(sdhci->base + SD_RISR);
@@ -380,7 +380,7 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
 	{
-		PRINTF("2 wr err=%08X, count=%u\n", err, count);
+		PRINTF("2 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
 	}
 
@@ -390,7 +390,10 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 	write32(sdhci->base + SD_RISR, 0xffffffff);
 
 	if(count)
+	{
+		PRINTF("3 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
+	}
 	return 1;
 }
 
@@ -399,7 +402,6 @@ static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, 
 	write32(sdhci->base + SD_GCTL, SDXC_FIFO_RESET);
 	WaitAfterReset(sdhci);
 
-	PRINTF("t113_transfer_data\n");
 	uint32_t dlen = (uint32_t)(dat->blkcnt * dat->blksz);
 	int ret = 0;
 
@@ -408,13 +410,17 @@ static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, 
 	if(dat->flag & MMC_DATA_READ)
 	{
 		if(!t113_transfer_command(sdhci, cmd, dat))
+		{
 			return 0;
+		}
 		ret = read_bytes(sdhci, (uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
 	}
 	else if(dat->flag & MMC_DATA_WRITE)
 	{
 		if(!t113_transfer_command(sdhci, cmd, dat))
+		{
 			return 0;
+		}
 		ret = write_bytes(sdhci, (uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
 	}
 	return ret;
@@ -441,7 +447,6 @@ int sdhci_t113_setvoltage(struct sdhci_t * sdhci, uint32_t voltage)
 
 int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 {
-	PRINTF("sdhci_t113_setwidth: %d bits\n", (int) width);
 	switch(width)
 	{
 	case MMC_BUS_WIDTH_1:
@@ -552,7 +557,7 @@ void sdhci_t113_clock(void)
 		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 15);
 		while ((SMHCHARD_PTR->SMHC_SAMP_DL & (UINT32_C(1) << 14)) == 0)
 			;
-		PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
+		//PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
 		SMHCHARD_PTR->SMHC_SAMP_DL = (SMHCHARD_PTR->SMHC_SAMP_DL & ~ (UINT32_C(0x3F) << 0)) |
 			((SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F) |
 			0;
@@ -564,7 +569,7 @@ void sdhci_t113_clock(void)
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 15);
 		while ((SMHCHARD_PTR->SMHC_DS_DL & (UINT32_C(1) << 14)) == 0)
 			;
-		PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
+		//PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
 		SMHCHARD_PTR->SMHC_DS_DL = (SMHCHARD_PTR->SMHC_DS_DL & ~ (UINT32_C(0x3F) << 0)) |
 			((SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F) |
 			0;
