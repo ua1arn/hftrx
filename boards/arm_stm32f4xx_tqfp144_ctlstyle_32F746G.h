@@ -311,7 +311,7 @@
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
-	//#define WITHNMEA		1	/* используется NMEA parser */
+	//
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	//#define WITHVOX			1	/* используется VOX */
 	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */

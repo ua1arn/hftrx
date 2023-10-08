@@ -559,7 +559,7 @@
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
-	//#define WITHNMEA		1	/* используется NMEA parser */
+	//
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#if WITHTX
 		#define WITHVOX			1	/* используется VOX */

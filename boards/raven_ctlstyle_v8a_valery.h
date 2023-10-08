@@ -105,7 +105,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#define WITHCAT		1	/* используется CAT */
-	//#define WITHNMEA		1	/* используется NMEA parser */
+	//
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	#define WITHVOX		1	/* используется VOX */
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */

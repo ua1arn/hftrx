@@ -341,7 +341,7 @@
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
-	//#define WITHNMEA		1	/* используется NMEA parser */
+	//
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#if WITHTX
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
