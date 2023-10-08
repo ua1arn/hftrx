@@ -102,7 +102,7 @@
 	#define PTT_TARGET_PIN PINB
 	#define PTT_BIT_PTT (1U << PB2)
 
-	#if WITHCAT || WITHNMEA
+	#if WITHCAT
 
 		// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 		#define FROMCAT_TARGET_PORT_RTS		PORTD

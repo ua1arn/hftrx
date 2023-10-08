@@ -110,7 +110,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// CAT control lines
 	#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) // was PINA 
 	#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/

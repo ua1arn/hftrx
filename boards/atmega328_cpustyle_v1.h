@@ -91,7 +91,7 @@
 	#define TARGET_TWI_TWD_PIN PINC
 	#define TARGET_TWI_TWD	(1U << PC4)
 
-#if 0 && (WITHCAT || WITHNMEA)
+#if 0 && WITHCAT
 	// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 	#define FROMCAT_TARGET_PIN_RTS		PIND
 	#define FROMCAT_TARGET_DDR_RTS		DDRD

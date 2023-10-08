@@ -197,7 +197,7 @@
 #endif /* WITHENCODER */
 
 /* Распределение битов в ARM контроллерах */
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 
 	// CAT control lines
 	#define FROMCAT_TARGET_DDR_RTS_C	PIOA->PIO_ODR	// was DDRA

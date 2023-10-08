@@ -191,7 +191,7 @@
 /* Распределение битов в ARM контроллерах */
 
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// CAT control lines
 	/* манипуляция от порта RS-232 */
 	#define FROMCAT_DTR_INITIALIZE() \

@@ -168,7 +168,7 @@
 
 #endif /* WITHTX */
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// CAT control lines
 	#define FROMCAT_TARGET_PIN_RTS		(AT91C_BASE_PIOA->PIO_PDSR) // was PINA 
 	#define FROMCAT_TARGET_PIN_DTR		(AT91C_BASE_PIOA->PIO_PDSR) // was PINA 

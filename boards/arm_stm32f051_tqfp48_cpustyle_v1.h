@@ -190,7 +190,7 @@
 
 
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// CAT control lines
 	#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) // was PINA 
 	#define FROMCAT_BIT_RTS				(0u << 11)	/* сигнал RTS от FT232RL	*/

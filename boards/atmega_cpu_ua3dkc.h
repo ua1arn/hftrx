@@ -174,7 +174,7 @@
 #define SIDETONE_TARGET_BIT		(1U << PD7)	// DIP40 pin 21
 
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 	#define FROMCAT_TARGET_PORT_RTS		PORTD
 	#define FROMCAT_TARGET_PIN_RTS		PIND

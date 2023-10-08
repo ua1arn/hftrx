@@ -181,7 +181,7 @@
 
 #endif /* WITHTX */
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 	#define FROMCAT_TARGET_PIN_RTS		(PORTE.IN)
 	#define FROMCAT_BIT_RTS			(PIN1_bm)	/* PE1 сигнал RTS от FT232RL	*/

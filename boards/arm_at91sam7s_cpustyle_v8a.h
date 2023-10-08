@@ -196,7 +196,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 	// CAT control lines
 	#define FROMCAT_TARGET_DDR_RTS_C	AT91C_BASE_PIOA->PIO_ODR	// was DDRA
 	#define FROMCAT_TARGET_PIN_RTS		AT91C_BASE_PIOA->PIO_PDSR // was PINA 

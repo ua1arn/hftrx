@@ -251,7 +251,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if WITHUART1HW && (WITHCAT || WITHNMEA)
+#if WITHUART1HW && WITHCAT
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 

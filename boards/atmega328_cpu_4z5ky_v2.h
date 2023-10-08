@@ -148,7 +148,7 @@
 
 	#define PTT_BIT_PTT (1U << PD7)		
 
-	#if 0 && (WITHCAT || WITHNMEA)
+	#if 0 && WITHCAT
 		// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 		#define FROMCAT_TARGET_PIN_RTS		PIND
 		#define FROMCAT_TARGET_DDR_RTS		DDRD

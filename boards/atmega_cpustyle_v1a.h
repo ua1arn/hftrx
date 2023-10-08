@@ -105,7 +105,7 @@
 
 #endif /* WITHTX */
 
-#if WITHCAT || WITHNMEA
+#if WITHCAT
 
 	// Сигналы переключения на передачу и манипуляции через CAT интерфейс.
 	#define FROMCAT_TARGET_PORT_RTS		PORTD
