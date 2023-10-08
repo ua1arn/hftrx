@@ -13561,7 +13561,7 @@ spool_nmeapps(void)
 #endif /* WITHLFM */
 }
 
-#if RTC_TYPE_GPS
+#if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS)
 
 uint_fast8_t board_rtc_chip_initialize(void)
 {
@@ -13592,9 +13592,11 @@ void board_rtc_setdatetime(
 	uint_fast8_t hours,
 	uint_fast8_t minutes,
 	uint_fast8_t seconds
-	) {}
+	)
+{
+}
 
-#endif /* RTC_TYPE_GPS */
+#endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) */
 
 #endif /* WITHNMEA */
 

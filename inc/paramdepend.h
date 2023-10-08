@@ -2718,9 +2718,9 @@ extern "C" {
 	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046) */
 
-#if defined RTC_TYPE_GPS && ! defined WITHNMEA
-	#error RTC_TYPE_GPS and WITHNMEA can be used in same time
-#endif /* defined RTC_TYPE_GPS && ! defined WITHNMEA */
+#if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA
+	#error RTC_TYPE_GPS and WITHNMEA must be used in same time
+#endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA */
 
 #ifdef __cplusplus
 }
