@@ -13494,7 +13494,9 @@ void nmealfm_parsechar(uint_fast8_t c)
 		{
 			if (nmea_param > 2 &&
 				strcmp(nmea_buff [0], "GPRMC") == 0 &&
-				strcmp(nmea_buff [2], "A") == 0 &&
+#if defined (RTC1_TYPE) && (RTC1_TYPE != RTC_TYPE_GPS)				// при наличии выделенного RTC через GPS обновляется время
+				strcmp(nmea_buff [2], "A") == 0 &&					// а если в качестве RTC выступает GPS, подводка не требуется
+#endif /* defined (RTC1_TYPE) && (RTC1_TYPE != RTC_TYPE_GPS) */
 				1)
 			{
 				// разбор времени
@@ -13583,6 +13585,17 @@ void board_rtc_getdatetime(
 	* dayofmonth = nmea_time.day;
 	* month = nmea_time.month;
 	* year = 2000 + nmea_time.year;
+}
+
+void board_rtc_gettime(
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * seconds
+	)
+{
+	* seconds = nmea_time.seconds;
+	* minute = nmea_time.minutes;
+	* hour = nmea_time.hours;
 }
 
 void board_rtc_setdatetime(
