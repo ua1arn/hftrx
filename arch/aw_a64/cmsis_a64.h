@@ -1625,14 +1625,7 @@ typedef struct SMHC_Type
              uint32_t reserved_0x104 [0x0002];
     volatile uint32_t SMHC_EDSD;                      /*!< Offset 0x10C eMMC4.5 DDR start bit detection control Register */
     volatile uint32_t SMHC_RES_CRC;                   /*!< Offset 0x110 Response CRC from device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D7_CRC;                    /*!< Offset 0x114 CRC in data7 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D6_CRC;                    /*!< Offset 0x118 CRC in data6 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D5_CRC;                    /*!< Offset 0x11C CRC in data5 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D4_CRC;                    /*!< Offset 0x120 CRC in data4 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D3_CRC;                    /*!< Offset 0x124 CRC in data3 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D2_CRC;                    /*!< Offset 0x128 CRC in data2 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D1_CRC;                    /*!< Offset 0x12C CRC in data1 form device(only for SMHC0&1) */
-    volatile uint32_t SMHC_D0_CRC;                    /*!< Offset 0x130 CRC in data0 form device(only for SMHC0&1) */
+    volatile uint32_t SMHC_D7_D0_CRC [0x008];         /*!< Offset 0x114 CRC in Data7..Data0 from Device (Only for SMHC0, SMHC1) */
     volatile uint32_t SMHC_CRC_STA;                   /*!< Offset 0x134 CRC status from device in write operation(only for SMHC0&1) */
              uint32_t reserved_0x138 [0x0002];
     volatile uint32_t SMHC_DRV_DL;                    /*!< Offset 0x140 Drive delay control Register */

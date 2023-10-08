@@ -9181,78 +9181,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>SMHC_D7_CRC</name>
-    <displayName>SMHC_D7_CRC</displayName>
-    <description>CRC in data7 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x114</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D6_CRC</name>
-    <displayName>SMHC_D6_CRC</displayName>
-    <description>CRC in data6 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x118</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D5_CRC</name>
-    <displayName>SMHC_D5_CRC</displayName>
-    <description>CRC in data5 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x11C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D4_CRC</name>
-    <displayName>SMHC_D4_CRC</displayName>
-    <description>CRC in data4 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x120</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D3_CRC</name>
-    <displayName>SMHC_D3_CRC</displayName>
-    <description>CRC in data3 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x124</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D2_CRC</name>
-    <displayName>SMHC_D2_CRC</displayName>
-    <description>CRC in data2 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x128</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D1_CRC</name>
-    <displayName>SMHC_D1_CRC</displayName>
-    <description>CRC in data1 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x12C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>SMHC_D0_CRC</name>
-    <displayName>SMHC_D0_CRC</displayName>
-    <description>CRC in data0 form device(only for SMHC0&amp;1)</description>
-    <addressOffset>0x130</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000114</addressOffset>
+    <register>
+     <name>SMHC_D7_D0_CRC</name>
+     <displayName>SMHC_D7_D0_CRC</displayName>
+     <description>CRC in Data7..Data0 from Device (Only for SMHC0, SMHC1)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
    <register>
     <name>SMHC_CRC_STA</name>
     <displayName>SMHC_CRC_STA</displayName>

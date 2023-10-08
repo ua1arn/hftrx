@@ -39,14 +39,7 @@
 #regdef; SMHC_THLD; 0x0100; Card threshold control Register
 #regdef; SMHC_EDSD; 0x010C; eMMC4.5 DDR start bit detection control Register
 #regdef; SMHC_RES_CRC; 0x0110; Response CRC from device(only for SMHC0&1)
-#regdef; SMHC_D7_CRC; 0x0114; CRC in data7 form device(only for SMHC0&1)
-#regdef; SMHC_D6_CRC; 0x0118; CRC in data6 form device(only for SMHC0&1)
-#regdef; SMHC_D5_CRC; 0x011C; CRC in data5 form device(only for SMHC0&1)
-#regdef; SMHC_D4_CRC; 0x0120; CRC in data4 form device(only for SMHC0&1)
-#regdef; SMHC_D3_CRC; 0x0124; CRC in data3 form device(only for SMHC0&1)
-#regdef; SMHC_D2_CRC; 0x0128; CRC in data2 form device(only for SMHC0&1)
-#regdef; SMHC_D1_CRC; 0x012C; CRC in data1 form device(only for SMHC0&1)
-#regdef; SMHC_D0_CRC; 0x0130; CRC in data0 form device(only for SMHC0&1)
+#regdef; SMHC_D7_D0_CRC; 0x0114 8; CRC in Data7..Data0 from Device (Only for SMHC0, SMHC1)
 #regdef; SMHC_CRC_STA; 0x0134; CRC status from device in write operation(only for SMHC0&1)
 #regdef; SMHC_DRV_DL; 0x0140; Drive delay control Register
 #regdef; SMHC_SAMP_DL; 0x0144; Sample delay control Register

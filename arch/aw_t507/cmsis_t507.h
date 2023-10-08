@@ -1242,14 +1242,7 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_A23A;                      /*!< Offset 0x108 Auto Command 23 Argument Register (Only for SMHC2) */
     volatile uint32_t EMMC_DDR_SBIT_DET;              /*!< Offset 0x10C eMMC4.5 DDR Start Bit Detection Control Register */
     volatile uint32_t SMHC_RES_CRC;                   /*!< Offset 0x110 Response CRC from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D7_CRC;                    /*!< Offset 0x114 CRC in Data7 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D6_CRC;                    /*!< Offset 0x118 CRC in Data6 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D5_CRC;                    /*!< Offset 0x11C CRC in Data5 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D4_CRC;                    /*!< Offset 0x120 CRC in Data4 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D3_CRC;                    /*!< Offset 0x124 CRC in Data3 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D2_CRC;                    /*!< Offset 0x128 CRC in Data2 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D1_CRC;                    /*!< Offset 0x12C CRC in Data1 from Device (Only for SMHC0, SMHC1) */
-    volatile uint32_t SMHC_D0_CRC;                    /*!< Offset 0x130 CRC in Data0 from Device (Only for SMHC0, SMHC1) */
+    volatile uint32_t SMHC_D7_D0_CRC [0x008];         /*!< Offset 0x114 CRC in Data7..Data0 from Device (Only for SMHC0, SMHC1) */
     volatile uint32_t SMHC_CRC_STA;                   /*!< Offset 0x134 Write CRC Status Register (Only for SMHC0, SMHC1) */
     volatile uint32_t SMHC_EXT_CMD;                   /*!< Offset 0x138 Extended Command Register (Only for SMHC2) */
     volatile uint32_t SMHC_EXT_RESP;                  /*!< Offset 0x13C Extended Response Register (Only for SMHC2) */
