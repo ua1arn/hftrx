@@ -234,16 +234,15 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		170
-			#define WITHTHERMOLEVEL		1
+			#define WITHAFGAINDEFAULT		150
+			#define WITHTHERMOLEVEL			1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
-			//#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 			#define WITHLFM					1
 			#define WITHNMEA				1
-			//#define WITHEXTRFBOARDTEST		1
 			#define WITHBUFFERSSMALLDEBUG	1
 #endif
 	#elif LCDMODE_LQ043T3DX02K

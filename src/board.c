@@ -4602,7 +4602,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		/* U7 */
 		RBBIT(027, ! glob_bandf);	// LPF_ON
-		RBBIT(026, glob_preamp);	// LNA_ON
+		RBBIT(026, 1);	// LNA always on
 		RBBIT(025, 0);	// ATT_ON_0.5
 		RBVAL(020, att_db, 5);
 
