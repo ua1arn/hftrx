@@ -17,11 +17,11 @@
 // БИНС поправки
 // RS-485 38400 8N1
 
-#define DEVADDR 1
 
-#define STARTCRCVAL 0xFF
+#define STARTCRCVAL 0xFF	// начальное значение аккумулятора CRC протокола обмена
 
-static unsigned culateCRC8(unsigned v, unsigned wCRCWord)
+// Быстрый расчет следующего значения CRC
+static unsigned calculateCRC8(unsigned v, unsigned wCRCWord)
 {
 
     static const uint8_t wCRCTable[] =
@@ -113,17 +113,18 @@ void user_uart2_ontxchar(void * ctx)
 	}
 }
 
+// Передать символ с обновлением контрольного кода
 static unsigned uartX_putc_crc8(int c, unsigned crc)
 {
 	nmeaX_putc(c);
-	crc = culateCRC8(c, crc);
+	crc = calculateCRC8(c, crc);
 	return crc;
 }
 
-// Передача массива с дополнением кодла контроля целостиности сообщения
+// Передача массива с дополнением кодла контроля целостности сообщения
 static void uartX_write_crc8(const uint8_t * buff, size_t n)
 {
-	unsigned crc = 0xFF;
+	unsigned crc = STARTCRCVAL;
 	while (n --)
 	{
 		crc = uartX_putc_crc8(* buff ++, crc);
@@ -145,12 +146,14 @@ void user_uart2_initialize(void)
 }
 
 
+// Сформировать int8 в передаваемом пакете
 static unsigned mbuff_uint8(uint8_t * b, uint_fast8_t v)
 {
 	b [0] = v;
 	return 1;
 }
 
+// Сформировать int32 в передаваемом пакете
 static unsigned mbuff_uint32_LE(uint8_t * b, uint_fast32_t v)
 {
 	b [0] = v >> 0;
@@ -160,6 +163,7 @@ static unsigned mbuff_uint32_LE(uint8_t * b, uint_fast32_t v)
 	return 4;
 }
 
+// Сформировать float32 в передаваемом пакете
 static unsigned mbuff_float32_LE(uint8_t * b, float v)
 {
 	union
@@ -175,6 +179,7 @@ static unsigned mbuff_float32_LE(uint8_t * b, float v)
 	return 4;
 }
 
+// Сформировать float64 в передаваемом пакете
 static unsigned mbuff_float64_LE(uint8_t * b, double v)
 {
 	union
@@ -195,6 +200,7 @@ static unsigned mbuff_float64_LE(uint8_t * b, double v)
 	return 8;
 }
 
+// Типы регистров БИНС Н1 при обмене
 enum regtypes
 {
 	REGT_UINT32,
@@ -202,6 +208,7 @@ enum regtypes
 	REGT_FLOAT64,
 };
 
+// получить тип регистра по его адресующему коду
 static enum regtypes getregtype(unsigned reg)
 {
 	switch (reg)
@@ -230,7 +237,7 @@ static int xbreginc(unsigned reg)
 	return 1;
 }
 
-
+// Получить Количество регистров для обмена мщ начального адреса и количества параметров
 static unsigned calctregcount(unsigned reg, unsigned argcount)
 {
 	unsigned tregcount;
@@ -251,7 +258,7 @@ void xbsetregEXTF(const double * pv)
 	unsigned i;
 
 	n += mbuff_uint8(b + n, 0xFB);	// preamble
-	n += mbuff_uint8(b + n, DEVADDR);	// device address
+	n += mbuff_uint8(b + n, GIRONAV_DEVADDR);	// device address
 	n += mbuff_uint8(b + n, reg);	// register address
 	n += mbuff_uint8(b + n, tregcount | 0x80);	// number of registers write
 

@@ -39,5 +39,6 @@ void xbsetregF(unsigned reg, unsigned argcount, const double * pv);
 void xbsetregI(unsigned reg, unsigned argcount, const long * pv);
 void xbsetregEXTF(const double * pv);	// РЕГИСТРЫ ВНЕШНЕЙ КОРРЕКЦИИ
 
+#define GIRONAV_DEVADDR 1
 
 #endif /* SRC_XHELPERT507_XHELPER507_H_ */

@@ -18,26 +18,13 @@
 // руль машинка
 // RS-485 115200 8N1
 
-#define PERIODSPOOL 500
-#define RXTOUT 50
-
-
-static uint16_t crc16(unsigned v, unsigned crc)
- {
-	crc = (uint16_t) ((v << 8u) ^ crc);
-	for (uint8_t k = 0u; k < 8u; k++) {
-		if (crc & 0x8000u)
-			crc = (uint16_t) ((crc << 1u) ^ 0x8005u);
-		else
-			crc = (uint16_t) (crc << 1u);
-	}
-	return crc;
-}
+#define PERIODSPOOL 500	// период опроса, мс
+#define RXTOUT 50		// конец пакета на приеме подразумевается по интервалу, мс
 
 #define STARTCRCVAL 0xFFFF	// начальное значение аккумулятора CRC протокола обмена
 
-// Быстрый расчет следующего снаяения CRC
-static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
+// Быстрый расчет следующего значения CRC
+static unsigned calculateCRC16_experemental(unsigned v, unsigned wCRCWord)
 {
     static const uint16_t wCRCTable[] =
     {
@@ -60,6 +47,19 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
     };
 
     return wCRCTable [(v ^ wCRCWord) & 0xFF];
+}
+
+// Расчёт следующего значения CRC
+static unsigned calculateCRC16(unsigned v, unsigned crc)
+ {
+	crc = (uint16_t) ((v << 8u) ^ crc);
+	for (uint8_t k = 0u; k < 8u; k++) {
+		if (crc & 0x8000u)
+			crc = (uint16_t) ((crc << 1u) ^ 0x8005u);
+		else
+			crc = (uint16_t) (crc << 1u);
+	}
+	return crc & 0XFFFF;
 }
 
 // Очередь символов для передачи в канал обмена
@@ -152,7 +152,7 @@ void user_uart1_onrxchar(uint_fast8_t c)
 		if (rxp->count < ARRAY_SIZE(rxp->buff))
 		{
 			rxp->buff [rxp->count ++] = c;
-			rxp->crc = crc16(c, rxp->crc);
+			rxp->crc = calculateCRC16(c, rxp->crc);
 		}
 	}
 	LowerIrql(oldIrql);
@@ -209,15 +209,16 @@ static void uartX_write(const uint8_t * buff, size_t n)
 	}
 }
 
+// Передать символ с обновлением контрольного кода
 static unsigned uartX_putc_crc16(int c, unsigned crc)
 {
 	nmeaX_putc(c);
 	//PRINTF("tx:%02X ", c & 0xFF);
-	crc = crc16(c, crc);
+	crc = calculateCRC16(c, crc);
 	return crc;
 }
 
-// Передача массива с дополнением кодла контроля целостиности сообщения
+// Передача массива с дополнением кодла контроля целостности сообщения
 static void uartX_write_crc16(const uint8_t * buff, size_t n)
 {
 	unsigned crc = 0xFFFF;
@@ -275,7 +276,8 @@ static int freshness [2];
 static int needPos [2];
 static const int ids [2] = { 1, 2 };
 
-// периодическая выдача команд опроса
+// передача запроса раз в PERIODSPOOL милисекунд
+// ВЫполняется из USER LEVEL
 // 3.1 Set Point Command
 static void uart1_dpc_spool(void * ctx)
 {

@@ -17,16 +17,17 @@
 // давление
 // RS-485 9600 8O1 (ODD PARITY!)
 
-#define PERIODSPOOL 2500
-#define RXTOUT 100
+#define PERIODSPOOL 2500	// период опроса, мс
+#define RXTOUT 100	// конец пакета на приеме подразумевается по интервалу, мс
 
 // Очередь символов для передачи в канал обмена
 static u8queue_t txq;
 
 
-#define STARTCRCVAL 0xFFFF
+#define STARTCRCVAL 0xFFFF	// начальное значение аккумулятора CRC протокола обмена
 
-static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
+// Быстрый расчет следующего значения CRC
+static unsigned calculateCRC16(unsigned v, unsigned wCRCWord)
 {
     static const uint16_t wCRCTable[] =
     {
@@ -142,7 +143,7 @@ void user_uart5_onrxchar(uint_fast8_t c)
 		if (rxp->count < ARRAY_SIZE(rxp->buff))
 		{
 			rxp->buff [rxp->count ++] = c;
-			rxp->crc = culateCRC16(c, rxp->crc);
+			rxp->crc = calculateCRC16(c, rxp->crc);
 		}
 	}
 	LowerIrql(oldIrql);
@@ -290,15 +291,15 @@ void uart5_spool(void)
 	}
 }
 
-
+// Передать символ с обновлением контрольного кода
 static unsigned uartX_putc_crc16(int c, unsigned crc)
 {
 	nmeaX_putc(c);
-	crc = culateCRC16(c, crc);
+	crc = calculateCRC16(c, crc);
 	return crc;
 }
 
-// Передача массива с дополнением кодла контроля целостиности сообщения
+// Передача массива с дополнением кодла контроля целостности сообщения
 static void uartX_write_crc16(const uint8_t * buff, size_t n)
 {
 	unsigned crc = STARTCRCVAL;
@@ -329,6 +330,8 @@ static void uart5_req(void)
 	uartX_write_crc16(b, 6);
 }
 
+// передача запроса раз в PERIODSPOOL милисекунд
+// ВЫполняется из USER LEVEL
 static void uart5_dpc_spool(void * ctx)
 {
 	uart5_req();

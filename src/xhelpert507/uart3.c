@@ -16,14 +16,14 @@
 
 // БИНС основной
 // RS-422, 921600 8N1
-#define DEVADDR 1
 
-#define PERIODSPOOL 200
-#define RXTOUT 50
+#define PERIODSPOOL 200	// период опроса, мс
+#define RXTOUT 50		// конец пакета на приеме подразумевается по интервалу, мс
 
-#define STARTCRCVAL 0xFF
+#define STARTCRCVAL 0xFF	// начальное значение аккумулятора CRC протокола обмена
 
-static unsigned culateCRC8(unsigned v, unsigned wCRCWord)
+// Быстрый расчет следующего значения CRC
+static unsigned calculateCRC8(unsigned v, unsigned wCRCWord)
 {
 
     static const uint8_t wCRCTable[] =
@@ -181,7 +181,7 @@ void user_uart3_onrxchar(uint_fast8_t c)
 		if (rxp->count < ARRAY_SIZE(rxp->buff))
 		{
 			rxp->buff [rxp->count ++] = c;
-			rxp->crc = culateCRC8(c, rxp->crc);
+			rxp->crc = calculateCRC8(c, rxp->crc);
 		}
 	}
 	LowerIrql(oldIrql);
@@ -213,14 +213,15 @@ static void uart3_timer_pkg_event(void * ctx)
 	}
 }
 
+// Передать символ с обновлением контрольного кода
 static unsigned uartX_putc_crc8(int c, unsigned crc)
 {
 	nmeaX_putc(c);
-	crc = culateCRC8(c, crc);
+	crc = calculateCRC8(c, crc);
 	return crc;
 }
 
-// Передача массива с дополнением кодла контроля целостиности сообщения
+// Передача массива с дополнением кодла контроля целостности сообщения
 static void uartX_write_crc8(const uint8_t * buff, size_t n)
 {
 	unsigned crc = 0xFF;
@@ -232,12 +233,14 @@ static void uartX_write_crc8(const uint8_t * buff, size_t n)
 	ASSERT(crc == 0);
 }
 
+// Сформировать int8 в передаваемом пакете
 static unsigned mbuff_uint8(uint8_t * b, uint_fast8_t v)
 {
 	b [0] = v;
 	return 1;
 }
 
+// Сформировать int32 в передаваемом пакете
 static unsigned mbuff_uint32_LE(uint8_t * b, uint_fast32_t v)
 {
 	b [0] = v >> 0;
@@ -247,6 +250,7 @@ static unsigned mbuff_uint32_LE(uint8_t * b, uint_fast32_t v)
 	return 4;
 }
 
+// Сформировать float32 в передаваемом пакете
 static unsigned mbuff_float32_LE(uint8_t * b, float v)
 {
 	union
@@ -262,6 +266,7 @@ static unsigned mbuff_float32_LE(uint8_t * b, float v)
 	return 4;
 }
 
+// Сформировать float64 в передаваемом пакете
 static unsigned mbuff_float64_LE(uint8_t * b, double v)
 {
 	union
@@ -282,9 +287,10 @@ static unsigned mbuff_float64_LE(uint8_t * b, double v)
 	return 8;
 }
 
+// Запрос на получение регистров состояния БИНС
 void readregisters(unsigned devaddr, unsigned reg, unsigned numregs)
 {
-	uint8_t b [8];
+	uint8_t b [4];
 	unsigned n = 0;
 
 	n += mbuff_uint8(b + n, 0xFB);	// preamble
@@ -343,6 +349,7 @@ static double rxpeek_float64_LE(const uint8_t * b)
 	return u.f;
 }
 
+// Типы регистров БИНС Н1 при обмене
 enum regtypes
 {
 	REGT_UINT32,
@@ -350,6 +357,7 @@ enum regtypes
 	REGT_FLOAT64,
 };
 
+// получить тип регистра по его адресующему коду
 static enum regtypes getregtype(unsigned reg)
 {
 	switch (reg)
@@ -472,6 +480,8 @@ static int xbreginc(unsigned reg)
 	return 1;
 }
 
+// Послеодвательный проход по принятому с интерфейса буферу.
+// Целостность данных уже проверена
 static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 {
 	const unsigned lastreg = rxregbase + rxnumregs;
@@ -678,6 +688,7 @@ static void parseanswers(const uint8_t * b, unsigned rxregbase, int rxnumregs)
 	}
 }
 
+// Получить Количество регистров для обмена мщ начального адреса и количества параметров
 static unsigned calctregcount(unsigned reg, unsigned argcount)
 {
 	unsigned tregcount;
@@ -696,7 +707,7 @@ void xbsetregF(unsigned reg, unsigned argcount, const double * pv)
 	unsigned i;
 
 	n += mbuff_uint8(b + n, 0xFB);	// preamble
-	n += mbuff_uint8(b + n, DEVADDR);	// device address
+	n += mbuff_uint8(b + n, GIRONAV_DEVADDR);	// device address
 	n += mbuff_uint8(b + n, reg);	// register address
 	n += mbuff_uint8(b + n, tregcount | 0x80);	// number of registers write
 
@@ -729,7 +740,7 @@ void xbsetregI(unsigned reg, unsigned argcount, const long * pv)
 	unsigned i;
 
 	n += mbuff_uint8(b + n, 0xFB);	// preamble
-	n += mbuff_uint8(b + n, DEVADDR);	// device address
+	n += mbuff_uint8(b + n, GIRONAV_DEVADDR);	// device address
 	n += mbuff_uint8(b + n, reg);	// register address
 	n += mbuff_uint8(b + n, tregcount | 0x80);	// number of registers write
 
@@ -765,7 +776,7 @@ static int parsepacket(const uint8_t * p, unsigned sz)
 		return 0;
 	if (p [0] != 0xFB)	// preamble
 		return 0;
-	if (p [1] != DEVADDR)	// address
+	if (p [1] != GIRONAV_DEVADDR)	// address
 		return 0;
 	rxregbase = p [2];
 	rxnumregs = p [3] & 0x7F;
@@ -820,7 +831,7 @@ static void spool_part0(void)
 {
 	const unsigned start = 0;	// 0..21 - до USER_PACKAGE
 	const unsigned top = 22;
-	readregisters(DEVADDR, start, top - start);
+	readregisters(GIRONAV_DEVADDR, start, top - start);
 }
 
 
@@ -828,30 +839,31 @@ static void spool_part1(void)
 {
 	const unsigned start = 54;	//GYRO_CALIBRATION_COEFFICIENT...
 	const unsigned top = 69;
-	readregisters(DEVADDR, start, top - start);
+	readregisters(GIRONAV_DEVADDR, start, top - start);
 }
 
 static void spool_part2(void)
 {
 	const unsigned start = 128;	// 0..21 - до USER_PACKAGE
 	const unsigned top = 152;
-	readregisters(DEVADDR, start, top - start);
+	readregisters(GIRONAV_DEVADDR, start, top - start);
 }
 
 static void spool_part3(void)
 {
 	const unsigned start = 152;	// 0..21 - до USER_PACKAGE
 	const unsigned top = 178;
-	readregisters(DEVADDR, start, top - start);
+	readregisters(GIRONAV_DEVADDR, start, top - start);
 }
 
 static void spool_part4(void)
 {
 	const unsigned start = 178;	// 0..21 - до USER_PACKAGE
 	const unsigned top = 208;
-	readregisters(DEVADDR, start, top - start);
+	readregisters(GIRONAV_DEVADDR, start, top - start);
 }
 
+// Запросы на получение регистров состояния БИНС несколькими порциями
 static int spoolcode;
 
 static void (* spooltable [])(void) =
@@ -863,6 +875,8 @@ static void (* spooltable [])(void) =
 	spool_part4,
 };
 
+// передача запроса раз в PERIODSPOOL милисекунд
+// ВЫполняется из USER LEVEL
 static void uart3_dpc_spool(void * ctx)
 {
 	spooltable [spoolcode]();

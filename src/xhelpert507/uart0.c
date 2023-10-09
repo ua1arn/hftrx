@@ -16,8 +16,8 @@
 
 // компас - RS232 9600 8N1
 
-#define PERIODSPOOL 2000
-#define RXTOUT 50
+#define PERIODSPOOL 2000	// период опроса, мс
+#define RXTOUT 50	// конец пакета на приеме подразумевается по интервалу, мс
 
 
 const uint8_t PREAMBLE_DATA = 0x55;
@@ -107,7 +107,8 @@ void user_uart0_ontxchar(void * ctx)
 	}
 }
 
-
+// передача запроса раз в PERIODSPOOL милисекунд
+// ВЫполняется из USER LEVEL
 static void uart0_dpc_spool(void * ctx)
 {
 	//TP();
@@ -134,7 +135,7 @@ enum codes
 	VQUATERNION       = 0x55
 };
 
-static int state;
+static int state;	// состояния разбора (соответствует номеру байта в принятом пакете).
 static int valuet;
 
 static uint8_t varray [11];
