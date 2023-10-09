@@ -917,6 +917,17 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 #include "mslist.h"
 
+
+typedef struct dpcentry_tag
+{
+	LIST_ENTRY item;
+	void (* fn)(void * ctx);
+	void * ctx;
+} dpcentry_t;
+
+void board_dpc_initialize(void);	/* инициализация списка user-mode опросных функций */
+void board_dpc_addentry(dpcentry_t * de);	/* добавить точку вызова */
+
 enum ticker_mode
 {
 	TICKERMD_PERIODIC,

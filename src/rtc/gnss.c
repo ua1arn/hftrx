@@ -134,6 +134,7 @@ void update_rtc_by_nmea_time(void)
 #endif /* defined (RTC1_TYPE) */
 }
 
+/* USER-MODE обработчик */
 void nmeagnss_parsechar(uint_fast8_t c)
 {
 	//dbg_putchar(c);
@@ -222,8 +223,8 @@ static u8queue_t rxq;
 // callback по принятому символу. сохранить в очередь для обработки в user level
 void nmeagnss_onrxchar(uint_fast8_t c)
 {
-	nmeagnss_parsechar(c & 0xFF);	// пока сразу обработка
-	return;
+//	nmeagnss_parsechar(c & 0xFF);	// пока сразу обработка
+//	return;
 
 	IRQL_t oldIrql;
 
@@ -233,8 +234,7 @@ void nmeagnss_onrxchar(uint_fast8_t c)
 }
 
 /* user-mode callback */
-// пока не используется
-void gnss_spool(void * ctx)
+static void gnss_spool(void * ctx)
 {
 	uint_fast8_t c;
 	uint_fast8_t f;
@@ -246,7 +246,7 @@ void gnss_spool(void * ctx)
 
 	if (f)
 	{
-		nmeagnss_parsechar(c & 0xFF);
+		nmeagnss_parsechar(c & 0xFF);	/* USER-MODE обработчик */
 	}
 }
 
@@ -266,6 +266,12 @@ void nmeagnss_initialize(void)
 {
 	const uint_fast32_t baudrate = UINT32_C(115200);
 	nmea_state = NMEAST_INITIALIZED;
+
+	static dpcentry_t nmeaspool;
+
+	nmeaspool.fn = gnss_spool;
+	nmeaspool.ctx = NULL;
+	board_dpc_addentry(& nmeaspool);
 
 	static uint8_t rxb [512];
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));

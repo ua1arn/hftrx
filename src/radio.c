@@ -16201,6 +16201,19 @@ uint_fast8_t dpclock_traylock(dpclock_t * lp)
 	return v;
 }
 
+static LIST_ENTRY dpclist;	// list of dpcentry_t
+
+/* добавить точку вызова */
+void board_dpc_addentry(dpcentry_t * de)
+{
+	InsertHeadList(& dpclist, & de->item);
+}
+
+/* инициализация списка user-mode опросных функций */
+void board_dpc_initialize(void)
+{
+	InitializeListHead(& dpclist);
+}
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
@@ -16230,6 +16243,16 @@ processmessages(
 	switch (takemsgready_user(& buff))
 	{
 	case MSGT_EMPTY:
+		// Выполнение периодического вызова user-mode функций по списку
+		{
+			PLIST_ENTRY t;
+			for (t = dpclist.Blink; t != & dpclist; t = t->Blink)
+			{
+				ASSERT(t != NULL);
+				dpcentry_t * const p = CONTAINING_RECORD(t, dpcentry_t, item);
+				(* p->fn)(p->ctx);
+			}
+		}
 #if WITHINTEGRATEDDSP
 		audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
@@ -19645,6 +19668,8 @@ void initialize2(void)
 void
 application_initialize(void)
 {
+	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
+
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */

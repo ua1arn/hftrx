@@ -76,7 +76,7 @@
 	// вызывается из обработчика прерываний UART0
 	// с принятым символом
 	#define HARDWARE_UART0_ONRXCHAR(c) do { \
-			nmeagnss_parsechar(c); \
+			nmeagnss_onrxchar(c); \
 		} while (0)
 	// вызывается из обработчика прерываний UART0
 	#define HARDWARE_UART0_ONOVERFLOW() do { \

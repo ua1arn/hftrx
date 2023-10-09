@@ -115,7 +115,7 @@ void linux_nmea_spool(void)
 		if (num_read > 1)
 		{
 			for (int i = 0; i < num_read; i ++)
-				nmeagnss_parsechar(buf[i]);
+				nmeagnss_parechar(buf[i]);		/* USER MODE или SYSTEM-MODE обработчик надо вызывать ? */
 		}
 	}
 }

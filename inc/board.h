@@ -436,8 +436,10 @@ void nmeatuner_parsechar(uint_fast8_t c);				/* вызывается из обр
 void nmeatuner_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmeatuner_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
+void nmeagnss_parechar(uint_fast8_t c);				/* USER-MODE обработчик */
+
 void nmeagnss_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
-void nmeagnss_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
+void nmeagnss_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void nmeagnss_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmeagnss_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
