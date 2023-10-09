@@ -216,6 +216,40 @@ void nmeagnss_parsechar(uint_fast8_t c)
 	}
 }
 
+// Очередь принятых симвоов из канала обменна
+static u8queue_t rxq;
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void nmeagnss_onrxchar(uint_fast8_t c)
+{
+	nmeagnss_parsechar(c & 0xFF);	// пока сразу обработка
+	return;
+
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
+}
+
+/* user-mode callback */
+// пока не используется
+void gnss_spool(void * ctx)
+{
+	uint_fast8_t c;
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	f = uint8_queue_get(& rxq, & c);
+	LowerIrql(oldIrql);
+
+	if (f)
+	{
+		nmeagnss_parsechar(c & 0xFF);
+	}
+}
+
 /* вызывается из обработчика прерываний */
 // произошла потеря символа (символов) при получении данных с компорта
 void nmeagnss_rxoverflow(void)
@@ -232,6 +266,9 @@ void nmeagnss_initialize(void)
 {
 	const uint_fast32_t baudrate = UINT32_C(115200);
 	nmea_state = NMEAST_INITIALIZED;
+
+	static uint8_t rxb [512];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
 #if ! LINUX_SUBSYSTEM
 
