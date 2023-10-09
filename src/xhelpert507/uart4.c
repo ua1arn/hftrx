@@ -28,11 +28,12 @@ static u8queue_t txq;
 // Очередь принятых симвоов из канала обменна
 static u8queue_t rxq;
 
+/* параметры окна времени начала ответа по каналу управления */
+static const uint_fast32_t starttxmin = NTICKS(40);
+static const uint_fast32_t starttxamx = NTICKS(200);
+static volatile uint_fast32_t lasttxticks;	/* таймер после последнего принятого символа - окно ответа */
 
-static const uint_fast32_t starttxmin = NTICKS(10);
-static const uint_fast32_t starttxamx = NTICKS(100);
-static volatile uint_fast32_t lasttxticks;
-
+/* Коды запроошенных ответов NMEA */
 enum answtype
 {
 	ANSW_NONE,
@@ -49,6 +50,9 @@ static enum answtype answerrequest = ANSW_NONE;
 static unsigned binsreg;
 static unsigned binsargcount;
 
+/* Получение и сброс запрошенного кода ответа. Признак возвращается одтин раз в интервале не менее starttxmin и не более starttxamx
+ *
+ */
 static enum answtype answerrequested(void)
 {
 	int v;
@@ -73,6 +77,7 @@ static enum answtype answerrequested(void)
 	return ANSW_NONE;
 }
 
+// обработка таймера окна ответа
 static void serialtouts(void * ctx)
 {
 	IRQL_t oldIrql;
@@ -87,13 +92,14 @@ static void serialtouts(void * ctx)
 }
 
 // callback по принятому символу. сохранить в очередь для обработки в user level
+// сброс таймера окна ответа
 void user_uart4_onrxchar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	uint8_queue_put(& rxq, c);
-	lasttxticks = 0;
+	lasttxticks = 0;	/* сброс таймера окна ответа */
 	LowerIrql(oldIrql);
 }
 
