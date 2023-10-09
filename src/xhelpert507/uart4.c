@@ -210,8 +210,8 @@ static void nmea_send(const char * body, size_t len)
 	nmeaX_putchar('\n');
 }
 
-#define NMEA_CHN 1
-#define NMEA_CHARS 16
+#define NMEA_CHN 1		// колчиество каналов управления
+#define NMEA_CHARS 16	// максимальный размер поля (включая завершающий символ '\0').
 
 enum nmea_states
 {
@@ -226,20 +226,20 @@ enum nmea_states
 
 enum
 {
-	PARAM_NAMETAG,
+	PARAM_NAMETAG,	// номер поля с кодом сообщения (первое после символа $).
 
 
 	//
-	NMEA_PARAMS = 15
+	NMEA_PARAMS = 15	// максимальное количество полей в запросах
 };
 
 static uint_fast8_t nmea_state [NMEA_CHN]; //= NMEAST_INITIALIZED;
-static uint_fast8_t nmea_checksum[NMEA_CHN];
+static uint_fast8_t nmea_checksum[NMEA_CHN];	// текущее значение накопленной контрольной суммы
 static uint_fast8_t nmea_chsval[NMEA_CHN];
-static uint_fast8_t nmea_param[NMEA_CHN];		// номер принимаемого параметра в строке - количество принятых реально
-static uint_fast16_t nmea_chars[NMEA_CHN];		// количество символов, помещённых в буфер
+static uint_fast8_t nmea_param[NMEA_CHN];		// номер принимаемого поля в строке - количество принятых символов
+static uint_fast16_t nmea_chars[NMEA_CHN];		// количество символов, помещённых в буфер данного поля
 
-static char nmea_buff [NMEA_CHN] [NMEA_PARAMS] [NMEA_CHARS];
+static char nmea_buff [NMEA_CHN] [NMEA_PARAMS] [NMEA_CHARS];	// буфер разбираемого в данный момент сообщения
 
 /* Завершён прием строки и проверена контрорльная сумма. начинаем разбирать. */
 static void nmea_done(unsigned chn)
@@ -338,7 +338,7 @@ static void nmea_done(unsigned chn)
 		{
 			setvalF [i] = strtod(nmea_buff [chn][PARAM_NAMETAG + 1 + i], NULL);
 		}
-		xbsetregEXTF(setvalF);	// установить группу регистров РЕГИСТРЫ ВНЕШНЕЙ КОРРЕКЦИИ
+		xbsetregEXTF(setvalF);	// установить группу регистров БИНС Н1 по каналу РЕГИСТРЫ ВНЕШНЕЙ КОРРЕКЦИИ
 		answerrequest = ANSW_BINSGROUP;
 	}
 	else if (
@@ -354,7 +354,7 @@ static void nmea_done(unsigned chn)
 		strcmp(nmea_buff [chn] [PARAM_NAMETAG], "TLPS") == 0 &&
 		1)
 	{
-		// разбор управляющих паарметров положения рулей
+		// разбор управляющих парметров положения рулей
 		long pos1 = strtol(nmea_buff [chn][PARAM_NAMETAG + 1], NULL, 10);
 		long pos2 = strtol(nmea_buff [chn][PARAM_NAMETAG + 2], NULL, 10);
 
@@ -443,30 +443,37 @@ static void nmeaX_parsechar(uint_fast8_t c, unsigned chn)
 		break;
 	}
 }
-static double binsmirrF [256];
-static int binsmirrI [256];
 
+
+// кеш считанных из БИНС Н1 значений регистров
+static double binsmirrF [256];	// для float/double регистров
+static int binsmirrI [256];		// для int32 регистров
+
+// Сохранение значения регистра - callback из разборщика пакетов на проиёме от БИНС Н1
 void xbsavebins_float32(unsigned reg, float v)
 {
 	if (reg < ARRAY_SIZE(binsmirrF))
 		binsmirrF [reg] = v;
 }
 
+// Сохранение значения регистра - callback из разборщика пакетов на проиёме от БИНС Н1
 void xbsavebins_float64(unsigned reg, double v)
 {
 	if (reg < ARRAY_SIZE(binsmirrF))
 		binsmirrF [reg] = v;
 }
 
-
+// Сохранение значения регистра - callback из разборщика пакетов на проиёме от БИНС Н1
 void xbsavebins_int32(unsigned reg, int32_t v)
 {
 	if (reg < ARRAY_SIZE(binsmirrI))
 		binsmirrI [reg] = v;
 }
 
+// Кеш параметрв полученных от магнитного компаса - callback из разборщика пакетов на проиёме
 static double groll, gpitch, gjaw;
 
+// callback из разборщика пакетов на проиёме от магнитного компаса
 void xbsavemagn(double roll, double pitch, double jaw)
 {
 	groll = roll;
@@ -475,8 +482,10 @@ void xbsavemagn(double roll, double pitch, double jaw)
 	PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jaw);
 }
 
+// Буфер для формирования ответа в канал управления
 static char state [1024];
 
+// Формирование ответа - чтение int32 параметров из БИНС Н1 (используются значения из кеша)
 static void answerbinsI(void)
 {
 	size_t len;
@@ -621,6 +630,7 @@ static void answerbinsI(void)
 
 }
 
+// Формирование ответа - чтение float/double параметров из БИНС Н1 (используются значения из кеша)
 static void answerbinsF(void)
 {
 	size_t len;
@@ -764,6 +774,7 @@ static void answerbinsF(void)
 	}
 }
 
+// Формирование ответа - чтение предопределенной шруппы параметров из БИНС Н1 (используются значения из кеша)
 static void answerbinsgroup(void)
 {
     //    1 Акселерометр X ! 143

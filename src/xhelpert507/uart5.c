@@ -317,6 +317,7 @@ static void uartX_write_crc16(const uint8_t * buff, size_t n)
 	ASSERT(crc == 0);
 }
 
+// передача запроса раз в PERIODSPOOL милисекунд
 static void uart5_req(void)
 {
 	unsigned regaddr = 8;
