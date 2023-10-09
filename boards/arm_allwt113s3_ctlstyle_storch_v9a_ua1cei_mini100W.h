@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
 // rmainunit_sv9f.pcb rmainunit_sv9u.pcb Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
+#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED
+#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -111,7 +111,7 @@
 
 	#define LCDMODE_DUMMY	1
 
-#elif 0
+#elif 1
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
@@ -325,6 +325,8 @@
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
+
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
@@ -416,7 +418,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
-	#elif 0
+	#elif 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -701,4 +703,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED */
