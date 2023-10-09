@@ -14009,6 +14009,12 @@ void cat2_disconnect(void)
 }
 
 
+static uint_fast8_t local_isdigit(char c)
+{
+	//return isdigit((unsigned char) c) != 0;
+	return c >= '0' && c <= '9';
+}
+
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
@@ -16062,10 +16068,13 @@ static void dpc_1stimer(void * arg)
 #endif
 }
 
-
 int board_islfmmode(void)
 {
+#if WITHLFM
 	return lfmmode;
+#else /* WITHLFM */
+	return 0;
+#endif /* WITHLFM */
 }
 
 /* Вызывается из обработчика прерываний раз в секунду */
