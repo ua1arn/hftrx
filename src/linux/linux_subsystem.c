@@ -115,7 +115,7 @@ void linux_nmea_spool(void)
 		if (num_read > 1)
 		{
 			for (int i = 0; i < num_read; i ++)
-				nmealfm_parsechar(buf[i]);
+				nmeagnss_parsechar(buf[i]);
 		}
 	}
 }

@@ -244,7 +244,9 @@
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
 			#define WITHBUFFERSSMALLDEBUG	1
-#endif
+//			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
+//			#define WITHGNSS_1PPS	1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/
+		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15

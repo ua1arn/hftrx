@@ -3504,6 +3504,10 @@ const char * get_band_label3(unsigned b); /* получение человеко
 
 uint_fast8_t edgepins_getptt(void);		/* Есть ли запрос на передачу с одного из источников */
 
+void gnss_initialize(void);	/* инициализация парсера GNSS потока NMEA */
+int board_islfmmode(void);
+uint_fast8_t islfmstart(unsigned now);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

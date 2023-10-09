@@ -102,12 +102,12 @@
 		} while (0)
 	// вызывается из обработчика прерываний UART0
 	#define HARDWARE_UART0_ONOVERFLOW() do { \
-			nmealfm_rxoverflow(); \
+			nmeagnss_rxoverflow(); \
 		} while (0)
 	// вызывается из обработчика прерываний UART0
 	// по готовности передатчика
 	#define HARDWARE_UART0_ONTXCHAR(ctx) do { \
-			nmealfm_sendchar(ctx); \
+			nmeagnss_sendchar(ctx); \
 		} while (0)
 
 	#define BOARD_PPSIN_BIT	48
