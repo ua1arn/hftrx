@@ -5,8 +5,12 @@
 //
 // Поддержка DS1307/DS3231 real time clock - tnx for UR3QTD
 //
-#ifndef M41T81_H_INCLUDED
-#define M41T81_H_INCLUDED
+
+#include "hardware.h"
+#include "formats.h"
+#include "board.h"
+
+#if defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_DS1307)
 
 #define DS1307_ADDRESS_W	0xD0
 #define DS1307_ADDRESS_R	0xD1
@@ -237,4 +241,4 @@ uint_fast8_t board_rtc_chip_initialize(void)
 #endif /* WITHTWIHW */
 }
 
-#endif /* M41T81_H_INCLUDED */
+#endif /* defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_DS1307) */

@@ -6,13 +6,20 @@
 // Поддержка MAXIM DS1305EN RTC clock chip with SPI interface
 // SERMODE pin tied high.
 //
-#ifndef DS1305_H_INCLUDED
-#define DS1305_H_INCLUDED
+
+#include "hardware.h"
+
+#if defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_DS1305)
+
+#include "formats.h"
+#include "board.h"
+#include "spi.h"
 
 #define DS1305_SPIMODE SPIC_MODE3
 #define DS1305_SPISPEED	SPIC_SPEED400k
 #define DS1305_SPICSDELAYUS 4	// uS, CE to CLK Setup and CE Inactive Time
 
+/* Адреса регистров */
 enum
 {
 	DS1305REG_TIME = 0,
@@ -319,4 +326,4 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	return eosc;
 }
 
-#endif /* DS1305_H_INCLUDED */
+#endif /* defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_DS1305) */

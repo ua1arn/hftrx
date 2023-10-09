@@ -286,6 +286,7 @@
 	#include "boards/arm_allwt113s3_cpustyle_ra4asn.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_storch_v9a.h"	// rmainunit_sv9e.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
+	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9a_ua1cei_mini100W.h"	// rmainunit_sv9e.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9a.h"	// rmainunit_sv9f.pcb Allwinner T113-s3, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1

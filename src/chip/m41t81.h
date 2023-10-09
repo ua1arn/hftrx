@@ -7,8 +7,12 @@
 // M41T81M6,M41T81M6F
 // M41T81SM6,M41T81SM6F
 //
-#ifndef M41T81_H_INCLUDED
-#define M41T81_H_INCLUDED
+
+#include "hardware.h"
+#include "formats.h"
+#include "board.h"
+
+#if defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_M41T81)
 
 #define M41T81_ADDRESS_W	0xD0	
 #define M41T81_ADDRESS_R	(M41T81_ADDRESS_W | 0x01)
@@ -259,4 +263,4 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	return 0;
 }
 
-#endif /* M41T81_H_INCLUDED */
+#endif /* defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_M41T81) */

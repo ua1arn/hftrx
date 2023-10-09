@@ -6,8 +6,12 @@
 //
 // Поддержка stm32f4xx internal real time clock
 //
-#ifndef RTCSTM32F4XX1_H_INCLUDED
-#define RTCSTM32F4XX1_H_INCLUDED
+
+#include "hardware.h"
+#include "formats.h"
+#include "board.h"
+
+#if defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_STM32F4xx)
 
 // input value 0x00..0x99, return value 0..99
 static uint_fast8_t 
@@ -498,4 +502,4 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	return inits;	/* возврат не-0 если требуется начальная загрузка значений */
 }
 
-#endif /* RTCSTM32F4XX1_H_INCLUDED */
+#endif /* defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_STM32F4xx) */
