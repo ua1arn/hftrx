@@ -630,11 +630,11 @@ static void nmea_send(const char * body, size_t len)
 
 static uint_fast8_t hex2int(uint_fast8_t c)
 {
-	if (isdigit(c))
+	if (local_isdigit((unsigned char) c))
 		return c - '0';
-	if (isupper(c))
+	if (isupper((unsigned char) c))
 		return c - 'A' + 10;
-	if (islower(c))
+	if (islower((unsigned char) c))
 		return c - 'a' + 10;
 	return 0;
 }
