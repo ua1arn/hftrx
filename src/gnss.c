@@ -310,7 +310,7 @@ void board_rtc_setdatetime(
 
 //static char nmea_time_str [9];
 
-void gui_get_nmea_time(char * p, size_t sz)
+void hamradio_get_nmea_time(char * p, size_t sz)
 {
 	//strcpy(p, nmea_time_str);
 #if WITHNMEA && WITHLFM

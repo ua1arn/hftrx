@@ -6382,7 +6382,7 @@ static void window_lfm_process(void)
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
 		label_t * lbl_nmeatime_val = find_gui_element(TYPE_LABEL, win, "lbl_nmeatime_val");
-		gui_get_nmea_time(lbl_nmeatime_val->text, ARRAY_SIZE(lbl_nmeatime_val->text));
+		hamradio_get_nmea_time(lbl_nmeatime_val->text, ARRAY_SIZE(lbl_nmeatime_val->text));
 
 		label_t * lbl_timeoffset_val = find_gui_element(TYPE_LABEL, win, "lbl_timeoffset_val");
 		local_snprintf_P(lbl_timeoffset_val->text, ARRAY_SIZE(lbl_timeoffset_val->text), "%02d sec", hamradio_get_lfmtoffset());
