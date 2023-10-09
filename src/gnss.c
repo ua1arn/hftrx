@@ -100,7 +100,7 @@ static uint_fast8_t nmea_chars;		// количество символов, по�
 #define NMEA_CHARS 16	// really need 11
 static char nmea_buff [NMEA_PARAMS] [NMEA_CHARS];
 static volatile timeholder_t nmea_time;
-static timeholder_t th;
+//static timeholder_t th;
 static volatile uint_fast8_t secondticks;
 static uint_fast8_t rtc_nmea_updated = 0;
 
@@ -244,13 +244,13 @@ void nmeagnss_initialize(void)
 #endif /*  ! LINUX_SUBSYSTEM */
 }
 
-static timeholder_t th;
+//static timeholder_t th;
 // Обработчик вызывается при приходе очередного импульса PPS
 void
 RAMFUNC_NONILINE
 spool_nmeapps(void)
 {
-	th = nmea_time;
+	//th = nmea_time;
 #if WITHLFM
 	if (board_islfmmode() != 0 && nmea_time.valid && islfmstart(nmea_time.minutes * 60 + nmea_time.seconds))
 	{
