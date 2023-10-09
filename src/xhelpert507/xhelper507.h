@@ -23,9 +23,9 @@ void uart3_spool(void);
 void uart4_spool(void);
 void uart5_spool(void);
 
-void xbsave_pressure(float v);
-void xbsave_position(unsigned id, int pos);
-void xbsave_setpos(unsigned id, int pos);	// set point
+void xbsave_pressure(float v);	// сохранить измеренное давление
+void xbsave_position(unsigned id, int pos);	// сохранить позицию, в которой находится рулевая машинка
+void xbsave_setpos(unsigned id, int pos);	// Установить желаемую позицию
 
 void xbsavebins_float32(unsigned reg, float v);
 void xbsavebins_int32(unsigned reg, int32_t v);

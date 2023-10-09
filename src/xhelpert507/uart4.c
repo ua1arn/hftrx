@@ -1,8 +1,7 @@
 /*
- * uart0.c
+ * uart4.c
  *
- *  Created on: 21 сент. 2023 г.
- *      Author: User
+ *  Работа с каналом внешнего управления
  */
 
 #include "hardware.h"
@@ -24,7 +23,9 @@
 
 #define UARTSPEED 9600
 
+// Очередь символов для передачи в канал обмена
 static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
 static u8queue_t rxq;
 
 
@@ -85,6 +86,7 @@ static void serialtouts(void * ctx)
 	LowerIrql(oldIrql);
 }
 
+// callback по принятому символу. сохранить в очередь для обработки в user level
 void user_uart4_onrxchar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
@@ -95,6 +97,7 @@ void user_uart4_onrxchar(uint_fast8_t c)
 	LowerIrql(oldIrql);
 }
 
+// callback по готовности последовательного порта к пердаче
 void user_uart4_ontxchar(void * ctx)
 {
 	IRQL_t oldIrql;
@@ -114,6 +117,7 @@ void user_uart4_ontxchar(void * ctx)
 	LowerIrql(oldIrql);
 }
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
 	IRQL_t oldIrql;
@@ -128,6 +132,7 @@ static int nmeaX_putc(int c)
 	return c;
 }
 
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
 static void uartX_write(const uint8_t * buff, size_t n)
 {
 	while (n --)
@@ -139,11 +144,13 @@ static void uartX_write(const uint8_t * buff, size_t n)
 
 static float gpressure;
 
+// сохранить измеренное давление
 void xbsave_pressure(float v)
 {
 	gpressure = v;
 }
 
+// Желаемая позиция для каждой рулевой машинки (-2047..+2047)
 static int positions [2];
 void xbsave_position(unsigned id, int pos)
 {
@@ -158,6 +165,7 @@ void xbsave_position(unsigned id, int pos)
 	}
 }
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putchar(int c)
 {
 	if (c == '\n')
@@ -806,6 +814,7 @@ static void answerbinsgroup(void)
     nmea_send(state, len);
 }
 
+/* Функционирование USER MODE обработчиков */
 void uart4_spool(void)
 {
 	size_t len;

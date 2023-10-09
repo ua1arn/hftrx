@@ -1,8 +1,7 @@
 /*
  * uart0.c
  *
- *  Created on: 21 сент. 2023 г.
- *      Author: User
+ *	Работа с магнитным компасом
  */
 
 #include "hardware.h"
@@ -37,9 +36,12 @@ enum
 
 // Очереди символов для обмена
 
+// Очередь символов для передачи в канал обмена
 static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
 static u8queue_t rxq;
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
 	IRQL_t oldIrql;
@@ -54,6 +56,7 @@ static int nmeaX_putc(int c)
 	return c;
 }
 
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
 static void uartX_write(const uint8_t * buff, size_t n)
 {
 	while (n --)
@@ -78,6 +81,7 @@ static void uartX_format(const char * format, ...)
 	va_end(ap);
 }
 
+// callback по принятому символу. сохранить в очередь для обработки в user level
 void user_uart0_onrxchar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
@@ -87,6 +91,7 @@ void user_uart0_onrxchar(uint_fast8_t c)
 	LowerIrql(oldIrql);
 }
 
+// callback по готовности последовательного порта к пердаче
 void user_uart0_ontxchar(void * ctx)
 {
 	uint_fast8_t c;
@@ -140,6 +145,7 @@ static double convert(uint8_t low, uint8_t high, double a, int b) {
     return (uint16_t) (high * 256 + low) * b / a;
 }
 
+/* Функционирование USER MODE обработчиков */
 void uart0_spool(void)
 {
 	uint_fast8_t c;

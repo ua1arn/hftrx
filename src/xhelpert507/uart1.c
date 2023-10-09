@@ -1,8 +1,8 @@
 /*
- * uart0.c
+ * uart1.c
  *
- *  Created on: 21 сент. 2023 г.
- *      Author: User
+ *  Работа с рулевыми машинками ТАЙБЕР
+ *
  */
 
 #include "hardware.h"
@@ -34,8 +34,9 @@ static uint16_t crc16(unsigned v, unsigned crc)
 	return crc;
 }
 
-#define STARTCRCVAL 0xFFFF
+#define STARTCRCVAL 0xFFFF	// начальное значение аккумулятора CRC протокола обмена
 
+// Быстрый расчет следующего снаяения CRC
 static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
 {
     static const uint16_t wCRCTable[] =
@@ -61,10 +62,10 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
     return wCRCTable [(v ^ wCRCWord) & 0xFF];
 }
 
+// Очередь символов для передачи в канал обмена
 static u8queue_t txq;
-//static u8queue_t rxq;
 
-
+// Элемент очереди принятых пакетов
 typedef struct rxlist
 {
 	LIST_ENTRY item;
@@ -73,9 +74,9 @@ typedef struct rxlist
 	unsigned crc;
 } rxlist_t;
 
-static LIST_ENTRY rxlistfree;
-static LIST_ENTRY rxlistready;
-static rxlist_t * rxp = NULL;
+static LIST_ENTRY rxlistfree;	// свободные буферы принятых пакетов
+static LIST_ENTRY rxlistready;	// заполненные буферы принятых пакетов - для обработки
+static rxlist_t * rxp = NULL;	// буфер принимаемого в данный момент пакета
 
 static void uartX_rxlist_initilize(void)
 {
@@ -91,6 +92,8 @@ static void uartX_rxlist_initilize(void)
 	}
 }
 
+// установить текущим буфером приема следующий свободный.
+// Если свободных нет - самый старый из принятых
 static void nextlist(void)
 {
 	if (! IsListEmpty(& rxlistfree))
@@ -118,8 +121,7 @@ static void nextlist(void)
 }
 
 
-/* вызывается из обработчика прерываний */
-// компорт готов передавать
+// callback по готовности последовательного порта к пердаче
 void user_uart1_ontxchar(void * ctx)
 {
 	uint_fast8_t c;
@@ -137,7 +139,7 @@ void user_uart1_ontxchar(void * ctx)
 
 static unsigned package_tout;
 
-/* обработка принятого символа */
+// callback по принятому символу. Разбор и пересчет CRC
 void user_uart1_onrxchar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
@@ -183,6 +185,7 @@ static void uart1_timer_pkg_event(void * ctx)
 }
 
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
 	IRQL_t oldIrql;
@@ -214,6 +217,7 @@ static unsigned uartX_putc_crc16(int c, unsigned crc)
 	return crc;
 }
 
+// Передача массива с дополнением кодла контроля целостиности сообщения
 static void uartX_write_crc16(const uint8_t * buff, size_t n)
 {
 	unsigned crc = 0xFFFF;
@@ -238,6 +242,9 @@ static void uart1_req(int targetId, uint_fast8_t cmd, int arg1)
 	uartX_write_crc16(b, 4);
 }
 
+// Таблица положений, выполняемая при включении устройства (тест).
+// После завершения, готово к выполнению команд управления положением,
+// получаемых по интерфейсу управления.
 static int phase;
 static int pos [] =
 {
@@ -299,6 +306,7 @@ static void uart1_dpc_spool(void * ctx)
     //phase = (phase + 1) % 8;}
 }
 
+// Установить желаемую позицию
 void xbsave_setpos(unsigned id, int abspos)	// set point
 {
 	const unsigned demobase = ARRAY_SIZE(pos);
@@ -320,6 +328,7 @@ void xbsave_setpos(unsigned id, int abspos)	// set point
 	needPos [ch] = abspos;
 }
 
+// Разбор пакета, принятого по каналу обмена от рулевых машинок
 static int prseanswer(const uint8_t * p, unsigned sz)
 {
 	unsigned id;
@@ -353,6 +362,7 @@ static void uart1_timer_event(void * ctx)
 	board_dpc(& uart1_dpc_lock, uart1_dpc_spool, NULL);
 }
 
+/* Функционирование USER MODE обработчиков */
 void uart1_spool(void)
 {
 	rxlist_t * p;
@@ -377,7 +387,7 @@ void uart1_spool(void)
 		/* использование принятого блока */
 		//printhex(0, p->buff, p->count);
 		prseanswer(p->buff, p->count);
-		/* поместить блок в список своюодных */
+		/* поместить блок в список свободных */
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		InsertHeadList(& rxlistfree, & p->item);
 		LowerIrql(oldIrql);

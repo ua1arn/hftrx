@@ -1,8 +1,7 @@
 /*
- * uart0.c
+ * uart5.c
  *
- *  Created on: 21 сент. 2023 г.
- *      Author: User
+ *  Работа с датчиком давления КОРУНД
  */
 
 #include "hardware.h"
@@ -21,6 +20,7 @@
 #define PERIODSPOOL 2500
 #define RXTOUT 100
 
+// Очередь символов для передачи в канал обмена
 static u8queue_t txq;
 
 
@@ -72,6 +72,7 @@ static unsigned culateCRC16(unsigned v, unsigned wCRCWord)
     return wCRCWord;
 }
 
+// Элемент очереди принятых пакетов
 typedef struct rxlist
 {
 	LIST_ENTRY item;
@@ -80,9 +81,9 @@ typedef struct rxlist
 	unsigned crc;
 } rxlist_t;
 
-static LIST_ENTRY rxlistfree;
-static LIST_ENTRY rxlistready;
-static rxlist_t * rxp = NULL;
+static LIST_ENTRY rxlistfree;	// свободные буферы принятых пакетов
+static LIST_ENTRY rxlistready;	// заполненные буферы принятых пакетов - для обработки
+static rxlist_t * rxp = NULL;	// буфер принимаемого в данный момент пакета
 
 static void uartX_rxlist_initilize(void)
 {
@@ -98,6 +99,8 @@ static void uartX_rxlist_initilize(void)
 	}
 }
 
+// установить текущим буфером приема следующий свободный.
+// Если свободных нет - самый старый из принятых
 static void nextlist(void)
 {
 	if (! IsListEmpty(& rxlistfree))
@@ -126,6 +129,7 @@ static void nextlist(void)
 
 static unsigned package_tout;
 
+// callback по принятому символу. Разбор и пересчет CRC
 void user_uart5_onrxchar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
@@ -170,6 +174,7 @@ static void uart5_timer_pkg_event(void * ctx)
 	}
 }
 
+// передача символа в канал. Ожидание, если очередь заполнена
 void user_uart5_ontxchar(void * ctx)
 {
 	uint_fast8_t c;
@@ -243,7 +248,7 @@ static int parsepacket(const uint8_t * p, unsigned sz)
 	float pr = rxpeek_float32_BE(p + 3);
 
 	PRINTF("Pressure=%f, depth=%f\n", pr, pr * 101.97162005);
-	xbsave_pressure(pr);
+	xbsave_pressure(pr);	// сохранить измеренное давление
 	return 1;
 }
 
@@ -251,6 +256,7 @@ static ticker_t uart5_ticker;
 static ticker_t uart5_pkg_ticker;
 static dpclock_t uart5_dpc_lock;
 
+/* Функционирование USER MODE обработчиков */
 void uart5_spool(void)
 {
 	rxlist_t * p;
@@ -277,12 +283,13 @@ void uart5_spool(void)
 		//printhex(0, p->buff, p->count);
 		parsepacket(p->buff, p->count);
 
-		/* поместить блок в список своюодных */
+		/* поместить блок в список свободных */
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		InsertHeadList(& rxlistfree, & p->item);
 		LowerIrql(oldIrql);
 	}
 }
+
 
 static unsigned uartX_putc_crc16(int c, unsigned crc)
 {
@@ -291,6 +298,7 @@ static unsigned uartX_putc_crc16(int c, unsigned crc)
 	return crc;
 }
 
+// Передача массива с дополнением кодла контроля целостиности сообщения
 static void uartX_write_crc16(const uint8_t * buff, size_t n)
 {
 	unsigned crc = STARTCRCVAL;

@@ -1,8 +1,7 @@
 /*
- * uart0.c
+ * uart2.c
  *
- *  Created on: 21 сент. 2023 г.
- *      Author: User
+ *	Работа с ГИРОНАВ БИНС Н1 - РЕГИСТРЫ ВНЕШНЕЙ КОРРЕКЦИИ
  */
 
 #include "hardware.h"
@@ -50,8 +49,10 @@ static unsigned culateCRC8(unsigned v, unsigned wCRCWord)
 
 // Очереди символов для обмена
 
+// Очередь символов для передачи в канал обмена
 static u8queue_t txq;
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
 	IRQL_t oldIrql;
@@ -66,6 +67,7 @@ static int nmeaX_putc(int c)
 	return c;
 }
 
+// Передача в канал указанного массива
 static void uartX_write(const uint8_t * buff, size_t n)
 {
 	while (n --)
@@ -90,10 +92,12 @@ static void uartX_format(const char * format, ...)
 	va_end(ap);
 }
 
+// callback по принятому символу. ничего не делаем
 void user_uart2_onrxchar(uint_fast8_t c)
 {
 }
 
+// callback по готовности последовательного порта к пердаче
 void user_uart2_ontxchar(void * ctx)
 {
 	uint_fast8_t c;
@@ -116,6 +120,7 @@ static unsigned uartX_putc_crc8(int c, unsigned crc)
 	return crc;
 }
 
+// Передача массива с дополнением кодла контроля целостиности сообщения
 static void uartX_write_crc8(const uint8_t * buff, size_t n)
 {
 	unsigned crc = 0xFF;
@@ -271,6 +276,7 @@ void xbsetregEXTF(const double * pv)
 	uartX_write_crc8(b, n);
 }
 
+/* Функционирование USER MODE обработчиков */
 void uart2_spool(void)
 {
 }

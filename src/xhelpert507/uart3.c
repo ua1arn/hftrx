@@ -1,8 +1,7 @@
 /*
- * uart0.c
+ * uart3.c
  *
- *  Created on: 21 сент. 2023 г.
- *      Author: User
+ *	Работа с ГИРОНАВ БИНС Н1 - ИНФОРМАЦИОННЫЙ ПРОТОКОЛ
  */
 
 #include "hardware.h"
@@ -52,8 +51,10 @@ static unsigned culateCRC8(unsigned v, unsigned wCRCWord)
 
 // Очереди символов для обмена
 
+// Очередь символов для передачи в канал обмена
 static u8queue_t txq;
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
 	IRQL_t oldIrql;
@@ -68,6 +69,7 @@ static int nmeaX_putc(int c)
 	return c;
 }
 
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
 static void uartX_write(const uint8_t * buff, size_t n)
 {
 	while (n --)
@@ -92,6 +94,7 @@ static void uartX_format(const char * format, ...)
 	va_end(ap);
 }
 
+// Элемент очереди принятых пакетов
 typedef struct rxlist
 {
 	LIST_ENTRY item;
@@ -100,9 +103,9 @@ typedef struct rxlist
 	unsigned crc;
 } rxlist_t;
 
-static LIST_ENTRY rxlistfree;
-static LIST_ENTRY rxlistready;
-static rxlist_t * rxp = NULL;
+static LIST_ENTRY rxlistfree;	// свободные буферы принятых пакетов
+static LIST_ENTRY rxlistready;	// заполненные буферы принятых пакетов - для обработки
+static rxlist_t * rxp = NULL;	// буфер принимаемого в данный момент пакета
 
 static void uartX_rxlist_initilize(void)
 {
@@ -118,6 +121,8 @@ static void uartX_rxlist_initilize(void)
 	}
 }
 
+// установить текущим буфером приема следующий свободный.
+// Если свободных нет - самый старый из принятых
 static void nextlist(void)
 {
 	if (! IsListEmpty(& rxlistfree))
@@ -145,8 +150,7 @@ static void nextlist(void)
 }
 
 
-/* вызывается из обработчика прерываний */
-// компорт готов передавать
+// callback по готовности последовательного порта к пердаче
 void user_uart3_ontxchar(void * ctx)
 {
 	uint_fast8_t c;
@@ -164,6 +168,7 @@ void user_uart3_ontxchar(void * ctx)
 
 static unsigned package_tout;
 
+// callback по принятому символу. Разбор и пересчет CRC
 void user_uart3_onrxchar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
@@ -215,6 +220,7 @@ static unsigned uartX_putc_crc8(int c, unsigned crc)
 	return crc;
 }
 
+// Передача массива с дополнением кодла контроля целостиности сообщения
 static void uartX_write_crc8(const uint8_t * buff, size_t n)
 {
 	unsigned crc = 0xFF;
@@ -776,6 +782,7 @@ static ticker_t uart3_ticker;
 static ticker_t uart3_pkg_ticker;
 static dpclock_t uart3_dpc_lock;
 
+/* Функционирование USER MODE обработчиков */
 void uart3_spool(void)
 {
 	rxlist_t * p;
@@ -802,7 +809,7 @@ void uart3_spool(void)
 		//printhex(0, p->buff, p->count);
 		parsepacket(p->buff, p->count);
 
-		/* поместить блок в список своюодных */
+		/* поместить блок в список свободных */
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		InsertHeadList(& rxlistfree, & p->item);
 		LowerIrql(oldIrql);
