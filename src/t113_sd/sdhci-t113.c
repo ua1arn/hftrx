@@ -245,10 +245,12 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 
 	write32(sdhci->base + SD_CAGR, cmd->cmdarg);
 
-	if(dat)
-		sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);
-	else
-		sdhci->instance->SMHC_CTRL &= ~ (UINT32_C(1) << 31);
+//	if(dat)
+//		sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);
+//	else
+//		sdhci->instance->SMHC_CTRL &= ~ (UINT32_C(1) << 31);
+
+	sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);	// NO DMA, всегда чтение процессором
 
 	write32(sdhci->base + SD_CMDR, cmdval | cmd->cmdidx);
 	while (read32(sdhci->base + SD_CMDR)&SDXC_START)
@@ -317,14 +319,13 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
+		else
+		{
+			//TP();
+
+		}
 	}
 
-	status = read32(sdhci->base + SD_STAR);
-	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
-	if (err)
-	{
-		PRINTF("1 rd err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
-	}
 	do {
 		status = read32(sdhci->base + SD_RISR);
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
@@ -356,18 +357,17 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 
 	while (count >= sizeof(uint32_t))
 	{
-		if(!(status & SDXC_FIFO_FULL))
+		if(!(read32(sdhci->base + SD_STAR) & SDXC_FIFO_FULL))
 		{
 			write32(sdhci->base + SD_FIFO, *tmp);
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
-	}
-	status = read32(sdhci->base + SD_STAR);
-	err = read32(sdhci->base + SD_RISR) & SDXC_INTERRUPT_ERROR_BIT;
-	if (err)
-	{
-		PRINTF("1 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+		else
+		{
+			TP();
+
+		}
 	}
 
 	do {
@@ -377,11 +377,12 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 			done = status & SDXC_AUTO_COMMAND_DONE;
 		else
 			done = status & SDXC_DATA_OVER;
+		PRINTF("4 wr err=%08X, done=%u (%08X), blksize=%u\n", (unsigned) err, (unsigned) done, (unsigned) read32(sdhci->base + SD_RISR), (unsigned) blksize);
 	} while(!done && !err);
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
 	{
-		PRINTF("2 wr err=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+		PRINTF("2 wr err=%08X, done=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) read32(sdhci->base + SD_RISR));
 		return 0;
 	}
 
@@ -520,6 +521,10 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 
 int sdhci_t113_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct sdhci_data_t * dat)
 {
+	if (dat)
+	{
+		PRINTF("sdhci_t113_transfer: blkcnt=%u, blksz=%u\n", (unsigned) dat->blkcnt, (unsigned) dat->blksz);
+	}
 	if(!dat)
 		return t113_transfer_command(sdhci, cmd, dat);
 
@@ -539,7 +544,7 @@ void sdhci_t113_clock(void)
 //
 // SMHC_BGR_REG|=(1<<16);                        //SMHC0 de-assert reset
 
-	if (SMHCHARD_PTR == SMHC2)
+	//if (SMHCHARD_PTR == SMHC2)
 	{
 		//	The steps to calibrate delay chain are as follows:
 		//	Step1: Enable SMHC. In order to calibrate delay chain by operation registers in SMHC, SMHC must be enabled through SMHC Bus Gating Reset Register and SMHC0/1/2 Clock Register.

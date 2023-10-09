@@ -772,8 +772,10 @@ int sdcard_init(void)
 			else if ((hci->width & MMC_BUS_WIDTH_8))
 				width = 3;
 #endif
+#if WITHSDHCHW4BIT
 			else if ((hci->width & MMC_BUS_WIDTH_4))
 				width = 2;
+#endif /* WITHSDHCHW4BIT */
 			else
 				width = 0;
 
@@ -798,8 +800,10 @@ int sdcard_init(void)
 			else if((hci->width & MMC_BUS_WIDTH_8))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
 #endif /* WITHSDHCHW8BIT */
+#if WITHSDHCHW4BIT
 			else if((hci->width & MMC_BUS_WIDTH_4))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_4);
+#endif /* WITHSDHCHW4BIT */
 			else
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 		}
@@ -822,15 +826,17 @@ int sdcard_init(void)
 				width = 0x03B70200;	// Set 8bit width
 			}
 #endif /* WITHSDHCHW8BIT */
+#if WITHSDHCHW4BIT
 			else if(hci->width & MMC_BUS_WIDTH_4)
 			{
 				//width = 2;
 				width = 0x03B70100;	// Set 4bit width
 			}
+#endif /* WITHSDHCHW4BIT */
 			else
 			{
 				width = 0;
-				//width = 0;	// !!!!!!!!!!!
+				width = 0x03B70000;	// Set 1bit width
 			}
 			cmd.cmdidx = MMC_APP_CMD;
 			cmd.cmdarg = card->rca << 16;
@@ -860,8 +866,10 @@ int sdcard_init(void)
 			else if(hci->width & MMC_BUS_WIDTH_8)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
 #endif /* WITHSDHCHW8BIT */
+#if WITHSDHCHW4BIT
 			else if(hci->width & MMC_BUS_WIDTH_4)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_4);
+#endif /* WITHSDHCHW4BIT */
 			else if(hci->width & MMC_BUS_WIDTH_1)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
 		}
