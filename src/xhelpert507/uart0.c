@@ -17,21 +17,20 @@
 // компас - RS232 9600 8N1
 
 #define PERIODSPOOL 2000	// период опроса, мс
-#define RXTOUT 50	// конец пакета на приеме подразумевается по интервалу, мс
 
 
-const uint8_t PREAMBLE_DATA = 0x55;
-const uint8_t SIZE_DATA     = 11;
+const uint8_t PREAMBLE_DATA = 0x55;	// Маркерный символ
+enum { SIZE_DATA     = 11 };
 
-enum
+// Типы значений, передаваемых в пакете данны (после маркерного символа)
+enum codes
 {
-
-    TIME             = 0x50,
-    ACCELERATION     = 0x51,
-    ANGULAR_VELOCITY = 0x52,
-    ANGLE            = 0x53,
-    MAGNETIC         = 0x54,
-    QUATERNION       = 0x55
+	VTIME             = 0x50,
+	VACCELERATION     = 0x51,
+	VANGULAR_VELOCITY = 0x52,
+	VANGLE            = 0x53,
+	VMAGNETIC         = 0x54,
+	VQUATERNION       = 0x55
 };
 
 // Очереди символов для обмена
@@ -109,6 +108,7 @@ void user_uart0_ontxchar(void * ctx)
 
 // передача запроса раз в PERIODSPOOL милисекунд
 // ВЫполняется из USER LEVEL
+// Заглушка
 static void uart0_dpc_spool(void * ctx)
 {
 	//TP();
@@ -122,23 +122,13 @@ static void uart0_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& uart0_dpc_lock, uart0_dpc_spool, NULL);
+	board_dpc(& uart0_dpc_lock, uart0_dpc_spool, NULL);	// Запрос отложенногог выполнения USER-MODE функции
 }
-
-enum codes
-{
-	VTIME             = 0x50,
-	VACCELERATION     = 0x51,
-	VANGULAR_VELOCITY = 0x52,
-	VANGLE            = 0x53,
-	VMAGNETIC         = 0x54,
-	VQUATERNION       = 0x55
-};
 
 static int state;	// состояния разбора (соответствует номеру байта в принятом пакете).
 static int valuet;
 
-static uint8_t varray [11];
+static uint8_t varray [SIZE_DATA];
 static unsigned cks;
 
 static double convert(uint8_t low, uint8_t high, double a, int b) {

@@ -184,7 +184,6 @@ static void uart1_timer_pkg_event(void * ctx)
 	}
 }
 
-
 // передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
@@ -361,7 +360,7 @@ static void uart1_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& uart1_dpc_lock, uart1_dpc_spool, NULL);
+	board_dpc(& uart1_dpc_lock, uart1_dpc_spool, NULL);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 /* Функционирование USER MODE обработчиков */

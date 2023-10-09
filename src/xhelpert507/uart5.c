@@ -20,6 +20,8 @@
 #define PERIODSPOOL 2500	// период опроса, мс
 #define RXTOUT 100	// конец пакета на приеме подразумевается по интервалу, мс
 
+#define TARGETID 0x01	// Адрес устройства на шине
+
 // Очередь символов для передачи в канал обмена
 static u8queue_t txq;
 
@@ -77,7 +79,7 @@ static unsigned calculateCRC16(unsigned v, unsigned wCRCWord)
 typedef struct rxlist
 {
 	LIST_ENTRY item;
-	uint8_t buff [128];
+	uint8_t buff [32];
 	unsigned count;
 	unsigned crc;
 } rxlist_t;
@@ -160,9 +162,9 @@ static void uart5_timer_pkg_event(void * ctx)
 	{
 		if (++ package_tout >= n)
 		{
-			if (rxp->count != 0 && rxp->crc == 0)
+			if (rxp->count == 9 && rxp->crc == 0)
 			{
-				/* приято до паузы, проверка CRC рошла */
+				/* приято до паузы, проверка CRC прошла */
 				InsertHeadList(& rxlistready, & rxp->item);
 				nextlist();
 			}
@@ -191,6 +193,7 @@ void user_uart5_ontxchar(void * ctx)
 	}
 }
 
+// передача символа в канал. Ожидание, если очередь заполнена
 static int nmeaX_putc(int c)
 {
 	//PRINTF("\\x%02X", (c & 0xFF));
@@ -206,6 +209,7 @@ static int nmeaX_putc(int c)
 	return c;
 }
 
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
 static void uartX_write(const uint8_t * buff, size_t n)
 {
 	while (n --)
@@ -215,7 +219,7 @@ static void uartX_write(const uint8_t * buff, size_t n)
 	}
 }
 
-
+// Получить из представления в канале значения float32
 static float rxpeek_float32_BE(const uint8_t * b)
 {
 	union
@@ -238,13 +242,13 @@ static float rxpeek_float32_BE(const uint8_t * b)
 static int parsepacket(const uint8_t * p, unsigned sz)
 {
 	if (sz < 9)
-		return 0;
+		return 0;	// размер мал
 	if (p [0] != 0x01)
-		return 0;
+		return 0;	// адрес не тот
 	if (p [1] != 0x03)
-		return 0;
+		return 0;	// код операции не тот
 	unsigned len = p [2];
-	if (len != 4)
+	if (len != 4)	// размер данныз не тот
 		return 0;
 	float pr = rxpeek_float32_BE(p + 3);
 
@@ -320,7 +324,7 @@ static void uart5_req(void)
 	unsigned command = 3;	// read
 
 	uint8_t b [32];
-	b [0] = 0x01;	// target id
+	b [0] = TARGETID;	// target id
 	b [1] = command; //0x01;	// target id
 	b [2] = regaddr >> 8;	// reg high byte
 	b [3] = regaddr >> 0;	// reg low byte
@@ -346,7 +350,7 @@ static void uart5_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& uart5_dpc_lock, uart5_dpc_spool, NULL);
+	board_dpc(& uart5_dpc_lock, uart5_dpc_spool, NULL);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 void user_uart5_initialize(void)

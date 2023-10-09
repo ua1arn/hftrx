@@ -893,7 +893,7 @@ static void uart3_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& uart3_dpc_lock, uart3_dpc_spool, NULL);
+	board_dpc(& uart3_dpc_lock, uart3_dpc_spool, NULL);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 void user_uart3_initialize(void)

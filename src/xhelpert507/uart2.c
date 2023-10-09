@@ -67,7 +67,7 @@ static int nmeaX_putc(int c)
 	return c;
 }
 
-// Передача в канал указанного массива
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
 static void uartX_write(const uint8_t * buff, size_t n)
 {
 	while (n --)
