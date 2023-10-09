@@ -19302,6 +19302,8 @@ applowinitialize(void)
 	gnss_initialize();
 #endif /* WITHGNSS */
 
+	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
+
 #if WITHNMEA && WITHAUTOTUNER_UA1CEI
 
 	nmeatuner_initialize();
@@ -19668,8 +19670,6 @@ void initialize2(void)
 void
 application_initialize(void)
 {
-	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
-
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */
