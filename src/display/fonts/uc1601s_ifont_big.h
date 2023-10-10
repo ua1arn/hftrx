@@ -2,7 +2,7 @@
    BY SG BITMAP FONT EDITOR
  */
 #define BIGCHARH 16 /* Font height */
-FLASHMEM uint8_t uc1601s_bigfont [13][2][12] = 
+const FLASHMEM uint8_t uc1601s_bigfont [13][2][12] = 
 {
 	{
 		{ 0x00, 0x07, 0x7f, 0xff, 0xf8, 0xc0, 0xc0, 0xc7, 0xff, 0xff, 0xff, 0x78, },	/* Upper part */
