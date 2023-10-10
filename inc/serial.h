@@ -150,8 +150,4 @@ uint_fast8_t usbd_cdc_ready(void);	/* временное решение для �
 
 #endif
 
-struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; };
-
-extern const FLASHMEM struct spcr_spsr_tag scemr_scsmr [];
-
 #endif /* INC_SERIAL_H_ */

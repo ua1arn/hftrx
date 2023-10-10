@@ -6,10 +6,13 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "serial.h"
 #include "formats.h"	// for debug prints
+
+#include "serial.h"
+#include "clocks.h"
 #include "board.h"
 #include "gpio.h"
+
 #include <string.h>
 #include <math.h>
 

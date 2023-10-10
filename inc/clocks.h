@@ -405,6 +405,10 @@ calcdivider(
 
 #elif CPUSTYLE_R7S721
 
+	struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; };
+
+	extern const FLASHMEM struct spcr_spsr_tag scemr_scsmr [];
+
 	enum
 	{
 		R7S721_SCIF_SCBRR_WIDTH = 8,	R7S721_SCIF_SCBRR_TAPS = (2048 | 1024 | 512 | 256 | 128 | 64 | 32 | 16 ),	// Регистр SCIFx.SCBRR требует уменьшение на 1
