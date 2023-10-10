@@ -3093,12 +3093,12 @@ void colpip_bitblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
+	//PRINTF("colpip_bitblt: tdx/tdy=%d/%d, sdx/sdy=%d/%d, keyflag=%08X\n", tdx, tdy, sdx, sdy, keyflag);
 	ASSERT(src != NULL);
 	ASSERT(dst != NULL);
-	ASSERT(tdx >= sdx);
-	ASSERT(tdy >= sdy);
+	ASSERT(tdx >= sw);
+	ASSERT(tdy >= sh);
 
-	//PRINTF("colpip_bitblt: x/y=%d/%d, w/h=%d/%d, keyflag=%08X\n", x, y, w, h, keyflag);
 
 	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
 	hwaccel_bitblt(

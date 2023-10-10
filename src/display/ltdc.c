@@ -2365,12 +2365,25 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Configure TCONLCD clock */
-    TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
-		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
-		(prei << 8) |	// FACTOR_N 0..3: 1..8
-		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+    if (needfreq != 0)
+    {
+    	// LVDS
+        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
+    		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+    		(prei << 8) |	// FACTOR_N 0..3: 1..8
+    		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+    		0;
+        TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+    }
+    else
+    {
+        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
+    		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
+    		(prei << 8) |	// FACTOR_N 0..3: 1..8
+    		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+    		0;
+        TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+    }
 	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
     local_delay_us(10);
 
@@ -2396,7 +2409,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = BOARD_TCONLCDFREQ / display_getdotclock(vdmode);
-	PRINTF("ltdc_divider=%u\n", val);
+	PRINTF("ltdc_divider=%u, dclk=%u\n", val, (unsigned) display_getdotclock(vdmode));
 	ASSERT(val >= 1 && val <= 127);
 	TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
