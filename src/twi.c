@@ -271,6 +271,14 @@ i2c_quit:
 } 
 
 // запись, после чего restart
+/* char */ void i2c_write_withrestart(uint_fast8_t data)
+{
+	i2c_write(data);
+	i2c_waitsend();
+
+}
+
+// запись, после чего restart
 /* char */ void i2c_write_withrestartX(const i2cp_t * p, uint_fast8_t data)
 {
 	i2c_write(data);

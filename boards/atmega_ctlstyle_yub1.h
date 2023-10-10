@@ -226,9 +226,21 @@ enum
 		PWRI = 4,	// SWR-meter
 	#endif
 #endif
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+	PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 	KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 };
 #define KI_COUNT 3	// количество используемых под клавиатуру входов АЦП
 
+#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
 #endif /* ATMEGA_CTLSTYLE_YUB1_H_INCLUDED */

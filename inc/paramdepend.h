@@ -2161,7 +2161,7 @@ extern "C" {
 	#define	BOARD_AGCCODE_0		0x00
 	#define	BOARD_AGCCODE_1		0x01
 	#define WITHAGCMODENONE 1	/* среди режимов АРУ есть только включено-выключено */
-	#define BOARD_AGCCODE_OFF	1
+	//#define BOARD_AGCCODE_OFF	1
 
 #elif CTLREGMODE16_UR3VBM
 

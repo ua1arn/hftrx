@@ -75,8 +75,10 @@ static uint_fast8_t 	glob_mikemute;		// отключить аудиовход б
 static uint_fast8_t 	glob_vox;
 
 
-static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-static uint_fast8_t 	glob_bglightoff = 1;	// выключаем дисплей
+#if WITHLCDBACKLIGHT
+	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
+	static uint_fast8_t 	glob_bglightoff = 1;	// выключаем дисплей
+#endif /* WITHLCDBACKLIGHT */
 static uint_fast8_t 	glob_kblight = 1;
 
 //#if WITHKEYBOARD
@@ -5090,12 +5092,14 @@ board_set_mikemute(uint_fast8_t v)
 void
 board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright)
 {
+#if WITHLCDBACKLIGHT
 	if (glob_bglightoff != dispoff || glob_bglight != dispbright)
 	{
 		glob_bglightoff = dispoff;
 		glob_bglight = dispbright;
 		board_ctlreg1changed();
 	}
+#endif /* WITHLCDBACKLIGHT */
 }
 
 #if WITHDCDCFREQCTL
