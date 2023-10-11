@@ -16087,7 +16087,6 @@ static void second_event(void * ctx)
 
 struct dpclayout
 {
-	uint8_t nargs;
 	uintptr_t func;
 	uintptr_t arg1;
 	uintptr_t lp;	/* lock pointer */
@@ -16336,31 +16335,16 @@ processmessages(
 		{
 			uintptr_t func;
 			void * arg1;
-			void * arg2;
-			void * arg3;
 			dpclock_t * lp;
 
 			ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
 
 			func = (uintptr_t) peek_uintptr(buff + offsetof(struct dpclayout, func));
 			arg1 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg1));
-			arg2 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg2));
-			arg3 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg3));
 			lp = (dpclock_t *) peek_uintptr(buff + offsetof(struct dpclayout, lp));
 
 			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была возможность самого себя повторно запросить
-			switch (buff [offsetof(struct dpclayout, nargs)])
-			{
-			case 1:
-				((udpcfn_t) func)(arg1);
-				break;
-			case 2:
-				((udpcfn2_t) func)(arg1, arg2);
-				break;
-			case 3:
-				((udpcfn3_t) func)(arg1, arg2, arg3);
-				break;
-			}
+			((udpcfn_t) func)(arg1);
 		}
 		break;
 
@@ -16380,7 +16364,6 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
-		buff [offsetof(struct dpclayout, nargs)] = 1;
 		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
 		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg);
 		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
