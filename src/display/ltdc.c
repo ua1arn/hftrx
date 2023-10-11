@@ -2335,7 +2335,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     else
     {
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			3 * (UINT32_C(1) << 24) | // 001: PLL_VIDEO1(4X)
+			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
     }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
@@ -2367,6 +2367,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	/* Configure TCONLCD clock */
     if (needfreq != 0)
     {
+    	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
     		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
@@ -2377,6 +2378,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     }
     else
     {
+    	ASSERT(divider >= 1 && divider <= 16);
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
     		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
@@ -2409,7 +2411,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = BOARD_TCONLCDFREQ / display_getdotclock(vdmode);
-	PRINTF("ltdc_divider=%u, dclk=%u\n", val, (unsigned) display_getdotclock(vdmode));
+	PRINTF("ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
 	ASSERT(val >= 1 && val <= 127);
 	TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
@@ -2692,7 +2694,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		clk_active = 0;
 
 		uint32_t val;
-#if 0//(CPUSTYLE_T507 || CPUSTYLE_H616)
+#if 1//(CPUSTYLE_T507 || CPUSTYLE_H616)
 		// вызывает сдвиг на пиксель
 		val = 0;
 #else
@@ -2708,7 +2710,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 			val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
 		if (! den_active)
 			val |= (UINT32_C(1) << 27);	// IO3_Inv - DE
-		if (! clk_active)
+		if (!! clk_active)
 			val |= (UINT32_C(1) << 26);	// IO2_Inv - DCLK
 
 		TCONLCD_PTR->LCD_IO_POL_REG = val;
