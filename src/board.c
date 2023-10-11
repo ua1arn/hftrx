@@ -78,7 +78,11 @@ static uint_fast8_t 	glob_vox;
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
 	static uint_fast8_t 	glob_bglightoff = 1;	// выключаем дисплей
+#else /* WITHLCDBACKLIGHT */
+	static uint_fast8_t 	glob_bglight = 0;	// включаем дисплей для работы в тествх в hightests()
+	static uint_fast8_t 	glob_bglightoff = 0;	// выключаем дисплей
 #endif /* WITHLCDBACKLIGHT */
+
 static uint_fast8_t 	glob_kblight = 1;
 
 //#if WITHKEYBOARD
