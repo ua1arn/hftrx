@@ -494,6 +494,14 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 {
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
 
+	if (sdhci->instance == SMHC2)
+	{
+		sdhci->instance->SMHC_SFC =
+				//(4u << 1) |
+				(1u << 0) |
+				0;
+
+	}
         uint32_t ratio=( /*HOSC_CLOCK*/ SMHCHARD_FREQ /(2*clock));
 
 	if((ratio & 0xff) != ratio)
