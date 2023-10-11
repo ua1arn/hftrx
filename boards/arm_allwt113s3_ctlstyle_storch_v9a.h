@@ -247,7 +247,7 @@
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	//#define WITHENCODER2	1		/* есть второй валкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
@@ -325,6 +325,8 @@
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
+
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */

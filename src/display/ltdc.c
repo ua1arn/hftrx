@@ -2282,7 +2282,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 
 	// ctrl
 	//start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
-	start_dly = 0x1F;
+	start_dly = 2;//0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->LCD_CTL_REG =
 		//1 * (UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
 		0 * (UINT32_C(1) << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F

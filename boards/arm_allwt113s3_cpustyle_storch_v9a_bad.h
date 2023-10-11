@@ -936,12 +936,13 @@
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const portholder_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
-		const portholder_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
-		const portholder_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
-		/* while ((GPIOD->DATA & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOD->DATA & VSmask) == 0) ; */ /* дождаться 1 */ \
+		arm_hardware_piod_outputs(VSmask, 0 * VSmask); /* PD21 LCD_VSYNC */ \
+		local_delay_ms(5); \
+		/* while ((gpioX_getinputs(GPIOD) & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
+		/* while ((gpioX_getinputs(GPIOD) & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		local_delay_ms(5); \
+		arm_hardware_piod_altfn20(VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
 	} while (0)
 
 	#define LCD_LVDS_IF_REG_VALUE ( \
