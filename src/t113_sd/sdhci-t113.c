@@ -544,7 +544,7 @@ void sdhci_t113_clock(void)
 //
 // SMHC_BGR_REG|=(1<<16);                        //SMHC0 de-assert reset
 
-	//if (SMHCHARD_PTR == SMHC2)
+	if (SMHCHARD_PTR == SMHC2)
 	{
 		//	The steps to calibrate delay chain are as follows:
 		//	Step1: Enable SMHC. In order to calibrate delay chain by operation registers in SMHC, SMHC must be enabled through SMHC Bus Gating Reset Register and SMHC0/1/2 Clock Register.
