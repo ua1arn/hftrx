@@ -16090,8 +16090,6 @@ struct dpclayout
 	uint8_t nargs;
 	uintptr_t func;
 	uintptr_t arg1;
-	uintptr_t arg2;
-	uintptr_t arg3;
 	uintptr_t lp;	/* lock pointer */
 } ATTRPACKED;
 
@@ -16385,51 +16383,6 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 		buff [offsetof(struct dpclayout, nargs)] = 1;
 		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
 		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg);
-		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
-		placesemsgbuffer_low(MSGT_DPC, buff);
-		return 1;
-	}
-	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
-	return 0;
-}
-
-// Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2)
-{
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpclock_traylock(lp))
-		return 0;
-	uint8_t * buff;
-	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
-	if (takemsgbufferfree_low(& buff) != 0)
-	{
-		buff [offsetof(struct dpclayout, nargs)] = 2;
-		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
-		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg1);
-		poke_uintptr(buff + offsetof(struct dpclayout, arg2), (uintptr_t) arg2);
-		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
-		placesemsgbuffer_low(MSGT_DPC, buff);
-		return 1;
-	}
-	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
-	return 0;
-}
-
-// Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3)
-{
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpclock_traylock(lp))
-		return 0;
-	uint8_t * buff;
-	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
-	if (takemsgbufferfree_low(& buff) != 0)
-	{
-		buff [offsetof(struct dpclayout, nargs)] = 3;
-		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
-		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg1);
-		poke_uintptr(buff + offsetof(struct dpclayout, arg2), (uintptr_t) arg2);
-		poke_uintptr(buff + offsetof(struct dpclayout, arg3), (uintptr_t) arg3);
 		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
