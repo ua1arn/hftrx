@@ -32,13 +32,14 @@
 
 #define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-#define WITHSDHC0HW	1		/* TF CARD */
+//#define WITHSDHC0HW	1		/* TF CARD */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 //#define WITHSDHC1HW	1		/* SDIO */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
-//#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 7-bit bus width */
-//#define WITHSDHC2HW	1		/* EMMC */
+#define WITHSDHC2HW	1		/* EMMC */
+#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
 
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
