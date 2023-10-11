@@ -154,7 +154,10 @@ enum {
 #define SDXC_SDIO_INTERRUPT			(1 << 16)
 #define SDXC_CARD_INSERT			(1 << 30)
 #define SDXC_CARD_REMOVE			(1 << 31)
-#define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | 0*SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | 0*SDXC_END_BIT_ERROR)
+
+//#define SDXC_INTERRUPT_ERROR_BIT    (SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | 0*SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | 0*SDXC_END_BIT_ERROR)
+#define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | SDXC_END_BIT_ERROR)
+
 #define SDXC_INTERRUPT_DONE_BIT		(SDXC_AUTO_COMMAND_DONE | SDXC_DATA_OVER | SDXC_COMMAND_DONE | SDXC_VOLTAGE_CHANGE_DONE)
 
 /*
@@ -365,7 +368,7 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 		}
 		else
 		{
-			TP();
+			//TP();
 
 		}
 	}
@@ -377,7 +380,7 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 			done = status & SDXC_AUTO_COMMAND_DONE;
 		else
 			done = status & SDXC_DATA_OVER;
-		PRINTF("4 wr err=%08X, done=%u (%08X), blksize=%u\n", (unsigned) err, (unsigned) done, (unsigned) read32(sdhci->base + SD_RISR), (unsigned) blksize);
+		//PRINTF("4 wr err=%08X, done=%u (%08X), blksize=%u\n", (unsigned) err, (unsigned) done, (unsigned) read32(sdhci->base + SD_RISR), (unsigned) blksize);
 	} while(!done && !err);
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
@@ -523,7 +526,7 @@ int sdhci_t113_transfer(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, struct
 {
 	if (dat)
 	{
-		PRINTF("sdhci_t113_transfer: blkcnt=%u, blksz=%u\n", (unsigned) dat->blkcnt, (unsigned) dat->blksz);
+		//PRINTF("sdhci_t113_transfer: blkcnt=%u, blksz=%u\n", (unsigned) dat->blkcnt, (unsigned) dat->blksz);
 	}
 	if(!dat)
 		return t113_transfer_command(sdhci, cmd, dat);

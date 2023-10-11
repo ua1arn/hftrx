@@ -885,6 +885,7 @@ int sdcard_init(void)
 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 		return 0;
 
+#if 0
 	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);
 	PRINTF("  Attached is a %s card\n", card->version & SD_VERSION_SD ? "SD" : "MMC");
 	PRINTF("  Version: %s\n", sdcard_version_string(card));
@@ -900,6 +901,7 @@ int sdcard_init(void)
 	PRINTF("  Product revision: %u.%u\n", extract_prv(card) >> 4, extract_prv(card) & 0xf);
 	PRINTF("  Serial no: %0u\n", extract_psn(card));
 	PRINTF("  Manufacturing date: %u.%u\n", extract_year(card), extract_month(card));
+#endif
 
 	return 1;
 }
