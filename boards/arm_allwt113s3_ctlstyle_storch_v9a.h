@@ -626,7 +626,7 @@
 		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
-	#elif WITHAUTOTUNER_AVBELNN || WITHAUTOTUNER_AVBELNN_UA1CEI
+	#elif WITHAUTOTUNER_AVBELNN
 
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 

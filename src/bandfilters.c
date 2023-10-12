@@ -392,7 +392,6 @@ void bandf_calc_initialize(void)
 
 #elif \
 	WITHAUTOTUNER_AVBELNN || \
-	WITHAUTOTUNER_AVBELNN_UA1CEI || \
 	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \
 	0
 	/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
