@@ -158,6 +158,18 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	return 4;
 }
 
+/* получить 16-бит значение */
+/* Big endian memory layout */
+uint_fast16_t
+USBD_peek_u16_BE(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [0] << 8) +
+		((uint_fast32_t) buff [1] << 0);
+}
+
 /* получить 32-бит значение */
 /* Big endian memory layout */
 uint_fast32_t

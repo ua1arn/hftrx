@@ -58,6 +58,13 @@ USBD_peek_u32_BE(
 	const uint8_t * buff
 	);
 
+/* получить 16-бит значение */
+/* Big endian memory layout */
+uint_fast16_t
+USBD_peek_u16_BE(
+	const uint8_t * buff
+	);
+
 /* получить 64-бит значение */
 /* Big endian memory layout */
 uint_fast64_t
