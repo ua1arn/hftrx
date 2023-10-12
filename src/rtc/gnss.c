@@ -19,6 +19,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#define TZHOURS_OFFSET 3	/* сколько добавлять к щначению часов ищ GNSS, чтобы получить время для установки RTC */
 // ****************
 // NMEA parser
 
@@ -100,9 +101,6 @@ static uint_fast8_t nmea_chars;		// количество символов, по�
 #define NMEA_CHARS 16	// really need 11
 static char nmea_buff [NMEA_PARAMS] [NMEA_CHARS];
 static volatile timeholder_t nmea_time;
-//static timeholder_t th;
-static volatile uint_fast8_t secondticks;
-static uint_fast8_t rtc_nmea_updated = 0;
 
 
 static uint_fast8_t local_isdigit(char c)
@@ -122,14 +120,31 @@ static unsigned char hex2int(uint_fast8_t c)
 	return 0;
 }
 
-void update_rtc_by_nmea_time(void)
+
+static dpclock_t dpc_lock;
+
+/* nmea_time скорректировано на следующую секунду */
+static void dpc_parsehandler(void * arg)
 {
+	(void) arg;
 #if defined (RTC1_TYPE)
-	if (! rtc_nmea_updated && nmea_time.valid)
+	static int updated = 0;
+	if (updated)
+		return;
+	IRQL_t oldIrql;
+	timeholder_t th;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	th = nmea_time;
+	LowerIrql(oldIrql);
+
+	if (nmea_time.valid)
 	{
-		rtc_nmea_updated = 1;
 		// todo: добавить в меню выбор часового пояса
-		board_rtc_setdatetime(nmea_time.year, nmea_time.month, nmea_time.day, nmea_time.hours + 3, nmea_time.minutes, nmea_time.seconds);
+		// todo: Учесть, что nmea_time содержит время, актуальное для следующего импульса PPS - скорректированное на 1 секунду вперед
+		// todo: учесть переход на следующие сутки (день, месяц, год) при добавлении TZHOURS_OFFSET.
+		board_rtc_setdatetime(th.year, th.month, th.day, th.hours + TZHOURS_OFFSET, th.minutes, th.seconds);
+		updated = 1;
 	}
 #endif /* defined (RTC1_TYPE) */
 }
@@ -209,8 +224,8 @@ void nmeagnss_parsechar(uint_fast8_t c)
 
 #if WITHLFM
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
-				update_rtc_by_nmea_time();
 #endif /* WITHLFM */
+				board_dpc(& dpc_lock, dpc_parsehandler, NULL);	// Update RTC by NMEA time
 			}
 		}
 		break;
@@ -218,36 +233,33 @@ void nmeagnss_parsechar(uint_fast8_t c)
 }
 
 // Очередь принятых симвоов из канала обменна
-static u8queue_t rxq;
+//static u8queue_t rxq;
 
 // callback по принятому символу. сохранить в очередь для обработки в user level
 void nmeagnss_onrxchar(uint_fast8_t c)
 {
-//	nmeagnss_parsechar(c & 0xFF);	// пока сразу обработка
-//	return;
-
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	uint8_queue_put(& rxq, c);
+	nmeagnss_parsechar(c & 0xFF);	// пока сразу обработка
 	LowerIrql(oldIrql);
 }
 
 /* user-mode callback */
 static void gnss_spool(void * ctx)
 {
-	uint_fast8_t c;
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	f = uint8_queue_get(& rxq, & c);
-	LowerIrql(oldIrql);
-
-	if (f)
-	{
-		nmeagnss_parsechar(c & 0xFF);	/* USER-MODE обработчик */
-	}
+//	uint_fast8_t c;
+//	uint_fast8_t f;
+//	IRQL_t oldIrql;
+//
+//	RiseIrql(IRQL_SYSTEM, & oldIrql);
+//	f = uint8_queue_get(& rxq, & c);
+//	LowerIrql(oldIrql);
+//
+//	if (f)
+//	{
+//		nmeagnss_parsechar(c & 0xFF);	/* USER-MODE обработчик */
+//	}
 }
 
 /* вызывается из обработчика прерываний */
@@ -267,14 +279,16 @@ void nmeagnss_initialize(void)
 	const uint_fast32_t baudrate = UINT32_C(115200);
 	nmea_state = NMEAST_INITIALIZED;
 
-	static dpcentry_t nmeaspool;
+	dpclock_initialize(& dpc_lock);
 
-	nmeaspool.fn = gnss_spool;
-	nmeaspool.ctx = NULL;
-	board_dpc_addentry(& nmeaspool);
+//	static dpcentry_t nmeaspool;
+//
+//	nmeaspool.fn = gnss_spool;
+//	nmeaspool.ctx = NULL;
+//	board_dpc_addentry(& nmeaspool);
 
-	static uint8_t rxb [512];
-	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+//	static uint8_t rxb [512];
+//	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
 #if ! LINUX_SUBSYSTEM
 

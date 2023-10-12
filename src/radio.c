@@ -4483,6 +4483,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #else /* WITHTX */
 
 	enum { tunemode = 0, moxmode = 0, reqautotune = 0, reqautotune2 = 0 };
+	enum { gheatprot = 0, gtempvmax = 99 };
 
 #endif /* WITHTX */
 
