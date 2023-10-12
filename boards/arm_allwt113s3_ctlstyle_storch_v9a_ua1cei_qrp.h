@@ -324,7 +324,7 @@
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
+	//#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -429,7 +429,7 @@
 		#define SHORTSET7	1
 	#elif 1
 		/* QRP LPF BOARD UA1CEI */
-		#define WITH_LPFBOARD_UA1CEI 1
+		#define WITH_LPFBOARD_UA1CEI 1	/* особенности отображения */
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 		#define WITHANTSELECT1RX	1	/* Управление переключением антенн - только приемной антенны */
 
@@ -526,7 +526,7 @@
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_FPGAV1
-	//#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
+	#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
