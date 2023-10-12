@@ -3785,7 +3785,11 @@ prog_ctrlreg(uint_fast8_t plane)
 			RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 			RBBIT(0071, glob_tuner_type);		// TY
 			RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+		#if WITHAUTOTUNER_AVBELNN_REV8CAPS
+			RBVAL8(0060, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
+		#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
 			RBVAL8(0060, glob_tuner_C);
+		#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
 			RBVAL8(0050, glob_tuner_L);
 		}
 

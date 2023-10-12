@@ -423,6 +423,7 @@
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define FULLSET8	1
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+		#define WITHAUTOTUNER_AVBELNN_REV8CAPS	1	// сборка от UA1CEI - перевернутый	порядок конденсаторв
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#elif 0
 		/* TUNER by R3KBL */

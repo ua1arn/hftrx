@@ -139,13 +139,13 @@
 		{	10, 51,	display2_usbsts3,                                                                      	REDRM_BARS, PGALL, },	// USB host status
 #else /* WITH_LPFBOARD_UA1CEI */
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
-		{	6, 	51,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	10, 51,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	0,	51,	display_time5,		REDRM_BARS, PG0,	},	// TIME
+		{	6, 	51,	display2_atu3,		REDRM_MODE, PG0, },	// TUNER state (optional)
+		{	10, 51,	display2_byp3,		REDRM_MODE, PG0, },	// TUNER BYPASS state (optional)
 #endif /* WITH_LPFBOARD_UA1CEI */
-		{	14, 51,	display2_thermo5,	REDRM_VOLT, PGALL, },	// thermo sensor 20.7C
-		{	19, 51,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	14, 51,	display2_thermo5,	REDRM_VOLT, PG0, },	// thermo sensor 20.7C
+		{	19, 51,	display2_currlevel5, REDRM_VOLT, PG0, },	// PA drain current d.dd without "A"
+		{	25, 51,	display2_voltlevelV5, REDRM_VOLT, PG0, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -159,6 +159,9 @@
 		{	1,	MENU1ROW,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 1,	MENU1ROW,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW * 2 + 2,	MENU1ROW,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		#if WITHAUTOTUNER
+		{	0,  		51,	display2_swrsts22,	REDRM_BARS, REDRSUBSET_MENU, },	// SWR METER display
+		#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
