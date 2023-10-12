@@ -64,8 +64,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
-	//#define CTLREGMODE_NOCTLREG 1
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
+	#define CTLREGMODE_NOCTLREG 1
 
 	
 
@@ -75,11 +75,11 @@
 	#define BOARD_NOTCH_MANUAL	0
 	#define BOARD_NOTCH_AUTO	0
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
-	#define BOARD_DETECTOR_SSB 	0		// Заглушка
-	#define BOARD_DETECTOR_AM 	1		// Заглушка
-	#define BOARD_DETECTOR_FM 	2		// Заглушка
-	#define BOARD_DETECTOR_MUTE 	3		// Заглушка
-	#define BOARD_DETECTOR_TUNE 	4		// Заглушка
+//	#define BOARD_DETECTOR_SSB 	0		// Заглушка
+//	#define BOARD_DETECTOR_AM 	1		// Заглушка
+//	#define BOARD_DETECTOR_FM 	2		// Заглушка
+//	#define BOARD_DETECTOR_MUTE 	3		// Заглушка
+//	#define BOARD_DETECTOR_TUNE 	4		// Заглушка
 
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
@@ -626,7 +626,7 @@
 		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
-	#elif WITHAUTOTUNER_AVBELNN
+	#elif WITHAUTOTUNER_AVBELNN || WITHAUTOTUNER_AVBELNN_UA1CEI
 
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
