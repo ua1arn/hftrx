@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t113-s3
 // rmainunit_sv9e.pcb Allwinner t113-s2, 2xUSB, NAU88C22 и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
+#ifndef ARM_ALLWT113S3_CPUSTYLE_STORCH_V9A_V0_H_INCLUDED
+#define ARM_ALLWT113S3_CPUSTYLE_STORCH_V9A_V0_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1069,4 +1069,4 @@
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 
-#endif /* ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALLWT113S3_CPUSTYLE_STORCH_V9A_V0_H_INCLUDED */
