@@ -134,8 +134,8 @@
 
 #if WITH_LPFBOARD_UA1CEI
 		/* плата без тюнера - можем использовать это место */
-		{	0,	51,	display_time5,		REDRM_BARS, PGALL,	},	// TIME
-		{	6, 	51,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	0,	51,	display_time5,		REDRM_BARS, PG0,	},	// TIME
+		{	6, 	51,	display2_rec3,		REDRM_BARS, PG0, },	// Отображение режима записи аудио фрагмента
 		{	10, 51,	display2_usbsts3,                                                                      	REDRM_BARS, PGALL, },	// USB host status
 #else /* WITH_LPFBOARD_UA1CEI */
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
