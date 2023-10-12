@@ -36,7 +36,7 @@ typedef struct
 typedef struct {
 
 	//uint32_t ConfigDesc_Len;
-	uint8_t MaxLUNv [4];
+	__ALIGN_BEGIN uint8_t MaxLUNv [4] __ALIGN_END;
 
 	//EP protocol
 	#define USB_PRTCL_ILL  	0
