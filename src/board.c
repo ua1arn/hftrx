@@ -3798,7 +3798,34 @@ prog_ctrlreg(uint_fast8_t plane)
 			RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 			RBBIT(0071, glob_tuner_type);		// TY
 			RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
-			RBVAL8(0060, glob_tuner_L);
+			RBVAL8(0060, glob_tuner_C);
+			RBVAL8(0050, glob_tuner_L);
+		}
+
+	#elif WITHAUTOTUNER_AVBELNN_UA1CEI
+		// Плата управления LPF и тюнером от avbelnn переразведённая UA1CEI
+
+		RBBIT(0107, 0);	// REZ4
+		RBBIT(0106, 0);	// REZ3
+		RBBIT(0105, 0);	// REZ2_OC
+		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
+		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		RBBIT(0102, glob_tx);
+		RBBIT(0101, glob_fanflag);	// FAN
+
+		if (n7ddcext)
+		{
+			// 0100 is a bpf7
+			RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+			RBBIT(0070, 0);	// в обесточенном состоянии - режим BYPASS
+		}
+		else
+		{
+			// 0100 is a bpf7
+			RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+			RBBIT(0071, glob_tuner_type);		// TY
+			RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+			RBVAL8(0060, revbits8(glob_tuner_L));
 			RBVAL8(0050, glob_tuner_C);
 		}
 

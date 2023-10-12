@@ -626,7 +626,7 @@
 		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
-	#elif WITHAUTOTUNER_AVBELNN
+	#elif WITHAUTOTUNER_AVBELNN || WITHAUTOTUNER_AVBELNN_UA1CEI
 
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
