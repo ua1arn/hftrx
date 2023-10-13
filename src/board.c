@@ -3471,9 +3471,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0106, 0);	// REZ3
 		RBBIT(0105, 0);	// REZ2_OC
 		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
-		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx && ! xvrtr);
-		RBBIT(0101, glob_fanflag);	// FAN
+		RBBIT(0101, glob_fanflag || txgated);	// FAN
 		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
@@ -3602,9 +3602,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0116, 0);	// REZ3
 		RBBIT(0115, 0);	// REZ2_OC
 		RBBIT(0114, glob_antenna);	// REZ1_OC -> antenna switch
-		RBBIT(0113, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		////RBBIT(0113, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0112, glob_tx && ! xvrtr);
-		RBBIT(0111, glob_fanflag);	// FAN
+		RBBIT(0111, glob_fanflag || txgated);	// FAN
 		// 0110 is a bpf7
 		RBVAL(0102, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0101, glob_tuner_type);		// TY
@@ -3770,9 +3770,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0106, 0);	// REZ3
 		RBBIT(0105, 0);	// REZ2_OC
 		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
-		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx && ! xvrtr);
-		RBBIT(0101, (glob_fanflag || txgated) && ! xvrtr);	// FAN
+		RBBIT(0101, glob_fanflag || txgated);	// FAN
 		if (n7ddcext)
 		{
 			// 0100 is a bpf7
@@ -3927,9 +3927,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0106, 0);	// REZ3
 		RBBIT(0105, 0);	// REZ2_OC
 		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
-		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx && ! xvrtr);
-		RBBIT(0101, glob_fanflag && ! xvrtr);	// FAN
+		RBBIT(0101, glob_fanflag || txgated);	// FAN
 		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
