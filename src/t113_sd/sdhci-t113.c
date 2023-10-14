@@ -494,6 +494,9 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 {
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
 
+	if (clock > 12500000)
+		clock = 12500000;
+	//clock = 5000000;
 	if (sdhci->instance == SMHC2)
 	{
 		sdhci->instance->SMHC_SFC =
@@ -502,12 +505,16 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 				0;
 
 	}
-        uint32_t ratio=( /*HOSC_CLOCK*/ SMHCHARD_FREQ /(2*clock));
+        uint32_t ratio= SMHCHARD_FREQ / ( 2 * clock);
+        if (ratio == 0)
+        	ratio = 1;
 
+	//PRINTF("***************** sdhci_t113_setclock: sdhci_t113_update_clk: ratio=%u, SMHCHARD_FREQ=%u MHz\n", (unsigned) ratio, (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
 	if((ratio & 0xff) != ratio)
         {
-		//PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
-		return 0;
+		PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
+		//return 0;
+		ratio = 255;
         }
 
 	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) & ~(1 << 16));	// card clock off
@@ -519,7 +526,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		return 0;
         }
 
-	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) | (3 << 16));
+	write32(sdhci->base + SD_CKCR, read32(sdhci->base + SD_CKCR) | (1 << 17) | (1 << 16));
 
 	if(!sdhci_t113_update_clk(sdhci))
         {
