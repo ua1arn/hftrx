@@ -493,23 +493,28 @@ int sdhci_t113_update_clk(struct sdhci_t * sdhci)
 int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 {
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
+	uint32_t ratio;
 
-	if (clock > 12500000)
-		clock = 12500000;
-	//clock = 5000000;
 	if (sdhci->instance == SMHC2)
 	{
 		sdhci->instance->SMHC_SFC =
 				//(4u << 1) |
 				(1u << 0) |
 				0;
+		if (clock > 12500000)
+			clock = 12500000;
 
+       ratio= SMHCHARD_FREQ / (clock);	// Измерения показали, что деление на 4 а не на 2
+       ratio = 100;
 	}
-        uint32_t ratio= SMHCHARD_FREQ / ( 2 * clock);
+	else
+	{
+        ratio= SMHCHARD_FREQ / (4 * clock);	// Измерения показали, что деление на 4 а не на 2
+	}
         if (ratio == 0)
         	ratio = 1;
 
-	//PRINTF("***************** sdhci_t113_setclock: sdhci_t113_update_clk: ratio=%u, SMHCHARD_FREQ=%u MHz\n", (unsigned) ratio, (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
+	//PRINTF("***************** sdhci_t113_setclock: sdhci_t113_update_clk: ratio=%u, SMHCHARD_FREQ=%u MHz SMHCHARD_CCU_CLK_REG=0x%08X\n", (unsigned) ratio, (unsigned) (SMHCHARD_FREQ / 1000 / 1000), (unsigned) SMHCHARD_CCU_CLK_REG);
 	if((ratio & 0xff) != ratio)
         {
 		PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
