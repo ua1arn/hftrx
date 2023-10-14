@@ -6481,7 +6481,7 @@ const codec2if_t * board_getfpgacodecif(void)
 
 
 #if WITHFPGALOAD_DCFG
-static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
+static ALIGNX_BEGIN const uint32_t bitimage0 [] ALIGNX_END =
 {
 #include BOARD_BITIMAGE_NAME
 };
@@ -6646,7 +6646,7 @@ static void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS && defined (BOARD_BITIMAGE_NAME_ZIP)
 
-static ALIGNX_BEGIN const FLASHMEMINIT uint8_t rbfimage0_zip [] ALIGNX_END =
+static ALIGNX_BEGIN const uint8_t rbfimage0_zip [] ALIGNX_END =
 {
 #include BOARD_BITIMAGE_NAME_ZIP
 };
@@ -6847,7 +6847,7 @@ restart:
 #if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
 
 /* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
-static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
+static ALIGNX_BEGIN const uint16_t rbfimage0 [] ALIGNX_END =
 {
 #include BOARD_BITIMAGE_NAME
 };

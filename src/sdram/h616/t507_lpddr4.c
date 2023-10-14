@@ -2369,7 +2369,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 }
 
 
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void arm_hardware_sdram_initialize(void)
 {
 	// https://artmemtech.com/
 	// artmem atl4b0832

@@ -816,7 +816,7 @@ int sys_dram_init(void)
 ///
 
 
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 

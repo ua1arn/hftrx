@@ -769,7 +769,7 @@ void arm_hardware_sdram_initialize(void)
 
 
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 	VERIFY(PS7_INIT_SUCCESS == ps7_init());

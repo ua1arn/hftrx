@@ -1757,7 +1757,7 @@ unsigned long sunxi_dram_init(void)
 	return size;
 };
 
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	unsigned long v = sunxi_dram_init();

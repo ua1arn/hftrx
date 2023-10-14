@@ -50,10 +50,9 @@ SECTIONS
 		. = ALIGN(4);
 		KEEP(*(.startup0))
 		KEEP(*(.init))
-		KEEP(*(.initfunc*))
-		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 		*(.text*)
+		*(.rodata*)
 		. = ALIGN(4);
 	} > RAM
 
@@ -123,8 +122,6 @@ SECTIONS
  		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
  		*(SORT(.dtors.*))
  		*(.dtors)
-
-		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
 

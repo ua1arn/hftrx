@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 		fprintf(fpo, "/* $Id: $ */\n");
 		fprintf(fpo, "/* GENERATED FILE - DO NOT EDIT */\n");
 		fprintf(fpo, "/* Source file '%s' */\n", argv [1]);
-		//fprintf(fpo, "static const FLASHMEMINIT uint16_t rbfimage [] =\n");
+		//fprintf(fpo, "static const uint16_t rbfimage [] =\n");
 		//fprintf(fpo, "{\n");
 		for (;;)
 		{

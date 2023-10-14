@@ -4501,7 +4501,6 @@ void vm14_pll_initialize(void)
 	* Return Value : none
 	*******************************************************************************/
 	static
-	FLASHMEMINITFUNC
 	void r7s721_pll_initialize(void)
 	{
 	    /* Cancel L2C standby status before clock change */
@@ -8340,7 +8339,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 
 // PLL initialize
-void FLASHMEMINITFUNC
+void
 sysinit_pll_initialize(int forced)
 {
 #ifdef USE_HAL_DRIVER

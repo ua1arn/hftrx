@@ -1467,7 +1467,7 @@ static void s1d13781_initialize(void)
 	const static struct {
 		uint8_t reg;
 		uint16_t val;
-	} FLASHMEM initdata [] =
+	} FLASHMEM initregsdata [] =
     {  
         { REG06_RESET,                          0x0100 },
 
@@ -1525,10 +1525,10 @@ static void s1d13781_initialize(void)
 
 
 	uint_fast8_t i;
-	for (i = 0; i < (sizeof initdata / sizeof initdata [0]); ++ i)  
+	for (i = 0; i < (sizeof initregsdata / sizeof initregsdata [0]); ++ i)
 	{ 
-		const uint_fast8_t reg = initdata [i].reg;
-		const uint_fast16_t value = initdata [i].val;
+		const uint_fast8_t reg = initregsdata [i].reg;
+		const uint_fast16_t value = initregsdata [i].val;
 
 		switch (reg)
 		{

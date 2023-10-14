@@ -197,7 +197,7 @@ int sys_dram_init(void)
 
 #endif /* CPUSTYLE_T113, CPUSTYLE_F133 */
 
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 #if 0 && CPUSTYLE_T113

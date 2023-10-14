@@ -50,8 +50,6 @@ SECTIONS
 		. = ALIGN(4);
 		KEEP(*(.startup0))
 		KEEP(*(.init))
-		KEEP(*(.initfunc*))
-		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 		*(.text*)
 		. = ALIGN(4);

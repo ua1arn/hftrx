@@ -216,8 +216,6 @@ void dpclock_exit(dpclock_t * lp);
 uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #if LINUX_SUBSYSTEM
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC //__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE //__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			//__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -231,8 +229,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP 		//__attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_R7S721
-	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* память доступная лоя DMA обмена */
@@ -246,8 +242,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_STM32MP1
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -261,8 +255,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_A64
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -276,8 +268,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_T507
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -291,8 +281,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_T113
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC //	__attribute__((noinline)) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -306,8 +294,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_VM14
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC //	__attribute__((noinline)) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -321,8 +307,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_F133
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -336,8 +320,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif CPUSTYLE_XC7Z
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -358,8 +340,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	//	RAM_D2 (xrw)  : ORIGIN = 0x30000000, LENGTH = 288K	/* SRAM1, SRAM2, SRAM3 */
 	//	RAM_D3 (xrw)  : ORIGIN = 0x38000000, LENGTH = 64K	/* SRAM4 */
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 - память доступная лоя DMA обмена */
@@ -376,8 +356,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 //	#pragma name .data .sdramdata
 //	#pragma name .bss .sdrambss
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	//__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
@@ -393,8 +371,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMLOW	__attribute__((section(".ram")))	// размещение во внутренней мамяти МК
 #elif (CPUSTYLE_STM32F7XX)
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	//__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
@@ -409,8 +385,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 #elif CPUSTYLE_STM32F4XX && (defined (STM32F429xx) || defined(STM32F407xx))
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	//__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE  //__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
@@ -425,8 +399,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 #elif CPUSTYLE_STM32F4XX
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	//__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
@@ -443,8 +415,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 #elif  CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 
 	#define FLASHMEM __flash
-	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
@@ -458,8 +428,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 #elif CPUSTYLE_TMS320F2833X
 
 	#define FLASHMEM //__flash
-	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
@@ -475,8 +443,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 #elif CPUSTYLE_UBLAZE
 
 	#define FLASHMEM //__flash
-	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
@@ -491,8 +457,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 
 #elif CPUSTYLE_STM32L0XX
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	//__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE //__attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 //__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
@@ -510,8 +474,6 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 #elif CPUSTYLE_ARM && 0
 
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
-	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	//__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */

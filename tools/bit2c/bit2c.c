@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 		fprintf(fpo, "/* $Id: $ */\n");
 		fprintf(fpo, "/* GENERATED FILE - DO NOT EDIT */\n");
 		fprintf(fpo, "/* Source file '%s' offset=%u (0x%08X) */\n", argv [1], binoffset, binoffset);
-		//fprintf(fpo, "static const FLASHMEMINIT uint16_t rbfimage [] =\n");
+		//fprintf(fpo, "static const uint16_t rbfimage [] =\n");
 		//fprintf(fpo, "{\n");
 		fseek(fpi, binoffset, SEEK_SET);
 		for (;;)

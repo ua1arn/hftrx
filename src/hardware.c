@@ -1831,7 +1831,7 @@ __STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr(volatile void *addr, int32
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void FLASHMEMINITFUNC dcache_clean_all(void)
+void dcache_clean_all(void)
 {
 	L1C_CleanInvalidateDCacheAll();
 #if (__L2C_PRESENT == 1)
@@ -2268,7 +2268,6 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 */
 
 static uint32_t
-FLASHMEMINITFUNC
 ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
 	const uint32_t addrbase = a & 0xFFF00000;
@@ -2399,7 +2398,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 }
 
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
-static void FLASHMEMINITFUNC
+static void
 sysinit_ttbr_initialize(void)
 {
 #if __CORTEX_A
@@ -2502,7 +2501,7 @@ sysinit_ttbr_initialize(void)
 #endif
 }
 
-static void FLASHMEMINITFUNC
+static void
 ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
@@ -2527,7 +2526,6 @@ ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
 // с точностью до 1 мегабайта
 //static void
-//FLASHMEMINITFUNC
 //ttb_map(
 //	uintptr_t va,	/* virtual address */
 //	uintptr_t la,	/* linear (physical) address */
@@ -2543,7 +2541,7 @@ ttb_1MB_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr
 #endif /* CPUSTYLE_R7S721 */
 
 // PLL and caches iniitialize
-static void FLASHMEMINITFUNC
+static void
 sysinit_fpu_initialize(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
@@ -2604,7 +2602,7 @@ sysinit_fpu_initialize(void)
 #endif
 }
 
-static void FLASHMEMINITFUNC
+static void
 sysintt_sdram_initialize(void)
 {
 #if WITHSDRAMHW
@@ -2631,7 +2629,7 @@ sysintt_sdram_initialize(void)
 #endif /* CPUSTYLE_F133 */
 }
 
-static void FLASHMEMINITFUNC
+static void
 sysinit_debug_initialize(void)
 {
 #if WITHDEBUG && ! LINUX_SUBSYSTEM
@@ -2680,7 +2678,7 @@ sysinit_debug_initialize(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-static void FLASHMEMINITFUNC
+static void
 sysinit_perfmeter_initialize(void)
 {
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
@@ -2759,7 +2757,7 @@ void __attribute__((used)) Reset_Handler(void)
 }
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
 
-static void FLASHMEMINITFUNC
+static void
 sysinit_vbar_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -2819,7 +2817,7 @@ void xtrap(void)
 		;
 }
 
-static void FLASHMEMINITFUNC
+static void
 sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
@@ -2906,7 +2904,7 @@ sysinit_mmu_initialize(void)
 }
 
 // ОБщая для всех процессоров инициализация
-static void FLASHMEMINITFUNC
+static void
 sysinit_cache_core0_initialize(void)
 {
 #if defined (__CORTEX_M)
@@ -3108,7 +3106,7 @@ sysinit_cache_core0_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
-static void FLASHMEMINITFUNC
+static void
 sysinit_hwprepare_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -3123,7 +3121,7 @@ sysinit_hwprepare_initialize(void)
 }
 
 /* инициадихации кеш-памяти, спцифические для CORE0 */
-static void FLASHMEMINITFUNC
+static void
 sysinit_cache_L2_initialize(void)
 {
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -3158,7 +3156,6 @@ void sysinit_pmic_initialize(void)
 */
 // watchdog disable, clock initialize, cache enable
 void
-FLASHMEMINITFUNC
 SystemInit(void)
 {
 #if ! LINUX_SUBSYSTEM
@@ -3203,7 +3200,7 @@ static void cortexa_cpuinfo(void)
 
 #if WITHSMPSYSTEM && ! WITHRTOS
 
-static void FLASHMEMINITFUNC
+static void
 sysinit_cache_coreN_initialize(void)
 {
 #if (__CORTEX_A != 0)

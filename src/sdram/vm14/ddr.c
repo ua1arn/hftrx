@@ -651,7 +651,7 @@ unsigned int check_both_ctl(unsigned int *ctl_enabled)
 }
 #endif
 
-void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 	init_ddr3(533, 1, 1);
