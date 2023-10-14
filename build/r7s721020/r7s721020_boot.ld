@@ -3,8 +3,8 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20240100,	LENGTH = 512k - 16k - 256
-  TTB (rwx)  : ORIGIN = 0x20240100 + 512k - 16k, 	LENGTH = 16k
+	RAM (rwx)  : ORIGIN = 0x20240000 + 256, LENGTH = 256K - 16k - 256
+	TTB (rwx)  : ORIGIN = 0x20240000 + 256K - 16k, LENGTH = 16k
 }
 
 /* Library configurations */
@@ -76,14 +76,14 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
+		/*
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
-		/*
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
-	*/
+		 */
 		__copy_table_end__ = .;
 	} > RAM
 

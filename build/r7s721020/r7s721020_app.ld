@@ -3,8 +3,8 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x20000000 + 256,	LENGTH = 3072k - 16k - 256
-  TTB (rwx)  : ORIGIN = 0x20000000 + 3072k - 16k, 	LENGTH = 16k
+	RAM (rwx)  : ORIGIN = 0x20000000 + 256,	LENGTH = 3072k - 16k - 256
+	TTB (rwx)  : ORIGIN = 0x20000000 + 3072k - 16k, LENGTH = 16k
 }
 
 /* Library configurations */

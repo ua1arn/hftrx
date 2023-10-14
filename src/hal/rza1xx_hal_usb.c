@@ -3902,7 +3902,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 			ASSERT(ep->xfer_len == 0 || ep->xfer_buff != NULL);
 
 			int err = USB_WritePacketNec(USBx, pipe, ep->xfer_buff, ep->xfer_len);	// pipe=0: DCP
-			ASSERT(err == 0);
+			//ASSERT(err == 0);
 		}
 
 		USBPhyHw_set_pid(USBx, pipe, DEVDRV_USBF_PID_BUF);

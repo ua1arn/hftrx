@@ -3,9 +3,9 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 256K
-  RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 128k - 16k
-  TTB (rwx)  : ORIGIN = 0x20200000 + 128k - 16k, LENGTH = 16k
+	FLASH (rx) : ORIGIN = 0x18000000, LENGTH = 128K
+	RAM (rwx)  : ORIGIN = 0x20200000, LENGTH = 256K - 16k
+	TTB (rwx)  : ORIGIN = 0x20200000 + 256K - 16k, LENGTH = 16k
 }
 
 /* Library configurations */
