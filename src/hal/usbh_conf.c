@@ -259,7 +259,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
-		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		//CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 		//(void) CPG.STBCR7;			/* Dummy read */
 
 		//HARDWARE_USB0_UNINITIALIZE();
@@ -271,8 +271,8 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 1: Channel 1 of the USB 2.0 host/function module halts.
+		//CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 		(void) CPG.STBCR7;			/* Dummy read */
 
 		//HARDWARE_USB1_UNINITIALIZE();
