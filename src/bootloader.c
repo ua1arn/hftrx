@@ -288,6 +288,7 @@ void bootloader0_mainloop(void)
 
 	TP();
 	memcpy((void *) target, boot2image, sizeof boot2image);
+	TP();
 
 	bootloader_launch_app(target);
 	for (;;)
