@@ -21,6 +21,10 @@
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
 
+#if CPUSTYLE_R7S721
+#include "rza1xx_hal_usb.h"
+#endif /* CPUSTYLE_R7S721 */
+
 /** @addtogroup STM32_USBD_STATE_DEVICE_LIBRARY
   * @{
   */

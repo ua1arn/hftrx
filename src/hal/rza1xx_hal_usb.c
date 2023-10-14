@@ -190,11 +190,9 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
     /* Disable IRQ */
 
     if (USBx == & USB200) {
-		arm_hardware_disable_handler(USBI0_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71);
 		(void) CPG.STBCR7;
 	} else if (USBx == & USB201) {
-		arm_hardware_disable_handler(USBI1_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71 | CPG_STBCR7_MSTP70);
 		(void) CPG.STBCR7;
 	}
@@ -261,17 +259,6 @@ int USBPhyHw_powered(USB_OTG_GlobalTypeDef * USBx)
     return 1;
 }
 
-
-static void device_USBI0_IRQHandler(void)
-{
-	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
-static void device_USBI1_IRQHandler(void)
-{
-	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
 //void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
@@ -279,15 +266,6 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
     USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
     USBx->SYSCFG0 |= USB_DPRPU;
 
-    /* Enable USB */
-    if (USBx == & USB200)
-	{
-    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
-	}
-	else if (USBx == & USB201)
-	{
-		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
-	}
 //    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
 //    GIC_SetPriority(USBIX_IRQn, 16);
 //    GIC_SetConfiguration(USBIX_IRQn, 1);
@@ -303,14 +281,6 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
     /* Disable USB */
 //    arm_hardware_disable_handler(USBIX_IRQn);
 //    InterruptHandlerRegister(USBIX_IRQn, NULL);
-    if (USBx == & USB200)
-	{
-    	arm_hardware_disable_handler(USBI0_IRQn);
-	}
-	else if (USBx == & USB201)
-	{
-		arm_hardware_disable_handler(USBI1_IRQn);
-	}
 
     /* Disable pullup on D+ */
     USBx->SYSCFG0 &= ~USB_DPRPU;
@@ -318,6 +288,8 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
     USBx->SYSCFG0 |= USB_DCFM;
     HARDWARE_DELAY_MS(1);
     USBx->SYSCFG0 &= ~USB_DCFM;
+
+    USBx->INTENB0 = 0;
 
     return HAL_OK;
 }

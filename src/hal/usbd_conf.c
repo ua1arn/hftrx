@@ -114,12 +114,12 @@ void device_OTG_HS_EP1_IN_IRQHandler(void)
 }
 
 
-static void device_USBI0_IRQHandler(void)
+void device_USBI0_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-static void device_USBI1_IRQHandler(void)
+void device_USBI1_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
@@ -162,25 +162,27 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	if (pcdHandle->Instance == & USB200)
 	{
-		arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 		(void) CPG.STBCR7;			/* Dummy read */
+	    //memset(pcdHandle->Instance, 0, sizeof * pcdHandle->Instance);
 
 		HARDWARE_USB0_INITIALIZE();
+		//arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 
 	}
 	else if (pcdHandle->Instance == & USB201)
 	{
-		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
 		(void) CPG.STBCR7;			/* Dummy read */
+	    //memset(pcdHandle->Instance, 0, sizeof * pcdHandle->Instance);
 
 		HARDWARE_USB1_INITIALIZE();
+		//arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 	}
 
 #elif CPUSTYLE_STM32MP1
@@ -554,10 +556,13 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 	if (pcdHandle->Instance == & USB200)
 	{
-		const IRQn_ID_t int_id = USBI0_IRQn;
-		arm_hardware_disable_handler(int_id);
+		//arm_hardware_disable_handler(USBI0_IRQn);
+		pcdHandle->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
+		pcdHandle->Instance->INTENB0 = 0;
+		pcdHandle->Instance->INTENB1 = 0;
+		//memset(pcdHandle->Instance, 0, sizeof * pcdHandle->Instance);
 
-		/* ---- Supply clock to the USB20(channel 0) ---- */
+		/* ---- Stop clock to the USB20(channel 0) ---- */
 		//CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 		//(void) CPG.STBCR7;			/* Dummy read */
 
@@ -566,19 +571,20 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	}
 	else if (pcdHandle->Instance == & USB201)
 	{
-		const IRQn_ID_t int_id = USBI1_IRQn;
-		arm_hardware_disable_handler(int_id);
+		//arm_hardware_disable_handler(USBI1_IRQn);
+		pcdHandle->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
+		pcdHandle->Instance->INTENB0 = 0;
+		pcdHandle->Instance->INTENB1 = 0;
+		//memset(pcdHandle->Instance, 0, sizeof * pcdHandle->Instance);
 
-		/* ---- Supply clock to the USB20(channel 1) ---- */
+		/* ---- Stop clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 1: Channel 1 of the USB 2.0 host/function module halts.
 		//CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 		(void) CPG.STBCR7;			/* Dummy read */
 
 		//HARDWARE_USB1_UNINITIALIZE();
 	}
-	pcdHandle->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
-	pcdHandle->Instance->INTENB0 = 0;
-	pcdHandle->Instance->INTENB1 = 0;
+
 
 #elif CPUSTYLE_STM32H7XX
 

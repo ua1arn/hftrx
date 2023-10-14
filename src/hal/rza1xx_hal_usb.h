@@ -8,14 +8,31 @@
 
 #include "hardware.h"
 
+#if CPUSTYLE_R7S721
+
 #include "rza1xx_hal.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define __HAL_PCD_ENABLE(__HANDLE__)            //           (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
-#define __HAL_PCD_DISABLE(__HANDLE__)           //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
+
+void device_USBI0_IRQHandler(void);
+void device_USBI1_IRQHandler(void);
+
+#define __HAL_PCD_ENABLE(__HANDLE__)    do { \
+	if ((__HANDLE__)->Instance == & USB200)  \
+		arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler); \
+	else \
+		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler); \
+	} while (0)
+
+#define __HAL_PCD_DISABLE(__HANDLE__) do { \
+	if ((__HANDLE__)->Instance == & USB200)  \
+	    arm_hardware_disable_handler(USBI0_IRQn); \
+	else \
+		arm_hardware_disable_handler(USBI1_IRQn); \
+	} while (0)
 
 /** @defgroup USB_Core_Speed_   USB Core Speed
   * @{
@@ -654,34 +671,35 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
   */
 
 #define EP_ADDR_MSK                            0xFU
-
-
-/** @defgroup USB_LL_EP_Type USB Low Layer EP Type
-  * @{
-  */
-#define EP_TYPE_CTRL                           0U
-#define EP_TYPE_ISOC                           1U
-#define EP_TYPE_BULK                           2U
-#define EP_TYPE_INTR                           3U
-#define EP_TYPE_MSK                            3U
 /**
   * @}
   */
 
 uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr);
 
-#define __HAL_HCD_ENABLE(__HANDLE__)       //            (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
-#define __HAL_HCD_DISABLE(__HANDLE__)       //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
+void host_USBI0_IRQHandler(void);
+void host_USBI1_IRQHandler(void);
+
+
+#define __HAL_HCD_ENABLE(__HANDLE__)    do { \
+	if ((__HANDLE__)->Instance == & USB200)  \
+		arm_hardware_set_handler_system(USBI0_IRQn, host_USBI0_IRQHandler); \
+	else \
+		arm_hardware_set_handler_system(USBI1_IRQn, host_USBI1_IRQHandler); \
+	} while (0)
+
+#define __HAL_HCD_DISABLE(__HANDLE__) do { \
+	if ((__HANDLE__)->Instance == & USB200)  \
+	    arm_hardware_disable_handler(USBI0_IRQn); \
+	else \
+		arm_hardware_disable_handler(USBI1_IRQn); \
+	} while (0)
 
 
 /** @defgroup USBH_CORE_Private_Defines
   * @{
   */
 
-
-#define USBH_MAX_PIPES_NBR                             15
-
-#define USBHNPIPES 15
 
 /* Exported macro ------------------------------------------------------------*/
 
@@ -764,6 +782,7 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
 }
 #endif
 
+#endif /* CPUSTYLE_R7S721 */
 
 
 #endif /* SRC_HAL_RZA1XX_HAL_USB_H_ */

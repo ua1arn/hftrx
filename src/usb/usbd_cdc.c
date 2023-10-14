@@ -13,6 +13,7 @@
 #include "formats.h"
 #include "usbd_def.h"
 #include "usbd_core.h"
+#include "usb_device.h"
 #include "usb200.h"
 #include "usbch9.h"
 
@@ -184,7 +185,7 @@ static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT
 static __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
 static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
 
-static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [64U] __ALIGN_END;
 
 static uint32_t dwDTERate [WITHUSBCDCACM_N];
 

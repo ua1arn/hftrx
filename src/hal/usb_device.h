@@ -35,6 +35,7 @@
 /* Includes ------------------------------------------------------------------*/
 #if CPUSTYLE_R7S721
 	#include "rza1xx_hal.h"
+	#include "rza1xx_hal_usb.h"
 
 #elif CPUSTYLE_STM32MP1
 	#include "stm32mp1xx.h"

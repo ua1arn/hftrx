@@ -843,19 +843,6 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 #define EP_ADDR_MSK                            0xFU
 
-
-/** @defgroup USB_LL_EP_Type USB Low Layer EP Type
-  * @{
-  */
-#define EP_TYPE_CTRL                           0U
-#define EP_TYPE_ISOC                           1U
-#define EP_TYPE_BULK                           2U
-#define EP_TYPE_INTR                           3U
-#define EP_TYPE_MSK                            3U
-/**
-  * @}
-  */
-
 //uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr);
 
 //#define __HAL_HCD_ENABLE(__HANDLE__)       //            (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
@@ -866,10 +853,6 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
   * @{
   */
 
-
-//#define USBH_MAX_PIPES_NBR                             15
-
-#define USBHNPIPES 15
 
 /* Exported macro ------------------------------------------------------------*/
 

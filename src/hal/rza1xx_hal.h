@@ -153,12 +153,23 @@ void HAL_IncTick(void);
 void HAL_MspInit(void);
 void HAL_MspDeInit(void);
 
+
+
+/** @defgroup USB_LL_EP_Type USB Low Layer EP Type
+  * @{
+  */
+#define EP_TYPE_CTRL                           0U
+#define EP_TYPE_ISOC                           1U
+#define EP_TYPE_BULK                           2U
+#define EP_TYPE_INTR                           3U
+#define EP_TYPE_MSK                            3U
+/**
+  * @}
+  */
+
 #ifdef __cplusplus
 }
 #endif
-
-
-#include "rza1xx_hal_usb.h"
 
 
 #endif /* SRC_HAL_RZA1XX_HAL_H_ */

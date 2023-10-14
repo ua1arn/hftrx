@@ -94,6 +94,19 @@ typedef enum
   HC_DATATGLERR
 } USB_OTG_HCStateTypeDef;
 
+
+/** @defgroup USB_LL_EP_Type USB Low Layer EP Type
+  * @{
+  */
+#define EP_TYPE_CTRL                           0U
+#define EP_TYPE_ISOC                           1U
+#define EP_TYPE_BULK                           2U
+#define EP_TYPE_INTR                           3U
+#define EP_TYPE_MSK                            3U
+/**
+  * @}
+  */
+
 /**
   * @brief  USB Instance Initialization Structure definition
   */
