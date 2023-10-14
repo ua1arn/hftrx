@@ -93,7 +93,7 @@ static void
 bootloader_launch_app(uintptr_t ip)
 {
 	global_disableIRQ();
-#if WITHUSBHW
+#if WITHUSBHW && ! CPUSTYLE_R7S721
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */
 	dcache_clean_all();
@@ -145,7 +145,7 @@ void bootloader_deffereddetach(void * arg)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
-#if WITHUSBHW
+#if WITHUSBHW && ! CPUSTYLE_R7S721
 		board_usb_deactivate();
 #endif /* WITHUSBHW */
 		bootloader_launch_app(ip);
@@ -250,7 +250,7 @@ void bootloader_fatfs_mainloop(void)
 	for (;;)
 		;
 #endif /* BOOTLOADER_RAMSIZE */
-#if WITHUSBHW
+#if WITHUSBHW && ! CPUSTYLE_R7S721
 	board_usb_deactivate();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
@@ -317,7 +317,7 @@ void bootloader_mainloop(void)
 				PRINTF("bootloader_mainloop: No application image\n");
 				break;
 			}
-#if WITHUSBHW
+#if WITHUSBHW && ! CPUSTYLE_R7S721
 			board_usb_deactivate();
 #endif /* WITHUSBHW */
 			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
