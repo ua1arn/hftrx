@@ -169,7 +169,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	    //memset(pcdHandle->Instance, 0, sizeof * pcdHandle->Instance);
 
 		HARDWARE_USB0_INITIALIZE();
-		//arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 
 	}
 	else if (pcdHandle->Instance == & USB201)
@@ -182,7 +181,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	    //memset(pcdHandle->Instance, 0, sizeof * pcdHandle->Instance);
 
 		HARDWARE_USB1_INITIALIZE();
-		//arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 	}
 
 #elif CPUSTYLE_STM32MP1

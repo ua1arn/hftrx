@@ -111,6 +111,11 @@ static void irq_modes_print(void)
 
 #if CPUSTYLE_R7S721
 
+static void Userdef_INTC_Dummy_Interrupt(void)
+{
+	PRINTF("Userdef_INTC_Dummy_Interrupt[%p]\n", Userdef_INTC_Dummy_Interrupt);
+	ASSERT(0);
+}
 
 #if 0
 
@@ -849,7 +854,7 @@ void r7s721_intc_initialize(void)
 		VERIFY(0 == IRQ_Disable(irqn));
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
 		VERIFY(0 == IRQ_SetPriority(irqn, 31));	// non-atomic operation
-		//VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
+		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
 		GIC_SetGroup(irqn, 0);
 	}
 
@@ -2312,8 +2317,9 @@ void cpu_initialize(void)
 	(void) USB201.SYSCFG0;			/* Dummy read */
 	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 1: Channel 1 of the USB 2.0 host/function module halts.
+#endif
 
-#elif CPUSTYLE_TMS320F2833X
+#if CPUSTYLE_TMS320F2833X
 
 	EALLOW;
 	WDCR = 0x0068;
@@ -2351,8 +2357,9 @@ void cpu_initialize(void)
 	// Таблица находится в области вне Data Cache
 	vectors_relocate();
 	arm_cpu_CMx_initialize_NVIC();
+#endif
 
-#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	{
 		IRQ_Initialize();	// GIC_Enable() inside
@@ -2374,9 +2381,9 @@ void cpu_initialize(void)
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
-#if WITHSMPSYSTEM
-	arm_hardware_populate_initialize();
-#endif /* WITHSMPSYSTEM */
+	#if WITHSMPSYSTEM
+		arm_hardware_populate_initialize();
+	#endif /* WITHSMPSYSTEM */
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");
