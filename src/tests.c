@@ -4097,6 +4097,52 @@ static void diskio_test(void)
 				}
 				break;
 
+			case 'W':
+				{
+					unsigned nsect = 1024;
+					// Wipe SD
+					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
+					char c = 0;
+					for (;;)
+					{
+						if (dbg_getchar(& c))
+						{
+								break;
+						}
+					}
+					if (c == 'y')
+					{
+						unsigned sector;
+
+						for (sector = 0; sector < nsect; )
+						{
+							#if WITHUSBHW
+									board_usbh_polling();     // usb device polling
+							#endif /* WITHUSBHW */
+							// проверка прерывания работы с клавиатуры
+							char c;
+							if (dbg_getchar(& c))
+							{
+								dbg_putchar(c);
+								if (c == 0x1b)
+									break;
+							}
+							// работа
+							if (mmcWriteSector(sector, sectbuffr) != MMC_SUCCESS2)
+							{
+								PRINTF(PSTR("Write error ar sector %u\n"), sector);
+								break;
+							}
+							else
+							{
+								++ sector;
+							}
+						}
+						PRINTF(PSTR("Done erasing.\n"));
+					}
+				}
+				break;
+
 			case 'z':
 				mmcInitialize();
 				PRINTF(PSTR("mmcInitialize.\n"));
