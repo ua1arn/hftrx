@@ -286,9 +286,7 @@ void bootloader0_mainloop(void)
 	const uintptr_t target = 0x20240100;	// The on-chip large-capacity RAM Page 4 base + 256K
 	PRINTF("bootloader0_mainloop [%p]: target=%p\n", bootloader0_mainloop, (void *) target);
 
-	TP();
 	memcpy((void *) target, boot2image, sizeof boot2image);
-	TP();
 
 	bootloader_launch_app(target);
 	for (;;)
