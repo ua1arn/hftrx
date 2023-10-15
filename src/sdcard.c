@@ -5205,6 +5205,7 @@ void hardware_sdhost_initialize(void)
 
 	{
 		// Automatic divisors calculation
+		// Для SDHI2 отличаются значения поля выбора источника тактирования
 		unsigned clksrc = 1;	// 001: PLL_PERI(1X)
 		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
 		unsigned dvalue;
