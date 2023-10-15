@@ -3455,6 +3455,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		const uint_fast8_t txgated = glob_tx && (xvrtr ? 0 : glob_txgate);
 #else /* XVTR_NYQ1 */
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
+		const uint_fast8_t xvrtr = 0;
 #endif /* XVTR_NYQ1 */
 
 		rbtype_t rbbuff [9] = { 0 };
