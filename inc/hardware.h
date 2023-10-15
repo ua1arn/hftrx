@@ -959,6 +959,7 @@ void adcdone_add(adcdone_t * p);
 void adcdone_del(adcdone_t * p);
 
 void bootloader_deffereddetach(void * arg);
+int bootloader_withusb(void);
 
 // targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
 // targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)

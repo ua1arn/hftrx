@@ -16258,7 +16258,8 @@ processmessages(
 		sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW
-		board_usbh_polling();     // usb device polling
+		if (bootloader_withusb())
+			board_usbh_polling();     // usb device polling
 #endif /* WITHUSBHW */
 #if WITHWAVPLAYER || WITHSENDWAV
 		spoolplayfile();
@@ -19279,7 +19280,8 @@ applowinitialize(void)
 	edgepins_initialize();
 
 #if WITHUSBHW
-	board_usb_initialize();		// USB device and host support
+	if (bootloader_withusb())
+		board_usb_initialize();		// USB device and host support
 #endif /* WITHUSBHW */
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
@@ -19682,7 +19684,8 @@ application_initialize(void)
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSBHW
-	board_usb_activate();		// USB device and host start
+	if (bootloader_withusb())
+		board_usb_activate();		// USB device and host start
 #endif /* WITHUSBHW */
 
 	// TODO: у аудио кодека и IF кодека могут быть раные требования
@@ -19816,7 +19819,8 @@ static void hamradio_main_initialize(void)
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW
-	board_usbh_polling();     // usb device polling
+	if (bootloader_withusb())
+		board_usbh_polling();     // usb device polling
 #endif /* WITHUSBHW */
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */

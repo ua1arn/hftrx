@@ -31,6 +31,22 @@
 
 #if WITHISBOOTLOADER
 
+int bootloader_withusb(void)
+{
+	static int st;
+	static int en;
+	if (st == 0)
+	{
+		st = 1;
+#if defined BOARD_IS_USERBOOT
+		en = BOARD_IS_USERBOOT();
+#else
+		en = 0;
+#endif
+	}
+	return en;
+}
+
 struct stm32_header {
 	uint32_t magic_number;
 	uint8_t image_signature[64];
@@ -92,11 +108,8 @@ static uint_fast8_t bootloader_copyapp(
 static void
 bootloader_launch_app(uintptr_t ip)
 {
-	global_disableIRQ();
-#if WITHUSBHW
-		board_usb_deinitialize();
-#endif /* WITHUSBHW */
 	dcache_clean_all();
+	global_disableIRQ();
 
 #if (__L2C_PRESENT == 1)
 	L2C_Disable();
@@ -146,7 +159,10 @@ void bootloader_deffereddetach(void * arg)
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
 #if WITHUSBHW
-		board_usb_deactivate();
+		if (bootloader_withusb())
+			board_usb_deactivate();
+		if (bootloader_withusb())
+			board_usb_deinitialize();
 #endif /* WITHUSBHW */
 		bootloader_launch_app(ip);
 	}
@@ -251,7 +267,10 @@ void bootloader_fatfs_mainloop(void)
 		;
 #endif /* BOOTLOADER_RAMSIZE */
 #if WITHUSBHW
-	board_usb_deactivate();
+	if (bootloader_withusb())
+		board_usb_deactivate();
+	if (bootloader_withusb())
+		board_usb_deinitialize();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
 	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %p\n", IMAGENAME, (void *) ip);
@@ -288,6 +307,9 @@ void bootloader0_mainloop(void)
 
 	memcpy((void *) target, boot2image, sizeof boot2image);
 
+#if WITHUSBHW
+	#error No WITHUSBHW supported
+#endif /* WITHUSBHW */
 	bootloader_launch_app(target);
 	for (;;)
 		;
@@ -316,7 +338,10 @@ void bootloader_mainloop(void)
 				break;
 			}
 #if WITHUSBHW
-			board_usb_deactivate();
+			if (bootloader_withusb())
+				board_usb_deactivate();
+			if (bootloader_withusb())
+				board_usb_deinitialize();
 #endif /* WITHUSBHW */
 			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
 			bootloader_launch_app(ip);
@@ -360,5 +385,17 @@ void bootloader_mainloop(void)
 	}
 }
 #endif /* WITHISBOOTLOADERFATFS */
+
+#else
+
+
+int bootloader_withusb(void)
+{
+#if WITHUSBHW
+	return 1;
+#else
+	return 0;
+#endif
+}
 
 #endif /* WITHISBOOTLOADER */
