@@ -290,8 +290,8 @@ ddrinit_t507:
 	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr_T507)
 
-app_run: $(PROJECT)_app.bin ddrinit_t507
-	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
+app_run: $(PROJECT)_app.alw32 ddrinit_t507
+	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 
 # debug for bootloader - check .ld file
