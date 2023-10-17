@@ -137,7 +137,7 @@ void Rasterizer::addEdge(const Vector2& v0, const Vector2& v1)
 * \note		
 *//*-------------------------------------------------------------------*/
 
-void Rasterizer::setup(int vpx, int vpy, int vpwidth, int vpheight, VGFillRule fillRule, const PixelPipe* pixelPipe, unsigned int* covBuffer)
+void Rasterizer::setup(int vpx, int vpy, int vpwidth, int vpheight, VGFillRule fillRule, const PixelPipe* pixelPipe, RIuint32* covBuffer)
 {
 	RI_ASSERT(vpwidth >= 0 && vpheight >= 0);
 	RI_ASSERT(vpx + vpwidth >= vpx && vpy + vpheight >= vpy);
