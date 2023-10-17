@@ -383,7 +383,7 @@
 	#define HARDWARE_SDIOPOWER_SET(on) do { \
 	} while (0)
 
-#endif /* WITHSDHCHW */
+#endif /* WITHSDHCHW && WITHSDHC0HW */
 
 #if WITHTX
 
