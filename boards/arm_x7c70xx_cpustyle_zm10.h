@@ -635,8 +635,8 @@
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			xc7z_gpio_output(targetextctl); \
-			xc7z_gpio_output(targetnvram); \
+			gpio_output2(targetextctl, 1, 0); \
+			gpio_output2(targetnvram, 1, 0); \
 		} while (0)
 
 	// MOSI & SCK port
@@ -693,7 +693,7 @@
 	#define TARGET_ENC2BTN_BIT_MIO 		60
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
+	#define TARGET_ENC2BTN_GET (gpio_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
