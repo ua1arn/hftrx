@@ -2367,6 +2367,9 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	/* Configure TCONLCD clock */
     if (needfreq != 0)
     {
+    	prei = 0;
+    	divider = calcdivround2(allwnrt113_get_video0pllx4_freq(), needfreq);
+		PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
     	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
@@ -2378,6 +2381,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     }
     else
     {
+    	ASSERT(prei >= 0 && prei <= 3);
     	ASSERT(divider >= 1 && divider <= 16);
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
     		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
