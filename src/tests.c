@@ -6713,6 +6713,94 @@ void ethhw_filldesc(volatile uint32_t * desc, uint8_t * buff1, uint8_t * buff2)
 
 #if CPUSTYLE_VM14
 
+#define SZ_8K				0x00002000
+#define NAND_BBT_USE_FLASH	0x00020000
+/**
+ * struct mtd_ecc_stats - error correction stats
+ *
+ * @corrected:	number of corrected bits
+ * @failed:	number of uncorrectable errors
+ * @badblocks:	number of bad blocks in this partition
+ * @bbtblocks:	number of blocks reserved for bad block tables
+ */
+struct mtd_ecc_stats {
+	uint32_t corrected;
+	uint32_t failed;
+	uint32_t badblocks;
+	uint32_t bbtblocks;
+};
+/**
+ * MTD operation modes
+ *
+ * @MTD_OPS_PLACE_OOB:	OOB data are placed at the given offset (default)
+ * @MTD_OPS_AUTO_OOB:	OOB data are automatically placed at the free areas
+ *			which are defined by the internal ecclayout
+ * @MTD_OPS_RAW:	data are transferred as-is, with no error correction;
+ *			this mode implies %MTD_OPS_PLACE_OOB
+ *
+ * These modes can be passed to ioctl(MEMWRITE) and are also used internally.
+ * See notes on "MTD file modes" for discussion on %MTD_OPS_RAW vs.
+ * %MTD_FILE_MODE_RAW.
+ */
+enum {
+	MTD_OPS_PLACE_OOB = 0,
+	MTD_OPS_AUTO_OOB = 1,
+	MTD_OPS_RAW = 2,
+};
+
+#define MTD_ABSENT		0
+#define MTD_RAM			1
+#define MTD_ROM			2
+#define MTD_NORFLASH		3
+#define MTD_NANDFLASH		4	/* SLC NAND */
+#define MTD_DATAFLASH		6
+#define MTD_UBIVOLUME		7
+#define MTD_MLCNANDFLASH	8	/* MLC NAND (including TLC) */
+
+#define MTD_WRITEABLE		0x400	/* Device is writeable */
+#define MTD_BIT_WRITEABLE	0x800	/* Single bits can be flipped */
+#define MTD_NO_ERASE		0x1000	/* No erase necessary */
+#define MTD_POWERUP_LOCK	0x2000	/* Always locked after reset */
+
+/* Some common devices / combinations of capabilities */
+#define MTD_CAP_ROM		0
+#define MTD_CAP_RAM		(MTD_WRITEABLE | MTD_BIT_WRITEABLE | MTD_NO_ERASE)
+#define MTD_CAP_NORFLASH	(MTD_WRITEABLE | MTD_BIT_WRITEABLE)
+#define MTD_CAP_NANDFLASH	(MTD_WRITEABLE)
+
+/* Obsolete ECC byte placement modes (used with obsolete MEMGETOOBSEL) */
+#define MTD_NANDECC_OFF		0	// Switch off ECC (Not recommended)
+#define MTD_NANDECC_PLACE	1	// Use the given placement in the structure (YAFFS1 legacy mode)
+#define MTD_NANDECC_AUTOPLACE	2	// Use the default placement scheme
+#define MTD_NANDECC_PLACEONLY	3	// Use the given placement in the structure (Do not store ecc result on read)
+#define MTD_NANDECC_AUTOPL_USR 	4	// Use the given autoplacement scheme rather than using the default
+
+/* OTP mode selection */
+#define MTD_OTP_OFF		0
+#define MTD_OTP_FACTORY		1
+#define MTD_OTP_USER		2
+
+static void udelay(unsigned us)
+{
+	local_delay_us(us * 1);
+}
+
+static uint32_t read32(uintptr_t addr)
+{
+	return * (volatile uint32_t *) addr;
+}
+
+static void write32(uintptr_t addr, uint32_t value)
+{
+	* (volatile uint32_t *) addr = value;
+}
+
+#define le16_to_cpu(v) ((uint16_t) (v))
+
+#define writel(data, addr) do { write32((uintptr_t) (addr), (data)); } while (0)
+#define readl(addr) (read32((uintptr_t) (addr)))
+
+
 /* SPDX-License-Identifier: GPL-2.0+ */
 /*
  * Copyright © 1999-2010 David Woodhouse <dwmw2@infradead.org> et al.
@@ -6850,6 +6938,10 @@ struct mtd_ooblayout_ops {
 
 typedef signed long loff_t;
 typedef signed long resource_size_t;
+typedef int flstate_t;
+typedef int ofnode;
+struct kvec;
+struct nand_chip;
 
 struct nand_oobfree {
 	uint32_t offset;
@@ -7021,7 +7113,7 @@ struct mtd_info {
 	 */
 	struct backing_dev_info *backing_dev_info;
 
-	struct notifier_block reboot_notifier;  /* default mode before reboot */
+	//struct notifier_block reboot_notifier;  /* default mode before reboot */
 #endif
 
 	/* ECC status information */
@@ -7033,9 +7125,9 @@ struct mtd_info {
 
 	struct module *owner;
 #ifndef __UBOOT__
-	struct device dev;
+	//struct device dev;
 #else
-	struct udevice *dev;
+	//struct udevice *dev;
 #endif
 	int usecount;
 
@@ -7046,73 +7138,73 @@ struct mtd_info {
 	 * Offset of the partition relatively to the parent offset.
 	 * Is 0 for real MTD devices (ie. not partitions).
 	 */
-	u64 offset;
+	uint64_t offset;
 
 	/*
 	 * List node used to add an MTD partition to the parent
 	 * partition list.
 	 */
-	struct list_head node;
+	//struct list_head node;
 
 	/*
 	 * List of partitions attached to this MTD device (the parent
 	 * MTD device can itself be a partition).
 	 */
-	struct list_head partitions;
+	//struct list_head partitions;
 };
 
-#if IS_ENABLED(CONFIG_DM)
-static inline void mtd_set_of_node(struct mtd_info *mtd,
-				   const struct device_node *np)
-{
-	mtd->dev->node.np = np;
-}
+//#if IS_ENABLED(CONFIG_DM)
+////static inline void mtd_set_of_node(struct mtd_info *mtd,
+////				   const struct device_node *np)
+////{
+////	mtd->dev->node.np = np;
+////}
+////
+////static inline const struct device_node *mtd_get_of_node(struct mtd_info *mtd)
+////{
+////	return mtd->dev->node.np;
+////}
+//#else
+//struct device_node;
+////
+////static inline void mtd_set_of_node(struct mtd_info *mtd,
+////				   const struct device_node *np)
+////{
+////}
+////
+////static inline const struct device_node *mtd_get_of_node(struct mtd_info *mtd)
+////{
+////	return NULL;
+////}
+//#endif
 
-static inline const struct device_node *mtd_get_of_node(struct mtd_info *mtd)
-{
-	return mtd->dev->node.np;
-}
-#else
-struct device_node;
+//static inline int mtd_is_partition(const struct mtd_info *mtd)
+//{
+//	return mtd->parent;
+//}
+//
+//static inline int mtd_has_partitions(const struct mtd_info *mtd)
+//{
+//	return !list_empty(&mtd->partitions);
+//}
 
-static inline void mtd_set_of_node(struct mtd_info *mtd,
-				   const struct device_node *np)
-{
-}
-
-static inline const struct device_node *mtd_get_of_node(struct mtd_info *mtd)
-{
-	return NULL;
-}
-#endif
-
-static inline bool mtd_is_partition(const struct mtd_info *mtd)
-{
-	return mtd->parent;
-}
-
-static inline bool mtd_has_partitions(const struct mtd_info *mtd)
-{
-	return !list_empty(&mtd->partitions);
-}
-
-bool mtd_partitions_used(struct mtd_info *master);
+int mtd_partitions_used(struct mtd_info *master);
 
 int mtd_ooblayout_ecc(struct mtd_info *mtd, int section,
 		      struct mtd_oob_region *oobecc);
 int mtd_ooblayout_find_eccregion(struct mtd_info *mtd, int eccbyte,
 				 int *section,
 				 struct mtd_oob_region *oobregion);
-int mtd_ooblayout_get_eccbytes(struct mtd_info *mtd, u8 *eccbuf,
-			       const u8 *oobbuf, int start, int nbytes);
-int mtd_ooblayout_set_eccbytes(struct mtd_info *mtd, const u8 *eccbuf,
-			       u8 *oobbuf, int start, int nbytes);
+int mtd_ooblayout_get_eccbytes(struct mtd_info *mtd, uint8_t *eccbuf,
+			       const uint8_t *oobbuf, int start, int nbytes);
+int mtd_ooblayout_set_eccbytes(struct mtd_info *mtd, const uint8_t *eccbuf,
+			       uint8_t *oobbuf, int start, int nbytes);
 int mtd_ooblayout_free(struct mtd_info *mtd, int section,
 		       struct mtd_oob_region *oobfree);
-int mtd_ooblayout_get_databytes(struct mtd_info *mtd, u8 *databuf,
-				const u8 *oobbuf, int start, int nbytes);
-int mtd_ooblayout_set_databytes(struct mtd_info *mtd, const u8 *databuf,
-				u8 *oobbuf, int start, int nbytes);
+int mtd_ooblayout_get_databytes(struct mtd_info *mtd, uint8_t *databuf,
+				const uint8_t *oobbuf, int start, int nbytes);
+int mtd_ooblayout_set_databytes(struct mtd_info *mtd, const uint8_t *databuf,
+				uint8_t *oobbuf, int start, int nbytes);
 int mtd_ooblayout_count_freebytes(struct mtd_info *mtd);
 int mtd_ooblayout_count_eccbytes(struct mtd_info *mtd);
 
@@ -7188,11 +7280,18 @@ static inline void mtd_resume(struct mtd_info *mtd)
 }
 #endif
 
+static uint32_t do_div(uint64_t *n, uint32_t base)
+{
+	uint32_t remainder = *n % base;
+	*n = *n / base;
+	return remainder;
+}
+
 static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
 {
 	if (mtd->erasesize_shift)
 		return sz >> mtd->erasesize_shift;
-	do_div(sz, mtd->erasesize);
+	do_div(& sz, mtd->erasesize);
 	return sz;
 }
 
@@ -7200,14 +7299,14 @@ static inline uint32_t mtd_mod_by_eb(uint64_t sz, struct mtd_info *mtd)
 {
 	if (mtd->erasesize_shift)
 		return sz & mtd->erasesize_mask;
-	return do_div(sz, mtd->erasesize);
+	return do_div(& sz, mtd->erasesize);
 }
 
 static inline uint32_t mtd_div_by_ws(uint64_t sz, struct mtd_info *mtd)
 {
 	if (mtd->writesize_shift)
 		return sz >> mtd->writesize_shift;
-	do_div(sz, mtd->writesize);
+	do_div(& sz, mtd->writesize);
 	return sz;
 }
 
@@ -7215,7 +7314,7 @@ static inline uint32_t mtd_mod_by_ws(uint64_t sz, struct mtd_info *mtd)
 {
 	if (mtd->writesize_shift)
 		return sz & mtd->writesize_mask;
-	return do_div(sz, mtd->writesize);
+	return do_div(& sz, mtd->writesize);
 }
 
 static inline int mtd_has_oob(const struct mtd_info *mtd)
@@ -7253,16 +7352,23 @@ extern struct mtd_info *get_mtd_device_nm(const char *name);
 extern void put_mtd_device(struct mtd_info *mtd);
 
 
+#define EINVAL (1)
+#define ENODEV (2)
+#define ENXIO	(3)
+#define ETIMEDOUT (4)
+#define EUCLEAN (5)
+#define EBADMSG (6)
+
 #ifndef __UBOOT__
-struct mtd_notifier {
-	void (*add)(struct mtd_info *mtd);
-	void (*remove)(struct mtd_info *mtd);
-	struct list_head list;
-};
-
-
-extern void register_mtd_user (struct mtd_notifier *new);
-extern int unregister_mtd_user (struct mtd_notifier *old);
+//struct mtd_notifier {
+//	void (*add)(struct mtd_info *mtd);
+//	void (*remove)(struct mtd_info *mtd);
+//	struct list_head list;
+//};
+//
+//
+//extern void register_mtd_user (struct mtd_notifier *new);
+//extern int unregister_mtd_user (struct mtd_notifier *old);
 #endif
 void *mtd_kmalloc_up_to(const struct mtd_info *mtd, size_t *size);
 
@@ -7328,7 +7434,7 @@ int mtd_arg_off_size(int argc, char *const argv[], int *idx, loff_t *off,
 void mtd_get_len_incl_bad(struct mtd_info *mtd, uint64_t offset,
 			  const uint64_t length, uint64_t *len_incl_bad,
 			  int *truncated);
-bool mtd_dev_list_updated(void);
+int mtd_dev_list_updated(void);
 
 /* drivers/mtd/mtd_uboot.c */
 int mtd_search_alternate_name(const char *mtdname, char *altname,
@@ -7633,6 +7739,31 @@ enum nand_ecc_algo {
 typedef uint16_t __le16;
 typedef uint32_t __le32;
 #define NAND_BIT(pos) (UINT32_C(1) << (pos))
+
+/*
+ * Create a contiguous bitmask starting at bit position @l and ending at
+ * position @h. For example
+ * GENMASK_64(39, 21) gives us the 64bit vector 0x000000ffffe00000.
+ */
+#if defined(__LINKER__) || defined(__ASSEMBLER__)
+#define GENMASK_32(h, l) \
+	(((0xFFFFFFFF) << (l)) & (0xFFFFFFFF >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	((~0 << (l)) & (~0 >> (64 - 1 - (h))))
+#else
+#define GENMASK_32(h, l) \
+	(((~UINT32_C(0)) << (l)) & (~UINT32_C(0) >> (32 - 1 - (h))))
+
+#define GENMASK_64(h, l) \
+	(((~UINT64_C(0)) << (l)) & (~UINT64_C(0) >> (64 - 1 - (h))))
+#endif
+
+#ifdef __aarch64__
+#define NAND_GENMASK				GENMASK_64
+#else
+#define NAND_GENMASK				GENMASK_32
+#endif
 
 struct nand_onfi_params {
 	/* rev info and features block */
@@ -8097,11 +8228,6 @@ struct nand_sdr_timings {
 	uint32_t tWW_min;
 };
 
-#define EINVAL (1)
-#define ENODEV (2)
-#define ENXIO	(3)
-#define ETIMEDOUT (4)
-
 #define ERR_PTR(p) ((void *) (p))
 /**
  * enum nand_data_interface_type - NAND interface timing type
@@ -8312,7 +8438,7 @@ struct nand_chip {
 	struct nand_ecc_ctrl ecc;
 	struct nand_buffers *buffers;
 	unsigned long buf_align;
-	struct nand_hw_control hwcontrol;
+	//struct nand_hw_control hwcontrol;
 
 	uint8_t *bbt;
 	struct nand_bbt_descr *bbt_td;
@@ -8323,37 +8449,39 @@ struct nand_chip {
 	void *priv;
 };
 
-static inline void nand_set_flash_node(struct nand_chip *chip,
-				       ofnode node)
-{
-	chip->flash_node = ofnode_to_offset(node);
-}
+//static inline void nand_set_flash_node(struct nand_chip *chip,
+//				       ofnode node)
+//{
+//	chip->flash_node = ofnode_to_offset(node);
+//}
+//
+//static inline ofnode nand_get_flash_node(struct nand_chip *chip)
+//{
+//	return offset_to_ofnode(chip->flash_node);
+//}
+//
+//static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
+//{
+//	return container_of(mtd, struct nand_chip, mtd);
+//}
+//
+//static inline struct mtd_info *nand_to_mtd(struct nand_chip *chip)
+//{
+//	return &chip->mtd;
+//}
+//
+//static inline void *nand_get_controller_data(struct nand_chip *chip)
+//{
+//	return chip->priv;
+//}
+//
+//static inline void nand_set_controller_data(struct nand_chip *chip, void *priv)
+//{
+//	chip->priv = priv;
+//}
 
-static inline ofnode nand_get_flash_node(struct nand_chip *chip)
-{
-	return offset_to_ofnode(chip->flash_node);
-}
-
-static inline struct nand_chip *mtd_to_nand(struct mtd_info *mtd)
-{
-	return container_of(mtd, struct nand_chip, mtd);
-}
-
-static inline struct mtd_info *nand_to_mtd(struct nand_chip *chip)
-{
-	return &chip->mtd;
-}
-
-static inline void *nand_get_controller_data(struct nand_chip *chip)
-{
-	return chip->priv;
-}
-
-static inline void nand_set_controller_data(struct nand_chip *chip, void *priv)
-{
-	chip->priv = priv;
-}
-
+ static struct nand_chip nand_chip0;
+ static struct mcom02_nand_priv nand_priv0;
 /*
  * NAND Flash Manufacturer ID Codes
  */
@@ -8723,7 +8851,7 @@ int nand_write_data_op(struct nand_chip *chip, const void *buf,
 #define PKT_CNT_SHIFT			12
 
 #define ECC_ENABLE			NAND_BIT(31)
-#define PAGE_SIZE_MASK			GENMASK(25, 23)
+#define PAGE_SIZE_MASK			NAND_GENMASK(25, 23)
 #define PAGE_SIZE_SHIFT			23
 #define PAGE_SIZE_512			0
 #define PAGE_SIZE_2K			1
@@ -8754,15 +8882,15 @@ int nand_write_data_op(struct nand_chip *chip, const void *buf,
 #define BCH_EN_SHIFT			25
 #define ECC_SIZE_SHIFT			16
 
-#define MEM_ADDR_MASK			GENMASK(7, 0)
-#define BCH_MODE_MASK			GENMASK(27, 25)
+#define MEM_ADDR_MASK			NAND_GENMASK(7, 0)
+#define BCH_MODE_MASK			NAND_GENMASK(27, 25)
 
-#define CS_MASK				GENMASK(31, 30)
+#define CS_MASK				NAND_GENMASK(31, 30)
 #define CS_SHIFT			30
 
-#define PAGE_ERR_CNT_MASK		GENMASK(16, 8)
+#define PAGE_ERR_CNT_MASK		NAND_GENMASK(16, 8)
 #define PAGE_ERR_CNT_SHIFT              8
-#define PKT_ERR_CNT_MASK		GENMASK(7, 0)
+#define PKT_ERR_CNT_MASK		NAND_GENMASK(7, 0)
 
 #define ONFI_ID_ADDR			0x20
 #define ONFI_ID_LEN			4
@@ -8774,7 +8902,7 @@ int nand_write_data_op(struct nand_chip *chip, const void *buf,
 #define ARASAN_NAND_POLL_TIMEOUT	1000000
 #define STATUS_TIMEOUT			2000
 
-DECLARE_GLOBAL_DATA_PTR;
+//DECLARE_GLOBAL_DATA_PTR;
 
 struct mcom02_nand_priv {
 	struct udevice *dev;
@@ -8840,7 +8968,7 @@ static uint8_t mcom02_nand_page(uint32_t pagesize)
 	case 8192:
 		return PAGE_SIZE_8K;
 	default:
-		printf("Unsupported page size: %#x\n", pagesize);
+		printf("Unsupported page size: %#x\n", (unsigned) pagesize);
 		break;
 	}
 
@@ -8896,7 +9024,7 @@ static void mcom02_nand_wait_for_event(struct mcom02_nand_priv *priv,
 	}
 
 	if (!timeout)
-		printf("Event waiting timeout, %d\n", event);
+		printf("Event waiting timeout, %d\n", (int) event);
 
 	writel(event, priv->regs + INTR_STS_OFST);
 }
@@ -8922,8 +9050,8 @@ static void mcom02_nand_readfifo(struct mcom02_nand_priv *priv, uint32_t prog,
 static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 				int column, int page_addr)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct nand_chip *nand = & nand_chip0; //mtd_to_nand(mtd);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 	int wait = 0 /* false */, read = 0 /* false */, read_id = 0 /* false */;
 	uint32_t addrcycles, prog;
 	uint32_t *bufptr = (uint32_t *)&priv->buf[0];
@@ -9024,8 +9152,8 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 
 static void mcom02_nand_select_chip(struct mtd_info *mtd, int chip)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct nand_chip *nand = & nand_chip0; //mtd_to_nand(mtd);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 	uint32_t val;
 
 	if (chip == -1)
@@ -9038,16 +9166,16 @@ static void mcom02_nand_select_chip(struct mtd_info *mtd, int chip)
 
 static uint8_t mcom02_nand_read_byte(struct mtd_info *mtd)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct nand_chip *nand = & nand_chip0; //mtd_to_nand(mtd);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 
 	return priv->buf[priv->bufshift++];
 }
 
 static void mcom02_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int size)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct nand_chip *nand = & nand_chip0; //mtd_to_nand(mtd);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 	uint32_t i, pktcount, buf_rd_cnt = 0, pktsize;
 	uint32_t *bufptr = (uint32_t *)buf;
 
@@ -9101,7 +9229,7 @@ static int mcom02_nand_read_page_hwecc(struct mtd_info *mtd,
 				       struct nand_chip *nand, uint8_t *buf,
 				       int oob_required, int page)
 {
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 	uint32_t val;
 
 	mcom02_nand_set_eccsparecmd(priv, NAND_CMD_RNDOUT,
@@ -9163,8 +9291,8 @@ static int mcom02_nand_device_ready(struct mtd_info *mtd,
 
 static void mcom02_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct nand_chip *nand = & nand_chip0; //mtd_to_nand(mtd);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 	uint32_t buf_wr_cnt = 0, pktcount = 1, i, pktsize;
 	uint32_t *bufptr = (uint32_t *)buf;
 
@@ -9205,7 +9333,7 @@ static int mcom02_nand_write_page_hwecc(struct mtd_info *mtd,
 					const uint8_t *buf,
 					int oob_required, int page)
 {
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 	uint8_t *ecc_calc = nand->buffers->ecccalc;
 	uint32_t *eccpos = nand->ecc.layout->eccpos;
 	uint32_t val, i;
@@ -9243,7 +9371,7 @@ static int mcom02_nand_read_oob(struct mtd_info *mtd, struct nand_chip *nand,
 static int mcom02_nand_write_oob(struct mtd_info *mtd, struct nand_chip *nand,
 				 int page)
 {
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct mcom02_nand_priv *priv = & nand_priv0; //nand_get_controller_data(nand);
 
 	priv->iswriteoob = 1 /* true */;
 	nand->cmdfunc(mtd, NAND_CMD_SEQIN, mtd->writesize, page);
@@ -9255,8 +9383,8 @@ static int mcom02_nand_write_oob(struct mtd_info *mtd, struct nand_chip *nand,
 
 static int mcom02_nand_ecc_init(struct mtd_info *mtd)
 {
-	struct nand_chip *nand = mtd_to_nand(mtd);
-	struct mcom02_nand_priv *priv = nand_get_controller_data(nand);
+	struct nand_chip *nand = & nand_chip0; // mtd_to_nand(mtd);
+	struct mcom02_nand_priv *priv = & nand_priv0; // nand_get_controller_data(nand);
 	uint32_t oob_index, i, regval, eccaddr, bchmode = 0;
 	int found = -1;
 
@@ -9349,13 +9477,14 @@ static int mcom02_nand_ecc_init(struct mtd_info *mtd)
 
 static int mcom02_nand_probe(struct udevice *dev)
 {
-	struct mcom02_nand_priv *priv = dev_get_priv(dev);
+	struct mcom02_nand_priv *priv = & nand_priv0; //dev_get_priv(dev);
 	struct nand_chip *nand = &priv->nand;
 	struct mtd_info *mtd;
 	int ret;
 
-	priv->regs = (void *)devfdt_get_addr(dev);
-	nand_set_controller_data(nand, priv);
+	priv->regs = NANDMPORT;//(void *)devfdt_get_addr(dev);
+	//nand_set_controller_data(nand, priv);
+	nand->priv = priv;
 
 	/* Set the driver entry points for MTD */
 	nand->cmdfunc = mcom02_nand_cmdfunc;
@@ -9374,7 +9503,7 @@ static int mcom02_nand_probe(struct udevice *dev)
 
 	priv->rdintrmask = 0;
 
-	mtd = nand_to_mtd(nand);
+	mtd = 0;//nand_to_mtd(nand);
 	ret = nand_scan_ident(mtd, 1, NULL);
 	if (ret)
 		return ret;
@@ -9401,9 +9530,9 @@ static int mcom02_nand_probe(struct udevice *dev)
 	if (ret)
 		return ret;
 
-	ret = nand_register(0, mtd);
-	if (ret)
-		return ret;
+//	ret = nand_register(0, mtd);
+//	if (ret)
+//		return ret;
 
 	return 0;
 }
