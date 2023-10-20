@@ -3787,14 +3787,6 @@ static void aarch64_mp_cpuN_start(uint_fast64_t startfunc, unsigned targetcore)
 
 #define HARDWARE_HOTPLUG_FLAG 0xFA50392F	// CPU Hotplug Flag value
 
-//#define SUNXI_HOTPLUG_MAGIC		0xFA50392F
-//#define SUNXI_STANDBY_MAGIC		0x0000EFE8
-//
-//#define HARDWARE_HOTPLUG_REG 	(* (volatile uint32_t *) 0x070005C0)
-//
-//#define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
-//#define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
-
 // In Allwinner h133 this i/o block named R_CPUCFG
 
 //#define HARDWARE_NCORES 2
