@@ -59,7 +59,7 @@
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-#include "cmsis_t507.h"
+#include "device.h"
 //
 //#define __IO volatile
 //

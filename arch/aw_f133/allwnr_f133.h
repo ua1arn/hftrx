@@ -243,7 +243,7 @@
 //#include "core_ca.h"
 #include "system_allwnr_f133.h"
 
-#include "cmsis_f133.h"
+#include "device.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 

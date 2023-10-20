@@ -163,7 +163,7 @@ typedef enum xIRQn
 
 
 /* auto-generated header */
-#include "elvees_vm14_2.h"
+#include "device.h"
 
 
 /* configuration for the PL310 L2 cache controller */
