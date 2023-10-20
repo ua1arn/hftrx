@@ -976,7 +976,7 @@
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911 || TSC1_TYPE == TSC_TYPE_ILI2102)
 
 	void gt911_interrupt_handler(void);
 
@@ -1004,7 +1004,7 @@
 	} while (0)
 	//gt911_interrupt_handler
 
-#endif
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911 || TSC1_TYPE == TSC_TYPE_ILI2102) */
 
 
 #if 0
