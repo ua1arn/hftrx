@@ -658,6 +658,7 @@ uintptr_t getfilled_dmabufferuacinrts96(void);
 
 uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
+void processing_dmabufferuacout48(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferuacin48(void);
 void release_dmabufferuacin48(uintptr_t addr);

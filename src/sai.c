@@ -4470,9 +4470,6 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	const uintptr_t newaddr = dma_invalidate16rx(allocate_dmabuffer16rx());
 	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
 
-//	printhex32(addr, (void *) addr, DMABUFFSTEP16RX * sizeof (aubufv_t));
-//	for (;;)
-//		;
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer16rx(addr);
 }
@@ -5136,8 +5133,6 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 	return addr;
 }
 
-static ALIGNX_BEGIN uint32_t uacout48_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
-
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
@@ -5146,14 +5141,13 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
 
 	/* Работа с только что принятыми данными */
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-
-	release_dmabufferuacout48(addr);
+	processing_dmabufferuacout48(addr);
 }
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
 	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
+	static ALIGNX_BEGIN uint32_t descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
@@ -5178,29 +5172,29 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	uacout48_descr0 [0] [0] = configDMAC;			// Cofigurarion
-	uacout48_descr0 [0] [1] = portaddr;				// Source Address
-	uacout48_descr0 [0] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-	uacout48_descr0 [0] [3] = NBYTES;				// Byte Counter
-	uacout48_descr0 [0] [4] = parameterDMAC;			// Parameter
-	uacout48_descr0 [0] [5] = (uintptr_t) uacout48_descr0 [1];	// Link to next
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = portaddr;				// Source Address
+	descr0 [0] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
-	uacout48_descr0 [1] [0] = configDMAC;			// Cofigurarion
-	uacout48_descr0 [1] [1] = portaddr;				// Source Address
-	uacout48_descr0 [1] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-	uacout48_descr0 [1] [3] = NBYTES;				// Byte Counter
-	uacout48_descr0 [1] [4] = parameterDMAC;				// Parameter
-	uacout48_descr0 [1] [5] = (uintptr_t) uacout48_descr0 [2];	// Link to next
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = portaddr;				// Source Address
+	descr0 [1] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
+	descr0 [1] [4] = parameterDMAC;				// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
 
-	uacout48_descr0 [2] [0] = configDMAC;			// Cofigurarion
-	uacout48_descr0 [2] [1] = portaddr;				// Source Address
-	uacout48_descr0 [2] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-	uacout48_descr0 [2] [3] = NBYTES;				// Byte Counter
-	uacout48_descr0 [2] [4] = parameterDMAC;				// Parameter
-	uacout48_descr0 [2] [5] = (uintptr_t) uacout48_descr0 [0];	// Link to next (loop)
+	descr0 [2] [0] = configDMAC;			// Cofigurarion
+	descr0 [2] [1] = portaddr;				// Source Address
+	descr0 [2] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+	descr0 [2] [3] = NBYTES;				// Byte Counter
+	descr0 [2] [4] = parameterDMAC;				// Parameter
+	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
 
-	uintptr_t descraddr = (uintptr_t) uacout48_descr0;
-	dcache_clean(descraddr, sizeof uacout48_descr0);
+	uintptr_t descraddr = (uintptr_t) descr0;
+	dcache_clean(descraddr, sizeof descr0);
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)

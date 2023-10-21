@@ -2729,6 +2729,13 @@ void RAMFUNC release_dmabufferuacout48(uintptr_t addr)
 	LCLSPIN_UNLOCK(& locklistuacout48);
 }
 
+void processing_dmabufferuacout48(uintptr_t addr)
+{
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+
+	release_dmabufferuacout48(addr);
+}
+
 // Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
 RAMFUNC uintptr_t allocate_dmabufferuacout48(void)
 {
