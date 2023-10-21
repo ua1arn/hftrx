@@ -24,6 +24,11 @@
 	#include "arm_const_structs.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 #if WITHAFEQUALIZER
 
 enum {
@@ -48,7 +53,17 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 
 #endif /* WITHAFEQUALIZER */
 
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 #endif /* WITHINTEGRATEDDSP */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 
 #if (((__ARM_FP & 0x08) && defined(__aarch64__)) || (__riscv_d)) && 0
@@ -145,6 +160,10 @@ typedef struct
 	int_fast32_t ivqv [2];
 } INT32P_t;
 
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 
 #endif /* SRC_DSPDEFINES_H_ */

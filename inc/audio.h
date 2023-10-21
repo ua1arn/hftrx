@@ -354,9 +354,6 @@ modem_frames_decode(
 uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 uint_fast8_t getsampmleusb(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с USB UAC OUT после ресэмплигнга */
 
-FLOAT_t local_log(FLOAT_t x);
-FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
-
 //#endif /* WITHINTEGRATEDDSP */
 
 

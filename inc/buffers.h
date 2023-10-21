@@ -8,6 +8,11 @@
 #ifndef INC_BUFFERS_H_
 #define INC_BUFFERS_H_
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define MODEMBUFFERSIZE8	1024
 
 #define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
@@ -679,5 +684,9 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);
 void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep);
 void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep);
 
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* INC_BUFFERS_H_ */
