@@ -11030,7 +11030,7 @@ audioproc_spool_user(void)
 {
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
-	while (takespeexready_user(& p))
+	while (takespeexready(& p))
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
@@ -11062,7 +11062,7 @@ audioproc_spool_user(void)
 			score += chunk;
 		}
 		// Освобождаем буфер
-		releasespeexbuffer_user(p);
+		releasespeexbuffer(p);
 	}
 #endif /* ! WITHSKIPUSERMODE */
 }
@@ -19276,6 +19276,7 @@ applowinitialize(void)
 #endif /* WITHAUTOTUNER */
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
+	buffers2_initialize();	// new version
 
 	edgepins_initialize();
 

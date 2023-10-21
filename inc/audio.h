@@ -506,8 +506,8 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf);			
 #endif /* WITHINTEGRATEDDSP */
 
 typedef FLOAT_t speexel_t;
-uint_fast8_t takespeexready_user(FLOAT_t * * dest);
-void releasespeexbuffer_user(FLOAT_t * t);
+uint_fast8_t takespeexready(FLOAT_t * * dest);
+void releasespeexbuffer(FLOAT_t * t);
 
 typedef struct subscribefloat_tag
 {

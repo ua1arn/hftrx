@@ -644,7 +644,7 @@ typedef ALIGNX_BEGIN struct denoise16
 
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready_user(speexel_t * * dest)
+uint_fast8_t takespeexready(speexel_t * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
@@ -663,8 +663,8 @@ uint_fast8_t takespeexready_user(speexel_t * * dest)
 	return 0;
 }
 
-// Освобождение обработанного буфера сообщения
-void releasespeexbuffer_user(speexel_t * t)
+// Освобождение обработанного буфера
+void releasespeexbuffer(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	IRQL_t oldIrql;
@@ -677,8 +677,22 @@ void releasespeexbuffer_user(speexel_t * t)
 	LowerIrql(oldIrql);
 }
 
+// Сохранние буфера
+void savespeexbuffer(speexel_t * t)
+{
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& speexlock);
 
-denoise16_t * allocate_dmabuffer16denoise(void)
+	InsertHeadList2(& speexready16, & p->item);
+
+	LCLSPIN_UNLOCK(& speexlock);
+	LowerIrql(oldIrql);
+}
+
+
+speexel_t * allocatespeexbuffer(void)
 {
 	LCLSPIN_LOCK(& speexlock);
 	if (! IsListEmpty2(& speexfree16))
@@ -686,12 +700,12 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		const PLIST_ENTRY t = RemoveTailList2(& speexfree16);
 		LCLSPIN_UNLOCK(& speexlock);
 		denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, item);
-		return p;
+		return p->buff;
 	}
 #if WITHBUFFERSDEBUG
 	++ e7;
 #endif /* WITHBUFFERSDEBUG */
-	//PRINTF(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	//PRINTF(PSTR("allocatespeexbuffer() failure\n"));
 	if (! IsListEmpty2(& speexready16))
 	{
 		const PLIST_ENTRY t = RemoveTailList2(& speexready16);
@@ -702,10 +716,10 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 		{
 			deliveryfloat(& speexoutfloat, 0, 0);	// to AUDIO codec
 		}
-		return p;
+		return p->buff;
 	}
 	LCLSPIN_UNLOCK(& speexlock);
-	PRINTF(PSTR("allocate_dmabuffer16denoise() failure\n"));
+	PRINTF(PSTR("allocatespeexbuffer() failure\n"));
 	ASSERT(0);
 	for (;;)
 		;
@@ -716,28 +730,26 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 static void
 savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	static denoise16_t * p = NULL;
+	static speexel_t * buff = NULL;
 	static unsigned n;
 
-	if (p == NULL)
+	if (buff == NULL)
 	{
-		p = allocate_dmabuffer16denoise();
+		buff = allocatespeexbuffer();
 		n = 0;
 	}
 
-	p->buff [n] = ch0;		// sample value
+	buff [n] = ch0;		// sample value
 #if WITHUSEDUALWATCH
-	p->buff [n + FIRBUFSIZE] = ch1;	// sample value
+	buff [n + FIRBUFSIZE] = ch1;	// sample value
 #endif /* WITHUSEDUALWATCH */
 
 	n += 1;
 
 	if (n >= FIRBUFSIZE)
 	{
-		LCLSPIN_LOCK(& speexlock);
-		InsertHeadList2(& speexready16, & p->item);
-		LCLSPIN_UNLOCK(& speexlock);
-		p = NULL;
+		savespeexbuffer(buff);
+		buff = NULL;
 	}
 }
 

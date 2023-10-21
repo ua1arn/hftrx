@@ -68,6 +68,8 @@ public:
 	void release_buffer(uintptr_t addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, u.buff);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
 		LCLSPIN_LOCK(& lock);
@@ -82,6 +84,8 @@ public:
 	void save_buffer(uintptr_t addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, u.buff);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
 		LCLSPIN_LOCK(& lock);
@@ -104,6 +108,8 @@ public:
 			LCLSPIN_UNLOCK(& lock);
 			LowerIrql(oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			* dest = (uintptr_t) p->u.buff;
 			return 1;
 		}
@@ -124,6 +130,8 @@ public:
 			LCLSPIN_UNLOCK(& lock);
 			LowerIrql(oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
 			* dest = (uintptr_t) p->u.buff;
 			return 1;
 		}
@@ -132,7 +140,6 @@ public:
 		return 0;
 	}
 };
-
 
 #if defined(WITHRTS96) && defined(WITHRTS192)
 	#error Configuration Error: WITHRTS96 and WITHRTS192 can not be used together
@@ -147,6 +154,32 @@ enum
 
 
 #if WITHINTEGRATEDDSP
+
+#if 0
+// Denoise operations
+// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+typedef blists<speexel_t, NTRX * FIRBUFSIZE, 5> denoise16list_t;
+static denoise16list_t denoise16list(IRQL_REALTIME);
+
+// Буферы с принятымти от обработчиков прерываний сообщениями
+uint_fast8_t takespeexready(speexel_t * * dest)
+{
+	uintptr_t addr;
+	if (denoise16list.get_readybuffer(& addr))
+	{
+		* dest = (speexel_t *) addr;
+		return 1;
+	}
+	return 0;
+}
+
+// Освобождение обработанного буфера сообщения
+void releasespeexbuffer(speexel_t * t)
+{
+	denoise16list.release_buffer((uintptr_t) t);
+}
+
+#endif
 
 #if 0
 // Audio CODEC in/out
@@ -305,7 +338,7 @@ void processing_dmabufferuacout48(uintptr_t addr)
 #endif
 
 
-extern "C" void XXbuffers_initialize(void)
+extern "C" void buffers2_initialize(void)
 {
 }
 
