@@ -609,6 +609,7 @@ void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
 void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
+/* получение размера для операций с кешем для разнообразных буферов */
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
 int_fast32_t buffers_dmabuffer16rxcachesize(void);
@@ -616,6 +617,7 @@ int_fast32_t buffers_dmabuffer16txcachesize(void);
 int_fast32_t buffers_dmabuffer192rtscachesize(void);
 int_fast32_t buffers_dmabuffer32rtscachesize(void);
 int_fast32_t buffers_dmabuffer96rtscachesize(void);
+int_fast32_t buffers_dmabufferuacout48cachesize(void);
 
 void savesamplewav48(int_fast32_t ch0, int_fast32_t ch1); /* to SD CARD */
 void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1); /* to USB AUDIO */
