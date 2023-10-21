@@ -517,7 +517,7 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 	//PRINTF("***************** sdhci_t113_setclock: sdhci_t113_update_clk: ratio=%u, SMHCHARD_FREQ=%u MHz SMHCHARD_CCU_CLK_REG=0x%08X\n", (unsigned) ratio, (unsigned) (SMHCHARD_FREQ / 1000 / 1000), (unsigned) SMHCHARD_CCU_CLK_REG);
 	if((ratio & 0xff) != ratio)
         {
-		PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", ratio, clock);
+		PRINTF("sdhci_t113_setclock: unreacheable ratio=%u (%u)\n", (unsigned) ratio, (unsigned) clock);
 		//return 0;
 		ratio = 255;
         }
