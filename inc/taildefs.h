@@ -2,6 +2,11 @@
 #ifndef TAILDEFS_H_INCLUDED
 #define TAILDEFS_H_INCLUDED
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 // В зависимости от типа платы - какие микросхемы применены в синтезаторе
 
 #ifndef HARDWARE_H_INCLUDED
@@ -492,5 +497,10 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#error Undefined CPUSTYLE_xxxx
 
 #endif
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* TAILDEFS_H_INCLUDED */

@@ -378,7 +378,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacin48 = LCLSPINLOCK_INIT;
 
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
 
 // USB AUDIO OUT
 typedef ALIGNX_BEGIN struct uacout48_tag
@@ -2718,7 +2718,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #endif /* WITHRTS192 */
 
-#if WITHUSBUACOUT
+#if WITHUSBUACOUT && 0
 
 void RAMFUNC release_dmabufferuacout48(uintptr_t addr)
 {
@@ -3390,7 +3390,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
-#if WITHUSBUACOUT
+#if WITHUSBUACOUT && 0
 	{
 		unsigned i;
 		static RAMBIGDTCM_MDMA uacout48_t uacout48array [5 * BUFOVERSIZE];
