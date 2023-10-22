@@ -616,7 +616,7 @@
 			XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCXKINxxx(7),		// Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// main board Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		// ST LM235Z
@@ -642,7 +642,7 @@
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 
-		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// main board MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
@@ -666,7 +666,7 @@
 			PASENSEIX = BOARD_ADCX1IN(5),		// MCP3208 CH5 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// main board Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL

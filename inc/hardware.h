@@ -896,15 +896,14 @@ enum messagetypes
 	MSGT_EMPTY,
 	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
-	MSGT_DPC,	// 4 bytes - function address, 4 bytes - parameter
 	//
 	MSGT_count
 };
 
-uint_fast8_t takemsgready_user(uint8_t * * dest);	// Буферы с принятымти от обработчиков прерываний сообщениями
-void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обработанного буфера сообщения
-size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
-void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
+uint_fast8_t takemsgready(uint8_t * * dest);	// Буферы с принятымти от обработчиков прерываний сообщениями
+void releasemsgbuffer(uint8_t * dest);	// Освобождение обработанного буфера сообщения
+size_t takemsgbufferfree(uint8_t * * dest);	// Буфер для формирования сообщения
+void placesemsgbuffer(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
 
 
 #include "mslist.h"

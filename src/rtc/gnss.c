@@ -121,7 +121,7 @@ static unsigned char hex2int(uint_fast8_t c)
 }
 
 
-static dpclock_t dpc_lock;
+static dpcobj_t dpcobj_gnss;
 
 /* nmea_time скорректировано на следующую секунду */
 static void dpc_parsehandler(void * arg)
@@ -225,7 +225,7 @@ void nmeagnss_parsechar(uint_fast8_t c)
 #if WITHLFM
 				time_next(& nmea_time);	// какое время надо будет поставить для установки в следующий PPS
 #endif /* WITHLFM */
-				board_dpc(& dpc_lock, dpc_parsehandler, NULL);	// Update RTC by NMEA time
+				board_dpc_call(& dpcobj_gnss);	// Update RTC by NMEA time
 			}
 		}
 		break;
@@ -279,13 +279,10 @@ void nmeagnss_initialize(void)
 	const uint_fast32_t baudrate = UINT32_C(115200);
 	nmea_state = NMEAST_INITIALIZED;
 
-	dpclock_initialize(& dpc_lock);
+	dpcobj_initialize(& dpcobj_gnss, dpc_parsehandler, NULL);		// Update RTC by NMEA time
+	dpcobj_initialize(& nmeaspool, gnss_spool, NULL);
 
-//	static dpcentry_t nmeaspool;
-//
-//	nmeaspool.fn = gnss_spool;
-//	nmeaspool.ctx = NULL;
-//	board_dpc_addentry(& nmeaspool);
+//	VERIFY(board_dpc_addentry(& nmeaspool));
 
 //	static uint8_t rxb [512];
 //	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));

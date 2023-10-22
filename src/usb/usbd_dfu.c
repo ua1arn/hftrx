@@ -103,6 +103,10 @@ static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
 	#define USBD_DFU_XFER_SIZE USBD_DFU_FLASH_XFER_SIZE
 #endif /* WITHISBOOTLOADER */
 
+#if WITHISBOOTLOADER
+	  static dpcobj_t dpc_deffereddetach;
+#endif /* WITHISBOOTLOADER */
+
 typedef USBALIGN_BEGIN struct
 {
   USBALIGN_BEGIN union
@@ -704,9 +708,8 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
 #if WITHISBOOTLOADER
-	  static dpclock_t dpc_deffereddetach;
 
-	  VERIFY(board_dpc(& dpc_deffereddetach, bootloader_deffereddetach, NULL));
+	  board_dpc_call(& dpc_deffereddetach);
 #endif /* WITHISBOOTLOADER */
   }
   else
@@ -1174,6 +1177,9 @@ static USBD_StatusTypeDef  USBD_DFU_Init(USBD_HandleTypeDef *pdev, uint_fast8_t 
       return USBD_FAIL;
     }
   }
+#if WITHISBOOTLOADER
+	dpcobj_initialize(& dpc_deffereddetach, bootloader_deffereddetach, NULL);
+#endif /* WITHISBOOTLOADER */
   return USBD_OK;
 }
 

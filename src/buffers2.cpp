@@ -342,4 +342,11 @@ extern "C" void buffers2_initialize(void)
 {
 }
 
+#else  /* WITHINTEGRATEDDSP */
+
+// stub function
+extern "C" void buffers2_initialize(void)
+{
+}
+
 #endif /* WITHINTEGRATEDDSP */

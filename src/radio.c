@@ -185,7 +185,7 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t bottom);
 
-static dpclock_t dpc_lock;
+static dpcobj_t dpcobj_1stimer;
 static void tuner_eventrestart(void);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
@@ -5400,8 +5400,8 @@ void display2_swrsts22(
 	char b [23];
 
 	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
-		(unsigned) (swr + TUS_SWRMIN) / 100,
-		(unsigned) (swr + TUS_SWRMIN) % 100,
+		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
+		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
 		r);
 	display_at(x, y, b);
@@ -5419,16 +5419,16 @@ static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_
 		(unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + TUS_SWRMIN) / 100,
-		(unsigned) (swr + TUS_SWRMIN) % 100);
+		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
+		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN);
 #else /* SHORTSET8 || SHORTSET7 */
 	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u.%02u\n",
 		title,
 		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + TUS_SWRMIN) / 100,
-		(unsigned) (swr + TUS_SWRMIN) % 100);
+		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
+		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN);
 #endif /* SHORTSET8 || SHORTSET7 */
 
 }
@@ -5677,6 +5677,7 @@ aborted:
 
 #if WITHAUTOTUNER
 
+static dpcobj_t dpcobj_tunertimer;
 static ticker_t ticker_tuner;
 
 /* user-mode function */
@@ -5689,7 +5690,7 @@ static void tuner_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& dpc_lock, dpc_tunertimer, NULL);
+	VERIFY(board_dpc_call(& dpcobj_tunertimer));
 }
 
 /* закончили установку нового состояния тюнера - запускаем новый период таймера */
@@ -6225,7 +6226,7 @@ kbd_scan(uint_fast8_t * key)
 {
 	uint_fast8_t f = 0;
 	uint8_t * buff;
-	switch (takemsgready_user(& buff))
+	switch (takemsgready(& buff))
 	{
 	case MSGT_EMPTY:
 		return 0;
@@ -6238,7 +6239,7 @@ kbd_scan(uint_fast8_t * key)
 	default:
 		break;
 	}
-	releasemsgbuffer_user(buff);
+	releasemsgbuffer(buff);
 	return f;
 }
 
@@ -14073,7 +14074,7 @@ void cat2_parsechar(uint_fast8_t c)
 			//catstatein = CATSTATE_READYCOMMAND;		// команда готова для интерпретации параметров
 
 			uint8_t * buff;
-			if (takemsgbufferfree_low(& buff) != 0)
+			if (takemsgbufferfree(& buff) != 0)
 			{
 				uint_fast8_t i;
 				// check MSGBUFFERSIZE8 valie
@@ -14085,7 +14086,7 @@ void cat2_parsechar(uint_fast8_t c)
 				for (i = 0; i < catpcount; ++ i)
 					buff [9 + i] = catp [i];
 
-				placesemsgbuffer_low(MSGT_CAT, buff);
+				placesemsgbuffer(MSGT_CAT, buff);
 			}
 			catstatein = CATSTATE_WAITCOMMAND1;	/* в user-mode нечего делать - ответ не формируем  */
 		}
@@ -16083,166 +16084,195 @@ static void second_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& dpc_lock, dpc_1stimer, NULL);
+	VERIFY(board_dpc_call(& dpcobj_1stimer));
 }
 
-struct dpclayout
-{
-	uintptr_t func;
-	uintptr_t arg1;
-	uintptr_t lp;	/* lock pointer */
-} ATTRPACKED;
+////////////////////
+/// поддержка отложенного вызова user-mode функций
 
-static void
-poke_uintptr(volatile uint8_t * p, uintptr_t v)
+static LIST_ENTRY dpclistentries;	// list of dpcobj_t - периодичски вызываемые функции
+static LIST_ENTRY dpclistcall;	// list of dpcobj_t = однократно вызываемые функции
+static IRQLSPINLOCK_t dpclistlock;
+
+/* инициализация списка user-mode опросных функций */
+void board_dpc_initialize(void)
 {
-	if (0)
-		;
-#if __LP64__
-	else if (sizeof (uintptr_t) == 8)
-	{
-		p [0] = (v >> 56) & 0xFF;
-		p [1] = (v >> 48) & 0xFF;
-		p [2] = (v >> 40) & 0xFF;
-		p [3] = (v >> 32) & 0xFF;
-		p [4] = (v >> 24) & 0xFF;
-		p [5] = (v >> 16) & 0xFF;
-		p [6] = (v >> 8) & 0xFF;
-		p [7] = (v >> 0) & 0xFF;
-	}
-#endif
-	else if (sizeof (uintptr_t) == 4)
-	{
-		p [0] = (v >> 24) & 0xFF;
-		p [1] = (v >> 16) & 0xFF;
-		p [2] = (v >> 8) & 0xFF;
-		p [3] = (v >> 0) & 0xFF;
-	}
-	else
-	{
-		p [0] = (v >> 8) & 0xFF;
-		p [1] = (v >> 0) & 0xFF;
-	}
+	IRQLSPINLOCK_INITIALIZE(& dpclistlock, DPC_IRQL);
+	InitializeListHead(& dpclistentries);
+	InitializeListHead(& dpclistcall);
 }
 
-static uintptr_t
-peek_uintptr(volatile const uint8_t * p)
-{
-	uintptr_t v = 0;
-
-	if (sizeof (uintptr_t) == 8)
-	{
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-	}
-	else if (sizeof (uintptr_t) == 4)
-	{
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-	}
-	else
-	{
-		v = (v << 8) + * p ++;
-		v = (v << 8) + * p ++;
-	}
-
-	return v;
-}
-
-
-void dpclock_initialize(dpclock_t * lp)
-{
-	IRQLSPINLOCK_INITIALIZE(& lp->lock, DPC_IRQL);
-	lp->flag = 0;
-}
-/*
-void dpclock_enter(dpclock_t * lp)
+static void dpcobj_exit(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(DPC_IRQL, & oldIrql);
-	LCLSPIN_LOCK(& lp->lock);
-
-	LCLSPIN_UNLOCK(& lp->lock);
-	LowerIrql(oldIrql);
-}
-*/
-void dpclock_exit(dpclock_t * lp)
-{
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& lp->lock, & oldIrql);
-	lp->flag = 0;
-	IRQLSPIN_UNLOCK(& lp->lock, oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	dp->flag = 0;
+	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 }
 
 // возврат не-0 если уже занято
-uint_fast8_t dpclock_traylock(dpclock_t * lp)
+static uint_fast8_t dpcobj_traylock(dpcobj_t * dp)
 {
 	uint_fast8_t v;
 
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lp->lock, & oldIrql);
-	v = lp->flag;
-	lp->flag = 1;
-	IRQLSPIN_UNLOCK(& lp->lock, oldIrql);
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	v = dp->flag;
+	dp->flag = 1;
+	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 
 	return v;
 }
 
-static LIST_ENTRY dpclistspool;	// list of dpcentry_t - периодичски вызываемые функции
-static LIST_ENTRY dpclistcall;	// list of dpcentry_t = однократно вызываемые функции
-
-/* добавить точку вызова */
-void board_dpc_addentry(dpcentry_t * de)
+// Запрос отложенного вызова user-mode функций
+/* добавить функцию для периодического вызова */
+uint_fast8_t board_dpc_addentry(dpcobj_t * dp)
 {
-	InsertHeadList(& dpclistcall, & de->item);
+	IRQL_t oldIrql;
+
+	// предотвращение повторного включения в очередь того же запроса
+	if (dpcobj_traylock(dp))
+		return 0;
+
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	InsertHeadList(& dpclistentries, & dp->item);
+	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+
+	return 1;
 }
 
-/* инициализация списка user-mode опросных функций */
-void board_dpc_initialize(void)
+// Запрос отложенного вызова user-mode функций
+/* добавить функцию для однократного вызова */
+uint_fast8_t board_dpc_call(dpcobj_t * dp)
 {
-	InitializeListHead(& dpclistspool);
-	InitializeListHead(& dpclistcall);
+	IRQL_t oldIrql;
+
+	// предотвращение повторного включения в очередь того же запроса
+	if (dpcobj_traylock(dp))
+		return 0;
+
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	InsertHeadList(& dpclistcall, & dp->item);
+	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+
+	return 1;
 }
 
+void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
+{
+	dp->flag = 0;
+	dp->fn = func;
+	dp->ctx = arg;
+}
+
+// user-mode функция обработки списков запросов dpc
 void board_dpc_processing(void)
 {
 	// Выполнение периодического вызова user-mode функций по списку
 	{
+		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		for (t = dpclistspool.Blink; t != & dpclistspool; t = t->Blink)
+		IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+		for (t = dpclistentries.Blink; t != & dpclistentries; t = t->Blink)
 		{
 			ASSERT(t != NULL);
-			dpcentry_t * const p = CONTAINING_RECORD(t, dpcentry_t, item);
-			(* p->fn)(p->ctx);
+			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
+			IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+
+			(* dp->fn)(dp->ctx);
+
+			IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
 		}
+		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 	}
 	// Выполнение однократно вызываемых user-mode функций по списку
 	{
+		IRQL_t oldIrql;
 		PLIST_ENTRY t;
-		for (t = dpclistcall.Blink; t != & dpclistcall; )
+		IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+		while (! IsListEmpty(& dpclistcall))
 		{
-			PLIST_ENTRY tnext = t->Blink;
-			RemoveEntryList(t);
-			t = tnext;
-
+			PLIST_ENTRY t = RemoveTailList(& dpclistcall);
+			IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 			ASSERT(t != NULL);
-			dpcentry_t * const p = CONTAINING_RECORD(t, dpcentry_t, item);
-			(* p->fn)(p->ctx);
+
+			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
+
+			(* dp->fn)(dp->ctx);
+			dpcobj_exit(dp);
+
+			IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
 		}
+		IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
 	}
+}
+
+// TODO: перенести эти функции на выполнение по board_dpc_addentry
+void app_processing(
+	uint_fast8_t inmenu,
+	const FLASHMEM struct menudef * mp
+)
+{
+#if WITHINTEGRATEDDSP
+	audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
+#if WITHUSEAUDIOREC
+	sdcardbgprocess();
+#endif /* WITHUSEAUDIOREC */
+#if WITHUSBHW
+	if (bootloader_withusb())
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
+#if WITHWAVPLAYER || WITHSENDWAV
+	spoolplayfile();
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHLWIP
+	/* LWIP */
+	//usb_polling();     // usb device polling
+	//network_spool();
+	//stmr();            // call software timers
+#endif /* WITHLWIP */
+	display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
+	directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (dimmflagch != 0)
+	{
+		dimmflagch = 0;
+		display2_bgreset();
+		display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
+		updateboard(1, 0);
+	}
+#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
+#if WITHFANTIMER
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (fanpaflagch != 0)
+	{
+		fanpaflagch = 0;
+		updateboard(1, 0);
+	}
+#endif /* WITHFANTIMER */
+#if WITHSLEEPTIMER
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (sleepflagch != 0)
+	{
+		sleepflagch = 0;
+		display2_bgreset();
+		display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
+		updateboard(1, 0);
+	}
+#endif /* WITHSLEEPTIMER */
+#if WITHCAT
+	if (cat_getstateout() == CATSTATEO_SENDREADY)
+	{
+		cat_answer_forming();
+	}
+#endif /* WITHCAT */
 
 }
+
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
 //NOINLINEAT
@@ -16268,65 +16298,11 @@ processmessages(
 	* kbready = 0;
 	* kbch = KBD_CODE_MAX;
 
-	switch (takemsgready_user(& buff))
+	board_dpc_processing();		// обработка отложенного вызова user mode функций
+	app_processing(inmenu, mp);
+	switch (takemsgready(& buff))
 	{
 	case MSGT_EMPTY:
-		board_dpc_processing();		// обработка отложенного вызова user mode функций
-#if WITHINTEGRATEDDSP
-		audioproc_spool_user();
-#endif /* WITHINTEGRATEDDSP */
-#if WITHUSEAUDIOREC
-		sdcardbgprocess();
-#endif /* WITHUSEAUDIOREC */
-#if WITHUSBHW
-		if (bootloader_withusb())
-			board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
-#if WITHWAVPLAYER || WITHSENDWAV
-		spoolplayfile();
-#endif /* WITHWAVPLAYER || WITHSENDWAV */
-#if WITHLWIP
-		/* LWIP */
-		//usb_polling();     // usb device polling
-		//network_spool();
-		//stmr();            // call software timers
-#endif /* WITHLWIP */
-		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
-		directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (dimmflagch != 0)
-		{
-			dimmflagch = 0;
-			display2_bgreset();
-			display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
-			updateboard(1, 0);
-		}
-#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
-#if WITHFANTIMER
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (fanpaflagch != 0)
-		{
-			fanpaflagch = 0;
-			updateboard(1, 0);
-		}
-#endif /* WITHFANTIMER */
-#if WITHSLEEPTIMER
-		// обработать запрос на обновление состояния аппаратуры из user mode программы
-		if (sleepflagch != 0)
-		{
-			sleepflagch = 0;
-			display2_bgreset();
-			display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-			updateboard(1, 0);
-		}
-#endif /* WITHSLEEPTIMER */
-#if WITHCAT
-		if (cat_getstateout() == CATSTATEO_SENDREADY)
-		{
-			cat_answer_forming();
-		}
-#endif /* WITHCAT */
 		return;
 
 	case MSGT_CAT:
@@ -16353,48 +16329,10 @@ processmessages(
 		}
 		break;
 
-	case MSGT_DPC:
-		// Выполнение отложенного вызова user-mode функций
-		{
-			uintptr_t func;
-			void * arg1;
-			dpclock_t * lp;
-
-			ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
-
-			func = (uintptr_t) peek_uintptr(buff + offsetof(struct dpclayout, func));
-			arg1 = (void *) peek_uintptr(buff + offsetof(struct dpclayout, arg1));
-			lp = (dpclock_t *) peek_uintptr(buff + offsetof(struct dpclayout, lp));
-
-			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была возможность самого себя повторно запросить
-			((udpcfn_t) func)(arg1);
-		}
-		break;
-
 	default:
 		break;
 	}
-	releasemsgbuffer_user(buff);
-}
-
-// Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
-{
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpclock_traylock(lp))
-		return 0;
-	uint8_t * buff;
-	ASSERT(MSGBUFFERSIZE8 >= sizeof (struct dpclayout));
-	if (takemsgbufferfree_low(& buff) != 0)
-	{
-		poke_uintptr(buff + offsetof(struct dpclayout, func), (uintptr_t) func);
-		poke_uintptr(buff + offsetof(struct dpclayout, arg1), (uintptr_t) arg);
-		poke_uintptr(buff + offsetof(struct dpclayout, lp), (uintptr_t) lp);
-		placesemsgbuffer_low(MSGT_DPC, buff);
-		return 1;
-	}
-	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
-	return 0;
+	releasemsgbuffer(buff);
 }
 
 #if WITHTX
@@ -16415,6 +16353,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 	return swr10;
 }
+
 #else
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
@@ -19288,10 +19227,13 @@ applowinitialize(void)
 
 	ticker_initialize(& displayticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& displayticker);
+
+	dpcobj_initialize(& dpcobj_1stimer, dpc_1stimer, NULL);
 	ticker_initialize(& ticker_1S, NTICKS(1000), second_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& ticker_1S);
 
 #if WITHAUTOTUNER
+	dpcobj_initialize(& dpcobj_tunertimer, dpc_tunertimer, NULL);
 	ticker_initialize(& ticker_tuner, NTICKS(gtunerdelay), tuner_event, NULL);
 	ticker_add(& ticker_tuner);
 #endif /* WITHAUTOTUNER */
@@ -19327,8 +19269,6 @@ applowinitialize(void)
 #if WITHKEYBOARD
 	kbd_initialize();
 #endif /* WITHKEYBOARD */
-
-	dpclock_initialize(& dpc_lock);
 
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));

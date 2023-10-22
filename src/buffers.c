@@ -762,7 +762,7 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takemsgready_user(uint8_t * * dest)
+uint_fast8_t takemsgready(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 
@@ -785,7 +785,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 
 
 // Освобождение обработанного буфера сообщения
-void releasemsgbuffer_user(uint8_t * dest)
+void releasemsgbuffer(uint8_t * dest)
 {
 	message_t * const p = CONTAINING_RECORD(dest, message_t, data);
 	ASSERT(p->tag2 == p);
@@ -800,7 +800,7 @@ void releasemsgbuffer_user(uint8_t * dest)
 }
 
 // Буфер для формирования сообщения
-size_t takemsgbufferfree_low(uint8_t * * dest)
+size_t takemsgbufferfree(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 
@@ -823,7 +823,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 }
 
 // поместить сообщение в очередь к исполнению
-void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
+void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
 {
 	ASSERT(type != MSGT_EMPTY);
 	message_t * p = CONTAINING_RECORD(dest, message_t, data);

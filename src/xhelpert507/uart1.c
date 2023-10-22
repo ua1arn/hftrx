@@ -353,14 +353,14 @@ static int prseanswer(const uint8_t * p, unsigned sz)
 
 static ticker_t uart1_ticker;
 static ticker_t uart1_pkg_ticker;
-static dpclock_t uart1_dpc_lock;
+static dpcobj_t uart1_dpc_lock;
 
 /* system-mode function */
 static void uart1_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& uart1_dpc_lock, uart1_dpc_spool, NULL);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart1_dpc_lock);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 /* Функционирование USER MODE обработчиков */
@@ -412,7 +412,7 @@ void user_uart1_initialize(void)
 	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
 	ticker_add(& uart1_pkg_ticker);
 
-	dpclock_initialize(& uart1_dpc_lock);
+	dpcobj_initialize(& uart1_dpc_lock, uart1_dpc_spool, NULL);
 	ticker_initialize(& uart1_ticker, NTICKS(PERIODSPOOL), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
 }

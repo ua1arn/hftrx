@@ -31,7 +31,7 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 
 //#define WITHSDHC0HW	1		/* TF CARD */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */

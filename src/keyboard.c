@@ -287,10 +287,10 @@ kbd_spool(void * ctx)
 
 #if ! WITHBBOX
 		uint8_t * buff;
-		if (takemsgbufferfree_low(& buff) != 0)
+		if (takemsgbufferfree(& buff) != 0)
 		{
 			buff [0] = code;
-			placesemsgbuffer_low(MSGT_KEYB, buff);
+			placesemsgbuffer(MSGT_KEYB, buff);
 		}
 #endif /* ! WITHBBOX */
 	}

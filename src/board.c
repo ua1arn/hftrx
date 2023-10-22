@@ -408,6 +408,7 @@ static uint_fast8_t hex2int(uint_fast8_t c)
 	return 0;
 }
 
+static dpcobj_t dpc_ua1ceituner;
 
 static void
 ua1ceituner_send(void *);
@@ -480,8 +481,7 @@ void nmeatuner_parsechar(uint_fast8_t c)
 				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
 				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
-				static dpclock_t dpc_ua1ceituner;
-				VERIFY(board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL));
+				VERIFY(board_dpc_call(& dpc_ua1ceituner));
 
 			}
 		}
@@ -549,6 +549,8 @@ ua1ceituner_send(void * not_used)
 
 void nmeatuner_initialize(void)
 {
+	dpcobj_initialize(& dpc_ua1ceituner, ua1ceituner_send, NULL);
+
 	nmeaparser_state = NMEAST_INITIALIZED;
 
 	HARDWARE_NMEA_INITIALIZE(250000L);

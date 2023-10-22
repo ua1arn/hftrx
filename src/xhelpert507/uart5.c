@@ -259,7 +259,7 @@ static int parsepacket(const uint8_t * p, unsigned sz)
 
 static ticker_t uart5_ticker;
 static ticker_t uart5_pkg_ticker;
-static dpclock_t uart5_dpc_lock;
+static dpcobj_t uart5_dpc_lock;
 
 /* Функционирование USER MODE обработчиков */
 void uart5_spool(void)
@@ -344,14 +344,14 @@ static void uart5_dpc_spool(void * ctx)
 
 static ticker_t uart5_ticker;
 static ticker_t uart5_pkg_ticker;
-static dpclock_t uart5_dpc_lock;
+static dpcobj_t uart5_dpc_lock;
 
 /* system-mode function */
 static void uart5_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& uart5_dpc_lock, uart5_dpc_spool, NULL);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart5_dpc_lock);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 void user_uart5_initialize(void)
@@ -369,7 +369,7 @@ void user_uart5_initialize(void)
 	ticker_initialize(& uart5_pkg_ticker, 1, uart5_timer_pkg_event, NULL);
 	ticker_add(& uart5_pkg_ticker);
 
-	dpclock_initialize(& uart5_dpc_lock);
+	dpcobj_initialize(& uart5_dpc_lock, uart5_dpc_spool, NULL);
 	ticker_initialize(& uart5_ticker, NTICKS(PERIODSPOOL), uart5_timer_event, NULL);
 	ticker_add(& uart5_ticker);
 }
