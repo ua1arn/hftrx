@@ -10192,11 +10192,6 @@ void vm14nand_readdata(unsigned address, uint8_t * p, int len)
 	while (len >= 4)
 	{
 		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-		if (status & 0x1)	// buff_wr_rdy_reg
-		{
-			//PRINTF("W\n");
-			NANDMPORT->BUFFER_DATA = 0x00;
-		}
 		if (status & 0x2)	// buff_rd_rdy_reg
 		{
 			__UNALIGNED_UINT32_WRITE(p, NANDMPORT->BUFFER_DATA);
@@ -10248,12 +10243,6 @@ void vm14nand_writedata(unsigned address, uint8_t * p, int len)
 			p += 4;
 			len -= 4;
 		}
-//		if (status & 0x2)	// buff_rd_rdy_reg
-//		{
-//			__UNALIGNED_UINT32_WRITE(p, NANDMPORT->BUFFER_DATA);
-//			p += 4;
-//			len -= 4;
-//		}
 	}
 	local_delay_ms(100);
 	vm14nand_sendcommand2(0xD0, (1u << 0), 0);	// 0x00: код команды READ MODE, 0x40 - команда read mode
@@ -10294,7 +10283,7 @@ void vm41nandtest(void)
 	static uint8_t buff [2048];
 	memset(buff, 0, sizeof buff);
 	mcom02_nand_probe();
-	//mcom02_nand_select_chip(&mtd_info0, 0);
+	mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_RESET, 0, 0);
 	mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
 	PRINTF("NAND test device ready\n");
 	mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READID, 0x00, 0);
@@ -10317,9 +10306,13 @@ void vm41nandtest(void)
 				break;
 			case 'i':
 				PRINTF("Read IDs\n");
-				vm14nand_readid(0x00);
-				vm14nand_readid(0x20);
-				vm14nand_readstatus();
+//				vm14nand_readid(0x00);
+//				vm14nand_readid(0x20);
+//				vm14nand_readstatus();
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READID, 0x00, 0);
+				printhex(0x00000, nand_priv0.buf, 8);
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READID, ONFI_ID_ADDR, 0);
+				printhex(ONFI_ID_ADDR, nand_priv0.buf, 8);
 				break;
 			case 'n':
 				sector += 1;
@@ -10333,6 +10326,7 @@ void vm41nandtest(void)
 			case 'e':
 				PRINTF("Erase block %u\n", sector);
 				vm14nand_eraseblock(sector);
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, 0x00, sector);
 				break;
 			case 'r':
 				PRINTF("Read sector (WITH ECC) = %u\n", sector);
@@ -10344,6 +10338,11 @@ void vm41nandtest(void)
 				PRINTF("Read sector (NO ECC) = %u\n", sector);
 //				vm14nand_readdata(sector, buff, sizeof buff);
 				mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, 0, sector);
+				printhex(0, buff, sizeof buff);
+				break;
+			case 'L':
+				PRINTF("Read sector (old) = %u\n", sector);
+				vm14nand_readdata(sector, buff, sizeof buff);
 				printhex(0, buff, sizeof buff);
 				break;
 			case 'w':
