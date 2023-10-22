@@ -9053,7 +9053,26 @@ static void mcom02_nand_set_irq_masks(struct mcom02_nand_priv *priv,
 	writel(val, NANDMPORT_BASE + INTR_STS_EN_OFST);
 }
 
-static void mcom02_nand_wait_for_event(struct mcom02_nand_priv *priv,
+static void mcom02_nand_wait_for_event_debug(struct mcom02_nand_priv *priv,
+				       uint32_t event,
+					   const char * file, int line)
+{
+	uint32_t timeout = ARASAN_NAND_POLL_TIMEOUT;
+
+	while (!(readl(NANDMPORT_BASE + INTR_STS_OFST) & event) && timeout) {
+		udelay(1);
+		timeout--;
+	}
+
+	if (!timeout)
+		PRINTF("Event waiting timeout, event=%02x, %s/%d\n", (unsigned) event, file, line);
+
+	writel(event, NANDMPORT_BASE + INTR_STS_OFST);
+}
+
+#define mcom02_nand_wait_for_event(p, e) do { mcom02_nand_wait_for_event_debug((p), (e), __FILE__, __LINE__); } while (0)
+
+static void (mcom02_nand_wait_for_event)(struct mcom02_nand_priv *priv,
 				       uint32_t event)
 {
 	uint32_t timeout = ARASAN_NAND_POLL_TIMEOUT;
@@ -9064,7 +9083,7 @@ static void mcom02_nand_wait_for_event(struct mcom02_nand_priv *priv,
 	}
 
 	if (!timeout)
-		PRINTF("Event waiting timeout, %d\n", (int) event);
+		PRINTF("Event waiting timeout, event=%02x\n", (unsigned) event);
 
 	writel(event, NANDMPORT_BASE + INTR_STS_OFST);
 }
@@ -9257,6 +9276,7 @@ static void mcom02_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int size)
 	priv->rdintrmask = 0;
 }
 
+// CHANGE READ COLUMN (05h-E0h) command
 static void mcom02_nand_set_eccsparecmd(struct mcom02_nand_priv *priv,
 					       uint8_t cmd1, uint8_t cmd2)
 {
@@ -9985,6 +10005,7 @@ static int mcom02_nand_probe(void)
 	struct nand_chip *nand = & nand_chip0;
 	struct mtd_info *mtd;
 	int ret;
+	mtd = & mtd_info0;//nand_to_mtd(nand);
 
 	priv->regs = NANDMPORT;//(void *)devfdt_get_addr(dev);
 	//nand_set_controller_data(nand, priv);
@@ -10007,12 +10028,13 @@ static int mcom02_nand_probe(void)
 
 	priv->rdintrmask = 0;
 
-	mtd_info0.writebufsize = 2048;
-	mtd_info0.writesize = 2048;
-	mtd_info0.erasesize = 2048;
-	mtd_info0.oobsize = 224;
+	priv->pktsize = 4;
 
-	mtd = & mtd_info0;//nand_to_mtd(nand);
+	mtd->writebufsize = 2048;
+	mtd->writesize = 2048;
+	mtd->erasesize = 2048;
+	mtd->oobsize = 224;
+
 //	ret = nand_scan_ident(mtd, 1, NULL);
 //	if (ret)
 //		return ret;
@@ -10195,6 +10217,7 @@ void vm14nand_readdata(unsigned address, uint8_t * p, int len)
 		if (status & 0x2)	// buff_rd_rdy_reg
 		{
 			__UNALIGNED_UINT32_WRITE(p, NANDMPORT->BUFFER_DATA);
+			PRINTF("%08X ", __UNALIGNED_UINT32_READ(p));
 			p += 4;
 			len -= 4;
 		}
@@ -10274,11 +10297,14 @@ void vm14nand_eraseblock(unsigned baddress)
 
 void vm41nandtest(void)
 {
+	int ec;
+	unsigned i;
+
 	CMCTR->GATE_SYS_CTR &= ~(1u << 21);
 	CMCTR->DIV_NFC_CTR = SYSTEM_BUS_CLK / NAND_BUS_FREQ;
 	//setSystemFreq(SYSTEM_BUS_CLK);
 	CMCTR->GATE_SYS_CTR |= (1u << 21);
-	PRINTF("NAND test commands: z, i, n, p, e, r, w\n");
+	PRINTF("NAND test commands: z, i, n, p, e, r, w, L\n");
 	unsigned sector = 0;
 	static uint8_t buff [2048];
 	memset(buff, 0, sizeof buff);
@@ -10302,7 +10328,8 @@ void vm41nandtest(void)
 			{
 			case 'z':
 				PRINTF("Reset\n");
-				vm14nand_reset();
+				//vm14nand_reset();
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_RESET, 0, 0);
 				break;
 			case 'i':
 				PRINTF("Read IDs\n");
@@ -10325,20 +10352,21 @@ void vm41nandtest(void)
 				break;
 			case 'e':
 				PRINTF("Erase block %u\n", sector);
-				vm14nand_eraseblock(sector);
+				//vm14nand_eraseblock(sector);
 				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, 0x00, sector);
 				break;
 			case 'r':
 				PRINTF("Read sector (WITH ECC) = %u\n", sector);
+				memset(buff, 0xDE, sizeof buff);
 //				vm14nand_readdata(sector, buff, sizeof buff);
-				mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, 1, sector);
-				printhex(0, buff, sizeof buff);
-				break;
-			case 'R':
-				PRINTF("Read sector (NO ECC) = %u\n", sector);
-//				vm14nand_readdata(sector, buff, sizeof buff);
-				mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, 0, sector);
-				printhex(0, buff, sizeof buff);
+				if (0 == mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector))
+				{
+					printhex(0, buff, sizeof buff);
+				}
+				else
+				{
+					PRINTF("Read sector (WITH ECC) = %u error\n", sector);
+				}
 				break;
 			case 'L':
 				PRINTF("Read sector (old) = %u\n", sector);
@@ -10348,20 +10376,17 @@ void vm41nandtest(void)
 			case 'w':
 				PRINTF("Write sector (WITH ECC) = %u\n", sector);
 				memset(buff, 0xE5, sizeof buff);
-				buff [0] = sector >> 8;
-				buff [1] = sector;
+				for (i = 0; i < sizeof buff / sizeof buff [0]; i += 32)
+				{
+					buff [i + 0] = sector >> 8;
+					buff [i + 1] = sector;
+				}
 				//memset(b, 0xE5, sizeof b);
 //				vm14nand_writedata(sector, buff, sizeof buff);
-				mcom02_nand_write_page_hwecc(&mtd_info0, &nand_chip0, buff, 1, sector);
-				break;
-			case 'W':
-				PRINTF("Write sector (NO ECC) = %u\n", sector);
-				memset(buff, 0xE5, sizeof buff);
-				buff [0] = sector >> 8;
-				buff [1] = sector;
-				//memset(b, 0xE5, sizeof b);
-//				vm14nand_writedata(sector, buff, sizeof buff);
-				mcom02_nand_write_page_hwecc(&mtd_info0, &nand_chip0, buff, 0, sector);
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, - 1, sector);
+				ec = mcom02_nand_write_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector);
+				ASSERT(ec == 0);
+				PRINTF("Write sector (WITH ECC) = %u done\n", sector);
 				break;
 			default:
 				PRINTF("Undefined command %02X\n", c);
