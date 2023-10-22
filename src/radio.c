@@ -16160,7 +16160,7 @@ peek_uintptr(volatile const uint8_t * p)
 
 void dpclock_initialize(dpclock_t * lp)
 {
-	IRQLSPINLOCK_INITIALIZE(& lp->lock, IRQL_REALTIME);
+	IRQLSPINLOCK_INITIALIZE(& lp->lock, DPC_IRQL);
 	lp->flag = 0;
 }
 /*
@@ -16168,7 +16168,7 @@ void dpclock_enter(dpclock_t * lp)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_REALTIME, & oldIrql);
+	RiseIrql(DPC_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& lp->lock);
 
 	LCLSPIN_UNLOCK(& lp->lock);
@@ -16199,20 +16199,50 @@ uint_fast8_t dpclock_traylock(dpclock_t * lp)
 	return v;
 }
 
-static LIST_ENTRY dpclist;	// list of dpcentry_t
+static LIST_ENTRY dpclistspool;	// list of dpcentry_t - периодичски вызываемые функции
+static LIST_ENTRY dpclistcall;	// list of dpcentry_t = однократно вызываемые функции
 
 /* добавить точку вызова */
 void board_dpc_addentry(dpcentry_t * de)
 {
-	InsertHeadList(& dpclist, & de->item);
+	InsertHeadList(& dpclistcall, & de->item);
 }
 
 /* инициализация списка user-mode опросных функций */
 void board_dpc_initialize(void)
 {
-	InitializeListHead(& dpclist);
+	InitializeListHead(& dpclistspool);
+	InitializeListHead(& dpclistcall);
 }
 
+void board_dpc_processing(void)
+{
+	// Выполнение периодического вызова user-mode функций по списку
+	{
+		PLIST_ENTRY t;
+		for (t = dpclistspool.Blink; t != & dpclistspool; t = t->Blink)
+		{
+			ASSERT(t != NULL);
+			dpcentry_t * const p = CONTAINING_RECORD(t, dpcentry_t, item);
+			(* p->fn)(p->ctx);
+		}
+	}
+	// Выполнение однократно вызываемых user-mode функций по списку
+	{
+		PLIST_ENTRY t;
+		for (t = dpclistcall.Blink; t != & dpclistcall; )
+		{
+			PLIST_ENTRY tnext = t->Blink;
+			RemoveEntryList(t);
+			t = tnext;
+
+			ASSERT(t != NULL);
+			dpcentry_t * const p = CONTAINING_RECORD(t, dpcentry_t, item);
+			(* p->fn)(p->ctx);
+		}
+	}
+
+}
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
 //NOINLINEAT
@@ -16241,16 +16271,7 @@ processmessages(
 	switch (takemsgready_user(& buff))
 	{
 	case MSGT_EMPTY:
-		// Выполнение периодического вызова user-mode функций по списку
-		{
-			PLIST_ENTRY t;
-			for (t = dpclist.Blink; t != & dpclist; t = t->Blink)
-			{
-				ASSERT(t != NULL);
-				dpcentry_t * const p = CONTAINING_RECORD(t, dpcentry_t, item);
-				(* p->fn)(p->ctx);
-			}
-		}
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
 #if WITHINTEGRATEDDSP
 		audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */

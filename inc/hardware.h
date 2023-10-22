@@ -906,23 +906,8 @@ void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обра
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
 
-typedef struct dpclock_tag dpclock_t;
-
-typedef void (* udpcfn_t)(void *);
-uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
 
 #include "mslist.h"
-
-
-typedef struct dpcentry_tag
-{
-	LIST_ENTRY item;
-	void (* fn)(void * ctx);
-	void * ctx;
-} dpcentry_t;
-
-void board_dpc_initialize(void);	/* инициализация списка user-mode опросных функций */
-void board_dpc_addentry(dpcentry_t * de);	/* добавить точку вызова */
 
 enum ticker_mode
 {

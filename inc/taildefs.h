@@ -209,16 +209,32 @@ void LowerIrql(IRQL_t newIRQL);
 
 #endif  /* ! LINUX_SUBSYSTEM */
 
-typedef struct dpclock_tag
-{
-	IRQLSPINLOCK_t lock;
-	uint8_t flag;
-} dpclock_t;
 
-void dpclock_initialize(dpclock_t * lp);
-void dpclock_enter(dpclock_t * lp);
-void dpclock_exit(dpclock_t * lp);
-uint_fast8_t dpclock_tray(dpclock_t * lp);
+	#define DPC_IRQL	IRQL_REALTIME
+
+	typedef struct dpclock_tag
+	{
+		IRQLSPINLOCK_t lock;
+		uint8_t flag;
+	} dpclock_t;
+
+	void dpclock_initialize(dpclock_t * lp);
+	void dpclock_enter(dpclock_t * lp);
+	void dpclock_exit(dpclock_t * lp);
+	uint_fast8_t dpclock_tray(dpclock_t * lp);
+
+	typedef void (* udpcfn_t)(void *);
+	uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
+
+	typedef struct dpcentry_tag
+	{
+		LIST_ENTRY item;
+		void (* fn)(void * ctx);
+		void * ctx;
+	} dpcentry_t;
+
+	void board_dpc_initialize(void);	/* инициализация списка user-mode опросных функций */
+	void board_dpc_addentry(dpcentry_t * de);	/* добавить точку вызова */
 
 #if LINUX_SUBSYSTEM
 	#define RAMFUNC_NONILINE //__attribute__((__section__(".itcm"), noinline))
