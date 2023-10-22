@@ -1154,7 +1154,7 @@ static void buffers_savetonull192rts(voice192rts_t * p)
 
 #endif /* WITHRTS192 && WITHUSBHW && WITHUSBUAC */
 
-#if WITHRTS96 && WITHUSBHW && WITHUSBUAC
+#if WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
 static uint_fast8_t isrts96(void)
 {
@@ -1208,8 +1208,9 @@ static uint_fast8_t isrts96(void)
 	return 0;
 }
 
-#endif /* WITHRTS96 && WITHUSBHW && WITHUSBUAC */
+#endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 // Сохранить буфер сэмплов для передачи в компьютер
 static RAMFUNC void
 buffers_savetouacin(uacin48_t * p)
@@ -1224,6 +1225,7 @@ buffers_savetouacin(uacin48_t * p)
 
 	refreshDMA_uacin48();		// если DMA  остановлено - начать обмен
 }
+#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
 #endif /* WITHUSBUAC */
 
