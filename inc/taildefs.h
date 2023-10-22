@@ -222,6 +222,7 @@ void LowerIrql(IRQL_t newIRQL);
 	} dpcobj_t;
 
 	void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg);
+	void board_dpc_processing(void);
 	uint_fast8_t board_dpc_addentry(dpcobj_t * dp);	// Запрос периодического вызова user-mode функциии (0 - уже помещён в список)
 	uint_fast8_t board_dpc_call(dpcobj_t * dp); // Запрос отложенного вызова user-mode функции (0 - ранее запрошенный вызов еще не выполнился)
 
