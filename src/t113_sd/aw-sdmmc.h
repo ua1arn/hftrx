@@ -76,6 +76,7 @@ enum {
 enum {
 	IO_CMD_SEND_OP_COND = 5,
 	/* Class 9 */
+	IO_RW_DIRECT = 52,
 	IO_RW_EXTENDED = 53,
 };
 

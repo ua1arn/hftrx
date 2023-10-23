@@ -251,6 +251,45 @@ static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	return 1;
 }
 
+
+static unsigned sdio_cccr_read(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr)
+{
+	// 5.2 IO_RW_DIRECT Command (CMD52)
+	const unsigned wr = 0;
+	const unsigned function = 0;	// 0 - common I/O area (CIA).
+	struct sdhci_cmd_t cmd = { 0 };
+
+	cmd.cmdidx = IO_RW_DIRECT;
+	cmd.cmdarg = (wr << 31) | (function << 28) | (addr << 9);
+	cmd.resptype = MMC_RSP_R5;
+
+	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+	{
+		TP();
+		return 0;
+	}
+	return cmd.response[0] & 0xFF;
+}
+
+static unsigned sdio_cccr_write(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr, unsigned data)
+{
+	// 5.2 IO_RW_DIRECT Command (CMD52)
+	const unsigned wr = 1;
+	const unsigned function = 0;	// 0 - common I/O area (CIA).
+	struct sdhci_cmd_t cmd = { 0 };
+
+	cmd.cmdidx = IO_RW_DIRECT;
+	cmd.cmdarg = (wr << 31) | (function << 28) | (addr << 9) | (data << 0);
+	cmd.resptype = MMC_RSP_R5;
+
+	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+	{
+		TP();
+		return 0;
+	}
+	return cmd.response[0] & 0xFF;
+}
+
 // https://yannik520.github.io/sdio.html
 //
 // An SDIO aware host shall send CMD5 arg=0 as part of the initialization
@@ -301,45 +340,12 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	card->ocr = cmd.response[0];
 	card->tran_speed = 25 * 1000 * 1000;
 
+	sdio_cccr_write(hci, card, 6, 1u << 3); // I/O I/O Abort: Bus reset
+
 	PRINTF("SDIO Memory Present=%d\n", (int) ((card->ocr >> 27) & 0x01));
 	PRINTF("SDIO Number of I/O Functions=%d\n", (int) ((card->ocr >> 28) & 0x07));
 
 	return 1;
-}
-
-static unsigned sdio_read_cccr(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr)
-{
-	// 5.3 IO_RW_EXTENDED Command (CMD53)
-	const unsigned wr = 0;
-	const unsigned count = 1;
-	const unsigned function = 0;	// 0 - common I/O area (CIA).
-	struct sdhci_cmd_t cmd = { 0 };
-
-	cmd.cmdidx = IO_RW_EXTENDED;
-	cmd.cmdarg = (wr << 31) | (function << 28) | (addr << 9) | (count << 0);
-	cmd.resptype = MMC_RSP_R5;
-
-//	uint8_t buf [4];
-//	struct sdhci_data_t dat = { 0 };
-//	dat.buf = buf;
-//	dat.flag = MMC_DATA_READ;
-//	dat.blksz = 4;
-//	dat.blkcnt = 1;
-//	cmd.resptype = MMC_RSP_R1;
-//
-//	if(!sdhci_t113_transfer(hci, &cmd, &dat))
-//	{
-//		TP();
-//		return 0;
-//	}
-//	return buf [0];
-
-	if(!sdhci_t113_transfer(hci, &cmd, NULL))
-	{
-		TP();
-		return 0;
-	}
-	return cmd.response[0];
 }
 
 static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
@@ -702,10 +708,6 @@ int sdcard_init(void)
 	else if (card->version & SDIO_VERSION_SDIO)
 	{
 		PRINTF("Set SDIO address\n");
-		PRINTF("SDIO CCCR[0]=%08X\n", sdio_read_cccr(hci, card, 0));
-		PRINTF("SDIO CCCR[1]=%08X\n", sdio_read_cccr(hci, card, 1));
-		PRINTF("SDIO CCCR[7]=%08X\n", sdio_read_cccr(hci, card, 7));
-		PRINTF("SDIO CCCR[8]=%08X\n", sdio_read_cccr(hci, card, 8));
 		card->tran_speed = 25 * 1000 * 1000;
 	}
 	else
@@ -869,10 +871,10 @@ int sdcard_init(void)
 	}
 	else
 	{
-		if ((card->version & SD_VERSION_SD) || (card->version & SDIO_VERSION_SDIO))
+		if (card->version & SD_VERSION_SD)
 		{
 			uint32_t width;
-			PRINTF("Processing SD/SDIO bus width parameters, card->version=%08X\n", (unsigned) card->version);
+			PRINTF("Processing SD bus width parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
 				;
 #if WITHSDHCHW8BIT
@@ -913,6 +915,51 @@ int sdcard_init(void)
 #endif /* WITHSDHCHW4BIT */
 			else
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
+
+		}
+		else if (card->version & SDIO_VERSION_SDIO)
+		{
+			uint32_t width;
+			PRINTF("Processing SDIO bus width parameters, card->version=%08X\n", (unsigned) card->version);
+			PRINTF("SDIO CCCR[0]=%02X\n", sdio_cccr_read(hci, card, 0));
+			PRINTF("SDIO CCCR[1]=%02X\n", sdio_cccr_read(hci, card, 1));
+			PRINTF("SDIO CCCR[7]=%02X\n", sdio_cccr_read(hci, card, 7));
+			PRINTF("SDIO CCCR[8]=%02X\n", sdio_cccr_read(hci, card, 8));
+			if (0)
+				;
+#if WITHSDHCHW8BIT
+			else if ((hci->width & MMC_BUS_WIDTH_8))
+				width = 3;
+#endif
+#if WITHSDHCHW4BIT
+			else if ((hci->width & MMC_BUS_WIDTH_4))
+				width = 2;
+#endif /* WITHSDHCHW4BIT */
+			else
+				width = 0;
+
+			sdio_cccr_write(hci, card, 7, width);
+
+			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
+
+			if (0)
+				;
+#if WITHSDHCHW8BIT
+			else if((hci->width & MMC_BUS_WIDTH_8))
+				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
+#endif /* WITHSDHCHW8BIT */
+#if WITHSDHCHW4BIT
+			else if((hci->width & MMC_BUS_WIDTH_4))
+				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_4);
+#endif /* WITHSDHCHW4BIT */
+			else
+				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_1);
+
+
+			PRINTF("SDIO CCCR[0]=%02X\n", sdio_cccr_read(hci, card, 0));
+			PRINTF("SDIO CCCR[1]=%02X\n", sdio_cccr_read(hci, card, 1));
+			PRINTF("SDIO CCCR[7]=%02X\n", sdio_cccr_read(hci, card, 7));
+			PRINTF("SDIO CCCR[8]=%02X\n", sdio_cccr_read(hci, card, 8));
 		}
 		else if(card->version & MMC_VERSION_MMC)
 		{
