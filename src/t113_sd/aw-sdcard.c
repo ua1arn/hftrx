@@ -301,10 +301,45 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	card->ocr = cmd.response[0];
 	card->tran_speed = 25 * 1000 * 1000;
 
-	PRINTF("SDIO Memory Present=%d\n", (card->ocr >> 27) & 0x01);
-	PRINTF("SDIO Number of I/O Functions=%d\n", (card->ocr >> 28) & 0x07);
+	PRINTF("SDIO Memory Present=%d\n", (int) ((card->ocr >> 27) & 0x01));
+	PRINTF("SDIO Number of I/O Functions=%d\n", (int) ((card->ocr >> 28) & 0x07));
 
 	return 1;
+}
+
+static unsigned sdio_read_cccr(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr)
+{
+	// 5.3 IO_RW_EXTENDED Command (CMD53)
+	const unsigned wr = 0;
+	const unsigned count = 1;
+	const unsigned function = 0;	// 0 - common I/O area (CIA).
+	struct sdhci_cmd_t cmd = { 0 };
+
+	cmd.cmdidx = IO_RW_EXTENDED;
+	cmd.cmdarg = (wr << 31) | (function << 28) | (addr << 9) | (count << 0);
+	cmd.resptype = MMC_RSP_R5;
+
+//	uint8_t buf [4];
+//	struct sdhci_data_t dat = { 0 };
+//	dat.buf = buf;
+//	dat.flag = MMC_DATA_READ;
+//	dat.blksz = 4;
+//	dat.blkcnt = 1;
+//	cmd.resptype = MMC_RSP_R1;
+//
+//	if(!sdhci_t113_transfer(hci, &cmd, &dat))
+//	{
+//		TP();
+//		return 0;
+//	}
+//	return buf [0];
+
+	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+	{
+		TP();
+		return 0;
+	}
+	return cmd.response[0];
 }
 
 static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
@@ -667,6 +702,10 @@ int sdcard_init(void)
 	else if (card->version & SDIO_VERSION_SDIO)
 	{
 		PRINTF("Set SDIO address\n");
+		PRINTF("SDIO CCCR[0]=%08X\n", sdio_read_cccr(hci, card, 0));
+		PRINTF("SDIO CCCR[1]=%08X\n", sdio_read_cccr(hci, card, 1));
+		PRINTF("SDIO CCCR[7]=%08X\n", sdio_read_cccr(hci, card, 7));
+		PRINTF("SDIO CCCR[8]=%08X\n", sdio_read_cccr(hci, card, 8));
 		card->tran_speed = 25 * 1000 * 1000;
 	}
 	else
