@@ -9115,7 +9115,7 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 	uint32_t addrcycles, prog;
 	uint32_t *bufptr = (uint32_t *)&priv->buf[0];
 
-	PRINTF("mcom02_nand_cmdfunc: cmd=%04X\n", cmd);
+	//PRINTF("mcom02_nand_cmdfunc: cmd=%04X\n", cmd);
 	priv->bufshift = 0;
 	priv->curr_cmd = cmd;
 
@@ -9141,7 +9141,6 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 		column += mtd->writesize;
 	case NAND_CMD_READ0:
 	case NAND_CMD_READ1:
-		PRINTF("read command prepare\n");
 		addrcycles = priv->raddr_cycles + priv->caddr_cycles;
 		mcom02_nand_prepare_cmd(priv, NAND_CMD_READ0,
 					NAND_CMD_READSTART,
@@ -10097,205 +10096,6 @@ static int mcom02_nand_probe(void)
 //		PRINTF("Failed to initialize %s, error %d\n", dev->name, ret);
 //}
 
-static void vm14nand_command(unsigned command, unsigned nbumaddr)
-{
-	NANDMPORT->COMMAND =
-			(command & 0xFFFF) |    // код команды
-			(nbumaddr << 28) |
-			(1u << 23) |	// page sie = 2048
-			0;
-}
-
-static void vm14nand_sendcommand(unsigned command, unsigned programm, unsigned nbumaddr)
-{
-	NANDMPORT->INTERRUPT_STATUS = 0xFF;          // для сброса необходимо записать 1 в соответствующее поле (0xFF тоже сработает)
-	NANDMPORT->INTERRUPT_STATUS_EN = 0xFF;      // разрешаем статус прерывания все
-	vm14nand_command(command, nbumaddr);
-	NANDMPORT->PROGRAM = programm;                 // команда
-	while ((NANDMPORT->INTERRUPT_STATUS & 0x4) == 0)  // ждем пока установится статус прерывания Transfer Complete
-	{
-//		PRINTF("vm14nand_sendcommand: NANDMPORT->INTERRUPT_STATU=%08x\n", (unsigned) NANDMPORT->INTERRUPT_STATUS);
-//		if (NANDMPORT->INTERRUPT_STATUS & 0x1)
-//			NANDMPORT->BUFFER_DATA = 0x00;
-//		if (NANDMPORT->INTERRUPT_STATUS & 0x2)
-//			PRINTF("DATA=%08X\n", (unsigned) NANDMPORT->BUFFER_DATA);
-	}
-	//TP();
-
-	while ((NANDMPORT->INTERRUPT_STATUS & 0x4) != 0)  // сбрасываем статус прерывания Transfer Complete
-	{
-		NANDMPORT->INTERRUPT_STATUS = 0x4;          // для сброса необходимо записать 1 в соответствующее поле (0xFF тоже сработает)
-	}
-	// после этого команда reset выполнена (статус прерывания сброшен в 0)
-	//TP();
-
-}
-
-// READ
-static void vm14nand_sendcommand2(unsigned command, unsigned programm, unsigned nbumaddr)
-{
-	NANDMPORT->INTERRUPT_STATUS = 0xFF;          // для сброса необходимо записать 1 в соответствующее поле (0xFF тоже сработает)
-	NANDMPORT->INTERRUPT_STATUS_EN = 0xFF;      // разрешаем статус прерывания все
-	vm14nand_command(command, nbumaddr);
-	NANDMPORT->PROGRAM = programm;                 // команда
-//	TP();
-//	while (NANDMPORT->INTERRUPT_STATUS != (1u << 1))  // buff_rd_rdy_reg
-//		;
-//	TP();
-//
-}
-
-void vm14nand_reset(void)
-{
-	// RESET
-	vm14nand_sendcommand(0xFF, 1u << 8, 0);	// 0xFF: код команды reset, 0x100 - команда reset
-}
-
-void vm14nand_readid(unsigned address)
-{
-	NANDMPORT->MEMADDR1 = address;
-	NANDMPORT->MEMADDR2 = 0;
-	// READ ID
-	vm14nand_sendcommand(0x90, 1u << 6, 1);	// 0x90: код команды readID, 0x40 - команда read id
-	// id1=0xA927 id2=0
-	PRINTF("vm14nand_readid(%04X): ID1=%08x, ID2=%08x\n", address, (unsigned) NANDMPORT->ID1, (unsigned) NANDMPORT->ID2);
-}
-
-unsigned vm14nand_readstatus(void)
-{
-	// READ STATUS
-	vm14nand_sendcommand(0x70, 1u << 3, 0);
-	PRINTF("vm14nand_readstatus: FLASH_STATUS=%08x\n", (unsigned) NANDMPORT->FLASH_STATUS);
-
-	return NANDMPORT->FLASH_STATUS;
-
-}
-
-void vm14nand_readdata(unsigned address, uint8_t * p, int len)
-{
-	unsigned long columnaddr = 0;
-	unsigned long blockaddr = 0;	// 0..2047
-	unsigned long pageaddr = 0;		// 0..31
-
-	NANDMPORT->MEMADDR1 = 0;
-	NANDMPORT->MEMADDR2 = 0;
-	// PAGE READ
-	TP();
-	vm14nand_sendcommand2(0x00, (1u << 0), 5);	// 0x00: код команды READ MODE, 0x40 - команда read mode
-	local_delay_ms(100);
-//	{
-//		TP();
-//		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-//		PRINTF("Wait NANDMPORT->INTERRUPT_STATU=%08x\n", status);
-//
-//	}
-	vm14nand_sendcommand2(0x30, (1u << 0), 0);	// 0x00: код команды READ MODE, 0x40 - команда read mode
-	local_delay_ms(100);
-//	{
-//		TP();
-//		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-//		PRINTF("Wait NANDMPORT->INTERRUPT_STATU=%08x\n", status);
-//
-//	}
-	unsigned i = 0;
-//	for (;;)
-//	{
-//		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-//		//local_delay_ms(100);
-//		//PRINTF("Wait NANDMPORT->INTERRUPT_STATU=%08x\n", status);
-//		if (status & 0x2)	// buff_rd_rdy_reg
-//			PRINTF("[%4u] %08X", i ++, (unsigned) NANDMPORT->BUFFER_DATA);
-//		if (status & 0x1)	// buff_wr_rdy_reg
-//			NANDMPORT->BUFFER_DATA = 0x00;
-//	}
-	TP();
-	//vm14nand_sendcommand(0x30, 1u << 0, 0);	// 0x00: код команды READ MODE, 0x40 - команда read mode
-	//TP();
-	// READ
-	//vm14nand_sendcommand2(0x30, 1u << 0);	// 0x30: код команды READ, 0x01 - команда read
-	// id1=0xA927 id2=0
-	//PRINTF("vm14nand_readid(%04X): ID1=%08x, ID2=%08x\n", address, (unsigned) NANDMPORT->ID1, (unsigned) NANDMPORT->ID2);
-
-	while (len >= 4)
-	{
-		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-		if (status & 0x2)	// buff_rd_rdy_reg
-		{
-			__UNALIGNED_UINT32_WRITE(p, NANDMPORT->BUFFER_DATA);
-			PRINTF("%08X ", __UNALIGNED_UINT32_READ(p));
-			p += 4;
-			len -= 4;
-		}
-	}
-}
-
-void vm14nand_writedata(unsigned address, uint8_t * p, int len)
-{
-	unsigned long columnaddr = 0;
-	unsigned long blockaddr = 0;	// 0..2047
-	unsigned long pageaddr = 0;		// 0..31
-
-	NANDMPORT->MEMADDR1 = address;
-	NANDMPORT->MEMADDR2 = 0;
-	// PAGE READ
-	TP();
-	vm14nand_sendcommand2(0x80, (1u << 4), 5);	// program page
-	local_delay_ms(100);
-	unsigned i = 0;
-//	for (;;)
-//	{
-//		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-//		//local_delay_ms(100);
-//		//PRINTF("Wait NANDMPORT->INTERRUPT_STATU=%08x\n", status);
-//		if (status & 0x2)	// buff_rd_rdy_reg
-//			PRINTF("[%4u] %08X", i ++, (unsigned) NANDMPORT->BUFFER_DATA);
-//		if (status & 0x1)	// buff_wr_rdy_reg
-//			NANDMPORT->BUFFER_DATA = 0x00;
-//	}
-	TP();
-	//vm14nand_sendcommand(0x30, 1u << 0, 0);	// 0x00: код команды READ MODE, 0x40 - команда read mode
-	//TP();
-	// READ
-	//vm14nand_sendcommand2(0x30, 1u << 0);	// 0x30: код команды READ, 0x01 - команда read
-	// id1=0xA927 id2=0
-	//PRINTF("vm14nand_readid(%04X): ID1=%08x, ID2=%08x\n", address, (unsigned) NANDMPORT->ID1, (unsigned) NANDMPORT->ID2);
-	int n = 0;
-	while (len >= 4)
-	{
-		//local_delay_ms(1);
-		const unsigned status = (unsigned) NANDMPORT->INTERRUPT_STATUS;
-		//PRINTF("Wait NANDMPORT->INTERRUPT_STATU=%08x (%u)\n", status, n ++);
-		if (status & 0x1)	// buff_wr_rdy_reg
-		{
-			NANDMPORT->BUFFER_DATA = __UNALIGNED_UINT32_READ(p);
-			p += 4;
-			len -= 4;
-		}
-	}
-	local_delay_ms(100);
-	vm14nand_sendcommand2(0xD0, (1u << 0), 0);	// 0x00: код команды READ MODE, 0x40 - команда read mode
-	local_delay_ms(100);
-}
-
-
-void vm14nand_eraseblock(unsigned baddress)
-{
-//	unsigned long columnaddr = 0;
-//	unsigned long blockaddr = 0;	// 0..2047
-//	unsigned long pageaddr = 0;		// 0..31
-
-	NANDMPORT->MEMADDR1 = baddress;
-	NANDMPORT->MEMADDR2 = 0;
-	// PAGE ERASE
-	TP();
-	vm14nand_sendcommand2(0x60, (1u << 2), 3);
-	local_delay_ms(100);
-	vm14nand_sendcommand2(0xD0, (1u << 2), 0);
-	local_delay_ms(100);
-
-//	vm14nand_sendcommand2(0xD060, (1u << 2), 3);
-//	local_delay_ms(100);
-}
 // MT29F32G08AFACBWP-ITZ
 #define SYSTEM_BUS_CLK 144
 #define NAND_BUS_FREQ  96
@@ -10326,7 +10126,8 @@ void vm41nandtest(void)
 	for (;;)
 	{
 		char c;
-		board_dpc_processing();
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
 		if (dbg_getchar(& c))
 		{
 			switch (c)
@@ -10358,33 +10159,26 @@ void vm41nandtest(void)
 				break;
 			case 'e':
 				PRINTF("Erase block %u\n", sector);
-				//vm14nand_eraseblock(sector);
-				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, 0x00, sector);
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, 0, sector);
+				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
 				break;
 			case 'r':
 				PRINTF("Read sector (WITH ECC) = %u\n", sector);
 				memset(buff, 0xDE, sizeof buff);
-				//mcom02_nand_set_eccsparecmd(&nand_priv0, 0x00, 0x30);
 				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READ0, 0, sector);
 				mcom02_nand_read_buf(&mtd_info0, buff, sizeof buff);
-				printhex(0, buff, sizeof buff);
-				break;
-				//				printhex(ONFI_ID_ADDR, nand_priv0.buf, 8);
+				printhex(0, buff, sizeof buff / 4);
+//				printhex(ONFI_ID_ADDR, nand_priv0.buf, 8);
 //				break;
 //				vm14nand_readdata(sector, buff, sizeof buff);
-				if (0 == mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector))
-				{
-					printhex(0, buff, sizeof buff);
-				}
-				else
-				{
-					PRINTF("Read sector (WITH ECC) = %u error\n", sector);
-				}
-				break;
-			case 'L':
-				PRINTF("Read sector (old) = %u\n", sector);
-				vm14nand_readdata(sector, buff, sizeof buff);
-				printhex(0, buff, sizeof buff);
+//				if (0 == mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector))
+//				{
+//					printhex(0, buff, sizeof buff);
+//				}
+//				else
+//				{
+//					PRINTF("Read sector (WITH ECC) = %u error\n", sector);
+//				}
 				break;
 			case 'w':
 				PRINTF("Write sector (WITH ECC) = %u\n", sector);
@@ -10393,13 +10187,14 @@ void vm41nandtest(void)
 				{
 					buff [i + 0] = sector >> 8;
 					buff [i + 1] = sector;
+					buff [i + 2] = 'G';
+					buff [i + 3] = 'Z';
 				}
-				//memset(b, 0xE5, sizeof b);
-//				vm14nand_writedata(sector, buff, sizeof buff);
-				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, - 1, sector);
-				ec = mcom02_nand_write_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector);
+//				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, 0, sector);
+//				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
+				ec = mcom02_nand_write_page_hwecc(&mtd_info0, &nand_chip0, buff, 0, sector);
 				ASSERT(ec == 0);
-				PRINTF("Write sector (WITH ECC) = %u done\n", sector);
+				//PRINTF("Write sector (WITH ECC) = %u done\n", sector);
 				break;
 			default:
 				PRINTF("Undefined command %02X\n", c);
