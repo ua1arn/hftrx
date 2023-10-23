@@ -8948,7 +8948,7 @@ struct mcom02_nand_priv {
 	//struct udevice *dev;
 	//struct nand_chip nand;
 
-	void /* __iomem */ *regs;
+	//void /* __iomem */ *regs;
 
 	uint8_t buf[TEMP_BUF_SIZE];
 
@@ -9115,6 +9115,7 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 	uint32_t addrcycles, prog;
 	uint32_t *bufptr = (uint32_t *)&priv->buf[0];
 
+	PRINTF("mcom02_nand_cmdfunc: cmd=%04X\n", cmd);
 	priv->bufshift = 0;
 	priv->curr_cmd = cmd;
 
@@ -9140,6 +9141,7 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 		column += mtd->writesize;
 	case NAND_CMD_READ0:
 	case NAND_CMD_READ1:
+		PRINTF("read command prepare\n");
 		addrcycles = priv->raddr_cycles + priv->caddr_cycles;
 		mcom02_nand_prepare_cmd(priv, NAND_CMD_READ0,
 					NAND_CMD_READSTART,
@@ -9161,6 +9163,7 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 				     sizeof(struct nand_onfi_params));
 		break;
 	case NAND_CMD_READID:
+		PRINTF("readID command prepare\n");
 		mcom02_nand_prepare_cmd(priv, cmd, 0, 0, 1);
 		mcom02_nand_setpagecoladdr(priv, page_addr, column);
 		if (column == ONFI_ID_ADDR)
@@ -9207,6 +9210,7 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 		if (column == ONFI_ID_ADDR)
 			bufptr[0] = ((bufptr[0] >> 8) | (bufptr[1] << 24));
 	}
+	//printhex(0, bufptr, 32);
 }
 
 static void mcom02_nand_select_chip(struct mtd_info *mtd, int chip)
@@ -9280,6 +9284,7 @@ static void mcom02_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int size)
 static void mcom02_nand_set_eccsparecmd(struct mcom02_nand_priv *priv,
 					       uint8_t cmd1, uint8_t cmd2)
 {
+	PRINTF("mcom02_nand_set_eccsparecmd: cmd1=%02X, cmd2=%02x\n", cmd1, cmd2);
 	writel(cmd1 | (cmd2 << CMD2_SHIFT) |
 	      (priv->caddr_cycles << ADDR_CYCLES_SHIFT) | SPARE_ADDR_CYCLES,
 	       NANDMPORT_BASE + ECC_SPR_CMD_OFST);
@@ -10007,7 +10012,7 @@ static int mcom02_nand_probe(void)
 	int ret;
 	mtd = & mtd_info0;//nand_to_mtd(nand);
 
-	priv->regs = NANDMPORT;//(void *)devfdt_get_addr(dev);
+	//priv->regs = NANDMPORT;//(void *)devfdt_get_addr(dev);
 	//nand_set_controller_data(nand, priv);
 	//nand->priv = priv;
 
@@ -10330,6 +10335,7 @@ void vm41nandtest(void)
 				PRINTF("Reset\n");
 				//vm14nand_reset();
 				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_RESET, 0, 0);
+				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
 				break;
 			case 'i':
 				PRINTF("Read IDs\n");
@@ -10358,6 +10364,13 @@ void vm41nandtest(void)
 			case 'r':
 				PRINTF("Read sector (WITH ECC) = %u\n", sector);
 				memset(buff, 0xDE, sizeof buff);
+				//mcom02_nand_set_eccsparecmd(&nand_priv0, 0x00, 0x30);
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READ0, 0, sector);
+				mcom02_nand_read_buf(&mtd_info0, buff, sizeof buff);
+				printhex(0, buff, sizeof buff);
+				break;
+				//				printhex(ONFI_ID_ADDR, nand_priv0.buf, 8);
+//				break;
 //				vm14nand_readdata(sector, buff, sizeof buff);
 				if (0 == mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector))
 				{
