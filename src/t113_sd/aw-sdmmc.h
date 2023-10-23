@@ -74,6 +74,10 @@ enum {
 };
 
 enum {
+	IO_CMD_SEND_OP_COND = 5,
+};
+
+enum {
 	MMC_RSP_PRESENT		= (1 << 0),
 	MMC_RSP_136			= (1 << 1),
 	MMC_RSP_CRC			= (1 << 2),
