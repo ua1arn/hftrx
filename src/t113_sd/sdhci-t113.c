@@ -255,8 +255,8 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 
 	sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);	// NO DMA, всегда чтение процессором
 
-	write32(sdhci->base + SD_CMDR, cmdval | cmd->cmdidx);
-	while (read32(sdhci->base + SD_CMDR)&SDXC_START)
+	sdhci->instance->SMHC_CMD = cmdval | cmd->cmdidx;
+	while (sdhci->instance->SMHC_CMD & SDXC_START)
 		 ;
 
 //	timeout = ktime_add_ms(ktime_get(),1);
