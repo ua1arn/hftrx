@@ -10163,25 +10163,14 @@ void vm41nandtest(void)
 				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
 				break;
 			case 'r':
-				PRINTF("Read sector (WITH ECC) = %u\n", sector);
-				memset(buff, 0xDE, sizeof buff);
+				PRINTF("Read sector %u\n", sector);
+				//memset(buff, 0xDE, sizeof buff);
 				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READ0, 0, sector);
 				mcom02_nand_read_buf(&mtd_info0, buff, sizeof buff);
 				printhex(0, buff, sizeof buff / 4);
-//				printhex(ONFI_ID_ADDR, nand_priv0.buf, 8);
-//				break;
-//				vm14nand_readdata(sector, buff, sizeof buff);
-//				if (0 == mcom02_nand_read_page_hwecc(&mtd_info0, &nand_chip0, buff, - 1, sector))
-//				{
-//					printhex(0, buff, sizeof buff);
-//				}
-//				else
-//				{
-//					PRINTF("Read sector (WITH ECC) = %u error\n", sector);
-//				}
 				break;
 			case 'w':
-				PRINTF("Write sector (WITH ECC) = %u\n", sector);
+				PRINTF("Write sector %u\n", sector);
 				memset(buff, 0xE5, sizeof buff);
 				for (i = 0; i < sizeof buff / sizeof buff [0]; i += 32)
 				{
@@ -10189,12 +10178,35 @@ void vm41nandtest(void)
 					buff [i + 1] = sector;
 					buff [i + 2] = 'G';
 					buff [i + 3] = 'Z';
+					buff [i + 4] = ' ';
+					buff [i + 5] = 'T';
+					buff [i + 6] = 'e';
+					buff [i + 7] = 's';
+					buff [i + 8] = 't';
 				}
-//				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_ERASE1, 0, sector);
-//				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
-				ec = mcom02_nand_write_page_hwecc(&mtd_info0, &nand_chip0, buff, 0, sector);
-				ASSERT(ec == 0);
-				//PRINTF("Write sector (WITH ECC) = %u done\n", sector);
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_SEQIN, 0, sector);
+				mcom02_nand_write_buf(&mtd_info0, buff, sizeof buff);
+				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
+				break;
+			case 'W':
+				PRINTF("Write sector %u (data set 2)\n", sector);
+				memset(buff, 0xFF, sizeof buff);
+				for (i = 0; i < sizeof buff / sizeof buff [0]; i += 32)
+				{
+					buff [i + 0] = sector >> 8;
+					buff [i + 1] = sector;
+					buff [i + 2] = 'G';
+					buff [i + 3] = 'Z';
+					buff [i + 4] = ' ';
+					buff [i + 5] = 'v';
+					buff [i + 6] = 'e';
+					buff [i + 7] = 'i';
+					buff [i + 8] = 'f';
+					buff [i + 8] = 'y';
+				}
+				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_SEQIN, 0, sector);
+				mcom02_nand_write_buf(&mtd_info0, buff, sizeof buff);
+				mcom02_nand_device_ready(&mtd_info0, &nand_chip0);
 				break;
 			default:
 				PRINTF("Undefined command %02X\n", c);
