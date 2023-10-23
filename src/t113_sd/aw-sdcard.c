@@ -299,6 +299,10 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 	card->version = SDIO_VERSION_SDIO;
 	card->ocr = cmd.response[0];
+	card->tran_speed = 25 * 1000 * 1000;
+
+	PRINTF("SDIO Memory Present=%d\n", (card->ocr >> 27) & 0x01);
+	PRINTF("SDIO Number of I/O Functions=%d\n", (card->ocr >> 28) & 0x07);
 
 	return 1;
 }
@@ -660,13 +664,19 @@ int sdcard_init(void)
 		card->csd[2] = cmd.response[2];
 		card->csd[3] = cmd.response[3];
 	}
+	else if (card->version & SDIO_VERSION_SDIO)
+	{
+		PRINTF("Set SDIO address\n");
+		card->tran_speed = 25 * 1000 * 1000;
+	}
 	else
 	{
-		cmd.cmdidx = MMC_ALL_SEND_CID;
+		cmd.cmdidx = MMC_ALL_SEND_CID;	//CID not supported by SDIO
 		cmd.cmdarg = 0;
 		cmd.resptype = MMC_RSP_R2;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
 			return 0;
+
 		card->cid[0] = cmd.response[0];
 		card->cid[1] = cmd.response[1];
 		card->cid[2] = cmd.response[2];
@@ -727,20 +737,24 @@ int sdcard_init(void)
 		};
 	}
 
-	unit = tran_speed_unit[(card->csd[0] & 0x7)];
-	time = tran_speed_time[((card->csd[0] >> 3) & 0xf)];
-	card->tran_speed = time * unit;
-	card->dsr_imp = UNSTUFF_BITS(card->csd, 76, 1);
+	if (!(card->version & SDIO_VERSION_SDIO))
+	{
+		// CID&CSD not supported by SDIO
+		unit = tran_speed_unit[(card->csd[0] & 0x7)];
+		time = tran_speed_time[((card->csd[0] >> 3) & 0xf)];
+		card->tran_speed = time * unit;
+		card->dsr_imp = UNSTUFF_BITS(card->csd, 76, 1);
 
-	card->read_bl_len = 1 << UNSTUFF_BITS(card->csd, 80, 4);
-	if(card->version & SD_VERSION_SD)
-		card->write_bl_len = card->read_bl_len;
-	else
-		card->write_bl_len = 1 << ((card->csd[3] >> 22) & 0xf);
-	if(card->read_bl_len > 512)
-		card->read_bl_len = 512;
-	if(card->write_bl_len > 512)
-		card->write_bl_len = 512;
+		card->read_bl_len = 1 << UNSTUFF_BITS(card->csd, 80, 4);
+		if(card->version & SD_VERSION_SD)
+			card->write_bl_len = card->read_bl_len;
+		else
+			card->write_bl_len = 1 << ((card->csd[3] >> 22) & 0xf);
+		if(card->read_bl_len > 512)
+			card->read_bl_len = 512;
+		if(card->write_bl_len > 512)
+			card->write_bl_len = 512;
+	}
 
 	if((card->version & MMC_VERSION_MMC) && (card->version >= MMC_VERSION_4))
 	{
@@ -816,10 +830,10 @@ int sdcard_init(void)
 	}
 	else
 	{
-		if(card->version & SD_VERSION_SD)
+		if ((card->version & SD_VERSION_SD) || (card->version & SDIO_VERSION_SDIO))
 		{
 			uint32_t width;
-			//PRINTF("Processing SD parameters, card->version=%08X\n", (unsigned) card->version);
+			PRINTF("Processing SD/SDIO bus width parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
 				;
 #if WITHSDHCHW8BIT
@@ -864,7 +878,7 @@ int sdcard_init(void)
 		else if(card->version & MMC_VERSION_MMC)
 		{
 			uint32_t width;
-			//PRINTF("Processing MMC parameters, card->version=%08X\n", (unsigned) card->version);
+			//PRINTF("Processing MMC bus width parameters, card->version=%08X\n", (unsigned) card->version);
 
 			/*
 			 * https://linux.codingbelief.com/zh/storage/flash_memory/emmc/emmc_commands.html
