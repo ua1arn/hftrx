@@ -290,6 +290,35 @@ static unsigned sdio_cccr_write(struct sdhci_t * hci, struct sdcard_t * card, un
 	return cmd.response[0] & 0xFF;
 }
 
+
+static unsigned sdio_cccr_readblock(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr, uint8_t * buf, unsigned size)
+{
+	// 5.3 IO_RW_EXTENDED Command (CMD53)
+	const unsigned wr = 0;
+	const unsigned function = 0;	// 0 - common I/O area (CIA).
+	const unsigned blksize = (size == 512) ? 0 : size;
+
+	struct sdhci_cmd_t cmd = { 0 };
+	struct sdhci_data_t dat = { 0 };
+
+	cmd.cmdidx = IO_RW_EXTENDED;
+	cmd.cmdarg = (wr << 31) | (function << 28) | (addr << 9) | (blksize << 0);
+	cmd.resptype = MMC_RSP_R5;
+
+	//cmd.resptype = MMC_RSP_R1;
+	dat.buf = buf;
+	dat.flag = MMC_DATA_READ;
+	dat.blksz = size;
+	dat.blkcnt = 1;
+
+	if(!sdhci_t113_transfer(hci, &cmd, &dat))
+	{
+		TP();
+		return 0;
+	}
+	return cmd.response[0] & 0xFF;
+}
+
 // https://yannik520.github.io/sdio.html
 //
 // An SDIO aware host shall send CMD5 arg=0 as part of the initialization
@@ -929,7 +958,7 @@ int sdcard_init(void)
 				;
 #if WITHSDHCHW8BIT
 			else if ((hci->width & MMC_BUS_WIDTH_8))
-				width = 3;
+				width = 1u << 2;	// S8B in CCCR[7]
 #endif
 #if WITHSDHCHW4BIT
 			else if ((hci->width & MMC_BUS_WIDTH_4))
