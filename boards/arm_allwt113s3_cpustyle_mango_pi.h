@@ -398,12 +398,12 @@
 	// SMHC1: SDC1 - SDIO
 
 	// Additional lines to module TL8189FQB2 (Realtek RTL8189FTV based) :
-	// PG10 - WL_WAKE_AP 	- pin 13
-	// PG12 - WL_REG_ON		- pin 12 (tied to +3.3)
-	// PG13 - AP_WAKE_BT 	- pin 06
-	// PG14 - BT_WAKE_AP	- pin 07
-	// PG15 - BT_EN			- pin 34 (tied to +3.3)
-	// PG11	- LPO			- pin24 (tied to +3.3) (not connected to CPU)
+	// PG10 - WL_WAKE_AP 	- pin 13 WL Wake-up host (GPIOB2) - to host
+	// PG12 - WL_REG_ON		- pin 12 (tied to +3.3) Power key (L=OFF, H=ON)
+	// PG13 - AP_WAKE_BT 	- pin 06 Host wake (GPIOB5) - from host
+	// PG14 - BT_WAKE_AP	- pin 07 WL Wake-up (GPIOB2) - to host
+	// PG15 - BT_EN			- pin 34 (tied to +3.3) - from host
+	// PG11	- LPO			- pin 24 (tied to +3.3) (not connected to CPU)
 
 	#define	SMHCHARD_IX 1	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_PTR SMHC1	/* 0 - SMHC0, 1: SMHC1... */

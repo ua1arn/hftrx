@@ -251,6 +251,30 @@ static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	return 1;
 }
 
+static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
+{
+	struct sdhci_cmd_t cmd = { 0 };
+	int retries = 100;
+
+	if (!go_idle_state(hci))
+	{
+		TP();
+		return 0;
+	}
+	cmd.cmdidx = 0x05;
+	cmd.cmdarg = 0;
+	cmd.resptype = MMC_RSP_R3;
+ 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+	{
+		TP();
+		return 0;
+	}
+
+	printhex32(0, cmd.response, sizeof cmd.response);
+
+	return 1;
+}
+
 static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
 	struct sdhci_cmd_t cmd = { 0 };
@@ -287,7 +311,7 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 	if(retries <= 0)
 	{
-		PRINTF("mmc_send_op_cond: no valid response\n");
+		//PRINTF("mmc_send_op_cond: no valid response\n");
 		return 0;
 	}
 
@@ -580,6 +604,9 @@ int sdcard_init(void)
 	{
 		if(!mmc_send_op_cond(hci, card))
 		{
+			if (!sdio_send_op_cond(hci, card))
+				return 0;
+			PRINTF("SDIO device detected\n");
 			return 0;
 		}
 	}
