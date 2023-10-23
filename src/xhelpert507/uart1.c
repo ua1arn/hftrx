@@ -353,18 +353,19 @@ static int prseanswer(const uint8_t * p, unsigned sz)
 
 static ticker_t uart1_ticker;
 static ticker_t uart1_pkg_ticker;
-static dpcobj_t uart1_dpc_lock;
+static dpcobj_t uart1_dpc_timed;
 
 /* system-mode function */
 static void uart1_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart1_dpc_lock);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart1_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
+static dpcobj_t uart1_dpc_entry;
 /* Функционирование USER MODE обработчиков */
-void uart1_spool(void)
+static void uart1_spool(void * ctx)
 {
 	rxlist_t * p;
 	uint_fast8_t f;
@@ -412,10 +413,12 @@ void user_uart1_initialize(void)
 	ticker_initialize(& uart1_pkg_ticker, 1, uart1_timer_pkg_event, NULL);
 	ticker_add(& uart1_pkg_ticker);
 
-	dpcobj_initialize(& uart1_dpc_lock, uart1_dpc_spool, NULL);
+	dpcobj_initialize(& uart1_dpc_timed, uart1_dpc_spool, NULL);
 	ticker_initialize(& uart1_ticker, NTICKS(PERIODSPOOL), uart1_timer_event, NULL);
 	ticker_add(& uart1_ticker);
+
+	dpcobj_initialize(& uart1_dpc_entry, uart1_spool, NULL);
+	board_dpc_addentry(& uart1_dpc_entry);
 }
 
 #endif /* WITHCTRLBOARDT507 */
-

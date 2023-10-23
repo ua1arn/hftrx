@@ -41,14 +41,6 @@ void ctlboardt507_mainloop(void)
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
 
-		/* Функционирование USER MODE обработчиков */
-		uart0_spool();
-		uart1_spool();
-		uart2_spool();
-		uart3_spool();
-		uart4_spool();
-		uart5_spool();
-
 		/* Отладочные функции */
 		if (kbready)
 			PRINTF("bkbch=%02x\n", kbch);

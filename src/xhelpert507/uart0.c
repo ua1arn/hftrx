@@ -115,14 +115,14 @@ static void uart0_dpc_spool(void * ctx)
 }
 
 static ticker_t uart0_ticker;
-static dpcobj_t uart0_dpc_lock;
+static dpcobj_t uart0_dpc_timed;
 
 /* system-mode function */
 static void uart0_timer_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc_call(& uart0_dpc_lock);	// Запрос отложенногог выполнения USER-MODE функции
+	board_dpc_call(& uart0_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
 }
 
 static int state;	// состояния разбора (соответствует номеру байта в принятом пакете).
@@ -136,8 +136,9 @@ static double convert(uint8_t low, uint8_t high, double a, int b) {
     return (uint16_t) (high * 256 + low) * b / a;
 }
 
+static dpcobj_t uart0_dpc_entry;
 /* Функционирование USER MODE обработчиков */
-void uart0_spool(void)
+static void uart0_spool(void * ctx)
 {
 	uint_fast8_t c;
 	uint_fast8_t f;
@@ -230,9 +231,12 @@ void user_uart0_initialize(void)
 	hardware_uart0_enablerx(1);
 	hardware_uart0_enabletx(0);
 
-	dpcobj_initialize(& uart0_dpc_lock, uart0_dpc_spool, NULL);
+	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
 	ticker_initialize(& uart0_ticker, NTICKS(PERIODSPOOL), uart0_timer_event, NULL);
 	ticker_add(& uart0_ticker);
+
+	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);
+	board_dpc_addentry(& uart0_dpc_entry);
 }
 
 #endif /* WITHCTRLBOARDT507 */

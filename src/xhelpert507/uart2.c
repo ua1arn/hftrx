@@ -133,19 +133,6 @@ static void uartX_write_crc8(const uint8_t * buff, size_t n)
 	ASSERT(crc == 0);
 }
 
-
-void user_uart2_initialize(void)
-{
-	static uint8_t txb [512];
-	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
-
-	hardware_uart2_initialize(0, 38400, 8, 0, 0);
-	hardware_uart2_set_speed(38400);
-	hardware_uart2_enablerx(0);
-	hardware_uart2_enabletx(0);
-}
-
-
 // Сформировать int8 в передаваемом пакете
 static unsigned mbuff_uint8(uint8_t * b, uint_fast8_t v)
 {
@@ -282,11 +269,25 @@ void xbsetregEXTF(const double * pv)
 
 	uartX_write_crc8(b, n);
 }
+//
+//static dpcobj_t uart2_dpc_entry;
+///* Функционирование USER MODE обработчиков */
+//static void uart2_spool(void * ctx)
+//{
+//}
 
-/* Функционирование USER MODE обработчиков */
-void uart2_spool(void)
+void user_uart2_initialize(void)
 {
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+
+	hardware_uart2_initialize(0, 38400, 8, 0, 0);
+	hardware_uart2_set_speed(38400);
+	hardware_uart2_enablerx(0);
+	hardware_uart2_enabletx(0);
+
+//	dpcobj_initialize(& uart2_dpc_entry, uart2_spool, NULL);
+//	board_dpc_addentry(& uart2_dpc_entry);
 }
 
 #endif /* WITHCTRLBOARDT507 */
-

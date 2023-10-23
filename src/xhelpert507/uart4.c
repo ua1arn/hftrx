@@ -831,8 +831,9 @@ static void answerbinsgroup(void)
     nmea_send(state, len);
 }
 
+static dpcobj_t uart4_dpc_entry;
 /* Функционирование USER MODE обработчиков */
-void uart4_spool(void)
+static void uart4_spool(void * ctx)
 {
 	size_t len;
 	uint_fast8_t c;
@@ -916,6 +917,9 @@ void user_uart4_initialize(void)
 	nmeaX_puts_impl(msg, ARRAY_SIZE(msg));
 
 #endif /* ! (WITHDEBUG && WITHDEBUG_UART4) */
+
+	dpcobj_initialize(& uart4_dpc_entry, uart4_spool, NULL);
+	board_dpc_addentry(& uart4_dpc_entry);
 }
 
 #endif /* WITHCTRLBOARDT507 */
