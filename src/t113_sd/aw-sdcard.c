@@ -254,7 +254,7 @@ static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 static unsigned sdio_cccr_read(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr)
 {
-	// 5.2 IO_RW_DIRECT Command (CMD52)
+	// 5.1 IO_RW_DIRECT Command (CMD52)
 	const unsigned wr = 0;
 	const unsigned function = 0;	// 0 - common I/O area (CIA).
 	struct sdhci_cmd_t cmd = { 0 };
@@ -273,7 +273,7 @@ static unsigned sdio_cccr_read(struct sdhci_t * hci, struct sdcard_t * card, uns
 
 static unsigned sdio_cccr_write(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr, unsigned data)
 {
-	// 5.2 IO_RW_DIRECT Command (CMD52)
+	// 5.1 IO_RW_DIRECT Command (CMD52)
 	const unsigned wr = 1;
 	const unsigned function = 0;	// 0 - common I/O area (CIA).
 	struct sdhci_cmd_t cmd = { 0 };
@@ -293,16 +293,19 @@ static unsigned sdio_cccr_write(struct sdhci_t * hci, struct sdcard_t * card, un
 
 static unsigned sdio_cccr_readblock(struct sdhci_t * hci, struct sdcard_t * card, unsigned addr, uint8_t * buf, unsigned size)
 {
+	size = 1;
 	// 5.3 IO_RW_EXTENDED Command (CMD53)
 	const unsigned wr = 0;
+	const unsigned blockmode = 0;
+	const unsigned opcode = 1;	// 1 - Multi byte R/W to incrementing address, 0 - for FIFO access
 	const unsigned function = 0;	// 0 - common I/O area (CIA).
-	const unsigned blksize = (size == 512) ? 0 : size;
+	const unsigned blksize = (size >= 512) ? 0 : size;
 
 	struct sdhci_cmd_t cmd = { 0 };
 	struct sdhci_data_t dat = { 0 };
 
 	cmd.cmdidx = IO_RW_EXTENDED;
-	cmd.cmdarg = (wr << 31) | (function << 28) | (addr << 9) | (blksize << 0);
+	cmd.cmdarg = (wr << 31) | (function << 28) | (blockmode << 27) | (opcode << 26) | (addr << 9) | (blksize << 0);
 	cmd.resptype = MMC_RSP_R5;
 
 	//cmd.resptype = MMC_RSP_R1;
@@ -312,10 +315,12 @@ static unsigned sdio_cccr_readblock(struct sdhci_t * hci, struct sdcard_t * card
 	dat.blkcnt = 1;
 
 	if(!sdhci_t113_transfer(hci, &cmd, &dat))
+	//if(!sdhci_t113_transfer(hci, &cmd, NULL))
 	{
 		TP();
 		return 0;
 	}
+	printhex32(0, cmd.response, sizeof cmd.response);
 	return cmd.response[0] & 0xFF;
 }
 
@@ -954,6 +959,11 @@ int sdcard_init(void)
 			PRINTF("SDIO CCCR[1]=%02X\n", sdio_cccr_read(hci, card, 1));
 			PRINTF("SDIO CCCR[7]=%02X\n", sdio_cccr_read(hci, card, 7));
 			PRINTF("SDIO CCCR[8]=%02X\n", sdio_cccr_read(hci, card, 8));
+
+			uint8_t cccr [8] = { 1,2,3,4,5,6,7,8 };
+			sdio_cccr_readblock(hci, card, 0, cccr, ARRAY_SIZE(cccr));
+			printhex(0, cccr, ARRAY_SIZE(cccr));
+
 			if (0)
 				;
 #if WITHSDHCHW8BIT
