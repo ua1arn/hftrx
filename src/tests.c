@@ -9115,7 +9115,6 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 	uint32_t addrcycles, prog;
 	uint32_t *bufptr = (uint32_t *)&priv->buf[0];
 
-	//PRINTF("mcom02_nand_cmdfunc: cmd=%04X\n", cmd);
 	priv->bufshift = 0;
 	priv->curr_cmd = cmd;
 
@@ -9162,7 +9161,6 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 				     sizeof(struct nand_onfi_params));
 		break;
 	case NAND_CMD_READID:
-		PRINTF("readID command prepare\n");
 		mcom02_nand_prepare_cmd(priv, cmd, 0, 0, 1);
 		mcom02_nand_setpagecoladdr(priv, page_addr, column);
 		if (column == ONFI_ID_ADDR)
@@ -9209,7 +9207,6 @@ static void mcom02_nand_cmdfunc(struct mtd_info *mtd, unsigned int cmd,
 		if (column == ONFI_ID_ADDR)
 			bufptr[0] = ((bufptr[0] >> 8) | (bufptr[1] << 24));
 	}
-	//printhex(0, bufptr, 32);
 }
 
 static void mcom02_nand_select_chip(struct mtd_info *mtd, int chip)
@@ -10167,22 +10164,14 @@ void vm41nandtest(void)
 				//memset(buff, 0xDE, sizeof buff);
 				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_READ0, 0, sector);
 				mcom02_nand_read_buf(&mtd_info0, buff, sizeof buff);
-				printhex(0, buff, sizeof buff / 4);
+				printhex(0, buff, sizeof buff / 1);
 				break;
 			case 'w':
 				PRINTF("Write sector %u\n", sector);
 				memset(buff, 0xE5, sizeof buff);
 				for (i = 0; i < sizeof buff / sizeof buff [0]; i += 32)
 				{
-					buff [i + 0] = sector >> 8;
-					buff [i + 1] = sector;
-					buff [i + 2] = 'G';
-					buff [i + 3] = 'Z';
-					buff [i + 4] = ' ';
-					buff [i + 5] = 'T';
-					buff [i + 6] = 'e';
-					buff [i + 7] = 's';
-					buff [i + 8] = 't';
+					local_snprintf_P((char *) buff + i, 32, "s=%u o=%04x ", sector, (unsigned) (buff + i + 8));
 				}
 				mcom02_nand_cmdfunc(&mtd_info0, NAND_CMD_SEQIN, 0, sector);
 				mcom02_nand_write_buf(&mtd_info0, buff, sizeof buff);
