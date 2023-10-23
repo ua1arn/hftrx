@@ -378,7 +378,7 @@ void user_uart5_ontxchar(void * ctx);
 	// SD CARF
 	#define USERFIRSTSBLOCK 0
 
-	// HelerBoard T505 ports:
+	// HelerBoard T507 ports:
 	// SMHC0: SDC0 - TF CARD
 	// SMHC1: SDC1 - SDIO
 	// SMHC2: SDC2 - eMMC
@@ -464,7 +464,7 @@ void user_uart5_ontxchar(void * ctx);
 	// eMMC
 	#define USERFIRSTSBLOCK 0
 
-	// HelerBoard T505 ports:
+	// HelerBoard T507 ports:
 	// SMHC0: SDC0 - TF CARD
 	// SMHC1: SDC1 - SDIO
 	// SMHC2: SDC2 - eMMC

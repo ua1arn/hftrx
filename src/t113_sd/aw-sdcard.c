@@ -251,6 +251,13 @@ static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	return 1;
 }
 
+// https://yannik520.github.io/sdio.html
+//
+// An SDIO aware host shall send CMD5 arg=0 as part of the initialization
+// sequence after either Power On or a CMD52 with write to I/O Reset.
+// Sending CMD5 arg=0 that has not been preceded by one of these two reset conditions
+// shall not result int either the host or card entering the initialization sequence.
+
 static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
 	struct sdhci_cmd_t cmd = { 0 };
@@ -266,11 +273,32 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 	cmd.resptype = MMC_RSP_R3;
  	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 	{
-		TP();
+		PRINTF("sdhci_t113_transfer error\n");
 		return 0;
 	}
 
+	do {
+		// Get IO OCR
+		cmd.cmdidx = 0x05;
+		cmd.cmdarg = 0x00FC0000;//hci->isspi ? 0 : (card->ocr & OCR_VOLTAGE_MASK) | (card->ocr & OCR_ACCESS_MODE);
+		//cmd.cmdarg |= OCR_HCS;
+		cmd.resptype = MMC_RSP_R3;
+	 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+			PRINTF("sdhci_t113_transfer error\n");
+			return 0;
+		}
+	} while (!(cmd.response[0] & OCR_BUSY) && retries--);
+
+	if(retries <= 0)
+	{
+		//PRINTF("sdio_send_op_cond: no valid response\n");
+		return 0;
+	}
 	printhex32(0, cmd.response, sizeof cmd.response);
+
+	card->version = SDIO_VERSION_SDIO;
+	card->ocr = cmd.response[1];
 
 	return 1;
 }
@@ -607,7 +635,6 @@ int sdcard_init(void)
 			if (!sdio_send_op_cond(hci, card))
 				return 0;
 			PRINTF("SDIO device detected\n");
-			return 0;
 		}
 	}
 
