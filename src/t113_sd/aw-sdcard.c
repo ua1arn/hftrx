@@ -268,9 +268,9 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		TP();
 		return 0;
 	}
-	cmd.cmdidx = 0x05;
+	cmd.cmdidx = 0x05;	// CMD5
 	cmd.cmdarg = 0;
-	cmd.resptype = MMC_RSP_R3;
+	cmd.resptype = MMC_RSP_R4;
  	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 	{
 		PRINTF("sdhci_t113_transfer error\n");
@@ -279,10 +279,10 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 
 	do {
 		// Get IO OCR
-		cmd.cmdidx = 0x05;
+		cmd.cmdidx = 0x05;	// CMD5
 		cmd.cmdarg = 0x00FC0000;//hci->isspi ? 0 : (card->ocr & OCR_VOLTAGE_MASK) | (card->ocr & OCR_ACCESS_MODE);
 		//cmd.cmdarg |= OCR_HCS;
-		cmd.resptype = MMC_RSP_R3;
+		cmd.resptype = MMC_RSP_R4;
 	 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
 		{
 			PRINTF("sdhci_t113_transfer error\n");
@@ -295,10 +295,10 @@ static int sdio_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		//PRINTF("sdio_send_op_cond: no valid response\n");
 		return 0;
 	}
-	printhex32(0, cmd.response, sizeof cmd.response);
+	//printhex32(0, cmd.response, sizeof cmd.response);
 
 	card->version = SDIO_VERSION_SDIO;
-	card->ocr = cmd.response[1];
+	card->ocr = cmd.response[0];
 
 	return 1;
 }
