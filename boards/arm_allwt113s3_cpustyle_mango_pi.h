@@ -97,8 +97,14 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHSDHC0HW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
+
+//	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
+//	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	#define WITHSDHC1HW	1		/* SDIO */
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
@@ -382,6 +388,55 @@
 	/* parameter on not zero for powering SD CARD */
 	#define HARDWARE_SDIOPOWER_SET(on) do { \
 	} while (0)
+
+#elif WITHSDHCHW && WITHSDHC1HW
+	// SDIO
+	#define USERFIRSTSBLOCK 0
+
+	// MangoPI T113-s3 ports:
+	// SMHC0: SDC0 - TF CARD
+	// SMHC1: SDC1 - SDIO
+
+	// Additional lines to module TL8189FQB2 (Realtek RTL8189FTV based) :
+	// PG10 - WL_WAKE_AP 	- pin 13
+	// PG12 - WL_REG_ON		- pin 12 (tied to +3.3)
+	// PG13 - AP_WAKE_BT 	- pin 06
+	// PG14 - BT_WAKE_AP	- pin 07
+	// PG15 - BT_EN			- pin 34 (tied to +3.3)
+	// PG11	- LPO			- pin24 (tied to +3.3) (not connected to CPU)
+
+	#define	SMHCHARD_IX 1	/* 0 - SMHC0, 1: SMHC1... */
+	#define	SMHCHARD_PTR SMHC1	/* 0 - SMHC0, 1: SMHC1... */
+	#define	SMHCHARD_BASE SMHC1_BASE	/* 0 - SMHC0, 1: SMHC1... */
+	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC1_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
+	#define SMHCHARD_FREQ (allwnrt113_get_smhc1_freq())
+
+	#define HARDWARE_SDIO_INITIALIZE() do { \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2);	/* PG1 - SDIO_CMD	*/ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2);	/* PG0 - SDIO_CK	*/ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2);	/* PG2 - SDIO_D0	*/ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2);	/* PG3 - SDIO_D1	*/ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2);	/* PG4 - SDIO_D2	*/ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2);	/* PG5 - SDIO_D3	*/ \
+	} while (0)
+	/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
+	#define HARDWARE_SDIO_HANGOFF()	do { \
+	} while (0)
+
+	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
+	} while (0)
+
+
+	#define HARDWARE_SDIOSENSE_CD() 1 /* == 0: no disk. получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_WP() 0 /* != 0: write protected получить состояние датчика CARD WRITE PROTECT */
+
+	/* если питание SD CARD управляется прямо с процессора */
+	#define HARDWARE_SDIOPOWER_INITIALIZE()	do { \
+		} while (0)
+	/* parameter on not zero for powering SD CARD */
+	#define HARDWARE_SDIOPOWER_SET(on) do { \
+	} while (0)
+
 
 #endif /* WITHSDHCHW && WITHSDHC0HW */
 

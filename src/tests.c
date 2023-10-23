@@ -3984,9 +3984,10 @@ static void diskio_test(void)
 		static int testdataval;
 		int i;
 
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
+
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4115,6 +4116,9 @@ static void diskio_test(void)
 						#if WITHUSBHW
 								board_usbh_polling();     // usb device polling
 						#endif /* WITHUSBHW */
+						/* Обеспечение работы USER MODE DPC */
+						uint_fast8_t kbch, kbready;
+						processmessages(& kbch, & kbready, 0, NULL);
 						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
@@ -4147,6 +4151,10 @@ static void diskio_test(void)
 					char c = 0;
 					for (;;)
 					{
+						/* Обеспечение работы USER MODE DPC */
+						uint_fast8_t kbch, kbready;
+						processmessages(& kbch, & kbready, 0, NULL);
+
 						if (dbg_getchar(& c))
 						{
 								break;
@@ -4158,9 +4166,9 @@ static void diskio_test(void)
 
 						for (sector = 0; sector < nsect; )
 						{
-							#if WITHUSBHW
-									board_usbh_polling();     // usb device polling
-							#endif /* WITHUSBHW */
+							/* Обеспечение работы USER MODE DPC */
+							uint_fast8_t kbch, kbready;
+							processmessages(& kbch, & kbready, 0, NULL);
 							// проверка прерывания работы с клавиатуры
 							char c;
 							if (dbg_getchar(& c))
@@ -4213,9 +4221,9 @@ static void fatfs_filesystest(int speedtest)
 
 	for (;;)
 	{
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -11319,6 +11327,9 @@ void hightests(void)
 
 		for (;0;)
 		{
+			/* Обеспечение работы USER MODE DPC */
+			uint_fast8_t kbch, kbready;
+			processmessages(& kbch, & kbready, 0, NULL);
 			char c;
 			if (dbg_getchar(& c))
 			{
