@@ -38,32 +38,38 @@ HEX_EEPROM_FLAGS += --set-section-flags=.eeprom="alloc,load"
 HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
 
 
-## Objects explicitly added by the user
-LINKONLYOBJECTS = 
+PRJROOT = ../..
 
-SRCDIR = ../../src
-SRC =
+## Objects that must be built in order to link
+SRCDIR = $(PRJROOT)/src
+CSRC +=
 ASRC +=
-UINCDIR += ../.. ../../inc
+UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 ULIBDIR +=
 ULIBS += 
+
+SRCDIRS += $(PRJROOT)/src
 
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-#SRC_EXCLUDES += ../../tools/rbf2c.c
-SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
+CSRC += $(call rwildcard, $(SRCDIRS), *.c)
+CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
+
 VPATH = $(SRCDIR)
 
-OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
+OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 
 CPFLAGS = $(CFLAGS) $(LDFLAGS)
 
+## Objects explicitly added by the user
+LINKONLYOBJECTS = 
+
 ## Build
-all: $(OBJS) $(TARGET) tc1_atmega32_8.hex tc1_atmega32_8.eep size
+all: $(OBJS) $(TARGET) tc1_atmega644_10.hex tc1_atmega644_10.eep size
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -73,7 +79,6 @@ $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
-##Link
 $(TARGET): $(OBJS)
 	 $(CC) $(LDFLAGS) $(OBJS) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
 
@@ -88,18 +93,21 @@ $(TARGET): $(OBJS)
 
 size: ${TARGET}
 	$(SIZE) --format=sysv --radix=16 ${TARGET}
-#	$(SIZE) -C --mcu=${MCU} ${TARGET}
+	#$(SIZE) -C --mcu=${MCU} ${TARGET}
 
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJS) tc1_atmega32_8.elf ./*.d tc1_atmega32_8.hex tc1_atmega32_8.eep
+	-rm -rf $(OBJS) tc1_atmega644_10.elf ./*.d tc1_atmega644_10.hex tc1_atmega644_10.eep
 	-rm -fR $(OBJDIR)
-	-rm -f $(SRC:.c=.c.bak)
-	-rm -f $(SRC:.c=.lst)
+	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
+	-rm -f $(CSRC:.c=.c.bak)
+	-rm -f $(CSRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
-
+	
 # 
 # Include the dependency files, should be the last of the makefile
 #
