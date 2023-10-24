@@ -5775,14 +5775,14 @@ static void fillrelaxedsign(uint8_t * tsign)
 	ASSERT(sizeof nvramsign == 8);
 
 	memset(tsign, 0xe5, 8);
-	tsign [0] = (uint8_t) (sizeof (struct nvmap) >> 24);
-	tsign [1] = (uint8_t) (sizeof (struct nvmap) >> 16);
-	tsign [2] = (uint8_t) (sizeof (struct nvmap) >> 8);
-	tsign [3] = (uint8_t) (sizeof (struct nvmap) >> 0);
-	tsign [4] = (uint8_t) (~ sizeof (struct nvmap) >> 24);
-	tsign [5] = (uint8_t) (~ sizeof (struct nvmap) >> 16);
-	tsign [6] = (uint8_t) (~ sizeof (struct nvmap) >> 8);
-	tsign [7] = (uint8_t) (~ sizeof (struct nvmap) >> 0);
+	tsign [0] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 24);
+	tsign [1] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 16);
+	tsign [2] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 8);
+	tsign [3] = (uint8_t) ((uint32_t) sizeof (struct nvmap) >> 0);
+	tsign [4] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 24);
+	tsign [5] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 16);
+	tsign [6] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 8);
+	tsign [7] = (uint8_t) ~ ((uint32_t) sizeof (struct nvmap) >> 0);
 }
 
 /* проверка совпадения сигнатуры в энергонезависимой памяти.
@@ -13204,7 +13204,7 @@ const char * hamradio_get_rxbw_value4(void)
 {
 	//const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	static char s [5];
-	int width = 10; // 10=1kHz //bwseti_getwidth(bwseti);
+	int_fast32_t width = 10; // 10=1kHz //bwseti_getwidth(bwseti);
 	if (width >= 1000000)
 		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
@@ -19130,11 +19130,11 @@ uint_fast8_t checkhandptt(void * ctx)
 
 uint_fast8_t checkcatptt(void * ctx)
 {
-#if WITHCAT
+#if WITHCAT && WITHTX
 	return cat_get_ptt();
-#else
+#else /* WITHCAT && WITHTX */
 	return 0;
-#endif
+#endif /* WITHCAT && WITHTX */
 }
 
 uint_fast8_t checktunerptt(void * ctx)
@@ -19182,6 +19182,12 @@ uint_fast8_t edgepins_get_ptt(void)
 			return 1;
 	}
 	return 0;
+}
+
+/* Fix ATMega builds */
+void __WEAK buffers2_initialize(void)
+{
+
 }
 
 /* вызывается при запрещённых прерываниях. */
