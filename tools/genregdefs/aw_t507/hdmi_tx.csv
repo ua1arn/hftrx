@@ -4,5 +4,5 @@
 #base; HDMI_TX0 0x06000000
 #irq; HDMI_TX0 95
 
-
-
+#type; HDMI_PHY 
+#base; HDMI_PHY 0x06010000

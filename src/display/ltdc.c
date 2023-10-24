@@ -2353,8 +2353,12 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 //    CCU->LVDS_BGR_REG |= ~ 0u;
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-//    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
-//    CCU->HDMI_BGR_REG |= ~ 0u;
+
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
+    CCU->HDMI_BGR_REG |= ~ 0u;
 //    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 #endif /* WITHLVDSHW */
 
@@ -2770,8 +2774,105 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 }
 
+static void lvds_t507_corrections(void)
+{
+#if CPUSTYLE_T507
+	static const uint32_t ccuv [] =
+	{
+		0x8a002900, 0x00000000, 0x00000000, 0x00000000,
+		0xb8004100, 0x00000000, 0x08002301, 0x00000000,
+		0xb8003100, 0x00000000, 0x89003100, 0x00000000,
+		0x80001800, 0x00000000, 0x00000000, 0x00000000,
+		0x88001d03, 0x00000000, 0x88004701, 0x00000000,
+		0x88006213, 0x00000000, 0x88002301, 0x00000000,
+		0x88001c00, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x89021501, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x88002301, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0xd1303333, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0x00000000, 0x00000000,
+		0x00000000, 0x00000000, 0xc001288d, 0x00000000,
+	};
+	// CCU
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(ccuv); ++ i)
+	{
+		* (volatile uint32_t *) (CCU_BASE + i * 4) = ccuv [i];
+	}
+
+
+	// TCON_LCD0
+	* (volatile uint32_t *) 0x0000000006511004 = 0x80000002;
+	* (volatile uint32_t *) 0x0000000006511010 = 0x00000000;
+
+	* (volatile uint32_t *) 0x0000000006511040 = 0x800001f0;
+	* (volatile uint32_t *) 0x0000000006511044 = 0xf0000007;
+	* (volatile uint32_t *) 0x0000000006511050 = 0x05140022;
+	* (volatile uint32_t *) 0x0000000006511054 = 0x00450000;
+
+	* (volatile uint32_t *) 0x0000000006511084 = 0x80100000;
+	* (volatile uint32_t *) 0x000000000651108c = 0xe0000000;
+	* (volatile uint32_t *) 0x00000000065110fc = 0x219c4000;	// LCD Debug Register
+
+	* (volatile uint32_t *) 0x00000000065111f0 = 0x02fd0023;
+	* (volatile uint32_t *) 0x0000000006511220 = 0xc1f40320;
+	* (volatile uint32_t *) 0x000000000651123c = 0x0003e814;
+	* (volatile uint32_t *) 0x0000000006511240 = 0x01f401f4;
+
+	// HDMI_TX0
+	* (volatile uint32_t *) 0x0000000006000000 = 0x00000021;
+	* (volatile uint32_t *) 0x0000000006000004 = 0x0000009f;
+	* (volatile uint32_t *) 0x0000000006000170 = 0x00000002;	// !!!!
+	* (volatile uint32_t *) 0x0000000006000180 = 0x00000018;
+	* (volatile uint32_t *) 0x0000000006000200 = 0x00000001;
+#endif /* CPUSTYLE_T507 */
+}
+
+
+void
+zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
+{
+	const volatile uint32_t * buff = (const volatile uint32_t *) vbuff;
+	enum { ROWSIZE = 4 };	/* elements in one row */
+	unsigned i, j;
+	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int remaining = (length + 3) / 4 - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("0x%016" PRIx32 ":"), (uint32_t) (voffs + i * ROWSIZE * 4));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" 0x%08" PRIx32), buff [i * ROWSIZE + j]);
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+static void
+performdump(const char * name, unsigned long base, unsigned long size)
+{
+#if CPUSTYLE_T507
+	PRINTF("%s\n", name);
+	zprinthex32(base, (void *) base, size);
+	PRINTF("---\n");
+#endif /* CPUSTYLE_T507 */
+}
+
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
+	//lvds_t507_corrections();
 	unsigned prei = 0;
 	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
@@ -2793,6 +2894,14 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
+
+	lvds_t507_corrections();
+
+//	performdump("CCU", 0x03001000, 0x400);
+//	performdump("DISP_IF_TOP", 0x06510000, 0x30);
+//	performdump("TCON_LCD0", TCON_LCD0_BASE, 0x400);	//TCON_LCD0_BASE;
+	performdump("HDMI_TX0", 0x06000000, 0x400);
+	performdump("HDMI_PHY", 0x06010000, 0x400);	//TCON_LCD0_BASE;
 }
 
 // What is DPSS_TOP_BGR_REG ?

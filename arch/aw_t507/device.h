@@ -211,6 +211,7 @@ typedef enum IRQn
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC3_BASE ((uintptr_t) 0x05311800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define HDMI_TX0_BASE ((uintptr_t) 0x06000000)        /*!< HDMI_TX  Base */
+#define HDMI_PHY_BASE ((uintptr_t) 0x06010000)        /*!< HDMI_PHY  Base */
 #define DISP_IF_TOP_BASE ((uintptr_t) 0x06510000)     /*!< DISP_IF_TOP display interface top (DISP_IF_TOP) Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x06511000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
