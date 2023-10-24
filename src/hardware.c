@@ -1179,6 +1179,10 @@ uint32_t hardware_get_random(void)
 		;
 	return RNG->DR;
 
+#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+
+	return cpu_getdebugticks();
+
 #else
 
 	//#warning RNG not exist - hardware_get_random not work
