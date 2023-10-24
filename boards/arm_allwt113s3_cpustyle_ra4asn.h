@@ -40,7 +40,8 @@
 #endif /* WITHINTEGRATEDDSP */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
+
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
@@ -333,13 +334,14 @@
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
-#if WITHSDHCHW
+#if WITHSDHCHW && WITHSDHC0HW
 
 	#define	SMHCHARD_IX 0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -401,7 +403,7 @@
 	#define HARDWARE_SDIOPOWER_SET(on) do { \
 	} while (0)
 
-#endif /* WITHSDHCHW */
+#endif /* WITHSDHCHW && WITHSDHC0HW */
 
 #if WITHTX
 

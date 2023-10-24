@@ -97,13 +97,9 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
-
+//	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
 //	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
-//	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-
-	#define WITHSDHC1HW	1		/* SDIO */
-	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//	#define WITHSDHC1HW	1		/* SDIO */
 
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -346,6 +342,7 @@
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnrt113_get_smhc0_freq())
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2);	/* PF3 - SDIO_CMD	*/ \
@@ -410,6 +407,7 @@
 	#define	SMHCHARD_BASE SMHC1_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC1_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnrt113_get_smhc1_freq())
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2);	/* PG1 - SDIO_CMD	*/ \
