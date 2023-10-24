@@ -83,7 +83,7 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 #endif
 
 	phy->HCI_ICR = 0x00000701;
-	phy->REG_10 = 0x00000000;
+	phy->PHY_CTRL = 0x00000000;
 
 	return;
 	phy->HCI_ICR |= (UINT32_C(1) << 0);
@@ -118,12 +118,13 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 
 static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 {
+#if 0
 	volatile uint32_t * base = (volatile uint32_t *) phy;
 
 	PRINTF("PHY %p before:\n", phy);
 	printhex32((uintptr_t) phy, phy, 0x20);
 	base [0] = 0x00000701;	// 0x000
-	base [1] = 0x00000001;	// 0x004
+//	base [1] = 0x00000001;	// 0x004
 //	base [2] = 0x00000000;	// 0x008
 //	base [3] = 0x00000000;	// 0x00C
 	base [4] = 0x00000000;	// 0x010
@@ -132,7 +133,9 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 //	base [7] = 0x00000053;	// 0x01C
 	PRINTF("PHY %p after:\n", phy);
 	printhex32((uintptr_t) phy, phy, 0x20);
-
+#endif
+	phy->USB_CTRL = 0x00000701;
+	phy->PHY_CTRL = 0x00000000;
 	return;
 
 	// EHCI0: phy->USB_CTRL
