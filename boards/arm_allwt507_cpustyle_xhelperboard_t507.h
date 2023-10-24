@@ -433,13 +433,14 @@ void user_uart5_ontxchar(void * ctx);
 
 	// Additional lines to module TL8189FQB2 (Realtek RTL8189FTV based) :
 	// PG11 - WL_WAKE_AP 	- pin 13 WL Wake-up host (GPIOB2) - to host
-	// PG13 - WL_REG_ON		- pin 12 (tied to +3.3) Power key (L=OFF, H=ON)
-	// PG13 - AP_WAKE_BT 	- pin 06 Host wake (GPIOB5) - from host
-	// PG14 - BT_WAKE_AP	- pin 07 WL Wake-up (GPIOB2) - to host
+	// PG13 - WL_REG_ON		- pin 12 (tied to GND) Power key (L=OFF, H=ON)
+	// PG14 - AP_WAKE_BT 	- pin 06 Host wake (GPIOB5) - from host
+	// PG12 - BT_WAKE_AP	- pin 07 WL Wake-up (GPIOB2) - to host
 	// PH4 - BT-RST-N		- pin 34 (tied to +3.3) - from host
 	// PG10	- AP-CK32KO		- pin 24 (tied to +3.3) (not connected to CPU)
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
+		arm_hardware_piog_outputs(UINT32_C(1) << 13, 1 * UINT32_C(1) << 13); /* PG13 WL_REG_ON */ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2);	/* PG1 - SDIO_CMD	*/ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2);	/* PG0 - SDIO_CK	*/ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2);	/* PG2 - SDIO_D0	*/ \
