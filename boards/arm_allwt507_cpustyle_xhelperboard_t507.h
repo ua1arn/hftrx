@@ -200,12 +200,12 @@ void user_uart5_ontxchar(void * ctx);
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-
-//	#define WITHTINYUSB 1
-//	#define BOARD_TUH_RHPORT 1
-//	#define WITHEHCIHW	1	/* USB_EHCI controller */
-//	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-//	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHTINYUSB 1
+	#define BOARD_TUH_RHPORT 1
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
+	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
