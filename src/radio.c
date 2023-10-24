@@ -16084,7 +16084,8 @@ static void second_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	VERIFY(board_dpc_call(& dpcobj_1stimer));
+	//VERIFY(board_dpc_call(& dpcobj_1stimer));
+	board_dpc_call(& dpcobj_1stimer);
 }
 
 ////////////////////
