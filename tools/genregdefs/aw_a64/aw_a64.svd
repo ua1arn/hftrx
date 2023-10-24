@@ -11409,17 +11409,62 @@
    <register>
     <name>HCI_ICR</name>
     <displayName>HCI_ICR</displayName>
-    <description>HCI Interface Control Register</description>
+    <description>HCI Interface Register (HCI_Interface)</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HSIC_STATUS</name>
-    <displayName>HSIC_STATUS</displayName>
-    <description>HSIC status Register This register is valid on HCI1.</description>
+    <name>USBPHY_PHYCTL</name>
+    <displayName>USBPHY_PHYCTL</displayName>
+    <description>(HSIC_STATUS) HSIC status Register This register is valid on HCI1.</description>
     <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HCI_CTRL3</name>
+    <displayName>HCI_CTRL3</displayName>
+    <description>HCI Control 3 Register (bist)</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PHY_CTRL</name>
+    <displayName>PHY_CTRL</displayName>
+    <description>PHY Control Register (PHY_Control)</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PHY_OTGCTL</name>
+    <displayName>PHY_OTGCTL</displayName>
+    <description>Control PHY routing to EHCI or OTG</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PHY_STATUS</name>
+    <displayName>PHY_STATUS</displayName>
+    <description>PHY Status Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_SPDCR</name>
+    <displayName>USB_SPDCR</displayName>
+    <description>HCI SIE Port Disable Control Register</description>
+    <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

@@ -2113,9 +2113,16 @@ typedef struct USBOTG_Type
 /*!< USBPHYC  */
 typedef struct USBPHYC_Type
 {
-    volatile uint32_t HCI_ICR;                        /*!< Offset 0x000 HCI Interface Control Register */
-    volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x004 HSIC status Register This register is valid on HCI1. */
-} USBPHYC_TypeDef; /* size of structure = 0x008 */
+    volatile uint32_t HCI_ICR;                        /*!< Offset 0x000 HCI Interface Register (HCI_Interface) */
+    volatile uint32_t USBPHY_PHYCTL;                  /*!< Offset 0x004 (HSIC_STATUS) HSIC status Register This register is valid on HCI1. */
+    volatile uint32_t HCI_CTRL3;                      /*!< Offset 0x008 HCI Control 3 Register (bist) */
+             uint32_t reserved_0x00C;
+    volatile uint32_t PHY_CTRL;                       /*!< Offset 0x010 PHY Control Register (PHY_Control) */
+             uint32_t reserved_0x014 [0x0003];
+    volatile uint32_t PHY_OTGCTL;                     /*!< Offset 0x020 Control PHY routing to EHCI or OTG */
+    volatile uint32_t PHY_STATUS;                     /*!< Offset 0x024 PHY Status Register */
+    volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register */
+} USBPHYC_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief USB_EHCI_Capability
  */

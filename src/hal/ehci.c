@@ -55,8 +55,37 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
 //    return PHYCx;
 //}
 
+//	PHY 0x1c1b800 before:
+//	01C1B800  00000000 00000001 00000000 00000000 00000002 00000000 023438E4 00000053
+//	PHY 0x1c1b800 after:
+//	01C1B800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+
 static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 {
+#if 0
+	volatile uint32_t * base = (volatile uint32_t *) phy;
+
+	PRINTF("PHY %p before:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+	base [0] = 0x00000701;	// 0x000 !!!! влияет
+//	base [1] = 0x00000001;	// 0x004
+//	base [2] = 0x00000000;	// 0x008
+//	base [3] = 0x00000000;	// 0x00C
+	base [4] = 0x00000000;	// 0x010 !!!! влияет
+//	base [5] = 0x00000000;	// 0x014
+//	base [6] = 0x023438e6;	// 0x018
+//	base [7] = 0x00000053;	// 0x01C
+
+	phy->HCI_ICR = 0x00000701;
+	phy->REG_10 = 0x00000000;
+	PRINTF("PHY %p after:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+#endif
+
+	phy->HCI_ICR = 0x00000701;
+	phy->REG_10 = 0x00000000;
+
+	return;
 	phy->HCI_ICR |= (UINT32_C(1) << 0);
 
 //	phy->HCI_ICR |= (UINT32_C(1) << 1);			// С этим битом не видит connect HSIC - This meaning is only valid when the controller is HCI1
