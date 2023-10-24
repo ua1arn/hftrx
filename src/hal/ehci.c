@@ -77,8 +77,35 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 //    return PHYCx;
 //}
 
+
+//	PHY 0x5310800 before:
+//	05310800  00000000 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+//	PHY 0x5310800 after:
+//	05310800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+//	PHY 0x5311800 before:
+//	05311800  00000000 00000101 00000000 00000000 00000008 00000000 023438E4 00000053
+//	PHY 0x5311800 after:
+//	05311800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+
 static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 {
+	volatile uint32_t * base = (volatile uint32_t *) phy;
+
+	PRINTF("PHY %p before:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+	base [0] = 0x00000701;	// 0x000
+	base [1] = 0x00000001;	// 0x004
+//	base [2] = 0x00000000;	// 0x008
+//	base [3] = 0x00000000;	// 0x00C
+	base [4] = 0x00000000;	// 0x010
+//	base [5] = 0x00000000;	// 0x014
+//	base [6] = 0x023438e6;	// 0x018
+//	base [7] = 0x00000053;	// 0x01C
+	PRINTF("PHY %p after:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+
+	return;
+
 	// EHCI0: phy->USB_CTRL
 	PRINTF("%p->USB_CTRL=%08X (@%p)\n", phy, (unsigned) phy->USB_CTRL, & phy->USB_CTRL);
 
