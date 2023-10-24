@@ -65,7 +65,7 @@ public:
 	}
 
 	// сохранить в списке свободных
-	void release_buffer(uintptr_t addr)
+	void release_buffer(element * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, u.buff);
 		ASSERT(p->tag2 == p);
@@ -81,7 +81,7 @@ public:
 	}
 
 	// сохранить в списке готовых
-	void save_buffer(uintptr_t addr)
+	void save_buffer(element * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, u.buff);
 		ASSERT(p->tag2 == p);
@@ -97,7 +97,7 @@ public:
 	}
 
 	// получить из списка готовых
-	int get_readybuffer(uintptr_t * dest)
+	int get_readybuffer(element * * dest)
 	{
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
@@ -110,7 +110,7 @@ public:
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			* dest = (uintptr_t) p->u.buff;
+			* dest = p->u.buff;
 			return 1;
 		}
 		LCLSPIN_UNLOCK(& lock);
@@ -119,7 +119,7 @@ public:
 	}
 
 	// получить из списка свободных
-	int get_freebuffer(uintptr_t * dest)
+	int get_freebuffer(element * * dest)
 	{
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
@@ -132,7 +132,7 @@ public:
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			* dest = (uintptr_t) p->u.buff;
+			* dest = p->u.buff;
 			return 1;
 		}
 		LCLSPIN_UNLOCK(& lock);
@@ -157,26 +157,47 @@ enum
 
 #if 0
 // Denoise operations
-// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
+// буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef blists<speexel_t, NTRX * FIRBUFSIZE, 5> denoise16list_t;
 static denoise16list_t denoise16list(IRQL_REALTIME);
 
-// Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takespeexready(speexel_t * * dest)
+// получить готоввый
+extern "C" uint_fast8_t takespeexready(speexel_t * * dest)
 {
-	uintptr_t addr;
+	speexel_t * addr;
 	if (denoise16list.get_readybuffer(& addr))
 	{
-		* dest = (speexel_t *) addr;
+		* dest = addr;
 		return 1;
 	}
 	return 0;
 }
 
-// Освобождение обработанного буфера сообщения
-void releasespeexbuffer(speexel_t * t)
+// получить свободный
+extern "C" speexel_t * allocatespeexbuffer(void)
 {
-	denoise16list.release_buffer((uintptr_t) t);
+	speexel_t * addr;
+	if (denoise16list.get_freebuffer(& addr))
+	{
+		return addr;
+	}
+	if (denoise16list.get_readybuffer(& addr))
+	{
+		return addr;
+	}
+	return NULL;
+}
+
+// Освобождение буфера
+extern "C" void releasespeexbuffer(speexel_t * t)
+{
+	denoise16list.release_buffer(t);
+}
+
+// сохранение длч обработки буфера
+extern "C" void savespeexbuffer(speexel_t * t)
+{
+	denoise16list.save_buffer(t);
 }
 
 #endif
@@ -194,10 +215,10 @@ extern "C" int_fast32_t buffers_dmabuffer16rxcachesize(void)
 
 extern "C" uintptr_t allocate_dmabuffer16rx(void)
 {
-	uintptr_t dest;
+	aubufv_t * dest;
 	while (voice16rxlist.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return dest;
+	return (uintptr_t) dest;
 }
 #endif
 
@@ -214,10 +235,10 @@ extern "C" int_fast32_t buffers_dmabuffer16txcachesize(void)
 
 extern "C" uintptr_t allocate_dmabuffer16tx(void)
 {
-	uintptr_t dest;
+	aubufv_t * dest;
 	while (voice16txlist.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return dest;
+	return (uintptr_t) dest;
 }
 #endif
 
@@ -287,16 +308,16 @@ extern "C" int_fast32_t buffers_dmabufferuacout48cachesize(void)
 extern "C"
 uintptr_t allocate_dmabufferuacout48(void)
 {
-	uintptr_t dest;
+	uint8_t * dest;
 	while (uacout48list.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return dest;
+	return (uintptr_t) dest;
 }
 
 extern "C"
 void release_dmabufferuacout48(uintptr_t addr)
 {
-	uacout48list.release_buffer(addr);
+	uacout48list.release_buffer((uint8_t *) addr);
 }
 
 extern "C"
