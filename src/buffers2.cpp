@@ -314,7 +314,7 @@ uintptr_t getfilled_dmabuffer32tx_sub(void)
 
 #endif
 
-#if 0
+#if 1
 // I/Q data from FPGA or IF CODEC
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag

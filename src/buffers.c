@@ -270,7 +270,7 @@ int_fast32_t cachesize_dmabuffer32tx(void)
 }
 #endif
 
-#if 1
+#if 0
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
 {
@@ -284,7 +284,7 @@ int_fast32_t cachesize_dmabuffer32rx(void)
 }
 #endif
 
-#if 1
+#if 0
 // I/Q SPECTRUM data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rts_tag
 {
@@ -340,7 +340,7 @@ static RAMBIGDTCM LIST_HEAD2 voicesfree32tx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32tx = LCLSPINLOCK_INIT;
 #endif
 
-#if 1
+#if 0
 static RAMBIGDTCM LIST_HEAD2 voicesfree32rx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32rx = LCLSPINLOCK_INIT;
 #endif
@@ -1879,7 +1879,7 @@ void RAMFUNC save_dmabuffer32tx(uintptr_t addr)
 
 #endif
 
-#if 1
+#if 0
 // Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 {
@@ -2128,8 +2128,7 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	//debugcount_rx32rtsadc += CNT32RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	voice32rts_t * const p = CONTAINING_RECORD(addr, voice32rts_t, buff);
-	dsp_extbuffer32rts(p->buff);
+	dsp_extbuffer32rts((IFADCvalue_t *) addr);
 }
 
 
@@ -3457,7 +3456,7 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklist32tx);
 	}
 	#endif
-	#if 1
+	#if 0
 	{
 		unsigned i;
 		// +2 - для отладочной печати содеожимого буферов
