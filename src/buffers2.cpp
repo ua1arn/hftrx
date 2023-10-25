@@ -199,7 +199,7 @@ void releasespeexbuffer(speexel_t * t)
 	denoise16list.release_buffer(p);
 }
 
-// сохранение длч обработки буфера
+// сохранение для обработки буфера
 void savespeexbuffer(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
