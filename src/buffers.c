@@ -1107,15 +1107,15 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 
 
 
-#if WITHUSBUAC
+#if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
 static uint_fast8_t isaudio48(void)
 {
-#if WITHUSBHW && WITHUSBUAC
+#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 	return UACINALT_AUDIO48 == uacinalt;
-#else /* WITHUSBHW && WITHUSBUAC */
+#else /* WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 	return 0;
-#endif /* WITHUSBHW && WITHUSBUAC */
+#endif /* WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 }
 
 // UAC OUT samplerate
@@ -1188,41 +1188,6 @@ static uint_fast8_t isrts96(void)
 #endif /* WITHUSBHW && WITHUSBUAC */
 }
 
-
-#if 0
-// Сохранить буфер сэмплов для передачи в компьютер
-RAMFUNC void
-save_dmabufferuacinrts96(uintptr_t addr)
-{
-	voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
-	ASSERT(p->tag == BUFFTAG_RTS96);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / UACIN_RTS96_SAMPLEBYTES / 2;	// в буфере пары сэмплов по три байта
-#endif /* WITHBUFFERSDEBUG */
-	
-	LCLSPIN_LOCK(& locklistrts);
-	InsertHeadList2(& uacinrts96ready, & p->item);
-	LCLSPIN_UNLOCK(& locklistrts);
-
-	refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
-}
-
-void save_dmabufferuacinrts96(uintptr_t addr)
-{
-	voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
-	ASSERT(p->tag == BUFFTAG_RTS96);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-
-	LCLSPIN_LOCK(& locklistrts);
-	InsertHeadList2(& uacinrts96free, & p->item);
-	LCLSPIN_UNLOCK(& locklistrts);
-}
-
-#endif
 #endif
 
 #else
@@ -1311,7 +1276,7 @@ static rsmpl_t uacin48rsmpl;
 static rsmpl_t uacinrts96rsmpl;
 static rsmpl_t uacinrts192rsmpl;
 
-#if WITHUSBUAC
+#if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
 // получает массив сэмплов
 // возвращает количество полученых сэмплов
@@ -1449,10 +1414,10 @@ static RAMFUNC void buffer_resample(rsmpl_t * rsmpl)
 
 static void buffers_resample(void)
 {
-#if WITHUSBUACOUT
+#if WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	buffer_resample(& uacout48rsmpl);
 #endif /* WITHUSBUACOUT */
-#if WITHUSBUACIN
+#if WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 	//buffer_resample(& uacin48rsmpl);
 #if WITHUSBUACIN2
 	//buffer_resample(& uacinrts96rsmpl);
@@ -1948,7 +1913,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->rbuff;
 	}
-#if WITHUSBUAC
+#if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 	else if (! IsListEmpty3(& resample16rx))
 	{
 		// Ошибочная ситуация - если буферы не освобождены вовремя -
@@ -2438,7 +2403,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 
-#if WITHUSBUAC && WITHUSBHW
+#if WITHUSBUAC && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 /* выборка нужного количества байт из UAC OUT буфера. Расширение знака не требуется, результат обрабатывается функцией transform_do32 */
 static int32_t fetch_le(const uint8_t * p, size_t usbsz)
@@ -2562,20 +2527,6 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 	}
 
 	// Этой функцией пользуются обработчики прерываний DMA
-	// передали буфер, считать свободным
-	void release_dmabufferuacinrts96(uintptr_t addr)
-	{
-		ASSERT(addr != 0);
-		voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
-		ASSERT(p->tag == BUFFTAG_RTS96);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		LCLSPIN_LOCK(& locklistrts);
-		InsertHeadList2(& uacinrts96free, & p->item);
-		LCLSPIN_UNLOCK(& locklistrts);
-	}
-
-	// Этой функцией пользуются обработчики прерываний DMA
 	// получить буфер для передачи в компьютер, через USB AUDIO
 	// Если в данный момент нет готового буфера, возврат 0
 	uintptr_t getfilled_dmabufferuacinrts96(void)
@@ -2599,6 +2550,38 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 		LCLSPIN_UNLOCK(& locklistrts);
 		return 0;
 	}
+	// Сохранить буфер сэмплов для передачи в компьютер
+	RAMFUNC void
+	save_dmabufferuacinrts96(uintptr_t addr)
+	{
+		voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
+		ASSERT(p->tag == BUFFTAG_RTS96);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+	#if WITHBUFFERSDEBUG
+		// подсчёт скорости в сэмплах за секунду
+		debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / UACIN_RTS96_SAMPLEBYTES / 2;	// в буфере пары сэмплов по три байта
+	#endif /* WITHBUFFERSDEBUG */
+
+		LCLSPIN_LOCK(& locklistrts);
+		InsertHeadList2(& uacinrts96ready, & p->item);
+		LCLSPIN_UNLOCK(& locklistrts);
+
+		refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
+	}
+
+	void release_dmabufferuacinrts96(uintptr_t addr)
+	{
+		voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
+		ASSERT(p->tag == BUFFTAG_RTS96);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+
+		LCLSPIN_LOCK(& locklistrts);
+		InsertHeadList2(& uacinrts96free, & p->item);
+		LCLSPIN_UNLOCK(& locklistrts);
+	}
+
 #endif
 	// Поэлементное заполнение буфера RTS96
 
@@ -2769,7 +2752,7 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #endif /* WITHRTS192 */
 
-#if WITHUSBUACOUT
+#if WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 
 
 void processing_dmabufferuacout48(uintptr_t addr)
@@ -3392,6 +3375,8 @@ void buffers_initialize(void)
 //	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
 
 	#if WITHRTS192 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+
+	#if 0
 	{
 		unsigned i;
 		RAMBIG static RAM_D1 voice192rts_t voicesarray192rts [4 * BUFOVERSIZE];
@@ -3411,10 +3396,14 @@ void buffers_initialize(void)
 			InsertHeadList2(& voicesfree192rts, & p->item);
 		}
 		LCLSPINLOCK_INITIALIZE(& locklistrts);
-		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
 
 	}
+	#endif
+
+	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
+
 	#elif WITHRTS96 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+
 	#if 0
 	{
 		unsigned i;
@@ -3436,10 +3425,12 @@ void buffers_initialize(void)
 			InsertHeadList2(& uacinrts96free, & p->item);
 		}
 		LCLSPINLOCK_INITIALIZE(& locklistrts);
-		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	}
 	#endif
+
+	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
+
 	#endif /* WITHRTS192 */
 	#if 1
 	{

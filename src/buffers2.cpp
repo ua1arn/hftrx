@@ -470,10 +470,11 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
-		while (uacinrts192list.get_readybuffer(& dest) == 0)
-			ASSERT(0);
-		dest->tag = BUFFTAG_RTS192;
-		return (uintptr_t) & dest->buff;
+		if (uacinrts192list.get_readybuffer(& dest) != 0)
+		{
+			dest->tag = BUFFTAG_RTS192;
+			return (uintptr_t) & dest->buff;
+		}
 	}
 
 
@@ -520,10 +521,12 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		while (uacinrts96list.get_readybuffer(& dest) == 0)
-			ASSERT(0);
-		dest->tag = BUFFTAG_RTS96;
-		return (uintptr_t) & dest->buff;
+		if (uacinrts96list.get_readybuffer(& dest))
+		{
+			dest->tag = BUFFTAG_RTS96;
+			return (uintptr_t) & dest->buff;
+		}
+		return 0;
 	}
 
 	void save_dmabufferuacinrts96(uintptr_t addr)
@@ -571,10 +574,12 @@ uintptr_t allocate_dmabufferuacin48(void)
 uintptr_t getfilled_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
-	while (uacin48list.get_readybuffer(& dest) == 0)
-		ASSERT(0);
-	dest->tag = BUFFTAG_UACIN48;
-	return (uintptr_t) & dest->buff;
+	if (uacin48list.get_readybuffer(& dest))
+	{
+		dest->tag = BUFFTAG_UACIN48;
+		return (uintptr_t) & dest->buff;
+	}
+	return 0;
 }
 
 void save_dmabufferuacin48(uintptr_t addr)
