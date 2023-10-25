@@ -450,6 +450,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 
 	static RAMBIGDTCM LCLSPINLOCK_t locklistrts = LCLSPINLOCK_INIT;
 	static subscribeint32_t uacinrtssubscribe;
+	static RAMBIGDTCM LCLSPINLOCK_t locklistrts = LCLSPINLOCK_INIT;
 
 #elif WITHRTS96
 
@@ -474,9 +475,9 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 
 	static RAMBIGDTCM LIST_HEAD2 uacinrts96free;
 	static RAMBIGDTCM LIST_HEAD2 uacinrts96ready;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
+	static RAMBIGDTCM LCLSPINLOCK_t locklistrts = LCLSPINLOCK_INIT;
 #endif
 
-	static RAMBIGDTCM LCLSPINLOCK_t locklistrts = LCLSPINLOCK_INIT;
 	static subscribeint32_t uacinrtssubscribe;
 
 #endif /* WITHRTS96 */
