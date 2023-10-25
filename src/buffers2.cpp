@@ -156,7 +156,7 @@ public:
 
 #if WITHINTEGRATEDDSP
 
-#if 0
+#if 1
 // Denoise operations
 
 typedef ALIGNX_BEGIN struct denoise16

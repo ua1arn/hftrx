@@ -335,7 +335,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklist32tx = LCLSPINLOCK_INIT;
 static RAMBIGDTCM LIST_HEAD2 voicesfree32rx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32rx = LCLSPINLOCK_INIT;
 
-#if 1
+#if 0
 static RAMBIGDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
 static RAMBIGDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
 static RAMBIGDTCM LCLSPINLOCK_t speexlock = LCLSPINLOCK_INIT;
@@ -650,7 +650,7 @@ void buffers_diagnostics(void)
 
 #if WITHINTEGRATEDDSP
 
-#if 1
+#if 0
 typedef ALIGNX_BEGIN struct denoise16
 {
 	LIST_ENTRY item;
@@ -3510,7 +3510,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-#if 1
+#if 0
 	{
 		unsigned i;
 		static RAMBIGDTCM denoise16_t speexarray16 [5];	// буферы: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
