@@ -332,8 +332,10 @@ static RAMBIGDTCM LIST_HEAD2 voicesfree32tx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32tx = LCLSPINLOCK_INIT;
 #endif
 
+#if 1
 static RAMBIGDTCM LIST_HEAD2 voicesfree32rx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32rx = LCLSPINLOCK_INIT;
+#endif
 
 #if 0
 static RAMBIGDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
@@ -1804,38 +1806,6 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 	return 0;
 }
 
-// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
-RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
-{
-	LCLSPIN_LOCK(& locklist32rx);
-	if (! IsListEmpty2(& voicesfree32rx))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& voicesfree32rx);
-		voice32rx_t * const p = CONTAINING_RECORD(t, voice32rx_t, item);
-		LCLSPIN_UNLOCK(& locklist32rx);
-		return (uintptr_t) & p->buff;
-	}
-	else
-	{
-		LCLSPIN_UNLOCK(& locklist32rx);
-		PRINTF(PSTR("allocate_dmabuffer32rx() failure\n"));
-		for (;;)
-			;
-	}
-	return 0;
-}
-
-void release_dmabuffer32rx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-
-	LCLSPIN_LOCK(& locklist32rx);
-	InsertHeadList2(& voicesfree32rx, & p->item);
-	LCLSPIN_UNLOCK(& locklist32rx);
-
-}
-
 // Этой функцией пользуются обработчики прерываний DMA
 // получить буфер для передачи через IF DAC
 uintptr_t getfilled_dmabuffer32tx(void)
@@ -1899,6 +1869,40 @@ void RAMFUNC save_dmabuffer32tx(uintptr_t addr)
 	LCLSPIN_UNLOCK(& locklist32tx);
 }
 
+#endif
+
+#if 1
+// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
+RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
+{
+	LCLSPIN_LOCK(& locklist32rx);
+	if (! IsListEmpty2(& voicesfree32rx))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& voicesfree32rx);
+		voice32rx_t * const p = CONTAINING_RECORD(t, voice32rx_t, item);
+		LCLSPIN_UNLOCK(& locklist32rx);
+		return (uintptr_t) & p->buff;
+	}
+	else
+	{
+		LCLSPIN_UNLOCK(& locklist32rx);
+		PRINTF(PSTR("allocate_dmabuffer32rx() failure\n"));
+		for (;;)
+			;
+	}
+	return 0;
+}
+
+void release_dmabuffer32rx(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+
+	LCLSPIN_LOCK(& locklist32rx);
+	InsertHeadList2(& voicesfree32rx, & p->item);
+	LCLSPIN_UNLOCK(& locklist32rx);
+
+}
 #endif
 
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO

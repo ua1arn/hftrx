@@ -251,7 +251,6 @@ uintptr_t allocate_dmabuffer16tx(void)
 #endif
 
 #if 0
-// I/Q data to FPGA or IF CODEC
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
