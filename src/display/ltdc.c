@@ -2777,6 +2777,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 static void lvds_t507_corrections(void)
 {
 #if CPUSTYLE_T507
+	unsigned i;
 	static const uint32_t ccuv [] =
 	{
 		0x8a002900, 0x00000000, 0x00000000, 0x00000000,
@@ -2805,10 +2806,21 @@ static void lvds_t507_corrections(void)
 		0x00000000, 0x00000000, 0xc001288d, 0x00000000,
 	};
 	// CCU
-	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(ccuv); ++ i)
 	{
 		* (volatile uint32_t *) (CCU_BASE + i * 4) = ccuv [i];
+	}
+
+	// HDMI_PHY
+	static const uint32_t hdmi_phy [] =
+	{
+		0x00000000, 0x80c00000, 0x00184210, 0x00000002,
+		0x00000000, 0x000f990b, 0x00000000, 0x00000000,
+		0x00000f80, 0x0c0040d8, 0x02700203, 0x000c6023,
+	};
+	for (i = 0; i < ARRAY_SIZE(hdmi_phy); ++ i)
+	{
+		* (volatile uint32_t *) (HDMI_PHY_BASE + i * 4) = hdmi_phy [i];
 	}
 
 
