@@ -1385,7 +1385,6 @@ gpioX_onchangeinterrupt(
 	gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
 	gpioint->EINT_CTL |= ipins;
-	// todo:
 	gpioint->EINT_STATUS = ipins; // for clear
 	gpioX_unlock(gpio, oldIrql);
 
