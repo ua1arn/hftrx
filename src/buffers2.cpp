@@ -19,17 +19,13 @@
 
 #include <string.h>		// for memset
 
-template <typename element, unsigned elements, unsigned capacity>
+template <typename element_t, unsigned capacity>
 class blists
 {
 	typedef struct buffitem
 	{
 		void * tag2;
-		ALIGNX_BEGIN union
-		{
-			element buff [elements];
-			uint8_t filler [EP_align(elements * sizeof (element), DCACHEROWSIZE)];
-		} u ALIGNX_END;
+		ALIGNX_BEGIN  element_t v ALIGNX_END;
 		ALIGNX_BEGIN  LIST_ENTRY item ALIGNX_END;	// should be placed after 'u' field
 		void * tag3;
 	} buffitem_t;
@@ -56,18 +52,13 @@ public:
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
 		}
-		PRINTF("Buffer %u %u %u\n", sizeof (element), elements, capacity);
-	}
-
-	static int_fast32_t get_cachesize()
-	{
-		return offsetof(buffitem_t, item) - offsetof(buffitem_t, u);
+		PRINTF("blists %u %u\n", sizeof (element_t), capacity);
 	}
 
 	// сохранить в списке свободных
-	void release_buffer(element * addr)
+	void release_buffer(element_t * addr)
 	{
-		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, u.buff);
+		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
@@ -81,9 +72,9 @@ public:
 	}
 
 	// сохранить в списке готовых
-	void save_buffer(element * addr)
+	void save_buffer(element_t * addr)
 	{
-		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, u.buff);
+		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
@@ -97,7 +88,7 @@ public:
 	}
 
 	// получить из списка готовых
-	int get_readybuffer(element * * dest)
+	int get_readybuffer(element_t * * dest)
 	{
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
@@ -110,7 +101,7 @@ public:
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			* dest = p->u.buff;
+			* dest = & p->v;
 			return 1;
 		}
 		LCLSPIN_UNLOCK(& lock);
@@ -119,7 +110,7 @@ public:
 	}
 
 	// получить из списка свободных
-	int get_freebuffer(element * * dest)
+	int get_freebuffer(element_t * * dest)
 	{
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
@@ -132,7 +123,7 @@ public:
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
-			* dest = p->u.buff;
+			* dest = & p->v;
 			return 1;
 		}
 		LCLSPIN_UNLOCK(& lock);
@@ -144,13 +135,6 @@ public:
 #if defined(WITHRTS96) && defined(WITHRTS192)
 	#error Configuration Error: WITHRTS96 and WITHRTS192 can not be used together
 #endif /* defined(WITHRTS96) && defined(WITHRTS192) */
-enum
-{
-	BUFFTAG_UACIN48 = 44,
-	BUFFTAG_RTS192,
-	BUFFTAG_RTS96,
-	BUFFTAG_total
-};
 
 
 #if WITHINTEGRATEDDSP
@@ -297,38 +281,54 @@ extern "C" int_fast32_t buffers_dmabufferuacin48cachesize(void)
 
 // USB AUDIO OUT
 
-typedef blists<uint8_t, UACOUT_AUDIO48_DATASIZE_DMAC, 4> uacout48list_t;
+typedef struct
+{
+	ALIGNX_BEGIN  uint8_t buff [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+} uacout48buff_t;
+
+typedef blists<uacout48buff_t, 4> uacout48list_t;
 static uacout48list_t uacout48list(IRQL_REALTIME);
 
 extern "C" int_fast32_t buffers_dmabufferuacout48cachesize(void)
 {
-	return uacout48list.get_cachesize();
+	return offsetof(uacout48buff_t, pad) - offsetof(uacout48buff_t, buff);
 }
 
 extern "C"
 uintptr_t allocate_dmabufferuacout48(void)
 {
-	uint8_t * dest;
+	uacout48buff_t * dest;
 	while (uacout48list.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return (uintptr_t) dest;
+	return (uintptr_t) & dest->buff;
 }
 
 extern "C"
 void release_dmabufferuacout48(uintptr_t addr)
 {
-	uacout48list.release_buffer((uint8_t *) addr);
+	uacout48buff_t * const p = CONTAINING_RECORD(addr, uacout48buff_t, buff);
+	uacout48list.release_buffer(p);
 }
 
 extern "C"
 void processing_dmabufferuacout48(uintptr_t addr)
 {
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	uacout48buff_t * const p = CONTAINING_RECORD(addr, uacout48buff_t, buff);
+	uacout_buffer_save(p->buff, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
 
 	release_dmabufferuacout48(addr);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
+
+enum
+{
+	BUFFTAG_UACIN48 = 44,
+	BUFFTAG_RTS192,
+	BUFFTAG_RTS96,
+	BUFFTAG_total
+};
 
 #if 0
 
@@ -336,6 +336,12 @@ void processing_dmabufferuacout48(uintptr_t addr)
 
 #if WITHRTS192
 
+	typedef struct
+	{
+		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
+		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+		unsigned tag;
+	} voice192rtsbuff_t;
 	typedef blists<uint8_t, UACIN_RTS192_DATASIZE_DMAC, 20> voice192rtslist_t;
 	static voice192rtslist_t voice192rtslist(IRQL_REALTIME);
 
