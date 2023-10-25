@@ -409,9 +409,9 @@ static uint_fast8_t wave_resync(void)
 // 3 - выполнить resync
 static uint_fast8_t wave_nextblockrecording(void)
 {
-	const uint_fast32_t RSYNLEN = 10UL * 1024 * 1024;
-	const uint_fast32_t FILELEN = 695UL * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
-	//const uint_fast32_t FILELEN = 33UL * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
+	const uint_fast32_t RSYNLEN = UINT32_C(10) * 1024 * 1024;
+	const uint_fast32_t FILELEN = UINT32_C(695) * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
+	//const uint_fast32_t FILELEN = UINT32_C(33) * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
 	void * p;
 	unsigned n = takerecordbuffer(& p);
 	if (n != 0)	// количество байтов для записи
@@ -979,7 +979,7 @@ void spoolplayfile(void)
 		}
 		else
 		{
-			unsigned saved = savesamplesplay_user(rbuff, ibr - ipos);
+			unsigned saved = savesamplesplay(rbuff, ibr - ipos);
 			ipos += saved;
 		}
 	} while (0);

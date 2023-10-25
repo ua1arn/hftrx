@@ -1586,13 +1586,13 @@ unsigned takefreerecordbuffer(void * * dest)
 	return 0;
 }
 
-// user-mode function
-void saveplaybuffer(void * dest, unsigned used)
+static void saveplaybuffer(void * dest, unsigned used)
 {
 	IRQL_t oldIrql;
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	p->startdata = 0;	// перыфй сэмпл в буфере
+	p->startdata = 0;	// первый сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
+
 	RiseIrql(IRQL_REALTIME, & oldIrql);
 	LCLSPIN_LOCK(& lockwav48);
 	InsertHeadList2(& recordswav48ready, & p->item);
@@ -1601,7 +1601,7 @@ void saveplaybuffer(void * dest, unsigned used)
 }
 
 /* data to play */
-unsigned savesamplesplay_user(
+unsigned savesamplesplay(
 	const void * buff,
 	unsigned length
 	)
@@ -1613,18 +1613,17 @@ unsigned savesamplesplay_user(
 
 	if (size == 0)
 	{
-		//PRINTF("savesamplesplay_user: length=%u - no memory\n", length);
+		//PRINTF("savesamplesplay: length=%u - no memory\n", length);
 		return 0;
 	}
 
-	//PRINTF("savesamplesplay_user: length=%u\n", length);
+	//PRINTF("savesamplesplay: length=%u\n", length);
 	unsigned chunk = ulmin32(size, length);
 	memcpy(p, buff, chunk);
 	saveplaybuffer(p, chunk);
 	return chunk;
 }
 
-// user-mode function
 void releaserecordbuffer(void * dest)
 {
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
@@ -1635,6 +1634,18 @@ void releaserecordbuffer(void * dest)
 	LCLSPIN_UNLOCK(& lockwav48);
 	LowerIrql(oldIrql);
 }
+
+void saverecordbuffer(void * dest)
+{
+	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	LCLSPIN_LOCK(& lockwav48);
+	InsertHeadList2(& recordswav48ready, & p->item);
+	LCLSPIN_UNLOCK(& lockwav48);
+	LowerIrql(oldIrql);
+}
+
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера
  * или для переачи
