@@ -1384,6 +1384,11 @@ gpioX_onchangeinterrupt(
 	gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
 	gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
 
+	gpioint->EINT_CTL |= ipins;
+	// todo:
+	gpioint->EINT_STATUS = ipins; // for clear
+	gpioX_unlock(gpio, oldIrql);
+
 	for (pos = 0; pos < 32; ++ pos)
 	{
 		const portholder_t mask = (portholder_t) 0x01 << pos;
@@ -1393,10 +1398,6 @@ gpioX_onchangeinterrupt(
 
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 	}
-
-	gpioint->EINT_CTL |= ipins;
-	// todo: EINT_STATUS = ipins; // for clear
-	gpioX_unlock(gpio, oldIrql);
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
