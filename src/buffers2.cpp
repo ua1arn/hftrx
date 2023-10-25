@@ -345,7 +345,7 @@ enum
 	typedef blists<voice192rtsbuff_t, 20> voice192rtslist_t;
 	static voice192rtslist_t voice192rtslist(IRQL_REALTIME);
 
-	extern "C" int_fast32_t buffers_dmabuffer192rtscachesize(void)
+	extern "C" int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
 		return offsetof(voice192rtsbuff_t, pad) - offsetof(voice192rtsbuff_t, buff);
 	}
@@ -361,7 +361,7 @@ enum
 	typedef blists<voice96rtsbuff_t, 20> voice96rtslist_t;
 	static voice96rtslist_t voice96rtslist(IRQL_REALTIME);
 
-	extern "C" int_fast32_t buffers_dmabuffer96rtscachesize(void)
+	extern "C" int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
 		return offsetof(voice96rtsbuff_t, pad) - offsetof(voice96rtsbuff_t, buff);
 	}

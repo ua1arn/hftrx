@@ -588,7 +588,7 @@ void release_dmabuffer16rx(uintptr_t addr);
 uintptr_t processing_pipe32tx(uintptr_t addr);
 uintptr_t processing_pipe32rx(uintptr_t addr);
 
-uintptr_t allocate_dmabuffer192rts(void);
+uintptr_t allocate_dmabufferuacinrts192(void);
 
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
@@ -615,15 +615,40 @@ void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
 void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
+// Буфер обмена про USB
+void release_dmabufferuacinrts192(uintptr_t addr);
+uintptr_t allocate_dmabufferuacinrts192(void);
+uintptr_t getfilled_dmabufferuacinrts192(void);
+int_fast32_t cachesize_dmabufferuacinrts192(void);
+
+// Буфер обмена про USB
+void release_dmabufferuacinrts96(uintptr_t addr);
+uintptr_t allocate_dmabufferuacinrts96(void);
+uintptr_t getfilled_dmabufferuacinrts96(void);
+int_fast32_t cachesize_dmabufferuacinrts96(void);
+
+// Буфер обмена про USB
+uintptr_t allocate_dmabufferuacout48(void);
+void release_dmabufferuacout48(uintptr_t addr);
+void processing_dmabufferuacout48(uintptr_t addr);
+int_fast32_t buffers_dmabufferuacout48cachesize(void);
+
+// Буфер обмена про USB
+uintptr_t allocate_dmabufferuacin48(void);
+void release_dmabufferuacin48(uintptr_t addr);
+uintptr_t getfilled_dmabufferuacin48(void);
+void save_dmabufferuacin48(uintptr_t addr);
+int_fast32_t cachesize_dmabufferuacin48(void);
+
 /* получение размера для операций с кешем для разнообразных буферов */
+// буферы FPGA IF
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
+int_fast32_t buffers_dmabuffer32rtscachesize(void);
+
+// буферы кодека
 int_fast32_t buffers_dmabuffer16rxcachesize(void);
 int_fast32_t buffers_dmabuffer16txcachesize(void);
-int_fast32_t buffers_dmabuffer192rtscachesize(void);
-int_fast32_t buffers_dmabuffer32rtscachesize(void);
-int_fast32_t buffers_dmabuffer96rtscachesize(void);
-int_fast32_t buffers_dmabufferuacout48cachesize(void);
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);
@@ -658,19 +683,6 @@ void releasemodembuffer_low(uint8_t * dest);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
-
-void release_dmabufferuacin192rts(uintptr_t addr);
-uintptr_t getfilled_dmabufferuacin192rts(void);
-
-void release_dmabufferuacinrts96(uintptr_t addr);
-uintptr_t getfilled_dmabufferuacinrts96(void);
-
-uintptr_t allocate_dmabufferuacout48(void);
-void release_dmabufferuacout48(uintptr_t addr);
-void processing_dmabufferuacout48(uintptr_t addr);
-
-uintptr_t getfilled_dmabufferuacin48(void);
-void release_dmabufferuacin48(uintptr_t addr);
 
 /* +++ UAC OUT data save - использование данных от компьютера. */
 void uacout_buffer_initialize(void);

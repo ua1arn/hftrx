@@ -366,12 +366,12 @@ typedef ALIGNX_BEGIN struct uacin48_tag
 		uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC];
 		uint8_t filler [EP_align(UACIN_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE)];
 	} u ALIGNX_END;		// спектр, 2*24*192 kS/S
-	void * tag3;
+	ALIGNX_BEGIN void * tag3 ALIGNX_END;
 } ALIGNX_END uacin48_t;
 
-int_fast32_t buffers_dmabufferuacin48cachesize(void)
+int_fast32_t cachesize_dmabufferuacin48(void)
 {
-	return EP_align(UACIN_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE);
+	return offsetof(uacin48_t, tag3) - offsetof(uacin48_t, u.buff);
 }
 
 static RAMBIGDTCM LIST_HEAD2 uacin48free;
@@ -422,7 +422,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 		void * tag3;
 	} ALIGNX_END voice192rts_t;
 
-	int_fast32_t buffers_dmabuffer192rtscachesize(void)
+	int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
 		return EP_align(UACIN_RTS192_DATASIZE_DMAC, DCACHEROWSIZE);
 	}
@@ -448,7 +448,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 		void * tag3;
 	} ALIGNX_END voice96rts_t;
 
-	int_fast32_t buffers_dmabuffer96rtscachesize(void)
+	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
 		return EP_align(UACIN_RTS96_DATASIZE_DMAC, DCACHEROWSIZE);
 	}
@@ -1219,9 +1219,10 @@ static uint_fast8_t isrts96(void)
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 // Сохранить буфер сэмплов для передачи в компьютер
-static RAMFUNC void
-buffers_savetouacin(uacin48_t * p)
+RAMFUNC void
+save_dmabufferuacin48(uintptr_t addr)
 {
+	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, u.buff);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_uacin += sizeof p->u.buff / sizeof p->u.buff [0] / (UACIN_FMT_CHANNELS_AUDIO48 * UACIN_AUDIO48_SAMPLEBYTES);	// в буфере пары сэмплов по три байта
@@ -2463,7 +2464,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 #if WITHRTS96
 
 	// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
-	static uintptr_t allocate_dmabufferuacinrts96(void)
+	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		LCLSPIN_LOCK(& locklistrts);
 		if (! IsListEmpty2(& uacinrts96free))
@@ -2623,7 +2624,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 	// Этой функцией пользуются обработчики прерываний DMA
 	// получить буфер для передачи в компьютер, через USB AUDIO
 	// Если в данный момент нет готового буфера, возврат 0
-	static uintptr_t getfilled_dmabufferuacinrts192(void)
+	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		LCLSPIN_LOCK(& locklistrts);
 		if (! IsListEmpty2(& uacin192rts))
@@ -2638,7 +2639,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 	}
 
 	// Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
-	uintptr_t allocate_dmabuffer192rts(void)
+	uintptr_t allocate_dmabufferuacinrts192(void)
 	{
 		LCLSPIN_LOCK(& locklistrts);
 		if (! IsListEmpty2(& voicesfree192rts))
@@ -2687,7 +2688,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		else
 		{
 			LCLSPIN_UNLOCK(& locklistrts);
-			PRINTF(PSTR("allocate_dmabuffer192rts() failure\n"));
+			PRINTF(PSTR("allocate_dmabufferuacinrts192() failure\n"));
 			for (;;)
 				;
 		}
@@ -2721,7 +2722,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		{
 			if (! isrts192())
 				return;
-			uintptr_t addr = allocate_dmabuffer192rts();
+			uintptr_t addr = allocate_dmabufferuacinrts192();
 			p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 			n = 0;
 
@@ -2821,25 +2822,20 @@ RAMFUNC uintptr_t allocate_dmabufferuacout48(void)
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 
-// Сохранить USB UAC IN буфер в никуда...
-static RAMFUNC void buffers_tonulluacin(uacin48_t * p)
-{
-	LCLSPIN_LOCK(& locklistuacin48);
-	InsertHeadList2(& uacin48free, & p->item);
-	LCLSPIN_UNLOCK(& locklistuacin48);
-}
-
 void RAMFUNC release_dmabufferuacin48(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, u.buff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	buffers_tonulluacin(p);
+
+	LCLSPIN_LOCK(& locklistuacin48);
+	InsertHeadList2(& uacin48free, & p->item);
+	LCLSPIN_UNLOCK(& locklistuacin48);
 }
 
 // Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
-static RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
+RAMFUNC uintptr_t allocate_dmabufferuacin48(void)
 {
 	LCLSPIN_LOCK(& locklistuacin48);
 	if (! IsListEmpty2(& uacin48free))
@@ -2931,7 +2927,7 @@ void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1)
 	}
 	else if (! isaudio48())
 	{
-		buffers_tonulluacin(p);
+		release_dmabufferuacin48((uintptr_t) p->u.buff);
 		p = NULL;
 		return;
 	}
@@ -2949,7 +2945,7 @@ void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1)
 
 	if (n >= ARRAY_SIZE(p->u.buff))
 	{
-		buffers_savetouacin(p);
+		save_dmabufferuacin48((uintptr_t) p->u.buff);
 		p = NULL;
 	}
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
