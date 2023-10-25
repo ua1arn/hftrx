@@ -10,6 +10,13 @@
 
 #include <stdint.h>
 
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 /* получить 32-бит значение */
 uint_fast32_t
 /* Low endian memory layout */
@@ -170,5 +177,11 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соотв
 /* Таблица разворота младших восьми бит */
 //extern const FLASHMEM unsigned char revbittable [256];
 uint_fast8_t revbits8(uint_fast8_t v);	// Функция разворота младших восьми бит
+
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* INC_UTILS_H_ */

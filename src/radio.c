@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"
+#include "buffers.h"
 #include "gui/gui.h"
 #include "synthcalcs.h"
 #include "board.h"
@@ -17,7 +18,6 @@
 #include "formats.h"
 
 #include "audio.h"
-#include "buffers.h"
 #include "codecs.h"
 #include "bootloader.h"
 

@@ -1295,8 +1295,8 @@ static aubufv_t uacin48average(aubufv_t v1, aubufv_t v2)
 static rsmpl_t uacout48rsmpl =
 {
 		.lock = & locklist16rx,
-		.skipsense = SKIPPEDBLOCKS,
 		.pdata = NULL,
+		.skipsense = SKIPPEDBLOCKS,
 		.bufsize = DMABUFFSIZE16RX,
 		.bufstep = DMABUFFSTEP16RX,
 		.rx = & resample16rx,
@@ -2064,7 +2064,7 @@ void RAMFUNC release_dmabuffer16tx(uintptr_t addr)
 
 static void debaudio(int v)
 {
-	static const char hex [16] = "0123456789ABCDEF";
+	static const char hex [] = "0123456789ABCDEF";
 
 	dbg_putchar(hex [(v >> 12) & 0x0F]);
 	dbg_putchar(hex [(v >> 8) & 0x0F]);

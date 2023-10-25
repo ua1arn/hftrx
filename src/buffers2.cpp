@@ -5,11 +5,11 @@
 // UA1ARN
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "buffers.h"
 #include "formats.h"	// for debug prints
 
 #include "mslist.h"
 #include "audio.h"
-#include "buffers.h"
 
 #define BUFOVERSIZE 1
 
