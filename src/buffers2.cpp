@@ -482,6 +482,8 @@ typedef enum
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
 		uacinrts192list.save_buffer(p);
+
+		refreshDMA_uacinrts192();		// если DMA  остановлено - начать обмен
 	}
 
 
@@ -533,6 +535,8 @@ typedef enum
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
 		uacinrts96list.save_buffer(p);
+
+		refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 	}
 
 
@@ -586,6 +590,8 @@ void save_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
 	uacin48list.save_buffer(p);
+
+	refreshDMA_uacin48();		// если DMA  остановлено - начать обмен
 }
 
 void release_dmabufferuacin48(uintptr_t addr)

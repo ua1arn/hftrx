@@ -606,8 +606,6 @@ void release_dmabuffer32rx(uintptr_t addr);
 int_fast32_t cachesize_dmabuffer32rx(void);
 
 
-uintptr_t allocate_dmabufferuacinrts192(void);
-
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 // WITHUSBUACIN2 specific

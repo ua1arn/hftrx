@@ -973,7 +973,7 @@ buffers_savefromuacout(voice16rx_t * p)
 	debugcount_uacout += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
-#if WITHUSBUAC
+#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 	buffers_savetoresampling16rx(p);
 #else /* WITHUSBUAC */
 	buffers_tonull16rx(p);
@@ -1142,9 +1142,10 @@ static uint_fast8_t isrts192(void)
 }
 
 // Сохранить буфер сэмплов для передачи в компьютер
-static RAMFUNC void
-buffers_savetouacin192rts(voice192rts_t * p)
+RAMFUNC void
+save_dmabufferuacinrts192(uintptr_t addr)
 {
+	voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
@@ -2206,7 +2207,7 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
-	//sbuffers_savetouacin192rts(p);
+	//save_dmabufferuacinrts192(p);
 	buffers_savetonull192rts(p);
 }
 #endif /* WITHRTS192 */
@@ -2718,35 +2719,30 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 	void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
 		// если есть инициализированный канал для выдачи звука
-		static voice192rts_t * RAMBIGDTCM p = NULL;
-		static RAMBIGDTCM unsigned n;
+		static uint8_t * buff = NULL;
+		static unsigned n;
 
 		if (p == NULL)
 		{
 			if (! isrts192())
 				return;
-			uintptr_t addr = allocate_dmabufferuacinrts192();
-			p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
+			buff = (uint8_t *) allocate_dmabufferuacinrts192();
 			n = 0;
-
-			ASSERT(p->tag == BUFFTAG_RTS192);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
 		}
 		else if (! isrts192())
 		{
-			buffers_savetonull192rts(p);
+			release_dmabufferuacinrts192((uintptr_t) buff);
 			p = NULL;
 			return;
 		}
 
-		n += place_le(p->u.buff + n, transform_do32(& if2rts192out, ch0), UACIN_RTS192_SAMPLEBYTES);	// sample value
-		n += place_le(p->u.buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
+		n += place_le(buff + n, transform_do32(& if2rts192out, ch0), UACIN_RTS192_SAMPLEBYTES);	// sample value
+		n += place_le(buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
 
-		if (n >= ARRAY_SIZE(p->u.buff))
+		if (n >= UACIN_RTS192_DATASIZE_DMAC)
 		{
-			buffers_savetouacin192rts(p);
-			p = NULL;
+			save_dmabufferuacinrts192((uintptr_t) buff);
+			buff = NULL;
 		}
 	}
 
