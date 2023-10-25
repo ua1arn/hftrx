@@ -1360,10 +1360,10 @@ gpioX_onchangeinterrupt(
 	//	0x2: High Level
 	//	0x3: Low Level
 	//	0x4: Double Edge (Positive/Negative)
-	unsigned cfgbits = 0;	// default - high level
+	unsigned cfgbits = 0x02;	// default - high level
 
 	if (! raise && ! fall)
-		cfgbits = 0x00;		// default - high level
+		cfgbits = 0x02;		// default - high level
 	else if (raise && ! fall)
 		cfgbits = 0x00;		// 0x0: Positive Edge
 	else if (! raise && fall)
@@ -1386,7 +1386,7 @@ gpioX_onchangeinterrupt(
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
-		const portholder_t mask = (portholder_t) 0x01L << pos;
+		const portholder_t mask = (portholder_t) 0x01 << pos;
 		if ((ipins & mask) == 0)
 			continue;
 		//gpiohandlers [gpioix] [pos] = handler;
