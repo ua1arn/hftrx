@@ -983,7 +983,11 @@ typedef struct GPIOBLOCK_Type
         volatile uint32_t EINT_DEB;                   /*!< Offset 0x218 External Interrupt Debounce Register */
                  uint32_t reserved_0x01C;
     } GPIO_INTS [0x009];                              /*!< Offset 0x200 GPIO interrupt control */
-} GPIOBLOCK_TypeDef; /* size of structure = 0x320 */
+             uint32_t reserved_0x320 [0x0008];
+    volatile uint32_t PIO_POW_MOD_SEL;                /*!< Offset 0x340 PIO Group Withstand Voltage Mode Select Register */
+    volatile uint32_t PIO_POW_MS_CTL;                 /*!< Offset 0x344 PIO Group Withstand Voltage Mode Select Control Register */
+    volatile uint32_t PIO_POW_VAL;                    /*!< Offset 0x348 PIO Group Power Value Register */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x34C */
 /*
  * @brief GPIOINT
  */

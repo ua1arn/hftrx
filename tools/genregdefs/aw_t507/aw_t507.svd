@@ -4352,6 +4352,33 @@
     </registers>
     <dimIncrement>0x120</dimIncrement>
    </cluster>
+   <register>
+    <name>PIO_POW_MOD_SEL</name>
+    <displayName>PIO_POW_MOD_SEL</displayName>
+    <description>PIO Group Withstand Voltage Mode Select Register</description>
+    <addressOffset>0x340</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIO_POW_MS_CTL</name>
+    <displayName>PIO_POW_MS_CTL</displayName>
+    <description>PIO Group Withstand Voltage Mode Select Control Register</description>
+    <addressOffset>0x344</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIO_POW_VAL</name>
+    <displayName>PIO_POW_VAL</displayName>
+    <description>PIO Group Power Value Register</description>
+    <addressOffset>0x348</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral derivedFrom="GPIOBLOCK">
