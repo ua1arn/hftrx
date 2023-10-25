@@ -19,6 +19,8 @@
 #define UACOUT48_CAPACITY (4 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
+#define SPEEX_CAPACITY (5 * BUFOVERSIZE)
+
 #if WITHUSBHW
 	#include "usb/usb200.h"
 	#include "usb/usbch9.h"
@@ -152,18 +154,24 @@ public:
 
 #if 0
 // Denoise operations
+
+typedef ALIGNX_BEGIN struct denoise16
+{
+	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
+} ALIGNX_END denoise16_t;
+
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef blists<speexel_t, NTRX * FIRBUFSIZE, 5> denoise16list_t;
+typedef blists<denoise16_t, SPEEX_CAPACITY> denoise16list_t;
 
 static denoise16list_t denoise16list(IRQL_REALTIME);
 
 // получить готоввый
 extern "C" uint_fast8_t takespeexready(speexel_t * * dest)
 {
-	speexel_t * addr;
+	denoise16_t * addr;
 	if (denoise16list.get_readybuffer(& addr))
 	{
-		* dest = addr;
+		* dest = addr->buff;
 		return 1;
 	}
 	return 0;
@@ -172,10 +180,10 @@ extern "C" uint_fast8_t takespeexready(speexel_t * * dest)
 // получить свободный
 extern "C" speexel_t * allocatespeexbuffer(void)
 {
-	speexel_t * addr;
+	denoise16_t * addr;
 	if (denoise16list.get_freebufferforced(& addr))
 	{
-		return addr;
+		return addr->buff;
 	}
 	return NULL;
 }
@@ -183,13 +191,15 @@ extern "C" speexel_t * allocatespeexbuffer(void)
 // Освобождение буфера
 extern "C" void releasespeexbuffer(speexel_t * t)
 {
-	denoise16list.release_buffer(t);
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
+	denoise16list.release_buffer(p);
 }
 
 // сохранение длч обработки буфера
 extern "C" void savespeexbuffer(speexel_t * t)
 {
-	denoise16list.save_buffer(t);
+	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
+	denoise16list.save_buffer(p);
 }
 
 #endif
