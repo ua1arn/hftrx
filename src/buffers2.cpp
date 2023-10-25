@@ -11,6 +11,7 @@
 #include "audio.h"
 #include "buffers.h"
 
+#define BUFOVERSIZE 1
 
 #if WITHUSBHW
 #include "usb/usb200.h"
@@ -300,7 +301,7 @@ extern "C"
 uintptr_t allocate_dmabufferuacout48(void)
 {
 	uacout48buff_t * dest;
-	while (uacout48list.get_freebuffer(& dest) == 0)
+	while (uacout48list.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) & dest->buff;
 }
@@ -350,7 +351,7 @@ enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 		unsigned tag;
 	} voice96rtsbuff_t;
-	typedef blists<voice96rtsbuff_t, 20> voice96rtslist_t;
+	typedef blists<voice96rtsbuff_t, 14 * BUFOVERSIZE> voice96rtslist_t;
 	static voice96rtslist_t voice96rtslist(IRQL_REALTIME);
 
 	extern "C" int_fast32_t cachesize_dmabufferuacinrts96(void)

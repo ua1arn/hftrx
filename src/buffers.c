@@ -435,6 +435,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 
 #elif WITHRTS96
 
+#if 1
 	typedef ALIGNX_BEGIN struct voices96rts
 	{
 		LIST_ENTRY item;	// layout should be same in uacin48_t, voice96rts_t and voice192rts_t
@@ -455,6 +456,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 
 	static RAMBIGDTCM LIST_HEAD2 uacinrts96free;
 	static RAMBIGDTCM LIST_HEAD2 uacinrts96ready;	// Буферы для записи в вудиоканал USB к компьютер спектра, 2*32*192 kS/S
+#endif
 
 	static RAMBIGDTCM LCLSPINLOCK_t locklistrts = LCLSPINLOCK_INIT;
 	static subscribeint32_t uacinrtssubscribe;
@@ -1179,9 +1181,10 @@ static uint_fast8_t isrts96(void)
 }
 
 // Сохранить буфер сэмплов для передачи в компьютер
-static RAMFUNC void
-buffers_savetouacinrts96(voice96rts_t * p)
+RAMFUNC void
+save_dmabuferuacinrts96(uintptr_t addr)
 {
+	voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 	ASSERT(p->tag == BUFFTAG_RTS96);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
@@ -1197,8 +1200,9 @@ buffers_savetouacinrts96(voice96rts_t * p)
 	refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 }
 
-static void buffers_savetonull96rts(voice96rts_t * p)
+void save_dmabufuacinrts96rts(uintptr_t addr)
 {
+	voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 	ASSERT(p->tag == BUFFTAG_RTS96);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
@@ -2463,6 +2467,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #if WITHRTS96
 
+	#if 1
 	// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
@@ -2572,7 +2577,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		LCLSPIN_UNLOCK(& locklistrts);
 		return 0;
 	}
-
+#endif
 	// Поэлементное заполнение буфера RTS96
 
 	// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
@@ -2580,39 +2585,32 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 	void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
 		// если есть инициализированный канал для выдачи звука
-		static voice96rts_t * p = NULL;
+		static uint8_t * buff = NULL;
 		static unsigned n;
 
-		if (p == NULL)
+		if (buff == NULL)
 		{
 			if (! isrts96())
 				return;
-			uintptr_t addr = allocate_dmabufferuacinrts96();
-			p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
+			buff = (uint8_t *) allocate_dmabufferuacinrts96();
 			n = 0;
-			ASSERT(p->tag == BUFFTAG_RTS96);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
 		}
 		else if (! isrts96())
 		{
-			buffers_savetonull96rts(p);
-			p = NULL;
+			save_dmabufuacinrts96rts((uintptr_t) buff);
+			buff = NULL;
 			return;
 		}
 
-		place_le(p->u.buff + n, transform_do32(& if2rts96out, ch0), UACIN_RTS96_SAMPLEBYTES);	// sample value
+		place_le(buff + n, transform_do32(& if2rts96out, ch0), UACIN_RTS96_SAMPLEBYTES);	// sample value
 		n += UACIN_RTS96_SAMPLEBYTES;
-		place_le(p->u.buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
+		place_le(buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
 		n += UACIN_RTS96_SAMPLEBYTES;
 
-		if (n >= ARRAY_SIZE(p->u.buff))
+		if (n >= UACIN_RTS96_DATASIZE_DMAC)
 		{
-			ASSERT(p->tag == BUFFTAG_RTS96);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			buffers_savetouacinrts96(p);
-			p = NULL;
+			save_dmabuferuacinrts96((uintptr_t) buff);
+			buff = NULL;
 		}
 	}
 
@@ -2620,6 +2618,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #if WITHRTS192
 
+	#if 0
 	// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
 	// Этой функцией пользуются обработчики прерываний DMA
 	// получить буфер для передачи в компьютер, через USB AUDIO
@@ -2696,7 +2695,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 	// Этой функцией пользуются обработчики прерываний DMA
 	// передали буфер, считать свободным
-	static void release_dmabuffer192rts(uintptr_t addr)
+	void release_dmabufferuacinrts192(uintptr_t addr)
 	{
 		voice192rts_t * const p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
 		ASSERT(p->tag == BUFFTAG_RTS192);
@@ -2706,6 +2705,7 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		InsertHeadList2(& voicesfree192rts, & p->item);
 		LCLSPIN_UNLOCK(& locklistrts);
 	}
+	#endif
 
 	// NOT USED
 	// Поэлементное заполнение буфера RTS192
@@ -2752,68 +2752,6 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 #endif /* WITHRTS192 */
 
 #if WITHUSBUACOUT
-
-#if 0
-
-void RAMFUNC release_dmabufferuacout48(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, u.buff);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-
-	LCLSPIN_LOCK(& locklistuacout48);
-	InsertHeadList2(& uacout48free, & p->item);
-	LCLSPIN_UNLOCK(& locklistuacout48);
-}
-
-// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
-RAMFUNC uintptr_t allocate_dmabufferuacout48(void)
-{
-	LCLSPIN_LOCK(& locklistuacout48);
-	if (! IsListEmpty2(& uacout48free))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& uacout48free);
-		LCLSPIN_UNLOCK(& locklistuacout48);
-		uacout48_t * const p = CONTAINING_RECORD(t, uacout48_t, item);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->u.buff;
-	}
-	else if (! IsListEmpty2(& uacout48ready))
-	{
-		// Ошибочная ситуация - если буферы не освобождены вовремя -
-		// берём из очереди готовых к передаче
-#if WITHBUFFERSDEBUG
-		++ e14;
-#endif /* WITHBUFFERSDEBUG */
-
-		uint_fast8_t n = 3;
-		do
-		{
-			const PLIST_ENTRY t = RemoveTailList2(& uacout48ready);
-			InsertHeadList2(& uacout48free, t);
-		}
-		while (-- n && ! IsListEmpty2(& uacout48ready));
-
-		PLIST_ENTRY t = RemoveTailList2(& uacout48free);
-		LCLSPIN_UNLOCK(& locklistuacout48);
-		uacout48_t * const p = CONTAINING_RECORD(t, uacout48_t, item);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->u.buff;
-	}
-	else
-	{
-		LCLSPIN_UNLOCK(& locklistuacout48);
-		PRINTF(PSTR("allocate_dmabufferuacout48() failure, uacinalt=%d\n"), uacinalt);
-		for (;;)
-			;
-	}
-	return 0;
-}
-
-#endif
 
 
 void processing_dmabufferuacout48(uintptr_t addr)
@@ -3139,7 +3077,7 @@ void release_dmabufferuacinX(uintptr_t addr)
 
 #if WITHRTS192
 	case BUFFTAG_RTS192:
-		release_dmabuffer192rts(addr);
+		release_dmabufferuacinrts192(addr);
 		return;
 #endif /* WITHRTS192 */
 
