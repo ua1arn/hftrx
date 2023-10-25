@@ -20,8 +20,8 @@
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
 #if WITHUSBHW
-#include "usb/usb200.h"
-#include "usb/usbch9.h"
+	#include "usb/usb200.h"
+	#include "usb/usbch9.h"
 #endif /* WITHUSBHW */
 
 #include <string.h>		// for memset
@@ -314,8 +314,7 @@ void release_dmabufferuacout48(uintptr_t addr)
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 
-#if 1
-
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 
 typedef enum
 {
@@ -434,156 +433,143 @@ typedef enum
 
 #endif /* WITHRTS96 */
 
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+// USB AUDIO IN
 
-	// USB AUDIO IN
-
-	typedef struct
-	{
-		uacintag_t tag;
-		ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
-		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
-	} uacin48_t;
-
-	typedef blists<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
-
-	static uacin48list_t uacin48list(IRQL_REALTIME);
-
-	extern "C" int_fast32_t cachesize_dmabufferuacin48(void)
-	{
-		return offsetof(uacin48_t, pad) - offsetof(uacin48_t, buff);
-	}
-
-	extern "C"
-	uintptr_t allocate_dmabufferuacin48(void)
-	{
-		uacin48_t * dest;
-		while (uacin48list.get_freebufferforced(& dest) == 0)
-			ASSERT(0);
-		dest->tag = BUFFTAG_UACIN48;
-		return (uintptr_t) & dest->buff;
-	}
-
-	extern "C"
-	uintptr_t getfilled_dmabufferuacin48(void)
-	{
-		uacin48_t * dest;
-		while (uacin48list.get_readybuffer(& dest) == 0)
-			ASSERT(0);
-		dest->tag = BUFFTAG_UACIN48;
-		return (uintptr_t) & dest->buff;
-	}
-
-	extern "C"
-	void save_dmabufferuacin48(uintptr_t addr)
-	{
-		uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
-		uacin48list.save_buffer(p);
-	}
-
-	extern "C"
-	void release_dmabufferuacin48(uintptr_t addr)
-	{
-		uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
-		uacin48list.release_buffer(p);
-	}
-	#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
-
-
-	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-	void release_dmabufferuacinX(uintptr_t addr)
-	{
-		//ASSERT(addr != 0);
-		uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
-		switch (p->tag)
-		{
-	#if WITHRTS96
-		case BUFFTAG_RTS96:
-			release_dmabufferuacinrts96(addr);
-			return;
-	#endif /* WITHRTS96 */
-
-	#if WITHRTS192
-		case BUFFTAG_RTS192:
-			release_dmabufferuacinrts192(addr);
-			return;
-	#endif /* WITHRTS192 */
-
-		case BUFFTAG_UACIN48:
-			release_dmabufferuacin48(addr);
-			return;
-
-		default:
-			PRINTF(PSTR("release_dmabufferuacinX: wrong tag value: p=%p, %02X\n"), p, p->tag);
-			for (;;)
-				;
-		}
-	}
-
-#endif
-
-#if 1
-	// message buffers
-	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
-
-	typedef struct
-	{
-		uint8_t type;
-		uint8_t data [MSGBUFFERSIZE8];
-	} message8buff_t;
-
-	typedef blists<message8buff_t, 12> message8list_t;
-
-	static message8list_t message8list(IRQL_SYSTEM);
-
-	// Освобождение обработанного буфера сообщения
-	extern "C" void releasemsgbuffer(uint8_t * dest)
-	{
-		message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
-		message8list.release_buffer(p);
-	}
-	// Буфер для формирования сообщения
-	extern "C" size_t takemsgbufferfree(uint8_t * * dest)
-	{
-		message8buff_t * addr;
-		if (message8list.get_freebuffer(& addr))
-		{
-			* dest = addr->data;
-			return sizeof addr->data;
-		}
-		return 0;
-	}
-	// поместить сообщение в очередь к исполнению
-	extern "C" void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
-	{
-		message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
-		p->type = type;
-		message8list.save_buffer(p);
-	}
-
-	// Буферы с принятымти от обработчиков прерываний сообщениями
-	extern "C" uint_fast8_t takemsgready(uint8_t * * dest)
-	{
-		message8buff_t * addr;
-		if (message8list.get_readybuffer(& addr))
-		{
-			* dest = addr->data;
-			return addr->type;
-		}
-		return MSGT_EMPTY;
-	}
-
-#endif
-
-extern "C" void buffers2_initialize(void)
+typedef struct
 {
+	uacintag_t tag;
+	ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+} uacin48_t;
+
+typedef blists<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
+
+static uacin48list_t uacin48list(IRQL_REALTIME);
+
+extern "C" int_fast32_t cachesize_dmabufferuacin48(void)
+{
+	return offsetof(uacin48_t, pad) - offsetof(uacin48_t, buff);
 }
 
-#else  /* WITHINTEGRATEDDSP */
-
-// stub function
-extern "C" void buffers2_initialize(void)
+extern "C"
+uintptr_t allocate_dmabufferuacin48(void)
 {
+	uacin48_t * dest;
+	while (uacin48list.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	dest->tag = BUFFTAG_UACIN48;
+	return (uintptr_t) & dest->buff;
 }
+
+extern "C"
+uintptr_t getfilled_dmabufferuacin48(void)
+{
+	uacin48_t * dest;
+	while (uacin48list.get_readybuffer(& dest) == 0)
+		ASSERT(0);
+	dest->tag = BUFFTAG_UACIN48;
+	return (uintptr_t) & dest->buff;
+}
+
+extern "C"
+void save_dmabufferuacin48(uintptr_t addr)
+{
+	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
+	uacin48list.save_buffer(p);
+}
+
+extern "C"
+void release_dmabufferuacin48(uintptr_t addr)
+{
+	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
+	uacin48list.release_buffer(p);
+}
+
+/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinX(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
+	switch (p->tag)
+	{
+#if WITHRTS96
+	case BUFFTAG_RTS96:
+		release_dmabufferuacinrts96(addr);
+		return;
+#endif /* WITHRTS96 */
+
+#if WITHRTS192
+	case BUFFTAG_RTS192:
+		release_dmabufferuacinrts192(addr);
+		return;
+#endif /* WITHRTS192 */
+
+	case BUFFTAG_UACIN48:
+		release_dmabufferuacin48(addr);
+		return;
+
+	default:
+		PRINTF(PSTR("release_dmabufferuacinX: wrong tag value: p=%p, %02X\n"), p, p->tag);
+		for (;;)
+			;
+
+	}
+}
+#endif /* uacin */
 
 #endif /* WITHINTEGRATEDDSP */
+
+// message buffers
+/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
+
+typedef struct
+{
+	uint8_t type;
+	uint8_t data [MSGBUFFERSIZE8];
+} message8buff_t;
+
+typedef blists<message8buff_t, 12> message8list_t;
+
+static message8list_t message8list(IRQL_SYSTEM);
+
+// Освобождение обработанного буфера сообщения
+extern "C" void releasemsgbuffer(uint8_t * dest)
+{
+	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
+	message8list.release_buffer(p);
+}
+// Буфер для формирования сообщения
+extern "C" size_t takemsgbufferfree(uint8_t * * dest)
+{
+	message8buff_t * addr;
+	if (message8list.get_freebuffer(& addr))
+	{
+		* dest = addr->data;
+		return sizeof addr->data;
+	}
+	return 0;
+}
+// поместить сообщение в очередь к исполнению
+extern "C" void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
+{
+	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
+	p->type = type;
+	message8list.save_buffer(p);
+}
+
+// Буферы с принятымти от обработчиков прерываний сообщениями
+extern "C" uint_fast8_t takemsgready(uint8_t * * dest)
+{
+	message8buff_t * addr;
+	if (message8list.get_readybuffer(& addr))
+	{
+		* dest = addr->data;
+		return addr->type;
+	}
+	return MSGT_EMPTY;
+}
+
+extern "C" void buffers2_initialize(void)
+{
+}
+
