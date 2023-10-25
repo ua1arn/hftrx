@@ -250,7 +250,7 @@ uintptr_t allocate_dmabuffer16tx(void)
 }
 #endif
 
-#if 0
+#if 1
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
@@ -286,7 +286,7 @@ uintptr_t allocate_dmabuffer32tx(void)
 void save_dmabuffer32tx(uintptr_t addr)
 {
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
-	voice32txlist.release_buffer(p);
+	voice32txlist.save_buffer(p);
 }
 
 uintptr_t getfilled_dmabuffer32tx(void)

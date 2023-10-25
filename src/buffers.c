@@ -254,7 +254,7 @@ int_fast32_t cachesize_dmabuffer16tx(void)
 }
 #endif
 
-#if 1
+#if 0
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
@@ -334,7 +334,7 @@ static RAMBIGDTCM LIST_HEAD3 voicesphones16tx;	// буферы, предназн
 static RAMBIGDTCM LIST_HEAD3 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
 static RAMBIGDTCM LCLSPINLOCK_t locklist16tx = LCLSPINLOCK_INIT;
 
-#if 1
+#if 0
 static RAMBIGDTCM LIST_HEAD2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 static RAMBIGDTCM LIST_HEAD2 voicesfree32tx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32tx = LCLSPINLOCK_INIT;
@@ -1769,7 +1769,7 @@ void releasemodembuffer_low(uint8_t * dest)
 
 #endif /* WITHMODEM */
 
-#if 1
+#if 0
 // Этой функцией пользуются обработчики прерываний DMA на передачу данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 {
@@ -3440,7 +3440,7 @@ void buffers_initialize(void)
 	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	#endif /* WITHRTS192 */
-	#if 1
+	#if 0
 	{
 		unsigned i;
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
