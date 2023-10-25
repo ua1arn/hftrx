@@ -342,28 +342,84 @@ enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 		unsigned tag;
 	} voice192rtsbuff_t;
-	typedef blists<uint8_t, UACIN_RTS192_DATASIZE_DMAC, 20> voice192rtslist_t;
+	typedef blists<voice192rtsbuff_t, 20> voice192rtslist_t;
 	static voice192rtslist_t voice192rtslist(IRQL_REALTIME);
 
 	extern "C" int_fast32_t buffers_dmabuffer192rtscachesize(void)
 	{
-		return voice192rtslist.get_cachesize();
+		return offsetof(voice192rtsbuff_t, pad) - offsetof(voice192rtsbuff_t, buff);
 	}
 
 #elif WITHRTS96
 
-	typedef blists<uint8_t, UACIN_RTS96_DATASIZE_DMAC, 20> voice96rtslist_t;
+	typedef struct
+	{
+		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
+		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+		unsigned tag;
+	} voice96rtsbuff_t;
+	typedef blists<voice96rtsbuff_t, 20> voice96rtslist_t;
 	static voice96rtslist_t voice96rtslist(IRQL_REALTIME);
 
 	extern "C" int_fast32_t buffers_dmabuffer96rtscachesize(void)
 	{
-		return voice96rtslist.get_cachesize();
+		return offsetof(voice96rtsbuff_t, pad) - offsetof(voice96rtsbuff_t, buff);
 	}
 
 #endif /* WITHRTS96 */
 
 #endif
 
+#if 1
+	// message buffers
+	/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
+
+	typedef struct
+	{
+		uint8_t type;
+		uint8_t data [MSGBUFFERSIZE8];
+	} message8buff_t;
+	typedef blists<message8buff_t, 12> message8list_t;
+	static message8list_t message8list(IRQL_SYSTEM);
+
+	// Освобождение обработанного буфера сообщения
+	extern "C" void releasemsgbuffer(uint8_t * dest)
+	{
+		message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
+		message8list.release_buffer(p);
+	}
+	// Буфер для формирования сообщения
+	extern "C" size_t takemsgbufferfree(uint8_t * * dest)
+	{
+		message8buff_t * addr;
+		if (message8list.get_freebuffer(& addr))
+		{
+			* dest = addr->data;
+			return sizeof addr->data;
+		}
+		return 0;
+	}
+	// поместить сообщение в очередь к исполнению
+	extern "C" void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
+	{
+		message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
+		p->type = type;
+		message8list.save_buffer(p);
+	}
+
+	// Буферы с принятымти от обработчиков прерываний сообщениями
+	extern "C" uint_fast8_t takemsgready(uint8_t * * dest)
+	{
+		message8buff_t * addr;
+		if (message8list.get_readybuffer(& addr))
+		{
+			* dest = addr->data;
+			return addr->type;
+		}
+		return MSGT_EMPTY;
+	}
+
+#endif
 
 extern "C" void buffers2_initialize(void)
 {

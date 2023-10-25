@@ -496,6 +496,7 @@ static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти 
 
 #endif /* WITHMODEM */
 
+#if 0
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 typedef struct message
@@ -510,6 +511,7 @@ typedef struct message
 static volatile RAMBIGDTCM VLIST_ENTRY msgsfree8;		// Свободные буферы
 static volatile RAMBIGDTCM VLIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 static RAMBIGDTCM LCLSPINLOCK_t locklistmsg8 = LCLSPINLOCK_INIT;
+#endif
 
 #if WITHBUFFERSDEBUG
 
@@ -762,6 +764,7 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
 
+#if 0
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
@@ -841,6 +844,7 @@ void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
 	LCLSPIN_UNLOCK(& locklistmsg8);
 	LowerIrql(oldIrql);
 }
+#endif
 
 #if WITHINTEGRATEDDSP
 
@@ -3587,6 +3591,7 @@ void buffers_initialize(void)
 #endif
 #endif /* WITHINTEGRATEDDSP */
 
+#if 0
 	{
 		unsigned i;
 		/* Cообщения от уровня обработчиков прерываний к user-level функциям. */
@@ -3605,7 +3610,7 @@ void buffers_initialize(void)
 		}
 		LCLSPINLOCK_INITIALIZE(& locklistmsg8);
 	}
-
+#endif
 	// Инициализация ресэмплеров
 
 }
