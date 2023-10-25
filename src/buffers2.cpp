@@ -54,7 +54,6 @@ public:
 		for (i = 0; i < capacity; ++ i)
 		{
 			buffitem_t * const p = & storage [i];
-			//p->tag = BUFFTAG_RTS192;
 			p->tag2 = p;
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
@@ -318,13 +317,13 @@ void release_dmabufferuacout48(uintptr_t addr)
 #if 1
 
 
-enum
+typedef enum
 {
 	BUFFTAG_UACIN48 = 44,
 	BUFFTAG_RTS192,
 	BUFFTAG_RTS96,
 	BUFFTAG_total
-};
+} uacintag_t;
 
 // USB AUDIO RTS IN
 
@@ -333,7 +332,7 @@ enum
 
 	typedef struct
 	{
-		unsigned tag;
+		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts192_t;
@@ -385,7 +384,7 @@ enum
 
 	typedef struct
 	{
-		unsigned tag;
+		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts96_t;
@@ -441,7 +440,7 @@ enum
 
 	typedef struct
 	{
-		unsigned tag;
+		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacin48_t;
