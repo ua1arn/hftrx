@@ -22,6 +22,10 @@
 #include "formats.h"
 #include "clocks.h"
 #include "t113_dram.h"
+
+
+#define MC_MEMC_BASE        0x03202000    /* MC */
+
 // Sources taker from:
 //	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
 //	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
