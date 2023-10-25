@@ -249,6 +249,7 @@ int_fast32_t cachesize_dmabuffer16tx(void)
 	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, tbuff);
 }
 
+#if 1
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
@@ -262,7 +263,9 @@ int_fast32_t cachesize_dmabuffer32tx(void)
 {
 	return offsetof(voice32tx_t, item) - offsetof(voice32tx_t, buff);
 }
+#endif
 
+#if 1
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
 {
@@ -274,6 +277,7 @@ int_fast32_t cachesize_dmabuffer32rx(void)
 {
 	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
 }
+#endif
 
 // I/Q SPECTRUM data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rts_tag
@@ -282,12 +286,12 @@ typedef ALIGNX_BEGIN struct voices32rts_tag
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rts_t;
 
-int_fast32_t cachesize_dmabuffer32rts(void)
-{
-	/* надо сделать правильно - вернуь размер буфера в байтах */
-	ASSERT(0);
-	return offsetof(voice32rts_t, item) - offsetof(voice32rts_t, buff);
-}
+//int_fast32_t cachesize_dmabuffer32rts(void)
+//{
+//	/* надо сделать правильно - вернуь размер буфера в байтах */
+//	ASSERT(0);
+//	return offsetof(voice32rts_t, item) - offsetof(voice32rts_t, buff);
+//}
 
 #if 1
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
@@ -322,9 +326,11 @@ static RAMBIGDTCM LIST_HEAD3 voicesphones16tx;	// буферы, предназн
 static RAMBIGDTCM LIST_HEAD3 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
 static RAMBIGDTCM LCLSPINLOCK_t locklist16tx = LCLSPINLOCK_INIT;
 
+#if 1
 static RAMBIGDTCM LIST_HEAD2 voicesready32tx;	// буферы, предназначенные для выдачи на IF DAC
 static RAMBIGDTCM LIST_HEAD2 voicesfree32tx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32tx = LCLSPINLOCK_INIT;
+#endif
 
 static RAMBIGDTCM LIST_HEAD2 voicesfree32rx;
 static RAMBIGDTCM LCLSPINLOCK_t locklist32rx = LCLSPINLOCK_INIT;
@@ -1787,6 +1793,7 @@ void releasemodembuffer_low(uint8_t * dest)
 
 #endif /* WITHMODEM */
 
+#if 1
 // Этой функцией пользуются обработчики прерываний DMA на передачу данных по SAI
 RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 {
@@ -1851,6 +1858,82 @@ RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 	}
 	return 0;
 }
+
+void release_dmabuffer32rx(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+
+	LCLSPIN_LOCK(& locklist32rx);
+	InsertHeadList2(& voicesfree32rx, & p->item);
+	LCLSPIN_UNLOCK(& locklist32rx);
+
+}
+
+// Этой функцией пользуются обработчики прерываний DMA
+// получить буфер для передачи через IF DAC
+uintptr_t getfilled_dmabuffer32tx(void)
+{
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_tx32dac += CNT32TX;	// в буфере пары сэмплов по четыре байта
+#endif /* WITHBUFFERSDEBUG */
+
+	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+
+	LCLSPIN_LOCK(& locklist32tx);
+	if (! IsListEmpty2(& voicesready32tx))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& voicesready32tx);
+		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
+		LCLSPIN_UNLOCK(& locklist32tx);
+		return (uintptr_t) & p->buff;
+	}
+	LCLSPIN_UNLOCK(& locklist32tx);
+#if WITHBUFFERSDEBUG
+	++ e9;
+#endif /* WITHBUFFERSDEBUG */
+	return allocate_dmabuffer32tx();	// аварийная ветка - работает первые несколько раз
+}
+
+uintptr_t getfilled_dmabuffer32tx_main(void)
+{
+	return getfilled_dmabuffer32tx();
+}
+
+
+// Этой функцией пользуются обработчики прерываний DMA
+// получить буфер для передачи через IF DAC2
+uintptr_t getfilled_dmabuffer32tx_sub(void)
+{
+	return allocate_dmabuffer32tx();
+}
+
+// Этой функцией пользуются обработчики прерываний DMA
+// передали буфер, считать свободным
+void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	LCLSPIN_LOCK(& locklist32tx);
+	InsertHeadList2(& voicesfree32tx, & p->item);
+	LCLSPIN_UNLOCK(& locklist32tx);
+}
+
+void RAMFUNC save_dmabuffer32tx(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	LCLSPIN_LOCK(& locklist32tx);
+	InsertHeadList2(& voicesready32tx, & p->item);
+	LCLSPIN_UNLOCK(& locklist32tx);
+}
+
+#endif
 
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
 RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
@@ -1960,18 +2043,6 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 	return 0;
 }
 
-// Этой функцией пользуются обработчики прерываний DMA
-// передали буфер, считать свободным
-void RAMFUNC release_dmabuffer32tx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist32tx);
-	InsertHeadList2(& voicesfree32tx, & p->item);
-	LCLSPIN_UNLOCK(& locklist32tx);
-}
 
 // Этой функцией пользуются обработчики прерываний DMA
 // передали буфер, считать свободным
@@ -2062,8 +2133,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-	dsp_extbuffer32rx(p->buff);
+	dsp_extbuffer32rx((IFADCvalue_t *) addr);
 
 	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
@@ -2082,17 +2152,6 @@ void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
 #endif /* WITHBUFFERSDEBUG */
 	voice32rts_t * const p = CONTAINING_RECORD(addr, voice32rts_t, buff);
 	dsp_extbuffer32rts(p->buff);
-}
-
-void release_dmabuffer32rx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-
-	LCLSPIN_LOCK(& locklist32rx);
-	InsertHeadList2(& voicesfree32rx, & p->item);
-	LCLSPIN_UNLOCK(& locklist32rx);
-
 }
 
 
@@ -2120,12 +2179,9 @@ pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 	voice16rx_t * const vrx16 = CONTAINING_RECORD(addr16rx, voice16rx_t, rbuff);
-	ASSERT(vrx16->tag2 == vrx16);
-	ASSERT(vrx16->tag3 == vrx16);
-	voice32rx_t * const vrx32 = CONTAINING_RECORD(addr32rx, voice32rx_t, buff);
 	unsigned i;
-	IFADCvalue_t * const rx32 = vrx32->buff;
-	aubufv_t * const rx16 = vrx16->rbuff;
+	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
+	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
 
 	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
 	ASSERT(sizeof * rx32 == sizeof * rx16);
@@ -2142,15 +2198,9 @@ static uintptr_t RAMFUNC
 pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	voice16tx_t * const vtx16 = CONTAINING_RECORD(addr16tx, voice16tx_t, tbuff);
-	ASSERT(vtx16->tag2 == vtx16);
-	ASSERT(vtx16->tag3 == vtx16);
-	voice32tx_t * const vtx32 = CONTAINING_RECORD(addr32tx, voice32tx_t, buff);
-	ASSERT(vtx32->tag2 == vtx32);
-	ASSERT(vtx32->tag3 == vtx32);
 
-	IFDACvalue_t * const tx32 = vtx32->buff;
-	aubufv_t * const tx16 = vtx16->tbuff;
+	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
+	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
 	unsigned i;
 	const FLOAT_t scale = 1.0 / 32;
 
@@ -2195,40 +2245,6 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 	buffers_savetonull192rts(p);
 }
 #endif /* WITHRTS192 */
-
-
-// Этой функцией пользуются обработчики прерываний DMA
-// получить буфер для передачи через IF DAC
-uintptr_t getfilled_dmabuffer32tx_main(void)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_tx32dac += CNT32TX;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-
-	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
-
-	LCLSPIN_LOCK(& locklist32tx);
-	if (! IsListEmpty2(& voicesready32tx))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& voicesready32tx);
-		voice32tx_t * const p = CONTAINING_RECORD(t, voice32tx_t, item);
-		LCLSPIN_UNLOCK(& locklist32tx);
-		return (uintptr_t) & p->buff;
-	}
-	LCLSPIN_UNLOCK(& locklist32tx);
-#if WITHBUFFERSDEBUG
-	++ e9;
-#endif /* WITHBUFFERSDEBUG */
-	return allocate_dmabuffer32tx();	// аварийная ветка - работает первые несколько раз
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-// получить буфер для передачи через IF DAC2
-uintptr_t getfilled_dmabuffer32tx_sub(void)
-{
-	return allocate_dmabuffer32tx();
-}
 
 
 
@@ -2346,27 +2362,25 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 // 32 bit, signed
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
-	static voice32tx_t * prepareout32tx = NULL;
+	static IFDACvalue_t * buff = NULL;
 	static unsigned level32tx;
 
-	if (prepareout32tx == NULL)
+	if (buff == NULL)
 	{
-		const uintptr_t addr = allocate_dmabuffer32tx();
-		voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
-		prepareout32tx = p;
+		buff = (IFDACvalue_t *) allocate_dmabuffer32tx();
 		level32tx = 0;
 	}
 
-	prepareout32tx->buff [level32tx + DMABUF32TXI] = ch0;
-	prepareout32tx->buff [level32tx + DMABUF32TXQ] = ch1;
+	buff [level32tx + DMABUF32TXI] = ch0;
+	buff [level32tx + DMABUF32TXQ] = ch1;
 
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
 
 #elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
 	/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
-	prepareout32tx->buff [level32tx + DMABUF32TX_NCO1] = dspfpga_get_nco1();
-	prepareout32tx->buff [level32tx + DMABUF32TX_NCO2] = dspfpga_get_nco2();
-	prepareout32tx->buff [level32tx + DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
+	buff [level32tx + DMABUF32TX_NCO1] = dspfpga_get_nco1();
+	buff [level32tx + DMABUF32TX_NCO2] = dspfpga_get_nco2();
+	buff [level32tx + DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
 #endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
 
 #if CPUSTYLE_XC7Z && WITHLFM
@@ -2381,10 +2395,8 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 	if ((level32tx += DMABUFFSTEP32TX) >= DMABUFFSIZE32TX)
 	{
-		LCLSPIN_LOCK(& locklist32tx);
-		InsertHeadList2(& voicesready32tx, & prepareout32tx->item);
-		LCLSPIN_UNLOCK(& locklist32tx);
-		prepareout32tx = NULL;
+		save_dmabuffer32tx((uintptr_t) buff);
+		buff = NULL;
 	}
 }
 
@@ -3130,7 +3142,7 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 #if WITHUSBUACIN2
 
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
+uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 {
 #if WITHBUFFERSDEBUG
 	++ n6;
@@ -3157,15 +3169,10 @@ uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep)
 #endif /* WITHUSBUACIN2 && WITHUSBHW */
 
 	default:
-		PRINTF(PSTR("getfilled_dmabufferxrts: uacinrtsalt=%u\n"), uacinrtsalt);
+		PRINTF(PSTR("getfilled_dmabufferuacinrtsX: uacinrtsalt=%u\n"), uacinrtsalt);
 		ASSERT(0);
 		return 0;
 	}
-}
-
-void release_dmabufferuacinrtsX(uintptr_t addr)	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-{
-	release_dmabufferuacinX(addr);
 }
 
 #endif /* WITHUSBUACIN2 */
@@ -3434,6 +3441,7 @@ void buffers_initialize(void)
 	}
 	#endif
 	#endif /* WITHRTS192 */
+	#if 1
 	{
 		unsigned i;
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice32tx_t voicesarray32tx [6 * BUFOVERSIZE] ALIGNX_END;
@@ -3449,6 +3457,8 @@ void buffers_initialize(void)
 		}
 		LCLSPINLOCK_INITIALIZE(& locklist32tx);
 	}
+	#endif
+	#if 0
 	{
 		unsigned i;
 		// +2 - для отладочной печати содеожимого буферов
@@ -3462,7 +3472,7 @@ void buffers_initialize(void)
 		}
 		LCLSPINLOCK_INITIALIZE(& locklist32rx);
 	}
-
+	#endif
 
 #if WITHUSEAUDIOREC
 

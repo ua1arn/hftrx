@@ -21,6 +21,10 @@
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
+#define VOICE32RX_CAPACITY (2 + 6 * BUFOVERSIZE)
+#define VOICE32TX_CAPACITY (6 * BUFOVERSIZE)
+#define VOICE32RTS_CAPACITY (1 * BUFOVERSIZE)	// dummy fn
+
 #if WITHUSBHW
 	#include "usb/usb200.h"
 	#include "usb/usbch9.h"
@@ -166,7 +170,7 @@ typedef blists<denoise16_t, SPEEX_CAPACITY> denoise16list_t;
 static denoise16list_t denoise16list(IRQL_REALTIME);
 
 // получить готоввый
-extern "C" uint_fast8_t takespeexready(speexel_t * * dest)
+uint_fast8_t takespeexready(speexel_t * * dest)
 {
 	denoise16_t * addr;
 	if (denoise16list.get_readybuffer(& addr))
@@ -178,7 +182,7 @@ extern "C" uint_fast8_t takespeexready(speexel_t * * dest)
 }
 
 // получить свободный
-extern "C" speexel_t * allocatespeexbuffer(void)
+speexel_t * allocatespeexbuffer(void)
 {
 	denoise16_t * addr;
 	if (denoise16list.get_freebufferforced(& addr))
@@ -189,14 +193,14 @@ extern "C" speexel_t * allocatespeexbuffer(void)
 }
 
 // Освобождение буфера
-extern "C" void releasespeexbuffer(speexel_t * t)
+void releasespeexbuffer(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	denoise16list.release_buffer(p);
 }
 
 // сохранение длч обработки буфера
-extern "C" void savespeexbuffer(speexel_t * t)
+void savespeexbuffer(speexel_t * t)
 {
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	denoise16list.save_buffer(p);
@@ -211,12 +215,12 @@ typedef blists<aubufv_t, DMABUFFSIZE16RX, 20> voice16rxlist_t;
 
 static voice16rxlist_t voice16rxlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabuffer16rx(void)
+int_fast32_t cachesize_dmabuffer16rx(void)
 {
 	return voice16rxlist.get_cachesize();
 }
 
-extern "C" uintptr_t allocate_dmabuffer16rx(void)
+uintptr_t allocate_dmabuffer16rx(void)
 {
 	aubufv_t * dest;
 	while (voice16rxlist.get_freebuffer(& dest) == 0)
@@ -232,12 +236,12 @@ typedef blists<aubufv_t, DMABUFFSIZE16TX, 20> voice16txlist_t;
 
 static voice16txlist_t voice16txlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabuffer16tx(void)
+int_fast32_t cachesize_dmabuffer16tx(void)
 {
 	return voice16txlist.get_cachesize();
 }
 
-extern "C" uintptr_t allocate_dmabuffer16tx(void)
+uintptr_t allocate_dmabuffer16tx(void)
 {
 	aubufv_t * dest;
 	while (voice16txlist.get_freebuffer(& dest) == 0)
@@ -249,40 +253,141 @@ extern "C" uintptr_t allocate_dmabuffer16tx(void)
 #if 0
 // I/Q data to FPGA or IF CODEC
 
-typedef blists<IFDACvalue_t, DMABUFFSIZE32TX, 20> voice32txlist_t;
+// I/Q data to FPGA or IF CODEC
+typedef ALIGNX_BEGIN struct voices32tx_tag
+{
+	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+} ALIGNX_END voice32tx_t;
+
+
+typedef blists<voice32tx_t, VOICE32TX_CAPACITY> voice32txlist_t;
 
 static voice32txlist_t voice32txlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabuffer32tx(void)
+int_fast32_t cachesize_dmabuffer32tx(void)
 {
-	return voice32txlist.get_cachesize();
+	return offsetof(voice32tx_t, pad) - offsetof(voice32tx_t, buff);
+}
+
+void release_dmabuffer32tx(uintptr_t addr)
+{
+	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
+	voice32txlist.release_buffer(p);
+}
+
+uintptr_t allocate_dmabuffer32tx(void)
+{
+	voice32tx_t * dest;
+	while (voice32txlist.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
+void save_dmabuffer32tx(uintptr_t addr)
+{
+	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
+	voice32txlist.release_buffer(p);
+}
+
+uintptr_t getfilled_dmabuffer32tx(void)
+{
+	voice32tx_t * dest;
+	if (voice32txlist.get_readybuffer(& dest))
+		return (uintptr_t) & dest->buff;
+	if (voice32txlist.get_freebuffer(& dest))
+		return (uintptr_t) & dest->buff;
+	ASSERT(0);
+	for (;;)
+		;
+	return 0;
+}
+
+uintptr_t getfilled_dmabuffer32tx_main(void)
+{
+	return getfilled_dmabuffer32tx();
+}
+
+uintptr_t getfilled_dmabuffer32tx_sub(void)
+{
+	return allocate_dmabuffer32tx();
 }
 
 #endif
 
 #if 0
 // I/Q data from FPGA or IF CODEC
+// I/Q data from FPGA or IF CODEC
+typedef ALIGNX_BEGIN struct voices32rx_tag
+{
+	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+} ALIGNX_END voice32rx_t;
 
-typedef blists<IFADCvalue_t, DMABUFFSIZE32RX, 20> voice32rxlist_t;
+
+typedef blists<voice32rx_t, VOICE32RX_CAPACITY> voice32rxlist_t;
 
 static voice32rxlist_t voice32rxlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabuffer32rx(void)
+int_fast32_t cachesize_dmabuffer32rx(void)
 {
-	return voice32rxlist.get_cachesize();
+	return offsetof(voice32rx_t, pad) - offsetof(voice32rx_t, buff);
 }
+
+void release_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	voice32rxlist.release_buffer(p);
+}
+
+uintptr_t allocate_dmabuffer32rx(void)
+{
+	voice32rx_t * dest;
+	while (voice32rxlist.get_freebuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
 #endif
 
 #if 0
 // I/Q SPECTRUM data from FPGA or IF CODEC
+typedef ALIGNX_BEGIN struct voices32rts_tag
+{
+	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RTS] ALIGNX_END;
+	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
+} ALIGNX_END voice32rts_t;
 
-typedef blists<IFADCvalue_t, DMABUFFSIZE32RTS, 20> voice32rtslist_t;
+
+typedef blists<voice32rts_t, VOICE32RTS_CAPACITY> voice32rtslist_t;
 
 static voice32rtslist_t voice32rtslist(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabuffer32rts(void)
+int_fast32_t cachesize_dmabuffer32rts(void)
 {
-	return voice32rtslist.get_cachesize();
+	return offsetof(voice32rts_t, item) - offsetof(voice32rts_t, buff);
+}
+
+void release_dmabuffer32rts(uintptr_t addr)
+{
+	voice32rts_t * const p = CONTAINING_RECORD(addr, voice32rts_t, buff);
+	voice32rtslist.release_buffer(p);
+}
+
+uintptr_t getfilled_dmabuffer32rts(void)
+{
+	voice32rts_t * dest;
+	while (voice32rtslist.get_readybuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
+uintptr_t allocate_dmabuffer32rts(void)
+{
+	voice32rts_t * dest;
+	while (voice32rtslist.get_freebuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
 }
 #endif
 
@@ -301,12 +406,11 @@ typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 
 static uacout48list_t uacout48list(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabufferuacout48(void)
+int_fast32_t cachesize_dmabufferuacout48(void)
 {
 	return offsetof(uacout48_t, pad) - offsetof(uacout48_t, buff);
 }
 
-extern "C"
 uintptr_t allocate_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
@@ -315,7 +419,6 @@ uintptr_t allocate_dmabufferuacout48(void)
 	return (uintptr_t) & dest->buff;
 }
 
-extern "C"
 void release_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
@@ -350,12 +453,11 @@ typedef enum
 
 	static uacinrts192list_t uacinrts192list(IRQL_REALTIME);
 
-	extern "C" int_fast32_t cachesize_dmabufferuacinrts192(void)
+	int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
 		return offsetof(uacinrts192_t, pad) - offsetof(uacinrts192_t, buff);
 	}
 
-	extern "C"
 	uintptr_t allocate_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
@@ -365,7 +467,6 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
-	extern "C"
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
@@ -375,14 +476,14 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
-	extern "C"
+
 	void save_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
 		uacinrts192list.save_buffer(p);
 	}
 
-	extern "C"
+
 	void release_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
@@ -402,12 +503,11 @@ typedef enum
 
 	static uacinrts96list_t uacinrts96list(IRQL_REALTIME);
 
-	extern "C" int_fast32_t cachesize_dmabufferuacinrts96(void)
+	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
 		return offsetof(uacinrts96_t, pad) - offsetof(uacinrts96_t, buff);
 	}
 
-	extern "C"
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
@@ -417,7 +517,6 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
-	extern "C"
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
@@ -427,14 +526,13 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
-	extern "C"
 	void save_dmabufferuacinrts96(uintptr_t addr)
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
 		uacinrts96list.save_buffer(p);
 	}
 
-	extern "C"
+
 	void release_dmabufferuacinrts96(uintptr_t addr)
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
@@ -456,12 +554,11 @@ typedef blists<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
 
 static uacin48list_t uacin48list(IRQL_REALTIME);
 
-extern "C" int_fast32_t cachesize_dmabufferuacin48(void)
+int_fast32_t cachesize_dmabufferuacin48(void)
 {
 	return offsetof(uacin48_t, pad) - offsetof(uacin48_t, buff);
 }
 
-extern "C"
 uintptr_t allocate_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
@@ -471,7 +568,6 @@ uintptr_t allocate_dmabufferuacin48(void)
 	return (uintptr_t) & dest->buff;
 }
 
-extern "C"
 uintptr_t getfilled_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
@@ -481,14 +577,12 @@ uintptr_t getfilled_dmabufferuacin48(void)
 	return (uintptr_t) & dest->buff;
 }
 
-extern "C"
 void save_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
 	uacin48list.save_buffer(p);
 }
 
-extern "C"
 void release_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
@@ -543,13 +637,13 @@ typedef blists<message8buff_t, 12> message8list_t;
 static message8list_t message8list(IRQL_SYSTEM);
 
 // Освобождение обработанного буфера сообщения
-extern "C" void releasemsgbuffer(uint8_t * dest)
+void releasemsgbuffer(uint8_t * dest)
 {
 	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
 	message8list.release_buffer(p);
 }
 // Буфер для формирования сообщения
-extern "C" size_t takemsgbufferfree(uint8_t * * dest)
+size_t takemsgbufferfree(uint8_t * * dest)
 {
 	message8buff_t * addr;
 	if (message8list.get_freebuffer(& addr))
@@ -560,7 +654,7 @@ extern "C" size_t takemsgbufferfree(uint8_t * * dest)
 	return 0;
 }
 // поместить сообщение в очередь к исполнению
-extern "C" void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
+void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
 {
 	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
 	p->type = type;
@@ -568,7 +662,7 @@ extern "C" void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
 }
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-extern "C" uint_fast8_t takemsgready(uint8_t * * dest)
+uint_fast8_t takemsgready(uint8_t * * dest)
 {
 	message8buff_t * addr;
 	if (message8list.get_readybuffer(& addr))
@@ -579,7 +673,7 @@ extern "C" uint_fast8_t takemsgready(uint8_t * * dest)
 	return MSGT_EMPTY;
 }
 
-extern "C" void buffers2_initialize(void)
+void buffers2_initialize(void)
 {
 }
 

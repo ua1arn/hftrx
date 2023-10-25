@@ -177,7 +177,7 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_REALTIME, & oldIrql);
-		release_dmabufferuacinrtsX(uacinrtsaddr);
+		release_dmabufferuacinX(uacinrtsaddr);
 		LowerIrql(oldIrql);
 		uacinrtsaddr = 0;
 	}
@@ -913,12 +913,12 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		if (uacinrtsaddr != 0)
 		{
 			RiseIrql(IRQL_REALTIME, & oldIrql);
-			release_dmabufferuacinrtsX(uacinrtsaddr);
+			release_dmabufferuacinX(uacinrtsaddr);
 			LowerIrql(oldIrql);
 		}
 
 		RiseIrql(IRQL_REALTIME, & oldIrql);
-		uacinrtsaddr = getfilled_dmabufferxrts(& uacinrtssize);
+		uacinrtsaddr = getfilled_dmabufferuacinrtsX(& uacinrtssize);
 		LowerIrql(oldIrql);
 
 		if (uacinrtsaddr != 0)

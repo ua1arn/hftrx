@@ -580,6 +580,8 @@ uint_fast8_t processmodem(void);
 uintptr_t allocate_dmabuffer32tx(void);
 uintptr_t allocate_dmabuffer32rx(void);
 void release_dmabuffer32tx(uintptr_t addr);
+void save_dmabuffer32tx(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32tx(void);
 
 uintptr_t allocate_dmabuffer16tx(void);
 uintptr_t allocate_dmabuffer16rx(void);
@@ -588,28 +590,31 @@ void release_dmabuffer16rx(uintptr_t addr);
 uintptr_t processing_pipe32tx(uintptr_t addr);
 uintptr_t processing_pipe32rx(uintptr_t addr);
 
-uintptr_t allocate_dmabufferuacinrts192(void);
-
-uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-// WITHUSBUACIN2 specific
-uintptr_t getfilled_dmabufferxrts(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-void release_dmabufferuacinrtsX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-
 void refreshDMA_uacin48(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 void refreshDMA_uacinrts96(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 void refreshDMA_uacinrts192(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
+
 uintptr_t getfilled_dmabuffer16txphones(void);
 uintptr_t getfilled_dmabuffer16txmoni(void);
-
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
-//void processing_dmabuffer16rxuac(uintptr_t addr);	// обработать буфер после приёма пакета с USB AUDIO
+
 void processing_dmabuffer32rx(uintptr_t addr);
-void processing_dmabuffer32rts(uintptr_t addr);
 void release_dmabuffer32rx(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32rx(void);
+
+
+uintptr_t allocate_dmabufferuacinrts192(void);
+
+uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+// WITHUSBUACIN2 specific
+uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+
+void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
 void buffers_resampleuacin(unsigned nsamples);
@@ -645,8 +650,6 @@ int_fast32_t cachesize_dmabufferuacin48(void);
 
 /* получение размера для операций с кешем для разнообразных буферов */
 // буферы FPGA IF
-int_fast32_t cachesize_dmabuffer32rx(void);
-int_fast32_t cachesize_dmabuffer32tx(void);
 int_fast32_t cachesize_dmabuffer32rts(void);
 
 // буферы кодека
