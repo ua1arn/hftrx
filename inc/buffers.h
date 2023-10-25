@@ -705,6 +705,23 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep);
 void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep);
 
 
+#define CATPCOUNTSIZE (13)
+#define MSGBUFFERSIZE8 64//(9 + CATPCOUNTSIZE)
+
+typedef enum messagetypes
+{
+	MSGT_EMPTY,
+	MSGT_KEYB,	// 1 byte - key code
+	MSGT_CAT,	// 12 bytes as parameter
+	//
+	MSGT_count
+} messagetypes_t;
+
+messagetypes_t takemsgready(uint8_t * * dest);	// Буферы с принятымти от обработчиков прерываний сообщениями
+void releasemsgbuffer(uint8_t * dest);	// Освобождение обработанного буфера сообщения
+size_t takemsgbufferfree(uint8_t * * dest);	// Буфер для формирования сообщения
+void placesemsgbuffer(messagetypes_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

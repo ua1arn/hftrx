@@ -5,6 +5,7 @@
 // UA1ARN
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "buffers.h"
 #include "keyboard.h"
 #include "encoder.h"
 #include "board.h"

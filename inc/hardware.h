@@ -888,24 +888,6 @@ calcdivround2(
 	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
 	);
 
-#define CATPCOUNTSIZE (13)
-#define MSGBUFFERSIZE8 64//(9 + CATPCOUNTSIZE) // See struct dpclayout
-
-enum messagetypes
-{
-	MSGT_EMPTY,
-	MSGT_KEYB,	// 1 byte - key code
-	MSGT_CAT,	// 12 bytes as parameter
-	//
-	MSGT_count
-};
-
-uint_fast8_t takemsgready(uint8_t * * dest);	// Буферы с принятымти от обработчиков прерываний сообщениями
-void releasemsgbuffer(uint8_t * dest);	// Освобождение обработанного буфера сообщения
-size_t takemsgbufferfree(uint8_t * * dest);	// Буфер для формирования сообщения
-void placesemsgbuffer(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
-
-
 #include "mslist.h"
 
 enum ticker_mode

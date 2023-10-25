@@ -524,7 +524,7 @@ typedef struct message
 {
 	void * tag2;
 	volatile VLIST_ENTRY item;
-	uint8_t type;
+	messagetypes_t type;
 	uint8_t data [MSGBUFFERSIZE8];
 	void * tag3;
 } message_t;
@@ -789,7 +789,7 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 /* Cообщения от уровня обработчиков прерываний к user-level функциям. */
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takemsgready(uint8_t * * dest)
+messagetypes_t takemsgready(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 
@@ -850,7 +850,7 @@ size_t takemsgbufferfree(uint8_t * * dest)
 }
 
 // поместить сообщение в очередь к исполнению
-void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
+void placesemsgbuffer(messagetypes_t type, uint8_t * dest)
 {
 	ASSERT(type != MSGT_EMPTY);
 	message_t * p = CONTAINING_RECORD(dest, message_t, data);

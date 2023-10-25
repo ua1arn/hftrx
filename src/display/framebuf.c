@@ -256,7 +256,7 @@ static void aw_g2d_prepare(void)
 		bgscreen [i] = bgcolor;
 	}
 	dcache_clean_invalidate((uintptr_t) bgscreen, sizeof bgscreen);
-	PRINTF("aw_g2d_prepare: bgcolor=%08X\n", (unsigned) bgcolor);
+	//PRINTF("aw_g2d_prepare: bgcolor=%08X\n", (unsigned) bgcolor);
 }
 
 

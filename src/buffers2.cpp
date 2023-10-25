@@ -25,6 +25,9 @@
 #define VOICE32TX_CAPACITY (6 * BUFOVERSIZE)
 #define VOICE32RTS_CAPACITY (1 * BUFOVERSIZE)	// dummy fn
 
+#define MESSAGE_CAPACITY (12)
+#define MESSAGE_IRQL IRQL_SYSTEM
+
 #if WITHUSBHW
 	#include "usb/usb200.h"
 	#include "usb/usbch9.h"
@@ -64,7 +67,7 @@ public:
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
 		}
-		PRINTF("blists %u %u\n", sizeof (element_t), capacity);
+		//PRINTF("blists %u %u\n", sizeof (element_t), capacity);
 	}
 
 	// сохранить в списке свободных
@@ -638,13 +641,13 @@ void release_dmabufferuacinX(uintptr_t addr)
 
 typedef struct
 {
-	uint8_t type;
+	messagetypes_t type;
 	uint8_t data [MSGBUFFERSIZE8];
 } message8buff_t;
 
-typedef blists<message8buff_t, 12> message8list_t;
+typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
 
-static message8list_t message8list(IRQL_SYSTEM);
+static message8list_t message8list(MESSAGE_IRQL);
 
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer(uint8_t * dest)
@@ -664,7 +667,7 @@ size_t takemsgbufferfree(uint8_t * * dest)
 	return 0;
 }
 // поместить сообщение в очередь к исполнению
-void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
+void placesemsgbuffer(messagetypes_t type, uint8_t * dest)
 {
 	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
 	p->type = type;
@@ -672,7 +675,7 @@ void placesemsgbuffer(uint_fast8_t type, uint8_t * dest)
 }
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
-uint_fast8_t takemsgready(uint8_t * * dest)
+messagetypes_t takemsgready(uint8_t * * dest)
 {
 	message8buff_t * addr;
 	if (message8list.get_readybuffer(& addr))
