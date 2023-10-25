@@ -3458,7 +3458,7 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklist32tx);
 	}
 	#endif
-	#if 0
+	#if 1
 	{
 		unsigned i;
 		// +2 - для отладочной печати содеожимого буферов
