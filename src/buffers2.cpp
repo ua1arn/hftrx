@@ -130,6 +130,11 @@ public:
 		LowerIrql(oldIrql);
 		return 0;
 	}
+	// получить из списка свободных, если нет - из готовых
+	int get_freebufferforced(element_t * * dest)
+	{
+		return get_freebuffer(dest) || get_readybuffer(dest);
+	}
 };
 
 #if defined(WITHRTS96) && defined(WITHRTS192)
@@ -161,11 +166,7 @@ extern "C" uint_fast8_t takespeexready(speexel_t * * dest)
 extern "C" speexel_t * allocatespeexbuffer(void)
 {
 	speexel_t * addr;
-	if (denoise16list.get_freebuffer(& addr))
-	{
-		return addr;
-	}
-	if (denoise16list.get_readybuffer(& addr))
+	if (denoise16list.get_freebufferforced(& addr))
 	{
 		return addr;
 	}
@@ -192,7 +193,7 @@ extern "C" void savespeexbuffer(speexel_t * t)
 typedef blists<aubufv_t, DMABUFFSIZE16RX, 20> voice16rxlist_t;
 static voice16rxlist_t voice16rxlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabuffer16rxcachesize(void)
+extern "C" int_fast32_t cachesize_dmabuffer16rx(void)
 {
 	return voice16rxlist.get_cachesize();
 }
@@ -212,7 +213,7 @@ extern "C" uintptr_t allocate_dmabuffer16rx(void)
 typedef blists<aubufv_t, DMABUFFSIZE16TX, 20> voice16txlist_t;
 static voice16txlist_t voice16txlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabuffer16txcachesize(void)
+extern "C" int_fast32_t cachesize_dmabuffer16tx(void)
 {
 	return voice16txlist.get_cachesize();
 }
@@ -232,7 +233,7 @@ extern "C" uintptr_t allocate_dmabuffer16tx(void)
 typedef blists<IFDACvalue_t, DMABUFFSIZE32TX, 20> voice32txlist_t;
 static voice32txlist_t voice32txlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabuffer32txcachesize(void)
+extern "C" int_fast32_t cachesize_dmabuffer32tx(void)
 {
 	return voice32txlist.get_cachesize();
 }
@@ -245,7 +246,7 @@ extern "C" int_fast32_t buffers_dmabuffer32txcachesize(void)
 typedef blists<IFADCvalue_t, DMABUFFSIZE32RX, 20> voice32rxlist_t;
 static voice32rxlist_t voice32rxlist(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabuffer32rxcachesize(void)
+extern "C" int_fast32_t cachesize_dmabuffer32rx(void)
 {
 	return voice32rxlist.get_cachesize();
 }
@@ -257,7 +258,7 @@ extern "C" int_fast32_t buffers_dmabuffer32rxcachesize(void)
 typedef blists<IFADCvalue_t, DMABUFFSIZE32RTS, 20> voice32rtslist_t;
 static voice32rtslist_t voice32rtslist(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabuffer32rtscachesize(void)
+extern "C" int_fast32_t cachesize_dmabuffer32rts(void)
 {
 	return voice32rtslist.get_cachesize();
 }
@@ -270,7 +271,7 @@ extern "C" int_fast32_t buffers_dmabuffer32rtscachesize(void)
 typedef blists<uint8_t, UACIN_AUDIO48_DATASIZE_DMAC, 20> uacin48list_t;
 static uacin48list_t uacin48list(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabufferuacin48cachesize(void)
+extern "C" int_fast32_t cachesize_dmabufferuacin48(void)
 {
 	return uacin48list.get_cachesize();
 }
@@ -290,7 +291,7 @@ typedef struct
 typedef blists<uacout48buff_t, 4> uacout48list_t;
 static uacout48list_t uacout48list(IRQL_REALTIME);
 
-extern "C" int_fast32_t buffers_dmabufferuacout48cachesize(void)
+extern "C" int_fast32_t cachesize_dmabufferuacout48(void)
 {
 	return offsetof(uacout48buff_t, pad) - offsetof(uacout48buff_t, buff);
 }
@@ -309,15 +310,6 @@ void release_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48buff_t * const p = CONTAINING_RECORD(addr, uacout48buff_t, buff);
 	uacout48list.release_buffer(p);
-}
-
-extern "C"
-void processing_dmabufferuacout48(uintptr_t addr)
-{
-	uacout48buff_t * const p = CONTAINING_RECORD(addr, uacout48buff_t, buff);
-	uacout_buffer_save(p->buff, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-
-	release_dmabufferuacout48(addr);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */

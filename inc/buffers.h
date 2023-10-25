@@ -631,7 +631,7 @@ int_fast32_t cachesize_dmabufferuacinrts96(void);
 uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 void processing_dmabufferuacout48(uintptr_t addr);
-int_fast32_t buffers_dmabufferuacout48cachesize(void);
+int_fast32_t cachesize_dmabufferuacout48(void);
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabufferuacin48(void);
@@ -642,13 +642,13 @@ int_fast32_t cachesize_dmabufferuacin48(void);
 
 /* получение размера для операций с кешем для разнообразных буферов */
 // буферы FPGA IF
-int_fast32_t buffers_dmabuffer32rxcachesize(void);
-int_fast32_t buffers_dmabuffer32txcachesize(void);
-int_fast32_t buffers_dmabuffer32rtscachesize(void);
+int_fast32_t cachesize_dmabuffer32rx(void);
+int_fast32_t cachesize_dmabuffer32tx(void);
+int_fast32_t cachesize_dmabuffer32rts(void);
 
 // буферы кодека
-int_fast32_t buffers_dmabuffer16rxcachesize(void);
-int_fast32_t buffers_dmabuffer16txcachesize(void);
+int_fast32_t cachesize_dmabuffer16rx(void);
+int_fast32_t cachesize_dmabuffer16tx(void);
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);

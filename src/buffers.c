@@ -230,7 +230,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	void * tag3;
 } ALIGNX_END voice16rx_t;
 
-int_fast32_t buffers_dmabuffer16rxcachesize(void)
+int_fast32_t cachesize_dmabuffer16rx(void)
 {
 	return offsetof(voice16rx_t, item) - offsetof(voice16rx_t, rbuff);
 }
@@ -244,7 +244,7 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 	void * tag3;
 } ALIGNX_END voice16tx_t;
 
-int_fast32_t buffers_dmabuffer16txcachesize(void)
+int_fast32_t cachesize_dmabuffer16tx(void)
 {
 	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, tbuff);
 }
@@ -258,7 +258,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 	void * tag3;
 } ALIGNX_END voice32tx_t;
 
-int_fast32_t buffers_dmabuffer32txcachesize(void)
+int_fast32_t cachesize_dmabuffer32tx(void)
 {
 	return offsetof(voice32tx_t, item) - offsetof(voice32tx_t, buff);
 }
@@ -270,7 +270,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
 
-int_fast32_t buffers_dmabuffer32rxcachesize(void)
+int_fast32_t cachesize_dmabuffer32rx(void)
 {
 	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
 }
@@ -282,7 +282,7 @@ typedef ALIGNX_BEGIN struct voices32rts_tag
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rts_t;
 
-int_fast32_t buffers_dmabuffer32rtscachesize(void)
+int_fast32_t cachesize_dmabuffer32rts(void)
 {
 	/* надо сделать правильно - вернуь размер буфера в байтах */
 	ASSERT(0);
@@ -396,7 +396,7 @@ typedef ALIGNX_BEGIN struct uacout48_tag
 	void * tag3;
 } ALIGNX_END uacout48_t;
 
-int_fast32_t buffers_dmabufferuacout48cachesize(void)
+int_fast32_t cachesize_dmabufferuacout48(void)
 {
 	return EP_align(UACOUT_AUDIO48_DATASIZE_DMAC, DCACHEROWSIZE);
 }
@@ -2751,7 +2751,9 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #endif /* WITHRTS192 */
 
-#if WITHUSBUACOUT && 0
+#if WITHUSBUACOUT
+
+#if 0
 
 void RAMFUNC release_dmabufferuacout48(uintptr_t addr)
 {
@@ -2763,13 +2765,6 @@ void RAMFUNC release_dmabufferuacout48(uintptr_t addr)
 	LCLSPIN_LOCK(& locklistuacout48);
 	InsertHeadList2(& uacout48free, & p->item);
 	LCLSPIN_UNLOCK(& locklistuacout48);
-}
-
-void processing_dmabufferuacout48(uintptr_t addr)
-{
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-
-	release_dmabufferuacout48(addr);
 }
 
 // Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
@@ -2816,6 +2811,16 @@ RAMFUNC uintptr_t allocate_dmabufferuacout48(void)
 			;
 	}
 	return 0;
+}
+
+#endif
+
+
+void processing_dmabufferuacout48(uintptr_t addr)
+{
+	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+
+	release_dmabufferuacout48(addr);
 }
 
 #endif /* WITHUSBUACOUT */

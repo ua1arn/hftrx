@@ -42,8 +42,8 @@ static uintptr_t
 dma_invalidate16rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer16rxcachesize() % DCACHEROWSIZE) == 0);
-	dcache_invalidate(addr, buffers_dmabuffer16rxcachesize());
+	ASSERT((cachesize_dmabuffer16rx() % DCACHEROWSIZE) == 0);
+	dcache_invalidate(addr, cachesize_dmabuffer16rx());
 	return addr;
 }
 
@@ -53,8 +53,8 @@ static uintptr_t
 dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer16txcachesize() % DCACHEROWSIZE) == 0);
-	dcache_clean_invalidate(addr, buffers_dmabuffer16txcachesize());
+	ASSERT((cachesize_dmabuffer16tx() % DCACHEROWSIZE) == 0);
+	dcache_clean_invalidate(addr, cachesize_dmabuffer16tx());
 	return addr;
 }
 
@@ -73,8 +73,8 @@ uintptr_t
 dma_invalidate32rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer32rxcachesize() % DCACHEROWSIZE) == 0);
-	dcache_invalidate(addr, buffers_dmabuffer32rxcachesize());
+	ASSERT((cachesize_dmabuffer32rx() % DCACHEROWSIZE) == 0);
+	dcache_invalidate(addr, cachesize_dmabuffer32rx());
 	return addr;
 }
 
@@ -83,8 +83,8 @@ uintptr_t
 dma_invalidate32rts(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer32rxcachesize() % DCACHEROWSIZE) == 0);
-	dcache_invalidate(addr, buffers_dmabuffer32rtscachesize());
+	ASSERT((cachesize_dmabuffer32rx() % DCACHEROWSIZE) == 0);
+	dcache_invalidate(addr, cachesize_dmabuffer32rts());
 	return addr;
 }
 
@@ -93,8 +93,8 @@ dma_invalidate32rts(uintptr_t addr)
 static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((buffers_dmabuffer32txcachesize() % DCACHEROWSIZE) == 0);
-	dcache_clean_invalidate(addr,  buffers_dmabuffer32txcachesize());
+	ASSERT((cachesize_dmabuffer32tx() % DCACHEROWSIZE) == 0);
+	dcache_clean_invalidate(addr,  cachesize_dmabuffer32tx());
 	return addr;
 }
 
@@ -5129,7 +5129,7 @@ static unsigned awusbadj(unsigned nbytes)
 
 static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 {
-	dcache_clean_invalidate(addr, buffers_dmabufferuacout48cachesize());
+	dcache_clean_invalidate(addr, cachesize_dmabufferuacout48());
 	return addr;
 }
 
