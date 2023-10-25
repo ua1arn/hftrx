@@ -221,6 +221,7 @@ void vfylist(LIST_HEAD2 * head)
 //////////////////////////////////
 // Система буферизации аудиоданных
 //
+#if 1
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16rx_tag
 {
@@ -234,6 +235,9 @@ int_fast32_t cachesize_dmabuffer16rx(void)
 {
 	return offsetof(voice16rx_t, item) - offsetof(voice16rx_t, rbuff);
 }
+#endif
+
+#if 1
 //
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16tx_tag
@@ -248,6 +252,7 @@ int_fast32_t cachesize_dmabuffer16tx(void)
 {
 	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, tbuff);
 }
+#endif
 
 #if 1
 // I/Q data to FPGA or IF CODEC
@@ -279,6 +284,7 @@ int_fast32_t cachesize_dmabuffer32rx(void)
 }
 #endif
 
+#if 1
 // I/Q SPECTRUM data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rts_tag
 {
@@ -292,6 +298,8 @@ typedef ALIGNX_BEGIN struct voices32rts_tag
 //	ASSERT(0);
 //	return offsetof(voice32rts_t, item) - offsetof(voice32rts_t, buff);
 //}
+
+#endif
 
 #if 1
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
