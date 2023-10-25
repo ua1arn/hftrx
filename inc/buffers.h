@@ -619,20 +619,21 @@ void dsp_processtx(void);	/* выборка CNT32TX семплов из исто
 void release_dmabufferuacinrts192(uintptr_t addr);
 uintptr_t allocate_dmabufferuacinrts192(void);
 uintptr_t getfilled_dmabufferuacinrts192(void);
-void save_dmabuferuacinrts192(uintptr_t addr);
+void save_dmabufferuacinrts192(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacinrts192(void);
 
 // Буфер обмена про USB
 void release_dmabufferuacinrts96(uintptr_t addr);
 uintptr_t allocate_dmabufferuacinrts96(void);
 uintptr_t getfilled_dmabufferuacinrts96(void);
-void save_dmabuferuacinrts96(uintptr_t addr);
+void save_dmabufferuacinrts96(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacinrts96(void);
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 void processing_dmabufferuacout48(uintptr_t addr);
+void save_dmabufferuacout48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacout48(void);
 
 // Буфер обмена про USB

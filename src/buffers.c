@@ -355,6 +355,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 
+#if 0
 // USB AUDIO IN
 typedef ALIGNX_BEGIN struct uacin48_tag
 {
@@ -377,6 +378,7 @@ int_fast32_t cachesize_dmabufferuacin48(void)
 static RAMBIGDTCM LIST_HEAD2 uacin48free;
 static RAMBIGDTCM LIST_HEAD2 uacin48ready;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 static RAMBIGDTCM LCLSPINLOCK_t locklistuacin48 = LCLSPINLOCK_INIT;
+#endif
 
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
@@ -435,7 +437,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklistuacout48 = LCLSPINLOCK_INIT;
 
 #elif WITHRTS96
 
-#if 1
+#if 0
 	typedef ALIGNX_BEGIN struct voices96rts
 	{
 		LIST_ENTRY item;	// layout should be same in uacin48_t, voice96rts_t and voice192rts_t
@@ -1180,9 +1182,11 @@ static uint_fast8_t isrts96(void)
 #endif /* WITHUSBHW && WITHUSBUAC */
 }
 
+
+#if 0
 // Сохранить буфер сэмплов для передачи в компьютер
 RAMFUNC void
-save_dmabuferuacinrts96(uintptr_t addr)
+save_dmabufferuacinrts96(uintptr_t addr)
 {
 	voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 	ASSERT(p->tag == BUFFTAG_RTS96);
@@ -1200,7 +1204,7 @@ save_dmabuferuacinrts96(uintptr_t addr)
 	refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 }
 
-void save_dmabufuacinrts96rts(uintptr_t addr)
+void save_dmabufferuacinrts96(uintptr_t addr)
 {
 	voice96rts_t * const p = CONTAINING_RECORD(addr, voice96rts_t, u.buff);
 	ASSERT(p->tag == BUFFTAG_RTS96);
@@ -1212,6 +1216,9 @@ void save_dmabufuacinrts96rts(uintptr_t addr)
 	LCLSPIN_UNLOCK(& locklistrts);
 }
 
+#endif
+#endif
+
 #else
 
 static uint_fast8_t isrts96(void)
@@ -1222,6 +1229,8 @@ static uint_fast8_t isrts96(void)
 #endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+
+#if 0
 // Сохранить буфер сэмплов для передачи в компьютер
 RAMFUNC void
 save_dmabufferuacin48(uintptr_t addr)
@@ -2437,7 +2446,7 @@ static int32_t fetch_le(const uint8_t * p, size_t usbsz)
 }
 
 /* Поместить в буфер UAC IN endpoint значения сжмпла */
-static void place_le(uint8_t * p, int32_t value, size_t usbsz)
+unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 {
 	switch (usbsz)
 	{
@@ -2463,11 +2472,12 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		p [0] = (uint8_t) (value >> 0);
 		break;
 	}
+	return usbsz;
 }
 
 #if WITHRTS96
 
-	#if 1
+	#if 0
 	// Этой функцией пользуются обработчики прерываний DMA на передачу данных по USB
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
@@ -2597,19 +2607,17 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 		}
 		else if (! isrts96())
 		{
-			save_dmabufuacinrts96rts((uintptr_t) buff);
+			release_dmabufferuacinrts96((uintptr_t) buff);
 			buff = NULL;
 			return;
 		}
 
-		place_le(buff + n, transform_do32(& if2rts96out, ch0), UACIN_RTS96_SAMPLEBYTES);	// sample value
-		n += UACIN_RTS96_SAMPLEBYTES;
-		place_le(buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
-		n += UACIN_RTS96_SAMPLEBYTES;
+		n += place_le(buff + n, transform_do32(& if2rts96out, ch0), UACIN_RTS96_SAMPLEBYTES);	// sample value
+		n += place_le(buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
 
 		if (n >= UACIN_RTS96_DATASIZE_DMAC)
 		{
-			save_dmabuferuacinrts96((uintptr_t) buff);
+			save_dmabufferuacinrts96((uintptr_t) buff);
 			buff = NULL;
 		}
 	}
@@ -2737,10 +2745,8 @@ static void place_le(uint8_t * p, int32_t value, size_t usbsz)
 			return;
 		}
 
-		place_le(p->u.buff + n, transform_do32(& if2rts192out, ch0), UACIN_RTS192_SAMPLEBYTES);	// sample value
-		n += UACIN_RTS192_SAMPLEBYTES;
-		place_le(p->u.buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
-		n += UACIN_RTS192_SAMPLEBYTES;
+		n += place_le(p->u.buff + n, transform_do32(& if2rts192out, ch0), UACIN_RTS192_SAMPLEBYTES);	// sample value
+		n += place_le(p->u.buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
 
 		if (n >= ARRAY_SIZE(p->u.buff))
 		{
@@ -2765,6 +2771,7 @@ void processing_dmabufferuacout48(uintptr_t addr)
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 
+#if 0
 void RAMFUNC release_dmabufferuacin48(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
@@ -2844,7 +2851,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 	LCLSPIN_UNLOCK(& locklistuacin48);
 	return 0;
 }
-
+#endif
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
 // Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
@@ -2854,42 +2861,32 @@ void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1)
 {
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 	// если есть инициализированный канал для выдачи звука
-	static uacin48_t * p = NULL;
+	static uint8_t * buff = NULL;
 	static unsigned n = 0;
 
-	if (p == NULL)
+	if (buff == NULL)
 	{
 		if (! isaudio48())
 			return;
-		uintptr_t addr = allocate_dmabufferuacin48();
-		p = CONTAINING_RECORD(addr, uacin48_t, u.buff);
-		ASSERT(p->tag == BUFFTAG_UACIN48);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
+		buff = (uint8_t *) allocate_dmabufferuacin48();
 		n = 0;
 	}
 	else if (! isaudio48())
 	{
-		release_dmabufferuacin48((uintptr_t) p->u.buff);
-		p = NULL;
+		release_dmabufferuacin48((uintptr_t) buff);
+		buff = NULL;
 		return;
 	}
 
-	ASSERT(p->tag == BUFFTAG_UACIN48);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-
-	place_le(p->u.buff + n, ch0, UACIN_AUDIO48_SAMPLEBYTES); // sample value
-	n += UACIN_AUDIO48_SAMPLEBYTES;
+	n += place_le(buff + n, ch0, UACIN_AUDIO48_SAMPLEBYTES); // sample value
 #if UACIN_FMT_CHANNELS_AUDIO48 > 1
-	place_le(p->u.buff + n, ch1, UACIN_AUDIO48_SAMPLEBYTES); // sample value
-	n += UACIN_AUDIO48_SAMPLEBYTES;
+	n += place_le(buff + n, ch1, UACIN_AUDIO48_SAMPLEBYTES); // sample value
 #endif /* UACIN_FMT_CHANNELS_AUDIO48 */
 
-	if (n >= ARRAY_SIZE(p->u.buff))
+	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
 	{
-		save_dmabufferuacin48((uintptr_t) p->u.buff);
-		p = NULL;
+		save_dmabufferuacin48((uintptr_t) buff);
+		buff = NULL;
 	}
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 }
@@ -3061,7 +3058,7 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t i
 }
 /* --- UAC OUT data save */
 
-
+#if 0
 /* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr)
 {
@@ -3091,7 +3088,7 @@ void release_dmabufferuacinX(uintptr_t addr)
 			;
 	}
 }
-
+#endif
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 {
@@ -3341,6 +3338,7 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklist16tx);
 	}
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if 0
 	{
 		unsigned i;
 		static RAMBIGDTCM_MDMA uacin48_t uacin48array [24 * BUFOVERSIZE];
@@ -3359,6 +3357,7 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklistuacin48);
 
 	}
+#endif
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
 #if WITHUSBUACOUT && 0
@@ -3409,6 +3408,7 @@ void buffers_initialize(void)
 
 	}
 	#elif WITHRTS96 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+	#if 0
 	{
 		unsigned i;
 		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice96rts_t voicesarray96rts [14 * BUFOVERSIZE] ALIGNX_END;
@@ -3432,6 +3432,7 @@ void buffers_initialize(void)
 		subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 	}
+	#endif
 	#endif /* WITHRTS192 */
 	{
 		unsigned i;
