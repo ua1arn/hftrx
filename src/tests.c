@@ -5223,6 +5223,7 @@ void looptests(void)
 	{
 		// See buffers.c - WITHBUFFERSDEBUG
 		buffers_diagnostics();
+		buffers2_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL

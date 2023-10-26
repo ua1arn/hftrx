@@ -11,6 +11,7 @@
 #include "mslist.h"
 #include "audio.h"
 
+//#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 
@@ -46,17 +47,27 @@ class blists
 		void * tag3;
 	} buffitem_t;
 
-	LIST_ENTRY freelist;
-	LIST_ENTRY outlist;
+
 	IRQL_t irql;
-	LCLSPINLOCK_t lock;
-	buffitem_t storage [capacity];
+#if WITHBUFFERSDEBUG
+	int errallocate;
+	int saveount;
+#endif /* WITHBUFFERSDEBUG */
+
 	int outcount;
 	int freecount;
+	LIST_ENTRY freelist;
+	LIST_ENTRY outlist;
+	LCLSPINLOCK_t lock;
+	buffitem_t storage [capacity];
 
 public:
 	blists(IRQL_t airql) :
 		irql(airql),
+#if WITHBUFFERSDEBUG
+		errallocate(0),
+		saveount(0),
+#endif /* WITHBUFFERSDEBUG */
 		outcount(0),
 		freecount(0)
 	{
@@ -102,6 +113,9 @@ public:
 
 		InsertHeadList(& outlist, & p->item);
 		++ outcount;
+#if WITHBUFFERSDEBUG
+		++ saveount;
+#endif /* WITHBUFFERSDEBUG */
 
 		LCLSPIN_UNLOCK(& lock);
 		LowerIrql(oldIrql);
@@ -148,6 +162,9 @@ public:
 			* dest = & p->v;
 			return 1;
 		}
+#if WITHBUFFERSDEBUG
+		++ errallocate;
+#endif /* WITHBUFFERSDEBUG */
 		LCLSPIN_UNLOCK(& lock);
 		LowerIrql(oldIrql);
 		return 0;
@@ -164,6 +181,13 @@ public:
 		element_t * dest;
 		while (get_readybuffer(& dest))
 			release_buffer(dest);
+	}
+
+	void debug(const char * name)
+	{
+#if WITHBUFFERSDEBUG
+		PRINTF("%s:a=%d,s=%d ", name, errallocate, saveount);
+#endif /* WITHBUFFERSDEBUG */
 	}
 };
 
@@ -407,12 +431,15 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		return 0;
 	} while (0);
 
+#if 1
+	// Добавить самоконтроль
 	while ((voice16txmoni.get_readybuffer(& moni) || voice16txmoni.get_freebuffer(& moni)) == 0)
 		ASSERT(0);
 
 	dsp_addsidetone(phones->buff, moni->buff, 1);
 
 	voice16txmoni.release_buffer(moni);
+#endif
 	return (uintptr_t) phones->buff;
 }
 
@@ -555,47 +582,6 @@ uintptr_t allocate_dmabuffer32rx(void)
 	return (uintptr_t) & dest->buff;
 }
 
-#endif
-
-#if 0
-// I/Q SPECTRUM data from FPGA or IF CODEC
-typedef ALIGNX_BEGIN struct voices32rts_tag
-{
-	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RTS] ALIGNX_END;
-	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
-} ALIGNX_END voice32rts_t;
-
-
-typedef blists<voice32rts_t, VOICE32RTS_CAPACITY> voice32rtslist_t;
-
-static voice32rtslist_t voice32rtslist(IRQL_REALTIME);
-
-int_fast32_t cachesize_dmabuffer32rts(void)
-{
-	return offsetof(voice32rts_t, item) - offsetof(voice32rts_t, buff);
-}
-
-void release_dmabuffer32rts(uintptr_t addr)
-{
-	voice32rts_t * const p = CONTAINING_RECORD(addr, voice32rts_t, buff);
-	voice32rtslist.release_buffer(p);
-}
-
-uintptr_t getfilled_dmabuffer32rts(void)
-{
-	voice32rts_t * dest;
-	while (voice32rtslist.get_readybuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) & dest->buff;
-}
-
-uintptr_t allocate_dmabuffer32rts(void)
-{
-	voice32rts_t * dest;
-	while (voice32rtslist.get_freebuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) & dest->buff;
-}
 #endif
 
 
@@ -885,6 +871,32 @@ messagetypes_t takemsgready(uint8_t * * dest)
 		return addr->type;
 	}
 	return MSGT_EMPTY;
+}
+
+void buffers2_diagnostics(void)
+{
+#if WITHBUFFERSDEBUG
+
+	//denoise16list.debug("denoise16list");
+	voice16rxcodeclist.debug("voice16rxcodeclist");
+	voice16rxuacout48list.debug("voice16rxuacout48list");
+	voice16txphones.debug("voice16txphones");
+	voice16txmoni.debug("voice16txmoni");
+	voice32txlist.debug("voice32txlist");
+	voice32rxlist.debug("voice32rxlist");
+
+#if 0
+	// USB
+	uacout48list.debug("uacout48list");
+	//uacinrts192list.debug("uacinrts192list");
+	uacinrts96list.debug("uacinrts96list");
+	uacin48list.debug("uacin48list");
+#endif
+	//message8list.debug("message8list");
+
+	PRINTF("\n");
+
+#endif /* WITHBUFFERSDEBUG */
 }
 
 void buffers2_initialize(void)

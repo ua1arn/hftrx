@@ -16,7 +16,7 @@
 #include "audio.h"
 #include "buffers.h"
 
-#if WITHUSBHW
+#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 #include "usb/usb200.h"
 #include "usb/usbch9.h"
 #endif /* WITHUSBHW */
@@ -271,7 +271,7 @@ static RAMBIGDTCM LCLSPINLOCK_t locklist16rx = LCLSPINLOCK_INIT;
 
 #endif
 
-#if WITHUSBHW && WITHUSBUAC
+#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
 static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
@@ -1820,7 +1820,7 @@ void savesampleuacin48(int_fast16_t ch0, int_fast16_t ch1)
 
 #endif /* WITHUSBUAC */
 
-#if WITHUSBUAC && WITHUSBHW
+#if WITHUSBUAC && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 /* +++ UAC OUT data save */
 
