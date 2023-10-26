@@ -5356,7 +5356,7 @@ static ALIGNX_BEGIN uint32_t uacinrts96_descr0 [3] [DMAC_DESC_SIZE] ALIGNX_END;
 
 static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 {
-	dcache_clean(addr, UACIN_RTS96_DATASIZE_DMAC);
+	dcache_clean(addr, cachesize_dmabufferuacinrts96());
 	return addr;
 }
 
