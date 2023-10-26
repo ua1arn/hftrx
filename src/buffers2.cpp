@@ -48,7 +48,7 @@ class blists
 	} buffitem_t;
 
 
-	IRQL_t irql;
+	IRQLSPINLOCK_t irqllocl;
 #if WITHBUFFERSDEBUG
 	int errallocate;
 	int saveount;
@@ -58,12 +58,10 @@ class blists
 	int freecount;
 	LIST_ENTRY freelist;
 	LIST_ENTRY outlist;
-	LCLSPINLOCK_t lock;
 	buffitem_t storage [capacity];
 
 public:
 	blists(IRQL_t airql) :
-		irql(airql),
 #if WITHBUFFERSDEBUG
 		errallocate(0),
 		saveount(0),
@@ -73,7 +71,7 @@ public:
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& outlist);
-		LCLSPINLOCK_INITIALIZE(& lock);
+		IRQLSPINLOCK_INITIALIZE(& irqllocl, airql);
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
 			buffitem_t * const p = & storage [i];
@@ -91,14 +89,12 @@ public:
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
-		RiseIrql(irql, & oldIrql);
-		LCLSPIN_LOCK(& lock);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 
 		InsertHeadList(& freelist, & p->item);
 		++ freecount;
 
-		LCLSPIN_UNLOCK(& lock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
 	// сохранить в списке готовых
@@ -108,8 +104,7 @@ public:
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
-		RiseIrql(irql, & oldIrql);
-		LCLSPIN_LOCK(& lock);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 
 		InsertHeadList(& outlist, & p->item);
 		++ outcount;
@@ -117,30 +112,26 @@ public:
 		++ saveount;
 #endif /* WITHBUFFERSDEBUG */
 
-		LCLSPIN_UNLOCK(& lock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
 	// получить из списка готовых
 	int get_readybuffer(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(irql, & oldIrql);
-		LCLSPIN_LOCK(& lock);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 		if (! IsListEmpty(& outlist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& outlist);
 			-- outcount;
-			LCLSPIN_UNLOCK(& lock);
-			LowerIrql(oldIrql);
+			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			* dest = & p->v;
 			return 1;
 		}
-		LCLSPIN_UNLOCK(& lock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		return 0;
 	}
 
@@ -148,14 +139,12 @@ public:
 	int get_freebuffer(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(irql, & oldIrql);
-		LCLSPIN_LOCK(& lock);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 		if (! IsListEmpty(& freelist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& freelist);
 			-- freecount;
-			LCLSPIN_UNLOCK(& lock);
-			LowerIrql(oldIrql);
+			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
@@ -165,8 +154,7 @@ public:
 #if WITHBUFFERSDEBUG
 		++ errallocate;
 #endif /* WITHBUFFERSDEBUG */
-		LCLSPIN_UNLOCK(& lock);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		return 0;
 	}
 	// получить из списка свободных, если нет - из готовых

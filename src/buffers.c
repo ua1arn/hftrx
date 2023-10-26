@@ -1781,6 +1781,4 @@ void buffers_initialize(void)
 #endif /* WITHMODEM */
 
 #endif /* WITHINTEGRATEDDSP */
-
-	// Инициализация ресэмплеров
 }
