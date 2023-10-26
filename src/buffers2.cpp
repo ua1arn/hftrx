@@ -46,16 +46,15 @@ class blists
 		void * tag3;
 	} buffitem_t;
 
-	LIST_ENTRY resamplelist;
 	LIST_ENTRY freelist;
 	LIST_ENTRY readylist;
+	LIST_ENTRY resamplelist;
 	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 	buffitem_t storage [capacity];
 	int readycount;
 	int freecount;
 	int resamplecount;
-	element_t workbuff;	// буфер над которым выполняется ресэмплинг
 
 public:
 	blists(IRQL_t airql) :
@@ -66,7 +65,7 @@ public:
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
-		InitializeListHead(& resamplelist);	// input list for resampling to readylist
+		InitializeListHead(& resamplelist);
 		LCLSPINLOCK_INITIALIZE(& lock);
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
@@ -111,7 +110,6 @@ public:
 		LCLSPIN_UNLOCK(& lock);
 		LowerIrql(oldIrql);
 	}
-
 	// сохранить в списке буферов для ресэмплинга
 	void resample_buffer(element_t * addr)
 	{
@@ -181,6 +179,22 @@ public:
 	}
 };
 
+template <typename element_t, unsigned capacity>
+class blistsresample: public blists<element_t, capacity>
+{
+	element_t workbuff;	// буфер над которым выполняется ресэмплинг
+	IRQL_t irql;
+	LCLSPINLOCK_t lock;
+public:
+	blistsresample(IRQL_t airql) :
+		blists<element_t, capacity>(airql),
+		irql(airql)
+		{
+			LCLSPINLOCK_INITIALIZE(& lock);
+
+		}
+};
+
 #if defined(WITHRTS96) && defined(WITHRTS192)
 	#error Configuration Error: WITHRTS96 and WITHRTS192 can not be used together
 #endif /* defined(WITHRTS96) && defined(WITHRTS192) */
@@ -242,22 +256,51 @@ void savespeexbuffer(speexel_t * t)
 
 #if 0
 // Audio CODEC in/out
+typedef ALIGNX_BEGIN struct voice16rx_tag
+{
+	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+} ALIGNX_END voice16rx_t;
 
-typedef blists<aubufv_t, DMABUFFSIZE16RX, 20> voice16rxlist_t;
+typedef ALIGNX_BEGIN struct voice16tx_tag
+{
+	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+} ALIGNX_END voice16tx_t;
+
+typedef blistsresample<voice16rx_t, 33> voice16rxlist_t;
+
+typedef blists<voice16tx_t, 33> voice16txlist_t;
+typedef blists<voice16tx_t, 33> voice16sidetonelist_t;
 
 static voice16rxlist_t voice16rxlist(IRQL_REALTIME);
+static voice16txlist_t voice16txlist(IRQL_REALTIME);
+static voice16txlist_t voice16sidetonelist(IRQL_REALTIME);
 
-int_fast32_t cachesize_dmabuffer16rx(void)
+int_fast32_t Xcachesize_dmabuffer16rx(void)
 {
-	return voice16rxlist.get_cachesize();
+	return offsetof(voice16rx_t, pad) - offsetof(voice16rx_t, buff);
 }
 
-uintptr_t allocate_dmabuffer16rx(void)
+int_fast32_t Xcachesize_dmabuffer16tx(void)
 {
-	aubufv_t * dest;
+	return offsetof(voice16tx_t, pad) - offsetof(voice16tx_t, buff);
+}
+
+uintptr_t Xallocate_dmabuffer16rx(void)
+{
+	voice16rx_t * dest;
 	while (voice16rxlist.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return (uintptr_t) dest;
+	return (uintptr_t) dest->buff;
+}
+
+uintptr_t Xallocate_dmabuffer16tx(void)
+{
+	voice16tx_t * dest;
+	while (voice16txlist.get_freebuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
 }
 #endif
 
