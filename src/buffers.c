@@ -508,44 +508,41 @@ RAMFUNC void release_dmabuffer16rx(uintptr_t addr)
 	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
+RAMFUNC void release_dmabuffer16rxresampler(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	LCLSPIN_LOCK(& locklist16rx);
+	InsertHeadList2(& voicesfree16rx, & p->item);
+	LCLSPIN_UNLOCK(& locklist16rx);
+}
+
 #endif
 
 #if WITHUSBUAC
 
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
-RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
+void save_dmabuffer16rxresampler(uintptr_t addr)
 {
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	LCLSPIN_LOCK(& locklist16rx);
 
-	if (uacoutalt == 0)
+
+	// Поместить в очередь принятых от USB UAC
+	InsertHeadList3(& resample16rx, & p->item, 0);
+
+	while (GetCountList3(& resample16rx) > (RESAMPLE16NORMAL + SKIPPEDBLOCKS))
 	{
-		// Поместить в свободные
-		InsertHeadList2(& voicesfree16rx, & p->item);
+		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
+		const PLIST_ENTRY t = RemoveTailList3(& resample16rx);
+		InsertHeadList2(& voicesfree16rx, t);
 
-		// Очистить очередь принятых от USB UAC
-//		while (GetCountList3(& resample16rx) != 0)
-//		{
-//			const PLIST_ENTRY t = RemoveTailList3(& resample16rx);
-//			InsertHeadList2(& voicesfree16rx, t);
-//		}
-	}
-	else
-	{
-		// Поместить в очередь принятых от USB UAC
-		InsertHeadList3(& resample16rx, & p->item, 0);
-
-		while (GetCountList3(& resample16rx) > (RESAMPLE16NORMAL + SKIPPEDBLOCKS))
-		{
-			// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
-			const PLIST_ENTRY t = RemoveTailList3(& resample16rx);
-			InsertHeadList2(& voicesfree16rx, t);
-
-		#if WITHBUFFERSDEBUG
-			++ e6;
-		#endif /* WITHBUFFERSDEBUG */
-		}
+	#if WITHBUFFERSDEBUG
+		++ e6;
+	#endif /* WITHBUFFERSDEBUG */
 	}
 	LCLSPIN_UNLOCK(& locklist16rx);
 }
@@ -556,19 +553,26 @@ RAMFUNC static void buffers_savetoresampling16rx(voice16rx_t * p)
 
 // приняли данные от USB AUDIO
 static RAMFUNC void
-buffers_savefromuacout(voice16rx_t * p)
+buffers_savefromuacout_rxresampler(uintptr_t addr)
 {
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_uacout += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
+	++ n2;
 #endif /* WITHBUFFERSDEBUG */
 
 #if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
-	buffers_savetoresampling16rx(p);
+	if (uacoutalt == 0)
+	{
+		release_dmabuffer16rxresampler(addr);
+	}
+	else
+	{
+		save_dmabuffer16rxresampler(addr);
+	}
+
 #else /* WITHUSBUAC */
-	buffers_tonull16rx(p);
+	release_dmabuffer16rxresampler(addr);
 #endif /* WITHUSBUAC */
 }
 
@@ -581,6 +585,22 @@ uintptr_t getfilled_dmabuffer16rx(void)
 	if (GetReadyList3(& voicesmike16rx))
 	{
 		PLIST_ENTRY t = RemoveTailList3(& voicesmike16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
+		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+		return (uintptr_t) p->rbuff;
+	}
+	LCLSPIN_UNLOCK(& locklist16rx);
+	return 0;
+}
+
+uintptr_t getfilled_dmabuffer16rxresampler(void)
+{
+	LCLSPIN_LOCK(& locklist16rx);
+	if (GetReadyList3(& voicesusb16rx))
+	{
+		PLIST_ENTRY t = RemoveTailList3(& voicesusb16rx);
 		LCLSPIN_UNLOCK(& locklist16rx);
 		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
 		ASSERT(p->tag2 == p);
@@ -632,41 +652,28 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 	enum { L, R };
-	static voice16rx_t * p = NULL;
-	static unsigned pos = 0;	// позиция по выходному количеству
+	static aubufv_t * buff = NULL;
+	static unsigned n = 0;	// позиция по выходному количеству
 
-	if (p == NULL)
+	if (buff == NULL)
 	{
-		LCLSPIN_LOCK(& locklist16rx);
-		if (GetReadyList3(& voicesusb16rx))
+		buff = (aubufv_t *) getfilled_dmabuffer16rxresampler();
+		if (buff == 0)
 		{
-			PLIST_ENTRY t = RemoveTailList3(& voicesusb16rx);
-			LCLSPIN_UNLOCK(& locklist16rx);
-			p = CONTAINING_RECORD(t, voice16rx_t, item);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			pos = 0;
-#if WITHBUFFERSDEBUG
-			++ n7;
-#endif /* WITHBUFFERSDEBUG */
-		}
-		else
-		{
-			// resampler не успел начать работать - возвращаем 0.
-			LCLSPIN_UNLOCK(& locklist16rx);
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
 			return 0;
 		}
+		n = 0;
 	}
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodecrx, p->rbuff [pos * DMABUFFSTEP16RX + 0]);	// левый канал
-	v->ivqv [R] = adpt_input(& afcodecrx, p->rbuff [pos * DMABUFFSTEP16RX + 1]);	// правый канал
 
-	if (++ pos >= CNT16RX)
+	// Использование данных.
+	v->ivqv [L] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 0]);	// левый канал
+	v->ivqv [R] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 1]);	// правый канал
+
+	if (++ n >= CNT16RX)
 	{
-		buffers_tonull16rx(p);
-		p = NULL;
+		release_dmabuffer16rxresampler((uintptr_t) buff);
+		buff = NULL;
 	}
 	return 1;
 }
@@ -1375,6 +1382,11 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 	return 0;
 }
 
+RAMFUNC uintptr_t allocate_dmabuffer16rxresampler(void)
+{
+	return allocate_dmabuffer16rx();
+
+}
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки AF ADC
 void RAMFUNC save_dmabuffer16rx(uintptr_t addr)
@@ -1399,27 +1411,6 @@ void RAMFUNC save_dmabuffer16rx(uintptr_t addr)
 
 	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после приёма пакета с USB AUDIO
-static void processing_dmabuffer16rxuac(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-	++ n2;
-#endif /* WITHBUFFERSDEBUG */
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
-//	// Замена приходящего с USB тоном
-//	{
-//		unsigned i;
-//		for (i = 0; i < DMABUFFSIZE16RX; i += DMABUFFSTEP16RX)
-//		{
-//			p->rbuff [i + DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, get_lout());
-//			p->rbuff [i + DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, get_rout());
-//		}
-//	}
-	buffers_savefromuacout(p);
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
@@ -1968,7 +1959,7 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t i
 		{
 			IRQL_t oldIrql;
 			RiseIrql(IRQL_REALTIME, & oldIrql);
-			uacoutaddr = allocate_dmabuffer16rx();
+			uacoutaddr = allocate_dmabuffer16rxresampler();
 			LowerIrql(oldIrql);
 			uacoutbufflevel = 0;
 		}
@@ -2011,7 +2002,7 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t i
 		{
 			IRQL_t oldIrql;
 			RiseIrql(IRQL_REALTIME, & oldIrql);
-			processing_dmabuffer16rxuac(uacoutaddr);
+			buffers_savefromuacout_rxresampler(uacoutaddr);
 			LowerIrql(oldIrql);
 			uacoutaddr = 0;
 			uacoutbufflevel = 0;
