@@ -533,7 +533,6 @@ extern "C" {
 	#endif /* CPUSTYLE_R7S721 */
 #endif /* ! defined (UACIN_RTS192_SAMPLEBYTES) */
 
-#define EP_align(v, g) (((v) + (g) - 1) / (g) * (g))	// Округление v до g
 #define UAC_DATASIZE(n, ss, ch) ((n) * (ss) * (ch))
 
 // Получить размер для программирования FIFO endpoint - с учетом разбивки на микрофреймы
