@@ -53,8 +53,8 @@ static uintptr_t
 dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((cachesize_dmabuffer16tx() % DCACHEROWSIZE) == 0);
-	dcache_clean_invalidate(addr, cachesize_dmabuffer16tx());
+	ASSERT((cachesize_dmabuffer16txphones() % DCACHEROWSIZE) == 0);
+	dcache_clean_invalidate(addr, cachesize_dmabuffer16txphones());
 	return addr;
 }
 

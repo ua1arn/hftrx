@@ -278,7 +278,7 @@ uintptr_t Xallocate_dmabuffer16rx(void)
 
 #endif
 
-#if 0
+#if 1
 
 // Audio CODEC in (from processor)
 typedef ALIGNX_BEGIN struct voice16tx_tag
@@ -288,61 +288,107 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 } ALIGNX_END voice16tx_t;
 
 
-typedef blists<voice16tx_t, 33> voice16txlist_t;
-typedef blists<voice16tx_t, 33> voice16sidetonelist_t;
+typedef blists<voice16tx_t, 333> voice16txphones_t;
+typedef blists<voice16tx_t, 33> voice16txmoni_t;
 
-static voice16txlist_t voice16txlist(IRQL_REALTIME);
-static voice16txlist_t voice16sidetonelist(IRQL_REALTIME);
+static voice16txphones_t voice16txphones(IRQL_REALTIME);
+static voice16txphones_t voice16txmoni(IRQL_REALTIME);
 
-int_fast32_t cachesize_dmabuffer16tx(void)
+int_fast32_t cachesize_dmabuffer16txphones(void)
 {
 	return offsetof(voice16tx_t, pad) - offsetof(voice16tx_t, buff);
 }
 
+uintptr_t allocate_dmabuffer16txphones(void)
+{
+	voice16tx_t * dest;
+	if (voice16txphones.get_freebuffer(& dest) )
+		return (uintptr_t) dest->buff;
+	if (voice16txphones.get_readybuffer(& dest) )
+		return (uintptr_t) dest->buff;
+	ASSERT(0);
+	for (;;)
+		;
+	return 0;
+}
+
+void save_dmabuffer16txphones(uintptr_t addr)
+{
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16txphones.save_buffer(p);
+}
+
+void release_dmabuffer16txphones(uintptr_t addr)
+{
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16txphones.release_buffer(p);
+}
+// add sidetone
+uintptr_t getfilled_dmabuffer16txphones(void)
+{
+	voice16tx_t * phones;
+	voice16tx_t * moni;
+	do
+	{
+		if (voice16txphones.get_readybuffer(& phones) )
+			break;
+		if (voice16txphones.get_freebuffer(& phones) )
+			break;
+		ASSERT(0);
+		for (;;)
+			;
+		return 0;
+	} while (0);
+
+	while ((voice16txmoni.get_readybuffer(& moni) || voice16txmoni.get_freebuffer(& moni)) == 0)
+		ASSERT(0);
+
+	dsp_addsidetone(phones->buff, moni->buff, 1);
+
+	voice16txmoni.release_buffer(moni);
+	return (uintptr_t) phones->buff;
+}
+
+// sidetone forming
+
 uintptr_t allocate_dmabuffer16txmoni(void)
 {
 	voice16tx_t * dest;
-	while (voice16sidetonelist.get_freebuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
+	if (voice16txmoni.get_freebuffer(& dest) )
+		return (uintptr_t) dest->buff;
+	if (voice16txmoni.get_readybuffer(& dest) )
+		return (uintptr_t) dest->buff;
+	ASSERT(0);
+	for (;;)
+		;
+	return 0;
 }
 
-uintptr_t getfilled_dmabuffer16txphones(void)
+void save_dmabuffer16txmoni(uintptr_t addr)
 {
-	voice16tx_t * dest;
-	while (voice16txlist.get_readybuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16txmoni.save_buffer(p);
 }
 
 uintptr_t getfilled_dmabuffer16txmoni(void)
 {
 	voice16tx_t * dest;
-	while (voice16txlist.get_readybuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
+	if (voice16txmoni.get_readybuffer(& dest) )
+		return (uintptr_t) dest->buff;
+	if (voice16txmoni.get_freebuffer(& dest) )
+		return (uintptr_t) dest->buff;
+	ASSERT(0);
+	for (;;)
+		;
+	return 0;
 }
-#endif
 
-#if 0
-// Audio CODEC in/out
-
-typedef blists<aubufv_t, DMABUFFSIZE16TX, 20> voice16txlist_t;
-
-static voice16txlist_t voice16txlist(IRQL_REALTIME);
-
-int_fast32_t cachesize_dmabuffer16tx(void)
+void release_dmabuffer16txmoni(uintptr_t addr)
 {
-	return voice16txlist.get_cachesize();
+	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16txmoni.release_buffer(p);
 }
 
-uintptr_t allocate_dmabuffer16tx(void)
-{
-	aubufv_t * dest;
-	while (voice16txlist.get_freebuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest;
-}
 #endif
 
 #if 1

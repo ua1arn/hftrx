@@ -237,7 +237,7 @@ int_fast32_t cachesize_dmabuffer16rx(void)
 }
 #endif
 
-#if 1
+#if 0
 //
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16tx_tag
@@ -248,7 +248,7 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 	void * tag3;
 } ALIGNX_END voice16tx_t;
 
-int_fast32_t cachesize_dmabuffer16tx(void)
+int_fast32_t cachesize_dmabuffer16txphones(void)
 {
 	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, tbuff);
 }
@@ -282,10 +282,12 @@ static RAMBIGDTCM LIST_HEAD3 resample16rx;		// буферы от USB для си
 static RAMBIGDTCM LIST_HEAD3 voicesusb16rx;	// буферы с оцифрованными звуками с USB AUDIO (после ресэмплинга)
 static RAMBIGDTCM LCLSPINLOCK_t locklist16rx = LCLSPINLOCK_INIT;
 
+#if 0
 static RAMBIGDTCM LIST_HEAD2 voicesfree16tx;
 static RAMBIGDTCM LIST_HEAD3 voicesphones16tx;	// буферы, предназначенные для выдачи на наушники
 static RAMBIGDTCM LIST_HEAD3 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
 static RAMBIGDTCM LCLSPINLOCK_t locklist16tx = LCLSPINLOCK_INIT;
+#endif
 
 #if WITHUSBHW && WITHUSBUAC
 
@@ -508,6 +510,7 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHINTEGRATEDDSP
 
+#if 0
 // Сохранить звук на звуковой выход трансивера
 static RAMFUNC void buffers_tophones16tx(voice16tx_t * p)
 {
@@ -528,15 +531,14 @@ static RAMFUNC void buffers_tomoni16tx(voice16tx_t * p)
 	LCLSPIN_UNLOCK(& locklist16tx);
 }
 
-// Сохранить звук в никуда...
-static RAMFUNC void buffers_tonull16rx(voice16rx_t * p)
+static RAMFUNC void
+buffers_savefrommoni16tx(voice16tx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist16rx);
-	InsertHeadList2(& voicesfree16rx, & p->item);
-	LCLSPIN_UNLOCK(& locklist16rx);
+	buffers_tomoni16tx(p);
 }
+
 
 // +++ Коммутация потоков аудиоданных
 // первый канал выхода приёмника - для прослушивания
@@ -548,15 +550,21 @@ buffers_savefromrxout16tx(voice16tx_t * p)
 	buffers_tophones16tx(p);
 }
 
+#endif
 
-static RAMFUNC void
-buffers_savefrommoni16tx(voice16tx_t * p)
+#if 1
+
+// Сохранить звук в никуда...
+static RAMFUNC void buffers_tonull16rx(voice16rx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-	buffers_tomoni16tx(p);
+	LCLSPIN_LOCK(& locklist16rx);
+	InsertHeadList2(& voicesfree16rx, & p->item);
+	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
+#endif
 
 #if WITHUSBUAC
 
@@ -720,28 +728,22 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16tx_t * p = NULL;
+	static aubufv_t * buff = NULL;
 	static unsigned n;
 
-	if (p == NULL)
+	if (buff == NULL)
 	{
-		uintptr_t addr = allocate_dmabuffer16txmoni();
-		p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
+		buff = (aubufv_t *) allocate_dmabuffer16txmoni();
 		n = 0;
 	}
 
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-
-	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
-	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
+	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
+	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
 
 	if (++ n >= CNT16TX)
 	{
-		buffers_savefrommoni16tx(p);
-		p = NULL;
+		save_dmabuffer16txmoni((uintptr_t) buff);
+		buff = NULL;
 	}
 }
 
@@ -1425,6 +1427,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 	return 0;
 }
 
+#if 0
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
 static RAMFUNC uintptr_t allocate_dmabuffer16tx_all(void)
 {
@@ -1495,15 +1498,6 @@ RAMFUNC uintptr_t allocate_dmabuffer16txmoni(void)
 
 // Этой функцией пользуются обработчики прерываний DMA
 // передали буфер, считать свободным
-void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
-	buffers_tonull16rx(p);
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-// передали буфер, считать свободным
 static void RAMFUNC release_dmabuffer16tx_all(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
@@ -1522,6 +1516,16 @@ void RAMFUNC release_dmabuffer16txphones(uintptr_t addr)
 void RAMFUNC release_dmabuffer16txmoni(uintptr_t addr)
 {
 	release_dmabuffer16tx_all(addr);
+}
+#endif
+
+// Этой функцией пользуются обработчики прерываний DMA
+// передали буфер, считать свободным
+void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
+{
+	//ASSERT(addr != 0);
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
+	buffers_tonull16rx(p);
 }
 
 static void debaudio(int v)
@@ -1759,6 +1763,7 @@ void dsp_calcrx(void)
 #endif /* WITHBUFFERSDEBUG */
 }
 
+#if 0
 // Этой функцией пользуются обработчики прерываний DMA
 // получить буфер для передачи через AF DAC
 uintptr_t getfilled_dmabuffer16txphones(void)
@@ -1815,6 +1820,7 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 	memset(p->tbuff, 0, sizeof p->tbuff); // Заполнение "тишиной"
 	return (uintptr_t) & p->tbuff;
 }
+#endif
 
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
@@ -1867,25 +1873,22 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	// если есть инициализированный канал для выдачи звука
-	static voice16tx_t * p = NULL;
+	static aubufv_t * buff = NULL;
 	static unsigned n;
 
-	if (p == NULL)
+	if (buff == NULL)
 	{
-		uintptr_t addr = allocate_dmabuffer16txphones();
-		p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
+		buff = (aubufv_t *) allocate_dmabuffer16txphones();
 		n = 0;
 	}
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
 
-	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
-	p->tbuff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
+	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
+	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
 
 	if (++ n >= CNT16TX)
 	{
-		buffers_savefromrxout16tx(p);
-		p = NULL;
+		save_dmabuffer16txphones((uintptr_t) buff);
+		buff = NULL;
 	}
 }
 
@@ -2466,6 +2469,7 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklist16rx);
 
 	}
+#if 0
 	{
 		unsigned i;
 		// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
@@ -2484,7 +2488,7 @@ void buffers_initialize(void)
 		}
 		LCLSPINLOCK_INITIALIZE(& locklist16tx);
 	}
-
+#endif
 	//ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
 //	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
 //	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
