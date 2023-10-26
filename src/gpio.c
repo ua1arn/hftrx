@@ -1355,35 +1355,41 @@ gpioX_onchangeinterrupt(
 		)
 {
 	unsigned pos;
-	//	0x0: Positive Edge
-	//	0x1: Negative Edge
-	//	0x2: High Level
-	//	0x3: Low Level
-	//	0x4: Double Edge (Positive/Negative)
-	unsigned cfgbits = 0x02;	// default - high level
-
-	if (! raise && ! fall)
-		cfgbits = 0x02;		// default - high level
-	else if (raise && ! fall)
-		cfgbits = 0x00;		// 0x0: Positive Edge
-	else if (! raise && fall)
-		cfgbits = 0x01;		// 0x1: Negative Edge
-	else if (raise && fall)
-		cfgbits = 0x04;		// 0x4: Double Edge (Positive/Negative)
-
-	const portholder_t cfg0 = power4(ipins >> 0);		/* EINT_CFG0 bits */
-	const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
-	const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
-	const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
 
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioint->EINT_CFG [0] = (gpioint->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	gpioint->EINT_CFG [1] = (gpioint->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	for (pos = 0; pos < 32; ++ pos)
+	{
+		const portholder_t mask = (portholder_t) 0x01 << pos;
+		if (! (ipins & mask))
+			continue;
+		//	0x0: Positive Edge
+		//	0x1: Negative Edge
+		//	0x2: High Level
+		//	0x3: Low Level
+		//	0x4: Double Edge (Positive/Negative)
+		unsigned cfgbits = 0x02;	// default - high level
 
+		if (! (raise & mask) && ! (fall & mask))
+			cfgbits = 0x02;		// default - high level
+		else if (!! (raise & mask) && ! (fall & mask))
+			cfgbits = 0x00;		// 0x0: Positive Edge
+		else if (! (raise & mask) && !! (fall & mask))
+			cfgbits = 0x01;		// 0x1: Negative Edge
+		else if (!! (raise & mask) && !! (fall & mask))
+			cfgbits = 0x04;		// 0x4: Double Edge (Positive/Negative)
+
+		const portholder_t cfg0 = power4(ipins >> 0);		/* EINT_CFG0 bits */
+		const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
+		const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
+		const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
+
+		gpioint->EINT_CFG [0] = (gpioint->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+		gpioint->EINT_CFG [1] = (gpioint->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+		gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+		gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	}
 	gpioint->EINT_CTL |= ipins;
 
 	//gpioint->EINT_DEB = 1;
@@ -1397,7 +1403,6 @@ gpioX_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		//gpiohandlers [gpioix] [pos] = handler;
-
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 	}
 }
