@@ -338,257 +338,257 @@ extern "C" {
 
 #endif /* CPUSTYLE_STM32F */
 
-void arm_hardware_pioa_inputs(unsigned long ipins);
-void arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioa_inputs(portholder_t ipins);
+void arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioa_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioa_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_piob_inputs(unsigned long ipins);
-void arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piob_inputs(portholder_t ipins);
+void arm_hardware_piob_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piob_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piob_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioc_inputs(unsigned long ipins);
-void arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioc_inputs(portholder_t ipins);
+void arm_hardware_pioc_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioc_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioc_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_piod_inputs(unsigned long ipins);
-void arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piod_inputs(portholder_t ipins);
+void arm_hardware_piod_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piod_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piod_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioe_inputs(unsigned long ipins);
-void arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioe_inputs(portholder_t ipins);
+void arm_hardware_pioe_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioe_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioe_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_piof_inputs(unsigned long ipins);
-void arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piof_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piof_inputs(portholder_t ipins);
+void arm_hardware_piof_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piof_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piof_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piof_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_piog_inputs(unsigned long ipins);
-void arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piog_inputs(portholder_t ipins);
+void arm_hardware_piog_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piog_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piog_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piog_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioh_inputs(unsigned long ipins);
-void arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioh_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioh_inputs(portholder_t ipins);
+void arm_hardware_pioh_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioh_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioh_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioh_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioi_inputs(unsigned long ipins);
-void arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioi_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioi_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioi_inputs(portholder_t ipins);
+void arm_hardware_pioi_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioi_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioi_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioi_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioj_inputs(unsigned long ipins);
-void arm_hardware_pioj_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioj_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioj_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioj_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioj_inputs(portholder_t ipins);
+void arm_hardware_pioj_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioj_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioj_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioj_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_piok_inputs(unsigned long ipins);
-void arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piok_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piok_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piok_inputs(portholder_t ipins);
+void arm_hardware_piok_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piok_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piok_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piok_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_piol_inputs(unsigned long ipins);
-void arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piol_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piol_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_piol_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_piol_inputs(portholder_t ipins);
+void arm_hardware_piol_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piol_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piol_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioz_inputs(unsigned long ipins);
-void arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pioz_inputs(portholder_t ipins);
+void arm_hardware_pioz_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioz_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioz_outputs50m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioz_opendrain(portholder_t opins, portholder_t initialstate);
 
-void arm_hardware_pioa_peripha(unsigned long pins);		// выводы присоединены к periph A
-void arm_hardware_pioa_periphb(unsigned long pins);		// выводы присоединены к periph B
-void arm_hardware_pioa_periphc(unsigned long pins);		// выводы присоединены к periph C
-void arm_hardware_pioa_periphd(unsigned long pins);		// выводы присоединены к periph D
-void arm_hardware_piob_peripha(unsigned long pins);		// выводы присоединены к periph A
-void arm_hardware_piob_periphb(unsigned long pins);		// выводы присоединены к periph B
-void arm_hardware_piob_periphc(unsigned long pins);		// выводы присоединены к periph C
-void arm_hardware_piob_periphd(unsigned long pins);		// выводы присоединены к periph D
+void arm_hardware_pioa_peripha(portholder_t pins);		// выводы присоединены к periph A
+void arm_hardware_pioa_periphb(portholder_t pins);		// выводы присоединены к periph B
+void arm_hardware_pioa_periphc(portholder_t pins);		// выводы присоединены к periph C
+void arm_hardware_pioa_periphd(portholder_t pins);		// выводы присоединены к periph D
+void arm_hardware_piob_peripha(portholder_t pins);		// выводы присоединены к periph A
+void arm_hardware_piob_periphb(portholder_t pins);		// выводы присоединены к periph B
+void arm_hardware_piob_periphc(portholder_t pins);		// выводы присоединены к periph C
+void arm_hardware_piob_periphd(portholder_t pins);		// выводы присоединены к periph D
 
-void arm_hardware_pioa_only(unsigned long pins);		// выводы присоединены к PIO
-void arm_hardware_piob_only(unsigned long pins);		// выводы присоединены к PIO
+void arm_hardware_pioa_only(portholder_t pins);		// выводы присоединены к PIO
+void arm_hardware_piob_only(portholder_t pins);		// выводы присоединены к PIO
 
-void arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_pioj_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_piok_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
-void arm_hardware_pioz_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioj_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_piok_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
+void arm_hardware_pioz_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu);
 
-void arm_hardware_pioa_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piob_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioc_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piod_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioe_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piof_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piog_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioh_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioi_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioj_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piok_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piol_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioz_altfn2(unsigned long opins, unsigned af);
+void arm_hardware_pioa_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piob_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioc_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piod_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioe_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piof_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piog_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioh_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioi_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioj_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piok_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piol_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioz_altfn2(portholder_t opins, unsigned af);
 
-void arm_hardware_pioa_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_piob_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_pioc_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_piod_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_pioe_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_piof_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_piog_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_pioh_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_pioi_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_pioj_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_piok_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_piol_altfn20(unsigned long opins, unsigned af);
-void arm_hardware_pioz_altfn20(unsigned long opins, unsigned af);
+void arm_hardware_pioa_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_piob_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_pioc_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_piod_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_pioe_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_piof_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_piog_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_pioh_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_pioi_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_pioj_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_piok_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_piol_altfn20(portholder_t opins, unsigned af);
+void arm_hardware_pioz_altfn20(portholder_t opins, unsigned af);
 
-void arm_hardware_pioa_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_piob_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_pioc_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_piod_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_pioe_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_piof_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_piog_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_pioh_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_pioi_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_pioj_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_piok_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_piol_altfn50(unsigned long opins, unsigned af);
-void arm_hardware_pioz_altfn50(unsigned long opins, unsigned af);
+void arm_hardware_pioa_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_piob_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_pioc_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_piod_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_pioe_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_piof_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_piog_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_pioh_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_pioi_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_pioj_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_piok_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_piol_altfn50(portholder_t opins, unsigned af);
+void arm_hardware_pioz_altfn50(portholder_t opins, unsigned af);
 
 // включить подтяжку вверх или вниз
-void arm_hardware_pioa_updown(unsigned long up, unsigned long down);
-void arm_hardware_piob_updown(unsigned long up, unsigned long down);
-void arm_hardware_pioc_updown(unsigned long up, unsigned long down);
-void arm_hardware_piod_updown(unsigned long up, unsigned long down);
-void arm_hardware_pioe_updown(unsigned long up, unsigned long down);
-void arm_hardware_piof_updown(unsigned long up, unsigned long down);
-void arm_hardware_piog_updown(unsigned long up, unsigned long down);
-void arm_hardware_pioh_updown(unsigned long up, unsigned long down);
-void arm_hardware_pioi_updown(unsigned long up, unsigned long down);
-void arm_hardware_pioj_updown(unsigned long up, unsigned long down);
-void arm_hardware_piok_updown(unsigned long up, unsigned long down);
-void arm_hardware_piol_updown(unsigned long up, unsigned long down);
-void arm_hardware_pioz_updown(unsigned long up, unsigned long down);
+void arm_hardware_pioa_updown(portholder_t up, portholder_t down);
+void arm_hardware_piob_updown(portholder_t up, portholder_t down);
+void arm_hardware_pioc_updown(portholder_t up, portholder_t down);
+void arm_hardware_piod_updown(portholder_t up, portholder_t down);
+void arm_hardware_pioe_updown(portholder_t up, portholder_t down);
+void arm_hardware_piof_updown(portholder_t up, portholder_t down);
+void arm_hardware_piog_updown(portholder_t up, portholder_t down);
+void arm_hardware_pioh_updown(portholder_t up, portholder_t down);
+void arm_hardware_pioi_updown(portholder_t up, portholder_t down);
+void arm_hardware_pioj_updown(portholder_t up, portholder_t down);
+void arm_hardware_piok_updown(portholder_t up, portholder_t down);
+void arm_hardware_piol_updown(portholder_t up, portholder_t down);
+void arm_hardware_pioz_updown(portholder_t up, portholder_t down);
 
 // отключить подтяжку вверх или вниз
-void arm_hardware_pioa_updownoff(unsigned long ipins);
-void arm_hardware_piob_updownoff(unsigned long ipins);
-void arm_hardware_pioc_updownoff(unsigned long ipins);
-void arm_hardware_piod_updownoff(unsigned long ipins);
-void arm_hardware_pioe_updownoff(unsigned long ipins);
-void arm_hardware_piof_updownoff(unsigned long ipins);
-void arm_hardware_piog_updownoff(unsigned long ipins);
-void arm_hardware_pioh_updownoff(unsigned long ipins);
-void arm_hardware_pioi_updownoff(unsigned long ipins);
-void arm_hardware_pioj_updownoff(unsigned long ipins);
-void arm_hardware_piok_updownoff(unsigned long ipins);
-void arm_hardware_piol_updownoff(unsigned long ipins);
-void arm_hardware_pioz_updownoff(unsigned long ipins);
+void arm_hardware_pioa_updownoff(portholder_t ipins);
+void arm_hardware_piob_updownoff(portholder_t ipins);
+void arm_hardware_pioc_updownoff(portholder_t ipins);
+void arm_hardware_piod_updownoff(portholder_t ipins);
+void arm_hardware_pioe_updownoff(portholder_t ipins);
+void arm_hardware_piof_updownoff(portholder_t ipins);
+void arm_hardware_piog_updownoff(portholder_t ipins);
+void arm_hardware_pioh_updownoff(portholder_t ipins);
+void arm_hardware_pioi_updownoff(portholder_t ipins);
+void arm_hardware_pioj_updownoff(portholder_t ipins);
+void arm_hardware_piok_updownoff(portholder_t ipins);
+void arm_hardware_piol_updownoff(portholder_t ipins);
+void arm_hardware_pioz_updownoff(portholder_t ipins);
 
-void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioh_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioi_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioj_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piok_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_piol_periphopendrain_altfn2(unsigned long opins, unsigned af);
-void arm_hardware_pioz_periphopendrain_altfn2(unsigned long opins, unsigned af);
+void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piog_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioh_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioi_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioj_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piok_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_piol_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioz_periphopendrain_altfn2(portholder_t opins, unsigned af);
 
-void arm_hardware_pioa_analoginput(unsigned long ipins);
-void arm_hardware_piob_analoginput(unsigned long ipins);
-void arm_hardware_pioc_analoginput(unsigned long ipins);
+void arm_hardware_pioa_analoginput(portholder_t ipins);
+void arm_hardware_piob_analoginput(portholder_t ipins);
+void arm_hardware_pioc_analoginput(portholder_t ipins);
 
 // R7S721 ports
-void arm_hardware_jpio0_inputs(unsigned long ipins);	// JTAG inputs access
-void arm_hardware_pio0_inputs(unsigned long ipins);
-void arm_hardware_pio1_inputs(unsigned long ipins);
-void arm_hardware_pio2_inputs(unsigned long ipins);
-void arm_hardware_pio3_inputs(unsigned long ipins);
-void arm_hardware_pio4_inputs(unsigned long ipins);
-void arm_hardware_pio5_inputs(unsigned long ipins);
-void arm_hardware_pio6_inputs(unsigned long ipins);
-void arm_hardware_pio7_inputs(unsigned long ipins);
-void arm_hardware_pio8_inputs(unsigned long ipins);
-void arm_hardware_pio9_inputs(unsigned long ipins);
-void arm_hardware_pio10_inputs(unsigned long ipins);
-void arm_hardware_pio11_inputs(unsigned long ipins);
+void arm_hardware_jpio0_inputs(portholder_t ipins);	// JTAG inputs access
+void arm_hardware_pio0_inputs(portholder_t ipins);
+void arm_hardware_pio1_inputs(portholder_t ipins);
+void arm_hardware_pio2_inputs(portholder_t ipins);
+void arm_hardware_pio3_inputs(portholder_t ipins);
+void arm_hardware_pio4_inputs(portholder_t ipins);
+void arm_hardware_pio5_inputs(portholder_t ipins);
+void arm_hardware_pio6_inputs(portholder_t ipins);
+void arm_hardware_pio7_inputs(portholder_t ipins);
+void arm_hardware_pio8_inputs(portholder_t ipins);
+void arm_hardware_pio9_inputs(portholder_t ipins);
+void arm_hardware_pio10_inputs(portholder_t ipins);
+void arm_hardware_pio11_inputs(portholder_t ipins);
 
 // R7S721 ports
 // PIOJ and PIO0 input-only ports
-void arm_hardware_pio1_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio2_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio3_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio4_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio5_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio6_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio7_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio8_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio9_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio10_outputs(unsigned long opins, unsigned long initialstate);
-void arm_hardware_pio11_outputs(unsigned long opins, unsigned long initialstate);
+void arm_hardware_pio1_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio2_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio3_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio4_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio5_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio6_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio7_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio8_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio9_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio10_outputs(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pio11_outputs(portholder_t opins, portholder_t initialstate);
 
 // R7S721 peripherials
-void arm_hardware_pio1_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio2_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio3_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio4_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio5_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio6_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio7_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio8_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio9_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio10_alternative(unsigned long iopins, unsigned alt);
-void arm_hardware_pio11_alternative(unsigned long iopins, unsigned alt);
+void arm_hardware_pio1_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio2_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio3_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio4_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio5_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio6_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio7_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio8_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio9_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio10_alternative(portholder_t iopins, unsigned alt);
+void arm_hardware_pio11_alternative(portholder_t iopins, unsigned alt);
 
 // R7S721 pin change interrupts
-void arm_hardware_piojp0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio1_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio2_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio3_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio4_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio5_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio6_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio7_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio8_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio9_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));
-void arm_hardware_pio10_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));	// RZ/A1H
-void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void));	// RZ/A1H
+void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));	// RZ/A1H
+void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void));	// RZ/A1H
 
-void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void));
 
 #if (CPUSTYLE_ALLWINNER || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_VM14)
 	/*!< Atomic port state change */
