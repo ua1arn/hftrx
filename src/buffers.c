@@ -26,13 +26,13 @@
 #if defined(WITHRTS96) && defined(WITHRTS192)
 	#error Configuration Error: WITHRTS96 and WITHRTS192 can not be used together
 #endif /* defined(WITHRTS96) && defined(WITHRTS192) */
-enum
-{
-	BUFFTAG_UACIN48 = 44,
-	BUFFTAG_RTS192,
-	BUFFTAG_RTS96,
-	BUFFTAG_total
-};
+//enum
+//{
+//	BUFFTAG_UACIN48 = 44,
+//	BUFFTAG_RTS192,
+//	BUFFTAG_RTS96,
+//	BUFFTAG_total
+//};
 
 /* отладочные врапперы для функций работы со списком - позволяют получить размер очереди */
 typedef struct listcnt

@@ -46,21 +46,29 @@ class blists
 		void * tag3;
 	} buffitem_t;
 
+	LIST_ENTRY resamplelist;
 	LIST_ENTRY freelist;
 	LIST_ENTRY readylist;
 	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 	buffitem_t storage [capacity];
+	int readycount;
+	int freecount;
+	int resamplecount;
+	element_t workbuff;	// буфер над которым выполняется ресэмплинг
 
 public:
-	blists(IRQL_t airql) : irql(airql)
+	blists(IRQL_t airql) :
+		irql(airql),
+		readycount(0),
+		freecount(0),
+		resamplecount(0)
 	{
-		unsigned i;
-
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
+		InitializeListHead(& resamplelist);	// input list for resampling to readylist
 		LCLSPINLOCK_INITIALIZE(& lock);
-		for (i = 0; i < capacity; ++ i)
+		for (unsigned i = 0; i < capacity; ++ i)
 		{
 			buffitem_t * const p = & storage [i];
 			p->tag2 = p;
@@ -81,6 +89,7 @@ public:
 		LCLSPIN_LOCK(& lock);
 
 		InsertHeadList(& freelist, & p->item);
+		++ freecount;
 
 		LCLSPIN_UNLOCK(& lock);
 		LowerIrql(oldIrql);
@@ -97,6 +106,24 @@ public:
 		LCLSPIN_LOCK(& lock);
 
 		InsertHeadList(& readylist, & p->item);
+		++ readycount;
+
+		LCLSPIN_UNLOCK(& lock);
+		LowerIrql(oldIrql);
+	}
+
+	// сохранить в списке буферов для ресэмплинга
+	void resample_buffer(element_t * addr)
+	{
+		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+		IRQL_t oldIrql;
+		RiseIrql(irql, & oldIrql);
+		LCLSPIN_LOCK(& lock);
+
+		InsertHeadList(& resamplelist, & p->item);
+		++ resamplecount;
 
 		LCLSPIN_UNLOCK(& lock);
 		LowerIrql(oldIrql);
@@ -111,6 +138,7 @@ public:
 		if (! IsListEmpty(& readylist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			-- readycount;
 			LCLSPIN_UNLOCK(& lock);
 			LowerIrql(oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -133,6 +161,7 @@ public:
 		if (! IsListEmpty(& freelist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& freelist);
+			-- freecount;
 			LCLSPIN_UNLOCK(& lock);
 			LowerIrql(oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
