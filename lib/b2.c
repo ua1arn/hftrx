@@ -372,36 +372,36 @@ void buffers_diagnostics(void)
 {
 #if 1 && WITHDEBUG && WITHINTEGRATEDDSP && WITHBUFFERSDEBUG && ! WITHBUFFERSSMALLDEBUG
 
-//	LIST2PRINT(speexfree16);
-//	LIST2PRINT(voicesfree32tx);
-//	LIST2PRINT(voicesfree16rx);
-//	LIST2PRINT(voicesfree16tx);
-//	LIST2PRINT(speexready16);
-//	LIST2PRINT(voicesready32tx);
+	LIST2PRINT(speexfree16);
+	LIST2PRINT(voicesfree32tx);
+	LIST2PRINT(voicesfree16rx);
+	LIST2PRINT(voicesfree16tx);
+	LIST2PRINT(speexready16);
+	LIST2PRINT(voicesready32tx);
 	PRINTF(PSTR("\n"));
-//	LIST3PRINT(voicesready16rx);
-//	LIST3PRINT(voicesphones16tx);
-//	LIST3PRINT(voicesmoni16tx);
+	LIST3PRINT(voicesmike16rx);
+	LIST3PRINT(voicesphones16tx);
+	LIST3PRINT(voicesmoni16tx);
 
-//	#if WITHUSBUACIN
-//		#if WITHRTS192
-//			LIST2PRINT(voicesfree192rts);
-//			LIST2PRINT(uacin192rts);
-//		#elif WITHRTS96
-//			LIST2PRINT(uacinrts96free);
-//			LIST2PRINT(uacinrts96ready);
-//		#endif
-//		LIST2PRINT(uacin48free);
-//		LIST2PRINT(uacin48ready);
-//	#endif /* WITHUSBUACIN */
+	#if WITHUSBUACIN
+		#if WITHRTS192
+			LIST2PRINT(voicesfree192rts);
+			LIST2PRINT(uacin192rts);
+		#elif WITHRTS96
+			LIST2PRINT(uacinrts96free);
+			LIST2PRINT(uacinrts96ready);
+		#endif
+		LIST2PRINT(uacin48free);
+		LIST2PRINT(uacin48ready);
+	#endif /* WITHUSBUACIN */
 			PRINTF(PSTR("\n"));
 	#if WITHUSBUACOUT
-//		LIST3PRINT(voicesusb16rx);
-//		LIST3PRINT(resample16rx);
+		LIST3PRINT(voicesusb16rx);
+		LIST3PRINT(resample16rx);
 		PRINTF(PSTR(" (NORMAL=%d), uacoutalt=%d, add=%u, del=%u, zero=%u, norm=%u "), RESAMPLE16NORMAL, uacoutalt, nbadd, nbdel, nbzero, nbnorm);
 	#endif /* WITHUSBUACOUT */
 
-		
+
 	PRINTF(PSTR("\n"));
 
 #endif
@@ -435,13 +435,13 @@ void buffers_diagnostics(void)
 		const unsigned uacin = getresetval(& debugcount_uacin);
 
 		PRINTF(PSTR("FREQ: uacout=%u, uacin=%u, uacinrts=%u, mikeadc=%u, phonesdac=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
-			uacout * 10000 / ms10, 
-			uacin * 10000 / ms10, 
+			uacout * 10000 / ms10,
+			uacin * 10000 / ms10,
 			uacinrts * 10000 / ms10,
-			mikeadc * 10000 / ms10, 
-			phonesdac * 10000 / ms10, 
-			rx32adc * 10000 / ms10, 
-			rx32wfm * 10000 / ms10, 
+			mikeadc * 10000 / ms10,
+			phonesdac * 10000 / ms10,
+			rx32adc * 10000 / ms10,
+			rx32wfm * 10000 / ms10,
 			tx32dac * 10000 / ms10
 			);
 	}
@@ -2322,3 +2322,4 @@ void buffers_initialize(void)
 
 	// Инициализация ресэмплеров
 }
+

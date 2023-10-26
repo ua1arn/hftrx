@@ -279,7 +279,7 @@ void savespeexbuffer(speexel_t * t)
 
 #endif
 
-#if 1
+#if 0
 
 // Audio CODEC out (to processor)
 typedef ALIGNX_BEGIN struct voice16rx_tag
