@@ -29,6 +29,7 @@
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
 
+
 #if WITHUSBHW
 	#include "usb/usb200.h"
 	#include "usb/usbch9.h"
@@ -214,6 +215,32 @@ public:
 
 
 #if WITHINTEGRATEDDSP
+
+//////////////////////////////////
+// Система буферизации аудиоданных
+//
+
+#if 1
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+	//enum { SKIPPEDBLOCKS = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 2000 сэмплов
+	enum { SKIPPEDBLOCKS = 2000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+
+#else
+	// исправляемая погрешность = 0.1% - один сэмпл добавить/убрать на 1000 сэмплов
+	enum { SKIPPEDBLOCKS = 1000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
+#endif
+
+enum { RESAMPLE16NORMAL = SKIPPEDBLOCKS * 2 };	// Нормальное количество буферов в очереди
+
+enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
+enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
+enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
+enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
+enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
+enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
+enum { MIKELEVEL = 6 };
+enum { PHONESLEVEL = 6 };
 
 // Denoise operations
 
