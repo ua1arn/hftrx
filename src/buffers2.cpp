@@ -192,6 +192,7 @@ class blistsresample: public blists<element_t, capacity>
 	element_t workbuff;	// буфер над которым выполняется ресэмплинг
 	IRQL_t irql;
 	LCLSPINLOCK_t lock;
+	typedef blists<element_t, capacity> parent_t;
 public:
 	blistsresample(IRQL_t airql) :
 		blists<element_t, capacity>(airql),
@@ -204,7 +205,7 @@ public:
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
-		return get_outbuffer(dest) || get_freebufferforced(dest);
+		return parent_t::get_outbuffer(dest) || parent_t::get_freebufferforced(dest);
 	}
 };
 
