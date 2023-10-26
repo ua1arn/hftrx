@@ -237,23 +237,6 @@ int_fast32_t cachesize_dmabuffer16rx(void)
 }
 #endif
 
-#if 0
-//
-// Audio CODEC in/out
-typedef ALIGNX_BEGIN struct voice16tx_tag
-{
-	void * tag2;
-	ALIGNX_BEGIN aubufv_t tbuff [DMABUFFSIZE16TX] ALIGNX_END;
-	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
-	void * tag3;
-} ALIGNX_END voice16tx_t;
-
-int_fast32_t cachesize_dmabuffer16txphones(void)
-{
-	return offsetof(voice16tx_t, item) - offsetof(voice16tx_t, tbuff);
-}
-#endif
-
 #if 1
 	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 	//enum { SKIPPEDBLOCKS = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
@@ -281,13 +264,6 @@ static RAMBIGDTCM LIST_HEAD3 voicesmike16rx;	// буферы с оцифрова
 static RAMBIGDTCM LIST_HEAD3 resample16rx;		// буферы от USB для синхронизации
 static RAMBIGDTCM LIST_HEAD3 voicesusb16rx;	// буферы с оцифрованными звуками с USB AUDIO (после ресэмплинга)
 static RAMBIGDTCM LCLSPINLOCK_t locklist16rx = LCLSPINLOCK_INIT;
-
-#if 0
-static RAMBIGDTCM LIST_HEAD2 voicesfree16tx;
-static RAMBIGDTCM LIST_HEAD3 voicesphones16tx;	// буферы, предназначенные для выдачи на наушники
-static RAMBIGDTCM LIST_HEAD3 voicesmoni16tx;	// буферы, предназначенные для звука самоконтроля
-static RAMBIGDTCM LCLSPINLOCK_t locklist16tx = LCLSPINLOCK_INIT;
-#endif
 
 #if WITHUSBHW && WITHUSBUAC
 
@@ -509,48 +485,6 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHINTEGRATEDDSP
-
-#if 0
-// Сохранить звук на звуковой выход трансивера
-static RAMFUNC void buffers_tophones16tx(voice16tx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist16tx);
-	InsertHeadList3(& voicesphones16tx, & p->item, 0);
-	LCLSPIN_UNLOCK(& locklist16tx);
-}
-
-// Сохранить звук для самоконтроля на звуковой выход трансивера
-static RAMFUNC void buffers_tomoni16tx(voice16tx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist16tx);
-	InsertHeadList3(& voicesmoni16tx, & p->item, 0);
-	LCLSPIN_UNLOCK(& locklist16tx);
-}
-
-static RAMFUNC void
-buffers_savefrommoni16tx(voice16tx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	buffers_tomoni16tx(p);
-}
-
-
-// +++ Коммутация потоков аудиоданных
-// первый канал выхода приёмника - для прослушивания
-static RAMFUNC void
-buffers_savefromrxout16tx(voice16tx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	buffers_tophones16tx(p);
-}
-
-#endif
 
 #if 1
 
@@ -1427,97 +1361,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 	return 0;
 }
 
-#if 0
-// Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
-static RAMFUNC uintptr_t allocate_dmabuffer16tx_all(void)
-{
-	LCLSPIN_LOCK(& locklist16tx);
-	if (! IsListEmpty2(& voicesfree16tx))
-	{
-		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
-		LCLSPIN_UNLOCK(& locklist16tx);
-		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->tbuff;
-	}
-	else if (! IsListEmpty3(& voicesphones16tx) && ! IsListEmpty3(& voicesmoni16tx))
-	{
-		// Ошибочная ситуация - если буферы не освобождены вовремя -
-		// берём из очереди готовых к прослушиванию
 
-		uint_fast8_t n = 3;
-		do
-		{
-			{
-				const PLIST_ENTRY t = RemoveTailList3(& voicesphones16tx);
-				voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-				ASSERT(p->tag2 == p);
-				ASSERT(p->tag3 == p);
-				InsertHeadList2(& voicesfree16tx, t);
-			}
-			{
-				const PLIST_ENTRY t = RemoveTailList3(& voicesmoni16tx);
-				voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-				ASSERT(p->tag2 == p);
-				ASSERT(p->tag3 == p);
-				InsertHeadList2(& voicesfree16tx, t);
-			}
-		}
-		while (-- n && ! IsListEmpty3(& voicesphones16tx) && ! IsListEmpty3(& voicesmoni16tx));
-
-		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16tx);
-		LCLSPIN_UNLOCK(& locklist16tx);
-		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-	#if WITHBUFFERSDEBUG
-		++ e3;
-	#endif /* WITHBUFFERSDEBUG */
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->tbuff;
-	}
-	else
-	{
-		LCLSPIN_UNLOCK(& locklist16tx);
-		PRINTF(PSTR("allocate_dmabuffer16tx() failure\n"));
-		for (;;)
-			;
-	}
-	return 0;
-}
-
-RAMFUNC uintptr_t allocate_dmabuffer16txphones(void)
-{
-	return allocate_dmabuffer16tx_all();
-}
-
-RAMFUNC uintptr_t allocate_dmabuffer16txmoni(void)
-{
-	return allocate_dmabuffer16tx_all();
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-// передали буфер, считать свободным
-static void RAMFUNC release_dmabuffer16tx_all(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist16tx);
-	InsertHeadList2(& voicesfree16tx, & p->item);
-	LCLSPIN_UNLOCK(& locklist16tx);
-}
-
-void RAMFUNC release_dmabuffer16txphones(uintptr_t addr)
-{
-	release_dmabuffer16tx_all(addr);
-}
-void RAMFUNC release_dmabuffer16txmoni(uintptr_t addr)
-{
-	release_dmabuffer16tx_all(addr);
-}
-#endif
 
 // Этой функцией пользуются обработчики прерываний DMA
 // передали буфер, считать свободным
@@ -1762,65 +1606,6 @@ void dsp_calcrx(void)
 	debugcount_mikeadc += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 }
-
-#if 0
-// Этой функцией пользуются обработчики прерываний DMA
-// получить буфер для передачи через AF DAC
-uintptr_t getfilled_dmabuffer16txphones(void)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_phonesdac += DMABUFFSIZE16TX / DMABUFFSTEP16TX;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-	const uintptr_t monibuf = getfilled_dmabuffer16txmoni();
-	LCLSPIN_LOCK(& locklist16tx);
-	if (GetReadyList3(& voicesphones16tx))
-	{
-		PLIST_ENTRY t = RemoveTailList3(& voicesphones16tx);
-		LCLSPIN_UNLOCK(& locklist16tx);
-		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-		dsp_addsidetone(p->tbuff, (aubufv_t *) monibuf, 1);
-		release_dmabuffer16txmoni(monibuf);
-		return (uintptr_t) & p->tbuff;	// алрес для DMA
-	}
-	LCLSPIN_UNLOCK(& locklist16tx);
-
-#if WITHBUFFERSDEBUG
-	++ e1;
-#endif /* WITHBUFFERSDEBUG */
-
-	const uintptr_t addr = allocate_dmabuffer16txphones();
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
-	dsp_addsidetone(p->tbuff, (aubufv_t *) monibuf, 0);
-	release_dmabuffer16txphones(monibuf);
-	return (uintptr_t) & p->tbuff;
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-uintptr_t getfilled_dmabuffer16txmoni(void)
-{
-	LCLSPIN_LOCK(& locklist16tx);
-	if (GetReadyList3(& voicesmoni16tx))
-	{
-		PLIST_ENTRY t = RemoveTailList3(& voicesmoni16tx);
-		LCLSPIN_UNLOCK(& locklist16tx);
-		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
-		return (uintptr_t) & p->tbuff;	// алрес для DMA
-	}
-	LCLSPIN_UNLOCK(& locklist16tx);
-
-#if WITHBUFFERSDEBUG
-	++ e10;
-#endif /* WITHBUFFERSDEBUG */
-
-	const uintptr_t addr = allocate_dmabuffer16txmoni();
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	memset(p->tbuff, 0, sizeof p->tbuff); // Заполнение "тишиной"
-	return (uintptr_t) & p->tbuff;
-}
-#endif
 
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
@@ -2469,27 +2254,8 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklist16rx);
 
 	}
-#if 0
-	{
-		unsigned i;
-		// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
-		enum { NVCOICESFREE16TX = (16 * PHONESLEVEL + 16 * (FIRBUFSIZE + CNT16TX - 1) / CNT16TX) * BUFOVERSIZE };
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
 
-		InitializeListHead3(& voicesphones16tx, 3 * DMABUFSCALE);	// список для выдачи на ЦАП кодека
-		InitializeListHead3(& voicesmoni16tx, 2 * DMABUFSCALE);	// самопрослушивание
-		InitializeListHead2(& voicesfree16tx);	// Незаполненные
-		for (i = 0; i < (sizeof voicesarray16tx / sizeof voicesarray16tx [0]); ++ i)
-		{
-			voice16tx_t * const p = & voicesarray16tx [i];
-			p->tag2 = p;
-			p->tag3 = p;
-			InsertHeadList2(& voicesfree16tx, & p->item);
-		}
-		LCLSPINLOCK_INITIALIZE(& locklist16tx);
-	}
-#endif
-	//ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
+//	ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
 //	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
 //	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
 
