@@ -1120,15 +1120,4 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 
 #endif /* WITHUSBUAC */
 
-#else
-
-void RAMFUNC buffers_resampleuacin(unsigned nsamples)
-{
-}
-
 #endif
-
-void buffers2_initialize(void)
-{
-}
-

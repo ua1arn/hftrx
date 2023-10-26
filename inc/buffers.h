@@ -573,7 +573,6 @@ extern "C" {
 
 // Buffers interface functions
 void buffers_initialize(void);
-void buffers2_initialize(void);
 
 uint_fast8_t processmodem(void);
 
@@ -630,7 +629,6 @@ void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32rts192(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
-void buffers_resampleuacin(unsigned nsamples);
 void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
 // Буфер обмена про USB

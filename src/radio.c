@@ -19185,12 +19185,6 @@ uint_fast8_t edgepins_get_ptt(void)
 	return 0;
 }
 
-/* Fix ATMega builds */
-void __WEAK buffers2_initialize(void)
-{
-
-}
-
 /* вызывается при запрещённых прерываниях. */
 void
 applowinitialize(void)
@@ -19245,8 +19239,7 @@ applowinitialize(void)
 	ticker_add(& ticker_tuner);
 #endif /* WITHAUTOTUNER */
 
-	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
-	buffers2_initialize();	// new version
+	buffers_initialize();
 
 	edgepins_initialize();
 
