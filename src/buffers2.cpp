@@ -205,6 +205,7 @@ public:
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
+		return parent_t::get_readybuffer(dest);
 		return parent_t::get_outbuffer(dest) || parent_t::get_freebufferforced(dest);
 	}
 };
@@ -537,7 +538,7 @@ typedef enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts192_t;
 
-	typedef blists<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
+	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
 
 	static uacinrts192list_t uacinrts192list(IRQL_REALTIME);
 
@@ -590,7 +591,7 @@ typedef enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts96_t;
 
-	typedef blists<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
+	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
 
 	static uacinrts96list_t uacinrts96list(IRQL_REALTIME);
 
@@ -645,7 +646,7 @@ typedef struct
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 } uacin48_t;
 
-typedef blists<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
+typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
 
 static uacin48list_t uacin48list(IRQL_REALTIME);
 
