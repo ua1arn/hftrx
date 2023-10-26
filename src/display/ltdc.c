@@ -2806,7 +2806,7 @@ static void lvds_t507_corrections(void)
 		0x00000000, 0x00000000, 0xc001288d, 0x00000000,
 	};
 	// CCU
-	for (i = 0; i < ARRAY_SIZE(ccuv); ++ i)
+	for (i = 1; i < ARRAY_SIZE(ccuv); ++ i)
 	{
 		* (volatile uint32_t *) (CCU_BASE + i * 4) = ccuv [i];
 	}
@@ -2884,7 +2884,7 @@ performdump(const char * name, unsigned long base, unsigned long size)
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
-	//lvds_t507_corrections();
+	lvds_t507_corrections();
 	unsigned prei = 0;
 	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
@@ -2912,8 +2912,8 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 //	performdump("CCU", 0x03001000, 0x400);
 //	performdump("DISP_IF_TOP", 0x06510000, 0x30);
 //	performdump("TCON_LCD0", TCON_LCD0_BASE, 0x400);	//TCON_LCD0_BASE;
-	performdump("HDMI_TX0", 0x06000000, 0x400);
-	performdump("HDMI_PHY", 0x06010000, 0x400);	//TCON_LCD0_BASE;
+//	performdump("HDMI_TX0", 0x06000000, 0x400);
+//	performdump("HDMI_PHY", 0x06010000, 0x400);	//TCON_LCD0_BASE;
 }
 
 // What is DPSS_TOP_BGR_REG ?
