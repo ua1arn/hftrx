@@ -48,24 +48,20 @@ class blists
 
 	LIST_ENTRY freelist;
 	LIST_ENTRY outlist;
-	LIST_ENTRY resamplelist;
 	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 	buffitem_t storage [capacity];
 	int outcount;
 	int freecount;
-	int resamplecount;
 
 public:
 	blists(IRQL_t airql) :
 		irql(airql),
 		outcount(0),
-		freecount(0),
-		resamplecount(0)
+		freecount(0)
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& outlist);
-		InitializeListHead(& resamplelist);
 		LCLSPINLOCK_INITIALIZE(& lock);
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
@@ -134,29 +130,6 @@ public:
 		return 0;
 	}
 
-	// получить из списка готовых после ресэмплинга
-	int get_outbuffer(element_t * * dest)
-	{
-		IRQL_t oldIrql;
-		RiseIrql(irql, & oldIrql);
-		LCLSPIN_LOCK(& lock);
-		if (! IsListEmpty(& outlist))
-		{
-			const PLIST_ENTRY t = RemoveTailList(& outlist);
-			-- outcount;
-			LCLSPIN_UNLOCK(& lock);
-			LowerIrql(oldIrql);
-			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			* dest = & p->v;
-			return 1;
-		}
-		LCLSPIN_UNLOCK(& lock);
-		LowerIrql(oldIrql);
-		return 0;
-	}
-
 	// получить из списка свободных
 	int get_freebuffer(element_t * * dest)
 	{
@@ -199,6 +172,10 @@ public:
 		irql(airql)
 		{
 			LCLSPINLOCK_INITIALIZE(& lock);
+			// Один элемент в выходном буфере присутствует
+			element_t * dest;
+			VERIFY(parent_t::get_freebuffer(& dest));
+			parent_t::save_buffer(dest);
 
 		}
 	// функция вызывается получателем (плучаем после ресэмплинга.
@@ -206,7 +183,6 @@ public:
 	int get_readybuffer(element_t * * dest)
 	{
 		return
-			parent_t::get_outbuffer(dest) ||
 			parent_t::get_readybuffer(dest) ||
 			parent_t::get_freebufferforced(dest);
 	}
