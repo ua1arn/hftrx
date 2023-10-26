@@ -227,7 +227,6 @@ public:
 
 #if WITHINTEGRATEDDSP
 
-#if 1
 // Denoise operations
 
 typedef ALIGNX_BEGIN struct denoise16
@@ -276,10 +275,6 @@ void savespeexbuffer(speexel_t * t)
 	denoise16_t * const p = CONTAINING_RECORD(t, denoise16_t, buff);
 	denoise16list.save_buffer(p);
 }
-
-#endif
-
-#if 1
 
 // Audio CODEC out (to processor)
 typedef ALIGNX_BEGIN struct voice16rx_tag
@@ -369,9 +364,6 @@ void purge_dmabuffer16rxresampler(void)
 	voice16rxuacout48list.purge_buffers();
 }
 
-#endif
-
-#if 1
 
 // Audio CODEC in (from processor)
 typedef ALIGNX_BEGIN struct voice16tx_tag
@@ -433,7 +425,6 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		return 0;
 	} while (0);
 
-#if 1
 	// Добавить самоконтроль
 	while ((voice16txmoni.get_readybuffer(& moni) || voice16txmoni.get_freebuffer(& moni)) == 0)
 		ASSERT(0);
@@ -441,7 +432,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	dsp_addsidetone(phones->buff, moni->buff, 1);
 
 	voice16txmoni.release_buffer(moni);
-#endif
+
 	return (uintptr_t) phones->buff;
 }
 
@@ -484,10 +475,6 @@ void release_dmabuffer16txmoni(uintptr_t addr)
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
 	voice16txmoni.release_buffer(p);
 }
-
-#endif
-
-#if 1
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
@@ -549,9 +536,6 @@ uintptr_t getfilled_dmabuffer32tx_sub(void)
 	return allocate_dmabuffer32tx();
 }
 
-#endif
-
-#if 1
 // I/Q data from FPGA or IF CODEC
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
@@ -583,9 +567,6 @@ uintptr_t allocate_dmabuffer32rx(void)
 		ASSERT(0);
 	return (uintptr_t) & dest->buff;
 }
-
-#endif
-
 
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 
@@ -900,6 +881,264 @@ void buffers2_diagnostics(void)
 
 #endif /* WITHBUFFERSDEBUG */
 }
+
+#if 0
+
+enum { NPARTS = 3 };
+
+typedef struct rsmpl_tag
+{
+	lclspinlock_t * lock;//locklist16rx
+	aubufv_t * pdata;// = NULL;
+	PLIST_ENTRY titem;
+	uint_fast8_t part;// = 0;
+	aubufv_t * datas [NPARTS];// = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	unsigned sizes [NPARTS];// = { 0, 0 };			// количество сэмплов во входном буфере
+	unsigned skipsense;// = SKIPPEDBLOCKS;
+	unsigned bufsize;
+	unsigned bufstep;
+	aubufv_t addsample [2];
+	LIST_HEAD3 * rx;//resample16rx
+	LIST_HEAD2 * freelist;//resample16rx
+	LIST_HEAD3 * outlist;//voicesusb16rx
+	uintptr_t (*getoutputdmabuff)(void); // получить выходной буфер
+	aubufv_t * (* getdataptr)(PLIST_ENTRY pitem);
+	aubufv_t (* getaverage)(aubufv_t v1, aubufv_t v2);
+} rsmpl_t;
+
+static aubufv_t * uacin48rsmgetdata(PLIST_ENTRY pitem)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(pitem, voice16rx_t, item);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+
+	return p->rbuff;
+}
+
+static aubufv_t uacin48average(aubufv_t v1, aubufv_t v2)
+{
+	return ((aufastbufv2x_t) v1 + v2) / 2;
+}
+
+static rsmpl_t uacout48rsmpl =
+{
+		.lock = & locklist16rx,
+		.pdata = NULL,
+		.skipsense = SKIPPEDBLOCKS,
+		.bufsize = DMABUFFSIZE16RX,
+		.bufstep = DMABUFFSTEP16RX,
+		.rx = & resample16rx,
+		.freelist = & voicesfree16rx,
+		.outlist = & voicesusb16rx,
+		.getoutputdmabuff = allocate_dmabuffer16rx,
+		.getdataptr = uacin48rsmgetdata,
+		.getaverage = uacin48average,
+};
+
+static rsmpl_t uacin48rsmpl;
+static rsmpl_t uacinrts96rsmpl;
+static rsmpl_t uacinrts192rsmpl;
+
+#if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
+
+// получает массив сэмплов
+// возвращает количество полученых сэмплов
+// Выборка из очереди resample16rx
+static RAMFUNC unsigned getsamplemsuacout(
+	rsmpl_t * rsmpl,
+	aubufv_t * buff,	// текущая позиция в целевом буфере
+	unsigned size		// количество оставшихся одиночных сэмплов
+	)
+{
+
+	LCLSPIN_LOCK(rsmpl->lock);
+	if (rsmpl->pdata == NULL)
+	{
+		if (GetReadyList3(rsmpl->rx) == 0)
+		{
+#if WITHBUFFERSDEBUG
+			++ nbzero;
+#endif /* WITHBUFFERSDEBUG */
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
+			LCLSPIN_UNLOCK(rsmpl->lock);
+			memset(buff, 0x00, size * sizeof (* buff));	// тишина
+			return size;	// ноль нельзя возвращать - зацикливается проуедура ресэмплинга
+		}
+		else
+		{
+			rsmpl->titem = RemoveTailList3(rsmpl->rx);
+			rsmpl->pdata = rsmpl->getdataptr(rsmpl->titem);
+			if (GetReadyList3(rsmpl->rx) == 0)	// готовность пропала
+				rsmpl->skipsense = SKIPPEDBLOCKS;
+			const uint_fast8_t valid = GetReadyList3(rsmpl->rx) && rsmpl->skipsense == 0;
+			rsmpl->skipsense = (rsmpl->skipsense == 0) ? SKIPPEDBLOCKS : rsmpl->skipsense - 1;
+
+			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPEDBLOCKS / 2);
+			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPEDBLOCKS / 2);
+
+			if (valid && GetCountList3(rsmpl->rx) <= LOW)
+			{
+				LCLSPIN_UNLOCK(rsmpl->lock);
+				// добавляется один сэмпл к выходному потоку раз в SKIPPEDBLOCKS блоков
+#if WITHBUFFERSDEBUG
+				++ nbadd;
+#endif /* WITHBUFFERSDEBUG */
+
+#if 0
+				rsmpl->part = NPARTS - 2;
+				rsmpl->datas [part + 0] = & rsmpl->pdata [0];	// дублируем первый сэмпл
+				rsmpl->sizes [part + 0] = rsmpl->bufstep;
+				rsmpl->datas [part + 1] = & rsmpl->pdata [0];
+				rsmpl->sizes [part + 1] = rsmpl->bufsize;
+#else
+				unsigned HALF = rsmpl->bufsize / 2;
+				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
+				rsmpl->addsample [0] = rsmpl->getaverage(rsmpl->pdata [HALF - rsmpl->bufstep + 0], rsmpl->pdata [HALF + 0]);	// Left
+				rsmpl->addsample [1] = rsmpl->getaverage(rsmpl->pdata [HALF - rsmpl->bufstep + 1], rsmpl->pdata [HALF + 1]);	// Right
+
+				rsmpl->part = NPARTS - 3;
+				rsmpl->datas [0] = & rsmpl->pdata [0];		// часть перед вставкой
+				rsmpl->sizes [0] = HALF;
+				rsmpl->datas [1] = & rsmpl->addsample [0];	// вставляемые данные
+				rsmpl->sizes [1] = rsmpl->bufstep;
+				rsmpl->datas [2] = & rsmpl->pdata [HALF];	// часть после вставки
+				rsmpl->sizes [2] = rsmpl->bufsize - HALF;
+#endif
+			}
+			else if (valid && GetCountList3(rsmpl->rx) >= HIGH)
+			{
+				LCLSPIN_UNLOCK(rsmpl->lock);
+#if WITHBUFFERSDEBUG
+				++ nbdel;
+#endif /* WITHBUFFERSDEBUG */
+				// убирается один сэмпл из выходного потока раз в SKIPPEDBLOCKS блоков
+				rsmpl->part = NPARTS - 1;
+				rsmpl->datas [rsmpl->part] = & rsmpl->pdata [rsmpl->bufstep];	// пропускаем первый сэмпл
+				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize - rsmpl->bufstep;
+			}
+			else
+			{
+				LCLSPIN_UNLOCK(rsmpl->lock);
+				// Ресэмплинг не требуется или нет запаса входных данных
+				rsmpl->part = NPARTS - 1;
+				rsmpl->datas [rsmpl->part] = & rsmpl->pdata [0];
+				rsmpl->sizes [rsmpl->part] = rsmpl->bufsize;
+#if WITHBUFFERSDEBUG
+			++ nbnorm;
+#endif /* WITHBUFFERSDEBUG */
+			}
+		}
+	}
+	else
+	{
+		/* нужное количество зон для вывода уже подготовленно */
+		LCLSPIN_UNLOCK(rsmpl->lock);
+	}
+
+	const unsigned chunk = ulmin32(rsmpl->sizes [rsmpl->part], size);
+
+	memcpy(buff, rsmpl->datas [rsmpl->part], chunk * sizeof (* buff));
+
+	rsmpl->datas [rsmpl->part] += chunk;
+	if ((rsmpl->sizes [rsmpl->part] -= chunk) == 0 && ++ rsmpl->part >= NPARTS)
+	{
+		// освобождаем ранее полученый от UAC буфер
+		LCLSPIN_LOCK(rsmpl->lock);
+		InsertHeadList2(rsmpl->freelist, rsmpl->titem);
+		LCLSPIN_UNLOCK(rsmpl->lock);
+		rsmpl->pdata = NULL;
+	}
+	return chunk;
+}
+
+// формирование одного буфера синхронного потока из N несинхронного
+static RAMFUNC void buffer_resample(rsmpl_t * rsmpl)
+{
+	const uintptr_t addr = rsmpl->getoutputdmabuff();//allocate_dmabuffer16rx();	// выходной буфер
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	//
+	// выполнение ресэмплинга
+	unsigned pos;
+	for (pos = 0; pos < rsmpl->bufsize; )
+	{
+		pos += getsamplemsuacout(rsmpl, & p->rbuff [pos], rsmpl->bufsize - pos);	// Выборка из очеререди rsmpl->rx
+	}
+
+	// направление получившегося буфера получателю.
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+
+	LCLSPIN_LOCK(rsmpl->lock);
+	InsertHeadList3(rsmpl->outlist, & p->item, 0);
+	LCLSPIN_UNLOCK(rsmpl->lock);
+}
+
+static void buffers_resample(void)
+{
+#if WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
+	buffer_resample(& uacout48rsmpl);
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+	//buffer_resample(& uacin48rsmpl);
+#if WITHUSBUACIN2
+	//buffer_resample(& uacinrts96rsmpl);
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
+}
+
+// вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
+// Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
+void RAMFUNC buffers_resampleuacin(unsigned nsamples)
+{
+	static unsigned nrx = 0;
+	static unsigned ntx = 0;
+	nrx += nsamples;
+	ntx += nsamples;
+	while (nrx >= CNT16RX)
+	{
+		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
+		nrx -= CNT16RX;
+	}
+
+	// Часть, необходимая в конфигурациях без канала выдачи на кодек
+	while (ntx >= CNT16TX)
+	{
+#if ! WITHI2S2HW && ! CPUSTYLE_XC7Z && ! WITHFPGAPIPE_CODEC1
+		release_dmabuffer16txphones(getfilled_dmabuffer16txphones());
+#endif /* ! WITHI2S2HW && ! CPUSTYLE_XC7Z */
+		ntx -= CNT16TX;
+	}
+}
+
+#else /* WITHUSBUAC */
+
+// вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
+// Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
+void RAMFUNC buffers_resampleuacin(unsigned nsamples)
+{
+	static unsigned n = 0;
+	n += nsamples;
+	while (n >= CNT16TX)
+	{
+#if ! WITHI2S2HW && ! CPUSTYLE_XC7Z
+		release_dmabuffer16txphones(getfilled_dmabuffer16txphones());
+#endif /* ! WITHI2S2HW && ! CPUSTYLE_XC7Z */
+		n -= CNT16TX;
+	}
+
+}
+
+#endif /* WITHUSBUAC */
+
+#else
+
+void RAMFUNC buffers_resampleuacin(unsigned nsamples)
+{
+}
+
+#endif
 
 void buffers2_initialize(void)
 {
