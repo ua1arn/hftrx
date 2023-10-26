@@ -498,7 +498,7 @@ void linux_iq_thread(void)
 			for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
 				m[i] = * mic_fifo;
 
-			processing_dmabuffer16rx(addr_mic);
+			save_dmabuffer16rx(addr_mic);
 		}
 
 		const uintptr_t addr = processing_pipe32tx(getfilled_dmabuffer32tx_main());

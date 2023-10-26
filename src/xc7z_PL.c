@@ -198,7 +198,7 @@ void xcz_fifo_mic_inthandler(void)
 	for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
 		r[i] = Xil_In32(XPAR_AUDIO_FIFO_MIC_BASEADDR);
 
-	processing_dmabuffer16rx(addr);
+	save_dmabuffer16rx(addr);
 #endif /* WITHTX */
 }
 

@@ -157,6 +157,14 @@ public:
 	{
 		return get_freebuffer(dest) || get_readybuffer(dest);
 	}
+
+	// все готовые перенести в свободные
+	void purge_buffers()
+	{
+		element_t * dest;
+		while (get_readybuffer(& dest))
+			release_buffer(dest);
+	}
 };
 
 template <typename element_t, unsigned capacity>
@@ -247,7 +255,7 @@ void savespeexbuffer(speexel_t * t)
 
 #endif
 
-#if 0
+#if 1
 
 // Audio CODEC out (to processor)
 typedef ALIGNX_BEGIN struct voice16rx_tag
@@ -260,20 +268,79 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 typedef blists<voice16rx_t, 33> voice16rxcodeclist_t;
 typedef blistsresample<voice16rx_t, 33> voice16rxuacout48list_t;
 
-static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);
-static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);
+static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);		// from codec
+static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);	// from USB AUDIO for resampling
 
-int_fast32_t Xcachesize_dmabuffer16rx(void)
+int_fast32_t cachesize_dmabuffer16rx(void)
 {
 	return offsetof(voice16rx_t, pad) - offsetof(voice16rx_t, buff);
 }
 
-uintptr_t Xallocate_dmabuffer16rx(void)
+uintptr_t allocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (voice16rxcodeclist.get_freebuffer(& dest) == 0)
+	while (voice16rxcodeclist.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
+}
+
+uintptr_t getfilled_dmabuffer16rx(void)
+{
+	voice16rx_t * dest;
+	while (voice16rxcodeclist.get_readybuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+void save_dmabuffer16rx(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxcodeclist.save_buffer(p);
+}
+
+void release_dmabuffer16rx(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxcodeclist.release_buffer(p);
+}
+
+int_fast32_t cachesize_dmabuffer16rxresampler(void)
+{
+	return offsetof(voice16rx_t, pad) - offsetof(voice16rx_t, buff);
+}
+
+uintptr_t allocate_dmabuffer16rxresampler(void)
+{
+	voice16rx_t * dest;
+	while (voice16rxuacout48list.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+uintptr_t getfilled_dmabuffer16rxresampler(void)
+{
+	voice16rx_t * dest;
+	while (voice16rxuacout48list.get_readybuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+void save_dmabuffer16rxresampler(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxuacout48list.save_buffer(p);
+}
+
+void release_dmabuffer16rxresampler(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxuacout48list.release_buffer(p);
+}
+
+// все готовые перенести в свободные
+void purge_dmabuffer16rxresampler(void)
+{
+	voice16rxuacout48list.purge_buffers();
 }
 
 #endif

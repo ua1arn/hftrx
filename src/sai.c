@@ -315,14 +315,14 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler_codec1_rx(void)
 			const uintptr_t addr = DMA1_Stream3->M0AR;
 			DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream3->M0AR);
-			processing_dmabuffer16rx(addr);
+			save_dmabuffer16rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA1_Stream3->M1AR;
 			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream3->M1AR);
-			processing_dmabuffer16rx(addr);
+			save_dmabuffer16rx(addr);
 		}
 	}
 
@@ -344,14 +344,14 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler_codec1_rx(void)
 			const uintptr_t addr = DMA1_Stream0->M0AR;
 			DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream0->M0AR);
-			processing_dmabuffer16rx(addr);
+			save_dmabuffer16rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA1_Stream0->M1AR;
 			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
 			DRD(DMA1_Stream0->M1AR);
-			processing_dmabuffer16rx(addr);
+			save_dmabuffer16rx(addr);
 		}
 	}
 
@@ -2446,13 +2446,13 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_codec1_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			processing_dmabuffer16rx(addr);		// посмещается в очередь
+			save_dmabuffer16rx(addr);		// посмещается в очередь
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
 			DMA2_Stream7->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			processing_dmabuffer16rx(addr);
+			save_dmabuffer16rx(addr);
 		}
 	}
 
@@ -4471,7 +4471,7 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
 
 	/* Работа с только что принятыми данными */
-	processing_dmabuffer16rx(addr);
+	save_dmabuffer16rx(addr);
 }
 
 
@@ -6063,14 +6063,14 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma_audiorx(void)
 		const uintptr_t addr = DMAC0.N0DA_n;
 		DMAC0.N0DA_n = dma_invalidate16rx(allocate_dmabuffer16rx());
 		DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
-		processing_dmabuffer16rx(addr);
+		save_dmabuffer16rx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC0.N1DA_n;
 		DMAC0.N1DA_n = dma_invalidate16rx(allocate_dmabuffer16rx());
 		DMAC0.CHCFG_n |= DMAC0_CHCFG_n_REN;	// REN bit
-		processing_dmabuffer16rx(addr);
+		save_dmabuffer16rx(addr);
 	}
 }
 
