@@ -1167,8 +1167,6 @@ save_dmabufferuacinrts192(uintptr_t addr)
 	LCLSPIN_LOCK(& locklistrts);
 	InsertHeadList2(& uacin192rts, & p->item);
 	LCLSPIN_UNLOCK(& locklistrts);
-
-	refreshDMA_uacinrts192();		// если DMA  остановлено - начать обмен
 }
 
 static void buffers_savetonull192rts(voice192rts_t * p)
@@ -1226,8 +1224,6 @@ save_dmabufferuacin48(uintptr_t addr)
 	LCLSPIN_LOCK(& locklistuacin48);
 	InsertHeadList2(& uacin48ready, & p->item);
 	LCLSPIN_UNLOCK(& locklistuacin48);
-
-	refreshDMA_uacin48();		// если DMA  остановлено - начать обмен
 }
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
@@ -2579,8 +2575,6 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 		LCLSPIN_LOCK(& locklistrts);
 		InsertHeadList2(& uacinrts96ready, & p->item);
 		LCLSPIN_UNLOCK(& locklistrts);
-
-		refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 	}
 
 	void release_dmabufferuacinrts96(uintptr_t addr)

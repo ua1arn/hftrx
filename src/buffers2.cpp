@@ -205,8 +205,10 @@ public:
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
-		return parent_t::get_readybuffer(dest);
-		return parent_t::get_outbuffer(dest) || parent_t::get_freebufferforced(dest);
+		return
+			parent_t::get_outbuffer(dest) ||
+			parent_t::get_readybuffer(dest) ||
+			parent_t::get_freebufferforced(dest);
 	}
 };
 
@@ -571,8 +573,6 @@ typedef enum
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
 		uacinrts192list.save_buffer(p);
-
-		refreshDMA_uacinrts192();		// если DMA  остановлено - начать обмен
 	}
 
 
@@ -617,6 +617,7 @@ typedef enum
 			dest->tag = BUFFTAG_RTS96;
 			return (uintptr_t) & dest->buff;
 		}
+		ASSERT(0);
 		return 0;
 	}
 
@@ -624,8 +625,6 @@ typedef enum
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
 		uacinrts96list.save_buffer(p);
-
-		refreshDMA_uacinrts96();		// если DMA  остановлено - начать обмен
 	}
 
 
@@ -672,6 +671,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 		dest->tag = BUFFTAG_UACIN48;
 		return (uintptr_t) & dest->buff;
 	}
+	ASSERT(0);
 	return 0;
 }
 
@@ -679,8 +679,6 @@ void save_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
 	uacin48list.save_buffer(p);
-
-	refreshDMA_uacin48();		// если DMA  остановлено - начать обмен
 }
 
 void release_dmabufferuacin48(uintptr_t addr)

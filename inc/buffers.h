@@ -590,10 +590,6 @@ void release_dmabuffer16rx(uintptr_t addr);
 uintptr_t processing_pipe32tx(uintptr_t addr);
 uintptr_t processing_pipe32rx(uintptr_t addr);
 
-void refreshDMA_uacin48(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacinrts96(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacinrts192(void); // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
 
