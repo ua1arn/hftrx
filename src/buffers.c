@@ -221,7 +221,7 @@ void vfylist(LIST_HEAD2 * head)
 //////////////////////////////////
 // Система буферизации аудиоданных
 //
-#if 1
+#if 0
 // Audio CODEC in/out
 typedef ALIGNX_BEGIN struct voice16rx_tag
 {
@@ -486,17 +486,7 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHINTEGRATEDDSP
 
-#if 1
-
-// Сохранить звук в никуда...
-static RAMFUNC void buffers_tonull16rx(voice16rx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist16rx);
-	InsertHeadList2(& voicesfree16rx, & p->item);
-	LCLSPIN_UNLOCK(& locklist16rx);
-}
+#if 0
 
 RAMFUNC void release_dmabuffer16rx(uintptr_t addr)
 {
@@ -522,6 +512,7 @@ RAMFUNC void release_dmabuffer16rxresampler(uintptr_t addr)
 
 #if WITHUSBUAC
 
+#if 0
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 void save_dmabuffer16rxresampler(uintptr_t addr)
 {
@@ -546,7 +537,7 @@ void save_dmabuffer16rxresampler(uintptr_t addr)
 	}
 	LCLSPIN_UNLOCK(& locklist16rx);
 }
-
+#endif
 
 #endif /* WITHUSBUAC */
 
@@ -578,7 +569,7 @@ buffers_savefromuacout_rxresampler(uintptr_t addr)
 
 //////////////////////////////////////////
 // Поэлементное чтение буфера AF ADC
-
+#if 0
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	LCLSPIN_LOCK(& locklist16rx);
@@ -610,6 +601,8 @@ uintptr_t getfilled_dmabuffer16rxresampler(void)
 	LCLSPIN_UNLOCK(& locklist16rx);
 	return 0;
 }
+#endif
+
 // 16 bit, signed
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
@@ -794,6 +787,8 @@ static uint_fast8_t isrts96(void)
 }
 
 #endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
+
+#if 0
 
 enum { NPARTS = 3 };
 
@@ -1042,6 +1037,14 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 }
 
 #endif /* WITHUSBUAC */
+
+#else
+
+void RAMFUNC buffers_resampleuacin(unsigned nsamples)
+{
+}
+
+#endif
 
 // --- Коммутация потоков аудиоданных
 
@@ -1332,6 +1335,7 @@ void releasemodembuffer_low(uint8_t * dest)
 
 #endif /* WITHMODEM */
 
+#if 0
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
 RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 {
@@ -1412,6 +1416,8 @@ void RAMFUNC save_dmabuffer16rx(uintptr_t addr)
 	//dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
 
 }
+#endif
+
 
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки IF ADC (спектроанализатор)
@@ -1469,7 +1475,6 @@ static uintptr_t RAMFUNC
 pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	voice16rx_t * const vrx16 = CONTAINING_RECORD(addr16rx, voice16rx_t, rbuff);
 	unsigned i;
 	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
 	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
@@ -1891,6 +1896,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 
 	if (v == 0)
 	{
+#if 0
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_REALTIME, & oldIrql);
 		LCLSPIN_LOCK(& locklist16rx);
@@ -1904,6 +1910,9 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 
 		LCLSPIN_UNLOCK(& locklist16rx);
 		LowerIrql(oldIrql);
+#else
+		purge_dmabuffer16rxresampler();
+#endif
 	}
 }
 
@@ -2216,6 +2225,7 @@ void buffers_initialize(void)
 
 #endif /* WITHSKIPUSERMODE */
 
+#if 0
 	{
 		unsigned i;
 		enum { NVCOICESFREE16RX = (2 * MIKELEVEL + 1 * RESAMPLE16NORMAL) * 2 * BUFOVERSIZE };
@@ -2236,6 +2246,7 @@ void buffers_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& locklist16rx);
 
 	}
+#endif
 
 //	ASSERT((DMABUFFSIZE_UACIN % HARDWARE_RTSDMABYTES) == 0);
 //	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);

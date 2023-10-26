@@ -279,7 +279,7 @@ void savespeexbuffer(speexel_t * t)
 
 #endif
 
-#if 0
+#if 1
 
 // Audio CODEC out (to processor)
 typedef ALIGNX_BEGIN struct voice16rx_tag
@@ -349,6 +349,8 @@ uintptr_t getfilled_dmabuffer16rxresampler(void)
 	return (uintptr_t) dest->buff;
 }
 
+// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
+// Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 void save_dmabuffer16rxresampler(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
