@@ -5137,17 +5137,17 @@ demod_WFM(
 }
 
 // Сохранение сэмплов с выхода демодулятора
-static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
+static void save16demod(FLOAT_t left, FLOAT_t right)
 {
 #if 0
 	// для тестирования шумоподавителя.
 	//const FLOAT_t tone = get_lout() * 0.9f;
-	ch0 = get_lout();
-	ch1 = get_rout();
+	left = get_lout();
+	right = get_rout();
 #endif
 #if WITHSKIPUSERMODE
 	#if WITHUSEDUALWATCH
-		const FLOAT32P_t i = { { ch0, ch1, }, };
+		const FLOAT32P_t i = { { left, right, }, };
 		const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
 		deliveryfloat(& afdemodoutfloat, o.IV, o.QV);
 	#else /* WITHUSEDUALWATCH */
@@ -5155,7 +5155,7 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 		deliveryfloat(& afdemodoutfloat, o, o);
 	#endif /* WITHUSEDUALWATCH */
 #else /* WITHSKIPUSERMODE */
-		deliveryfloat(& afdemodoutfloat, ch0, ch1);
+		deliveryfloat(& afdemodoutfloat, left, right);
 #endif /* WITHSKIPUSERMODE */
 }
 
