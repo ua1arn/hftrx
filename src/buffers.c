@@ -498,6 +498,16 @@ static RAMFUNC void buffers_tonull16rx(voice16rx_t * p)
 	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
+RAMFUNC void release_dmabuffer16rx(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	LCLSPIN_LOCK(& locklist16rx);
+	InsertHeadList2(& voicesfree16rx, & p->item);
+	LCLSPIN_UNLOCK(& locklist16rx);
+}
+
 #endif
 
 #if WITHUSBUAC
@@ -565,6 +575,21 @@ buffers_savefromuacout(voice16rx_t * p)
 //////////////////////////////////////////
 // Поэлементное чтение буфера AF ADC
 
+uintptr_t getfilled_dmabuffer16rx(void)
+{
+	LCLSPIN_LOCK(& locklist16rx);
+	if (GetReadyList3(& voicesmike16rx))
+	{
+		PLIST_ENTRY t = RemoveTailList3(& voicesmike16rx);
+		LCLSPIN_UNLOCK(& locklist16rx);
+		voice16rx_t * const p = CONTAINING_RECORD(t, voice16rx_t, item);
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+		return (uintptr_t) p->rbuff;
+	}
+	LCLSPIN_UNLOCK(& locklist16rx);
+	return 0;
+}
 // 16 bit, signed
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
@@ -572,41 +597,30 @@ buffers_savefromuacout(voice16rx_t * p)
 RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
 	enum { L, R };
-	static voice16rx_t * p = NULL;
-	static unsigned pos = 0;	// позиция по выходному количеству
+	static aubufv_t * buff = NULL;
+	static unsigned n = 0;	// позиция по выходному количеству
 
-	if (p == NULL)
+	if (buff == NULL)
 	{
-		LCLSPIN_LOCK(& locklist16rx);
-		if (GetReadyList3(& voicesmike16rx))
-		{
-			PLIST_ENTRY t = RemoveTailList3(& voicesmike16rx);
-			LCLSPIN_UNLOCK(& locklist16rx);
-			p = CONTAINING_RECORD(t, voice16rx_t, item);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			pos = 0;
-		}
-		else
+		buff = (aubufv_t *) getfilled_dmabuffer16rx();
+		if (buff == 0)
 		{
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			LCLSPIN_UNLOCK(& locklist16rx);
 			return 0;
 		}
+		n = 0;
 	}
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
 
-	const FLOAT_t sample = adpt_input(& afcodecrx, p->rbuff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
+	const FLOAT_t sample = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
 
 	// Использование данных.
 	v->ivqv [L] = sample;
 	v->ivqv [R] = sample;
 
-	if (++ pos >= CNT16RX)
+	if (++ n >= CNT16RX)
 	{
-		buffers_tonull16rx(p);
-		p = NULL;
+		release_dmabuffer16rx((uintptr_t) buff);
+		buff = NULL;
 	}
 	return 1;
 }
@@ -1361,32 +1375,9 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 	return 0;
 }
 
-
-
-// Этой функцией пользуются обработчики прерываний DMA
-// передали буфер, считать свободным
-void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, rbuff);
-	buffers_tonull16rx(p);
-}
-
-static void debaudio(int v)
-{
-	static const char hex [] = "0123456789ABCDEF";
-
-	dbg_putchar(hex [(v >> 12) & 0x0F]);
-	dbg_putchar(hex [(v >> 8) & 0x0F]);
-	dbg_putchar(hex [(v >> 4) & 0x0F]);
-	dbg_putchar(hex [(v >> 0) & 0x0F]);
-	dbg_putchar(' ');
-
-}
-
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки AF ADC
-void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
+void RAMFUNC save_dmabuffer16rx(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
@@ -1561,7 +1552,7 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 uintptr_t processing_pipe32rx(uintptr_t addr)
 {
 #if WITHFPGAPIPE_CODEC1
-	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
 #endif /* WITHFPGAPIPE_CODEC1 */
 #if WITHFPGAPIPE_RTS96
 	//processing_dmabuffer32rts(addr);

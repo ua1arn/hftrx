@@ -1372,21 +1372,9 @@ void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
 	buffers_tonull16rx(p);
 }
 
-static void debaudio(int v)
-{
-	static const char hex [] = "0123456789ABCDEF";
-
-	dbg_putchar(hex [(v >> 12) & 0x0F]);
-	dbg_putchar(hex [(v >> 8) & 0x0F]);
-	dbg_putchar(hex [(v >> 4) & 0x0F]);
-	dbg_putchar(hex [(v >> 0) & 0x0F]);
-	dbg_putchar(' ');
-
-}
-
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки AF ADC
-void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
+void RAMFUNC save_dmabuffer16rx(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
@@ -1561,7 +1549,7 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 uintptr_t processing_pipe32rx(uintptr_t addr)
 {
 #if WITHFPGAPIPE_CODEC1
-	processing_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
 #endif /* WITHFPGAPIPE_CODEC1 */
 #if WITHFPGAPIPE_RTS96
 	//processing_dmabuffer32rts(addr);
