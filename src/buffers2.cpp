@@ -47,24 +47,24 @@ class blists
 	} buffitem_t;
 
 	LIST_ENTRY freelist;
-	LIST_ENTRY readylist;
+	LIST_ENTRY outlist;
 	LIST_ENTRY resamplelist;
 	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 	buffitem_t storage [capacity];
-	int readycount;
+	int outcount;
 	int freecount;
 	int resamplecount;
 
 public:
 	blists(IRQL_t airql) :
 		irql(airql),
-		readycount(0),
+		outcount(0),
 		freecount(0),
 		resamplecount(0)
 	{
 		InitializeListHead(& freelist);
-		InitializeListHead(& readylist);
+		InitializeListHead(& outlist);
 		InitializeListHead(& resamplelist);
 		LCLSPINLOCK_INITIALIZE(& lock);
 		for (unsigned i = 0; i < capacity; ++ i)
@@ -104,24 +104,8 @@ public:
 		RiseIrql(irql, & oldIrql);
 		LCLSPIN_LOCK(& lock);
 
-		InsertHeadList(& readylist, & p->item);
-		++ readycount;
-
-		LCLSPIN_UNLOCK(& lock);
-		LowerIrql(oldIrql);
-	}
-	// сохранить в списке буферов для ресэмплинга
-	void resample_buffer(element_t * addr)
-	{
-		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		IRQL_t oldIrql;
-		RiseIrql(irql, & oldIrql);
-		LCLSPIN_LOCK(& lock);
-
-		InsertHeadList(& resamplelist, & p->item);
-		++ resamplecount;
+		InsertHeadList(& outlist, & p->item);
+		++ outcount;
 
 		LCLSPIN_UNLOCK(& lock);
 		LowerIrql(oldIrql);
@@ -133,10 +117,33 @@ public:
 		IRQL_t oldIrql;
 		RiseIrql(irql, & oldIrql);
 		LCLSPIN_LOCK(& lock);
-		if (! IsListEmpty(& readylist))
+		if (! IsListEmpty(& outlist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& readylist);
-			-- readycount;
+			const PLIST_ENTRY t = RemoveTailList(& outlist);
+			-- outcount;
+			LCLSPIN_UNLOCK(& lock);
+			LowerIrql(oldIrql);
+			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
+			* dest = & p->v;
+			return 1;
+		}
+		LCLSPIN_UNLOCK(& lock);
+		LowerIrql(oldIrql);
+		return 0;
+	}
+
+	// получить из списка готовых после ресэмплинга
+	int get_outbuffer(element_t * * dest)
+	{
+		IRQL_t oldIrql;
+		RiseIrql(irql, & oldIrql);
+		LCLSPIN_LOCK(& lock);
+		if (! IsListEmpty(& outlist))
+		{
+			const PLIST_ENTRY t = RemoveTailList(& outlist);
+			-- outcount;
 			LCLSPIN_UNLOCK(& lock);
 			LowerIrql(oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -193,6 +200,12 @@ public:
 			LCLSPINLOCK_INITIALIZE(& lock);
 
 		}
+	// функция вызывается получателем (плучаем после ресэмплинга.
+	// Гарантированно получене буфера
+	int get_readybuffer(element_t * * dest)
+	{
+		return get_outbuffer(dest) || get_freebufferforced(dest);
+	}
 };
 
 #if defined(WITHRTS96) && defined(WITHRTS192)
