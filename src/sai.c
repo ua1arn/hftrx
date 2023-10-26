@@ -371,13 +371,13 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			release_dmabuffer16tx(DMA1_Stream4->M0AR);
+			release_dmabuffer16txphones(DMA1_Stream4->M0AR);
 			DMA1_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA1_Stream4->M0AR);
 		}
 		else
 		{
-			release_dmabuffer16tx(DMA1_Stream4->M1AR);
+			release_dmabuffer16txphones(DMA1_Stream4->M1AR);
 			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA1_Stream4->M1AR);
 		}
@@ -423,8 +423,8 @@ DMA_I2S2_TX_initialize_codec1(void)
 #endif /* CPUSTYLE_STM32MP1 */
 
 	ASSERT((DMA1_Stream4->CR & DMA_SxCR_EN) == 0);
-	DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16tx());
-    DMA1_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16tx());
+	DMA1_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16txphones());
+    DMA1_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16txphones());
 	DMA1_Stream4->NDTR = (DMA1_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16TX * DMA_SxNDT_0);
 	DMA1_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
@@ -2569,13 +2569,13 @@ void DMA2_Stream4_IRQHandler_codec1_tx(void)
 
 		if (b != 0)
 		{
-			release_dmabuffer16tx(DMA2_Stream4->M0AR);
+			release_dmabuffer16txphones(DMA2_Stream4->M0AR);
 			DMA2_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
-			release_dmabuffer16tx(DMA2_Stream4->M1AR);
+			release_dmabuffer16txphones(DMA2_Stream4->M1AR);
 			DMA2_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16txphones());
 			DRD(DMA2_Stream4->M1AR);
 		}
@@ -2735,8 +2735,8 @@ static void DMA_SAI2_A_TX_initialize_codec1(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16tx());
-	DMA2_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16tx());
+	DMA2_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16txphones());
+	DMA2_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16txphones());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16TX * DMA_SxNDT_0);
 
@@ -4484,7 +4484,7 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
 
 	/* Работа с только что передаными данными */
-	release_dmabuffer16tx(addr);
+	release_dmabuffer16txphones(addr);
 }
 
 /* Приём от FPGA */
@@ -6091,14 +6091,14 @@ static void r7s721_ssif0_txdma_audio(void)
 		const uintptr_t addr = DMAC1.N0SA_n;
 		DMAC1.N0SA_n = dma_flush16tx(getfilled_dmabuffer16txphones());
 		DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
-		release_dmabuffer16tx(addr);
+		release_dmabuffer16txphones(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC1.N1SA_n;
 		DMAC1.N1SA_n = dma_flush16tx(getfilled_dmabuffer16txphones());
 		DMAC1.CHCFG_n |= DMAC1_CHCFG_n_REN;	// REN bit
-		release_dmabuffer16tx(addr);
+		release_dmabuffer16txphones(addr);
 	}
 }
 
@@ -6177,8 +6177,8 @@ static void r7s721_ssif0_dmatx_initialize_codec1_tx(void)
 	enum { id = 1 };	// 1: DMAC1
 	// DMAC1
 	/* Set Source Start Address */
-	DMAC1.N0SA_n = dma_flush16tx(allocate_dmabuffer16tx());
-	DMAC1.N1SA_n = dma_flush16tx(allocate_dmabuffer16tx());
+	DMAC1.N0SA_n = dma_flush16tx(allocate_dmabuffer16txphones());
+	DMAC1.N1SA_n = dma_flush16tx(allocate_dmabuffer16txphones());
 
     /* Set Destination Start Address */
     DMAC1.N0DA_n = (uintptr_t) & SSIF0.SSIFTDR;	// Fixed destination address

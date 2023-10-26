@@ -481,7 +481,7 @@ void linux_iq_thread(void)
 			for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 				* ph_fifo = b[i];
 
-			release_dmabuffer16tx(addr2);
+			release_dmabuffer16txphones(addr2);
 			rx_stage -= CNT16TX;
 		}
 	}

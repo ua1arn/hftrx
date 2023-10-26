@@ -538,16 +538,6 @@ static RAMFUNC void buffers_tonull16rx(voice16rx_t * p)
 	LCLSPIN_UNLOCK(& locklist16rx);
 }
 
-// Сохранить звук в никуда...
-static RAMFUNC void buffers_tonull16tx(voice16tx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	LCLSPIN_LOCK(& locklist16tx);
-	InsertHeadList2(& voicesfree16tx, & p->item);
-	LCLSPIN_UNLOCK(& locklist16tx);
-}
-
 // +++ Коммутация потоков аудиоданных
 // первый канал выхода приёмника - для прослушивания
 static RAMFUNC void
@@ -735,7 +725,7 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 
 	if (p == NULL)
 	{
-		uintptr_t addr = allocate_dmabuffer16tx();
+		uintptr_t addr = allocate_dmabuffer16txmoni();
 		p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
@@ -1070,7 +1060,7 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	while (ntx >= CNT16TX)
 	{
 #if ! WITHI2S2HW && ! CPUSTYLE_XC7Z && ! WITHFPGAPIPE_CODEC1
-		release_dmabuffer16tx(getfilled_dmabuffer16txphones());
+		release_dmabuffer16txphones(getfilled_dmabuffer16txphones());
 #endif /* ! WITHI2S2HW && ! CPUSTYLE_XC7Z */
 		ntx -= CNT16TX;
 	}
@@ -1087,7 +1077,7 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	while (n >= CNT16TX)
 	{
 #if ! WITHI2S2HW && ! CPUSTYLE_XC7Z
-		release_dmabuffer16tx(getfilled_dmabuffer16txphones());
+		release_dmabuffer16txphones(getfilled_dmabuffer16txphones());
 #endif /* ! WITHI2S2HW && ! CPUSTYLE_XC7Z */
 		n -= CNT16TX;
 	}
@@ -1436,7 +1426,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16rx(void)
 }
 
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
-RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
+static RAMFUNC uintptr_t allocate_dmabuffer16tx_all(void)
 {
 	LCLSPIN_LOCK(& locklist16tx);
 	if (! IsListEmpty2(& voicesfree16tx))
@@ -1493,6 +1483,15 @@ RAMFUNC uintptr_t allocate_dmabuffer16tx(void)
 	return 0;
 }
 
+RAMFUNC uintptr_t allocate_dmabuffer16txphones(void)
+{
+	return allocate_dmabuffer16tx_all();
+}
+
+RAMFUNC uintptr_t allocate_dmabuffer16txmoni(void)
+{
+	return allocate_dmabuffer16tx_all();
+}
 
 // Этой функцией пользуются обработчики прерываний DMA
 // передали буфер, считать свободным
@@ -1505,11 +1504,24 @@ void RAMFUNC release_dmabuffer16rx(uintptr_t addr)
 
 // Этой функцией пользуются обработчики прерываний DMA
 // передали буфер, считать свободным
-void RAMFUNC release_dmabuffer16tx(uintptr_t addr)
+static void RAMFUNC release_dmabuffer16tx_all(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
-	buffers_tonull16tx(p);
+	ASSERT(p->tag2 == p);
+	ASSERT(p->tag3 == p);
+	LCLSPIN_LOCK(& locklist16tx);
+	InsertHeadList2(& voicesfree16tx, & p->item);
+	LCLSPIN_UNLOCK(& locklist16tx);
+}
+
+void RAMFUNC release_dmabuffer16txphones(uintptr_t addr)
+{
+	release_dmabuffer16tx_all(addr);
+}
+void RAMFUNC release_dmabuffer16txmoni(uintptr_t addr)
+{
+	release_dmabuffer16tx_all(addr);
 }
 
 static void debaudio(int v)
@@ -1718,7 +1730,7 @@ uintptr_t processing_pipe32tx(uintptr_t addr)
 #if WITHFPGAPIPE_CODEC1
 	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
 	pipe_dmabuffer32tx(addr, addr16);
-	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
+	release_dmabuffer16txphones(addr16);	/* освоюождаем буфер как переданный */
 #endif /* WITHFPGAPIPE_CODEC1 */
 #if WITHFPGAPIPE_NCORX0
 #endif /* WITHFPGAPIPE_NCORX0 */
@@ -1763,7 +1775,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		LCLSPIN_UNLOCK(& locklist16tx);
 		voice16tx_t * const p = CONTAINING_RECORD(t, voice16tx_t, item);
 		dsp_addsidetone(p->tbuff, (aubufv_t *) monibuf, 1);
-		release_dmabuffer16tx(monibuf);
+		release_dmabuffer16txmoni(monibuf);
 		return (uintptr_t) & p->tbuff;	// алрес для DMA
 	}
 	LCLSPIN_UNLOCK(& locklist16tx);
@@ -1772,10 +1784,10 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	++ e1;
 #endif /* WITHBUFFERSDEBUG */
 
-	const uintptr_t addr = allocate_dmabuffer16tx();
+	const uintptr_t addr = allocate_dmabuffer16txphones();
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 	dsp_addsidetone(p->tbuff, (aubufv_t *) monibuf, 0);
-	release_dmabuffer16tx(monibuf);
+	release_dmabuffer16txphones(monibuf);
 	return (uintptr_t) & p->tbuff;
 }
 
@@ -1796,7 +1808,7 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 	++ e10;
 #endif /* WITHBUFFERSDEBUG */
 
-	const uintptr_t addr = allocate_dmabuffer16tx();
+	const uintptr_t addr = allocate_dmabuffer16txmoni();
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
@@ -1860,7 +1872,7 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 	if (p == NULL)
 	{
-		uintptr_t addr = allocate_dmabuffer16tx();
+		uintptr_t addr = allocate_dmabuffer16txphones();
 		p = CONTAINING_RECORD(addr, voice16tx_t, tbuff);
 		n = 0;
 	}

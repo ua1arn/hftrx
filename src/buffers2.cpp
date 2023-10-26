@@ -248,50 +248,77 @@ void savespeexbuffer(speexel_t * t)
 #endif
 
 #if 0
-// Audio CODEC in/out
+
+// Audio CODEC out (to processor)
 typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
 } ALIGNX_END voice16rx_t;
 
-typedef ALIGNX_BEGIN struct voice16tx_tag
-{
-	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
-	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-} ALIGNX_END voice16tx_t;
 
-typedef blistsresample<voice16rx_t, 33> voice16rxlist_t;
+typedef blists<voice16rx_t, 33> voice16rxcodeclist_t;
+typedef blistsresample<voice16rx_t, 33> voice16rxuacout48list_t;
 
-typedef blists<voice16tx_t, 33> voice16txlist_t;
-typedef blists<voice16tx_t, 33> voice16sidetonelist_t;
-
-static voice16rxlist_t voice16rxlist(IRQL_REALTIME);
-static voice16txlist_t voice16txlist(IRQL_REALTIME);
-static voice16txlist_t voice16sidetonelist(IRQL_REALTIME);
+static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);
+static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);
 
 int_fast32_t Xcachesize_dmabuffer16rx(void)
 {
 	return offsetof(voice16rx_t, pad) - offsetof(voice16rx_t, buff);
 }
 
-int_fast32_t Xcachesize_dmabuffer16tx(void)
-{
-	return offsetof(voice16tx_t, pad) - offsetof(voice16tx_t, buff);
-}
-
 uintptr_t Xallocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (voice16rxlist.get_freebuffer(& dest) == 0)
+	while (voice16rxcodeclist.get_freebuffer(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
 
-uintptr_t Xallocate_dmabuffer16tx(void)
+#endif
+
+#if 0
+
+// Audio CODEC in (from processor)
+typedef ALIGNX_BEGIN struct voice16tx_tag
+{
+	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+} ALIGNX_END voice16tx_t;
+
+
+typedef blists<voice16tx_t, 33> voice16txlist_t;
+typedef blists<voice16tx_t, 33> voice16sidetonelist_t;
+
+static voice16txlist_t voice16txlist(IRQL_REALTIME);
+static voice16txlist_t voice16sidetonelist(IRQL_REALTIME);
+
+int_fast32_t cachesize_dmabuffer16tx(void)
+{
+	return offsetof(voice16tx_t, pad) - offsetof(voice16tx_t, buff);
+}
+
+uintptr_t allocate_dmabuffer16txmoni(void)
 {
 	voice16tx_t * dest;
-	while (voice16txlist.get_freebuffer(& dest) == 0)
+	while (voice16sidetonelist.get_freebuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+uintptr_t getfilled_dmabuffer16txphones(void)
+{
+	voice16tx_t * dest;
+	while (voice16txlist.get_readybuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+uintptr_t getfilled_dmabuffer16txmoni(void)
+{
+	voice16tx_t * dest;
+	while (voice16txlist.get_readybuffer(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }

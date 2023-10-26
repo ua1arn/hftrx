@@ -583,24 +583,27 @@ void release_dmabuffer32tx(uintptr_t addr);
 void save_dmabuffer32tx(uintptr_t addr);
 int_fast32_t cachesize_dmabuffer32tx(void);
 
-uintptr_t allocate_dmabuffer16tx(void);
+uintptr_t allocate_dmabuffer16txphones(void);
+void release_dmabuffer16txphones(uintptr_t addr);
+uintptr_t getfilled_dmabuffer16txphones(void);
+
+uintptr_t allocate_dmabuffer16txmoni(void);
+void release_dmabuffer16txmoni(uintptr_t addr);
+uintptr_t getfilled_dmabuffer16txmoni(void);
+
 uintptr_t allocate_dmabuffer16rx(void);
-void release_dmabuffer16tx(uintptr_t addr);
-void release_dmabuffer16rx(uintptr_t addr);
-uintptr_t processing_pipe32tx(uintptr_t addr);
 uintptr_t processing_pipe32rx(uintptr_t addr);
+void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
+void release_dmabuffer16rx(uintptr_t addr);
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
-
-uintptr_t getfilled_dmabuffer16txphones(void);
-uintptr_t getfilled_dmabuffer16txmoni(void);
-void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
 
 void processing_dmabuffer32rx(uintptr_t addr);
 void release_dmabuffer32rx(uintptr_t addr);
 int_fast32_t cachesize_dmabuffer32rx(void);
 
+uintptr_t processing_pipe32tx(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
