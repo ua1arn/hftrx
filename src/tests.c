@@ -4404,20 +4404,20 @@ static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 	unsigned score = 0;
 	for (;;)
 	{
-		static RAMNOINIT_D1 BYTE buff [512];		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static BYTE buff [512 * 4];		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		unsigned chunksize = sizeof buff;
 		UINT br;
 		//PRINTF("Write at %u.\n", score);
-		rc = f_read(f, buff, sizeof buff, &br);	/* Read a chunk of file */
+		rc = f_read(f, buff, chunksize, &br);	/* Read a chunk of file */
 		if (rc != FR_OK || ! br)
 			break;			/* Error or end of file */
-
-		dc = disk_write(targetDEV, buff, (offset + score) / 512, 1);
+		dc = disk_write(targetDEV, buff, (offset + score) / 512, chunksize / 512);
 		if (dc != 0)
 		{
 			PRINTF("Write error");
 			break;
 		}
-		score += 512;
+		score += chunksize;
 	}
 	PRINTF("%08X: %u bytes written.\n", offset, score);
 }
@@ -4490,7 +4490,7 @@ startProgramming:
 		if (rc != FR_OK)
 		{
 			PRINTF(PSTR("Can not open file '%s', rc=%u\n"), filename, rc);
-			break;
+			continue;
 		}
 
 		programming(& Fil, jobs [i].offs, targetDEV);
