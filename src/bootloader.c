@@ -402,8 +402,12 @@ void bootloader_mainloop(void)
 			printhex(drambase, (void *) drambase, 512);
 			break;
 		}
-		//dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (length + 256 + 511) / 512);
-		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (2 * 1024 * 1024) / 512);
+		else
+		{
+			PRINTF("app read: length = %lu (%lu)\n", length + 256, (length + 256 + 511) / 512 * 512);
+		}
+		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (length + 256 + 511) / 512);
+		//dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (2 * 1024 * 1024) / 512);
 		if (dc != 0)
 		{
 			PRINTF("app read error\n");
