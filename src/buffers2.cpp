@@ -207,6 +207,9 @@ public:
 			VERIFY(parent_t::get_freebuffer(& dest));
 			parent_t::save_buffer(dest);
 
+			VERIFY(parent_t::get_freebuffer(& workbuff));
+			wbstart = element_t::ss * element_t::nch;
+
 		}
 	// функция вызывается получателем (получаем после ресэмплинга.
 	// Гарантированно получене буфера
@@ -214,16 +217,17 @@ public:
 	{
 		if (wbstart)
 		{
-			const unsigned p1 = sizeof (workbuff->buff) - wbstart;	// размер оставшийся до конца ьуфера
-			const unsigned p2 = wbstart;	// размер от начала буфера
+			// Есть не полностью израсходованный остаток в буфере
+			const int p1 = sizeof (workbuff->buff) - wbstart;	// размер оставшийся до конца буфера
+			const int p2 = wbstart;	// размер от начала буфера
 			// есть остаток старого буфера
 			while (! parent_t::get_freebufferforced(dest))
 				ASSERT(0);
-			memcpy((* dest)->buff, workbuff->buff + wbstart, p1);
+			memcpy((* dest)->buff, (uint8_t *) workbuff->buff + wbstart, p1);
 			parent_t::release_buffer(workbuff);
 			if (parent_t::get_readybuffer(& workbuff) || parent_t::get_freebufferforced(& workbuff))
 			{
-				memcpy((* dest)->buff + p1, workbuff->buff, p2);
+				memcpy((uint8_t *) (* dest)->buff + p1, workbuff->buff, p2);
 				wbstart = p2;
 				return 1;
 			}
@@ -319,6 +323,8 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (aubufv_t) };
+	enum { nch = DMABUFFSTEP16RX };
 } ALIGNX_END voice16rx_t;
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxcodeclist_t;
@@ -659,9 +665,11 @@ typedef enum
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+		enum { ss = UACIN_RTS192_SAMPLEBYTES };
+		enum { nch = UACIN_FMT_CHANNELS_RTS192 };
 	} uacinrts192_t;
 
-	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY, sizeof (aubufv_t) * UACIN_RTS192_DATASIZE_DMAC> uacinrts192list_t;
+	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
 
 	static uacinrts192list_t uacinrts192list(IRQL_REALTIME);
 
@@ -710,6 +718,8 @@ typedef enum
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+		enum { ss = UACIN_RTS96_SAMPLEBYTES };
+		enum { nch = UACIN_FMT_CHANNELS_RTS96 };
 	} uacinrts96_t;
 
 	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
@@ -764,6 +774,8 @@ typedef struct
 	uacintag_t tag;
 	ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+	enum { ss = UACIN_AUDIO48_SAMPLEBYTES };
+	enum { nch = UACIN_FMT_CHANNELS_AUDIO48 };
 } uacin48_t;
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
