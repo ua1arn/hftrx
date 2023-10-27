@@ -113,6 +113,8 @@ void ctlboardt507_mainloop(void);
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
+	#define EMMC_EGON_OFFSET 0x00002000	// байтовое смещение, на котором в eMMC или SD CARD должен находиться загрузчик
+
 #endif /* CPUSTYLE_ALLWINNER */
 
 #endif /* INC_BOOTLOADER_H_ */

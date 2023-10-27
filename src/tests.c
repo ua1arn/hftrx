@@ -10,6 +10,7 @@
 #include "audio.h"
 #include "keyboard.h"
 #include "encoder.h"
+#include "bootloader.h"
 
 #include "display/display.h"
 #include "display2.h"
@@ -3674,11 +3675,16 @@ static void test_recodstart(void)
 
 #if 1
 
-// когда одновременно и eMMC и USB FLASH - 0:USB, 1: eMMC,
+#if WITHUSESDCARD && WITHUSEUSBFLASH
+	// когда одновременно и eMMC и USB FLASH - 0:USB, 1: eMMC,
 
-#define VOLPREFIX "0:"				// префикс для файловых операций
-//static const BYTE targetdrv = 0;	// том для diskio функций
-static const BYTE eMMCtargetdrv = 1;	// том для diskio функций
+	#define VOLPREFIX "0:"					// префикс для файловых операций
+	static const BYTE eMMCtargetdrv = 1;	// том для diskio функций
+#else
+
+	#define VOLPREFIX "0:"					// префикс для файловых операций
+	static const BYTE eMMCtargetdrv = 0;	// том для diskio функций
+#endif
 
 // сохранение потока данных большими блоками
 // 1 - конец циклпа проверок
@@ -4390,6 +4396,114 @@ static int fatfs_filesyspeedstest(void)
 	return dosaveblocks(testlog);
 }
 #endif
+
+static void programming(FIL * f, unsigned offset, BYTE targetDEV)
+{
+	FRESULT rc;				/* Result code */
+	DRESULT dc;
+	unsigned score = 0;
+	for (;;)
+	{
+		static RAMNOINIT_D1 BYTE buff [512];		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		UINT br;
+		//PRINTF("Write at %u.\n", score);
+		rc = f_read(f, buff, sizeof buff, &br);	/* Read a chunk of file */
+		if (rc != FR_OK || ! br)
+			break;			/* Error or end of file */
+
+		dc = disk_write(targetDEV, buff, (offset + score) / 512, 1);
+		if (dc != 0)
+		{
+			PRINTF("Write error");
+			break;
+		}
+		score += 512;
+	}
+	PRINTF("%u bytes written.\n", score);
+}
+
+static void
+bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
+{
+	static const struct base
+	{
+		unsigned offs;
+		const char * name;
+	} jobs [] =
+	{
+		{
+				EMMC_EGON_OFFSET,
+				"fsbl.alw32"
+		},
+		{
+				BOOTLOADER_SELFSIZE,
+				"tc1_awt507_app.alw32"
+		},
+	};
+	int i;
+	FRESULT rc;				/* Result code */
+
+	PRINTF("Flash files from USB FatFS storage, '%s' to device %d\n", volPrefix, (int) targetDEV);
+	PRINTF("Press 'y' for contiunue\n");
+	for (;;)
+	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
+		char c;
+		if (dbg_getchar(& c))
+		{
+			switch (c)
+			{
+			default:
+				return;
+				break;
+			case 'y':
+				goto startProgramming;
+			}
+		}
+	}
+
+startProgramming:
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+
+	if (disk_initialize(targetDEV) != 0)
+	{
+		PRINTF("No targed device\n");
+		return;
+	}
+	rc = f_mount(& Fatfs, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+	if (rc != FR_OK)
+	{
+		PRINTF("f_mount error, rc=%d\n", (int) rc);
+		return;
+	}
+	PRINTF("Start...\n");
+	displfiles_buff(volPrefix);	// Заполнение буфера имён файлов в памяти
+	for (i = 0; i < ARRAY_SIZE(jobs); ++ i)
+	{
+		static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 char filename [128];
+		local_snprintf_P(filename, ARRAY_SIZE(filename), "%s%s", volPrefix, jobs [i].name);
+		// чтение файла
+		rc = f_open(& Fil, filename, FA_READ);
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("Can not open file '%s', rc=%u\n"), filename, rc);
+			break;
+		}
+
+		programming(& Fil, jobs [i].offs, targetDEV);
+		rc = f_close(& Fil);
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("Can not close file '%s', rc=%u\n"), filename, rc);
+			break;
+		}
+	}
+	rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+	PRINTF("Done\n");
+}
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
@@ -12395,6 +12509,12 @@ void hightests(void)
 			PRINTF(PSTR("SD sensors: CD=%d, WP=%d\n"), HARDWARE_SDIOSENSE_CD(), HARDWARE_SDIOSENSE_WP());
 			local_delay_ms(50);
 		}
+	}
+#endif
+#if 0 && ! WITHISBOOTLOADER
+	{
+		// USB file -> eMMC write
+		bootloaderFLASH("0:", eMMCtargetdrv);
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEFATFS
