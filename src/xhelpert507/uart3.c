@@ -287,6 +287,34 @@ static unsigned mbuff_float64_LE(uint8_t * b, double v)
 	return 8;
 }
 
+//
+//// Запрос на получение регистров состояния БИНС
+//void userpackagesetup(unsigned devaddr)
+//{
+//	uint8_t b [4];
+//	unsigned n = 0;
+//
+//	n += mbuff_uint8(b + n, 0xFB);	// preamble
+//	n += mbuff_uint8(b + n, devaddr);	// device address
+//	n += mbuff_uint8(b + n, reg);	// register address
+//	n += mbuff_uint8(b + n, numregs & 0x7F);	// number of registers read
+//
+//	uartX_write_crc8(b, n);
+//}
+//
+//void userpackagerequest(unsigned devaddr)
+//{
+//	uint8_t b [4];
+//	unsigned n = 0;
+//
+//	n += mbuff_uint8(b + n, 0xFB);	// preamble
+//	n += mbuff_uint8(b + n, devaddr);	// device address
+//	n += mbuff_uint8(b + n, reg);	// register address
+//	n += mbuff_uint8(b + n, numregs & 0x7F);	// number of registers read
+//
+//	uartX_write_crc8(b, n);
+//}
+
 // Запрос на получение регистров состояния БИНС
 void readregisters(unsigned devaddr, unsigned reg, unsigned numregs)
 {
