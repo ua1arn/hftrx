@@ -4376,7 +4376,7 @@ static void spi_hangoff(void)
 
 #define SPIMODE_AT26DF081A	SPIC_MODE3
 
-static unsigned char dataflash_read_status(
+static unsigned char spidataflash_read_status(
 	spitarget_t target	/* addressing to chip */
 	)
 {
@@ -4394,35 +4394,35 @@ static unsigned char dataflash_read_status(
 	return v;
 }
 
-static int timed_dataflash_read_status(
+static int spitimed_dataflash_read_status(
 	spitarget_t target
 	)
 {
 	unsigned long w = 40000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((spidataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH timeout error\n"));
 	return 1;
 }
 
-static int largetimed_dataflash_read_status(
+static int spilargetimed_dataflash_read_status(
 	spitarget_t target
 	)
 {
 	unsigned long w = 40000000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((spidataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH erase timeout error\n"));
 	return 1;
 }
 
-static int testchipDATAFLASH(void)
+static int spitestchipDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4435,7 +4435,7 @@ static int testchipDATAFLASH(void)
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
-	if (timed_dataflash_read_status(target))
+	if (spitimed_dataflash_read_status(target))
 		return 1;
 
 	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
@@ -4458,7 +4458,7 @@ static int testchipDATAFLASH(void)
 	return mf_id != 0x1f || mf_devid1 != 0x45 || mf_devid2 != 0x01 || mf_dlen != 0;
 }
 
-static int eraseDATAFLASH(void)
+static int spieraseDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4466,17 +4466,17 @@ static int eraseDATAFLASH(void)
 	spi_progval8(target, 0x06);		/* write enable */
 	spi_unselect(target);	/* done sending data to target chip */
 
-	if (timed_dataflash_read_status(target))
+	if (spitimed_dataflash_read_status(target))
 		return 1;
 
 	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spi_progval8(target, 0x60);		/* chip erase */
 	spi_unselect(target);	/* done sending data to target chip */
 
-	if (largetimed_dataflash_read_status(target))
+	if (spilargetimed_dataflash_read_status(target))
 		return 1;
 
-	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
+	if ((spidataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
 	{
 		PRINTF(PSTR("Erase error\n"));
 		return 1;
@@ -4484,7 +4484,7 @@ static int eraseDATAFLASH(void)
 	return 0;
 }
 
-static int prepareDATAFLASH(void)
+static int spiprepareDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4501,7 +4501,7 @@ static int prepareDATAFLASH(void)
 	return 0;
 }
 
-static int writeEnableDATAFLASH(void)
+static int spiwriteEnableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4512,7 +4512,7 @@ static int writeEnableDATAFLASH(void)
 	return 0;
 }
 
-static int writeDisableDATAFLASH(void)
+static int spiwriteDisableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4552,21 +4552,14 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
-	if (timed_dataflash_read_status(target))
+	if (spitimed_dataflash_read_status(target))
 		return 1;
 
 	//PRINTF(PSTR("Done programming\n"));
 	return 0;
 }
 
-static unsigned long ulmin(
-	unsigned long a,
-	unsigned long b)
-{
-	return a < b ? a : b;
-}
-
-static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+static int spiwriteDATAFLASH(void * ctx, unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
 	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
@@ -4584,7 +4577,7 @@ static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data,
 	return 0;
 }
 
-static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+static int spiverifyDATAFLASH(void * ctx, unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
 	unsigned long count;
 	unsigned long err = 0;
@@ -4682,7 +4675,7 @@ static int ascii2nibble(int c)
 	return 0;
 }
 
-static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, const unsigned char * data, unsigned long length))
+static int parsehex(void * ctx, const TCHAR * filename, int (* usedata)(void * ctx, unsigned long addr, const unsigned char * data, unsigned long length))
 {
 	int hexstate = HSINIT;
 	unsigned long rowaddress = 0;
@@ -4853,7 +4846,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 				{
 				case 0:
 					// Data
-					if (usedata(segaddress + address, body, count))
+					if (usedata(ctx, segaddress + address, body, count))
 						break;
 					continue;
 
@@ -4897,30 +4890,30 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 }
 
 static void
-fatfs_proghexfile(const char * hexfile)
+fatfs_proghexfile(void * ctx, const char * hexfile)
 {
 	spi_hangon();
 	PRINTF(PSTR("SPI FLASH programmer\n"));
 	//parsehex(hexfile, printhexDATAFLASH);
 
 	// AT26DF081A chip write
-	if (testchipDATAFLASH() == 0)
+	if (spitestchipDATAFLASH() == 0)
 	{
-		//testchipDATAFLASH();
+		//spitestchipDATAFLASH();
 		//parsehex(hexfile, printhexDATAFLASH);
 
 		do 
 		{
 			PRINTF(PSTR("Prepare...\n"));
-			if (prepareDATAFLASH()) break;
+			if (spiprepareDATAFLASH()) break;
 			PRINTF(PSTR("Erase...\n"));
-			if (eraseDATAFLASH()) break;
-			if (writeEnableDATAFLASH()) break;
-			if (parsehex(hexfile, writeDATAFLASH)) break;
+			if (spieraseDATAFLASH()) break;
+			if (spiwriteEnableDATAFLASH()) break;
+			if (parsehex(NULL, hexfile, spiwriteDATAFLASH)) break;
 			PRINTF(PSTR("Programming...\n"));
-			if (writeDisableDATAFLASH()) break;
+			if (spiwriteDisableDATAFLASH()) break;
 			PRINTF(PSTR("Verify...\n"));
-			if (parsehex(hexfile, verifyDATAFLASH)) break;
+			if (parsehex(ctx, hexfile, spiverifyDATAFLASH)) break;
 		} while (0);
 		PRINTF(PSTR("SPI FLASH programmer done\n"));
 	}
@@ -4934,7 +4927,7 @@ fatfs_progspi(void)
 {
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-	fatfs_proghexfile("tc1_r7s721_rom.hex");
+	fatfs_proghexfile(NULL, "tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
 
 	for (;;)
