@@ -398,10 +398,12 @@ void bootloader_mainloop(void)
 		}
 		if (bootloader_get_start_no_cks(drambase, & ip, & length) != 0)
 		{
-			PRINTF("bootloader: header is not loaded to %08lX.\n", (unsigned long) drambase);
+			PRINTF("1 bootloader: header is not loaded to %08lX.\n", (unsigned long) drambase);
+			printhex(drambase, (void *) drambase, 512);
 			break;
 		}
-		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (length + 256 + 511) / 512);
+		//dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (length + 256 + 511) / 512);
+		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (2 * 1024 * 1024) / 512);
 		if (dc != 0)
 		{
 			PRINTF("app read error\n");
@@ -415,7 +417,8 @@ void bootloader_mainloop(void)
 		}
 		else
 		{
-			PRINTF("bootloader: app is not loaded to %08lX.\n", (unsigned long) drambase);
+			PRINTF("2 bootloader: app is not loaded to %08lX.\n", (unsigned long) drambase);
+			printhex(drambase, (void *) drambase, 512);
 		}
 	} while (0);
 

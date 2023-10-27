@@ -116,7 +116,7 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 //	PHY 0x5311800 after:
 //	05311800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
 
-static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
+void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 {
 #if 0
 	volatile uint32_t * base = (volatile uint32_t *) phy;
@@ -2409,6 +2409,11 @@ void MX_USB_HOST_Process(void)
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_T507
+
+	CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
+
+	CCU->USB2_CLK_REG |= 0x60000000;	// WAS: 0 - USBPHY2RST, SCLK_GATING _USBPHY2
+	CCU->USB_BGR_REG |= 0x00400040; // WAS 01000100 - USBEHCI2_RST USBEHCI2_GATING
 
 	const unsigned OHCIx_12M_SRC_SEL = 1;	// OHCI3_12M_SRC_SEL 01: 12M divided from 24 MHz
 
