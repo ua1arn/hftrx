@@ -83,6 +83,20 @@ static uint_fast8_t bootloader_get_start(
 	return checksum != 0;	// возврат 0 если контрольная сумма совпала
 }
 
+static uint_fast8_t bootloader_get_start_no_cks(
+		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
+		uintptr_t * ip, unsigned * lp)
+{
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	uint_fast32_t checksum = hdr->image_checksum;
+	uint_fast32_t length = hdr->image_length;
+	const uint8_t * p = (const uint8_t *) (uintptr_t) hdr->load_address;
+	if (hdr->magic_number != HEADER_MAGIC)
+		return 1;
+	* lp = length;
+	return 0;
+}
+
 static uint_fast8_t bootloader_copyapp(
 		uint_fast32_t appoffset,	/* смещение заголовка приожения в накопителе */
 		uintptr_t * ip
@@ -319,11 +333,13 @@ void bootloader0_mainloop(void)
 
 void bootloader_mainloop(void)
 {
-	PRINTF("1 bootloader_mainloop [%p]:\n", bootloader_mainloop);
+	PRINTF("bootloader_mainloop: wait user/USB loop [%p]\n", bootloader_mainloop);
+	PRINTF("bootloader_mainloop: user user/USB loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+
 	board_set_bglight(1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
 	board_update();
 
-#if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT)
+#if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) && ! WITHISBOOTLOADERRAWDISK
 
 	if (BOARD_IS_USERBOOT() == 0)
 	{
@@ -354,8 +370,56 @@ void bootloader_mainloop(void)
 	}
 #endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
-	PRINTF("bootloader_mainloop: wait user/USB loop [%p]\n", bootloader_mainloop);
-	PRINTF("bootloader_mainloop: user user/USB loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+#if WITHISBOOTLOADERRAWDISK
+	// чтение application с предопределённого смещения на накопителе
+	// WITHISBOOTLOADERRAWDISK_DEV
+	PRINTF("bootloader_mainloop: boot from offset 0x%08X at disk %d\n", (unsigned) BOOTLOADER_SELFSIZE, (int) WITHISBOOTLOADERRAWDISK_DEV);
+
+	do
+	{
+		uintptr_t drambase = DRAM_SPACE_BASE;
+		BYTE targetDEV = WITHISBOOTLOADERRAWDISK_DEV;
+		DRESULT dc;
+		UINT br = 0;		//  количество считанных байтов
+		uintptr_t ip;
+		unsigned length = 0;
+		struct stm32_header * const hdr = (struct stm32_header *) drambase;
+
+		if (disk_initialize(targetDEV) != 0)
+		{
+			PRINTF("No targed device\n");
+			break;
+		}
+		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, 1);
+		if (dc != 0)
+		{
+			PRINTF("bootloade header read error\n");
+			break;
+		}
+		if (bootloader_get_start_no_cks(drambase, & ip, & length) != 0)
+		{
+			PRINTF("bootloader: header is not loaded to %08lX.\n", (unsigned long) drambase);
+			break;
+		}
+		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (length + 256 + 511) / 512);
+		if (dc != 0)
+		{
+			PRINTF("app read error\n");
+			break;
+		}
+		if (bootloader_get_start(drambase, & ip) == 0)
+		{
+			PRINTF("bootloader: ip=%08lX\n", (unsigned long) ip);
+			/* Perform an Attach-Detach operation on USB bus */
+			bootloader_launch_app(ip);
+		}
+		else
+		{
+			PRINTF("bootloader: app is not loaded to %08lX.\n", (unsigned long) drambase);
+		}
+	} while (0);
+
+#endif /* WITHISBOOTLOADERRAWDISK */
 
 	/* Обеспечение работы USB DFU */
 	for (;;)

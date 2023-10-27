@@ -229,6 +229,15 @@ void hardware_uart3_tx(void * ctx, uint_fast8_t c)
 /* дождаться, когда буде все передано */
 void hardware_uart3_flush(void)
 {
+#if (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+
+	while ((UART3->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
+		;
+
+#else
+	//#error Undefined CPUSTYLE_XXX
+#endif
+
 
 }
 

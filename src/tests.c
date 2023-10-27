@@ -4419,7 +4419,7 @@ static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 		}
 		score += 512;
 	}
-	PRINTF("%u bytes written.\n", score);
+	PRINTF("%08X: %u bytes written.\n", offset, score);
 }
 
 static void
@@ -4436,7 +4436,7 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 				"fsbl.alw32"
 		},
 		{
-				BOOTLOADER_SELFSIZE,
+				BOOTLOADER_FLASHSIZE,
 				"tc1_awt507_app.alw32"
 		},
 	};
