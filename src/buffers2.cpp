@@ -191,15 +191,13 @@ class blistsresample: public blists<element_t, capacity>
 {
 	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
 	unsigned wbstart;	// start position of work buffer - zero has not meaning
-	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 	typedef blists<element_t, capacity> parent_t;
 public:
 	blistsresample(IRQL_t airql) :
 		blists<element_t, capacity>(airql),
-		workbuff(NULL),
-		wbstart(0),
-		irql(airql)
+		//workbuff(nullptr),
+		wbstart(0)
 		{
 			LCLSPINLOCK_INITIALIZE(& lock);
 			// Один элемент в выходном буфере присутствует
@@ -220,7 +218,7 @@ public:
 		{
 			// Есть не полностью израсходованный остаток в буфере
 			const int p1 = sizeof (workbuff->buff) - wbstart;	// размер оставшийся до конца буфера
-			const int p2 = wbstart;	// размер от начала буфера
+			const int p3 = wbstart;	// размер от начала буфера - в рабочем буфере уже передано
 			// есть остаток старого буфера
 			while (! parent_t::get_freebufferforced(dest))
 				ASSERT(0);
@@ -228,8 +226,8 @@ public:
 			parent_t::release_buffer(workbuff);
 			if (parent_t::get_readybuffer(& workbuff) || parent_t::get_freebufferforced(& workbuff))
 			{
-				memcpy((uint8_t *) (* dest)->buff + p1, workbuff->buff, p2);
-				wbstart = p2;
+				memcpy((uint8_t *) (* dest)->buff + p1, workbuff->buff, p3);
+				wbstart = p3;
 				return 1;
 			}
 		}
