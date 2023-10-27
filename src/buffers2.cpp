@@ -14,6 +14,10 @@
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
+#define VOICE16RX_CAPACITY (33 * BUFOVERSIZE)
+#define VOICE16RXUAC_CAPACITY (33 * BUFOVERSIZE)
+#define VOICE16RXPHONES_CAPACITY (333 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TXMONI_CAPACITY (33 * BUFOVERSIZE)	// этот юуфер соразмерен с тем что ребуются для сохренения сэмплов VOICE16RXxxx
 
 #define UACINRTS192_CAPACITY (14 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (14 * BUFOVERSIZE)
@@ -26,7 +30,7 @@
 #define VOICE32TX_CAPACITY (6 * BUFOVERSIZE)
 #define VOICE32RTS_CAPACITY (1 * BUFOVERSIZE)	// dummy fn
 
-#define AUDIOREC_CAPACITY (8 * BUFOVERSIZE)
+#define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
@@ -182,16 +186,19 @@ public:
 	}
 };
 
-template <typename element_t, unsigned capacity>
+template <typename element_t, unsigned capacity, unsigned wbsize>
 class blistsresample: public blists<element_t, capacity>
 {
-	element_t workbuff;	// буфер над которым выполняется ресэмплинг
+	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
+	unsigned wbstart;	// start position of work buffer - zero has not meaning
 	IRQL_t irql;
 	LCLSPINLOCK_t lock;
 	typedef blists<element_t, capacity> parent_t;
 public:
 	blistsresample(IRQL_t airql) :
 		blists<element_t, capacity>(airql),
+		workbuff(NULL),
+		wbstart(0),
 		irql(airql)
 		{
 			LCLSPINLOCK_INITIALIZE(& lock);
@@ -300,9 +307,8 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
 } ALIGNX_END voice16rx_t;
 
-
-typedef blists<voice16rx_t, 33> voice16rxcodeclist_t;
-typedef blistsresample<voice16rx_t, 33> voice16rxuacout48list_t;
+typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxcodeclist_t;
+typedef blistsresample<voice16rx_t, VOICE16RXUAC_CAPACITY, sizeof (aubufv_t) * DMABUFFSIZE16RX> voice16rxuacout48list_t;
 
 static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);		// from codec
 static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);	// from USB AUDIO for resampling
@@ -389,9 +395,8 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
 } ALIGNX_END voice16tx_t;
 
-
-typedef blists<voice16tx_t, 333> voice16txphones_t;
-typedef blists<voice16tx_t, 33> voice16txmoni_t;
+typedef blists<voice16tx_t, VOICE16RXPHONES_CAPACITY> voice16txphones_t;
+typedef blists<voice16tx_t, VOICE16TXMONI_CAPACITY> voice16txmoni_t;
 
 static voice16txphones_t voice16txphones(IRQL_REALTIME);
 static voice16txphones_t voice16txmoni(IRQL_REALTIME);
@@ -642,7 +647,7 @@ typedef enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts192_t;
 
-	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
+	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY, sizeof (aubufv_t) * UACIN_RTS192_DATASIZE_DMAC> uacinrts192list_t;
 
 	static uacinrts192list_t uacinrts192list(IRQL_REALTIME);
 
@@ -693,7 +698,7 @@ typedef enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts96_t;
 
-	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
+	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY, sizeof (aubufv_t) * UACIN_RTS96_DATASIZE_DMAC> uacinrts96list_t;
 
 	static uacinrts96list_t uacinrts96list(IRQL_REALTIME);
 
@@ -747,7 +752,7 @@ typedef struct
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 } uacin48_t;
 
-typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
+typedef blistsresample<uacin48_t, UACIN48_CAPACITY, sizeof (uint8_t) * UACIN_AUDIO48_DATASIZE_DMAC> uacin48list_t;
 
 static uacin48list_t uacin48list(IRQL_REALTIME);
 
