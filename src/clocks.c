@@ -8689,6 +8689,14 @@ sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
 
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+		CCU->SMHC_BGR_REG = 0;
+	}
 
 	{
 		// Disable XFEL enabled device
