@@ -207,6 +207,7 @@ public:
 			VERIFY(parent_t::get_freebuffer(& dest));
 			parent_t::save_buffer(dest);
 
+			// test
 			VERIFY(parent_t::get_freebuffer(& workbuff));
 			wbstart = element_t::ss * element_t::nch;
 
