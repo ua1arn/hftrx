@@ -26,6 +26,8 @@
 #define VOICE32TX_CAPACITY (6 * BUFOVERSIZE)
 #define VOICE32RTS_CAPACITY (1 * BUFOVERSIZE)	// dummy fn
 
+#define AUDIOREC_CAPACITY (8 * BUFOVERSIZE)
+
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
 
@@ -870,6 +872,288 @@ messagetypes_t takemsgready(uint8_t * * dest)
 	}
 	return MSGT_EMPTY;
 }
+
+#if WITHMODEM
+	{
+		unsigned i;
+		static modems8_t modemsarray8 [8];
+
+		/* Подготовка буферов для обмена с модемом */
+		InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
+		//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
+		InitializeListHead2(& modemsfree8);	// Незаполненные
+		for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
+		{
+			modems8_t * const p = & modemsarray8 [i];
+			//InitializeListHead2(& p->item);
+			InsertHeadList2(& modemsfree8, & p->item);
+		}
+	}
+
+
+typedef struct modems8
+{
+	LIST_ENTRY item;
+	size_t length;
+	uint8_t buff [MODEMBUFFERSIZE8];
+} modems8_t;
+
+static RAMBIGDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
+static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
+//static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
+
+
+
+// Буферы с принятымти через модем данными
+size_t takemodemrxbuffer(uint8_t * * dest)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	if (! IsListEmpty2(& modemsrx8))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
+		LowerIrql(oldIrql);
+		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
+		* dest = p->buff;
+		return p->length;
+	}
+	LowerIrql(oldIrql);
+	* dest = NULL;
+	return 0;
+}
+
+// Буферы для заполнения данными
+size_t takemodembuffer(uint8_t * * dest)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	if (! IsListEmpty2(& modemsfree8))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
+		LowerIrql(oldIrql);
+		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
+		* dest = p->buff;
+		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
+	}
+	LowerIrql(oldIrql);
+	* dest = NULL;
+	return 0;
+}
+
+// Буферы для заполнения данными
+// вызывается из real-time обработчика прерывания
+size_t takemodembuffer_low(uint8_t * * dest)
+{
+	if (! IsListEmpty2(& modemsfree8))
+	{
+		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
+		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
+		* dest = p->buff;
+		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
+	}
+	* dest = NULL;
+	return 0;
+}
+
+// Готов буфер с принятыми данными
+// вызывается из real-time обработчика прерывания
+void savemodemrxbuffer_low(uint8_t * dest, size_t length)
+{
+	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
+	p->length = length;
+	InsertHeadList2(& modemsrx8, & p->item);
+}
+
+void releasemodembuffer(uint8_t * dest)
+{
+	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	InsertHeadList2(& modemsfree8, & p->item);
+	LowerIrql(oldIrql);
+}
+
+// вызывается из real-time обработчика прерывания
+void releasemodembuffer_low(uint8_t * dest)
+{
+	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
+	InsertHeadList2(& modemsfree8, & p->item);
+}
+
+#endif /* WITHMODEM */
+
+#if WITHUSEAUDIOREC
+
+// работа с аудиофайлами на накопителе
+
+typedef ALIGNX_BEGIN struct recordswav48
+{
+	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
+	unsigned startdata;
+	unsigned topdata;
+} ALIGNX_END recordswav48_t;
+
+// буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
+typedef blists<recordswav48_t, AUDIOREC_CAPACITY> recordswav48list_t;
+
+static recordswav48list_t recordswav48list(IRQL_REALTIME);
+
+
+// Поэлементное заполнение буфера SD CARD
+
+/* to SD CARD */
+// 16 bit, signed
+void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
+{
+	// если есть инициализированный канал для выдачи звука
+	static recordswav48_t * p = NULL;
+	static unsigned n;
+
+	if (p == NULL)
+	{
+		while (recordswav48list.get_freebufferforced(& p) == 0)
+			ASSERT(0);
+
+		n = 0;
+
+		// Подготовка к записи файла WAV со множеством DATA CHUNK, но получившийся файл
+		// нормально читает только ADOBE AUDITION, Windows Media Player 12 проигрывает только один - первый.
+		// Windows Media Player Classic (https://github.com/mpc-hc/mpc-hc) вообще не проигрывает этот файл.
+
+		//preparerecord16->buff [0] = 'd' | 'a' * 256;
+		//preparerecord16->buff [1] = 't' | 'a' * 256;
+		//preparerecord16->buff [2] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 0;
+		//preparerecord16->buff [3] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
+		//level16record = 4;
+
+	}
+
+#if WITHUSEAUDIOREC2CH
+	// Запись звука на SD CARD в стерео
+	p->buff [n ++] = left;	// sample value
+	p->buff [n ++] = right;	// sample value
+
+#else /* WITHUSEAUDIOREC2CH */
+	// Запись звука на SD CARD в моно
+	p->buff [n ++] = left;	// sample value
+
+#endif /* WITHUSEAUDIOREC2CH */
+
+	if (n >= AUDIORECBUFFSIZE16)
+	{
+		/* используется буфер целиклом */
+		p->startdata = 0;
+		p->topdata = AUDIORECBUFFSIZE16;
+		recordswav48list.save_buffer(p);
+		p = NULL;
+	}
+}
+
+// user-mode function
+unsigned takerecordbuffer(void * * dest)
+{
+	recordswav48_t * p;
+	if (recordswav48list.get_readybuffer(& p))
+	{
+		* dest = p->buff;
+		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
+	}
+	return 0;
+}
+
+// user-mode function
+unsigned takefreerecordbuffer(void * * dest)
+{
+	recordswav48_t * p;
+	if (recordswav48list.get_freebuffer(& p))
+	{
+		* dest = p->buff;
+		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
+	}
+	return 0;
+}
+
+static void saveplaybuffer(void * dest, unsigned used)
+{
+	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
+	p->startdata = 0;	// первый сэмпл в буфере
+	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
+
+	recordswav48list.save_buffer(p);
+}
+
+/* data to play */
+unsigned savesamplesplay(
+	const void * buff,
+	unsigned length
+	)
+{
+	void * p;
+	unsigned size;
+
+	size = takefreerecordbuffer(& p);
+
+	if (size == 0)
+	{
+		//PRINTF("savesamplesplay: length=%u - no memory\n", length);
+		return 0;
+	}
+
+	//PRINTF("savesamplesplay: length=%u\n", length);
+	unsigned chunk = ulmin32(size, length);
+	memcpy(p, buff, chunk);
+	saveplaybuffer(p, chunk);
+	return chunk;
+}
+
+void releaserecordbuffer(void * dest)
+{
+	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
+	recordswav48list.release_buffer(p);
+}
+
+void saverecordbuffer(void * dest)
+{
+	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
+	recordswav48list.save_buffer(p);
+}
+
+
+/* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера
+ * или для переачи
+ * Возврат 0, если нет ничего для воспроизведения.
+ */
+uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
+{
+	static recordswav48_t * p = NULL;
+	static unsigned n;
+	if (p == NULL)
+	{
+		if (recordswav48list.get_readybuffer(& p))
+		{
+			n = p->startdata;	// reset samples count
+		}
+		else
+		{
+			// Нет данных для воспроизведения
+			return 0;
+		}
+	}
+	int_fast16_t sample = p->buff [n];
+	rv->IV = sample;
+	rv->QV = sample;
+
+	if (++ n >= AUDIORECBUFFSIZE16 || n >= p->topdata)
+	{
+		// Last sample used
+		recordswav48list.release_buffer(p);
+		p = NULL;
+		//PRINTF("Release record buffer\n");
+	}
+	return 1;	// Сэмпл считан
+}
+
+#endif /* WITHUSEAUDIOREC */
 
 void buffers2_diagnostics(void)
 {
