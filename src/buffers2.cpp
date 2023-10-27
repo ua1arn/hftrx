@@ -178,6 +178,11 @@ public:
 			release_buffer(dest);
 	}
 
+	static int_fast32_t get_cachesize(void)
+	{
+		return offsetof(element_t, pad) - offsetof(element_t, buff);
+	}
+
 	void debug(const char * name)
 	{
 #if WITHBUFFERSDEBUG
@@ -334,7 +339,7 @@ static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);	// from USB
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
-	return offsetof(voice16rx_t, pad) - offsetof(voice16rx_t, buff);
+	return voice16rxcodeclist.get_cachesize();
 }
 
 uintptr_t allocate_dmabuffer16rx(void)
@@ -367,7 +372,7 @@ void release_dmabuffer16rx(uintptr_t addr)
 
 int_fast32_t cachesize_dmabuffer16rxresampler(void)
 {
-	return offsetof(voice16rx_t, pad) - offsetof(voice16rx_t, buff);
+	return voice16rxuacout48list.get_cachesize();
 }
 
 uintptr_t allocate_dmabuffer16rxresampler(void)
@@ -422,7 +427,7 @@ static voice16txphones_t voice16txmoni(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
-	return offsetof(voice16tx_t, pad) - offsetof(voice16tx_t, buff);
+	return voice16txphones.get_cachesize();
 }
 
 uintptr_t allocate_dmabuffer16txphones(void)
@@ -531,7 +536,7 @@ static voice32txlist_t voice32txlist(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabuffer32tx(void)
 {
-	return offsetof(voice32tx_t, pad) - offsetof(voice32tx_t, buff);
+	return voice32txlist.get_cachesize();
 }
 
 void release_dmabuffer32tx(uintptr_t addr)
@@ -592,7 +597,7 @@ static voice32rxlist_t voice32rxlist(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabuffer32rx(void)
 {
-	return offsetof(voice32rx_t, pad) - offsetof(voice32rx_t, buff);
+	return voice32rxlist.get_cachesize();
 }
 
 void release_dmabuffer32rx(uintptr_t addr)
@@ -625,7 +630,7 @@ static uacout48list_t uacout48list(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
-	return offsetof(uacout48_t, pad) - offsetof(uacout48_t, buff);
+	return uacout48list.get_cachesize();
 }
 
 uintptr_t allocate_dmabufferuacout48(void)
@@ -674,8 +679,8 @@ typedef enum
 
 	int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
-		return offsetof(uacinrts192_t, pad) - offsetof(uacinrts192_t, buff);
-	}
+		return uacinrts192list.get_cachesize();
+}
 
 	uintptr_t allocate_dmabufferuacinrts192(void)
 	{
@@ -727,7 +732,7 @@ typedef enum
 
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
-		return offsetof(uacinrts96_t, pad) - offsetof(uacinrts96_t, buff);
+		return uacinrts96list.get_cachesize();
 	}
 
 	uintptr_t allocate_dmabufferuacinrts96(void)
@@ -783,7 +788,7 @@ static uacin48list_t uacin48list(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabufferuacin48(void)
 {
-	return offsetof(uacin48_t, pad) - offsetof(uacin48_t, buff);
+	return uacin48list.get_cachesize();
 }
 
 uintptr_t allocate_dmabufferuacin48(void)
