@@ -460,7 +460,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
 	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 
-	//SetupUsbPhyc(USB20_OTG_PHYC_BASE); // ?
 	//USB20_OTG_PHYC->USB_CTRL = UINT32_C(0x4300CC01);	// младший бит не влияет... вообще ничего не влияет
 	//USBPHYC0->USB_CTRL =  UINT32_C(0x4300CC00);	// влияет!
 	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
@@ -482,10 +481,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	USB20_OTG_PHYC->PHY_CTRL = 0x00000022;
 	USB20_OTG_PHYC->HSIC_PHY_tune3 = 0x00000008;
 
-	PRINTF("USB20_OTG_PHYC_BASE:\n");
-	printhex32(USB20_OTG_PHYC_BASE, USB20_OTG_PHYC, 128);
-	PRINTF("USBPHYC0:\n");
-	printhex32(USBPHYC0_BASE, USBPHYC0, 128);
+//	PRINTF("USB20_OTG_PHYC_BASE:\n");
+//	printhex32(USB20_OTG_PHYC_BASE, USB20_OTG_PHYC, 128);
+//	PRINTF("USBPHYC0:\n");
+//	printhex32(USBPHYC0_BASE, USBPHYC0, 128);
 
 //	PRINTF("CCU:\n");
 //	printhex32(CCU_BASE, CCU, sizeof * CCU);
