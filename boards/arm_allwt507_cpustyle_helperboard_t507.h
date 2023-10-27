@@ -119,10 +119,10 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHC0HW	1		/* TF CARD */
 	//#define WITHSDHC1HW	1		/* SDIO */
-	#define WITHSDHC2HW	1		/* EMMC */
+	//#define WITHSDHC2HW	1		/* EMMC */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
