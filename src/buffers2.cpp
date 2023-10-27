@@ -186,7 +186,7 @@ public:
 	}
 };
 
-template <typename element_t, unsigned capacity, unsigned wbsize>
+template <typename element_t, unsigned capacity>
 class blistsresample: public blists<element_t, capacity>
 {
 	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
@@ -208,13 +208,27 @@ public:
 			parent_t::save_buffer(dest);
 
 		}
-	// функция вызывается получателем (плучаем после ресэмплинга.
+	// функция вызывается получателем (получаем после ресэмплинга.
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
-		return
-			parent_t::get_readybuffer(dest) ||
-			parent_t::get_freebufferforced(dest);
+		if (wbstart)
+		{
+			const unsigned p1 = sizeof (workbuff->buff) - wbstart;	// размер оставшийся до конца ьуфера
+			const unsigned p2 = wbstart;	// размер от начала буфера
+			// есть остаток старого буфера
+			while (! parent_t::get_freebufferforced(dest))
+				ASSERT(0);
+			memcpy((* dest)->buff, workbuff->buff + wbstart, p1);
+			parent_t::release_buffer(workbuff);
+			if (parent_t::get_readybuffer(& workbuff) || parent_t::get_freebufferforced(& workbuff))
+			{
+				memcpy((* dest)->buff + p1, workbuff->buff, p2);
+				wbstart = p2;
+				return 1;
+			}
+		}
+		return parent_t::get_readybuffer(dest) || parent_t::get_freebufferforced(dest);
 	}
 };
 
@@ -308,7 +322,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 } ALIGNX_END voice16rx_t;
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxcodeclist_t;
-typedef blistsresample<voice16rx_t, VOICE16RXUAC_CAPACITY, sizeof (aubufv_t) * DMABUFFSIZE16RX> voice16rxuacout48list_t;
+typedef blistsresample<voice16rx_t, VOICE16RXUAC_CAPACITY> voice16rxuacout48list_t;
 
 static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);		// from codec
 static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);	// from USB AUDIO for resampling
@@ -698,7 +712,7 @@ typedef enum
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 	} uacinrts96_t;
 
-	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY, sizeof (aubufv_t) * UACIN_RTS96_DATASIZE_DMAC> uacinrts96list_t;
+	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
 
 	static uacinrts96list_t uacinrts96list(IRQL_REALTIME);
 
@@ -752,7 +766,7 @@ typedef struct
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
 } uacin48_t;
 
-typedef blistsresample<uacin48_t, UACIN48_CAPACITY, sizeof (uint8_t) * UACIN_AUDIO48_DATASIZE_DMAC> uacin48list_t;
+typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
 
 static uacin48list_t uacin48list(IRQL_REALTIME);
 
