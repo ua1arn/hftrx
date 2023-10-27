@@ -501,18 +501,17 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 				//(4u << 1) |
 				(1u << 0) |
 				0;
-		if (clock > 12500000)
-			clock = 12500000;
 
        ratio= SMHCHARD_FREQ / (clock);	// Измерения показали, что деление на 4 а не на 2
-       ratio = 100;
 	}
 	else
 	{
         ratio= SMHCHARD_FREQ / (4 * clock);	// Измерения показали, что деление на 4 а не на 2
 	}
-        if (ratio == 0)
-        	ratio = 1;
+	if (ratio == 0)
+		ratio = 1;
+	else if (ratio > 255)
+		ratio = 255;
 
 	//PRINTF("***************** sdhci_t113_setclock: sdhci_t113_update_clk: ratio=%u, SMHCHARD_FREQ=%u MHz SMHCHARD_CCU_CLK_REG=0x%08X\n", (unsigned) ratio, (unsigned) (SMHCHARD_FREQ / 1000 / 1000), (unsigned) SMHCHARD_CCU_CLK_REG);
 	if((ratio & 0xff) != ratio)
