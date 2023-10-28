@@ -47,6 +47,7 @@ class blists
 {
 	typedef struct buffitem
 	{
+		void * tag0;
 		void * tag2;
 		ALIGNX_BEGIN  element_t v ALIGNX_END;
 		ALIGNX_BEGIN  LIST_ENTRY item ALIGNX_END;	// should be placed after 'u' field
@@ -81,6 +82,7 @@ public:
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
 			buffitem_t * const p = & storage [i];
+			p->tag0 = this;
 			p->tag2 = p;
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
@@ -92,6 +94,7 @@ public:
 	void release_buffer(element_t * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
+		ASSERT(p->tag0 == this);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
@@ -107,6 +110,7 @@ public:
 	void save_buffer(element_t * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
+		ASSERT(p->tag0 == this);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
 		IRQL_t oldIrql;
@@ -132,6 +136,7 @@ public:
 			-- outcount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
+			ASSERT(p->tag0 == this);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			* dest = & p->v;
@@ -152,6 +157,7 @@ public:
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
+			ASSERT(p->tag0 == this);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			* dest = & p->v;
@@ -170,12 +176,12 @@ public:
 	}
 
 	// все готовые перенести в свободные
-	void purge_buffers()
-	{
-		element_t * dest;
-		while (get_readybuffer(& dest))
-			release_buffer(dest);
-	}
+//	void purge_buffers()
+//	{
+//		element_t * dest;
+//		while (get_readybuffer(& dest))
+//			release_buffer(dest);
+//	}
 
 	static int_fast32_t get_cachesize(void)
 	{
@@ -869,6 +875,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 	if (uacin48list.get_freebuffer(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
+		memset(dest->buff, 0, sizeof dest->buff);
 		return (uintptr_t) & dest->buff;
 	}
 	ASSERT(0);
