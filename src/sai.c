@@ -5137,7 +5137,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
 
 	/* Работа с только что принятыми данными */
-	processing_dmabufferuacout48(addr);
+	save_dmabufferuacout48(addr);
 }
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)

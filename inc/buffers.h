@@ -620,13 +620,7 @@ void release_dmabuffer16rx(uintptr_t addr);
 void save_dmabuffer16rx(uintptr_t addr);
 
 
-uintptr_t allocate_dmabuffer16rxresampler(void);
-uintptr_t getfilled_dmabuffer16rxresampler(void);
-int_fast32_t cachesize_dmabuffer16rxresampler(void);
 uintptr_t processing_pipe32rx(uintptr_t addr);
-void release_dmabuffer16rxresampler(uintptr_t addr);
-void save_dmabuffer16rxresampler(uintptr_t addr);
-void purge_dmabuffer16rxresampler(void);	// все готовые перенести в свободные
 
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
@@ -665,17 +659,18 @@ int_fast32_t cachesize_dmabufferuacinrts96(void);
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabufferuacout48(void);
+uintptr_t getfilled_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
-void processing_dmabufferuacout48(uintptr_t addr);
 void save_dmabufferuacout48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacout48(void);
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabuffer16rxresampler(void);
-void release_dmabuffer16rxresampler(uintptr_t addr);
-void processing_dmabuffer16rxresampler(uintptr_t addr);
-void save_dmabuffer16rxresampler(uintptr_t addr);
+uintptr_t getfilled_dmabuffer16rxresampler(void);
 int_fast32_t cachesize_dmabuffer16rxresampler(void);
+void release_dmabuffer16rxresampler(uintptr_t addr);
+void save_dmabuffer16rxresampler(uintptr_t addr);
+void purge_dmabuffer16rxresampler(void);	// все готовые перенести в свободные
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabufferuacin48(void);

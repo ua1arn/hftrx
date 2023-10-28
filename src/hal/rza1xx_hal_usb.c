@@ -2165,12 +2165,18 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		cons uintptr_t addr = allocate_dmabufferuacout48();
+		memcpy((void *) addr, uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
+		save_dmabufferuacout48(addr);
+
 		dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		cons uintptr_t addr = allocate_dmabufferuacout48();
+		memcpy((void *) addr, uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
+		save_dmabufferuacout48(addr);
+
 		dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 }

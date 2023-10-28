@@ -220,31 +220,6 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHINTEGRATEDDSP
 
-// приняли данные от USB AUDIO
-static RAMFUNC void
-buffers_savefromuacout_rxresampler(uintptr_t addr)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_uacout += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
-	++ n2;
-#endif /* WITHBUFFERSDEBUG */
-
-#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
-	if (uacoutalt == 0)
-	{
-		release_dmabuffer16rxresampler(addr);
-	}
-	else
-	{
-		save_dmabuffer16rxresampler(addr);
-	}
-
-#else /* WITHUSBUAC */
-	release_dmabuffer16rxresampler(addr);
-#endif /* WITHUSBUAC */
-}
-
 // 16 bit, signed
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
@@ -754,18 +729,6 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #endif /* WITHRTS192 */
 
-#if WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-
-
-void processing_dmabufferuacout48(uintptr_t addr)
-{
-	uacout_buffer_save((const uint8_t *) addr, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
-
-	release_dmabufferuacout48(addr);
-}
-
-#endif /* WITHUSBUACOUT */
-
 // Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 // vl, vr: 16 bit, signed - требуемый формат для передачи по USB.
 
@@ -854,6 +817,8 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 	}
 }
 
+#if 1
+
 static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * размер сэмпла * количество каналов bytes
 static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
@@ -875,10 +840,7 @@ void uacout_buffer_stop(void)
 {
 	if (uacoutaddr != 0)
 	{
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
 		release_dmabuffer16rx(uacoutaddr);
-		LowerIrql(oldIrql);
 		uacoutaddr = 0;
 		uacoutbufflevel = 0;
 	}
@@ -904,10 +866,7 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t i
 			break;
 		if (uacoutaddr == 0)
 		{
-			IRQL_t oldIrql;
-			RiseIrql(IRQL_REALTIME, & oldIrql);
 			uacoutaddr = allocate_dmabuffer16rxresampler();
-			LowerIrql(oldIrql);
 			uacoutbufflevel = 0;
 		}
 
@@ -947,16 +906,35 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t i
 
 		if ((uacoutbufflevel += outchunk) >= dmabuffer16size)
 		{
-			IRQL_t oldIrql;
-			RiseIrql(IRQL_REALTIME, & oldIrql);
-			buffers_savefromuacout_rxresampler(uacoutaddr);
-			LowerIrql(oldIrql);
+
+		#if WITHBUFFERSDEBUG
+			// подсчёт скорости в сэмплах за секунду
+			debugcount_uacout += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
+			++ n2;
+		#endif /* WITHBUFFERSDEBUG */
+
+		#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
+			if (uacoutalt == 0)
+			{
+				release_dmabuffer16rxresampler(uacoutaddr);
+			}
+			else
+			{
+				save_dmabuffer16rxresampler(uacoutaddr);
+			}
+
+		#else /* WITHUSBUAC */
+			release_dmabuffer16rxresampler(uacoutaddr);
+		#endif /* WITHUSBUAC */
+
 			uacoutaddr = 0;
 			uacoutbufflevel = 0;
 		}
 	}
 }
 /* --- UAC OUT data save */
+
+#endif
 
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
