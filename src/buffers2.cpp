@@ -631,18 +631,26 @@ void save_dmabufferuacout48(uintptr_t addr)
 ///
 ///
 
-typedef blistsresample<voice16rx_t, RX16RESAMPLER_CAPACITY> rx16resamplerlist_t;
+typedef ALIGNX_BEGIN struct voice16rxF_tag
+{
+	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16RX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (aubufv_t) };
+	enum { nch = DMABUFFSTEP16RX };
+} ALIGNX_END voice16rxF_t;
+
+typedef blistsresample<voice16rxF_t, RX16RESAMPLER_CAPACITY> rx16resamplerlist_t;
 static rx16resamplerlist_t rx16resamplerlist(IRQL_REALTIME);
 
-
-int_fast32_t cachesize_dmabuffer16rxresampler(void)
-{
-	return rx16resamplerlist.get_cachesize();
-}
+//
+//int_fast32_t cachesize_dmabuffer16rxresampler(void)
+//{
+//	return rx16resamplerlist.get_cachesize();
+//}
 
 uintptr_t allocate_dmabuffer16rxresampler(void)
 {
-	voice16rx_t * dest;
+	voice16rxF_t * dest;
 	while (rx16resamplerlist.get_freebuffer(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
@@ -651,7 +659,7 @@ uintptr_t allocate_dmabuffer16rxresampler(void)
 // may be zero
 uintptr_t getfilled_dmabuffer16rxresampler(void)
 {
-	voice16rx_t * dest;
+	voice16rxF_t * dest;
 	if (rx16resamplerlist.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
@@ -659,13 +667,13 @@ uintptr_t getfilled_dmabuffer16rxresampler(void)
 
 void release_dmabuffer16rxresampler(uintptr_t addr)
 {
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxF_t * const p = CONTAINING_RECORD(addr, voice16rxF_t, buff);
 	rx16resamplerlist.release_buffer(p);
 }
 
 void save_dmabuffer16rxresampler(uintptr_t addr)
 {
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxF_t * const p = CONTAINING_RECORD(addr, voice16rxF_t, buff);
 	rx16resamplerlist.save_buffer(p);
 }
 
@@ -1019,13 +1027,15 @@ static int32_t fetch_le(const uint8_t * p, size_t usbsz)
 	case 1:
 		return p [0];
 	case 2:
-		return p [1] * 256u + p [0];
+		return USBD_peek_u16(p); //p [1] * 256u + p [0];
 	case 3:
-		return (p [2] * 256u + p [1]) * 256u + p [0];
+		return USBD_peek_u24(p); //(p [2] * 256u + p [1]) * 256u + p [0];
 	case 4:
-		return ((p [3] * 256u + p [2]) * 256u + p [1]) * 256u + p [0];
+		return USBD_peek_u32(p); //((p [3] * 256u + p [2]) * 256u + p [1]) * 256u + p [0];
 	}
 }
+
+enum { L, R };
 
 /* вызыватся из не-realtime функции обработчика прерывания */
 // Работает на ARM_SYSTEM_PRIORITY
@@ -1037,7 +1047,7 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 	static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * размер сэмпла * количество каналов bytes
 	static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
-	const size_t dmabuffer16size = DMABUFFSIZE16RX * sizeof (aubufv_t);	// размер в байтах
+	const size_t dmabuffer16size = DMABUFFSIZE16RX * sizeof (FLOAT_t);	// размер в байтах
 
 	for (;;)
 	{
@@ -1060,11 +1070,11 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 			ASSERT(DMABUFFSTEP16RX == 2);
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
 			const uint8_t * src = buff;
-			aubufv_t * dst = (aubufv_t *) (uacoutaddr + uacoutbufflevel);
+			FLOAT_t * dst = (FLOAT_t *) (uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples;
 			while (n --)
 			{
-				const aufastbufv_t v = transform_do32(& uac48out2afcodecrx, fetch_le(src, usbsz));
+				const FLOAT_t v = adpt_input(& uac48out, fetch_le(src, usbsz));
 				* dst ++ = v;
 				* dst ++ = v;
 				src += usbsz;
@@ -1076,11 +1086,11 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 			// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
 			/* копирование 16 бит сэмплов с расширением */
 			const uint8_t * src = buff;
-			aubufv_t * dst = (aubufv_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
+			FLOAT_t * dst = (FLOAT_t *) ((uint8_t *) uacoutaddr + uacoutbufflevel);
 			uint_fast16_t n = chunksamples * ichannels;
 			while (n --)
 			{
-				const aufastbufv_t v = transform_do32(& uac48out2afcodecrx, fetch_le(src, usbsz));
+				const FLOAT_t v = adpt_input(& uac48out, fetch_le(src, usbsz));
 				* dst ++ = v;
 				src += usbsz;
 			}
@@ -1112,13 +1122,12 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 // TODO: переделать на denoise16_t
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
-	enum { L, R };
-	static aubufv_t * buff = NULL;
+	static FLOAT_t * buff = NULL;
 	static unsigned n = 0;	// позиция по выходному количеству
 
 	if (buff == NULL)
 	{
-		buff = (aubufv_t *) getfilled_dmabuffer16rxresampler();
+		buff = (FLOAT_t *) getfilled_dmabuffer16rxresampler();
 		if (buff == 0)
 		{
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
@@ -1128,8 +1137,8 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 0]);	// левый канал
-	v->ivqv [R] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 1]);	// правый канал
+	v->ivqv [L] = buff [n * DMABUFFSTEP16RX + 0];	// левый канал
+	v->ivqv [R] = buff [n * DMABUFFSTEP16RX + 1];	// правый канал
 
 	if (++ n >= CNT16RX)
 	{
@@ -1499,31 +1508,6 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 
 #endif /* WITHUSEAUDIOREC */
 
-void buffers2_diagnostics(void)
-{
-#if WITHBUFFERSDEBUG
-
-	//denoise16list.debug("denoise16list");
-	voice16rxcodeclist.debug("voice16rxcodeclist");
-	voice16txphones.debug("voice16txphones");
-	voice16txmoni.debug("voice16txmoni");
-	voice32txlist.debug("voice32txlist");
-	voice32rxlist.debug("voice32rxlist");
-
-#if 0
-	// USB
-	uacout48list.debug("uacout48list");
-	//uacinrts192list.debug("uacinrts192list");
-	uacinrts96list.debug("uacinrts96list");
-	uacin48list.debug("uacin48list");
-#endif
-	//message8list.debug("message8list");
-
-	PRINTF("\n");
-
-#endif /* WITHBUFFERSDEBUG */
-}
-
 #if 0
 
 enum { NPARTS = 3 };
@@ -1775,3 +1759,28 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 #endif /* WITHUSBUAC */
 
 #endif
+
+void buffers2_diagnostics(void)
+{
+#if WITHBUFFERSDEBUG
+
+	//denoise16list.debug("denoise16list");
+	voice16rxcodeclist.debug("voice16rxcodeclist");
+	voice16txphones.debug("voice16txphones");
+	voice16txmoni.debug("voice16txmoni");
+	voice32txlist.debug("voice32txlist");
+	voice32rxlist.debug("voice32rxlist");
+
+#if 0
+	// USB
+	uacout48list.debug("uacout48list");
+	//uacinrts192list.debug("uacinrts192list");
+	uacinrts96list.debug("uacinrts96list");
+	uacin48list.debug("uacin48list");
+#endif
+	//message8list.debug("message8list");
+
+	PRINTF("\n");
+
+#endif /* WITHBUFFERSDEBUG */
+}

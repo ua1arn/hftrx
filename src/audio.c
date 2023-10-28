@@ -873,7 +873,6 @@ adapter_t uac48in;	/* Аудиоданные в компютер из транс
 adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
-transform_t uac48out2afcodecrx;	// преобразование из выхода UAC AUDIO48 в формат кодека
 
 #if WITHUSEAUDIOREC
 adapter_t sdcardio;
@@ -904,7 +903,7 @@ static void adapterst_initialize(void)
 	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uac48in");	/* Аудиоданные в компютер из трансивера */
 	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uac48out");	/* Аудиоданные из компютера в трансивер */
-	transform_initialize(& uac48out2afcodecrx, & uac48out, & afcodecrx);
+
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin96, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT, "ifspectrumin96");
