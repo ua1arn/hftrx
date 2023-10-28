@@ -267,6 +267,7 @@ public:
 enum { RESAMPLE16NORMAL = SKIPPEDBLOCKS * 2 };	// Нормальное количество буферов в очереди
 
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
+enum { CNT16RXF = DMABUFFSIZE16RXF / DMABUFFSTEP16RXF };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
@@ -633,10 +634,10 @@ void save_dmabufferuacout48(uintptr_t addr)
 
 typedef ALIGNX_BEGIN struct voice16rxF_tag
 {
-	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16RX] ALIGNX_END;
+	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16RXF] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t) };
-	enum { nch = DMABUFFSTEP16RX };
+	enum { ss = sizeof (FLOAT_t) };
+	enum { nch = DMABUFFSTEP16RXF };
 } ALIGNX_END voice16rxF_t;
 
 typedef blistsresample<voice16rxF_t, RX16RESAMPLER_CAPACITY> rx16resamplerlist_t;
@@ -1047,7 +1048,7 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 	static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * размер сэмпла * количество каналов bytes
 	static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 
-	const size_t dmabuffer16size = DMABUFFSIZE16RX * sizeof (FLOAT_t);	// размер в байтах
+	const size_t dmabuffer16size = DMABUFFSIZE16RXF * sizeof (FLOAT_t);	// размер в байтах
 
 	for (;;)
 	{
@@ -1067,7 +1068,7 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 
 		if (ichannels == 1)
 		{
-			ASSERT(DMABUFFSTEP16RX == 2);
+			ASSERT(DMABUFFSTEP16RXF == 2);
 			// копирование нужного количества сэмплов с прербразованием из моно в стерео
 			const uint8_t * src = buff;
 			FLOAT_t * dst = (FLOAT_t *) (uacoutaddr + uacoutbufflevel);
@@ -1082,7 +1083,7 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 		}
 		else
 		{
-			ASSERT(DMABUFFSTEP16RX == ichannels);
+			ASSERT(DMABUFFSTEP16RXF == ichannels);
 			// требуется преобразование формата из 16-бит семплов ко внутреннему формату aubufv_t
 			/* копирование 16 бит сэмплов с расширением */
 			const uint8_t * src = buff;
@@ -1104,7 +1105,7 @@ static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fa
 
 		#if WITHBUFFERSDEBUG
 			// подсчёт скорости в сэмплах за секунду
-			debugcount_uacout += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
+			debugcount_uacout += DMABUFFSIZE16RXF / DMABUFFSTEP16RXF;	// в буфере пары сэмплов по два байта
 			++ n2;
 		#endif /* WITHBUFFERSDEBUG */
 
@@ -1128,7 +1129,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	if (buff == NULL)
 	{
 		buff = (FLOAT_t *) getfilled_dmabuffer16rxresampler();
-		if (buff == 0)
+		if (buff == NULL)
 		{
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
 			return 0;
@@ -1137,10 +1138,10 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	}
 
 	// Использование данных.
-	v->ivqv [L] = buff [n * DMABUFFSTEP16RX + 0];	// левый канал
-	v->ivqv [R] = buff [n * DMABUFFSTEP16RX + 1];	// правый канал
+	v->ivqv [L] = buff [n * DMABUFFSTEP16RXF + 0];	// левый канал
+	v->ivqv [R] = buff [n * DMABUFFSTEP16RXF + 1];	// правый канал
 
-	if (++ n >= CNT16RX)
+	if (++ n >= CNT16RXF)
 	{
 		release_dmabuffer16rxresampler((uintptr_t) buff);
 		buff = NULL;
