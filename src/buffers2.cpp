@@ -35,8 +35,6 @@
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
 
-static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t usbsz);
-
 #if WITHUSBHW
 	#include "usb/usb200.h"
 	#include "usb/usbch9.h"
@@ -603,7 +601,6 @@ uintptr_t getfilled_dmabufferuacout48(void)
 	uacout48_t * dest;
 	if (uacout48list.get_readybuffer(& dest) == 0)
 		return 0;
-	//fillout48((uintptr_t) dest->buff);
 	return (uintptr_t) dest->buff;
 }
 
@@ -619,7 +616,10 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 
 #if 1
-	uacout_buffer_save(p->buff, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+	uintptr_t addr2 = allocate_dmabuffer16rxresampler();
+	ASSERT(addr2 != 0);
+	memcpy((void *) addr2, (void *) addr, UACOUT_AUDIO48_DATASIZE_DMAC);
+	save_dmabuffer16rxresampler(addr2);
 	release_dmabufferuacout48(addr);
 #else
 	uacout48list.save_buffer(p);
@@ -630,7 +630,8 @@ void save_dmabufferuacout48(uintptr_t addr)
 //////////////////////////
 ///
 ///
-typedef blistsresample<uacout48_t, UACOUT48_CAPACITY> rx16resamplerlist_t;
+
+typedef blists<uacout48_t, UACOUT48_CAPACITY> rx16resamplerlist_t;
 static rx16resamplerlist_t rx16resamplerlist(IRQL_REALTIME);
 
 //
@@ -944,19 +945,6 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 		buff = NULL;
 	}
 	return 1;
-}
-
-/* вызыватся из не-realtime функции обработчика прерывания */
-// Работает на ARM_SYSTEM_PRIORITY
-/* вызыватся из realtime функции обработчика прерывания */
-// Работает на ARM_REALTIME_PRIORITY
-static void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t usbsz)
-{
-	ASSERT(size == UACOUT_AUDIO48_DATASIZE_DMAC);
-	uintptr_t addr = allocate_dmabuffer16rxresampler();
-	ASSERT(addr != 0);
-	memcpy((void *) addr, buff, UACOUT_AUDIO48_DATASIZE_DMAC);
-	save_dmabuffer16rxresampler(addr);
 }
 
 //////////////////////////////////////////
