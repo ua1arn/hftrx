@@ -220,39 +220,6 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 
 #if WITHINTEGRATEDDSP
 
-// 16 bit, signed
-// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
-// При отсутствии данных в очереди - возвращаем 0
-// TODO: переделать на denoise16_t
-RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
-{
-	enum { L, R };
-	static aubufv_t * buff = NULL;
-	static unsigned n = 0;	// позиция по выходному количеству
-
-	if (buff == NULL)
-	{
-		buff = (aubufv_t *) getfilled_dmabuffer16rxresampler();
-		if (buff == 0)
-		{
-			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			return 0;
-		}
-		n = 0;
-	}
-
-	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 0]);	// левый канал
-	v->ivqv [R] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 1]);	// правый канал
-
-	if (++ n >= CNT16RX)
-	{
-		release_dmabuffer16rxresampler((uintptr_t) buff);
-		buff = NULL;
-	}
-	return 1;
-}
-
 #if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
 static uint_fast8_t isaudio48(void)
@@ -932,7 +899,39 @@ void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t i
 		}
 	}
 }
-/* --- UAC OUT data save */
+
+// 16 bit, signed
+// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
+// При отсутствии данных в очереди - возвращаем 0
+// TODO: переделать на denoise16_t
+RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
+{
+	enum { L, R };
+	static aubufv_t * buff = NULL;
+	static unsigned n = 0;	// позиция по выходному количеству
+
+	if (buff == NULL)
+	{
+		buff = (aubufv_t *) getfilled_dmabuffer16rxresampler();
+		if (buff == 0)
+		{
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
+			return 0;
+		}
+		n = 0;
+	}
+
+	// Использование данных.
+	v->ivqv [L] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 0]);	// левый канал
+	v->ivqv [R] = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + 1]);	// правый канал
+
+	if (++ n >= CNT16RX)
+	{
+		release_dmabuffer16rxresampler((uintptr_t) buff);
+		buff = NULL;
+	}
+	return 1;
+}
 
 #endif
 
