@@ -579,7 +579,7 @@ typedef struct
 	enum { nch = UACOUT_FMT_CHANNELS_AUDIO48 };
 } uacout48_t;
 
-typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
+typedef blistsresample<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 
 static uacout48list_t uacout48list(IRQL_REALTIME);
 
@@ -587,8 +587,8 @@ static uacout48list_t uacout48list(IRQL_REALTIME);
 ///
 ///
 
-void save_dmabuffer16rxresampler(uintptr_t addr);
-uintptr_t allocate_dmabuffer16rxresampler(void);
+void save_dmabufferuacout48_rs(uintptr_t addr);
+uintptr_t allocate_dmabufferuacout48_rs(void);
 
 #define WRK 1
 
@@ -626,10 +626,10 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 
 #if WRK
-	uintptr_t addr2 = allocate_dmabuffer16rxresampler();
+	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
 	ASSERT(addr2 != 0);
 	memcpy((void *) addr2, (void *) addr, UACOUT_AUDIO48_DATASIZE_DMAC);
-	save_dmabuffer16rxresampler(addr2);
+	save_dmabufferuacout48_rs(addr2);
 	release_dmabufferuacout48(addr);
 #else
 	uacout48list.save_buffer(p);
@@ -641,8 +641,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 ///
 ///
 
-typedef blists<uacout48_t, UACOUT48_CAPACITY> rx16resamplerlist_t;
-static rx16resamplerlist_t RSCMLIST(IRQL_REALTIME);
+static uacout48list_t RSCMLIST(IRQL_REALTIME);
 
 #else
 
@@ -651,12 +650,12 @@ static rx16resamplerlist_t RSCMLIST(IRQL_REALTIME);
 #endif
 
 
-int_fast32_t cachesize_dmabuffer16rxresampler(void)
+int_fast32_t cachesize_dmabufferuacout48_rs(void)
 {
 	return RSCMLIST.get_cachesize();
 }
 
-uintptr_t allocate_dmabuffer16rxresampler(void)
+uintptr_t allocate_dmabufferuacout48_rs(void)
 {
 	uacout48_t * dest;
 	while (RSCMLIST.get_freebuffer(& dest) == 0)
@@ -665,7 +664,7 @@ uintptr_t allocate_dmabuffer16rxresampler(void)
 }
 
 // may be zero
-uintptr_t getfilled_dmabuffer16rxresampler(void)
+uintptr_t getfilled_dmabufferuacout48_rs(void)
 {
 	uacout48_t * dest;
 	if (RSCMLIST.get_readybuffer(& dest) == 0)
@@ -673,14 +672,14 @@ uintptr_t getfilled_dmabuffer16rxresampler(void)
 	return (uintptr_t) dest->buff;
 }
 
-void release_dmabuffer16rxresampler(uintptr_t addr)
+void release_dmabufferuacout48_rs(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 	RSCMLIST.release_buffer(p);
 }
 
 // временное решение
-void save_dmabuffer16rxresampler(uintptr_t addr)
+void save_dmabufferuacout48_rs(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 	RSCMLIST.save_buffer(p);
@@ -976,7 +975,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 	if (buff == NULL)
 	{
-		buff = (uint8_t *) getfilled_dmabuffer16rxresampler();
+		buff = (uint8_t *) getfilled_dmabufferuacout48_rs();
 		if (buff == NULL)
 		{
 			// Канал ещё не успел начать работать - возвращаем 0.
@@ -1017,7 +1016,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 	if (n >= UACOUT_AUDIO48_DATASIZE_DMAC)
 	{
-		release_dmabuffer16rxresampler((uintptr_t) buff);
+		release_dmabufferuacout48_rs((uintptr_t) buff);
 		buff = NULL;
 	}
 	return 1;
