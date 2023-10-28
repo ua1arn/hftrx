@@ -21,6 +21,7 @@
 #define UACINRTS192_CAPACITY (14 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (14 * BUFOVERSIZE)
 #define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
+#define UACOUT48REAMPLER_CAPACITY (16 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
@@ -573,9 +574,16 @@ typedef struct
 	enum { nch = UACOUT_FMT_CHANNELS_AUDIO48 };
 } uacout48_t;
 
-typedef blistsresample<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
+typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
+typedef blistsresample<uacout48_t, UACOUT48REAMPLER_CAPACITY> uacout48resampelist_t;
 
 static uacout48list_t uacout48list(IRQL_REALTIME);
+static uacout48resampelist_t uacout48resampelist(IRQL_REALTIME);
+
+//////////////////////////
+///
+///
+
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
@@ -612,7 +620,58 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48list.save_buffer(p);
 }
 
+#if 1
+//////////////////////////
+///
+///
+
+
+int_fast32_t cachesize_dmabuffer16rxresampler(void)
+{
+	return uacout48resampelist.get_cachesize();
+}
+
+uintptr_t allocate_dmabuffer16rxresampler(void)
+{
+	uacout48_t * dest;
+	while (uacout48resampelist.get_freebuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+// may be zero
+uintptr_t getfilled_dmabuffer16rxresampler(void)
+{
+	uacout48_t * dest;
+	if (uacout48resampelist.get_readybuffer(& dest) == 0)
+		return 0;
+	//fillout48((uintptr_t) dest->buff);
+	return (uintptr_t) dest->buff;
+}
+
+void release_dmabuffer16rxresampler(uintptr_t addr)
+{
+	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	uacout48resampelist.release_buffer(p);
+}
+
+void save_dmabuffer16rxresampler(uintptr_t addr)
+{
+	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	uacout48resampelist.save_buffer(p);
+}
+
+void purge_dmabuffer16rxresampler(void)
+{
+	uacout48resampelist.purge_buffers();
+}
+
+#endif
+
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
+
+///////////////////////////////////////
+///
 
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 
