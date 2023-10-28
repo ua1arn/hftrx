@@ -578,10 +578,10 @@ extern "C" {
 #endif /* DMABUFCLUSTER */
 #define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
 
-#define DMABUFFSTEP16RXF 2
+#define DMABUFFSTEP16RXF UACOUT_FMT_CHANNELS_AUDIO48
+#define DMABUFFSIZE16RXF (OUTSAMPLES_AUDIO48 * DMABUFFSTEP16RXF)		/* decoded uacout48 */
 
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX)		/* AF CODEC ADC */
-#define DMABUFFSIZE16RXF (DMABUFCLUSTER * DMABUFFSTEP16RXF)		/* AF CODEC ADC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32RTS (DMABUFCLUSTER * DMABUFFSTEP32RTS)		/* FPGA RX or IF CODEC RX */
 
