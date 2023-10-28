@@ -581,6 +581,10 @@ static uacout48list_t uacout48list(IRQL_REALTIME);
 ///
 ///
 
+void save_dmabuffer16rxresampler(uintptr_t addr);
+uintptr_t allocate_dmabuffer16rxresampler(void);
+
+#define WRK 1
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
@@ -615,7 +619,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 
-#if 1
+#if WRK
 	uintptr_t addr2 = allocate_dmabuffer16rxresampler();
 	ASSERT(addr2 != 0);
 	memcpy((void *) addr2, (void *) addr, UACOUT_AUDIO48_DATASIZE_DMAC);
@@ -626,24 +630,30 @@ void save_dmabufferuacout48(uintptr_t addr)
 #endif
 }
 
-#if 1
+#if WRK
 //////////////////////////
 ///
 ///
 
 typedef blists<uacout48_t, UACOUT48_CAPACITY> rx16resamplerlist_t;
-static rx16resamplerlist_t rx16resamplerlist(IRQL_REALTIME);
+static rx16resamplerlist_t RSCMLIST(IRQL_REALTIME);
 
-//
-//int_fast32_t cachesize_dmabuffer16rxresampler(void)
-//{
-//	return rx16resamplerlist.get_cachesize();
-//}
+#else
+
+#define RSCMLIST uacout48list
+
+#endif
+
+
+int_fast32_t cachesize_dmabuffer16rxresampler(void)
+{
+	return RSCMLIST.get_cachesize();
+}
 
 uintptr_t allocate_dmabuffer16rxresampler(void)
 {
 	uacout48_t * dest;
-	while (rx16resamplerlist.get_freebuffer(& dest) == 0)
+	while (RSCMLIST.get_freebuffer(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -652,7 +662,7 @@ uintptr_t allocate_dmabuffer16rxresampler(void)
 uintptr_t getfilled_dmabuffer16rxresampler(void)
 {
 	uacout48_t * dest;
-	if (rx16resamplerlist.get_readybuffer(& dest) == 0)
+	if (RSCMLIST.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -660,16 +670,15 @@ uintptr_t getfilled_dmabuffer16rxresampler(void)
 void release_dmabuffer16rxresampler(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	rx16resamplerlist.release_buffer(p);
+	RSCMLIST.release_buffer(p);
 }
 
+// временное решение
 void save_dmabuffer16rxresampler(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	rx16resamplerlist.save_buffer(p);
+	RSCMLIST.save_buffer(p);
 }
-
-#endif
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 
