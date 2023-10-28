@@ -3161,9 +3161,6 @@ struct nvmap
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
-	uint8_t gadcrand;	/* управление интерфейсом в LTC2208 */
-	uint8_t gadcfifo;
-	//uint16_t gadcoffset;
 	uint8_t gdactest;
 	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
@@ -4681,23 +4678,21 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if (ADC1_TYPE == ADC_TYPE_AD9246) || CTLSTYLE_V3D
-			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
+			static const uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
-			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
+			static const uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
 		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
-		static uint_fast8_t gadcfifo = 1;
-		//static uint_fast16_t gadcoffset = ADCOFFSETMID;
 		static uint_fast8_t gdactest;
 		#if WITHDACSTRAIGHT
-			static uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+			static const uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 		#else /* WITHDACSTRAIGHT */
-			static uint_fast8_t gdacstraight = 0;	/* Требуется формирование кода для ЦАП в режиме знакового кода */
+			static const uint_fast8_t gdacstraight = 0;	/* Требуется формирование кода для ЦАП в режиме знакового кода */
 		#endif /* WITHDACSTRAIGHT */
 		#if WITHTXINHDISABLE
-			static uint_fast8_t gtxinhenable = 0;	/* запрещение реакции на вход tx_inh */
+			static const uint_fast8_t gtxinhenable = 0;	/* запрещение реакции на вход tx_inh */
 		#else /* WITHTXINHDISABLE */
-			static uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
+			static const uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
 		#endif /* WITHTXINHDISABLE */
 	#endif /* WITHDSPEXTDDC */
 
@@ -11688,8 +11683,6 @@ updateboardZZZ(
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
-			board_set_adcfifo(gadcfifo);
-			//board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */

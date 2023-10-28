@@ -109,14 +109,12 @@ static uint_fast8_t 	glob_txcw;			// находимся в режиме пере
 static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилителя
 static uint_fast8_t 	glob_classamode;	/* использование режима клвсс А при передаче */
 
-//static int_fast16_t		glob_adcoffset;		/* смещение для выходного сигнала с АЦП */
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
 static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
 static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
 static uint_fast8_t		glob_mode_wfm;
-static uint_fast8_t		glob_adcfifo;
 static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
 static uint_fast8_t		glob_dither;		/* управление зашумлением в LTC2208 */
@@ -5222,29 +5220,6 @@ board_set_dac1(uint_fast8_t n)	/* подстройка опорного гене
 		board_ctlreg2changed();
 	}
 }
-
-void
-board_set_adcfifo(uint_fast8_t v)
-{
-	uint_fast8_t n = v != 0;
-	if (glob_adcfifo != n)
-	{
-		glob_adcfifo = n;
-		board_ctlreg1changed();
-	}
-}
-
-/* смещение для выходного сигнала с АЦП */
-//void
-//board_set_adcoffset(int_fast16_t n)
-//{
-//	if (glob_adcoffset != n)
-//	{
-//		glob_adcoffset = n;
-//		board_ctlreg1changed();
-//	}
-//}
-
 
 void
 board_set_dactest(uint_fast8_t v)
