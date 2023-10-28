@@ -15,13 +15,12 @@
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (33 * BUFOVERSIZE)
-#define VOICE16RXUAC_CAPACITY (33 * BUFOVERSIZE)
 #define VOICE16RXPHONES_CAPACITY (333 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (33 * BUFOVERSIZE)	// этот юуфер соразмерен с тем что ребуются для сохренения сэмплов VOICE16RXxxx
 
 #define UACINRTS192_CAPACITY (14 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (14 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (4 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
@@ -211,14 +210,15 @@ public:
 			parent_t::save_buffer(dest);
 
 			// test
-			VERIFY(parent_t::get_freebuffer(& workbuff));
-			wbstart = element_t::ss * element_t::nch;
+//			VERIFY(parent_t::get_freebuffer(& workbuff));
+//			wbstart = element_t::ss * element_t::nch;
 
 		}
 	// функция вызывается получателем (получаем после ресэмплинга.
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
+		return parent_t::get_readybuffer(dest);
 		if (wbstart)
 		{
 			// Есть не полностью израсходованный остаток в буфере
@@ -332,10 +332,8 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 } ALIGNX_END voice16rx_t;
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxcodeclist_t;
-typedef blistsresample<voice16rx_t, VOICE16RXUAC_CAPACITY> voice16rxuacout48list_t;
 
 static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);		// from codec
-static voice16rxuacout48list_t voice16rxuacout48list(IRQL_REALTIME);	// from USB AUDIO for resampling
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -353,8 +351,8 @@ uintptr_t allocate_dmabuffer16rx(void)
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (voice16rxcodeclist.get_readybuffer(& dest) == 0)
-		ASSERT(0);
+	if (voice16rxcodeclist.get_readybuffer(& dest) == 0)
+		return 0;
 	return (uintptr_t) dest->buff;
 }
 
@@ -369,48 +367,6 @@ void release_dmabuffer16rx(uintptr_t addr)
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
 	voice16rxcodeclist.release_buffer(p);
 }
-
-int_fast32_t cachesize_dmabuffer16rxresampler(void)
-{
-	return voice16rxuacout48list.get_cachesize();
-}
-
-uintptr_t allocate_dmabuffer16rxresampler(void)
-{
-	voice16rx_t * dest;
-	while (voice16rxuacout48list.get_freebufferforced(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
-uintptr_t getfilled_dmabuffer16rxresampler(void)
-{
-	voice16rx_t * dest;
-	while (voice16rxuacout48list.get_readybuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
-// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
-// Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
-void save_dmabuffer16rxresampler(uintptr_t addr)
-{
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rxuacout48list.save_buffer(p);
-}
-
-void release_dmabuffer16rxresampler(uintptr_t addr)
-{
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rxuacout48list.release_buffer(p);
-}
-
-// все готовые перенести в свободные
-void purge_dmabuffer16rxresampler(void)
-{
-	voice16rxuacout48list.purge_buffers();
-}
-
 
 // Audio CODEC in (from processor)
 typedef ALIGNX_BEGIN struct voice16tx_tag
@@ -433,14 +389,9 @@ int_fast32_t cachesize_dmabuffer16txphones(void)
 uintptr_t allocate_dmabuffer16txphones(void)
 {
 	voice16tx_t * dest;
-	if (voice16txphones.get_freebuffer(& dest) )
-		return (uintptr_t) dest->buff;
-	if (voice16txphones.get_readybuffer(& dest) )
-		return (uintptr_t) dest->buff;
-	ASSERT(0);
-	for (;;)
-		;
-	return 0;
+	while (voice16txphones.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
 }
 
 void save_dmabuffer16txphones(uintptr_t addr)
@@ -454,6 +405,7 @@ void release_dmabuffer16txphones(uintptr_t addr)
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
 	voice16txphones.release_buffer(p);
 }
+
 // add sidetone
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
@@ -487,14 +439,9 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 uintptr_t allocate_dmabuffer16txmoni(void)
 {
 	voice16tx_t * dest;
-	if (voice16txmoni.get_freebuffer(& dest) )
-		return (uintptr_t) dest->buff;
-	if (voice16txmoni.get_readybuffer(& dest) )
-		return (uintptr_t) dest->buff;
-	ASSERT(0);
-	for (;;)
-		;
-	return 0;
+	while (voice16txmoni.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
 }
 
 void save_dmabuffer16txmoni(uintptr_t addr)
@@ -550,7 +497,7 @@ uintptr_t allocate_dmabuffer32tx(void)
 	voice32tx_t * dest;
 	while (voice32txlist.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
-	return (uintptr_t) & dest->buff;
+	return (uintptr_t) dest->buff;
 }
 
 void save_dmabuffer32tx(uintptr_t addr)
@@ -563,9 +510,9 @@ uintptr_t getfilled_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
 	if (voice32txlist.get_readybuffer(& dest))
-		return (uintptr_t) & dest->buff;
+		return (uintptr_t) dest->buff;
 	if (voice32txlist.get_freebuffer(& dest))
-		return (uintptr_t) & dest->buff;
+		return (uintptr_t) dest->buff;
 	ASSERT(0);
 	for (;;)
 		;
@@ -611,7 +558,7 @@ uintptr_t allocate_dmabuffer32rx(void)
 	voice32rx_t * dest;
 	while (voice32rxlist.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return (uintptr_t) & dest->buff;
+	return (uintptr_t) dest->buff;
 }
 
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
@@ -622,9 +569,11 @@ typedef struct
 {
 	ALIGNX_BEGIN  uint8_t buff [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES };
+	enum { nch = UACOUT_FMT_CHANNELS_AUDIO48 };
 } uacout48_t;
 
-typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
+typedef blistsresample<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 
 static uacout48list_t uacout48list(IRQL_REALTIME);
 
@@ -636,15 +585,31 @@ int_fast32_t cachesize_dmabufferuacout48(void)
 uintptr_t allocate_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
-	while (uacout48list.get_freebufferforced(& dest) == 0)
+	while (uacout48list.get_freebuffer(& dest) == 0)
 		ASSERT(0);
-	return (uintptr_t) & dest->buff;
+	return (uintptr_t) dest->buff;
+}
+
+// may be zero
+uintptr_t getfilled_dmabufferuacout48(void)
+{
+	uacout48_t * dest;
+	if (uacout48list.get_readybuffer(& dest) == 0)
+		return 0;
+	//fillout48((uintptr_t) dest->buff);
+	return (uintptr_t) dest->buff;
 }
 
 void release_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 	uacout48list.release_buffer(p);
+}
+
+void save_dmabufferuacout48(uintptr_t addr)
+{
+	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	uacout48list.save_buffer(p);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -656,6 +621,7 @@ typedef enum
 	BUFFTAG_UACIN48 = 44,
 	BUFFTAG_RTS192,
 	BUFFTAG_RTS96,
+	//
 	BUFFTAG_total
 } uacintag_t;
 
@@ -680,8 +646,9 @@ typedef enum
 	int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
 		return uacinrts192list.get_cachesize();
-}
+	}
 
+	// can not be be zero
 	uintptr_t allocate_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
@@ -691,20 +658,28 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
+	// can not be be zero
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
-		if (uacinrts192list.get_readybuffer(& dest) != 0)
+		if (uacinrts192list.get_readybuffer(& dest))
 		{
-			dest->tag = BUFFTAG_RTS192;
+			dest->tag = BUFFTAG_RTS96;
 			return (uintptr_t) & dest->buff;
 		}
+		if (uacinrts192list.get_freebuffer(& dest))
+		{
+			dest->tag = BUFFTAG_RTS96;
+			return (uintptr_t) & dest->buff;
+		}
+		ASSERT(0);
+		return 0;
 	}
-
 
 	void save_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
+		ASSERT(p->tag == BUFFTAG_RTS192);
 		uacinrts192list.save_buffer(p);
 	}
 
@@ -712,6 +687,7 @@ typedef enum
 	void release_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
+		ASSERT(p->tag == BUFFTAG_RTS192);
 		uacinrts192list.release_buffer(p);
 	}
 
@@ -735,6 +711,7 @@ typedef enum
 		return uacinrts96list.get_cachesize();
 	}
 
+	// can not be be zero
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
@@ -744,10 +721,16 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
+	// can not be be zero
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
 		if (uacinrts96list.get_readybuffer(& dest))
+		{
+			dest->tag = BUFFTAG_RTS96;
+			return (uintptr_t) & dest->buff;
+		}
+		if (uacinrts96list.get_freebuffer(& dest))
 		{
 			dest->tag = BUFFTAG_RTS96;
 			return (uintptr_t) & dest->buff;
@@ -759,6 +742,7 @@ typedef enum
 	void save_dmabufferuacinrts96(uintptr_t addr)
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
+		ASSERT(p->tag == BUFFTAG_RTS96);
 		uacinrts96list.save_buffer(p);
 	}
 
@@ -766,6 +750,7 @@ typedef enum
 	void release_dmabufferuacinrts96(uintptr_t addr)
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
+		ASSERT(p->tag == BUFFTAG_RTS96);
 		uacinrts96list.release_buffer(p);
 	}
 
@@ -791,19 +776,26 @@ int_fast32_t cachesize_dmabufferuacin48(void)
 	return uacin48list.get_cachesize();
 }
 
+// can not be zero
 uintptr_t allocate_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
 	while (uacin48list.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	dest->tag = BUFFTAG_UACIN48;
-	return (uintptr_t) & dest->buff;
+	return (uintptr_t) dest->buff;
 }
 
+// can not be zero
 uintptr_t getfilled_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
 	if (uacin48list.get_readybuffer(& dest))
+	{
+		dest->tag = BUFFTAG_UACIN48;
+		return (uintptr_t) & dest->buff;
+	}
+	if (uacin48list.get_freebuffer(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
 		return (uintptr_t) & dest->buff;
@@ -815,6 +807,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 void save_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
+	ASSERT(p->tag == BUFFTAG_UACIN48);
 	uacin48list.save_buffer(p);
 }
 
@@ -855,6 +848,160 @@ void release_dmabufferuacinX(uintptr_t addr)
 	}
 }
 #endif /* uacin */
+
+//////////////////////////////////////////
+// Поэлементное чтение буфера AF ADC
+
+// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
+// При отсутствии данных в очереди - возвращаем 0
+RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
+{
+	enum { L, R };
+	static aubufv_t * buff = NULL;
+	static unsigned n = 0;	// позиция по выходному количеству
+
+	if (buff == NULL)
+	{
+		buff = (aubufv_t *) getfilled_dmabuffer16rx();
+		if (buff == 0)
+		{
+			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
+			return 0;
+		}
+		n = 0;
+	}
+
+	const FLOAT_t sample = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
+
+	// Использование данных.
+	v->ivqv [L] = sample;
+	v->ivqv [R] = sample;
+
+	if (++ n >= CNT16RX)
+	{
+		release_dmabuffer16rx((uintptr_t) buff);
+		buff = NULL;
+	}
+	return 1;
+}
+
+//////////////////////////////////////////
+// Поэлементное чтение буфера UAC OUT
+
+void fillout48(uintptr_t addr)
+{
+	unsigned n;
+	uint8_t * buff = (uint8_t *) addr;
+
+	for (n = 0; n < UACOUT_AUDIO48_DATASIZE_DMAC; )
+	{
+		ASSERT(UACOUT_FMT_CHANNELS_AUDIO48 == 2);
+		switch (UACOUT_AUDIO48_SAMPLEBYTES)
+		{
+		default:
+			break;
+		case 2:
+			USBD_poke_u16(buff + n, adpt_output(& uac48out, get_lout()));	// левый канал
+			n += UACOUT_AUDIO48_SAMPLEBYTES;
+			USBD_poke_u16(buff + n, adpt_output(& uac48out, get_rout()));	// левый канал
+			n += UACOUT_AUDIO48_SAMPLEBYTES;
+			break;
+		case 3:
+			USBD_poke_u24(buff + n, adpt_output(& uac48out, get_lout()));	// левый канал
+			n += UACOUT_AUDIO48_SAMPLEBYTES;
+			USBD_poke_u24(buff + n, adpt_output(& uac48out, get_rout()));	// левый канал
+			n += UACOUT_AUDIO48_SAMPLEBYTES;
+			break;
+		case 4:
+			USBD_poke_u32(buff + n, adpt_output(& uac48out, get_lout()));	// левый канал
+			n += UACOUT_AUDIO48_SAMPLEBYTES;
+			USBD_poke_u32(buff + n, adpt_output(& uac48out, get_rout()));	// левый канал
+			n += UACOUT_AUDIO48_SAMPLEBYTES;
+			break;
+		}
+	}
+}
+
+// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
+// При отсутствии данных в очереди - возвращаем 0
+RAMFUNC uint_fast8_t Xgetsampmleusb(FLOAT32P_t * v)
+{
+	enum { L, R };
+	static uint8_t * buff = NULL;
+	static unsigned n = 0;	// позиция по выходному количеству байт
+
+	if (buff == NULL)
+	{
+		buff = (uint8_t *) getfilled_dmabufferuacout48();
+		if (buff == NULL)
+		{
+			// Канал ещё не успел начать работать - возвращаем 0.
+			return 0;
+		}
+		n = 0;
+	}
+
+	// Использование данных.
+	ASSERT(UACOUT_FMT_CHANNELS_AUDIO48 == 2);
+	switch (UACOUT_AUDIO48_SAMPLEBYTES)
+	{
+	default:
+		break;
+	case 2:
+		v->ivqv [L] = adpt_input(& uac48out, USBD_peek_u16(buff + n));	// левый канал
+		n += UACOUT_AUDIO48_SAMPLEBYTES;
+		v->ivqv [R] = adpt_input(& uac48out, USBD_peek_u16(buff + n));	// правый канал
+		n += UACOUT_AUDIO48_SAMPLEBYTES;
+		break;
+	case 3:
+		v->ivqv [L] = adpt_input(& uac48out, USBD_peek_u24(buff + n));	// левый канал
+		n += UACOUT_AUDIO48_SAMPLEBYTES;
+		v->ivqv [R] = adpt_input(& uac48out, USBD_peek_u24(buff + n));	// правый канал
+		n += UACOUT_AUDIO48_SAMPLEBYTES;
+		break;
+	case 4:
+		v->ivqv [L] = adpt_input(& uac48out, USBD_peek_u32(buff + n));	// левый канал
+		n += UACOUT_AUDIO48_SAMPLEBYTES;
+		v->ivqv [R] = adpt_input(& uac48out, USBD_peek_u32(buff + n));	// правый канал
+		n += UACOUT_AUDIO48_SAMPLEBYTES;
+		break;
+	}
+
+	// test
+//	v->ivqv [L] = get_lout();	// левый канал
+//	v->ivqv [R] = get_rout();	// правый канал
+
+	if (n >= UACOUT_AUDIO48_DATASIZE_DMAC)
+	{
+		release_dmabufferuacout48((uintptr_t) buff);
+		buff = NULL;
+	}
+	return 1;
+}
+
+// звук для самоконтроля
+void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
+{
+	enum { L, R };
+	// если есть инициализированный канал для выдачи звука
+	static aubufv_t * buff = NULL;
+	static unsigned n;
+
+	if (buff == NULL)
+	{
+		buff = (aubufv_t *) allocate_dmabuffer16txmoni();
+		n = 0;
+	}
+
+	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
+	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
+
+	if (++ n >= CNT16TX)
+	{
+		save_dmabuffer16txmoni((uintptr_t) buff);
+		buff = NULL;
+	}
+}
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -1196,7 +1343,6 @@ void buffers2_diagnostics(void)
 
 	//denoise16list.debug("denoise16list");
 	voice16rxcodeclist.debug("voice16rxcodeclist");
-	voice16rxuacout48list.debug("voice16rxuacout48list");
 	voice16txphones.debug("voice16txphones");
 	voice16txmoni.debug("voice16txmoni");
 	voice32txlist.debug("voice32txlist");

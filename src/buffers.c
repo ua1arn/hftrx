@@ -245,44 +245,6 @@ buffers_savefromuacout_rxresampler(uintptr_t addr)
 #endif /* WITHUSBUAC */
 }
 
-//////////////////////////////////////////
-// Поэлементное чтение буфера AF ADC
-
-// 16 bit, signed
-// в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
-// При отсутствии данных в очереди - возвращаем 0
-// TODO: переделать на denoise16_t
-RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
-{
-	enum { L, R };
-	static aubufv_t * buff = NULL;
-	static unsigned n = 0;	// позиция по выходному количеству
-
-	if (buff == NULL)
-	{
-		buff = (aubufv_t *) getfilled_dmabuffer16rx();
-		if (buff == 0)
-		{
-			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			return 0;
-		}
-		n = 0;
-	}
-
-	const FLOAT_t sample = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
-
-	// Использование данных.
-	v->ivqv [L] = sample;
-	v->ivqv [R] = sample;
-
-	if (++ n >= CNT16RX)
-	{
-		release_dmabuffer16rx((uintptr_t) buff);
-		buff = NULL;
-	}
-	return 1;
-}
-
 // 16 bit, signed
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
@@ -315,32 +277,6 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	}
 	return 1;
 }
-
-// звук для самоконтроля
-void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
-{
-	enum { L, R };
-	// если есть инициализированный канал для выдачи звука
-	static aubufv_t * buff = NULL;
-	static unsigned n;
-
-	if (buff == NULL)
-	{
-		buff = (aubufv_t *) allocate_dmabuffer16txmoni();
-		n = 0;
-	}
-
-	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
-	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
-
-	if (++ n >= CNT16TX)
-	{
-		save_dmabuffer16txmoni((uintptr_t) buff);
-		buff = NULL;
-	}
-}
-
-
 
 #if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
