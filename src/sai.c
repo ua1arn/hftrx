@@ -4589,27 +4589,18 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;				// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -4654,27 +4645,18 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16txphones());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -4722,27 +4704,18 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16txphones());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -4789,27 +4762,18 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -4860,27 +4824,18 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;				// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -4925,27 +4880,18 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -4995,27 +4941,18 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5062,27 +4999,18 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5167,27 +5095,18 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;				// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidateuacout48(allocate_dmabufferuacout48());				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5252,27 +5171,18 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flushuacin48(allocate_dmabufferuacin48());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5334,27 +5244,19 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to next
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to next (loop)
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5620,27 +5522,18 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;				// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;				// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate16rx(allocate_dmabuffer16rx());				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5683,27 +5576,18 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush16tx(getfilled_dmabuffer16txphones());			// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush16tx(allocate_dmabuffer16txphones());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5831,27 +5715,18 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = portaddr;				// Source Address
-	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = portaddr;				// Source Address
-	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = portaddr;				// Source Address
-	descr0 [2] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
@@ -5896,27 +5771,18 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [0] [2] = portaddr;				// Destination Address
-	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = parameterDMAC;			// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
-
-	descr0 [1] [0] = configDMAC;			// Cofigurarion
-	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = parameterDMAC;			// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [2];	// Link to previous
-
-	descr0 [2] [0] = configDMAC;			// Cofigurarion
-	descr0 [2] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
-	descr0 [2] [2] = portaddr;				// Destination Address
-	descr0 [2] [3] = NBYTES;				// Byte Counter
-	descr0 [2] [4] = parameterDMAC;			// Parameter
-	descr0 [2] [5] = (uintptr_t) descr0 [0];	// Link to previous
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
