@@ -191,7 +191,6 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
 	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-	uacout_buffer_stop();
 #endif /* WITHUSBUACOUT */
 	//PRINTF(PSTR("USBD_XXX_DeInit done\n"));
 	return USBD_OK;
@@ -968,14 +967,12 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
    /* UAC Prepare Out endpoint to receive 1st packet */
 	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacoutbuff, UACOUT_AUDIO48_DATASIZE);
 
-	uacout_buffer_start();
 #endif /* WITHUSBUACOUT */
 	return USBD_OK;
 }
 
 static void USBD_UAC_ColdInit(void)
 {
-	uacout_buffer_initialize();
 	memset(altinterfaces, 0, sizeof altinterfaces);
 }
 

@@ -670,7 +670,6 @@ uintptr_t getfilled_dmabuffer16rxresampler(void);
 int_fast32_t cachesize_dmabuffer16rxresampler(void);
 void release_dmabuffer16rxresampler(uintptr_t addr);
 void save_dmabuffer16rxresampler(uintptr_t addr);
-void purge_dmabuffer16rxresampler(void);	// все готовые перенести в свободные
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabufferuacin48(void);
@@ -716,12 +715,6 @@ void releasemodembuffer_low(uint8_t * dest);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
-
-/* +++ UAC OUT data save - использование данных от компьютера. */
-void uacout_buffer_initialize(void);
-void uacout_buffer_start(void);
-void uacout_buffer_stop(void);
-void uacout_buffer_save(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t usbsz);
 
 void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
