@@ -373,6 +373,7 @@ enum { RESAMPLE16NORMAL = SKIPPEDBLOCKS * 2 };	// Нормальное коли�
 
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
+enum { CNT16TXF = DMABUFFSIZE16TXF / DMABUFFSTEP16TXF };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
@@ -490,8 +491,16 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };
 } ALIGNX_END voice16tx_t;
 
+// Sidetone
+typedef ALIGNX_BEGIN struct voice16txF_tag
+{
+	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
+	//ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16TXF };
+} ALIGNX_END voice16txF_t;
+
 typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
-typedef blists<voice16tx_t, VOICE16TXMONI_CAPACITY> voice16txmonilist_t;
+typedef blists<voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonilist_t;
 
 static voice16txlist_t voice16txlist(IRQL_REALTIME, "16tx");
 static voice16txmonilist_t voice16txmoni(IRQL_REALTIME, "16moni");
@@ -526,7 +535,7 @@ void release_dmabuffer16txphones(uintptr_t addr)
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
 	voice16tx_t * phones;
-	voice16tx_t * moni;
+	voice16txF_t * moni;
 	do
 	{
 		if (voice16txlist.get_readybuffer(& phones) )
@@ -543,7 +552,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	while ((voice16txmoni.get_readybuffer(& moni) || voice16txmoni.get_freebuffer(& moni)) == 0)
 		ASSERT(0);
 
-	dsp_addsidetone(phones->buff, moni->buff, 1);
+	dsp_addsidetone(phones->buff, moni->buff);
 
 	voice16txmoni.release_buffer(moni);
 
@@ -555,7 +564,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 // can not be zero
 uintptr_t allocate_dmabuffer16txmoni(void)
 {
-	voice16tx_t * dest;
+	voice16txF_t * dest;
 	while (voice16txmoni.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
@@ -563,17 +572,20 @@ uintptr_t allocate_dmabuffer16txmoni(void)
 
 void save_dmabuffer16txmoni(uintptr_t addr)
 {
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
 	voice16txmoni.save_buffer(p);
 }
 
 uintptr_t getfilled_dmabuffer16txmoni(void)
 {
-	voice16tx_t * dest;
+	voice16txF_t * dest;
 	if (voice16txmoni.get_readybuffer(& dest) )
 		return (uintptr_t) dest->buff;
 	if (voice16txmoni.get_freebuffer(& dest) )
+	{
+		memset(dest->buff, 0, sizeof dest->buff);
 		return (uintptr_t) dest->buff;
+	}
 	ASSERT(0);
 	for (;;)
 		;
@@ -582,7 +594,7 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 
 void release_dmabuffer16txmoni(uintptr_t addr)
 {
-	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
+	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
 	voice16txmoni.release_buffer(p);
 }
 
@@ -1117,19 +1129,19 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static aubufv_t * buff = NULL;
+	static FLOAT_t * buff = NULL;
 	static unsigned n;
 
 	if (buff == NULL)
 	{
-		buff = (aubufv_t *) allocate_dmabuffer16txmoni();
+		buff = (FLOAT_t *) allocate_dmabuffer16txmoni();
 		n = 0;
 	}
 
-	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodectx, ch0);	// sample value
-	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodectx, ch1);	// sample value
+	buff [n * DMABUFFSTEP16TXF + L] = ch0;
+	buff [n * DMABUFFSTEP16TXF + R] = ch1;
 
-	if (++ n >= CNT16TX)
+	if (++ n >= CNT16TXF)
 	{
 		save_dmabuffer16txmoni((uintptr_t) buff);
 		buff = NULL;

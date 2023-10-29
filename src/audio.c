@@ -5224,7 +5224,7 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
+void dsp_addsidetone(aubufv_t * buff, const FLOAT_t * monibuff)
 {
 	enum { L = DMABUFF16TX_LEFT, R = DMABUFF16TX_RIGHT };
 	ASSERT(buff != NULL);
@@ -5241,8 +5241,8 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
 		// Использование данных.
-		moni.IV = adpt_input(& afcodectx, monibuff [i + L]);	// микрофон или левый канал
-		moni.QV = adpt_input(& afcodectx, monibuff [i + R]);	// правый канал
+		moni.IV =  monibuff [i + L];	// левый канал
+		moni.QV = monibuff [i + R]; 	// правый канал
 //		b [L] = adpt_output(& afcodectc, sdtnv);
 //		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;
@@ -5250,8 +5250,8 @@ void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf)
 		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, moni.IV);
 		const FLOAT_t moniR = mixmonitor(sdtnenvelop, sdtnv, moni.QV);
 
-		FLOAT_t left = adpt_input(& afcodectx, b [L] * usebuf);
-		FLOAT_t right = adpt_input(& afcodectx, b [R] * usebuf);
+		FLOAT_t left = adpt_input(& afcodectx, b [L]);
+		FLOAT_t right = adpt_input(& afcodectx, b [R]);
 		//
 #if WITHWAVPLAYER
 		{
