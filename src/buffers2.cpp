@@ -349,6 +349,7 @@ int_fast32_t cachesize_dmabuffer16rx(void)
 	return voice16rxcodeclist.get_cachesize();
 }
 
+// can not be zero
 uintptr_t allocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
@@ -357,6 +358,7 @@ uintptr_t allocate_dmabuffer16rx(void)
 	return (uintptr_t) dest->buff;
 }
 
+// may be zero
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
@@ -395,6 +397,7 @@ int_fast32_t cachesize_dmabuffer16txphones(void)
 	return voice16txphones.get_cachesize();
 }
 
+// can not be zero
 uintptr_t allocate_dmabuffer16txphones(void)
 {
 	voice16tx_t * dest;
@@ -445,6 +448,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 
 // sidetone forming
 
+// can not be zero
 uintptr_t allocate_dmabuffer16txmoni(void)
 {
 	voice16tx_t * dest;
@@ -501,6 +505,7 @@ void release_dmabuffer32tx(uintptr_t addr)
 	voice32txlist.release_buffer(p);
 }
 
+// can not be zero
 uintptr_t allocate_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
@@ -515,6 +520,7 @@ void save_dmabuffer32tx(uintptr_t addr)
 	voice32txlist.save_buffer(p);
 }
 
+// can not be be zero
 uintptr_t getfilled_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
@@ -528,11 +534,13 @@ uintptr_t getfilled_dmabuffer32tx(void)
 	return 0;
 }
 
+// can not be be zero
 uintptr_t getfilled_dmabuffer32tx_main(void)
 {
 	return getfilled_dmabuffer32tx();
 }
 
+// can not be be zero
 uintptr_t getfilled_dmabuffer32tx_sub(void)
 {
 	return allocate_dmabuffer32tx();
@@ -562,6 +570,7 @@ void release_dmabuffer32rx(uintptr_t addr)
 	voice32rxlist.release_buffer(p);
 }
 
+// can not be zero
 uintptr_t allocate_dmabuffer32rx(void)
 {
 	voice32rx_t * dest;
@@ -595,10 +604,11 @@ int_fast32_t cachesize_dmabufferuacout48(void)
 	return uacout48list.get_cachesize();
 }
 
+// can not be zero
 uintptr_t allocate_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
-	while (uacout48list.get_freebuffer(& dest) == 0)
+	while (uacout48list.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -675,7 +685,7 @@ typedef enum
 		return uacinrts192list.get_cachesize();
 	}
 
-	// can not be be zero
+	// can not be zero
 	uintptr_t allocate_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
@@ -685,7 +695,7 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
-	// can not be be zero
+	// can not be zero
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
@@ -738,7 +748,7 @@ typedef enum
 		return uacinrts96list.get_cachesize();
 	}
 
-	// can not be be zero
+	// can not be zero
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
@@ -748,7 +758,7 @@ typedef enum
 		return (uintptr_t) & dest->buff;
 	}
 
-	// can not be be zero
+	// can not be zero
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
