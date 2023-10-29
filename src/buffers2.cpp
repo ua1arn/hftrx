@@ -15,7 +15,7 @@
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
-#define VOICE16RXPHONES_CAPACITY (48 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (4 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
 #define UACINRTS192_CAPACITY (8 * BUFOVERSIZE)
@@ -340,20 +340,20 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	enum { nch = DMABUFFSTEP16RX };
 } ALIGNX_END voice16rx_t;
 
-typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxcodeclist_t;
+typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
 
-static voice16rxcodeclist_t voice16rxcodeclist(IRQL_REALTIME);		// from codec
+static voice16rxlist_t voice16rxlist(IRQL_REALTIME);		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
-	return voice16rxcodeclist.get_cachesize();
+	return voice16rxlist.get_cachesize();
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (voice16rxcodeclist.get_freebufferforced(& dest) == 0)
+	while (voice16rxlist.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -362,7 +362,7 @@ uintptr_t allocate_dmabuffer16rx(void)
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	if (voice16rxcodeclist.get_readybuffer(& dest) == 0)
+	if (voice16rxlist.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -370,13 +370,13 @@ uintptr_t getfilled_dmabuffer16rx(void)
 void save_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rxcodeclist.save_buffer(p);
+	voice16rxlist.save_buffer(p);
 }
 
 void release_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rxcodeclist.release_buffer(p);
+	voice16rxlist.release_buffer(p);
 }
 
 // Audio CODEC in (from processor)
@@ -386,22 +386,22 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
 } ALIGNX_END voice16tx_t;
 
-typedef blists<voice16tx_t, VOICE16RXPHONES_CAPACITY> voice16txphones_t;
-typedef blists<voice16tx_t, VOICE16TXMONI_CAPACITY> voice16txmoni_t;
+typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
+typedef blists<voice16tx_t, VOICE16TXMONI_CAPACITY> voice16txmonilist_t;
 
-static voice16txphones_t voice16txphones(IRQL_REALTIME);
-static voice16txphones_t voice16txmoni(IRQL_REALTIME);
+static voice16txlist_t voice16txlist(IRQL_REALTIME);
+static voice16txmonilist_t voice16txmoni(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
-	return voice16txphones.get_cachesize();
+	return voice16txlist.get_cachesize();
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer16txphones(void)
 {
 	voice16tx_t * dest;
-	while (voice16txphones.get_freebufferforced(& dest) == 0)
+	while (voice16txlist.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -409,13 +409,13 @@ uintptr_t allocate_dmabuffer16txphones(void)
 void save_dmabuffer16txphones(uintptr_t addr)
 {
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	voice16txphones.save_buffer(p);
+	voice16txlist.save_buffer(p);
 }
 
 void release_dmabuffer16txphones(uintptr_t addr)
 {
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	voice16txphones.release_buffer(p);
+	voice16txlist.release_buffer(p);
 }
 
 // add sidetone
@@ -425,9 +425,9 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	voice16tx_t * moni;
 	do
 	{
-		if (voice16txphones.get_readybuffer(& phones) )
+		if (voice16txlist.get_readybuffer(& phones) )
 			break;
-		if (voice16txphones.get_freebuffer(& phones) )
+		if (voice16txlist.get_freebuffer(& phones) )
 			break;
 		ASSERT(0);
 		for (;;)
@@ -1596,13 +1596,13 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 void buffers2_diagnostics(void)
 {
 #if WITHBUFFERSDEBUG
-#if 0
+#if 1
 	//denoise16list.debug("denoise16");
-	voice16rxcodeclist.debug("voice16rxcodec");
-	voice16txphones.debug("voice16txphones");
-	voice16txmoni.debug("voice16txmoni");
-	voice32txlist.debug("voice32tx");
-	voice32rxlist.debug("voice32rx");
+	voice16rxlist.debug("16rx");
+	voice16txlist.debug("16tx");
+	voice16txmoni.debug("16txmoni");
+	voice32txlist.debug("32tx");
+	voice32rxlist.debug("32rx");
 #endif
 #if 1
 	// USB
