@@ -12,7 +12,7 @@
 #include "audio.h"
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 1
+#define BUFOVERSIZE 10
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16RXPHONES_CAPACITY (333 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
@@ -41,6 +41,13 @@
 #endif /* WITHUSBHW */
 
 #include <string.h>		// for memset
+
+static void pp(const void * p, size_t n)
+{
+	const volatile uint8_t * pb = (const volatile uint8_t *) p;
+	while (n --)
+		* pb ++;
+}
 
 template <typename element_t, unsigned capacity>
 class blists
@@ -88,7 +95,7 @@ public:
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
 		}
-		//PRINTF("blists %u %u\n", sizeof (element_t), capacity);
+		//PRINTF("blists %u %u\n", sizeof (storage [0].v.buff), capacity);
 	}
 
 	// сохранить в списке свободных
@@ -114,6 +121,11 @@ public:
 		ASSERT(p->tag0 == this);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
+
+		pp(& p->v.buff, sizeof p->v.buff);
+		pp(& p->v.buff, sizeof p->v.buff);
+		pp(& p->v.buff, sizeof p->v.buff);
+
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 
@@ -568,6 +580,10 @@ uintptr_t allocate_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
+
+///////////////////////////////////////
+///
+
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 
 // USB AUDIO OUT
@@ -583,53 +599,6 @@ typedef struct
 typedef blistsresample<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 
 static uacout48list_t uacout48list(IRQL_REALTIME);
-
-//////////////////////////
-///
-///
-
-
-#define WRK 1
-
-#if WRK
-
-static uacout48list_t uacout48list_rs(IRQL_REALTIME);
-
-#else
-
-#define uacout48list_rs uacout48list
-
-#endif
-
-uintptr_t allocate_dmabufferuacout48_rs(void)
-{
-	uacout48_t * dest;
-	while (uacout48list_rs.get_freebuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
-// may be zero
-uintptr_t getfilled_dmabufferuacout48_rs(void)
-{
-	uacout48_t * dest;
-	if (uacout48list_rs.get_readybuffer(& dest) == 0)
-		return 0;
-	return (uintptr_t) dest->buff;
-}
-
-void release_dmabufferuacout48_rs(uintptr_t addr)
-{
-	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	uacout48list_rs.release_buffer(p);
-}
-
-// временное решение
-void save_dmabufferuacout48_rs(uintptr_t addr)
-{
-	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	uacout48list_rs.save_buffer(p);
-}
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
@@ -663,18 +632,11 @@ void release_dmabufferuacout48(uintptr_t addr)
 void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-
-#if WRK
-	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
-	memcpy((void *) addr2, (void *) addr, UACOUT_AUDIO48_DATASIZE_DMAC);
-	save_dmabufferuacout48_rs(addr2);
-	release_dmabufferuacout48(addr);
-#else
 	uacout48list.save_buffer(p);
-#endif
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
+
 ///////////////////////////////////////
 ///
 
@@ -963,7 +925,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 	if (buff == NULL)
 	{
-		buff = (uint8_t *) getfilled_dmabufferuacout48_rs();
+		buff = (uint8_t *) getfilled_dmabufferuacout48();
 		if (buff == NULL)
 		{
 			// Канал ещё не успел начать работать - возвращаем 0.
@@ -1004,7 +966,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 	if (n >= UACOUT_AUDIO48_DATASIZE_DMAC)
 	{
-		release_dmabufferuacout48_rs((uintptr_t) buff);
+		release_dmabufferuacout48((uintptr_t) buff);
 		buff = NULL;
 	}
 	return 1;
@@ -1643,4 +1605,6 @@ void buffers2_diagnostics(void)
 	PRINTF("\n");
 
 #endif /* WITHBUFFERSDEBUG */
+//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", __get_CPUACTLR());
+//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
 }
