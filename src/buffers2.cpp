@@ -634,9 +634,10 @@ typedef struct
 	enum { nch = UACOUT_FMT_CHANNELS_AUDIO48 };
 } uacout48_t;
 
-typedef blistsresample<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
+typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 
 static uacout48list_t uacout48list(IRQL_REALTIME);
+static uacout48list_t uacout48list_rs(IRQL_REALTIME);
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
@@ -652,11 +653,29 @@ uintptr_t allocate_dmabufferuacout48(void)
 	return (uintptr_t) dest->buff;
 }
 
+// can not be zero
+uintptr_t allocate_dmabufferuacout48_rs(void)
+{
+	uacout48_t * dest;
+	while (uacout48list_rs.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
 // may be zero
 uintptr_t getfilled_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
 	if (uacout48list.get_readybuffer(& dest) == 0)
+		return 0;
+	return (uintptr_t) dest->buff;
+}
+
+// may be zero
+uintptr_t getfilled_dmabufferuacout48_rs(void)
+{
+	uacout48_t * dest;
+	if (uacout48list_rs.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -667,22 +686,32 @@ void release_dmabufferuacout48(uintptr_t addr)
 	uacout48list.release_buffer(p);
 }
 
-static void pp(const void * p, size_t n)
+void release_dmabufferuacout48_rs(uintptr_t addr)
 {
-	const volatile uint8_t * pb = (const volatile uint8_t *) p;
-	while (n --)
-		* pb ++;
+	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	uacout48list_rs.release_buffer(p);
 }
+
+//static void pp(const void * p, size_t n)
+//{
+//	const volatile uint8_t * pb = (const volatile uint8_t *) p;
+//	while (n --)
+//		* pb ++;
+//}
 
 void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 
 	// временное решение проблемы щелчклчков
-	pp(p->buff, sizeof p->buff);
-	pp(p->buff, sizeof p->buff);
+//	pp(p->buff, sizeof p->buff);
+//	pp(p->buff, sizeof p->buff);
+	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
+	uacout48_t * const p2 = CONTAINING_RECORD(addr2, uacout48_t, buff);
+	memcpy(p2->buff, p->buff, sizeof p2->buff);
+	uacout48list.release_buffer(p);
 
-	uacout48list.save_buffer(p);
+	uacout48list_rs.save_buffer(p2);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -962,7 +991,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 	if (buff == NULL)
 	{
-		buff = (uint8_t *) getfilled_dmabufferuacout48();
+		buff = (uint8_t *) getfilled_dmabufferuacout48_rs();
 		if (buff == NULL)
 		{
 			// Канал ещё не успел начать работать - возвращаем 0.
@@ -997,13 +1026,13 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 		break;
 	}
 
-	// test
+	// WITHUSBUACOUT test
 //	v->ivqv [L] = get_lout();	// левый канал
 //	v->ivqv [R] = get_rout();	// правый канал
 
 	if (n >= UACOUT_AUDIO48_DATASIZE_DMAC)
 	{
-		release_dmabufferuacout48((uintptr_t) buff);
+		release_dmabufferuacout48_rs((uintptr_t) buff);
 		buff = NULL;
 	}
 	return 1;
