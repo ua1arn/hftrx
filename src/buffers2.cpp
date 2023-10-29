@@ -955,6 +955,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 // При отсутствии данных в очереди - возвращаем 0
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	enum { L, R };
 	static uint8_t * buff = NULL;
 	static unsigned n = 0;	// позиция по выходному количеству байт
@@ -1006,6 +1007,9 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 		buff = NULL;
 	}
 	return 1;
+#else
+	return 0;
+#endif
 }
 
 // звук для самоконтроля
