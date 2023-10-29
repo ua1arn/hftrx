@@ -572,36 +572,6 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 #if WITHUSBUAC && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
-/* Поместить в буфер UAC IN endpoint значения сжмпла */
-unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
-{
-	switch (usbsz)
-	{
-	default:
-		ASSERT(0);
-		break;
-	case 1:
-		p [0] = (uint8_t) (value >> 0);
-		break;
-	case 2:
-		p [1] = (uint8_t) (value >> 8);
-		p [0] = (uint8_t) (value >> 0);
-		break;
-	case 3:
-		p [2] = (uint8_t) (value >> 16);
-		p [1] = (uint8_t) (value >> 8);
-		p [0] = (uint8_t) (value >> 0);
-		break;
-	case 4:
-		p [3] = (uint8_t) (value >> 24);
-		p [2] = (uint8_t) (value >> 16);
-		p [1] = (uint8_t) (value >> 8);
-		p [0] = (uint8_t) (value >> 0);
-		break;
-	}
-	return usbsz;
-}
-
 #if WITHRTS96
 
 	// Поэлементное заполнение буфера RTS96
@@ -628,8 +598,23 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 			return;
 		}
 
-		n += place_le(buff + n, transform_do32(& if2rts96out, ch0), UACIN_RTS96_SAMPLEBYTES);	// sample value
-		n += place_le(buff + n, transform_do32(& if2rts96out, ch1), UACIN_RTS96_SAMPLEBYTES);	// sample value
+		ASSERT(UACIN_FMT_CHANNELS_RTS96 == 2);
+
+		switch (UACIN_RTS96_SAMPLEBYTES)
+		{
+		case 2:
+			n += USBD_poke_u16(buff + n, transform_do32(& if2rts96out, ch0));
+			n += USBD_poke_u16(buff + n, transform_do32(& if2rts96out, ch1));
+			break;
+		case 3:
+			n += USBD_poke_u24(buff + n, transform_do32(& if2rts96out, ch0));
+			n += USBD_poke_u24(buff + n, transform_do32(& if2rts96out, ch1));
+			break;
+		case 4:
+			n += USBD_poke_u32(buff + n, transform_do32(& if2rts96out, ch0));
+			n += USBD_poke_u32(buff + n, transform_do32(& if2rts96out, ch1));
+			break;
+		}
 
 		if (n >= UACIN_RTS96_DATASIZE_DMAC)
 		{
@@ -667,8 +652,23 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 			return;
 		}
 
-		n += place_le(buff + n, transform_do32(& if2rts192out, ch0), UACIN_RTS192_SAMPLEBYTES);	// sample value
-		n += place_le(buff + n, transform_do32(& if2rts192out, ch1), UACIN_RTS192_SAMPLEBYTES);	// sample value
+		ASSERT(UACIN_FMT_CHANNELS_RTS192 == 2);
+
+		switch (UACIN_RTS192_SAMPLEBYTES)
+		{
+		case 2:
+			n += USBD_poke_u16(buff + n, transform_do32(& if2rts192out, ch0));
+			n += USBD_poke_u16(buff + n, transform_do32(& if2rts192out, ch1));
+			break;
+		case 3:
+			n += USBD_poke_u24(buff + n, transform_do32(& if2rts192out, ch0));
+			n += USBD_poke_u24(buff + n, transform_do32(& if2rts192out, ch1));
+			break;
+		case 4:
+			n += USBD_poke_u32(buff + n, transform_do32(& if2rts192out, ch0));
+			n += USBD_poke_u32(buff + n, transform_do32(& if2rts192out, ch1));
+			break;
+		}
 
 		if (n >= UACIN_RTS192_DATASIZE_DMAC)
 		{
@@ -679,42 +679,6 @@ unsigned place_le(uint8_t * p, int32_t value, size_t usbsz)
 
 #endif /* WITHRTS192 */
 
-// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
-// vl, vr: 16 bit, signed - требуемый формат для передачи по USB.
-
-void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1)
-{
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-	// если есть инициализированный канал для выдачи звука
-	static uint8_t * buff = NULL;
-	static unsigned n = 0;
-
-	if (buff == NULL)
-	{
-		if (! isaudio48())
-			return;
-		buff = (uint8_t *) allocate_dmabufferuacin48();
-		n = 0;
-	}
-	else if (! isaudio48())
-	{
-		release_dmabufferuacin48((uintptr_t) buff);
-		buff = NULL;
-		return;
-	}
-
-	n += place_le(buff + n, ch0, UACIN_AUDIO48_SAMPLEBYTES); // sample value
-#if UACIN_FMT_CHANNELS_AUDIO48 > 1
-	n += place_le(buff + n, ch1, UACIN_AUDIO48_SAMPLEBYTES); // sample value
-#endif /* UACIN_FMT_CHANNELS_AUDIO48 */
-
-	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
-	{
-		save_dmabufferuacin48((uintptr_t) buff);
-		buff = NULL;
-	}
-#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
-}
 
 #else /* WITHUSBUAC */
 
@@ -723,10 +687,6 @@ void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 }
 
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
-{
-}
-
-void savesampleuacin48(int_fast16_t ch0, int_fast16_t ch1)
 {
 }
 

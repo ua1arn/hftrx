@@ -682,8 +682,6 @@ int_fast32_t cachesize_dmabuffer32rts(void);
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);
 void saverecordbuffer(void * dest);
-
-void savesampleuacin48(int_fast32_t ch0, int_fast32_t ch1); /* to USB AUDIO */
 /* data to play */
 unsigned savesamplesplay(
 	const void * buff,

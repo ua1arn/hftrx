@@ -5202,25 +5202,6 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 
 #endif /* WITHDSPEXTDDC */
 
-// Выдача в USB UAC
-static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
-{
-#if WITHUSBUACIN
-	// WITHUSBUACIN test
-//	left = get_lout();
-//	right = get_rout();
-	savesampleuacin48(adpt_output(& uac48in, left), adpt_output(& uac48in, right));	// Запись демодулированного сигнала без озвучки клавиш в USB
-#endif /* WITHUSBUACIN */
-}
-
-// Запись на SD CARD
-static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
-{
-#if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
-	savesamplewav48(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
-#endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
-}
-
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level

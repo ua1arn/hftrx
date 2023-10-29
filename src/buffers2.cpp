@@ -1328,58 +1328,6 @@ typedef blists<recordswav48_t, AUDIOREC_CAPACITY> recordswav48list_t;
 static recordswav48list_t recordswav48list(IRQL_REALTIME, "rec");
 
 
-// Поэлементное заполнение буфера SD CARD
-
-/* to SD CARD */
-// 16 bit, signed
-void RAMFUNC savesamplewav48(FLOAT_t left, FLOAT_t right)
-{
-	int_fast32_t ch0 = adpt_output(& sdcardio, left);
-	int_fast32_t ch1 = adpt_output(& sdcardio, right);
-			// если есть инициализированный канал для выдачи звука
-	static recordswav48_t * p = NULL;
-	static unsigned n;
-
-	if (p == NULL)
-	{
-		while (recordswav48list.get_freebufferforced(& p) == 0)
-			ASSERT(0);
-
-		n = 0;
-
-		// Подготовка к записи файла WAV со множеством DATA CHUNK, но получившийся файл
-		// нормально читает только ADOBE AUDITION, Windows Media Player 12 проигрывает только один - первый.
-		// Windows Media Player Classic (https://github.com/mpc-hc/mpc-hc) вообще не проигрывает этот файл.
-
-		//preparerecord16->buff [0] = 'd' | 'a' * 256;
-		//preparerecord16->buff [1] = 't' | 'a' * 256;
-		//preparerecord16->buff [2] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 0;
-		//preparerecord16->buff [3] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
-		//level16record = 4;
-
-	}
-
-#if WITHUSEAUDIOREC2CH
-	// Запись звука на SD CARD в стерео
-	p->buff [n ++] = ch0;	// sample value
-	p->buff [n ++] = ch1;	// sample value
-
-#else /* WITHUSEAUDIOREC2CH */
-	// Запись звука на SD CARD в моно
-	p->buff [n ++] = ch0;	// sample value
-
-#endif /* WITHUSEAUDIOREC2CH */
-
-	if (n >= AUDIORECBUFFSIZE16)
-	{
-		/* используется буфер целиклом */
-		p->startdata = 0;
-		p->topdata = AUDIORECBUFFSIZE16;
-		recordswav48list.save_buffer(p);
-		p = NULL;
-	}
-}
-
 // user-mode function
 unsigned takerecordbuffer(void * * dest)
 {
@@ -1738,6 +1686,102 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 #endif /* WITHUSBUAC */
 
 #endif
+
+
+// Выдача в USB UAC
+void recordsampleUAC(FLOAT_t left, FLOAT_t right)
+{
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+	// WITHUSBUACIN test
+//	left = get_lout();
+//	right = get_rout();
+
+	static uint8_t * buff = NULL;
+	static unsigned n = 0;
+
+	if (buff == NULL)
+	{
+		buff = (uint8_t *) allocate_dmabufferuacin48();
+		n = 0;
+	}
+
+	ASSERT(UACIN_FMT_CHANNELS_AUDIO48 == 2);
+	switch (UACIN_AUDIO48_SAMPLEBYTES)
+	{
+	case 2:
+		n += USBD_poke_u16(buff + n, adpt_output(& uac48in, left));
+		n += USBD_poke_u16(buff + n, adpt_output(& uac48in, right));
+		break;
+	case 3:
+		n += USBD_poke_u24(buff + n, adpt_output(& uac48in, left));
+		n += USBD_poke_u24(buff + n, adpt_output(& uac48in, right));
+		break;
+	case 4:
+		n += USBD_poke_u32(buff + n, adpt_output(& uac48in, left));
+		n += USBD_poke_u32(buff + n, adpt_output(& uac48in, right));
+		break;
+	}
+
+	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
+	{
+		save_dmabufferuacin48((uintptr_t) buff);
+		buff = NULL;
+	}
+#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
+}
+
+// Запись на SD CARD
+void recordsampleSD(FLOAT_t left, FLOAT_t right)
+{
+#if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
+
+	int_fast32_t ch0 = adpt_output(& sdcardio, left);
+	int_fast32_t ch1 = adpt_output(& sdcardio, right);
+			// если есть инициализированный канал для выдачи звука
+	static recordswav48_t * p = NULL;
+	static unsigned n;
+
+	if (p == NULL)
+	{
+		while (recordswav48list.get_freebufferforced(& p) == 0)
+			ASSERT(0);
+
+		n = 0;
+
+		// Подготовка к записи файла WAV со множеством DATA CHUNK, но получившийся файл
+		// нормально читает только ADOBE AUDITION, Windows Media Player 12 проигрывает только один - первый.
+		// Windows Media Player Classic (https://github.com/mpc-hc/mpc-hc) вообще не проигрывает этот файл.
+
+		//preparerecord16->buff [0] = 'd' | 'a' * 256;
+		//preparerecord16->buff [1] = 't' | 'a' * 256;
+		//preparerecord16->buff [2] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 0;
+		//preparerecord16->buff [3] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
+		//level16record = 4;
+
+	}
+
+#if WITHUSEAUDIOREC2CH
+	// Запись звука на SD CARD в стерео
+	p->buff [n ++] = ch0;	// sample value
+	p->buff [n ++] = ch1;	// sample value
+
+#else /* WITHUSEAUDIOREC2CH */
+	// Запись звука на SD CARD в моно
+	p->buff [n ++] = ch0;	// sample value
+
+#endif /* WITHUSEAUDIOREC2CH */
+
+	if (n >= AUDIORECBUFFSIZE16)
+	{
+		/* используется буфер целиклом */
+		p->startdata = 0;
+		p->topdata = AUDIORECBUFFSIZE16;
+		recordswav48list.save_buffer(p);
+		p = NULL;
+	}
+
+#endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
+}
 
 void buffers2_diagnostics(void)
 {
