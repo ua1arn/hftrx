@@ -1636,8 +1636,14 @@ void buffers2_diagnostics(void)
 #if 1
 	// USB
 	uacout48list.debug("uacout48");
-	//uacinrts192list.debug("uacinrts192");
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192list.debug("uacinrts192");
+#endif
+#if WITHRTS96
 	uacinrts96list.debug("uacinrts96");
+#endif
+#endif
 	uacin48list.debug("uacin48");
 #endif
 	//message8list.debug("message8");
