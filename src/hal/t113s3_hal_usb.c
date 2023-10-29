@@ -3281,7 +3281,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 					break;
 #if WITHUAC2
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_INRTS):
-						ASSERT(0);	// not supported
+						//ASSERT(0);	// not supported
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48):
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48):
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_OUT48):

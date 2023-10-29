@@ -802,9 +802,9 @@ typedef enum
 		enum { nch = UACIN_FMT_CHANNELS_RTS96 };
 	} uacinrts96_t;
 
-	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY, "uacin96"> uacinrts96list_t;
+	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
 
-	static uacinrts96list_t uacinrts96list(IRQL_REALTIME);
+	static uacinrts96list_t uacinrts96list(IRQL_REALTIME, "uacin96");
 
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{

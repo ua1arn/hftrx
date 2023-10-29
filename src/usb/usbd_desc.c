@@ -66,6 +66,7 @@
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
 //#define USB_FUNCTION_VENDOR_ID	0x1D6B	// Linux Foundation
+//#define USB_FUNCTION_VENDOR_ID	0x08BB	// Texas Instruments Japan (08BBh/2902h)
 
 // From STMicroelectronics Communication Device Class driver (CDC) INF FILE:
 //#define USB_FUNCTION_VENDOR_ID	0x0483	// ST (SGS Thomson Microelectronics)
