@@ -177,6 +177,12 @@ public:
 		return get_freebuffer(dest) || get_readybuffer(dest);
 	}
 
+	// получить из списка готовых, если нет - из свободных
+	int get_readybufferforced(element_t * * dest)
+	{
+		return get_readybuffer(dest) || get_freebuffer(dest);
+	}
+
 	// все готовые перенести в свободные
 //	void purge_buffers()
 //	{
@@ -223,29 +229,62 @@ public:
 //			wbstart = element_t::ss * element_t::nch;
 
 		}
+
 	// функция вызывается получателем (получаем после ресэмплинга.
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
-		return parent_t::get_readybuffer(dest);
+		//return parent_t::get_readybuffer(dest);
+		return get_readybufferarj(dest, false, false, false);
+	}
+
+	// функция вызывается получателем (получаем после ресэмплинга.
+	// Гарантированно получене буфера
+	// исполнение команд на добавление или удаление одного семплв, на замену потока тишиной
+	int get_readybufferarj(element_t * * dest, bool zero, bool add, bool del)
+	{
 		if (wbstart)
 		{
 			// Есть не полностью израсходованный остаток в буфере
-			const int p1 = sizeof (workbuff->buff) - wbstart;	// размер оставшийся до конца буфера
+			const int ototal = sizeof (workbuff->buff);
+
+			const int o1 = wbstart;
+			const int p1 = sizeof (workbuff->buff) - wbstart;	// размер, оставшийся до конца буфера
+
+			const int o2 = 0;
+			const int p2 = 0;	// вставляемый кусок
+
+			const int o3 = 0;
 			const int p3 = wbstart;	// размер от начала буфера - в рабочем буфере уже передано
 			// есть остаток старого буфера
-			while (! parent_t::get_freebufferforced(dest))
+
+			int o = 0;
+			// Часть, оставшаяся от предыдущих пересылок
+			while (parent_t::get_freebufferforced(dest) == 0)	// выходной буфр
 				ASSERT(0);
-			memcpy((* dest)->buff, (uint8_t *) workbuff->buff + wbstart, p1);
+
+			memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o1, p1);	// копируем остаток предыдущего буфера
+			o += p1;
+			// остатлк передали весь
 			parent_t::release_buffer(workbuff);
-			if (parent_t::get_readybuffer(& workbuff) || parent_t::get_freebufferforced(& workbuff))
+
+			// Вставляемая часть
+			if (p2 != 0)
 			{
-				memcpy((uint8_t *) (* dest)->buff + p1, workbuff->buff, p3);
-				wbstart = p3;
-				return 1;
+				o += p2;
 			}
+
+			if (o < ototal)
+			{
+				while (parent_t::get_readybufferforced(& workbuff) == 0)	// следующий готовый
+					ASSERT(0);
+				memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o3, p3);	// копируем часть следующего буфера
+				o += p3;
+			}
+			ASSERT(o == ototal);
+			return 1;
 		}
-		return parent_t::get_readybuffer(dest) || parent_t::get_freebufferforced(dest);
+		return parent_t::get_readybuffer(dest);
 	}
 };
 
@@ -699,17 +738,10 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
-		if (uacinrts192list.get_readybuffer(& dest))
-		{
-			dest->tag = BUFFTAG_RTS96;
-			return (uintptr_t) & dest->buff;
-		}
-		if (uacinrts192list.get_freebuffer(& dest))
-		{
-			dest->tag = BUFFTAG_RTS96;
-			return (uintptr_t) & dest->buff;
-		}
-		ASSERT(0);
+		while (uacinrts192list.get_readybufferforced(& dest) == 0)
+			ASSERT(0);
+		dest->tag = BUFFTAG_RTS96;
+		return (uintptr_t) & dest->buff;
 		return 0;
 	}
 
@@ -762,17 +794,10 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		if (uacinrts96list.get_readybuffer(& dest))
-		{
-			dest->tag = BUFFTAG_RTS96;
-			return (uintptr_t) & dest->buff;
-		}
-		if (uacinrts96list.get_freebuffer(& dest))
-		{
-			dest->tag = BUFFTAG_RTS96;
-			return (uintptr_t) & dest->buff;
-		}
-		ASSERT(0);
+		while (uacinrts96list.get_readybufferforced(& dest) == 0)
+			ASSERT(0);
+		dest->tag = BUFFTAG_RTS96;
+		return (uintptr_t) & dest->buff;
 		return 0;
 	}
 
