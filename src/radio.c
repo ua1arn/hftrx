@@ -5685,7 +5685,8 @@ static void tuner_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	VERIFY(board_dpc_call(& dpcobj_tunertimer));
+	//VERIFY(board_dpc_call(& dpcobj_tunertimer));
+	board_dpc_call(& dpcobj_tunertimer);
 }
 
 /* закончили установку нового состояния тюнера - запускаем новый период таймера */
