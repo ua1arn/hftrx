@@ -5040,13 +5040,14 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 };
 #endif /* defined(I2S1) && WITHI2S1HW */
 
+/* получить 1, 2 или 4 - чему кратен размер буфера */
 static unsigned awusbadj(unsigned nbytes)
 {
 	return (nbytes % 4) ? ((nbytes % 2) ? 1 : 2) : 4;
 }
 
-#define   USB2DRAM_PARAMS    	0x0f000f0f
-#define   DRAM2USB_PARAMS    	0x0f0f0f00
+//#define   USB2DRAM_PARAMS    	0x0f000f0f
+//#define   DRAM2USB_PARAMS    	0x0f0f0f00
 
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 
@@ -5069,9 +5070,9 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	save_dmabufferuacout48(addr);
 }
 
-void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
+void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
 {
-	const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
+	//const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
 	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
@@ -5145,9 +5146,9 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	release_dmabufferuacin48(addr);
 }
 
-void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
+void DMAC_USB_TX_initialize_UACIN48(uint32_t ep, unsigned NBYTES)
 {
-	const unsigned NBYTES = UACIN_AUDIO48_DATASIZE_DMAC;
+	//const unsigned NBYTES = UACIN_AUDIO48_DATASIZE_DMAC;
 	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
@@ -5218,9 +5219,9 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 	release_dmabufferuacinrts96(addr);
 }
 
-void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
+void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep, unsigned NBYTES)
 {
-	const unsigned NBYTES = UACIN_RTS96_DATASIZE_DMAC;
+	//const unsigned NBYTES = UACIN_RTS96_DATASIZE_DMAC;
 	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
