@@ -468,6 +468,11 @@ uintptr_t getfilled_dmabuffer16rx(void)
 void save_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+//	unsigned i;
+//	for (i = 0; i < DMABUFFSIZE16RX; i += DMABUFFSTEP16RX)
+//	{
+//		p->buff [i + DMABUFF16RX_MIKE] = adpt_output(& afcodecrx, get_lout());
+//	}
 	voice16rxlist.save_buffer(p);
 }
 

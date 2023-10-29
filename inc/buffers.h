@@ -664,6 +664,8 @@ uintptr_t getfilled_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 void save_dmabufferuacout48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacout48(void);
+uintptr_t getfilled_dmabufferuacout48_rs(void);
+void release_dmabufferuacout48_rs(uintptr_t addr);
 
 // Буфер обмена про USB
 uintptr_t allocate_dmabufferuacin48(void);
