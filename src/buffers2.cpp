@@ -41,6 +41,38 @@
 
 #include <string.h>		// for memset
 
+class fqmeter
+{
+	unsigned debugcount;
+	unsigned ms10;
+public:
+	fqmeter() : debugcount(0), ms10(0)
+	{
+
+	}
+
+	void pass(unsigned samples)
+	{
+		debugcount += samples;
+	}
+
+	unsigned getfreq()
+	{
+		unsigned v = debugcount;
+		debugcount = 0;
+
+		unsigned v10ms = ms10;
+		ms10 = 0;
+
+		return v * 10000 / v10ms;
+	}
+	void spool10ms()
+	{
+		ms10 += 10000 / TICKS_FREQUENCY;
+	}
+};
+
+
 template <typename element_t, unsigned capacity>
 class blists
 {
@@ -67,6 +99,8 @@ class blists
 	LIST_ENTRY readylist;
 	buffitem_t storage [capacity];
 	const char * name;
+
+	fqmeter fqin, fqout;
 
 public:
 	blists(IRQL_t airql, const char * aname) :
@@ -122,6 +156,7 @@ public:
 		InsertHeadList(& readylist, & p->item);
 		++ outcount;
 #if WITHBUFFERSDEBUG
+		fqin.pass(sizeof addr->buff / (addr->ss * addr->nch));
 		++ saveount;
 #endif /* WITHBUFFERSDEBUG */
 
@@ -137,6 +172,9 @@ public:
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
 			-- outcount;
+#if WITHBUFFERSDEBUG
+			fqout.pass(sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch));
+#endif /* WITHBUFFERSDEBUG */
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
@@ -201,8 +239,25 @@ public:
 	void debug()
 	{
 #if WITHBUFFERSDEBUG
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		unsigned fin = fqin.getfreq();
+		unsigned fout = fqout.getfreq();
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
-		PRINTF("%s:a=%d,o=%d,f=%d ", name, errallocate, outcount, freecount);
+		PRINTF("%s:b=%d/%d,q=%u/%u ", name, outcount, freecount, fin, fout);
+#endif /* WITHBUFFERSDEBUG */
+	}
+	void spool10ms()
+	{
+#if WITHBUFFERSDEBUG
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+
+		fqin.spool10ms();
+		fqout.spool10ms();
+
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 #endif /* WITHBUFFERSDEBUG */
 	}
 };
@@ -328,6 +383,7 @@ enum { PHONESLEVEL = 6 };
 typedef ALIGNX_BEGIN struct denoise16
 {
 	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
+	enum { ss = sizeof (speexel_t), nch = NTRX };	// stub
 } ALIGNX_END denoise16_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
@@ -377,8 +433,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t) };
-	enum { nch = DMABUFFSTEP16RX };
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };
 } ALIGNX_END voice16rx_t;
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
@@ -425,6 +480,7 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };
 } ALIGNX_END voice16tx_t;
 
 typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
@@ -528,6 +584,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };
 } ALIGNX_END voice32tx_t;
 
 
@@ -593,6 +650,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 {
 	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };
 } ALIGNX_END voice32rx_t;
 
 
@@ -1076,6 +1134,7 @@ typedef struct
 {
 	messagetypes_t type;
 	uint8_t buff [MSGBUFFERSIZE8];
+	enum { ss = 1, nch = 1 };
 } message8buff_t;
 
 typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
@@ -1237,6 +1296,7 @@ typedef ALIGNX_BEGIN struct recordswav48
 	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
 	unsigned startdata;
 	unsigned topdata;
+	enum { ss = 2, nch = 1 };
 } ALIGNX_END recordswav48_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
@@ -1684,4 +1744,45 @@ void buffers2_diagnostics(void)
 #endif /* WITHBUFFERSDEBUG */
 //	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", __get_CPUACTLR());
 //	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
+}
+
+static ticker_t buffticker;
+
+/* вызывается из обработчика таймерного прерывания */
+static void buffers_spool(void * ctx)
+{
+#if WITHBUFFERSDEBUG
+#if 1
+	//denoise16list.spool10ms();
+	voice16rxlist.spool10ms();
+	voice16txlist.spool10ms();
+	voice16txmoni.spool10ms();
+	voice32txlist.spool10ms();
+	voice32rxlist.spool10ms();
+#endif
+#if 1
+	// USB
+	uacout48list.spool10ms();
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192list.spool10ms();
+#endif
+#if WITHRTS96
+	uacinrts96list.spool10ms();
+#endif
+#endif
+	uacin48list.spool10ms();
+#endif
+	//message8list.spool10ms();
+
+#endif /* WITHBUFFERSDEBUG */
+}
+
+
+void buffers2_initialize(void)
+{
+#if 1 && WITHBUFFERSDEBUG
+	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
+	ticker_add(& buffticker);
+#endif /* WITHBUFFERSDEBUG */
 }
