@@ -20,7 +20,7 @@
 
 #define UACINRTS192_CAPACITY (14 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (14 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (4 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (8 * BUFOVERSIZE)
 #define RX16RESAMPLER_CAPACITY (16 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
@@ -47,11 +47,12 @@ class blists
 {
 	typedef struct buffitem
 	{
+		LIST_ENTRY item;
 		void * tag0;
 		void * tag2;
 		ALIGNX_BEGIN  element_t v ALIGNX_END;
-		ALIGNX_BEGIN  LIST_ENTRY item ALIGNX_END;	// should be placed after 'u' field
 		void * tag3;
+		unsigned cks;
 	} buffitem_t;
 
 
@@ -64,7 +65,7 @@ class blists
 	int outcount;
 	int freecount;
 	LIST_ENTRY freelist;
-	LIST_ENTRY outlist;
+	LIST_ENTRY readylist;
 	buffitem_t storage [capacity];
 
 public:
@@ -77,7 +78,7 @@ public:
 		freecount(0)
 	{
 		InitializeListHead(& freelist);
-		InitializeListHead(& outlist);
+		InitializeListHead(& readylist);
 		IRQLSPINLOCK_INITIALIZE(& irqllocl, airql);
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
@@ -116,7 +117,7 @@ public:
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 
-		InsertHeadList(& outlist, & p->item);
+		InsertHeadList(& readylist, & p->item);
 		++ outcount;
 #if WITHBUFFERSDEBUG
 		++ saveount;
@@ -130,9 +131,9 @@ public:
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
-		if (! IsListEmpty(& outlist))
+		if (! IsListEmpty(& readylist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& outlist);
+			const PLIST_ENTRY t = RemoveTailList(& readylist);
 			-- outcount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -1041,7 +1042,7 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 typedef struct
 {
 	messagetypes_t type;
-	uint8_t data [MSGBUFFERSIZE8];
+	uint8_t buff [MSGBUFFERSIZE8];
 } message8buff_t;
 
 typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
@@ -1051,7 +1052,7 @@ static message8list_t message8list(MESSAGE_IRQL);
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer(uint8_t * dest)
 {
-	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
+	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, buff);
 	message8list.release_buffer(p);
 }
 // Буфер для формирования сообщения
@@ -1060,15 +1061,15 @@ size_t takemsgbufferfree(uint8_t * * dest)
 	message8buff_t * addr;
 	if (message8list.get_freebuffer(& addr))
 	{
-		* dest = addr->data;
-		return sizeof addr->data;
+		* dest = addr->buff;
+		return sizeof addr->buff;
 	}
 	return 0;
 }
 // поместить сообщение в очередь к исполнению
 void placesemsgbuffer(messagetypes_t type, uint8_t * dest)
 {
-	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, data);
+	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, buff);
 	p->type = type;
 	message8list.save_buffer(p);
 }
@@ -1079,7 +1080,7 @@ messagetypes_t takemsgready(uint8_t * * dest)
 	message8buff_t * addr;
 	if (message8list.get_readybuffer(& addr))
 	{
-		* dest = addr->data;
+		* dest = addr->buff;
 		return addr->type;
 	}
 	return MSGT_EMPTY;

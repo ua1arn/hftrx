@@ -94,7 +94,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((cachesize_dmabuffer32tx() % DCACHEROWSIZE) == 0);
-	dcache_clean_invalidate(addr,  cachesize_dmabuffer32tx());
+	dcache_clean_invalidate(addr, cachesize_dmabuffer32tx());
 	return addr;
 }
 
@@ -5052,7 +5052,9 @@ static unsigned awusbadj(unsigned nbytes)
 
 static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 {
-	dcache_clean_invalidate(addr, cachesize_dmabufferuacout48());
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((cachesize_dmabufferuacout48() % DCACHEROWSIZE) == 0);
+	dcache_invalidate(addr, cachesize_dmabufferuacout48());
 	return addr;
 }
 
