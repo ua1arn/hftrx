@@ -11,18 +11,17 @@
 #include "mslist.h"
 #include "audio.h"
 
-#define WITHBUFFERSDEBUG WITHDEBUG
+//#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
-#define VOICE16RXPHONES_CAPACITY (333 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16RXPHONES_CAPACITY (48 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (4 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
-#define UACINRTS192_CAPACITY (32 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (32 * BUFOVERSIZE)
+#define UACINRTS192_CAPACITY (8 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY (8 * BUFOVERSIZE)
 #define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
-#define RX16RESAMPLER_CAPACITY (16 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (24 * BUFOVERSIZE)
+#define UACIN48_CAPACITY (16 * BUFOVERSIZE)
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -194,7 +193,8 @@ public:
 	void debug(const char * name)
 	{
 #if WITHBUFFERSDEBUG
-		PRINTF("%s:a=%d,s=%d,o=%d,f=%d ", name, errallocate, saveount, outcount, freecount);
+		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
+		PRINTF("%s:a=%d,o=%d,f=%d ", name, errallocate, outcount, freecount);
 #endif /* WITHBUFFERSDEBUG */
 	}
 };
