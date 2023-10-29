@@ -66,15 +66,17 @@ class blists
 	LIST_ENTRY freelist;
 	LIST_ENTRY readylist;
 	buffitem_t storage [capacity];
+	const char * name;
 
 public:
-	blists(IRQL_t airql) :
+	blists(IRQL_t airql, const char * aname) :
 #if WITHBUFFERSDEBUG
 		errallocate(0),
 		saveount(0),
 #endif /* WITHBUFFERSDEBUG */
 		outcount(0),
-		freecount(capacity)
+		freecount(capacity),
+		name(aname)
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
@@ -94,9 +96,9 @@ public:
 	void release_buffer(element_t * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
-		ASSERT(p->tag0 == this);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
+		ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
+		ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
+		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 
@@ -110,9 +112,9 @@ public:
 	void save_buffer(element_t * addr)
 	{
 		buffitem_t * const p = CONTAINING_RECORD(addr, buffitem_t, v);
-		ASSERT(p->tag0 == this);
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
+		ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
+		ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
+		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
@@ -137,9 +139,9 @@ public:
 			-- outcount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
-			ASSERT(p->tag0 == this);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
+			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
+			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
+			ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 			* dest = & p->v;
 			return 1;
 		}
@@ -159,9 +161,9 @@ public:
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
-			ASSERT(p->tag0 == this);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
+			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
+			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
+			ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 			* dest = & p->v;
 			return 1;
 		}
@@ -196,7 +198,7 @@ public:
 		return offsetof(element_t, pad) - offsetof(element_t, buff);
 	}
 
-	void debug(const char * name)
+	void debug()
 	{
 #if WITHBUFFERSDEBUG
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
@@ -213,8 +215,8 @@ class blistsresample: public blists<element_t, capacity>
 	LCLSPINLOCK_t lock;
 	typedef blists<element_t, capacity> parent_t;
 public:
-	blistsresample(IRQL_t airql) :
-		blists<element_t, capacity>(airql),
+	blistsresample(IRQL_t airql, const char * aname) :
+		blists<element_t, capacity>(airql, aname),
 		//workbuff(nullptr),
 		wbstart(0)
 		{
@@ -331,7 +333,7 @@ typedef ALIGNX_BEGIN struct denoise16
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef blists<denoise16_t, SPEEX_CAPACITY> denoise16list_t;
 
-static denoise16list_t denoise16list(IRQL_REALTIME);
+static denoise16list_t denoise16list(IRQL_REALTIME, "denoise16");
 
 // получить готоввый
 uint_fast8_t takespeexready(speexel_t * * dest)
@@ -381,7 +383,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
 
-static voice16rxlist_t voice16rxlist(IRQL_REALTIME);		// from codec
+static voice16rxlist_t voice16rxlist(IRQL_REALTIME, "16rx");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -428,8 +430,8 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
 typedef blists<voice16tx_t, VOICE16TXMONI_CAPACITY> voice16txmonilist_t;
 
-static voice16txlist_t voice16txlist(IRQL_REALTIME);
-static voice16txmonilist_t voice16txmoni(IRQL_REALTIME);
+static voice16txlist_t voice16txlist(IRQL_REALTIME, "16tx");
+static voice16txmonilist_t voice16txmoni(IRQL_REALTIME, "16moni");
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
@@ -531,7 +533,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 
 typedef blists<voice32tx_t, VOICE32TX_CAPACITY> voice32txlist_t;
 
-static voice32txlist_t voice32txlist(IRQL_REALTIME);
+static voice32txlist_t voice32txlist(IRQL_REALTIME, "32tx");
 
 int_fast32_t cachesize_dmabuffer32tx(void)
 {
@@ -596,7 +598,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 
 typedef blists<voice32rx_t, VOICE32RX_CAPACITY> voice32rxlist_t;
 
-static voice32rxlist_t voice32rxlist(IRQL_REALTIME);
+static voice32rxlist_t voice32rxlist(IRQL_REALTIME, "32rx");
 
 int_fast32_t cachesize_dmabuffer32rx(void)
 {
@@ -636,8 +638,8 @@ typedef struct
 
 typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 
-static uacout48list_t uacout48list(IRQL_REALTIME);
-static uacout48list_t uacout48list_rs(IRQL_REALTIME);
+static uacout48list_t uacout48list(IRQL_REALTIME, "uaco48");
+static uacout48list_t uacout48list_rs(IRQL_REALTIME, "uaco48_rs");
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
@@ -746,7 +748,7 @@ typedef enum
 
 	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
 
-	static uacinrts192list_t uacinrts192list(IRQL_REALTIME);
+	static uacinrts192list_t uacinrts192list(IRQL_REALTIME, "uacin192");
 
 	int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
@@ -800,7 +802,7 @@ typedef enum
 		enum { nch = UACIN_FMT_CHANNELS_RTS96 };
 	} uacinrts96_t;
 
-	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
+	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY, "uacin96"> uacinrts96list_t;
 
 	static uacinrts96list_t uacinrts96list(IRQL_REALTIME);
 
@@ -860,7 +862,7 @@ typedef struct
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
 
-static uacin48list_t uacin48list(IRQL_REALTIME);
+static uacin48list_t uacin48list(IRQL_REALTIME, "uacin48");
 
 int_fast32_t cachesize_dmabufferuacin48(void)
 {
@@ -1078,7 +1080,7 @@ typedef struct
 
 typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
 
-static message8list_t message8list(MESSAGE_IRQL);
+static message8list_t message8list(MESSAGE_IRQL, "msg8");
 
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer(uint8_t * dest)
@@ -1240,7 +1242,7 @@ typedef ALIGNX_BEGIN struct recordswav48
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef blists<recordswav48_t, AUDIOREC_CAPACITY> recordswav48list_t;
 
-static recordswav48list_t recordswav48list(IRQL_REALTIME);
+static recordswav48list_t recordswav48list(IRQL_REALTIME, "rec");
 
 
 // Поэлементное заполнение буфера SD CARD
@@ -1656,24 +1658,24 @@ void buffers2_diagnostics(void)
 #if WITHBUFFERSDEBUG
 #if 1
 	//denoise16list.debug("denoise16");
-	voice16rxlist.debug("16rx");
-	voice16txlist.debug("16tx");
-	voice16txmoni.debug("16txmoni");
-	voice32txlist.debug("32tx");
-	voice32rxlist.debug("32rx");
+	voice16rxlist.debug();
+	voice16txlist.debug();
+	voice16txmoni.debug();
+	voice32txlist.debug();
+	voice32rxlist.debug();
 #endif
 #if 1
 	// USB
-	uacout48list.debug("uacout48");
+	uacout48list.debug();
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 #if WITHRTS192
-	uacinrts192list.debug("uacinrts192");
+	uacinrts192list.debug();
 #endif
 #if WITHRTS96
-	uacinrts96list.debug("uacinrts96");
+	uacinrts96list.debug();
 #endif
 #endif
-	uacin48list.debug("uacin48");
+	uacin48list.debug();
 #endif
 	//message8list.debug("message8");
 

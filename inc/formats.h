@@ -67,6 +67,10 @@ void dbg_flush(void); // дождаться, пока будут передан�
 		PRINTF(PSTR("%s(%d): Assert '%s'\n"), (f), (l), (# v)); \
 		for (;;) ; \
 		} } while (0)
+	#define ASSERT3(v, f, l, m) do { if ((v) == 0) { \
+		PRINTF(PSTR("%s(%d): Assert '%s' (%s)\n"), (f), (l), (# v), (m)); \
+		for (;;) ; \
+		} } while (0)
 
 	#define VERIFY(v) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Verify '%s'\n"), __FILE__, __LINE__, (# v)); \
@@ -77,6 +81,7 @@ void dbg_flush(void); // дождаться, пока будут передан�
 
 	#define ASSERT(v) ((void) (0))
 	#define ASSERT2(v, f, l) ((void) (0))
+	#define ASSERT3(v, f, l, m) ((void) (0))
 	#define VERIFY(v) ((void) (v))
 
 #endif /* WITHDEBUG */
