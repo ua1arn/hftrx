@@ -11,16 +11,16 @@
 #include "mslist.h"
 #include "audio.h"
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 10
+#define WITHBUFFERSDEBUG WITHDEBUG
+#define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16RXPHONES_CAPACITY (333 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (4 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
-#define UACINRTS192_CAPACITY (14 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (14 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (8 * BUFOVERSIZE)
+#define UACINRTS192_CAPACITY (32 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY (32 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
 #define RX16RESAMPLER_CAPACITY (16 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
@@ -75,7 +75,7 @@ public:
 		saveount(0),
 #endif /* WITHBUFFERSDEBUG */
 		outcount(0),
-		freecount(0)
+		freecount(capacity)
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
@@ -156,6 +156,7 @@ public:
 		if (! IsListEmpty(& freelist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& freelist);
+			ASSERT(freecount != 0);
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -193,7 +194,7 @@ public:
 	void debug(const char * name)
 	{
 #if WITHBUFFERSDEBUG
-		PRINTF("%s:a=%d,s=%d ", name, errallocate, saveount);
+		PRINTF("%s:a=%d,s=%d,o=%d,f=%d ", name, errallocate, saveount, outcount, freecount);
 #endif /* WITHBUFFERSDEBUG */
 	}
 };
@@ -1585,22 +1586,22 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 void buffers2_diagnostics(void)
 {
 #if WITHBUFFERSDEBUG
-
-	//denoise16list.debug("denoise16list");
-	voice16rxcodeclist.debug("voice16rxcodeclist");
+#if 0
+	//denoise16list.debug("denoise16");
+	voice16rxcodeclist.debug("voice16rxcodec");
 	voice16txphones.debug("voice16txphones");
 	voice16txmoni.debug("voice16txmoni");
-	voice32txlist.debug("voice32txlist");
-	voice32rxlist.debug("voice32rxlist");
-
-#if 0
-	// USB
-	uacout48list.debug("uacout48list");
-	//uacinrts192list.debug("uacinrts192list");
-	uacinrts96list.debug("uacinrts96list");
-	uacin48list.debug("uacin48list");
+	voice32txlist.debug("voice32tx");
+	voice32rxlist.debug("voice32rx");
 #endif
-	//message8list.debug("message8list");
+#if 1
+	// USB
+	uacout48list.debug("uacout48");
+	//uacinrts192list.debug("uacinrts192");
+	uacinrts96list.debug("uacinrts96");
+	uacin48list.debug("uacin48");
+#endif
+	//message8list.debug("message8");
 
 	PRINTF("\n");
 
