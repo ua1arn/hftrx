@@ -14,13 +14,13 @@
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
-#define VOICE16RX_CAPACITY (33 * BUFOVERSIZE)
+#define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16RXPHONES_CAPACITY (333 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY (33 * BUFOVERSIZE)	// этот юуфер соразмерен с тем что ребуются для сохренения сэмплов VOICE16RXxxx
+#define VOICE16TXMONI_CAPACITY (4 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
 #define UACINRTS192_CAPACITY (14 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (14 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (4 * BUFOVERSIZE)
 #define RX16RESAMPLER_CAPACITY (16 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (24 * BUFOVERSIZE)
 
@@ -28,7 +28,7 @@
 
 #define VOICE32RX_CAPACITY (2 + 6 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (6 * BUFOVERSIZE)
-#define VOICE32RTS_CAPACITY (1 * BUFOVERSIZE)	// dummy fn
+#define VOICE32RTS_CAPACITY (4 * BUFOVERSIZE)	// dummy fn
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
