@@ -621,8 +621,6 @@ void release_dmabuffer16rx(uintptr_t addr);
 void save_dmabuffer16rx(uintptr_t addr);
 
 
-uintptr_t processing_pipe32rx(uintptr_t addr);
-
 uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
 
