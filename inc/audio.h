@@ -499,6 +499,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
  * Возврат 0, если нет ничего для воспроизведения.
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
+void savesamplewav48(FLOAT_t left, FLOAT_t right); /* to SD CARD */
 
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
 #if WITHINTEGRATEDDSP

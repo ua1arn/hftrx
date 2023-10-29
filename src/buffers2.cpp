@@ -1332,9 +1332,11 @@ static recordswav48list_t recordswav48list(IRQL_REALTIME, "rec");
 
 /* to SD CARD */
 // 16 bit, signed
-void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
+void RAMFUNC savesamplewav48(FLOAT_t left, FLOAT_t right)
 {
-	// если есть инициализированный канал для выдачи звука
+	int_fast32_t ch0 = adpt_output(& sdcardio, left);
+	int_fast32_t ch1 = adpt_output(& sdcardio, right);
+			// если есть инициализированный канал для выдачи звука
 	static recordswav48_t * p = NULL;
 	static unsigned n;
 
@@ -1359,12 +1361,12 @@ void RAMFUNC savesamplewav48(int_fast32_t left, int_fast32_t right)
 
 #if WITHUSEAUDIOREC2CH
 	// Запись звука на SD CARD в стерео
-	p->buff [n ++] = left;	// sample value
-	p->buff [n ++] = right;	// sample value
+	p->buff [n ++] = ch0;	// sample value
+	p->buff [n ++] = ch1;	// sample value
 
 #else /* WITHUSEAUDIOREC2CH */
 	// Запись звука на SD CARD в моно
-	p->buff [n ++] = left;	// sample value
+	p->buff [n ++] = ch0;	// sample value
 
 #endif /* WITHUSEAUDIOREC2CH */
 
@@ -1468,7 +1470,8 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 			return 0;
 		}
 	}
-	int_fast16_t sample = p->buff [n];
+
+	const FLOAT_t sample = adpt_input(& sdcardio, p->buff [n]);
 	rv->IV = sample;
 	rv->QV = sample;
 

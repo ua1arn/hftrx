@@ -5217,7 +5217,7 @@ static RAMFUNC void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
-	savesamplewav48(adpt_output(& sdcardio, left), adpt_output(& sdcardio, right));	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
+	savesamplewav48(left, right);	// Запись демодулированного сигнала без озвучки клавиш на SD CARD
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
