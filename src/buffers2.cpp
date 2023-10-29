@@ -42,13 +42,6 @@
 
 #include <string.h>		// for memset
 
-static void pp(const void * p, size_t n)
-{
-	const volatile uint8_t * pb = (const volatile uint8_t *) p;
-	while (n --)
-		* pb ++;
-}
-
 template <typename element_t, unsigned capacity>
 class blists
 {
@@ -121,10 +114,6 @@ public:
 		ASSERT(p->tag0 == this);
 		ASSERT(p->tag2 == p);
 		ASSERT(p->tag3 == p);
-
-		pp(& p->v.buff, sizeof p->v.buff);
-		pp(& p->v.buff, sizeof p->v.buff);
-		pp(& p->v.buff, sizeof p->v.buff);
 
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
@@ -628,10 +617,21 @@ void release_dmabufferuacout48(uintptr_t addr)
 	uacout48list.release_buffer(p);
 }
 
-// временное решение
+static void pp(const void * p, size_t n)
+{
+	const volatile uint8_t * pb = (const volatile uint8_t *) p;
+	while (n --)
+		* pb ++;
+}
+
 void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+
+	// временное решение проблемы щелчклчков
+	pp(p->buff, sizeof p->buff);
+	pp(p->buff, sizeof p->buff);
+
 	uacout48list.save_buffer(p);
 }
 
