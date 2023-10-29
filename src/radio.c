@@ -19234,6 +19234,7 @@ applowinitialize(void)
 #endif /* WITHAUTOTUNER */
 
 	buffers_initialize();
+	buffers2_initialize();
 
 	edgepins_initialize();
 
