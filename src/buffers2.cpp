@@ -588,6 +588,10 @@ static uacout48list_t uacout48list(IRQL_REALTIME);
 ///
 
 
+#define WRK 1
+
+#if WRK
+
 static uacout48list_t uacout48list_rs(IRQL_REALTIME);
 
 #else
@@ -626,8 +630,6 @@ void save_dmabufferuacout48_rs(uintptr_t addr)
 	uacout48list_rs.save_buffer(p);
 }
 
-#define WRK 1
-
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
 	return uacout48list.get_cachesize();
@@ -663,7 +665,6 @@ void save_dmabufferuacout48(uintptr_t addr)
 
 #if WRK
 	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
-	ASSERT(addr2 != 0);
 	memcpy((void *) addr2, (void *) addr, UACOUT_AUDIO48_DATASIZE_DMAC);
 	save_dmabufferuacout48_rs(addr2);
 	release_dmabufferuacout48(addr);
@@ -672,6 +673,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 #endif
 }
 
+#endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 ///////////////////////////////////////
 ///
 
