@@ -587,8 +587,44 @@ static uacout48list_t uacout48list(IRQL_REALTIME);
 ///
 ///
 
-void save_dmabufferuacout48_rs(uintptr_t addr);
-uintptr_t allocate_dmabufferuacout48_rs(void);
+
+static uacout48list_t uacout48list_rs(IRQL_REALTIME);
+
+#else
+
+#define uacout48list_rs uacout48list
+
+#endif
+
+uintptr_t allocate_dmabufferuacout48_rs(void)
+{
+	uacout48_t * dest;
+	while (uacout48list_rs.get_freebuffer(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
+// may be zero
+uintptr_t getfilled_dmabufferuacout48_rs(void)
+{
+	uacout48_t * dest;
+	if (uacout48list_rs.get_readybuffer(& dest) == 0)
+		return 0;
+	return (uintptr_t) dest->buff;
+}
+
+void release_dmabufferuacout48_rs(uintptr_t addr)
+{
+	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	uacout48list_rs.release_buffer(p);
+}
+
+// временное решение
+void save_dmabufferuacout48_rs(uintptr_t addr)
+{
+	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	uacout48list_rs.save_buffer(p);
+}
 
 #define WRK 1
 
@@ -635,57 +671,6 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48list.save_buffer(p);
 #endif
 }
-
-#if WRK
-//////////////////////////
-///
-///
-
-static uacout48list_t RSCMLIST(IRQL_REALTIME);
-
-#else
-
-#define RSCMLIST uacout48list
-
-#endif
-
-
-int_fast32_t cachesize_dmabufferuacout48_rs(void)
-{
-	return RSCMLIST.get_cachesize();
-}
-
-uintptr_t allocate_dmabufferuacout48_rs(void)
-{
-	uacout48_t * dest;
-	while (RSCMLIST.get_freebuffer(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
-// may be zero
-uintptr_t getfilled_dmabufferuacout48_rs(void)
-{
-	uacout48_t * dest;
-	if (RSCMLIST.get_readybuffer(& dest) == 0)
-		return 0;
-	return (uintptr_t) dest->buff;
-}
-
-void release_dmabufferuacout48_rs(uintptr_t addr)
-{
-	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	RSCMLIST.release_buffer(p);
-}
-
-// временное решение
-void save_dmabufferuacout48_rs(uintptr_t addr)
-{
-	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	RSCMLIST.save_buffer(p);
-}
-
-#endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 
 ///////////////////////////////////////
 ///
