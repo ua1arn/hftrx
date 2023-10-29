@@ -5290,7 +5290,10 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 #if CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
 
-#else
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+	#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// 0x00 = 48000 (x 512)
 	// 0x01 = ~ 46902 (x 512)
@@ -5319,26 +5322,31 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
 
 	//PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+	PRINTF("AudioCodec: allwnrt113_get_audio_codec_adc_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_adc_freq() / 1000));
+	PRINTF("AudioCodec: allwnrt113_get_audio_codec_dac_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_dac_freq() / 1000));
 
-	// audiocode1x_dac_clk
-	// audiocode1x_adc_clk
+	// audiocodec_dac_clk
+	// audiocodec_adc_clk
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
 	//	01: PLL_AUDIO1(DIV2)
 	//	10: PLL_AUDIO1(DIV5)
 
-	const portholder_t clk_reg =
+	const portholder_t codec_clk_reg =
 		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
 		0;
 
-	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
-	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
+	CCU->AUDIO_CODEC_ADC_CLK_REG = codec_clk_reg;
+	CCU->AUDIO_CODEC_DAC_CLK_REG = codec_clk_reg;
 
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
+#else
+	#warning Unexpected CPUSTYLE_xxx
+
 #endif
 
 #if 1
@@ -5349,7 +5357,7 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 //	AUDIO_CODEC->ADC_DIG_CTRL |= (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
 
 	//AUDIO_CODEC->ADC_DIG_CTRL & ~ (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(15 << 0);
-	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x0Fu)) |
+	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ UINT32_C(0x0F)) |
 			(UINT32_C(1) << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
 			(UINT32_C(1) << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
 			((0x04 | 0x02 | 0x01) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
