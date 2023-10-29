@@ -442,6 +442,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
 
 static voice16rxlist_t voice16rxlist(IRQL_REALTIME, "16rx");		// from codec
+static voice16rxlist_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -457,11 +458,29 @@ uintptr_t allocate_dmabuffer16rx(void)
 	return (uintptr_t) dest->buff;
 }
 
+// can not be zero
+uintptr_t allocate_dmabuffer16rx_rs(void)
+{
+	voice16rx_t * dest;
+	while (voice16rxlist_rs.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
+
 // may be zero
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
 	if (voice16rxlist.get_readybuffer(& dest) == 0)
+		return 0;
+	return (uintptr_t) dest->buff;
+}
+
+// may be zero
+uintptr_t getfilled_dmabuffer16rx_rs(void)
+{
+	voice16rx_t * dest;
+	if (voice16rxlist_rs.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -474,13 +493,23 @@ void save_dmabuffer16rx(uintptr_t addr)
 //	{
 //		p->buff [i + DMABUFF16RX_MIKE] = adpt_output(& afcodecrx, get_lout());
 //	}
-	voice16rxlist.save_buffer(p);
+	uintptr_t addr2 = allocate_dmabuffer16rx_rs();
+	voice16rx_t * const p2 = CONTAINING_RECORD(addr2, voice16rx_t, buff);
+	memcpy(p2->buff, p->buff, sizeof p2->buff);
+	voice16rxlist_rs.save_buffer(p2);
+	voice16rxlist.release_buffer(p);
 }
 
 void release_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
 	voice16rxlist.release_buffer(p);
+}
+
+void release_dmabuffer16rx_rs(uintptr_t addr)
+{
+	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+	voice16rxlist_rs.release_buffer(p);
 }
 
 // Audio CODEC in (from processor)
@@ -1033,7 +1062,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 
 	if (buff == NULL)
 	{
-		buff = (aubufv_t *) getfilled_dmabuffer16rx();
+		buff = (aubufv_t *) getfilled_dmabuffer16rx_rs();
 		if (buff == 0)
 		{
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
@@ -1054,7 +1083,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 
 	if (++ n >= CNT16RX)
 	{
-		release_dmabuffer16rx((uintptr_t) buff);
+		release_dmabuffer16rx_rs((uintptr_t) buff);
 		buff = NULL;
 	}
 	return 1;
@@ -1816,7 +1845,6 @@ void buffers2_diagnostics(void)
 //	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
 }
 
-static ticker_t buffticker;
 
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
@@ -1852,6 +1880,8 @@ static void buffers_spool(void * ctx)
 void buffers2_initialize(void)
 {
 #if 1 && WITHBUFFERSDEBUG
+	static ticker_t buffticker;
+
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
