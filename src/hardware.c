@@ -2916,6 +2916,7 @@ sysinit_mmu_initialize(void)
 	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
+#if (__CORTEX_A == 53U)
 static void setactlr(void)
 {
 	uint64_t v = __get_CPUACTLR();
@@ -2923,6 +2924,7 @@ static void setactlr(void)
 	//v |= UINT64_C(1) << 44;	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
 	__set_CPUACTLR(v);
 }
+#endif /* (__CORTEX_A == 53U) */
 
 // ОБщая для всех процессоров инициализация
 static void
@@ -2961,7 +2963,7 @@ sysinit_cache_core0_initialize(void)
 			 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
 			 */
 			__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
-			__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUECTLR write access control. The possible
+			__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUACTLR write access control. The possible
 			setactlr();
 			// set the CPUECTLR.SMPEN
 			__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
@@ -3907,7 +3909,7 @@ void Reset_CPUn_Handler(void)
 	__DSB();
 #elif (__CORTEX_A == 53U)
 	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
-	__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUECTLR write access control. The possible
+	__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUACTLR write access control. The possible
 	setactlr();
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
