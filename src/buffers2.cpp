@@ -64,6 +64,8 @@ public:
 		unsigned v10ms = ms10;
 		ms10 = 0;
 
+		if (v10ms == 0)
+			return 0;
 		return v * 10000 / v10ms;
 	}
 	void spool10ms()
@@ -1028,6 +1030,10 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	// Использование данных.
 	v->ivqv [L] = sample;
 	v->ivqv [R] = sample;
+
+	// AudioCodec test
+//	v->ivqv [L] = get_lout();	// левый канал
+//	v->ivqv [R] = get_rout();	// правый канал
 
 	if (++ n >= CNT16RX)
 	{
