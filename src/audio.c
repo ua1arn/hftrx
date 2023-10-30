@@ -866,10 +866,16 @@ adapter_t afcodecrx;		/* от микрофона */
 adapter_t afcodectx;		/* к наушникам */
 static adapter_t ifcodecrx;		/* канал от FPGA к процессору */
 static adapter_t ifcodectx;		/* канал от процессора к FPGA */
+
+#if WITHRTS96
 adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
-adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
+#endif /* WITHRTS96 */
+
+#if WITHRTS192
+adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
+#endif /* WITHRTS96 */
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
 
 #if WITHUSEAUDIOREC
