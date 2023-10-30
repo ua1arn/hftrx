@@ -886,7 +886,6 @@ typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHA
 
 static uacout48list_t uacout48list(IRQL_REALTIME, "uaco48");
 static uacout48list_t uacout48list_rs(IRQL_REALTIME, "uaco48_rs");
-
 static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 
 int_fast32_t cachesize_dmabufferuacout48(void)
@@ -998,7 +997,7 @@ typedef enum
 	typedef adapters<int32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
 	static uacinrts192list_t uacinrts192list(IRQL_REALTIME, "uacin192");
-	static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacinrts192");
+	static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacin192");
 
 	int_fast32_t cachesize_dmabufferuacinrts192(void)
 	{
@@ -1053,11 +1052,10 @@ typedef enum
 	} uacinrts96_t;
 
 	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
-
 	typedef adapters<int32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
 	static uacinrts96list_t uacinrts96list(IRQL_REALTIME, "uacin96");
-	static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacinrts96");
+	static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacin96");
 
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
@@ -1114,11 +1112,9 @@ typedef struct
 } uacin48_t;
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
-
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
 
 static uacin48list_t uacin48list(IRQL_REALTIME, "uacin48");
-
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 
 int_fast32_t cachesize_dmabufferuacin48(void)
