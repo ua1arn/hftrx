@@ -44,11 +44,17 @@
 template<typename apptype, int ss, int nch>
 class adapters
 {
+	const char * name;
+	adapter_t adp;
 public:
-	adapters();
+	adapters(int leftbit, int rightspace, const char * aname) :
+		name(aname)
+	{
+		adpt_initialize(& adp, leftbit, rightspace, name);
+	}
 
 	// преобразование в буфер из внутреннего представления
-	static void poke(const adapter_t * adp, uint8_t * buff, apptype ch0, apptype ch1)
+	void poke(uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -56,13 +62,13 @@ public:
 			switch (ss)
 			{
 			case 2:
-				USBD_poke_u16(buff + 0, adpt_output(adp, ch0));
+				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
 				break;
 			case 3:
-				USBD_poke_u24(buff + 0, adpt_output(adp, ch0));
+				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
 				break;
 			case 4:
-				USBD_poke_u32(buff + 0, adpt_output(adp, ch0));
+				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
 				break;
 			}
 			break;
@@ -71,16 +77,16 @@ public:
 			switch (ss)
 			{
 			case 2:
-				USBD_poke_u16(buff + 0, adpt_output(adp, ch0));
-				USBD_poke_u16(buff + 2, adpt_output(adp, ch1));
+				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
+				USBD_poke_u16(buff + 2, adpt_output(& adp, ch1));
 				break;
 			case 3:
-				USBD_poke_u24(buff + 0, adpt_output(adp, ch0));
-				USBD_poke_u24(buff + 3, adpt_output(adp, ch1));
+				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
+				USBD_poke_u24(buff + 3, adpt_output(& adp, ch1));
 				break;
 			case 4:
-				USBD_poke_u32(buff + 0, adpt_output(adp, ch0));
-				USBD_poke_u32(buff + 4, adpt_output(adp, ch1));
+				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
+				USBD_poke_u32(buff + 4, adpt_output(& adp, ch1));
 				break;
 			}
 			break;
@@ -88,7 +94,7 @@ public:
 	}
 
 	// преобразование в буфер из внутреннего представления
-	static void poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
+	void poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -130,7 +136,7 @@ public:
 	static int sssize() { return ss * nch; }
 
 	// преобразование во внутреннее представление из буфера
-	static void peek(const adapter_t * adp, const uint8_t * buff, apptype * v)
+	void peek(const uint8_t * buff, apptype * v)
 	{
 		switch (nch)
 		{
@@ -138,13 +144,13 @@ public:
 			switch (ss)
 			{
 			case 2:
-				v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
+				v [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
 				break;
 			case 3:
-				v [0] = adpt_input(adp, USBD_peek_u24(buff + 0));
+				v [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
 				break;
 			case 4:
-				v [0] = adpt_input(adp, USBD_peek_u32(buff + 0));
+				v [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
 				break;
 			}
 			break;
@@ -153,16 +159,16 @@ public:
 			switch (ss)
 			{
 			case 2:
-				v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
-				v [1] = adpt_input(adp, USBD_peek_u16(buff + 2));
+				v [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
+				v [1] = adpt_input(& adp, USBD_peek_u16(buff + 2));
 				break;
 			case 3:
-				v [0] = adpt_input(adp, USBD_peek_u24(buff + 0));
-				v [1] = adpt_input(adp, USBD_peek_u24(buff + 3));
+				v [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
+				v [1] = adpt_input(& adp, USBD_peek_u24(buff + 3));
 				break;
 			case 4:
-				v [0] = adpt_input(adp, USBD_peek_u32(buff + 0));
-				v [1] = adpt_input(adp, USBD_peek_u32(buff + 4));
+				v [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
+				v [1] = adpt_input(& adp, USBD_peek_u32(buff + 4));
 				break;
 			}
 			break;
@@ -171,11 +177,16 @@ public:
 
 };
 
-typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt;
-typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt;
+typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
+typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
 
-typedef adapters<int32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt;
-typedef adapters<int32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt;
+typedef adapters<int32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
+typedef adapters<int32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
+
+static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uacout48");
+static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
+static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacinrts96");
+static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacinrts192");
 
 //////////////////////
 
@@ -1251,7 +1262,8 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	}
 
 	// Использование данных.
-	uacout48adpt::peek(& uac48out, buff + n, v->ivqv);
+	uacout48adpt.peek(buff + n, v->ivqv);
+	n += uacout48adpt.sssize();
 
 	// WITHUSBUACOUT test
 //	v->ivqv [L] = get_lout();	// левый канал
@@ -1849,8 +1861,8 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 		n = 0;
 	}
 
-	uacin48adpt::poke(& uac48in, buff + n, left, right);
-	n += uacin48adpt::sssize();
+	uacin48adpt.poke(buff + n, left, right);
+	n += uacin48adpt.sssize();
 
 	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
 	{
@@ -1935,8 +1947,8 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 			n = 0;
 		}
 
-		uacinrts96adpt::poketransf(& if2rts96out, buff + n, ch0, ch1);
-		n += uacinrts96adpt::sssize();
+		uacinrts96adpt.poketransf(& if2rts96out, buff + n, ch0, ch1);
+		n += uacinrts96adpt.sssize();
 
 		if (n >= UACIN_RTS96_DATASIZE_DMAC)
 		{
