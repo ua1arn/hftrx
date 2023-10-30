@@ -3409,6 +3409,10 @@ enum
 
 #define DMAC_delay 7
 
+#define DMAC_MODE_REGN_VALUE_UACIN (0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2))	// mode: DMA_DST_MODE, DMA_SRC_MODE
+#define DMAC_MODE_REGN_VALUE_UACOUT (0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2))	// // mode: DMA_DST_MODE, DMA_SRC_MODE
+
+
 #define DMAC_DESC_SRC	1	/* адрес источника */
 #define DMAC_DESC_DST	2	/* адрес получателя */
 #define DMAC_DESC_LEN	3	/* размер */
@@ -5117,7 +5121,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
 
-	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACOUT;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5193,7 +5197,8 @@ void DMAC_USB_TX_initialize_UACIN48(uint32_t ep, unsigned NBYTES)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACIN48);
 
-	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	// DMA_DST_MODE потребовался на Allwinner A64
+	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
@@ -5248,7 +5253,6 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep, unsigned NBYTES)
 	{
 		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
-		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [0] = configDMAC;			// Cofigurarion
 		descr0 [i] [1] = dma_flushuacinrts96(allocate_dmabufferuacinrts96());			// Source Address
 		descr0 [i] [2] = portaddr;				// Destination Address
@@ -5267,7 +5271,8 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep, unsigned NBYTES)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS96);
 
-	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	// DMA_DST_MODE потребовался на Allwinner A64
+	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }

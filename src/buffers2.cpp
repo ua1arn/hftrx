@@ -1145,6 +1145,12 @@ uintptr_t getfilled_dmabufferuacin48(void)
 	{
 		dest->tag = BUFFTAG_UACIN48;
 		memset(dest->buff, 0, sizeof dest->buff);
+//		unsigned i;
+//		for (i = 0; i < DMABUFFSIZE16RX;)
+//		{
+//			uacout48adpt.poke(dest->buff + i, get_lout(), get_rout());
+//			i += uacout48adpt.sssize();
+//		}
 		return (uintptr_t) & dest->buff;
 	}
 	ASSERT(0);
