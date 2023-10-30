@@ -1139,6 +1139,12 @@ uintptr_t getfilled_dmabufferuacin48(void)
 	if (uacin48list.get_readybuffer(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
+//		unsigned i;
+//		for (i = 0; i < DMABUFFSIZE16RX;)
+//		{
+//			uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
+//			i += uacin48adpt.sssize();
+//		}
 		return (uintptr_t) & dest->buff;
 	}
 	if (uacin48list.get_freebuffer(& dest))
@@ -1148,8 +1154,8 @@ uintptr_t getfilled_dmabufferuacin48(void)
 //		unsigned i;
 //		for (i = 0; i < DMABUFFSIZE16RX;)
 //		{
-//			uacout48adpt.poke(dest->buff + i, get_lout(), get_rout());
-//			i += uacout48adpt.sssize();
+//			uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
+//			i += uacin48adpt.sssize();
 //		}
 		return (uintptr_t) & dest->buff;
 	}
