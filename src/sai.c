@@ -3421,34 +3421,11 @@ enum
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
-static void (* dmac_handlers [16])(unsigned dmach);
-
-// Есть необработанное прерывание
-static int DMAC_has_done(unsigned dmach)
-{
-	const unsigned flag = 0x07;
 #if CPUSTYLE_A64
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
-
-	return !! (reg0 & DMAC_REG0_MASK(dmach) * flag);
-#else /* CPUSTYLE_A64 */
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
-	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
-
-	return (reg0 & DMAC_REG0_MASK(dmach) * flag) || (reg1 & DMAC_REG1_MASK(dmach) * flag);
-#endif /* CPUSTYLE_A64 */
-}
-
-static void DMAC_clear_pending(unsigned dmach)
-{
-	const unsigned flag = 0x07;
-#if CPUSTYLE_A64
-	DMAC->DMAC_IRQ_PEND_REG = DMAC_REG0_MASK(dmach) * flag;	// Write 1 to clear the pending status.
-#else /* CPUSTYLE_A64 */
-	DMAC->DMAC_IRQ_PEND_REG0 = DMAC_REG0_MASK(dmach) * flag;	// Write 1 to clear the pending status.
-	DMAC->DMAC_IRQ_PEND_REG1 = DMAC_REG1_MASK(dmach) * flag;	// Write 1 to clear the pending status.
-#endif /* CPUSTYLE_A64 */
-}
+	static void (* dmac_handlers [8])(unsigned dmach);
+#else
+	static void (* dmac_handlers [16])(unsigned dmach);
+#endif
 
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
@@ -3456,16 +3433,28 @@ static void DMAC_NS_IRQHandler(void)
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	const unsigned flag = 0x07;
 	unsigned dmach;
-#if CPUSTYLE_A64
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
 
+#if CPUSTYLE_A64
+
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
 	DMAC->DMAC_IRQ_PEND_REG = reg0;	// Write 1 to clear the pending status.
-#else /* CPUSTYLE_A64 */
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
-
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
+	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+
+#else /* CPUSTYLE_A64 */
+
 #endif /* CPUSTYLE_A64 */
 
 	for (dmach = 0; dmach < 8; ++ dmach)
@@ -3529,20 +3518,28 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	//ASSERT(DMAC_Ch_Total <= 8);
 	dmac_handlers [dmach] = handler;
+
 #if CPUSTYLE_A64
-	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
 
+	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
 	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-#elif CPUSTYLE_T507
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
-
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
-#else /* CPUSTYLE_A64 */
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
+
+#else /* CPUSTYLE_A64 */
+
+	#warning Unrecognized CPUSTYLE_xxx
+
 #endif /* CPUSTYLE_A64 */
 }
 
