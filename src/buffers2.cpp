@@ -41,14 +41,14 @@
 
 #include <string.h>		// for memset
 
-template<typename iotype, typename apptype, int ss, int nch>
+template<typename apptype, int ss, int nch>
 class adapters
 {
 public:
 	adapters();
 
 	// преобразование в буфер из внутреннего представления
-	void poke(const adapter_t * adp, iotype * buff, const apptype * v)
+	static void poke(const adapter_t * adp, uint8_t * buff, const apptype * v)
 	{
 		switch (nch)
 		{
@@ -87,8 +87,10 @@ public:
 		}
 	}
 
+	static int sssize() { return ss * nch; }
+
 	// преобразование во внутреннее представление из буфера
-	void peek(const adapter_t * adp, const iotype * buff, apptype * v)
+	static void peek(const adapter_t * adp, const uint8_t * buff, apptype * v)
 	{
 		switch (nch)
 		{
@@ -129,6 +131,9 @@ public:
 
 };
 
+
+typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt;
+typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt;
 
 //////////////////////
 
@@ -1204,30 +1209,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 	}
 
 	// Использование данных.
-	ASSERT(UACOUT_FMT_CHANNELS_AUDIO48 == 2);
-	switch (UACOUT_AUDIO48_SAMPLEBYTES)
-	{
-	default:
-		break;
-	case 2:
-		v->ivqv [L] = adpt_input(& uac48out, USBD_peek_u16(buff + n));	// левый канал
-		n += UACOUT_AUDIO48_SAMPLEBYTES;
-		v->ivqv [R] = adpt_input(& uac48out, USBD_peek_u16(buff + n));	// правый канал
-		n += UACOUT_AUDIO48_SAMPLEBYTES;
-		break;
-	case 3:
-		v->ivqv [L] = adpt_input(& uac48out, USBD_peek_u24(buff + n));	// левый канал
-		n += UACOUT_AUDIO48_SAMPLEBYTES;
-		v->ivqv [R] = adpt_input(& uac48out, USBD_peek_u24(buff + n));	// правый канал
-		n += UACOUT_AUDIO48_SAMPLEBYTES;
-		break;
-	case 4:
-		v->ivqv [L] = adpt_input(& uac48out, USBD_peek_u32(buff + n));	// левый канал
-		n += UACOUT_AUDIO48_SAMPLEBYTES;
-		v->ivqv [R] = adpt_input(& uac48out, USBD_peek_u32(buff + n));	// правый канал
-		n += UACOUT_AUDIO48_SAMPLEBYTES;
-		break;
-	}
+	uacout48adpt::peek(& uac48out, buff + n, v->ivqv);
 
 	// WITHUSBUACOUT test
 //	v->ivqv [L] = get_lout();	// левый канал
@@ -1816,6 +1798,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 //	left = get_lout();
 //	right = get_rout();
 
+	const FLOAT_t v [2] = { left, right };
 	static uint8_t * buff = NULL;
 	static unsigned n = 0;
 
@@ -1825,22 +1808,8 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 		n = 0;
 	}
 
-	ASSERT(UACIN_FMT_CHANNELS_AUDIO48 == 2);
-	switch (UACIN_AUDIO48_SAMPLEBYTES)
-	{
-	case 2:
-		n += USBD_poke_u16(buff + n, adpt_output(& uac48in, left));
-		n += USBD_poke_u16(buff + n, adpt_output(& uac48in, right));
-		break;
-	case 3:
-		n += USBD_poke_u24(buff + n, adpt_output(& uac48in, left));
-		n += USBD_poke_u24(buff + n, adpt_output(& uac48in, right));
-		break;
-	case 4:
-		n += USBD_poke_u32(buff + n, adpt_output(& uac48in, left));
-		n += USBD_poke_u32(buff + n, adpt_output(& uac48in, right));
-		break;
-	}
+	uacin48adpt::poke(& uac48in, buff + n, v);
+	n += uacin48adpt::sssize();
 
 	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
 	{
