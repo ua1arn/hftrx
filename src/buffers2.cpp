@@ -48,7 +48,7 @@ public:
 	adapters();
 
 	// преобразование в буфер из внутреннего представления
-	static void poke(const adapter_t * adp, uint8_t * buff, const apptype * v)
+	static void poke(const adapter_t * adp, uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -56,13 +56,13 @@ public:
 			switch (ss)
 			{
 			case 2:
-				USBD_poke_u16(buff + 0, adpt_output(adp, v [0]));
+				USBD_poke_u16(buff + 0, adpt_output(adp, ch0));
 				break;
 			case 3:
-				USBD_poke_u24(buff + 0, adpt_output(adp, v [0]));
+				USBD_poke_u24(buff + 0, adpt_output(adp, ch0));
 				break;
 			case 4:
-				USBD_poke_u32(buff + 0, adpt_output(adp, v [0]));
+				USBD_poke_u32(buff + 0, adpt_output(adp, ch0));
 				break;
 			}
 			break;
@@ -71,16 +71,56 @@ public:
 			switch (ss)
 			{
 			case 2:
-				USBD_poke_u16(buff + 0, adpt_output(adp, v [0]));
-				USBD_poke_u16(buff + 2, adpt_output(adp, v [1]));
+				USBD_poke_u16(buff + 0, adpt_output(adp, ch0));
+				USBD_poke_u16(buff + 2, adpt_output(adp, ch1));
 				break;
 			case 3:
-				USBD_poke_u24(buff + 0, adpt_output(adp, v [0]));
-				USBD_poke_u24(buff + 3, adpt_output(adp, v [1]));
+				USBD_poke_u24(buff + 0, adpt_output(adp, ch0));
+				USBD_poke_u24(buff + 3, adpt_output(adp, ch1));
 				break;
 			case 4:
-				USBD_poke_u32(buff + 0, adpt_output(adp, v [0]));
-				USBD_poke_u32(buff + 4, adpt_output(adp, v [1]));
+				USBD_poke_u32(buff + 0, adpt_output(adp, ch0));
+				USBD_poke_u32(buff + 4, adpt_output(adp, ch1));
+				break;
+			}
+			break;
+		}
+	}
+
+	// преобразование в буфер из внутреннего представления
+	static void poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
+	{
+		switch (nch)
+		{
+		case 1:
+			switch (ss)
+			{
+			case 2:
+				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
+				break;
+			case 3:
+				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
+				break;
+			case 4:
+				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
+				break;
+			}
+			break;
+
+		case 2:
+			switch (ss)
+			{
+			case 2:
+				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
+				USBD_poke_u16(buff + 2, transform_do32(tfm, ch1));
+				break;
+			case 3:
+				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
+				USBD_poke_u24(buff + 3, transform_do32(tfm, ch1));
+				break;
+			case 4:
+				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
+				USBD_poke_u32(buff + 4, transform_do32(tfm, ch1));
 				break;
 			}
 			break;
@@ -131,9 +171,11 @@ public:
 
 };
 
-
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt;
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt;
+
+typedef adapters<int32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt;
+typedef adapters<int32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt;
 
 //////////////////////
 
@@ -1798,7 +1840,6 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 //	left = get_lout();
 //	right = get_rout();
 
-	const FLOAT_t v [2] = { left, right };
 	static uint8_t * buff = NULL;
 	static unsigned n = 0;
 
@@ -1808,7 +1849,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 		n = 0;
 	}
 
-	uacin48adpt::poke(& uac48in, buff + n, v);
+	uacin48adpt::poke(& uac48in, buff + n, left, right);
 	n += uacin48adpt::sssize();
 
 	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
