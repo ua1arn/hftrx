@@ -868,8 +868,6 @@ static adapter_t ifcodecrx;		/* канал от FPGA к процессору */
 static adapter_t ifcodectx;		/* канал от процессора к FPGA */
 adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
 adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
-adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
-adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */
 adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
@@ -900,9 +898,6 @@ static void adapterst_initialize(void)
 	/* SD CARD */
 	adpt_initialize(& sdcardio, audiorec_getwidth(), 0, "sdcardio");
 #endif /* WITHUSEAUDIOREC */
-	/* канал звука USB AUDIO */
-	adpt_initialize(& uac48in, UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uac48in");	/* Аудиоданные в компютер из трансивера */
-	adpt_initialize(& uac48out, UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uac48out");	/* Аудиоданные из компютера в трансивер */
 
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */

@@ -227,8 +227,6 @@ extern adapter_t afcodectx;	/* к наушникам */
 extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
 extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 
-extern adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
-extern adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */
 extern adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
 extern adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 extern adapter_t sdcardio;
