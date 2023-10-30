@@ -247,7 +247,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
-		PRINTF("%s:b=%d/%d,q=%u/%u ", name, outcount, freecount, fin, fout);
+		PRINTF("%s:a=%d,b=%d/%d,q=%u/%u ", name, errallocate, outcount, freecount, fin, fout);
 #endif /* WITHBUFFERSDEBUG */
 	}
 	void spool10ms()
@@ -811,7 +811,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 
-	// временное решение проблемы щелчклчков
+	// временное решение проблемы щелчкчков
 //	pp(p->buff, sizeof p->buff);
 //	pp(p->buff, sizeof p->buff);
 	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
@@ -1815,8 +1815,8 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 void buffers2_diagnostics(void)
 {
 #if WITHBUFFERSDEBUG
-#if 1
-	//denoise16list.debug("denoise16");
+#if 0
+	//denoise16list.debug();
 	voice16rxlist.debug();
 	voice16txlist.debug();
 	voice16txmoni.debug();
@@ -1836,7 +1836,7 @@ void buffers2_diagnostics(void)
 #endif
 	uacin48list.debug();
 #endif
-	//message8list.debug("message8");
+	//message8list.debug();
 
 	PRINTF("\n");
 
