@@ -1913,6 +1913,73 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
 
+
+
+#if WITHUSBUAC && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+
+#if WITHRTS96
+
+	// Поэлементное заполнение буфера RTS96
+
+	// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
+	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
+	void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
+	{
+		// если есть инициализированный канал для выдачи звука
+		static uint8_t * buff = NULL;
+		static unsigned n;
+
+		if (buff == NULL)
+		{
+			buff = (uint8_t *) allocate_dmabufferuacinrts96();
+			n = 0;
+		}
+
+		uacinrts96adpt::poketransf(& if2rts96out, buff + n, ch0, ch1);
+		n += uacinrts96adpt::sssize();
+
+		if (n >= UACIN_RTS96_DATASIZE_DMAC)
+		{
+			save_dmabufferuacinrts96((uintptr_t) buff);
+			buff = NULL;
+		}
+	}
+
+#endif /* WITHRTS96 */
+
+#if WITHRTS192
+
+	// NOT USED
+	// Поэлементное заполнение буфера RTS192
+
+	// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
+	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
+	void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
+	{
+		// если есть инициализированный канал для выдачи звука
+		static uint8_t * buff = NULL;
+		static unsigned n;
+
+		if (p == NULL)
+		{
+			buff = (uint8_t *) allocate_dmabufferuacinrts192();
+			n = 0;
+		}
+
+		uacinrts192adpt::poketransf(& if2rts96out, buff + n, ch0, ch1);
+		n += uacinrts192adpt::sssize();
+
+		if (n >= UACIN_RTS192_DATASIZE_DMAC)
+		{
+			save_dmabufferuacinrts192((uintptr_t) buff);
+			buff = NULL;
+		}
+	}
+
+#endif /* WITHRTS192 */
+
+#endif /* WITHUSBUAC */
+
 void buffers2_diagnostics(void)
 {
 #if WITHBUFFERSDEBUG
