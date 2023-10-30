@@ -46,57 +46,89 @@ class adapters
 {
 public:
 	adapters();
-	void poke(const adapter_t * adp, iotype * dst, const apptype * src);
-	void peek(const adapter_t * adp, const iotype * dst, apptype * src);
+
+	// преобразование в буфер из внутреннего представления
+	void poke(const adapter_t * adp, iotype * buff, const apptype * v)
+	{
+		switch (nch)
+		{
+		case 1:
+			switch (ss)
+			{
+			case 2:
+				USBD_poke_u16(buff + 0, adpt_output(adp, v [0]));
+				break;
+			case 3:
+				USBD_poke_u24(buff + 0, adpt_output(adp, v [0]));
+				break;
+			case 4:
+				USBD_poke_u32(buff + 0, adpt_output(adp, v [0]));
+				break;
+			}
+			break;
+
+		case 2:
+			switch (ss)
+			{
+			case 2:
+				USBD_poke_u16(buff + 0, adpt_output(adp, v [0]));
+				USBD_poke_u16(buff + 2, adpt_output(adp, v [1]));
+				break;
+			case 3:
+				USBD_poke_u24(buff + 0, adpt_output(adp, v [0]));
+				USBD_poke_u24(buff + 3, adpt_output(adp, v [1]));
+				break;
+			case 4:
+				USBD_poke_u32(buff + 0, adpt_output(adp, v [0]));
+				USBD_poke_u32(buff + 4, adpt_output(adp, v [1]));
+				break;
+			}
+			break;
+		}
+	}
+
+	// преобразование во внутреннее представление из буфера
+	void peek(const adapter_t * adp, const iotype * buff, apptype * v)
+	{
+		switch (nch)
+		{
+		case 1:
+			switch (ss)
+			{
+			case 2:
+				v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
+				break;
+			case 3:
+				v [0] = adpt_input(adp, USBD_peek_u24(buff + 0));
+				break;
+			case 4:
+				v [0] = adpt_input(adp, USBD_peek_u32(buff + 0));
+				break;
+			}
+			break;
+
+		case 2:
+			switch (ss)
+			{
+			case 2:
+				v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
+				v [1] = adpt_input(adp, USBD_peek_u16(buff + 2));
+				break;
+			case 3:
+				v [0] = adpt_input(adp, USBD_peek_u24(buff + 0));
+				v [1] = adpt_input(adp, USBD_peek_u24(buff + 3));
+				break;
+			case 4:
+				v [0] = adpt_input(adp, USBD_peek_u32(buff + 0));
+				v [1] = adpt_input(adp, USBD_peek_u32(buff + 4));
+				break;
+			}
+			break;
+		}
+	}
 
 };
 
-
-#if 0
-// преобразование в буфер из внутреннего представления
-void adapters<uint8_t, FLOAT_t, 2, 2>::poke(const adapter_t * adp, uint8_t * buff, const FLOAT_t * v)
-{
-	USBD_poke_u16(buff + 0, adpt_output(adp, v [0]));
-	USBD_poke_u16(buff + 2, adpt_output(adp, v [1]));
-}
-
-// преобразование в буфер из внутреннего представления
-void adapters<uint8_t, FLOAT_t, 3, 2>::poke(const adapter_t * adp, uint8_t * buff, const FLOAT_t * v)
-{
-	USBD_poke_u24(buff + 0, adpt_output(adp, v [0]));
-	USBD_poke_u24(buff + 3, adpt_output(adp, v [1]));
-}
-
-// преобразование в буфер из внутреннего представления
-void adapters<uint8_t, FLOAT_t, 4, 2>::poke(const adapter_t * adp, uint8_t * buff, const FLOAT_t * v)
-{
-	USBD_poke_u32(buff + 0, adpt_output(adp, v [0]));
-	USBD_poke_u32(buff + 4, adpt_output(adp, v [1]));
-}
-
-//////////////////////////
-// преобразование во внутреннее представление из буфера
-void adapters<uint8_t, FLOAT_t, 2, 2>::peek(const adapter_t * adp, const uint8_t * buff, FLOAT_t * v)
-{
-	v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
-	v [1] = adpt_input(adp, USBD_peek_u16(buff + 2));
-}
-
-// преобразование во внутреннее представление из буфера
-void adapters<uint8_t, FLOAT_t, 3, 2>::peek(const adapter_t * adp, const uint8_t * buff, FLOAT_t * v)
-{
-	v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
-	v [1] = adpt_input(adp, USBD_peek_u16(buff + 2));
-}
-
-// преобразование во внутреннее представление из буфера
-void adapters<uint8_t, FLOAT_t, 4, 2>::peek(const adapter_t * adp, const uint8_t * buff, FLOAT_t * v)
-{
-	v [0] = adpt_input(adp, USBD_peek_u16(buff + 0));
-	v [1] = adpt_input(adp, USBD_peek_u16(buff + 2));
-}
-
-#endif
 
 //////////////////////
 
