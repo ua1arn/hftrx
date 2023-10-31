@@ -684,29 +684,11 @@ uintptr_t allocate_dmabuffer16rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-// can not be zero
-uintptr_t allocate_dmabuffer16rx_rs(void)
-{
-	voice16rx_t * dest;
-	while (voice16rxlist_rs.get_freebufferforced(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
 // may be zero
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
 	if (voice16rx.get_readybuffer(& dest) == 0)
-		return 0;
-	return (uintptr_t) dest->buff;
-}
-
-// may be zero
-uintptr_t getfilled_dmabuffer16rx_rs(void)
-{
-	voice16rx_t * dest;
-	if (voice16rxlist_rs.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -734,8 +716,9 @@ void save_dmabuffer16rx(uintptr_t addr)
 //	{
 //		p->buff [i + DMABUFF16RX_MIKE] = adpt_output(& afcodecrx, get_lout());
 //	}
-	uintptr_t addr2 = allocate_dmabuffer16rx_rs();
-	voice16rx_t * const p2 = CONTAINING_RECORD(addr2, voice16rx_t, buff);
+	voice16rx_t * p2;
+	while (voice16rxlist_rs.get_freebufferforced(& p2) == 0)
+		ASSERT(0);
 	memcpy(p2->buff, p->buff, sizeof p2->buff);
 	voice16rxlist_rs.save_buffer(p2);
 	voice16rx.release_buffer(p);
