@@ -264,7 +264,7 @@ void xcz_fifo_phones_inthandler(void)
 		Xil_Out32(XPAR_AUDIO_FIFO_PHONES_BASEADDR, r[i]);
 #endif /* IQMODEM_BLOCKMEMORY */
 
-	release_dmabuffer16tx(addr);
+	release_dmabuffer16txphones(addr);
 }
 
 void xcz_audio_tx_enable(uint_fast8_t state)
