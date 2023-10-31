@@ -126,6 +126,7 @@ public:
 		}
 	}
 
+
 	// преобразование в буфер из внутреннего представления
 	void poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
 	{
@@ -166,10 +167,8 @@ public:
 		}
 	}
 
-	static int sssize() { return ss * nch; }
-
-	// преобразование во внутреннее представление из буфера
-	void peek(const uint8_t * buff, apptype * v)
+	// во внутреннее представление из буфера
+	void peek(const uint8_t * buff, apptype * dest)
 	{
 		switch (nch)
 		{
@@ -177,13 +176,13 @@ public:
 			switch (ss)
 			{
 			case 2:
-				v [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
+				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
 				break;
 			case 3:
-				v [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
+				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
 				break;
 			case 4:
-				v [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
+				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
 				break;
 			}
 			break;
@@ -192,21 +191,23 @@ public:
 			switch (ss)
 			{
 			case 2:
-				v [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
-				v [1] = adpt_input(& adp, USBD_peek_u16(buff + 2));
+				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
+				dest [1] = adpt_input(& adp, USBD_peek_u16(buff + 2));
 				break;
 			case 3:
-				v [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
-				v [1] = adpt_input(& adp, USBD_peek_u24(buff + 3));
+				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
+				dest [1] = adpt_input(& adp, USBD_peek_u24(buff + 3));
 				break;
 			case 4:
-				v [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
-				v [1] = adpt_input(& adp, USBD_peek_u32(buff + 4));
+				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
+				dest [1] = adpt_input(& adp, USBD_peek_u32(buff + 4));
 				break;
 			}
 			break;
 		}
 	}
+
+	static int sssize() { return ss * nch; }
 
 };
 
@@ -525,11 +526,14 @@ class dmahandle: public blists<element_t, capacity>
 	typedef blists<element_t, capacity> parent_t;
 	element_t * wb;
 	unsigned wbn;
+	element_t * rb;
+	unsigned rbn;
 
 public:
 	dmahandle(IRQL_t airql, const char * aname) :
 		blists<element_t, capacity>(airql, aname),
-		wb(NULL)
+		wb(NULL),
+		rb(NULL)
 	{
 
 	}
@@ -550,6 +554,24 @@ public:
 			wb = NULL;
 		}
 	}
+
+	uint_fast8_t fetchdata(sample_t * dest, unsigned (* getcbf)(typeof (element_t::buff [0]) * b, sample_t * dest))
+	{
+		if (rb == NULL)
+		{
+			if (parent_t::get_freebufferforced(& rb) == 0)
+				return 0;
+			rbn = 0;
+		}
+		rbn += getcbf(rb->buff + rbn, dest);
+		if (rbn >= ARRAY_SIZE(wb->buff))
+		{
+			parent_t::save_buffer(rb);
+			rb = NULL;
+		}
+		return 1;
+	}
+
 };
 
 
@@ -645,9 +667,10 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 } ALIGNX_END voice16rx_t;
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
+typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY> voice16rxdma_t;
 
-static voice16rxlist_t voice16rxlist(IRQL_REALTIME, "16rx");		// from codec
-static voice16rxlist_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
+static voice16rxdma_t voice16rxlist(IRQL_REALTIME, "16rx");		// from codec
+static voice16rxdma_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -688,6 +711,19 @@ uintptr_t getfilled_dmabuffer16rx_rs(void)
 	if (voice16rxlist_rs.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
+}
+
+static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
+{
+	enum { L, R };
+	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_LEFT]);
+	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_RIGHT]);
+	return DMABUFFSTEP16RX;
+}
+
+uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
+{
+	return voice16rxlist_rs.fetchdata(dest, voice16rx_getcbf);
 }
 
 void save_dmabuffer16rx(uintptr_t addr)
@@ -1017,10 +1053,13 @@ typedef struct
 } uacout48_t;
 
 typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
+typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY> uacout48dma_t;
+
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
-static uacout48list_t uacout48list(IRQL_REALTIME, "uaco48");
-static uacout48list_t uacout48list_rs(IRQL_REALTIME, "uaco48_rs");
+static uacout48dma_t uacout48list(IRQL_REALTIME, "uaco48");
+static uacout48dma_t uacout48list_rs(IRQL_REALTIME, "uaco48_rs");
+
 static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 
 int_fast32_t cachesize_dmabufferuacout48(void)
@@ -1097,6 +1136,21 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48list.release_buffer(p);
 
 	uacout48list_rs.save_buffer(p2);
+}
+
+static unsigned uacout48_getcbf(uint8_t * b, FLOAT_t * dest)
+{
+	uacout48adpt.peek(b, dest);
+	// WITHUSBUACOUT test
+//	enum { L, R };
+//	dest [L] = get_lout();	// левый канал
+//	dest [R] = get_rout();	// правый канал
+	return uacout48adpt.sssize();
+}
+
+uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
+{
+	return uacout48list_rs.fetchdata(dest, uacout48_getcbf);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -1272,8 +1326,10 @@ typedef struct
 } uacin48_t;
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
-typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
 typedef dmahandle<FLOAT_t, uacin48_t, UACIN48_CAPACITY> uacin48dma_t;
+
+
+typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
 
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 
@@ -1390,37 +1446,7 @@ void release_dmabufferuacinX(uintptr_t addr)
 // При отсутствии данных в очереди - возвращаем 0
 RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
-	enum { L, R };
-	static aubufv_t * buff = NULL;
-	static unsigned n = 0;	// позиция по выходному количеству
-
-	if (buff == NULL)
-	{
-		buff = (aubufv_t *) getfilled_dmabuffer16rx_rs();
-		if (buff == 0)
-		{
-			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
-			return 0;
-		}
-		n = 0;
-	}
-
-	const FLOAT_t sample = adpt_input(& afcodecrx, buff [n * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
-
-	// Использование данных.
-	v->ivqv [L] = sample;
-	v->ivqv [R] = sample;
-
-	// AudioCodec test
-//	v->ivqv [L] = get_lout();	// левый канал
-//	v->ivqv [R] = get_rout();	// правый канал
-
-	if (++ n >= CNT16RX)
-	{
-		release_dmabuffer16rx_rs((uintptr_t) buff);
-		buff = NULL;
-	}
-	return 1;
+	return elfetch_dmabuffer16rx(v->ivqv);
 }
 
 //////////////////////////////////////////
@@ -1431,35 +1457,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	enum { L, R };
-	static uint8_t * buff = NULL;
-	static unsigned n = 0;	// позиция по выходному количеству байт
-
-	if (buff == NULL)
-	{
-		buff = (uint8_t *) getfilled_dmabufferuacout48_rs();
-		if (buff == NULL)
-		{
-			// Канал ещё не успел начать работать - возвращаем 0.
-			return 0;
-		}
-		n = 0;
-	}
-
-	// Использование данных.
-	uacout48adpt.peek(buff + n, v->ivqv);
-	n += uacout48adpt.sssize();
-
-	// WITHUSBUACOUT test
-//	v->ivqv [L] = get_lout();	// левый канал
-//	v->ivqv [R] = get_rout();	// правый канал
-
-	if (n >= UACOUT_AUDIO48_DATASIZE_DMAC)
-	{
-		release_dmabufferuacout48_rs((uintptr_t) buff);
-		buff = NULL;
-	}
-	return 1;
+	return elfetch_dmabufferuacout48(v->ivqv);
 #else
 	return 0;
 #endif
@@ -1639,15 +1637,40 @@ void releasemodembuffer_low(uint8_t * dest)
 typedef ALIGNX_BEGIN struct recordswav48
 {
 	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
-	unsigned startdata;
-	unsigned topdata;
+//	unsigned startdata;
+//	unsigned topdata;
 } ALIGNX_END recordswav48_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef blists<recordswav48_t, AUDIOREC_CAPACITY> recordswav48list_t;
+typedef dmahandle<FLOAT_t, recordswav48_t, AUDIOREC_CAPACITY> recordswav48dma_t;
 
-static recordswav48list_t recordswav48list(IRQL_REALTIME, "rec");
+static recordswav48dma_t recordswav48list(IRQL_REALTIME, "rec");
 
+
+
+static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
+{
+#if WITHUSEAUDIOREC2CH
+
+	// Запись звука на SD CARD в стерео
+	buff [0] = adpt_output(& sdcardio, ch0);
+	buff [1] = adpt_output(& sdcardio, ch1);
+	return 2;
+
+#else /* WITHUSEAUDIOREC2CH */
+
+	// Запись звука на SD CARD в моно
+	buff [0] = adpt_output(& sdcardio, ch0);
+	returt 1;
+
+#endif /* WITHUSEAUDIOREC2CH */
+}
+
+void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1)
+{
+	recordswav48list.savedata(ch0, ch1, recordswav48_putcbf);
+}
 
 // user-mode function
 unsigned takerecordbuffer(void * * dest)
@@ -1672,6 +1695,10 @@ unsigned takefreerecordbuffer(void * * dest)
 	}
 	return 0;
 }
+
+#if 0
+
+// поддержка воспроизведения файлов
 
 static void saveplaybuffer(void * dest, unsigned used)
 {
@@ -1704,18 +1731,6 @@ unsigned savesamplesplay(
 	memcpy(p, buff, chunk);
 	saveplaybuffer(p, chunk);
 	return chunk;
-}
-
-void releaserecordbuffer(void * dest)
-{
-	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	recordswav48list.release_buffer(p);
-}
-
-void saverecordbuffer(void * dest)
-{
-	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	recordswav48list.save_buffer(p);
 }
 
 
@@ -1752,6 +1767,20 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 		//PRINTF("Release record buffer\n");
 	}
 	return 1;	// Сэмпл считан
+}
+
+#endif
+
+void releaserecordbuffer(void * dest)
+{
+	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
+	recordswav48list.release_buffer(p);
+}
+
+void saverecordbuffer(void * dest)
+{
+	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
+	recordswav48list.save_buffer(p);
 }
 
 #endif /* WITHUSEAUDIOREC */
@@ -2009,6 +2038,7 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 #endif
 
 
+
 // Выдача в USB UAC
 void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 {
@@ -2016,6 +2046,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 	// WITHUSBUACIN test
 //	left = get_lout();
 //	right = get_rout();
+
 	elfill_dmabufferuacin48(left, right);
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 }
@@ -2025,50 +2056,7 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 {
 #if WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV)
 
-	int_fast32_t ch0 = adpt_output(& sdcardio, left);
-	int_fast32_t ch1 = adpt_output(& sdcardio, right);
-			// если есть инициализированный канал для выдачи звука
-	static recordswav48_t * p = NULL;
-	static unsigned n;
-
-	if (p == NULL)
-	{
-		while (recordswav48list.get_freebufferforced(& p) == 0)
-			ASSERT(0);
-
-		n = 0;
-
-		// Подготовка к записи файла WAV со множеством DATA CHUNK, но получившийся файл
-		// нормально читает только ADOBE AUDITION, Windows Media Player 12 проигрывает только один - первый.
-		// Windows Media Player Classic (https://github.com/mpc-hc/mpc-hc) вообще не проигрывает этот файл.
-
-		//preparerecord16->buff [0] = 'd' | 'a' * 256;
-		//preparerecord16->buff [1] = 't' | 'a' * 256;
-		//preparerecord16->buff [2] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 0;
-		//preparerecord16->buff [3] = ((AUDIORECBUFFSIZE16 * sizeof preparerecord16->buff [0]) - 8) >> 16;
-		//level16record = 4;
-
-	}
-
-#if WITHUSEAUDIOREC2CH
-	// Запись звука на SD CARD в стерео
-	p->buff [n ++] = ch0;	// sample value
-	p->buff [n ++] = ch1;	// sample value
-
-#else /* WITHUSEAUDIOREC2CH */
-	// Запись звука на SD CARD в моно
-	p->buff [n ++] = ch0;	// sample value
-
-#endif /* WITHUSEAUDIOREC2CH */
-
-	if (n >= AUDIORECBUFFSIZE16)
-	{
-		/* используется буфер целиклом */
-		p->startdata = 0;
-		p->topdata = AUDIORECBUFFSIZE16;
-		recordswav48list.save_buffer(p);
-		p = NULL;
-	}
+	elfill_recordswav48(left, right);
 
 #endif /* WITHUSEAUDIOREC && ! (WITHWAVPLAYER || WITHSENDWAV) */
 }
