@@ -519,6 +519,40 @@ public:
 	}
 };
 
+template <typename sample_t, typename element_t, unsigned capacity>
+class dmahandle: public blists<element_t, capacity>
+{
+	typedef blists<element_t, capacity> parent_t;
+	element_t * wb;
+	unsigned wbn;
+
+public:
+	dmahandle(IRQL_t airql, const char * aname) :
+		blists<element_t, capacity>(airql, aname),
+		wb(NULL)
+	{
+
+	}
+
+	// поэлементное заполнение буферов
+	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(sample_t * b, FLOAT_t ch0, FLOAT_t ch1))
+	{
+		if (wb == NULL)
+		{
+			while (parent_t::get_freebufferforced(& wb) == 0)
+				ASSERT(0);
+			wbn = 0;
+		}
+		wbn += putcbf(wb->buff + wbn, ch0, ch1);
+		if (wbn >= 999)
+		{
+			parent_t::save_buffer(wb);
+			wb = NULL;
+		}
+	}
+};
+
+
 #if defined(WITHRTS96) && defined(WITHRTS192)
 	#error Configuration Error: WITHRTS96 and WITHRTS192 can not be used together
 #endif /* defined(WITHRTS96) && defined(WITHRTS192) */
@@ -1147,13 +1181,23 @@ typedef struct
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
+typedef dmahandle<uint8_t, uacin48_t, UACIN48_CAPACITY> uacin48dma_t;
 
-static uacin48list_t uacin48list(IRQL_REALTIME, "uacin48");
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
+
+//static uacin48list_t uacin48list(IRQL_REALTIME, "uacin48");
+static uacin48dma_t uacin48list(IRQL_REALTIME, "uacin48");
+
+static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	return 0;
+}
 
 int_fast32_t cachesize_dmabufferuacin48(void)
 {
 	return uacin48list.get_cachesize();
+
+	uacin48list.savedata(0,  0, uacin48_putcbf);
 }
 
 // can not be zero
