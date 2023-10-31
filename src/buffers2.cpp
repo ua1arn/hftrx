@@ -718,6 +718,7 @@ uintptr_t getfilled_dmabuffer16rx_rs(void)
 	return (uintptr_t) dest->buff;
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 {
 	enum { L, R };
@@ -726,6 +727,7 @@ static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 	return DMABUFFSTEP16RX;
 }
 
+// Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
 	return voice16rxlist_rs.fetchdata(dest, voice16rx_getcbf);
@@ -1143,12 +1145,13 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48_rs.save_buffer(p2);
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned uacout48_getcbf(uint8_t * b, FLOAT_t * dest)
 {
-	uacout48adpt.peek(b, dest);
-	return uacout48adpt.sssize();
+	return uacout48adpt.peek(b, dest);
 }
 
+// Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 {
 	// WITHUSBUACOUT test
@@ -1340,6 +1343,7 @@ static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 //static uacin48list_t uacin48(IRQL_REALTIME, "uacin48");
 static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48");
 
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
 	return uacin48adpt.poke(b, ch0, ch1);
@@ -1636,8 +1640,7 @@ typedef dmahandle<FLOAT_t, recordswav48_t, AUDIOREC_CAPACITY> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48list(IRQL_REALTIME, "rec");
 
-
-
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 {
 #if WITHUSEAUDIOREC2CH
