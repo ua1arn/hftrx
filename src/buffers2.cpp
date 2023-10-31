@@ -641,7 +641,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
 } ALIGNX_END voice16rx_t;
 
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
@@ -722,7 +722,7 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// resampling support
 } ALIGNX_END voice16tx_t;
 
 // Sidetone
@@ -871,7 +871,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };
+	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };	// resampling support
 } ALIGNX_END voice32tx_t;
 
 
@@ -973,7 +973,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 {
 	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };
+	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };	// resampling support
 } ALIGNX_END voice32rx_t;
 
 
@@ -1013,8 +1013,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  uint8_t buff [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
-	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES };
-	enum { nch = UACOUT_FMT_CHANNELS_AUDIO48 };
+	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
 } uacout48_t;
 
 typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
@@ -1125,8 +1124,7 @@ typedef struct
 	uacintag_t tag;
 	ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
-	enum { ss = UACIN_RTS192_SAMPLEBYTES };
-	enum { nch = UACIN_FMT_CHANNELS_RTS192 };
+	enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
 } uacinrts192_t;
 
 typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
@@ -1197,8 +1195,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
-		enum { ss = UACIN_RTS96_SAMPLEBYTES };
-		enum { nch = UACIN_FMT_CHANNELS_RTS96 };
+		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
 	} uacinrts96_t;
 
 	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
@@ -1271,8 +1268,7 @@ typedef struct
 	uacintag_t tag;
 	ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
-	enum { ss = UACIN_AUDIO48_SAMPLEBYTES };
-	enum { nch = UACIN_FMT_CHANNELS_AUDIO48 };
+	enum { ss = UACIN_AUDIO48_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_AUDIO48 };
 } uacin48_t;
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
@@ -1484,7 +1480,6 @@ typedef struct
 {
 	messagetypes_t type;
 	uint8_t buff [MSGBUFFERSIZE8];
-	enum { ss = 1, nch = 1 };
 } message8buff_t;
 
 typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
@@ -1646,7 +1641,6 @@ typedef ALIGNX_BEGIN struct recordswav48
 	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
 	unsigned startdata;
 	unsigned topdata;
-	enum { ss = 2, nch = 1 };
 } ALIGNX_END recordswav48_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
