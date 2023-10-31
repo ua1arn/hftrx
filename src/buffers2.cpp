@@ -757,7 +757,7 @@ static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1
 	return DMABUFFSTEP16TX;
 }
 
-void fill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
 {
 	voice16txlist.savedata(ch0, ch1, putbf_dmabuffer16txphones);
 }
@@ -765,7 +765,7 @@ void fill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
 // Поэлементное заполнение DMA буфера AF DAC
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	fill_dmabuffer16txphones(ch0, ch1);
+	elfill_dmabuffer16txphones(ch0, ch1);
 }
 
 // can not be zero
@@ -827,7 +827,7 @@ static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 	return 2;
 }
 
-void fill_dmabuffer16txmoni(int32_t ch0, int32_t ch1)
+void elfill_dmabuffer16txmoni(int32_t ch0, int32_t ch1)
 {
 	voice16txmoni.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
 }
@@ -1087,62 +1087,75 @@ typedef enum
 
 #if WITHRTS192
 
+typedef struct
+{
+	uacintag_t tag;
+	ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+	enum { ss = UACIN_RTS192_SAMPLEBYTES };
+	enum { nch = UACIN_FMT_CHANNELS_RTS192 };
+} uacinrts192_t;
 
-	typedef struct
-	{
-		uacintag_t tag;
-		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
-		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
-		enum { ss = UACIN_RTS192_SAMPLEBYTES };
-		enum { nch = UACIN_FMT_CHANNELS_RTS192 };
-	} uacinrts192_t;
+typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
+typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192dma_t;
 
-	typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
-	typedef adapters<int32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
+typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
-	static uacinrts192list_t uacinrts192list(IRQL_REALTIME, "uacin192");
-	static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacin192");
+//static uacinrts192list_t uacinrts192list(IRQL_REALTIME, "uacin192");
+static uacinrts192dma_t uacinrts192list(IRQL_REALTIME, "uacin192");
+static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacin192");
 
-	int_fast32_t cachesize_dmabufferuacinrts192(void)
-	{
-		return uacinrts192list.get_cachesize();
-	}
+int_fast32_t cachesize_dmabufferuacinrts192(void)
+{
+	return uacinrts192list.get_cachesize();
+}
 
-	// can not be zero
-	uintptr_t allocate_dmabufferuacinrts192(void)
-	{
-		uacinrts192_t * dest;
-		while (uacinrts192list.get_freebufferforced(& dest) == 0)
-			ASSERT(0);
-		dest->tag = BUFFTAG_RTS192;
-		return (uintptr_t) & dest->buff;
-	}
+static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+{
+	uacinrts192adpt.poketransf(& if2rts192out, b, ch0, ch1);
+	return uacinrts192adpt.sssize();
+}
 
-	// can not be zero
-	uintptr_t getfilled_dmabufferuacinrts192(void)
-	{
-		uacinrts192_t * dest;
-		while (uacinrts192list.get_readybufferforced(& dest) == 0)
-			ASSERT(0);
-		dest->tag = BUFFTAG_RTS96;
-		return (uintptr_t) & dest->buff;
-		return 0;
-	}
+void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
+{
+	uacinrts192list.savedata(ch0, ch1, putbf_dmabufferuacinrts192);
+}
 
-	void save_dmabufferuacinrts192(uintptr_t addr)
-	{
-		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
-		ASSERT(p->tag == BUFFTAG_RTS192);
-		uacinrts192list.save_buffer(p);
-	}
+// can not be zero
+uintptr_t allocate_dmabufferuacinrts192(void)
+{
+	uacinrts192_t * dest;
+	while (uacinrts192list.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	dest->tag = BUFFTAG_RTS192;
+	return (uintptr_t) & dest->buff;
+}
+
+// can not be zero
+uintptr_t getfilled_dmabufferuacinrts192(void)
+{
+	uacinrts192_t * dest;
+	while (uacinrts192list.get_readybufferforced(& dest) == 0)
+		ASSERT(0);
+	dest->tag = BUFFTAG_RTS192;
+	return (uintptr_t) & dest->buff;
+	return 0;
+}
+
+void save_dmabufferuacinrts192(uintptr_t addr)
+{
+	uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
+	ASSERT(p->tag == BUFFTAG_RTS192);
+	uacinrts192list.save_buffer(p);
+}
 
 
-	void release_dmabufferuacinrts192(uintptr_t addr)
-	{
-		uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
-		ASSERT(p->tag == BUFFTAG_RTS192);
-		uacinrts192list.release_buffer(p);
-	}
+void release_dmabufferuacinrts192(uintptr_t addr)
+{
+	uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
+	ASSERT(p->tag == BUFFTAG_RTS192);
+	uacinrts192list.release_buffer(p);
+}
 
 #elif WITHRTS96
 
@@ -1175,7 +1188,7 @@ typedef enum
 		return uacinrts96adpt.sssize();
 	}
 
-	void fill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
+	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
 	{
 		uacinrts96list.savedata(ch0, ch1, putbf_dmabufferuacinrts96);
 	}
@@ -1250,7 +1263,7 @@ int_fast32_t cachesize_dmabufferuacin48(void)
 
 }
 
-void fill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
 {
 	uacin48list.savedata(ch0, ch1, uacin48_putcbf);
 }
@@ -1426,7 +1439,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
-	fill_dmabuffer16txmoni(ch0, ch1);
+	elfill_dmabuffer16txmoni(ch0, ch1);
 }
 
 #endif /* WITHINTEGRATEDDSP */
@@ -1976,7 +1989,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 	// WITHUSBUACIN test
 //	left = get_lout();
 //	right = get_rout();
-	fill_dmabufferuacin48(left, right);
+	elfill_dmabufferuacin48(left, right);
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 }
 
@@ -2045,7 +2058,7 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 	void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		fill_dmabufferuacinrts96(ch0, ch1);
+		elfill_dmabufferuacinrts96(ch0, ch1);
 	}
 
 #endif /* WITHRTS96 */
