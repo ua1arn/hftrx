@@ -535,7 +535,7 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(sample_t * b, FLOAT_t ch0, FLOAT_t ch1))
+	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(typeof (element_t::buff [0]) * b, sample_t ch0, sample_t ch1))
 	{
 		if (wb == NULL)
 		{
@@ -544,7 +544,7 @@ public:
 			wbn = 0;
 		}
 		wbn += putcbf(wb->buff + wbn, ch0, ch1);
-		if (wbn >= 999)
+		if (wbn >= ARRAY_SIZE(wb->buff))
 		{
 			parent_t::save_buffer(wb);
 			wb = NULL;
@@ -731,18 +731,41 @@ typedef ALIGNX_BEGIN struct voice16txF_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
 	//ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16TXF };
+	enum { ss = 1, nch = DMABUFFSTEP16TXF };
 } ALIGNX_END voice16txF_t;
 
 typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
 typedef blists<voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonilist_t;
 
-static voice16txlist_t voice16txlist(IRQL_REALTIME, "16tx");
-static voice16txmonilist_t voice16txmoni(IRQL_REALTIME, "16moni");
+typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonidma_t;
+typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
+
+static voice16txdma_t voice16txlist(IRQL_REALTIME, "16tx");
+
+static voice16txmonidma_t voice16txmoni(IRQL_REALTIME, "16moni");
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
 	return voice16txlist.get_cachesize();
+}
+
+static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
+	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, ch1);
+	return DMABUFFSTEP16TX;
+}
+
+void fill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
+{
+	voice16txlist.savedata(ch0, ch1, putbf_dmabuffer16txphones);
+}
+
+// Поэлементное заполнение DMA буфера AF DAC
+static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	fill_dmabuffer16txphones(ch0, ch1);
 }
 
 // can not be zero
@@ -795,6 +818,19 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 }
 
 // sidetone forming
+
+
+static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [0] = ch0;
+	b [1] = ch1;
+	return 2;
+}
+
+void fill_dmabuffer16txmoni(int32_t ch0, int32_t ch1)
+{
+	voice16txmoni.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
+}
 
 // can not be zero
 uintptr_t allocate_dmabuffer16txmoni(void)
@@ -1120,14 +1156,28 @@ typedef enum
 	} uacinrts96_t;
 
 	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
-	typedef adapters<int32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
+	typedef dmahandle<int_fast32_t, uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96dma_t;
 
-	static uacinrts96list_t uacinrts96list(IRQL_REALTIME, "uacin96");
+	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
+
+	//static uacinrts96list_t uacinrts96list(IRQL_REALTIME, "uacin96");
+	static uacinrts96dma_t uacinrts96list(IRQL_REALTIME, "uacin96");
 	static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacin96");
 
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
 		return uacinrts96list.get_cachesize();
+	}
+
+	static unsigned putbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+	{
+		uacinrts96adpt.poketransf(& if2rts96out, b, ch0, ch1);
+		return uacinrts96adpt.sssize();
+	}
+
+	void fill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
+	{
+		uacinrts96list.savedata(ch0, ch1, putbf_dmabufferuacinrts96);
 	}
 
 	// can not be zero
@@ -1181,7 +1231,7 @@ typedef struct
 
 typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
-typedef dmahandle<uint8_t, uacin48_t, UACIN48_CAPACITY> uacin48dma_t;
+typedef dmahandle<FLOAT_t, uacin48_t, UACIN48_CAPACITY> uacin48dma_t;
 
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 
@@ -1190,14 +1240,19 @@ static uacin48dma_t uacin48list(IRQL_REALTIME, "uacin48");
 
 static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
-	return 0;
+	uacin48adpt.poke(b, ch0, ch1);
+	return uacin48adpt.sssize();
 }
 
 int_fast32_t cachesize_dmabufferuacin48(void)
 {
 	return uacin48list.get_cachesize();
 
-	uacin48list.savedata(0,  0, uacin48_putcbf);
+}
+
+void fill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
+{
+	uacin48list.savedata(ch0, ch1, uacin48_putcbf);
 }
 
 // can not be zero
@@ -1371,25 +1426,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
-	enum { L, R };
-	// если есть инициализированный канал для выдачи звука
-	static FLOAT_t * buff = NULL;
-	static unsigned n;
-
-	if (buff == NULL)
-	{
-		buff = (FLOAT_t *) allocate_dmabuffer16txmoni();
-		n = 0;
-	}
-
-	buff [n * DMABUFFSTEP16TXF + L] = ch0;
-	buff [n * DMABUFFSTEP16TXF + R] = ch1;
-
-	if (++ n >= CNT16TXF)
-	{
-		save_dmabuffer16txmoni((uintptr_t) buff);
-		buff = NULL;
-	}
+	fill_dmabuffer16txmoni(ch0, ch1);
 }
 
 #endif /* WITHINTEGRATEDDSP */
@@ -1939,24 +1976,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 	// WITHUSBUACIN test
 //	left = get_lout();
 //	right = get_rout();
-
-	static uint8_t * buff = NULL;
-	static unsigned n = 0;
-
-	if (buff == NULL)
-	{
-		buff = (uint8_t *) allocate_dmabufferuacin48();
-		n = 0;
-	}
-
-	uacin48adpt.poke(buff + n, left, right);
-	n += uacin48adpt.sssize();
-
-	if (n >= UACIN_AUDIO48_DATASIZE_DMAC)
-	{
-		save_dmabufferuacin48((uintptr_t) buff);
-		buff = NULL;
-	}
+	fill_dmabufferuacin48(left, right);
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 }
 
@@ -2025,24 +2045,7 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 	void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		// если есть инициализированный канал для выдачи звука
-		static uint8_t * buff = NULL;
-		static unsigned n;
-
-		if (buff == NULL)
-		{
-			buff = (uint8_t *) allocate_dmabufferuacinrts96();
-			n = 0;
-		}
-
-		uacinrts96adpt.poketransf(& if2rts96out, buff + n, ch0, ch1);
-		n += uacinrts96adpt.sssize();
-
-		if (n >= UACIN_RTS96_DATASIZE_DMAC)
-		{
-			save_dmabufferuacinrts96((uintptr_t) buff);
-			buff = NULL;
-		}
+		fill_dmabufferuacinrts96(ch0, ch1);
 	}
 
 #endif /* WITHRTS96 */
@@ -2440,38 +2443,7 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 }
 
 //////////////////////////////////////////
-// Поэлементное заполнение DMA буфера AF DAC
-/* вызывается при запрещённых глобавльных прерываниях */
-static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
-{
-	// если есть инициализированный канал для выдачи звука
-	static aubufv_t * buff = NULL;
-	static unsigned n;
-
-	if (buff == NULL)
-	{
-		buff = (aubufv_t *) allocate_dmabuffer16txphones();
-		n = 0;
-	}
-
-	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
-	buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
-
-	if (++ n >= CNT16TX)
-	{
-		save_dmabuffer16txphones((uintptr_t) buff);
-		buff = NULL;
-	}
-}
-
-/* вызывается при запрещённых глобальных прерываниях */
-static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
-{
-	savesampleout16stereo(
-		adpt_output(& afcodectx, ch0),
-		adpt_output(& afcodectx, ch1)
-		);
-}
+///
 
 
 #if WITHUSBUAC && WITHUSBHW
