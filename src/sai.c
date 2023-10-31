@@ -3484,7 +3484,7 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
-	DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;//dbg_putchar('a' + dmach);
@@ -3500,7 +3500,7 @@ static uintptr_t DMA_suspend(unsigned dmach)
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
-    DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+    //DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 }
 
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PARAM]
