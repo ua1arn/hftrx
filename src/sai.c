@@ -3389,7 +3389,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYLE_ALLWINNER
 
-#define DMACRINGSTAGES 2
+#define DMACRINGSTAGES 3
 
 /* DMA каналы на Allwinner. 0..7 */
 enum
@@ -3488,14 +3488,25 @@ static uintptr_t DMA_suspend(unsigned dmach)
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;//dbg_putchar('a' + dmach);
-
-//	const uintptr_t v1 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-//	local_delay_us(10);
-//	const uintptr_t v2 = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-//	ASSERT(v1 == v2);
-//	return v2;
-
 	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
+}
+
+static uintptr_t DMA_RX_suspend2(unsigned dmach)
+{
+	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
+	// Ждём, пока канал приступит к следующему дескриптору
+	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
+		;//dbg_putchar('a' + dmach);
+
+	uintptr_t addr = DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
+
+	unsigned steps = 1;
+	while (steps --)
+	{
+		addr = ((volatile uint32_t *) addr) [DMAC_DESC_LINK];
+	}
+	return addr;
+
 }
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
@@ -3519,14 +3530,26 @@ static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 	return addr;
 }
 
-static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
+static uintptr_t DMAC_RX_swap2(unsigned dmach, uintptr_t newaddr)
 {
-	return DMAC_swap(dmach, newaddr, DMAC_DESC_DST);
+	int ix = DMAC_DESC_DST;
+	const uintptr_t descbase = DMA_RX_suspend2(dmach);
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [ix];
+	descraddr [ix] = newaddr;
+	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	DMA_resume(dmach, descbase);
+	return addr;
 }
 
 static uintptr_t DMAC_TX_swap(unsigned dmach, uintptr_t newaddr)
 {
 	return DMAC_swap(dmach, newaddr, DMAC_DESC_SRC);
+}
+
+static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
+{
+	return DMAC_swap(dmach, newaddr, DMAC_DESC_DST);
 }
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
@@ -3542,6 +3565,7 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	DMAC->DMAC_SEC_REG &= ~ (UINT32_C(1) << dmach);
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
@@ -5072,7 +5096,7 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
 	const uintptr_t newaddr = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap2(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
 	save_dmabufferuacout48(addr);
@@ -5081,7 +5105,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
 {
 	//const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
-	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [48*2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width

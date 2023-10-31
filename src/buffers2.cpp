@@ -21,10 +21,10 @@
 #define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
 
-#define UACINRTS192_CAPACITY (8 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (8 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (16 * BUFOVERSIZE)
+#define UACINRTS192_CAPACITY (2 * 8 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY (2 * 8 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (192 + 16 * BUFOVERSIZE)
+#define UACIN48_CAPACITY (128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -474,6 +474,11 @@ public:
 	{
 		if (wbstart != 0 && 1)
 		{
+			// Выходной буфер всегда запрашивается.
+			// каждый вызов метода get_readybufferarj возвращает или целый буфер или ничего.
+			if (get_freebuffer(dest) == 0)	// выходной буфр
+				return 0;
+
 			// Есть не полностью израсходованный остаток в буфере
 			const int ototal = sizeof (workbuff->buff);
 
@@ -489,8 +494,6 @@ public:
 
 			int o = 0;
 			// Часть, оставшаяся от предыдущих пересылок
-			while (get_freebufferforced(dest) == 0)	// выходной буфр
-				ASSERT(0);
 
 			memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o1, p1);	// копируем остаток предыдущего буфера
 			o += p1;
@@ -812,6 +815,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 			break;
 		if (voice16tx.get_freebuffer(& phones) )
 			break;
+		voice16tx.debug();
 		ASSERT(0);
 		for (;;)
 			;
@@ -1035,7 +1039,7 @@ typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY, 1> uacout48dma_t;
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
 static uacout48dma_t uacout48(IRQL_REALTIME, "uaco48");
-static uacout48dma_t uacout48_rs(IRQL_REALTIME, "uaco48_rs");
+//static uacout48dma_t uacout48_rs(IRQL_REALTIME, "uaco48_rs");
 
 static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 
@@ -1068,12 +1072,12 @@ void release_dmabufferuacout48(uintptr_t addr)
 	uacout48.release_buffer(p);
 }
 
-//static void pp(const void * p, size_t n)
-//{
-//	const volatile uint8_t * pb = (const volatile uint8_t *) p;
-//	while (n --)
-//		* pb ++;
-//}
+static void pp(const void * p, size_t n)
+{
+	const volatile uint8_t * pb = (const volatile uint8_t *) p;
+	while (n --)
+		* pb ++;
+}
 
 void save_dmabufferuacout48(uintptr_t addr)
 {
@@ -1083,18 +1087,20 @@ void save_dmabufferuacout48(uintptr_t addr)
 		uacout48.release_buffer(p);
 		return;
 	}
-
 	// временное решение проблемы щелчкчков
 //	pp(p->buff, sizeof p->buff);
 //	pp(p->buff, sizeof p->buff);
-	uacout48_t * p2;
-	while (uacout48_rs.get_freebufferforced(& p2) == 0)
-		ASSERT(0);
-	memcpy(p2->buff, p->buff, sizeof p2->buff);
-	//printhex(0, p2->buff, sizeof p2->buff);
-	uacout48.release_buffer(p);
+	uacout48.save_buffer(p);
+	return;
 
-	uacout48_rs.save_buffer(p2);
+//	uacout48_t * p2;
+//	while (uacout48_rs.get_freebufferforced(& p2) == 0)
+//		ASSERT(0);
+//	memcpy(p2->buff, p->buff, sizeof p2->buff);
+//	//printhex(0, p2->buff, sizeof p2->buff);
+//	uacout48.release_buffer(p);
+//
+//	uacout48_rs.save_buffer(p2);
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -1111,7 +1117,7 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 //	dest [L] = get_lout();	// левый канал
 //	dest [R] = get_rout();	// правый канал
 //	return 1;
-	return uacout48_rs.fetchdata(dest, uacout48_getcbf);
+	return uacout48.fetchdata(dest, uacout48_getcbf);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -1343,6 +1349,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 //		}
 		return (uintptr_t) & dest->buff;
 	}
+	uacin48.debug();
 	ASSERT(0);
 	return 0;
 }
