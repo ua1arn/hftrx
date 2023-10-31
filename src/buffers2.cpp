@@ -711,11 +711,14 @@ uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 void save_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
+//	voice16rx.save_buffer(p);
+//	return;
 //	unsigned i;
 //	for (i = 0; i < DMABUFFSIZE16RX; i += DMABUFFSTEP16RX)
 //	{
 //		p->buff [i + DMABUFF16RX_MIKE] = adpt_output(& afcodecrx, get_lout());
 //	}
+
 	voice16rx_t * p2;
 	while (voice16rxlist_rs.get_freebufferforced(& p2) == 0)
 		ASSERT(0);
@@ -728,12 +731,6 @@ void release_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
 	voice16rx.release_buffer(p);
-}
-
-void release_dmabuffer16rx_rs(uintptr_t addr)
-{
-	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rxlist_rs.release_buffer(p);
 }
 
 // Audio CODEC in (from processor)
