@@ -5365,9 +5365,8 @@ void looptests(void)
 #endif
 #if 1 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
-		// See buffers.c - WITHBUFFERSDEBUG
+		// See buffers2.cpp - WITHBUFFERSDEBUG
 		buffers_diagnostics();
-		buffers2_diagnostics();
 	}
 #endif
 #if 0 && WITHCURRLEVEL

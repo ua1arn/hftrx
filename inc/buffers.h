@@ -593,7 +593,6 @@ extern "C" {
 
 // Buffers interface functions
 void buffers_initialize(void);
-void buffers2_initialize(void);
 
 uint_fast8_t processmodem(void);
 

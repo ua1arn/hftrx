@@ -669,19 +669,19 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
 typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY> voice16rxdma_t;
 
-static voice16rxdma_t voice16rxlist(IRQL_REALTIME, "16rx");		// from codec
+static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
 static voice16rxdma_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
-	return voice16rxlist.get_cachesize();
+	return voice16rx.get_cachesize();
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (voice16rxlist.get_freebufferforced(& dest) == 0)
+	while (voice16rx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -699,7 +699,7 @@ uintptr_t allocate_dmabuffer16rx_rs(void)
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	if (voice16rxlist.get_readybuffer(& dest) == 0)
+	if (voice16rx.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -738,13 +738,13 @@ void save_dmabuffer16rx(uintptr_t addr)
 	voice16rx_t * const p2 = CONTAINING_RECORD(addr2, voice16rx_t, buff);
 	memcpy(p2->buff, p->buff, sizeof p2->buff);
 	voice16rxlist_rs.save_buffer(p2);
-	voice16rxlist.release_buffer(p);
+	voice16rx.release_buffer(p);
 }
 
 void release_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rxlist.release_buffer(p);
+	voice16rx.release_buffer(p);
 }
 
 void release_dmabuffer16rx_rs(uintptr_t addr)
@@ -774,13 +774,13 @@ typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY> voice16txdma_t;
 typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonidma_t;
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
-static voice16txdma_t voice16txlist(IRQL_REALTIME, "16tx");
+static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
 
 static voice16txmonidma_t voice16txmoni(IRQL_REALTIME, "16moni");
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
-	return voice16txlist.get_cachesize();
+	return voice16tx.get_cachesize();
 }
 
 static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
@@ -792,7 +792,7 @@ static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1
 
 void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
 {
-	voice16txlist.savedata(ch0, ch1, putbf_dmabuffer16txphones);
+	voice16tx.savedata(ch0, ch1, putbf_dmabuffer16txphones);
 }
 
 // Поэлементное заполнение DMA буфера AF DAC
@@ -805,7 +805,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 uintptr_t allocate_dmabuffer16txphones(void)
 {
 	voice16tx_t * dest;
-	while (voice16txlist.get_freebufferforced(& dest) == 0)
+	while (voice16tx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -813,13 +813,13 @@ uintptr_t allocate_dmabuffer16txphones(void)
 void save_dmabuffer16txphones(uintptr_t addr)
 {
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	voice16txlist.save_buffer(p);
+	voice16tx.save_buffer(p);
 }
 
 void release_dmabuffer16txphones(uintptr_t addr)
 {
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	voice16txlist.release_buffer(p);
+	voice16tx.release_buffer(p);
 }
 
 // add sidetone
@@ -829,9 +829,9 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	voice16txF_t * moni;
 	do
 	{
-		if (voice16txlist.get_readybuffer(& phones) )
+		if (voice16tx.get_readybuffer(& phones) )
 			break;
-		if (voice16txlist.get_freebuffer(& phones) )
+		if (voice16tx.get_freebuffer(& phones) )
 			break;
 		ASSERT(0);
 		for (;;)
@@ -914,12 +914,12 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 typedef blists<voice32tx_t, VOICE32TX_CAPACITY> voice32txlist_t;
 typedef dmahandle<int_fast32_t, voice32tx_t, VOICE32TX_CAPACITY> voice32txdma_t;
 
-//static voice32txlist_t voice32txlist(IRQL_REALTIME, "32tx");
-static voice32txdma_t voice32txlist(IRQL_REALTIME, "32tx");
+//static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
+static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx");
 
 int_fast32_t cachesize_dmabuffer32tx(void)
 {
-	return voice32txlist.get_cachesize();
+	return voice32tx.get_cachesize();
 }
 
 
@@ -953,20 +953,20 @@ static unsigned putbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_f
 
 void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1)
 {
-	voice32txlist.savedata(ch0, ch1, putbf_dmabuffer32tx);
+	voice32tx.savedata(ch0, ch1, putbf_dmabuffer32tx);
 }
 
 void release_dmabuffer32tx(uintptr_t addr)
 {
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
-	voice32txlist.release_buffer(p);
+	voice32tx.release_buffer(p);
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
-	while (voice32txlist.get_freebufferforced(& dest) == 0)
+	while (voice32tx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -974,16 +974,16 @@ uintptr_t allocate_dmabuffer32tx(void)
 void save_dmabuffer32tx(uintptr_t addr)
 {
 	voice32tx_t * const p = CONTAINING_RECORD(addr, voice32tx_t, buff);
-	voice32txlist.save_buffer(p);
+	voice32tx.save_buffer(p);
 }
 
 // can not be be zero
 uintptr_t getfilled_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
-	if (voice32txlist.get_readybuffer(& dest))
+	if (voice32tx.get_readybuffer(& dest))
 		return (uintptr_t) dest->buff;
-	if (voice32txlist.get_freebuffer(& dest))
+	if (voice32tx.get_freebuffer(& dest))
 		return (uintptr_t) dest->buff;
 	ASSERT(0);
 	for (;;)
@@ -1015,24 +1015,24 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 
 typedef blists<voice32rx_t, VOICE32RX_CAPACITY> voice32rxlist_t;
 
-static voice32rxlist_t voice32rxlist(IRQL_REALTIME, "32rx");
+static voice32rxlist_t voice32rx(IRQL_REALTIME, "32rx");
 
 int_fast32_t cachesize_dmabuffer32rx(void)
 {
-	return voice32rxlist.get_cachesize();
+	return voice32rx.get_cachesize();
 }
 
 void release_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-	voice32rxlist.release_buffer(p);
+	voice32rx.release_buffer(p);
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer32rx(void)
 {
 	voice32rx_t * dest;
-	while (voice32rxlist.get_freebuffer(& dest) == 0)
+	while (voice32rx.get_freebuffer(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -1057,21 +1057,21 @@ typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
-static uacout48dma_t uacout48list(IRQL_REALTIME, "uaco48");
-static uacout48dma_t uacout48list_rs(IRQL_REALTIME, "uaco48_rs");
+static uacout48dma_t uacout48(IRQL_REALTIME, "uaco48");
+static uacout48dma_t uacout48_rs(IRQL_REALTIME, "uaco48_rs");
 
 static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
-	return uacout48list.get_cachesize();
+	return uacout48.get_cachesize();
 }
 
 // can not be zero
 uintptr_t allocate_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
-	while (uacout48list.get_freebufferforced(& dest) == 0)
+	while (uacout48.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -1080,7 +1080,7 @@ uintptr_t allocate_dmabufferuacout48(void)
 uintptr_t allocate_dmabufferuacout48_rs(void)
 {
 	uacout48_t * dest;
-	while (uacout48list_rs.get_freebufferforced(& dest) == 0)
+	while (uacout48_rs.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -1089,7 +1089,7 @@ uintptr_t allocate_dmabufferuacout48_rs(void)
 uintptr_t getfilled_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
-	if (uacout48list.get_readybuffer(& dest) == 0)
+	if (uacout48.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -1098,7 +1098,7 @@ uintptr_t getfilled_dmabufferuacout48(void)
 uintptr_t getfilled_dmabufferuacout48_rs(void)
 {
 	uacout48_t * dest;
-	if (uacout48list_rs.get_readybuffer(& dest) == 0)
+	if (uacout48_rs.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -1106,13 +1106,13 @@ uintptr_t getfilled_dmabufferuacout48_rs(void)
 void release_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	uacout48list.release_buffer(p);
+	uacout48.release_buffer(p);
 }
 
 void release_dmabufferuacout48_rs(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	uacout48list_rs.release_buffer(p);
+	uacout48_rs.release_buffer(p);
 }
 
 //static void pp(const void * p, size_t n)
@@ -1133,9 +1133,9 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uacout48_t * const p2 = CONTAINING_RECORD(addr2, uacout48_t, buff);
 	memcpy(p2->buff, p->buff, sizeof p2->buff);
 	printhex(0, p2->buff, sizeof p2->buff);
-	uacout48list.release_buffer(p);
+	uacout48.release_buffer(p);
 
-	uacout48list_rs.save_buffer(p2);
+	uacout48_rs.save_buffer(p2);
 }
 
 static unsigned uacout48_getcbf(uint8_t * b, FLOAT_t * dest)
@@ -1150,7 +1150,7 @@ static unsigned uacout48_getcbf(uint8_t * b, FLOAT_t * dest)
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 {
-	return uacout48list_rs.fetchdata(dest, uacout48_getcbf);
+	return uacout48_rs.fetchdata(dest, uacout48_getcbf);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -1186,13 +1186,13 @@ typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192
 
 typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
-//static uacinrts192list_t uacinrts192list(IRQL_REALTIME, "uacin192");
-static uacinrts192dma_t uacinrts192list(IRQL_REALTIME, "uacin192");
+//static uacinrts192list_t uacinrts192(IRQL_REALTIME, "uacin192");
+static uacinrts192dma_t uacinrts192(IRQL_REALTIME, "uacin192");
 static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacin192");
 
 int_fast32_t cachesize_dmabufferuacinrts192(void)
 {
-	return uacinrts192list.get_cachesize();
+	return uacinrts192.get_cachesize();
 }
 
 static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
@@ -1203,14 +1203,14 @@ static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fa
 
 void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
 {
-	uacinrts192list.savedata(ch0, ch1, putbf_dmabufferuacinrts192);
+	uacinrts192.savedata(ch0, ch1, putbf_dmabufferuacinrts192);
 }
 
 // can not be zero
 uintptr_t allocate_dmabufferuacinrts192(void)
 {
 	uacinrts192_t * dest;
-	while (uacinrts192list.get_freebufferforced(& dest) == 0)
+	while (uacinrts192.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	dest->tag = BUFFTAG_RTS192;
 	return (uintptr_t) & dest->buff;
@@ -1220,7 +1220,7 @@ uintptr_t allocate_dmabufferuacinrts192(void)
 uintptr_t getfilled_dmabufferuacinrts192(void)
 {
 	uacinrts192_t * dest;
-	while (uacinrts192list.get_readybufferforced(& dest) == 0)
+	while (uacinrts192.get_readybufferforced(& dest) == 0)
 		ASSERT(0);
 	dest->tag = BUFFTAG_RTS192;
 	return (uintptr_t) & dest->buff;
@@ -1231,7 +1231,7 @@ void save_dmabufferuacinrts192(uintptr_t addr)
 {
 	uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
 	ASSERT(p->tag == BUFFTAG_RTS192);
-	uacinrts192list.save_buffer(p);
+	uacinrts192.save_buffer(p);
 }
 
 
@@ -1239,7 +1239,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 {
 	uacinrts192_t * const p = CONTAINING_RECORD(addr, uacinrts192_t, buff);
 	ASSERT(p->tag == BUFFTAG_RTS192);
-	uacinrts192list.release_buffer(p);
+	uacinrts192.release_buffer(p);
 }
 
 #elif WITHRTS96
@@ -1257,13 +1257,13 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
-	//static uacinrts96list_t uacinrts96list(IRQL_REALTIME, "uacin96");
-	static uacinrts96dma_t uacinrts96list(IRQL_REALTIME, "uacin96");
+	//static uacinrts96list_t uacinrts96(IRQL_REALTIME, "uacin96");
+	static uacinrts96dma_t uacinrts96(IRQL_REALTIME, "uacin96");
 	static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacin96");
 
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
-		return uacinrts96list.get_cachesize();
+		return uacinrts96.get_cachesize();
 	}
 
 	static unsigned putbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
@@ -1274,14 +1274,14 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 
 	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts96list.savedata(ch0, ch1, putbf_dmabufferuacinrts96);
+		uacinrts96.savedata(ch0, ch1, putbf_dmabufferuacinrts96);
 	}
 
 	// can not be zero
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		while (uacinrts96list.get_freebufferforced(& dest) == 0)
+		while (uacinrts96.get_freebufferforced(& dest) == 0)
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS96;
 		return (uintptr_t) & dest->buff;
@@ -1291,7 +1291,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		while (uacinrts96list.get_readybufferforced(& dest) == 0)
+		while (uacinrts96.get_readybufferforced(& dest) == 0)
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS96;
 		return (uintptr_t) & dest->buff;
@@ -1302,7 +1302,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
 		ASSERT(p->tag == BUFFTAG_RTS96);
-		uacinrts96list.save_buffer(p);
+		uacinrts96.save_buffer(p);
 	}
 
 
@@ -1310,7 +1310,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacinrts96_t * const p = CONTAINING_RECORD(addr, uacinrts96_t, buff);
 		ASSERT(p->tag == BUFFTAG_RTS96);
-		uacinrts96list.release_buffer(p);
+		uacinrts96.release_buffer(p);
 	}
 
 #endif /* WITHRTS96 */
@@ -1333,8 +1333,8 @@ typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANN
 
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 
-//static uacin48list_t uacin48list(IRQL_REALTIME, "uacin48");
-static uacin48dma_t uacin48list(IRQL_REALTIME, "uacin48");
+//static uacin48list_t uacin48(IRQL_REALTIME, "uacin48");
+static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48");
 
 static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -1344,20 +1344,20 @@ static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 
 int_fast32_t cachesize_dmabufferuacin48(void)
 {
-	return uacin48list.get_cachesize();
+	return uacin48.get_cachesize();
 
 }
 
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	uacin48list.savedata(ch0, ch1, uacin48_putcbf);
+	uacin48.savedata(ch0, ch1, uacin48_putcbf);
 }
 
 // can not be zero
 uintptr_t allocate_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
-	while (uacin48list.get_freebufferforced(& dest) == 0)
+	while (uacin48.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	dest->tag = BUFFTAG_UACIN48;
 	return (uintptr_t) dest->buff;
@@ -1367,7 +1367,7 @@ uintptr_t allocate_dmabufferuacin48(void)
 uintptr_t getfilled_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
-	if (uacin48list.get_readybuffer(& dest))
+	if (uacin48.get_readybuffer(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
 //		unsigned i;
@@ -1378,7 +1378,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 //		}
 		return (uintptr_t) & dest->buff;
 	}
-	if (uacin48list.get_freebuffer(& dest))
+	if (uacin48.get_freebuffer(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
 		memset(dest->buff, 0, sizeof dest->buff);
@@ -1398,13 +1398,13 @@ void save_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
 	ASSERT(p->tag == BUFFTAG_UACIN48);
-	uacin48list.save_buffer(p);
+	uacin48.save_buffer(p);
 }
 
 void release_dmabufferuacin48(uintptr_t addr)
 {
 	uacin48_t * const p = CONTAINING_RECORD(addr, uacin48_t, buff);
-	uacin48list.release_buffer(p);
+	uacin48.release_buffer(p);
 }
 
 /* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
@@ -2111,29 +2111,29 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 
 #endif /* WITHUSBUAC */
 
-void buffers2_diagnostics(void)
+void buffers_diagnostics(void)
 {
 #if WITHBUFFERSDEBUG
 #if 0
 	//denoise16list.debug();
-	voice16rxlist.debug();
-	voice16txlist.debug();
+	voice16rx.debug();
+	voice16tx.debug();
 	voice16txmoni.debug();
-	voice32txlist.debug();
-	voice32rxlist.debug();
+	voice32tx.debug();
+	voice32rx.debug();
 #endif
 #if 1
 	// USB
-	uacout48list.debug();
+	uacout48.debug();
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 #if WITHRTS192
-	uacinrts192list.debug();
+	uacinrts192.debug();
 #endif
 #if WITHRTS96
-	uacinrts96list.debug();
+	uacinrts96.debug();
 #endif
 #endif
-	uacin48list.debug();
+	uacin48.debug();
 #endif
 	//message8list.debug();
 
@@ -2625,11 +2625,35 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 #endif /* WITHINTEGRATEDDSP */
 
 
-
-void buffers_diagnostics(void)
+/* вызывается из обработчика таймерного прерывания */
+static void buffers_spool(void * ctx)
 {
-}
+#if WITHBUFFERSDEBUG
+#if 1
+	//denoise16list.spool10ms();
+	voice16rx.spool10ms();
+	voice16tx.spool10ms();
+	voice16txmoni.spool10ms();
+	voice32tx.spool10ms();
+	voice32rx.spool10ms();
+#endif
+#if 1
+	// USB
+	uacout48.spool10ms();
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192.spool10ms();
+#endif
+#if WITHRTS96
+	uacinrts96.spool10ms();
+#endif
+#endif
+	uacin48.spool10ms();
+#endif
+	//message8list.spool10ms();
 
+#endif /* WITHBUFFERSDEBUG */
+}
 
 // инициализация системы буферов
 void buffers_initialize(void)
@@ -2679,45 +2703,4 @@ void buffers_initialize(void)
 
 
 #endif /* WITHINTEGRATEDDSP */
-}
-
-/* вызывается из обработчика таймерного прерывания */
-static void buffers_spool(void * ctx)
-{
-#if WITHBUFFERSDEBUG
-#if 1
-	//denoise16list.spool10ms();
-	voice16rxlist.spool10ms();
-	voice16txlist.spool10ms();
-	voice16txmoni.spool10ms();
-	voice32txlist.spool10ms();
-	voice32rxlist.spool10ms();
-#endif
-#if 1
-	// USB
-	uacout48list.spool10ms();
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-#if WITHRTS192
-	uacinrts192list.spool10ms();
-#endif
-#if WITHRTS96
-	uacinrts96list.spool10ms();
-#endif
-#endif
-	uacin48list.spool10ms();
-#endif
-	//message8list.spool10ms();
-
-#endif /* WITHBUFFERSDEBUG */
-}
-
-
-void buffers2_initialize(void)
-{
-#if 1 && WITHBUFFERSDEBUG
-	static ticker_t buffticker;
-
-	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
-	ticker_add(& buffticker);
-#endif /* WITHBUFFERSDEBUG */
 }
