@@ -250,7 +250,7 @@ public:
 };
 
 
-template <typename element_t, unsigned capacity>
+template <typename element_t, unsigned capacity, int hasresample>
 class blists
 {
 	typedef struct buffitem
@@ -276,6 +276,8 @@ class blists
 	LIST_ENTRY readylist;
 	buffitem_t storage [capacity];
 	const char * name;
+	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
+	unsigned wbstart;	// start position of work buffer - zero has not meaning
 
 	fqmeter fqin, fqout;
 
@@ -287,7 +289,8 @@ public:
 #endif /* WITHBUFFERSDEBUG */
 		outcount(0),
 		freecount(capacity),
-		name(aname)
+		name(aname),
+		wbstart(0)	// начало данных в workbuff->buff
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
@@ -301,6 +304,14 @@ public:
 			InsertHeadList(& freelist, & p->item);
 		}
 		//PRINTF("blists %u %u\n", sizeof (storage [0].v.buff), capacity);
+
+        // resampler test
+		if (0 && hasresample)
+		{
+			VERIFY(get_freebuffer(& workbuff));
+			wbstart = element_t::ss * element_t::nch;
+			PRINTF("%s: test resampler: wbstart=%u\n", name, wbstart);
+		}
 	}
 
 	// сохранить в списке свободных
@@ -341,7 +352,7 @@ public:
 	}
 
 	// получить из списка готовых
-	int get_readybuffer(element_t * * dest)
+	int get_readybuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
@@ -362,6 +373,17 @@ public:
 		}
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		return 0;
+	}
+	int get_readybuffer(element_t * * dest)
+	{
+		if (hasresample)
+		{
+			return get_readybufferarj(dest, false, false, false);
+		}
+		else
+		{
+			return get_readybuffer_raw(dest);
+		}
 	}
 
 	// получить из списка свободных
@@ -438,40 +460,9 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 #endif /* WITHBUFFERSDEBUG */
 	}
-};
 
-template <typename element_t, unsigned capacity>
-class blistsresample: public blists<element_t, capacity>
-{
-	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
-	unsigned wbstart;	// start position of work buffer - zero has not meaning
-	LCLSPINLOCK_t lock;
-	typedef blists<element_t, capacity> parent_t;
-public:
-	blistsresample(IRQL_t airql, const char * aname) :
-		parent_t(airql, aname),
-		//workbuff(nullptr),
-		wbstart(0)
-		{
-			LCLSPINLOCK_INITIALIZE(& lock);
-			// Один элемент в выходном буфере присутствует
-			element_t * dest;
-			VERIFY(parent_t::get_freebuffer(& dest));
-			parent_t::save_buffer(dest);
-
-			// test
-//			VERIFY(parent_t::get_freebuffer(& workbuff));
-//			wbstart = element_t::ss * element_t::nch;
-
-		}
-
-	// функция вызывается получателем (получаем после ресэмплинга.
-	// Гарантированно получене буфера
-	int get_readybuffer(element_t * * dest)
-	{
-		return parent_t::get_readybuffer(dest);
-		return get_readybufferarj(dest, false, false, false);
-	}
+	///////////
+	/// resampler
 
 	// функция вызывается получателем (получаем после ресэмплинга.
 	// Гарантированно получене буфера
@@ -495,13 +486,13 @@ public:
 
 			int o = 0;
 			// Часть, оставшаяся от предыдущих пересылок
-			while (parent_t::get_freebufferforced(dest) == 0)	// выходной буфр
+			while (get_freebufferforced(dest) == 0)	// выходной буфр
 				ASSERT(0);
 
 			memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o1, p1);	// копируем остаток предыдущего буфера
 			o += p1;
-			// остатлк передали весь
-			parent_t::release_buffer(workbuff);
+			// остаток передали весь
+			release_buffer(workbuff);
 
 			// Вставляемая часть
 			if (p2 != 0)
@@ -511,7 +502,7 @@ public:
 
 			if (o < ototal)
 			{
-				while (parent_t::get_readybufferforced(& workbuff) == 0)	// следующий готовый
+				while (get_readybufferforced(& workbuff) == 0)	// следующий готовый
 					ASSERT(0);
 				memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o3, p3);	// копируем часть следующего буфера
 				o += p3;
@@ -519,14 +510,15 @@ public:
 			ASSERT(o == ototal);
 			return 1;
 		}
-		return parent_t::get_readybuffer(dest);
+		return get_readybuffer_raw(dest);
 	}
+
 };
 
-template <typename sample_t, typename element_t, unsigned capacity>
-class dmahandle: public blists<element_t, capacity>
+template <typename sample_t, typename element_t, unsigned capacity, int hasresample>
+class dmahandle: public blists<element_t, capacity, hasresample>
 {
-	typedef blists<element_t, capacity> parent_t;
+	typedef blists<element_t, capacity, hasresample> parent_t;
 	element_t * wb;
 	unsigned wbn;
 	element_t * rb;
@@ -617,10 +609,11 @@ enum { PHONESLEVEL = 6 };
 typedef ALIGNX_BEGIN struct denoise16
 {
 	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
+	enum { ss = 1, nch = NTRX };	// stub for resampling support
 } ALIGNX_END denoise16_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef dmahandle<FLOAT_t, denoise16_t, SPEEX_CAPACITY> denoise16dma_t;
+typedef dmahandle<FLOAT_t, denoise16_t, SPEEX_CAPACITY, 0> denoise16dma_t;
 
 static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16");
 
@@ -669,7 +662,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
 } ALIGNX_END voice16rx_t;
 
-typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, 0> voice16rxdma_t;
 
 static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
 static voice16rxdma_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
@@ -769,10 +762,11 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 typedef ALIGNX_BEGIN struct voice16txF_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
+	enum { ss = 2, nch = DMABUFFSTEP16TXF };	// stub for resampling support
 } ALIGNX_END voice16txF_t;
 
-typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY> voice16txdma_t;
-typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonidma_t;
+typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, 0> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> voice16txmonidma_t;
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
 static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
@@ -912,7 +906,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 } ALIGNX_END voice32tx_t;
 
 
-typedef dmahandle<int_fast32_t, voice32tx_t, VOICE32TX_CAPACITY> voice32txdma_t;
+typedef dmahandle<int_fast32_t, voice32tx_t, VOICE32TX_CAPACITY, 0> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx");
@@ -1013,7 +1007,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 } ALIGNX_END voice32rx_t;
 
 
-typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY> voice32rxlist_t;
+typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY, 0> voice32rxlist_t;
 
 static voice32rxlist_t voice32rx(IRQL_REALTIME, "32rx");
 
@@ -1052,7 +1046,7 @@ typedef struct
 	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
 } uacout48_t;
 
-typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY> uacout48dma_t;
+typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY, !0> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
@@ -1187,8 +1181,7 @@ typedef struct
 	enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
 } uacinrts192_t;
 
-typedef blistsresample<uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192list_t;
-typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY> uacinrts192dma_t;
+typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY, 0> uacinrts192dma_t;
 
 typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
@@ -1257,12 +1250,10 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
 	} uacinrts96_t;
 
-	typedef blistsresample<uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96list_t;
-	typedef dmahandle<int_fast32_t, uacinrts96_t, UACINRTS96_CAPACITY> uacinrts96dma_t;
+	typedef dmahandle<int_fast32_t, uacinrts96_t, UACINRTS96_CAPACITY, 0> uacinrts96dma_t;
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
-	//static uacinrts96list_t uacinrts96(IRQL_REALTIME, "uacin96");
 	static uacinrts96dma_t uacinrts96(IRQL_REALTIME, "uacin96");
 	static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacin96");
 
@@ -1329,8 +1320,7 @@ typedef struct
 	enum { ss = UACIN_AUDIO48_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_AUDIO48 };
 } uacin48_t;
 
-typedef blistsresample<uacin48_t, UACIN48_CAPACITY> uacin48list_t;
-typedef dmahandle<FLOAT_t, uacin48_t, UACIN48_CAPACITY> uacin48dma_t;
+typedef dmahandle<FLOAT_t, uacin48_t, UACIN48_CAPACITY, 0> uacin48dma_t;
 
 
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
@@ -1480,10 +1470,11 @@ typedef struct
 {
 	messagetypes_t type;
 	uint8_t buff [MSGBUFFERSIZE8];
+	enum { ss = 1, nch = 1 };	// stub for resampling support
 } message8buff_t;
 
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
-typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
+typedef blists<message8buff_t, MESSAGE_CAPACITY, 0> message8list_t;
 
 static message8list_t message8(MESSAGE_IRQL, "msg8");
 
@@ -1630,10 +1621,15 @@ typedef ALIGNX_BEGIN struct recordswav48
 	ALIGNX_BEGIN int16_t buff [AUDIORECBUFFSIZE16] ALIGNX_END;
 //	unsigned startdata;
 //	unsigned topdata;
+#if WITHUSEAUDIOREC2CH
+	enum { ss = 1, nch = 2 };	// stub for resampling support
+#else /* WITHUSEAUDIOREC2CH */
+	enum { ss = 1, nch = 1 };	// stub for resampling support
+#endif /* WITHUSEAUDIOREC2CH */
 } ALIGNX_END recordswav48_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef dmahandle<FLOAT_t, recordswav48_t, AUDIOREC_CAPACITY> recordswav48dma_t;
+typedef dmahandle<FLOAT_t, recordswav48_t, AUDIOREC_CAPACITY, 0> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48list(IRQL_REALTIME, "rec");
 
