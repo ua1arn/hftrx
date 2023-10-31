@@ -3552,8 +3552,8 @@ static void DMAC_clock_initialize(void)
 #if CPUSTYLE_T507
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
 
 #elif CPUSTYLE_A64
 
@@ -3564,8 +3564,8 @@ static void DMAC_clock_initialize(void)
 	// T113-s3, F133-A
 	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);		// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
 
 #else
 	#error Unhandled CPUSTYLE_xxx

@@ -541,8 +541,8 @@ public:
 	{
 		if (wb == NULL)
 		{
-			while (parent_t::get_freebufferforced(& wb) == 0)
-				ASSERT(0);
+			if (parent_t::get_freebuffer(& wb) == 0)
+				return;
 			wbn = 0;
 		}
 		wbn += putcbf(wb->buff + wbn, ch0, ch1);
