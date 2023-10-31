@@ -34,6 +34,9 @@
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
 
+#define MODEM8_CAPACITY (8)
+#define MODEM8_IRQL IRQL_SYSTEM
+
 #if WITHUSBHW
 	#include "usb/usb200.h"
 	#include "usb/usbch9.h"
@@ -1481,19 +1484,19 @@ typedef struct
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
 typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
 
-static message8list_t message8list(MESSAGE_IRQL, "msg8");
+static message8list_t message8(MESSAGE_IRQL, "msg8");
 
 // Освобождение обработанного буфера сообщения
 void releasemsgbuffer(uint8_t * dest)
 {
 	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, buff);
-	message8list.release_buffer(p);
+	message8.release_buffer(p);
 }
 // Буфер для формирования сообщения
 size_t takemsgbufferfree(uint8_t * * dest)
 {
 	message8buff_t * addr;
-	if (message8list.get_freebuffer(& addr))
+	if (message8.get_freebuffer(& addr))
 	{
 		* dest = addr->buff;
 		return sizeof addr->buff;
@@ -1505,14 +1508,14 @@ void placesemsgbuffer(messagetypes_t type, uint8_t * dest)
 {
 	message8buff_t * const p = CONTAINING_RECORD(dest, message8buff_t, buff);
 	p->type = type;
-	message8list.save_buffer(p);
+	message8.save_buffer(p);
 }
 
 // Буферы с принятымти от обработчиков прерываний сообщениями
 messagetypes_t takemsgready(uint8_t * * dest)
 {
 	message8buff_t * addr;
-	if (message8list.get_readybuffer(& addr))
+	if (message8.get_readybuffer(& addr))
 	{
 		* dest = addr->buff;
 		return addr->type;
@@ -1521,22 +1524,6 @@ messagetypes_t takemsgready(uint8_t * * dest)
 }
 
 #if WITHMODEM
-	{
-		unsigned i;
-		static modems8_t modemsarray8 [8];
-
-		/* Подготовка буферов для обмена с модемом */
-		InitializeListHead2(& modemsrx8);	// Заполненные - принятые с модема
-		//InitializeListHead2(& modemstx8);	// Заполненные - готовые для передачи через модем
-		InitializeListHead2(& modemsfree8);	// Незаполненные
-		for (i = 0; i < (sizeof modemsarray8 / sizeof modemsarray8 [0]); ++ i)
-		{
-			modems8_t * const p = & modemsarray8 [i];
-			//InitializeListHead2(& p->item);
-			InsertHeadList2(& modemsfree8, & p->item);
-		}
-	}
-
 
 typedef struct modems8
 {
@@ -1545,10 +1532,14 @@ typedef struct modems8
 	uint8_t buff [MODEMBUFFERSIZE8];
 } modems8_t;
 
-static RAMBIGDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
-static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
-//static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
+// Данному интерфейсу не требуется побайтный доступ или ресэмплниг
+typedef blists<modems8_t, MODEM8_CAPACITY> modems8list_t;
 
+static modems8list_t modems8list(MODEM8_IRQL, "mdm8");
+
+//static RAMBIGDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
+//static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
+//static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 
 // Буферы с принятымти через модем данными
@@ -2152,7 +2143,7 @@ void buffers_diagnostics(void)
 #endif
 	uacin48.debug();
 #endif
-	//message8list.debug();
+	//message8.debug();
 
 	PRINTF("\n");
 
@@ -2667,7 +2658,7 @@ static void buffers_spool(void * ctx)
 #endif
 	uacin48.spool10ms();
 #endif
-	//message8list.spool10ms();
+	//message8.spool10ms();
 
 #endif /* WITHBUFFERSDEBUG */
 }
