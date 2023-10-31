@@ -303,14 +303,14 @@ public:
 			p->tag3 = p;
 			InsertHeadList(& freelist, & p->item);
 		}
-		//PRINTF("blists %u %u\n", sizeof (storage [0].v.buff), capacity);
+		//PRINTF("%s: %u[%u]\n", name, sizeof (storage [0].v.buff), capacity);
 
         // resampler test
-		if (0 && hasresample)
+		if (hasresample)
 		{
 			VERIFY(get_freebuffer(& workbuff));
-			wbstart = element_t::ss * element_t::nch;
-			PRINTF("%s: test resampler: wbstart=%u\n", name, wbstart);
+			wbstart = 7 * element_t::ss * element_t::nch;
+			//PRINTF("%s: test resampler: wbstart=%u\n", name, wbstart);
 		}
 	}
 
@@ -413,13 +413,13 @@ public:
 	// получить из списка свободных, если нет - из готовых
 	int get_freebufferforced(element_t * * dest)
 	{
-		return get_freebuffer(dest) || get_readybuffer(dest);
+		return get_freebuffer(dest) || get_readybuffer_raw(dest);
 	}
 
 	// получить из списка готовых, если нет - из свободных
 	int get_readybufferforced(element_t * * dest)
 	{
-		return get_readybuffer(dest) || get_freebuffer(dest);
+		return get_readybuffer_raw(dest) || get_freebuffer(dest);
 	}
 
 	// все готовые перенести в свободные
@@ -469,7 +469,7 @@ public:
 	// исполнение команд на добавление или удаление одного семплв, на замену потока тишиной
 	int get_readybufferarj(element_t * * dest, bool zero, bool add, bool del)
 	{
-		if (wbstart)
+		if (wbstart != 0 && 1)
 		{
 			// Есть не полностью израсходованный остаток в буфере
 			const int ototal = sizeof (workbuff->buff);
@@ -1046,7 +1046,7 @@ typedef struct
 	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
 } uacout48_t;
 
-typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY, !0> uacout48dma_t;
+typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY, 1> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
@@ -1181,7 +1181,7 @@ typedef struct
 	enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
 } uacinrts192_t;
 
-typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY, 0> uacinrts192dma_t;
+typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY, 1> uacinrts192dma_t;
 
 typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
@@ -1250,7 +1250,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
 	} uacinrts96_t;
 
-	typedef dmahandle<int_fast32_t, uacinrts96_t, UACINRTS96_CAPACITY, 0> uacinrts96dma_t;
+	typedef dmahandle<int_fast32_t, uacinrts96_t, UACINRTS96_CAPACITY, 1> uacinrts96dma_t;
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
@@ -1320,7 +1320,7 @@ typedef struct
 	enum { ss = UACIN_AUDIO48_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_AUDIO48 };
 } uacin48_t;
 
-typedef dmahandle<FLOAT_t, uacin48_t, UACIN48_CAPACITY, 0> uacin48dma_t;
+typedef dmahandle<FLOAT_t, uacin48_t, UACIN48_CAPACITY, 1> uacin48dma_t;
 
 
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
