@@ -1053,15 +1053,6 @@ uintptr_t allocate_dmabufferuacout48(void)
 	return (uintptr_t) dest->buff;
 }
 
-// can not be zero
-uintptr_t allocate_dmabufferuacout48_rs(void)
-{
-	uacout48_t * dest;
-	while (uacout48_rs.get_freebufferforced(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
 // may be zero
 uintptr_t getfilled_dmabufferuacout48(void)
 {
@@ -1071,25 +1062,10 @@ uintptr_t getfilled_dmabufferuacout48(void)
 	return (uintptr_t) dest->buff;
 }
 
-// may be zero
-uintptr_t getfilled_dmabufferuacout48_rs(void)
-{
-	uacout48_t * dest;
-	if (uacout48_rs.get_readybuffer(& dest) == 0)
-		return 0;
-	return (uintptr_t) dest->buff;
-}
-
 void release_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
 	uacout48.release_buffer(p);
-}
-
-void release_dmabufferuacout48_rs(uintptr_t addr)
-{
-	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
-	uacout48_rs.release_buffer(p);
 }
 
 //static void pp(const void * p, size_t n)
@@ -1111,8 +1087,9 @@ void save_dmabufferuacout48(uintptr_t addr)
 	// временное решение проблемы щелчкчков
 //	pp(p->buff, sizeof p->buff);
 //	pp(p->buff, sizeof p->buff);
-	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
-	uacout48_t * const p2 = CONTAINING_RECORD(addr2, uacout48_t, buff);
+	uacout48_t * p2;
+	while (uacout48_rs.get_freebufferforced(& p2) == 0)
+		ASSERT(0);
 	memcpy(p2->buff, p->buff, sizeof p2->buff);
 	//printhex(0, p2->buff, sizeof p2->buff);
 	uacout48.release_buffer(p);
