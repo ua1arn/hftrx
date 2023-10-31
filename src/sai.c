@@ -3506,7 +3506,9 @@ static void DMA_resume(unsigned dmach, uintptr_t descbase)
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PARAM]
 // 19:18 DMA transfers the higher 2 bits of the 34-bit destination address
 // 17:16 DMA transfers the high 2 bits of the 34-bit source address
-static uintptr_t DMAC_swap(unsigned dmach, unsigned ix, uintptr_t newaddr)
+
+
+static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 {
 	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
@@ -3515,6 +3517,16 @@ static uintptr_t DMAC_swap(unsigned dmach, unsigned ix, uintptr_t newaddr)
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 	DMA_resume(dmach, descbase);
 	return addr;
+}
+
+static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
+{
+	return DMAC_swap(dmach, newaddr, DMAC_DESC_DST);
+}
+
+static uintptr_t DMAC_TX_swap(unsigned dmach, uintptr_t newaddr)
+{
+	return DMAC_swap(dmach, newaddr, DMAC_DESC_SRC);
 }
 
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
@@ -4464,9 +4476,8 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 /* от встроенного в процессор или подключенного по I2S */
 static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_DST };
 	const uintptr_t newaddr = dma_invalidate16rx(allocate_dmabuffer16rx());
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
 	save_dmabuffer16rx(addr);
@@ -4477,9 +4488,8 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(unsigned dmach)
 /* на встроенный в процессор или подключенный по I2S */
 static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t newaddr = dma_flush16tx(getfilled_dmabuffer16txphones());
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16txphones(addr);
@@ -4488,9 +4498,8 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_DST };
 	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
 	processing_pipe32rx(addr);
@@ -4502,9 +4511,8 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t newaddr = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
@@ -5063,9 +5071,8 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 /* Приём от USB */
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_DST };
 	const uintptr_t newaddr = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
 	save_dmabufferuacout48(addr);
@@ -5139,9 +5146,8 @@ static uintptr_t dma_flushuacin48(uintptr_t addr)
 /* Передача в host */
 static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t newaddr = dma_flushuacin48(getfilled_dmabufferuacin48());
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
 	release_dmabufferuacin48(addr);
@@ -5213,9 +5219,8 @@ static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 /* Передача в host */
 static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 {
-	enum { ix = DMAC_DESC_SRC };
 	const uintptr_t newaddr = dma_flushuacinrts96(getfilled_dmabufferuacinrts96());
-	const uintptr_t addr = DMAC_swap(dmach, ix, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
 	release_dmabufferuacinrts96(addr);
