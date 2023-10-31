@@ -275,6 +275,7 @@ class blists
 
 	int outcount;
 	int freecount;
+	int rslevel;
 	LIST_ENTRY freelist;
 	LIST_ENTRY readylist;
 	buffitem_t storage [capacity];
@@ -292,6 +293,7 @@ public:
 #endif /* WITHBUFFERSDEBUG */
 		outcount(0),
 		freecount(capacity),
+		rslevel(0),
 		name(aname),
 		wbstart(0)	// начало данных в workbuff->buff
 	{
@@ -349,6 +351,7 @@ public:
 #if WITHBUFFERSDEBUG
 		fqin.pass(sizeof addr->buff / (addr->ss * addr->nch));
 		++ saveount;
+		rslevel += sizeof addr->buff / (addr->ss * addr->nch);
 #endif /* WITHBUFFERSDEBUG */
 
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
@@ -366,6 +369,7 @@ public:
 #if WITHBUFFERSDEBUG
 			fqout.pass(sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch));
 #endif /* WITHBUFFERSDEBUG */
+			rslevel -= sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch);
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
@@ -447,7 +451,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
-		PRINTF("%s:a=%d,b=%d/%d,q=%u/%u ", name, errallocate, outcount, freecount, fin, fout);
+		PRINTF("%s:b=%d/%d,q=%u/%u,v=%d ", name, outcount, freecount, fin, fout, rslevel);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
