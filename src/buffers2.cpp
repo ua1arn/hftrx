@@ -63,10 +63,6 @@ static const uint_fast8_t uacoutalt = 0;
 #endif /* WITHUSBHW && WITHUSBUAC */
 
 
-static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
-static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
-
-
 #if WITHRTS192 || WITHRTS96
 
 	static subscribeint32_t uacinrtssubscribe;
@@ -429,6 +425,7 @@ public:
 		PRINTF("%s:a=%d,b=%d/%d,q=%u/%u ", name, errallocate, outcount, freecount, fin, fout);
 #endif /* WITHBUFFERSDEBUG */
 	}
+
 	void spool10ms()
 	{
 #if WITHBUFFERSDEBUG
@@ -452,7 +449,7 @@ class blistsresample: public blists<element_t, capacity>
 	typedef blists<element_t, capacity> parent_t;
 public:
 	blistsresample(IRQL_t airql, const char * aname) :
-		blists<element_t, capacity>(airql, aname),
+		parent_t(airql, aname),
 		//workbuff(nullptr),
 		wbstart(0)
 		{
@@ -472,7 +469,7 @@ public:
 	// Гарантированно получене буфера
 	int get_readybuffer(element_t * * dest)
 	{
-		//return parent_t::get_readybuffer(dest);
+		return parent_t::get_readybuffer(dest);
 		return get_readybufferarj(dest, false, false, false);
 	}
 
@@ -537,7 +534,7 @@ class dmahandle: public blists<element_t, capacity>
 
 public:
 	dmahandle(IRQL_t airql, const char * aname) :
-		blists<element_t, capacity>(airql, aname),
+		parent_t(airql, aname),
 		wb(NULL),
 		rb(NULL)
 	{
