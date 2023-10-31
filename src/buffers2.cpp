@@ -592,7 +592,6 @@ enum { PHONESLEVEL = 6 };
 typedef ALIGNX_BEGIN struct denoise16
 {
 	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
-	enum { ss = sizeof (speexel_t), nch = NTRX };	// stub
 } ALIGNX_END denoise16_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
@@ -730,8 +729,6 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 typedef ALIGNX_BEGIN struct voice16txF_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
-	//ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = 1, nch = DMABUFFSTEP16TXF };
 } ALIGNX_END voice16txF_t;
 
 typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
@@ -827,7 +824,7 @@ static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 	return 2;
 }
 
-void elfill_dmabuffer16txmoni(int32_t ch0, int32_t ch1)
+void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
 {
 	voice16txmoni.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
 }
