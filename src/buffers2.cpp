@@ -559,14 +559,14 @@ public:
 	{
 		if (rb == NULL)
 		{
-			if (parent_t::get_freebufferforced(& rb) == 0)
+			if (parent_t::get_readybuffer(& rb) == 0)
 				return 0;
 			rbn = 0;
 		}
 		rbn += getcbf(rb->buff + rbn, dest);
 		if (rbn >= ARRAY_SIZE(wb->buff))
 		{
-			parent_t::save_buffer(rb);
+			parent_t::release_buffer(rb);
 			rb = NULL;
 		}
 		return 1;
@@ -1125,6 +1125,11 @@ void release_dmabufferuacout48_rs(uintptr_t addr)
 void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
+	if (uacoutalt != UACOUTALT_AUDIO48)
+	{
+		uacout48.release_buffer(p);
+		return;
+	}
 
 	// временное решение проблемы щелчкчков
 //	pp(p->buff, sizeof p->buff);
@@ -2047,7 +2052,10 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 //	left = get_lout();
 //	right = get_rout();
 
-	elfill_dmabufferuacin48(left, right);
+	if (uacinalt == UACINALT_AUDIO48)
+	{
+		elfill_dmabufferuacin48(left, right);
+	}
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 }
 
