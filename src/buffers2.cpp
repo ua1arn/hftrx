@@ -18,6 +18,9 @@
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (4 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
+#define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
+#define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
+
 #define UACINRTS192_CAPACITY (8 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (8 * BUFOVERSIZE)
 #define UACOUT48_CAPACITY (16 * BUFOVERSIZE)
@@ -662,7 +665,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
 } ALIGNX_END voice16rx_t;
 
-typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, 0> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, VOICE16RX_RESAMPLING> voice16rxdma_t;
 
 static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
 static voice16rxdma_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
@@ -765,11 +768,12 @@ typedef ALIGNX_BEGIN struct voice16txF_tag
 	enum { ss = 2, nch = DMABUFFSTEP16TXF };	// stub for resampling support
 } ALIGNX_END voice16txF_t;
 
-typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, 0> voice16txdma_t;
-typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> voice16txmonidma_t;
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
+typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING> voice16txdma_t;
 
 static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
+
+typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> voice16txmonidma_t;
 
 static voice16txmonidma_t voice16txmoni(IRQL_REALTIME, "16moni");
 
