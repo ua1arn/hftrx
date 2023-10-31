@@ -2080,29 +2080,54 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 	void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		elfill_dmabufferuacinrts96(ch0, ch1);
+#if WITHUSBUACIN2
+	#if WITHRTS96
+		if (uacinrtsalt == UACINRTSALT_RTS96)
+		{
+			elfill_dmabufferuacinrts96(ch0, ch1);
+		}
+	#endif /* WITHRTS96 */
+	#if WITHRTS192
+	#endif /* WITHRTS192 */
+#else
+	#if WITHRTS96
+		if (uacinalt == UACINALT_RTS96)
+		{
+			elfill_dmabufferuacinrts96(ch0, ch1);
+		}
+	#endif /* WITHRTS96 */
+	#if WITHRTS192
+	#endif /* WITHRTS192 */
+#endif /* WITHUSBUACIN2 */
 	}
 
 #endif /* WITHRTS96 */
 
 #if WITHRTS192
 
-	static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
-	{
-		return uacinrts192adpt.poketransf(& if2rts96out, b, ch0, ch1);
-	}
-
-	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
-	{
-		uacinrts192.savedata(ch0, ch1, putbf_dmabufferuacinrts192);
-	}
-
 	// Поэлементное заполнение буфера RTS192
 
 	void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		elfill_dmabufferuacinrts96(ch0, ch1);
-
+#if WITHUSBUACIN2
+	#if WITHRTS96
+	#endif /* WITHRTS96 */
+	#if WITHRTS192
+		if (uacinrtsalt == UACINRTSALT_RTS192)
+		{
+			elfill_dmabufferuacinrts192(ch0, ch1);
+		}
+	#endif /* WITHRTS192 */
+#else
+	#if WITHRTS96
+	#endif /* WITHRTS96 */
+	#if WITHRTS192
+		if (uacinalt == UACINALT_RTS192)
+		{
+			elfill_dmabufferuacinrts192(ch0, ch1);
+		}
+	#endif /* WITHRTS192 */
+#endif /* WITHUSBUACIN2 */
 	}
 
 #endif /* WITHRTS192 */
