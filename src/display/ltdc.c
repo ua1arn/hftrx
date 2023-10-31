@@ -2339,7 +2339,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     		0;
     }
 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
+	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
 
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
@@ -2373,7 +2373,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     {
     	prei = 0;
     	divider = calcdivround2(allwnrt113_get_video0pllx4_freq(), needfreq);
-		PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
     	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
         TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
@@ -2394,7 +2394,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     		0;
         TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
     }
-	PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
+	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
     local_delay_us(10);
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
@@ -2419,7 +2419,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = BOARD_TCONLCDFREQ / display_getdotclock(vdmode);
-	PRINTF("ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
+	//PRINTF("ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
 	ASSERT(val >= 1 && val <= 127);
 	TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
@@ -3079,8 +3079,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
     local_delay_us(10);
 
-	PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
-	PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
+	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
+	//PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
 
     CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset

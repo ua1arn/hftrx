@@ -812,7 +812,7 @@ void arm_hardware_mdma_initialize(void)
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 		local_delay_us(10);
-		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
+		//PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
 
 		//CCU->G2D_BGR_REG = 0;
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -841,7 +841,7 @@ void arm_hardware_mdma_initialize(void)
 		local_delay_ms(10);
 
 		// G2D version=01010100
-		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
+		//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	}
 
@@ -863,7 +863,7 @@ void arm_hardware_mdma_initialize(void)
 		0;
 	CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 	local_delay_us(10);
-	PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000 / 1000));
+	//PRINTF("allwnrt113_get_g2d_freq()=%u MHz\n", (unsigned) (allwnrt113_get_g2d_freq() / 1000 / 1000));
 
 	//CCU->G2D_BGR_REG = 0;
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -892,7 +892,7 @@ void arm_hardware_mdma_initialize(void)
 	local_delay_ms(10);
 
 	// G2D version=01100114
-	PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
+	//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
 	awxx_rcq(0xDEADBEEF, 64);
