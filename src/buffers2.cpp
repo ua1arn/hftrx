@@ -319,6 +319,24 @@ public:
 		}
 	}
 
+	void rslevelreset()
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+
+		rslevel = 0;
+
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+	}
+	void rsleveladd(int inc)
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+
+		rslevel += inc;
+
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+	}
 	// сохранить в списке свободных
 	void release_buffer(element_t * addr)
 	{

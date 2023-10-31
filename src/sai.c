@@ -5105,7 +5105,9 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
 {
 	//const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
-	static ALIGNX_BEGIN uint32_t descr0 [48*2] [DMAC_DESC_SIZE] ALIGNX_END;
+	//static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	//static ALIGNX_BEGIN uint32_t descr0 [48*2] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [64] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
