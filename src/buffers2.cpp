@@ -879,12 +879,48 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 
 
 typedef blists<voice32tx_t, VOICE32TX_CAPACITY> voice32txlist_t;
+typedef dmahandle<int_fast32_t, voice32tx_t, VOICE32TX_CAPACITY> voice32txdma_t;
 
-static voice32txlist_t voice32txlist(IRQL_REALTIME, "32tx");
+//static voice32txlist_t voice32txlist(IRQL_REALTIME, "32tx");
+static voice32txdma_t voice32txlist(IRQL_REALTIME, "32tx");
 
 int_fast32_t cachesize_dmabuffer32tx(void)
 {
 	return voice32txlist.get_cachesize();
+}
+
+
+static unsigned putbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_fast32_t ch1)
+{
+
+	buff [DMABUF32TXI] = ch0;
+	buff [DMABUF32TXQ] = ch1;
+
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
+
+#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
+	/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
+	buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
+	buff [DMABUF32TX_NCO2] = dspfpga_get_nco2();
+	buff [DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
+#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
+
+#if CPUSTYLE_XC7Z && WITHLFM
+	if (iflfmactive())
+	{
+		ftw_t v = dspfpga_get_nco1();
+		xcz_dds_ftw(& v);
+		v = dspfpga_get_ncorts();
+		xcz_dds_rts(& v);
+	}
+#endif /* CPUSTYLE_XC7Z && WITHLFM */
+
+	return DMABUFFSTEP32TX;
+}
+
+void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1)
+{
+	voice32txlist.savedata(ch0, ch1, putbf_dmabuffer32tx);
 }
 
 void release_dmabuffer32tx(uintptr_t addr)
@@ -2392,67 +2428,13 @@ uintptr_t processing_pipe32tx(uintptr_t addr)
 	return addr;
 }
 
-// Отладочная функция для тестирования обмена с кодеком
-void dsp_calctx(void)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_phonesdac += DMABUFFSIZE16TX / DMABUFFSTEP16TX;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-}
-
-// Отладочная функция для тестирования обмена с кодеком
-void dsp_calcrx(void)
-{
-#if WITHBUFFERSDEBUG
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_mikeadc += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
-#endif /* WITHBUFFERSDEBUG */
-}
-
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
 
-// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
 // 32 bit, signed
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
-	static IFDACvalue_t * buff = NULL;
-	static unsigned level32tx;
-
-	if (buff == NULL)
-	{
-		buff = (IFDACvalue_t *) allocate_dmabuffer32tx();
-		level32tx = 0;
-	}
-
-	buff [level32tx + DMABUF32TXI] = ch0;
-	buff [level32tx + DMABUF32TXQ] = ch1;
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
-
-#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
-	/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
-	buff [level32tx + DMABUF32TX_NCO1] = dspfpga_get_nco1();
-	buff [level32tx + DMABUF32TX_NCO2] = dspfpga_get_nco2();
-	buff [level32tx + DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
-#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
-
-#if CPUSTYLE_XC7Z && WITHLFM
-	if (iflfmactive())
-	{
-		ftw_t v = dspfpga_get_nco1();
-		xcz_dds_ftw(& v);
-		v = dspfpga_get_ncorts();
-		xcz_dds_rts(& v);
-	}
-#endif /* CPUSTYLE_XC7Z && WITHLFM */
-
-	if ((level32tx += DMABUFFSTEP32TX) >= DMABUFFSIZE32TX)
-	{
-		save_dmabuffer32tx((uintptr_t) buff);
-		buff = NULL;
-	}
+	elfill_dmabuffer32tx(ch0, ch1);
 }
 
 //////////////////////////////////////////
