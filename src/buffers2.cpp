@@ -87,7 +87,7 @@ public:
 	}
 
 	// преобразование в буфер из внутреннего представления
-	void poke(uint8_t * buff, apptype ch0, apptype ch1)
+	unsigned poke(uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -124,11 +124,12 @@ public:
 			}
 			break;
 		}
+		return ss * nch;
 	}
 
 
 	// преобразование в буфер из внутреннего представления
-	void poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
+	unsigned poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -165,10 +166,11 @@ public:
 			}
 			break;
 		}
+		return ss * nch;
 	}
 
 	// во внутреннее представление из буфера
-	void peek(const uint8_t * buff, apptype * dest)
+	unsigned peek(const uint8_t * buff, apptype * dest)
 	{
 		switch (nch)
 		{
@@ -205,6 +207,7 @@ public:
 			}
 			break;
 		}
+		return ss * nch;
 	}
 
 	static int sssize() { return ss * nch; }
@@ -1137,7 +1140,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 	uintptr_t addr2 = allocate_dmabufferuacout48_rs();
 	uacout48_t * const p2 = CONTAINING_RECORD(addr2, uacout48_t, buff);
 	memcpy(p2->buff, p->buff, sizeof p2->buff);
-	printhex(0, p2->buff, sizeof p2->buff);
+	//printhex(0, p2->buff, sizeof p2->buff);
 	uacout48.release_buffer(p);
 
 	uacout48_rs.save_buffer(p2);
@@ -1146,15 +1149,16 @@ void save_dmabufferuacout48(uintptr_t addr)
 static unsigned uacout48_getcbf(uint8_t * b, FLOAT_t * dest)
 {
 	uacout48adpt.peek(b, dest);
-	// WITHUSBUACOUT test
-//	enum { L, R };
-//	dest [L] = get_lout();	// левый канал
-//	dest [R] = get_rout();	// правый канал
 	return uacout48adpt.sssize();
 }
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 {
+	// WITHUSBUACOUT test
+//	enum { L, R };
+//	dest [L] = get_lout();	// левый канал
+//	dest [R] = get_rout();	// правый канал
+//	return 1;
 	return uacout48_rs.fetchdata(dest, uacout48_getcbf);
 }
 
@@ -1202,8 +1206,7 @@ int_fast32_t cachesize_dmabufferuacinrts192(void)
 
 static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 {
-	uacinrts192adpt.poketransf(& if2rts192out, b, ch0, ch1);
-	return uacinrts192adpt.sssize();
+	return uacinrts192adpt.poketransf(& if2rts192out, b, ch0, ch1);
 }
 
 void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
@@ -1273,8 +1276,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 
 	static unsigned putbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts96adpt.poketransf(& if2rts96out, b, ch0, ch1);
-		return uacinrts96adpt.sssize();
+		return uacinrts96adpt.poketransf(& if2rts96out, b, ch0, ch1);
 	}
 
 	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
@@ -1343,8 +1345,7 @@ static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48");
 
 static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
-	uacin48adpt.poke(b, ch0, ch1);
-	return uacin48adpt.sssize();
+	return uacin48adpt.poke(b, ch0, ch1);
 }
 
 int_fast32_t cachesize_dmabufferuacin48(void)
@@ -1378,8 +1379,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 //		unsigned i;
 //		for (i = 0; i < DMABUFFSIZE16RX;)
 //		{
-//			uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
-//			i += uacin48adpt.sssize();
+//			i += uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
 //		}
 		return (uintptr_t) & dest->buff;
 	}
@@ -1390,8 +1390,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 //		unsigned i;
 //		for (i = 0; i < DMABUFFSIZE16RX;)
 //		{
-//			uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
-//			i += uacin48adpt.sssize();
+//			i += uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
 //		}
 		return (uintptr_t) & dest->buff;
 	}
@@ -2088,31 +2087,22 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 
 #if WITHRTS192
 
-	// NOT USED
+	static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+	{
+		return uacinrts192adpt.poketransf(& if2rts96out, b, ch0, ch1);
+	}
+
+	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
+	{
+		uacinrts192.savedata(ch0, ch1, putbf_dmabufferuacinrts192);
+	}
+
 	// Поэлементное заполнение буфера RTS192
 
-	// Вызывается из ARM_REALTIME_PRIORITY обработчика прерывания
-	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 	void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		// если есть инициализированный канал для выдачи звука
-		static uint8_t * buff = NULL;
-		static unsigned n;
+		elfill_dmabufferuacinrts96(ch0, ch1);
 
-		if (p == NULL)
-		{
-			buff = (uint8_t *) allocate_dmabufferuacinrts192();
-			n = 0;
-		}
-
-		uacinrts192adpt::poketransf(& if2rts96out, buff + n, ch0, ch1);
-		n += uacinrts192adpt::sssize();
-
-		if (n >= UACIN_RTS192_DATASIZE_DMAC)
-		{
-			save_dmabufferuacinrts192((uintptr_t) buff);
-			buff = NULL;
-		}
 	}
 
 #endif /* WITHRTS192 */
