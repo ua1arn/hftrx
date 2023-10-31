@@ -668,7 +668,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, VOICE16RX_RESAMPLING> voice16rxdma_t;
 
 static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
-static voice16rxdma_t voice16rxlist_rs(IRQL_REALTIME, "16rx_rs");		// from codec
+static voice16rxdma_t voice16rx_rs(IRQL_REALTIME, "16rx_rs");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -705,7 +705,7 @@ static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
-	return voice16rxlist_rs.fetchdata(dest, voice16rx_getcbf);
+	return voice16rx_rs.fetchdata(dest, voice16rx_getcbf);
 }
 
 void save_dmabuffer16rx(uintptr_t addr)
@@ -720,10 +720,10 @@ void save_dmabuffer16rx(uintptr_t addr)
 //	}
 
 	voice16rx_t * p2;
-	while (voice16rxlist_rs.get_freebufferforced(& p2) == 0)
+	while (voice16rx_rs.get_freebufferforced(& p2) == 0)
 		ASSERT(0);
 	memcpy(p2->buff, p->buff, sizeof p2->buff);
-	voice16rxlist_rs.save_buffer(p2);
+	voice16rx_rs.save_buffer(p2);
 	voice16rx.release_buffer(p);
 }
 
