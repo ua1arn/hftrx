@@ -2261,9 +2261,9 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
-	++ n1;
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
+//	++ n1;
+//	// подсчёт скорости в сэмплах за секунду
+//	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
 	dsp_extbuffer32rx((IFADCvalue_t *) addr);
@@ -2294,9 +2294,9 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
-	++ n1wfm;
-	// подсчёт скорости в сэмплах за секунду
-	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
+//	++ n1wfm;
+//	// подсчёт скорости в сэмплах за секунду
+//	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 #if WITHWFM
 	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
@@ -2458,7 +2458,7 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 {
 #if WITHBUFFERSDEBUG
-	++ n6;
+//	++ n6;
 #endif /* WITHBUFFERSDEBUG */
 	switch (uacinalt)
 	{
@@ -2498,7 +2498,7 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 {
 #if WITHBUFFERSDEBUG
-	++ n6;
+//	++ n6;
 #endif /* WITHBUFFERSDEBUG */
 	switch (uacinrtsalt)
 	{
@@ -2662,6 +2662,8 @@ static void buffers_spool(void * ctx)
 // инициализация системы буферов
 void buffers_initialize(void)
 {
+	static ticker_t buffticker;
+
 #if WITHBUFFERSDEBUG
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
 	ticker_add(& buffticker);
