@@ -620,9 +620,9 @@ typedef ALIGNX_BEGIN struct denoise16
 } ALIGNX_END denoise16_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef blists<denoise16_t, SPEEX_CAPACITY> denoise16list_t;
+typedef dmahandle<FLOAT_t, denoise16_t, SPEEX_CAPACITY> denoise16dma_t;
 
-static denoise16list_t denoise16list(IRQL_REALTIME, "denoise16");
+static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16");
 
 // получить готоввый
 uint_fast8_t takespeexready(speexel_t * * dest)
@@ -669,7 +669,6 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
 } ALIGNX_END voice16rx_t;
 
-typedef blists<voice16rx_t, VOICE16RX_CAPACITY> voice16rxlist_t;
 typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY> voice16rxdma_t;
 
 static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
@@ -769,9 +768,6 @@ typedef ALIGNX_BEGIN struct voice16txF_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
 } ALIGNX_END voice16txF_t;
-
-typedef blists<voice16tx_t, VOICE16TX_CAPACITY> voice16txlist_t;
-typedef blists<voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonilist_t;
 
 typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY> voice16txdma_t;
 typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY> voice16txmonidma_t;
@@ -914,7 +910,6 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 } ALIGNX_END voice32tx_t;
 
 
-typedef blists<voice32tx_t, VOICE32TX_CAPACITY> voice32txlist_t;
 typedef dmahandle<int_fast32_t, voice32tx_t, VOICE32TX_CAPACITY> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
@@ -1016,7 +1011,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 } ALIGNX_END voice32rx_t;
 
 
-typedef blists<voice32rx_t, VOICE32RX_CAPACITY> voice32rxlist_t;
+typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY> voice32rxlist_t;
 
 static voice32rxlist_t voice32rx(IRQL_REALTIME, "32rx");
 
@@ -1055,7 +1050,6 @@ typedef struct
 	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
 } uacout48_t;
 
-typedef blists<uacout48_t, UACOUT48_CAPACITY> uacout48list_t;
 typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
@@ -1484,6 +1478,7 @@ typedef struct
 	uint8_t buff [MSGBUFFERSIZE8];
 } message8buff_t;
 
+// Данному интерфейсу не требуется побайтный доступ или ресэмплниг
 typedef blists<message8buff_t, MESSAGE_CAPACITY> message8list_t;
 
 static message8list_t message8list(MESSAGE_IRQL, "msg8");
@@ -1646,7 +1641,6 @@ typedef ALIGNX_BEGIN struct recordswav48
 } ALIGNX_END recordswav48_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef blists<recordswav48_t, AUDIOREC_CAPACITY> recordswav48list_t;
 typedef dmahandle<FLOAT_t, recordswav48_t, AUDIOREC_CAPACITY> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48list(IRQL_REALTIME, "rec");
