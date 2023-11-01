@@ -764,9 +764,9 @@ typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING
 
 static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
 
-typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> voice16txmonidma_t;
+typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 
-static voice16txmonidma_t voice16txmoni(IRQL_REALTIME, "16moni");
+static moni16txdma_t moni16tx(IRQL_REALTIME, "16moni");
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
@@ -829,20 +829,20 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		return 0;
 	} while (0);
 
-	if (voice16txmoni.get_readybuffer(& moni))
+	if (moni16tx.get_readybuffer(& moni))
 	{
 		// Добавить самоконтроль
 		// add sidetone
 		dsp_addsidetone(phones->buff, moni->buff);
-		voice16txmoni.release_buffer(moni);
+		moni16tx.release_buffer(moni);
 	}
-	else if (voice16txmoni.get_freebuffer(& moni))
+	else if (moni16tx.get_freebuffer(& moni))
 	{
 		// Добавить самоконтроль
 		// add sidetone
 		memset(moni->buff, 0, sizeof moni->buff);
 		dsp_addsidetone(phones->buff, moni->buff);
-		voice16txmoni.release_buffer(moni);
+		moni16tx.release_buffer(moni);
 	}
 
 #if 0
@@ -869,14 +869,14 @@ static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 
 void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
 {
-	voice16txmoni.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
+	moni16tx.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer16txmoni(void)
 {
 	voice16txF_t * dest;
-	while (voice16txmoni.get_freebufferforced(& dest) == 0)
+	while (moni16tx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -884,15 +884,15 @@ uintptr_t allocate_dmabuffer16txmoni(void)
 void save_dmabuffer16txmoni(uintptr_t addr)
 {
 	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
-	voice16txmoni.save_buffer(p);
+	moni16tx.save_buffer(p);
 }
 
 uintptr_t getfilled_dmabuffer16txmoni(void)
 {
 	voice16txF_t * dest;
-	if (voice16txmoni.get_readybuffer(& dest) )
+	if (moni16tx.get_readybuffer(& dest) )
 		return (uintptr_t) dest->buff;
-	if (voice16txmoni.get_freebuffer(& dest) )
+	if (moni16tx.get_freebuffer(& dest) )
 	{
 		memset(dest->buff, 0, sizeof dest->buff);
 		return (uintptr_t) dest->buff;
@@ -906,7 +906,7 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 void release_dmabuffer16txmoni(uintptr_t addr)
 {
 	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
-	voice16txmoni.release_buffer(p);
+	moni16tx.release_buffer(p);
 }
 
 // I/Q data to FPGA or IF CODEC
@@ -2594,7 +2594,7 @@ void buffers_diagnostics(void)
 	//denoise16list.debug();
 	voice16rx.debug();
 	voice16tx.debug();
-	voice16txmoni.debug();
+	moni16tx.debug();
 	voice32tx.debug();
 	voice32rx.debug();
 #endif
@@ -2629,7 +2629,7 @@ static void buffers_spool(void * ctx)
 	//denoise16list.spool10ms();
 	voice16rx.spool10ms();
 	voice16tx.spool10ms();
-	voice16txmoni.spool10ms();
+	moni16tx.spool10ms();
 	voice32tx.spool10ms();
 	voice32rx.spool10ms();
 #endif
