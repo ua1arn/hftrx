@@ -60,6 +60,17 @@
 	#define USB_FUNCTION_BCD_USB	0x0200
 #endif /* (USBD_LPM_ENABLED == 1) */
 
+#if 0
+	// ACME Inc. STM32F723E-DISCO UAC2
+	#define USB_FUNCTION_VENDOR_ID_OVERRIDE		0xBEEF
+	#define USB_FUNCTION_PRODUCT_ID_OVERRIDE	0x5740
+#endif
+#if 0
+	// E1DA Cosmos ADC PCM32/384
+	#define USB_FUNCTION_VENDOR_ID_OVERRIDE		0x2FC6
+	#define USB_FUNCTION_PRODUCT_ID_OVERRIDE	0x6012
+#endif
+
 /* Remove hive in \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\usbflags\ */
 
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
@@ -264,6 +275,11 @@ static uint_fast8_t usb_ft8cn;	/* совместимость VID/PID для ра
 
 static unsigned usbd_get_productId(void)
 {
+
+#if defined (USB_FUNCTION_PRODUCT_ID_OVERRIDE)
+	return USB_FUNCTION_PRODUCT_ID_OVERRIDE;
+#endif /* USB_FUNCTION_PRODUCT_ID_OVERRIDE */
+
 	if (usb_ft8cn != 0)
 		return 0x5732;	// Need for FT8CN
 	unsigned v = 0;
@@ -308,6 +324,10 @@ static unsigned usbd_get_productId(void)
 
 static unsigned usbd_get_vendorId(void)
 {
+#if defined (USB_FUNCTION_VENDOR_ID_OVERRIDE)
+	return USB_FUNCTION_VENDOR_ID_OVERRIDE;
+#endif /* USB_FUNCTION_VENDOR_ID_OVERRIDE */
+
 	if (usb_ft8cn != 0)
 		return 0x0483;	// Need for FT8CN - ST (SGS Thomson Microelectronics)
 	return USB_FUNCTION_VENDOR_ID;
