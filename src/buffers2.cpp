@@ -845,7 +845,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		moni16tx.release_buffer(moni);
 	}
 
-#if 1
+#if 0
 	// тестирование вывода на кодек
 	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSIZE16TX)
 	{
