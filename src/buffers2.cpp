@@ -721,8 +721,8 @@ uintptr_t getfilled_dmabuffer16rx(void)
 static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 {
 	enum { L, R };
-	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_LEFT]);
-	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_RIGHT]);
+	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
+	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
 	return DMABUFFSTEP16RX;
 }
 

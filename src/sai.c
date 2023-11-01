@@ -2445,7 +2445,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_codec1_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			save_dmabuffer16rx(addr);		// посмещается в очередь
+			save_dmabuffer16rx(addr);		// помещается в очередь
 		}
 		else
 		{
@@ -3530,7 +3530,7 @@ static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 	return addr;
 }
 
-static uintptr_t DMAC_RX_swap2(unsigned dmach, uintptr_t newaddr)
+static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 {
 	int ix = DMAC_DESC_DST;
 	const uintptr_t descbase = DMA_RX_suspend2(dmach);
@@ -3547,7 +3547,7 @@ static uintptr_t DMAC_TX_swap(unsigned dmach, uintptr_t newaddr)
 	return DMAC_swap(dmach, newaddr, DMAC_DESC_SRC);
 }
 
-static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
+static uintptr_t DMAC_RX_swap_old(unsigned dmach, uintptr_t newaddr)
 {
 	return DMAC_swap(dmach, newaddr, DMAC_DESC_DST);
 }
