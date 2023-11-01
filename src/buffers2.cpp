@@ -847,11 +847,12 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 
 #if 0
 	// тестирование вывода на кодек
-	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSIZE16TX)
+	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSTEP16TX)
 	{
 		phones->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
 		phones->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
 	}
+	//printhex32(0, phones->buff, sizeof phones->buff);
 #endif
 
 	return (uintptr_t) phones->buff;
