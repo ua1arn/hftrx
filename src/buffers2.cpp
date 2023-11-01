@@ -753,18 +753,18 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 } ALIGNX_END voice16tx_t;
 
 // Sidetone
-typedef ALIGNX_BEGIN struct voice16txF_tag
+typedef ALIGNX_BEGIN struct moni16tx_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
 	enum { ss = 2, nch = DMABUFFSTEP16TXF };	// stub for resampling support
-} ALIGNX_END voice16txF_t;
+} ALIGNX_END moni16tx_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING> voice16txdma_t;
 
 static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
 
-typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
+typedef dmahandle<FLOAT_t, moni16tx_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 
 static moni16txdma_t moni16tx(IRQL_REALTIME, "16moni");
 
@@ -815,7 +815,7 @@ void release_dmabuffer16txphones(uintptr_t addr)
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
 	voice16tx_t * phones;
-	voice16txF_t * moni;
+	moni16tx_t * moni;
 	do
 	{
 		if (voice16tx.get_readybuffer(& phones) )
@@ -875,7 +875,7 @@ void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
 // can not be zero
 uintptr_t allocate_dmabuffer16txmoni(void)
 {
-	voice16txF_t * dest;
+	moni16tx_t * dest;
 	while (moni16tx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
@@ -883,13 +883,13 @@ uintptr_t allocate_dmabuffer16txmoni(void)
 
 void save_dmabuffer16txmoni(uintptr_t addr)
 {
-	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
+	moni16tx_t * const p = CONTAINING_RECORD(addr, moni16tx_t, buff);
 	moni16tx.save_buffer(p);
 }
 
 uintptr_t getfilled_dmabuffer16txmoni(void)
 {
-	voice16txF_t * dest;
+	moni16tx_t * dest;
 	if (moni16tx.get_readybuffer(& dest) )
 		return (uintptr_t) dest->buff;
 	if (moni16tx.get_freebuffer(& dest) )
@@ -905,7 +905,7 @@ uintptr_t getfilled_dmabuffer16txmoni(void)
 
 void release_dmabuffer16txmoni(uintptr_t addr)
 {
-	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
+	moni16tx_t * const p = CONTAINING_RECORD(addr, moni16tx_t, buff);
 	moni16tx.release_buffer(p);
 }
 
