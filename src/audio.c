@@ -3881,6 +3881,9 @@ static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
 #if WITHUSBMIKET113
+	// WITHUSBMIKET113:
+	// в канал мониторинга идет USB AUDIO OUT
+	// в канал от микрофона - то что с микрофонного кодека
 	return v;
 #else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
@@ -3922,6 +3925,9 @@ static RAMFUNC FLOAT_t get_noisefloat(void)
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
 #if WITHUSBMIKET113
+	// WITHUSBMIKET113:
+	// в канал мониторинга идет USB AUDIO OUT
+	// в канал от микрофона - то что с микрофонного кодека
 	return moni;
 #else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
@@ -3975,6 +3981,9 @@ static RAMFUNC FLOAT_t mikeinmux(
 	FLOAT_t vi0f = vi0p.IV;
 
 #if WITHUSBMIKET113
+	// в канал мониторинга идет USB AUDIO OUT
+	// в канал от микрофона - то что с микрофонного кодека
+	* moni = viusb0f;
 	return vi0f;
 
 #endif
@@ -5477,6 +5486,9 @@ RAMFUNC void dsp_processtx(void)
 	{
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
+		// WITHUSBMIKET113:
+		// в канал мониторинга идет USB AUDIO OUT
+		// в канал от микрофона - то что с микрофонного кодека
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
 #if WITHUSBMIKET113
