@@ -3892,6 +3892,22 @@ static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 #endif /* WITHUSBMIKET113 */
 }
 
+// sdtn, moni: значение выборки в диапазоне, допустимом для кодека
+// shape: 0..1: 0 - monitor, 1 - sidetone
+static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
+{
+#if WITHUSBMIKET113
+	// WITHUSBMIKET113:
+	// в канал мониторинга идет USB AUDIO OUT
+	// в канал от микрофона - то что с микрофонного кодека
+	return moni;
+#else /* WITHUSBMIKET113 */
+	if (uacoutplayer)
+		return moni;
+	return sdtn * shape + moni * glob_moniflag * (1 - shape);
+#endif /* WITHUSBMIKET113 */
+}
+
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
@@ -3918,22 +3934,6 @@ static RAMFUNC FLOAT_t get_noisefloat(void)
 	const unsigned long middle = LONG_MAX;
 	// Формирование значения выборки
 	return (int) (local_random(2 * middle - 1) - middle) / (FLOAT_t) middle;
-}
-
-// sdtn, moni: значение выборки в диапазоне, допустимом для кодека
-// shape: 0..1: 0 - monitor, 1 - sidetone
-static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
-{
-#if WITHUSBMIKET113
-	// WITHUSBMIKET113:
-	// в канал мониторинга идет USB AUDIO OUT
-	// в канал от микрофона - то что с микрофонного кодека
-	return moni;
-#else /* WITHUSBMIKET113 */
-	if (uacoutplayer)
-		return moni;
-	return sdtn * shape + moni * glob_moniflag * (1 - shape);
-#endif /* WITHUSBMIKET113 */
 }
 
 /* При необходимости добавить в самопрослушивание пердаваемый SSB сигнал */
