@@ -812,7 +812,6 @@ void release_dmabuffer16txphones(uintptr_t addr)
 	voice16tx.release_buffer(p);
 }
 
-// add sidetone
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
 	voice16tx_t * phones;
@@ -830,13 +829,30 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		return 0;
 	} while (0);
 
-	// Добавить самоконтроль
-	while ((voice16txmoni.get_readybuffer(& moni) || voice16txmoni.get_freebuffer(& moni)) == 0)
-		ASSERT(0);
+	if (voice16txmoni.get_readybuffer(& moni))
+	{
+		// Добавить самоконтроль
+		// add sidetone
+		dsp_addsidetone(phones->buff, moni->buff);
+		voice16txmoni.release_buffer(moni);
+	}
+	else if (voice16txmoni.get_freebuffer(& moni))
+	{
+		// Добавить самоконтроль
+		// add sidetone
+		memset(moni->buff, 0, sizeof moni->buff);
+		dsp_addsidetone(phones->buff, moni->buff);
+		voice16txmoni.release_buffer(moni);
+	}
 
-	dsp_addsidetone(phones->buff, moni->buff);
-
-	voice16txmoni.release_buffer(moni);
+#if 0
+	// тестирование вывода на кодек
+	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSIZE16TX)
+	{
+		phones->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
+		phones->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
+	}
+#endif
 
 	return (uintptr_t) phones->buff;
 }
@@ -2091,40 +2107,6 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 
 #endif /* WITHUSBUAC */
 
-void buffers_diagnostics(void)
-{
-#if WITHBUFFERSDEBUG
-#if 0
-	//denoise16list.debug();
-	voice16rx.debug();
-	voice16tx.debug();
-	voice16txmoni.debug();
-	voice32tx.debug();
-	voice32rx.debug();
-#endif
-#if 1
-	// USB
-	uacout48.debug();
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-#if WITHRTS192
-	uacinrts192.debug();
-#endif
-#if WITHRTS96
-	uacinrts96.debug();
-#endif
-#endif
-	uacin48.debug();
-#endif
-	//message8.debug();
-
-	PRINTF("\n");
-
-#endif /* WITHBUFFERSDEBUG */
-//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", __get_CPUACTLR());
-//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
-}
-
-
 
 #if WITHINTEGRATEDDSP
 
@@ -2603,6 +2585,40 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 }
 
 #endif /* WITHINTEGRATEDDSP */
+
+
+void buffers_diagnostics(void)
+{
+#if WITHBUFFERSDEBUG
+#if 1
+	//denoise16list.debug();
+	voice16rx.debug();
+	voice16tx.debug();
+	voice16txmoni.debug();
+	voice32tx.debug();
+	voice32rx.debug();
+#endif
+#if 0
+	// USB
+	uacout48.debug();
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192.debug();
+#endif
+#if WITHRTS96
+	uacinrts96.debug();
+#endif
+#endif
+	uacin48.debug();
+#endif
+	//message8.debug();
+
+	PRINTF("\n");
+
+#endif /* WITHBUFFERSDEBUG */
+//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", __get_CPUACTLR());
+//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
+}
 
 
 /* вызывается из обработчика таймерного прерывания */
