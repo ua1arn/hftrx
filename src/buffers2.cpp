@@ -845,7 +845,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		moni16tx.release_buffer(moni);
 	}
 
-#if 0
+#if 1
 	// тестирование вывода на кодек
 	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSIZE16TX)
 	{
@@ -858,56 +858,23 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 }
 
 // sidetone forming
-
-
 static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
+	ASSERT(DMABUFFSTEP16TXF == 2);
 	b [0] = ch0;
 	b [1] = ch1;
-	return 2;
+	return DMABUFFSTEP16TXF;
 }
 
+// sidetone forming
 void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
 {
 	moni16tx.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
 }
 
-// can not be zero
-uintptr_t allocate_dmabuffer16txmoni(void)
-{
-	moni16tx_t * dest;
-	while (moni16tx.get_freebufferforced(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
 
-void save_dmabuffer16txmoni(uintptr_t addr)
-{
-	moni16tx_t * const p = CONTAINING_RECORD(addr, moni16tx_t, buff);
-	moni16tx.save_buffer(p);
-}
-
-uintptr_t getfilled_dmabuffer16txmoni(void)
-{
-	moni16tx_t * dest;
-	if (moni16tx.get_readybuffer(& dest) )
-		return (uintptr_t) dest->buff;
-	if (moni16tx.get_freebuffer(& dest) )
-	{
-		memset(dest->buff, 0, sizeof dest->buff);
-		return (uintptr_t) dest->buff;
-	}
-	ASSERT(0);
-	for (;;)
-		;
-	return 0;
-}
-
-void release_dmabuffer16txmoni(uintptr_t addr)
-{
-	moni16tx_t * const p = CONTAINING_RECORD(addr, moni16tx_t, buff);
-	moni16tx.release_buffer(p);
-}
+///////////////////////////////////
+///
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
