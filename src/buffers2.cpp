@@ -23,7 +23,7 @@
 
 #define UACINRTS192_CAPACITY (2 * 8 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (2 * 8 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (192 + 16 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (128 + 16 * BUFOVERSIZE)
 #define UACIN48_CAPACITY (128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
@@ -693,7 +693,6 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, VOICE16RX_RESAMPLING> voice16rxdma_t;
 
 static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
-static voice16rxdma_t voice16rx_rs(IRQL_REALTIME, "16rx_rs");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -730,26 +729,13 @@ static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
-	return voice16rx_rs.fetchdata(dest, voice16rx_getcbf);
+	return voice16rx.fetchdata(dest, voice16rx_getcbf);
 }
 
 void save_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-//	voice16rx.save_buffer(p);
-//	return;
-//	unsigned i;
-//	for (i = 0; i < DMABUFFSIZE16RX; i += DMABUFFSTEP16RX)
-//	{
-//		p->buff [i + DMABUFF16RX_MIKE] = adpt_output(& afcodecrx, get_lout());
-//	}
-
-	voice16rx_t * p2;
-	while (voice16rx_rs.get_freebufferforced(& p2) == 0)
-		ASSERT(0);
-	memcpy(p2->buff, p->buff, sizeof p2->buff);
-	voice16rx_rs.save_buffer(p2);
-	voice16rx.release_buffer(p);
+	voice16rx.save_buffer(p);
 }
 
 void release_dmabuffer16rx(uintptr_t addr)
