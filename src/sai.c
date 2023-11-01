@@ -5096,7 +5096,7 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
 	const uintptr_t newaddr = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	const uintptr_t addr = DMAC_RX_swap2(dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
 	save_dmabufferuacout48(addr);
