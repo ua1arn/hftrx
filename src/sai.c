@@ -3491,24 +3491,6 @@ static uintptr_t DMA_suspend(unsigned dmach)
 	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 }
 
-static uintptr_t DMA_RX_suspend2(unsigned dmach)
-{
-	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-	// Ждём, пока канал приступит к следующему дескриптору
-	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
-		;//dbg_putchar('a' + dmach);
-
-	uintptr_t addr = DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-
-	unsigned steps = 1;
-	while (steps --)
-	{
-		addr = ((volatile uint32_t *) addr) [DMAC_DESC_LINK];
-	}
-	return addr;
-
-}
-
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
 {
     //DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -3533,13 +3515,14 @@ static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 {
 	int ix = DMAC_DESC_DST;
-	const uintptr_t descbase = DMA_RX_suspend2(dmach);
+	const uintptr_t descbase = DMA_suspend(dmach);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = newaddr;
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	const unsigned NBYTES = descraddr [DMAC_DESC_LEN];
+	memcpy((void *) newaddr, (void *) addr, NBYTES);
+	dcache_invalidate(addr, NBYTES);
 	DMA_resume(dmach, descbase);
-	return addr;
+	return newaddr;
 }
 
 static uintptr_t DMAC_TX_swap(unsigned dmach, uintptr_t newaddr)
@@ -5105,9 +5088,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
 {
 	//const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
-	//static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
-	//static ALIGNX_BEGIN uint32_t descr0 [48*2] [DMAC_DESC_SIZE] ALIGNX_END;
-	static ALIGNX_BEGIN uint32_t descr0 [64] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
