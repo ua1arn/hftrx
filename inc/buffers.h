@@ -413,6 +413,9 @@ extern "C" {
 	#define DMABUFFSTEP16RX		3		/* 3 - каждому сэмплу при получении от AUDIO CODEC соответствует три числа в DMA буфере */
 	#define DMABUFF16RX_MIKE 	2		/* индекс сэмпла левого канала */
 
+	#define DMABUFF16RX_LEFT 	1		/* индекс сэмпла левого канала */
+	#define DMABUFF16RX_RIGHT 	2		/* индекс сэмпла правого канала */
+
 	#define DMABUFFSTEP16TX		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
