@@ -3377,7 +3377,10 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #define DMACRINGSTAGES 16
 
-/* DMA каналы на Allwinner. 0..7 */
+/* DMA каналы на Allwinner T113-s3. 0..7
+ * T507/H616 - 0..15
+ *
+ * */
 enum
 {
 	DMAC_FPGA_TX_Ch,
@@ -3405,7 +3408,7 @@ enum
 #define DMAC_DESC_PARAM	4	/* Parameter */
 #define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
 
-#define DMAC_DESC_SIZE	8	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано 8 */
+#define DMAC_DESC_SIZE	(DCACHEROWSIZE / sizeof (uint32_t))	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано больше */
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? UINT32_C(0) : (UINT32_C(1) << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
