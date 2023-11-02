@@ -1092,7 +1092,6 @@ typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY, 1> uacout48dma_t;
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
 static RAMNC uacout48dma_t uacout48(IRQL_REALTIME, "uaco48");
-//static uacout48dma_t uacout48_rs(IRQL_REALTIME, "uaco48_rs");
 
 static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 
@@ -1186,8 +1185,8 @@ typedef dmahandle<int_fast32_t, uacinrts192_t, UACINRTS192_CAPACITY, 1> uacinrts
 typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
 //static uacinrts192list_t uacinrts192(IRQL_REALTIME, "uacin192");
-static RAMNC uacinrts192dma_t uacinrts192(IRQL_REALTIME, "uacin192");
-static RAMNC uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacin192");
+static uacinrts192dma_t uacinrts192(IRQL_REALTIME, "uacin192");
+static uacinrts192adpt_t uacinrts192adpt(UACIN_RTS192_SAMPLEBYTES * 8, 0, "uacin192");
 
 int_fast32_t cachesize_dmabufferuacinrts192(void)
 {
@@ -1254,7 +1253,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
-	static RAMNC uacinrts96dma_t uacinrts96(IRQL_REALTIME, "uacin96");
+	static uacinrts96dma_t uacinrts96(IRQL_REALTIME, "uacin96");
 	static uacinrts96adpt_t uacinrts96adpt(UACIN_RTS96_SAMPLEBYTES * 8, 0, "uacin96");
 
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
@@ -1327,7 +1326,7 @@ typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANN
 
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 
-static RAMNC uacin48dma_t uacin48(IRQL_REALTIME, "uacin48");
+static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48");
 
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
