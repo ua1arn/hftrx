@@ -464,12 +464,12 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calc
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1);
 void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1);
-void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
-uint_fast8_t elfetch_dmabuffer16txmoni(FLOAT_t * dest);
+uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);

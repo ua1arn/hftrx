@@ -753,20 +753,39 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 } ALIGNX_END voice16tx_t;
 
 // Sidetone
-typedef ALIGNX_BEGIN struct moni16tx_tag
+typedef ALIGNX_BEGIN struct moni16_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16MONI] ALIGNX_END;
 	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for resampling support
-} ALIGNX_END moni16tx_t;
+} ALIGNX_END moni16_t;
+
+// sidetone forming
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	ASSERT(DMABUFFSTEP16MONI == 2);
+	b [0] = ch0;
+	b [1] = ch1;
+	return DMABUFFSTEP16MONI;
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return DMABUFFSTEP16MONI;
+}
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING> voice16txdma_t;
 
 static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
 
-typedef dmahandle<FLOAT_t, moni16tx_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
+typedef dmahandle<FLOAT_t, moni16_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 
-static moni16txdma_t moni16tx(IRQL_REALTIME, "16moni");
+static moni16txdma_t moni16(IRQL_REALTIME, "16moni");		// аудиоданные - самоконтроль (ключ, голос).
+static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec");	// аудиоданные - выход приемника
 
 //int_fast32_t cachesize_dmabuffer16txphones(void)
 //{
@@ -847,34 +866,32 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 	return (uintptr_t) phones->buff;
 }
 
-// sidetone forming
-// Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
-{
-	ASSERT(DMABUFFSTEP16MONI == 2);
-	b [0] = ch0;
-	b [1] = ch1;
-	return DMABUFFSTEP16MONI;
-}
-
-// Возвращает количество элементов буфера, обработанных за вызов
-static unsigned getcbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t * dest)
-{
-	dest [0] = b [0];
-	dest [1] = b [1];
-	return DMABUFFSTEP16MONI;
-}
+///////////////////////////////////
+///
 
 // Возвращает не-ноль если данные есть
-uint_fast8_t elfetch_dmabuffer16txmoni(FLOAT_t * dest)
+uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest)
 {
-	return moni16tx.fetchdata(dest, getcbf_dmabuffer16txmoni);
+	return moni16.fetchdata(dest, getcbf_dmabuffer16moni);
 }
 
 // sidetone forming
-void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1)
 {
-	moni16tx.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
+	moni16.savedata(ch0, ch1, putbf_dmabuffer16moni);
+}
+
+
+// Возвращает не-ноль если данные есть
+uint_fast8_t elfetch_dmabufferrx16rec(FLOAT_t * dest)
+{
+	return rx16rec.fetchdata(dest, getcbf_dmabuffer16moni);
+}
+
+// выход приемника после фильтра
+void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
+{
+	rx16rec.savedata(ch0, ch1, putbf_dmabuffer16moni);
 }
 
 ///////////////////////////////////
@@ -1476,7 +1493,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
-	elfill_dmabuffer16txmoni(ch0, ch1);
+	elfill_dmabuffer16moni(ch0, ch1);
 }
 
 #endif /* WITHINTEGRATEDDSP */
@@ -2238,7 +2255,7 @@ void buffers_diagnostics(void)
 	//denoise16list.debug();
 	voice16rx.debug();
 	voice16tx.debug();
-	moni16tx.debug();
+	moni16.debug();
 	voice32tx.debug();
 	//voice32rx.debug();
 #endif
@@ -2269,7 +2286,7 @@ static void buffers_spool(void * ctx)
 	//denoise16list.spool10ms();
 	voice16rx.spool10ms();
 	voice16tx.spool10ms();
-	moni16tx.spool10ms();
+	moni16.spool10ms();
 	voice32tx.spool10ms();
 	voice32rx.spool10ms();
 #endif

@@ -614,10 +614,10 @@ void release_dmabuffer16txphones(uintptr_t addr);
 void save_dmabuffer16txphones(uintptr_t addr);
 uintptr_t getfilled_dmabuffer16txphones(void);
 
-uintptr_t allocate_dmabuffer16txmoni(void);
-void release_dmabuffer16txmoni(uintptr_t addr);
-void save_dmabuffer16txmoni(uintptr_t addr);
-uintptr_t getfilled_dmabuffer16txmoni(void);
+uintptr_t allocate_dmabuffer16moni(void);
+void release_dmabuffer16moni(uintptr_t addr);
+void save_dmabuffer16moni(uintptr_t addr);
+uintptr_t getfilled_dmabuffer16moni(void);
 
 uintptr_t allocate_dmabuffer16rx(void);
 uintptr_t getfilled_dmabuffer16rx(void);
