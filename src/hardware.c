@@ -1787,7 +1787,7 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
