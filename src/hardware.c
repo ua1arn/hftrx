@@ -2331,7 +2331,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 #if WITHLWIP
 	if (a == (uintptr_t) bd_space)
-		return addrbase | TTB_PARA_DEVICE;
+		return addrbase | TTB_PARA_NCACHED(ro, 0);
 #endif /* WITHLWIP */
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
@@ -2358,6 +2358,10 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+
+	if (a >= 0x46000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_NCACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);

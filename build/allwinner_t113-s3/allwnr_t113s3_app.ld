@@ -4,9 +4,10 @@
 
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 128M - 16k - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
-  TTB (rwx)  : ORIGIN = 0x40000000 + 128M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
   SRAM_A1 (rwx)	: ORIGIN = 0x00020000, 				LENGTH = 32k	/*  */
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 96M - 16k - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
+  TTB (rwx)  : ORIGIN = 0x40000000 + 96M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  RAMNC (rwx)  : ORIGIN = 0x40000000 + 96M, 			LENGTH = 128M - 96M	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
 }
 
 /* Library configurations */
@@ -110,10 +111,8 @@ SECTIONS
 		__zero_table_start__ = .;
 		LONG (__bss_start__)
 		LONG (__bss_end__ - __bss_start__)
-	/*
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
-	*/
 		__zero_table_end__ = .;
 	} > RAM
 
@@ -218,4 +217,12 @@ SECTIONS
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+
+	.ramnc (NOLOAD):
+	{
+		__bss2_start__ = .;
+		. = ALIGN(64);
+		*(.ramnc*)
+		__bss2_end__ = .;
+	} > RAMNC
 }
