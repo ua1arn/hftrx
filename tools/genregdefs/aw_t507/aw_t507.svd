@@ -361,18 +361,18 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>AC_DAC_DRC_LPFLAT</name>
-    <displayName>AC_DAC_DRC_LPFLAT</displayName>
-    <description>DAC DRC Left Peak Filter Low Attack Time Coef Register</description>
+    <name>AC_DAC_DRC_LPFLAT_</name>
+    <displayName>AC_DAC_DRC_LPFLAT_</displayName>
+    <description>DAC DRC Left Peak Filter Low Attack Time Coef Register ???</description>
     <addressOffset>0x110</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>AC_DAC_DRC_LPFLAT</name>
-    <displayName>AC_DAC_DRC_LPFLAT</displayName>
-    <description>DAC DRC Left Peak Filter Low Attack Time Coef Register</description>
+    <name>AC_DAC_DRC_LPFLRT_</name>
+    <displayName>AC_DAC_DRC_LPFLRT_</displayName>
+    <description>DAC DRC Left Peak Filter Low Release Time Coef Register ????</description>
     <addressOffset>0x118</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
