@@ -13,7 +13,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define RAMNC __attribute__ ((section(".ramnc"), used))
 
 #define MODEMBUFFERSIZE8	1024
 
