@@ -12,7 +12,7 @@
 #include "audio.h"
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 10
+#define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
@@ -21,10 +21,10 @@
 #define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
 
-#define UACINRTS192_CAPACITY (2 * 8 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (2 * 8 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (128 + 16 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define UACINRTS192_CAPACITY (256 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY (256 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (256 * BUFOVERSIZE)
+#define UACIN48_CAPACITY (512 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -469,7 +469,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
-		PRINTF("%s:b=%d/%d,q=%u/%u,v=%d ", name, outcount, freecount, fin, fout, rslevel);
+		PRINTF("%s:e=%d,b=%d/%d,f=%u/%u,v=%d ", name, errallocate, outcount, freecount, fin, fout, rslevel);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
@@ -2479,10 +2479,11 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 #endif /* WITHINTEGRATEDDSP */
 
 
+#if WITHBUFFERSDEBUG
+
 void buffers_diagnostics(void)
 {
-#if WITHBUFFERSDEBUG
-#if 1
+#if 0
 	//denoise16list.debug();
 	voice16rx.debug();
 	voice16tx.debug();
@@ -2490,7 +2491,7 @@ void buffers_diagnostics(void)
 	voice32tx.debug();
 	voice32rx.debug();
 #endif
-#if 0
+#if 1
 	// USB
 	uacout48.debug();
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
@@ -2507,16 +2508,12 @@ void buffers_diagnostics(void)
 
 	PRINTF("\n");
 
-#endif /* WITHBUFFERSDEBUG */
-//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", __get_CPUACTLR());
-//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
 }
 
 
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
 {
-#if WITHBUFFERSDEBUG
 #if 1
 	//denoise16list.spool10ms();
 	voice16rx.spool10ms();
@@ -2540,8 +2537,15 @@ static void buffers_spool(void * ctx)
 #endif
 	//message8.spool10ms();
 
-#endif /* WITHBUFFERSDEBUG */
 }
+
+#else /* WITHBUFFERSDEBUG */
+
+void buffers_diagnostics(void)
+{
+}
+
+#endif /* WITHBUFFERSDEBUG */
 
 // инициализация системы буферов
 void buffers_initialize(void)
