@@ -1125,13 +1125,6 @@ void release_dmabufferuacout48(uintptr_t addr)
 	uacout48.release_buffer(p);
 }
 
-static void pp(const void * p, size_t n)
-{
-	const volatile uint8_t * pb = (const volatile uint8_t *) p;
-	while (n --)
-		* pb ++;
-}
-
 void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
@@ -1140,20 +1133,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 		uacout48.release_buffer(p);
 		return;
 	}
-	// временное решение проблемы щелчкчков
-//	pp(p->buff, sizeof p->buff);
-//	pp(p->buff, sizeof p->buff);
 	uacout48.save_buffer(p);
-	return;
-
-//	uacout48_t * p2;
-//	while (uacout48_rs.get_freebufferforced(& p2) == 0)
-//		ASSERT(0);
-//	memcpy(p2->buff, p->buff, sizeof p2->buff);
-//	//printhex(0, p2->buff, sizeof p2->buff);
-//	uacout48.release_buffer(p);
-//
-//	uacout48_rs.save_buffer(p2);
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -1470,10 +1450,11 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	return elfetch_dmabufferuacout48(v->ivqv);
-#else
+	if (uacoutalt == UACOUTALT_AUDIO48)
+		return elfetch_dmabufferuacout48(v->ivqv);
 	return 0;
 #endif
+	return 0;
 }
 
 // звук для самоконтроля
