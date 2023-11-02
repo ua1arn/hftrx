@@ -1829,20 +1829,14 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream5->M0AR;
-			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream5->M1AR;
-			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 	}
 
@@ -1864,13 +1858,13 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M0AR);
-			DMA2_Stream1->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream1->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream1->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M1AR);
-			DMA2_Stream1->M1AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream1->M1AR);
 		}
 	}
@@ -1973,8 +1967,8 @@ static void DMA_SAI1_B_RX_initialize_fpga(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	DMA2_Stream5->NDTR = (DMA2_Stream5->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -2472,20 +2466,14 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
-			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
-			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 	}
 
@@ -2536,16 +2524,14 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_wfm_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
-			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_dmabuffer32wfm(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
-			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_dmabuffer32wfm(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 	}
 
@@ -2598,13 +2584,13 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR =  dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream4->M1AR);
 		}
 	}
@@ -2990,8 +2976,8 @@ static void DMA_SAI2_B_RX_initialize_fpga(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	DMA2_Stream7->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -3211,8 +3197,8 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -4338,132 +4324,6 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 #endif /* defined(I2S2) && WITHI2S2HW */
 
 
-#if WITHDEBUG && 1
-
-static uint32_t rxlastts;
-static uint32_t txlastts;
-static volatile uint32_t rxfreq;
-static volatile uint32_t txfreq;
-
-static void txstamp(unsigned samples)
-{
-#if WITHDEBUG
-	uint32_t last = txlastts;
-	txlastts = cpu_getdebugticks();
-	uint32_t d = txlastts - last;
-	txfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
-#endif /* WITHDEBUG */
-}
-
-static void rxstamp(unsigned samples)
-{
-#if WITHDEBUG
-	uint32_t last = rxlastts;
-	rxlastts = cpu_getdebugticks();
-	uint32_t d = rxlastts - last;
-	rxfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
-#endif /* WITHDEBUG */
-}
-
-static LCLSPINLOCK_t locklistprint = LCLSPINLOCK_INIT;
-static volatile uintptr_t printptr;
-
-void zdataprint(void)
-{
-#if WITHDEBUG
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	LCLSPIN_LOCK(& locklistprint);
-	uintptr_t pp = printptr;
-	printptr = 0;
-	LCLSPIN_UNLOCK(& locklistprint);
-	LowerIrql(oldIrql);
-
-	if (pp != 0)
-	{
-		PRINTF("rx buffer:\n");
-		//printhex32(0, (void *) xbuff, sizeof xbuff);
-		printhex32(0, (void *) pp, 128);
-
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		LCLSPIN_LOCK(& locklistprint);
-		release_dmabuffer32rx(pp);
-		LCLSPIN_UNLOCK(& locklistprint);
-		LowerIrql(oldIrql);
-	}
-#endif /* WITHDEBUG */
-}
-
-static void savetodebug(uintptr_t addr32)
-{
-#if WITHDEBUG
-	uintptr_t p = allocate_dmabuffer32rx();
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	LCLSPIN_LOCK(& locklistprint);
-	uintptr_t oldpp = printptr;
-	printptr = p;
-	LCLSPIN_UNLOCK(& locklistprint);
-	LowerIrql(oldIrql);
-
-	if (oldpp != 0)
-		release_dmabuffer32rx(oldpp);
-
-	memcpy((void *) p, (void *) addr32, 128);
-
-#endif /* WITHDEBUG */
-}
-
-void zcountsprint(void)
-{
-#if WITHDEBUG && CPUSTYLE_T507
-	//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
-	PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X\n",
-			(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
-			(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
-	PRINTF("APBIF_RX1FIFO_CNT=%08X, APBIF_TX1FIFO_CNT=%08X\n",
-			(unsigned) AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT,
-			(unsigned) AHUB->APBIF_TX[1].APBIF_TXnFIFO_CNT);
-	PRINTF("APBIF_RX2FIFO_CNT=%08X, APBIF_TX2FIFO_CNT=%08X\n",
-			(unsigned) AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT,
-			(unsigned) AHUB->APBIF_TX[2].APBIF_TXnFIFO_CNT);
-#endif
-}
-
-void zfreqprint(void)
-{
-#if WITHDEBUG && CPUSTYLE_T507
-	unsigned ix = 0;	// I2S0
-	{
-		static uint32_t txlasc;
-		uint32_t lastc = txlasc;
-		txlasc = AHUB->APBIF_RX[getAPBIFrx(ix)].APBIF_RXnFIFO_CNT;
-		uint32_t df = cpu_getdebugticksfreq();
-		static uint32_t txlastts;
-		uint32_t last = txlastts;
-		txlastts = cpu_getdebugticks();
-		uint32_t d = txlastts - last;
-		uint32_t dc = txlasc - lastc;
-		PRINTF("rxiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
-	}
-	{
-		static uint32_t txlasc;
-		uint32_t lastc = txlasc;
-		txlasc = AHUB->APBIF_TX[getAPBIFtx(ix)].APBIF_TXnFIFO_CNT;
-		uint32_t df = cpu_getdebugticksfreq();
-		static uint32_t txlastts;
-		uint32_t last = txlastts;
-		txlastts = cpu_getdebugticks();
-		uint32_t d = txlastts - last;
-		uint32_t dc = txlasc - lastc;
-		PRINTF("txiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
-	}
-#endif
-	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
-}
-
-#endif
-
 
 // DMA Source/Destination Data Width
 // 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4505,20 +4365,17 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
-	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());
+	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
-	processing_pipe32rx(addr);
-	processing_dmabuffer32rts(addr);
-	processing_dmabuffer32rx(addr);
-	release_dmabuffer32rx(addr);
+	save_dmabuffer32rx(addr);
 }
 
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
-	const uintptr_t newaddr = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+	const uintptr_t newaddr = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
@@ -6241,14 +6098,14 @@ static void r7s721_ssif1_txdma_fpgatx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC3.N0SA_n;
-		DMAC3.N0SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC3.N1SA_n;
-		DMAC3.N1SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
@@ -6269,22 +6126,16 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC2.N0DA_n;
-		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
-		processing_pipe32rx(addr);
-		processing_dmabuffer32rts(addr);
-		processing_dmabuffer32rx(addr);
-		release_dmabuffer32rx(addr);
+		save_dmabuffer32rx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC2.N1DA_n;
-		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
-		processing_pipe32rx(addr);
-		processing_dmabuffer32rts(addr);
-		processing_dmabuffer32rx(addr);
-		release_dmabuffer32rx(addr);
+		save_dmabuffer32rx(addr);
 	}
 }
 
@@ -6301,8 +6152,8 @@ static void r7s721_ssif1_dmarx_initialize_fpga_rx(void)
     DMAC2.N1SA_n = (uintptr_t) & SSIF1.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
-	DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 
 	/* Set Transfer Size */
 	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);	// размер в байтах
@@ -6528,12 +6379,12 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 	const uint_fast8_t b = (DMAC4.CHSTAT_n & (UINT32_C(1) << DMAC4_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
-		processing_dmabuffer32rts192(DMAC4.N0DA_n);
+		save_dmabufferuacinrts192(DMAC4.N0DA_n);
 		DMAC4.N0DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
 	}
 	else
 	{
-		processing_dmabuffer32rts192(DMAC4.N1DA_n);
+		save_dmabufferuacinrts192(DMAC4.N1DA_n);
 		DMAC4.N1DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
 	}
 }

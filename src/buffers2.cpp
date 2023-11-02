@@ -11,7 +11,7 @@
 #include "mslist.h"
 #include "audio.h"
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
@@ -965,10 +965,71 @@ uintptr_t getfilled_dmabuffer32tx(void)
 	return 0;
 }
 
+
+#if WITHFPGAPIPE_CODEC1
+
+// копирование полей из принятого от FPGA буфера
+static uintptr_t RAMFUNC
+pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
+{
+	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
+	unsigned i;
+	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
+	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
+
+	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
+	ASSERT(sizeof * rx32 == sizeof * rx16);
+	for (i = 0; i < (unsigned) CNT32RX; ++ i)
+	{
+		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
+		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
+	}
+	return addr16rx;
+}
+
+// копирование полей в передаваемый на FPGA буфер
+static uintptr_t RAMFUNC
+pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
+{
+	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
+
+	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
+	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
+	unsigned i;
+	const FLOAT_t scale = 1.0 / 32;	// for test
+
+	ASSERT((unsigned) CNT32TX == (unsigned) CNT16TX);
+	ASSERT(DMABUFFSTEP16TX >= 2);
+	ASSERT(sizeof * tx32 == sizeof * tx16);
+	for (i = 0; i < (unsigned) CNT32TX; ++ i)
+	{
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
+//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = adpt_outputexact(& afcodectx, get_lout() * scale);
+//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = adpt_outputexact(& afcodectx, get_rout() * scale);
+	}
+	return addr32tx;
+}
+
+#endif /* WITHFPGAPIPE_CODEC1 */
+
 // can not be be zero
 uintptr_t getfilled_dmabuffer32tx_main(void)
 {
-	return getfilled_dmabuffer32tx();
+	uintptr_t addr = getfilled_dmabuffer32tx();
+#if WITHFPGAPIPE_CODEC1
+	/* при необходимости добавляем слоты для передачи на кодек */
+	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	pipe_dmabuffer32tx(addr, addr16);
+	release_dmabuffer16txphones(addr16);	/* освоюождаем буфер как переданный */
+#endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_NCORX0
+#endif /* WITHFPGAPIPE_NCORX0 */
+#if WITHFPGAPIPE_NCORX1
+#endif /* WITHFPGAPIPE_NCORX1 */
+#if WITHFPGAPIPE_NCORTS
+#endif /* WITHFPGAPIPE_NCORTS */
+	return addr;
 }
 
 // can not be be zero
@@ -2176,110 +2237,10 @@ static uint_fast8_t isrts96(void)
 
 #endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 
-
-// --- Коммутация потоков аудиоданных
-
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (спектроанализатор)
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-//	++ n1;
-//	// подсчёт скорости в сэмплах за секунду
-//	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-
-	dsp_extbuffer32rx((IFADCvalue_t *) addr);
-
-	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
-
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-	//++ n77;
-	// подсчёт скорости в сэмплах за секунду
-	//debugcount_rx32rtsadc += CNT32RTS;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32rts((IFADCvalue_t *) addr);
-}
-
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-//	++ n1wfm;
-//	// подсчёт скорости в сэмплах за секунду
-//	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-#if WITHWFM
-	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
-#endif /* WITHWFM */
-}
-
-#if WITHFPGAPIPE_CODEC1
-
-// копирование полей из принятого от FPGA буфера
-static uintptr_t RAMFUNC
-pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
-{
-	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	unsigned i;
-	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
-	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
-
-	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
-	ASSERT(sizeof * rx32 == sizeof * rx16);
-	for (i = 0; i < (unsigned) CNT32RX; ++ i)
-	{
-		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
-		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
-	}
-	return addr16rx;
-}
-
-// копирование полей в передаваемый на FPGA буфер
-static uintptr_t RAMFUNC
-pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
-{
-	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-
-	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
-	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
-	unsigned i;
-	const FLOAT_t scale = 1.0 / 32;
-
-	ASSERT((unsigned) CNT32TX == (unsigned) CNT16TX);
-	ASSERT(DMABUFFSTEP16TX >= 2);
-	ASSERT(sizeof * tx32 == sizeof * tx16);
-	for (i = 0; i < (unsigned) CNT32TX; ++ i)
-	{
-		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
-		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
-//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = adpt_outputexact(& afcodectx, get_lout() * scale);
-//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = adpt_outputexact(& afcodectx, get_rout() * scale);
-	}
-	return addr32tx;
-}
-
-#endif /* WITHFPGAPIPE_CODEC1 */
-
 #if WITHRTS192
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки - канал спектроанализатора
-void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
+void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
@@ -2298,44 +2259,10 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
-	//save_dmabufferuacinrts192(p);
-	buffers_savetonull192rts(p);
+	release_savetonull192rts(addr);
 }
 #endif /* WITHRTS192 */
 
-
-
-/* при необходимости копируем сэмплы от кодекв */
-uintptr_t processing_pipe32rx(uintptr_t addr)
-{
-#if WITHFPGAPIPE_CODEC1
-	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
-#endif /* WITHFPGAPIPE_CODEC1 */
-#if WITHFPGAPIPE_RTS96
-	//processing_dmabuffer32rts(addr);
-#endif /* WITHFPGAPIPE_RTS96 */
-#if WITHFPGAPIPE_RTS192
-	//processing_dmabuffer32rts(addr);
-#endif /* WITHFPGAPIPE_RTS192 */
-	return addr;
-}
-
-/* при необходимости добавляем слоты для передачи на кодек */
-uintptr_t processing_pipe32tx(uintptr_t addr)
-{
-#if WITHFPGAPIPE_CODEC1
-	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
-	pipe_dmabuffer32tx(addr, addr16);
-	release_dmabuffer16txphones(addr16);	/* освоюождаем буфер как переданный */
-#endif /* WITHFPGAPIPE_CODEC1 */
-#if WITHFPGAPIPE_NCORX0
-#endif /* WITHFPGAPIPE_NCORX0 */
-#if WITHFPGAPIPE_NCORX1
-#endif /* WITHFPGAPIPE_NCORX1 */
-#if WITHFPGAPIPE_NCORTS
-#endif /* WITHFPGAPIPE_NCORTS */
-	return addr;
-}
 
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
@@ -2345,6 +2272,24 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	elfill_dmabuffer32tx(ch0, ch1);
 }
+
+void save_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+#if WITHFPGAPIPE_CODEC1
+	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+#endif /* WITHFPGAPIPE_CODEC1 */
+	dsp_extbuffer32rts(p->buff);
+	dsp_extbuffer32rx(p->buff);
+#if WITHWFM
+	dsp_extbuffer32wfm(p->buff);
+#endif /* WITHWFM */
+
+	voice32rx.release_buffer(p);
+
+	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+}
+
 
 //////////////////////////////////////////
 ///
