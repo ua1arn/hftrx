@@ -2201,6 +2201,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define RAM_ATTRS CACHEATTR_WB_WA_CACHE
 //#define RAM_ATTRS CACHEATTR_WB_NWA_CACHE
 #define DEVICE_ATTRS CACHEATTR_NOCACHE
+#define NCRAM_ATTRS CACHEATTR_NOCACHE
 
 #define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)
 #define Cval_RAM		MKATTR_Cval(RAM_ATTRS)
@@ -2210,6 +2211,16 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
 #else /* WITHSMPSYSTEM */
 	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+#endif /* WITHSMPSYSTEM */
+
+#define TEXval_NCRAM	MKATTR_TEXval(NCRAM_ATTRS)
+#define Cval_NCRAM		MKATTR_Cval(NCRAM_ATTRS)
+#define Bval_NCRAM		MKATTR_Bval(NCRAM_ATTRS)
+
+#if WITHSMPSYSTEM
+	#define SHAREDval_NCRAM 1		// required for ldrex.. and strex.. functionality
+#else /* WITHSMPSYSTEM */
+	#define SHAREDval_NCRAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
 #if 1
@@ -2250,6 +2261,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 		0 \
 	)
 
+#define	TTB_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
@@ -2364,11 +2376,13 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Все сравнения должны быть не точнее 1 MB
 	if (a < 0x00100000)			// SYSRAM, BROM
 		return addrbase | TTB_PARA_CACHED(ro, 0);
+	if (a >= 0x60000000)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);

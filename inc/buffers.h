@@ -13,6 +13,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define RAMNC __attribute__ ((section(".ramnc"), used))
+
 #define MODEMBUFFERSIZE8	1024
 
 #define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
