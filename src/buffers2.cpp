@@ -756,7 +756,7 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 typedef ALIGNX_BEGIN struct moni16tx_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
-	enum { ss = 2, nch = DMABUFFSTEP16TXF };	// stub for resampling support
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16TXF };	// stub for resampling support
 } ALIGNX_END moni16tx_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
