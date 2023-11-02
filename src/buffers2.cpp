@@ -12,7 +12,7 @@
 #include "audio.h"
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 1
+#define BUFOVERSIZE 10
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
