@@ -1083,7 +1083,7 @@ uintptr_t allocate_dmabuffer32rx(void)
 typedef struct
 {
 	ALIGNX_BEGIN  uint8_t buff [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
-	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
 } uacout48_t;
 
@@ -1176,7 +1176,7 @@ typedef struct
 {
 	uacintag_t tag;
 	ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
-	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
 } uacinrts192_t;
 
@@ -1246,7 +1246,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 	{
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
-		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
 	} uacinrts96_t;
 
@@ -1317,7 +1317,7 @@ typedef struct
 {
 	uacintag_t tag;
 	ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
-	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = UACIN_AUDIO48_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_AUDIO48 };
 } uacin48_t;
 
@@ -1450,9 +1450,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	if (uacoutalt == UACOUTALT_AUDIO48)
-		return elfetch_dmabufferuacout48(v->ivqv);
-	return 0;
+	return elfetch_dmabufferuacout48(v->ivqv);
 #endif
 	return 0;
 }
@@ -2296,7 +2294,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативно
 
 uint_fast8_t buffers_get_uacoutalt(void)
 {
-	return uacoutalt;
+	return uacoutalt == UACOUTALT_AUDIO48;
 }
 
 void
