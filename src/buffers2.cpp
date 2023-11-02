@@ -272,8 +272,9 @@ class blists
 	int errallocate;
 	int saveount;
 #endif /* WITHBUFFERSDEBUG */
+public:
 
-	int outcount;
+	int readycount;
 	int freecount;
 	int rslevel;
 	LIST_ENTRY freelist;
@@ -284,6 +285,8 @@ class blists
 	unsigned wbstart;	// start position of work buffer - zero has not meaning
 
 	fqmeter fqin, fqout;
+	enum { MINLEVEL = 4 };
+	bool outready;
 
 public:
 	blists(IRQL_t airql, const char * aname) :
@@ -291,11 +294,12 @@ public:
 		errallocate(0),
 		saveount(0),
 #endif /* WITHBUFFERSDEBUG */
-		outcount(0),
+		readycount(0),
 		freecount(capacity),
 		rslevel(0),
 		name(aname),
-		wbstart(0)	// начало данных в workbuff->buff
+		wbstart(0),	// начало данных в workbuff->buff
+		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
@@ -317,6 +321,12 @@ public:
 			wbstart = 7 * element_t::ss * element_t::nch;
 			//PRINTF("%s: test resampler: wbstart=%u\n", name, wbstart);
 		}
+	}
+
+	/* готовность буферов с "гистерезисом". */
+	void fiforeadyupdate()
+	{
+		outready = outready ? readycount != 0 : readycount >= MINLEVEL;
 	}
 
 	void rslevelreset()
@@ -365,7 +375,8 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
 
 		InsertHeadList(& readylist, & p->item);
-		++ outcount;
+		++ readycount;
+		fiforeadyupdate();
 #if WITHBUFFERSDEBUG
 		fqin.pass(sizeof addr->buff / (addr->ss * addr->nch));
 		++ saveount;
@@ -383,10 +394,11 @@ public:
 		if (! IsListEmpty(& readylist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
-			-- outcount;
-#if WITHBUFFERSDEBUG
+			-- readycount;
+			fiforeadyupdate();
+	#if WITHBUFFERSDEBUG
 			fqout.pass(sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch));
-#endif /* WITHBUFFERSDEBUG */
+	#endif /* WITHBUFFERSDEBUG */
 			rslevel -= sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch);
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -403,6 +415,8 @@ public:
 	{
 		if (hasresample)
 		{
+			if (! outready)
+				return 0;
 			return get_readybufferarj(dest, false, false, false);
 		}
 		else
@@ -468,8 +482,8 @@ public:
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
-		PRINTF("%s:e=%d,b=%d/%d,f=%u/%u,v=%d ", name, errallocate, outcount, freecount, fin, fout, rslevel);
+		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
+		PRINTF("%s:e=%d,b=%d/%d,f=%u/%u,v=%d ", name, errallocate, readycount, freecount, fin, fout, rslevel);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
@@ -551,6 +565,7 @@ class dmahandle: public blists<element_t, capacity, hasresample>
 	unsigned wbn;
 	element_t * rb;
 	unsigned rbn;
+
 
 public:
 	dmahandle(IRQL_t airql, const char * aname) :
@@ -1403,6 +1418,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 		return (uintptr_t) & dest->buff;
 	}
 	uacin48.debug();
+	PRINTF("uacin48.readycount=%u\n", uacin48.readycount);
 	ASSERT(0);
 	return 0;
 }
