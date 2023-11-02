@@ -14979,8 +14979,43 @@ void signal_handler(int n, siginfo_t *info, void *unused)
 }
 #endif
 
+//#include "buffers.h"
+
 void lowtests(void)
 {
+#if 0
+	// cached memory tests
+	{
+		PRINTF("Cached memory test:\n");
+		static ALIGNX_BEGIN uint8_t buff [256];
+
+		global_disableIRQ();
+		memset(buff, 0xE5, sizeof buff);
+		dcache_clean((uintptr_t) buff, sizeof buff);
+
+		memset(buff + DCACHEROWSIZE, 0x33, 16);
+		dcache_invalidate((uintptr_t) buff, sizeof buff);
+
+		printhex32((uintptr_t) buff, buff, sizeof buff);
+//		for (;;)
+//			;
+	}
+	{
+		PRINTF("Non-cached memory test:\n");
+		static RAMNC ALIGNX_BEGIN uint8_t buff [256];
+
+		global_disableIRQ();
+		memset(buff, 0xE5, sizeof buff);
+		dcache_clean((uintptr_t) buff, sizeof buff);
+
+		memset(buff + DCACHEROWSIZE, 0x33, 16);
+		dcache_invalidate((uintptr_t) buff, sizeof buff);
+
+		printhex32((uintptr_t) buff, buff, sizeof buff);
+		for (;;)
+			;
+	}
+#endif
 #if 0 && LINUX_SUBSYSTEM
 	struct sigaction sig;
 	sig.sa_sigaction = signal_handler;
