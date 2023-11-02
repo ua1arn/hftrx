@@ -24,7 +24,7 @@
 #define UACINRTS192_CAPACITY (256 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY (256 * BUFOVERSIZE)
 #define UACOUT48_CAPACITY (256 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (1024 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define UACIN48_CAPACITY (256 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
