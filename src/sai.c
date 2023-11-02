@@ -3375,7 +3375,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYLE_ALLWINNER
 
-#define DMACRINGSTAGES 3
+#define DMACRINGSTAGES 16
 
 /* DMA каналы на Allwinner. 0..7 */
 enum
@@ -3497,16 +3497,26 @@ static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 	DMA_resume(dmach, descbase);
 	return addr;
 }
+//
+//static void ppttt(const void * p, size_t n)
+//{
+//	const volatile uint8_t * pb = (const volatile uint8_t *) p;
+//	while (n --)
+//		* pb ++;
+//}
 
 static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 {
 	int ix = DMAC_DESC_DST;
 	const uintptr_t descbase = DMA_suspend(dmach);
+
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	const unsigned NBYTES = descraddr [DMAC_DESC_LEN];
 	memcpy((void *) newaddr, (void *) addr, NBYTES);
+	//ASSERT(!memcmp((void *) newaddr, (void *) addr, NBYTES));
 	dcache_invalidate(addr, NBYTES);
+
 	DMA_resume(dmach, descbase);
 	return newaddr;
 }
@@ -3710,10 +3720,10 @@ static void I2S_fill_TXxCHMAP(
 	)
 {
 #if CPUSTYLE_A64
-	#warning Implement for CPUSTYLE_A64
+	//#warning Implement for CPUSTYLE_A64
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
-	#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
+	//#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
