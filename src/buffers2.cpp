@@ -21,10 +21,10 @@
 #define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
 
-#define UACINRTS192_CAPACITY (2 * 8 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (2 * 8 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (128 + 16 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define UACINRTS192_CAPACITY (256 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY (256 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (256 * BUFOVERSIZE)
+#define UACIN48_CAPACITY (1024 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -469,7 +469,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, outcount, freecount);
-		PRINTF("%s:b=%d/%d,q=%u/%u,v=%d ", name, outcount, freecount, fin, fout, rslevel);
+		PRINTF("%s:e=%d,b=%d/%d,f=%u/%u,v=%d ", name, errallocate, outcount, freecount, fin, fout, rslevel);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
@@ -692,7 +692,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 
 typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, VOICE16RX_RESAMPLING> voice16rxdma_t;
 
-static voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
+static RAMNC voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
@@ -721,8 +721,8 @@ uintptr_t getfilled_dmabuffer16rx(void)
 static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 {
 	enum { L, R };
-	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_LEFT]);
-	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_RIGHT]);
+	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
+	dest [R] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
 	return DMABUFFSTEP16RX;
 }
 
@@ -753,20 +753,20 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 } ALIGNX_END voice16tx_t;
 
 // Sidetone
-typedef ALIGNX_BEGIN struct voice16txF_tag
+typedef ALIGNX_BEGIN struct moni16tx_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
-	enum { ss = 2, nch = DMABUFFSTEP16TXF };	// stub for resampling support
-} ALIGNX_END voice16txF_t;
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16TXF };	// stub for resampling support
+} ALIGNX_END moni16tx_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING> voice16txdma_t;
 
 static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
 
-typedef dmahandle<FLOAT_t, voice16txF_t, VOICE16TXMONI_CAPACITY, 0> voice16txmonidma_t;
+typedef dmahandle<FLOAT_t, moni16tx_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 
-static voice16txmonidma_t voice16txmoni(IRQL_REALTIME, "16moni");
+static moni16txdma_t moni16tx(IRQL_REALTIME, "16moni");
 
 int_fast32_t cachesize_dmabuffer16txphones(void)
 {
@@ -812,11 +812,10 @@ void release_dmabuffer16txphones(uintptr_t addr)
 	voice16tx.release_buffer(p);
 }
 
-// add sidetone
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
 	voice16tx_t * phones;
-	voice16txF_t * moni;
+	moni16tx_t * moni;
 	do
 	{
 		if (voice16tx.get_readybuffer(& phones) )
@@ -830,68 +829,53 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		return 0;
 	} while (0);
 
-	// Добавить самоконтроль
-	while ((voice16txmoni.get_readybuffer(& moni) || voice16txmoni.get_freebuffer(& moni)) == 0)
-		ASSERT(0);
+	if (moni16tx.get_readybuffer(& moni))
+	{
+		// Добавить самоконтроль
+		// add sidetone
+		dsp_addsidetone(phones->buff, moni->buff);
+		moni16tx.release_buffer(moni);
+	}
+	else if (moni16tx.get_freebuffer(& moni))
+	{
+		// Добавить самоконтроль
+		// add sidetone
+		memset(moni->buff, 0, sizeof moni->buff);
+		dsp_addsidetone(phones->buff, moni->buff);
+		moni16tx.release_buffer(moni);
+	}
 
-	dsp_addsidetone(phones->buff, moni->buff);
-
-	voice16txmoni.release_buffer(moni);
+#if 0
+	// тестирование вывода на кодек
+	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSTEP16TX)
+	{
+		phones->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
+		phones->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
+	}
+	//printhex32(0, phones->buff, sizeof phones->buff);
+#endif
 
 	return (uintptr_t) phones->buff;
 }
 
 // sidetone forming
-
-
 static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
+	ASSERT(DMABUFFSTEP16TXF == 2);
 	b [0] = ch0;
 	b [1] = ch1;
-	return 2;
+	return DMABUFFSTEP16TXF;
 }
 
+// sidetone forming
 void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
 {
-	voice16txmoni.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
+	moni16tx.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
 }
 
-// can not be zero
-uintptr_t allocate_dmabuffer16txmoni(void)
-{
-	voice16txF_t * dest;
-	while (voice16txmoni.get_freebufferforced(& dest) == 0)
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
 
-void save_dmabuffer16txmoni(uintptr_t addr)
-{
-	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
-	voice16txmoni.save_buffer(p);
-}
-
-uintptr_t getfilled_dmabuffer16txmoni(void)
-{
-	voice16txF_t * dest;
-	if (voice16txmoni.get_readybuffer(& dest) )
-		return (uintptr_t) dest->buff;
-	if (voice16txmoni.get_freebuffer(& dest) )
-	{
-		memset(dest->buff, 0, sizeof dest->buff);
-		return (uintptr_t) dest->buff;
-	}
-	ASSERT(0);
-	for (;;)
-		;
-	return 0;
-}
-
-void release_dmabuffer16txmoni(uintptr_t addr)
-{
-	voice16txF_t * const p = CONTAINING_RECORD(addr, voice16txF_t, buff);
-	voice16txmoni.release_buffer(p);
-}
+///////////////////////////////////
+///
 
 // I/Q data to FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32tx_tag
@@ -981,10 +965,71 @@ uintptr_t getfilled_dmabuffer32tx(void)
 	return 0;
 }
 
+
+#if WITHFPGAPIPE_CODEC1
+
+// копирование полей из принятого от FPGA буфера
+static uintptr_t RAMFUNC
+pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
+{
+	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
+	unsigned i;
+	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
+	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
+
+	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
+	ASSERT(sizeof * rx32 == sizeof * rx16);
+	for (i = 0; i < (unsigned) CNT32RX; ++ i)
+	{
+		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
+		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
+	}
+	return addr16rx;
+}
+
+// копирование полей в передаваемый на FPGA буфер
+static uintptr_t RAMFUNC
+pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
+{
+	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
+
+	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
+	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
+	unsigned i;
+	const FLOAT_t scale = 1.0 / 32;	// for test
+
+	ASSERT((unsigned) CNT32TX == (unsigned) CNT16TX);
+	ASSERT(DMABUFFSTEP16TX >= 2);
+	ASSERT(sizeof * tx32 == sizeof * tx16);
+	for (i = 0; i < (unsigned) CNT32TX; ++ i)
+	{
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
+		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
+//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = adpt_outputexact(& afcodectx, get_lout() * scale);
+//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = adpt_outputexact(& afcodectx, get_rout() * scale);
+	}
+	return addr32tx;
+}
+
+#endif /* WITHFPGAPIPE_CODEC1 */
+
 // can not be be zero
 uintptr_t getfilled_dmabuffer32tx_main(void)
 {
-	return getfilled_dmabuffer32tx();
+	uintptr_t addr = getfilled_dmabuffer32tx();
+#if WITHFPGAPIPE_CODEC1
+	/* при необходимости добавляем слоты для передачи на кодек */
+	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	pipe_dmabuffer32tx(addr, addr16);
+	release_dmabuffer16txphones(addr16);	/* освоюождаем буфер как переданный */
+#endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_NCORX0
+#endif /* WITHFPGAPIPE_NCORX0 */
+#if WITHFPGAPIPE_NCORX1
+#endif /* WITHFPGAPIPE_NCORX1 */
+#if WITHFPGAPIPE_NCORTS
+#endif /* WITHFPGAPIPE_NCORTS */
+	return addr;
 }
 
 // can not be be zero
@@ -1003,9 +1048,9 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 } ALIGNX_END voice32rx_t;
 
 
-typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY, 0> voice32rxlist_t;
+typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY, 0> voice32rxdma_t;
 
-static voice32rxlist_t voice32rx(IRQL_REALTIME, "32rx");
+static RAMNC voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx");
 
 int_fast32_t cachesize_dmabuffer32rx(void)
 {
@@ -1046,8 +1091,7 @@ typedef dmahandle<FLOAT_t, uacout48_t, UACOUT48_CAPACITY, 1> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
-static uacout48dma_t uacout48(IRQL_REALTIME, "uaco48");
-//static uacout48dma_t uacout48_rs(IRQL_REALTIME, "uaco48_rs");
+static RAMNC uacout48dma_t uacout48(IRQL_REALTIME, "uaco48");
 
 static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 
@@ -1080,13 +1124,6 @@ void release_dmabufferuacout48(uintptr_t addr)
 	uacout48.release_buffer(p);
 }
 
-static void pp(const void * p, size_t n)
-{
-	const volatile uint8_t * pb = (const volatile uint8_t *) p;
-	while (n --)
-		* pb ++;
-}
-
 void save_dmabufferuacout48(uintptr_t addr)
 {
 	uacout48_t * const p = CONTAINING_RECORD(addr, uacout48_t, buff);
@@ -1095,20 +1132,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 		uacout48.release_buffer(p);
 		return;
 	}
-	// временное решение проблемы щелчкчков
-//	pp(p->buff, sizeof p->buff);
-//	pp(p->buff, sizeof p->buff);
 	uacout48.save_buffer(p);
-	return;
-
-//	uacout48_t * p2;
-//	while (uacout48_rs.get_freebufferforced(& p2) == 0)
-//		ASSERT(0);
-//	memcpy(p2->buff, p->buff, sizeof p2->buff);
-//	//printhex(0, p2->buff, sizeof p2->buff);
-//	uacout48.release_buffer(p);
-//
-//	uacout48_rs.save_buffer(p2);
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -1302,7 +1326,6 @@ typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANN
 
 static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 
-//static uacin48list_t uacin48(IRQL_REALTIME, "uacin48");
 static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48");
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -1425,10 +1448,11 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
-	return elfetch_dmabufferuacout48(v->ivqv);
-#else
+	if (uacoutalt == UACOUTALT_AUDIO48)
+		return elfetch_dmabufferuacout48(v->ivqv);
 	return 0;
 #endif
+	return 0;
 }
 
 // звук для самоконтроля
@@ -2091,40 +2115,6 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 
 #endif /* WITHUSBUAC */
 
-void buffers_diagnostics(void)
-{
-#if WITHBUFFERSDEBUG
-#if 0
-	//denoise16list.debug();
-	voice16rx.debug();
-	voice16tx.debug();
-	voice16txmoni.debug();
-	voice32tx.debug();
-	voice32rx.debug();
-#endif
-#if 1
-	// USB
-	uacout48.debug();
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-#if WITHRTS192
-	uacinrts192.debug();
-#endif
-#if WITHRTS96
-	uacinrts96.debug();
-#endif
-#endif
-	uacin48.debug();
-#endif
-	//message8.debug();
-
-	PRINTF("\n");
-
-#endif /* WITHBUFFERSDEBUG */
-//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", __get_CPUACTLR());
-//	PRINTF("__get_CPUACTLR()=%016" PRIX64 "\n", UINT64_C(1) << 44);
-}
-
-
 
 #if WITHINTEGRATEDDSP
 
@@ -2226,110 +2216,10 @@ static uint_fast8_t isrts96(void)
 
 #endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 
-
-// --- Коммутация потоков аудиоданных
-
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (спектроанализатор)
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-//	++ n1;
-//	// подсчёт скорости в сэмплах за секунду
-//	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-
-	dsp_extbuffer32rx((IFADCvalue_t *) addr);
-
-	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
-
-}
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC processing_dmabuffer32rts(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-	//++ n77;
-	// подсчёт скорости в сэмплах за секунду
-	//debugcount_rx32rtsadc += CNT32RTS;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32rts((IFADCvalue_t *) addr);
-}
-
-
-// Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки IF ADC (MAIN RX/SUB RX)
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
-{
-	//ASSERT(addr != 0);
-#if WITHBUFFERSDEBUG
-//	++ n1wfm;
-//	// подсчёт скорости в сэмплах за секунду
-//	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
-#endif /* WITHBUFFERSDEBUG */
-#if WITHWFM
-	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
-#endif /* WITHWFM */
-}
-
-#if WITHFPGAPIPE_CODEC1
-
-// копирование полей из принятого от FPGA буфера
-static uintptr_t RAMFUNC
-pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
-{
-	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	unsigned i;
-	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
-	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
-
-	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
-	ASSERT(sizeof * rx32 == sizeof * rx16);
-	for (i = 0; i < (unsigned) CNT32RX; ++ i)
-	{
-		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
-		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
-	}
-	return addr16rx;
-}
-
-// копирование полей в передаваемый на FPGA буфер
-static uintptr_t RAMFUNC
-pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
-{
-	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-
-	IFDACvalue_t * const tx32 = (IFDACvalue_t *) addr32tx;
-	aubufv_t * const tx16 = (aubufv_t *) addr16tx;
-	unsigned i;
-	const FLOAT_t scale = 1.0 / 32;
-
-	ASSERT((unsigned) CNT32TX == (unsigned) CNT16TX);
-	ASSERT(DMABUFFSTEP16TX >= 2);
-	ASSERT(sizeof * tx32 == sizeof * tx16);
-	for (i = 0; i < (unsigned) CNT32TX; ++ i)
-	{
-		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_LEFT];
-		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = tx16 [i * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT];
-//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_LEFT] = adpt_outputexact(& afcodectx, get_lout() * scale);
-//		tx32 [i * DMABUFFSTEP32TX + DMABUFF32TX_CODEC1_RIGHT] = adpt_outputexact(& afcodectx, get_rout() * scale);
-	}
-	return addr32tx;
-}
-
-#endif /* WITHFPGAPIPE_CODEC1 */
-
 #if WITHRTS192
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки - канал спектроанализатора
-void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
+void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG
@@ -2348,44 +2238,10 @@ void RAMFUNC processing_dmabuffer32rts192(uintptr_t addr)
 	}
 #endif /* ! WITHTRANSPARENTIQ */
 
-	//save_dmabufferuacinrts192(p);
-	buffers_savetonull192rts(p);
+	release_savetonull192rts(addr);
 }
 #endif /* WITHRTS192 */
 
-
-
-/* при необходимости копируем сэмплы от кодекв */
-uintptr_t processing_pipe32rx(uintptr_t addr)
-{
-#if WITHFPGAPIPE_CODEC1
-	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
-#endif /* WITHFPGAPIPE_CODEC1 */
-#if WITHFPGAPIPE_RTS96
-	//processing_dmabuffer32rts(addr);
-#endif /* WITHFPGAPIPE_RTS96 */
-#if WITHFPGAPIPE_RTS192
-	//processing_dmabuffer32rts(addr);
-#endif /* WITHFPGAPIPE_RTS192 */
-	return addr;
-}
-
-/* при необходимости добавляем слоты для передачи на кодек */
-uintptr_t processing_pipe32tx(uintptr_t addr)
-{
-#if WITHFPGAPIPE_CODEC1
-	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
-	pipe_dmabuffer32tx(addr, addr16);
-	release_dmabuffer16txphones(addr16);	/* освоюождаем буфер как переданный */
-#endif /* WITHFPGAPIPE_CODEC1 */
-#if WITHFPGAPIPE_NCORX0
-#endif /* WITHFPGAPIPE_NCORX0 */
-#if WITHFPGAPIPE_NCORX1
-#endif /* WITHFPGAPIPE_NCORX1 */
-#if WITHFPGAPIPE_NCORTS
-#endif /* WITHFPGAPIPE_NCORTS */
-	return addr;
-}
 
 //////////////////////////////////////////
 // Поэлементное заполнение буфера IF DAC
@@ -2395,6 +2251,24 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	elfill_dmabuffer32tx(ch0, ch1);
 }
+
+void save_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+#if WITHFPGAPIPE_CODEC1
+	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+#endif /* WITHFPGAPIPE_CODEC1 */
+	dsp_extbuffer32rts(p->buff);
+	dsp_extbuffer32rx(p->buff);
+#if WITHWFM
+	dsp_extbuffer32wfm(p->buff);
+#endif /* WITHWFM */
+
+	voice32rx.release_buffer(p);
+
+	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+}
+
 
 //////////////////////////////////////////
 ///
@@ -2605,15 +2479,46 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 #endif /* WITHINTEGRATEDDSP */
 
 
+#if WITHBUFFERSDEBUG
+
+void buffers_diagnostics(void)
+{
+#if 0
+	//denoise16list.debug();
+	voice16rx.debug();
+	voice16tx.debug();
+	moni16tx.debug();
+	voice32tx.debug();
+	voice32rx.debug();
+#endif
+#if 1
+	// USB
+	uacout48.debug();
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192
+	uacinrts192.debug();
+#endif
+#if WITHRTS96
+	uacinrts96.debug();
+#endif
+#endif
+	uacin48.debug();
+#endif
+	//message8.debug();
+
+	PRINTF("\n");
+
+}
+
+
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
 {
-#if WITHBUFFERSDEBUG
 #if 1
 	//denoise16list.spool10ms();
 	voice16rx.spool10ms();
 	voice16tx.spool10ms();
-	voice16txmoni.spool10ms();
+	moni16tx.spool10ms();
 	voice32tx.spool10ms();
 	voice32rx.spool10ms();
 #endif
@@ -2632,8 +2537,15 @@ static void buffers_spool(void * ctx)
 #endif
 	//message8.spool10ms();
 
-#endif /* WITHBUFFERSDEBUG */
 }
+
+#else /* WITHBUFFERSDEBUG */
+
+void buffers_diagnostics(void)
+{
+}
+
+#endif /* WITHBUFFERSDEBUG */
 
 // инициализация системы буферов
 void buffers_initialize(void)

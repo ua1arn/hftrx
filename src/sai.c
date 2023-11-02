@@ -1829,20 +1829,14 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream5->M0AR;
-			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream5->M1AR;
-			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 	}
 
@@ -1864,13 +1858,13 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M0AR);
-			DMA2_Stream1->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream1->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream1->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M1AR);
-			DMA2_Stream1->M1AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream1->M1AR);
 		}
 	}
@@ -1973,8 +1967,8 @@ static void DMA_SAI1_B_RX_initialize_fpga(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	DMA2_Stream5->NDTR = (DMA2_Stream5->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -2445,7 +2439,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_codec1_rx(void)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
 			DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			save_dmabuffer16rx(addr);		// посмещается в очередь
+			save_dmabuffer16rx(addr);		// помещается в очередь
 		}
 		else
 		{
@@ -2472,20 +2466,14 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
-			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
-			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_pipe32rx(addr);
-			processing_dmabuffer32rts(addr);
-			processing_dmabuffer32rx(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 	}
 
@@ -2536,16 +2524,14 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_wfm_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
-			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_dmabuffer32wfm(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
-			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-			processing_dmabuffer32wfm(addr);
-			release_dmabuffer32rx(addr);
+			DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+			save_dmabuffer32rx(addr);
 		}
 	}
 
@@ -2598,13 +2584,13 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR =  dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx_main());
 			DRD(DMA2_Stream4->M1AR);
 		}
 	}
@@ -2990,8 +2976,8 @@ static void DMA_SAI2_B_RX_initialize_fpga(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	DMA2_Stream7->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -3211,8 +3197,8 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
@@ -3391,7 +3377,10 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #define DMACRINGSTAGES 3
 
-/* DMA каналы на Allwinner. 0..7 */
+/* DMA каналы на Allwinner T113-s3. 0..7
+ * T507/H616 - 0..15
+ *
+ * */
 enum
 {
 	DMAC_FPGA_TX_Ch,
@@ -3419,7 +3408,7 @@ enum
 #define DMAC_DESC_PARAM	4	/* Parameter */
 #define DMAC_DESC_LINK	5	/* адрес сдедующего дескриптора */
 
-#define DMAC_DESC_SIZE	8	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано 8 */
+#define DMAC_DESC_SIZE	(DCACHEROWSIZE / sizeof (uint32_t))	/* Требуется 6 - но для упрощения работы с кеш-памятью сделано больше */
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? UINT32_C(0) : (UINT32_C(1) << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
@@ -3484,29 +3473,11 @@ static void DMAC_NS_IRQHandler(void)
 
 static uintptr_t DMA_suspend(unsigned dmach)
 {
-	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;//dbg_putchar('a' + dmach);
+	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
 	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-}
-
-static uintptr_t DMA_RX_suspend2(unsigned dmach)
-{
-	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-	// Ждём, пока канал приступит к следующему дескриптору
-	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
-		;//dbg_putchar('a' + dmach);
-
-	uintptr_t addr = DMAC->CH [dmach].DMAC_DESC_ADDR_REGN;
-
-	unsigned steps = 1;
-	while (steps --)
-	{
-		addr = ((volatile uint32_t *) addr) [DMAC_DESC_LINK];
-	}
-	return addr;
-
 }
 
 static void DMA_resume(unsigned dmach, uintptr_t descbase)
@@ -3518,22 +3489,9 @@ static void DMA_resume(unsigned dmach, uintptr_t descbase)
 // 19:18 DMA transfers the higher 2 bits of the 34-bit destination address
 // 17:16 DMA transfers the high 2 bits of the 34-bit source address
 
-
 static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 {
 	const uintptr_t descbase = DMA_suspend(dmach);
-	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = newaddr;
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	DMA_resume(dmach, descbase);
-	return addr;
-}
-
-static uintptr_t DMAC_RX_swap2(unsigned dmach, uintptr_t newaddr)
-{
-	int ix = DMAC_DESC_DST;
-	const uintptr_t descbase = DMA_RX_suspend2(dmach);
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = newaddr;
@@ -3585,7 +3543,7 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 
 static void DMAC_clock_initialize(void)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
@@ -3672,7 +3630,7 @@ static unsigned width2fmt(unsigned width)
 /* Установить для заданного канала I2S требуемый DINx и слот */
 static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, unsigned rxsdi)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 
 	__IO uint32_t * const reg = i2s->I2Sn_SDINCHMAP;
 	/* в каждом регистре управления для восьми каналов */
@@ -3740,8 +3698,12 @@ static void I2S_fill_TXxCHMAP(
 	unsigned NCH
 	)
 {
-#if CPUSTYLE_T507
-#elif CPUSTYLE_A64
+#if CPUSTYLE_A64
+	//#warning Implement for CPUSTYLE_A64
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+	//#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
@@ -3788,7 +3750,7 @@ static void I2S_fill_TXxCHMAP(
 //		;
 //}
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 
 // 0..2
 static unsigned getAPBIFrx(unsigned ix)
@@ -3803,7 +3765,7 @@ static unsigned getAPBIFtx(unsigned ix)
 }
 
 
-#endif /* CPUSTYLE_T507 */
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 
 static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
@@ -3812,7 +3774,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	// CCU
 
 //	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
@@ -3936,7 +3898,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 #endif
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 
 	/* Установка формата обмна */
 	// AHUB = top level
@@ -4231,7 +4193,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	/* Соответствующий i2S не работает напрямую с DMA */
 	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
@@ -4355,132 +4317,6 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 #endif /* defined(I2S2) && WITHI2S2HW */
 
 
-#if WITHDEBUG && 1
-
-static uint32_t rxlastts;
-static uint32_t txlastts;
-static volatile uint32_t rxfreq;
-static volatile uint32_t txfreq;
-
-static void txstamp(unsigned samples)
-{
-#if WITHDEBUG
-	uint32_t last = txlastts;
-	txlastts = cpu_getdebugticks();
-	uint32_t d = txlastts - last;
-	txfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
-#endif /* WITHDEBUG */
-}
-
-static void rxstamp(unsigned samples)
-{
-#if WITHDEBUG
-	uint32_t last = rxlastts;
-	rxlastts = cpu_getdebugticks();
-	uint32_t d = rxlastts - last;
-	rxfreq = (uint64_t) cpu_getdebugticksfreq() * samples / d;
-#endif /* WITHDEBUG */
-}
-
-static LCLSPINLOCK_t locklistprint = LCLSPINLOCK_INIT;
-static volatile uintptr_t printptr;
-
-void zdataprint(void)
-{
-#if WITHDEBUG
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	LCLSPIN_LOCK(& locklistprint);
-	uintptr_t pp = printptr;
-	printptr = 0;
-	LCLSPIN_UNLOCK(& locklistprint);
-	LowerIrql(oldIrql);
-
-	if (pp != 0)
-	{
-		PRINTF("rx buffer:\n");
-		//printhex32(0, (void *) xbuff, sizeof xbuff);
-		printhex32(0, (void *) pp, 128);
-
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		LCLSPIN_LOCK(& locklistprint);
-		release_dmabuffer32rx(pp);
-		LCLSPIN_UNLOCK(& locklistprint);
-		LowerIrql(oldIrql);
-	}
-#endif /* WITHDEBUG */
-}
-
-static void savetodebug(uintptr_t addr32)
-{
-#if WITHDEBUG
-	uintptr_t p = allocate_dmabuffer32rx();
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	LCLSPIN_LOCK(& locklistprint);
-	uintptr_t oldpp = printptr;
-	printptr = p;
-	LCLSPIN_UNLOCK(& locklistprint);
-	LowerIrql(oldIrql);
-
-	if (oldpp != 0)
-		release_dmabuffer32rx(oldpp);
-
-	memcpy((void *) p, (void *) addr32, 128);
-
-#endif /* WITHDEBUG */
-}
-
-void zcountsprint(void)
-{
-#if WITHDEBUG && CPUSTYLE_T507
-	//printhex32(AHUB_BASE, AHUB, sizeof * AHUB);
-	PRINTF("APBIF_RX0FIFO_CNT=%08X, APBIF_TX0FIFO_CNT=%08X\n",
-			(unsigned) AHUB->APBIF_RX[0].APBIF_RXnFIFO_CNT,
-			(unsigned) AHUB->APBIF_TX[0].APBIF_TXnFIFO_CNT);
-	PRINTF("APBIF_RX1FIFO_CNT=%08X, APBIF_TX1FIFO_CNT=%08X\n",
-			(unsigned) AHUB->APBIF_RX[1].APBIF_RXnFIFO_CNT,
-			(unsigned) AHUB->APBIF_TX[1].APBIF_TXnFIFO_CNT);
-	PRINTF("APBIF_RX2FIFO_CNT=%08X, APBIF_TX2FIFO_CNT=%08X\n",
-			(unsigned) AHUB->APBIF_RX[2].APBIF_RXnFIFO_CNT,
-			(unsigned) AHUB->APBIF_TX[2].APBIF_TXnFIFO_CNT);
-#endif
-}
-
-void zfreqprint(void)
-{
-#if WITHDEBUG && CPUSTYLE_T507
-	unsigned ix = 0;	// I2S0
-	{
-		static uint32_t txlasc;
-		uint32_t lastc = txlasc;
-		txlasc = AHUB->APBIF_RX[getAPBIFrx(ix)].APBIF_RXnFIFO_CNT;
-		uint32_t df = cpu_getdebugticksfreq();
-		static uint32_t txlastts;
-		uint32_t last = txlastts;
-		txlastts = cpu_getdebugticks();
-		uint32_t d = txlastts - last;
-		uint32_t dc = txlasc - lastc;
-		PRINTF("rxiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
-	}
-	{
-		static uint32_t txlasc;
-		uint32_t lastc = txlasc;
-		txlasc = AHUB->APBIF_TX[getAPBIFtx(ix)].APBIF_TXnFIFO_CNT;
-		uint32_t df = cpu_getdebugticksfreq();
-		static uint32_t txlastts;
-		uint32_t last = txlastts;
-		txlastts = cpu_getdebugticks();
-		uint32_t d = txlastts - last;
-		uint32_t dc = txlasc - lastc;
-		PRINTF("txiofreq=%u ", (unsigned) ((uint64_t) df * dc / d));	// 768000 expected
-	}
-#endif
-	PRINTF("crxfreq=%u, ctxfreq=%u\n", (unsigned) rxfreq, (unsigned) txfreq);
-}
-
-#endif
-
 
 // DMA Source/Destination Data Width
 // 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4522,20 +4358,17 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 /* Приём от FPGA */
 static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 {
-	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());
+	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
-	processing_pipe32rx(addr);
-	processing_dmabuffer32rts(addr);
-	processing_dmabuffer32rx(addr);
-	release_dmabuffer32rx(addr);
+	save_dmabuffer32rx(addr);
 }
 
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
-	const uintptr_t newaddr = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+	const uintptr_t newaddr = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
@@ -4544,7 +4377,7 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 
 static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 //	static uint32_t v = 0xDEADBEEF;
 //	return (uintptr_t) & v;
 	(void) i2s;
@@ -4557,7 +4390,7 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	(void) i2s;
 	return (uintptr_t) & AHUB->APBIF_TX [getAPBIFtx(ix)].APBIF_TXnFIFO;
 #else
@@ -4568,7 +4401,7 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	return DMAC_SrcReqAHUB_drqr0_RX + getAPBIFrx(ix);
 #else
 	return DMAC_SrcReqI2S1_RX + ix - 1;
@@ -4577,7 +4410,7 @@ static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	return DMAC_DstReqAHUB_drqt0_TX + getAPBIFtx(ix);
 #elif CPUSTYLE_A64
 	static const unsigned drq [] =
@@ -5096,7 +4929,7 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 {
 	const uintptr_t newaddr = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	const uintptr_t addr = DMAC_RX_swap2(dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
 
 	/* Работа с только что принятыми данными */
 	save_dmabufferuacout48(addr);
@@ -5105,9 +4938,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
 {
 	//const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
-	//static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
-	//static ALIGNX_BEGIN uint32_t descr0 [48*2] [DMAC_DESC_SIZE] ALIGNX_END;
-	static ALIGNX_BEGIN uint32_t descr0 [64] [DMAC_DESC_SIZE] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
@@ -5383,6 +5214,12 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 #endif
 
 #if 1
+
+#if CPUSTYLE_A64
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// anatol
 
 	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (UINT32_C(1) << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
@@ -5522,11 +5359,18 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	//AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
 
 #endif
+
+#else
+
+#endif
 }
 
 /* встороенный в процессор кодек */
 static void hardware_hwblock_enable_codec1(uint_fast8_t state)
 {
+#if CPUSTYLE_A64
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	if (state)
 	{
 		AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);		// DAC Digital Part Enable
@@ -5537,6 +5381,8 @@ static void hardware_hwblock_enable_codec1(uint_fast8_t state)
 		AUDIO_CODEC->AC_ADC_FIFOC &= ~ (UINT32_C(1) << 28);	// ADC Digital Part Enable
 		AUDIO_CODEC->AC_DAC_DPC &= ~ (UINT32_C(1) << 31);	// DAC Digital Part Enable
 	}
+#else
+#endif
 }
 
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
@@ -6260,14 +6106,14 @@ static void r7s721_ssif1_txdma_fpgatx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC3.N0SA_n;
-		DMAC3.N0SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC3.N1SA_n;
-		DMAC3.N1SA_n = dma_flush32tx(processing_pipe32tx(getfilled_dmabuffer32tx_main()));
+		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
@@ -6288,22 +6134,16 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC2.N0DA_n;
-		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
-		processing_pipe32rx(addr);
-		processing_dmabuffer32rts(addr);
-		processing_dmabuffer32rx(addr);
-		release_dmabuffer32rx(addr);
+		save_dmabuffer32rx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC2.N1DA_n;
-		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+		DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 		DMAC2.CHCFG_n |= DMAC2_CHCFG_n_REN;	// REN bit
-		processing_pipe32rx(addr);
-		processing_dmabuffer32rts(addr);
-		processing_dmabuffer32rx(addr);
-		release_dmabuffer32rx(addr);
+		save_dmabuffer32rx(addr);
 	}
 }
 
@@ -6320,8 +6160,8 @@ static void r7s721_ssif1_dmarx_initialize_fpga_rx(void)
     DMAC2.N1SA_n = (uintptr_t) & SSIF1.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
-	DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
-	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMAC2.N0DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
+	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 
 	/* Set Transfer Size */
 	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);	// размер в байтах
@@ -6547,12 +6387,12 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 	const uint_fast8_t b = (DMAC4.CHSTAT_n & (UINT32_C(1) << DMAC4_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
-		processing_dmabuffer32rts192(DMAC4.N0DA_n);
+		save_dmabufferuacinrts192(DMAC4.N0DA_n);
 		DMAC4.N0DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
 	}
 	else
 	{
-		processing_dmabuffer32rts192(DMAC4.N1DA_n);
+		save_dmabufferuacinrts192(DMAC4.N1DA_n);
 		DMAC4.N1DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
 	}
 }

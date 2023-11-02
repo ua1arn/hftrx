@@ -467,9 +467,9 @@ void linux_iq_thread(void)
 		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
 			r[i] = * iq_fifo_rx;
 #endif /* IQMODEM_BLOCKMEMORY */
-		processing_pipe32rx(addr32rx);
-		processing_dmabuffer32rx(addr32rx);
-		processing_dmabuffer32rts(addr32rx);
+
+		save_dmabuffer32rx(addr32rx);
+		addr32rx = allocate_dmabuffer32rx();
 
 		rx_stage += CNT32RX;
 
@@ -501,7 +501,7 @@ void linux_iq_thread(void)
 			save_dmabuffer16rx(addr_mic);
 		}
 
-		const uintptr_t addr = processing_pipe32tx(getfilled_dmabuffer32tx_main());
+		const uintptr_t addr = getfilled_dmabuffer32tx_main();
 		uint32_t * r = (uint32_t *) addr;
 
 		for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit

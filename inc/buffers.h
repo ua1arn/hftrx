@@ -13,6 +13,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define RAMNC __attribute__ ((section(".ramnc"), used))
+
 #define MODEMBUFFERSIZE8	1024
 
 #define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
@@ -413,6 +415,9 @@ extern "C" {
 	#define DMABUFFSTEP16RX		3		/* 3 - каждому сэмплу при получении от AUDIO CODEC соответствует три числа в DMA буфере */
 	#define DMABUFF16RX_MIKE 	2		/* индекс сэмпла левого канала */
 
+	#define DMABUFF16RX_LEFT 	1		/* индекс сэмпла левого канала */
+	#define DMABUFF16RX_RIGHT 	2		/* индекс сэмпла правого канала */
+
 	#define DMABUFFSTEP16TX		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
@@ -617,7 +622,6 @@ uintptr_t getfilled_dmabuffer16txmoni(void);
 uintptr_t allocate_dmabuffer16rx(void);
 uintptr_t getfilled_dmabuffer16rx(void);
 int_fast32_t cachesize_dmabuffer16rx(void);
-uintptr_t processing_pipe32rx(uintptr_t addr);
 void release_dmabuffer16rx(uintptr_t addr);
 void save_dmabuffer16rx(uintptr_t addr);
 
@@ -630,20 +634,14 @@ uintptr_t getfilled_dmabuffer32tx_sub(void);
 
 uintptr_t allocate_dmabuffer32rx(void);
 int_fast32_t cachesize_dmabuffer32rx(void);
-void processing_dmabuffer32rx(uintptr_t addr);
 void release_dmabuffer32rx(uintptr_t addr);
-
-uintptr_t processing_pipe32tx(uintptr_t addr);
+void save_dmabuffer32rx(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 // WITHUSBUACIN2 specific
 uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-
-void processing_dmabuffer32rts(uintptr_t addr);
-void processing_dmabuffer32rts192(uintptr_t addr);
-void processing_dmabuffer32wfm(uintptr_t addr);
 void dsp_processtx(void);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
 // Буфер обмена про USB

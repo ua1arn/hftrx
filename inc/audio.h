@@ -461,6 +461,7 @@ void buffers_diagnostics(void);
 void dtmftest(void);
 void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calculate full array of coefficients
 
+void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1);
 void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1);
