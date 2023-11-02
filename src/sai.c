@@ -3510,30 +3510,6 @@ static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 	return DMAC_swap(dmach, newaddr, DMAC_DESC_DST);
 }
 
-//
-//static void ppttt(const void * p, size_t n)
-//{
-//	const volatile uint8_t * pb = (const volatile uint8_t *) p;
-//	while (n --)
-//		* pb ++;
-//}
-
-//static uintptr_t DMAC_RX_swapN(unsigned dmach, uintptr_t newaddr)
-//{
-//	int ix = DMAC_DESC_DST;
-//	const uintptr_t descbase = DMA_suspend(dmach);
-//
-//	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-//	const uintptr_t addr = descraddr [ix];
-//	const unsigned NBYTES = descraddr [DMAC_DESC_LEN];
-//	memcpy((void *) newaddr, (void *) addr, NBYTES);
-//	ASSERT(!memcmp((void *) newaddr, (void *) addr, NBYTES));
-//	dcache_invalidate(addr, NBYTES);
-//
-//	DMA_resume(dmach, descbase);
-//	return newaddr;
-//}
-
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
