@@ -5215,7 +5215,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(aubufv_t * buff, const FLOAT_t * monibuff)
+void dsp_addsidetone(aubufv_t * buff)
 {
 	enum { L = DMABUFF16TX_LEFT, R = DMABUFF16TX_RIGHT };
 	ASSERT(buff != NULL);
@@ -5232,8 +5232,12 @@ void dsp_addsidetone(aubufv_t * buff, const FLOAT_t * monibuff)
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
 		// Использование данных.
-		moni.IV =  monibuff [i + L];	// левый канал
-		moni.QV = monibuff [i + R]; 	// правый канал
+		if (elfetch_dmabuffer16txmoni(moni.ivqv) == 0)
+		{
+			moni.IV =  0;	// левый канал
+			moni.QV = 0; 	// правый канал
+		}
+
 //		b [L] = adpt_output(& afcodectc, sdtnv);
 //		b [R] = adpt_output(& afcodectx, sdtnv);
 //		continue;

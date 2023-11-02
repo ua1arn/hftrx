@@ -511,7 +511,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right);
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
 
 #if WITHINTEGRATEDDSP
-void dsp_addsidetone(aubufv_t * buff, const FLOAT_t * monibuff);			// перед передачей по DMA в аудиокодек
+void dsp_addsidetone(aubufv_t * buff);			// перед передачей по DMA в аудиокодек
 #endif /* WITHINTEGRATEDDSP */
 
 typedef FLOAT_t speexel_t;

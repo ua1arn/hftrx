@@ -624,7 +624,7 @@ enum { RESAMPLE16NORMAL = SKIPPEDBLOCKS * 2 };	// Нормальное коли�
 
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
-enum { CNT16TXF = DMABUFFSIZE16TXF / DMABUFFSTEP16TXF };
+enum { CNT16MONI = DMABUFFSIZE16MONI / DMABUFFSTEP16MONI };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 enum { CNT32RTS = DMABUFFSIZE32RTS / DMABUFFSTEP32RTS };
@@ -755,8 +755,8 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 // Sidetone
 typedef ALIGNX_BEGIN struct moni16tx_tag
 {
-	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16TXF] ALIGNX_END;
-	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16TXF };	// stub for resampling support
+	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16MONI] ALIGNX_END;
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for resampling support
 } ALIGNX_END moni16tx_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
@@ -816,7 +816,6 @@ void release_dmabuffer16txphones(uintptr_t addr)
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
 	voice16tx_t * phones;
-	moni16tx_t * moni;
 	do
 	{
 		if (voice16tx.get_readybuffer(& phones) )
@@ -830,21 +829,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 		return 0;
 	} while (0);
 
-	if (moni16tx.get_readybuffer(& moni))
-	{
-		// Добавить самоконтроль
-		// add sidetone
-		dsp_addsidetone(phones->buff, moni->buff);
-		moni16tx.release_buffer(moni);
-	}
-	else if (moni16tx.get_freebuffer(& moni))
-	{
-		// Добавить самоконтроль
-		// add sidetone
-		memset(moni->buff, 0, sizeof moni->buff);
-		dsp_addsidetone(phones->buff, moni->buff);
-		moni16tx.release_buffer(moni);
-	}
+	dsp_addsidetone(phones->buff);
 
 #if 0
 	// тестирование вывода на кодек
@@ -863,10 +848,10 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
-	ASSERT(DMABUFFSTEP16TXF == 2);
+	ASSERT(DMABUFFSTEP16MONI == 2);
 	b [0] = ch0;
 	b [1] = ch1;
-	return DMABUFFSTEP16TXF;
+	return DMABUFFSTEP16MONI;
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -874,7 +859,7 @@ static unsigned getcbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t * dest)
 {
 	dest [0] = b [0];
 	dest [1] = b [1];
-	return DMABUFFSTEP16TXF;
+	return DMABUFFSTEP16MONI;
 }
 
 // Возвращает не-ноль если данные есть
