@@ -285,7 +285,9 @@ public:
 	unsigned wbstart;	// start position of work buffer - zero has not meaning
 
 	fqmeter fqin, fqout;
-	enum { MINLEVEL = 4 };
+	enum { LEVELSTEP = 4 };
+	// параметры чувствтительности ресэмплера
+	enum { MINMLEVEL = LEVELSTEP * 1, NORMLEVEL = LEVELSTEP * 2, MAXLEVEL = LEVELSTEP * 3 };
 	bool outready;
 
 public:
@@ -326,7 +328,7 @@ public:
 	/* готовность буферов с "гистерезисом". */
 	void fiforeadyupdate()
 	{
-		outready = outready ? readycount != 0 : readycount >= MINLEVEL;
+		outready = outready ? readycount != 0 : readycount >= NORMLEVEL;
 	}
 
 	void rslevelreset()
