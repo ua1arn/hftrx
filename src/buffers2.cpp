@@ -718,7 +718,7 @@ uintptr_t getfilled_dmabuffer16rx(void)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
+static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 {
 	enum { L, R };
 	dest [L] = adpt_input(& afcodecrx, b [DMABUFF16RX_MIKE]);
@@ -729,7 +729,7 @@ static unsigned voice16rx_getcbf(aubufv_t * b, FLOAT_t * dest)
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
-	return voice16rx.fetchdata(dest, voice16rx_getcbf);
+	return voice16rx.fetchdata(dest, getcbf_dmabuffer16rx);
 }
 
 void save_dmabuffer16rx(uintptr_t addr)
@@ -773,6 +773,7 @@ int_fast32_t cachesize_dmabuffer16txphones(void)
 	return voice16tx.get_cachesize();
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
 	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
@@ -859,6 +860,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 }
 
 // sidetone forming
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
 	ASSERT(DMABUFFSTEP16TXF == 2);
@@ -867,12 +869,25 @@ static unsigned putbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 	return DMABUFFSTEP16TXF;
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabuffer16txmoni(FLOAT_t * b, FLOAT_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return DMABUFFSTEP16TXF;
+}
+
+// Возвращает не-ноль если данные есть
+uint_fast8_t elfetch_dmabuffer16txmoni(FLOAT_t * dest)
+{
+	return moni16tx.fetchdata(dest, getcbf_dmabuffer16txmoni);
+}
+
 // sidetone forming
 void elfill_dmabuffer16txmoni(FLOAT_t ch0, FLOAT_t ch1)
 {
 	moni16tx.savedata(ch0, ch1, putbf_dmabuffer16txmoni);
 }
-
 
 ///////////////////////////////////
 ///
@@ -896,7 +911,7 @@ int_fast32_t cachesize_dmabuffer32tx(void)
 	return voice32tx.get_cachesize();
 }
 
-
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_fast32_t ch1)
 {
 
@@ -1136,7 +1151,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned uacout48_getcbf(uint8_t * b, FLOAT_t * dest)
+static unsigned getcbf_dmabufferuacout48(uint8_t * b, FLOAT_t * dest)
 {
 	return uacout48adpt.peek(b, dest);
 }
@@ -1149,7 +1164,7 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 //	dest [L] = get_lout();	// левый канал
 //	dest [R] = get_rout();	// правый канал
 //	return 1;
-	return uacout48.fetchdata(dest, uacout48_getcbf);
+	return uacout48.fetchdata(dest, getcbf_dmabufferuacout48);
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -1193,6 +1208,7 @@ int_fast32_t cachesize_dmabufferuacinrts192(void)
 	return uacinrts192.get_cachesize();
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 {
 	return uacinrts192adpt.poketransf(& if2rts192out, b, ch0, ch1);
@@ -1261,6 +1277,7 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 		return uacinrts96.get_cachesize();
 	}
 
+	// Возвращает количество элементов буфера, обработанных за вызов
 	static unsigned putbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 	{
 		return uacinrts96adpt.poketransf(& if2rts96out, b, ch0, ch1);
@@ -2483,18 +2500,18 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 
 void buffers_diagnostics(void)
 {
-#if 0
+#if 1
 	//denoise16list.debug();
 	voice16rx.debug();
 	voice16tx.debug();
 	moni16tx.debug();
 	voice32tx.debug();
-	voice32rx.debug();
+	//voice32rx.debug();
 #endif
 #if 1
 	// USB
 	uacout48.debug();
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
 #if WITHRTS192
 	uacinrts192.debug();
 #endif
@@ -2502,7 +2519,7 @@ void buffers_diagnostics(void)
 	uacinrts96.debug();
 #endif
 #endif
-	uacin48.debug();
+	//uacin48.debug();
 #endif
 	//message8.debug();
 

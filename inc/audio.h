@@ -469,6 +469,7 @@ void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
+uint_fast8_t elfetch_dmabuffer16txmoni(FLOAT_t * dest);
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
