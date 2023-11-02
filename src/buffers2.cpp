@@ -1048,9 +1048,9 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 } ALIGNX_END voice32rx_t;
 
 
-typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY, 0> voice32rxlist_t;
+typedef dmahandle<int_fast32_t, voice32rx_t, VOICE32RX_CAPACITY, 0> voice32rxdma_t;
 
-static RAMNC voice32rxlist_t voice32rx(IRQL_REALTIME, "32rx");
+static RAMNC voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx");
 
 int_fast32_t cachesize_dmabuffer32rx(void)
 {
