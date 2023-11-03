@@ -98,7 +98,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate windo
 
 #endif /* WITHDSPLOCALFIR */
 
-#if WITHUSBMIKET113 && WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
 	/* работа со встроенным кодеком Allwinner t113-s3 */
 	/* параметры входного/выходного адаптеров */

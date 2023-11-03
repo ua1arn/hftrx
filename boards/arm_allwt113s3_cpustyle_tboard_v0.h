@@ -104,7 +104,7 @@
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
@@ -138,8 +138,11 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHUSBMIKET113
+	#if WITHUSBHEADSET
+		//#define WITHUAC2		1	/* UAC2 support */
+		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACIN	1
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
 		#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
 	#elif WITHINTEGRATEDDSP

@@ -195,55 +195,6 @@ extern "C" {
 		#define DMABUF32TXI	0		// TX, I
 		#define DMABUF32TXQ	1		// TX, Q
 
-	#elif WITHUSBMIKET113
-		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
-		// ws=0: even samples, ws=1: odd samples
-
-
-		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-		#define DMABUFFSTEP32RTS	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-
-		#define DMABUF32RX0I	0		// RX0, I
-		#define DMABUF32RX1I	2		// RX1, I
-		#define DMABUF32RX0Q	1		// RX0, Q
-		#define DMABUF32RX1Q	3		// RX1, Q
-
-		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-		#define DMABUF32TXI	0		// TX, I
-		#define DMABUF32TXQ	1		// TX, Q
-
-		#define DMABUF32TX_NCO1		5		// NCO RX A
-		#define DMABUF32TX_NCO2		4		// NCO RX B
-		#define DMABUF32TX_NCORTS	7		// NCO RTS
-
-		// ws=0: 00 02 04 06
-		// ws=1: 01 03 05 07
-
-		#if WITHRTS96
-			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
-			#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
-			#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
-			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
-		#endif /* WITHRTS96 */
-
-		// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
-		// ws=0: even samples, ws=1: odd samples
-
-		// Slot S0, S4: Oldest sample (T-3)
-		// Slot S1, S5: Old sample (T-2)
-		// Slot S2, S6: Old sample (T-1)
-		// Slot S3, S7: Newest sample (T-0)
-		#define DMABUF32RXWFM0I	0		// WFM OLDEST
-		#define DMABUF32RXWFM0Q	1		// WFM
-		#define DMABUF32RXWFM1I	2		// WFM
-		#define DMABUF32RXWFM1Q	3		// WFM
-		#define DMABUF32RXWFM2I	4		// WFM
-		#define DMABUF32RXWFM2Q	5		// WFM
-		#define DMABUF32RXWFM3I	6		// WFM NEWEST
-		#define DMABUF32RXWFM3Q	7		// WFM
-
 	#elif CPUSTYLE_ALLWINNER
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples

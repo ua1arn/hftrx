@@ -808,10 +808,10 @@ typedef dmahandle<FLOAT_t, moni16_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 static moni16txdma_t moni16(IRQL_REALTIME, "16moni");		// аудиоданные - самоконтроль (ключ, голос).
 static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec");	// аудиоданные - выход приемника
 
-//int_fast32_t cachesize_dmabuffer16txphones(void)
-//{
-//	return voice16tx.get_cachesize();
-//}
+int_fast32_t cachesize_dmabuffer16txphones(void)
+{
+	return voice16tx.get_cachesize();
+}
 
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
@@ -853,9 +853,34 @@ void release_dmabuffer16txphones(uintptr_t addr)
 	voice16tx.release_buffer(p);
 }
 
+void dsp_loopback(unsigned nsamples)
+{
+	enum { L = 0, R = 1 };
+
+	// Требуется обработать указанное количество сэмплов
+	while (nsamples --)
+	{
+		FLOAT_t v [2];
+
+		// Канал от USB в наушники
+		if (elfetch_dmabufferuacout48(v))
+			elfill_dmabuffer16txphones(v [L], v [R]);
+
+		// Канал от микрофона в USB
+		if (elfetch_dmabuffer16rx(v))
+			elfill_dmabufferuacin48(v [L], v [R]);
+
+	}
+}
+
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
+#if WITHUSBHEADSET
+	dsp_loopback(CNT16TX);
+#else /* WITHUSBHEADSET */
 	dsp_fillphones(CNT16TX);
+#endif
+
 	voice16tx_t * phones;
 	while (voice16tx.get_freebufferforced(& phones) == 0)
 		ASSERT(0);
@@ -2586,7 +2611,7 @@ void buffers_initialize(void)
 	deliverylist_initialize(& afdemodoutfloat, IRQL_REALTIME);
 
 
-#if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
+#if WITHSKIPUSERMODE || CTLSTYLE_V3D
 
 	// Обход user mode шумоподавителя
 	static subscribefloat_t afsample16register;

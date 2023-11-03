@@ -3881,32 +3881,18 @@ static FLOAT_t mainvolumetx = 1; //1 - subtonevolume;
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
-#if WITHUSBMIKET113
-	// WITHUSBMIKET113:
-	// в канал мониторинга идет USB AUDIO OUT
-	// в канал от микрофона - то что с микрофонного кодека
-	return v;
-#else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
 		return sdtn;
 	return v * mainvolumerx + sdtn * sidetonevolume;
-#endif /* WITHUSBMIKET113 */
 }
 
 // sdtn, moni: значение выборки в диапазоне, допустимом для кодека
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
-#if WITHUSBMIKET113
-	// WITHUSBMIKET113:
-	// в канал мониторинга идет USB AUDIO OUT
-	// в канал от микрофона - то что с микрофонного кодека
-	return moni;
-#else /* WITHUSBMIKET113 */
 	if (uacoutplayer)
 		return moni;
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
-#endif /* WITHUSBMIKET113 */
 }
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
@@ -3981,13 +3967,6 @@ static RAMFUNC FLOAT_t mikeinmux(
 	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 	FLOAT_t vi0f = vi0p.IV;
 
-#if WITHUSBMIKET113
-	// в канал мониторинга идет USB AUDIO OUT
-	// в канал от микрофона - то что с микрофонного кодека
-	* moni = viusb0f;
-	return vi0f;
-
-#endif
 #if WITHFT8
 	ft8_txfill(& vi0f);	// todo: add new DSPCTL_FT8 mode
 #endif /* WITHFT8 */
@@ -5151,7 +5130,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 // realtime level
 void dsp_fillphones(unsigned nsamples)
 {
-	enum { L = DMABUFF16TX_LEFT, R = DMABUFF16TX_RIGHT };
+	enum { L = 0, R = 1 };
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	const uint_fast8_t tx = isdspmodetx(dspmodeA);
@@ -5194,9 +5173,9 @@ void dsp_fillphones(unsigned nsamples)
 				right = dual.QV;
 			}
 		}
-#elif WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
+#elif WITHLFM
 		// Обеспечиваем прослушивание стерео
-#else /* WITHUSBHEADSET */
+#else /*  */
 		switch (glob_mainsubrxmode)
 		{
 		case BOARD_RXMAINSUB_A_A:
@@ -5206,7 +5185,7 @@ void dsp_fillphones(unsigned nsamples)
 			left = right;
 			break;
 		}
-#endif /* WITHUSBHEADSET */
+#endif /*  */
 		if (tx)
 		{
 			left = 0;
@@ -5225,10 +5204,10 @@ void dsp_fillphones(unsigned nsamples)
 			recordsampleUAC(recleft, recright);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
-#if WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
+#if WITHLFM
 		b.ivqv [L] = left;
 		b.ivqv [R] = right;
-#else /* WITHUSBHEADSET */
+#else /* */
 		switch (glob_mainsubrxmode)
 		{
 		default:
@@ -5261,7 +5240,7 @@ void dsp_fillphones(unsigned nsamples)
 			}
 			break;
 		}
-#endif /* WITHUSBHEADSET */
+#endif /*  */
 		elfill_dmabuffer16txphones(b.IV, b.QV);
 	}
 }
@@ -5315,18 +5294,8 @@ RAMFUNC void dsp_processtx(void)
 	{
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
-		// WITHUSBMIKET113:
-		// в канал мониторинга идет USB AUDIO OUT
-		// в канал от микрофона - то что с микрофонного кодека
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
-#if WITHUSBMIKET113
-	for (i = 0; i < tx_MIKE_blockSize; ++ i)
-	{
-		savesampleout32stereo(0, 0);	// Запись в поток к передатчику I/Q значений.
-		savedemod_to_AF_proc(txfirbuff [i], txfirbuff [i]);
-	}
-#else /* WITHUSBMIKET113 */
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
 
@@ -5373,7 +5342,6 @@ RAMFUNC void dsp_processtx(void)
 #endif /* WITHDSPEXTDDC */
 
 	}
-#endif /* WITHUSBMIKET113 */
 #endif /* ! WITHTRANSPARENTIQ */
 }
 
@@ -5494,7 +5462,7 @@ void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
 
 #elif WITHDSPEXTDDC
 
-	#if WITHUSBMIKET113
+	#if WITHUSBHEADSET
 	// Режимы трансиверов с внешним DDC
 
 	#elif WITHUSEDUALWATCH
@@ -5854,12 +5822,12 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	}
 
 	// Уровень сигнала самоконтроля
-#if WITHUSBHEADSET || WITHWAVPLAYER
+#if WITHWAVPLAYER
 	// В этих вариантвх самоконтроля нет.
 	sidetonevolume = 0;
-#else /* WITHUSBHEADSET */
+#else /* */
 	sidetonevolume = (glob_sidetonelevel / (FLOAT_t) 100);
-#endif /* WITHUSBHEADSET */
+#endif /*  */
 	mainvolumerx = 1 - sidetonevolume;
 }
 
