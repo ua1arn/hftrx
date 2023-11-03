@@ -2140,6 +2140,99 @@ saverts96(const IFADCvalue_t * buff)
 
 #endif /* WITHDSPEXTDDC && WITHRTS96 */
 
+#if 0
+
+// Проверка качества линии передачи от FPGA
+static int32_t seqNext [DMABUFFSTEP32RX];
+static uint_fast8_t  seqValid [DMABUFFSTEP32RX];
+static int seqErrors;
+static int seqTotal;
+static int seqRun;
+static int seqDone;
+
+enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
+
+static int32_t seqHist [MAXSEQHIST] [DMABUFFSTEP32RX];
+static const void * seqHistP [MAXSEQHIST];
+static unsigned seqHistR [MAXSEQHIST];
+static unsigned seqPos;
+static unsigned seqAfterError;
+
+static void printSeqError(void)
+{
+	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
+	unsigned i;
+	for (i = 0; i < MAXSEQHIST; ++ i)
+	{
+		unsigned ix = ((MAXSEQHIST - 1) - i + seqPos) % MAXSEQHIST;
+		PRINTF("hist [%2d] %02d @%p :", i, seqHistR [ix], seqHistP [ix]);
+		unsigned col;
+		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
+			PRINTF("%08x ", (unsigned) seqHist [ix] [col]);
+		PRINTF("\n");
+	}
+	for (;;)
+		;
+}
+
+static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * base)
+{
+	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
+	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
+	unsigned col;
+	for (col = 0; col < DMABUFFSTEP32RX; ++ col)
+		seqHist [seqPos] [col] = base [col];
+	seqHistP [seqPos] = base;
+	seqHistR [seqPos] = rowi / DMABUFFSTEP32RX;
+
+	if (seqAfterError)
+	{
+
+		if (seqAfterError != 0)
+		{
+			seqAfterError = seqAfterError - 1;
+			if (seqAfterError == 0)
+			{
+				printSeqError();
+			}
+		}
+		return;
+	}
+
+
+//	PRINTF("%d:%08lX ", slot, v);
+//	return;
+	if (seqDone)
+		return;
+	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFFSTEP32RX) * 10000L))
+	{
+		seqDone = 1;
+		printSeqError();
+		return;
+	}
+	if (! seqValid [slot])
+	{
+		seqValid [slot] = 1;
+	}
+	else
+	{
+		if (seqNext [slot] != v)
+		{
+			++ seqErrors;
+			seqRun = 0;
+			if (seqErrors == 2 && seqAfterError == 0)
+				seqAfterError = 4;	// Еще четыре фрейма и стоп
+		}
+		else
+		{
+			++ seqRun;
+		}
+		++ seqTotal;
+	}
+	seqNext [slot] = v + 2;
+}
+#endif
+
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
@@ -2148,6 +2241,20 @@ void save_dmabuffer32rx(uintptr_t addr)
 	{
 		const IFADCvalue_t * const b = p->buff;
 		//
+#if 0
+	if (0)
+	{
+		// Проверка качества линии передачи от FPGA
+		uint_fast8_t slot;
+		for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
+			validateSeq(slot, b [i + slot], i, b + i);
+	}
+	else if (1)
+	{
+		uint_fast8_t slot = DMABUF32RTS0I;	// slot 4
+		validateSeq(slot, b [i + slot], i, b + i);
+	}
+#endif
 #if 0
 		// Тестирование - заменить приянтые квадратуры синтезированными
 		inject_testsignals(b + i);
