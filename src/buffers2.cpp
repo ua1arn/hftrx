@@ -2264,11 +2264,11 @@ void save_dmabuffer32rx(uintptr_t addr)
 #elif WITHRTS96
 		saverts96pair(b + i);	// использование данных о спектре, передаваемых в общем фрейме
 #endif /* WITHRTS96 */
+		dsp_step32rx(b + i);
 	}
 #if WITHFPGAPIPE_CODEC1
 	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
 #endif /* WITHFPGAPIPE_CODEC1 */
-	dsp_extbuffer32rx(p->buff);
 #if WITHWFM
 	dsp_extbuffer32wfm(p->buff);
 #endif /* WITHWFM */

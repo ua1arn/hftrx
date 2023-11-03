@@ -5376,9 +5376,42 @@ RAMFUNC void dsp_processtx(void)
 #endif /* WITHUSBMIKET113 */
 #endif /* ! WITHTRANSPARENTIQ */
 }
+
+
+FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
+{
+	ASSERT(gwprof < NPROF);
+	const uint_fast8_t tx = isdspmodetx( globDSPMode [gwprof] [0]);
+	const uint_fast8_t dspmode = pathi ? tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [1] : globDSPMode [gwprof] [0];
+	const int rxgate = getRxGate();
+
+	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
+	nco_setlo6_delay(pathi, tx);
+
+#if WITHDSPEXTDDC
+
+		if (dspmode == DSPCTL_MODE_RX_ISB)
+		{
+			/* прием независимых боковых полос */
+			// Обработка буфера с парами значений
+			const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv * rxgate, qv * rxgate,pathi);
+			return 0;
+		}
+		else
+		{
+			return processifadcsampleIQ(iv * rxgate, qv * rxgate, dspmode, pathi);
+		}
+
+#else /* WITHDSPEXTDDC */
+
+	return processifadcsamplei(iv, dspmode);
+
+#endif /* WITHDSPEXTDDC */
+}
+
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
+void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
 {
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
@@ -5387,12 +5420,8 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 #if WITHUSEDUALWATCH
 	const uint_fast8_t dspmodeB = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [1];
 #endif /* WITHUSEDUALWATCH */
-	unsigned i;
+	const unsigned i = 0;
 	const int rxgate = getRxGate();
-
-	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
-	{
-
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
 	#if WITHUSEDUALWATCH
@@ -5550,7 +5579,6 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 	savedemod_to_AF_proc(left, left);
 
 #endif /* WITHDSPEXTDDC */
-	}
 }
 
 //////////////////////////////////////////
