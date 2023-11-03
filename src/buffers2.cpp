@@ -2154,7 +2154,6 @@ enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
 
 static int32_t seqHist [MAXSEQHIST] [DMABUFFSTEP32RX];
 static const void * seqHistP [MAXSEQHIST];
-static unsigned seqHistR [MAXSEQHIST];
 static unsigned seqPos;
 static unsigned seqAfterError;
 
@@ -2165,7 +2164,7 @@ static void printSeqError(void)
 	for (i = 0; i < MAXSEQHIST; ++ i)
 	{
 		unsigned ix = ((MAXSEQHIST - 1) - i + seqPos) % MAXSEQHIST;
-		PRINTF("hist [%2d] %02d @%p :", i, seqHistR [ix], seqHistP [ix]);
+		PRINTF("hist %02d @%p :", i, seqHistP [ix]);
 		unsigned col;
 		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
 			PRINTF("%08x ", (unsigned) seqHist [ix] [col]);
@@ -2175,7 +2174,7 @@ static void printSeqError(void)
 		;
 }
 
-static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * base)
+static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 {
 	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
 	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
@@ -2183,7 +2182,6 @@ static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * 
 	for (col = 0; col < DMABUFFSTEP32RX; ++ col)
 		seqHist [seqPos] [col] = base [col];
 	seqHistP [seqPos] = base;
-	seqHistR [seqPos] = rowi / DMABUFFSTEP32RX;
 
 	if (seqAfterError)
 	{
@@ -2239,7 +2237,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 	unsigned i;
 	for (i = 0; i < DMABUFFSIZE32RTS; i += DMABUFFSTEP32RTS)
 	{
-		const IFADCvalue_t * const b = p->buff;
+		const IFADCvalue_t * const b = p->buff + i;
 		//
 #if 0
 	if (0)
@@ -2247,24 +2245,39 @@ void save_dmabuffer32rx(uintptr_t addr)
 		// Проверка качества линии передачи от FPGA
 		uint_fast8_t slot;
 		for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
-			validateSeq(slot, b [i + slot], i, b + i);
+			validateSeq(slot, b [slot], b);
 	}
 	else if (1)
 	{
 		uint_fast8_t slot = DMABUF32RTS0I;	// slot 4
-		validateSeq(slot, b [i + slot], i, b + i);
+		validateSeq(slot, b [slot], b);
 	}
 #endif
 #if 0
 		// Тестирование - заменить приянтые квадратуры синтезированными
-		inject_testsignals(b + i);
+		inject_testsignals(b);
 #endif
 #if FPGAMODE_GW2A
-		saverts96(b + i);	// использование данных о спектре, передаваемых в общем фрейме
+		saverts96(b);	// использование данных о спектре, передаваемых в общем фрейме
 #elif WITHRTS96
-		saverts96pair(b + i);	// использование данных о спектре, передаваемых в общем фрейме
+		saverts96pair(b);	// использование данных о спектре, передаваемых в общем фрейме
 #endif /* WITHRTS96 */
-		dsp_step32rx(b + i);
+
+#if WITHDSPEXTDDC
+#if WITHUSEDUALWATCH
+		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
+		FLOAT_t right = rxdmaproc(1, b [DMABUF32RX1I], b [DMABUF32RX1Q]);
+		savedemod_to_AF_proc(left, right);
+#else /* WITHUSEDUALWATCH */
+		FLOAT_t left = rxdmaproc(0, b [ DMABUF32RX0I], b [DMABUF32RX0Q]);
+		savedemod_to_AF_proc(left, left);
+#endif /* WITHUSEDUALWATCH */
+#else /* WITHDSPEXTDDC */
+		// обработка IF4
+		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX], 0);
+		savedemod_to_AF_proc(left, left);
+#endif /* WITHDSPEXTDDC */
+		//dsp_step32rx(b + i);	// старый вариант обработки
 	}
 #if WITHFPGAPIPE_CODEC1
 	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));

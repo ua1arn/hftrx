@@ -577,7 +577,7 @@ extern deliverylist_t speexoutfloat;	// выход speex и фильтра
 extern deliverylist_t afdemodoutfloat;	// выход приемника
 
 
-void dsp_step32rx(const IFADCvalue_t * buff);	// RX
+//void dsp_step32rx(const IFADCvalue_t * buff);	// RX
 //void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
 void inject_testsignals(IFADCvalue_t * dbuff);

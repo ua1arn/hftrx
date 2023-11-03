@@ -5409,6 +5409,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 #endif /* WITHDSPEXTDDC */
 }
 
+#if 0
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
@@ -5580,6 +5581,8 @@ void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
 
 #endif /* WITHDSPEXTDDC */
 }
+
+#endif
 
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
