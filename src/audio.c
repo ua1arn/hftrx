@@ -5241,7 +5241,7 @@ void dsp_fillphones(unsigned nsamples)
 			break;
 		}
 #endif /*  */
-		elfill_dmabuffer16txphones(b.IV, b.QV);
+		elfill_dmabuffer16tx(b.IV, b.QV);
 	}
 }
 

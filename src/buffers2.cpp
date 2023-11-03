@@ -14,7 +14,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-#define WITHBUFFERSDEBUG WITHDEBUG
+//#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
@@ -289,7 +289,7 @@ public:
 	unsigned wbstart;	// start position of work buffer - zero has not meaning
 
 	fqmeter fqin, fqout;
-	enum { LEVELSTEP = 4 };
+	enum { LEVELSTEP = 100 };
 	// параметры чувствтительности ресэмплера
 	enum { MINMLEVEL = LEVELSTEP * 1, NORMLEVEL = LEVELSTEP * 2, MAXLEVEL = LEVELSTEP * 3 };
 	bool outready;
@@ -703,7 +703,7 @@ void savespeexbuffer(speexel_t * t)
 	denoise16list.save_buffer(p);
 }
 
-// Audio CODEC out (to processor)
+// DMA data from codec
 typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
@@ -711,20 +711,38 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
 } ALIGNX_END voice16rx_t;
 
-typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, VOICE16RX_RESAMPLING> voice16rxdma_t;
+// DMA data to codec
+typedef ALIGNX_BEGIN struct voice16tx_tag
+{
+	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
+	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// resampling support
+} ALIGNX_END voice16tx_t;
 
-static RAMNC voice16rxdma_t voice16rx(IRQL_REALTIME, "16rx");		// from codec
+
+//typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
+
+typedef dmahandle<FLOAT_t, voice16rx_t, VOICE16RX_CAPACITY, VOICE16RX_RESAMPLING> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING> voice16txdma_t;
+
+static RAMNC voice16rxdma_t codec16rx(IRQL_REALTIME, "16rx");		// from codec
+static voice16txdma_t codec16tx(IRQL_REALTIME, "16tx");				// to codec
 
 int_fast32_t cachesize_dmabuffer16rx(void)
 {
-	return voice16rx.get_cachesize();
+	return codec16rx.get_cachesize();
+}
+
+int_fast32_t cachesize_dmabuffer16tx(void)
+{
+	return codec16tx.get_cachesize();
 }
 
 // can not be zero
 uintptr_t allocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (voice16rx.get_freebufferforced(& dest) == 0)
+	while (codec16rx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -733,7 +751,7 @@ uintptr_t allocate_dmabuffer16rx(void)
 uintptr_t getfilled_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	if (voice16rx.get_readybuffer(& dest) == 0)
+	if (codec16rx.get_readybuffer(& dest) == 0)
 		return 0;
 	return (uintptr_t) dest->buff;
 }
@@ -750,28 +768,20 @@ static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
-	return voice16rx.fetchdata(dest, getcbf_dmabuffer16rx);
+	return codec16rx.fetchdata(dest, getcbf_dmabuffer16rx);
 }
 
 void save_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rx.save_buffer(p);
+	codec16rx.save_buffer(p);
 }
 
 void release_dmabuffer16rx(uintptr_t addr)
 {
 	voice16rx_t * const p = CONTAINING_RECORD(addr, voice16rx_t, buff);
-	voice16rx.release_buffer(p);
+	codec16rx.release_buffer(p);
 }
-
-// Audio CODEC in (from processor)
-typedef ALIGNX_BEGIN struct voice16tx_tag
-{
-	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
-	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// resampling support
-} ALIGNX_END voice16tx_t;
 
 // Sidetone
 typedef ALIGNX_BEGIN struct moni16_tag
@@ -798,32 +808,23 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 	return DMABUFFSTEP16MONI;
 }
 
-typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
-typedef dmahandle<FLOAT_t, voice16tx_t, VOICE16TX_CAPACITY, VOICE16TX_RESAMPLING> voice16txdma_t;
-
-static voice16txdma_t voice16tx(IRQL_REALTIME, "16tx");
 
 typedef dmahandle<FLOAT_t, moni16_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 
 static moni16txdma_t moni16(IRQL_REALTIME, "16moni");		// аудиоданные - самоконтроль (ключ, голос).
 static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec");	// аудиоданные - выход приемника
 
-int_fast32_t cachesize_dmabuffer16txphones(void)
-{
-	return voice16tx.get_cachesize();
-}
-
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putbf_dmabuffer16txphones(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
 	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
 	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, ch1);
 	return DMABUFFSTEP16TX;
 }
 
-void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 {
-	voice16tx.savedata(ch0, ch1, putbf_dmabuffer16txphones);
+	codec16tx.savedata(ch0, ch1, putbf_dmabuffer16tx);
 }
 
 // Поэлементное заполнение DMA буфера AF DAC
@@ -833,24 +834,24 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // can not be zero
-uintptr_t allocate_dmabuffer16txphones(void)
+uintptr_t allocate_dmabuffer16tx(void)
 {
 	voice16tx_t * dest;
-	while (voice16tx.get_freebufferforced(& dest) == 0)
+	while (codec16tx.get_freebufferforced(& dest) == 0)
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
 
-//void save_dmabuffer16txphones(uintptr_t addr)
+//void save_dmabuffer16tx(uintptr_t addr)
 //{
 //	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-//	voice16tx.save_buffer(p);
+//	codec16tx.save_buffer(p);
 //}
 
-void release_dmabuffer16txphones(uintptr_t addr)
+void release_dmabuffer16tx(uintptr_t addr)
 {
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
-	voice16tx.release_buffer(p);
+	codec16tx.release_buffer(p);
 }
 
 void dsp_loopback(unsigned nsamples)
@@ -864,7 +865,7 @@ void dsp_loopback(unsigned nsamples)
 
 		// Канал от USB в наушники
 		if (elfetch_dmabufferuacout48(v))
-			elfill_dmabuffer16txphones(v [L], v [R]);
+			elfill_dmabuffer16tx(v [L], v [R]);
 
 		// Канал от микрофона в USB
 		if (elfetch_dmabuffer16rx(v))
@@ -873,7 +874,7 @@ void dsp_loopback(unsigned nsamples)
 	}
 }
 
-uintptr_t getfilled_dmabuffer16txphones(void)
+uintptr_t getfilled_dmabuffer16tx(void)
 {
 #if WITHUSBHEADSET
 	dsp_loopback(CNT16TX);
@@ -882,7 +883,7 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 #endif
 
 	voice16tx_t * phones;
-	while (voice16tx.get_freebufferforced(& phones) == 0)
+	while (codec16tx.get_freebufferforced(& phones) == 0)
 		ASSERT(0);
 
 
@@ -1072,9 +1073,9 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 	uintptr_t addr = getfilled_dmabuffer32tx();
 #if WITHFPGAPIPE_CODEC1
 	/* при необходимости добавляем слоты для передачи на кодек */
-	const uintptr_t addr16 = getfilled_dmabuffer16txphones();
+	const uintptr_t addr16 = getfilled_dmabuffer16tx();
 	pipe_dmabuffer32tx(addr, addr16);
-	release_dmabuffer16txphones(addr16);	/* освоюождаем буфер как переданный */
+	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
 #endif /* WITHFPGAPIPE_CODEC1 */
 #if WITHFPGAPIPE_NCORX0
 #endif /* WITHFPGAPIPE_NCORX0 */
@@ -1974,7 +1975,7 @@ VOICE_t * voice_rec16(void)
 //
 //VOICE_t * voice_16txphones(void)
 //{
-//	return (VOICE_t *) & voice16tx;
+//	return (VOICE_t *) & codec16tx;
 //}
 //
 //VOICE_t * voice_swav48(void)
@@ -2516,8 +2517,8 @@ void buffers_diagnostics(void)
 {
 #if 1
 	//denoise16list.debug();
-	voice16rx.debug();
-	voice16tx.debug();
+	codec16rx.debug();
+	codec16tx.debug();
 	//moni16.debug();
 	//voice32tx.debug();
 	//voice32rx.debug();
@@ -2547,8 +2548,8 @@ static void buffers_spool(void * ctx)
 {
 #if 1
 	//denoise16list.spool10ms();
-	voice16rx.spool10ms();
-	voice16tx.spool10ms();
+	codec16rx.spool10ms();
+	codec16tx.spool10ms();
 	moni16.spool10ms();
 	voice32tx.spool10ms();
 	voice32rx.spool10ms();

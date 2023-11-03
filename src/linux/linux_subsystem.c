@@ -475,13 +475,13 @@ void linux_iq_thread(void)
 
 		while (rx_stage >= CNT16TX)
 		{
-			const uintptr_t addr2 = getfilled_dmabuffer16txphones();
+			const uintptr_t addr2 = getfilled_dmabuffer16tx();
 			uint32_t * b = (uint32_t *) addr2;
 
 			for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 				* ph_fifo = b[i];
 
-			release_dmabuffer16txphones(addr2);
+			release_dmabuffer16tx(addr2);
 			rx_stage -= CNT16TX;
 		}
 	}

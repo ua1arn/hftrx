@@ -562,10 +562,10 @@ uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
 
 // буферы передачи на кодек
-uintptr_t allocate_dmabuffer16txphones(void);
-int_fast32_t cachesize_dmabuffer16txphones(void);
-void release_dmabuffer16txphones(uintptr_t addr);
-uintptr_t getfilled_dmabuffer16txphones(void);
+uintptr_t allocate_dmabuffer16tx(void);
+int_fast32_t cachesize_dmabuffer16tx(void);
+void release_dmabuffer16tx(uintptr_t addr);
+uintptr_t getfilled_dmabuffer16tx(void);
 
 // прием с кодека
 uintptr_t allocate_dmabuffer16rx(void);

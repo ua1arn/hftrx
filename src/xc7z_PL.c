@@ -250,7 +250,7 @@ void xcz_audio_tx_init(void)
 
 void xcz_fifo_phones_inthandler(void)
 {
-	const uintptr_t addr = getfilled_dmabuffer16txphones();
+	const uintptr_t addr = getfilled_dmabuffer16tx();
 	uint32_t * r = (uint32_t *) addr;
 
 #if IQMODEM_BLOCKMEMORY
@@ -263,7 +263,7 @@ void xcz_fifo_phones_inthandler(void)
 		Xil_Out32(XPAR_AUDIO_FIFO_PHONES_BASEADDR, r[i]);
 #endif /* IQMODEM_BLOCKMEMORY */
 
-	release_dmabuffer16txphones(addr);
+	release_dmabuffer16tx(addr);
 }
 
 void xcz_audio_tx_enable(uint_fast8_t state)
