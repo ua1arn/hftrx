@@ -19,7 +19,7 @@
 
 #define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY (4 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
 #define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
@@ -829,7 +829,6 @@ void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	voice_put(VOICE_REC16, ch0, ch1);	// аудиоданные - выход приемника
-	elfill_dmabuffer16txphones(ch0, ch1);
 }
 
 // can not be zero
@@ -855,24 +854,11 @@ void release_dmabuffer16txphones(uintptr_t addr)
 
 uintptr_t getfilled_dmabuffer16txphones(void)
 {
+	dsp_fillphones(CNT16TX);
 	voice16tx_t * phones;
-	do
-	{
-		if (voice16tx.get_readybuffer(& phones) )
-			break;
-		if (voice16tx.get_freebuffer(& phones) )
-		{
-			memset(phones->buff, 0, sizeof phones->buff);
-			break;
-		}
-		voice16tx.debug();
+	while (voice16tx.get_freebufferforced(& phones) == 0)
 		ASSERT(0);
-		for (;;)
-			;
-		return 0;
-	} while (0);
 
-	dsp_addsidetone(phones->buff);
 
 #if 0
 	// тестирование вывода на кодек

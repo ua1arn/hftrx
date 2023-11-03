@@ -5215,22 +5215,27 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 // перед передачей по DMA в аудиокодек
 //  Здесь ответвляются потоки в USB и для записи на SD CARD
 // realtime level
-void dsp_addsidetone(aubufv_t * buff)
+void dsp_fillphones(unsigned nsamples)
 {
 	enum { L = DMABUFF16TX_LEFT, R = DMABUFF16TX_RIGHT };
-	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	const uint_fast8_t tx = isdspmodetx(dspmodeA);
 	unsigned i;
-	for (i = 0; i < DMABUFFSIZE16TX; i += DMABUFFSTEP16TX)
+	while (nsamples --)
 	{
-		aubufv_t * const b = & buff [i];
+		FLOAT32P_t b;
+		FLOAT32P_t voice;
+		FLOAT32P_t moni;
 		const FLOAT_t sdtnenvelop = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone();
 		ASSERT(sdtnenvelop >= 0 && sdtnenvelop <= 1);
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
-		FLOAT32P_t moni;
+		if (voice_get(VOICE_REC16, & voice) == 0)
+		{
+			voice.IV =  0;	// левый канал
+			voice.QV = 0; 	// правый канал
+		}
 		// Использование данных.
 		if (voice_get(VOICE_MONI16, & moni) == 0)
 		{
@@ -5238,15 +5243,12 @@ void dsp_addsidetone(aubufv_t * buff)
 			moni.QV = 0; 	// правый канал
 		}
 
-//		b [L] = adpt_output(& afcodectc, sdtnv);
-//		b [R] = adpt_output(& afcodectx, sdtnv);
-//		continue;
 		/* Замещаем звук из мониторинга на sidetone пропорционально огибающей */
 		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, moni.IV);
 		const FLOAT_t moniR = mixmonitor(sdtnenvelop, sdtnv, moni.QV);
 
-		FLOAT_t left = adpt_input(& afcodectx, b [L]);
-		FLOAT_t right = adpt_input(& afcodectx, b [R]);
+		FLOAT_t left = voice.IV;
+		FLOAT_t right = voice.QV;
 		//
 #if WITHWAVPLAYER
 		{
@@ -5290,42 +5292,43 @@ void dsp_addsidetone(aubufv_t * buff)
 		}
 
 #if WITHUSBHEADSET || WITHLFM || WITHUSBMIKET113
-		b [L] = adpt_outputexact(& afcodectx, left);
-		b [R] = adpt_outputexact(& afcodectx, right);
+		b.ivqv [L] = left;
+		b.ivqv [R] = right;
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
 		{
 		default:
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
-			b [L] = adpt_output(& afcodectx, injectsidetone(left, moniL));
-			b [R] = adpt_output(& afcodectx, injectsidetone(right, moniR));
+			b.ivqv [L] = (injectsidetone(left, moniL));
+			b.ivqv [R] = (injectsidetone(right, moniR));
 			break;
 		case BOARD_RXMAINSUB_A_B:
 			// left:A/right:B
-			b [L] = adpt_output(& afcodectx, injectsidetone(left, moniL));
-			b [R] = adpt_output(& afcodectx, injectsidetone(right, moniR));
+			b.ivqv [L] = (injectsidetone(left, moniL));
+			b.ivqv [R] = (injectsidetone(right, moniR));
 			break;
 		case BOARD_RXMAINSUB_B_A:
 			// left:B/right:A
-			b [L] = adpt_output(& afcodectx, injectsidetone(right, moniL));
-			b [R] = adpt_output(& afcodectx, injectsidetone(left, moniR));
+			b.ivqv [L] = (injectsidetone(right, moniL));
+			b.ivqv [R] = (injectsidetone(left, moniR));
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			// left:B/right:B
-			b [L] = adpt_output(& afcodectx, injectsidetone(left, moniL));
-			b [R] = adpt_output(& afcodectx, injectsidetone(right, moniR));
+			b.ivqv [L] = (injectsidetone(left, moniL));
+			b.ivqv [R] = (injectsidetone(right, moniR));
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
 			{
 				const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
-				b [L] = adpt_output(& afcodectx, injectsidetone(sumv, moniL));
-				b [R] = adpt_output(& afcodectx, injectsidetone(sumv, moniR));
+				b.ivqv [L] = (injectsidetone(sumv, moniL));
+				b.ivqv [R] = (injectsidetone(sumv, moniR));
 			}
 			break;
 		}
 #endif /* WITHUSBHEADSET */
+		elfill_dmabuffer16txphones(b.IV, b.QV);
 	}
 }
 

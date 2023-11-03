@@ -464,7 +464,6 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calc
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1);
 void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1);
-//void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
@@ -532,7 +531,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right);
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
 
 #if WITHINTEGRATEDDSP
-void dsp_addsidetone(aubufv_t * buff);			// перед передачей по DMA в аудиокодек
+void dsp_fillphones(unsigned nsamples);			// перед передачей по DMA в аудиокодек
 #endif /* WITHINTEGRATEDDSP */
 
 typedef FLOAT_t speexel_t;
