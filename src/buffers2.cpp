@@ -14,8 +14,8 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 1
+#define WITHBUFFERSDEBUG WITHDEBUG
+#define BUFOVERSIZE 10
 
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
@@ -765,6 +765,14 @@ static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 	return DMABUFFSTEP16RX;
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
+	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, ch1);
+	return DMABUFFSTEP16TX;
+}
+
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
@@ -783,48 +791,9 @@ void release_dmabuffer16rx(uintptr_t addr)
 	codec16rx.release_buffer(p);
 }
 
-// Sidetone
-typedef ALIGNX_BEGIN struct moni16_tag
-{
-	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16MONI] ALIGNX_END;
-	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for resampling support
-} ALIGNX_END moni16_t;
-
-// sidetone forming
-// Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
-{
-	ASSERT(DMABUFFSTEP16MONI == 2);
-	b [0] = ch0;
-	b [1] = ch1;
-	return DMABUFFSTEP16MONI;
-}
-
-// Возвращает количество элементов буфера, обработанных за вызов
-static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
-{
-	dest [0] = b [0];
-	dest [1] = b [1];
-	return DMABUFFSTEP16MONI;
-}
-
-
-typedef dmahandle<FLOAT_t, moni16_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
-
-static moni16txdma_t moni16(IRQL_REALTIME, "16moni");		// аудиоданные - самоконтроль (ключ, голос).
-static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec");	// аудиоданные - выход приемника
-
-// Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
-{
-	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
-	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, ch1);
-	return DMABUFFSTEP16TX;
-}
-
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 {
-	codec16tx.savedata(ch0, ch1, putbf_dmabuffer16tx);
+	codec16tx.savedata(ch0, ch1, putcbf_dmabuffer16tx);
 }
 
 // Поэлементное заполнение DMA буфера AF DAC
@@ -853,6 +822,40 @@ void release_dmabuffer16tx(uintptr_t addr)
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
 	codec16tx.release_buffer(p);
 }
+
+////////////////////////////////////////////////////
+///
+
+// Sidetone
+typedef ALIGNX_BEGIN struct moni16_tag
+{
+	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16MONI] ALIGNX_END;
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for resampling support
+} ALIGNX_END moni16_t;
+
+// sidetone forming
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	ASSERT(DMABUFFSTEP16MONI == 2);
+	b [0] = ch0;
+	b [1] = ch1;
+	return DMABUFFSTEP16MONI;
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return DMABUFFSTEP16MONI;
+}
+
+
+typedef dmahandle<FLOAT_t, moni16_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
+
+static moni16txdma_t moni16(IRQL_REALTIME, "16moni");		// аудиоданные - самоконтроль (ключ, голос).
+static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec");	// аудиоданные - выход приемника
 
 void dsp_loopback(unsigned nsamples)
 {
@@ -912,7 +915,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 //// sidetone forming
 //void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1)
 //{
-//	moni16.savedata(ch0, ch1, putbf_dmabuffer16moni);
+//	moni16.savedata(ch0, ch1, putcbf_dmabuffer16moni);
 //}
 //
 //
@@ -925,7 +928,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 //// выход приемника после фильтра
 //void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
 //{
-//	rx16rec.savedata(ch0, ch1, putbf_dmabuffer16moni);
+//	rx16rec.savedata(ch0, ch1, putcbf_dmabuffer16moni);
 //}
 
 ///////////////////////////////////
@@ -951,7 +954,7 @@ int_fast32_t cachesize_dmabuffer32tx(void)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_fast32_t ch1)
+static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_fast32_t ch1)
 {
 
 	buff [DMABUF32TXI] = ch0;
@@ -981,7 +984,7 @@ static unsigned putbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_f
 
 void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1)
 {
-	voice32tx.savedata(ch0, ch1, putbf_dmabuffer32tx);
+	voice32tx.savedata(ch0, ch1, putcbf_dmabuffer32tx);
 }
 
 void release_dmabuffer32tx(uintptr_t addr)
@@ -1248,14 +1251,14 @@ int_fast32_t cachesize_dmabufferuacinrts192(void)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+static unsigned putcbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 {
 	return uacinrts192adpt.poketransf(& if2rts192out, b, ch0, ch1);
 }
 
 void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
 {
-	uacinrts192.savedata(ch0, ch1, putbf_dmabufferuacinrts192);
+	uacinrts192.savedata(ch0, ch1, putcbf_dmabufferuacinrts192);
 }
 
 // can not be zero
@@ -1317,14 +1320,14 @@ void release_dmabufferuacinrts192(uintptr_t addr)
 	}
 
 	// Возвращает количество элементов буфера, обработанных за вызов
-	static unsigned putbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+	static unsigned putcbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 	{
 		return uacinrts96adpt.poketransf(& if2rts96out, b, ch0, ch1);
 	}
 
 	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts96.savedata(ch0, ch1, putbf_dmabufferuacinrts96);
+		uacinrts96.savedata(ch0, ch1, putcbf_dmabufferuacinrts96);
 	}
 
 	// can not be zero
@@ -1943,7 +1946,7 @@ deliverylist_t afdemodoutfloat;	// выход приемника
 void voice_put(VOICE_t * p, FLOAT_t ch0, FLOAT_t ch1)
 {
 	moni16txdma_t * const obj = (moni16txdma_t *) p;
-	obj->savedata(ch0, ch1, putbf_dmabuffer16moni);
+	obj->savedata(ch0, ch1, putcbf_dmabuffer16moni);
 }
 
 uint_fast8_t voice_get(VOICE_t * p, FLOAT32P_t * v)
