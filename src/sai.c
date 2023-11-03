@@ -3955,12 +3955,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		// BCLK = MCLK / BCLKDIV
 		/* PI0 H_I2S0_MCLK pin 32	*/
 		/* PI1 H_I2S0_BCLK pin 31 */
-		const unsigned ratio = 256 / framebits;
-		const unsigned div4 = 1;
+		const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
+		const unsigned mclkdiv = clk / mclkf;
+		const unsigned bclkdiv = clk / bclkf;
+		PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
+		PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
 		i2s->I2Sn_CLKD =
 			!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
-			ratio2div(div4) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-			ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+			ratio2div(mclkdiv) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+			ratio2div(bclkdiv) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 			0;
 #endif
 		i2s->I2Sn_CHCFG =
