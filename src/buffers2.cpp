@@ -832,13 +832,13 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // can not be zero
-//uintptr_t allocate_dmabuffer16txphones(void)
-//{
-//	voice16tx_t * dest;
-//	while (voice16tx.get_freebufferforced(& dest) == 0)
-//		ASSERT(0);
-//	return (uintptr_t) dest->buff;
-//}
+uintptr_t allocate_dmabuffer16txphones(void)
+{
+	voice16tx_t * dest;
+	while (voice16tx.get_freebufferforced(& dest) == 0)
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
+}
 
 //void save_dmabuffer16txphones(uintptr_t addr)
 //{
