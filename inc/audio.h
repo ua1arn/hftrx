@@ -578,9 +578,33 @@ extern deliverylist_t afdemodoutfloat;	// выход приемника
 
 
 void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
-void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
+//void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
+void inject_testsignals(IFADCvalue_t * dbuff);
 
+#if WITHAFEQUALIZER
+
+enum {
+	AF_EQUALIZER_BANDS = 3,		// число полос
+	AF_EQUALIZER_BASE = 8,		// предел регулировки
+	AF_EQUALIZER_LOW = 400,		// частота нижней полосы
+	AF_EQUALIZER_MID = 1500,	// частота средней полосы
+	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
+};
+
+int_fast32_t hamradio_get_af_equalizer_base(void);
+int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
+void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
+void board_set_equalizer_rx(uint_fast8_t n);
+void board_set_equalizer_tx(uint_fast8_t n);
+void board_set_equalizer_rx_gains(const uint_fast8_t * p);
+void board_set_equalizer_tx_gains(const uint_fast8_t * p);
+uint_fast8_t hamradio_get_geqrx(void);
+void hamradio_set_geqrx(uint_fast8_t v);
+
+void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
+
+#endif /* WITHAFEQUALIZER */
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA
 

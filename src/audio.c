@@ -25,7 +25,6 @@
 	#include "ft8.h"
 #endif /* WITHFT8 */
 
-#define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
 
 #if 0
@@ -75,6 +74,10 @@
 	#if __ARM_ARCH_7A__
 		#warning Avaliable __ARM_ARCH_7A__
 	#endif /* __ARM_ARCH_7A__ */
+
+	#if __ARM_ARCH_8A__
+		#warning Avaliable __ARM_ARCH_8A__
+	#endif /* __ARM_ARCH_8A__ */
 #endif
 
 #ifdef __ARM_ACLE
@@ -179,8 +182,6 @@ static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость перед�
 
 static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
 static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
-
-static uint_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
 static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
 
@@ -4506,11 +4507,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-#if DUALFILTERSPROCESSING
 	enum { DUALRXFLT = 1 };
-#else /* DUALFILTERSPROCESSING */
-	enum { DUALRXFLT = 0 };
-#endif /* DUALFILTERSPROCESSING */
 
 	FLOAT_t r;
 	switch (dspmode)
@@ -4998,69 +4995,6 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	}
 }
 
-#if WITHDSPEXTDDC && WITHRTS96
-// использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC 
-saverts96pair(const IFADCvalue_t * buff)
-{
-#if FPGAMODE_GW2A
-#else /* FPGAMODE_GW2A */
-	// формирование отображения спектра
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swaprts != 0)
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RTS0Q],	// previous
-			buff [DMABUF32RTS0I]
-			);	
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RTS1Q],	// current
-			buff [DMABUF32RTS1I]
-			);	
-	}
-	else
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RTS0I],	// previous
-			buff [DMABUF32RTS0Q]
-			);	
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RTS1I],	// current
-			buff [DMABUF32RTS1Q]
-			);	
-	}
-#endif
-}
-// использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
-saverts96(const IFADCvalue_t * buff)
-{
-	// формирование отображения спектра
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swaprts != 0)
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RTS0Q],	// previous
-			buff [DMABUF32RTS0I]
-			);
-	}
-	else
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RTS0I],	// previous
-			buff [DMABUF32RTS0Q]
-			);
-	}
-}
-
-#endif /* WITHDSPEXTDDC && WITHRTS96 */
-
 // Taken from https://stackoverflow.com/questions/11930594/calculate-atan2-without-std-functions-or-c99
 
 // Approximates atan(x) normalized to the [-1,1] range
@@ -5423,8 +5357,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * 
 }
 
 // Тестирование - заменить приянтые квадратуры синтезированными
-static void
-inject_testsignals(IFADCvalue_t * const dbuff)
+void inject_testsignals(IFADCvalue_t * const dbuff)
 {
 #ifdef DMABUF32RX0I
 	static FLOAT_t simlevelRX = (FLOAT_t) 0.0000001;	// -140 dBFS
@@ -5455,27 +5388,6 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 #endif /* WITHRTS96 */
 
 #endif
-}
-
-// Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_extbuffer32rts(const IFADCvalue_t * buff)
-{
-	unsigned i;
-	ASSERT(buff != NULL);
-
-	for (i = 0; i < DMABUFFSIZE32RTS; i += DMABUFFSTEP32RTS)
-	{
-#if 0
-		// Тестирование - заменить приянтые квадратуры синтезированными
-		inject_testsignals((IFADCvalue_t *) (buff + i));
-#endif
-#if FPGAMODE_GW2A
-		saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-#elif WITHRTS96
-		saverts96pair(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-#endif /* WITHRTS96 */
-	}
 }
 
 /* выборка tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
@@ -6447,17 +6359,6 @@ board_set_squelch(uint_fast8_t n)	/* уровень открывания шум�
 	if (glob_squelch != n)
 	{
 		glob_squelch = n;		board_dsp1regchanged();
-	}
-}
-
-void 
-board_set_swaprts(uint_fast8_t v)	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_swaprts != n)
-	{
-		glob_swaprts = n;
-		board_dsp1regchanged();
 	}
 }
 

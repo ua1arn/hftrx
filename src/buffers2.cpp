@@ -50,6 +50,7 @@
 
 #include <string.h>		// for memset
 
+static uint_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
 
 #if WITHINTEGRATEDDSP
@@ -2076,13 +2077,90 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 	elfill_dmabuffer32tx(ch0, ch1);
 }
 
+#if WITHDSPEXTDDC && WITHRTS96
+// использование данных о спектре, передаваемых в общем фрейме
+static void RAMFUNC
+saverts96pair(const IFADCvalue_t * buff)
+{
+#if FPGAMODE_GW2A
+#else /* FPGAMODE_GW2A */
+	// формирование отображения спектра
+	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
+	if (glob_swaprts != 0)
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS0Q],	// previous
+			buff [DMABUF32RTS0I]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS1Q],	// current
+			buff [DMABUF32RTS1I]
+			);
+	}
+	else
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS0I],	// previous
+			buff [DMABUF32RTS0Q]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS1I],	// current
+			buff [DMABUF32RTS1Q]
+			);
+	}
+#endif
+}
+// использование данных о спектре, передаваемых в общем фрейме
+static void RAMFUNC
+saverts96(const IFADCvalue_t * buff)
+{
+	// формирование отображения спектра
+	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
+	if (glob_swaprts != 0)
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS0Q],	// previous
+			buff [DMABUF32RTS0I]
+			);
+	}
+	else
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RTS0I],	// previous
+			buff [DMABUF32RTS0Q]
+			);
+	}
+}
+
+#endif /* WITHDSPEXTDDC && WITHRTS96 */
+
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	unsigned i;
+	for (i = 0; i < DMABUFFSIZE32RTS; i += DMABUFFSTEP32RTS)
+	{
+		const IFADCvalue_t * const b = p->buff;
+		//
+#if 0
+		// Тестирование - заменить приянтые квадратуры синтезированными
+		inject_testsignals(b + i);
+#endif
+#if FPGAMODE_GW2A
+		saverts96(b + i);	// использование данных о спектре, передаваемых в общем фрейме
+#elif WITHRTS96
+		saverts96pair(b + i);	// использование данных о спектре, передаваемых в общем фрейме
+#endif /* WITHRTS96 */
+	}
 #if WITHFPGAPIPE_CODEC1
 	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
 #endif /* WITHFPGAPIPE_CODEC1 */
-	dsp_extbuffer32rts(p->buff);
 	dsp_extbuffer32rx(p->buff);
 #if WITHWFM
 	dsp_extbuffer32wfm(p->buff);
@@ -2421,4 +2499,16 @@ void buffers_initialize(void)
 
 
 #endif /* WITHINTEGRATEDDSP */
+}
+
+
+void
+board_set_swaprts(uint_fast8_t v)	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_swaprts != n)
+	{
+		glob_swaprts = n;
+		//board_dsp1regchanged();
+	}
 }
