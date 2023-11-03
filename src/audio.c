@@ -5080,7 +5080,7 @@ demod_WFM(
 }
 
 // Сохранение сэмплов с выхода демодулятора
-static void save16demod(FLOAT_t left, FLOAT_t right)
+void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right)
 {
 #if 0
 	// для тестирования шумоподавителя.
@@ -5127,7 +5127,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 
 			//volatile const FLOAT_t left = get_lout();
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
-			save16demod(left, left);
+			savedemod_to_AF_proc(left, left);
 
 			// Измеритель уровня
 			const FLOAT32P_t p0 = { { buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q] } };
@@ -5324,7 +5324,7 @@ RAMFUNC void dsp_processtx(void)
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		savesampleout32stereo(0, 0);	// Запись в поток к передатчику I/Q значений.
-		save16demod(txfirbuff [i], txfirbuff [i]);
+		savedemod_to_AF_proc(txfirbuff [i], txfirbuff [i]);
 	}
 #else /* WITHUSBMIKET113 */
 	/* формирование АЧХ перед модулятором */
@@ -5460,7 +5460,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 			inp_samples [dtmfbi] = vi.IV;
 			++ dtmfbi;
 		}
-		save16demod(dual.IV, dual.QV);
+		savedemod_to_AF_proc(dual.IV, dual.QV);
 
 #elif WITHDSPEXTDDC
 
@@ -5481,12 +5481,12 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 				buff [i + DMABUF32RX0Q] * rxgate,
 				0	// MAIN RX
 				);	
-			save16demod(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
+			savedemod_to_AF_proc(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else if (0)
 		{
 			// тест - обход приемной части.
-			save16demod(get_lout(), get_rout());
+			savedemod_to_AF_proc(get_lout(), get_rout());
 		}
 		else
 		{
@@ -5504,7 +5504,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 				dspmodeB,
 				1	// SUB RX
 				);	
-			save16demod(rxA, rxB);
+			savedemod_to_AF_proc(rxA, rxB);
 		}
 
 	#else /* WITHUSEDUALWATCH */
@@ -5517,7 +5517,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 			BEGIN_STAMP2();
 			const FLOAT_t leftFiltered = 0;
 			END_STAMP2();
-			save16demod(leftFiltered, leftFiltered);
+			savedemod_to_AF_proc(leftFiltered, leftFiltered);
 #endif /* ! WITHSAI2HW */
 		}
 		else if (dspmodeA == DSPCTL_MODE_RX_ISB)
@@ -5529,7 +5529,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 				buff [i + DMABUF32RX0Q] * rxgate,
 				0	// MAIN RX
 				);	
-			save16demod(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
+			savedemod_to_AF_proc(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
 		else
 		{
@@ -5540,14 +5540,14 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 				dspmodeA,
 				0		// MAIN RX
 				);	
-			save16demod(left, left);
+			savedemod_to_AF_proc(left, left);
 		}
 
 	#endif /*  WITHUSEDUALWATCH */
 
 #else /* WITHDSPEXTDDC */
 	const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
-	save16demod(left, left);
+	savedemod_to_AF_proc(left, left);
 
 #endif /* WITHDSPEXTDDC */
 	}

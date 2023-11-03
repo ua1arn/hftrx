@@ -581,6 +581,7 @@ void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
 //void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
 void inject_testsignals(IFADCvalue_t * dbuff);
+void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right);	// Сохранение сэмплов с выхода демодулятора
 
 #if WITHAFEQUALIZER
 
