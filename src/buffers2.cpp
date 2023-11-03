@@ -1708,7 +1708,7 @@ static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 
 	// Запись звука на SD CARD в моно
 	buff [0] = adpt_output(& sdcardio, ch0);
-	returt 1;
+	return 1;
 
 #endif /* WITHUSEAUDIOREC2CH */
 }
