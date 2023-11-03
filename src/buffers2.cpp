@@ -14,14 +14,14 @@
 //#undef RAMNC
 //#define RAMNC
 
-#define WITHBUFFERSDEBUG WITHDEBUG
-#define BUFOVERSIZE 10
+//#define WITHBUFFERSDEBUG WITHDEBUG
+#define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
-#define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
+#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
 
 #define UACINRTS192_CAPACITY (256 * BUFOVERSIZE)
@@ -289,7 +289,7 @@ public:
 	unsigned wbstart;	// start position of work buffer - zero has not meaning
 
 	fqmeter fqin, fqout;
-	enum { LEVELSTEP = 100 };
+	enum { LEVELSTEP = 8 };
 	// параметры чувствтительности ресэмплера
 	enum { MINMLEVEL = LEVELSTEP * 1, NORMLEVEL = LEVELSTEP * 2, MAXLEVEL = LEVELSTEP * 3 };
 	bool outready;
@@ -857,7 +857,7 @@ typedef dmahandle<FLOAT_t, moni16_t, VOICE16TXMONI_CAPACITY, 0> moni16txdma_t;
 static moni16txdma_t moni16(IRQL_REALTIME, "16moni");		// аудиоданные - самоконтроль (ключ, голос).
 static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec");	// аудиоданные - выход приемника
 
-void dsp_loopback(unsigned nsamples)
+static void dsp_loopback(unsigned nsamples)
 {
 	enum { L = 0, R = 1 };
 
@@ -866,13 +866,17 @@ void dsp_loopback(unsigned nsamples)
 	{
 		FLOAT_t v [2];
 
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 		// Канал от USB в наушники
 		if (elfetch_dmabufferuacout48(v))
 			elfill_dmabuffer16tx(v [L], v [R]);
+#endif
 
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 		// Канал от микрофона в USB
 		if (elfetch_dmabuffer16rx(v))
 			elfill_dmabufferuacin48(v [L], v [R]);
+#endif
 
 	}
 }
@@ -2528,7 +2532,9 @@ void buffers_diagnostics(void)
 #endif
 #if 1
 	// USB
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	uacout48.debug();
+#endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
 #if WITHRTS192
 	uacinrts192.debug();
@@ -2559,7 +2565,9 @@ static void buffers_spool(void * ctx)
 #endif
 #if 1
 	// USB
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	uacout48.spool10ms();
+#endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 #if WITHRTS192
 	uacinrts192.spool10ms();
