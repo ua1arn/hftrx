@@ -4024,6 +4024,7 @@ enum
 	#else /* WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
+		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 	#endif /* WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		#define EQUALIZERBASE 12
