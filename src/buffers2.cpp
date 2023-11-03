@@ -2522,6 +2522,7 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 
 void buffers_diagnostics(void)
 {
+#if WITHINTEGRATEDDSP
 #if 1
 	//denoise16list.debug();
 	codec16rx.debug();
@@ -2548,13 +2549,14 @@ void buffers_diagnostics(void)
 	//message8.debug();
 
 	PRINTF("\n");
-
+#endif /* WITHINTEGRATEDDSP */
 }
 
 
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
 {
+#if WITHINTEGRATEDDSP
 #if 1
 	//denoise16list.spool10ms();
 	codec16rx.spool10ms();
@@ -2579,7 +2581,7 @@ static void buffers_spool(void * ctx)
 	uacin48.spool10ms();
 #endif
 	//message8.spool10ms();
-
+#endif /* WITHINTEGRATEDDSP */
 }
 
 #else /* WITHBUFFERSDEBUG */
