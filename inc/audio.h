@@ -464,12 +464,33 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calc
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1);
 void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1);
-void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1);
+//void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
-uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest);
+//uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest);
+
+
+/* Сервис очереди сэмплов */
+typedef struct { int dummy; } VOICE_t;
+
+void voice_put(VOICE_t * p, FLOAT_t ch0, FLOAT_t ch1);
+uint_fast8_t voice_get(VOICE_t * p, FLOAT32P_t * v);
+
+VOICE_t * voice_moni16(void);
+VOICE_t * voice_rec16(void);
+//VOICE_t * voice_uacin48(void);
+//VOICE_t * voice_uacout48(void);
+//VOICE_t * voice_16txphones(void);
+//VOICE_t * voice_swav48(void);
+
+#define VOICE_MONI16 (voice_moni16())	// формирование звуового потока с сигналом самоконтроля
+#define VOICE_REC16 (voice_rec16())		// аудиоданные - выход приемника
+//#define VOICE_UACIN48 (voice_uacin48())	// поток с USB фудио устройства
+//#define VOICE_UACOUT48 (voice_uacin48())	// поток на USB фудио устройство
+//#define VOICE_TXPHONES (voice_16txphones())	// формирование звуового потока с демодулированным сигналом
+//#define VOICE_WAV48 (voice_swav48())		// поток для записи на накопитель
 
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
@@ -560,6 +581,7 @@ extern deliverylist_t afdemodoutfloat;	// выход приемника
 void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
+
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA
 

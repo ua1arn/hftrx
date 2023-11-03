@@ -11,6 +11,9 @@
 #include "mslist.h"
 #include "audio.h"
 
+//#undef RAMNC
+//#define RAMNC
+
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
@@ -825,6 +828,7 @@ void elfill_dmabuffer16txphones(FLOAT_t ch0, FLOAT_t ch1)
 // Поэлементное заполнение DMA буфера AF DAC
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
+	voice_put(VOICE_REC16, ch0, ch1);	// аудиоданные - выход приемника
 	elfill_dmabuffer16txphones(ch0, ch1);
 }
 
@@ -886,30 +890,30 @@ uintptr_t getfilled_dmabuffer16txphones(void)
 ///////////////////////////////////
 ///
 
-// Возвращает не-ноль если данные есть
-uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest)
-{
-	return moni16.fetchdata(dest, getcbf_dmabuffer16moni);
-}
-
-// sidetone forming
-void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1)
-{
-	moni16.savedata(ch0, ch1, putbf_dmabuffer16moni);
-}
-
-
-// Возвращает не-ноль если данные есть
-uint_fast8_t elfetch_dmabufferrx16rec(FLOAT_t * dest)
-{
-	return rx16rec.fetchdata(dest, getcbf_dmabuffer16moni);
-}
-
-// выход приемника после фильтра
-void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
-{
-	rx16rec.savedata(ch0, ch1, putbf_dmabuffer16moni);
-}
+//// Возвращает не-ноль если данные есть
+//uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest)
+//{
+//	return moni16.fetchdata(dest, getcbf_dmabuffer16moni);
+//}
+//
+//// sidetone forming
+//void elfill_dmabuffer16moni(FLOAT_t ch0, FLOAT_t ch1)
+//{
+//	moni16.savedata(ch0, ch1, putbf_dmabuffer16moni);
+//}
+//
+//
+//// Возвращает не-ноль если данные есть
+//uint_fast8_t elfetch_dmabufferrx16rec(FLOAT_t * dest)
+//{
+//	return rx16rec.fetchdata(dest, getcbf_dmabuffer16moni);
+//}
+//
+//// выход приемника после фильтра
+//void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
+//{
+//	rx16rec.savedata(ch0, ch1, putbf_dmabuffer16moni);
+//}
 
 ///////////////////////////////////
 ///
@@ -1511,7 +1515,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // звук для самоконтроля
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
-	elfill_dmabuffer16moni(ch0, ch1);
+	voice_put(VOICE_MONI16, ch0, ch1);
 }
 
 #endif /* WITHINTEGRATEDDSP */
@@ -1684,7 +1688,7 @@ typedef ALIGNX_BEGIN struct recordswav48
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 typedef dmahandle<FLOAT_t, recordswav48_t, AUDIOREC_CAPACITY, 0> recordswav48dma_t;
 
-static recordswav48dma_t recordswav48list(IRQL_REALTIME, "rec");
+static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec");
 
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
@@ -1707,14 +1711,14 @@ static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	recordswav48list.savedata(ch0, ch1, recordswav48_putcbf);
+	recordswav48dma.savedata(ch0, ch1, recordswav48_putcbf);
 }
 
 // user-mode function
 unsigned takerecordbuffer(void * * dest)
 {
 	recordswav48_t * p;
-	if (recordswav48list.get_readybuffer(& p))
+	if (recordswav48dma.get_readybuffer(& p))
 	{
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
@@ -1726,7 +1730,7 @@ unsigned takerecordbuffer(void * * dest)
 unsigned takefreerecordbuffer(void * * dest)
 {
 	recordswav48_t * p;
-	if (recordswav48list.get_freebuffer(& p))
+	if (recordswav48dma.get_freebuffer(& p))
 	{
 		* dest = p->buff;
 		return (AUDIORECBUFFSIZE16 * sizeof p->buff [0]);
@@ -1744,7 +1748,7 @@ static void saveplaybuffer(void * dest, unsigned used)
 	p->startdata = 0;	// первый сэмпл в буфере
 	p->topdata = used / sizeof p->buff [0];	// количество сэмплов
 
-	recordswav48list.save_buffer(p);
+	recordswav48dma.save_buffer(p);
 }
 
 /* data to play */
@@ -1782,7 +1786,7 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 	static unsigned n;
 	if (p == NULL)
 	{
-		if (recordswav48list.get_readybuffer(& p))
+		if (recordswav48dma.get_readybuffer(& p))
 		{
 			n = p->startdata;	// reset samples count
 		}
@@ -1800,7 +1804,7 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 	if (++ n >= AUDIORECBUFFSIZE16 || n >= p->topdata)
 	{
 		// Last sample used
-		recordswav48list.release_buffer(p);
+		recordswav48dma.release_buffer(p);
 		p = NULL;
 		//PRINTF("Release record buffer\n");
 	}
@@ -1812,13 +1816,13 @@ uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend)
 void releaserecordbuffer(void * dest)
 {
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	recordswav48list.release_buffer(p);
+	recordswav48dma.release_buffer(p);
 }
 
 void saverecordbuffer(void * dest)
 {
 	recordswav48_t * const p = CONTAINING_RECORD(dest, recordswav48_t, buff);
-	recordswav48list.save_buffer(p);
+	recordswav48dma.save_buffer(p);
 }
 
 #endif /* WITHUSEAUDIOREC */
@@ -1933,6 +1937,54 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 deliverylist_t speexoutfloat;	// выход speex и фильтра
 deliverylist_t afdemodoutfloat;	// выход приемника
+
+#endif /* WITHINTEGRATEDDSP */
+
+#if WITHINTEGRATEDDSP
+
+
+void voice_put(VOICE_t * p, FLOAT_t ch0, FLOAT_t ch1)
+{
+	moni16txdma_t * const obj = (moni16txdma_t *) p;
+	obj->savedata(ch0, ch1, putbf_dmabuffer16moni);
+}
+
+uint_fast8_t voice_get(VOICE_t * p, FLOAT32P_t * v)
+{
+	moni16txdma_t * const obj = (moni16txdma_t *) p;
+	return obj->fetchdata(v->ivqv, getcbf_dmabuffer16moni);
+}
+
+VOICE_t * voice_moni16(void)
+{
+	return (VOICE_t *) & moni16;
+}
+
+// аудиоданные - выход приемника
+VOICE_t * voice_rec16(void)
+{
+	return (VOICE_t *) & rx16rec;
+}
+//
+//VOICE_t * voice_uacin48(void)
+//{
+//	return (VOICE_t *) & uacin48;
+//}
+//
+//VOICE_t * voice_uacout48(void)
+//{
+//	return (VOICE_t *) & uacout48;
+//}
+//
+//VOICE_t * voice_16txphones(void)
+//{
+//	return (VOICE_t *) & voice16tx;
+//}
+//
+//VOICE_t * voice_swav48(void)
+//{
+//	return (VOICE_t *) & recordswav48dma;
+//}
 
 #endif /* WITHINTEGRATEDDSP */
 

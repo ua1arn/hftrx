@@ -5232,7 +5232,7 @@ void dsp_addsidetone(aubufv_t * buff)
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
 		FLOAT32P_t moni;
 		// Использование данных.
-		if (elfetch_dmabuffer16moni(moni.ivqv) == 0)
+		if (voice_get(VOICE_MONI16, & moni) == 0)
 		{
 			moni.IV =  0;	// левый канал
 			moni.QV = 0; 	// правый канал
