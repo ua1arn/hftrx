@@ -14,10 +14,10 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
-#define VOICE16RX_CAPACITY (4 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
@@ -1414,25 +1414,9 @@ uintptr_t allocate_dmabufferuacin48(void)
 uintptr_t getfilled_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
-	if (uacin48.get_readybuffer(& dest))
+	if (uacin48.get_readybuffer(& dest) || uacin48.get_freebuffer(& dest) || uacin48.get_freebufferforced(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
-//		unsigned i;
-//		for (i = 0; i < DMABUFFSIZE16RX;)
-//		{
-//			i += uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
-//		}
-		return (uintptr_t) & dest->buff;
-	}
-	if (uacin48.get_freebuffer(& dest))
-	{
-		dest->tag = BUFFTAG_UACIN48;
-		memset(dest->buff, 0, sizeof dest->buff);
-//		unsigned i;
-//		for (i = 0; i < DMABUFFSIZE16RX;)
-//		{
-//			i += uacin48adpt.poke(dest->buff + i, get_lout(), get_rout());
-//		}
 		return (uintptr_t) & dest->buff;
 	}
 	uacin48.debug();
@@ -2534,8 +2518,8 @@ void buffers_diagnostics(void)
 	//denoise16list.debug();
 	voice16rx.debug();
 	voice16tx.debug();
-	moni16.debug();
-	voice32tx.debug();
+	//moni16.debug();
+	//voice32tx.debug();
 	//voice32rx.debug();
 #endif
 #if 1
@@ -2549,7 +2533,7 @@ void buffers_diagnostics(void)
 	uacinrts96.debug();
 #endif
 #endif
-	//uacin48.debug();
+	uacin48.debug();
 #endif
 	//message8.debug();
 
