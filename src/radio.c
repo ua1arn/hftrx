@@ -3072,12 +3072,15 @@ struct nvmap
 	uint8_t gkeybeep10;	/* тон озвучки нажатий клавиш */
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
 
+#if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN)
+	uint8_t	ggrpusb; // последний посещённый пункт группы
+#endif
+
 #if WITHIF4DSP
 	uint8_t	ggrpagc; // последний посещённый пункт группы
 	uint8_t	ggrpagcssb; // последний посещённый пункт группы
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
 	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
-	uint8_t	ggrpusb; // последний посещённый пункт группы
 
 	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */

@@ -2252,7 +2252,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	unsigned i;
-	for (i = 0; i < DMABUFFSIZE32RTS; i += DMABUFFSTEP32RTS)
+	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
 	{
 		const IFADCvalue_t * const b = p->buff + i;
 		//
