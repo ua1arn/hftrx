@@ -14,7 +14,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
@@ -415,22 +415,8 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		return false;
 	}
-	bool get_readybuffer(element_t * * dest)
-	{
-		if (hasresample)
-		{
-			if (! outready)
-				return false;
-			return get_readybufferarj(dest, false, false, false);
-		}
-		else
-		{
-			return get_readybuffer_raw(dest);
-		}
-	}
-
 	// получить из списка свободных
-	bool get_freebuffer(element_t * * dest)
+	bool get_freebuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
@@ -453,15 +439,38 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		return false;
 	}
+
+	bool get_readybuffer(element_t * * dest)
+	{
+		if (hasresample)
+		{
+			if (! outready)
+				return false;
+			return get_readybufferarj(dest, false, false, false);
+		}
+		else
+		{
+			return get_readybuffer_raw(dest);
+		}
+	}
+
+	// получить из списка свободных, если нет - ошибка
+	bool get_freebuffer(element_t * * dest)
+	{
+		return get_freebuffer_raw(dest);
+	}
+
 	// получить из списка свободных, если нет - из готовых
 	bool get_freebufferforced_nopurge(element_t * * dest)
 	{
-		return get_freebuffer(dest) || get_readybuffer_raw(dest);
+		return get_freebuffer_raw(dest) || get_readybuffer_raw(dest);
 	}
+
 	// получить из списка свободных, если нет - из готовых
 	bool get_freebufferforced(element_t * * dest)
 	{
-		if (get_freebuffer(dest))
+		return get_freebuffer_raw(dest) || get_readybuffer_raw(dest);
+		if (get_freebuffer_raw(dest))
 			return true;
 		for (unsigned i = 3; i --;)
 		{
@@ -475,7 +484,7 @@ public:
 	// получить из списка готовых, если нет - из свободных
 	bool get_readybufferforced(element_t * * dest)
 	{
-		//return get_readybuffer_raw(dest) || get_freebuffer(dest);
+		return get_readybuffer_raw(dest) || get_freebuffer_raw(dest);
 		if (get_readybuffer_raw(dest))
 			return true;
 		for (unsigned i = 3; i --;)
@@ -509,7 +518,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF("%s:e=%d,b=%d/%d,f=%u/%u,v=%d ", name, errallocate, readycount, freecount, fin, fout, rslevel);
+		PRINTF("%s:e=%d,b=%d/%d,f=%uk/%uk,v=%d ", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
