@@ -5306,8 +5306,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 {
 	const unsigned framebits = CODEC1_FRAMEBITS;
 	const unsigned lrckf = ARMI2SRATE;
-
 	const unsigned mclkf = lrckf * 512;
+
 
 #if CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
@@ -5322,7 +5322,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	if (0)
 	{
-		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
+		unsigned N = 47; //43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
 		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
 		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
 			(N - 1) * (UINT32_C(1) << 8) |
@@ -5340,24 +5340,31 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	01: PLL_AUDIO(2X)
 	//	10: PLL_AUDIO(4X)
 	//	11: PLL_AUDIO(hs)
-	unsigned long clk = allwnrt113_get_audio0pll4x_freq();
-//	switch (src)
-//	{
-//	default:
-//	case 0x00:
-//		clk = allwnrt113_get_audio0pll1x_freq();
-//		break;
-//	case 0x01:
-//		clk = allwnrt113_get_audio1pll_div2_freq();
-//		break;
-//	case 0x02:
-//		clk = allwnrt113_get_audio1pll_div5_freq();
-//		break;
-//	}
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnrt113_get_audio0pll1x_freq();
+		break;
+	case 0x01:
+		clk = allwnrt113_get_audio0pll2x_freq();
+		break;
+	case 0x02:
+		clk = allwnrt113_get_audio0pll4x_freq();
+		break;
+	case 0x03:
+		clk = allwnrt113_get_audio0pllhs_freq();
+		break;
+	}
 //	//TP();
-	unsigned value = calcdivround2(clk, mclkf) - 1;	/* делитель */
+	unsigned divider = calcdivround2(clk, mclkf);	/* делитель */
+	if (divider < 1)
+		divider = 1;
+	else if (divider > 15)
+		divider = 15;
 
-	PRINTF("AudioCodec: value=%u, lrckf=%u, (clk=%lu)\n", value, mclkf, clk);
+	PRINTF("AudioCodec: divider=%u, lrckf=%u, (clk=%lu)\n", divider, mclkf, clk);
 
 	// SCLK = Clock Source/M.
 	//	Clock Source Select
@@ -5369,7 +5376,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	const portholder_t codec_clk_reg =
 		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
-		((uint_fast32_t) value << 0) |	// Factor M (1..16)
+		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
 
 	CCU->AUDIO_CODEC_1X_CLK_REG = codec_clk_reg;
@@ -5466,7 +5473,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 
 
