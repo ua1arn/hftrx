@@ -14,7 +14,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-#define WITHBUFFERSDEBUG WITHDEBUG
+//#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
@@ -471,13 +471,11 @@ public:
 	{
 		if (get_freebuffer_raw(dest))
 			return true;
-		for (unsigned i = 3; i --;)
+		for (unsigned i = 3; i -- && get_readybuffer_raw(dest);)
 		{
-			while (! get_readybuffer_raw(dest))
-				ASSERT(0);
 			release_buffer(* dest);
 		}
-		return get_readybuffer_raw(dest);
+		return get_freebuffer_raw(dest);
 	}
 
 	// получить из списка готовых, если нет - из свободных
@@ -485,13 +483,11 @@ public:
 	{
 		if (get_readybuffer_raw(dest))
 			return true;
-		for (unsigned i = 3; i --;)
+		for (unsigned i = 3; i -- && get_freebuffer(dest);)
 		{
-			while (! get_freebuffer(dest))
-				ASSERT(0);
 			save_buffer(* dest);
 		}
-		return get_freebuffer(dest);
+		return get_readybuffer_raw(dest);
 	}
 
 	// получить из списка свободных, если нет - из готовых
@@ -879,7 +875,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 
 //	int e = codec16tx.errallocate;
 	voice16tx_t * phones;
-	while (! codec16tx.get_readybufferforced_nopurge(& phones))
+	while (! codec16tx.get_readybufferforced(& phones))
 		ASSERT(0);
 //	int e2 = codec16tx.errallocate;
 //	ASSERT(e == e2);
