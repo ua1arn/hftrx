@@ -2346,7 +2346,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 
 	voice32rx.release_buffer(p);
 
-	dsp_processtx();	/* выборка семплов из источников звука и формирование потока на передатчик */
+	dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 }
 
 

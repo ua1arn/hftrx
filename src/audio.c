@@ -5281,8 +5281,9 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 
 /* выборка tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
 /* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
-RAMFUNC void dsp_processtx(void)
+RAMFUNC void dsp_processtx(unsigned nsamples)
 {
+	ASSERT(tx_MIKE_blockSize == nsamples);
 #if ! WITHTRANSPARENTIQ
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
