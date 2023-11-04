@@ -24,10 +24,10 @@
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
 
-#define UACINRTS192_CAPACITY (256 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (256 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (256 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (256 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define UACINRTS192_CAPACITY (128 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY (128 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY (128 * BUFOVERSIZE)
+#define UACIN48_CAPACITY (128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -875,7 +875,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 
 //	int e = codec16tx.errallocate;
 	voice16tx_t * phones;
-	while (! codec16tx.get_readybufferforced(& phones))
+	while (! codec16tx.get_readybuffer(& phones) && ! codec16tx.get_freebuffer_raw(& phones))
 		ASSERT(0);
 //	int e2 = codec16tx.errallocate;
 //	ASSERT(e == e2);
