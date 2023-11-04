@@ -3010,7 +3010,7 @@ uint_fast32_t allwnr_t507_get_ahub_freq(void)
 	}
 }
 
-uint_fast64_t allwnrt113_get_audio0pllhs_freq(void)
+uint_fast32_t allwnrt113_get_audio0pllhs_freq(void)
 {
 	// PLL_AUDIO(hs) 24 MHz*N/M1
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
@@ -3022,7 +3022,7 @@ uint_fast64_t allwnrt113_get_audio0pllhs_freq(void)
 
 }
 
-uint_fast64_t allwnrt113_get_audio0pll4x_freq(void)
+uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
 {
 	// PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
