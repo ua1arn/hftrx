@@ -865,8 +865,8 @@ int64_t transform_do64(
 static adapter_t fpgafircoefsout;
 adapter_t afcodecrx;		/* от микрофона */
 adapter_t afcodectx;		/* к наушникам */
-static adapter_t ifcodecrx;		/* канал от FPGA к процессору */
-static adapter_t ifcodectx;		/* канал от процессора к FPGA */
+adapter_t ifcodecrx;		/* канал от FPGA к процессору */
+adapter_t ifcodectx;		/* канал от процессора к FPGA */
 
 #if WITHRTS96
 adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
@@ -5328,18 +5328,14 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 
 #if WITHDSPEXTDDC
 
-#if WITHTXCPATHCALIBRATE
-		savesampleout32stereo(adpt_outputexact(& ifcodectx, vfb.IV), adpt_outputexact(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
-#else /* WITHTXCPATHCALIBRATE */
-		savesampleout32stereo(adpt_output(& ifcodectx, vfb.IV), adpt_output(& ifcodectx, vfb.QV));	// Запись в поток к передатчику I/Q значений.
-#endif /* WITHTXCPATHCALIBRATE */
+		elfill_dmabuffer32tx(vfb.IV, vfb.QV);	// Запись в поток к передатчику I/Q значений.
 
 #else /* WITHDSPEXTDDC */
 		const FLOAT32P_t v_if = get_float4_iflo();	// частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
 		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - фильтр имеет усиление 2.0
 		const FLOAT_t r = (e1.QV * v_if.QV + e1.IV * v_if.IV);	// переносим на выходную частоту ("+" - без инверсии).
 		// Интерфейс с ВЧ - одноканальный ADC/DAC
-		savesampleout32stereo(adpt_output(& ifcodectx, r), 0);	// кодек получает 24 бита left justified в 32-х битном числе.
+		elfill_dmabuffer32tx(r, 0);	// Запись в поток к передатчику I/Q значений.
 #endif /* WITHDSPEXTDDC */
 
 	}
@@ -5410,7 +5406,7 @@ void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
 			INT32P_t dual;
 			dual.IV = get_lout();		// тон 700 Hz
 			dual.QV = get_rout();		// тон 500 Hz
-			savesampleout32stereo(adpt_output(& ifcodectx, dual.IV), adpt_output(& ifcodectx, dual.QV));	// Запись в поток к передатчику I/Q значений.
+			elfill_dmabuffer32tx(dual.IV, dual.QV);	// Запись в поток к передатчику I/Q значений.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
 			recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
@@ -5418,13 +5414,13 @@ void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
 		{
 			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shapecw);
 			const FLOAT32P_t dual = vi;
-			savesampleout32stereo(adpt_output(& ifcodectx, dual.IV), adpt_output(& ifcodectx, dual.QV));	// Запись в поток к передатчику I/Q значений.
+			elfill_dmabuffer32tx(dual.IV, dual.QV);	// Запись в поток к передатчику I/Q значений.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
 			recordsampleUAC(get_lout(), get_rout());	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 		else
 		{
-			savesampleout32stereo(0, 0);	// кодек получает 24 бита left justified в 32-х битном числе.
+			elfill_dmabuffer32tx(0, 0);	// кодек получает 24 бита left justified в 32-х битном числе.
 			recordsampleUAC(0, 0);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
@@ -5442,7 +5438,7 @@ void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
 		{
 			vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		}
-		savesampleout32stereo(adpt_output(& ifcodectx, vi.IV), adpt_output(& ifcodectx, vi.QV));	// Запись в поток к передатчику I/Q значений.
+		elfill_dmabuffer32tx(vi.IV, vi.QV);	// Запись в поток к передатчику I/Q значений.
 
 #elif WITHDTMFPROCESSING
 		// тестирование распозначания DTMF

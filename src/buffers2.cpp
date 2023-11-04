@@ -965,7 +965,7 @@ typedef buffitem<voice32tx_t> voice32txbuf_t;
 
 static voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
-typedef dmahandle<int_fast32_t, voice32txbuf_t, 0> voice32txdma_t;
+typedef dmahandle<FLOAT_t, voice32txbuf_t, 0> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx", voice32txbuf, ARRAY_SIZE(voice32txbuf));
@@ -976,11 +976,17 @@ int_fast32_t cachesize_dmabuffer32tx(void)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_fast32_t ch1)
+static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 {
 
-	buff [DMABUF32TXI] = ch0;
-	buff [DMABUF32TXQ] = ch1;
+#if WITHTXCPATHCALIBRATE
+	buff [DMABUF32TXI] = adpt_outputexact(& ifcodectx, ch0);
+	buff [DMABUF32TXQ] = adpt_outputexact(& ifcodectx, ch1);
+#else /* WITHTXCPATHCALIBRATE */
+	buff [DMABUF32TXI] = adpt_output(& ifcodectx, ch0);
+	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
+#endif /* WITHTXCPATHCALIBRATE */
+
 
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
 
@@ -1004,7 +1010,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, int_fast32_t ch0, int_
 	return DMABUFFSTEP32TX;
 }
 
-void elfill_dmabuffer32tx(int_fast32_t ch0, int_fast32_t ch1)
+void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1)
 {
 	voice32tx.savedata(ch0, ch1, putcbf_dmabuffer32tx);
 }
@@ -2124,16 +2130,6 @@ void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 	release_savetonull192rts(addr);
 }
 #endif /* WITHRTS192 */
-
-
-//////////////////////////////////////////
-// Поэлементное заполнение буфера IF DAC
-
-// 32 bit, signed
-void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
-{
-	elfill_dmabuffer32tx(ch0, ch1);
-}
 
 #if WITHDSPEXTDDC && WITHRTS96
 // использование данных о спектре, передаваемых в общем фрейме

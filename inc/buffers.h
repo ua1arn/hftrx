@@ -646,7 +646,6 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
