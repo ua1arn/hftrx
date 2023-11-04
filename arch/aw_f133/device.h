@@ -230,7 +230,7 @@ typedef struct AUDIO_CODEC_Type
     volatile uint32_t AC_DAC_DRC_LPFHAT;              /*!< Offset 0x10C DAC DRC Left Peak Filter High Attack Time Coef Register */
     volatile uint32_t AC_DAC_DRC_LPFLAT;              /*!< Offset 0x110 DAC DRC Left Peak Filter Low Attack Time Coef Register */
     volatile uint32_t AC_DAC_DRC_RPFHAT;              /*!< Offset 0x114 DAC DRC Right Peak Filter High Attack Time Coef Register */
-    volatile uint32_t AC_DAC_DRC_RPFLAT;              /*!< Offset 0x118 DAC DRC Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLAT;              /*!< Offset 0x118 DAC DRC Right Peak Filter Low Attack Time Coef Register */
     volatile uint32_t AC_DAC_DRC_LPFHRT;              /*!< Offset 0x11C DAC DRC Left Peak Filter High Release Time Coef Register */
     volatile uint32_t AC_DAC_DRC_LPFLRT;              /*!< Offset 0x120 DAC DRC Left Peak Filter Low Release Time Coef Register */
     volatile uint32_t AC_DAC_DRC_RPFHRT;              /*!< Offset 0x124 DAC DRC Right Peak filter High Release Time Coef Register */

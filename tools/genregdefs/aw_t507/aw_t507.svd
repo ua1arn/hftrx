@@ -361,18 +361,27 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>AC_DAC_DRC_LPFLAT_</name>
-    <displayName>AC_DAC_DRC_LPFLAT_</displayName>
-    <description>DAC DRC Left Peak Filter Low Attack Time Coef Register ???</description>
+    <name>AC_DAC_DRC_LPFLAT</name>
+    <displayName>AC_DAC_DRC_LPFLAT</displayName>
+    <description>DAC DRC Left Peak Filter Low Attack Time Coef Register</description>
     <addressOffset>0x110</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>AC_DAC_DRC_LPFLRT_</name>
-    <displayName>AC_DAC_DRC_LPFLRT_</displayName>
-    <description>DAC DRC Left Peak Filter Low Release Time Coef Register ????</description>
+    <name>AC_DAC_DRC_RPFHAT</name>
+    <displayName>AC_DAC_DRC_RPFHAT</displayName>
+    <description>DAC DRC Right Peak Filter High Attack Time Coef Register</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RPFLAT</name>
+    <displayName>AC_DAC_DRC_RPFLAT</displayName>
+    <description>DAC DRC Right Peak Filter Low Attack Time Coef Register</description>
     <addressOffset>0x118</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -399,7 +408,7 @@
    <register>
     <name>AC_DAC_DRC_RPFHRT</name>
     <displayName>AC_DAC_DRC_RPFHRT</displayName>
-    <description>DAC DRC Right Peak Filter High Release Time Coef Register</description>
+    <description>DAC DRC Right Peak filter High Release Time Coef Register</description>
     <addressOffset>0x124</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -408,7 +417,7 @@
    <register>
     <name>AC_DAC_DRC_RPFLRT</name>
     <displayName>AC_DAC_DRC_RPFLRT</displayName>
-    <description>DAC DRC Right Peak Filter Low Release Time Coef Register</description>
+    <description>DAC DRC Right Peak filter Low Release Time Coef Register</description>
     <addressOffset>0x128</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

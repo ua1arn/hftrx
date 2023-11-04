@@ -297,13 +297,13 @@ typedef struct AUDIO_CODEC_Type
     volatile uint32_t AC_DAC_DRC_LHPFC;               /*!< Offset 0x104 DAC DRC Low HPF Coef Register */
     volatile uint32_t AC_DAC_DRC_CTRL;                /*!< Offset 0x108 DAC DRC Control Register */
     volatile uint32_t AC_DAC_DRC_LPFHAT;              /*!< Offset 0x10C DAC DRC Left Peak Filter High Attack Time Coef Register */
-    volatile uint32_t AC_DAC_DRC_LPFLAT_;             /*!< Offset 0x110 DAC DRC Left Peak Filter Low Attack Time Coef Register ??? */
-             uint32_t reserved_0x114;
-    volatile uint32_t AC_DAC_DRC_LPFLRT_;             /*!< Offset 0x118 DAC DRC Left Peak Filter Low Release Time Coef Register ???? */
+    volatile uint32_t AC_DAC_DRC_LPFLAT;              /*!< Offset 0x110 DAC DRC Left Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFHAT;              /*!< Offset 0x114 DAC DRC Right Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLAT;              /*!< Offset 0x118 DAC DRC Right Peak Filter Low Attack Time Coef Register */
     volatile uint32_t AC_DAC_DRC_LPFHRT;              /*!< Offset 0x11C DAC DRC Left Peak Filter High Release Time Coef Register */
     volatile uint32_t AC_DAC_DRC_LPFLRT;              /*!< Offset 0x120 DAC DRC Left Peak Filter Low Release Time Coef Register */
-    volatile uint32_t AC_DAC_DRC_RPFHRT;              /*!< Offset 0x124 DAC DRC Right Peak Filter High Release Time Coef Register */
-    volatile uint32_t AC_DAC_DRC_RPFLRT;              /*!< Offset 0x128 DAC DRC Right Peak Filter Low Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFHRT;              /*!< Offset 0x124 DAC DRC Right Peak filter High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLRT;              /*!< Offset 0x128 DAC DRC Right Peak filter Low Release Time Coef Register */
     volatile uint32_t AC_DAC_DRC_LRMSHAT;             /*!< Offset 0x12C DAC DRC Left RMS Filter High Coef Register */
     volatile uint32_t AC_DAC_DRC_LRMSLAT;             /*!< Offset 0x130 DAC DRC Left RMS Filter Low Coef Register */
     volatile uint32_t AC_DAC_DRC_RRMSHAT;             /*!< Offset 0x134 DAC DRC Right RMS Filter High Coef Register */

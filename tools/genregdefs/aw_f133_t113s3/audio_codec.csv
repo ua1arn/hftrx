@@ -23,18 +23,21 @@
 #regdef; AC_DAC_DRC_HHPFC; 0x0100; DAC DRC High HPF Coef Register
 #regdef; AC_DAC_DRC_LHPFC; 0x0104; DAC DRC Low HPF Coef Register
 #regdef; AC_DAC_DRC_CTRL; 0x0108; DAC DRC Control Register
+
 #regdef; AC_DAC_DRC_LPFHAT; 0x010C; DAC DRC Left Peak Filter High Attack Time Coef Register
 #regdef; AC_DAC_DRC_LPFLAT; 0x0110; DAC DRC Left Peak Filter Low Attack Time Coef Register
 #regdef; AC_DAC_DRC_RPFHAT; 0x0114; DAC DRC Right Peak Filter High Attack Time Coef Register
-#regdef; AC_DAC_DRC_RPFLAT; 0x0118; DAC DRC Peak Filter Low Attack Time Coef Register
+#regdef; AC_DAC_DRC_RPFLAT; 0x0118; DAC DRC Right Peak Filter Low Attack Time Coef Register
 #regdef; AC_DAC_DRC_LPFHRT; 0x011C; DAC DRC Left Peak Filter High Release Time Coef Register
 #regdef; AC_DAC_DRC_LPFLRT; 0x0120; DAC DRC Left Peak Filter Low Release Time Coef Register
 #regdef; AC_DAC_DRC_RPFHRT; 0x0124; DAC DRC Right Peak filter High Release Time Coef Register
 #regdef; AC_DAC_DRC_RPFLRT; 0x0128; DAC DRC Right Peak filter Low Release Time Coef Register
+
 #regdef; AC_DAC_DRC_LRMSHAT; 0x012C; DAC DRC Left RMS Filter High Coef Register
 #regdef; AC_DAC_DRC_LRMSLAT; 0x0130; DAC DRC Left RMS Filter Low Coef Register
 #regdef; AC_DAC_DRC_RRMSHAT; 0x0134; DAC DRC Right RMS Filter High Coef Register
 #regdef; AC_DAC_DRC_RRMSLAT; 0x0138; DAC DRC Right RMS Filter Low Coef Register
+
 #regdef; AC_DAC_DRC_HCT; 0x013C; DAC DRC Compressor Threshold High Setting Register
 #regdef; AC_DAC_DRC_LCT; 0x0140; DAC DRC Compressor Slope High Setting Register
 #regdef; AC_DAC_DRC_HKC; 0x0144; DAC DRC Compressor Slope High Setting Register
