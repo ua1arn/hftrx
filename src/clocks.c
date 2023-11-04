@@ -3010,6 +3010,89 @@ uint_fast32_t allwnr_t507_get_ahub_freq(void)
 	}
 }
 
+uint_fast64_t allwnrt113_get_audio0pllhs_freq(void)
+{
+	// PLL_AUDIO(hs) 24 MHz*N/M1
+	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
+	//const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x0F);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M1 = UINT32_C(1) + ((reg >> 1) & 0x01);
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1;
+
+}
+
+uint_fast64_t allwnrt113_get_audio0pll4x_freq(void)
+{
+	// PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
+	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
+	const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x3F);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M1 = UINT32_C(1) + ((reg >> 1) & 0x01);
+	const uint_fast32_t M0 = UINT32_C(1) + ((reg >> 0) & 0x01);
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1 * P);
+
+}
+
+uint_fast32_t allwnrt113_get_audio0pll2x_freq(void)
+{
+	return allwnrt113_get_audio0pll4x_freq() / 2;
+}
+
+uint_fast32_t allwnrt113_get_audio0pll1x_freq(void)
+{
+	return allwnrt113_get_audio0pll4x_freq() / 4;
+}
+
+uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->AUDIO_CODEC_1X_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SCLK = Clock Source/M.
+	//	Clock Source Select
+	//	00: PLL_AUDIO(1X)
+	//	01: PLL_AUDIO(2X)
+	//	10: PLL_AUDIO(4X)
+	//	11: PLL_AUDIO(hs)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:	/* 00: PLL_AUDIO(1X) */
+		return allwnrt113_get_audio0pll1x_freq() / M;
+	case 0x01:	/* 01: PLL_AUDIO(2X) */
+		return allwnrt113_get_audio0pll2x_freq() / M;
+	case 0x02: 	/* 10: PLL_AUDIO(4X) */
+		return allwnrt113_get_audio0pll4x_freq() / M;
+	case 0x03: 	/* 11: PLL_AUDIO(hs) */
+		return allwnrt113_get_audio0pllhs_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->AUDIO_CODEC_4X_CLK_REG;
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SCLK = Clock Source/M.
+	//	Clock Source Select
+	//	00: PLL_AUDIO(1X)
+	//	01: PLL_AUDIO(2X)
+	//	10: PLL_AUDIO(4X)
+	//	11: PLL_AUDIO(hs)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:	/* 00: PLL_AUDIO(1X) */
+		return allwnrt113_get_audio0pll1x_freq() / M;
+	case 0x01:	/* 01: PLL_AUDIO(2X) */
+		return allwnrt113_get_audio0pll2x_freq() / M;
+	case 0x02: 	/* 10: PLL_AUDIO(4X) */
+		return allwnrt113_get_audio0pll4x_freq() / M;
+	case 0x03: 	/* 11: PLL_AUDIO(hs) */
+		return allwnrt113_get_audio0pllhs_freq() / M;
+	}
+}
+
 uint_fast32_t allwnr_t507_get_dram_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;

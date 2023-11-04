@@ -5315,6 +5315,74 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 	#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
 
+	// Default CCU settings:
+	//	AudioCodec: allwnrt113_get_audio0pllhs_freq()=1032000 kHz
+	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
+	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
+
+	if (0)
+	{
+		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
+		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
+			(N - 1) * (UINT32_C(1) << 8) |
+			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
+			0;
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+		while ((CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
+			;
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
+	}
+
+	const unsigned long src = 0x02;
+	//	Clock Source Select
+	//	00: PLL_AUDIO(1X)
+	//	01: PLL_AUDIO(2X)
+	//	10: PLL_AUDIO(4X)
+	//	11: PLL_AUDIO(hs)
+	unsigned long clk = allwnrt113_get_audio0pll4x_freq();
+//	switch (src)
+//	{
+//	default:
+//	case 0x00:
+//		clk = allwnrt113_get_audio0pll1x_freq();
+//		break;
+//	case 0x01:
+//		clk = allwnrt113_get_audio1pll_div2_freq();
+//		break;
+//	case 0x02:
+//		clk = allwnrt113_get_audio1pll_div5_freq();
+//		break;
+//	}
+//	//TP();
+	unsigned value = calcdivround2(clk, mclkf) - 1;	/* делитель */
+
+	PRINTF("AudioCodec: value=%u, lrckf=%u, (clk=%lu)\n", value, mclkf, clk);
+
+	// SCLK = Clock Source/M.
+	//	Clock Source Select
+	//	00: PLL_AUDIO(1X)
+	//	01: PLL_AUDIO(2X)
+	//	10: PLL_AUDIO(4X)
+	//	11: PLL_AUDIO(hs)
+
+	const portholder_t codec_clk_reg =
+		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) value << 0) |	// Factor M (1..16)
+		0;
+
+	CCU->AUDIO_CODEC_1X_CLK_REG = codec_clk_reg;
+	CCU->AUDIO_CODEC_4X_CLK_REG = codec_clk_reg;
+
+	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
+	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
+
+
+	PRINTF("AudioCodec: allwnrt113_get_audio0pllhs_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio0pllhs_freq() / 1000));
+	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
+	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_1x_freq() / 1000));
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// Default CCU settings:
@@ -5392,6 +5460,32 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 #if CPUSTYLE_A64
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	ASSERT(DMABUFFSTEP16TX == 2);
+
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
+
+	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
+
+
+    ///-----LDO-----
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+//	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 31);	// ALDO_EN
+//	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 30);	// HPLDO_EN
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+    ///-------------
+
+
+	// DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 15) | (UINT32_C(1) << 14);	// DACL_EN, DACR_EN
+
+
+	AUDIO_CODEC->RAMP_REG |=
+	   (UINT32_C(1) << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
+	   (UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
+	   0;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// anatol
@@ -5503,6 +5597,14 @@ static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 {
 #if CPUSTYLE_A64
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
+	if (state)
+	{
+		AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);		// DAC Digital Part Enable
+	}
+	else
+	{
+		AUDIO_CODEC->AC_DAC_DPC &= ~ (UINT32_C(1) << 31);	// DAC Digital Part Enable
+	}
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	if (state)
 	{
@@ -5517,6 +5619,8 @@ static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 #else
 #endif
 }
+
+#if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
 {
@@ -5571,6 +5675,22 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+
+static void DMAC_AudioCodec_RX_initialize_codec1(void)
+{
+}
+
+#elif (CPUSTYLE_A64)
+
+static void DMAC_AudioCodec_RX_initialize_codec1(void)
+{
+}
+
+#else
+
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 
 static void DMAC_AudioCodec_TX_initialize_codec1(void)
 {
