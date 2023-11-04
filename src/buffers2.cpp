@@ -813,6 +813,14 @@ static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 	return DMABUFFSTEP16TX;
 }
 
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [DMABUFF16TX_LEFT] = adpt_output(& afcodecrx, ch0);
+	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodecrx, ch1);
+	return DMABUFFSTEP16RX;
+}
+
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest)
 {
@@ -834,6 +842,11 @@ void release_dmabuffer16rx(uintptr_t addr)
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 {
 	codec16tx.savedata(ch0, ch1, putcbf_dmabuffer16tx);
+}
+
+void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1)
+{
+	codec16rx.savedata(ch0, ch1, putcbf_dmabuffer16rx);
 }
 
 // Поэлементное заполнение DMA буфера AF DAC
@@ -1080,25 +1093,6 @@ uintptr_t getfilled_dmabuffer32tx(void)
 
 
 #if WITHFPGAPIPE_CODEC1
-
-// копирование полей из принятого от FPGA буфера
-static uintptr_t RAMFUNC
-pipe_dmabuffer16rx(uintptr_t addr16rx, uintptr_t addr32rx)
-{
-	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
-	unsigned i;
-	IFADCvalue_t * const rx32 = (IFADCvalue_t *) addr32rx;
-	aubufv_t * const rx16 = (aubufv_t *) addr16rx;
-
-	ASSERT((unsigned) CNT32RX == (unsigned) CNT16RX);
-	ASSERT(sizeof * rx32 == sizeof * rx16);
-	for (i = 0; i < (unsigned) CNT32RX; ++ i)
-	{
-		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_LEFT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_LEFT];
-		rx16 [i * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT] = rx32 [i * DMABUFFSTEP32RX + DMABUFF32RX_CODEC1_RIGHT];
-	}
-	return addr16rx;
-}
 
 // копирование полей в передаваемый на FPGA буфер
 static uintptr_t RAMFUNC
@@ -2359,11 +2353,11 @@ void save_dmabuffer32rx(uintptr_t addr)
 		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX], 0);
 		savedemod_to_AF_proc(left, left);
 #endif /* WITHDSPEXTDDC */
-		//dsp_step32rx(b + i);	// старый вариант обработки
-	}
 #if WITHFPGAPIPE_CODEC1
-	save_dmabuffer16rx(pipe_dmabuffer16rx(allocate_dmabuffer16rx(), addr));
+		elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
 #endif /* WITHFPGAPIPE_CODEC1 */
+	}
+
 #if WITHWFM
 	dsp_extbuffer32wfm(p->buff);
 #endif /* WITHWFM */

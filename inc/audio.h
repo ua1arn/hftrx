@@ -465,6 +465,7 @@ void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1);
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
