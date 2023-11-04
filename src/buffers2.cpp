@@ -787,14 +787,14 @@ uintptr_t allocate_dmabuffer16rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-// may be zero
-uintptr_t getfilled_dmabuffer16rx(void)
-{
-	voice16rx_t * dest;
-	if (codec16rx.get_readybuffer(& dest) == 0)
-		return 0;
-	return (uintptr_t) dest->buff;
-}
+//// may be zero
+//uintptr_t getfilled_dmabuffer16rx(void)
+//{
+//	voice16rx_t * dest;
+//	if (! codec16rx.get_readybuffer(& dest))
+//		return 0;
+//	return (uintptr_t) dest->buff;
+//}
 
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
@@ -865,6 +865,7 @@ void release_dmabuffer16tx(uintptr_t addr)
 	codec16tx.release_buffer(p);
 }
 
+// can not be zero
 uintptr_t getfilled_dmabuffer16tx(void)
 {
 #if WITHUSBHEADSET
@@ -873,24 +874,21 @@ uintptr_t getfilled_dmabuffer16tx(void)
 	dsp_fillphones(CNT16TX);
 #endif
 
-//	int e = codec16tx.errallocate;
-	voice16tx_t * phones;
-	while (! codec16tx.get_readybuffer(& phones) && ! codec16tx.get_freebuffer_raw(& phones))
+	voice16tx_t * dest;
+	while (! codec16tx.get_readybuffer(& dest) && ! codec16tx.get_freebufferforced(& dest))
 		ASSERT(0);
-//	int e2 = codec16tx.errallocate;
-//	ASSERT(e == e2);
 
 #if 0
 	// тестирование вывода на кодек
 	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSTEP16TX)
 	{
-		phones->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
-		phones->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
+		dest->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
+		dest->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
 	}
 	//printhex32(0, phones->buff, sizeof phones->buff);
 #endif
 
-	return (uintptr_t) phones->buff;
+	return (uintptr_t) dest->buff;
 }
 
 ////////////////////////////////////////////////////
@@ -1075,14 +1073,9 @@ void save_dmabuffer32tx(uintptr_t addr)
 uintptr_t getfilled_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
-	if (voice32tx.get_readybuffer(& dest))
-		return (uintptr_t) dest->buff;
-	if (voice32tx.get_freebuffer(& dest))
-		return (uintptr_t) dest->buff;
-	ASSERT(0);
-	for (;;)
-		;
-	return 0;
+	while (! voice32tx.get_readybuffer(& dest) && ! voice32tx.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) dest->buff;
 }
 
 
@@ -1236,14 +1229,14 @@ uintptr_t allocate_dmabufferuacout48(void)
 	return (uintptr_t) dest->buff;
 }
 
-// may be zero
-uintptr_t getfilled_dmabufferuacout48(void)
-{
-	uacout48_t * dest;
-	if (uacout48.get_readybuffer(& dest) == 0)
-		return 0;
-	return (uintptr_t) dest->buff;
-}
+//// may be zero
+//uintptr_t getfilled_dmabufferuacout48(void)
+//{
+//	uacout48_t * dest;
+//	if (! uacout48.get_readybuffer(& dest))
+//		return 0;
+//	return (uintptr_t) dest->buff;
+//}
 
 void release_dmabufferuacout48(uintptr_t addr)
 {
@@ -1347,7 +1340,7 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
-		while (! uacinrts192.get_readybufferforced(& dest))
+		while (! uacinrts192.get_readybuffer(& dest) && ! uacinrts192.get_freebufferforced(& dest))
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS192;
 		return (uintptr_t) & dest->buff;
@@ -1419,7 +1412,7 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		while (! uacinrts96.get_readybufferforced(& dest))
+		while (! uacinrts96.get_readybuffer(& dest) && ! uacinrts96.get_freebufferforced(& dest))
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS96;
 		return (uintptr_t) & dest->buff;

@@ -570,7 +570,7 @@ uintptr_t getfilled_dmabuffer16tx(void);
 
 // прием с кодека
 uintptr_t allocate_dmabuffer16rx(void);
-uintptr_t getfilled_dmabuffer16rx(void);
+//uintptr_t getfilled_dmabuffer16rx(void);
 int_fast32_t cachesize_dmabuffer16rx(void);
 void release_dmabuffer16rx(uintptr_t addr);
 void save_dmabuffer16rx(uintptr_t addr);
@@ -587,28 +587,28 @@ void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер
 uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
-// Буфер обмена про USB
+// Буфер обмена по USB
 void release_dmabufferuacinrts192(uintptr_t addr);
 uintptr_t allocate_dmabufferuacinrts192(void);
 uintptr_t getfilled_dmabufferuacinrts192(void);
 void save_dmabufferuacinrts192(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacinrts192(void);
 
-// Буфер обмена про USB
+// Буфер обмена по USB
 void release_dmabufferuacinrts96(uintptr_t addr);
 uintptr_t allocate_dmabufferuacinrts96(void);
 uintptr_t getfilled_dmabufferuacinrts96(void);
 void save_dmabufferuacinrts96(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacinrts96(void);
 
-// Буфер обмена про USB
+// Буфер обмена по USB
 uintptr_t allocate_dmabufferuacout48(void);
-uintptr_t getfilled_dmabufferuacout48(void);
+//uintptr_t getfilled_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 void save_dmabufferuacout48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacout48(void);
 
-// Буфер обмена про USB
+// Буфер обмена по USB
 uintptr_t allocate_dmabufferuacin48(void);
 void release_dmabufferuacin48(uintptr_t addr);
 uintptr_t getfilled_dmabufferuacin48(void);
