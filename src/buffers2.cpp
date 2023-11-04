@@ -270,7 +270,7 @@ template <typename buffitem_t, int hasresample>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
-
+public:
 	IRQLSPINLOCK_t irqllocl;
 #if WITHBUFFERSDEBUG
 	int errallocate;
@@ -469,7 +469,6 @@ public:
 	// получить из списка свободных, если нет - из готовых
 	bool get_freebufferforced(element_t * * dest)
 	{
-		return get_freebuffer_raw(dest) || get_readybuffer_raw(dest);
 		if (get_freebuffer_raw(dest))
 			return true;
 		for (unsigned i = 3; i --;)
@@ -484,7 +483,6 @@ public:
 	// получить из списка готовых, если нет - из свободных
 	bool get_readybufferforced(element_t * * dest)
 	{
-		return get_readybuffer_raw(dest) || get_freebuffer_raw(dest);
 		if (get_readybuffer_raw(dest))
 			return true;
 		for (unsigned i = 3; i --;)
@@ -494,6 +492,12 @@ public:
 			save_buffer(* dest);
 		}
 		return get_freebuffer(dest);
+	}
+
+	// получить из списка свободных, если нет - из готовых
+	bool get_readybufferforced_nopurge(element_t * * dest)
+	{
+		return get_readybuffer_raw(dest) ||  get_freebuffer_raw(dest);
 	}
 
 	// все готовые перенести в свободные
@@ -518,7 +522,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF("%s:e=%d,b=%d/%d,f=%uk/%uk,v=%d ", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
+		PRINTF("%s:e=%d,y=%d,f=%d,%uk/%uk,v=%d ", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
@@ -842,7 +846,7 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	voice_put(VOICE_REC16, ch0, ch1);	// аудиоданные - выход приемника
 }
 
-// USed at initialization DMA
+// Used at initialization DMA
 // can not be zero
 uintptr_t allocate_dmabuffer16tx(void)
 {
@@ -863,6 +867,34 @@ void release_dmabuffer16tx(uintptr_t addr)
 {
 	voice16tx_t * const p = CONTAINING_RECORD(addr, voice16tx_t, buff);
 	codec16tx.release_buffer(p);
+}
+
+uintptr_t getfilled_dmabuffer16tx(void)
+{
+#if WITHUSBHEADSET
+	dsp_loopback(CNT16TX);
+#else /* WITHUSBHEADSET */
+	dsp_fillphones(CNT16TX);
+#endif
+
+//	int e = codec16tx.errallocate;
+	voice16tx_t * phones;
+	while (! codec16tx.get_readybufferforced_nopurge(& phones))
+		ASSERT(0);
+//	int e2 = codec16tx.errallocate;
+//	ASSERT(e == e2);
+
+#if 0
+	// тестирование вывода на кодек
+	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSTEP16TX)
+	{
+		phones->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
+		phones->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
+	}
+	//printhex32(0, phones->buff, sizeof phones->buff);
+#endif
+
+	return (uintptr_t) phones->buff;
 }
 
 ////////////////////////////////////////////////////
@@ -927,32 +959,6 @@ static void dsp_loopback(unsigned nsamples)
 #endif
 
 	}
-}
-
-uintptr_t getfilled_dmabuffer16tx(void)
-{
-#if WITHUSBHEADSET
-	dsp_loopback(CNT16TX);
-#else /* WITHUSBHEADSET */
-	dsp_fillphones(CNT16TX);
-#endif
-
-	voice16tx_t * phones;
-	while (! codec16tx.get_freebufferforced_nopurge(& phones))
-		ASSERT(0);
-
-
-#if 0
-	// тестирование вывода на кодек
-	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSTEP16TX)
-	{
-		phones->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
-		phones->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());
-	}
-	//printhex32(0, phones->buff, sizeof phones->buff);
-#endif
-
-	return (uintptr_t) phones->buff;
 }
 
 ///////////////////////////////////
