@@ -5302,7 +5302,7 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep, unsigned NBYTES)
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
 /* встороенный в процессор кодек */
-static void hardware_hwblock_master_duplex_initialize_codec1(void)
+static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 {
 	const unsigned framebits = CODEC1_FRAMEBITS;
 	const unsigned lrckf = ARMI2SRATE;
@@ -5317,9 +5317,24 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	// 0x00 = 48000 (x 512)
-	// 0x01 = ~ 46902 (x 512)
-	// 0x02 = 48000 (x 512)
+	// Default CCU settings:
+	//	AudioCodec: allwnrt113_get_audio0pll1x_freq()=24571 kHz
+	//	AudioCodec: allwnrt113_get_audio1pll_div2_freq()=1536000 kHz
+	//	AudioCodec: allwnrt113_get_audio1pll_div5_freq()=614400 kHz
+
+	{
+		unsigned N = 86;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
+		CCU->PLL_AUDIO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
+		CCU->PLL_AUDIO0_CTRL_REG = (CCU->PLL_AUDIO0_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
+			(N - 1) * (UINT32_C(1) << 8) |
+			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
+			0;
+		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+		while ((CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
+			;
+		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
+	}
+
 	const unsigned long src = 0x00;
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
@@ -5343,9 +5358,7 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	unsigned value;	/* делитель */
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
 
-	//PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
-	PRINTF("AudioCodec: allwnrt113_get_audio_codec_adc_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_adc_freq() / 1000));
-	PRINTF("AudioCodec: allwnrt113_get_audio_codec_dac_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_dac_freq() / 1000));
+	PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
 
 	// audiocodec_dac_clk
 	// audiocodec_adc_clk
@@ -5366,13 +5379,16 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
+
+	PRINTF("AudioCodec: allwnrt113_get_audio_codec_adc_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_adc_freq() / 1000));
+	PRINTF("AudioCodec: allwnrt113_get_audio_codec_dac_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio_codec_dac_freq() / 1000));
+
 #else
 	#warning Unexpected CPUSTYLE_xxx
 
 #endif
 
-#if 1
-
+	// Настройка аналогового тракта
 #if CPUSTYLE_A64
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
@@ -5467,64 +5483,23 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	// MIC3
 	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 30);	// MIC3_PGA_EN
 	//AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
-	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (0x0Fu << 8)) | (0x0Fu << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
+	AUDIO_CODEC->ADC3_REG = (AUDIO_CODEC->ADC3_REG & ~ (UINT32_C(0x0F) << 8)) | (UINT32_C(0x0F) << 8);	// ADC3_PGA_GAIN_CTRL: 36 dB
 
 	// Установка усиления
 	AUDIO_CODEC->ADC_VOL_CTRL1 =
-		0 * (0xA0u << 0) |	/* ADC1_VOL 0xA0 - middle point */
-		0 * (0xA0u << 8) |	/* ADC2_VOL 0xA0 - middle point */
-		(0xA0u << 16) |	/* ADC3_VOL 0xA0 - middle point */
+		180 * (UINT32_C(1) << 16) |	// ADC3_VOL (0xA0 - middle point)
+		0*0xA0 * (UINT32_C(1) << 8) |		// ADC2_VOL
+		0*0xA0 * (UINT32_C(1) << 0) |		// ADC1_VOL
 		0;
-#else
-
-	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
-
-	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
-	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
-			(UINT32_C(1) << 17) |	// ADC3_VOL_EN ADC3 Volume Control Enable
-			(UINT32_C(1) << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
-			((0x04 | 0x02) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
-			0;
-
-	// ADCx Analog Control Register
-	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 31);	// FMINL ADC1 Channel Enable
-	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 31);	// FMINR
-	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 31);	// MIC3
-
-	// DAC Analog Control Register
-	// количество каналов должно соотыетствовать DMABUFFSTEP16TX
-	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 15) | (UINT32_C(1) << 14);	// DACL_EN, DACR_EN
-
-	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
-	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (UINT32_C(1) << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
-	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 3);	// ADC_DRQ_EN
-
-	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (3u << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
-	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
-
-	// Установка аналоговых параметрв
-	AUDIO_CODEC->ADC_VOL_CTRL1 = 0x00FFFFFF;
-
-	AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 27);	// FMINLEN FMINL Enable
-	//AUDIO_CODEC->ADC1_REG |= (UINT32_C(1) << 23);	// LINEINLEN LINEINL Enable
-
-	AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 27);	// FMINREN FMINR Enable
-	//AUDIO_CODEC->ADC2_REG |= (UINT32_C(1) << 23);	// LINEINREN LINEINR Enable
-
-	AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 30);	// MIC3_PGA_EN
-	//AUDIO_CODEC->ADC3_REG |= (UINT32_C(1) << 28);	// MIC3_SIN_EN MIC3 Single Input Enable
-
-#endif
 
 #else
+	#warning Unexpected CPUSTYLE_xxx
 
 #endif
 }
 
 /* встороенный в процессор кодек */
-static void hardware_hwblock_enable_codec1(uint_fast8_t state)
+static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 {
 #if CPUSTYLE_A64
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
@@ -5651,13 +5626,13 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
-static const codechw_t audiocodechw_hwblock_duplex_master =
+static const codechw_t audiocodechw_AudioCodec_duplex_master =
 {
-	hardware_hwblock_master_duplex_initialize_codec1,
+	hardware_AudioCodec_master_duplex_initialize_codec1,
 	hardware_dummy_initialize,
 	DMAC_AudioCodec_RX_initialize_codec1,
 	DMAC_AudioCodec_TX_initialize_codec1,
-	hardware_hwblock_enable_codec1,
+	hardware_AudioCodec_enable_codec1,
 	hardware_dummy_enable,
 	"audiocodechw-hwblock-duplex-master"
 };
@@ -6961,7 +6936,7 @@ static const codechw_t * const channels [] =
 		& fpgacodechw_i2s0_duplex_slave,					// Интерфейс к IF кодеку/FPGA
 	#endif /* WITHFPGAIF_I2S0_DUPLEX_SLAVE */
 	#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER	// allwinner t113-s3 or F133
-		& audiocodechw_hwblock_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
+		& audiocodechw_AudioCodec_duplex_master,					// Интерфейс к НЧ кодеку (встроенный в процессор)
 	#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 
