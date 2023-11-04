@@ -391,7 +391,7 @@ public:
 	}
 
 	// получить из списка готовых
-	int get_readybuffer_raw(element_t * * dest)
+	bool get_readybuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
@@ -410,17 +410,17 @@ public:
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
 			ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 			* dest = & p->v;
-			return 1;
+			return true;
 		}
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-		return 0;
+		return false;
 	}
-	int get_readybuffer(element_t * * dest)
+	bool get_readybuffer(element_t * * dest)
 	{
 		if (hasresample)
 		{
 			if (! outready)
-				return 0;
+				return false;
 			return get_readybufferarj(dest, false, false, false);
 		}
 		else
@@ -430,7 +430,7 @@ public:
 	}
 
 	// получить из списка свободных
-	int get_freebuffer(element_t * * dest)
+	bool get_freebuffer(element_t * * dest)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
@@ -445,24 +445,46 @@ public:
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
 			ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 			* dest = & p->v;
-			return 1;
+			return true;
 		}
 #if WITHBUFFERSDEBUG
 		++ errallocate;
 #endif /* WITHBUFFERSDEBUG */
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-		return 0;
+		return false;
 	}
 	// получить из списка свободных, если нет - из готовых
-	int get_freebufferforced(element_t * * dest)
+	bool get_freebufferforced_nopurge(element_t * * dest)
 	{
 		return get_freebuffer(dest) || get_readybuffer_raw(dest);
 	}
+	// получить из списка свободных, если нет - из готовых
+	bool get_freebufferforced(element_t * * dest)
+	{
+		if (get_freebuffer(dest))
+			return true;
+		for (unsigned i = 3; i --;)
+		{
+			while (! get_readybuffer_raw(dest))
+				ASSERT(0);
+			release_buffer(* dest);
+		}
+		return get_readybuffer_raw(dest);
+	}
 
 	// получить из списка готовых, если нет - из свободных
-	int get_readybufferforced(element_t * * dest)
+	bool get_readybufferforced(element_t * * dest)
 	{
-		return get_readybuffer_raw(dest) || get_freebuffer(dest);
+		//return get_readybuffer_raw(dest) || get_freebuffer(dest);
+		if (get_readybuffer_raw(dest))
+			return true;
+		for (unsigned i = 3; i --;)
+		{
+			while (! get_freebuffer(dest))
+				ASSERT(0);
+			save_buffer(* dest);
+		}
+		return get_freebuffer(dest);
 	}
 
 	// все готовые перенести в свободные
@@ -548,7 +570,7 @@ public:
 
 			if (o < ototal)
 			{
-				while (get_readybufferforced(& workbuff) == 0)	// следующий готовый
+				while (! get_readybufferforced(& workbuff))	// следующий готовый
 					ASSERT(0);
 				memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o3, p3);	// копируем часть следующего буфера
 				o += p3;
@@ -751,7 +773,7 @@ int_fast32_t cachesize_dmabuffer16tx(void)
 uintptr_t allocate_dmabuffer16rx(void)
 {
 	voice16rx_t * dest;
-	while (codec16rx.get_freebufferforced(& dest) == 0)
+	while (! codec16rx.get_freebufferforced(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -811,12 +833,14 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	voice_put(VOICE_REC16, ch0, ch1);	// аудиоданные - выход приемника
 }
 
+// USed at initialization DMA
 // can not be zero
 uintptr_t allocate_dmabuffer16tx(void)
 {
 	voice16tx_t * dest;
-	while (codec16tx.get_freebufferforced(& dest) == 0)
+	while (! codec16tx.get_freebufferforced(& dest))
 		ASSERT(0);
+	memset(dest->buff, 0, sizeof dest->buff);
 	return (uintptr_t) dest->buff;
 }
 
@@ -905,7 +929,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 #endif
 
 	voice16tx_t * phones;
-	while (codec16tx.get_freebufferforced(& phones) == 0)
+	while (! codec16tx.get_freebufferforced_nopurge(& phones))
 		ASSERT(0);
 
 
@@ -1025,7 +1049,7 @@ void release_dmabuffer32tx(uintptr_t addr)
 uintptr_t allocate_dmabuffer32tx(void)
 {
 	voice32tx_t * dest;
-	while (voice32tx.get_freebufferforced(& dest) == 0)
+	while (! voice32tx.get_freebufferforced(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -1155,7 +1179,7 @@ void release_dmabuffer32rx(uintptr_t addr)
 uintptr_t allocate_dmabuffer32rx(void)
 {
 	voice32rx_t * dest;
-	while (voice32rx.get_freebuffer(& dest) == 0)
+	while (! voice32rx.get_freebuffer(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -1196,7 +1220,7 @@ int_fast32_t cachesize_dmabufferuacout48(void)
 uintptr_t allocate_dmabufferuacout48(void)
 {
 	uacout48_t * dest;
-	while (uacout48.get_freebufferforced(& dest) == 0)
+	while (! uacout48.get_freebufferforced(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 }
@@ -1302,7 +1326,7 @@ typedef enum
 	uintptr_t allocate_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
-		while (uacinrts192.get_freebufferforced(& dest) == 0)
+		while (! uacinrts192.get_freebufferforced(& dest))
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS192;
 		return (uintptr_t) & dest->buff;
@@ -1312,7 +1336,7 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts192(void)
 	{
 		uacinrts192_t * dest;
-		while (uacinrts192.get_readybufferforced(& dest) == 0)
+		while (! uacinrts192.get_readybufferforced(& dest))
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS192;
 		return (uintptr_t) & dest->buff;
@@ -1374,7 +1398,7 @@ typedef enum
 	uintptr_t allocate_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		while (uacinrts96.get_freebufferforced(& dest) == 0)
+		while (! uacinrts96.get_freebufferforced(& dest))
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS96;
 		return (uintptr_t) & dest->buff;
@@ -1384,7 +1408,7 @@ typedef enum
 	uintptr_t getfilled_dmabufferuacinrts96(void)
 	{
 		uacinrts96_t * dest;
-		while (uacinrts96.get_readybufferforced(& dest) == 0)
+		while (! uacinrts96.get_readybufferforced(& dest))
 			ASSERT(0);
 		dest->tag = BUFFTAG_RTS96;
 		return (uintptr_t) & dest->buff;
@@ -1452,7 +1476,7 @@ void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
 uintptr_t allocate_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
-	while (uacin48.get_freebufferforced(& dest) == 0)
+	while (! uacin48.get_freebufferforced(& dest))
 		ASSERT(0);
 	dest->tag = BUFFTAG_UACIN48;
 	return (uintptr_t) dest->buff;
