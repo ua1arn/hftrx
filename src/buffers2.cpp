@@ -321,7 +321,7 @@ public:
         // resampler test
 		if (hasresample)
 		{
-			VERIFY(get_freebuffer(& workbuff));
+			VERIFY3(get_freebuffer(& workbuff), __FILE__, __LINE__, name);
 			wbstart = 7 * element_t::ss * element_t::nch;
 			//PRINTF("%s: test resampler: wbstart=%u\n", name, wbstart);
 		}
