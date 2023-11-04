@@ -6568,7 +6568,7 @@ arm_hardware_pioa_altfn2(portholder_t opins, unsigned af)
 #elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -7229,7 +7229,7 @@ arm_hardware_pioe_altfn50(portholder_t opins, unsigned af)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOF);
+	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -8043,7 +8043,7 @@ arm_hardware_pioi_altfn50(portholder_t opins, unsigned af)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOF);
+	//gpioX_poweron(GPIOI);
 	gpioX_prog(GPIOI, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -9258,8 +9258,8 @@ void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOG);
-	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX

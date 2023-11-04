@@ -252,10 +252,10 @@
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
-		arm_hardware_pioe_altfn20(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, 0); \
 		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-		arm_hardware_pioe_altfn20(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, 0); \
 		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 	} while (0)
@@ -995,7 +995,7 @@
 	#define BOARD_STMPE811_RESET_PIN (UINT32_C(1) << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_GPIOE_STMPE811_INT_PIN, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2(BOARD_GPIOE_STMPE811_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_STMPE811_INT_PIN, 0); \
 		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_STMPE811_INT_PIN, 1 * BOARD_GPIOE_STMPE811_INT_PIN, 0 * BOARD_GPIOE_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
@@ -1027,7 +1027,7 @@
 	} while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
-		arm_hardware_pioe_altfn20(BOARD_GPIOE_GT911_INT_PIN, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2(BOARD_GPIOE_GT911_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_GT911_INT_PIN, 0); \
 		arm_hardware_pioe_onchangeinterrupt0 * BOARD_GPIOE_GT911_INT_PIN, 1 * BOARD_GPIOE_GT911_INT_PIN, 0 * BOARD_GPIOE_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
