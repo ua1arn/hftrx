@@ -10510,6 +10510,20 @@ void hightests(void)
 #endif
 #if 0
 	{
+		extern uint32_t __TTB_BASE;
+		const uintptr_t __ttb_base = (uintptr_t) & __TTB_BASE;
+
+		extern uint32_t __RAMNC_BASE;
+		extern uint32_t __RAMNC_TOP;
+		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+
+		PRINTF("__ttb_base=0x%08X\n", (unsigned) __ttb_base);
+		PRINTF("__ramnc_base=0x%08X, __ramnc_top=0x%08X (%u MB)\n", (unsigned) __ramnc_base, (unsigned) __ramnc_top, (unsigned) ((__ramnc_top - __ramnc_base) / 1024 / 1024));
+	}
+#endif
+#if 0
+	{
 		// cache line size test
 		static __ALIGNED(256) uint8_t data [256];
 		memset(data, 0xE5, sizeof data);

@@ -2356,12 +2356,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_T113
 
+	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
-
-
-	if (a >= 0x46000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_NCACHED(ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2371,6 +2376,8 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_A64
+
+	// Все сравнения должны быть не точнее 1 MB
 
 	if (a < 0x01000000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2383,10 +2390,16 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
 	if (a < 0x00100000)			// SYSRAM, BROM
 		return addrbase | TTB_PARA_CACHED(ro, 0);
-	if (a >= 0x60000000)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2408,6 +2421,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_VM14
 
 	// 1892ВМ14Я ELVEES multicore.ru
+	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
 		return addrbase | TTB_PARA_CACHED(ro, 0);
