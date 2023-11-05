@@ -816,8 +816,8 @@ static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
-	b [DMABUFF16TX_LEFT] = adpt_output(& afcodecrx, ch0);
-	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodecrx, ch1);
+	b [DMABUFF16RX_LEFT] = adpt_output(& afcodecrx, ch0);
+	b [DMABUFF16RX_RIGHT] = adpt_output(& afcodecrx, ch1);
 	return DMABUFFSTEP16RX;
 }
 

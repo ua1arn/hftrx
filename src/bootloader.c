@@ -404,7 +404,7 @@ void bootloader_mainloop(void)
 		}
 		else
 		{
-			PRINTF("app read: length = %lu (%lu)\n", length + 256, (length + 256 + 511) / 512 * 512);
+			PRINTF("app read: length = %u (%u)\n", length + 256, (length + 256 + 511) / 512 * 512);
 		}
 		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (length + 256 + 511) / 512);
 		//dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_FLASHSIZE / 512, (2 * 1024 * 1024) / 512);
