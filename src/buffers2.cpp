@@ -2688,15 +2688,15 @@ void buffers_initialize(void)
 //	ASSERT((DMABUFFSIZE192RTS % HARDWARE_RTSDMABYTES) == 0);
 //	ASSERT((DMABUFFSIZE96RTS % HARDWARE_RTSDMABYTES) == 0);
 
-	#if WITHRTS192 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+#if WITHRTS192 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout192stereo);
 
-	#elif WITHRTS96 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+#elif WITHRTS96 && WITHUSBUACIN && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
-	#endif /* WITHRTS192 */
+#endif /* WITHRTS192 */
 
 
 
