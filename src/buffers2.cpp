@@ -24,10 +24,10 @@
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
 
-#define UACINRTS192_CAPACITY (128 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY (128 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY (128 * BUFOVERSIZE)
-#define UACIN48_CAPACITY (128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)
+#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -2582,7 +2582,7 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 void buffers_diagnostics(void)
 {
 #if WITHINTEGRATEDDSP
-#if 1
+#if 0
 	denoise16list.debug();
 	codec16rx.debug();
 	codec16tx.debug();
@@ -2592,10 +2592,10 @@ void buffers_diagnostics(void)
 #endif
 #if 1
 	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 1
 	uacout48.debug();
 #endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 1
 #if WITHRTS192
 	uacinrts192.debug();
 #endif
@@ -2616,15 +2616,13 @@ void buffers_diagnostics(void)
 static void buffers_spool(void * ctx)
 {
 #if WITHINTEGRATEDDSP
-#if 1
+	// internal sources/targets
 	//denoise16list.spool10ms();
 	codec16rx.spool10ms();
 	codec16tx.spool10ms();
 	moni16.spool10ms();
 	voice32tx.spool10ms();
 	voice32rx.spool10ms();
-#endif
-#if 1
 	// USB
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	uacout48.spool10ms();
@@ -2638,7 +2636,6 @@ static void buffers_spool(void * ctx)
 #endif
 #endif
 	uacin48.spool10ms();
-#endif
 	//message8.spool10ms();
 #endif /* WITHINTEGRATEDDSP */
 }
