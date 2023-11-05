@@ -268,7 +268,7 @@ void MX_USB_DEVICE_Process(void)
 void board_usb_initialize(void)
 {
 #if WITHUSBHW
-	PRINTF("board_usb_initialize [%p]\n", board_usb_initialize);
+	//PRINTF("board_usb_initialize [%p]\n", board_usb_initialize);
 
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Init();
@@ -276,13 +276,13 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Init();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-	PRINTF("board_usb_initialize done\n");
+	//PRINTF("board_usb_initialize done\n");
 #endif /* WITHUSBHW */
 }
 
 void board_usb_deinitialize(void)
 {
-	PRINTF("board_usb_deinitialize [%p]\n", board_usb_deinitialize);
+	//PRINTF("board_usb_deinitialize [%p]\n", board_usb_deinitialize);
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_DeInit();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
@@ -292,13 +292,13 @@ void board_usb_deinitialize(void)
 #if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC)
 	USB_HS_PHYCDeInit();
 #endif /* (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC) */
-	PRINTF("board_usb_deinitialize done\n");
+	//PRINTF("board_usb_deinitialize done\n");
 }
 
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-	PRINTF("board_usb_activate [%p]\n", board_usb_activate);
+	//PRINTF("board_usb_activate [%p]\n", board_usb_activate);
 #if defined (WITHUSBHW_DEVICE)
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
@@ -319,7 +319,7 @@ void board_usb_activate(void)
 		Error_Handler();
 	}
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-	PRINTF("board_usb_activate done\n");
+	//PRINTF("board_usb_activate done\n");
 }
 
 void board_usb_deactivate(void)

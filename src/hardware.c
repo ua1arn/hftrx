@@ -1726,6 +1726,15 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 
+/** \brief  Set DCCMVAU
+
+  Data cache clean
+ */
+__STATIC_FORCEINLINE void __set_DCCMVAU(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 11, 1);
+}
+
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required
 // 	see Terms used in describing the maintenance operations on page B2-1272.
@@ -1778,7 +1787,7 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2192,6 +2201,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 #define RAM_ATTRS CACHEATTR_WB_WA_CACHE
 //#define RAM_ATTRS CACHEATTR_WB_NWA_CACHE
 #define DEVICE_ATTRS CACHEATTR_NOCACHE
+#define NCRAM_ATTRS CACHEATTR_NOCACHE
 
 #define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)
 #define Cval_RAM		MKATTR_Cval(RAM_ATTRS)
@@ -2201,6 +2211,16 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
 #else /* WITHSMPSYSTEM */
 	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+#endif /* WITHSMPSYSTEM */
+
+#define TEXval_NCRAM	MKATTR_TEXval(NCRAM_ATTRS)
+#define Cval_NCRAM		MKATTR_Cval(NCRAM_ATTRS)
+#define Bval_NCRAM		MKATTR_Bval(NCRAM_ATTRS)
+
+#if WITHSMPSYSTEM
+	#define SHAREDval_NCRAM 1		// required for ldrex.. and strex.. functionality
+#else /* WITHSMPSYSTEM */
+	#define SHAREDval_NCRAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
 #if 1
@@ -2241,6 +2261,7 @@ uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 		0 \
 	)
 
+#define	TTB_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_NO_ACCESS 		0
@@ -2310,7 +2331,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 #if WITHLWIP
 	if (a == (uintptr_t) bd_space)
-		return addrbase | TTB_PARA_DEVICE;
+		return addrbase | TTB_PARA_NCACHED(ro, 0);
 #endif /* WITHLWIP */
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
@@ -2335,6 +2356,15 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_T113
 
+	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
 	if (a < 0x00400000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
@@ -2347,6 +2377,8 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_A64
 
+	// Все сравнения должны быть не точнее 1 MB
+
 	if (a < 0x01000000)
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 
@@ -2355,9 +2387,17 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
 	if (a < 0x00100000)			// SYSRAM, BROM
 		return addrbase | TTB_PARA_CACHED(ro, 0);
 	// 1 GB DDR RAM memory size allowed
@@ -2381,6 +2421,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 #elif CPUSTYLE_VM14
 
 	// 1892ВМ14Я ELVEES multicore.ru
+	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -2907,6 +2948,16 @@ sysinit_mmu_initialize(void)
 	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
+#if (__CORTEX_A == 53U)
+static void setactlr(void)
+{
+	uint64_t v = __get_CPUACTLR();
+
+	//v |= UINT64_C(1) << 44;	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+	__set_CPUACTLR(v);
+}
+#endif /* (__CORTEX_A == 53U) */
+
 // ОБщая для всех процессоров инициализация
 static void
 sysinit_cache_core0_initialize(void)
@@ -2944,6 +2995,8 @@ sysinit_cache_core0_initialize(void)
 			 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
 			 */
 			__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
+			__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUACTLR write access control. The possible
+			setactlr();
 			// set the CPUECTLR.SMPEN
 			__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 			// 4.5.28 Auxiliary Control Register
@@ -3888,6 +3941,8 @@ void Reset_CPUn_Handler(void)
 	__DSB();
 #elif (__CORTEX_A == 53U)
 	__set_ACTLR(__get_ACTLR() | (1u << 1));	// CPUECTLR write access control. The possible
+	__set_ACTLR(__get_ACTLR() | (1u << 0));	// CPUACTLR write access control. The possible
+	setactlr();
 	// set the CPUECTLR.SMPEN
 	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
 	// 4.5.28 Auxiliary Control Register
@@ -3957,7 +4012,17 @@ void Reset_CPUn_Handler(void)
 #endif /* CPUSTYLE_VM14 */
 
 	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
-
+#if HARDWARE_NCORES > 2
+	if (arm_hardware_cpuid() == 2)
+	{
+		for (;;)
+		{
+#if WITHINTEGRATEDDSP
+			audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
+		}
+	}
+#endif /* HARDWARE_NCORES > 2 */
 	// Idle loop
 	for (;;)
 	{

@@ -1871,6 +1871,7 @@ dma_flushxrtstx(uintptr_t addr, unsigned long size)
 // Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
 static void refreshDMA_uacin(void)
 {
+#error Remove - use continugous stream
 	if ((DMAC12.CHSTAT_n & DMAC12_CHSTAT_n_EN) != 0)
 	{
 		// Канал DMA ещё занят - новые данные не требуются.
@@ -1911,27 +1912,6 @@ static void refreshDMA_uacin(void)
 	}
 }
 
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacin48(void)
-{
-	refreshDMA_uacin();
-}
-
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacinrts96(void)
-{
-	refreshDMA_uacin();
-}
-
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void refreshDMA_uacinrts192(void)
-{
-	refreshDMA_uacin();
-}
-
 
 // USB AUDIO
 // DMA по передаче USB0 DMA1 - обработчик прерывания
@@ -1965,6 +1945,7 @@ static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 	}
 	else
 	{
+#error TRemove - use continugous stream
 		DMAC12.N0SA_n = 0;
 		DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLREN;		// CLREN
 		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
@@ -2184,12 +2165,18 @@ static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 	// Прием с автопереключением больше нигде не подтвержден.
 	if (b == 0)
 	{
-		uacout_buffer_save(uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		cons uintptr_t addr = allocate_dmabufferuacout48();
+		memcpy((void *) addr, uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
+		save_dmabufferuacout48(addr);
+
 		dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 	else
 	{
-		uacout_buffer_save(uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC, UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		cons uintptr_t addr = allocate_dmabufferuacout48();
+		memcpy((void *) addr, uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
+		save_dmabufferuacout48(addr);
+
 		dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 }

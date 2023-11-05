@@ -769,7 +769,6 @@ extern "C" {
 		GPIO_CFG_AF3 = 0x03,
 		GPIO_CFG_AF4 = 0x04,
 		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_AF6 = 0x06,
 		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
 		GPIO_CFG_IODISABLE = 0x07,
 	} GPIOMode_TypeDef;
@@ -778,7 +777,7 @@ extern "C" {
 	#define WITHCPUNAME "Allw A64"
 
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -815,7 +814,6 @@ extern "C" {
 		GPIO_CFG_AF3 = 0x03,
 		GPIO_CFG_AF4 = 0x04,
 		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_AF6 = 0x06,
 		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
 		GPIO_CFG_IODISABLE = 0x07,
 	} GPIOMode_TypeDef;

@@ -235,9 +235,13 @@
 //	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 //	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD - загрузчик работает через eMMC
+	#define WITHISBOOTLOADERRAWDISK	1	// чтение application с предопределённого смещения на накопителе
+	#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
+
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHUSBMIKET113	1	/* Функциональность USB микрофона */
+	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define FORMATFROMLIBRARY 	1
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */

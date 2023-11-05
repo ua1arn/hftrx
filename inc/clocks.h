@@ -166,8 +166,10 @@ uint_fast32_t allwnrt113_get_video1pllx4_freq(void);
 uint_fast32_t allwnrt113_get_video1_x2_freq(void);
 uint_fast32_t allwnrt113_get_video1_x1_freq(void);
 uint_fast32_t allwnrt113_get_vepll_freq(void);
-uint_fast32_t allwnrt113_get_audio0pll4x_freq(void);
 uint_fast32_t allwnrt113_get_audio0pll1x_freq(void);
+uint_fast32_t allwnrt113_get_audio0pll2x_freq(void);
+uint_fast32_t allwnrt113_get_audio0pll4x_freq(void);
+uint_fast32_t allwnrt113_get_audio0pllhs_freq(void);
 uint_fast32_t allwnrt113_get_audio1pll1x_freq(void);
 uint_fast32_t allwnrt113_get_audio1pll_div2_freq(void);
 uint_fast32_t allwnrt113_get_audio1pll_div5_freq(void);
@@ -197,6 +199,10 @@ uint_fast32_t allwnrt113_get_smhc1_freq(void);
 uint_fast32_t allwnrt113_get_smhc2_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
 uint_fast32_t allwnrt113_get_peripll1x_freq(void);
+uint_fast32_t allwnrt113_get_audio_codec_dac_freq(void);
+uint_fast32_t allwnrt113_get_audio_codec_adc_freq(void);
+uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void);
+uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void);
 
 // Allwinner A64
 uint_fast32_t allwnr_a64_get_cpux_freq(void);
@@ -228,6 +234,10 @@ uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void);
 uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void);
 uint_fast32_t allwnr_t507_get_ahub_freq(void);
 uint_fast32_t allwnr_t507_get_gpu_freq(void);
+uint_fast32_t allwnr_t507_get_pll_audio_x1_freq(void);
+uint_fast32_t allwnr_t507_get_pll_audio_x2_freq(void);
+uint_fast64_t allwnr_t507_get_pll_audio_x4_freq(void);
+uint_fast64_t allwnr_t507_get_pll_audio_hs_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);

@@ -49,6 +49,11 @@
 
 #if WITHISBOOTLOADER
 
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHC0HW	1		/* TF CARD */
+	//#define WITHSDHC1HW	1		/* SDIO */
+	#define WITHSDHC2HW	1		/* EMMC */
+
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define BOARD_CONFIG_DRAM_CLK 792
@@ -114,6 +119,11 @@
 
 #else /* WITHISBOOTLOADER */
 
+	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHC0HW	1		/* TF CARD */
+	//#define WITHSDHC1HW	1		/* SDIO */
+	//#define WITHSDHC2HW	1		/* EMMC */
+
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#if WITHINTEGRATEDDSP
@@ -148,7 +158,7 @@
 
 	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -173,11 +183,11 @@
 
 	#if WITHINTEGRATEDDSP
 
-		//#define WITHUAC2		1	/* UAC2 support */
-		#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+		#define WITHUAC2		1	/* UAC2 support */
+		#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
 		#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-		#define UACIN_RTS96_SAMPLEBYTES		3	/* должны быть 2, 3 или 4 */
-		#define UACIN_RTS192_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+		#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
+		#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
 
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -259,9 +269,10 @@
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_ENCODER_BITS); \
+			arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER_BITS, GPIO_CFG_EINT); \
 			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			/*arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENCODER2_BITS); \
 			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER2_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(0 * BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \

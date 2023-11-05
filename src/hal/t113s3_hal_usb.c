@@ -3281,7 +3281,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 					break;
 #if WITHUAC2
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_INRTS):
-						ASSERT(0);	// not supported
+						//ASSERT(0);	// not supported
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48):
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48):
 				case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_OUT48):
@@ -4027,19 +4027,19 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 #if WITHUSBUACIN
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
-		DMAC_USB_TX_initialize_UACIN48(ep_no);
+		DMAC_USB_TX_initialize_UACIN48(ep_no, UACIN_AUDIO48_DATASIZE_DMAC);
 	}
 #if WITHUSBUACIN2
 	{
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
-		DMAC_USB_TX_initialize_UACINRTS96(ep_no);
+		DMAC_USB_TX_initialize_UACINRTS96(ep_no, UACIN_RTS96_DATASIZE_DMAC);
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
 #if WITHUSBUACOUT
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
-		DMAC_USB_RX_initialize_UACOUT48(ep_no);
+		DMAC_USB_RX_initialize_UACOUT48(ep_no, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 #endif /* WITHUSBUACOUT */
 

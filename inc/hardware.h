@@ -391,8 +391,12 @@ elif CPUSTYLE_STM32F0XX
 	#include "allwnr_t507.h"
 	#include "irq_ctrl.h"
 
+	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
+	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
+	//	Unified-Cache L2: 1024 KB, 1024 Sets, 64 Bytes/Line, 16-Way
+
 	#define DCACHEROWSIZE 64
-	#define ICACHEROWSIZE 32
+	#define ICACHEROWSIZE 64
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */

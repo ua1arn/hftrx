@@ -10,6 +10,7 @@
 #include "audio.h"
 #include "keyboard.h"
 #include "encoder.h"
+#include "bootloader.h"
 
 #include "display/display.h"
 #include "display2.h"
@@ -3673,16 +3674,17 @@ static void test_recodstart(void)
 }
 
 #if 1
-/* записать в буфер для ответа 32-бит значение */
-unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
-{
-	buff [0] = v >> 0;
-	buff [1] = v >> 8;
-	buff [2] = v >> 16;
-	buff [3] = v >> 24;
 
-	return 4;
-}
+#if WITHUSESDCARD && WITHUSEUSBFLASH
+	// когда одновременно и eMMC и USB FLASH - 0:USB, 1: eMMC,
+
+	#define VOLPREFIX "0:"					// префикс для файловых операций
+	static const BYTE eMMCtargetdrv = 1;	// том для diskio функций
+#else
+
+	#define VOLPREFIX "0:"					// префикс для файловых операций
+	static const BYTE eMMCtargetdrv = 0;	// том для diskio функций
+#endif
 
 // сохранение потока данных большими блоками
 // 1 - конец циклпа проверок
@@ -3695,7 +3697,7 @@ static int dosaveblocks(const char * fname)
 	FRESULT rc;				/* Result code */
 
 	PRINTF(PSTR("FAT FS test - write file '%s'.\n"), fname);
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
 
 	/* формирование сигнатуры в данных = для конроля достоверности записи */
 	unsigned j;
@@ -3784,7 +3786,7 @@ static int dosaveblocks(const char * fname)
 		PRINTF("f_truncate: rc=0x%02X\n", (unsigned) rc);
 	}
 	rc = f_close(& Fil);
-	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 	if (rc)
 	{
 		TP();
@@ -3857,7 +3859,7 @@ void displfiles_buff(const char* path)
     //fno.lfsize = sizeof lfn;
 #endif
 
-	PRINTF(PSTR("Open root directory.\n"));
+	PRINTF(PSTR("Open root directory '%s'.\n"), path);
     res = f_opendir(& dir, path);                       /* Open the directory */
     if (res == FR_OK) 
 	{
@@ -3890,22 +3892,25 @@ void displfiles_buff(const char* path)
         }
         //f_closedir(&dir);
     }
+    else
+    {
+    	PRINTF(PSTR("Can not open root directory '%s', res=%d.\n"), path, (int) res);
+
+    }
 }
 
-static BYTE targetdrv = 0;
-
-static char mmcInitialize(void)
+static char mmcInitialize(BYTE drv)
 {
-	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
+	DSTATUS st = disk_initialize (drv);				/* Physical drive nmuber (0..) */
 	//PRINTF(PSTR("disk_initialize code=%02X\n"), st);
 	return st != RES_OK;
 }
 
 // read a size Byte big block beginning at the address.
 //char mmcReadBlock(uint_fast32_t address, unsigned long count, unsigned char *pBuffer);
-static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
+static char mmcReadSector(BYTE drv, uint_fast32_t sector, unsigned char *pBuffer)
 {
-	DSTATUS st = disk_read(targetdrv, pBuffer, sector, 1);
+	DSTATUS st = disk_read(drv, pBuffer, sector, 1);
 	//PRINTF(PSTR("disk_read code=%02X\n"), st);
 	return st != RES_OK;
 }
@@ -3913,29 +3918,29 @@ static char mmcReadSector(uint_fast32_t sector, unsigned char *pBuffer)
 
 // write a 512 Byte big block beginning at the (aligned) address
 //char mmcWriteBlock (uint_fast32_t address, unsigned long count, const unsigned char *pBuffer);
-static char mmcWriteSector(uint_fast32_t sector, const unsigned char *pBuffer)
+static char mmcWriteSector(BYTE drv, uint_fast32_t sector, const unsigned char *pBuffer)
 {
-	DSTATUS st = disk_write(targetdrv, pBuffer, sector, 1);
+	DSTATUS st = disk_write(drv, pBuffer, sector, 1);
 	//PRINTF(PSTR("disk_write code=%02X\n"), st);
 	return st != RES_OK;
 }
 
-static uint_fast64_t mmcCardSize(void)
+static uint_fast64_t mmcCardSize(BYTE drv)
 {
 	DWORD v;
-	DSTATUS st = disk_ioctl(targetdrv, GET_SECTOR_COUNT, & v);
+	DSTATUS st = disk_ioctl(drv, GET_SECTOR_COUNT, & v);
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-static void diskio_test(void)
+static void diskio_test(BYTE drv)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
 
-	PRINTF(PSTR("Test SD card\n"));
-	mmcInitialize();
+	PRINTF(PSTR("Test SD card (drv=%d)\n"), (int) drv);
+	mmcInitialize(drv);
 
 	PRINTF(PSTR("Enter command:\n"));
 //test_disk();
@@ -4049,7 +4054,7 @@ static void diskio_test(void)
 
 			case 'r':
 				PRINTF(PSTR("Read SD card, sector = %lu\n"), lba_sector);
-				if (mmcReadSector(lba_sector, sectbuffr) != MMC_SUCCESS2)
+				if (mmcReadSector(drv, lba_sector, sectbuffr) != MMC_SUCCESS2)
 					PRINTF("Read error\n");
 				else
 					printhex(0, sectbuffr, MMC_SECTORSIZE);
@@ -4058,7 +4063,7 @@ static void diskio_test(void)
 			case 'w':
 				/* запись тестовых данных */
 				PRINTF(PSTR("Write SD card, sector = %lu\n"), lba_sector);
-				if (mmcWriteSector(lba_sector, sectbuffw) != MMC_SUCCESS2)
+				if (mmcWriteSector(drv, lba_sector, sectbuffw) != MMC_SUCCESS2)
 					PRINTF(PSTR("Write error\n"));
 				else
 					PRINTF(PSTR("Write Okay\n"));
@@ -4066,7 +4071,7 @@ static void diskio_test(void)
 
 			case 'v':
 				PRINTF(PSTR("Verify SD card, sector = %lu\n"), lba_sector);
-				if (mmcReadSector(lba_sector, sectbuffr) != MMC_SUCCESS2)
+				if (mmcReadSector(drv, lba_sector, sectbuffr) != MMC_SUCCESS2)
 					PRINTF(PSTR("Read error\n"));
 				else if (memcmp(sectbuffr, sectbuffw, MMC_SECTORSIZE) == 0)
 					PRINTF(PSTR("No errors\n"));
@@ -4088,7 +4093,7 @@ static void diskio_test(void)
 					;
 			case 'q':
 				{
-					uint_fast64_t v = mmcCardSize();
+					uint_fast64_t v = mmcCardSize(drv);
 					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
@@ -4104,7 +4109,7 @@ static void diskio_test(void)
 			case 'd':
 				{
 					uint_fast64_t pos;
-					const uint_fast64_t v = mmcCardSize();
+					const uint_fast64_t v = mmcCardSize(drv);
 					PRINTF(PSTR("Dump SD Card with size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
@@ -4129,7 +4134,7 @@ static void diskio_test(void)
 						}
 						// работа
 						const unsigned long sector = pos / MMC_SECTORSIZE;
-						if (mmcReadSector(sector, sectbuffr) != MMC_SUCCESS2)
+						if (mmcReadSector(drv, sector, sectbuffr) != MMC_SUCCESS2)
 						{
 							PRINTF(PSTR("Read error\n"));
 						}
@@ -4178,7 +4183,7 @@ static void diskio_test(void)
 									break;
 							}
 							// работа
-							if (mmcWriteSector(sector, sectbuffr) != MMC_SUCCESS2)
+							if (mmcWriteSector(drv, sector, sectbuffr) != MMC_SUCCESS2)
 							{
 								PRINTF(PSTR("Write error ar sector %u\n"), sector);
 								break;
@@ -4194,7 +4199,7 @@ static void diskio_test(void)
 				break;
 
 			case 'z':
-				mmcInitialize();
+				mmcInitialize(drv);
 				PRINTF(PSTR("mmcInitialize.\n"));
 				break;
 				
@@ -4211,13 +4216,13 @@ static void fatfs_filesystest(int speedtest)
 	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static const char testfile [] = "readme.txt";
+	static const char testfile [] = VOLPREFIX "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
 
-	mmcInitialize();
+	//mmcInitialize();
 	PRINTF(PSTR("FAT FS test.\n"));
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
 
 	for (;;)
 	{
@@ -4233,54 +4238,84 @@ static void fatfs_filesystest(int speedtest)
 				PRINTF(PSTR("Undefined command letter with code 0x%02X\n"), (unsigned char) c);
 				break;
 
-			case 'q':
-				{
-					uint_fast64_t v = mmcCardSize();
-					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
-						(unsigned long) (v / 1024), 
-						(unsigned long) (v / 1024 / 1024), 
-						(unsigned long) (v >> 32), 
-						(unsigned long) (v >> 0));
+//			case 'q':
+//				{
+//					uint_fast64_t v = mmcCardSize();
+//					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
+//						(unsigned long) (v / 1024),
+//						(unsigned long) (v / 1024 / 1024),
+//						(unsigned long) (v >> 32),
+//						(unsigned long) (v >> 0));
+//
+//				}
+//				break;
 
-				}
-				break;
-
-			case 'z':
-				mmcInitialize();
-				break;
+//			case 'z':
+//				mmcInitialize();
+//				break;
 				
 			case 'x':
-				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+				rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+				if (rc != FR_OK)
+				{
+					PRINTF("f_mount error, rc=%d\n", (int) rc);
+					//break;
+				}
 				PRINTF(PSTR("FAT FS test done.\n"));
 				return;
 
 			case 'd':
 				PRINTF(PSTR("FAT FS test - display root directory.\n"));
-				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-				displfiles_buff("");	// Заполнение буфера имён файлов в памяти
+				rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+				if (rc != FR_OK)
+				{
+					PRINTF("f_mount error, rc=%d\n", (int) rc);
+					break;
+				}
+				rc = f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
+				if (rc != FR_OK)
+				{
+					PRINTF("f_mount error, rc=%d\n", (int) rc);
+					break;
+				}
+				displfiles_buff(VOLPREFIX "");	// Заполнение буфера имён файлов в памяти
 				break;
 
 			case 't':
 				PRINTF(PSTR("FAT FS test - print file '%s'.\n"), testfile);
-				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+				rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+				if (rc != FR_OK)
+				{
+					PRINTF("f_mount error, rc=%d\n", (int) rc);
+					break;
+				}
+				rc = f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
+				if (rc != FR_OK)
+				{
+					PRINTF("f_mount error, rc=%d\n", (int) rc);
+					break;
+				}
 				printtextfile(testfile);
 				break;
 
 			case 'F':
 				PRINTF(PSTR("FAT FS formatting.\n"));
-				f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+				rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+				if (rc != FR_OK)
+				{
+					PRINTF("f_mount error, rc=%d\n", (int) rc);
+					break;
+				}
 				rc = f_mkfs("0:", NULL, work, sizeof (work));
 				if (rc != FR_OK)
 				{
-					PRINTF(PSTR("sdcardformat: f_mkfs failure (rc=%d)\n"), rc);
+					PRINTF(PSTR("f_mkfs error (rc=%d)\n"), rc);
 				}
 				else
 				{
 					PRINTF(PSTR("sdcardformat: f_mkfs okay\n"));
 				}
-				f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+				f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
 				break;
 
 			case 'w':
@@ -4291,15 +4326,23 @@ static void fatfs_filesystest(int speedtest)
 					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
-						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
+						PSTR(VOLPREFIX "rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
 						year, month, day,
 						hour, minute, seconds,
 						(unsigned) hardware_get_random(),
 						++ ser
 						);
 					PRINTF(PSTR("FAT FS test - write file '%s'.\n"), testlog);
-					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-					f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+					rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+					if (rc != FR_OK)
+					{
+						PRINTF(PSTR("f_mount error (rc=%d)\n"), rc);
+					}
+					rc = f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
+					if (rc != FR_OK)
+					{
+						PRINTF(PSTR("f_mount error (rc=%d)\n"), rc);
+					}
 					dosaveserialport(testlog);
 				}
 				break;
@@ -4313,13 +4356,13 @@ static void fatfs_filesystest(int speedtest)
 					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 					static unsigned ser;
 					local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
-						PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
+						PSTR(VOLPREFIX "rec_%04d-%02d-%02d_%02d%02d%02d_%08lX_%u.txt"),
 						year, month, day,
 						hour, minute, seconds,
 						hardware_get_random(),
 						++ ser
 						);
-					f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+					f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 					dosaveblocks(testlog);
 				}
 				break;
@@ -4342,7 +4385,7 @@ static int fatfs_filesyspeedstest(void)
 	//int nlog = 0;
 
 
-	mmcInitialize();
+	//mmcInitialize();
 	local_snprintf_P(testlog, sizeof testlog / sizeof testlog [0],
 		PSTR("rec_%04d-%02d-%02d_%02d%02d%02d_%08X_%u.txt"),
 		year, month, day,
@@ -4353,6 +4396,114 @@ static int fatfs_filesyspeedstest(void)
 	return dosaveblocks(testlog);
 }
 #endif
+
+static void programming(FIL * f, unsigned offset, BYTE targetDEV)
+{
+	FRESULT rc;				/* Result code */
+	DRESULT dc;
+	unsigned score = 0;
+	for (;;)
+	{
+		static BYTE buff [512 * 4];		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		unsigned chunksize = sizeof buff;
+		UINT br;
+		//PRINTF("Write at %u.\n", score);
+		rc = f_read(f, buff, chunksize, &br);	/* Read a chunk of file */
+		if (rc != FR_OK || ! br)
+			break;			/* Error or end of file */
+		dc = disk_write(targetDEV, buff, (offset + score) / 512, chunksize / 512);
+		if (dc != 0)
+		{
+			PRINTF("Write error");
+			break;
+		}
+		score += chunksize;
+	}
+	PRINTF("%08X: %u bytes written.\n", offset, score);
+}
+
+static void
+bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
+{
+	static const struct base
+	{
+		unsigned offs;
+		const char * name;
+	} jobs [] =
+	{
+		{
+				EMMC_EGON_OFFSET,
+				"fsbl.alw32"
+		},
+		{
+				BOOTLOADER_FLASHSIZE,
+				"tc1_awt507_app.alw32"
+		},
+	};
+	int i;
+	FRESULT rc;				/* Result code */
+
+	PRINTF("Flash files from USB FatFS storage, '%s' to device %d\n", volPrefix, (int) targetDEV);
+	PRINTF("Press 'y' for contiunue\n");
+	for (;;)
+	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready, 0, NULL);
+		char c;
+		if (dbg_getchar(& c))
+		{
+			switch (c)
+			{
+			default:
+				return;
+				break;
+			case 'y':
+				goto startProgramming;
+			}
+		}
+	}
+
+startProgramming:
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+
+	if (disk_initialize(targetDEV) != 0)
+	{
+		PRINTF("No targed device\n");
+		return;
+	}
+	rc = f_mount(& Fatfs, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+	if (rc != FR_OK)
+	{
+		PRINTF("f_mount error, rc=%d\n", (int) rc);
+		return;
+	}
+	PRINTF("Start...\n");
+	displfiles_buff(volPrefix);	// Заполнение буфера имён файлов в памяти
+	for (i = 0; i < ARRAY_SIZE(jobs); ++ i)
+	{
+		static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 char filename [128];
+		local_snprintf_P(filename, ARRAY_SIZE(filename), "%s%s", volPrefix, jobs [i].name);
+		// чтение файла
+		rc = f_open(& Fil, filename, FA_READ);
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("Can not open file '%s', rc=%u\n"), filename, rc);
+			continue;
+		}
+
+		programming(& Fil, jobs [i].offs, targetDEV);
+		rc = f_close(& Fil);
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("Can not close file '%s', rc=%u\n"), filename, rc);
+			break;
+		}
+	}
+	rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
+	PRINTF("Done\n");
+}
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
@@ -4376,7 +4527,7 @@ static void spi_hangoff(void)
 
 #define SPIMODE_AT26DF081A	SPIC_MODE3
 
-static unsigned char dataflash_read_status(
+static unsigned char spidataflash_read_status(
 	spitarget_t target	/* addressing to chip */
 	)
 {
@@ -4394,35 +4545,35 @@ static unsigned char dataflash_read_status(
 	return v;
 }
 
-static int timed_dataflash_read_status(
+static int spitimed_dataflash_read_status(
 	spitarget_t target
 	)
 {
 	unsigned long w = 40000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((spidataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH timeout error\n"));
 	return 1;
 }
 
-static int largetimed_dataflash_read_status(
+static int spilargetimed_dataflash_read_status(
 	spitarget_t target
 	)
 {
 	unsigned long w = 40000000;
 	while (w --)
 	{
-		if ((dataflash_read_status(target) & 0x01) == 0)
+		if ((spidataflash_read_status(target) & 0x01) == 0)
 			return 0;
 	}
 	PRINTF(PSTR("DATAFLASH erase timeout error\n"));
 	return 1;
 }
 
-static int testchipDATAFLASH(void)
+static int spitestchipDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4435,7 +4586,7 @@ static int testchipDATAFLASH(void)
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
-	if (timed_dataflash_read_status(target))
+	if (spitimed_dataflash_read_status(target))
 		return 1;
 
 	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
@@ -4458,7 +4609,7 @@ static int testchipDATAFLASH(void)
 	return mf_id != 0x1f || mf_devid1 != 0x45 || mf_devid2 != 0x01 || mf_dlen != 0;
 }
 
-static int eraseDATAFLASH(void)
+static int spieraseDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4466,17 +4617,17 @@ static int eraseDATAFLASH(void)
 	spi_progval8(target, 0x06);		/* write enable */
 	spi_unselect(target);	/* done sending data to target chip */
 
-	if (timed_dataflash_read_status(target))
+	if (spitimed_dataflash_read_status(target))
 		return 1;
 
 	spi_select(target, SPIMODE_AT26DF081A);	/* start sending data to target chip */
 	spi_progval8(target, 0x60);		/* chip erase */
 	spi_unselect(target);	/* done sending data to target chip */
 
-	if (largetimed_dataflash_read_status(target))
+	if (spilargetimed_dataflash_read_status(target))
 		return 1;
 
-	if ((dataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
+	if ((spidataflash_read_status(target) & (0x01 << 5)) != 0)	// write error
 	{
 		PRINTF(PSTR("Erase error\n"));
 		return 1;
@@ -4484,7 +4635,7 @@ static int eraseDATAFLASH(void)
 	return 0;
 }
 
-static int prepareDATAFLASH(void)
+static int spiprepareDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4501,7 +4652,7 @@ static int prepareDATAFLASH(void)
 	return 0;
 }
 
-static int writeEnableDATAFLASH(void)
+static int spiwriteEnableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4512,7 +4663,7 @@ static int writeEnableDATAFLASH(void)
 	return 0;
 }
 
-static int writeDisableDATAFLASH(void)
+static int spiwriteDisableDATAFLASH(void)
 {
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 
@@ -4552,21 +4703,14 @@ static int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned ch
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
-	if (timed_dataflash_read_status(target))
+	if (spitimed_dataflash_read_status(target))
 		return 1;
 
 	//PRINTF(PSTR("Done programming\n"));
 	return 0;
 }
 
-static unsigned long ulmin(
-	unsigned long a,
-	unsigned long b)
-{
-	return a < b ? a : b;
-}
-
-static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+static int spiwriteDATAFLASH(void * ctx, unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
 	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
@@ -4584,7 +4728,7 @@ static int writeDATAFLASH(unsigned long flashoffset, const unsigned char * data,
 	return 0;
 }
 
-static int verifyDATAFLASH(unsigned long flashoffset, const unsigned char * data, unsigned long len)
+static int spiverifyDATAFLASH(void * ctx, unsigned long flashoffset, const unsigned char * data, unsigned long len)
 {
 	unsigned long count;
 	unsigned long err = 0;
@@ -4682,7 +4826,7 @@ static int ascii2nibble(int c)
 	return 0;
 }
 
-static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, const unsigned char * data, unsigned long length))
+static int parsehex(void * ctx, const TCHAR * filename, int (* usedata)(void * ctx, unsigned long addr, const unsigned char * data, unsigned long length))
 {
 	int hexstate = HSINIT;
 	unsigned long rowaddress = 0;
@@ -4853,7 +4997,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 				{
 				case 0:
 					// Data
-					if (usedata(segaddress + address, body, count))
+					if (usedata(ctx, segaddress + address, body, count))
 						break;
 					continue;
 
@@ -4897,30 +5041,30 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 }
 
 static void
-fatfs_proghexfile(const char * hexfile)
+fatfs_proghexfile(void * ctx, const char * hexfile)
 {
 	spi_hangon();
 	PRINTF(PSTR("SPI FLASH programmer\n"));
 	//parsehex(hexfile, printhexDATAFLASH);
 
 	// AT26DF081A chip write
-	if (testchipDATAFLASH() == 0)
+	if (spitestchipDATAFLASH() == 0)
 	{
-		//testchipDATAFLASH();
+		//spitestchipDATAFLASH();
 		//parsehex(hexfile, printhexDATAFLASH);
 
 		do 
 		{
 			PRINTF(PSTR("Prepare...\n"));
-			if (prepareDATAFLASH()) break;
+			if (spiprepareDATAFLASH()) break;
 			PRINTF(PSTR("Erase...\n"));
-			if (eraseDATAFLASH()) break;
-			if (writeEnableDATAFLASH()) break;
-			if (parsehex(hexfile, writeDATAFLASH)) break;
+			if (spieraseDATAFLASH()) break;
+			if (spiwriteEnableDATAFLASH()) break;
+			if (parsehex(NULL, hexfile, spiwriteDATAFLASH)) break;
 			PRINTF(PSTR("Programming...\n"));
-			if (writeDisableDATAFLASH()) break;
+			if (spiwriteDisableDATAFLASH()) break;
 			PRINTF(PSTR("Verify...\n"));
-			if (parsehex(hexfile, verifyDATAFLASH)) break;
+			if (parsehex(ctx, hexfile, spiverifyDATAFLASH)) break;
 		} while (0);
 		PRINTF(PSTR("SPI FLASH programmer done\n"));
 	}
@@ -4933,9 +5077,9 @@ static void
 fatfs_progspi(void)
 {
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-	fatfs_proghexfile("tc1_r7s721_rom.hex");
-	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
+	fatfs_proghexfile(NULL, "tc1_r7s721_rom.hex");
+	f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 
 	for (;;)
 		;
@@ -5221,7 +5365,7 @@ void looptests(void)
 #endif
 #if 1 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
-		// See buffers.c - WITHBUFFERSDEBUG
+		// See buffers2.cpp - WITHBUFFERSDEBUG
 		buffers_diagnostics();
 	}
 #endif
@@ -10366,6 +10510,20 @@ void hightests(void)
 #endif
 #if 0
 	{
+		extern uint32_t __TTB_BASE;
+		const uintptr_t __ttb_base = (uintptr_t) & __TTB_BASE;
+
+		extern uint32_t __RAMNC_BASE;
+		extern uint32_t __RAMNC_TOP;
+		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+
+		PRINTF("__ttb_base=0x%08X\n", (unsigned) __ttb_base);
+		PRINTF("__ramnc_base=0x%08X, __ramnc_top=0x%08X (%u MB)\n", (unsigned) __ramnc_base, (unsigned) __ramnc_top, (unsigned) ((__ramnc_top - __ramnc_base) / 1024 / 1024));
+	}
+#endif
+#if 0
+	{
 		// cache line size test
 		static __ALIGNED(256) uint8_t data [256];
 		memset(data, 0xE5, sizeof data);
@@ -11958,7 +12116,7 @@ void hightests(void)
 
 			}
 		}
-		f_mount(NULL, "", 0);
+		f_mount(NULL, VOLPREFIX "", 0);
 
 		for (;;)
 		{
@@ -12366,10 +12524,16 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0 && ! WITHISBOOTLOADER
+	{
+		// USB file -> eMMC write
+		bootloaderFLASH("0:", eMMCtargetdrv);
+	}
+#endif
 #if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD low level functions test
 	{
-		diskio_test();
+		diskio_test(eMMCtargetdrv);
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEFATFS
@@ -12433,7 +12597,7 @@ void hightests(void)
 		ticker_add(& test_recordticker);
 		LowerIrql(oldIrql);
 		{
- 			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+ 			f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 			rc = f_mkfs("0:", NULL, rbwruff, sizeof (rbwruff));
 			if (rc != FR_OK)
 			{
@@ -14829,8 +14993,43 @@ void signal_handler(int n, siginfo_t *info, void *unused)
 }
 #endif
 
+//#include "buffers.h"
+
 void lowtests(void)
 {
+#if 0
+	// cached memory tests
+	{
+		PRINTF("Cached memory test:\n");
+		static ALIGNX_BEGIN uint8_t buff [256];
+
+		global_disableIRQ();
+		memset(buff, 0xE5, sizeof buff);
+		dcache_clean((uintptr_t) buff, sizeof buff);
+
+		memset(buff + DCACHEROWSIZE, 0x33, 16);
+		dcache_invalidate((uintptr_t) buff, sizeof buff);
+
+		printhex32((uintptr_t) buff, buff, sizeof buff);
+//		for (;;)
+//			;
+	}
+	{
+		PRINTF("Non-cached memory test:\n");
+		static RAMNC ALIGNX_BEGIN uint8_t buff [256];
+
+		global_disableIRQ();
+		memset(buff, 0xE5, sizeof buff);
+		dcache_clean((uintptr_t) buff, sizeof buff);
+
+		memset(buff + DCACHEROWSIZE, 0x33, 16);
+		dcache_invalidate((uintptr_t) buff, sizeof buff);
+
+		printhex32((uintptr_t) buff, buff, sizeof buff);
+		for (;;)
+			;
+	}
+#endif
 #if 0 && LINUX_SUBSYSTEM
 	struct sigaction sig;
 	sig.sa_sigaction = signal_handler;

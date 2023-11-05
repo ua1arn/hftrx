@@ -685,7 +685,7 @@ int sdcard_init(void)
         	PRINTF("No SD card\n");
         	return 0;
         }
-      	PRINTF("SD card present:\n");
+      	//PRINTF("SD card present:\n");
 
 	struct sdhci_cmd_t cmd = { 0 };
 	struct sdhci_data_t dat = { 0 };
@@ -1107,7 +1107,7 @@ DSTATUS SD_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW

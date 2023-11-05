@@ -121,15 +121,15 @@ const struct drvfunc RAMDISK_drvfunc =
 
 static const struct drvfunc * const drvfuncs [] =
 {
+#if WITHUSEUSBFLASH
+	& USBH_drvfunc,
+#endif /* WITHUSEUSBFLASH */
 #if WITHUSESDCARD && WITHSDHCHW
-	& SD_drvfunc,
+	& SD_drvfunc,	// SD, eMMC
 #endif /* WITHUSESDCARD */
 #if WITHUSESDCARD && ! WITHSDHCHW
 	& MMC_drvfunc,
 #endif /* WITHUSESDCARD && ! WITHSDHCHW */
-#if WITHUSEUSBFLASH
-	& USBH_drvfunc,
-#endif /* WITHUSEUSBFLASH */
 #if WITHUSERAMDISK
 	& RAMDISK_drvfunc,
 #endif /* WITHUSERAMDISK */

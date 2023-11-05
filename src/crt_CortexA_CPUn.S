@@ -148,7 +148,7 @@ Reset_CPU1_Handler:
 		.endfunc
    .ltorg
 
-	.section .bss
+	.section .noinit
 	.align 3
 
 	.space	STACKSIZEIRQ
@@ -234,7 +234,7 @@ Reset_CPU2_Handler:
 		.endfunc
    .ltorg
 
-	.section .bss
+	.section .noinit
 	.align 3
 
 	.space	STACKSIZEIRQ
@@ -320,7 +320,7 @@ Reset_CPU3_Handler:
 		.endfunc
    .ltorg
 
-	.section .bss
+	.section .noinit
 	.align 3
 
 	.space	STACKSIZEIRQ

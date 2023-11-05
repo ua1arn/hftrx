@@ -60,7 +60,7 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
 //	PHY 0x1c1b800 after:
 //	01C1B800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
 
-static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
+static void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
 {
 #if 0
 	volatile uint32_t * base = (volatile uint32_t *) phy;
@@ -116,7 +116,7 @@ static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
 //	PHY 0x5311800 after:
 //	05311800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
 
-static void SetupUsbPhyc(USBPHYC_TypeDef * phy)
+void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
 {
 #if 0
 	volatile uint32_t * base = (volatile uint32_t *) phy;
@@ -2410,6 +2410,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYLE_T507
 
+	CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
+
+	CCU->USB2_CLK_REG |= 0x60000000;	// WAS: 0 - USBPHY2RST, SCLK_GATING _USBPHY2
+	CCU->USB_BGR_REG |= 0x00400040; // WAS 01000100 - USBEHCI2_RST USBEHCI2_GATING
+
 	const unsigned OHCIx_12M_SRC_SEL = 1;	// OHCI3_12M_SRC_SEL 01: 12M divided from 24 MHz
 
 	{
@@ -2417,7 +2422,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB2_CLK_REG = (CCU->USB2_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
-		SetupUsbPhyc(USBPHYC2);
+		SetupHostUsbPhyc(USBPHYC2);
 	}
 
 	if (0)
@@ -2449,7 +2454,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
 		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
 
-		SetupUsbPhyc(USBPHYC0);
+		SetupHostUsbPhyc(USBPHYC0);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST0_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -2477,7 +2482,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB1_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY1
 		CCU->USB1_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI1
 
-		SetupUsbPhyc(USBPHYC1);
+		SetupHostUsbPhyc(USBPHYC1);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -2506,7 +2511,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
 		CCU->USB2_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI2
 
-		SetupUsbPhyc(USBPHYC2);
+		SetupHostUsbPhyc(USBPHYC2);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -2533,7 +2538,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB3_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY3
 		CCU->USB3_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING_OHCI3
 
-		SetupUsbPhyc(USBPHYC3);
+		SetupHostUsbPhyc(USBPHYC3);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -2594,7 +2599,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 24);	// USB-OTG-EHCI_RST
 		//CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 23);	// USB-OTG-Device_RST.	- xfel boot setup
 
-		SetupUsbPhyc(USBPHY0);
+		SetupHostUsbPhyc(USBPHY0);
 
 	}
 	else
@@ -2618,7 +2623,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 29);	// USB-OHCI0_RST.
 		CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 25);	// USB-EHCI0_RST.
 
-		SetupUsbPhyc(USBPHY1);
+		SetupHostUsbPhyc(USBPHY1);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)

@@ -247,6 +247,536 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>AUDIO_CODEC</name>
+  <description>Audio Codec</description>
+  <baseAddress>0x05096000</baseAddress>
+  <interrupt>
+   <name>AudioCodec_ADC</name>
+   <value>55</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>AudioCodec_DAC</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>AC_DAC_DPC</name>
+    <displayName>AC_DAC_DPC</displayName>
+    <description>DAC Digital Part Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_FIFOC</name>
+    <displayName>AC_DAC_FIFOC</displayName>
+    <description>DAC FIFO Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_FIFOS</name>
+    <displayName>AC_DAC_FIFOS</displayName>
+    <description>DAC FIFO Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_TXDATA</name>
+    <displayName>AC_DAC_TXDATA</displayName>
+    <description>DAC TX DATA Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_CNT</name>
+    <displayName>AC_DAC_CNT</displayName>
+    <description>DAC TX FIFO Counter Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DG</name>
+    <displayName>AC_DAC_DG</displayName>
+    <description>DAC Debug Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DAP_CTRL</name>
+    <displayName>AC_DAC_DAP_CTRL</displayName>
+    <description>DAC DAP Control Register</description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HHPFC</name>
+    <displayName>AC_DAC_DRC_HHPFC</displayName>
+    <description>DAC DRC High HPF Coef Register</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LHPFC</name>
+    <displayName>AC_DAC_DRC_LHPFC</displayName>
+    <description>DAC DRC Low HPF Coef Register</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_CTRL</name>
+    <displayName>AC_DAC_DRC_CTRL</displayName>
+    <description>DAC DRC Control Register</description>
+    <addressOffset>0x108</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LPFHAT</name>
+    <displayName>AC_DAC_DRC_LPFHAT</displayName>
+    <description>DAC DRC Left Peak Filter High Attack Time Coef Register</description>
+    <addressOffset>0x10C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LPFLAT</name>
+    <displayName>AC_DAC_DRC_LPFLAT</displayName>
+    <description>DAC DRC Left Peak Filter Low Attack Time Coef Register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RPFHAT</name>
+    <displayName>AC_DAC_DRC_RPFHAT</displayName>
+    <description>DAC DRC Right Peak Filter High Attack Time Coef Register</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RPFLAT</name>
+    <displayName>AC_DAC_DRC_RPFLAT</displayName>
+    <description>DAC DRC Right Peak Filter Low Attack Time Coef Register</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LPFHRT</name>
+    <displayName>AC_DAC_DRC_LPFHRT</displayName>
+    <description>DAC DRC Left Peak Filter High Release Time Coef Register</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LPFLRT</name>
+    <displayName>AC_DAC_DRC_LPFLRT</displayName>
+    <description>DAC DRC Left Peak Filter Low Release Time Coef Register</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RPFHRT</name>
+    <displayName>AC_DAC_DRC_RPFHRT</displayName>
+    <description>DAC DRC Right Peak filter High Release Time Coef Register</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RPFLRT</name>
+    <displayName>AC_DAC_DRC_RPFLRT</displayName>
+    <description>DAC DRC Right Peak filter Low Release Time Coef Register</description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LRMSHAT</name>
+    <displayName>AC_DAC_DRC_LRMSHAT</displayName>
+    <description>DAC DRC Left RMS Filter High Coef Register</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LRMSLAT</name>
+    <displayName>AC_DAC_DRC_LRMSLAT</displayName>
+    <description>DAC DRC Left RMS Filter Low Coef Register</description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RRMSHAT</name>
+    <displayName>AC_DAC_DRC_RRMSHAT</displayName>
+    <description>DAC DRC Right RMS Filter High Coef Register</description>
+    <addressOffset>0x134</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_RRMSLAT</name>
+    <displayName>AC_DAC_DRC_RRMSLAT</displayName>
+    <description>DAC DRC Right RMS Filter Low Coef Register</description>
+    <addressOffset>0x138</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HCT</name>
+    <displayName>AC_DAC_DRC_HCT</displayName>
+    <description>DAC DRC Compressor Threshold High Setting Register</description>
+    <addressOffset>0x13C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LCT</name>
+    <displayName>AC_DAC_DRC_LCT</displayName>
+    <description>DAC DRC Compressor Slope High Setting Register</description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HKC</name>
+    <displayName>AC_DAC_DRC_HKC</displayName>
+    <description>DAC DRC Compressor Slope High Setting Register</description>
+    <addressOffset>0x144</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LKC</name>
+    <displayName>AC_DAC_DRC_LKC</displayName>
+    <description>DAC DRC Compressor Slope Low Setting Register</description>
+    <addressOffset>0x148</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HOPC</name>
+    <displayName>AC_DAC_DRC_HOPC</displayName>
+    <description>DAC DRC Compressor High Output at Compressor Threshold Register</description>
+    <addressOffset>0x14C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LOPC</name>
+    <displayName>AC_DAC_DRC_LOPC</displayName>
+    <description>DAC DRC Compressor Low Output at Compressor Threshold Register</description>
+    <addressOffset>0x150</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HLT</name>
+    <displayName>AC_DAC_DRC_HLT</displayName>
+    <description>DAC DRC Limiter Threshold High Setting Register</description>
+    <addressOffset>0x154</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LLT</name>
+    <displayName>AC_DAC_DRC_LLT</displayName>
+    <description>DAC DRC Limiter Threshold Low Setting Register</description>
+    <addressOffset>0x158</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HKl</name>
+    <displayName>AC_DAC_DRC_HKl</displayName>
+    <description>DAC DRC Limiter Slope High Setting Register</description>
+    <addressOffset>0x15C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LKl</name>
+    <displayName>AC_DAC_DRC_LKl</displayName>
+    <description>DAC DRC Limiter Slope Low Setting Register</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HOPL</name>
+    <displayName>AC_DAC_DRC_HOPL</displayName>
+    <description>DAC DRC Limiter High Output at Limiter Threshold</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LOPL</name>
+    <displayName>AC_DAC_DRC_LOPL</displayName>
+    <description>DAC DRC Limiter Low Output at Limiter Threshold</description>
+    <addressOffset>0x168</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HET</name>
+    <displayName>AC_DAC_DRC_HET</displayName>
+    <description>DAC DRC Expander Threshold High Setting Register</description>
+    <addressOffset>0x16C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LET</name>
+    <displayName>AC_DAC_DRC_LET</displayName>
+    <description>DAC DRC Expander Threshold Low Setting Register</description>
+    <addressOffset>0x170</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HKE</name>
+    <displayName>AC_DAC_DRC_HKE</displayName>
+    <description>DAC DRC Expander Slope High Setting Register</description>
+    <addressOffset>0x174</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LKE</name>
+    <displayName>AC_DAC_DRC_LKE</displayName>
+    <description>DAC DRC Expander Slope Low Setting Register</description>
+    <addressOffset>0x178</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HOPE</name>
+    <displayName>AC_DAC_DRC_HOPE</displayName>
+    <description>DAC DRC Expander High Output at Expander Threshold</description>
+    <addressOffset>0x17C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LOPE</name>
+    <displayName>AC_DAC_DRC_LOPE</displayName>
+    <description>DAC DRC Expander Low Output at Expander Threshold</description>
+    <addressOffset>0x180</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HKN</name>
+    <displayName>AC_DAC_DRC_HKN</displayName>
+    <description>DAC DRC Linear Slope High Setting Register</description>
+    <addressOffset>0x184</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_LKN</name>
+    <displayName>AC_DAC_DRC_LKN</displayName>
+    <description>DAC DRC Linear Slope Low Setting Register</description>
+    <addressOffset>0x188</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_SFHAT</name>
+    <displayName>AC_DAC_DRC_SFHAT</displayName>
+    <description>DAC DRC Smooth Filter</description>
+    <addressOffset>0x18C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_SFLAT</name>
+    <displayName>AC_DAC_DRC_SFLAT</displayName>
+    <description>DAC DRC Smooth Filter</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_SFHRT</name>
+    <displayName>AC_DAC_DRC_SFHRT</displayName>
+    <description>DAC DRC Smooth Filter Gain High Release Time Coef Register</description>
+    <addressOffset>0x194</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_SFLRT</name>
+    <displayName>AC_DAC_DRC_SFLRT</displayName>
+    <description>DAC DRC Smooth Filter</description>
+    <addressOffset>0x198</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_MXGHS</name>
+    <displayName>AC_DAC_DRC_MXGHS</displayName>
+    <description>DAC DRC MAX Gain High Setting Register</description>
+    <addressOffset>0x19C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_MXGLS</name>
+    <displayName>AC_DAC_DRC_MXGLS</displayName>
+    <description>DAC DRC MAX Gain Low Setting Register</description>
+    <addressOffset>0x1A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_MNGHS</name>
+    <displayName>AC_DAC_DRC_MNGHS</displayName>
+    <description>DAC DRC MIN Gain High Setting Register</description>
+    <addressOffset>0x1A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_MNGLS</name>
+    <displayName>AC_DAC_DRC_MNGLS</displayName>
+    <description>DAC DRC MIN Gain Low Setting Register</description>
+    <addressOffset>0x1A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_EPSHC</name>
+    <displayName>AC_DAC_DRC_EPSHC</displayName>
+    <description>DAC DRC Expander Smooth Time High Coef Register</description>
+    <addressOffset>0x1AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_EPSLC</name>
+    <displayName>AC_DAC_DRC_EPSLC</displayName>
+    <description>DAC DRC Expander Smooth Time Low Coef Register</description>
+    <addressOffset>0x1B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HPFHGAIN</name>
+    <displayName>AC_DAC_DRC_HPFHGAIN</displayName>
+    <description>DAC DRC HPF Gain High Coef Register</description>
+    <addressOffset>0x1B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AC_DAC_DRC_HPFLGAIN</name>
+    <displayName>AC_DAC_DRC_HPFLGAIN</displayName>
+    <description>DAC DRC HPF Gain Low Coef Register</description>
+    <addressOffset>0x1BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DAC_REG</name>
+    <displayName>DAC_REG</displayName>
+    <description>DAC Analog Control Register</description>
+    <addressOffset>0x310</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MIXER_REG</name>
+    <displayName>MIXER_REG</displayName>
+    <description>MIXER Analog Control Register</description>
+    <addressOffset>0x314</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RAMP_REG</name>
+    <displayName>RAMP_REG</displayName>
+    <description>RAMP Control Register</description>
+    <addressOffset>0x31C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>C0_CPUX_CFG_H616</name>
   <description>H616 Cluster 0 Configuration Register List</description>
   <baseAddress>0x09010000</baseAddress>

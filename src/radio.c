@@ -3072,12 +3072,15 @@ struct nvmap
 	uint8_t gkeybeep10;	/* тон озвучки нажатий клавиш */
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
 
+#if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN)
+	uint8_t	ggrpusb; // последний посещённый пункт группы
+#endif
+
 #if WITHIF4DSP
 	uint8_t	ggrpagc; // последний посещённый пункт группы
 	uint8_t	ggrpagcssb; // последний посещённый пункт группы
 	uint8_t	ggrpagccw; // последний посещённый пункт группы
 	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
-	uint8_t	ggrpusb; // последний посещённый пункт группы
 
 	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
@@ -3161,9 +3164,6 @@ struct nvmap
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
-	uint8_t gadcrand;	/* управление интерфейсом в LTC2208 */
-	uint8_t gadcfifo;
-	//uint16_t gadcoffset;
 	uint8_t gdactest;
 	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
@@ -4020,17 +4020,14 @@ enum
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
-		#if WITHUSBHEADSET
-			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		#else /* WITHUSBHEADSET */
-			static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		#endif /* WITHUSBHEADSET */
+		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 	#else /* WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
+		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 	#endif /* WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		#define EQUALIZERBASE 12
@@ -4589,7 +4586,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 
 #if WITHMIC1LEVEL
-	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 2 + WITHMIKEINGAINMIN;
+	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 4 + WITHMIKEINGAINMIN;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint_fast8_t ALCNEN = 0;	// ALC noise gate function control bit
@@ -4681,23 +4678,21 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if (ADC1_TYPE == ADC_TYPE_AD9246) || CTLSTYLE_V3D
-			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
+			static const uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
-			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
+			static const uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
 		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
-		static uint_fast8_t gadcfifo = 1;
-		//static uint_fast16_t gadcoffset = ADCOFFSETMID;
 		static uint_fast8_t gdactest;
 		#if WITHDACSTRAIGHT
-			static uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+			static const uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 		#else /* WITHDACSTRAIGHT */
-			static uint_fast8_t gdacstraight = 0;	/* Требуется формирование кода для ЦАП в режиме знакового кода */
+			static const uint_fast8_t gdacstraight = 0;	/* Требуется формирование кода для ЦАП в режиме знакового кода */
 		#endif /* WITHDACSTRAIGHT */
 		#if WITHTXINHDISABLE
-			static uint_fast8_t gtxinhenable = 0;	/* запрещение реакции на вход tx_inh */
+			static const uint_fast8_t gtxinhenable = 0;	/* запрещение реакции на вход tx_inh */
 		#else /* WITHTXINHDISABLE */
-			static uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
+			static const uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
 		#endif /* WITHTXINHDISABLE */
 	#endif /* WITHDSPEXTDDC */
 
@@ -5690,7 +5685,8 @@ static void tuner_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	VERIFY(board_dpc_call(& dpcobj_tunertimer));
+	//VERIFY(board_dpc_call(& dpcobj_tunertimer));
+	board_dpc_call(& dpcobj_tunertimer);
 }
 
 /* закончили установку нового состояния тюнера - запускаем новый период таймера */
@@ -10951,7 +10947,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
-#if WITHUSBMIKET113
+#if WITHUSBHEADSET
 	return p;
 
 #elif WITHNOSPEEX
@@ -11688,8 +11684,6 @@ updateboardZZZ(
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
-			board_set_adcfifo(gadcfifo);
-			//board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
@@ -16216,7 +16210,7 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
-#if WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP && (HARDWARE_NCORES <= 2)
 	audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
 #if WITHUSEAUDIOREC
@@ -19185,12 +19179,6 @@ uint_fast8_t edgepins_get_ptt(void)
 	return 0;
 }
 
-/* Fix ATMega builds */
-void __WEAK buffers2_initialize(void)
-{
-
-}
-
 /* вызывается при запрещённых прерываниях. */
 void
 applowinitialize(void)
@@ -19245,8 +19233,7 @@ applowinitialize(void)
 	ticker_add(& ticker_tuner);
 #endif /* WITHAUTOTUNER */
 
-	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
-	buffers2_initialize();	// new version
+	buffers_initialize();
 
 	edgepins_initialize();
 

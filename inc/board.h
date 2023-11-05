@@ -103,8 +103,6 @@ void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент -
 void board_set_notchnarrow(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра в режиме CW */
 void board_set_vox(uint_fast8_t v);		/* не нулевой аргумент - включение VOX (для внешних схем) */
 void board_set_preamp(uint_fast8_t v); /* включение УВЧ */
-void board_set_adcfifo(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-//void board_set_adcoffset(int_fast16_t n); /* смещение для выходного сигнала с АЦП */
 void board_set_xvrtr(uint_fast8_t v);	/* Разрешить работу конвертора */
 void board_set_dacstraight(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */

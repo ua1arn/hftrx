@@ -45,6 +45,7 @@ typedef enum IRQn
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface */
     THS_IRQn = 51,                                    /*!< THS THS interrupt */
+    AudioCodec_ADC_IRQn = 55,                         /*!< AUDIO_CODEC AudioCodec_ADC interrupt */
     AHUB_IRQn = 56,                                   /*!< AHUB AudioHub interrupt */
     USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller */
     USB20_HOST0_EHCI_IRQn = 58,                       /*!< USB_EHCI_Capability  */
@@ -70,6 +71,7 @@ typedef enum IRQn
     GPIOG_IRQn = 87,                                  /*!< GPIOINT GPIOG interrupt */
     GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
+    AudioCodec_DAC_IRQn = 90,                         /*!< AUDIO_CODEC AudioCodec_DAC interrupt */
     IOMMU_IRQn = 93,                                  /*!< IOMMU IOMMU */
     HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
@@ -191,6 +193,7 @@ typedef enum IRQn
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
+#define AUDIO_CODEC_BASE ((uintptr_t) 0x05096000)     /*!< AUDIO_CODEC Audio Codec Base */
 #define AHUB_BASE ((uintptr_t) 0x05097000)            /*!< AHUB Audio HUB Base */
 #define I2S0_BASE ((uintptr_t) 0x05097200)            /*!< I2S_PCM  Base */
 #define I2S1_BASE ((uintptr_t) 0x05097300)            /*!< I2S_PCM  Base */
@@ -273,6 +276,77 @@ typedef struct AHUB_Type
                  uint32_t reserved_0x070 [0x0004];
     } DAM [0x002];                                    /*!< Offset 0xA00 DAMn (n=0~2) */
 } AHUB_TypeDef; /* size of structure = 0xB00 */
+/*
+ * @brief AUDIO_CODEC
+ */
+/*!< AUDIO_CODEC Audio Codec */
+typedef struct AUDIO_CODEC_Type
+{
+    volatile uint32_t AC_DAC_DPC;                     /*!< Offset 0x000 DAC Digital Part Control Register */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t AC_DAC_FIFOC;                   /*!< Offset 0x010 DAC FIFO Control Register */
+    volatile uint32_t AC_DAC_FIFOS;                   /*!< Offset 0x014 DAC FIFO Status Register */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t AC_DAC_TXDATA;                  /*!< Offset 0x020 DAC TX DATA Register */
+    volatile uint32_t AC_DAC_CNT;                     /*!< Offset 0x024 DAC TX FIFO Counter Register */
+    volatile uint32_t AC_DAC_DG;                      /*!< Offset 0x028 DAC Debug Register */
+             uint32_t reserved_0x02C [0x0031];
+    volatile uint32_t AC_DAC_DAP_CTRL;                /*!< Offset 0x0F0 DAC DAP Control Register */
+             uint32_t reserved_0x0F4 [0x0003];
+    volatile uint32_t AC_DAC_DRC_HHPFC;               /*!< Offset 0x100 DAC DRC High HPF Coef Register */
+    volatile uint32_t AC_DAC_DRC_LHPFC;               /*!< Offset 0x104 DAC DRC Low HPF Coef Register */
+    volatile uint32_t AC_DAC_DRC_CTRL;                /*!< Offset 0x108 DAC DRC Control Register */
+    volatile uint32_t AC_DAC_DRC_LPFHAT;              /*!< Offset 0x10C DAC DRC Left Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LPFLAT;              /*!< Offset 0x110 DAC DRC Left Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFHAT;              /*!< Offset 0x114 DAC DRC Right Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLAT;              /*!< Offset 0x118 DAC DRC Right Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LPFHRT;              /*!< Offset 0x11C DAC DRC Left Peak Filter High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LPFLRT;              /*!< Offset 0x120 DAC DRC Left Peak Filter Low Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFHRT;              /*!< Offset 0x124 DAC DRC Right Peak filter High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLRT;              /*!< Offset 0x128 DAC DRC Right Peak filter Low Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LRMSHAT;             /*!< Offset 0x12C DAC DRC Left RMS Filter High Coef Register */
+    volatile uint32_t AC_DAC_DRC_LRMSLAT;             /*!< Offset 0x130 DAC DRC Left RMS Filter Low Coef Register */
+    volatile uint32_t AC_DAC_DRC_RRMSHAT;             /*!< Offset 0x134 DAC DRC Right RMS Filter High Coef Register */
+    volatile uint32_t AC_DAC_DRC_RRMSLAT;             /*!< Offset 0x138 DAC DRC Right RMS Filter Low Coef Register */
+    volatile uint32_t AC_DAC_DRC_HCT;                 /*!< Offset 0x13C DAC DRC Compressor Threshold High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LCT;                 /*!< Offset 0x140 DAC DRC Compressor Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_HKC;                 /*!< Offset 0x144 DAC DRC Compressor Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKC;                 /*!< Offset 0x148 DAC DRC Compressor Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HOPC;                /*!< Offset 0x14C DAC DRC Compressor High Output at Compressor Threshold Register */
+    volatile uint32_t AC_DAC_DRC_LOPC;                /*!< Offset 0x150 DAC DRC Compressor Low Output at Compressor Threshold Register */
+    volatile uint32_t AC_DAC_DRC_HLT;                 /*!< Offset 0x154 DAC DRC Limiter Threshold High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LLT;                 /*!< Offset 0x158 DAC DRC Limiter Threshold Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HKl;                 /*!< Offset 0x15C DAC DRC Limiter Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKl;                 /*!< Offset 0x160 DAC DRC Limiter Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HOPL;                /*!< Offset 0x164 DAC DRC Limiter High Output at Limiter Threshold */
+    volatile uint32_t AC_DAC_DRC_LOPL;                /*!< Offset 0x168 DAC DRC Limiter Low Output at Limiter Threshold */
+    volatile uint32_t AC_DAC_DRC_HET;                 /*!< Offset 0x16C DAC DRC Expander Threshold High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LET;                 /*!< Offset 0x170 DAC DRC Expander Threshold Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HKE;                 /*!< Offset 0x174 DAC DRC Expander Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKE;                 /*!< Offset 0x178 DAC DRC Expander Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HOPE;                /*!< Offset 0x17C DAC DRC Expander High Output at Expander Threshold */
+    volatile uint32_t AC_DAC_DRC_LOPE;                /*!< Offset 0x180 DAC DRC Expander Low Output at Expander Threshold */
+    volatile uint32_t AC_DAC_DRC_HKN;                 /*!< Offset 0x184 DAC DRC Linear Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKN;                 /*!< Offset 0x188 DAC DRC Linear Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_SFHAT;               /*!< Offset 0x18C DAC DRC Smooth Filter */
+    volatile uint32_t AC_DAC_DRC_SFLAT;               /*!< Offset 0x190 DAC DRC Smooth Filter */
+    volatile uint32_t AC_DAC_DRC_SFHRT;               /*!< Offset 0x194 DAC DRC Smooth Filter Gain High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_SFLRT;               /*!< Offset 0x198 DAC DRC Smooth Filter */
+    volatile uint32_t AC_DAC_DRC_MXGHS;               /*!< Offset 0x19C DAC DRC MAX Gain High Setting Register */
+    volatile uint32_t AC_DAC_DRC_MXGLS;               /*!< Offset 0x1A0 DAC DRC MAX Gain Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_MNGHS;               /*!< Offset 0x1A4 DAC DRC MIN Gain High Setting Register */
+    volatile uint32_t AC_DAC_DRC_MNGLS;               /*!< Offset 0x1A8 DAC DRC MIN Gain Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_EPSHC;               /*!< Offset 0x1AC DAC DRC Expander Smooth Time High Coef Register */
+    volatile uint32_t AC_DAC_DRC_EPSLC;               /*!< Offset 0x1B0 DAC DRC Expander Smooth Time Low Coef Register */
+             uint32_t reserved_0x1B4;
+    volatile uint32_t AC_DAC_DRC_HPFHGAIN;            /*!< Offset 0x1B8 DAC DRC HPF Gain High Coef Register */
+    volatile uint32_t AC_DAC_DRC_HPFLGAIN;            /*!< Offset 0x1BC DAC DRC HPF Gain Low Coef Register */
+             uint32_t reserved_0x1C0 [0x0054];
+    volatile uint32_t DAC_REG;                        /*!< Offset 0x310 DAC Analog Control Register */
+    volatile uint32_t MIXER_REG;                      /*!< Offset 0x314 MIXER Analog Control Register */
+             uint32_t reserved_0x318;
+    volatile uint32_t RAMP_REG;                       /*!< Offset 0x31C RAMP Control Register */
+} AUDIO_CODEC_TypeDef; /* size of structure = 0x320 */
 /*
  * @brief C0_CPUX_CFG_H616
  */
@@ -1778,6 +1852,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
 #define AHUB ((AHUB_TypeDef *) AHUB_BASE)             /*!< AHUB Audio HUB register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */

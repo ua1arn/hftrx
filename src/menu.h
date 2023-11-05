@@ -1403,16 +1403,16 @@ static const FLASHMEM struct menudef menutable [] =
 		& gdither,
 		getzerobase, 
 	},
-	{
-		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gadcfifo),
-		nvramoffs0,
-		NULL,
-		& gadcfifo,
-		getzerobase, 
-	},
+//	{
+//		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
+//		ITEM_VALUE,
+//		0, 1,
+//		offsetof(struct nvmap, gadcfifo),
+//		nvramoffs0,
+//		NULL,
+//		& gadcfifo,
+//		getzerobase,
+//	},
 //	{
 //		QLABEL("ADC OFFS"), 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
 //		ITEM_VALUE,

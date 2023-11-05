@@ -1,5 +1,5 @@
 #type; OWA; One Wire Audio
-#base; OWA 0x01C02000
+#base; OWA 0x01C21000
 #irq; OWA 44
 
 #regdef; OWA_GEN_CTL; 0x0000; OWA General Control Register

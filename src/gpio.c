@@ -181,7 +181,7 @@ void sysinit_gpio_initialize(void)
 static void r7s721_pio_onchangeinterrupt(
 	int irqbase,	/* irq id для младшего бита указанного порта */
 	int width, 
-	unsigned long ipins, 
+	portholder_t ipins,
 	int edge,	/* rising edge sensetive or level sensetive */
 	uint32_t priority, 
 	void (* vector)(void)
@@ -190,7 +190,7 @@ static void r7s721_pio_onchangeinterrupt(
 	int bitpos;
 	for (bitpos = 0; bitpos < width; ++ bitpos)
 	{
-		unsigned long mask = 1uL << bitpos;
+		portholder_t mask = 1uL << bitpos;
 		if ((ipins & mask) == 0)
 			continue;
 		const IRQn_ID_t int_id = irqbase + bitpos;
@@ -201,195 +201,195 @@ static void r7s721_pio_onchangeinterrupt(
 }
 
 // JTAG inputs access
-void arm_hardware_jpio0_inputs(unsigned long ipins)
+void arm_hardware_jpio0_inputs(portholder_t ipins)
 {
 	r7s721_jpio_inputs(0, ipins);
 }
 
 // inputs
-void arm_hardware_pio0_inputs(unsigned long ipins)
+void arm_hardware_pio0_inputs(portholder_t ipins)
 {
 	r7s721_pio0_inputs(0, ipins);
 }
 
-void arm_hardware_pio1_inputs(unsigned long ipins)
+void arm_hardware_pio1_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(1, ipins);
 }
 
-void arm_hardware_pio2_inputs(unsigned long ipins)
+void arm_hardware_pio2_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(2, ipins);
 }
 
-void arm_hardware_pio3_inputs(unsigned long ipins)
+void arm_hardware_pio3_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(3, ipins);
 }
 
-void arm_hardware_pio4_inputs(unsigned long ipins)
+void arm_hardware_pio4_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(4, ipins);
 }
 
-void arm_hardware_pio5_inputs(unsigned long ipins)
+void arm_hardware_pio5_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(5, ipins);
 }
 
-void arm_hardware_pio6_inputs(unsigned long ipins)
+void arm_hardware_pio6_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(6, ipins);
 }
 
-void arm_hardware_pio7_inputs(unsigned long ipins)
+void arm_hardware_pio7_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(7, ipins);
 }
 
-void arm_hardware_pio8_inputs(unsigned long ipins)
+void arm_hardware_pio8_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(8, ipins);
 }
 
-void arm_hardware_pio9_inputs(unsigned long ipins)
+void arm_hardware_pio9_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(9, ipins);
 }
 
 #if CPUSTYLE_R7S721001	// RZ/A1H
 
-void arm_hardware_pio10_inputs(unsigned long ipins)
+void arm_hardware_pio10_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(10, ipins);
 }
 
-void arm_hardware_pio11_inputs(unsigned long ipins)
+void arm_hardware_pio11_inputs(portholder_t ipins)
 {
 	r7s721_pio_inputs(11, ipins);
 }
 #endif /* CPUSTYLE_R7S721001 */
 
 // outputs
-void arm_hardware_pio1_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio1_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(1, opins, initialstate);
 }
 
-void arm_hardware_pio2_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio2_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(2, opins, initialstate);
 }
 
-void arm_hardware_pio3_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio3_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(3, opins, initialstate);
 }
 
-void arm_hardware_pio4_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio4_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(4, opins, initialstate);
 }
 
-void arm_hardware_pio5_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio5_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(5, opins, initialstate);
 }
 
-void arm_hardware_pio6_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio6_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(6, opins, initialstate);
 }
 
-void arm_hardware_pio7_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio7_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(7, opins, initialstate);
 }
 
-void arm_hardware_pio8_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio8_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(8, opins, initialstate);
 }
 
-void arm_hardware_pio9_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio9_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(9, opins, initialstate);
 }
 
 #if CPUSTYLE_R7S721001	// RZ/A1H
 
-void arm_hardware_pio10_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio10_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(10, opins, initialstate);
 }
 
-void arm_hardware_pio11_outputs(unsigned long opins, unsigned long initialstate)
+void arm_hardware_pio11_outputs(portholder_t opins, portholder_t initialstate)
 {
 	r7s721_pio_outputs(11, opins, initialstate);
 }
 #endif /* CPUSTYLE_R7S721001 */
 
 // alternative
-void arm_hardware_pio1_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio1_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(1, iopins, alt);
 }
 
-void arm_hardware_pio2_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio2_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(2, iopins, alt);
 }
 
-void arm_hardware_pio3_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio3_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(3, iopins, alt);
 }
 
-void arm_hardware_pio4_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio4_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(4, iopins, alt);
 }
 
-void arm_hardware_pio5_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio5_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(5, iopins, alt);
 }
 
-void arm_hardware_pio6_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio6_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(6, iopins, alt);
 }
 
-void arm_hardware_pio7_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio7_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(7, iopins, alt);
 }
 
-void arm_hardware_pio8_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio8_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(8, iopins, alt);
 }
 
-void arm_hardware_pio9_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio9_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(9, iopins, alt);
 }
 
 #if CPUSTYLE_R7S721001	// RZ/A1H
 
-void arm_hardware_pio10_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio10_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(10, iopins, alt);
 }
 
-void arm_hardware_pio11_alternative(unsigned long iopins, unsigned alt)
+void arm_hardware_pio11_alternative(portholder_t iopins, unsigned alt)
 {
 	R7S721_PIOX_ALTERNATIVE(11, iopins, alt);
 }
 #endif /* CPUSTYLE_R7S721001 */
 
 // pin change interrupts
-void arm_hardware_piojp0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT0_IRQn, 2, ipins, edge, priority, vector);
@@ -400,7 +400,7 @@ void arm_hardware_piojp0_onchangeinterrupt(unsigned long ipins, int edge, uint32
 #endif
 }
 
-void arm_hardware_pio0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT2_IRQn, 4, ipins, edge, priority, vector);
@@ -411,7 +411,7 @@ void arm_hardware_pio0_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio1_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT6_IRQn, 16, ipins, edge, priority, vector);
@@ -422,7 +422,7 @@ void arm_hardware_pio1_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio2_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT22_IRQn, 10, ipins, edge, priority, vector);
@@ -433,7 +433,7 @@ void arm_hardware_pio2_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio3_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT32_IRQn, 16, ipins, edge, priority, vector);
@@ -444,7 +444,7 @@ void arm_hardware_pio3_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio4_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT48_IRQn, 8, ipins, edge, priority, vector);
@@ -455,7 +455,7 @@ void arm_hardware_pio4_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio5_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT56_IRQn, 16, ipins, edge, priority, vector);
@@ -466,7 +466,7 @@ void arm_hardware_pio5_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio6_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT72_IRQn, 16, ipins, edge, priority, vector);
@@ -477,7 +477,7 @@ void arm_hardware_pio6_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio7_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT88_IRQn, 12, ipins, edge, priority, vector);
@@ -488,7 +488,7 @@ void arm_hardware_pio7_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio8_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT100_IRQn, 16, ipins, edge, priority, vector);
@@ -499,7 +499,7 @@ void arm_hardware_pio8_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 #endif
 }
 
-void arm_hardware_pio9_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
 	r7s721_pio_onchangeinterrupt(TINT116_IRQn, 6, ipins, edge, priority, vector);
@@ -512,12 +512,12 @@ void arm_hardware_pio9_onchangeinterrupt(unsigned long ipins, int edge, uint32_t
 
 #if CPUSTYLE_R7S721001	// RZ/A1H
 
-void arm_hardware_pio10_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 	r7s721_pio_onchangeinterrupt(TINT139_IRQn, 16, ipins, edge, priority, vector);
 }
 
-void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, void (* vector)(void))
 {
 	r7s721_pio_onchangeinterrupt(TINT155_IRQn, 16, ipins, edge, priority, vector);
 }
@@ -600,7 +600,7 @@ static void r7s721_IRQn_IRQHandler(void)
 	11: Interrupt request is detected on both edges of IRQn input
 */
 
-void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void))
 {
 	r7s721_IRQn_user [irq] = vector;
 
@@ -1355,38 +1355,47 @@ gpioX_onchangeinterrupt(
 		)
 {
 	unsigned pos;
-	//	0x0: Positive Edge
-	//	0x1: Negative Edge
-	//	0x2: High Level
-	//	0x3: Low Level
-	//	0x4: Double Edge (Positive/Negative)
-	unsigned cfgbits = 0x02;	// default - high level
-
-	if (! raise && ! fall)
-		cfgbits = 0x02;		// default - high level
-	else if (raise && ! fall)
-		cfgbits = 0x00;		// 0x0: Positive Edge
-	else if (! raise && fall)
-		cfgbits = 0x01;		// 0x1: Negative Edge
-	else if (raise && fall)
-		cfgbits = 0x04;		// 0x4: Double Edge (Positive/Negative)
-
-	const portholder_t cfg0 = power4(ipins >> 0);		/* EINT_CFG0 bits */
-	const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
-	const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
-	const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
 
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioint->EINT_CFG [0] = (gpioint->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
-	gpioint->EINT_CFG [1] = (gpioint->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
-	gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
-	gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	for (pos = 0; pos < 32; ++ pos)
+	{
+		const portholder_t mask = (portholder_t) 0x01 << pos;
+		if (! (ipins & mask))
+			continue;
+		//	0x0: Positive Edge
+		//	0x1: Negative Edge
+		//	0x2: High Level
+		//	0x3: Low Level
+		//	0x4: Double Edge (Positive/Negative)
+		unsigned cfgbits = 0x02;	// default - high level
 
+		if (! (raise & mask) && ! (fall & mask))
+			cfgbits = 0x02;		// default - high level
+		else if (!! (raise & mask) && ! (fall & mask))
+			cfgbits = 0x00;		// 0x0: Positive Edge
+		else if (! (raise & mask) && !! (fall & mask))
+			cfgbits = 0x01;		// 0x1: Negative Edge
+		else if (!! (raise & mask) && !! (fall & mask))
+			cfgbits = 0x04;		// 0x4: Double Edge (Positive/Negative)
+
+		const portholder_t cfg0 = power4(ipins >> 0);		/* EINT_CFG0 bits */
+		const portholder_t cfg1 = power4(ipins >> 8);		/* EINT_CFG1 bits */
+		const portholder_t cfg2 = power4(ipins >> 16);		/* EINT_CFG2 bits */
+		const portholder_t cfg3 = power4(ipins >> 24);		/* EINT_CFG3 bits */
+
+		gpioint->EINT_CFG [0] = (gpioint->EINT_CFG [0] & ~ (cfg0 * 0x0F)) | (cfgbits * cfg0);
+		gpioint->EINT_CFG [1] = (gpioint->EINT_CFG [1] & ~ (cfg1 * 0x0F)) | (cfgbits * cfg1);
+		gpioint->EINT_CFG [2] = (gpioint->EINT_CFG [2] & ~ (cfg2 * 0x0F)) | (cfgbits * cfg2);
+		gpioint->EINT_CFG [3] = (gpioint->EINT_CFG [3] & ~ (cfg3 * 0x0F)) | (cfgbits * cfg3);
+	}
 	gpioint->EINT_CTL |= ipins;
-	gpioint->EINT_STATUS = ipins; // for clear
+
+	//gpioint->EINT_DEB = 1;
 	gpioX_unlock(gpio, oldIrql);
+
+	gpioint->EINT_STATUS = ipins; // for clear
 
 	for (pos = 0; pos < 32; ++ pos)
 	{
@@ -1394,7 +1403,6 @@ gpioX_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		//gpiohandlers [gpioix] [pos] = handler;
-
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 	}
 }
@@ -1478,7 +1486,7 @@ void gpioX_setstate(
 
 	/* установка битов в регистре AFIO_MAPR. Поддерживается режим переключения JTAG */
 	void cpu_stm32f1xx_setmapr(
-		unsigned long bits
+		portholder_t bits
 		)
 	{
 		RCC->APB2ENR |=  RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
@@ -2085,7 +2093,7 @@ void gpioX_setstate(
 #if defined (GPIOA)
 /* программирование выводов на ввод, без присоединения к периферии */
 void 
-arm_hardware_pioa_inputs(unsigned long ipins)
+arm_hardware_pioa_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -2172,7 +2180,7 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 #if defined (GPIOB)
 
 void 
-arm_hardware_piob_inputs(unsigned long ipins)
+arm_hardware_piob_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -2252,7 +2260,7 @@ arm_hardware_piob_inputs(unsigned long ipins)
 #if defined (GPIOC)
 
 void 
-arm_hardware_pioc_inputs(unsigned long ipins)
+arm_hardware_pioc_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -2332,7 +2340,7 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 #if defined (GPIOD)
 
 void 
-arm_hardware_piod_inputs(unsigned long ipins)
+arm_hardware_piod_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -2404,7 +2412,7 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 #if defined (GPIOE)
 void 
-arm_hardware_pioe_inputs(unsigned long ipins)
+arm_hardware_pioe_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -2459,7 +2467,7 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 
 #if defined (GPIOF)
 void 
-arm_hardware_piof_inputs(unsigned long ipins)
+arm_hardware_piof_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPFEN)
 
@@ -2512,7 +2520,7 @@ arm_hardware_piof_inputs(unsigned long ipins)
 
 #if defined (GPIOG)
 void 
-arm_hardware_piog_inputs(unsigned long ipins)
+arm_hardware_piog_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -2566,7 +2574,7 @@ arm_hardware_piog_inputs(unsigned long ipins)
 #if defined (GPIOA)
 
 void 
-arm_hardware_pioa_analoginput(unsigned long ipins)
+arm_hardware_pioa_analoginput(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -2628,7 +2636,7 @@ arm_hardware_pioa_analoginput(unsigned long ipins)
 #if defined (GPIOB)
 
 void 
-arm_hardware_piob_analoginput(unsigned long ipins)
+arm_hardware_piob_analoginput(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -2690,7 +2698,7 @@ arm_hardware_piob_analoginput(unsigned long ipins)
 #if defined (GPIOC)
 
 void 
-arm_hardware_pioc_analoginput(unsigned long ipins)
+arm_hardware_pioc_analoginput(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -2754,7 +2762,7 @@ arm_hardware_pioc_analoginput(unsigned long ipins)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -2859,7 +2867,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioa_outputs10m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -2963,7 +2971,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, без ограничения скорости (на STM32) 50 МГц	*/
 void 
-arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioa_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -3072,7 +3080,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_piob_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -3166,7 +3174,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, без ограничения скорости (на STM32) 50 МГц	*/
 void 
-arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piob_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
@@ -3275,7 +3283,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, без ограничения скорости (на STM32) 50 МГц	*/
 void 
-arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioc_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
@@ -3385,7 +3393,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, без ограничения скорости (на STM32) 50 МГц	*/
 void
-arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piod_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
@@ -3495,7 +3503,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, без ограничения скорости (на STM32) 50 МГц	*/
 void
-arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioe_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
@@ -3594,7 +3602,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioc_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -3692,7 +3700,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioa_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -3779,7 +3787,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piob_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -3867,7 +3875,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioc_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -3956,7 +3964,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piod_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -4040,7 +4048,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_piod_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -4119,7 +4127,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioe_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -4185,7 +4193,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioe_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -4253,7 +4261,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_piof_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPFEN)
 
@@ -4318,7 +4326,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piof_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPFEN)
 
@@ -4386,7 +4394,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_piog_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -4450,7 +4458,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piog_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -4513,7 +4521,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 }
 /* Установка режима - вывод, без ограничения скорости	*/
 void 
-arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piog_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -4581,7 +4589,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioh_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
 
@@ -4645,7 +4653,7 @@ arm_hardware_pioh_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioh_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
 
@@ -4711,7 +4719,7 @@ arm_hardware_pioh_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioi_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPIEN)
 
@@ -4775,7 +4783,7 @@ arm_hardware_pioi_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioi_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPIEN)
 
@@ -4843,7 +4851,7 @@ arm_hardware_pioi_outputs2m(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_piok_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPKEN)
 
@@ -4901,7 +4909,7 @@ arm_hardware_piok_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void 
-arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_piok_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPKEN)
 
@@ -4962,7 +4970,7 @@ arm_hardware_piok_outputs2m(unsigned long opins, unsigned long initialstate)
 #if defined(GPIOZ)
 
 void
-arm_hardware_pioz_inputs(unsigned long ipins)
+arm_hardware_pioz_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5011,7 +5019,7 @@ arm_hardware_pioz_inputs(unsigned long ipins)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void
-arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioz_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPZEN)
 
@@ -5071,7 +5079,7 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 
 /* Установка режима - вывод, с ограничением скорости 2 МГц	*/
 void
-arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioz_outputs2m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -5130,7 +5138,7 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 }
 /* Установка режима - вывод, без ограничения скорости	*/
 void
-arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioz_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPZEN)
 
@@ -5189,7 +5197,7 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 }
 
 void
-arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioz_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
 
@@ -5248,7 +5256,7 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void
-arm_hardware_pioz_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioz_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5308,7 +5316,7 @@ arm_hardware_pioz_altfn20(unsigned long opins, unsigned af)
 
 /* программирование выводов на вывод, без присоединения к периферии - открытый сток */
 void 
-arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -5415,7 +5423,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOB)
 
 void 
-arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5503,7 +5511,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOC)
 
 void 
-arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5590,7 +5598,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOD)
 
 void 
-arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5677,7 +5685,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOE)
 
 void 
-arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPEEN)
 
@@ -5744,7 +5752,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOF)
 
 void 
-arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_piof_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPFEN)
 
@@ -5806,7 +5814,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 
 #if defined (GPIOG)
 void 
-arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_piog_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -5869,7 +5877,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 
 #if defined (GPIOH)
 void 
-arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_pioh_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
 
@@ -5933,7 +5941,7 @@ arm_hardware_pioh_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOA)
 
 // выводы присоединены к periph A (Atmel specific)
-void arm_hardware_pioa_peripha(unsigned long pins)
+void arm_hardware_pioa_peripha(portholder_t pins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -5952,7 +5960,7 @@ void arm_hardware_pioa_peripha(unsigned long pins)
 #endif
 }
 // выводы присоединены к periph B (Atmel specific)
-void arm_hardware_pioa_periphb(unsigned long pins)
+void arm_hardware_pioa_periphb(portholder_t pins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -5974,7 +5982,7 @@ void arm_hardware_pioa_periphb(unsigned long pins)
 #if defined (GPIOB)
 
 // выводы присоединены к periph A (Atmel specific)
-void arm_hardware_piob_peripha(unsigned long pins)
+void arm_hardware_piob_peripha(portholder_t pins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -5993,7 +6001,7 @@ void arm_hardware_piob_peripha(unsigned long pins)
 #endif
 }
 // выводы присоединены к periph B (Atmel specific)
-void arm_hardware_piob_periphb(unsigned long pins)
+void arm_hardware_piob_periphb(portholder_t pins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -6015,7 +6023,7 @@ void arm_hardware_piob_periphb(unsigned long pins)
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 // выводы присоединены к periph C (Atmel specific)
-void arm_hardware_pioa_periphc(unsigned long pins)
+void arm_hardware_pioa_periphc(portholder_t pins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -6028,7 +6036,7 @@ void arm_hardware_pioa_periphc(unsigned long pins)
 }
 
 // выводы присоединены к periph D (Atmel specific)
-void arm_hardware_pioa_periphd(unsigned long pins)
+void arm_hardware_pioa_periphd(portholder_t pins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -6041,7 +6049,7 @@ void arm_hardware_pioa_periphd(unsigned long pins)
 }
 
 // выводы присоединены к periph C (Atmel specific)
-void arm_hardware_piob_periphc(unsigned long pins)
+void arm_hardware_piob_periphc(portholder_t pins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -6054,7 +6062,7 @@ void arm_hardware_piob_periphc(unsigned long pins)
 }
 
 // выводы присоединены к periph D (Atmel specific)
-void arm_hardware_piob_periphd(unsigned long pins)
+void arm_hardware_piob_periphd(portholder_t pins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -6070,7 +6078,7 @@ void arm_hardware_piob_periphd(unsigned long pins)
 #endif /* CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S */
 
 // выводы присоединены к PIO (Atmel specific)
-void arm_hardware_pioa_only(unsigned long pins)		
+void arm_hardware_pioa_only(portholder_t pins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -6084,7 +6092,7 @@ void arm_hardware_pioa_only(unsigned long pins)
 }
 
 // выводы присоединены к PIO (Atmel specific)
-void arm_hardware_piob_only(unsigned long pins)		
+void arm_hardware_piob_only(portholder_t pins)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -6101,7 +6109,7 @@ void arm_hardware_piob_only(unsigned long pins)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
+arm_hardware_pioa_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6184,7 +6192,7 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
+arm_hardware_piob_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6267,7 +6275,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
+arm_hardware_pioc_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6342,7 +6350,7 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
+arm_hardware_piod_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6414,7 +6422,7 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
+arm_hardware_piod_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6490,7 +6498,7 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
+arm_hardware_pioa_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6560,7 +6568,7 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 #elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -6570,7 +6578,7 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioa_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6640,7 +6648,7 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 #elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -6648,13 +6656,13 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 #endif
 }
 
-#endif
+#endif /* defined (GPIOB) */
 
 #if defined (GPIOB)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
+arm_hardware_piob_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6734,7 +6742,7 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
+arm_hardware_piob_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6818,7 +6826,7 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
+arm_hardware_pioc_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6898,7 +6906,7 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioc_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6982,7 +6990,7 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
+arm_hardware_piod_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7058,7 +7066,7 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
+arm_hardware_pioe_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7116,7 +7124,7 @@ arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioe_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7174,7 +7182,7 @@ arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
+arm_hardware_pioe_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7221,7 +7229,7 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOF);
+	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -7236,7 +7244,7 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
+arm_hardware_piof_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7294,7 +7302,7 @@ arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
+arm_hardware_piof_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7352,7 +7360,7 @@ arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
+arm_hardware_piof_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7414,7 +7422,7 @@ arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
+arm_hardware_piog_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7472,7 +7480,7 @@ arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
+arm_hardware_piog_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7530,7 +7538,7 @@ arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
+arm_hardware_piog_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7591,7 +7599,7 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 #if defined (GPIOH)
 
 void 
-arm_hardware_pioh_inputs(unsigned long ipins)
+arm_hardware_pioh_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7643,7 +7651,7 @@ arm_hardware_pioh_inputs(unsigned long ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
+arm_hardware_pioh_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7701,7 +7709,7 @@ arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_pioh_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioh_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7759,7 +7767,7 @@ arm_hardware_pioh_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_pioh_altfn50(unsigned long opins, unsigned af)
+arm_hardware_pioh_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7820,7 +7828,7 @@ arm_hardware_pioh_altfn50(unsigned long opins, unsigned af)
 #if defined (GPIOI)
 
 void 
-arm_hardware_pioi_inputs(unsigned long ipins)
+arm_hardware_pioi_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7872,7 +7880,7 @@ arm_hardware_pioi_inputs(unsigned long ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioi_altfn2(unsigned long opins, unsigned af)
+arm_hardware_pioi_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7930,7 +7938,7 @@ arm_hardware_pioi_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_pioi_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioi_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7988,7 +7996,7 @@ arm_hardware_pioi_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_pioi_altfn50(unsigned long opins, unsigned af)
+arm_hardware_pioi_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8035,7 +8043,7 @@ arm_hardware_pioi_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOF);
+	//gpioX_poweron(GPIOI);
 	gpioX_prog(GPIOI, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -8049,7 +8057,7 @@ arm_hardware_pioi_altfn50(unsigned long opins, unsigned af)
 #if defined (GPIOJ)
 
 void 
-arm_hardware_pioj_inputs(unsigned long ipins)
+arm_hardware_pioj_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8094,7 +8102,7 @@ arm_hardware_pioj_inputs(unsigned long ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioj_altfn2(unsigned long opins, unsigned af)
+arm_hardware_pioj_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8145,7 +8153,7 @@ arm_hardware_pioj_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_pioj_altfn20(unsigned long opins, unsigned af)
+arm_hardware_pioj_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8196,7 +8204,7 @@ arm_hardware_pioj_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_pioj_altfn50(unsigned long opins, unsigned af)
+arm_hardware_pioj_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8250,7 +8258,7 @@ arm_hardware_pioj_altfn50(unsigned long opins, unsigned af)
 #if defined (GPIOK)
 
 void 
-arm_hardware_piok_inputs(unsigned long ipins)
+arm_hardware_piok_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8297,7 +8305,7 @@ arm_hardware_piok_inputs(unsigned long ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piok_altfn2(unsigned long opins, unsigned af)
+arm_hardware_piok_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8350,7 +8358,7 @@ arm_hardware_piok_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void 
-arm_hardware_piok_altfn20(unsigned long opins, unsigned af)
+arm_hardware_piok_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8403,7 +8411,7 @@ arm_hardware_piok_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void 
-arm_hardware_piok_altfn50(unsigned long opins, unsigned af)
+arm_hardware_piok_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8460,7 +8468,7 @@ arm_hardware_piok_altfn50(unsigned long opins, unsigned af)
 
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void
-arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
+arm_hardware_piol_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
 
@@ -8523,7 +8531,7 @@ arm_hardware_piol_outputs(unsigned long opins, unsigned long initialstate)
 }
 
 void
-arm_hardware_piol_inputs(unsigned long ipins)
+arm_hardware_piol_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8575,7 +8583,7 @@ arm_hardware_piol_inputs(unsigned long ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void
-arm_hardware_piol_altfn2(unsigned long opins, unsigned af)
+arm_hardware_piol_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8633,7 +8641,7 @@ arm_hardware_piol_altfn2(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 20 МГц, push-pull */
 void
-arm_hardware_piol_altfn20(unsigned long opins, unsigned af)
+arm_hardware_piol_altfn20(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8691,7 +8699,7 @@ arm_hardware_piol_altfn20(unsigned long opins, unsigned af)
 
 /* подключаем к периферии, 50 МГц, push-pull */
 void
-arm_hardware_piol_altfn50(unsigned long opins, unsigned af)
+arm_hardware_piol_altfn50(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8748,7 +8756,7 @@ arm_hardware_piol_altfn50(unsigned long opins, unsigned af)
 }
 
 void
-arm_hardware_piol_opendrain(unsigned long opins, unsigned long initialstate)
+arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPHEN)
 
@@ -8813,7 +8821,7 @@ arm_hardware_piol_opendrain(unsigned long opins, unsigned long initialstate)
 #if defined (GPIOA)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8896,7 +8904,7 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 #if defined (GPIOB)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8978,7 +8986,7 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 #if defined (GPIOC)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -9059,7 +9067,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #if defined (GPIOD)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -9140,7 +9148,7 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #if defined (GPIOE)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -9203,7 +9211,7 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 #if defined (GPIOF)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX && defined(RCC_APB2ENR_IOPFEN)
 
@@ -9250,8 +9258,8 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOG);
-	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9262,7 +9270,7 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #if defined (GPIOG)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
+void arm_hardware_piog_periphopendrain_altfn2(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 
@@ -9320,7 +9328,7 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioa_updown(unsigned long up, unsigned long down)
+arm_hardware_pioa_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOA, up, down);
@@ -9352,7 +9360,7 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piob_updown(unsigned long up, unsigned long down)
+arm_hardware_piob_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOB, up, down);
@@ -9384,7 +9392,7 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioc_updown(unsigned long up, unsigned long down)
+arm_hardware_pioc_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOC, up, down);
@@ -9416,7 +9424,7 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piod_updown(unsigned long up, unsigned long down)
+arm_hardware_piod_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOD, up, down);
@@ -9448,7 +9456,7 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioe_updown(unsigned long up, unsigned long down)
+arm_hardware_pioe_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOE, up, down);
@@ -9477,7 +9485,7 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piof_updown(unsigned long up, unsigned long down)
+arm_hardware_piof_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOF, up, down);
@@ -9503,7 +9511,7 @@ arm_hardware_piof_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piog_updown(unsigned long up, unsigned long down)
+arm_hardware_piog_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOG, up, down);
@@ -9529,7 +9537,7 @@ arm_hardware_piog_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioh_updown(unsigned long up, unsigned long down)
+arm_hardware_pioh_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOH, up, down);
@@ -9555,7 +9563,7 @@ arm_hardware_pioh_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioi_updown(unsigned long up, unsigned long down)
+arm_hardware_pioi_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOI, up, down);
@@ -9581,7 +9589,7 @@ arm_hardware_pioi_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioj_updown(unsigned long up, unsigned long down)
+arm_hardware_pioj_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOJ, up, down);
@@ -9603,7 +9611,7 @@ arm_hardware_pioj_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piok_updown(unsigned long up, unsigned long down)
+arm_hardware_piok_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOK, up, down);
@@ -9625,7 +9633,7 @@ arm_hardware_piok_updown(unsigned long up, unsigned long down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void
-arm_hardware_pioz_updown(unsigned long up, unsigned long down)
+arm_hardware_pioz_updown(portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
 	stm32f10x_pioX_pupdr(GPIOZ, up, down);
@@ -9647,7 +9655,7 @@ arm_hardware_pioz_updown(unsigned long up, unsigned long down)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_pioa_updownoff(unsigned long ipins)
+arm_hardware_pioa_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOA, ipins);
@@ -9679,7 +9687,7 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_piob_updownoff(unsigned long ipins)
+arm_hardware_piob_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOB, ipins);
@@ -9711,7 +9719,7 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_pioc_updownoff(unsigned long ipins)
+arm_hardware_pioc_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOC, ipins);
@@ -9743,7 +9751,7 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_piod_updownoff(unsigned long ipins)
+arm_hardware_piod_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOD, ipins);
@@ -9775,7 +9783,7 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_pioe_updownoff(unsigned long ipins)
+arm_hardware_pioe_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOE, ipins);
@@ -9804,7 +9812,7 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_piof_updownoff(unsigned long ipins)
+arm_hardware_piof_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOF, ipins);
@@ -9830,7 +9838,7 @@ arm_hardware_piof_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_piog_updownoff(unsigned long ipins)
+arm_hardware_piog_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOG, ipins);
@@ -9857,7 +9865,7 @@ arm_hardware_piog_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_pioh_updownoff(unsigned long ipins)
+arm_hardware_pioh_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOH, ipins);
@@ -9883,7 +9891,7 @@ arm_hardware_pioh_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_pioi_updownoff(unsigned long ipins)
+arm_hardware_pioi_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOI, ipins);
@@ -9910,7 +9918,7 @@ arm_hardware_pioi_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_pioj_updownoff(unsigned long ipins)
+arm_hardware_pioj_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOJ, ipins);
@@ -9932,7 +9940,7 @@ arm_hardware_pioj_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void 
-arm_hardware_piok_updownoff(unsigned long ipins)
+arm_hardware_piok_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOK, ipins);
@@ -9954,7 +9962,7 @@ arm_hardware_piok_updownoff(unsigned long ipins)
 
 /* отключение подтягивающих резисторов. */
 void
-arm_hardware_pioz_updownoff(unsigned long ipins)
+arm_hardware_pioz_updownoff(portholder_t ipins)
 {
 #if CPUSTYLE_STM32F1XX
 	arm_stm32f10x_hardware_pio_pupoff(GPIOZ, ipins);
@@ -9978,7 +9986,7 @@ arm_hardware_pioz_updownoff(unsigned long ipins)
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -10048,7 +10056,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10105,7 +10113,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10161,7 +10169,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10219,7 +10227,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10265,7 +10273,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10310,7 +10318,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10357,7 +10365,7 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -10395,7 +10403,7 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void
-arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, unsigned long fall, uint32_t priority, uint32_t tgcpu)
+arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -10487,7 +10495,7 @@ arm_hardware_pioi_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 /* программирование выводов на вывод, без присоединения к периферии */
 void
-tms320_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
+tms320_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate)
 {
 	// Установка начального состояния битов
 	tms320f2833x_hardware_pioa_setstate(opins, initialstate);
@@ -10496,7 +10504,7 @@ tms320_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 }
 /* программирование выводов на вывод, без присоединения к периферии */
 void
-tms320_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
+tms320_hardware_piob_outputs(portholder_t opins, portholder_t initialstate)
 {
 	// Установка начального состояния битов
 	tms320f2833x_hardware_piob_setstate(opins, initialstate);
@@ -10505,7 +10513,7 @@ tms320_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 }
 /* программирование выводов на вывод, без присоединения к периферии */
 void
-tms320_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
+tms320_hardware_pioc_outputs(portholder_t opins, portholder_t initialstate)
 {
 	// Установка начального состояния битов
 	tms320f2833x_hardware_pioc_setstate(opins, initialstate);
@@ -10514,7 +10522,7 @@ tms320_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 }
 /* программирование выводов на вывод, присоединение к периферии */
 void
-tms320_hardware_pioa_periph(unsigned long opins, uint_fast8_t mux)
+tms320_hardware_pioa_periph(portholder_t opins, uint_fast8_t mux)
 {
 	// Установка режима выводов
 	tms320f2833x_hardware_pioa_prog(opins, mux, 0, 0, 0);
@@ -10522,14 +10530,14 @@ tms320_hardware_pioa_periph(unsigned long opins, uint_fast8_t mux)
 
 /* программирование выводов на вывод, присоединение к периферии */
 void
-tms320_hardware_piob_periph(unsigned long opins, uint_fast8_t mux)
+tms320_hardware_piob_periph(portholder_t opins, uint_fast8_t mux)
 {
 	// Установка режима выводов
 	tms320f2833x_hardware_piob_prog(opins, mux, 0, 0, 0);
 }
 /* программирование выводов на вывод, присоединение к периферии */
 void
-tms320_hardware_pioc_periph(unsigned long opins, uint_fast8_t mux)
+tms320_hardware_pioc_periph(portholder_t opins, uint_fast8_t mux)
 {
 	// Установка режима выводов
 	tms320f2833x_hardware_pioc_prog(opins, mux, 0, 0);
@@ -10537,21 +10545,21 @@ tms320_hardware_pioc_periph(unsigned long opins, uint_fast8_t mux)
 
 /* программирование выводов на ввод, без присоединения к периферии */
 void
-tms320_hardware_pioa_inputs(unsigned long ipins)
+tms320_hardware_pioa_inputs(portholder_t ipins)
 {
 	// Установка режима выводов
 	tms320f2833x_hardware_pioa_prog(ipins, 0, 0, 0, 0);	/* На ввод, с pull-up */
 }
 /* программирование выводов на ввод, без присоединения к периферии */
 void
-tms320_hardware_piob_inputs(unsigned long ipins)
+tms320_hardware_piob_inputs(portholder_t ipins)
 {
 	// Установка режима выводов
 	tms320f2833x_hardware_piob_prog(ipins, 0, 0, 0, 0);	/* На ввод, с pull-up */
 }
 /* программирование выводов на ввод, без присоединения к периферии */
 void
-tms320_hardware_pioс_inputs(unsigned long ipins)
+tms320_hardware_pioс_inputs(portholder_t ipins)
 {
 	// Установка режима выводов
 	tms320f2833x_hardware_pioc_prog(ipins, 0, 0, 0);	/* На ввод, с pull-up */

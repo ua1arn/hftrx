@@ -98,7 +98,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate windo
 
 #endif /* WITHDSPLOCALFIR */
 
-#if WITHUSBMIKET113 && WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
 	/* работа со встроенным кодеком Allwinner t113-s3 */
 	/* параметры входного/выходного адаптеров */
@@ -222,19 +222,16 @@ void transform_initialize(transform_t * tfm, const adapter_t * informat, const a
 extern adapter_t afcodecrx;	/* от микрофона */
 extern adapter_t afcodectx;	/* к наушникам */
 
-//extern adapter_t ifcodecrx;	/* канал от FPGA к процессору */
-//extern adapter_t ifcodectx;	/* канал от процессора к FPGA */
+extern adapter_t ifcodecrx;	/* канал от FPGA к процессору */
+extern adapter_t ifcodectx;	/* канал от процессора к FPGA */
 extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
 extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 
-extern adapter_t uac48out;	/* Аудиоданные из компютера в трансивер */
-extern adapter_t uac48in;	/* Аудиоданные в компютер из трансивера */
 extern adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
 extern adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
 extern adapter_t sdcardio;
 extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
-extern transform_t uac48out2afcodecrx;	// преобразование из выхода UAC AUDIO48 в формат кодека
 
 unsigned audiorec_getwidth(void);
 
@@ -464,6 +461,37 @@ void buffers_diagnostics(void);
 void dtmftest(void);
 void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calculate full array of coefficients
 
+void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
+void elfill_dmabuffer16rx(FLOAT_t ch0, FLOAT_t ch1);
+
+uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
+uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
+//uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest);
+
+
+/* Сервис очереди сэмплов */
+typedef struct { int dummy; } VOICE_t;
+
+void voice_put(VOICE_t * p, FLOAT_t ch0, FLOAT_t ch1);
+uint_fast8_t voice_get(VOICE_t * p, FLOAT32P_t * v);
+
+VOICE_t * voice_moni16(void);
+VOICE_t * voice_rec16(void);
+//VOICE_t * voice_uacin48(void);
+//VOICE_t * voice_uacout48(void);
+//VOICE_t * voice_16txphones(void);
+//VOICE_t * voice_swav48(void);
+
+#define VOICE_MONI16 (voice_moni16())	// формирование звуового потока с сигналом самоконтроля
+#define VOICE_REC16 (voice_rec16())		// аудиоданные - выход приемника
+//#define VOICE_UACIN48 (voice_uacin48())	// поток с USB фудио устройства
+//#define VOICE_UACOUT48 (voice_uacin48())	// поток на USB фудио устройство
+//#define VOICE_TXPHONES (voice_16txphones())	// формирование звуового потока с демодулированным сигналом
+//#define VOICE_WAV48 (voice_swav48())		// поток для записи на накопитель
+
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
 
@@ -499,10 +527,12 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
  * Возврат 0, если нет ничего для воспроизведения.
  */
 uint_fast8_t takewavsample(FLOAT32P_t * rv, uint_fast8_t suspend);
-
+void recordsampleSD(FLOAT_t left, FLOAT_t right);
+void recordsampleUAC(FLOAT_t left, FLOAT_t right);
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
+
 #if WITHINTEGRATEDDSP
-void dsp_addsidetone(aubufv_t * buff, const aubufv_t * monibuff, int usebuf);			// перед передачей по DMA в аудиокодек
+void dsp_fillphones(unsigned nsamples);			// перед передачей по DMA в аудиокодек
 #endif /* WITHINTEGRATEDDSP */
 
 typedef FLOAT_t speexel_t;
@@ -548,9 +578,36 @@ extern deliverylist_t speexoutfloat;	// выход speex и фильтра
 extern deliverylist_t afdemodoutfloat;	// выход приемника
 
 
-void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
-void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
+//void dsp_step32rx(const IFADCvalue_t * buff);	// RX
+//void dsp_extbuffer32rts(const IFADCvalue_t * buff);	// RX
 void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
+void inject_testsignals(IFADCvalue_t * dbuff);
+void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right);	// Сохранение сэмплов с выхода демодулятора
+FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv);
+
+#if WITHAFEQUALIZER
+
+enum {
+	AF_EQUALIZER_BANDS = 3,		// число полос
+	AF_EQUALIZER_BASE = 8,		// предел регулировки
+	AF_EQUALIZER_LOW = 400,		// частота нижней полосы
+	AF_EQUALIZER_MID = 1500,	// частота средней полосы
+	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
+};
+
+int_fast32_t hamradio_get_af_equalizer_base(void);
+int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
+void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
+void board_set_equalizer_rx(uint_fast8_t n);
+void board_set_equalizer_tx(uint_fast8_t n);
+void board_set_equalizer_rx_gains(const uint_fast8_t * p);
+void board_set_equalizer_tx_gains(const uint_fast8_t * p);
+uint_fast8_t hamradio_get_geqrx(void);
+void hamradio_set_geqrx(uint_fast8_t v);
+
+void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
+
+#endif /* WITHAFEQUALIZER */
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA
 

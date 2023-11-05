@@ -111,7 +111,6 @@ typedef enum IRQn
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
 #define DRAMC_BASE ((uintptr_t) 0x01C01000)           /*!< DRAMC  Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC  Base */
-#define OWA_BASE ((uintptr_t) 0x01C02000)             /*!< OWA One Wire Audio Base */
 #define NDFC_BASE ((uintptr_t) 0x01C03000)            /*!< NDFC NAND Flash Controller Interface Base */
 #define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Transport Stream Controller Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface Base */
@@ -145,6 +144,7 @@ typedef enum IRQn
 #define GPIOINTG_BASE ((uintptr_t) 0x01C20AA0)        /*!< GPIOINT  Base */
 #define GPIOINTH_BASE ((uintptr_t) 0x01C20AC0)        /*!< GPIOINT  Base */
 #define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER  Base */
+#define OWA_BASE ((uintptr_t) 0x01C21000)             /*!< OWA One Wire Audio Base */
 #define PWM_BASE ((uintptr_t) 0x01C21400)             /*!< PWM  Base */
 #define I2S0_BASE ((uintptr_t) 0x01C22000)            /*!< I2S_PCM I2S/PCM Controller Base */
 #define I2S1_BASE ((uintptr_t) 0x01C22400)            /*!< I2S_PCM I2S/PCM Controller Base */
@@ -2188,7 +2188,6 @@ typedef struct USB_OHCI_Capability_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
-#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC NAND Flash Controller Interface register set access pointer */
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
 #define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
@@ -2221,6 +2220,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0 I2S/PCM Controller register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1 I2S/PCM Controller register set access pointer */

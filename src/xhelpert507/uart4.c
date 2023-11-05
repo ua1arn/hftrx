@@ -153,6 +153,7 @@ static float gpressure;
 // сохранить измеренное давление
 void xbsave_pressure(float v)
 {
+	//PRINTF("Pressure=%f, depth=%f\n", v, v * 101.97162005);
 	gpressure = v;
 }
 
@@ -485,7 +486,7 @@ void xbsavemagn(double roll, double pitch, double jaw)
 	groll = roll;
 	gpitch = pitch;
 	gjaw = jaw;
-	PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jaw);
+	//PRINTF("roll=%g,pitch=%g,jav=%g\n", roll, pitch, jaw);
 }
 
 // Буфер для формирования ответа в канал управления

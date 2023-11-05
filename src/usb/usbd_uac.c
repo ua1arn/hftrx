@@ -191,7 +191,6 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
 	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
-	uacout_buffer_stop();
 #endif /* WITHUSBUACOUT */
 	//PRINTF(PSTR("USBD_XXX_DeInit done\n"));
 	return USBD_OK;
@@ -801,7 +800,9 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 	case USBD_EP_AUDIO_OUT:
 		/* UAC EP OUT */
 		// use audio data
-		uacout_buffer_save(uacoutbuff, USBD_LL_GetRxDataSize(pdev, epnum), UACOUT_FMT_CHANNELS_AUDIO48, UACOUT_AUDIO48_SAMPLEBYTES);
+		const uintptr_t addr = allocate_dmabufferuacout48();
+		memcpy((void *) addr, uacoutbuff, UACOUT_AUDIO48_DATASIZE_DMAC);
+		save_dmabufferuacout48(addr);
 		/* Prepare Out endpoint to receive next audio data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, UACOUT_AUDIO48_DATASIZE);
 		break;
@@ -966,14 +967,12 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
    /* UAC Prepare Out endpoint to receive 1st packet */
 	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacoutbuff, UACOUT_AUDIO48_DATASIZE);
 
-	uacout_buffer_start();
 #endif /* WITHUSBUACOUT */
 	return USBD_OK;
 }
 
 static void USBD_UAC_ColdInit(void)
 {
-	uacout_buffer_initialize();
 	memset(altinterfaces, 0, sizeof altinterfaces);
 }
 
@@ -991,24 +990,6 @@ const USBD_ClassTypeDef USBD_CLASS_UAC =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
-
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void __weak refreshDMA_uacin48(void)
-{
-}
-
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void __weak refreshDMA_uacinrts96(void)
-{
-}
-
-// USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-void __weak refreshDMA_uacinrts192(void)
-{
-}
 
 
 #endif /* WITHUSBHW && WITHUSBUAC */
