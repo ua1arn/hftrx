@@ -878,6 +878,30 @@ void release_dmabuffer16tx(uintptr_t addr)
 	codec16tx.release_buffer(p);
 }
 
+static void dsp_loopback(unsigned nsamples)
+{
+	enum { L = 0, R = 1 };
+
+	// Требуется обработать указанное количество сэмплов
+	while (nsamples --)
+	{
+		FLOAT_t v [2];
+
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+		// Канал от USB в наушники
+		if (elfetch_dmabufferuacout48(v))
+			elfill_dmabuffer16tx(v [L], v [R]);
+#endif
+
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+		// Канал от микрофона в USB
+		if (elfetch_dmabuffer16rx(v))
+			elfill_dmabufferuacin48(v [L], v [R]);
+#endif
+
+	}
+}
+
 // can not be zero
 uintptr_t getfilled_dmabuffer16tx(void)
 {
@@ -943,30 +967,6 @@ static moni16buf_t rx16recbuf [VOICE16TXMONI_CAPACITY];
 
 static moni16txdma_t moni16(IRQL_REALTIME, "16moni", moni16buf, ARRAY_SIZE(moni16buf));		// аудиоданные - самоконтроль (ключ, голос).
 static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec", rx16recbuf, ARRAY_SIZE(rx16recbuf));	// аудиоданные - выход приемника
-
-static void dsp_loopback(unsigned nsamples)
-{
-	enum { L = 0, R = 1 };
-
-	// Требуется обработать указанное количество сэмплов
-	while (nsamples --)
-	{
-		FLOAT_t v [2];
-
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-		// Канал от USB в наушники
-		if (elfetch_dmabufferuacout48(v))
-			elfill_dmabuffer16tx(v [L], v [R]);
-#endif
-
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
-		// Канал от микрофона в USB
-		if (elfetch_dmabuffer16rx(v))
-			elfill_dmabufferuacin48(v [L], v [R]);
-#endif
-
-	}
-}
 
 ///////////////////////////////////
 ///
