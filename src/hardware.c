@@ -3998,7 +3998,17 @@ void Reset_CPUn_Handler(void)
 #endif /* CPUSTYLE_VM14 */
 
 	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
-
+#if HARDWARE_NCORES > 2
+	if (arm_hardware_cpuid() == 2)
+	{
+		for (;;)
+		{
+#if WITHINTEGRATEDDSP
+			audioproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
+		}
+	}
+#endif /* HARDWARE_NCORES > 2 */
 	// Idle loop
 	for (;;)
 	{
