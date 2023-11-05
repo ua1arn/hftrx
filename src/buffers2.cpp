@@ -2065,14 +2065,14 @@ VOICE_t * voice_rec16(void)
 
 #if WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
-static uint_fast8_t isaudio48(void)
-{
-#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
-	return UACINALT_AUDIO48 == uacinalt;
-#else /* WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
-	return 0;
-#endif /* WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
-}
+//static uint_fast8_t isaudio48(void)
+//{
+//#if WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
+//	return UACINALT_AUDIO48 == uacinalt;
+//#else /* WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
+//	return 0;
+//#endif /* WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
+//}
 
 // UAC OUT samplerate
 int_fast32_t dsp_get_samplerateuacout(void)
@@ -2101,29 +2101,29 @@ static uint_fast8_t isrts192(void)
 
 #if WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE)
 
-static uint_fast8_t isrts96(void)
-{
-#if WITHUSBHW && WITHUSBUAC
-	#if WITHUSBUACIN2 && WITHRTS96
-		return uacinrtsalt == UACINRTSALT_RTS96;
-	#elif WITHRTS96
-		return uacinalt == UACINALT_RTS96;
-	#else /* WITHUSBUACIN2 */
-		return 0;
-	#endif /* WITHUSBUACIN2 */
-#else /* WITHUSBHW && WITHUSBUAC */
-	return 0;
-#endif /* WITHUSBHW && WITHUSBUAC */
-}
+//static uint_fast8_t isrts96(void)
+//{
+//#if WITHUSBHW && WITHUSBUAC
+//	#if WITHUSBUACIN2 && WITHRTS96
+//		return uacinrtsalt == UACINRTSALT_RTS96;
+//	#elif WITHRTS96
+//		return uacinalt == UACINALT_RTS96;
+//	#else /* WITHUSBUACIN2 */
+//		return 0;
+//	#endif /* WITHUSBUACIN2 */
+//#else /* WITHUSBHW && WITHUSBUAC */
+//	return 0;
+//#endif /* WITHUSBHW && WITHUSBUAC */
+//}
 
 #endif
 
 #else
 
-static uint_fast8_t isrts96(void)
-{
-	return 0;
-}
+//static uint_fast8_t isrts96(void)
+//{
+//	return 0;
+//}
 
 #endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 
@@ -2583,16 +2583,16 @@ void buffers_diagnostics(void)
 {
 #if WITHINTEGRATEDDSP
 #if 1
-	//denoise16list.debug();
+	denoise16list.debug();
 	codec16rx.debug();
 	codec16tx.debug();
-	//moni16.debug();
+	moni16.debug();
 	//voice32tx.debug();
 	//voice32rx.debug();
 #endif
 #if 1
 	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
 	uacout48.debug();
 #endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
@@ -2602,8 +2602,8 @@ void buffers_diagnostics(void)
 #if WITHRTS96
 	uacinrts96.debug();
 #endif
-#endif
 	uacin48.debug();
+#endif
 #endif
 	//message8.debug();
 
