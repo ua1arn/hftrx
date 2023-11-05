@@ -668,8 +668,8 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi)
 #endif
 }
 
-/* задержка установки нового значение частоты генератора */
-static RAMFUNC void nco_setlo6_delay(uint_fast8_t pathi, uint_fast8_t tx)
+/* задержка установки нового значение частоты генератора - возврат 1 если закончилась отработка времени */
+static RAMFUNC uint_fast8_t nco_setlo6_delay(uint_fast8_t pathi, uint_fast8_t tx)
 {
 #if WITHDSPEXTFIR || WITHDSPEXTDDC || WITHDSPLOCALFIR
 	if (tx != 0)
@@ -695,7 +695,9 @@ static RAMFUNC void nco_setlo6_delay(uint_fast8_t pathi, uint_fast8_t tx)
 			}
 		}
 	}
-
+	return delaysetlo6 [pathi] == 0;
+#else
+	return 1;
 #endif
 }
 
@@ -5346,12 +5348,12 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 {
 	ASSERT(gwprof < NPROF);
-	const uint_fast8_t tx = isdspmodetx( globDSPMode [gwprof] [0]);
-	const uint_fast8_t dspmode = pathi ? tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [1] : globDSPMode [gwprof] [0];
-	const int rxgate = getRxGate();
+	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
+	const uint_fast8_t dspmode = pathi ? (tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [1]) : globDSPMode [gwprof] [0];
+	int rxgate = getRxGate();
 
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	nco_setlo6_delay(pathi, tx);
+	rxgate *= !! nco_setlo6_delay(pathi, tx);
 
 #if WITHDSPEXTDDC
 
@@ -5359,7 +5361,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 		{
 			/* прием независимых боковых полос */
 			// Обработка буфера с парами значений
-			const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv * rxgate, qv * rxgate,pathi);
+			const FLOAT32P_t rv = processifadcsampleIQ_ISB(iv * rxgate, qv * rxgate, pathi);
 			return 0;
 		}
 		else
