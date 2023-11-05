@@ -189,7 +189,7 @@ SECTIONS
 	.ttb BLOCK(16k) (NOLOAD):
 	{
 		PROVIDE(__TTB_BASE = .);
-		LONG(0)	/* dummy object = check for need */
+		LONG(0)	/* dummy object */
 		. = ALIGN(16k);
 	} > RAM
 
