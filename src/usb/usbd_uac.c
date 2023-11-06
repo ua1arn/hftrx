@@ -25,6 +25,18 @@
 #include <string.h>
 
 
+#define VOLMAX	100
+#define VOLMIN	0
+#define VOLGRAN 1
+
+enum
+{
+	VolMin = VOLMIN,
+	VolMax = VOLMAX,
+	VolResoluion = VOLGRAN,
+	VolCurr = VOLMAX
+};
+
 // Fill Layout 1 Parameter Block
 static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t vmin, uint_fast8_t vmax, uint_fast8_t vres)
 {
@@ -204,14 +216,6 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 	uint8_t * buff
 	)
 {
-	/* значения для немодифицируемых управляющих элементов громкости */
-	enum
-	{
-		VolMin = 0,
-		VolMax = 256,
-		VolRes = 4,
-		VolCur = VolMax
-	};
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t CS = HI_BYTE(req->wValue);	// The Control Selector indicates which type of Control this request is manipulating. (Volume, Mute, etc.)
@@ -240,7 +244,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 		{
 		case AUDIO_REQUEST_GET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d\n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, VolCur), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolCurr), req->wLength);
 
 		case AUDIO_REQUEST_SET_CUR:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_SET_CUR: interfacev=%u,  terminal=%u, CS=%d, CN=%d, value=%d\n"), interfacev, terminalID, CS, CN, val16);
@@ -257,7 +261,7 @@ static unsigned USBD_UAC1_FeatureUnit_req(
 
 		case AUDIO_REQUEST_GET_RES:
 			//PRINTF(PSTR("USBD_UAC1_FeatureUnit_req: AUDIO_REQUEST_GET_RES: interfacev=%u,  terminal=%u, CS=%d, CN=%d, \n"), interfacev, terminalID, CS, CN);
-			return ulmin16(USBD_poke_u16(buff, VolRes), req->wLength);
+			return ulmin16(USBD_poke_u16(buff, VolResoluion), req->wLength);
 		default:
 			//TP();	// here then connecting to Android
 			return 0;
@@ -341,7 +345,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 				return USBD_poke_u8(buff, 0);
 			case 2:
 				// VOLUME
-				return USBD_poke_u16(buff, 0x7FFF);
+				return USBD_poke_u16(buff, VolCurr);
 			default:
 				// Undefined control ID
 				TP();
@@ -357,7 +361,7 @@ static unsigned USBD_UAC2_FeatureUnit_req(
 				return USBD_fill_range_lay1pb(buff, 0, 1, 1);
 			case 2:
 				// VOLUME
-				return USBD_fill_range_lay2pb(buff, 0, 0x7FFF, 1);
+				return USBD_fill_range_lay2pb(buff, VolMin, VolMax, VolResoluion);
 			default:
 				// Undefined control ID
 				TP();
