@@ -70,6 +70,11 @@
 	#define USB_FUNCTION_VENDOR_ID_OVERRIDE		0x2FC6
 	#define USB_FUNCTION_PRODUCT_ID_OVERRIDE	0x6012
 #endif
+#if 0
+	// REFLEX 2.0 Config 2.0
+	#define USB_FUNCTION_VENDOR_ID_OVERRIDE		0x0483
+	#define USB_FUNCTION_PRODUCT_ID_OVERRIDE	0xA210
+#endif
 
 /* Remove hive in \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\usbflags\ */
 
@@ -524,7 +529,7 @@ static unsigned UAC2_ClockSource(
 
 // 4.7.2.3 Clock Multiplier Descriptor
 // Clock Multiplier
-static unsigned UAC2_ClockMultiplier(
+static unsigned UAC2_ClockMultiplier_(
 	uint_fast8_t fill, uint8_t * buff, unsigned maxsize,
 	uint_fast8_t bClockID,
 	uint_fast8_t bCSourceID
@@ -1040,7 +1045,7 @@ typedef struct topology_terminals
 	uint8_t bTerminalID;	// терминал, завершающий поток обработки
 	uint8_t bFeatureUnitID;
 	uint8_t bFeatureUnit2ID;
-	uint8_t bOSC;	// Выходной темрминал цепочки
+//	uint8_t bOSC;	// Выходной темрминал цепочки с ClockMultiplier
 	uint8_t bCSourceID;
 } tpgt_t;
 
@@ -1056,8 +1061,8 @@ static unsigned UAC2_TopologyIN48(
 {
 	unsigned n = 0;
 
-	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bCSourceID);
+	////n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
 	n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  tgpt->bTerminalID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
 	n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bFeatureUnit2ID, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
@@ -1074,8 +1079,8 @@ static unsigned UAC2_Topology_inout_IN48(
 {
 	unsigned n = 0;
 
-	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bCSourceID);
+	////n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
 	n += UAC2_AudioControlIT_IN48(fill, p + n, maxsize - n, tgpt->bFeatureUnit2ID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_RADIO_RECEIVER */
 	n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bFeatureUnit2ID, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
@@ -1119,8 +1124,8 @@ static unsigned UAC2_TopologyIN48_INRTS(
 {
 	unsigned n = 0;
 
-	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bCSourceID);
+	////n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
 	n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  tgpt->bTerminalID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_FU_AUDIO -> TERMINAL_UACIN48_UACINRTS */
 	n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bFeatureUnit2ID, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_AUDIO */
@@ -1142,8 +1147,8 @@ static unsigned UAC2_TopologyOUT48(
 {
 	unsigned n = 0;
 
-	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bCSourceID);
+	////n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
 	n += UAC2_AudioControlIT_OUT48(fill, p + n, maxsize - n, tgpt->bTerminalID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Input Terminal Descriptor TERMINAL_UACOUT48 */
 	n += UAC2_AudioFeatureUnit_OUT(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bTerminalID, offset);	/* USB Speaker Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_5 */
@@ -1162,8 +1167,8 @@ static unsigned UAC2_TopologyINRTS(
 {
 	unsigned n = 0;
 
-	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bOSC);
-	n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
+	n += UAC2_ClockSource(fill, p + n, maxsize - n, tgpt->bCSourceID);
+	////n += UAC2_ClockMultiplier(fill, p + n, maxsize - n, tgpt->bCSourceID, tgpt->bOSC);
 
 	n += UAC2_AudioControlOT_IN(fill, p + n, maxsize - n,  tgpt->bTerminalID, tgpt->bFeatureUnitID, tgpt->bCSourceID, offset);	/* AUDIO_TERMINAL_USB_STREAMING Terminal Descriptor TERMINAL_ID_IT_2 -> TERMINAL_UACIN48_UACINRTS */
 	n += UAC2_AudioFeatureUnit_IN(fill, p + n, maxsize - n, tgpt->bFeatureUnitID, tgpt->bFeatureUnit2ID, offset);	/* USB microphone Audio Feature Unit Descriptor TERMINAL_UACOUT48 -> TERMINAL_ID_FU_RTS */
@@ -1723,8 +1728,9 @@ static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 			.bTerminalID = terminalID,
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+//		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+//		    .bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 	};
 	const tpgt_t * const rtstermsv [] = { & rtsterms };
 	const uint_fast8_t iInterfaceINRTS = STRING_ID_MODE0 + offset;
@@ -1778,8 +1784,9 @@ static unsigned fill_UAC2_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 			.bTerminalID = terminalID,
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48),
+//			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+//			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
 	const uint_fast8_t iInterfaceIN48 = STRING_ID_MODE0 + offset;
@@ -1821,8 +1828,9 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 			.bTerminalID = terminalID,
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+//		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+//		    .bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 	};
 	const tpgt_t * const miketermsv [] = { & miketerms };
 	const uint_fast8_t iInterfaceIN48_INRTS = STRING_ID_MODE0 + offset;
@@ -1881,8 +1889,10 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 			.bTerminalID = terminalID,
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_OUT, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
-			.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-			.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48),
+			//.bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+			//.bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+
 	};
 	const tpgt_t * const modulatortermsv [] = { & modulatorterms };
 	const uint_fast8_t bNumEndpoints = 1;//2;
@@ -2832,16 +2842,18 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 			.bTerminalID = terminalInID,
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_IN, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_IN, offset),	// промежуточный terminal этой топологии
-		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-		    .bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+//		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+//		    .bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 	};
 	const tpgt_t modulatorterms =
 	{
 			.bTerminalID = terminalOutID,
 			.bFeatureUnitID = UACTEix(TERMINAL_ID_FU2a_OUT, offset),
 			.bFeatureUnit2ID = UACTEix(TERMINAL_ID_FU2b_OUT, offset),	// промежуточный terminal этой топологии
-		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
-		    .bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+//		    .bOSC = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
+//		    .bCSourceID = UACTEix(TERMINAL_ID_CLKMULTIPLIER, offset),
+			.bCSourceID = UACTEix(TERMINAL_ID_CLKSOURCE, offset),
 	};
 	const tpgt_t * const termsv [] = { & miketerms,  & modulatorterms };
 	static const uac_pathfn_t paths [] =
