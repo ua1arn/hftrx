@@ -468,7 +468,7 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 #endif /* WITHUAC2 */
 
 // UAC2: Выполнение запроса CURR/RANGE
-static unsigned USBD_UAC2_ClockSource_req(
+static unsigned USBD_UAC2_ClockSource_req_48k(
 	const USBD_SetupReqTypedef *req,
 	uint8_t * buff
 	)
@@ -476,7 +476,62 @@ static unsigned USBD_UAC2_ClockSource_req(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	const uint_fast32_t freq = REFERENCE_FREQ;
+	const uint_fast32_t freq = dsp_get_samplerateuacin_audio48();
+
+	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
+	if (req->bmRequest & USB_REQ_TYPE_DIR)
+	{
+		// IN
+		switch (req->bRequest)
+		{
+		case 0x01:	// CURR
+			switch (controlID)
+			{
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			case 1:
+				// FREQ
+				return USBD_poke_u32(buff + 0, freq); // sample rate
+			case 2:
+				// VALID
+				return USBD_poke_u8(buff + 0, 1); // valid
+			}
+			break;
+		case 0x02:	// RANGE
+			// The Clock Validity Control must have only the CUR attribute
+			switch (controlID)
+			{
+			default:
+				// Undefined control ID
+				TP();
+				return 0;
+			case 1:
+				// FREQ
+				return USBD_fill_range_lay3pb(buff, freq, freq, 0);
+			}
+			break;
+		}
+	}
+	else
+	{
+		// OUT
+		printhex(0, buff, 16);
+	}
+	return 0;
+}
+
+// UAC2: Выполнение запроса CURR/RANGE
+static unsigned USBD_UAC2_ClockSource_req_rts(
+	const USBD_SetupReqTypedef *req,
+	uint8_t * buff
+	)
+{
+	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
+	const uint_fast8_t controlID = HI_BYTE(req->wValue);
+	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
+	const uint_fast32_t freq = dsp_get_samplerateuacin_rts();
 
 	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
@@ -597,7 +652,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48):
 					case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_OUT48):
 					case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_IN48_OUT48):
-					len = USBD_UAC2_CloclMultiplier_req_48k(req, buff);
+						len = USBD_UAC2_CloclMultiplier_req_48k(req, buff);
 						break;
 
 					case UACTEix(TERMINAL_ID_CLKMULTIPLIER, UACOFFS_INRTS):
@@ -607,9 +662,12 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48):
 					case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_OUT48):
 					case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_OUT48):
+						len = USBD_UAC2_ClockSource_req_48k(req, buff);
+						break;
+
 					case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_INRTS):
 					case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_INRTS):
-						len = USBD_UAC2_ClockSource_req(req, buff);
+						len = USBD_UAC2_ClockSource_req_rts(req, buff);
 						break;
 
 					case UACTEix(TERMINAL_ID_FU2a_IN, UACOFFS_IN48):
@@ -854,9 +912,12 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 			case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48):
 			case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_OUT48):
 			case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_OUT48):
+				USBD_UAC2_ClockSource_req_48k(req, uac_ep0databuffout);
+				break;
+
 			case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_IN48_INRTS):
 			case UACTEix(TERMINAL_ID_CLKSOURCE, UACOFFS_INRTS):
-				USBD_UAC2_ClockSource_req(req, uac_ep0databuffout);
+				USBD_UAC2_ClockSource_req_rts(req, uac_ep0databuffout);
 				break;
 #endif /* WITHUAC2 */
 
