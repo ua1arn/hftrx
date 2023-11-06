@@ -120,7 +120,7 @@
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -142,8 +142,10 @@
 	#define WITHMODEM_CDC	1
 
 	#if WITHUSBHEADSET
-		//#define WITHUAC2		1	/* UAC2 support */
-		#define WITHUSBUACIN	1
+		#define WITHUAC2		WITHUSBDEV_HSDESC //1	/* UAC2 support */
+		#define WITHUSBUACINOUT		1	/* совмещённое усройство ввода/вывода (без спектра) */
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#define WITHUSBUACIN		1
 		#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
 		#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
 	#elif WITHINTEGRATEDDSP

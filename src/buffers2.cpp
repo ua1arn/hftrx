@@ -887,7 +887,7 @@ static void dsp_loopback(unsigned nsamples)
 	{
 		FLOAT_t v [2];
 
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 		// Канал от USB в наушники
 		if (elfetch_dmabufferuacout48(v))
 			elfill_dmabuffer16tx(v [L], v [R]);

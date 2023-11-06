@@ -16210,7 +16210,7 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
-#if WITHINTEGRATEDDSP && (HARDWARE_NCORES <= 2)
+#if WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM)
 	audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
 #if WITHUSEAUDIOREC

@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// mango-pi board
+// Dmitriy's board
 
 #ifndef ARM_ALLW_F1333_CPUSTYLE_TBOARD_V0_H_INCLUDED
 #define ARM_ALLW_F1333_CPUSTYLE_TBOARD_V0_H_INCLUDED 1
@@ -117,7 +117,7 @@
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -139,7 +139,7 @@
 	#define WITHMODEM_CDC	1
 
 	#if WITHUSBHEADSET
-		//#define WITHUAC2		1	/* UAC2 support */
+		#define WITHUAC2		WITHUSBDEV_HSDESC //1	/* UAC2 support */
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACIN	1
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */

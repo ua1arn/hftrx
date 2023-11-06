@@ -215,22 +215,41 @@ void user_uart5_ontxchar(void * ctx);
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
+		#if WITHUSBDEV_HSDESC
 
-		//#define WITHUAC2		1	/* UAC2 support */
-		#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-		#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-		#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
-		#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
+			#define WITHUAC2		1	/* UAC2 support */
+			#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+			#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+			#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
+			#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
 
-		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
-		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-		#if WITHRTS96 || WITHRTS192
-			#define WITHUSBUACIN	1
-			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-		#else /* WITHRTS96 || WITHRTS192 */
-			#define WITHUSBUACIN	1
-		#endif /* WITHRTS96 || WITHRTS192 */
-		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+			#if WITHRTS96 || WITHRTS192
+				#define WITHUSBUACIN	1
+				#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+			#else /* WITHRTS96 || WITHRTS192 */
+				#define WITHUSBUACIN	1
+			#endif /* WITHRTS96 || WITHRTS192 */
+			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		#else /* WITHUSBDEV_HSDESC */
+
+			//#define WITHUAC2		1	/* UAC2 support */
+			#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+			#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+			#define UACIN_RTS96_SAMPLEBYTES		3	/* должны быть 2, 3 или 4 */
+			#define UACIN_RTS192_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+
+			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+			#if WITHRTS96 || WITHRTS192
+				#define WITHUSBUACIN	1
+				#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+			#else /* WITHRTS96 || WITHRTS192 */
+				#define WITHUSBUACIN	1
+			#endif /* WITHRTS96 || WITHRTS192 */
+			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		#endif /* WITHUSBDEV_HSDESC */
 	#endif /* WITHINTEGRATEDDSP */
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
