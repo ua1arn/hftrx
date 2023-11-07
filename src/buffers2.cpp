@@ -285,14 +285,13 @@ public:
 	LIST_ENTRY freelist;
 	LIST_ENTRY readylist;
 	const char * name;
-	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
-	unsigned wbstart;	// start position of work buffer - zero has not meaning
 	unsigned wbskip;	// сколько блоков пропускаем без контроля расхожденеия скорости
 	unsigned wbadded;
 	unsigned wbdeleted;
-	unsigned wbhatoffs [3];		// смещения в буфере для формирования нового блока
-	unsigned wbhatsize [3];		// рамеры
-	unsigned wbgatcnt;			// Текуший инлдекс параметров для заполнения выходного буфера
+	unsigned wbgatoffs [2];		// смещения в буфере для формирования нового блока
+	unsigned wbgatsize [2];		// рамеры
+	unsigned wbgatix;			// Текуший инлдекс параметров для заполнения выходного буфера
+	element_t * workbuff;		// буфер - источник данных, над которым выполняется ресэмплинг (не валиден если wbgatcnt == 3)
 
 	fqmeter fqin, fqout;
 	enum { LEVELSTEP = 8 };
@@ -310,11 +309,10 @@ public:
 		freecount(capacity),
 		rslevel(0),
 		name(aname),
-		wbstart(0),	// начало данных в workbuff->buff
 		wbskip(0),	// сколько блоков пропускаем без контроля расхожденеия скорости
 		wbadded(0),
 		wbdeleted(0),
-		wbgatcnt(ARRAY_SIZE(wbhatsize)),	// состояние - нет ничего для формирования нового блокв
+		wbgatix(ARRAY_SIZE(wbgatsize)),	// состояние - нет ничего для формирования нового блокв
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
@@ -329,15 +327,7 @@ public:
 			InsertHeadList(& freelist, & p->item);
 		}
 		//PRINTF("%s: %u[%u]\n", name, sizeof (storage [0].v.buff), capacity);
-
-        // resampler test
-		if (hasresample)
-		{
-			VERIFY3(get_freebuffer(& workbuff), __FILE__, __LINE__, name);
-			wbstart = 7 * element_t::ss * element_t::nch;
-			//PRINTF("%s: test resampler: wbstart=%u\n", name, wbstart);
-		}
-	}
+ 	}
 
 	/* готовность буферов с "гистерезисом". */
 	void fiforeadyupdate()
@@ -579,53 +569,101 @@ public:
 	// исполнение команд на добавление или удаление одного семплв, на замену потока тишиной
 	int get_readybufferarj(element_t * * dest, bool add, bool del)
 	{
-		if (wbstart != 0 && 1)
+		const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
+		const unsigned total = sizeof element_t::buff;	// полный размер буфера
+		const unsigned wbgattotal = ARRAY_SIZE(wbgatsize);	// все элементы выданы
+
+		// ситуация что позиция источника и получателя выровнены на границу буфера и нет запросов на ресэмплинг
+//		if (wbgattotal == wbgatix && ! add && ! del)
+//		{
+//			return get_readybuffer_raw(dest);
+//		}
+
+		// в остальных случаях заполняем новый буфер
+		while(! get_freebufferforced(dest))	// выходной буфер
+			ASSERT(0);
+
+#if 1
+		// test
+		if (get_readybuffer_raw(& workbuff))
 		{
-			// Выходной буфер всегда запрашивается.
-			// каждый вызов метода get_readybufferarj возвращает или целый буфер или ничего.
-			if (get_freebuffer(dest) == 0)	// выходной буфр
-				return 0;
-
-			// Есть не полностью израсходованный остаток в буфере
-			const int ototal = sizeof (workbuff->buff);
-
-			const int o1 = wbstart;
-			const int p1 = sizeof (workbuff->buff) - wbstart;	// размер, оставшийся до конца буфера
-
-			const int o2 = 0;
-			const int p2 = 0;	// вставляемый кусок
-
-			const int o3 = 0;
-			const int p3 = wbstart;	// размер от начала буфера - в рабочем буфере уже передано
-			// есть остаток старого буфера
-
-			int o = 0;
-			// Часть, оставшаяся от предыдущих пересылок
-
-			memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o1, p1);	// копируем остаток предыдущего буфера
-			o += p1;
-			// остаток передали весь
+			memcpy((* dest)->buff, workbuff->buff, total);
 			release_buffer(workbuff);
-
-			// Вставляемая часть
-			if (p2 != 0)
-			{
-				o += p2;
-			}
-
-			if (o < ototal)
-			{
-				while (! get_readybufferforced(& workbuff))	// следующий готовый
-					ASSERT(0);
-				memcpy((uint8_t *) (* dest)->buff + o, (uint8_t *) workbuff->buff + o3, p3);	// копируем часть следующего буфера
-				o += p3;
-			}
-			ASSERT(o == ototal);
-			return 1;
+			return true;
 		}
-		return get_readybuffer_raw(dest);
-	}
+		release_buffer(* dest);
+		return false;
+#endif
+		// Уикл, пока не наберем требуемого колчиества сэмплов в выходной буфер
+		for (unsigned score = 0; score < total;)
+		{
+			if (wbgatix < wbgattotal)
+			{
+				// ещё остались данные
+				if (del)
+				{
+					wbgatoffs [wbgatix] += wbgss;
+					wbgatsize [wbgatix] -= wbgss;
+					del = false;
+				}
+				// добавление данных будет выполнено в следующем проходе через состояние "данных нет"
 
+			}
+			else
+			{
+				// Данных нет
+				if (! get_readybuffer_raw(& workbuff))
+				{
+					release_buffer(* dest);
+					return false;	// нет и в источнике
+				}
+				// Есть полный буфер
+				if (add)
+				{
+					// Добавляем сэмпл
+					wbgatoffs [wbgattotal - 2] = 0;
+					wbgatsize [wbgattotal - 2] = wbgss;
+					wbgatoffs [wbgattotal - 1] = 0;
+					wbgatsize [wbgattotal - 1] = total;
+					wbgatix = wbgattotal - 2;
+					add = false;
+
+				}
+				else if (del)
+				{
+					// удаляем сэмпл
+					wbgatoffs [wbgattotal - 1] = 0 + wbgss;	// пропустили один сэмпл от начала
+					wbgatsize [wbgattotal - 1] = total - wbgss;
+					wbgatix = wbgattotal - 1;
+					del = false;
+				}
+				else
+				{
+					// Есть полный буфер без неебходимости ресэмплинга - доформировать выходной буфер
+					wbgatoffs [wbgattotal - 1] = 0;
+					wbgatsize [wbgattotal - 1] = total;
+					wbgatix = wbgattotal - 1;
+				}
+			}
+
+			if (wbgatix < wbgattotal)
+			{
+				// ещё остались данные
+				const unsigned chunk = ulmin32(wbgattotal, wbgatsize [wbgatix]);
+				memcpy((uint8_t *) (* dest)->buff + score, (uint8_t *) workbuff->buff + wbgatoffs [wbgatix], chunk);	// копируем остаток предыдущего буфера
+				score += chunk;
+				wbgatsize [wbgatix] -= chunk;
+				if (0 == wbgatsize [wbgatix])
+				{
+					if (++ wbgatix >= wbgattotal)
+					{
+						release_buffer(workbuff);
+					}
+				}
+			}
+		}
+		return true;
+	}
 };
 
 template <typename sample_t, typename element_t, int hasresample>
