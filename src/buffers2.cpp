@@ -14,10 +14,12 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
+// Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+static const unsigned SKIPSAMPLES = 1000;	// раз в 1000 сэмплов добавление/удалени одного сэмпла
 
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
@@ -95,7 +97,7 @@ public:
 	}
 
 	// преобразование в буфер из внутреннего представления
-	unsigned poke(uint8_t * buff, apptype ch0, apptype ch1)
+	unsigned poke_LE(uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -137,7 +139,7 @@ public:
 
 
 	// преобразование в буфер из внутреннего представления
-	unsigned poketransf(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
+	unsigned poketransf_LE(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
 	{
 		switch (nch)
 		{
@@ -178,7 +180,7 @@ public:
 	}
 
 	// во внутреннее представление из буфера
-	unsigned peek(const uint8_t * buff, apptype * dest)
+	unsigned peek_LE(const uint8_t * buff, apptype * dest)
 	{
 		switch (nch)
 		{
@@ -294,8 +296,7 @@ public:
 
 	fqmeter fqin, fqout;
 
-	// параметры чувствтительности ресэмплера
-	const unsigned SKIPBUFFS = 500;
+	// параметры реакции ресэмплера
 	int MINMLEVEL, NORMLEVEL, MAXLEVEL;
 	bool outready;
 
@@ -428,6 +429,9 @@ public:
 	{
 		if (hasresample)
 		{
+			const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
+			const unsigned total = sizeof element_t::buff;	// полный размер буфера
+			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);	// раз в 300 буферов добавление/удалени сэмпла
 			if (! outready)
 				return false;
 			if (wbskip != 0)
@@ -1331,7 +1335,7 @@ void save_dmabufferuacout48(uintptr_t addr)
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned getcbf_dmabufferuacout48(uint8_t * b, FLOAT_t * dest)
 {
-	return uacout48adpt.peek(b, dest);
+	return uacout48adpt.peek_LE(b, dest);
 }
 
 // Возвращает не-ноль если данные есть
@@ -1391,7 +1395,7 @@ typedef enum
 	// Возвращает количество элементов буфера, обработанных за вызов
 	static unsigned putcbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		return uacinrts192adpt.poketransf(& if2rts192out, b, ch0, ch1);
+		return uacinrts192adpt.poketransf_LE(& if2rts192out, b, ch0, ch1);
 	}
 
 	void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
@@ -1463,7 +1467,7 @@ typedef enum
 	// Возвращает количество элементов буфера, обработанных за вызов
 	static unsigned putcbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 	{
-		return uacinrts96adpt.poketransf(& if2rts96out, b, ch0, ch1);
+		return uacinrts96adpt.poketransf_LE(& if2rts96out, b, ch0, ch1);
 	}
 
 	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
@@ -1535,7 +1539,7 @@ static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48", uacin48buf, ARRAY_SIZE(uac
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 {
-	return uacin48adpt.poke(b, ch0, ch1);
+	return uacin48adpt.poke_LE(b, ch0, ch1);
 }
 
 int_fast32_t cachesize_dmabufferuacin48(void)
