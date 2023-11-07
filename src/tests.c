@@ -4150,7 +4150,7 @@ static void diskio_test(BYTE drv)
 
 			case 'W':
 				{
-					unsigned nsect = 1024;
+					unsigned nsect = 10 * 1024 * 2;	// 10M
 					// Wipe SD
 					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
 					char c = 0;
@@ -4422,6 +4422,38 @@ static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 	PRINTF("%08X: %u bytes written.\n", offset, score);
 }
 
+static void verifying(FIL * f, unsigned offset, BYTE targetDEV)
+{
+	return;
+	FRESULT rc;				/* Result code */
+	DRESULT dc;
+	unsigned score = 0;
+	for (;;)
+	{
+		static BYTE buff [512 * 4];		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static BYTE buffchk [512 * 4];		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		unsigned chunksize = sizeof buff;
+		UINT br;
+		//PRINTF("Write at %u.\n", score);
+		rc = f_read(f, buff, chunksize, &br);	/* Read a chunk of file */
+		if (rc != FR_OK || ! br)
+			break;			/* Error or end of file */
+		dc = disk_read(targetDEV, buffchk, (offset + score) / 512, chunksize / 512);
+		if (dc != 0)
+		{
+			PRINTF("Write error");
+			break;
+		}
+		if (memcmp(buff, buffchk, br))
+		{
+			PRINTF("Verifaying fault\n");
+			return;
+		}
+		score += chunksize;
+	}
+	PRINTF("%08X: %u bytes verifyed.\n", offset, score);
+}
+
 static void
 bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 {
@@ -4436,7 +4468,7 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 				"fsbl.alw32"
 		},
 		{
-				BOOTLOADER_FLASHSIZE,
+				BOOTLOADER_SELFSIZE,
 				"tc1_awt507_app.alw32"
 		},
 	};
@@ -4494,6 +4526,21 @@ startProgramming:
 		}
 
 		programming(& Fil, jobs [i].offs, targetDEV);
+		rc = f_close(& Fil);
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("Can not close file '%s', rc=%u\n"), filename, rc);
+			break;
+		}
+		// check written
+		rc = f_open(& Fil, filename, FA_READ);
+		if (rc != FR_OK)
+		{
+			PRINTF(PSTR("Can not open file '%s', rc=%u\n"), filename, rc);
+			continue;
+		}
+
+		verifying(& Fil, jobs [i].offs, targetDEV);
 		rc = f_close(& Fil);
 		if (rc != FR_OK)
 		{
@@ -12525,6 +12572,9 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG && ! WITHISBOOTLOADER
+	#if ! (defined (WITHUSESDCARD) && defined (WITHUSEUSBFLASH))
+		#error Wrong configuration
+	#endif
 	{
 		// USB file -> eMMC write
 		bootloaderFLASH("0:", eMMCtargetdrv);
