@@ -290,6 +290,9 @@ public:
 	unsigned wbskip;	// сколько блоков пропускаем без контроля расхожденеия скорости
 	unsigned wbadded;
 	unsigned wbdeleted;
+	unsigned wbhatoffs [3];		// смещения в буфере для формирования нового блока
+	unsigned wbhatsize [3];		// рамеры
+	unsigned wbgatcnt;			// Текуший инлдекс параметров для заполнения выходного буфера
 
 	fqmeter fqin, fqout;
 	enum { LEVELSTEP = 8 };
@@ -311,6 +314,7 @@ public:
 		wbskip(0),	// сколько блоков пропускаем без контроля расхожденеия скорости
 		wbadded(0),
 		wbdeleted(0),
+		wbgatcnt(ARRAY_SIZE(wbhatsize)),	// состояние - нет ничего для формирования нового блокв
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
