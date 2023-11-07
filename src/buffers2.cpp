@@ -288,14 +288,15 @@ public:
 	unsigned wbskip;	// сколько блоков пропускаем без контроля расхожденеия скорости
 	unsigned wbadded;
 	unsigned wbdeleted;
-	unsigned wbgatoffs [2];		// смещения в буфере для формирования нового блока
-	unsigned wbgatsize [2];		// рамеры
+	unsigned wbgatoffs [3];		// смещения в буфере для формирования нового блока
+	unsigned wbgatsize [3];		// рамеры
 	unsigned wbgatix;			// Текуший инлдекс параметров для заполнения выходного буфера
 	element_t * workbuff;		// буфер - источник данных, над которым выполняется ресэмплинг (не валиден если wbgatcnt == 3)
 
 	fqmeter fqin, fqout;
 	enum { LEVELSTEP = 8 };
 	// параметры чувствтительности ресэмплера
+	const unsigned SKIPBUFFS = 500;
 	enum { MINMLEVEL = LEVELSTEP * 1, NORMLEVEL = LEVELSTEP * 2, MAXLEVEL = LEVELSTEP * 3 };
 	bool outready;
 
@@ -453,16 +454,16 @@ public:
 				-- wbskip;
 				return get_readybufferarj(dest, false, false);
 			}
-			else if (readycount < MINMLEVEL)
+			else if (readycount <= MINMLEVEL)
 			{
 				++ wbadded;
-				wbskip = 2000;
+				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, true, false);
 			}
 			else if (readycount >= MAXLEVEL)
 			{
 				++ wbdeleted;
-				wbskip = 2000;
+				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, false, true);
 			}
 			else
@@ -543,7 +544,7 @@ public:
 		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk,v=%d", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
 		if (hasresample)
 		{
-			PRINTF("+%u,-%u", wbadded, wbdeleted);
+			PRINTF("+%u,-%u,i=%u", wbadded, wbdeleted, wbgatix);
 		}
 #endif /* WITHBUFFERSDEBUG */
 	}
@@ -572,12 +573,13 @@ public:
 		const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 		const unsigned total = sizeof element_t::buff;	// полный размер буфера
 		const unsigned wbgattotal = ARRAY_SIZE(wbgatsize);	// все элементы выданы
+		ASSERT((total % wbgss) == 0);
 
 		// ситуация что позиция источника и получателя выровнены на границу буфера и нет запросов на ресэмплинг
-//		if (wbgattotal == wbgatix && ! add && ! del)
-//		{
-//			return get_readybuffer_raw(dest);
-//		}
+		if (wbgattotal == wbgatix && ! add && ! del)
+		{
+			return get_readybuffer_raw(dest);
+		}
 
 		// в остальных случаях заполняем новый буфер
 		while(! get_freebufferforced(dest))	// выходной буфер
@@ -602,11 +604,28 @@ public:
 				// ещё остались данные
 				if (del)
 				{
+					ASSERT(wbgatsize [wbgatix] >= wbgss);
 					wbgatoffs [wbgatix] += wbgss;
 					wbgatsize [wbgatix] -= wbgss;
 					del = false;
+					ASSERT((wbgatoffs [wbgatix] % wbgss) == 0);
+					ASSERT((wbgatsize [wbgatix] % wbgss) == 0);
+//					if (!strcmp(name, "uaco48"))
+//						PRINTF("%s:del\n", name);
+					if (!strcmp(name, "uaco48"))
+						dbg_putchar('@');
 				}
-				// добавление данных будет выполнено в следующем проходе через состояние "данных нет"
+				else if (add)
+				{
+					// добавление данных
+					ASSERT(wbgatix > 0);
+					wbgatoffs [wbgatix - 1] = wbgatoffs [wbgatix];
+					wbgatsize [wbgatix - 1] = wbgss;
+					wbgatix -= 1;
+					add = false;
+//					if (!strcmp(name, "uaco48"))
+//						PRINTF("%s:add\n", name);
+				}
 
 			}
 			else
@@ -623,25 +642,36 @@ public:
 					// Добавляем сэмпл
 					wbgatoffs [wbgattotal - 2] = 0;
 					wbgatsize [wbgattotal - 2] = wbgss;
+
 					wbgatoffs [wbgattotal - 1] = 0;
 					wbgatsize [wbgattotal - 1] = total;
+
 					wbgatix = wbgattotal - 2;
 					add = false;
 
+//					if (!strcmp(name, "uaco48"))
+//						PRINTF("%s:add2\n", name);
 				}
 				else if (del)
 				{
 					// удаляем сэмпл
 					wbgatoffs [wbgattotal - 1] = 0 + wbgss;	// пропустили один сэмпл от начала
 					wbgatsize [wbgattotal - 1] = total - wbgss;
+
 					wbgatix = wbgattotal - 1;
 					del = false;
+
+//					if (!strcmp(name, "uaco48"))
+//						PRINTF("%s:del2\n", name);
+					if (!strcmp(name, "uaco48"))
+						dbg_putchar('$');
 				}
 				else
 				{
 					// Есть полный буфер без неебходимости ресэмплинга - доформировать выходной буфер
 					wbgatoffs [wbgattotal - 1] = 0;
 					wbgatsize [wbgattotal - 1] = total;
+
 					wbgatix = wbgattotal - 1;
 				}
 			}
@@ -649,7 +679,10 @@ public:
 			if (wbgatix < wbgattotal)
 			{
 				// ещё остались данные
-				const unsigned chunk = ulmin32(wbgattotal, wbgatsize [wbgatix]);
+				const unsigned chunk = ulmin32(total - score, wbgatsize [wbgatix]);
+				ASSERT((score % wbgss) == 0);
+				ASSERT((chunk % wbgss) == 0);
+				ASSERT((wbgatsize [wbgatix] % wbgss) == 0);
 				memcpy((uint8_t *) (* dest)->buff + score, (uint8_t *) workbuff->buff + wbgatoffs [wbgatix], chunk);	// копируем остаток предыдущего буфера
 				score += chunk;
 				wbgatsize [wbgatix] -= chunk;
@@ -2658,8 +2691,8 @@ void buffers_diagnostics(void)
 #if WITHINTEGRATEDDSP
 #if 1
 	//denoise16list.debug();
-	codec16rx.debug();
-	codec16tx.debug();
+	//codec16rx.debug();
+	//codec16tx.debug();
 	//moni16.debug();
 	//voice32tx.debug();
 	//voice32rx.debug();
@@ -2676,7 +2709,7 @@ void buffers_diagnostics(void)
 #if WITHRTS96
 	uacinrts96.debug();
 #endif
-	uacin48.debug();
+	//uacin48.debug();
 #endif
 #endif
 	//message8.debug();
