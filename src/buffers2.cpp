@@ -287,6 +287,9 @@ public:
 	const char * name;
 	element_t * workbuff;	// буфер над которым выполняется ресэмплинг
 	unsigned wbstart;	// start position of work buffer - zero has not meaning
+	unsigned wbskip;	// сколько блоков пропускаем без контроля расхожденеия скорости
+	unsigned wbadded;
+	unsigned wbdeleted;
 
 	fqmeter fqin, fqout;
 	enum { LEVELSTEP = 8 };
@@ -305,6 +308,9 @@ public:
 		rslevel(0),
 		name(aname),
 		wbstart(0),	// начало данных в workbuff->buff
+		wbskip(0),	// сколько блоков пропускаем без контроля расхожденеия скорости
+		wbadded(0),
+		wbdeleted(0),
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
@@ -448,7 +454,27 @@ public:
 		{
 			if (! outready)
 				return false;
-			return get_readybufferarj(dest, false, false, false);
+			if (wbskip != 0)
+			{
+				-- wbskip;
+				return get_readybufferarj(dest, false, false);
+			}
+			else if (readycount < MINMLEVEL)
+			{
+				++ wbadded;
+				wbskip = 2000;
+				return get_readybufferarj(dest, true, false);
+			}
+			else if (readycount >= MAXLEVEL)
+			{
+				++ wbdeleted;
+				wbskip = 2000;
+				return get_readybufferarj(dest, false, true);
+			}
+			else
+			{
+				return get_readybufferarj(dest, false, false);
+			}
 		}
 		else
 		{
@@ -520,7 +546,11 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF("%s:e=%d,y=%d,f=%d,%uk/%uk,v=%d ", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk,v=%d", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
+		if (hasresample)
+		{
+			PRINTF("+%u,-%u", wbadded, wbdeleted);
+		}
 #endif /* WITHBUFFERSDEBUG */
 	}
 
@@ -543,7 +573,7 @@ public:
 	// функция вызывается получателем (получаем после ресэмплинга.
 	// Гарантированно получене буфера
 	// исполнение команд на добавление или удаление одного семплв, на замену потока тишиной
-	int get_readybufferarj(element_t * * dest, bool zero, bool add, bool del)
+	int get_readybufferarj(element_t * * dest, bool add, bool del)
 	{
 		if (wbstart != 0 && 1)
 		{
