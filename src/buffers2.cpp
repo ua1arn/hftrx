@@ -278,10 +278,9 @@ public:
 	int errallocate;
 	int saveount;
 #endif /* WITHBUFFERSDEBUG */
-public:
+
 	int readycount;
 	int freecount;
-	int rslevel;
 	LIST_ENTRY freelist;
 	LIST_ENTRY readylist;
 	const char * name;
@@ -294,10 +293,10 @@ public:
 	element_t * workbuff;		// буфер - источник данных, над которым выполняется ресэмплинг (не валиден если wbgatcnt == 3)
 
 	fqmeter fqin, fqout;
-	enum { LEVELSTEP = 8 };
+
 	// параметры чувствтительности ресэмплера
 	const unsigned SKIPBUFFS = 500;
-	enum { MINMLEVEL = LEVELSTEP * 1, NORMLEVEL = LEVELSTEP * 2, MAXLEVEL = LEVELSTEP * 3 };
+	int MINMLEVEL, NORMLEVEL, MAXLEVEL;
 	bool outready;
 
 public:
@@ -308,12 +307,14 @@ public:
 #endif /* WITHBUFFERSDEBUG */
 		readycount(0),
 		freecount(capacity),
-		rslevel(0),
 		name(aname),
 		wbskip(0),	// сколько блоков пропускаем без контроля расхожденеия скорости
 		wbadded(0),
 		wbdeleted(0),
 		wbgatix(ARRAY_SIZE(wbgatsize)),	// состояние - нет ничего для формирования нового блокв
+		MINMLEVEL(1 * capacity / 4),
+		NORMLEVEL(2 * capacity / 4),
+		MAXLEVEL(3 * capacity / 4),
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
@@ -336,24 +337,6 @@ public:
 		outready = outready ? readycount != 0 : readycount >= NORMLEVEL;
 	}
 
-	void rslevelreset()
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
-
-		rslevel = 0;
-
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-	}
-	void rsleveladd(int inc)
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
-
-		rslevel += inc;
-
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-	}
 	// сохранить в списке свободных
 	void release_buffer(element_t * addr)
 	{
@@ -387,7 +370,6 @@ public:
 #if WITHBUFFERSDEBUG
 		fqin.pass(sizeof addr->buff / (addr->ss * addr->nch));
 		++ saveount;
-		rslevel += sizeof addr->buff / (addr->ss * addr->nch);
 #endif /* WITHBUFFERSDEBUG */
 
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
@@ -406,7 +388,6 @@ public:
 	#if WITHBUFFERSDEBUG
 			fqout.pass(sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch));
 	#endif /* WITHBUFFERSDEBUG */
-			rslevel -= sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch);
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
@@ -494,7 +475,7 @@ public:
 	{
 		if (get_freebuffer_raw(dest))
 			return true;
-		for (unsigned i = 3; i -- && get_readybuffer_raw(dest);)
+		for (unsigned i = MINMLEVEL; i -- && get_readybuffer_raw(dest);)
 		{
 			release_buffer(* dest);
 		}
@@ -506,7 +487,7 @@ public:
 	{
 		if (get_readybuffer_raw(dest))
 			return true;
-		for (unsigned i = 3; i -- && get_freebuffer(dest);)
+		for (unsigned i = MINMLEVEL; i -- && get_freebuffer(dest);)
 		{
 			save_buffer(* dest);
 		}
@@ -541,10 +522,10 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk,v=%d", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000, rslevel);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (fin + 500) / 1000, (fout + 500) / 1000);
 		if (hasresample)
 		{
-			PRINTF("+%u,-%u,i=%u", wbadded, wbdeleted, wbgatix);
+			PRINTF("+%u,-%u", wbadded, wbdeleted);
 		}
 #endif /* WITHBUFFERSDEBUG */
 	}
@@ -566,16 +547,16 @@ public:
 	/// resampler
 
 	// функция вызывается получателем (получаем после ресэмплинга.
-	// Гарантированно получене буфера
+	// Гарантированно получене полного буфера или отказ
 	// исполнение команд на добавление или удаление одного семплв, на замену потока тишиной
 	int get_readybufferarj(element_t * * dest, bool add, bool del)
 	{
 		const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 		const unsigned total = sizeof element_t::buff;	// полный размер буфера
 		const unsigned wbgattotal = ARRAY_SIZE(wbgatsize);	// все элементы выданы
-		ASSERT((total % wbgss) == 0);
 
-		// ситуация что позиция источника и получателя выровнены на границу буфера и нет запросов на ресэмплинг
+		// ситуация, когда позиция источника и получателя
+		// выровнены на границу буфера и нет запросов на ресэмплинг
 		if (wbgattotal == wbgatix && ! add && ! del)
 		{
 			return get_readybuffer_raw(dest);
@@ -585,8 +566,8 @@ public:
 		while(! get_freebufferforced(dest))	// выходной буфер
 			ASSERT(0);
 
-#if 1
-		// test
+#if 0
+		// test (bypas resampler)
 		if (get_readybuffer_raw(& workbuff))
 		{
 			memcpy((* dest)->buff, workbuff->buff, total);
@@ -596,49 +577,47 @@ public:
 		release_buffer(* dest);
 		return false;
 #endif
-		// Уикл, пока не наберем требуемого колчиества сэмплов в выходной буфер
+		// Цикл, пока не наберем требуемого колчиества сэмплов в выходной буфер
 		for (unsigned score = 0; score < total;)
 		{
 			if (wbgatix < wbgattotal)
 			{
-				// ещё остались данные
-				if (del)
+				// ещё остались данные в workbuff
+				if (add)
 				{
-					ASSERT(wbgatsize [wbgatix] >= wbgss);
-					wbgatoffs [wbgatix] += wbgss;
-					wbgatsize [wbgatix] -= wbgss;
-					del = false;
-					ASSERT((wbgatoffs [wbgatix] % wbgss) == 0);
-					ASSERT((wbgatsize [wbgatix] % wbgss) == 0);
-//					if (!strcmp(name, "uaco48"))
-//						PRINTF("%s:del\n", name);
-					if (!strcmp(name, "uaco48"))
-						dbg_putchar('@');
-				}
-				else if (add)
-				{
-					// добавление данных
+					// ещё остались данные
+					// Добавляем сэмпл
 					ASSERT(wbgatix > 0);
 					wbgatoffs [wbgatix - 1] = wbgatoffs [wbgatix];
 					wbgatsize [wbgatix - 1] = wbgss;
 					wbgatix -= 1;
 					add = false;
-//					if (!strcmp(name, "uaco48"))
-//						PRINTF("%s:add\n", name);
+				}
+				else if (del)
+				{
+					// ещё остались данные
+					// удаляем сэмпл
+					ASSERT(wbgatsize [wbgatix] >= wbgss);
+					wbgatoffs [wbgatix] += wbgss;
+					wbgatsize [wbgatix] -= wbgss;
+					del = false;
 				}
 
 			}
 			else
 			{
-				// Данных нет
+				// Данных нет в workbuff
 				if (! get_readybuffer_raw(& workbuff))
 				{
 					release_buffer(* dest);
 					return false;	// нет и в источнике
 				}
-				// Есть полный буфер
+
+				// Есть полный буфер в workbuff
+
 				if (add)
 				{
+					// Есть полный буфер
 					// Добавляем сэмпл
 					wbgatoffs [wbgattotal - 2] = 0;
 					wbgatsize [wbgattotal - 2] = wbgss;
@@ -648,27 +627,20 @@ public:
 
 					wbgatix = wbgattotal - 2;
 					add = false;
-
-//					if (!strcmp(name, "uaco48"))
-//						PRINTF("%s:add2\n", name);
 				}
 				else if (del)
 				{
+					// Есть полный буфер
 					// удаляем сэмпл
 					wbgatoffs [wbgattotal - 1] = 0 + wbgss;	// пропустили один сэмпл от начала
 					wbgatsize [wbgattotal - 1] = total - wbgss;
 
 					wbgatix = wbgattotal - 1;
 					del = false;
-
-//					if (!strcmp(name, "uaco48"))
-//						PRINTF("%s:del2\n", name);
-					if (!strcmp(name, "uaco48"))
-						dbg_putchar('$');
 				}
 				else
 				{
-					// Есть полный буфер без неебходимости ресэмплинга - доформировать выходной буфер
+					// Есть полный буфер без необходимости ресэмплинга - доформировать выходной буфер
 					wbgatoffs [wbgattotal - 1] = 0;
 					wbgatsize [wbgattotal - 1] = total;
 
@@ -680,11 +652,9 @@ public:
 			{
 				// ещё остались данные
 				const unsigned chunk = ulmin32(total - score, wbgatsize [wbgatix]);
-				ASSERT((score % wbgss) == 0);
-				ASSERT((chunk % wbgss) == 0);
-				ASSERT((wbgatsize [wbgatix] % wbgss) == 0);
 				memcpy((uint8_t *) (* dest)->buff + score, (uint8_t *) workbuff->buff + wbgatoffs [wbgatix], chunk);	// копируем остаток предыдущего буфера
 				score += chunk;
+				wbgatoffs [wbgatix] += chunk;
 				wbgatsize [wbgatix] -= chunk;
 				if (0 == wbgatsize [wbgatix])
 				{
@@ -2709,7 +2679,7 @@ void buffers_diagnostics(void)
 #if WITHRTS96
 	uacinrts96.debug();
 #endif
-	//uacin48.debug();
+	uacin48.debug();
 #endif
 #endif
 	//message8.debug();
