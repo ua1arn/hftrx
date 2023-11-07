@@ -475,7 +475,8 @@ public:
 	{
 		if (get_freebuffer_raw(dest))
 			return true;
-		for (unsigned i = MINMLEVEL; i -- && get_readybuffer_raw(dest);)
+		// сбрасываем количество до половины (NORMLEVEL)
+		for (unsigned i = NORMLEVEL; i -- && get_readybuffer_raw(dest);)
 		{
 			release_buffer(* dest);
 		}
@@ -487,7 +488,8 @@ public:
 	{
 		if (get_readybuffer_raw(dest))
 			return true;
-		for (unsigned i = MINMLEVEL; i -- && get_freebuffer(dest);)
+		// сбрасываем количество до половины (NORMLEVEL)
+		for (unsigned i = NORMLEVEL; i -- && get_freebuffer(dest);)
 		{
 			save_buffer(* dest);
 		}
