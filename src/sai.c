@@ -5498,6 +5498,9 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// anatol
 
+	ASSERT(DMABUFFSTEP16RX == 3);
+	ASSERT(DMABUFFSTEP16TX == 2);
+
 	///AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |(0x04 | 0x01) << (UINT32_C(1) << 0) |	0;// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 //	AUDIO_CODEC->ADC_DIG_CTRL & ~ (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(15 << 0);
 //	AUDIO_CODEC->ADC_DIG_CTRL |= (UINT32_C(1) << 17)|(UINT32_C(1) << 16)|(1 << 0)|(1 << 1)/*|(1 << 2)*/;///LINL,LINR IN
@@ -5508,7 +5511,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 			(UINT32_C(1) << 16) |	// ADC1_2_VOL_EN ADC1/2 Volume Control Enable
 			((0x04 | 0x02 | 0x01) << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
-	ASSERT(DMABUFFSTEP16RX == 3);
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 	AUDIO_CODEC->AC_ADC_FIFOC |= (UINT32_C(1) << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits

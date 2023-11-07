@@ -17,6 +17,8 @@
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
+// Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
+
 #define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
@@ -2582,11 +2584,11 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 void buffers_diagnostics(void)
 {
 #if WITHINTEGRATEDDSP
-#if 0
-	denoise16list.debug();
+#if 1
+	//denoise16list.debug();
 	codec16rx.debug();
 	codec16tx.debug();
-	moni16.debug();
+	//moni16.debug();
 	//voice32tx.debug();
 	//voice32rx.debug();
 #endif

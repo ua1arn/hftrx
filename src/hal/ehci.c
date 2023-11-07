@@ -31,7 +31,7 @@
 /* USB Host Core handle declaration. */
 USBH_HandleTypeDef hUsbHostHS;
 
-static EHCI_HandleTypeDef hehci_USB;
+static RAMNC EHCI_HandleTypeDef hehci_USB;
 
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"

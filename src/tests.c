@@ -12524,10 +12524,13 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && ! WITHISBOOTLOADER
+#if 0 && WITHDEBUG && ! WITHISBOOTLOADER
 	{
 		// USB file -> eMMC write
 		bootloaderFLASH("0:", eMMCtargetdrv);
+		PRINTF("Done. Halted.\n");
+		for (;;)
+			;
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEFATFS

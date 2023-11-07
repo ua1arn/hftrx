@@ -438,8 +438,8 @@ typedef uint32_t ncoftw_t;
 typedef int32_t ncoftwi_t;
 #define NCOFTWBITS 32	// количество битов в ncoftw_t
 #define FTWROUND(ftw) ((uint32_t) (ftw))
-#define FTWAF001(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100)
-#define FTWAF(freq) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE)
+#define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
+#define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
 static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
@@ -4475,7 +4475,6 @@ demodulator_SAM(
 
 	return audio;
 }
-
 
 // ПРИЁМ
 // Обрабатывается floating point квадратура
