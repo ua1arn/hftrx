@@ -1112,7 +1112,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//PRINTF("3 HAL_EHCI_Init: PORTSC=%08X\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	// OHCI init
 
-	if (hehci->ohci != NULL && 0)
+	if (hehci->ohci != NULL && 1)
 	{
 		PRINTF("OHCI Init, hehci->ohci=%p\n", hehci->ohci);
 //		PRINTF("OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
@@ -1120,8 +1120,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 		(void) hehci->ohci->HcCommandStatus;
 		while ((le32_to_cpu(hehci->ohci->HcCommandStatus) & (UINT32_C(1) << 0)) != 0)
 			;
-
-		hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
+		//goto doneinit;
+		//hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
 
 		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 //		PRINTF("OHCI: PowerOnToPowerGoodTime=%u\n", PowerOnToPowerGoodTime);
