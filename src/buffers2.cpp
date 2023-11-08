@@ -444,6 +444,22 @@ public:
 		return v;
 	}
 
+	void save_frees(LIST_ENTRY * list)
+	{
+		IRQL_t oldIrql;
+
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+
+		while (! IsListEmpty(list))
+		{
+			const PLIST_ENTRY t = RemoveTailList(list);
+			++ freecount;
+			InsertHeadList(& freelist, t);
+		}
+
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+	}
+
 	bool get_readybuffer(element_t * * dest)
 	{
 		if (hasresample)
@@ -498,11 +514,12 @@ public:
 	{
 		if (get_freebuffer_raw(dest))
 			return true;
+
 		// сбрасываем количество до половины (NORMLEVEL)
-		for (unsigned i = NORMLEVEL; i -- && get_readybuffer_raw(dest);)
-		{
-			release_buffer(* dest);
-		}
+		LIST_ENTRY list;
+		take_readys(& list, NORMLEVEL);
+		save_frees(& list);
+
 		return get_freebuffer_raw(dest);
 	}
 
