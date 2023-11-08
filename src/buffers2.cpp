@@ -425,6 +425,25 @@ public:
 		return false;
 	}
 
+	unsigned take_readys(LIST_ENTRY * list, unsigned n)
+	{
+		unsigned v = 0;
+		IRQL_t oldIrql;
+
+		InitializeListHead(list);
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql);
+		while (n -- && ! IsListEmpty(& readylist))
+		{
+			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			-- readycount;
+			InsertHeadList(list, t);
+			++ v;
+		}
+		fiforeadyupdate();
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		return v;
+	}
+
 	bool get_readybuffer(element_t * * dest)
 	{
 		if (hasresample)
@@ -487,32 +506,11 @@ public:
 		return get_freebuffer_raw(dest);
 	}
 
-	// получить из списка готовых, если нет - из свободных
-	bool get_readybufferforced(element_t * * dest)
-	{
-		if (get_readybuffer_raw(dest))
-			return true;
-		// сбрасываем количество до половины (NORMLEVEL)
-		for (unsigned i = NORMLEVEL; i -- && get_freebuffer(dest);)
-		{
-			save_buffer(* dest);
-		}
-		return get_readybuffer_raw(dest);
-	}
-
 	// получить из списка свободных, если нет - из готовых
 	bool get_readybufferforced_nopurge(element_t * * dest)
 	{
 		return get_readybuffer_raw(dest) ||  get_freebuffer_raw(dest);
 	}
-
-	// все готовые перенести в свободные
-//	void purge_buffers()
-//	{
-//		element_t * dest;
-//		while (get_readybuffer(& dest))
-//			release_buffer(dest);
-//	}
 
 	static int_fast32_t get_cachesize(void)
 	{
