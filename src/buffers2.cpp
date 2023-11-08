@@ -14,7 +14,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
@@ -559,11 +559,11 @@ public:
 	{
 		const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 		const unsigned total = sizeof element_t::buff;	// полный размер буфера
-		const unsigned wbgattotal = ARRAY_SIZE(wbgatsize);	// все элементы выданы
+		const unsigned wbgatixtotal = ARRAY_SIZE(wbgatsize);	// все элементы выданы
 
 		// ситуация, когда позиция источника и получателя
 		// выровнены на границу буфера и нет запросов на ресэмплинг
-		if (wbgattotal == wbgatix && ! add && ! del)
+		if (wbgatixtotal == wbgatix && ! add && ! del)
 		{
 			return get_readybuffer_raw(dest);
 		}
@@ -572,91 +572,48 @@ public:
 		while(! get_freebufferforced(dest))	// выходной буфер
 			ASSERT(0);
 
-#if 0
-		// test (bypas resampler)
-		if (get_readybuffer_raw(& workbuff))
-		{
-			memcpy((* dest)->buff, workbuff->buff, total);
-			release_buffer(workbuff);
-			return true;
-		}
-		release_buffer(* dest);
-		return false;
-#endif
-		// Цикл, пока не наберем требуемого колчиества сэмплов в выходной буфер
+		// Цикл, пока не наберем требуемого колчиества samples в выходной буфер
 		for (unsigned score = 0; score < total;)
 		{
-			if (wbgatix < wbgattotal)
-			{
-				// ещё остались данные в workbuff
-				if (add)
-				{
-					// ещё остались данные
-					// Добавляем сэмпл
-					ASSERT(wbgatix > 0);
-					wbgatoffs [wbgatix - 1] = wbgatoffs [wbgatix];
-					wbgatsize [wbgatix - 1] = wbgss;
-					wbgatix -= 1;
-					add = false;
-				}
-				else if (del)
-				{
-					// ещё остались данные
-					// удаляем сэмпл
-					ASSERT(wbgatsize [wbgatix] >= wbgss);
-					wbgatoffs [wbgatix] += wbgss;
-					wbgatsize [wbgatix] -= wbgss;
-					del = false;
-				}
-
-			}
-			else
+			if (wbgatix >= wbgatixtotal)
 			{
 				// Данных нет в workbuff
 				if (! get_readybuffer_raw(& workbuff))
 				{
-					release_buffer(* dest);
-					return false;	// нет и в источнике
+					release_buffer(* dest);	// освбодождаем ранее полученный буфер результата
+					return false;			// Данных нет и в источнике
 				}
 
 				// Есть полный буфер в workbuff
+				wbgatoffs [wbgatixtotal - 1] = 0;
+				wbgatsize [wbgatixtotal - 1] = total;
 
-				if (add)
-				{
-					// Есть полный буфер
-					// Добавляем сэмпл
-					wbgatoffs [wbgattotal - 2] = 0;
-					wbgatsize [wbgattotal - 2] = wbgss;
-
-					wbgatoffs [wbgattotal - 1] = 0;
-					wbgatsize [wbgattotal - 1] = total;
-
-					wbgatix = wbgattotal - 2;
-					add = false;
-				}
-				else if (del)
-				{
-					// Есть полный буфер
-					// удаляем сэмпл
-					wbgatoffs [wbgattotal - 1] = 0 + wbgss;	// пропустили один сэмпл от начала
-					wbgatsize [wbgattotal - 1] = total - wbgss;
-
-					wbgatix = wbgattotal - 1;
-					del = false;
-				}
-				else
-				{
-					// Есть полный буфер без необходимости ресэмплинга - доформировать выходной буфер
-					wbgatoffs [wbgattotal - 1] = 0;
-					wbgatsize [wbgattotal - 1] = total;
-
-					wbgatix = wbgattotal - 1;
-				}
+				wbgatix = wbgatixtotal - 1;
 			}
 
-			if (wbgatix < wbgattotal)
+			// выполнение ресэмплинга
+			if (add)
 			{
 				// ещё остались данные
+				// Добавляем sample
+				ASSERT(wbgatix > 0);
+				wbgatoffs [wbgatix - 1] = wbgatoffs [wbgatix];
+				wbgatsize [wbgatix - 1] = wbgss;
+				wbgatix -= 1;
+				add = false;
+			}
+			else if (del)
+			{
+				// ещё остались данные
+				// удаляем sample
+				ASSERT(wbgatsize [wbgatix] >= wbgss);
+				wbgatoffs [wbgatix] += wbgss;
+				wbgatsize [wbgatix] -= wbgss;
+				del = false;
+			}
+
+			// формируем содержимое выходного буфера
+			{
 				const unsigned chunk = ulmin32(total - score, wbgatsize [wbgatix]);
 				memcpy((uint8_t *) (* dest)->buff + score, (uint8_t *) workbuff->buff + wbgatoffs [wbgatix], chunk);	// копируем остаток предыдущего буфера
 				score += chunk;
@@ -664,13 +621,14 @@ public:
 				wbgatsize [wbgatix] -= chunk;
 				if (0 == wbgatsize [wbgatix])
 				{
-					if (++ wbgatix >= wbgattotal)
+					if (++ wbgatix >= wbgatixtotal)
 					{
 						release_buffer(workbuff);
 					}
 				}
 			}
 		}
+		// выходной буфер готов
 		return true;
 	}
 };
