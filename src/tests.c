@@ -4451,7 +4451,7 @@ static void verifying(FIL * f, unsigned offset, BYTE targetDEV)
 		}
 		score += chunksize;
 	}
-	PRINTF("%08X: %u bytes verifyed.\n", offset, score);
+	PRINTF("%08X: %u bytes verified.\n", offset, score);
 }
 
 static void
