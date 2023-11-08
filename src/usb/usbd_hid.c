@@ -3,6 +3,7 @@
 
 #if WITHUSBHW && WITHUSBHID
 
+#include "buffers.h"
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_def.h"

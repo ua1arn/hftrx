@@ -8,6 +8,7 @@
 
 #if WITHUSBHW && WITHUSBDMTP
 
+#include "buffers.h"
 #include "formats.h"
 #include "usbd_def.h"
 #include "usbd_core.h"

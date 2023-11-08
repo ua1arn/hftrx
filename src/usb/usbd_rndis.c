@@ -9,6 +9,7 @@
 
 #if WITHUSBHW && WITHUSBRNDIS
 
+#include "buffers.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include "rndis_protocol.h"

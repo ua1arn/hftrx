@@ -9,6 +9,7 @@
 
 #if WITHUSBHW && WITHUSBDFU
 
+#include "buffers.h"
 #include "formats.h"
 #include "bootloader.h"
 #include "spi.h"

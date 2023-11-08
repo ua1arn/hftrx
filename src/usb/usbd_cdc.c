@@ -9,6 +9,7 @@
 
 #if WITHUSBHW && WITHUSBCDCACM
 
+#include "buffers.h"
 #include "board.h"
 #include "formats.h"
 #include "usbd_def.h"
