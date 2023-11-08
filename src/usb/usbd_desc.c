@@ -75,6 +75,11 @@
 	#define USB_FUNCTION_VENDOR_ID_OVERRIDE		0x0483
 	#define USB_FUNCTION_PRODUCT_ID_OVERRIDE	0xA210
 #endif
+#if 0
+	// FT8CN requirements
+	#define USB_FUNCTION_VENDOR_ID_OVERRIDE		0x0483
+	#define USB_FUNCTION_PRODUCT_ID_OVERRIDE	0x5732
+#endif
 
 /* Remove hive in \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\usbflags\ */
 
