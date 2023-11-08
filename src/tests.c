@@ -4087,6 +4087,11 @@ static void diskio_test(BYTE drv)
 				PRINTF(PSTR("Previous sector (%lu) on SD card\n"), -- lba_sector);
 				break;
 
+			case 'u':
+				lba_sector = BOOTLOADER_SELFSIZE / MMC_SECTORSIZE;
+				PRINTF(PSTR("Set sector (%lu) on SD card\n"), lba_sector);
+				break;
+
 			//case 'Q':
 			//	PRINTF(PSTR("Wait for ready\n"));
 			//	while (SD_ReadCardSize() == 0 && dbg_getchar(& c) == 0)
@@ -4424,7 +4429,6 @@ static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 
 static void verifying(FIL * f, unsigned offset, BYTE targetDEV)
 {
-	return;
 	FRESULT rc;				/* Result code */
 	DRESULT dc;
 	unsigned score = 0;
@@ -4528,6 +4532,8 @@ startProgramming:
 			PRINTF(PSTR("Can not close file '%s', rc=%u\n"), filename, rc);
 			break;
 		}
+
+
 		// check written
 		rc = f_open(& Fil, filename, FA_READ);
 		if (rc != FR_OK)

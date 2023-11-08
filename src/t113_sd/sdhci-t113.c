@@ -497,8 +497,8 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 
 	if (sdhci->instance == SMHC2)
 	{
-		if (clock > 12000000)
-			clock = 12000000;
+		if (clock > 5000000)
+			clock = 5000000;
 
 		sdhci->instance->SMHC_SFC =
 				//(4u << 1) |
