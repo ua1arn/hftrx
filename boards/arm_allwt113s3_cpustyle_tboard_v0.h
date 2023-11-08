@@ -42,6 +42,9 @@
 
 #define WITHDEBUG_UART1	1
 
+//#define WITHTINYUSB 1
+#define BOARD_TUH_RHPORT 1
+
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
