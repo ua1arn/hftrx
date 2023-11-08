@@ -4441,12 +4441,12 @@ static void verifying(FIL * f, unsigned offset, BYTE targetDEV)
 		dc = disk_read(targetDEV, buffchk, (offset + score) / 512, chunksize / 512);
 		if (dc != 0)
 		{
-			PRINTF("Write error");
+			PRINTF("Read error");
 			break;
 		}
 		if (memcmp(buff, buffchk, br))
 		{
-			PRINTF("Verifaying fault\n");
+			PRINTF("Verificaton fault\n");
 			return;
 		}
 		score += chunksize;
