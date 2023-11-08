@@ -2842,7 +2842,50 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYLE_A64
+#if CPUSTYLE_T507
+
+	if (0)
+	{
+
+	}
+	else if (WITHUSBHW_EHCI == USB20_HOST0_EHCI)
+	{
+		arm_hardware_disable_handler(USB20_HOST0_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST0_EHCI_IRQn);
+
+		CCU->USB_BGR_REG;
+		CCU->USB0_CLK_REG;
+
+	}
+	else if (WITHUSBHW_EHCI == USB20_HOST1_EHCI)
+	{
+		arm_hardware_disable_handler(USB20_HOST1_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST1_EHCI_IRQn);
+
+
+		CCU->USB_BGR_REG;
+		CCU->USB1_CLK_REG;
+	}
+	else if (WITHUSBHW_EHCI == USB20_HOST2_EHCI)
+	{
+		arm_hardware_disable_handler(USB20_HOST2_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST2_EHCI_IRQn);
+
+
+//		CCU->USB_BGR_REG;
+//		CCU->USB2_CLK_REG;
+	}
+	else if (WITHUSBHW_EHCI == USB20_HOST3_EHCI)
+	{
+		arm_hardware_disable_handler(USB20_HOST3_OHCI_IRQn);
+		arm_hardware_disable_handler(USB20_HOST3_EHCI_IRQn);
+
+
+//		CCU->USB_BGR_REG;
+//		CCU->USB3_CLK_REG;
+	}
+
+#elif CPUSTYLE_A64
 
 	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
