@@ -2154,7 +2154,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& guacplayer,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
+	#if WITHRTS96 || WITHRTS192
 	{
 		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
@@ -2175,7 +2175,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gusb_ft8cn,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+	#endif /* WITHRTS96 || WITHRTS192 */
 #if WITHTX
 	{
 		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */

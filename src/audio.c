@@ -5285,7 +5285,6 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 RAMFUNC void dsp_processtx(unsigned nsamples)
 {
 	ASSERT(tx_MIKE_blockSize == nsamples);
-#if ! WITHTRANSPARENTIQ
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
@@ -5340,7 +5339,6 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 #endif /* WITHDSPEXTDDC */
 
 	}
-#endif /* ! WITHTRANSPARENTIQ */
 }
 
 
@@ -5375,180 +5373,6 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 #endif /* WITHDSPEXTDDC */
 }
 
-#if 0
-// Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
-// Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_step32rx(const IFADCvalue_t * buff)
-{
-	ASSERT(buff != NULL);
-	ASSERT(gwprof < NPROF);
-	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
-	const uint_fast8_t tx = isdspmodetx(dspmodeA);
-#if WITHUSEDUALWATCH
-	const uint_fast8_t dspmodeB = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [1];
-#endif /* WITHUSEDUALWATCH */
-	const unsigned i = 0;
-	const int rxgate = getRxGate();
-
-	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	#if WITHUSEDUALWATCH
-		nco_setlo6_delay(0, tx);
-		nco_setlo6_delay(1, tx);
-	#else /* WITHUSEDUALWATCH */
-		nco_setlo6_delay(0, tx);
-	#endif /* WITHUSEDUALWATCH */
-
-#if WITHSUSBSPKONLY
-		// тестирование в режиме USB SPEAKER
-
-		if (isdspmodetx(dspmodeA))
-		{
-			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shapecw);
-			INT32P_t dual;
-			dual.IV = get_lout();		// тон 700 Hz
-			dual.QV = get_rout();		// тон 500 Hz
-			elfill_dmabuffer32tx(dual.IV, dual.QV);	// Запись в поток к передатчику I/Q значений.
-			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-			recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		}
-		else if (isdspmoderx(dspmodeA))
-		{
-			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shapecw);
-			const FLOAT32P_t dual = vi;
-			elfill_dmabuffer32tx(dual.IV, dual.QV);	// Запись в поток к передатчику I/Q значений.
-			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-			recordsampleUAC(get_lout(), get_rout());	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		}
-		else
-		{
-			elfill_dmabuffer32tx(0, 0);	// кодек получает 24 бита left justified в 32-х битном числе.
-			recordsampleUAC(0, 0);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		}
-
-#elif WITHTRANSPARENTIQ
-		/* процессор просто поддерживает двунаправленный обмен между USB и FPGA */
-	
-		savesampleout96stereo(
-			buff [i + DMABUF32RX0I],
-			buff [i + DMABUF32RX0Q]
-			);
-
-		static FLOAT32P_t vi;
-		static uint_fast8_t outupsamplecnt;
-		if ((outupsamplecnt ++ & 0x01) == 0)	// в сторону передатчика идут 96 кГц фреймы
-		{
-			vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
-		}
-		elfill_dmabuffer32tx(vi.IV, vi.QV);	// Запись в поток к передатчику I/Q значений.
-
-#elif WITHDTMFPROCESSING
-		// тестирование распозначания DTMF
-
-		INT32P_t dual;
-		//dual.IV = vi.IV; //get_lout();
-		dual.IV = get_lout();
-		dual.QV = 0;
-		processafadcsampleiq(dual, viusb, dspmodeA, shapecw, shapecwssb, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
-		savemonistereo(moni.IV, moni.QV);
-		// Тестирование распознавания DTMF
-		if (dtmfbi < DTMF_STEPS)
-		{
-			inp_samples [dtmfbi] = vi.IV;
-			++ dtmfbi;
-		}
-		savedemod_to_AF_proc(dual.IV, dual.QV);
-
-#elif WITHDSPEXTDDC
-
-	#if WITHUSBHEADSET
-	// Режимы трансиверов с внешним DDC
-
-	#elif WITHUSEDUALWATCH
-
-		//
-		// Двухканальный приёмник
-
-		if (dspmodeA == DSPCTL_MODE_RX_ISB)
-		{
-			/* прием независимых боковых полос с приемника A */
-			// Обработка буфера с парами значений
-			const FLOAT32P_t pair = processifadcsampleIQ_ISB(
-				buff [i + DMABUF32RX0I] * rxgate,
-				buff [i + DMABUF32RX0Q] * rxgate,
-				0	// MAIN RX
-				);	
-			savedemod_to_AF_proc(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
-		}
-		else if (0)
-		{
-			// тест - обход приемной части.
-			savedemod_to_AF_proc(get_lout(), get_rout());
-		}
-		else
-		{
-			// buff data layout: I main/I sub/Q main/Q sub
-			const FLOAT_t rxA = processifadcsampleIQ(
-				buff [i + DMABUF32RX0I] * rxgate,
-				buff [i + DMABUF32RX0Q] * rxgate,
-				dspmodeA,
-				0	// MAIN RX
-				);
-
-			const FLOAT_t rxB = processifadcsampleIQ(
-				buff [i + DMABUF32RX1I] * rxgate,
-				buff [i + DMABUF32RX1Q] * rxgate,
-				dspmodeB,
-				1	// SUB RX
-				);	
-			savedemod_to_AF_proc(rxA, rxB);
-		}
-
-	#else /* WITHUSEDUALWATCH */
-
-		// Одноканальный приёмник
-
-		if (dspmodeA == DSPCTL_MODE_RX_WFM)
-		{
-#if ! WITHSAI2HW
-			BEGIN_STAMP2();
-			const FLOAT_t leftFiltered = 0;
-			END_STAMP2();
-			savedemod_to_AF_proc(leftFiltered, leftFiltered);
-#endif /* ! WITHSAI2HW */
-		}
-		else if (dspmodeA == DSPCTL_MODE_RX_ISB)
-		{
-			/* прием независимых боковых полос */
-			// Обработка буфера с парами значений
-			const FLOAT32P_t rv = processifadcsampleIQ_ISB(
-				buff [i + DMABUF32RX0I] * rxgate,
-				buff [i + DMABUF32RX0Q] * rxgate,
-				0	// MAIN RX
-				);	
-			savedemod_to_AF_proc(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
-		}
-		else
-		{
-			// Обработка буфера с парами значений
-			const FLOAT_t left = processifadcsampleIQ(
-				buff [i + DMABUF32RX0I] * rxgate,
-				buff [i + DMABUF32RX0Q] * rxgate,
-				dspmodeA,
-				0		// MAIN RX
-				);	
-			savedemod_to_AF_proc(left, left);
-		}
-
-	#endif /*  WITHUSEDUALWATCH */
-
-#else /* WITHDSPEXTDDC */
-	const FLOAT_t left = processifadcsamplei(buff [i + DMABUF32RX] * rxgate, dspmodeA);	// Расширяем 24-х битные числа до 32 бит
-	savedemod_to_AF_proc(left, left);
-
-#endif /* WITHDSPEXTDDC */
-}
-
-#endif
 
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд

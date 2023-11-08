@@ -3140,9 +3140,9 @@ struct nvmap
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
+		#if WITHRTS96 || WITHRTS192
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
-		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+		#endif /* WITHRTS96 || WITHRTS192 */
 		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
@@ -4021,9 +4021,9 @@ enum
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
+		#if WITHRTS96 || WITHRTS192
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
-		#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+		#endif /* WITHRTS96 || WITHRTS192 */
 	#else /* WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
@@ -11743,9 +11743,9 @@ updateboardZZZ(
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBHW && WITHUSBUAC
 			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
+			#if WITHRTS96 || WITHRTS192
 				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
-			#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+			#endif /* WITHRTS96 || WITHRTS192 */
 			#if WITHTX
 				board_set_datatx(gdatatx);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			#endif /* WITHTX */

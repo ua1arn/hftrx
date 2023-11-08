@@ -29,7 +29,7 @@ extern "C" {
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX		8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-		#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		//#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
@@ -73,7 +73,7 @@ extern "C" {
 		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-			#define DMABUFFSTEP32RTS96	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			//#define DMABUFFSTEP32RTS96	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
 			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
@@ -84,7 +84,7 @@ extern "C" {
 			// buff data layout: I main/I sub/Q main/Q sub
 			#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-			#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			//#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
@@ -122,7 +122,7 @@ extern "C" {
 		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-			#define DMABUFFSTEP32RTS96	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			//#define DMABUFFSTEP32RTS96	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX0Q	1		// RX0, Q
 			#define DMABUFFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
@@ -133,7 +133,7 @@ extern "C" {
 			// buff data layout: I main/I sub/Q main/Q sub
 			#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-			#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			//#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX1I	1		// RX1, I
@@ -182,7 +182,7 @@ extern "C" {
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-		#define DMABUFFSTEP32RTS96	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		//#define DMABUFFSTEP32RTS96	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX0Q	1		// RX0, Q
@@ -203,7 +203,7 @@ extern "C" {
 			// buff data layout: I main/I sub/Q main/Q sub
 			#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-			#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			//#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	0		// RX0, I
 			#define DMABUF32RX1I	2		// RX1, I
@@ -248,7 +248,7 @@ extern "C" {
 			// buff data layout: I main/I sub/Q main/Q sub
 			#define DMABUFFSTEP32RX	16		// Каждому сэмплу соответствует шестнадцать чисел в DMA буфере
 			// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-			#define DMABUFFSTEP32RTS96	DMABUFFSTEP32RX		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+			//#define DMABUFFSTEP32RTS96	DMABUFFSTEP32RX		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 			#define DMABUF32RX0I	8		// RX0, I
 			#define DMABUF32RX0Q	9		// RX0, Q
@@ -306,7 +306,7 @@ extern "C" {
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-		#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		//#define DMABUFFSTEP32RTS96	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX1I	1		// RX1, I
@@ -344,7 +344,7 @@ extern "C" {
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
 	#define DMABUFFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
-	#define DMABUFFSTEP32RTS96	(WITHFPGARTS_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	//#define DMABUFFSTEP32RTS96	(WITHFPGARTS_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 
@@ -598,7 +598,7 @@ extern "C" {
 
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX)		/* AF CODEC ADC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
-#define DMABUFFSIZE32RTS96 (DMABUFCLUSTER * DMABUFFSTEP32RTS96)		/* FPGA RX or IF CODEC RX */
+//#define DMABUFFSIZE32RTS96 (DMABUFCLUSTER * DMABUFFSTEP32RTS96)		/* FPGA RX or IF CODEC RX */
 
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/

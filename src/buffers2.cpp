@@ -733,7 +733,7 @@ enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT16MONI = DMABUFFSIZE16MONI / DMABUFFSTEP16MONI };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
-enum { CNT32RTS96 = DMABUFFSIZE32RTS96 / DMABUFFSTEP32RTS96 };
+//enum { CNT32RTS96 = DMABUFFSIZE32RTS96 / DMABUFFSTEP32RTS96 };
 enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
 enum { MIKELEVEL = 6 };
 enum { PHONESLEVEL = 6 };
@@ -2193,18 +2193,16 @@ void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 #endif /* WITHBUFFERSDEBUG */
 	voice32rts192_t * const p = CONTAINING_RECORD(addr, voice32rts192_t, u.buff);
 
-#if ! WITHTRANSPARENTIQ
 	unsigned i;
-	for (i = 0; i < DMABUFFSIZE32RTS96; i += DMABUFFSTEP32RTS96)
+	for (i = 0; i < DMABUFFSIZE32RTS192; i += DMABUFFSTEP32RTS192)
 	{
 		const int32_t * const b = (const int32_t *) & p->u.buff [i];
 
         //saveIQRTSxx(NULL, b [0], b [1]);
         deliveryint(& rtstargetsint, b [0], b [1]);
 	}
-#endif /* ! WITHTRANSPARENTIQ */
 
-	release_savetonull192rts(addr);
+	release_dmabuffer32rts192(addr);
 }
 #endif /* WITHRTS192 */
 
