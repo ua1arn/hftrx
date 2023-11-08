@@ -158,6 +158,11 @@ static uint8_t altinterfaces [INTERFACE_count];
 
 static __ALIGN_BEGIN uint8_t uacout48buff [UACOUT_AUDIO48_DATASIZE_DMAC] __ALIGN_END;
 static __ALIGN_BEGIN uint8_t uacinbuff [UACIN_AUDIO48_DATASIZE_DMAC + UACIN_RTS96_DATASIZE_DMAC] __ALIGN_END;
+#if WITHRTS96
+static __ALIGN_BEGIN uint8_t uacinrtsbuff [UACIN_RTS96_DATASIZE_DMAC] __ALIGN_END;
+#elif WITHRTS192
+static __ALIGN_BEGIN uint8_t uacinrtsbuff [UACIN_RTS192_DATASIZE_DMAC] __ALIGN_END;
+#endif
 
 static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
@@ -173,14 +178,6 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 
 	USBD_LL_CloseEP(pdev, USBD_EP_RTS_IN);
 
-	if (uacinrtsaddr != 0)
-	{
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		release_dmabufferuacinX(uacinrtsaddr);
-		LowerIrql(oldIrql);
-		uacinrtsaddr = 0;
-	}
 	altinterfaces [INTERFACE_AUDIO_RTS] = 0;
 	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 #endif /* WITHUSBUACIN2 */
@@ -961,24 +958,21 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 
 #if WITHUSBUACIN2
 	case ((USBD_EP_RTS_IN) & 0x7F):
-		if (uacinrtsaddr != 0)
 		{
-			RiseIrql(IRQL_REALTIME, & oldIrql);
-			release_dmabufferuacinX(uacinrtsaddr);
-			LowerIrql(oldIrql);
-		}
 
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		uacinrtsaddr = getfilled_dmabufferuacinrtsX(& uacinrtssize);
-		LowerIrql(oldIrql);
+			unsigned uacinrtssize;
+			uintptr_t uacinrtsaddr = getfilled_dmabufferuacinrtsX(& uacinrtssize);
+			if (uacinrtsaddr != 0)
+			{
+				memcpy(uacinrtsbuff, (void *) uacinrtsaddr, uacinrtssize);
+				release_dmabufferuacinX(uacinrtsaddr);
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), uacinrtsbuff, uacinrtssize);
+			}
+			else
+			{
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+			}
 
-		if (uacinrtsaddr != 0)
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), (const uint8_t *) uacinrtsaddr, uacinrtssize);
-		}
-		else
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
 		}
 		break;
 #endif /* WITHUSBUACIN2 */

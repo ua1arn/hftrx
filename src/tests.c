@@ -4463,14 +4463,10 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 		const char * name;
 	} jobs [] =
 	{
-		{
-				EMMC_EGON_OFFSET,
-				"fsbl.alw32"
-		},
-		{
-				BOOTLOADER_SELFSIZE,
-				"tc1_awt507_app.alw32"
-		},
+#if CPUSTYLE_ALLWINNER
+		{	EMMC_EGON_OFFSET,	"fsbl.alw32",	},
+#endif /* CPUSTYLE_ALLWINNER */
+		{	BOOTLOADER_SELFSIZE,	"tc1_awt507_app.alw32", },
 	};
 	int i;
 	FRESULT rc;				/* Result code */

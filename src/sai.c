@@ -4242,25 +4242,10 @@ static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t
 #endif
 }
 
-#if CPUSTYLE_A64
-
-static void hardware_i2s0_master_duplex_initialize_codec1(void)
-{
-	hardware_i2s_initialize(0, I2S0, 1, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S0HW_INITIALIZE(1);
-}
-
-static void hardware_i2s0_slave_duplex_initialize_codec1(void)
-{
-	hardware_i2s_initialize(0, I2S0, 0, 2, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S0HW_INITIALIZE(0);
-}
-
-#endif /* CPUSTYLE_A64 */
-
 #define CODEC1_NCH 2	/* всегда стерео */
 
 #if defined(I2S0) && WITHI2S0HW
+
 static void hardware_i2s0_enable(uint_fast8_t state)
 {
 	hardware_i2s_enable(0, I2S0, state);
