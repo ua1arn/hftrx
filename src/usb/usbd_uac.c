@@ -149,19 +149,15 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 // for descriptors fill
 uint_fast16_t usbd_getuacoutmaxpacket(void)
 {
-	return UACOUT_AUDIO48_DATASIZE;
+	return UACOUT_AUDIO48_DATASIZE;	// NOT UACOUT_AUDIO48_DATASIZE_DMAC
 }
 
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
 
-static uintptr_t uacinaddr = 0;
-static uint_fast16_t uacinsize = 0;
-static uintptr_t uacinrtsaddr = 0;
-static uint_fast16_t uacinrtssize = 0;
-
-static __ALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t uacout48buff [UACOUT_AUDIO48_DATASIZE_DMAC] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t uacinbuff [UACIN_AUDIO48_DATASIZE_DMAC + UACIN_RTS96_DATASIZE_DMAC] __ALIGN_END;
 
 static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
@@ -170,14 +166,6 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 {
 #if WITHUSBUACIN
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
-	if (uacinaddr != 0)
-	{
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		release_dmabufferuacinX(uacinaddr);
-		LowerIrql(oldIrql);
-		uacinaddr = 0;
-	}
 	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
 	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
 
@@ -861,12 +849,14 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 #if WITHUSBUACOUT
 	case USBD_EP_AUDIO_OUT:
 		/* UAC EP OUT */
-		// use audio data
-		const uintptr_t addr = allocate_dmabufferuacout48();
-		memcpy((void *) addr, uacoutbuff, UACOUT_AUDIO48_DATASIZE_DMAC);
-		save_dmabufferuacout48(addr);
-		/* Prepare Out endpoint to receive next audio data packet */
-		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, UACOUT_AUDIO48_DATASIZE);
+		{
+			// use audio data
+			const uintptr_t addr = allocate_dmabufferuacout48();
+			memcpy((void *) addr, uacout48buff, UACOUT_AUDIO48_DATASIZE_DMAC);
+			save_dmabufferuacout48(addr);
+			/* Prepare Out endpoint to receive next audio data packet */
+			USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacout48buff, UACOUT_AUDIO48_DATASIZE_DMAC);
+		}
 		break;
 #endif /* WITHUSBUACOUT */
 	}
@@ -953,24 +943,19 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 	{
 #if WITHUSBUACIN
 	case ((USBD_EP_AUDIO_IN) & 0x7F):
-		if (uacinaddr != 0)
 		{
-			RiseIrql(IRQL_REALTIME, & oldIrql);
-			release_dmabufferuacinX(uacinaddr);
-			LowerIrql(oldIrql);
-		}
-
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		uacinaddr = getfilled_dmabufferuacinX(& uacinsize);
-		LowerIrql(oldIrql);
-
-		if (uacinaddr != 0)
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), (const uint8_t *) uacinaddr, uacinsize);
-		}
-		else
-		{
-			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+			unsigned uacinsize;
+			uintptr_t uacinaddr = getfilled_dmabufferuacinX(& uacinsize);
+			if (uacinaddr != 0)
+			{
+				memcpy(uacinbuff, (void *) uacinaddr, uacinsize);
+				release_dmabufferuacinX(uacinaddr);
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), uacinbuff, uacinsize);
+			}
+			else
+			{
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);
+			}
 		}
 		break;
 
@@ -1028,9 +1013,9 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
 	/* UAC Open EP OUT */
-	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_OUT, USBD_EP_TYPE_ISOC, UACOUT_AUDIO48_DATASIZE);
+	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_OUT, USBD_EP_TYPE_ISOC, UACOUT_AUDIO48_DATASIZE_DMAC);
    /* UAC Prepare Out endpoint to receive 1st packet */
-	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacoutbuff, UACOUT_AUDIO48_DATASIZE);
+	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacout48buff, UACOUT_AUDIO48_DATASIZE_DMAC);
 
 #endif /* WITHUSBUACOUT */
 	return USBD_OK;

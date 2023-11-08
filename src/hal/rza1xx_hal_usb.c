@@ -1868,89 +1868,41 @@ dma_flushxrtstx(uintptr_t addr, unsigned long size)
 }
 
 // USB AUDIO
-// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferuacinX
-static void refreshDMA_uacin(void)
-{
-#error Remove - use continugous stream
-	if ((DMAC12.CHSTAT_n & DMAC12_CHSTAT_n_EN) != 0)
-	{
-		// Канал DMA ещё занят - новые данные не требуются.
-		return;
-	}
-	if (DMAC12.N0SA_n != 0)
-	{
-		// Ситуация - прерывание по концу передачи возникло сейчас,
-		// но ещё не обработано.
-		return;
-	}
-
-	// При наличии следующего блока - запускаем передачу
-	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер - может вернуть 0
-	if (addr != 0)
-	{
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
-		WITHUSBHW_DEVICE->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((WITHUSBHW_DEVICE->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		WITHUSBHW_DEVICE->PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
-		WITHUSBHW_DEVICE->PIPESEL = 0;
-
-		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
-		DMAC12.N0TB_n = size;	// размер в байтах
-
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-		DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SETEN;		// SETEN
-	}
-	else
-	{
-		//DMAC12.N0SA_n = 0;
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLREN;		// CLREN
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-	}
-}
-
-
-// USB AUDIO
 // DMA по передаче USB0 DMA1 - обработчик прерывания
 // DMA по передаче USB1 DMA1 - обработчик прерывания
 // Use dcache_clean
 // Работает на ARM_REALTIME_PRIORITY
 static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
+#error To be complete for DMA
+	DMAC12.CHCFG_n |= DMAC12_CHCFG_n_REN;	// REN bit
 	//__DMB();
-	ASSERT(DMAC12.N0SA_n != 0);
-	release_dmabufferuacinX(DMAC12.N0SA_n);
-
-	// При наличии следующего блока - запускаем передачу
-	uint_fast16_t size;
-	const uintptr_t addr = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер - может вернуть 0
-	if (addr != 0)
+	// SR (bt 7)
+	// Indicates the register set currently selected in register mode.
+	// 0: Next0 Register Set
+	// 1: Next1 Register Set
+	const uint_fast8_t b = (DMAC12.CHSTAT_n & DMAC12_CHSTAT_n_SR) != 0;	// SR
+	if (b != 0)
 	{
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
-		WITHUSBHW_DEVICE->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((WITHUSBHW_DEVICE->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-				;
-		WITHUSBHW_DEVICE->PIPEMAXP = size << USB_PIPEMAXP_MXPS_SHIFT;
-		WITHUSBHW_DEVICE->PIPESEL = 0;
+		uint_fast16_t size;
+		const uintptr_t addr = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер
 
+		const uintptr_t wasaddr = DMAC12.N0SA_n;
+		DMAC12.N0TB_n = size;
 		DMAC12.N0SA_n = dma_flushxrtstx(addr, size);
-		DMAC12.N0TB_n = size;	// размер в байтах
-
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-		DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SETEN;		// SETEN
+		release_dmabufferuacinX(wasaddr);
 	}
 	else
 	{
-#error TRemove - use continugous stream
-		DMAC12.N0SA_n = 0;
-		DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLREN;		// CLREN
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
-		//DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
+		uint_fast16_t size;
+		const uintptr_t addr = getfilled_dmabufferuacinX(& size);	// для передачи в компьютер
+
+		const uintptr_t wasaddr = DMAC12.N1SA_n;
+		DMAC12.N1TB_n = size;
+		DMAC12.N1SA_n = dma_flushxrtstx(addr, size);
+		release_dmabufferuacinX(wasaddr);
 	}
+
 }
 
 
@@ -1960,6 +1912,7 @@ static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 
 static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
+#error To be complete for DMA
 	USB_OTG_GlobalTypeDef * const USBx = & USB200;
 
 	enum { id = 12 };	// 12: DMAC12
@@ -1968,11 +1921,11 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 
     /* Set Destination Start Address */
     DMAC12.N0DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
-    //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
-    //DMAC12.N1TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
+    DMAC12.N0TB_n = UACIN_AUDIO48_DATASIZE_DMAC;	// размер в байтах
+    DMAC12.N1TB_n = UACIN_AUDIO48_DATASIZE_DMAC;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA1 (channel 1 transmit FIFO empty)
@@ -2037,7 +1990,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_SWRST;		// SWRST
 	DMAC12.CHCTRL_n = DMAC12_CHCTRL_n_CLRINTMSK;	// CLRINTMSK
-	//DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
+	DMAC12.CHCTRL_n = 1 * (1U << 0);		// SETEN
 }
 
 // audio codec
@@ -2046,6 +1999,7 @@ static void r7s721_usb0_dma1_dmatx_initialize(uint_fast8_t pipe)
 
 static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
 {
+#error To be complete for DMA
 	USB_OTG_GlobalTypeDef * const USBx = & USB201;
 
 	enum { id = 12 };	// 12: DMAC12
@@ -2054,7 +2008,7 @@ static void r7s721_usb1_dma1_dmatx_initialize(uint_fast8_t pipe)
 
     /* Set Destination Start Address */
     DMAC12.N0DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
-    //DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
+    DMAC12.N1DA_n = (uintptr_t) & USBx->D1FIFO.UINT32;	// Fixed destination address
 
     /* Set Transfer Size */
     //DMAC12.N0TB_n = DMABUFFSIZE16 * sizeof (aubufv_t);	// размер в байтах
@@ -2144,8 +2098,14 @@ static void r7s721_usb1_dma1_dmatx_stop(uint_fast8_t pipe)
 
 #if WITHDMAHW_UACOUT
 
-static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff0 [UACOUT_AUDIO48_DATASIZE_DMAC] USBALIGN_END;
-static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE_DMAC] USBALIGN_END;
+
+static uintptr_t dma_invalidateuacout48(uintptr_t addr)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((cachesize_dmabufferuacout48() % DCACHEROWSIZE) == 0);
+	dcache_invalidate(addr, cachesize_dmabufferuacout48());
+	return addr;
+}
 
 // USB AUDIO
 // DMA по приему USB0 DMA0 - обработчик прерывания
@@ -2153,32 +2113,28 @@ static RAMBIGDTCM USBALIGN_BEGIN uint8_t uacoutbuff1 [UACOUT_AUDIO48_DATASIZE_DM
 // Работает на ARM_REALTIME_PRIORITY
 static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
+#error To be complete for DMA
 	//__DMB();
-	// Enable switch to next regidters set
-	DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
 	// 1: Next1 Register Set
-	const uint_fast8_t b = (DMAC13.CHSTAT_n & DMAC13_CHSTAT_n_SR) != 0;	// SR
-	// Фаза в данном случае отличается от проверенной на передаче в кодек (функция r7s721_ssif0_txdma).
-	// Прием с автопереключением больше нигде не подтвержден.
-	if (b == 0)
+	const uint_fast8_t b = (DMAC13.CHSTAT_n & (UINT32_C(1) << DMAC13_CHSTAT_n_SR_SHIFT)) != 0;	// SR
+	if (b != 0)
 	{
-		cons uintptr_t addr = allocate_dmabufferuacout48();
-		memcpy((void *) addr, uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
+		const uintptr_t addr = DMAC13.N0DA_n;
+		DMAC13.N0DA_n = dma_invalidateuacout48(allocate_dmabufferuacout48());
+		DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 		save_dmabufferuacout48(addr);
-
-		dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
 	else
 	{
-		cons uintptr_t addr = allocate_dmabufferuacout48();
-		memcpy((void *) addr, uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
+		const uintptr_t addr = DMAC13.N1DA_n;
+		DMAC13.N1DA_n = dma_invalidateuacout48(allocate_dmabufferuacout48());
+		DMAC13.CHCFG_n |= DMAC13_CHCFG_n_REN;	// REN bit
 		save_dmabufferuacout48(addr);
-
-		dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
 	}
+
 }
 
 
@@ -2188,8 +2144,13 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB200;
 
-	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
-	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
+	unsigned uacinsize0;
+	uintptr_t uacinaddr0 = getfilled_dmabufferuacinX(& uacinsize0);
+	unsigned uacinsize1;
+	uintptr_t uacinaddr1 = getfilled_dmabufferuacinX(& uacinsize1);
+
+	dcache_clean_invalidate(uacinaddr0, uacinsize0);
+	dcache_clean_invalidate(uacinaddr1, uacinsize1);
 
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
@@ -2199,12 +2160,12 @@ static void r7s721_usb0_dma0_dmarx_initialize(uint_fast8_t pipe)
     DMAC13.N1SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
-	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
-	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
+	DMAC13.N0DA_n = uacinaddr0;
+	DMAC13.N1DA_n = uacinaddr1;
 
     /* Set Transfer Size */
-    DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
-    DMAC13.N1TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
+    DMAC13.N0TB_n = uacinsize0;	// размер в байтах
+    DMAC13.N1TB_n = uacinsize1;	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// USB0_DMA0 (channel 0 receive FIFO full)
@@ -2278,9 +2239,6 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = & USB201;
 
-	dcache_clean_invalidate((uintptr_t) uacoutbuff0, UACOUT_AUDIO48_DATASIZE_DMAC);
-	dcache_clean_invalidate((uintptr_t) uacoutbuff1, UACOUT_AUDIO48_DATASIZE_DMAC);
-
 	enum { id = 13 };	// 13: DMAC13
 	// DMAC13
 	/* Set Source Start Address */
@@ -2289,8 +2247,8 @@ static void r7s721_usb1_dma0_dmarx_initialize(uint_fast8_t pipe)
     DMAC13.N1SA_n = (uintptr_t) & USBx->D0FIFO.UINT32;	// Fixed source address
 
 	/* Set Destination Start Address */
-	DMAC13.N0DA_n = (uintptr_t) uacoutbuff0;
-	DMAC13.N1DA_n = (uintptr_t) uacoutbuff1;
+	DMAC13.N0DA_n = dma_invalidateuacout48(allocate_dmabufferuacout48());
+	DMAC13.N1DA_n = dma_invalidateuacout48(allocate_dmabufferuacout48());
 
     /* Set Transfer Size */
     DMAC13.N0TB_n = UACOUT_AUDIO48_DATASIZE_DMAC;	// размер в байтах
