@@ -1099,7 +1099,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	{
 		uint_fast32_t portsc = hehci->portsc[porti];
 
- 		portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI - already zero after set EHCI_CONFIGFLAG_CF
+ 		////portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI - already zero after set EHCI_CONFIGFLAG_CF
 		portsc &= ~ EHCI_PORTSC_CHANGE;
 		portsc |= EHCI_PORTSC_PP;
 
@@ -1180,10 +1180,11 @@ void USBH_EHCI_IRQHandler(void)
 	HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
+// TinyUSB interface
 void ohci_disconnect_handler(void)
 {
 //	hehci_USB.ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
-	HAL_EHCI_Disconnect_Callback(& hehci_USB);
+	//HAL_EHCI_Disconnect_Callback(& hehci_USB);
 }
 
 #if WITHUSBHOST_HIGHSPEEDULPI
