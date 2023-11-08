@@ -14,7 +14,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-#define WITHBUFFERSDEBUG WITHDEBUG
+//#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
