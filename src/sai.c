@@ -60,11 +60,11 @@ dma_flush16tx(uintptr_t addr)
 
 // Сейчас в эту память будем читать по DMA
 static uintptr_t
-dma_invalidate192rts(uintptr_t addr)
+dma_invalidate32rts192(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((cachesize_dmabufferuacinrts192() % DCACHEROWSIZE) == 0);
-	dcache_invalidate(addr,  cachesize_dmabufferuacinrts192());
+	dcache_invalidate(addr,  cachesize_dmabuffer32rts192());
 	return addr;
 }
 
@@ -2494,14 +2494,14 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rts192_rx(void)
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
-			DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabufferuacinrts192());
-			processing_dmabuffer32rts192(addr);
+			DMA2_Stream7->M0AR = dma_invalidate32rts192(allocate_dmabuffer32rts192());
+			save_dmabuffer32rts192(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA2_Stream7->M1AR;
-			DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabufferuacinrts192());
-			processing_dmabuffer32rts192(addr);
+			DMA2_Stream7->M1AR = dma_invalidate32rts192(allocate_dmabuffer32rts192());
+			save_dmabuffer32rts192(addr);
 		}
 	}
 
@@ -2848,10 +2848,10 @@ static void DMA_SAI2_B_RX_initialize_RTS192(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabufferuacinrts192());
-	DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabufferuacinrts192());
+	DMA2_Stream7->M0AR = dma_invalidate32rts192(allocate_dmabuffer32rts192());
+	DMA2_Stream7->M1AR = dma_invalidate32rts192(allocate_dmabuffer32rts192());
 	DMA2_Stream7->NDTR = (DMA2_Stream7->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE192RTS * DMA_SxNDT_0);
+		(DMABUFFSIZE32RTS192 * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA2_Stream7->FCR);
@@ -6636,12 +6636,12 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 	if (b != 0)
 	{
 		save_dmabufferuacinrts192(DMAC4.N0DA_n);
-		DMAC4.N0DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
+		DMAC4.N0DA_n = dma_invalidate32rts192(allocate_dmabufferuacinrts192());
 	}
 	else
 	{
 		save_dmabufferuacinrts192(DMAC4.N1DA_n);
-		DMAC4.N1DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
+		DMAC4.N1DA_n = dma_invalidate32rts192(allocate_dmabufferuacinrts192());
 	}
 }
 
@@ -6657,12 +6657,12 @@ static void r7s721_ssif2_dmarx_initialize_WFM(void)
     DMAC4.N1SA_n = (uintptr_t) & SSIF2.SSIFRDR;	// Fixed source address
 
     /* Set Destination Start Address */
-	DMAC4.N0DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
-	DMAC4.N1DA_n = dma_invalidate192rts(allocate_dmabufferuacinrts192());
+	DMAC4.N0DA_n = dma_invalidate32rts192(allocate_dmabufferuacinrts192());
+	DMAC4.N1DA_n = dma_invalidate32rts192(allocate_dmabufferuacinrts192());
 
     /* Set Transfer Size */
-    DMAC4.N0TB_n = DMABUFFSIZE192RTS * sizeof (uint8_t);	// размер в байтах
-    DMAC4.N1TB_n = DMABUFFSIZE192RTS * sizeof (uint8_t);	// размер в байтах
+    DMAC4.N0TB_n = DMABUFFSIZE32RTS192 * sizeof (uint8_t);	// размер в байтах
+    DMAC4.N1TB_n = DMABUFFSIZE32RTS192 * sizeof (uint8_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRTI2 (receive data full)
