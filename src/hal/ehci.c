@@ -2083,7 +2083,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("speed=USB_SPEED_FULL, portsc=%08X\n", portsc);
 	}
 
-	if (speed != USBH_SPEED_HIGH && hehci->ohci != 0)
+	if (speed != USBH_SPEED_HIGH && hehci->ohci != 0 && 0)
 	{
 		ASSERT(hehci->ohci != NULL);
 		// передать управление портом к companion controller (OHCI)
@@ -2470,6 +2470,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 21);	// USBEHCI1_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
+
 #if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 17);	// USBOHCI1_RST
