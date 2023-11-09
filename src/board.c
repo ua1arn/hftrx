@@ -320,6 +320,33 @@ prog_fpga_ctrlreg(
 
 #include <ctype.h>
 
+static void nmeatuner_putc(uint8_t c)
+{
+	while (0 == HARDWARE_NMEA_PUTCHAR(c))
+		;
+}
+
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
+static void nmeatuner_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeatuner_putc(c);
+	}
+}
+
+static void nmeatuner_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+
+	n = local_snprintf_P(b, sizeof b / sizeof b [0], format);
+
+	for (i = 0; i < n; ++ i)
+		nmeatuner_putc(b [i]);
+}
+
 enum nmeaparser_states
 {
 	NMEAST_INITIALIZED,
@@ -397,7 +424,7 @@ static uint_fast8_t calcxorv(
 
 static uint_fast8_t hex2int(uint_fast8_t c)
 {
-	if (local_isdigit((unsigned char) c))
+	if (isdigit((unsigned char) c))
 		return c - '0';
 	if (isupper((unsigned char) c))
 		return c - 'A' + 10;
@@ -408,12 +435,24 @@ static uint_fast8_t hex2int(uint_fast8_t c)
 
 static dpcobj_t dpc_ua1ceituner;
 
-static void
-ua1ceituner_send(void *);
+static void ua1ceituner_send(void *);
+
+
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с компорта
+void nmeatuner_rxoverflow(void)
+{
+	nmeaparser_state = NMEAST_INITIALIZED;
+}
+/* вызывается из обработчика прерываний */
+void nmeatuner_disconnect(void)
+{
+	nmeaparser_state = NMEAST_INITIALIZED;
+}
 
 /* вызывается из обработчика прерываний */
 // принятый символ с последовательного порта
-void nmeatuner_parsechar(uint_fast8_t c)
+void nmeatuner_onrxchar(uint_fast8_t c)
 {
 	switch (nmeaparser_state)
 	{
@@ -521,7 +560,7 @@ ua1ceituner_send(void * not_used)
 	  VREF              //ADC  измерения опорного напряжения
 	  *CS<CR><LF>
 	*/
-	nmea_format(
+	nmeatuner_format(
 			"$COM,"
 			"%d,"	// RX_TX_state,        //0 = RX 1 = TX
 			"%d,"	// BND_number,       //номер диапазона  1 - 10
@@ -554,6 +593,7 @@ void nmeatuner_initialize(void)
 	HARDWARE_NMEA_INITIALIZE(250000L);
 	HARDWARE_NMEA_SET_SPEED(250000L);
 	HARDWARE_NMEA_ENABLERX(1);
+	HARDWARE_NMEA_ENABLETX(0);
 }
 
 #endif /* WITHAUTOTUNER_UA1CEI */

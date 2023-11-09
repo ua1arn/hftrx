@@ -57,6 +57,56 @@
 //#define WITHCAT_USART2		1
 #define WITHDEBUG_UART2	1
 
+#if WITHNMEA
+
+	// Модемные функции работают через USART0
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_INITIALIZE(baudrate) do { \
+			hardware_uart2_initialize(1, baudrate, 8, 0, 0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
+			hardware_uart2_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLETX(v) do { \
+			hardware_uart2_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_NMEA_ENABLERX(v) do { \
+			hardware_uart2_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_NMEA_TX(ctx, c) do { \
+			hardware_uart2_tx((ctx), (c)); \
+		} while (0)
+	#define HARDWARE_NMEA_PUTCHAR(c) \
+		(hardware_uart2_putchar(c))
+
+	// вызывается из обработчика прерываний UART0
+	// с принятым символом
+	#define HARDWARE_UART2_ONRXCHAR(c) do { \
+			nmeatuner_onrxchar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	#define HARDWARE_UART2_ONOVERFLOW() do { \
+			nmeatuner_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART0
+	// по готовности передатчика
+	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
+			nmeatuner_sendchar(ctx); \
+		} while (0)
+
+	#define NMEA_INITIALIZE() do { \
+		nmeatuner_initialize(); \
+	} while (0)
+
+#endif /* WITHNMEA */
+
 #if WITHUSBHW
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -428,11 +478,6 @@
 		do { \
 		} while (0)
 #endif /* WITHTX */
-
-	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
-	#define NMEA_INITIALIZE() \
-		do { \
-		} while (0)
 
 #if WITHELKEY
 	// Electronic key inputs

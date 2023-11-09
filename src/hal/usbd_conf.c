@@ -21,6 +21,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "buffers.h"
 #include "formats.h"
 
 #if WITHUSBHW
