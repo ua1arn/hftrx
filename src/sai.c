@@ -222,9 +222,6 @@ enum
 #endif /* WITHI2SCLOCKFROMPIN */
 
 
-
-#define DRD(r) ((void) (r))
-
 #if 0
 
 #define DMAERR(dma, dmastream, status, control, errorf, resetf) do { \
@@ -236,7 +233,6 @@ enum
 			while ((dmastream)->CR & DMA_SxCR_EN) \
 				; \
 			(dmastream)->CR |= DMA_SxCR_EN; \
-			DRD((dmastream)->CR); \
 		} \
 	} while (0)
 
@@ -314,14 +310,12 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler_codec1_rx(void)
 		{
 			const uintptr_t addr = DMA1_Stream3->M0AR;
 			DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			DRD(DMA1_Stream3->M0AR);
 			save_dmabuffer16rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA1_Stream3->M1AR;
 			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			DRD(DMA1_Stream3->M1AR);
 			save_dmabuffer16rx(addr);
 		}
 	}
@@ -343,14 +337,12 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler_codec1_rx(void)
 		{
 			const uintptr_t addr = DMA1_Stream0->M0AR;
 			DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			DRD(DMA1_Stream0->M0AR);
 			save_dmabuffer16rx(addr);
 		}
 		else
 		{
 			const uintptr_t addr = DMA1_Stream0->M1AR;
 			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			DRD(DMA1_Stream0->M1AR);
 			save_dmabuffer16rx(addr);
 		}
 	}
@@ -373,13 +365,11 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 		{
 			release_dmabuffer16tx(DMA1_Stream4->M0AR);
 			DMA1_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16tx());
-			DRD(DMA1_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer16tx(DMA1_Stream4->M1AR);
 			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16tx());
-			DRD(DMA1_Stream4->M1AR);
 		}
 	}
 
@@ -428,7 +418,6 @@ DMA_I2S2_TX_initialize_codec1(void)
 	DMA1_Stream4->NDTR = (DMA1_Stream4->NDTR & ~ DMA_SxNDT) |
 		(DMABUFFSIZE16TX * DMA_SxNDT_0);
 	DMA1_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA1_Stream4->FCR);
 	DMA1_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -446,7 +435,6 @@ DMA_I2S2_TX_initialize_codec1(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel4->CCR = 40 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_TX
-	DRD(DMAMUX1_Channel4->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 	DMA1->HIFCR = DMA_HISR_TCIF4;	// Clear TC interrupt flag соответствующий stream
@@ -474,7 +462,6 @@ DMA_I2S2ext_rx_init_audio(void)
 		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA1_Stream3->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA1_Stream3->FCR);
 	DMA1_Stream3->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -529,7 +516,6 @@ DMA_I2S3_RX_initialize_codec1(void)
 		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA1_Stream0->FCR);
 	DMA1_Stream0->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -548,7 +534,6 @@ DMA_I2S3_RX_initialize_codec1(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel0->CCR = 61 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI3_RX
-	DRD(DMAMUX1_Channel0->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 	DMA1->LIFCR = DMA_LISR_TCIF0;	// Clear TC interrupt flag
@@ -594,7 +579,6 @@ DMA_I2S2_RX_initialize_codec1(void)
 		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA1_Stream0->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA1_Stream0->FCR);
 	DMA1_Stream0->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -613,7 +597,6 @@ DMA_I2S2_RX_initialize_codec1(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel0->CCR = 39 * DMAMUX_CxCR_DMAREQ_ID_0;	// SPI2_RX
-	DRD(DMAMUX1_Channel0->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -1859,13 +1842,11 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M0AR);
 			DMA2_Stream1->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
-			DRD(DMA2_Stream1->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream1->M1AR);
 			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
-			DRD(DMA2_Stream1->M1AR);
 		}
 	}
 
@@ -1926,7 +1907,6 @@ static void DMA_SAI1_A_TX_initialize_fpga(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel9->CCR = 87 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI1_A
-	DRD(DMAMUX1_Channel9->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -1973,7 +1953,6 @@ static void DMA_SAI1_B_RX_initialize_fpga(void)
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
 	DMA2_Stream5->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream5->FCR);
 
 	DMA2_Stream5->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
@@ -1987,14 +1966,12 @@ static void DMA_SAI1_B_RX_initialize_fpga(void)
 		0 * DMA_SxCR_CT |	// M0AR selected
 		1 * DMA_SxCR_DBM |	 // double buffer mode seelcted
 		0;
-	DRD(DMA2_Stream5->CR);
 
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 	// DMAMUX init
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel13->CCR = 88 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI1_B
-	DRD(DMAMUX1_Channel13->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -2004,7 +1981,6 @@ static void DMA_SAI1_B_RX_initialize_fpga(void)
 	arm_hardware_set_handler_realtime(DMA2_Stream5_IRQn, DMA2_Stream5_IRQHandler_fpga_rx);
 
 	DMA2_Stream5->CR |= DMA_SxCR_EN;
-	DRD(DMA2_Stream5->CR);
 }
 
 static void hardware_sai1_master_duplex_initialize_v3d_fpga(void)		/* инициализация SAI1 на STM32F4xx */
@@ -2555,13 +2531,11 @@ void DMA2_Stream4_IRQHandler_codec1_tx(void)
 		{
 			release_dmabuffer16tx(DMA2_Stream4->M0AR);
 			DMA2_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16tx());
-			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer16tx(DMA2_Stream4->M1AR);
 			DMA2_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16tx());
-			DRD(DMA2_Stream4->M1AR);
 		}
 	}
 
@@ -2585,13 +2559,11 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
 			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
-			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
 			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx_main());
-			DRD(DMA2_Stream4->M1AR);
 		}
 	}
 
@@ -2615,13 +2587,11 @@ void DMA2_Stream4_IRQHandler_32txsub(void)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
 			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_sub());
-			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
 			DMA2_Stream4->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_sub());
-			DRD(DMA2_Stream4->M1AR);
 		}
 	}
 
@@ -2662,7 +2632,6 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 		(DMABUFFSIZE32TX * DMA_SxNDT_0);
 
 	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream4->FCR);
 	DMA2_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | //канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2681,7 +2650,6 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
-	DRD(DMAMUX1_Channel12->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -2725,7 +2693,6 @@ static void DMA_SAI2_A_TX_initialize_codec1(void)
 		(DMABUFFSIZE16TX * DMA_SxNDT_0);
 
 	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream4->FCR);
 	DMA2_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | //канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2738,14 +2705,12 @@ static void DMA_SAI2_A_TX_initialize_codec1(void)
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
-	DRD(DMA2_Stream4->CR);
 
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 	// DMAMUX init
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
-	DRD(DMAMUX1_Channel12->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -2789,7 +2754,6 @@ static void DMA_SAI2_A_TX_initialize_fpga(void)
 		(DMABUFFSIZE32TX * DMA_SxNDT_0);
 
 	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream4->FCR);
 	DMA2_Stream4->CR =
 		ch * DMA_SxCR_CHSEL_0 | //канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2802,14 +2766,12 @@ static void DMA_SAI2_A_TX_initialize_fpga(void)
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
 		0;
-	DRD(DMA2_Stream4->CR);
 
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 	// DMAMUX init
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel12->CCR = 89 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_A
-	DRD(DMAMUX1_Channel12->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -2854,7 +2816,6 @@ static void DMA_SAI2_B_RX_initialize_RTS192(void)
 		(DMABUFFSIZE32RTS192 * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2873,7 +2834,6 @@ static void DMA_SAI2_B_RX_initialize_RTS192(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	DRD(DMAMUX1_Channel15->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -2918,7 +2878,6 @@ static void DMA_SAI2_B_RX_initialize_codec1(void)
 		(DMABUFFSIZE16RX * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -2937,7 +2896,6 @@ static void DMA_SAI2_B_RX_initialize_codec1(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	DRD(DMAMUX1_Channel15->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -2982,7 +2940,6 @@ static void DMA_SAI2_B_RX_initialize_fpga(void)
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -3001,7 +2958,6 @@ static void DMA_SAI2_B_RX_initialize_fpga(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	DRD(DMAMUX1_Channel15->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -3203,7 +3159,6 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
-	DRD(DMA2_Stream7->FCR);
 	DMA2_Stream7->CR =
 		ch * DMA_SxCR_CHSEL_0 | // канал
 		0 * DMA_SxCR_MBURST_0 |	// 0: single transfer
@@ -3222,7 +3177,6 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
 	DMAMUX1_Channel15->CCR = 90 * DMAMUX_CxCR_DMAREQ_ID_0;	// SAI2_B
-	DRD(DMAMUX1_Channel15->CCR);
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX */
 
 
@@ -3470,33 +3424,20 @@ static void DMAC_NS_IRQHandler(void)
 #endif /* ! CPUSTYLE_A64 */
 }
 
-
-static uintptr_t DMA_suspend(unsigned dmach)
-{
-	// Ждём, пока канал приступит к следующему дескриптору
-	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
-		;//dbg_putchar('a' + dmach);
-	//DMAC->CH [dmach].DMAC_PAU_REGN = 1;	// 1: Suspend Transferring
-	return DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
-}
-
-static void DMA_resume(unsigned dmach, uintptr_t descbase)
-{
-    //DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-}
-
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PARAM]
 // 19:18 DMA transfers the higher 2 bits of the 34-bit destination address
 // 17:16 DMA transfers the high 2 bits of the 34-bit source address
 
 static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 {
-	const uintptr_t descbase = DMA_suspend(dmach);
+	// Ждём, пока канал приступит к следующему дескриптору
+	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
+		;
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;	// только что обработанный дескриптор
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [ix];
 	descraddr [ix] = newaddr;
 	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
-	DMA_resume(dmach, descbase);
 	return addr;
 }
 
@@ -6635,13 +6576,15 @@ static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 	const uint_fast8_t b = (DMAC4.CHSTAT_n & (UINT32_C(1) << DMAC4_CHSTAT_n_SR_SHIFT)) != 0;	// SR
 	if (b != 0)
 	{
-		save_dmabufferuacinrts192(DMAC4.N0DA_n);
+		const uintptr_t addr = DMAC4.N0DA_n;
 		DMAC4.N0DA_n = dma_invalidate32rts192(allocate_dmabufferuacinrts192());
+		save_dmabufferuacinrts192(addr);
 	}
 	else
 	{
-		save_dmabufferuacinrts192(DMAC4.N1DA_n);
+		const uintptr_t addr = DMAC4.N1DA_n;
 		DMAC4.N1DA_n = dma_invalidate32rts192(allocate_dmabufferuacinrts192());
+		save_dmabufferuacinrts192(addr);
 	}
 }
 
