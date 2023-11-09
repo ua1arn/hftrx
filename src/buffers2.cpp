@@ -369,7 +369,7 @@ public:
 		++ readycount;
 		fiforeadyupdate();
 #if WITHBUFFERSDEBUG
-		fqin.pass(sizeof addr->buff / (addr->ss * addr->nch));
+		fqin.pass(get_datasize() / (addr->ss * addr->nch));
 		++ saveount;
 #endif /* WITHBUFFERSDEBUG */
 
@@ -387,7 +387,7 @@ public:
 			-- readycount;
 			fiforeadyupdate();
 	#if WITHBUFFERSDEBUG
-			fqout.pass(sizeof (* dest)->buff / ((* dest)->ss * (* dest)->nch));
+			fqout.pass(get_datasize() / ((* dest)->ss * (* dest)->nch));
 	#endif /* WITHBUFFERSDEBUG */
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -465,8 +465,8 @@ public:
 		if (hasresample)
 		{
 			const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
-			const unsigned total = sizeof element_t::buff;	// полный размер буфера
-			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);	// раз в 300 буферов добавление/удалени сэмпла
+			const unsigned total = get_datasize();	// полный размер буфера
+			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);
 			if (! outready)
 				return false;
 			if (wbskip != 0)
@@ -577,7 +577,7 @@ public:
 	int get_readybufferarj(element_t * * dest, bool add, bool del)
 	{
 		const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
-		const unsigned total = sizeof element_t::buff;	// полный размер буфера
+		const unsigned total = get_datasize();
 		const unsigned wbgatixtotal = ARRAY_SIZE(wbgatsize);	// все элементы выданы
 
 		// ситуация, когда позиция источника и получателя
