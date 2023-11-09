@@ -1974,4 +1974,46 @@ void display_nextfb(void)
 {
 }
 
+
+//#if ! (LCDMODE_HD44780 || LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341)
+#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
+uint_fast8_t bigfont_width(char cc)
+{
+	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
+//#endif /* ! (LCDMODE_HD44780 || LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341) */
+
+#if defined (HALFCHARW)
+uint_fast8_t halffont_width(char cc)
+{
+	(void) cc;
+	return HALFCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (HALFCHARW) */
+
+#if defined (SMALLCHARW)
+uint_fast8_t smallfont_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (SMALLCHARW) */
+
+#if defined (SMALLCHARH2)
+uint_fast8_t smallfont2_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW2;	// полная ширина символа в пикселях
+}
+#endif /* defined (SMALLCHARH2) */
+
+#if defined (SMALLCHARH3)
+uint_fast8_t smallfont3_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW3;	// полная ширина символа в пикселях
+}
+#endif /* defined (SMALLCHARH3) */
+
 #endif /* LCDMODE_S1D13781 */

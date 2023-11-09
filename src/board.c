@@ -347,6 +347,11 @@ static void nmeatuner_format(const char * format, ...)
 		nmeatuner_putc(b [i]);
 }
 
+void nmeatuner_sendchar(void * ctx)
+{
+	(void) ctx;
+}
+
 enum nmeaparser_states
 {
 	NMEAST_INITIALIZED,
