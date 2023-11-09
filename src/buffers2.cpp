@@ -21,17 +21,17 @@
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
-#define VOICE16RX_CAPACITY (64 * BUFOVERSIZE)	// прием от кодекв
-#define VOICE16TX_CAPACITY (64 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16RX_CAPACITY (32 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16TX_CAPACITY (32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TXMONI_CAPACITY (32 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
 
-#define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)
-#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 128 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
