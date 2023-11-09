@@ -662,6 +662,7 @@ uintptr_t allocate_dmabufferuacinrts192(void);
 uintptr_t getfilled_dmabufferuacinrts192(void);
 void save_dmabufferuacinrts192(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacinrts192(void);
+int_fast32_t datasize_dmabufferuacinrts192(void);
 
 // Буфер обмена по USB
 void release_dmabufferuacinrts96(uintptr_t addr);
@@ -669,6 +670,7 @@ uintptr_t allocate_dmabufferuacinrts96(void);
 uintptr_t getfilled_dmabufferuacinrts96(void);
 void save_dmabufferuacinrts96(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacinrts96(void);
+int_fast32_t datasize_dmabufferuacinrts96(void);
 
 // Буфер обмена по USB
 uintptr_t allocate_dmabufferuacout48(void);
@@ -676,6 +678,7 @@ uintptr_t allocate_dmabufferuacout48(void);
 void release_dmabufferuacout48(uintptr_t addr);
 void save_dmabufferuacout48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacout48(void);
+int_fast32_t datasize_dmabufferuacout48(void);
 
 // Буфер обмена по USB
 uintptr_t allocate_dmabufferuacin48(void);
@@ -683,6 +686,7 @@ void release_dmabufferuacin48(uintptr_t addr);
 uintptr_t getfilled_dmabufferuacin48(void);
 void save_dmabufferuacin48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacin48(void);
+int_fast32_t datasize_dmabufferuacin48(void);
 
 /* получение размера для операций с кешем для разнообразных буферов */
 // буферы FPGA IF
@@ -723,10 +727,10 @@ void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернатив
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 uint_fast8_t buffers_get_uacoutalt(void);
 
-void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES);
-void DMAC_USB_TX_initialize_UACIN48(uint32_t ep, unsigned NBYTES);
-void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep, unsigned NBYTES);
-void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep, unsigned NBYTES);
+void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep);
+void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);
+void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep);
+void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep);
 
 
 #define CATPCOUNTSIZE (13)

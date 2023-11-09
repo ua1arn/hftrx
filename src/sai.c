@@ -5019,9 +5019,9 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	save_dmabufferuacout48(addr);
 }
 
-void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep, unsigned NBYTES)
+void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep)
 {
-	//const unsigned NBYTES = UACOUT_AUDIO48_DATASIZE_DMAC;
+	const unsigned NBYTES = datasize_dmabufferuacout48();
 	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_RX_Ch;
@@ -5094,9 +5094,9 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	release_dmabufferuacin48(addr);
 }
 
-void DMAC_USB_TX_initialize_UACIN48(uint32_t ep, unsigned NBYTES)
+void DMAC_USB_TX_initialize_UACIN48(uint32_t ep)
 {
-	//const unsigned NBYTES = UACIN_AUDIO48_DATASIZE_DMAC;
+	const unsigned NBYTES = datasize_dmabufferuacin48();
 	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUAC48_TX_Ch;
@@ -5167,9 +5167,9 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 	release_dmabufferuacinrts96(addr);
 }
 
-void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep, unsigned NBYTES)
+void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 {
-	//const unsigned NBYTES = UACIN_RTS96_DATASIZE_DMAC;
+	const unsigned NBYTES = datasize_dmabufferuacinrts96();
 	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
 	const size_t dw = awusbadj(NBYTES);
 	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;

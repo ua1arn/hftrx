@@ -534,6 +534,11 @@ public:
 		return offsetof(element_t, pad) - offsetof(element_t, buff);
 	}
 
+	static int_fast32_t get_datasize(void)
+	{
+		return sizeof element_t::buff;
+	}
+
 	void debug()
 	{
 #if WITHBUFFERSDEBUG
@@ -833,6 +838,16 @@ int_fast32_t cachesize_dmabuffer16tx(void)
 	return codec16tx.get_cachesize();
 }
 
+int_fast32_t datasize_dmabuffer16rx(void)
+{
+	return codec16rx.get_datasize();
+}
+
+int_fast32_t datasize_dmabuffer16tx(void)
+{
+	return codec16tx.get_datasize();
+}
+
 // can not be zero
 uintptr_t allocate_dmabuffer16rx(void)
 {
@@ -1076,6 +1091,11 @@ int_fast32_t cachesize_dmabuffer32tx(void)
 	return voice32tx.get_cachesize();
 }
 
+int_fast32_t datasize_dmabuffer32tx(void)
+{
+	return voice32tx.get_datasize();
+}
+
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -1222,6 +1242,11 @@ int_fast32_t cachesize_dmabuffer32rx(void)
 	return voice32rx.get_cachesize();
 }
 
+int_fast32_t datasize_dmabuffer32rx(void)
+{
+	return voice32rx.get_datasize();
+}
+
 void release_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
@@ -1267,6 +1292,11 @@ static uacout48adpt_t uacout48adpt(UACOUT_AUDIO48_SAMPLEBYTES * 8, 0, "uaco48");
 int_fast32_t cachesize_dmabufferuacout48(void)
 {
 	return uacout48.get_cachesize();
+}
+
+int_fast32_t datasize_dmabufferuacout48(void)
+{
+	return uacout48.get_datasize();
 }
 
 // can not be zero
@@ -1364,6 +1394,11 @@ typedef enum
 		return uacinrts192.get_cachesize();
 	}
 
+	int_fast32_t datasize_dmabufferuacinrts192(void)
+	{
+		return uacinrts192.get_datasize();
+	}
+
 	// Возвращает количество элементов буфера, обработанных за вызов
 	static unsigned putcbf_dmabufferuacinrts192(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
 	{
@@ -1434,6 +1469,11 @@ typedef enum
 	int_fast32_t cachesize_dmabufferuacinrts96(void)
 	{
 		return uacinrts96.get_cachesize();
+	}
+
+	int_fast32_t datasize_dmabufferuacinrts96(void)
+	{
+		return uacinrts96.get_datasize();
 	}
 
 	// Возвращает количество элементов буфера, обработанных за вызов
@@ -1517,6 +1557,12 @@ static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
 int_fast32_t cachesize_dmabufferuacin48(void)
 {
 	return uacin48.get_cachesize();
+
+}
+
+int_fast32_t datasize_dmabufferuacin48(void)
+{
+	return uacin48.get_datasize();
 
 }
 
@@ -2467,20 +2513,20 @@ uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
 		return 0;
 
 	case UACINALT_AUDIO48:
-		* sizep = UACIN_AUDIO48_DATASIZE_DMAC;
+		* sizep = datasize_dmabufferuacin48();
 		return getfilled_dmabufferuacin48();
 
 #if ! WITHUSBUACIN2
 
 #if WITHRTS96
 	case UACINALT_RTS96:
-		* sizep = UACIN_RTS96_DATASIZE_DMAC;
+		* sizep = datasize_dmabufferuacinrts96();
 		return getfilled_dmabufferuacinrts96();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINALT_RTS192:
-		* sizep = UACIN_RTS192_DATASIZE_DMAC;
+		* sizep = datasize_dmabufferuacinrts192();
 		return getfilled_dmabufferuacinrts192();
 #endif /* WITHRTS192 */
 
@@ -2510,13 +2556,13 @@ uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 
 #if WITHRTS96
 	case UACINRTSALT_RTS96:
-		* sizep = UACIN_RTS96_DATASIZE_DMAC;
+		* sizep = datasize_dmabufferuacinrts96();
 		return getfilled_dmabufferuacinrts96();
 #endif /* WITHRTS192 */
 
 #if WITHRTS192
 	case UACINRTSALT_RTS192:
-		* sizep = UACIN_RTS192_DATASIZE_DMAC;
+		* sizep = datasize_dmabufferuacinrts192();
 		return getfilled_dmabufferuacinrts192();
 #endif /* WITHRTS192 */
 

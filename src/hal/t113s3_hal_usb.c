@@ -4088,19 +4088,19 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 #if WITHUSBUACIN
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
-		DMAC_USB_TX_initialize_UACIN48(ep_no, UACIN_AUDIO48_DATASIZE_DMAC);
+		DMAC_USB_TX_initialize_UACIN48(ep_no);
 	}
 #if WITHUSBUACIN2
 	{
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
-		DMAC_USB_TX_initialize_UACINRTS96(ep_no, UACIN_RTS96_DATASIZE_DMAC);
+		DMAC_USB_TX_initialize_UACINRTS96(ep_no);
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
 #if WITHUSBUACOUT
 	{
 		const uint32_t ep_no = (USBD_EP_AUDIO_OUT & 0x0F);
-		DMAC_USB_RX_initialize_UACOUT48(ep_no, UACOUT_AUDIO48_DATASIZE_DMAC);
+		DMAC_USB_RX_initialize_UACOUT48(ep_no);
 	}
 #endif /* WITHUSBUACOUT */
 
