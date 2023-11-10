@@ -453,8 +453,12 @@ public:
 		while (! IsListEmpty(list))
 		{
 			const PLIST_ENTRY t = RemoveTailList(list);
-			++ freecount;
+			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
+			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
+			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
+			ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 			InsertHeadList(& freelist, t);
+			++ freecount;
 		}
 
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
@@ -503,12 +507,6 @@ public:
 	bool get_freebuffer(element_t * * dest)
 	{
 		return get_freebuffer_raw(dest);
-	}
-
-	// получить из списка свободных, если нет - из готовых
-	bool get_freebufferforced_nopurge(element_t * * dest)
-	{
-		return get_freebuffer_raw(dest) || get_readybuffer_raw(dest);
 	}
 
 	// получить из списка свободных, если нет - из готовых
@@ -932,7 +930,6 @@ uintptr_t allocate_dmabuffer16tx(void)
 	voice16tx_t * dest;
 	while (! codec16tx.get_freebufferforced(& dest))
 		ASSERT(0);
-	//memset(dest->buff, 0, sizeof dest->buff);
 	return (uintptr_t) dest->buff;
 }
 

@@ -3433,11 +3433,13 @@ static uintptr_t DMAC_swap(unsigned dmach, uintptr_t newaddr, unsigned ix)
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;
-	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;	// только что обработанный дескриптор
-	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
-	const uintptr_t addr = descraddr [ix];
-	descraddr [ix] = newaddr;
-	dcache_clean(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+
+	const uintptr_t descraddr = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;	// только что обработанный дескриптор
+	volatile uint32_t * const desc = (volatile uint32_t *) descraddr;
+	const uintptr_t addr = desc [ix];
+	desc [ix] = newaddr;
+	dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
+
 	return addr;
 }
 
