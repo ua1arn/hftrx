@@ -36,7 +36,7 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
 #define VOICE32RX_CAPACITY (2 + 6 * BUFOVERSIZE)
-#define VOICE32TX_CAPACITY (6 * BUFOVERSIZE)
+#define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 #define VOICE32RTS_CAPACITY (4 * BUFOVERSIZE)	// dummy fn
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
@@ -270,7 +270,7 @@ struct buffitem
 	void * tag3;
 };
 
-template <typename buffitem_t, int hasresample>
+template <typename buffitem_t, int hasresample, int hacheckready>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
@@ -493,6 +493,8 @@ public:
 		}
 		else
 		{
+			if (hacheckready && ! outready)
+				return false;
 			return get_readybuffer_raw(dest);
 		}
 	}
@@ -652,10 +654,10 @@ public:
 	}
 };
 
-template <typename sample_t, typename element_t, int hasresample>
-class dmahandle: public blists<element_t, hasresample>
+template <typename sample_t, typename element_t, int hasresample, int hacheckready>
+class dmahandle: public blists<element_t, hasresample, hacheckready>
 {
-	typedef blists<element_t, hasresample> parent_t;
+	typedef blists<element_t, hasresample, hacheckready> parent_t;
 	typedef typeof (element_t::v) wel_t;
 	wel_t * wb;
 	unsigned wbn;
@@ -731,8 +733,6 @@ public:
 	enum { SKIPPEDBLOCKS = 1000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
 #endif
 
-enum { RESAMPLE16NORMAL = SKIPPEDBLOCKS * 2 };	// Нормальное количество буферов в очереди
-
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT16MONI = DMABUFFSIZE16MONI / DMABUFFSTEP16MONI };
@@ -752,7 +752,7 @@ typedef ALIGNX_BEGIN struct denoise16
 } ALIGNX_END denoise16_t;
 
 typedef buffitem<denoise16_t> denoise16buf_t;
-typedef dmahandle<FLOAT_t, denoise16buf_t, 0> denoise16dma_t;
+typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0> denoise16dma_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 static denoise16buf_t denoise16buf [SPEEX_CAPACITY];
@@ -818,8 +818,8 @@ typedef buffitem<voice16tx_t> voice16txbuf_t;
 
 //typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
-typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING> voice16rxdma_t;
-typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1> voice16txdma_t;
 
 static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
 static voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
@@ -1030,7 +1030,7 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 
 
 
-typedef dmahandle<FLOAT_t, moni16buf_t, 0> moni16txdma_t;
+typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1> moni16txdma_t;
 
 static moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
 static moni16buf_t rx16recbuf [VOICE16TXMONI_CAPACITY];
@@ -1081,7 +1081,7 @@ typedef buffitem<voice32tx_t> voice32txbuf_t;
 
 static voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
-typedef dmahandle<FLOAT_t, voice32txbuf_t, 0> voice32txdma_t;
+typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx", voice32txbuf, ARRAY_SIZE(voice32txbuf));
@@ -1233,7 +1233,7 @@ typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
 static RAMNC voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
-typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0> voice32rxdma_t;
+typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1> voice32rxdma_t;
 
 static voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx", voice32rxbuf, ARRAY_SIZE(voice32rxbuf));
 
@@ -1281,7 +1281,7 @@ typedef buffitem<uacout48_t> uacout48buf_t;
 
 static RAMNC uacout48buf_t uacout48buf [UACOUT48_CAPACITY];
 
-typedef dmahandle<FLOAT_t, uacout48buf_t, 1> uacout48dma_t;
+typedef dmahandle<FLOAT_t, uacout48buf_t, 1, 1> uacout48dma_t;
 
 typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> uacout48adpt_t;
 
@@ -1343,12 +1343,16 @@ static unsigned getcbf_dmabufferuacout48(uint8_t * b, FLOAT_t * dest)
 // Возвращает не-ноль если данные есть
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 {
-	// WITHUSBUACOUT test
-//	enum { L, R };
-//	dest [L] = get_lout();	// левый канал
-//	dest [R] = get_rout();	// правый канал
-//	return 1;
-	return uacout48.fetchdata(dest, getcbf_dmabufferuacout48);
+	if (uacout48.fetchdata(dest, getcbf_dmabufferuacout48))
+	{
+		// WITHUSBUACOUT test
+		enum { L, R };
+	//	dest [L] = get_lout();	// левый канал
+	//	dest [R] = get_rout();	// правый канал
+	//	dest [R] = dest [L];
+		return 1;
+	}
+	return 0;
 }
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
@@ -1382,7 +1386,7 @@ typedef enum
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
 	static uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
 
-	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1> uacinrts192dma_t;
+	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1, 1> uacinrts192dma_t;
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS192_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS192> uacinrts192adpt_t;
 
@@ -1459,7 +1463,7 @@ typedef enum
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
 	static uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
 
-	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1> uacinrts96dma_t;
+	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1, 1> uacinrts96dma_t;
 
 	typedef adapters<int_fast32_t, (int) UACIN_RTS96_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_RTS96> uacinrts96adpt_t;
 
@@ -1539,7 +1543,7 @@ typedef buffitem<uacin48_t> uacin48buf_t;
 
 static uacin48buf_t uacin48buf [UACIN48_CAPACITY];
 
-typedef dmahandle<FLOAT_t, uacin48buf_t, 1> uacin48dma_t;
+typedef dmahandle<FLOAT_t, uacin48buf_t, 1, 1> uacin48dma_t;
 
 
 typedef adapters<FLOAT_t, (int) UACIN_AUDIO48_SAMPLEBYTES, (int) UACIN_FMT_CHANNELS_AUDIO48> uacin48adpt_t;
@@ -1701,7 +1705,7 @@ typedef buffitem<message8buff_t> message8v_t;
 static message8v_t message8v [MESSAGE_CAPACITY];
 
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
-typedef blists<message8v_t, 0> message8list_t;
+typedef blists<message8v_t, 0, 0> message8list_t;
 
 static message8list_t message8(MESSAGE_IRQL, "msg8", message8v, ARRAY_SIZE(message8v));
 
@@ -1860,7 +1864,7 @@ typedef buffitem<recordswav48_t> recordswav48buf_t;
 static recordswav48buf_t recordswav48buf [AUDIOREC_CAPACITY];
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef dmahandle<FLOAT_t, recordswav48buf_t, 0> recordswav48dma_t;
+typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec", recordswav48buf, ARRAY_SIZE(recordswav48buf));
 
