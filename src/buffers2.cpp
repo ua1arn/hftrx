@@ -1590,7 +1590,7 @@ uintptr_t allocate_dmabufferuacin48(void)
 uintptr_t getfilled_dmabufferuacin48(void)
 {
 	uacin48_t * dest;
-	if (uacin48.get_readybuffer(& dest) || uacin48.get_freebuffer(& dest) || uacin48.get_freebufferforced(& dest))
+	if (uacin48.get_readybuffer(& dest) || uacin48.get_freebufferforced(& dest))
 	{
 		dest->tag = BUFFTAG_UACIN48;
 		return (uintptr_t) & dest->buff;
