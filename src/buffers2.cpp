@@ -1394,7 +1394,7 @@ typedef enum
 
 // USB AUDIO RTS IN
 
-#if WITHRTS192
+#if WITHRTS192 || WITHRTS96
 
 	typedef struct
 	{
@@ -1471,7 +1471,7 @@ typedef enum
 		uacinrts192.release_buffer(p);
 	}
 
-#elif WITHRTS96
+//#elif WITHRTS96
 
 	typedef struct
 	{
@@ -2253,9 +2253,9 @@ static uint_fast8_t isrts192(void)
 
 #endif /*  WITHRTS96 && WITHUSBHW && WITHUSBUAC && defined (WITHUSBHW_DEVICE) */
 
-#if WITHRTS192
+#if WITHRTS192 && 0
 // Этой функцией пользуются обработчики прерываний DMA
-// обработать буфер после оцифровки - канал спектроанализатора
+// обработать буфер после оцифровки - отдельный канал спектроанализатора
 void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);

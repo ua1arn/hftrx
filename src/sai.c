@@ -5225,6 +5225,78 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
+static uintptr_t dma_flushuacinrts192(uintptr_t addr)
+{
+	dcache_clean(addr, cachesize_dmabufferuacinrts192());
+	return addr;
+}
+
+/* Передача в host */
+static void DMAC_USB_TX_handler_UACINRTS192(unsigned dmach)
+{
+	const uintptr_t newaddr = dma_flushuacinrts192(getfilled_dmabufferuacinrts192());
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
+
+	/* Работа с только что передаными данными */
+	release_dmabufferuacinrts192(addr);
+}
+
+void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep)
+{
+	const unsigned NBYTES = datasize_dmabufferuacinrts192();
+	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	const size_t dw = awusbadj(NBYTES);
+	const unsigned dmach = DMAC_USBUACRTS_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
+	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
+	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep - 1;
+
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
+	const uint_fast32_t configDMAC =
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flushuacinrts192(allocate_dmabufferuacinrts192());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	dcache_clean(descraddr, sizeof descr0);
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS192);
+
+	// DMA_DST_MODE потребовался на Allwinner A64
+	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
 #endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER

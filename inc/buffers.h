@@ -50,7 +50,7 @@ extern "C" {
 		#if WITHRTS96
 			#define DMABUF32RXRTS0I	2		// RTS0, I	// previous - oldest
 			#define DMABUF32RXRTS0Q	6		// RTS0, Q	// previous
-			#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- newest
 			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 
@@ -94,7 +94,7 @@ extern "C" {
 		#if WITHRTS96
 			#define DMABUF32RXRTS0I	4		// RTS0, I	// previous - oldest
 			#define DMABUF32RXRTS0Q	5		// RTS0, Q	// previous
-			#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- newest
 			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 
@@ -143,7 +143,7 @@ extern "C" {
 			#if WITHRTS96
 				#define DMABUF32RXRTS0I	2		// RTS0, I	// previous - oldest
 				#define DMABUF32RXRTS0Q	6		// RTS0, Q	// previous
-				#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- nevest
+				#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- newest
 				#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 			#endif /* WITHRTS96 */
 
@@ -224,7 +224,7 @@ extern "C" {
 			#if WITHRTS96
 				#define DMABUF32RXRTS0I	4		// RTS0, I	// previous - oldest
 				#define DMABUF32RXRTS0Q	5		// RTS0, Q	// previous
-				#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- nevest
+				#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- newest
 				#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 			#endif /* WITHRTS96 */
 
@@ -261,20 +261,20 @@ extern "C" {
 			// ws=1: 01 03 05 07
 
 		#if WITHRTS96
-			#define DMABUF32RXRTS0I	4		// RTS0, I	// previous - oldest
-			#define DMABUF32RXRTS0Q	5		// RTS0, Q	// previous
-			#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- nevest
-			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
+			#define DMABUF32RXRTS0I	4		// RTS(t-1), I	// previous - oldest
+			#define DMABUF32RXRTS0Q	5		// RTS(t-1), Q	// previous
+			#define DMABUF32RXRTS1I	6		// RTS(t), I	// current	- newest
+			#define DMABUF32RXRTS1Q	7		// RTS(t), Q	// current
 		#endif /* WITHRTS96 */
 		#if WITHRTS192
-			#define DMABUF32RXRTS0I	0		// RTS0, I	// previous - oldest
-			#define DMABUF32RXRTS0Q	1		// RTS0, Q	// previous
-			#define DMABUF32RXRTS1I	2		// RTS1, I	// previous
-			#define DMABUF32RXRTS1Q	3		// RTS1, Q	// previous
-			#define DMABUF32RXRTS1I	4		// RTS2, I	// previous
-			#define DMABUF32RXRTS1Q	5		// RTS2, Q	// previous
-			#define DMABUF32RXRTS1I	6		// RTS3, I	// current	- nevest
-			#define DMABUF32RXRTS1Q	7		// RTS3, Q	// current
+			#define DMABUF32RXRTS0I	0		// RTS(t-3), I	// previous - oldest
+			#define DMABUF32RXRTS0Q	1		// RTS(t-3), Q	// previous
+			#define DMABUF32RXRTS1I	2		// RTS(t-2), I	// previous
+			#define DMABUF32RXRTS1Q	3		// RTS(t-2), Q	// previous
+			#define DMABUF32RXRTS2I	4		// RTS(t-1), I	// previous
+			#define DMABUF32RXRTS2Q	5		// RTS(t-1), Q	// previous
+			#define DMABUF32RXRTS3I	6		// RTS(t), I	// current	- newest
+			#define DMABUF32RXRTS3Q	7		// RTS(t), Q	// current
 		#endif /* WITHRTS192 */
 
 
@@ -330,7 +330,7 @@ extern "C" {
 		#if WITHRTS96
 			#define DMABUF32RXRTS0I	2		// RTS0, I	// previous - oldest
 			#define DMABUF32RXRTS0Q	6		// RTS0, Q	// previous
-			#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- newest
 			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 

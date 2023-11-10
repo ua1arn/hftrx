@@ -870,15 +870,15 @@ adapter_t afcodectx;		/* к наушникам */
 adapter_t ifcodecrx;		/* канал от FPGA к процессору */
 adapter_t ifcodectx;		/* канал от процессора к FPGA */
 
-#if WITHRTS96
+//#if WITHRTS96
 adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
 adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
-#endif /* WITHRTS96 */
+//#endif /* WITHRTS96 */
 
-#if WITHRTS192
+//#if WITHRTS192
 adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
-#endif /* WITHRTS96 */
+//#endif /* WITHRTS96 */
 adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
 
 #if WITHUSEAUDIOREC
@@ -5271,7 +5271,7 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 	dbuff [DMABUF32RXRTS0I] = adpt_output(& ifspectrumin96, simval0.IV);
 	dbuff [DMABUF32RXRTS0Q] = adpt_output(& ifspectrumin96, simval0.QV);
 
-	// current	- nevest
+	// current	- newest
 	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
 	dbuff [DMABUF32RXRTS1I] = adpt_output(& ifspectrumin96, simval1.IV);
 	dbuff [DMABUF32RXRTS1Q] = adpt_output(& ifspectrumin96, simval1.QV);

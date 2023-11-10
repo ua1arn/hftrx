@@ -2609,7 +2609,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
-#if WITHUSBUACIN2
+#if WITHUSBUACIN2 && WITHRTS96
 	{
 		// ISOC IN Аудиоданные спектра в компьютер из TRX
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
@@ -2625,7 +2625,24 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
 #endif
 	}
-#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN2 && WITHRTS96 */
+#if WITHUSBUACIN2 && WITHRTS192
+	{
+		// ISOC IN Аудиоданные спектра в компьютер из TRX
+		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
+		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_RTS192_DATASIZE_DMAC, 1, fifo_addr);
+		set_ep_iso(pusb, ep_no, EP_DIR_IN);
+#if 0
+		usb_set_eptx_interrupt_enable(pusb, 1u << ep_no);
+#else
+		usb_select_ep(pusb, ep_no);
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+#endif
+	}
+#endif /* WITHUSBUACIN2 && WITHRTS192 */
 #endif /* WITHUSBUACIN */
 	//PRINTF("awxx_setup_fifo: fifo_addr = %u\n", (unsigned) fifo_addr);
 	// Device and host controller share a 8K SRAM and a physical PHY
@@ -4091,12 +4108,18 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 		const uint32_t ep_no = (USBD_EP_AUDIO_IN & 0x0F);
 		DMAC_USB_TX_initialize_UACIN48(ep_no);
 	}
-#if WITHUSBUACIN2
+#if WITHUSBUACIN2 && WITHRTS96
 	{
 		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
 		DMAC_USB_TX_initialize_UACINRTS96(ep_no);
 	}
-#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN2 && WITHRTS96 */
+#if WITHUSBUACIN2 && WITHRTS192
+	{
+		const uint32_t ep_no = (USBD_EP_RTS_IN & 0x0F);
+		DMAC_USB_TX_initialize_UACINRTS192(ep_no);
+	}
+#endif /* WITHUSBUACIN2 && WITHRTS192 */
 #endif /* WITHUSBUACIN */
 #if WITHUSBUACOUT
 	{
