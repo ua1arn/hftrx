@@ -2282,38 +2282,36 @@ void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 static void RAMFUNC
 saverts96pair(const IFADCvalue_t * buff)
 {
-#if FPGAMODE_GW2A
-#else /* FPGAMODE_GW2A */
 	// формирование отображения спектра
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
 	if (glob_swaprts != 0)
 	{
 		deliveryint(
 			& rtstargetsint,
-			buff [DMABUF32RTS0Q],	// previous
-			buff [DMABUF32RTS0I]
+			buff [DMABUF32RXRTS0Q],	// previous
+			buff [DMABUF32RXRTS0I]
 			);
 		deliveryint(
 			& rtstargetsint,
-			buff [DMABUF32RTS1Q],	// current
-			buff [DMABUF32RTS1I]
+			buff [DMABUF32RXRTS1Q],	// current
+			buff [DMABUF32RXRTS1I]
 			);
 	}
 	else
 	{
 		deliveryint(
 			& rtstargetsint,
-			buff [DMABUF32RTS0I],	// previous
-			buff [DMABUF32RTS0Q]
+			buff [DMABUF32RXRTS0I],	// previous
+			buff [DMABUF32RXRTS0Q]
 			);
 		deliveryint(
 			& rtstargetsint,
-			buff [DMABUF32RTS1I],	// current
-			buff [DMABUF32RTS1Q]
+			buff [DMABUF32RXRTS1I],	// current
+			buff [DMABUF32RXRTS1Q]
 			);
 	}
-#endif
 }
+
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC
 saverts96(const IFADCvalue_t * buff)
@@ -2324,21 +2322,77 @@ saverts96(const IFADCvalue_t * buff)
 	{
 		deliveryint(
 			& rtstargetsint,
-			buff [DMABUF32RTS0Q],	// previous
-			buff [DMABUF32RTS0I]
+			buff [DMABUF32RXRTS0Q],	// current
+			buff [DMABUF32RXRTS0I]
 			);
 	}
 	else
 	{
 		deliveryint(
 			& rtstargetsint,
-			buff [DMABUF32RTS0I],	// previous
-			buff [DMABUF32RTS0Q]
+			buff [DMABUF32RXRTS0I],	// current
+			buff [DMABUF32RXRTS0Q]
 			);
 	}
 }
 
 #endif /* WITHDSPEXTDDC && WITHRTS96 */
+
+#if WITHDSPEXTDDC && WITHRTS192
+// использование данных о спектре, передаваемых в общем фрейме
+static void RAMFUNC
+saverts192quad(const IFADCvalue_t * buff)
+{
+	// формирование отображения спектра
+	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
+	if (glob_swaprts != 0)
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS0Q],	// previous
+			buff [DMABUF32RXRTS0I]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS1Q],	// previous
+			buff [DMABUF32RXRTS1I]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS2Q],	// previous
+			buff [DMABUF32RXRTS2I]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS3Q],	// current
+			buff [DMABUF32RXRTS3I]
+			);
+	}
+	else
+	{
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS0I],	// previous
+			buff [DMABUF32RXRTS0Q]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS1I],	// previous
+			buff [DMABUF32RXRTS1Q]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS2I],	// previous
+			buff [DMABUF32RXRTS2Q]
+			);
+		deliveryint(
+			& rtstargetsint,
+			buff [DMABUF32RXRTS3I],	// current
+			buff [DMABUF32RXRTS3Q]
+			);
+	}
+}
+#endif /* WITHDSPEXTDDC && WITHRTS192 */
 
 #if 0
 
@@ -2448,7 +2502,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 	}
 	else if (1)
 	{
-		uint_fast8_t slot = DMABUF32RTS0I;	// slot 4
+		uint_fast8_t slot = DMABUF32RXRTS0I;	// slot 4
 		validateSeq(slot, b [slot], b);
 	}
 #endif
@@ -2460,6 +2514,8 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		saverts96(b);	// использование данных о спектре, передаваемых в общем фрейме
 #elif WITHRTS96
 		saverts96pair(b);	// использование данных о спектре, передаваемых в общем фрейме
+#elif WITHRTS192
+		saverts192quad(b);	// использование данных о спектре, передаваемых в общем фрейме
 #endif /* WITHRTS96 */
 
 #if WITHDSPEXTDDC

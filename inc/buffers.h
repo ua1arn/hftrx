@@ -48,10 +48,10 @@ extern "C" {
 		// ws=1: 04 05 06 07
 
 		#if WITHRTS96
-			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
-			#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
-			#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
-			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#define DMABUF32RXRTS0I	2		// RTS0, I	// previous - oldest
+			#define DMABUF32RXRTS0Q	6		// RTS0, Q	// previous
+			#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 
 
@@ -92,10 +92,10 @@ extern "C" {
 			#define DMABUF32RX1Q	3		// RX1, Q
 
 		#if WITHRTS96
-			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
-			#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
-			#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
-			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#define DMABUF32RXRTS0I	4		// RTS0, I	// previous - oldest
+			#define DMABUF32RXRTS0Q	5		// RTS0, Q	// previous
+			#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 
 			// Slot S0, S4: Oldest sample (T-3)
@@ -141,10 +141,10 @@ extern "C" {
 			#define DMABUF32RX1Q	5		// RX1, Q
 
 			#if WITHRTS96
-				#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
-				#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
-				#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
-				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+				#define DMABUF32RXRTS0I	2		// RTS0, I	// previous - oldest
+				#define DMABUF32RXRTS0Q	6		// RTS0, Q	// previous
+				#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- nevest
+				#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 			#endif /* WITHRTS96 */
 
 			// Slot S0, S4: Oldest sample (T-3)
@@ -187,8 +187,8 @@ extern "C" {
 		#define DMABUF32RX0I	0		// RX0, I
 		#define DMABUF32RX0Q	1		// RX0, Q
 
-		#define DMABUF32RTS0I	0		// RTS0, I	// previous - oldest
-		#define DMABUF32RTS0Q	1		// RTS0, Q	// previous
+		#define DMABUF32RXRTS0I	0		// RTS0, I	// previous - oldest
+		#define DMABUF32RXRTS0Q	1		// RTS0, Q	// previous
 
 		/* FPGA */
 		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -222,10 +222,10 @@ extern "C" {
 			// ws=1: 01 03 05 07
 
 			#if WITHRTS96
-				#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
-				#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
-				#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
-				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+				#define DMABUF32RXRTS0I	4		// RTS0, I	// previous - oldest
+				#define DMABUF32RXRTS0Q	5		// RTS0, Q	// previous
+				#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- nevest
+				#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 			#endif /* WITHRTS96 */
 
 			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
@@ -260,12 +260,22 @@ extern "C" {
 			// ws=0: 00 02 04 06
 			// ws=1: 01 03 05 07
 
-			#if WITHRTS96
-				#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
-				#define DMABUF32RTS0Q	5		// RTS0, Q	// previous
-				#define DMABUF32RTS1I	6		// RTS1, I	// current	- nevest
-				#define DMABUF32RTS1Q	7		// RTS1, Q	// current
-			#endif /* WITHRTS96 */
+		#if WITHRTS96
+			#define DMABUF32RXRTS0I	4		// RTS0, I	// previous - oldest
+			#define DMABUF32RXRTS0Q	5		// RTS0, Q	// previous
+			#define DMABUF32RXRTS1I	6		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
+		#endif /* WITHRTS96 */
+		#if WITHRTS192
+			#define DMABUF32RXRTS0I	0		// RTS0, I	// previous - oldest
+			#define DMABUF32RXRTS0Q	1		// RTS0, Q	// previous
+			#define DMABUF32RXRTS1I	2		// RTS1, I	// previous
+			#define DMABUF32RXRTS1Q	3		// RTS1, Q	// previous
+			#define DMABUF32RXRTS1I	4		// RTS2, I	// previous
+			#define DMABUF32RXRTS1Q	5		// RTS2, Q	// previous
+			#define DMABUF32RXRTS1I	6		// RTS3, I	// current	- nevest
+			#define DMABUF32RXRTS1Q	7		// RTS3, Q	// current
+		#endif /* WITHRTS192 */
 
 
 			// Allwinner t113-s3: I2S/PCM have non-sequential numbering of samples in DMA buffer
@@ -318,10 +328,10 @@ extern "C" {
 		#define DMABUF32TXQ	4		// TX, Q
 
 		#if WITHRTS96
-			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
-			#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
-			#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
-			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+			#define DMABUF32RXRTS0I	2		// RTS0, I	// previous - oldest
+			#define DMABUF32RXRTS0Q	6		// RTS0, Q	// previous
+			#define DMABUF32RXRTS1I	3		// RTS1, I	// current	- nevest
+			#define DMABUF32RXRTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 
 
