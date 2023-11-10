@@ -932,7 +932,7 @@ uintptr_t allocate_dmabuffer16tx(void)
 	voice16tx_t * dest;
 	while (! codec16tx.get_freebufferforced(& dest))
 		ASSERT(0);
-	memset(dest->buff, 0, sizeof dest->buff);
+	//memset(dest->buff, 0, sizeof dest->buff);
 	return (uintptr_t) dest->buff;
 }
 
@@ -1246,12 +1246,12 @@ int_fast32_t datasize_dmabuffer32rx(void)
 {
 	return voice32rx.get_datasize();
 }
-
-void release_dmabuffer32rx(uintptr_t addr)
-{
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-	voice32rx.release_buffer(p);
-}
+//
+//void release_dmabuffer32rx(uintptr_t addr)
+//{
+//	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+//	voice32rx.release_buffer(p);
+//}
 
 // can not be zero
 uintptr_t allocate_dmabuffer32rx(void)
@@ -1259,6 +1259,7 @@ uintptr_t allocate_dmabuffer32rx(void)
 	voice32rx_t * dest;
 	while (! voice32rx.get_freebuffer(& dest))
 		ASSERT(0);
+	//memset(dest->buff, 0, sizeof dest->buff);
 	return (uintptr_t) dest->buff;
 }
 
