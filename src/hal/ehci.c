@@ -674,7 +674,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
   */
 void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
 {
-  USBH_LL_Connect(hehci->pData);
+  USBH_LL_Connect((USBH_HandleTypeDef *) hehci->pData);
 }
 
 /**
@@ -684,7 +684,7 @@ void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
   */
 void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
 {
-  USBH_LL_Disconnect(hehci->pData);
+  USBH_LL_Disconnect((USBH_HandleTypeDef *) hehci->pData);
 }
 
 /**
@@ -694,7 +694,7 @@ void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
   */
 void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
 {
-  USBH_LL_PortEnabled(hehci->pData);
+  USBH_LL_PortEnabled((USBH_HandleTypeDef *) hehci->pData);
 }
 
 /**
@@ -704,7 +704,7 @@ void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
   */
 void HAL_EHCI_SOF_Callback(EHCI_HandleTypeDef *hhcd)
 {
-  USBH_LL_IncTimer(hhcd->pData);
+  USBH_LL_IncTimer((USBH_HandleTypeDef *) hhcd->pData);
 }
 
 
@@ -1831,7 +1831,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
 		uint32_t length, uint8_t do_ping)
 {
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef *) phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
@@ -1845,7 +1845,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	EHCI_StopAsync(EHCIx);
 
-	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
+	hal_status = HAL_EHCI_HC_SubmitRequest((EHCI_HandleTypeDef *) phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
 								 do_ping);
 
@@ -1877,7 +1877,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe)
 {
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef *) phost->pData;
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -1891,20 +1891,20 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
 #endif /* WITHINTEGRATEDDSP */
 
-	EHCI_URBStateTypeDef state2 = HAL_EHCI_HC_GetURBState(phost->pData, pipe);
+	EHCI_URBStateTypeDef state2 = HAL_EHCI_HC_GetURBState((EHCI_HandleTypeDef*) phost->pData, pipe);
 	EHCI_URBStateTypeDef state;
 	do
 	{
 		state = state2;
-		state2 = HAL_EHCI_HC_GetURBState(phost->pData, pipe);
+		state2 = HAL_EHCI_HC_GetURBState((EHCI_HandleTypeDef*) phost->pData, pipe);
 	} while (state != state2);
 	return (USBH_URBStateTypeDef) state2;
 }
 
 USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost, uint8_t pipe_num)
 {
-	EHCI_HandleTypeDef *hehci = phost->pData;
-	return hehci->hc [pipe_num].speed;
+	EHCI_HandleTypeDef *hehci = (EHCI_HandleTypeDef*) phost->pData;
+	return (USBH_SpeedTypeDef) hehci->hc [pipe_num].speed;
 
 }
 
@@ -1949,8 +1949,8 @@ USBH_StatusTypeDef USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state) 
 USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 		uint8_t toggle) {
 	EHCI_HandleTypeDef *pHandle;
-	pHandle = phost->pData;
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	pHandle = (EHCI_HandleTypeDef *) phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) phost->pData;
 	ASSERT(pHandle != NULL);
 	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef*) pHandle->Instance;
 
@@ -1981,7 +1981,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
  * @retval toggle (0/1)
  */
 uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num) {
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) phost->pData;
 	uint8_t toggle = 0;
 //	EHCI_HandleTypeDef *pHandle;
 //	pHandle = phost->pData;
@@ -2030,7 +2030,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 //  }
 //
 	/* Determine port speed */
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) phost->pData;
 	const uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
 	const unsigned ccs = (portsc & EHCI_PORTSC_CCS);
 	const unsigned line = EHCI_PORTSC_LINE_STATUS(portsc);
@@ -2136,7 +2136,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	//
 	//	  hal_status = HAL_EHCI_ResetPort2(phost->pData, resetIsActive);
 	//
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 //	PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08X USBSTS=%08X PORTSC[%u]=%08X\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
@@ -2182,12 +2182,12 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
   */
 uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
-	uint32_t size2 = HAL_EHCI_HC_GetXferCount(phost->pData, pipe);
+	uint32_t size2 = HAL_EHCI_HC_GetXferCount((EHCI_HandleTypeDef*) phost->pData, pipe);
 	uint32_t size;
 	do
 	{
 		size = size2;
-		size2 = HAL_EHCI_HC_GetXferCount(phost->pData, pipe);
+		size2 = HAL_EHCI_HC_GetXferCount((EHCI_HandleTypeDef*) phost->pData, pipe);
 	} while (size != size2);
 	return size2;
 }
@@ -2223,10 +2223,10 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
-	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-  hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
+  hal_status = HAL_EHCI_HC_Init((EHCI_HandleTypeDef*) phost->pData, pipe_num, epnum,
 		  dev_target->dev_address, dev_target->speed, ep_type, mps, dev_target->tt_hubaddr, dev_target->tt_prtaddr);
 
   ////hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
@@ -2309,7 +2309,7 @@ USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	hal_status = HAL_EHCI_DeInit(phost->pData);
+	hal_status = HAL_EHCI_DeInit((EHCI_HandleTypeDef*) phost->pData);
 
 	usb_status = USBH_Get_USB_Status(hal_status);
 	phost->pData = NULL;
@@ -2327,7 +2327,7 @@ USBH_StatusTypeDef USBH_LL_Start(USBH_HandleTypeDef *phost)
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	hal_status = HAL_EHCI_Start(phost->pData);
+	hal_status = HAL_EHCI_Start((EHCI_HandleTypeDef*) phost->pData);
 
 	usb_status = USBH_Get_USB_Status(hal_status);
 
@@ -2344,7 +2344,7 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	hal_status = HAL_EHCI_Stop(phost->pData);
+	hal_status = HAL_EHCI_Stop((EHCI_HandleTypeDef*) phost->pData);
 
 	usb_status = USBH_Get_USB_Status(hal_status);
 
@@ -2379,7 +2379,7 @@ void MX_USB_HOST_DeInit(void)
 /* User-mode function */
 void MX_USB_HOST_Process(void)
 {
-	EHCI_HandleTypeDef * const hehci = hUsbHostHS.pData;
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
 	USBH_Process(& hUsbHostHS);
 
 	IRQL_t oldIrql;

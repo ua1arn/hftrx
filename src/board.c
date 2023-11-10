@@ -8990,7 +8990,7 @@ typedef struct boardadc_tag
 	adcvalholder_t adc_data_filtered;		// выход фильтра
 	//uint8_t adc_data_smoothed_u8;		// выход фильтра
 	uint8_t adc_filter;			/* методы фильтрации данных */
-	void * lpf;
+	lpfdata_t * lpf;
 } boardadc_t;
 
 static boardadc_t badcst [HARDWARE_ADCINPUTS];

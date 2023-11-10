@@ -33,9 +33,10 @@ typedef struct editfreq2_tag
 	uint8_t blinkstate;	// в месте редактируемого символа отображается подчёркивание (0 - пробел)
 } editfreq2_t;
 
+enum DCTX_t { DCTX_FREQ, DCTX_MENU };
 typedef struct dctx_tag
 {
-	enum { DCTX_FREQ, DCTX_MENU } type;
+	enum DCTX_t type;
 	const void * pv;
 } dctx_t;
 

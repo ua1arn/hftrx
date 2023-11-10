@@ -1105,7 +1105,7 @@ void IRQ_Handler_GIC(void)
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
-		GIC_SetPriority(0, GIC_GetPriority(0));
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 
 	}
@@ -1145,12 +1145,12 @@ void IRQ_Handler_GIC(void)
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
-		GIC_SetPriority(0, GIC_GetPriority(0));
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 	}
 	//dbg_putchar(' ');
 
-	GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
+	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
 #endif
@@ -2001,7 +2001,7 @@ static void arm_hardware_gicsfetch(void)
 	LCLSPIN_LOCK(& gicdistrib_lock);
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
-		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
+		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	//dcache_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
@@ -2011,8 +2011,9 @@ static void arm_hardware_gicsfetch(void)
 }
 
 /* вызывается на любом ядре */
-static void arm_hardware_populate(int int_id)
+static void arm_hardware_populate(int int_ida)
 {
+	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	const uint32_t target_list = 0xFF & ~ (0x01u << arm_hardware_cpuid());	// получателями будут остальные ядра
 	LCLSPIN_LOCK(& populate_lock);
 	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
@@ -2038,7 +2039,7 @@ static void arm_hardware_populate_initialize(void)
 	unsigned int_id;
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
-		gicshadow_prio [int_id] = GIC_GetPriority(int_id);
+		gicshadow_prio [int_id] = GIC_GetPriority((IRQn_Type) int_id);
 	}
 	//LCLSPINLOCK_INITIALIZE(& gicdistrib_lock);
 	//LCLSPINLOCK_INITIALIZE(& populate_lock);
@@ -2071,8 +2072,9 @@ void arm_hardware_populte_second_initialize(void)
 #endif /* WITHSMPSYSTEM */
 
 // Set interrupt vector wrapper
-void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
+void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
+	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
 #if CPUSTYLE_AT91SAM7S
 
@@ -2158,8 +2160,9 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 }
 
 // Disable interrupt vector
-void arm_hardware_disable_handler(uint_fast16_t int_id)
+void arm_hardware_disable_handler(uint_fast16_t int_ida)
 {
+	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 

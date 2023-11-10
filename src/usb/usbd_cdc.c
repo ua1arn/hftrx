@@ -325,8 +325,8 @@ void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обра
 void usbd_cdc_tx(void * ctx, uint_fast8_t c)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
-	USBD_HandleTypeDef * const pdev = ctx;
-	(void) ctx;
+	USBD_HandleTypeDef * const pdev = (USBD_HandleTypeDef *) ctx;
+
 	LCLSPIN_LOCK(& catlock);
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;

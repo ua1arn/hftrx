@@ -393,7 +393,7 @@ static COLORPIP_T attr2color(uint_fast8_t v)
 void ex_gettext(int left, int top, int right, int bottom, void *destin)
 {
 	vtty_x2_t * const vt = & vtty_x2_0;
-	uint8_t * p = destin;
+	uint8_t * p = (uint8_t *) destin;
 	unsigned row = top - 1;
 	unsigned h = bottom - top + 1;
 	while (h --)
@@ -417,7 +417,7 @@ void ex_gettext(int left, int top, int right, int bottom, void *destin)
 void puttext(int left, int top, int right, int bottom, void *source)
 {
 	vtty_x2_t * const vt = & vtty_x2_0;
-	uint8_t * p = source;
+	uint8_t * p = (uint8_t *) source;
 	unsigned row = top - 1;
 	unsigned h = bottom - top + 1;
 	while (h --)

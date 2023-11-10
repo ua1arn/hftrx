@@ -16740,7 +16740,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = y;
 	uint_fast16_t index_groups = 0;
@@ -16824,7 +16824,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -16916,7 +16916,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * 
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_params = y;
 	uint_fast16_t index_params = 0;
@@ -17006,7 +17006,7 @@ void display2_menu_lblc3(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	char buff [4];
 	const uint_fast8_t index = (int) (mp - menutable);
 	if (ismenukind(mp, ITEM_GROUP))
@@ -17033,7 +17033,7 @@ void display2_menu_lblng(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
@@ -17050,7 +17050,7 @@ void display2_menu_lblst(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_at_P(x, y, mp->qlabel);
 }
@@ -17065,7 +17065,7 @@ void display2_menu_group(
 {
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * mp = pctx->pv;
+	const FLASHMEM struct menudef * mp = (const FLASHMEM struct menudef *) pctx->pv;
 
 	while (ismenukind(mp, ITEM_GROUP) == 0)
 		-- mp;
@@ -17100,7 +17100,7 @@ void display2_menu_valxx(
 	};
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
-	const FLASHMEM struct menudef * const mp = pctx->pv;
+	const FLASHMEM struct menudef * const mp = (const FLASHMEM struct menudef *) pctx->pv;
 	if (ismenukind(mp, ITEM_VALUE) == 0)
 		return;
 	multimenuwnd_t window;

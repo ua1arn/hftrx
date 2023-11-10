@@ -554,7 +554,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 			{
 			case SPIIOSIZE_U8:
 				{
-					const uint8_t * txbuff = ex->txbuff;
+					const uint8_t * txbuff = (uint8_t *) ex->txbuff;
 					spi_progval8_p1(target, * txbuff);
 					while (-- size)
 						spi_progval8_p2(target, * ++ txbuff);
@@ -564,7 +564,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 		#if WITHSPI16BIT
 			case SPIIOSIZE_U16:
 				{
-					const uint16_t * txbuff = ex->txbuff;
+					const uint16_t * txbuff = (uint16_t *) ex->txbuff;
 					hardware_spi_b16_p1(* txbuff);
 					while (-- size)
 						hardware_spi_b16_p2(* ++ txbuff);
@@ -575,7 +575,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 		#if WITHSPI32BIT
 			case SPIIOSIZE_U32:
 				{
-					const uint32_t * txbuff = ex->txbuff;
+					const uint32_t * txbuff = (uint32_t *) ex->txbuff;
 					hardware_spi_b32_p1(* txbuff);
 					while (-- size)
 						hardware_spi_b32_p2(* ++ txbuff);
@@ -593,7 +593,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 			{
 			case SPIIOSIZE_U8:
 				{
-					uint8_t * rxbuff = ex->rxbuff;
+					uint8_t * rxbuff = (uint8_t *) ex->rxbuff;
 					spi_to_read(target);
 					while (size --)
 						* rxbuff ++ = spi_read_byte(target, 0xff);
@@ -603,7 +603,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 		#if WITHSPI16BIT
 			case SPIIOSIZE_U16:
 				{
-					uint16_t * rxbuff = ex->rxbuff;
+					uint16_t * rxbuff = (uint16_t *) ex->rxbuff;
 					spi_to_read(target);
 					while (size --)
 					{
@@ -617,7 +617,7 @@ static void spi_operate_low(lowspiio_t * iospi)
 		#if WITHSPI32BIT
 			case SPIIOSIZE_U32:
 				{
-					uint32_t * rxbuff = ex->rxbuff;
+					uint32_t * rxbuff = (uint32_t *) ex->rxbuff;
 					spi_to_read(target);
 					while (size --)
 					{
@@ -640,8 +640,8 @@ static void spi_operate_low(lowspiio_t * iospi)
 			{
 			case SPIIOSIZE_U8:
 				{
-					uint8_t * rxbuff = ex->rxbuff;
-					const uint8_t * txbuff = ex->txbuff;
+					uint8_t * rxbuff = (uint8_t *) ex->rxbuff;
+					const uint8_t * txbuff = (const uint8_t *) ex->txbuff;
 					while (size --)
 						* rxbuff ++ = spi_read_byte(target, * txbuff ++);
 				}
@@ -649,8 +649,8 @@ static void spi_operate_low(lowspiio_t * iospi)
 		#if WITHSPI16BIT
 			case SPIIOSIZE_U16:
 				{
-					uint16_t * rxbuff = ex->rxbuff;
-					const uint16_t * txbuff = ex->txbuff;
+					uint16_t * rxbuff = (uint16_t *) ex->rxbuff;
+					const uint16_t * txbuff = (const uint16_t *) ex->txbuff;
 					while (size --)
 					{
 						hardware_spi_b16_p1(* txbuff ++);
@@ -662,8 +662,8 @@ static void spi_operate_low(lowspiio_t * iospi)
 		#if WITHSPI32BIT
 			case SPIIOSIZE_U32:
 				{
-					uint32_t * rxbuff = ex->rxbuff;
-					const uint32_t * txbuff = ex->txbuff;
+					uint32_t * rxbuff = (uint32_t *) ex->rxbuff;
+					const uint32_t * txbuff = (const uint32_t *) ex->txbuff;
 					while (size --)
 					{
 						hardware_spi_b32_p1(* txbuff ++);

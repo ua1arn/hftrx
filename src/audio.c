@@ -3745,8 +3745,8 @@ dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upp
 	return level;
 }
 
-static FLOAT_t mickecliplevelp [NPROF] = { + INT_MAX, + INT_MAX };	/* positive limit */
-static FLOAT_t mickeclipleveln [NPROF] = { - INT_MAX, - INT_MAX };	/* negative limit */
+static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
+static FLOAT_t mickeclipleveln [NPROF] = { - 1, - 1 };	/* negative limit */
 static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
 // ару и компрессор микрофона

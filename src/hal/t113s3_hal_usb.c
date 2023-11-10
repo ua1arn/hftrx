@@ -4036,7 +4036,7 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 
 void usb_device_function0(USBD_HandleTypeDef * pdev)
 {
-	PCD_HandleTypeDef * hpcd = pdev->pData;
+	PCD_HandleTypeDef * hpcd = (PCD_HandleTypeDef*) pdev->pData;
 	ASSERT(hpcd != NULL);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -4050,7 +4050,7 @@ void usb_device_function0(USBD_HandleTypeDef * pdev)
 
 void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 {
-	PCD_HandleTypeDef * hpcd = pdev->pData;
+	PCD_HandleTypeDef * hpcd = (PCD_HandleTypeDef*) pdev->pData;
 	ASSERT(hpcd != NULL);
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	IRQL_t oldIrql;
