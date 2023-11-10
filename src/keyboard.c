@@ -273,7 +273,10 @@ kbd_scan_local(uint_fast8_t * key)
 		return 0;
 }
 
+static IRQLSPINLOCK_t irqllock;
 static volatile uint_fast8_t kbd_ready;
+
+static u8queue_t kbdq;
 
 // вызывается с частотой TICKS_FREQUENCY герц
 // после завершения полного цикла ADC по всем входам.
@@ -287,12 +290,12 @@ kbd_spool(void * ctx)
 		board_keybeep_enable(1);	/* начать формирование звукового сигнала */
 
 #if ! WITHBBOX
-		uint8_t * buff;
-		if (takemsgbufferfree(& buff) != 0)
-		{
-			buff [0] = code;
-			placesemsgbuffer(MSGT_KEYB, buff);
-		}
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllock, & oldIrql);
+
+		uint8_queue_put(& kbdq, code);
+
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 #endif /* ! WITHBBOX */
 	}
 	else
@@ -341,11 +344,30 @@ uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
 #endif /* WITHBBOX */
 }
 
+uint_fast8_t kbd_scan(uint_fast8_t * v)
+{
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& irqllock, & oldIrql);
+
+	f = uint8_queue_get(& kbdq, v);
+
+	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
+	return f;
+}
+
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
 	static ticker_t kbdticker;
 	static adcdone_t aevent;
+
+	IRQLSPINLOCK_INITIALIZE(& irqllock, IRQL_SYSTEM);
+
+
+	static uint8_t kbdfifo [16];
+
+	uint8_queue_init(& kbdq, kbdfifo, sizeof kbdfifo / sizeof kbdfifo [0]);
 
 	// todo: все присвоения нулями могут быть убраны.
 
@@ -368,13 +390,17 @@ void kbd_initialize(void)
 {
 }
 
-uint_fast8_t 
-kbd_is_tready(void)
+uint_fast8_t kbd_is_tready(void)
 {
 	return 1;
 }
 
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
+{
+	return 0;
+}
+
+uint_fast8_t kbd_scan(uint_fast8_t * v)
 {
 	return 0;
 }

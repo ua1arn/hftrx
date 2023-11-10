@@ -739,7 +739,6 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep);
 typedef enum messagetypes
 {
 	MSGT_EMPTY,
-	MSGT_KEYB,	// 1 byte - key code
 	MSGT_CAT,	// 12 bytes as parameter
 	//
 	MSGT_count

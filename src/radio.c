@@ -6214,31 +6214,6 @@ board_wakeup(void)
 	return r;
 }
 
-/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
-/* обработка только клавиатурных сообщений - для начальной инициализации, например. */
-uint_fast8_t
-//NOINLINEAT
-kbd_scan(uint_fast8_t * key)
-{
-	uint_fast8_t f = 0;
-	uint8_t * buff;
-	switch (takemsgready(& buff))
-	{
-	case MSGT_EMPTY:
-		return 0;
-
-	case MSGT_KEYB:
-		* key = buff [0];
-		f = 1;
-		break;
-
-	default:
-		break;
-	}
-	releasemsgbuffer(buff);
-	return f;
-}
-
 /* получаем PBT offset для текущего режима работы */
 /* TODO: сделать зависимым от текущего фильтра */
 static int_fast16_t
@@ -16287,14 +16262,15 @@ processmessages(
 			;
 	}
 
-
-	uint8_t * buff;
-
-	* kbready = 0;
-	* kbch = KBD_CODE_MAX;
-
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
 	app_processing(inmenu, mp);
+
+	if ((* kbready = kbd_scan(kbch)) != 0)
+		board_wakeup();
+	else
+		* kbch = KBD_CODE_MAX;
+
+	uint8_t * buff;
 	switch (takemsgready(& buff))
 	{
 	case MSGT_EMPTY:
@@ -16311,17 +16287,6 @@ processmessages(
 				display_redrawfreqmodesbarsnow(inmenu, mp);			/* Обновление дисплея - всё, включая частоту */
 		}
 #endif /* WITHCAT */
-		break;
-
-	case MSGT_KEYB:
-		//PRINTF(PSTR("processmessages: MSGT_KEYB\n"));
-		board_wakeup();
-		//if (board_wakeup() == 0)
-		{
-			// первый символ, нажатый в состоянии "сна" или "притушенного дисплея" игнорируется
-			* kbch = buff [0];
-			* kbready = 1;
-		}
 		break;
 
 	default:
