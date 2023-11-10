@@ -3176,7 +3176,7 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, const
 			else
 			{
 				FLOAT_t dC2 [NtapCoeffs(iCoefNum)];
-				int i;
+				unsigned i;
 				// расчитывается два неперекрывающихся полосовых фильтра
 				fir_design_bandpass_freq(dC2, iCoefNum, cutfreqlow, fcutL);	// низкочастотная полоса пропускания
 				fir_design_bandpass_freq(dCoeff, iCoefNum, fcutH, cutfreqhigh);	// высокочастотная полоса пропускания

@@ -282,6 +282,7 @@ void board_usb_initialize(void)
 
 void board_usb_deinitialize(void)
 {
+#if WITHUSBHW
 	//PRINTF("board_usb_deinitialize [%p]\n", board_usb_deinitialize);
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_DeInit();
@@ -293,11 +294,13 @@ void board_usb_deinitialize(void)
 	USB_HS_PHYCDeInit();
 #endif /* (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC) */
 	//PRINTF("board_usb_deinitialize done\n");
+#endif /* WITHUSBHW */
 }
 
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
+#if WITHUSBHW
 	//PRINTF("board_usb_activate [%p]\n", board_usb_activate);
 #if defined (WITHUSBHW_DEVICE)
 #if WITHUSBDEV_HSDESC
@@ -320,10 +323,12 @@ void board_usb_activate(void)
 	}
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 	//PRINTF("board_usb_activate done\n");
+#endif /* WITHUSBHW */
 }
 
 void board_usb_deactivate(void)
 {
+#if WITHUSBHW
 	//PRINTF(PSTR("board_usb_deactivate start.\n"));
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	USBH_Stop(& hUsbHostHS);
@@ -332,15 +337,18 @@ void board_usb_deactivate(void)
 	USBD_Stop(& hUsbDeviceHS);
 #endif /* defined (WITHUSBHW_DEVICE) */
 	//PRINTF(PSTR("board_usb_deactivate done.\n"));
+#endif /* WITHUSBHW */
 }
 void board_usbh_polling(void)
 {
+#if WITHUSBHW
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Process();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Process();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#endif /* WITHUSBHW */
 }
 
 uint_fast8_t hamradio_get_usbh_active(void)

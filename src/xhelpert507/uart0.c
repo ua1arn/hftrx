@@ -226,6 +226,7 @@ void user_uart0_initialize(void)
 	static uint8_t rxb [512];
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
+#if ! WITHDEBUG_UART0
 	hardware_uart0_initialize(0, 9600, 8, 0, 0);
 	hardware_uart0_set_speed(9600);
 	hardware_uart0_enablerx(1);
@@ -237,6 +238,7 @@ void user_uart0_initialize(void)
 
 	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);
 	board_dpc_addentry(& uart0_dpc_entry);
+#endif
 }
 
 #endif /* WITHCTRLBOARDT507 */

@@ -3403,7 +3403,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 #if WITHUSBDFU
 			case INTERFACE_DFU_CONTROL:
 			{
-				PRINTF("ep0_in_handler: INTERFACE_DFU_CONTROL: ifc=%u, req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
+				PRINTF("ep0_in_handler: INTERFACE_DFU_CONTROL: req=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
 				switch (ep0_setup->bRequest)
 				{
 				case DFU_DETACH:
@@ -3624,7 +3624,8 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
     		{
 #if WITHUSBDFU
        		case INTERFACE_DFU_CONTROL:
-       			break;
+        		PRINTF("usb_device: DFU EP0 OUT: req=0x%02X, wLength=0x%04X, wValue=0x%04X\n", ep0_setup->bRequest, ep0_setup->wLength, ep0_setup->wValue);
+      			break;
 #endif /* WITHUSBDFU */
 #if WITHUSBUACOUT
        		case INTERFACE_AUDIO_SPK:
