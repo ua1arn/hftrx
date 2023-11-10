@@ -21,7 +21,7 @@
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
-#define VOICE16RX_CAPACITY (32 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16RX_CAPACITY (16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY (32 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
@@ -35,7 +35,7 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (2 + 6 * BUFOVERSIZE)
+#define VOICE32RX_CAPACITY (4 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 #define VOICE32RTS_CAPACITY (4 * BUFOVERSIZE)	// dummy fn
 
@@ -1243,23 +1243,46 @@ int_fast32_t datasize_dmabuffer32rx(void)
 {
 	return voice32rx.get_datasize();
 }
-//
-//void release_dmabuffer32rx(uintptr_t addr)
-//{
-//	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-//	voice32rx.release_buffer(p);
-//}
+
+void release_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	voice32rx.release_buffer(p);
+}
 
 // can not be zero
 uintptr_t allocate_dmabuffer32rx(void)
 {
 	voice32rx_t * dest;
-	while (! voice32rx.get_freebuffer(& dest))
+	while (! voice32rx.get_freebufferforced(& dest))
 		ASSERT(0);
-	//memset(dest->buff, 0, sizeof dest->buff);
+//	memset(dest->buff, 0, sizeof dest->buff);
+//	dcache_clean((uintptr_t) dest->buff, voice32rx.get_cachesize());
 	return (uintptr_t) dest->buff;
 }
 
+// can be zero
+uintptr_t getfilled_dmabuffer32rx(void)
+{
+	voice32rx_t * dest;
+	if (! voice32rx.get_readybuffer(& dest))
+		return 0;
+	return (uintptr_t) dest->buff;
+}
+
+void save_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	voice32rx.save_buffer(p);
+
+	voice32rx_t * dest;
+	if (voice32rx.get_readybuffer(& dest))
+	{
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+	}
+	dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+}
 
 ///////////////////////////////////////
 ///
@@ -2408,13 +2431,12 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 }
 #endif
 
-void save_dmabuffer32rx(uintptr_t addr)
+void process_dmabuffer32rx(const IFADCvalue_t * buff)
 {
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	unsigned i;
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
 	{
-		const IFADCvalue_t * const b = p->buff + i;
+		const IFADCvalue_t * const b = buff + i;
 		//
 #if 0
 	if (0)
@@ -2462,10 +2484,6 @@ void save_dmabuffer32rx(uintptr_t addr)
 #if WITHWFM
 	dsp_extbuffer32wfm(p->buff);
 #endif /* WITHWFM */
-
-	voice32rx.release_buffer(p);
-
-	dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 }
 
 
@@ -2684,19 +2702,19 @@ void buffers_diagnostics(void)
 {
 #if WITHINTEGRATEDDSP
 #if 1
-	//denoise16list.debug();
-	//codec16rx.debug();
-	//codec16tx.debug();
-	//moni16.debug();
-	//voice32tx.debug();
-	//voice32rx.debug();
+	denoise16list.debug();
+	codec16rx.debug();
+	codec16tx.debug();
+	moni16.debug();
+	voice32tx.debug();
+	voice32rx.debug();
 #endif
 #if 1
 	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 1
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
 	uacout48.debug();
 #endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 1
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
 #if WITHRTS192
 	uacinrts192.debug();
 #endif

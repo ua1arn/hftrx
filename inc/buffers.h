@@ -640,6 +640,7 @@ void save_dmabuffer16rx(uintptr_t addr);
 
 // прием с FPGA
 uintptr_t allocate_dmabuffer32rx(void);
+uintptr_t getfilled_dmabuffer32rx(void);
 int_fast32_t cachesize_dmabuffer32rx(void);
 void release_dmabuffer32rx(uintptr_t addr);
 void save_dmabuffer32rx(uintptr_t addr);

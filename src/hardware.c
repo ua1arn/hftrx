@@ -16,6 +16,7 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
+//#include "buffers.h"
 
 #if WITHRTOS
 #include "FreeRTOS.h"
@@ -4012,7 +4013,7 @@ void Reset_CPUn_Handler(void)
 #endif /* CPUSTYLE_VM14 */
 
 	//aarch64_mp_cpuN_start((uintptr_t) halt64_1, (__get_MPIDR() & 0x03));
-#if HARDWARE_NCORES > 2
+#if HARDWARE_NCORES > 3
 	if (arm_hardware_cpuid() == 2)
 	{
 		for (;;)
@@ -4022,6 +4023,18 @@ void Reset_CPUn_Handler(void)
 #endif /* WITHINTEGRATEDDSP */
 		}
 	}
+//	if (arm_hardware_cpuid() == 3)
+//	{
+//		for (;;)
+//		{
+//			const uintptr_t addr = getfilled_dmabuffer32rx();
+//			if (addr == 0)
+//				continue;
+//			process_dmabuffer32rx((IFADCvalue_t *) addr);
+//			release_dmabuffer32rx(addr);
+//
+//		}
+//	}
 #endif /* HARDWARE_NCORES > 2 */
 	// Idle loop
 	for (;;)
