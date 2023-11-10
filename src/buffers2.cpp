@@ -673,11 +673,11 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(typeof (element_t::v.buff [0]) * b, sample_t ch0, sample_t ch1))
+	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(typeof (wel_t::buff [0]) * b, sample_t ch0, sample_t ch1))
 	{
 		if (wb == NULL)
 		{
-			if (parent_t::get_freebuffer(& wb) == 0)
+			if (! parent_t::get_freebuffer(& wb))
 				return;
 			wbn = 0;
 		}
@@ -689,11 +689,11 @@ public:
 		}
 	}
 
-	uint_fast8_t fetchdata(sample_t * dest, unsigned (* getcbf)(typeof (element_t::v.buff [0]) * b, sample_t * dest))
+	uint_fast8_t fetchdata(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest))
 	{
 		if (rb == NULL)
 		{
-			if (parent_t::get_readybuffer(& rb) == 0)
+			if (! parent_t::get_readybuffer(& rb))
 				return 0;
 			rbn = 0;
 		}
