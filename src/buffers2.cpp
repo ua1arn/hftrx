@@ -23,7 +23,7 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define VOICE16RX_CAPACITY (16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY (32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY (32 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16TXMONI_CAPACITY (64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
 #define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
@@ -313,9 +313,9 @@ public:
 		wbadded(0),
 		wbdeleted(0),
 		wbgatix(ARRAY_SIZE(wbgatsize)),	// состояние - нет ничего для формирования нового блокв
-		MINMLEVEL(1 * capacity / 4),
-		NORMLEVEL(2 * capacity / 4),
-		MAXLEVEL(3 * capacity / 4),
+		MINMLEVEL(hasresample ? 1 * capacity / 4 : 0),
+		NORMLEVEL(hasresample ? 2 * capacity / 4 : capacity / 4),	// без resample используется только этот параметр
+		MAXLEVEL(hasresample ? 3 * capacity / 4 : 0),
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
