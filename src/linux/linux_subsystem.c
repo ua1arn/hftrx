@@ -3,6 +3,7 @@
  */
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "radio.h"
 
 #if LINUX_SUBSYSTEM
 
