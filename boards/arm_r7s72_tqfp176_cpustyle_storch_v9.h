@@ -129,12 +129,28 @@
 	#if 1
 		// Обычный AUDIO + 2*CDC + DFU
 		#if WITHINTEGRATEDDSP
+			#if WITHUSBDEV_HSDESC
+				#define WITHUAC2		1	/* UAC2 support */
+				#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+				#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+				#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
+				#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
 
-			//#define WITHUAC2		1	/* UAC2 support */
-			#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
-			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-			#define WITHUSBUACIN	1
-			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+				#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+				#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+				#define WITHUSBUACIN	1
+
+			#else /* WITHUSBDEV_HSDESC */
+				//#define WITHUAC2		1	/* UAC2 support */
+				#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+				#define UACIN_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+
+				#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+				#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+				#define WITHUSBUACIN	1
+
+			#endif /* WITHUSBDEV_HSDESC */
+
 		#endif /* WITHINTEGRATEDDSP */
 
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
