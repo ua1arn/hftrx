@@ -156,13 +156,10 @@ uint_fast16_t usbd_getuacoutmaxpacket(void)
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 static uint8_t altinterfaces [INTERFACE_count];
 
+#define VMAX(a, b) ((a) > (b) ? (a) : (b))
 static __ALIGN_BEGIN uint8_t uacout48buff [UACOUT_AUDIO48_DATASIZE_DMAC] __ALIGN_END;
-static __ALIGN_BEGIN uint8_t uacinbuff [UACIN_AUDIO48_DATASIZE_DMAC + UACIN_RTS96_DATASIZE_DMAC] __ALIGN_END;
-#if WITHRTS96
-static __ALIGN_BEGIN uint8_t uacinrtsbuff [UACIN_RTS96_DATASIZE_DMAC] __ALIGN_END;
-#elif WITHRTS192
-static __ALIGN_BEGIN uint8_t uacinrtsbuff [UACIN_RTS192_DATASIZE_DMAC] __ALIGN_END;
-#endif
+static __ALIGN_BEGIN uint8_t uacinbuff [VMAX(UACIN_AUDIO48_DATASIZE_DMAC, VMAX(UACIN_RTS96_DATASIZE_DMAC, UACIN_RTS192_DATASIZE_DMAC))] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t uacinrtsbuff [VMAX(UACIN_RTS96_DATASIZE_DMAC, UACIN_RTS192_DATASIZE_DMAC)] __ALIGN_END;
 
 static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
