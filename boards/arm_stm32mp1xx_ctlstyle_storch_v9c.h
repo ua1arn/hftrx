@@ -445,7 +445,10 @@
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
-	//#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
+	//#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_RED	1
+
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
