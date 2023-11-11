@@ -498,6 +498,7 @@ elif CPUSTYLE_STM32F0XX
 #define NTICKSADC(t_uS) ((uint_fast16_t) (((uint_fast32_t) (t_uS) * ADC_FREQ + 5) / 1000000))
 #define NTICKSADC01(t_uS01) ((uint_fast16_t) (((uint_fast32_t) (t_uS01) * ADC_FREQ + 5) / 10000000))
 
+#define OFFSETOF(s, m) ((size_t) (uintptr_t) & (((s *) 0) -> m))
 
 void cpu_initialize(void);
 void arm_hardware_reset(void);
