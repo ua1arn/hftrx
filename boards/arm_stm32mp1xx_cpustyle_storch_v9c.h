@@ -143,7 +143,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -163,8 +163,11 @@
 	#if WITHINTEGRATEDDSP
 		#if WITHUSBDEV_HSDESC
 			#define WITHUAC2		1	/* UAC2 support */
-			#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
-			#define UACIN_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+			#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+			#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+			#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
+			#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
+
 			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 			#if WITHRTS96 || WITHRTS192

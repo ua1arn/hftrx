@@ -441,7 +441,7 @@ extern "C" {
 #define HSINTERVAL_256MS 12    // endpoint descriptor parameters - для обеспечения 255 ms периода (interrupt endpoint for CDC)
 #define FSINTERVAL_255MS 255
 
-#if WITHUSBDEV_HSDESC && CPUSTYLE_ALLWINNER && 1
+#if WITHUSBDEV_HSDESC
 	/* вариант передачи с периодом 0.5 мс */
 	#define OUTSAMPLES_AUDIO48	24 /* количество сэмплов за SOF в UAC OUT */
 
