@@ -197,11 +197,7 @@ endif
 ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
-
-BTSTACKDIR := $(PRJROOT)/lib/btstack
-DINCDIR += $(BTSTACKDIR)/src $(BTSTACKDIR)/port/stm32-f4discovery-usb/port
-SRCDIRS += $(BTSTACKDIR)/src
-
+include ../btstack.mak
 endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
