@@ -3509,6 +3509,9 @@ void gnss_initialize(void);	/* инициализация парсера GNSS п
 int board_islfmmode(void);
 uint_fast8_t islfmstart(unsigned now);
 
+void bt_initialize(void);
+void bt_enable(uint_fast8_t v);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

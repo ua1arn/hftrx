@@ -11637,6 +11637,7 @@ updateboardZZZ(
 		// параметры, не имеющие специфики для разных приемников
 		update_lo0(lo0hint, lo0side);
 		board_set_sleep(sleepflag);
+		bt_enable(gusbbt);	/* Bluetooth enable */
 
 		if (gtx == 0)
 		{
@@ -19651,6 +19652,7 @@ application_initialize(void)
 	hamradio_gui_enc2_update();
 #endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
+	bt_initialize();
 }
 
 #if WITHSPISLAVE

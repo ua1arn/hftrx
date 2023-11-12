@@ -11,11 +11,11 @@
 
 
 // Port related features
-#define HAVE_BTSTACK_STDIN
-#define HAVE_EMBEDDED_TIME_MS
-#define HAVE_HAL_AUDIO
-#define HAVE_HAL_AUDIO_SINK_STEREO_ONLY
-#define HAVE_BTSTACK_AUDIO_EFFECTIVE_SAMPLERATE
+//#define HAVE_BTSTACK_STDIN
+//#define HAVE_EMBEDDED_TIME_MS
+//#define HAVE_HAL_AUDIO
+//#define HAVE_HAL_AUDIO_SINK_STEREO_ONLY
+//#define HAVE_BTSTACK_AUDIO_EFFECTIVE_SAMPLERATE
 
 // BTstack features that can be enabled
 #define ENABLE_BLE
