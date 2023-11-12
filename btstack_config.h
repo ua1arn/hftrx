@@ -31,7 +31,7 @@
 #define ENABLE_PRINTF_HEXDUMP
 #define ENABLE_SCO_OVER_HCI
 #define ENABLE_SCO_STEREO_PLAYBACK
-#define ENABLE_SEGGER_RTT
+//#define ENABLE_SEGGER_RTT
 
 // BTstack configuration. buffers, sizes, ...
 #define HCI_ACL_PAYLOAD_SIZE (1691 + 4)

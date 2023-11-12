@@ -36,7 +36,7 @@
 #if WITHUSBHW
 
 #if WITHUSEUSBBT
-//#include "usbh_bluetooth.h"
+#include "../src/bt/usbh_bluetooth.h"
 #endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"

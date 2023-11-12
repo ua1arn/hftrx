@@ -2353,7 +2353,7 @@ void MX_USB_HOST_Init(void)
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
 #if WITHUSEUSBBT
-	//USBH_RegisterClass(& hUsbHostHS, USBH_BLUETOOTH_CLASS);
+	USBH_RegisterClass(& hUsbHostHS, USBH_BLUETOOTH_CLASS);
 #endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
 	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
