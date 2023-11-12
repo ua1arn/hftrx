@@ -33,15 +33,6 @@ USBH_HandleTypeDef hUsbHostHS;
 
 static EHCI_HandleTypeDef hehci_USB;
 
-#if WITHUSEUSBBT
-#include "usbh_bluetooth.h"
-#endif /* WITHUSEUSBBT */
-#if WITHUSEUSBFLASH
-#include "../../Class/MSC/Inc/usbh_msc.h"
-#endif /* WITHUSEUSBFLASH */
-#include "../../Class/HID/Inc/usbh_hid.h"
-#include "../../Class/HUB/Inc/usbh_hub.h"
-
 #if CPUSTYLE_XC7Z
 
 XUSBPS_Registers * EHCIxToUSBx(void * p)
@@ -2362,7 +2353,7 @@ void MX_USB_HOST_Init(void)
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
 #if WITHUSEUSBBT
-	USBH_RegisterClass(& hUsbHostHS, USBH_BLUETOOTH_CLASS);
+	//USBH_RegisterClass(& hUsbHostHS, USBH_BLUETOOTH_CLASS);
 #endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
 	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);

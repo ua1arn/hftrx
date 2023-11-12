@@ -27,15 +27,6 @@
 
 #include "usb_device.h"
 
-#if WITHUSEUSBBT
-#include "usbh_bluetooth.h"
-#endif /* WITHUSEUSBBT */
-#if WITHUSEUSBFLASH
-#include "../../Class/MSC/Inc/usbh_msc.h"
-#endif /* WITHUSEUSBFLASH */
-#include "../../Class/HID/Inc/usbh_hid.h"
-#include "../../Class/HUB/Inc/usbh_hub.h"
-
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 

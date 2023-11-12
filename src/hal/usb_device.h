@@ -32,6 +32,20 @@
  extern "C" {
 #endif
 
+
+#if WITHUSBHW
+
+#if WITHUSEUSBBT
+//#include "usbh_bluetooth.h"
+#endif /* WITHUSEUSBBT */
+#if WITHUSEUSBFLASH
+#include "../../Class/MSC/Inc/usbh_msc.h"
+#endif /* WITHUSEUSBFLASH */
+#include "../../Class/HID/Inc/usbh_hid.h"
+#include "../../Class/HUB/Inc/usbh_hub.h"
+
+#endif /* WITHUSBHW */
+
 /* Includes ------------------------------------------------------------------*/
 #if CPUSTYLE_R7S721
 	#include "rza1xx_hal.h"
