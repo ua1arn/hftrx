@@ -189,7 +189,12 @@ enum
 		enum_finish
 };
 
-
+uintptr_t stm32_dmaswap(volatile uint32_t * reg, uintptr_t newaddr)
+{
+	uintptr_t addr = * reg;
+	* reg = newaddr;
+	return addr;
+}
 //
 #if WITHI2SCLOCKFROMPIN
 	static uint_fast32_t 
@@ -294,19 +299,14 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler_codec1_rx(void)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
 		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
-		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			const uintptr_t addr = DMA1_Stream3->M0AR;
-			DMA1_Stream3->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			save_dmabuffer16rx(addr);
+			save_dmabuffer16rx(stm32_dmaswap(& DMA1_Stream3->M0AR, dma_invalidate16rx(allocate_dmabuffer16rx())));
 		}
 		else
 		{
-			const uintptr_t addr = DMA1_Stream3->M1AR;
-			DMA1_Stream3->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			save_dmabuffer16rx(addr);
+			save_dmabuffer16rx(stm32_dmaswap(& DMA1_Stream3->M1AR, dma_invalidate16rx(allocate_dmabuffer16rx())));
 		}
 	}
 
@@ -321,19 +321,14 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler_codec1_rx(void)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
 		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
-		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream0->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			const uintptr_t addr = DMA1_Stream0->M0AR;
-			DMA1_Stream0->M0AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			save_dmabuffer16rx(addr);
+			save_dmabuffer16rx(stm32_dmaswap(& DMA1_Stream0->M0AR, dma_invalidate16rx(allocate_dmabuffer16rx())));
 		}
 		else
 		{
-			const uintptr_t addr = DMA1_Stream0->M1AR;
-			DMA1_Stream0->M1AR = dma_invalidate16rx(allocate_dmabuffer16rx());
-			save_dmabuffer16rx(addr);
+			save_dmabuffer16rx(stm32_dmaswap(& DMA1_Stream0->M1AR, dma_invalidate16rx(allocate_dmabuffer16rx())));
 		}
 	}
 
@@ -349,17 +344,14 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 	{
 		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
-		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			release_dmabuffer16tx(DMA1_Stream4->M0AR);
-			DMA1_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16tx());
+			release_dmabuffer16tx(stm32_dmaswap(& DMA1_Stream4->M0AR, dma_flush16tx(getfilled_dmabuffer16tx())));
 		}
 		else
 		{
-			release_dmabuffer16tx(DMA1_Stream4->M1AR);
-			DMA1_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16tx());
+			release_dmabuffer16tx(stm32_dmaswap(& DMA1_Stream4->M1AR, dma_flush16tx(getfilled_dmabuffer16tx())));
 		}
 	}
 
@@ -1797,19 +1789,14 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 	{
 		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
 		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
-		ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream5->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			const uintptr_t addr = DMA2_Stream5->M0AR;
-			DMA2_Stream5->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-			save_dmabuffer32rx(addr);
+			save_dmabuffer32rx(stm32_dmaswap(& DMA2_Stream5->M0AR, dma_invalidate32rx(allocate_dmabuffer32rx())));
 		}
 		else
 		{
-			const uintptr_t addr = DMA2_Stream5->M1AR;
-			DMA2_Stream5->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-			save_dmabuffer32rx(addr);
+			save_dmabuffer32rx(stm32_dmaswap(& DMA2_Stream5->M1AR, dma_invalidate32rx(allocate_dmabuffer32rx())));
 		}
 	}
 
@@ -1826,17 +1813,14 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 	{
 		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
 		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
-		ASSERT((SAI1_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream1->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			release_dmabuffer32tx(DMA2_Stream1->M0AR);
-			DMA2_Stream1->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			release_dmabuffer32tx(stm32_dmaswap(& DMA2_Stream1->M0AR, dma_flush32tx(getfilled_dmabuffer32tx_main())));
 		}
 		else
 		{
-			release_dmabuffer32tx(DMA2_Stream1->M1AR);
-			DMA2_Stream1->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			release_dmabuffer32tx(stm32_dmaswap(& DMA2_Stream1->M1AR, dma_flush32tx(getfilled_dmabuffer32tx_main())));
 		}
 	}
 

@@ -510,45 +510,6 @@ uint_fast8_t modem_getnextbit(
 	return modem_frame_getnextbit(suspend);
 }
 
-static ticker_t modemticker;
-static ticker_t modemticker1S;
-
-/* вызывается при разрешённых прерываниях. */
-void modem_initialze(void)
-{
-	// получение признака работы MASTER
-#if CTLREGMODE_STORCH_V4
-	arm_hardware_piof_outputs(0x0002, 0x0002);
-	arm_hardware_piof_inputs(0x0001);
-	local_delay_ms(100);
-	mastermode = (GPIOF->IDR & 0x01) == 0;
-#else
-	mastermode = 1;
-#endif /* CTLREGMODE_STORCH_V4 */
-
-#if defined (UID_BASE)
-	// формирование буфера собственного адреса
-	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
-	ownaddressbuff [0x00] = uidbase [0] >> 24;
-	ownaddressbuff [0x01] = uidbase [0] >> 16;
-	ownaddressbuff [0x02] = uidbase [0] >> 8;
-	ownaddressbuff [0x03] = uidbase [0] >> 0;
-	ownaddressbuff [0x04] = uidbase [1] >> 24;
-	ownaddressbuff [0x05] = uidbase [1] >> 16;
-	ownaddressbuff [0x06] = uidbase [1] >> 8;
-	ownaddressbuff [0x07] = uidbase [1] >> 0;
-	ownaddressbuff [0x08] = uidbase [2] >> 24;
-	ownaddressbuff [0x09] = uidbase [2] >> 16;
-	ownaddressbuff [0x0A] = uidbase [2] >> 8;
-	ownaddressbuff [0x0B] = uidbase [2] >> 0;
-#endif
-
-	ticker_initialize(& modemticker1S, NTICKS(1000), modem_spool_1S, NULL);	// вызывается с частотой 1 герц
-	ticker_add(& modemticker1S);
-	ticker_initialize(& modemticker, 1, modem_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	ticker_add(& modemticker);
-}
-modem_spool_1S
 
 enum nmeaparser_states
 {
@@ -801,10 +762,11 @@ static volatile uint_fast32_t modemmode;
 
 // Функция обновления (частоты, ...) - вызывается из основного цикла программы, user mode.
 
-uint_fast8_t processmodem(void)
+static void processmodem(void * ctx)
 {
 	uint_fast8_t any = 0;	// если что-то поменялось в режимах
 	uint_fast8_t f;
+	(void) ctx;
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -840,7 +802,7 @@ uint_fast8_t processmodem(void)
 		modemchangemode(modemmode);
 	}
 	
-	return any;	
+	//return any;
 }
 
 /* вызывается из обработчика прерываний */
@@ -1060,12 +1022,48 @@ void modem_sendchar(void * ctx)
 	}
 }
 
-#else /* WITHMODEM */
-
-// Функция обновления (частоты, ...) - вызывается из основного цикла программы, user mode.
-
-uint_fast8_t processmodem(void)
+/* вызывается при разрешённых прерываниях. */
+void modem_initialze(void)
 {
-	return 0;
+	static ticker_t modemticker;
+	static ticker_t modemticker1S;
+	static dpcobj_t modem_dpc;
+
+	// получение признака работы MASTER
+#if CTLREGMODE_STORCH_V4
+	arm_hardware_piof_outputs(0x0002, 0x0002);
+	arm_hardware_piof_inputs(0x0001);
+	local_delay_ms(100);
+	mastermode = (GPIOF->IDR & 0x01) == 0;
+#else
+	mastermode = 1;
+#endif /* CTLREGMODE_STORCH_V4 */
+
+#if defined (UID_BASE)
+	// формирование буфера собственного адреса
+	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
+	ownaddressbuff [0x00] = uidbase [0] >> 24;
+	ownaddressbuff [0x01] = uidbase [0] >> 16;
+	ownaddressbuff [0x02] = uidbase [0] >> 8;
+	ownaddressbuff [0x03] = uidbase [0] >> 0;
+	ownaddressbuff [0x04] = uidbase [1] >> 24;
+	ownaddressbuff [0x05] = uidbase [1] >> 16;
+	ownaddressbuff [0x06] = uidbase [1] >> 8;
+	ownaddressbuff [0x07] = uidbase [1] >> 0;
+	ownaddressbuff [0x08] = uidbase [2] >> 24;
+	ownaddressbuff [0x09] = uidbase [2] >> 16;
+	ownaddressbuff [0x0A] = uidbase [2] >> 8;
+	ownaddressbuff [0x0B] = uidbase [2] >> 0;
+#endif
+
+	ticker_initialize(& modemticker1S, NTICKS(1000), modem_spool_1S, NULL);	// вызывается с частотой 1 герц
+	ticker_add(& modemticker1S);
+	ticker_initialize(& modemticker, 1, modem_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& modemticker);
+
+
+	dpcobj_initialize(& modem_dpc, processmodem, NULL);
+	board_dpc_addentry(& modem_dpc);
 }
+
 #endif /* WITHMODEM */

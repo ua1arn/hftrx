@@ -602,9 +602,6 @@ extern "C" {
 // Buffers interface functions
 void buffers_initialize(void);
 
-uint_fast8_t processmodem(void);
-
-
 // передача на fpga
 uintptr_t allocate_dmabuffer32tx(void);
 void release_dmabuffer32tx(uintptr_t addr);

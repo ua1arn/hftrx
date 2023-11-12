@@ -17443,7 +17443,6 @@ modifysettings(
 		int nrotate;
 		uint_fast8_t kbch, kbready;
 
-		processmodem();
 		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
@@ -20003,16 +20002,6 @@ hamradio_main_step(void)
 
 			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
-
-//			if (processmodem())
-//			{
-//				/* обновление индикатора без сохранения состояния диапазона */
-//				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-//			} // end keyboard processing
-
-			//auto int marker;
-			//PRINTF(PSTR("M0:@%p %02x %08lx!\n"), & marker, INTC.ICCRPR, __get_CPSR());
-
 
 			if (lockmode == 0)
 			{
