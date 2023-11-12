@@ -286,16 +286,6 @@ board_ctlregs_spi_send_frame(
 	#endif
 #endif /* defined(DDS3_TYPE) */
 
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
-static void
-prog_fpga_ctrlreg(
-	spitarget_t target		/* addressing to chip */
-	)
-{
-}
-#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0) */
-
 #if XVTR_R820T2
 	#include "chip/r820t.h"
 #endif /* XVTR_R820T2 */

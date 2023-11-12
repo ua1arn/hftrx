@@ -1231,7 +1231,6 @@ extern "C" {
 #define DDS_TYPE_FPGAV1		7	// NCO, DDC/DUC
 #define DDS_TYPE_ATTINY2313	8	// experemental: nco=/7, dds=/9
 #define DDS_TYPE_ZYNQ_PL 	9
-#define DDS_TYPE_GW2A_V0 	10
 
 #define	ADC_TYPE_AD9246		15
 

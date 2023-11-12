@@ -78,16 +78,6 @@ dma_invalidate32rx(uintptr_t addr)
 	return addr;
 }
 
-// Сейчас в эту память будем читать по DMA
-uintptr_t
-dma_invalidate32rts(uintptr_t addr)
-{
-	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((cachesize_dmabuffer32rx() % DCACHEROWSIZE) == 0);
-	dcache_invalidate(addr, cachesize_dmabuffer32rts());
-	return addr;
-}
-
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
 static uintptr_t dma_flush32tx(uintptr_t addr)

@@ -174,27 +174,6 @@ extern "C" {
 			#error Undefined WITHFPGAIF_FRAMEBITS value
 		#endif
 
-	#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
-		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
-		// ws=0: even samples, ws=1: odd samples
-
-		/* FPGA */
-		// buff data layout: I main/I sub/Q main/Q sub
-		#define DMABUFFSTEP32RX	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-		// buff data layout: I_T0/Q_T0/I_T1/Q_T1
-		//#define DMABUFFSTEP32RTS96	2		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-
-		#define DMABUF32RX0I	0		// RX0, I
-		#define DMABUF32RX0Q	1		// RX0, Q
-
-		#define DMABUF32RXRTS0I	0		// RTS0, I	// previous - oldest
-		#define DMABUF32RXRTS0Q	1		// RTS0, Q	// previous
-
-		/* FPGA */
-		#define DMABUFFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
-		#define DMABUF32TXI	0		// TX, I
-		#define DMABUF32TXQ	1		// TX, Q
-
 	#elif CPUSTYLE_ALLWINNER
 		// Allwinner t113-s3, Allwinner D1s (F133): I2S/PCM have non-sequential numbering of samples in DMA buffer
 		// ws=0: even samples, ws=1: odd samples
@@ -698,10 +677,6 @@ uintptr_t getfilled_dmabufferuacin48(void);
 void save_dmabufferuacin48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacin48(void);
 int_fast32_t datasize_dmabufferuacin48(void);
-
-/* получение размера для операций с кешем для разнообразных буферов */
-// буферы FPGA IF
-int_fast32_t cachesize_dmabuffer32rts(void);
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);

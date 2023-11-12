@@ -1106,9 +1106,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 #endif /* WITHTXCPATHCALIBRATE */
 
 
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_GW2A_V0)
-
-#elif defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
 	/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
 	buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
 	buff [DMABUF32TX_NCO2] = dspfpga_get_nco2();
