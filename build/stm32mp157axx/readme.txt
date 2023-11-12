@@ -9,3 +9,7 @@
 Результатом работы является файл tc1_stm32mp157axx_boot.hex и tc1_stm32mp157axx_boot.stm32
 Требуются изменения в product.h
 
+Командные файлы 
+	flash_read_bin.cmd	чтение старой прошивки
+	flash_write_bin.cmd	обновление прошивки из файла с расширением .bin
+	flash_write_dfu.cmd	обновление прошивки из файла с расширением .dfu
