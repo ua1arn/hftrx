@@ -9,6 +9,7 @@
 #ifndef BTSTACK_CONFIG_H
 #define BTSTACK_CONFIG_H
 
+
 // Port related features
 #define HAVE_BTSTACK_STDIN
 #define HAVE_EMBEDDED_TIME_MS
@@ -18,7 +19,7 @@
 
 // BTstack features that can be enabled
 #define ENABLE_BLE
-#define ENABLE_BTSTACK_ASSERT
+////#define ENABLE_BTSTACK_ASSERT
 #define ENABLE_CC256X_BAUDRATE_CHANGE_FLOWCONTROL_BUG_WORKAROUND
 #define ENABLE_CLASSIC
 #define ENABLE_HFP_WIDE_BAND_SPEECH
@@ -57,21 +58,5 @@
 // Link Key DB and LE Device DB using TLV on top of Flash Sector interface
 #define NVM_NUM_DEVICE_DB_ENTRIES 16
 #define NVM_NUM_LINK_KEYS 16
-
-// Mesh Configuration
-#define ENABLE_MESH
-#define ENABLE_MESH_ADV_BEARER
-#define ENABLE_MESH_GATT_BEARER
-#define ENABLE_MESH_PB_ADV
-#define ENABLE_MESH_PB_GATT
-#define ENABLE_MESH_PROVISIONER
-#define ENABLE_MESH_PROXY_SERVER
-
-#define MAX_NR_MESH_SUBNETS            2
-#define MAX_NR_MESH_TRANSPORT_KEYS    16
-#define MAX_NR_MESH_VIRTUAL_ADDRESSES 16
-
-// allow for one NetKey update
-#define MAX_NR_MESH_NETWORK_KEYS      (MAX_NR_MESH_SUBNETS+1)
 
 #endif

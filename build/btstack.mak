@@ -1,7 +1,8 @@
 # btstack
 # https://github.com/bluekitchen/btstack.git
+# forked to https://github.com/ua1arn/hftrx_btstack.git
 
-BTSTACK_ROOT := $(PRJROOT)/lib/btstack
+BTSTACK_ROOT := $(PRJROOT)/lib/hftrx_btstack
 
 C_SOURCES =  \
 ${BTSTACK_ROOT}/3rd-party/hxcmod-player/hxcmod.c \
