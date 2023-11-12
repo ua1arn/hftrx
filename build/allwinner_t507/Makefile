@@ -182,11 +182,11 @@ DINCDIR += \
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # unzipLIB
 # https://github.com/bitbank2/unzipLIB.git
 
-UNZIPLIBDIR = $(PRJROOT)/lib/unzipLIB
+UNZIPLIBDIR := $(PRJROOT)/lib/unzipLIB
 DINCDIR += $(UNZIPLIBDIR)/src
 SRCDIRS += $(UNZIPLIBDIR)/src
 
@@ -194,7 +194,7 @@ endif
 
 ifeq (1, 0)
 # FreeRTOS
-RTOSDIR = $(PRJROOT)/lib/FreeRTOS-Kernel-main
+RTOSDIR := $(PRJROOT)/lib/FreeRTOS-Kernel-main
 DINCDIR += \
 	$(RTOSDIR)/include \
 	$(RTOSDIR)/portable/GCC/ARM_CA9
@@ -202,12 +202,12 @@ SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 
-BTSTACKDIR = $(PRJROOT)/lib/btstack
-DINCDIR += $(BTSTACKDIR)/src
+BTSTACKDIR := $(PRJROOT)/lib/btstack
+DINCDIR += $(BTSTACKDIR)/src $(BTSTACKDIR)/port/stm32-f4discovery-usb/port
 SRCDIRS += $(BTSTACKDIR)/src
 
 endif

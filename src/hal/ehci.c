@@ -33,6 +33,9 @@ USBH_HandleTypeDef hUsbHostHS;
 
 static EHCI_HandleTypeDef hehci_USB;
 
+#if WITHUSEUSBBT
+#include "usbh_bluetooth.h"
+#endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
@@ -2358,6 +2361,9 @@ void MX_USB_HOST_Init(void)
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
+#if WITHUSEUSBBT
+	USBH_RegisterClass(& hUsbHostHS, USBH_BLUETOOTH_CLASS);
+#endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
 	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
 #endif /* WITHUSEUSBFLASH */

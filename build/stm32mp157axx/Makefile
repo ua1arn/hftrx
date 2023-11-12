@@ -192,8 +192,8 @@ ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 
-BTSTACKDIR = $(PRJROOT)/lib/btstack
-DINCDIR += $(BTSTACKDIR)/src
+BTSTACKDIR := $(PRJROOT)/lib/btstack
+DINCDIR += $(BTSTACKDIR)/src $(BTSTACKDIR)/port/stm32-f4discovery-usb/port
 SRCDIRS += $(BTSTACKDIR)/src
 
 endif
