@@ -200,6 +200,9 @@ void MX_USB_HOST_Init(void)
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
+#if WITHUSEUSBBT
+	USBH_RegisterClass(& hUsbHostHS, & USBH_bt);
+#endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
 	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
 #endif /* WITHUSEUSBFLASH */

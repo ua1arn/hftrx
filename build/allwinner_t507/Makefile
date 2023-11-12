@@ -202,6 +202,16 @@ SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
+ifeq (1, 0)
+# btstack
+# https://github.com/bluekitchen/btstack.git
+
+BTSTACKDIR = $(PRJROOT)/lib/btstack
+DINCDIR += $(BTSTACKDIR)/src
+SRCDIRS += $(BTSTACKDIR)/src
+
+endif
+
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 

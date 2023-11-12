@@ -3136,6 +3136,9 @@ struct nvmap
 		uint8_t greverbdelay;		/* ревербератор - задержка */
 		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
+	#if WITHUSEUSBBT
+		uint8_t gusbbt;	/* управление трансивером произволится по USB BT каналу, звуук на передачу так же оттуда */
+	#endif /* WITHUSEUSBBT */
 	#if WITHUSBUAC
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
@@ -4012,6 +4015,11 @@ enum
 		static uint_fast8_t greverbloss = WITHREVERBLOSSMAX;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 
+	#if WITHUSEUSBBT
+		static uint_fast8_t gusbbt;	/* управление трансивером произволится по USB BT каналу, звуук на передачу так же оттуда */
+	#else /* WITHUSEUSBBT */
+		enum { gusbbt = 0 };
+	#endif /* WITHUSEUSBBT */
 	#if WITHUSBUAC
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }

@@ -2117,7 +2117,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHUSEAUDIOREC */
-#if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN)
+#if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
 #if ! WITHFLATMENU
 	{
 		QLABEL("USB     "), 0, 0, 0, 0,
@@ -2131,6 +2131,18 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif /* ! WITHFLATMENU */
 #if WITHIF4DSP
+#if WITHUSEUSBBT
+	{
+		QLABEL("BT CONN "), 7, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		offsetof(struct nvmap, gusbbt),
+		nvramoffs0,
+		NULL,
+		& gusbbt,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHUSEUSBBT */
 #if WITHUSBUAC
 #if WITHTX
 	{
@@ -2190,7 +2202,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHTX */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
-#endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN) */
+#endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT) */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{
