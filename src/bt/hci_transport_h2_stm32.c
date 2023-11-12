@@ -44,6 +44,10 @@
  */
 
 #include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
 // include STM32 first to avoid warning about redefinition of UNUSED
 //#include "usb_host.h"
 #include "usbh_bluetooth.h"
@@ -146,3 +150,4 @@ const hci_transport_t * hci_transport_h2_stm32_instance(void) {
     };
     return &instance;
 }
+#endif /* WITHUSEUSBBT */

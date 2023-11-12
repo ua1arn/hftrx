@@ -37,6 +37,11 @@
 
 #define __BTSTACK_FILE__ "hal_audio_f4_discovery.c"
 
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
 #include "hal_audio.h"
 #include "btstack_debug.h"
 //#include "stm32f4_discovery_audio.h"
@@ -331,3 +336,5 @@ void hal_audio_source_close(void){
 		hal_audio_source_stop();
 	}
 }
+
+#endif /* WITHUSEUSBBT */

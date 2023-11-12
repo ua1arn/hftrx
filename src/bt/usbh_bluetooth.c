@@ -37,6 +37,11 @@
 
 #define BTSTACK_FILE__ "usbh_bluetooth.c"
 
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
 #include "usbh_bluetooth.h"
 #include "btstack_debug.h"
 #include "hci.h"
@@ -101,8 +106,10 @@ USBH_StatusTypeDef usbh_bluetooth_start_acl_in_transfer(USBH_HandleTypeDef *phos
     return USBH_BulkReceiveData(phost, &hci_acl_in_packet[hci_acl_in_offset], acl_in_transfer_size, usb->acl_in_pipe);
 }
 
-USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost){
+USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * dev_target){
     log_info("USBH_Bluetooth_InterfaceInit");
+
+    bttarget = * dev_target;
 
     // dump everything
     uint8_t interface_index = 0;
@@ -379,3 +386,4 @@ USBH_ClassTypeDef  Bluetooth_Class = {
     NULL,
 };
 
+#endif /* WITHUSEUSBBT */

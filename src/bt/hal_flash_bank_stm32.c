@@ -28,6 +28,11 @@
  * SUCH DAMAGE.
  *
  */
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
 
 /*
  *  hal_flash_bank_stm32.c
@@ -109,3 +114,5 @@ const hal_flash_bank_t * hal_flash_bank_stm32_init_instance(hal_flash_bank_stm32
 	return &hal_flash_bank_stm32_impl;
 }
 #endif
+
+#endif /* WITHUSEUSBBT */
