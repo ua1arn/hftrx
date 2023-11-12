@@ -369,7 +369,7 @@ static void adcdones_event(void)
 
 static volatile uint32_t sys_now_counter;
 
-#if ! WITHLWIP && ! WITHUSEUSBBT
+#if ! WITHLWIP
 
 uint32_t sys_now(void)
 {
