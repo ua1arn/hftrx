@@ -9,6 +9,17 @@
 
 #include "xc7z_inc.h"
 
+enum {
+	rx_fir_shift_pos 	= 0,
+	tx_shift_pos 		= 8,
+	rx_cic_shift_pos 	= 16,
+	tx_state_pos 		= 24,
+	resetn_modem_pos 	= 25,
+	hw_vfo_sel_pos		= 26,
+	adc_rand_pos 		= 27,
+	iq_test_pos			= 28,
+};
+
 static uintptr_t addr32rx;
 volatile uint8_t iq_ready = 0;
 
@@ -35,15 +46,24 @@ void xcz_fifo_phones_inthandler(void);
 #define BCLK_DIV_MASK 		 		0x000000FF
 #define LRCLK_DIV_MASK 		 		0x00FF0000
 
-void xcz_rxtx_state(uint8_t tx)
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+static uint8_t rx_cic_shift, rx_fir_shift, tx_shift, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
+
+void update_modem_ctrl(void)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 0, (tx != 0));
+	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
+			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
+			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
+			| (! hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
+			| 0;
+
+	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR, v);
 }
 
-void xcz_dds_rts(const uint_least64_t * val)
+void xcz_rxtx_state(uint8_t tx)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 8, * val);
-	mirror_ncorts = * val;
+	tx_state = tx != 0;
+	update_modem_ctrl();
 }
 
 void xcz_dds_ftw(const uint_least64_t * val)
@@ -54,14 +74,15 @@ void xcz_dds_ftw(const uint_least64_t * val)
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 28, * val);
+	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 8, * val);
 	mirror_nco2 = * val;
 }
 
-#if WITHIQSHIFT
-
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
-static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
+void xcz_dds_rts(const uint_least64_t * val)
+{
+	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 12, * val);
+	mirror_ncorts = * val;
+}
 
 uint8_t iq_shift_fir_rx(uint8_t val) // 48
 {
@@ -70,7 +91,7 @@ uint8_t iq_shift_fir_rx(uint8_t val) // 48
 		if (val >= rx_fir_shift_min && val <= rx_fir_shift_max)
 			rx_fir_shift = val;
 
-		Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 12, rx_fir_shift);
+		update_modem_ctrl();
 	}
 	return rx_fir_shift;
 }
@@ -82,7 +103,7 @@ uint8_t iq_shift_cic_rx(uint8_t val)
 		if (val >= rx_cic_shift_min && val <= rx_cic_shift_max)
 			rx_cic_shift = val;
 
-		Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 16, rx_cic_shift);
+		update_modem_ctrl();
 	}
 	return rx_cic_shift;
 }
@@ -94,14 +115,15 @@ uint8_t iq_shift_tx(uint8_t val)
 		if (val >= tx_shift_min && val <= tx_shift_max)
 			tx_shift = val;
 
-		Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 20, tx_shift);
+		update_modem_ctrl();
 	}
 	return tx_shift;
 }
 
 void iq_cic_test(uint32_t val)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 24, !! val);
+	iq_test = val != 0;
+	update_modem_ctrl();
 }
 
 uint32_t iq_cic_test_process(void)
@@ -114,8 +136,6 @@ uint32_t iq_cic_test_process(void)
 
 	return max;
 }
-
-#endif /* WITHIQSHIFT */
 
 #if WITHRTS96
 
@@ -130,11 +150,9 @@ void xcz_ah_preinit(void)
 	xcz_rxtx_state(1);
 	xcz_rxtx_state(0);
 
-#if WITHIQSHIFT
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
-#endif /* WITHIQSHIFT */
 }
 
 // ****************** IF RX ******************

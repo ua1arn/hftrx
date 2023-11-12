@@ -242,7 +242,6 @@
 //			#define WITHEXTRFBOARDTEST		1
 			#define IQMODEM_BLOCKMEMORY		1
 			#define DMABUFCLUSTER			32
-			#define WITHIQSHIFT				1
 			#define WITHBUFFERSSMALLDEBUG	1
 //			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
 //			#define WITHGNSS_1PPS	1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/

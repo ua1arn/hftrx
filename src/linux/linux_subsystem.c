@@ -38,6 +38,7 @@ enum {
 	resetn_modem_pos 	= 25,
 	hw_vfo_sel_pos		= 26,
 	adc_rand_pos 		= 27,
+	iq_test_pos			= 28,
 };
 
 void * get_highmem_ptr(uint32_t addr)
@@ -415,7 +416,7 @@ uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, con
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl,  * ph_fifo, * iq_count_rx, * iq_count_tx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
-static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
+static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 int fd_int = 0;
 uintptr_t addr32rx;
@@ -442,11 +443,9 @@ void linux_iq_init(void)
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
 
-#if WITHIQSHIFT
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
-#endif /* WITHIQSHIFT */
 }
 
 void linux_iq_thread(void)
@@ -708,10 +707,11 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 
 void update_modem_ctrl(void)
 {
-	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) | ((tx_shift & 0xFF) << tx_shift_pos)
-			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) | (!!tx_state << tx_state_pos)
-			| (!!resetn_modem << resetn_modem_pos) | (!!hw_vfo_sel << hw_vfo_sel_pos)
-			| (! hamradio_get_gadcrand() << adc_rand_pos);
+	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
+			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
+			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
+			| (! hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
+			| 0;
 
 	* modem_ctrl = v;
 }
@@ -748,8 +748,6 @@ void xcz_dds_ftw_sub(const uint_least64_t * val)
 	* ftw_sub = v;
 	mirror_nco2 = v;
 }
-
-#if WITHIQSHIFT
 
 uint8_t iq_shift_fir_rx(uint8_t val) // 52
 {
@@ -793,8 +791,6 @@ uint32_t iq_cic_test_process(void)
 }
 
 void iq_cic_test(uint32_t val) {}
-
-#endif /* WITHIQSHIFT */
 
 #if WITHHWDUALVFO
 

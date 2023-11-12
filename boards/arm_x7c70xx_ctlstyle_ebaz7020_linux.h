@@ -106,7 +106,7 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
-	#define WITHLVGL			1
+	//#define WITHLVGL			1
 #endif /* WITHISBOOTLOADER */
 
 #if WITHISBOOTLOADER
@@ -236,7 +236,7 @@
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
+//			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 //			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //			#define WITHLFM					1
 //			#define WITHNMEA				1
@@ -244,7 +244,6 @@
 //			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
 //			#define WITHGNSS_1PPS	1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/
 			#define IQMODEM_BLOCKMEMORY		1
-			#define WITHIQSHIFT				1
 			#define DMABUFCLUSTER			32
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
