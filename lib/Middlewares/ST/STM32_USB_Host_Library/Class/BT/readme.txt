@@ -1,5 +1,7 @@
 
 https://bluekitchen-gmbh.com/btstack-stm32-usb-port/
+https://github.com/bluekitchen/btstack.git
+
 
 VID/PID: 0A12/0001
 Address (#2,hub=1,port=3,speed=1) assigned.
