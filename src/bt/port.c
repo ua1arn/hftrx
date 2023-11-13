@@ -80,26 +80,26 @@ static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
 //uint32_t hal_time_ms(void){
 //    return HAL_GetTick();
 //}
-//
-//// hal_cpu.h implementation
-//#include "hal_cpu.h"
-//
-//void hal_cpu_disable_irqs(void){
-//    __disable_irq();
-//}
-//
-//void hal_cpu_enable_irqs(void){
-//    __enable_irq();
-//}
-//
-//void hal_cpu_enable_irqs_and_sleep(void){
-//    __enable_irq();
-//#if 0
-//    // temp disable until effect on RTT is clear
-//    // go to sleep if event flag isn't set. if set, just clear it. IRQs set event flag
-//    //  __asm__("wfe");
-//#endif
-//}
+
+// hal_cpu.h implementation
+#include "hal_cpu.h"
+
+void hal_cpu_disable_irqs(void){
+    __disable_irq();
+}
+
+void hal_cpu_enable_irqs(void){
+    __enable_irq();
+}
+
+void hal_cpu_enable_irqs_and_sleep(void){
+    __enable_irq();
+#if 0
+    // temp disable until effect on RTT is clear
+    // go to sleep if event flag isn't set. if set, just clear it. IRQs set event flag
+    //  __asm__("wfe");
+#endif
+}
 
 //#define HAL_FLASH_BANK_SIZE (128 * 1024)
 //#define HAL_FLASH_BANK_0_ADDR 0x080C0000
@@ -188,6 +188,7 @@ void port_main(void){
     btstack_main(0, NULL);
 
     // go
-    btstack_run_loop_execute();
+    //btstack_run_loop_execute();
+    TP();
 }
 #endif /* WITHUSEUSBBT */

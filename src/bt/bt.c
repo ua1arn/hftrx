@@ -331,6 +331,7 @@ void bt_initialize(void)
 {
 	PRINTF("bt_initialize start\n");
 
+	port_main();
 
 	PRINTF("bt_initialize done\n");
 }

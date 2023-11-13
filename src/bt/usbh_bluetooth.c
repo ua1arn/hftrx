@@ -227,6 +227,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
             if (status == USBH_OK) {
                 usbh_out_state = USBH_OUT_IDLE;
                 // notify host stack
+                ASSERT(usbh_packet_sent);
                 (*usbh_packet_sent)();
             }
             break;
@@ -249,6 +250,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                     if (acl_len == 0){
                         usbh_out_state = USBH_OUT_IDLE;
                         // notify host stack
+                        ASSERT(usbh_packet_sent);
                         (*usbh_packet_sent)();
                     } else {
                         acl_packet += transfer_size;
@@ -287,6 +289,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                     // event complete
                     if (hci_event_offset >= event_size){
                         hci_event_offset = 0;
+                        ASSERT(usbh_packet_received);
                         (*usbh_packet_received)(HCI_EVENT_PACKET, hci_event, event_size);
                     }
                     break;
@@ -332,6 +335,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                 printf("Extra HCI EVENT!\n");
             }
             if (hci_acl_in_offset >= acl_size){
+                ASSERT(usbh_packet_received);
                 (*usbh_packet_received)(HCI_ACL_DATA_PACKET, hci_acl_in_packet, acl_size);
                 hci_acl_in_offset = 0;
             }
@@ -350,13 +354,11 @@ USBH_StatusTypeDef USBH_Bluetooth_SOFProcess(USBH_HandleTypeDef *phost){
 }
 
 void usbh_bluetooth_set_packet_sent(void (*callback)(void)){
-PRINTF("usbh_bluetooth_set_packet_sent: %p\n", callback);
     usbh_packet_sent = callback;
 }
 
 
 void usbh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size)){
-	PRINTF("usbh_bluetooth_set_packet_received: %p\n", callback);
     usbh_packet_received = callback;
 }
 
