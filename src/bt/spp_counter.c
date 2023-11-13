@@ -241,7 +241,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
                     break;
                 
                 default:
-                    printf("Unhandled event packet type 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+                    //printf("Unhandled event packet type 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                    break;
             }
             break;
@@ -255,7 +255,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
             break;
 
         default:
-            printf("Unhandled packet type 0x%02X\n", (unsigned) packet_type);
+            //printf("Unhandled packet type 0x%02X\n", (unsigned) packet_type);
             break;
     }
 /* LISTING_RESUME */ 
