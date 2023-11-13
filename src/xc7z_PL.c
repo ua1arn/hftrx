@@ -54,7 +54,7 @@ void update_modem_ctrl(void)
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
 			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
-			| (! hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
+			| (hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
 			| 0;
 
 	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR, v);
