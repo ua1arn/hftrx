@@ -11637,7 +11637,9 @@ updateboardZZZ(
 		// параметры, не имеющие специфики для разных приемников
 		update_lo0(lo0hint, lo0side);
 		board_set_sleep(sleepflag);
+#if WITHUSEUSBBT
 		bt_enable(gusbbt);	/* Bluetooth enable */
+#endif /* WITHUSEUSBBT */
 
 		if (gtx == 0)
 		{

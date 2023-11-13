@@ -35,6 +35,14 @@
  *
  */
 
+
+
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
+
 #define BTSTACK_FILE__ "spp_counter.c"
 
 // *****************************************************************************
@@ -273,3 +281,4 @@ int btstack_main(int argc, const char * argv[]){
 }
 /* EXAMPLE_END */
 
+#endif /* WITHUSEUSBBT */
