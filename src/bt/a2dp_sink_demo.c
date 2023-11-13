@@ -557,7 +557,7 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
     sbc_frame_size = packet_length / sbc_header.num_frames;
     int status = btstack_ring_buffer_write(&sbc_frame_ring_buffer, packet_begin, packet_length);
     if (status != ERROR_CODE_SUCCESS){
-        printf("Error storing samples in SBC ring buffer!!!\n");
+        //printf("Error storing samples in SBC ring buffer!!!\n");
     }
 
     // decide on audio sync drift based on number of sbc frames in queue
