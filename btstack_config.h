@@ -13,7 +13,7 @@
 // Port related features
 //#define HAVE_BTSTACK_STDIN
 #define HAVE_EMBEDDED_TIME_MS
-//#define HAVE_HAL_AUDIO
+#define HAVE_HAL_AUDIO
 //#define HAVE_HAL_AUDIO_SINK_STEREO_ONLY
 //#define HAVE_BTSTACK_AUDIO_EFFECTIVE_SAMPLERATE
 
@@ -58,5 +58,11 @@
 // Link Key DB and LE Device DB using TLV on top of Flash Sector interface
 #define NVM_NUM_DEVICE_DB_ENTRIES 16
 #define NVM_NUM_LINK_KEYS 16
+
+uint32_t BSP_AUDIO_OUT_GetFrequency(uint32_t AudioFreq);
+uint8_t BSP_AUDIO_IN_Record(uint16_t* pbuf, uint32_t size);
+uint8_t BSP_AUDIO_IN_Stop(void);
+uint8_t BSP_AUDIO_IN_Init(uint32_t AudioFreq, uint32_t BitRes, uint32_t ChnlNbr);
+uint8_t BSP_AUDIO_IN_PDMToPCM(uint16_t *PDMBuf, uint16_t *PCMBuf);
 
 #endif

@@ -118,8 +118,10 @@ ${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/altcp_proxyconnect.c \
 ${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/fs.c \
 ${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/httpd.c \
 ${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server/dhserver.c \
-${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c \
+${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c
 
+SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/srce
+SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/srce
 
 C_INCLUDES += $(BUILD_DIR)
 C_INCLUDES += ${BTSTACK_ROOT}/src/ble
