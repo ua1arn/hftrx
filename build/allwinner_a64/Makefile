@@ -192,7 +192,7 @@ SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak

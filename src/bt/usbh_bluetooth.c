@@ -60,6 +60,7 @@ typedef struct {
     uint8_t event_in_pipe;
     uint16_t event_in_len;
     uint32_t event_in_frame;
+    USBH_TargetTypeDef bttarget;
 } USB_Bluetooth_t;
 
 static enum {
@@ -98,7 +99,6 @@ static uint16_t hci_acl_in_offset;
 static uint8_t  hci_acl_in_buffer[HCI_INCOMING_PRE_BUFFER_SIZE + HCI_ACL_BUFFER_SIZE];
 static uint8_t  * hci_acl_in_packet = &hci_acl_in_buffer[HCI_INCOMING_PRE_BUFFER_SIZE];
 
-static USBH_TargetTypeDef bttarget;
 
 USBH_StatusTypeDef usbh_bluetooth_start_acl_in_transfer(USBH_HandleTypeDef *phost, USB_Bluetooth_t * usb){
     uint16_t acl_in_transfer_size = btstack_min(usb->acl_in_len, HCI_ACL_BUFFER_SIZE - hci_acl_in_offset);
@@ -109,7 +109,6 @@ USBH_StatusTypeDef usbh_bluetooth_start_acl_in_transfer(USBH_HandleTypeDef *phos
 USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * dev_target){
     log_info("USBH_Bluetooth_InterfaceInit");
 
-    bttarget = * dev_target;
 
     // dump everything
     uint8_t interface_index = 0;
@@ -149,6 +148,7 @@ USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const
     // setup
     memset(&usb_bluetooth, 0, sizeof(USB_Bluetooth_t));
     phost->pActiveClass->pData = (void*) &usb_bluetooth;
+    usb_bluetooth.bttarget = * dev_target;
 
     // Command
     usbh_out_state = USBH_OUT_OFF;
@@ -163,7 +163,7 @@ USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const
     /* Open pipe for IN endpoint */
     USBH_OpenPipe(phost, usb->event_in_pipe, usb->event_in_ep,
     		//phost->device.address, phost->device.speed,
-			& bttarget,
+			& usb_bluetooth.bttarget,
 				  USB_EP_TYPE_INTR, interface->Ep_Desc[event_in].wMaxPacketSize);
 
     USBH_LL_SetToggle(phost, usb->event_in_ep, 0U);
@@ -174,7 +174,7 @@ USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const
     usb->acl_in_pipe = USBH_AllocPipe(phost, usb->acl_in_ep);
     USBH_OpenPipe(phost, usb->acl_in_pipe, usb->acl_in_ep,
     		//phost->device.address, phost->device.speed,
-			& bttarget,
+			& usb_bluetooth.bttarget,
 			USB_EP_TYPE_BULK, usb->acl_in_len);
     USBH_LL_SetToggle(phost, usb->acl_in_pipe, 0U);
     hci_acl_in_offset = 0;
@@ -186,7 +186,7 @@ USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const
     usb->acl_out_pipe = USBH_AllocPipe(phost, usb->acl_out_ep);
     USBH_OpenPipe(phost, usb->acl_out_pipe, usb->acl_out_ep,
     		//phost->device.address, phost->device.speed,
-			& bttarget,
+			& usb_bluetooth.bttarget,
 			USB_EP_TYPE_BULK, usb->acl_out_len);
     USBH_LL_SetToggle(phost, usb->acl_out_pipe, 0U);
 
@@ -205,6 +205,7 @@ USBH_StatusTypeDef USBH_Bluetooth_ClassRequest(USBH_HandleTypeDef *phost){
     usbh_out_state = USBH_OUT_IDLE;
     usbh_in_state = USBH_IN_SUBMIT_REQUEST;
     // notify host stack
+    ASSERT(usbh_packet_sent);
     (*usbh_packet_sent)();
     return USBH_OK;
 }
@@ -349,11 +350,13 @@ USBH_StatusTypeDef USBH_Bluetooth_SOFProcess(USBH_HandleTypeDef *phost){
 }
 
 void usbh_bluetooth_set_packet_sent(void (*callback)(void)){
+PRINTF("usbh_bluetooth_set_packet_sent: %p\n", callback);
     usbh_packet_sent = callback;
 }
 
 
 void usbh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size)){
+	PRINTF("usbh_bluetooth_set_packet_received: %p\n", callback);
     usbh_packet_received = callback;
 }
 
