@@ -187,7 +187,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
     uint8_t   rfcomm_channel_nr;
     uint16_t  mtu;
     int i;
-
+    //printhex(0xFFFF0000, packet, size);
     switch (packet_type) {
         case HCI_EVENT_PACKET:
             switch (hci_event_packet_get_type(packet)) {
@@ -233,7 +233,8 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
                     break;
                 
                 default:
-                    break;
+                    printf("Unhandled event packet type 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+                   break;
             }
             break;
 
@@ -246,6 +247,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
             break;
 
         default:
+            printf("Unhandled packet type 0x%02X\n", (unsigned) packet_type);
             break;
     }
 /* LISTING_RESUME */ 
