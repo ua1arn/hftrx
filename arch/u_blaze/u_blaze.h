@@ -11,5 +11,6 @@
 
 
 
+#define UNUSED(x) ((void)(sizeof(x)))
 
 #endif /* ARCH_U_BLAZE_U_BLAZE_H_ */

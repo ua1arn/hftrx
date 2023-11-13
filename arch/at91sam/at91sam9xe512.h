@@ -4152,4 +4152,7 @@ typedef struct _AT91S_ISI {
 #define AT91C_EBI_CS7	 (0x80000000) // EBI Chip Select 7 base address
 #define AT91C_EBI_CS7_SIZE	 (0x10000000) // EBI Chip Select 7 size in byte (262144 Kbytes)
 
+
+#define UNUSED(x) ((void)(sizeof(x)))
+
 #endif

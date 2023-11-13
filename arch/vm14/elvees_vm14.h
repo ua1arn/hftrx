@@ -192,4 +192,6 @@ typedef enum xIRQn
 
 #include <arch/vm14/system_vm14.h>
 
+#define UNUSED(x) ((void)(sizeof(x)))
+
 #endif /* ARCH_VM14_ELVEES_VM14_H_ */

@@ -2242,4 +2242,7 @@ typedef struct _AT91S_UDP {
 #define AT91C_IFLASH_NB_OF_PAGES	 (512) // Internal FLASH Number of Pages: 512 bytes
 #define AT91C_IFLASH_NB_OF_LOCK_BITS	 (16) // Internal FLASH Number of Lock Bits: 16 bytes
 
+#define UNUSED(x) ((void)(sizeof(x)))
+
+
 #endif

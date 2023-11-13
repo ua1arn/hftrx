@@ -265,4 +265,6 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
 
 #endif
 
+#define UNUSED(x) ((void)(sizeof(x)))
+
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
