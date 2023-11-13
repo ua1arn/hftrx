@@ -238,8 +238,7 @@ typedef struct
 
 
 
-#define UNUSED(X) (void)X      /* To avoid gcc/g++ warnings */
-
+//#define UNUSED(x) ((void)(sizeof(x)))	/* To avoid gcc/g++ warnings */
 #define HAL_MAX_DELAY      0xFFFFFFFFU
 
 HAL_StatusTypeDef HAL_Init(void);
