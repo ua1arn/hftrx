@@ -105,7 +105,7 @@ USBD_StatusTypeDef USBD_MSC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum
   * @}
   */
 
-#if WITHUSERAMDISK
+#if 1//WITHUSERAMDISK
 
 static int8_t ramdisk_Init(uint8_t lun)
 {
@@ -116,7 +116,7 @@ static int8_t ramdisk_Init(uint8_t lun)
 static int8_t ramdisk_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
 	* block_size = 512;
-	* block_num = getRamDiskSize() / 512;
+	* block_num = 11111;//getRamDiskSize() / 512;
 
 	return 0; // 0 - okatn or non-zero - no media
 }
@@ -130,16 +130,16 @@ static int8_t ramdisk_IsWriteProtected(uint8_t lun)
 }
 static int8_t ramdisk_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
-	memcpy(buf, (void *) offset, 512 * blk_len);
-	return 0;
+//	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
+//	memcpy(buf, (void *) offset, 512 * blk_len);
+//	return 0;
 	return -1;	// error
 }
 static int8_t ramdisk_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
-	memcpy((void *) offset, buf, 512 * blk_len);
-	return 0;
+//	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
+//	memcpy((void *) offset, buf, 512 * blk_len);
+//	return 0;
 	return -1;	// error
 }
 static int8_t ramdisk_GetMaxLun(void)
@@ -147,7 +147,8 @@ static int8_t ramdisk_GetMaxLun(void)
 	return 1;
 }
 
-static int8_t ramdisk_pInquiry [4];
+// for each LUN
+static int8_t ramdisk_Inquiry [1 * STANDARD_INQUIRY_DATA_LEN];
 
 
 USBD_StorageTypeDef mscStorage = {
@@ -158,7 +159,7 @@ USBD_StorageTypeDef mscStorage = {
 	ramdisk_Read,
 	ramdisk_Write,
 	ramdisk_GetMaxLun,
-	ramdisk_pInquiry
+	ramdisk_Inquiry
 };
 #endif /* WITHUSERAMDISK */
 
