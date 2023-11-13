@@ -158,7 +158,7 @@ void MX_USB_DEVICE_Init(void)
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MTP);
 #endif /* WITHUSBDMTP */
 #if WITHUSBDMSC
-	//USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MSC);
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MSC);
 #endif /* WITHUSBDMSC */
 
  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */

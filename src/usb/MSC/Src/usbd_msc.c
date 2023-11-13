@@ -48,6 +48,10 @@ EndBSPDependencies */
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
+extern USBD_StorageTypeDef mscStorage;
+
+USBD_MSC_BOT_HandleTypeDef mscBOT;
+
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
   */
@@ -101,6 +105,8 @@ USBD_StatusTypeDef USBD_MSC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum
   * @}
   */
 
+#if WITHUSERAMDISK
+
 static int8_t ramdisk_Init(uint8_t lun)
 {
 	// not called
@@ -144,8 +150,6 @@ static int8_t ramdisk_GetMaxLun(void)
 static int8_t ramdisk_pInquiry [4];
 
 
-USBD_MSC_BOT_HandleTypeDef mscBOT;
-
 USBD_StorageTypeDef mscStorage = {
 	ramdisk_Init,
 	ramdisk_GetCapacity,
@@ -156,192 +160,7 @@ USBD_StorageTypeDef mscStorage = {
 	ramdisk_GetMaxLun,
 	ramdisk_pInquiry
 };
-
-static void USBD_MSC_ColdInit(void)
-{
-
-}
-
-/** @defgroup MSC_CORE_Private_Variables
-  * @{
-  */
-
-
-USBD_ClassTypeDef  USBD_MSC =
-{
-  USBD_MSC_ColdInit,
-  USBD_MSC_Init,
-  USBD_MSC_DeInit,
-  USBD_MSC_Setup,
-  NULL, /*EP0_TxSent*/
-  NULL, /*EP0_RxReady*/
-  USBD_MSC_DataIn,
-  USBD_MSC_DataOut,
-  NULL, /*SOF */
-  NULL,
-  NULL,
-//  USBD_MSC_GetHSCfgDesc,
-//  USBD_MSC_GetFSCfgDesc,
-//  USBD_MSC_GetOtherSpeedCfgDesc,
-//  USBD_MSC_GetDeviceQualifierDescriptor,
-};
-
-/* USB Mass storage device Configuration Descriptor */
-/*   All Descriptors (Configuration, Interface, Endpoint, Class, Vendor */
-__ALIGN_BEGIN static uint8_t USBD_MSC_CfgHSDesc[USB_MSC_CONFIG_DESC_SIZ]  __ALIGN_END =
-{
-  0x09,                                            /* bLength: Configuration Descriptor size */
-  USB_DESC_TYPE_CONFIGURATION,                     /* bDescriptorType: Configuration */
-  USB_MSC_CONFIG_DESC_SIZ,
-
-  0x00,
-  0x01,                                            /* bNumInterfaces: 1 interface */
-  0x01,                                            /* bConfigurationValue: */
-  0x04,                                            /* iConfiguration: */
-#if (USBD_SELF_POWERED == 1U)
-  0xC0,                                            /* bmAttributes: Bus Powered according to user configuration */
-#else
-  0x80,                                            /* bmAttributes: Bus Powered according to user configuration */
-#endif
-  USBD_MAX_POWER,                                  /* MaxPower 100 mA */
-
-  /********************  Mass Storage interface ********************/
-  0x09,                                            /* bLength: Interface Descriptor size */
-  0x04,                                            /* bDescriptorType: */
-  0x00,                                            /* bInterfaceNumber: Number of Interface */
-  0x00,                                            /* bAlternateSetting: Alternate setting */
-  0x02,                                            /* bNumEndpoints */
-  0x08,                                            /* bInterfaceClass: MSC Class */
-  0x06,                                            /* bInterfaceSubClass : SCSI transparent */
-  0x50,                                            /* nInterfaceProtocol */
-  0x05,                                            /* iInterface: */
-  /********************  Mass Storage Endpoints ********************/
-  0x07,                                            /* Endpoint descriptor length = 7 */
-  0x05,                                            /* Endpoint descriptor type */
-  MSC_EPIN_ADDR,                                   /* Endpoint address (IN, address 1) */
-  0x02,                                            /* Bulk endpoint type */
-  LOBYTE(MSC_MAX_HS_PACKET),
-  HIBYTE(MSC_MAX_HS_PACKET),
-  0x00,                                            /* Polling interval in milliseconds */
-
-  0x07,                                            /* Endpoint descriptor length = 7 */
-  0x05,                                            /* Endpoint descriptor type */
-  MSC_EPOUT_ADDR,                                  /* Endpoint address (OUT, address 1) */
-  0x02,                                            /* Bulk endpoint type */
-  LOBYTE(MSC_MAX_HS_PACKET),
-  HIBYTE(MSC_MAX_HS_PACKET),
-  0x00                                             /* Polling interval in milliseconds */
-};
-
-/* USB Mass storage device Configuration Descriptor */
-/* All Descriptors (Configuration, Interface, Endpoint, Class, Vendor */
-__ALIGN_BEGIN static uint8_t USBD_MSC_CfgFSDesc[USB_MSC_CONFIG_DESC_SIZ]  __ALIGN_END =
-{
-  0x09,                                            /* bLength: Configuration Descriptor size */
-  USB_DESC_TYPE_CONFIGURATION,                     /* bDescriptorType: Configuration */
-  USB_MSC_CONFIG_DESC_SIZ,
-
-  0x00,
-  0x01,                                            /* bNumInterfaces: 1 interface */
-  0x01,                                            /* bConfigurationValue: */
-  0x04,                                            /* iConfiguration: */
-#if (USBD_SELF_POWERED == 1U)
-  0xC0,                                            /* bmAttributes: Bus Powered according to user configuration */
-#else
-  0x80,                                            /* bmAttributes: Bus Powered according to user configuration */
-#endif
-  USBD_MAX_POWER,                                  /* MaxPower 100 mA */
-
-  /********************  Mass Storage interface ********************/
-  0x09,                                            /* bLength: Interface Descriptor size */
-  0x04,                                            /* bDescriptorType: */
-  0x00,                                            /* bInterfaceNumber: Number of Interface */
-  0x00,                                            /* bAlternateSetting: Alternate setting */
-  0x02,                                            /* bNumEndpoints*/
-  0x08,                                            /* bInterfaceClass: MSC Class */
-  0x06,                                            /* bInterfaceSubClass : SCSI transparent*/
-  0x50,                                            /* nInterfaceProtocol */
-  0x05,                                            /* iInterface: */
-  /********************  Mass Storage Endpoints ********************/
-  0x07,                                            /* Endpoint descriptor length = 7 */
-  0x05,                                            /* Endpoint descriptor type */
-  MSC_EPIN_ADDR,                                   /* Endpoint address (IN, address 1) */
-  0x02,                                            /* Bulk endpoint type */
-  LOBYTE(MSC_MAX_FS_PACKET),
-  HIBYTE(MSC_MAX_FS_PACKET),
-  0x00,                                            /* Polling interval in milliseconds */
-
-  0x07,                                            /* Endpoint descriptor length = 7 */
-  0x05,                                            /* Endpoint descriptor type */
-  MSC_EPOUT_ADDR,                                  /* Endpoint address (OUT, address 1) */
-  0x02,                                            /* Bulk endpoint type */
-  LOBYTE(MSC_MAX_FS_PACKET),
-  HIBYTE(MSC_MAX_FS_PACKET),
-  0x00                                             /* Polling interval in milliseconds */
-};
-
-__ALIGN_BEGIN static uint8_t USBD_MSC_OtherSpeedCfgDesc[USB_MSC_CONFIG_DESC_SIZ]   __ALIGN_END  =
-{
-  0x09,                                           /* bLength: Configuration Descriptor size */
-  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION,
-  USB_MSC_CONFIG_DESC_SIZ,
-
-  0x00,
-  0x01,                                           /* bNumInterfaces: 1 interface */
-  0x01,                                           /* bConfigurationValue: */
-  0x04,                                           /* iConfiguration: */
-#if (USBD_SELF_POWERED == 1U)
-  0xC0,                                           /* bmAttributes: Bus Powered according to user configuration */
-#else
-  0x80,                                           /* bmAttributes: Bus Powered according to user configuration */
-#endif
-  USBD_MAX_POWER,                                 /* MaxPower 100 mA */
-
-  /********************  Mass Storage interface ********************/
-  0x09,                                           /* bLength: Interface Descriptor size */
-  0x04,                                           /* bDescriptorType: */
-  0x00,                                           /* bInterfaceNumber: Number of Interface */
-  0x00,                                           /* bAlternateSetting: Alternate setting */
-  0x02,                                           /* bNumEndpoints */
-  0x08,                                           /* bInterfaceClass: MSC Class */
-  0x06,                                           /* bInterfaceSubClass : SCSI transparent command set */
-  0x50,                                           /* nInterfaceProtocol */
-  0x05,                                           /* iInterface: */
-  /********************  Mass Storage Endpoints ********************/
-  0x07,                                           /* Endpoint descriptor length = 7 */
-  0x05,                                           /* Endpoint descriptor type */
-  MSC_EPIN_ADDR,                                  /* Endpoint address (IN, address 1) */
-  0x02,                                           /* Bulk endpoint type */
-  0x40,
-  0x00,
-  0x00,                                           /* Polling interval in milliseconds */
-
-  0x07,                                           /* Endpoint descriptor length = 7 */
-  0x05,                                           /* Endpoint descriptor type */
-  MSC_EPOUT_ADDR,                                 /* Endpoint address (OUT, address 1) */
-  0x02,                                           /* Bulk endpoint type */
-  0x40,
-  0x00,
-  0x00                                            /* Polling interval in milliseconds */
-};
-
-/* USB Standard Device Descriptor */
-__ALIGN_BEGIN static uint8_t USBD_MSC_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC]  __ALIGN_END =
-{
-  USB_LEN_DEV_QUALIFIER_DESC,
-  USB_DESC_TYPE_DEVICE_QUALIFIER,
-  0x00,
-  0x02,
-  0x00,
-  0x00,
-  0x00,
-  MSC_MAX_FS_PACKET,
-  0x01,
-  0x00,
-};
-/**
-  * @}
-  */
+#endif /* WITHUSERAMDISK */
 
 
 /** @defgroup MSC_CORE_Private_Functions
@@ -668,6 +487,37 @@ uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *
 /**
   * @}
   */
+
+
+static void USBD_MSC_ColdInit(void)
+{
+
+}
+
+/** @defgroup MSC_CORE_Private_Variables
+  * @{
+  */
+
+
+USBD_ClassTypeDef  USBD_CLASS_MSC =
+{
+  USBD_MSC_ColdInit,
+  USBD_MSC_Init,
+  USBD_MSC_DeInit,
+  USBD_MSC_Setup,
+  NULL, /*EP0_TxSent*/
+  NULL, /*EP0_RxReady*/
+  USBD_MSC_DataIn,
+  USBD_MSC_DataOut,
+  NULL, /*SOF */
+  NULL,
+  NULL,
+//  USBD_MSC_GetHSCfgDesc,
+//  USBD_MSC_GetFSCfgDesc,
+//  USBD_MSC_GetOtherSpeedCfgDesc,
+//  USBD_MSC_GetDeviceQualifierDescriptor,
+};
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 #endif /* WITHUSBHW && WITHUSBDMSC */

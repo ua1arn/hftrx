@@ -55,9 +55,10 @@ extern "C" {
 #define BOT_RESET                    0xFF
 #define USB_MSC_CONFIG_DESC_SIZ      32
 
+#include "src/usb/usbch9.h"
 
-#define MSC_EPIN_ADDR                0x81U
-#define MSC_EPOUT_ADDR               0x01U
+#define MSC_EPIN_ADDR                USBD_EP_MSC_IN //0x81U
+#define MSC_EPOUT_ADDR               USBD_EP_MSC_OUT //0x01U
 
 /**
   * @}
