@@ -134,6 +134,7 @@ void  MSC_BOT_CplClrFeature(USBD_HandleTypeDef  *pdev,
   * @}
   */
 
+
 #ifdef __cplusplus
 }
 #endif

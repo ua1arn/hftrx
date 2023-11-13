@@ -17,6 +17,10 @@
   ******************************************************************************
   */
 
+#include "hardware.h"
+
+#if WITHUSBHW && WITHUSBDMSC
+
 /* BSPDependencies
 - "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
 - "stm32xxxxx_{eval}{discovery}_io.c"
@@ -181,3 +185,4 @@ uint8_t MSC_Mode_Sense10_data[MODE_SENSE10_LEN] =
   */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#endif /* WITHUSBHW && WITHUSBDMSC */
