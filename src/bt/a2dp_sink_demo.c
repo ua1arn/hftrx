@@ -1384,7 +1384,7 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 
     // turn on!
     printf("Starting BTstack ...\n");
-    hci_power_control(HCI_POWER_ON);
+    //hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

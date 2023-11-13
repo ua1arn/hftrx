@@ -333,6 +333,7 @@ void port_main(void){
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
 
     gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
+    gap_discoverable_control(1);
    // turn on!
     hci_power_control(HCI_POWER_ON);
 
