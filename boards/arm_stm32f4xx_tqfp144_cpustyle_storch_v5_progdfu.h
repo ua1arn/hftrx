@@ -72,9 +72,19 @@
 //#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 //#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
-#define WITHUSBWCID	1	// автоустановка драйвера
+#if WITHLWIP
+	#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+#endif /* WITHLWIP */
+//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+
+#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+#define WITHUSBWCID	1
+
+//#define WITHUSBDMTP	1	/* MTP USB Device */
+//#define WITHUSBDMSC	1	/* MSC USB device */
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
 //#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */
