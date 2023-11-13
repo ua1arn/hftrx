@@ -315,7 +315,7 @@ void port_main(void){
     hci_set_link_key_db(btstack_link_key_db);
 
     // setup LE Device DB using TLV
-    le_device_db_tlv_configure(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
+    ////le_device_db_tlv_configure(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
 
 #ifdef HAVE_HAL_AUDIO
     // setup audio
@@ -328,7 +328,13 @@ void port_main(void){
     hci_add_event_handler(&hci_event_callback_registration);
 
     // hand over to btstack embedded code
-    VERIFY(! btstack_main(0, NULL));
+    //VERIFY(! spp_counter_btstack_main(0, NULL));
+    VERIFY(! a2dp_sink_btstack_main(0, NULL));
+    //VERIFY(! a2dp_source_btstack_main(0, NULL));
+
+    gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
+   // turn on!
+    hci_power_control(HCI_POWER_ON);
 
     // go
     //btstack_run_loop_execute();
