@@ -325,9 +325,12 @@ static int a2dp_source_and_avrcp_services_init(void){
     ////gap_discoverable_control(1);
     gap_set_class_of_device(0x200408);
     
+#if 0
+    // без автоподключения
     // Register for HCI events.
     hci_event_callback_registration.callback = &hci_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
+#endif
 
     data_source = STREAM_MOD;
 
