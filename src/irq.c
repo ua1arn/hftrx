@@ -1901,12 +1901,12 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	else
 	{
 		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u\n", file, line, (unsigned) newIRQL, (unsigned) GIC_GetInterfacePriorityMask());
-		ASSERT(GIC_GetInterfacePriorityMask() >= newIRQL);	/* Не понижаем приоритет */
+		ASSERT2(GIC_GetInterfacePriorityMask() >= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	* oldIrql = GIC_GetInterfacePriorityMask();
 	GIC_SetInterfacePriorityMask(newIRQL);
 #elif defined (__CORTEX_M)
-	ASSERT(__get_BASEPRI() >= newIRQL);	/* Не понижаем приоритет */
+	////ASSERT2(__get_BASEPRI() >= newIRQL, file, line);	/* Не понижаем приоритет */
 	* oldIrql = __get_BASEPRI();
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV
@@ -1915,7 +1915,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	else
 	{
 		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u\n", file, line, (unsigned) newIRQL, (unsigned) PLIC->PLIC_MTH_REG);
-		ASSERT(PLIC->PLIC_MTH_REG <= newIRQL);	/* Не понижаем приоритет */
+		ASSERT2(PLIC->PLIC_MTH_REG <= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
 	* oldIrql = PLIC->PLIC_MTH_REG;

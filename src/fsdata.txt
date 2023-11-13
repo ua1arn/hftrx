@@ -3,6 +3,8 @@
 #include "fsdata.h"
 
 
+#if WITHLWIP
+
 #define file_NULL (struct fsdata_file *) NULL
 
 
@@ -2435,3 +2437,4 @@ sizeof(data__zepto_min_js) - 16,
 #define FS_ROOT file__zepto_min_js
 #define FS_NUMFILES 5
 
+#endif /* WITHLWIP */

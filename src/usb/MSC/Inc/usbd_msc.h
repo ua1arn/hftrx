@@ -48,12 +48,12 @@ extern "C" {
 #define MSC_MEDIA_PACKET             512U
 #endif /* MSC_MEDIA_PACKET */
 
-#define MSC_MAX_FS_PACKET            0x40U
-#define MSC_MAX_HS_PACKET            0x200U
+//#define MSC_MAX_FS_PACKET            0x40U
+//#define MSC_MAX_HS_PACKET            0x200U
 
 #define BOT_GET_MAX_LUN              0xFE
 #define BOT_RESET                    0xFF
-#define USB_MSC_CONFIG_DESC_SIZ      32
+//#define USB_MSC_CONFIG_DESC_SIZ      32
 
 #include "src/usb/usbch9.h"
 
@@ -88,7 +88,7 @@ typedef struct
   uint8_t                  bot_state;
   uint8_t                  bot_status;
   uint32_t                 bot_data_length;
-  uint8_t                  bot_data[MSC_MEDIA_PACKET];
+  __ALIGN_BEGIN uint8_t                  bot_data[MSC_MEDIA_PACKET] __ALIGN_END;
   USBD_MSC_BOT_CBWTypeDef  cbw;
   USBD_MSC_BOT_CSWTypeDef  csw;
 

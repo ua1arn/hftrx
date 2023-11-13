@@ -3932,6 +3932,7 @@ static uint_fast64_t mmcCardSize(BYTE drv)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
+#if 0
 static void diskio_test(BYTE drv)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
@@ -4553,6 +4554,8 @@ startProgramming:
 	rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 	PRINTF("Done\n");
 }
+
+#endif
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 

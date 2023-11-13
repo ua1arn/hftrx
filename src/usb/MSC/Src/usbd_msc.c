@@ -33,6 +33,7 @@
   */
 
 #include "hardware.h"
+#include "buffers.h"
 
 #if WITHUSBHW && WITHUSBDMSC
 
@@ -50,7 +51,7 @@ EndBSPDependencies */
 
 extern USBD_StorageTypeDef mscStorage;
 
-USBD_MSC_BOT_HandleTypeDef mscBOT;
+__ALIGN_BEGIN USBD_MSC_BOT_HandleTypeDef mscBOT __ALIGN_END;
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
@@ -105,7 +106,7 @@ USBD_StatusTypeDef USBD_MSC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_t epnum
   * @}
   */
 
-#if 1//WITHUSERAMDISK
+#if WITHUSERAMDISK
 
 static int8_t ramdisk_Init(uint8_t lun)
 {
@@ -116,7 +117,7 @@ static int8_t ramdisk_Init(uint8_t lun)
 static int8_t ramdisk_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
 	* block_size = 512;
-	* block_num = 11111;//getRamDiskSize() / 512;
+	* block_num = getRamDiskSize() / 512;
 
 	return 0; // 0 - okatn or non-zero - no media
 }
@@ -130,16 +131,16 @@ static int8_t ramdisk_IsWriteProtected(uint8_t lun)
 }
 static int8_t ramdisk_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-//	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
-//	memcpy(buf, (void *) offset, 512 * blk_len);
-//	return 0;
+	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
+	memcpy(buf, (void *) offset, 512 * blk_len);
+	return 0;
 	return -1;	// error
 }
 static int8_t ramdisk_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
-//	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
-//	memcpy((void *) offset, buf, 512 * blk_len);
-//	return 0;
+	uintptr_t const offset = getRamDiskBase() + (blk_addr * 512);
+	memcpy((void *) offset, buf, 512 * blk_len);
+	return 0;
 	return -1;	// error
 }
 static int8_t ramdisk_GetMaxLun(void)
@@ -148,7 +149,7 @@ static int8_t ramdisk_GetMaxLun(void)
 }
 
 // for each LUN
-static int8_t ramdisk_Inquiry [1 * STANDARD_INQUIRY_DATA_LEN];
+static __ALIGN_BEGIN int8_t ramdisk_Inquiry [1 * STANDARD_INQUIRY_DATA_LEN] __ALIGN_END;
 
 
 USBD_StorageTypeDef mscStorage = {
@@ -195,21 +196,21 @@ USBD_StatusTypeDef USBD_MSC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
   if (pdev->dev_speed == USBD_SPEED_HIGH)
   {
     /* Open EP OUT */
-    (void)USBD_LL_OpenEP(pdev, MSC_EPOUT_ADDR, USBD_EP_TYPE_BULK, MSC_MAX_HS_PACKET);
+    (void)USBD_LL_OpenEP(pdev, MSC_EPOUT_ADDR, USBD_EP_TYPE_BULK, MSC_DATA_MAX_PACKET_SIZE_HS);
     pdev->ep_out[MSC_EPOUT_ADDR & 0xFU].is_used = 1U;
 
     /* Open EP IN */
-    (void)USBD_LL_OpenEP(pdev, MSC_EPIN_ADDR, USBD_EP_TYPE_BULK, MSC_MAX_HS_PACKET);
+    (void)USBD_LL_OpenEP(pdev, MSC_EPIN_ADDR, USBD_EP_TYPE_BULK, MSC_DATA_MAX_PACKET_SIZE_HS);
     pdev->ep_in[MSC_EPIN_ADDR & 0xFU].is_used = 1U;
   }
   else
   {
     /* Open EP OUT */
-    (void)USBD_LL_OpenEP(pdev, MSC_EPOUT_ADDR, USBD_EP_TYPE_BULK, MSC_MAX_FS_PACKET);
+    (void)USBD_LL_OpenEP(pdev, MSC_EPOUT_ADDR, USBD_EP_TYPE_BULK, MSC_DATA_MAX_PACKET_SIZE_FS);
     pdev->ep_out[MSC_EPOUT_ADDR & 0xFU].is_used = 1U;
 
     /* Open EP IN */
-    (void)USBD_LL_OpenEP(pdev, MSC_EPIN_ADDR, USBD_EP_TYPE_BULK, MSC_MAX_FS_PACKET);
+    (void)USBD_LL_OpenEP(pdev, MSC_EPIN_ADDR, USBD_EP_TYPE_BULK, MSC_DATA_MAX_PACKET_SIZE_FS);
     pdev->ep_in[MSC_EPIN_ADDR & 0xFU].is_used = 1U;
   }
 

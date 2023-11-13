@@ -145,6 +145,13 @@ SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
+
+ifeq (1, 0)
+# btstack
+# https://github.com/bluekitchen/btstack.git
+include ../btstack.mak
+endif
+
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 

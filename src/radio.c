@@ -4097,6 +4097,11 @@ enum
 	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
+#if WITHUSEUSBBT
+	enum { gusbbt = 1 };		/* Bluetooth enable */
+#else /* WITHUSEUSBBT */
+	enum { gusbbt = 0 };
+#endif /* WITHUSEUSBBT */
 	static const uint_fast8_t gagcoff;
 	static const uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 #endif /* WITHIF4DSP */
