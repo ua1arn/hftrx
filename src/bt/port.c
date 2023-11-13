@@ -131,6 +131,68 @@ void btstack_assert_failed(const char * file, uint16_t line_nr){
     while(1);
 }
 
+static uint32_t hal_fram_get_size(void * context){
+//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
+	return 1024;//self->sector_size;
+}
+
+static uint32_t hal_fram_get_alignment(void * context){
+    UNUSED(context);
+    return 1;
+}
+
+static void hal_fram_erase(void * context, int bank){
+//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
+	if (bank > 1) return;
+	PRINTF("hal_fram_erase: bank=%u\n", (unsigned) bank);
+//	FLASH_EraseInitTypeDef eraseInit;
+//	eraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
+//	eraseInit.Sector = self->sectors[bank];
+//	eraseInit.NbSectors = 1;
+//	eraseInit.VoltageRange = FLASH_VOLTAGE_RANGE_1;	// safe value
+//	uint32_t sectorError;
+//	HAL_FLASH_Unlock();
+//	HAL_FLASHEx_Erase(&eraseInit, &sectorError);
+//	HAL_FLASH_Lock();
+}
+
+static void hal_fram_read(void * context, int bank, uint32_t offset, uint8_t * buffer, uint32_t size){
+//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
+//
+//	if (bank > 1) return;
+//	if (offset > self->sector_size) return;
+//	if ((offset + size) > self->sector_size) return;
+//
+//	memcpy(buffer, ((uint8_t *) self->banks[bank]) + offset, size);
+	memset(buffer, 0, size);
+	//PRINTF("hal_fram_read: bank=%u, off=%u, size=%u\n", (unsigned) bank, (unsigned) offset, (unsigned) size);
+}
+
+static void hal_fram_write(void * context, int bank, uint32_t offset, const uint8_t * data, uint32_t size){
+//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
+
+//	if (bank > 1) return;
+//	if (offset > self->sector_size) return;
+//	if ((offset + size) > self->sector_size) return;
+//
+//	unsigned int i;
+//	HAL_FLASH_Unlock();
+//	for (i=0;i<size;i++){
+//		HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, self->banks[bank] + offset +i, data[i]);
+//	}
+//	HAL_FLASH_Lock();
+	//printhex(0, data, size);
+	//PRINTF("hal_fram_write: bank=%u, off=%u, size=%u\n", (unsigned) bank, (unsigned) offset, (unsigned) size);
+}
+
+static const hal_flash_bank_t hal_fram_bank_impl = {
+	/* uint32_t (*get_size)() */         &hal_fram_get_size,
+	/* uint32_t (*get_alignment)(..); */ &hal_fram_get_alignment,
+	/* void (*erase)(..);             */ &hal_fram_erase,
+	/* void (*read)(..);              */ &hal_fram_read,
+	/* void (*write)(..);             */ &hal_fram_write,
+};
+
 void port_main(void){
 
     printf("BTstack on STM32 F4 Discovery with USB support starting...\n");
@@ -149,19 +211,18 @@ void port_main(void){
     // init HCI
     hci_init(hci_transport_h2_stm32_instance(), NULL);
 
-#if 0
     // setup TLV Flash Sector implementation
-    const hal_flash_bank_t * hal_flash_bank_impl = hal_flash_bank_stm32_init_instance(
-            &hal_flash_bank_context,
-            HAL_FLASH_BANK_SIZE,
-            HAL_FLASH_BANK_0_SECTOR,
-            HAL_FLASH_BANK_1_SECTOR,
-            HAL_FLASH_BANK_0_ADDR,
-            HAL_FLASH_BANK_1_ADDR);
+//    const hal_flash_bank_t * hal_flash_bank_impl = hal_flash_bank_stm32_init_instance(
+//            &hal_flash_bank_context,
+//            0,//HAL_FLASH_BANK_SIZE,
+//			0,//HAL_FLASH_BANK_0_SECTOR,
+//			0,//HAL_FLASH_BANK_1_SECTOR,
+//			0,//HAL_FLASH_BANK_0_ADDR,
+//			0//HAL_FLASH_BANK_1_ADDR);
     const btstack_tlv_t * btstack_tlv_impl = btstack_tlv_flash_bank_init_instance(
             &btstack_tlv_flash_bank_context,
-            hal_flash_bank_impl,
-            &hal_flash_bank_context);
+			& hal_fram_bank_impl,
+            NULL);
 
     // setup global tlv
     btstack_tlv_set_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
@@ -172,7 +233,6 @@ void port_main(void){
 
     // setup LE Device DB using TLV
     le_device_db_tlv_configure(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
-#endif
 
 #ifdef HAVE_HAL_AUDIO
     // setup audio
