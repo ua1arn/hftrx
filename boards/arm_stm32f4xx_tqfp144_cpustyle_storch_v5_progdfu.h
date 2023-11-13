@@ -80,11 +80,11 @@
 #endif /* WITHLWIP */
 //#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-#define WITHUSBWCID	1
+//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+//#define WITHUSBWCID	1
 
 //#define WITHUSBDMTP	1	/* MTP USB Device */
-//#define WITHUSBDMSC	1	/* MSC USB device */
+#define WITHUSBDMSC	1	/* MSC USB device */
 
 //#define BSRR_S(v) ((v) * GPIO_BSRR_BS_0)	/* Преобразование значения для установки бита в регистре */
 //#define BSRR_C(v) ((v) * GPIO_BSRR_BR_0)	/* Преобразование значения для сброса бита в регистре */

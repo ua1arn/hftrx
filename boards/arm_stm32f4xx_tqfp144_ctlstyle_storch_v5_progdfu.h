@@ -256,7 +256,13 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
+	#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+
+	#define WITHUSERAMDISK			1			// создание FATFS диска в озу
+	#define WITHUSERAMDISKSIZEKB	(128)	// размр в килобайтах FATFS диска в озу
+
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
