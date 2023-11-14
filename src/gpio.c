@@ -866,6 +866,8 @@ void sysinit_gpio_initialize(void)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock);
+
 #endif /* CPUSTYLE_A64 */
 }
 
