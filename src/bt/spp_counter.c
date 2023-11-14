@@ -104,8 +104,8 @@ static void spp_service_setup(void){
     sm_init();
 #endif
 
-//    rfcomm_init();
-//    rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+    rfcomm_init();
+    rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 
     // init SDP, create record for SPP and register with SDP
     //sdp_init();
@@ -201,18 +201,18 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
         case HCI_EVENT_PACKET:
             switch (hci_event_packet_get_type(packet)) {
 /* LISTING_RESUME */ 
-                case HCI_EVENT_PIN_CODE_REQUEST:
-                    // inform about pin code request
-                    printf("Pin code request - using '0000'\n");
-                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
-                    gap_pin_code_response(event_addr, "0000");
-                    break;
+//                case HCI_EVENT_PIN_CODE_REQUEST:
+//                    // inform about pin code request
+//                    printf("Pin code request - using '0000'\n");
+//                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
+//                    gap_pin_code_response(event_addr, "0000");
+//                    break;
 
-                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
-                    // ssp: inform about user confirmation request
-                    printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
-                    printf("SSP User Confirmation Auto accept\n");
-                    break;
+//                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
+//                    // ssp: inform about user confirmation request
+//                    printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
+//                    printf("SSP User Confirmation Auto accept\n");
+//                    break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
                     rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
