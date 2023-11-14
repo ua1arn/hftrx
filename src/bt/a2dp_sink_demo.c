@@ -35,6 +35,13 @@
  *
  */
 
+
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
+
 #define BTSTACK_FILE__ "a2dp_sink_demo.c"
 
 /*
@@ -1389,3 +1396,4 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
     return 0;
 }
 /* EXAMPLE_END */
+#endif /* WITHUSEUSBBT */
