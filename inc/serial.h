@@ -118,6 +118,13 @@ void usbd_cdc_enablerx(uint_fast8_t state);	/* вызывается из обр�
 void usbd_cdc_send(const void * buff, size_t length);	/* временное решение для передачи */
 uint_fast8_t usbd_cdc_ready(void);	/* временное решение для передачи */
 
+void btspp_tx(void * ctx, uint_fast8_t c);			/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void btspp_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void btspp_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+
+void btspp_send(const void * buff, size_t length);	/* временное решение для передачи */
+uint_fast8_t btspp_ready(void);	/* временное решение для передачи */
+
 
 #if defined(STM32F401xC)
 
