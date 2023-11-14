@@ -251,7 +251,7 @@ static int a2dp_source_and_avrcp_services_init(void){
     // enabled EIR
     hci_set_inquiry_mode(INQUIRY_MODE_RSSI_AND_EIR);
 
-    l2cap_init();
+    //l2cap_init();
 
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
@@ -287,7 +287,7 @@ static int a2dp_source_and_avrcp_services_init(void){
     avrcp_controller_register_packet_handler(&avrcp_controller_packet_handler);
 
     // Initialize SDP, 
-    sdp_init();
+    //sdp_init();
     
     // Create A2DP Source service record and register it with SDP
     memset(sdp_a2dp_source_service_buffer, 0, sizeof(sdp_a2dp_source_service_buffer));
@@ -1066,7 +1066,7 @@ int a2dp_source_btstack_main(int argc, const char * argv[]){
     int err = a2dp_source_and_avrcp_services_init();
     if (err) return err;
     // turn on!
-    hci_power_control(HCI_POWER_ON);
+    //hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

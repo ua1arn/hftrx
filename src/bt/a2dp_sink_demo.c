@@ -254,8 +254,8 @@ static void stdin_process(char cmd);
 static int setup_demo(void){
 
     // init protocols
-    l2cap_init();
-    sdp_init();
+    //l2cap_init();
+    //sdp_init();
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
@@ -1374,7 +1374,8 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
     UNUSED(argc);
     (void)argv;
 
-    setup_demo();
+    int err = setup_demo();
+    if (err) return err;
 
 #ifdef HAVE_BTSTACK_STDIN
     // parse human-readable Bluetooth address

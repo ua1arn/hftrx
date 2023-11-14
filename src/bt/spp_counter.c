@@ -67,11 +67,11 @@
 #define RFCOMM_SERVER_CHANNEL 1
 #define HEARTBEAT_PERIOD_MS 1000
 
-static void ssppacket_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 
 static uint16_t rfcomm_channel_id;
 static uint8_t  spp_service_buffer[150];
-static btstack_packet_callback_registration_t spphci_event_callback_registration;
+static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 
 /* @section SPP Service Setup 
@@ -91,22 +91,24 @@ static btstack_packet_callback_registration_t spphci_event_callback_registration
 /* LISTING_START(SPPSetup): SPP service setup */ 
 static void spp_service_setup(void){
 
+#if 0
     // register for HCI events
-    spphci_event_callback_registration.callback = &ssppacket_handler;
-    hci_add_event_handler(&spphci_event_callback_registration);
+    hci_event_callback_registration.callback = &packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+#endif
 
-    l2cap_init();
+    //l2cap_init();
 
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
 #endif
 
-    rfcomm_init();
-    rfcomm_register_service(ssppacket_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+//    rfcomm_init();
+//    rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 
     // init SDP, create record for SPP and register with SDP
-    sdp_init();
+    //sdp_init();
     memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
     spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, WITHBRANDSTR " SPP Counter");
     btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
@@ -186,7 +188,7 @@ static void one_shot_timer_setup(void){
  */ 
 
 /* LISTING_START(SppServerPacketHandler): SPP Server - Heartbeat Counter over RFCOMM */
-static void ssppacket_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
 
 /* LISTING_PAUSE */ 

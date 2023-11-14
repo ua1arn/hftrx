@@ -327,8 +327,11 @@ void port_main(void){
     hci_event_callback_registration.callback = &packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
 
+    sdp_init();		// везде убрать
+    l2cap_init();	// везде убрать
+
     // hand over to btstack embedded code
-    //VERIFY(! spp_counter_btstack_main(0, NULL));
+    VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
     VERIFY(! a2dp_sink_btstack_main(0, NULL));
 
