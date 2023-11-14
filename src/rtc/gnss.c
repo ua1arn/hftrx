@@ -280,7 +280,6 @@ void nmeagnss_initialize(void)
 	nmea_state = NMEAST_INITIALIZED;
 
 	dpcobj_initialize(& dpcobj_gnss, dpc_parsehandler, NULL);		// Update RTC by NMEA time
-	dpcobj_initialize(& nmeaspool, gnss_spool, NULL);
 
 //	VERIFY(board_dpc_addentry(& nmeaspool));
 

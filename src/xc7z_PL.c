@@ -57,7 +57,7 @@ void update_modem_ctrl(void)
 			| (hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
 			| 0;
 
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR, v);
+	Xil_Out32(XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR, v);
 }
 
 void xcz_rxtx_state(uint8_t tx)
@@ -68,19 +68,19 @@ void xcz_rxtx_state(uint8_t tx)
 
 void xcz_dds_ftw(const uint_least64_t * val)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 4, * val);
+	Xil_Out32(XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR, * val);
 	mirror_nco1 = * val;
 }
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 8, * val);
+	Xil_Out32(XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR, * val);
 	mirror_nco2 = * val;
 }
 
 void xcz_dds_rts(const uint_least64_t * val)
 {
-	Xil_Out32(XPAR_IQ_MODEM_TRX_CONTROL2_0_S00_AXI_BASEADDR + 12, * val);
+	Xil_Out32(XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR, * val);
 	mirror_ncorts = * val;
 }
 
@@ -257,13 +257,7 @@ void xcz_if_tx_enable(uint_fast8_t state)
 
 void xcz_audio_tx_init(void)
 {
-#if IQMODEM_BLOCKMEMORY
-	// Первоначальное заполнение первой половины буфера
-	void * blkmem = (void *) XPAR_AUDIO_PHONES_BRAM_WRITER_BASEADDR;
-	uint32_t f[DMABUFFSIZE16TX];
-	memset(f, 0, sizeof(f));
-	memcpy(blkmem, f, DMABUFFSIZE16TX * 4);
-#endif /* IQMODEM_BLOCKMEMORY */
+
 }
 
 void xcz_fifo_phones_inthandler(void)
@@ -271,15 +265,8 @@ void xcz_fifo_phones_inthandler(void)
 	const uintptr_t addr = getfilled_dmabuffer16tx();
 	uint32_t * r = (uint32_t *) addr;
 
-#if IQMODEM_BLOCKMEMORY
-	const uint32_t pos = Xil_In32(XPAR_AUDIO_PHONES_BRAM_POS_BASEADDR);
-	void * blkmem = (void *) XPAR_AUDIO_PHONES_BRAM_WRITER_BASEADDR;
-	const uint16_t offset = pos >= DMABUFFSIZE16TX ? 0 : (DMABUFFSIZE16TX * 4);
-	memcpy(blkmem + offset, r, DMABUFFSIZE16TX * 4);
-#else
 	for (uint16_t i = 0; i < DMABUFFSIZE16TX; i ++)
 		Xil_Out32(XPAR_AUDIO_FIFO_PHONES_BASEADDR, r[i]);
-#endif /* IQMODEM_BLOCKMEMORY */
 
 	release_dmabuffer16tx(addr);
 }
