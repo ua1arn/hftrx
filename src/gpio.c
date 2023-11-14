@@ -12,6 +12,8 @@
 #include <string.h>
 #include <math.h>
 
+#define GPIOIRQL IRQL_SYSTEM
+
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYLE_ALLWINNER
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 portholder_t
@@ -645,7 +647,7 @@ void sysinit_gpio_initialize(void)
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
-	RiseIrql(IRQL_SYSTEM, oldIrql);
+	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
@@ -881,7 +883,7 @@ typedef uint32_t irqstatus_t;
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-	RiseIrql(IRQL_SYSTEM, oldIrql);
+	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
@@ -1431,7 +1433,7 @@ void sysinit_gpio_initialize(void)
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 //	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
-//	RiseIrql(IRQL_SYSTEM, oldIrql);
+//	RiseIrql(GPIOIRQL, oldIrql);
 //	LCLSPIN_LOCK(lck);
 	* oldIrql = 0;
 }
