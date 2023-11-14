@@ -284,8 +284,8 @@ bootloader: BOOT2
 	./egontool $(PROJECT)_boot.bin fsbl.alw32
 	
 # Take from tc1_t507_boot.map
-SystemInitAddr_H616 = 0x000308a0
-SystemInitAddr_T507 = 0x0002c1e4
+SystemInitAddr_H616 = 0x0003170c
+SystemInitAddr_T507 = 0x00032460
 
 # Invoke SystemInit 
 ddrinit_h616: h616_fsbl_frz.alw32
