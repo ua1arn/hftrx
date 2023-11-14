@@ -2373,18 +2373,12 @@ void arm_hardware_sdram_initialize(void)
 {
 	// https://artmemtech.com/
 	// artmem atl4b0832
+	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
+	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+
 	long int memsize;
 	long int memsizeMB;
-	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-	//return;
-	TP();
-	//int status = sunxi_board_init();
-	//PRINTF("status=%i\n", status);
-	TP();
-	//memsize = init_DRAM(SUNXI_DRAM_TYPE_LPDDR4, & lpddr4);
-	//PRINTF("arm_hardware_sdram_initialize: v=%ld, %ld MB\n", memsize, memsize / 1024 / 1024);
-	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
-	memsizeMB =   sunxi_dram_init();
+	memsizeMB = sunxi_dram_init();
 	memsize = memsizeMB * 1024 * 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
