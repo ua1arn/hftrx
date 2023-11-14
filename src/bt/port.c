@@ -359,4 +359,36 @@ void port_main(void){
     // go
     //btstack_run_loop_execute();
 }
+
+
+
+/* Bluetooth initialize */
+void bt_initialize(void)
+{
+	PRINTF("bt_initialize start\n");
+
+	port_main();
+
+	PRINTF("bt_initialize done\n");
+}
+
+/* Bluetooth enable */
+void bt_enable(uint_fast8_t v)
+{
+
+}
+
+
+#else  /* WITHUSEUSBBT */
+
+void bt_initialize(void)
+{
+
+}
+
+void bt_enable(uint_fast8_t v)
+{
+
+}
+
 #endif /* WITHUSEUSBBT */
