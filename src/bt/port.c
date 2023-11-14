@@ -210,6 +210,9 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
         hci_event_pin_code_request_get_bd_addr(packet, address);
         gap_pin_code_response(address, "0000");
         break;
+    case GAP_EVENT_PAIRING_COMPLETE:
+        printf("Paired!\n");
+        break;
     case HCI_EVENT_USER_CONFIRMATION_REQUEST:
         // ssp: inform about user confirmation request
         printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
@@ -344,7 +347,7 @@ void port_main(void){
     // hand over to btstack embedded code
     VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    //VERIFY(! a2dp_sink_btstack_main(0, NULL));
+    VERIFY(! a2dp_sink_btstack_main(0, NULL));
 
     gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_discoverable_control(1);

@@ -104,8 +104,10 @@ static void spp_service_setup(void){
     sm_init();
 #endif
 
+#if 0
     rfcomm_init();
     rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
+#endif
 
     // init SDP, create record for SPP and register with SDP
     //sdp_init();
