@@ -885,10 +885,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
-#if WITHTINYUSB
-	hcd_int_handler(BOARD_TUH_RHPORT);
-	return;
-#endif /* WITHTINYUSB */
 	if (hehci->ohci == NULL)
 		return;
 	//ASSERT(0);
@@ -897,7 +893,7 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 	{
 		const uint32_t HcRhPortStatus = le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]);
 		//PRINTF("HAL_OHCI_IRQHandler: RootHubStatusChange HcInterruptStatus=%08X\n", HcInterruptStatus);
-		PRINTF("HAL_OHCI_IRQHandler: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, (unsigned) HcRhPortStatus);
+		PRINTF("HAL_OHCI_IRQHandler: HcRhPortStatus[%d]=%08" PRIX32 "\n", WITHOHCIHW_OHCIPORT, HcRhPortStatus);
 		if ((HcRhPortStatus & 0x01) == 0) // CurrentConnectStatus
 		{
 			// передать управление портом к EHCI
@@ -908,43 +904,55 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 			PRINTF("Back to EHCI\n");
 			//HAL_EHCI_PortEnabled_Callback(hehci);
- 			HAL_EHCI_Disconnect_Callback(hehci);
+ 			//HAL_EHCI_Disconnect_Callback(hehci);
 
 		}
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 6);	/* reset interrupt */
 
 	}
+#if WITHTINYUSB
+	hcd_int_handler(BOARD_TUH_RHPORT);
+	return;
+#else
 	if ((HcInterruptStatus & (UINT32_C(1) << 5)) != 0)
 	{
 		//PRINTF("HAL_OHCI_IRQHandler: FrameNumberOverflow HcInterruptStatus=%08X\n", HcInterruptStatus);
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 5);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 4)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: UnrecoverableError HcInterruptStatus=%08X\n", HcInterruptStatus);
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 4);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 3)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: ResumeDetected HcInterruptStatus=%08X\n", HcInterruptStatus);
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 3);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 2)) != 0)
 	{
 		//PRINTF("HAL_OHCI_IRQHandler: StartofFrame HcInterruptStatus=%08X\n", HcInterruptStatus);
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 2);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 1)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: WritebackDoneHead HcInterruptStatus=%08X\n", HcInterruptStatus);
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 1);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 0)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: SchedulingOverrun HcInterruptStatus=%08X\n", HcInterruptStatus);
+		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 0);	/* reset interrupt */
 
 	}
 
-	hehci->ohci->HcInterruptStatus = cpu_to_le32(HcInterruptStatus);	/* reset interrupt */
+	//hehci->ohci->HcInterruptStatus = cpu_to_le32(HcInterruptStatus);	/* reset interrupt */
+#endif /* WITHTINYUSB */
 }
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
@@ -1093,7 +1101,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//	2 HAL_EHCI_Init: PORTSC=00000000
 	//	3 HAL_EHCI_Init: PORTSC=00001000
 
-#if ! WITHTINYUSB
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
@@ -1101,7 +1108,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	(void) * hehci->configFlag;
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
-#endif
+
 	/* Enable power to all ports */
 	unsigned porti = WITHEHCIHW_EHCIPORT;
 	//for (porti = 0; porti < hehci->nports; ++ porti)
