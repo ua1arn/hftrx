@@ -1,0 +1,52 @@
+#type; TSC; Transport Stream Controller
+#base; TSC 0x05060000
+#irq; TS 49; Transport Stream Controller
+
+#regdef; TSC_PCTLR; 0x10; TSC Port Control Register
+#regdef; TSC_PPARR; 0x14; TSC Port Parameter Register
+#regdef; TSC_TSFMUXR; 0x20; TSC TSF Input Multiplex Control Register
+#regdef; TSC_OUTMUXR; 0x28; TSC Port Output Multiplex Control Register
+
+#type; TSG; Transport Stream Controller
+#base; TSG 0x05060040
+
+#regdef; TSG_CTLR; 0x00; TSG Control Register
+#regdef; TSG_PPR; 0x04; TSG Packet Parameter Register
+#regdef; TSG_STAR; 0x08; TSG Status Register
+#regdef; TSG_CCR; 0x0C; TSG Clock Control Register
+#regdef; TSG_BBAR; 0x10; TSG Buffer Base Address Register
+#regdef; TSG_BSZR; 0x14; TSG Buffer Size Register
+#regdef; TSG_BPR; 0x18; TSG Buffer Pointer Register
+
+#type; TSF; Transport Stream Controller
+#base; TSF 0x05060100
+
+#regdef; TSF_CTLR; 0x00; TSF Control Register
+#regdef; TSF_PPR; 0x04; TSF Packet Parameter Register
+#regdef; TSF_STAR; 0x08; TSF Status Register
+#regdef; TSF_DIER; 0x10; TSF DMA Interrupt Enable Register
+#regdef; TSF_OIER; 0x14; TSF Overlap Interrupt Enable Register
+#regdef; TSF_DISR; 0x18; TSF DMA Interrupt Status Register
+#regdef; TSF_OISR; 0x1C; TSF Overlap Interrupt Status Register
+#regdef; TSF_PCRCR; 0x20; TSF PCR Control Register
+#regdef; TSF_PCRDR; 0x24; TSF PCR Data Register
+#regdef; TSF_CENR; 0x30; TSF Channel Enable Register
+#regdef; TSF_CPER; 0x34; TSF Channel PES Enable Register
+#regdef; TSF_CDER; 0x38; TSF Channel Descramble Enable Register
+#regdef; TSF_CINDR; 0x3C; TSF Channel Index Register
+#regdef; TSF_CCTLR; 0x40; TSF Channel Control Register
+#regdef; TSF_CSTAR; 0x44; TSF Channel Status Register
+#regdef; TSF_CCWIR; 0x48; TSF Channel CW Index Register
+#regdef; TSF_CPIDR; 0x4C; TSF Channel PID Register
+#regdef; TSF_CBBAR; 0x50; TSF Channel Buffer Base Address Register
+#regdef; TSF_CBSZR; 0x54; TSF Channel Buffer Size Register
+#regdef; TSF_CBWPR; 0x58; TSF Channel Buffer Write Pointer Register
+#regdef; TSF_CBRPR; 0x5C; TSF Channel Buffer Read Pointer Register
+
+#type; TSD; Transport Stream Controller
+#base; TSD 0x05060180
+
+#regdef; TSD_CTLR; 0x00; TSD Control Register
+#regdef; TSD_STAR; 0x04; TSD Status Register
+#regdef; TSD_CWIR; 0x1C; TSD Control Word Index Register
+#regdef; TSD_CWR; 0x20; TSD Control Word Register

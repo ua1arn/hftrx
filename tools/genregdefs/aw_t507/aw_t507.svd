@@ -4296,6 +4296,162 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DMIC</name>
+  <description>Digital Microphone Interface</description>
+  <baseAddress>0x05095000</baseAddress>
+  <interrupt>
+   <name>DMIC</name>
+   <value>54</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>DMIC_EN</name>
+    <displayName>DMIC_EN</displayName>
+    <description>DMIC Enable Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_SR</name>
+    <displayName>DMIC_SR</displayName>
+    <description>DMIC Sample Rate Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_CTR</name>
+    <displayName>DMIC_CTR</displayName>
+    <description>DMIC Control Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_DATA</name>
+    <displayName>DMIC_DATA</displayName>
+    <description>DMIC Data Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_INTC</name>
+    <displayName>DMIC_INTC</displayName>
+    <description>MIC Interrupt Control Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_INTS</name>
+    <displayName>DMIC_INTS</displayName>
+    <description>DMIC Interrupt Status Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_RXFIFO_CTR</name>
+    <displayName>DMIC_RXFIFO_CTR</displayName>
+    <description>DMIC RX FIFO Control Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_RXFIFO_STA</name>
+    <displayName>DMIC_RXFIFO_STA</displayName>
+    <description>DMIC RX FIFO Status Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_CH_NUM</name>
+    <displayName>DMIC_CH_NUM</displayName>
+    <description>DMIC Channel Numbers Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_CH_MAP</name>
+    <displayName>DMIC_CH_MAP</displayName>
+    <description>DMIC Channel Mapping Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMIC_CNT</name>
+    <displayName>DMIC_CNT</displayName>
+    <description>DMIC Counter Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DATA0_DATA1_VOL_CTR</name>
+    <displayName>DATA0_DATA1_VOL_CTR</displayName>
+    <description>Data 0 and Data 1 Volume Control Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DATA2_DATA3_VOL_CTR</name>
+    <displayName>DATA2_DATA3_VOL_CTR</displayName>
+    <description>Data 2 and Data 3 Volume Control Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HPF_EN_CTR</name>
+    <displayName>HPF_EN_CTR</displayName>
+    <description>High Pass Filter Enable Control Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HPF_COEF_REG</name>
+    <displayName>HPF_COEF_REG</displayName>
+    <description>High Pass Filter Coef Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HPF_GAIN_REG</name>
+    <displayName>HPF_GAIN_REG</displayName>
+    <description>High Pass Filter Gain Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>G2D_MIXER</name>
   <description>Graphic 2D (G2D) Engine Video Mixer</description>
   <baseAddress>0x01480100</baseAddress>
@@ -6417,6 +6573,11 @@
   <name>PWM</name>
   <description>Pulse Width Modulation module</description>
   <baseAddress>0x0300A000</baseAddress>
+  <interrupt>
+   <name>PWM</name>
+   <value>48</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PIER</name>
@@ -8335,6 +8496,363 @@
     <displayName>AVS_CNT_DIV_REG</displayName>
     <description>AVS Divisor Register</description>
     <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TSC</name>
+  <description>Transport Stream Controller</description>
+  <baseAddress>0x05060000</baseAddress>
+  <interrupt>
+   <name>TS</name>
+   <value>49</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TSC_PCTLR</name>
+    <displayName>TSC_PCTLR</displayName>
+    <description>TSC Port Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSC_PPARR</name>
+    <displayName>TSC_PPARR</displayName>
+    <description>TSC Port Parameter Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSC_TSFMUXR</name>
+    <displayName>TSC_TSFMUXR</displayName>
+    <description>TSC TSF Input Multiplex Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSC_OUTMUXR</name>
+    <displayName>TSC_OUTMUXR</displayName>
+    <description>TSC Port Output Multiplex Control Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TSD</name>
+  <description>Transport Stream Controller</description>
+  <baseAddress>0x05060180</baseAddress>
+  <registers>
+   <register>
+    <name>TSD_CTLR</name>
+    <displayName>TSD_CTLR</displayName>
+    <description>TSD Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSD_STAR</name>
+    <displayName>TSD_STAR</displayName>
+    <description>TSD Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSD_CWIR</name>
+    <displayName>TSD_CWIR</displayName>
+    <description>TSD Control Word Index Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSD_CWR</name>
+    <displayName>TSD_CWR</displayName>
+    <description>TSD Control Word Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TSF</name>
+  <description>Transport Stream Controller</description>
+  <baseAddress>0x05060100</baseAddress>
+  <registers>
+   <register>
+    <name>TSF_CTLR</name>
+    <displayName>TSF_CTLR</displayName>
+    <description>TSF Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_PPR</name>
+    <displayName>TSF_PPR</displayName>
+    <description>TSF Packet Parameter Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_STAR</name>
+    <displayName>TSF_STAR</displayName>
+    <description>TSF Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_DIER</name>
+    <displayName>TSF_DIER</displayName>
+    <description>TSF DMA Interrupt Enable Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_OIER</name>
+    <displayName>TSF_OIER</displayName>
+    <description>TSF Overlap Interrupt Enable Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_DISR</name>
+    <displayName>TSF_DISR</displayName>
+    <description>TSF DMA Interrupt Status Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_OISR</name>
+    <displayName>TSF_OISR</displayName>
+    <description>TSF Overlap Interrupt Status Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_PCRCR</name>
+    <displayName>TSF_PCRCR</displayName>
+    <description>TSF PCR Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_PCRDR</name>
+    <displayName>TSF_PCRDR</displayName>
+    <description>TSF PCR Data Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CENR</name>
+    <displayName>TSF_CENR</displayName>
+    <description>TSF Channel Enable Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CPER</name>
+    <displayName>TSF_CPER</displayName>
+    <description>TSF Channel PES Enable Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CDER</name>
+    <displayName>TSF_CDER</displayName>
+    <description>TSF Channel Descramble Enable Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CINDR</name>
+    <displayName>TSF_CINDR</displayName>
+    <description>TSF Channel Index Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CCTLR</name>
+    <displayName>TSF_CCTLR</displayName>
+    <description>TSF Channel Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CSTAR</name>
+    <displayName>TSF_CSTAR</displayName>
+    <description>TSF Channel Status Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CCWIR</name>
+    <displayName>TSF_CCWIR</displayName>
+    <description>TSF Channel CW Index Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CPIDR</name>
+    <displayName>TSF_CPIDR</displayName>
+    <description>TSF Channel PID Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CBBAR</name>
+    <displayName>TSF_CBBAR</displayName>
+    <description>TSF Channel Buffer Base Address Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CBSZR</name>
+    <displayName>TSF_CBSZR</displayName>
+    <description>TSF Channel Buffer Size Register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CBWPR</name>
+    <displayName>TSF_CBWPR</displayName>
+    <description>TSF Channel Buffer Write Pointer Register</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSF_CBRPR</name>
+    <displayName>TSF_CBRPR</displayName>
+    <description>TSF Channel Buffer Read Pointer Register</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TSG</name>
+  <description>Transport Stream Controller</description>
+  <baseAddress>0x05060040</baseAddress>
+  <registers>
+   <register>
+    <name>TSG_CTLR</name>
+    <displayName>TSG_CTLR</displayName>
+    <description>TSG Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSG_PPR</name>
+    <displayName>TSG_PPR</displayName>
+    <description>TSG Packet Parameter Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSG_STAR</name>
+    <displayName>TSG_STAR</displayName>
+    <description>TSG Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSG_CCR</name>
+    <displayName>TSG_CCR</displayName>
+    <description>TSG Clock Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSG_BBAR</name>
+    <displayName>TSG_BBAR</displayName>
+    <description>TSG Buffer Base Address Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSG_BSZR</name>
+    <displayName>TSG_BSZR</displayName>
+    <description>TSG Buffer Size Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TSG_BPR</name>
+    <displayName>TSG_BPR</displayName>
+    <description>TSG Buffer Pointer Register</description>
+    <addressOffset>0x018</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

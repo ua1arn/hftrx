@@ -44,7 +44,13 @@ typedef enum IRQn
     TWI4_IRQn = 42,                                   /*!< TWI  */
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface */
+    PWM_IRQn = 48,                                    /*!< PWM Pulse Width Modulation module */
+    TS_IRQn = 49,                                     /*!< TSC Transport Stream Controller */
+    GPADC_IRQn = 50,                                  /*!< GPADC  */
     THS_IRQn = 51,                                    /*!< THS THS interrupt */
+    LRADC_IRQn = 52,                                  /*!< LRADC  */
+    OWA_IRQn = 53,                                    /*!< OWA  */
+    DMIC_IRQn = 54,                                   /*!< DMIC Digital Microphone Interface */
     AudioCodec_ADC_IRQn = 55,                         /*!< AUDIO_CODEC AudioCodec_ADC interrupt */
     AHUB_IRQn = 56,                                   /*!< AHUB AudioHub interrupt */
     USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller */
@@ -192,7 +198,12 @@ typedef enum IRQn
 #define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
+#define TSC_BASE ((uintptr_t) 0x05060000)             /*!< TSC Transport Stream Controller Base */
+#define TSG_BASE ((uintptr_t) 0x05060040)             /*!< TSG Transport Stream Controller Base */
+#define TSF_BASE ((uintptr_t) 0x05060100)             /*!< TSF Transport Stream Controller Base */
+#define TSD_BASE ((uintptr_t) 0x05060180)             /*!< TSD Transport Stream Controller Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
+#define DMIC_BASE ((uintptr_t) 0x05095000)            /*!< DMIC Digital Microphone Interface Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x05096000)     /*!< AUDIO_CODEC Audio Codec Base */
 #define AHUB_BASE ((uintptr_t) 0x05097000)            /*!< AHUB Audio HUB Base */
 #define I2S0_BASE ((uintptr_t) 0x05097200)            /*!< I2S_PCM  Base */
@@ -963,6 +974,30 @@ typedef struct DMAC_Type
     } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
 } DMAC_TypeDef; /* size of structure = 0x500 */
 /*
+ * @brief DMIC
+ */
+/*!< DMIC Digital Microphone Interface */
+typedef struct DMIC_Type
+{
+    volatile uint32_t DMIC_EN;                        /*!< Offset 0x000 DMIC Enable Control Register */
+    volatile uint32_t DMIC_SR;                        /*!< Offset 0x004 DMIC Sample Rate Register */
+    volatile uint32_t DMIC_CTR;                       /*!< Offset 0x008 DMIC Control Register */
+             uint32_t reserved_0x00C;
+    volatile uint32_t DMIC_DATA;                      /*!< Offset 0x010 DMIC Data Register */
+    volatile uint32_t DMIC_INTC;                      /*!< Offset 0x014 MIC Interrupt Control Register */
+    volatile uint32_t DMIC_INTS;                      /*!< Offset 0x018 DMIC Interrupt Status Register */
+    volatile uint32_t DMIC_RXFIFO_CTR;                /*!< Offset 0x01C DMIC RX FIFO Control Register */
+    volatile uint32_t DMIC_RXFIFO_STA;                /*!< Offset 0x020 DMIC RX FIFO Status Register */
+    volatile uint32_t DMIC_CH_NUM;                    /*!< Offset 0x024 DMIC Channel Numbers Register */
+    volatile uint32_t DMIC_CH_MAP;                    /*!< Offset 0x028 DMIC Channel Mapping Register */
+    volatile uint32_t DMIC_CNT;                       /*!< Offset 0x02C DMIC Counter Register */
+    volatile uint32_t DATA0_DATA1_VOL_CTR;            /*!< Offset 0x030 Data 0 and Data 1 Volume Control Register */
+    volatile uint32_t DATA2_DATA3_VOL_CTR;            /*!< Offset 0x034 Data 2 and Data 3 Volume Control Register */
+    volatile uint32_t HPF_EN_CTR;                     /*!< Offset 0x038 High Pass Filter Enable Control Register */
+    volatile uint32_t HPF_COEF_REG;                   /*!< Offset 0x03C High Pass Filter Coef Register */
+    volatile uint32_t HPF_GAIN_REG;                   /*!< Offset 0x040 High Pass Filter Gain Register */
+} DMIC_TypeDef; /* size of structure = 0x044 */
+/*
  * @brief G2D_MIXER
  */
 /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer */
@@ -1556,6 +1591,76 @@ typedef struct TIMER_Type
     volatile uint32_t AVS_CNT_DIV_REG;                /*!< Offset 0x0CC AVS Divisor Register */
 } TIMER_TypeDef; /* size of structure = 0x0D0 */
 /*
+ * @brief TSC
+ */
+/*!< TSC Transport Stream Controller */
+typedef struct TSC_Type
+{
+             uint32_t reserved_0x000 [0x0004];
+    volatile uint32_t TSC_PCTLR;                      /*!< Offset 0x010 TSC Port Control Register */
+    volatile uint32_t TSC_PPARR;                      /*!< Offset 0x014 TSC Port Parameter Register */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t TSC_TSFMUXR;                    /*!< Offset 0x020 TSC TSF Input Multiplex Control Register */
+             uint32_t reserved_0x024;
+    volatile uint32_t TSC_OUTMUXR;                    /*!< Offset 0x028 TSC Port Output Multiplex Control Register */
+} TSC_TypeDef; /* size of structure = 0x02C */
+/*
+ * @brief TSD
+ */
+/*!< TSD Transport Stream Controller */
+typedef struct TSD_Type
+{
+    volatile uint32_t TSD_CTLR;                       /*!< Offset 0x000 TSD Control Register */
+    volatile uint32_t TSD_STAR;                       /*!< Offset 0x004 TSD Status Register */
+             uint32_t reserved_0x008 [0x0005];
+    volatile uint32_t TSD_CWIR;                       /*!< Offset 0x01C TSD Control Word Index Register */
+    volatile uint32_t TSD_CWR;                        /*!< Offset 0x020 TSD Control Word Register */
+} TSD_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief TSF
+ */
+/*!< TSF Transport Stream Controller */
+typedef struct TSF_Type
+{
+    volatile uint32_t TSF_CTLR;                       /*!< Offset 0x000 TSF Control Register */
+    volatile uint32_t TSF_PPR;                        /*!< Offset 0x004 TSF Packet Parameter Register */
+    volatile uint32_t TSF_STAR;                       /*!< Offset 0x008 TSF Status Register */
+             uint32_t reserved_0x00C;
+    volatile uint32_t TSF_DIER;                       /*!< Offset 0x010 TSF DMA Interrupt Enable Register */
+    volatile uint32_t TSF_OIER;                       /*!< Offset 0x014 TSF Overlap Interrupt Enable Register */
+    volatile uint32_t TSF_DISR;                       /*!< Offset 0x018 TSF DMA Interrupt Status Register */
+    volatile uint32_t TSF_OISR;                       /*!< Offset 0x01C TSF Overlap Interrupt Status Register */
+    volatile uint32_t TSF_PCRCR;                      /*!< Offset 0x020 TSF PCR Control Register */
+    volatile uint32_t TSF_PCRDR;                      /*!< Offset 0x024 TSF PCR Data Register */
+             uint32_t reserved_0x028 [0x0002];
+    volatile uint32_t TSF_CENR;                       /*!< Offset 0x030 TSF Channel Enable Register */
+    volatile uint32_t TSF_CPER;                       /*!< Offset 0x034 TSF Channel PES Enable Register */
+    volatile uint32_t TSF_CDER;                       /*!< Offset 0x038 TSF Channel Descramble Enable Register */
+    volatile uint32_t TSF_CINDR;                      /*!< Offset 0x03C TSF Channel Index Register */
+    volatile uint32_t TSF_CCTLR;                      /*!< Offset 0x040 TSF Channel Control Register */
+    volatile uint32_t TSF_CSTAR;                      /*!< Offset 0x044 TSF Channel Status Register */
+    volatile uint32_t TSF_CCWIR;                      /*!< Offset 0x048 TSF Channel CW Index Register */
+    volatile uint32_t TSF_CPIDR;                      /*!< Offset 0x04C TSF Channel PID Register */
+    volatile uint32_t TSF_CBBAR;                      /*!< Offset 0x050 TSF Channel Buffer Base Address Register */
+    volatile uint32_t TSF_CBSZR;                      /*!< Offset 0x054 TSF Channel Buffer Size Register */
+    volatile uint32_t TSF_CBWPR;                      /*!< Offset 0x058 TSF Channel Buffer Write Pointer Register */
+    volatile uint32_t TSF_CBRPR;                      /*!< Offset 0x05C TSF Channel Buffer Read Pointer Register */
+} TSF_TypeDef; /* size of structure = 0x060 */
+/*
+ * @brief TSG
+ */
+/*!< TSG Transport Stream Controller */
+typedef struct TSG_Type
+{
+    volatile uint32_t TSG_CTLR;                       /*!< Offset 0x000 TSG Control Register */
+    volatile uint32_t TSG_PPR;                        /*!< Offset 0x004 TSG Packet Parameter Register */
+    volatile uint32_t TSG_STAR;                       /*!< Offset 0x008 TSG Status Register */
+    volatile uint32_t TSG_CCR;                        /*!< Offset 0x00C TSG Clock Control Register */
+    volatile uint32_t TSG_BBAR;                       /*!< Offset 0x010 TSG Buffer Base Address Register */
+    volatile uint32_t TSG_BSZR;                       /*!< Offset 0x014 TSG Buffer Size Register */
+    volatile uint32_t TSG_BPR;                        /*!< Offset 0x018 TSG Buffer Pointer Register */
+} TSG_TypeDef; /* size of structure = 0x01C */
+/*
  * @brief TWI
  */
 /*!< TWI  */
@@ -1858,7 +1963,12 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
+#define TSG ((TSG_TypeDef *) TSG_BASE)                /*!< TSG Transport Stream Controller register set access pointer */
+#define TSF ((TSF_TypeDef *) TSF_BASE)                /*!< TSF Transport Stream Controller register set access pointer */
+#define TSD ((TSD_TypeDef *) TSD_BASE)                /*!< TSD Transport Stream Controller register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
+#define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC Digital Microphone Interface register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
 #define AHUB ((AHUB_TypeDef *) AHUB_BASE)             /*!< AHUB Audio HUB register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */

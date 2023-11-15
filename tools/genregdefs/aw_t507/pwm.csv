@@ -1,5 +1,6 @@
 #type; PWM; Pulse Width Modulation module
 #base; PWM 0x0300A000
+#irq; PWM 48
 
 
 #regdef; PIER; 0x0000; PWM IRQ Enable Register
