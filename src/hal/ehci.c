@@ -2078,7 +2078,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("speed=USB_SPEED_FULL, portsc=%08X\n", portsc);
 	}
 
-	if (speed != USBH_SPEED_HIGH && hehci->ohci != 0 && 1)
+	if (speed != USBH_SPEED_HIGH && hehci->ohci != 0 && 0)
 	{
 		ASSERT(hehci->ohci != NULL);
 		// передать управление портом к companion controller (OHCI)
@@ -2088,28 +2088,28 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
-//		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
-//		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
-////		hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
-////		while ((hehci->ohci->HcControl & cpu_to_le32(UINT32_C(1) << 3)) == 0)
-////			;
-//
-//
-////		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 1);    // pes
-//
-//		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
-//		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
-//		local_delay_ms(PowerOnToPowerGoodTime);
-////		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 0); // PortEnableStatus
-//		local_delay_ms(PowerOnToPowerGoodTime);
-//
-//		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
-//		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
-//
-////		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 4);	// port reset
-////		while ((hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] & cpu_to_le32(UINT32_C(1) << 4)) != 0)
-////			;
-//		PRINTF("OHCI: %s Speed device attached\n", (le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]) & (UINT32_C(1) << 9)) ? "Low" : "Full");
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
+//		hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
+//		while ((hehci->ohci->HcControl & cpu_to_le32(UINT32_C(1) << 3)) == 0)
+//			;
+
+
+//		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 1);    // pes
+
+		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+		local_delay_ms(PowerOnToPowerGoodTime);
+//		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 0); // PortEnableStatus
+		local_delay_ms(PowerOnToPowerGoodTime);
+
+		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
+		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
+
+//		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 4);	// port reset
+//		while ((hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] & cpu_to_le32(UINT32_C(1) << 4)) != 0)
+//			;
+		PRINTF("OHCI: %s Speed device attached\n", (le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]) & (UINT32_C(1) << 9)) ? "Low" : "Full");
 	}
 #endif /* CPUSTYLE_XC7Z */
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
