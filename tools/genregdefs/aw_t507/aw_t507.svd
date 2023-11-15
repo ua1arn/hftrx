@@ -4838,6 +4838,207 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>GPADC</name>
+  <description></description>
+  <baseAddress>0x05070000</baseAddress>
+  <interrupt>
+   <name>GPADC</name>
+   <value>50</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>GP_SR_CON</name>
+    <displayName>GP_SR_CON</displayName>
+    <description>GPADC Sample Rate Configure Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CTRL</name>
+    <displayName>GP_CTRL</displayName>
+    <description>GPADC Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CS_EN</name>
+    <displayName>GP_CS_EN</displayName>
+    <description>GPADC</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_FIFO_INTC</name>
+    <displayName>GP_FIFO_INTC</displayName>
+    <description>GPADC FIFO Interrupt Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_FIFO_INTS</name>
+    <displayName>GP_FIFO_INTS</displayName>
+    <description>GPADC FIFO Interrupt Status Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_FIFO_DATA</name>
+    <displayName>GP_FIFO_DATA</displayName>
+    <description>GPADC FIFO Data Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CDATA</name>
+    <displayName>GP_CDATA</displayName>
+    <description>GPADC Calibration Data Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_DATAL_INTC</name>
+    <displayName>GP_DATAL_INTC</displayName>
+    <description>GPADC Data Low Interrupt Configure Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_DATAH_INTC</name>
+    <displayName>GP_DATAH_INTC</displayName>
+    <description>GPADC Data High Interrupt Configure Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_DATA_INTC</name>
+    <displayName>GP_DATA_INTC</displayName>
+    <description>GPADC Data Interrupt Configure Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_DATAL_INTS</name>
+    <displayName>GP_DATAL_INTS</displayName>
+    <description>GPADC Data Low Interrupt Status Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_DATAH_INTS</name>
+    <displayName>GP_DATAH_INTS</displayName>
+    <description>GPADC Data High Interrupt Status Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_DATA_INTS</name>
+    <displayName>GP_DATA_INTS</displayName>
+    <description>GPADC Data Interrupt Status Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH0_CMP_DATA</name>
+    <displayName>GP_CH0_CMP_DATA</displayName>
+    <description>GPADC CH0 Compare Data Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH1_CMP_DATA</name>
+    <displayName>GP_CH1_CMP_DATA</displayName>
+    <description>GPADC CH1 Compare Data Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH2_CMP_DATA</name>
+    <displayName>GP_CH2_CMP_DATA</displayName>
+    <description>GPADC CH2 Compare Data Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH3_CMP_DATA</name>
+    <displayName>GP_CH3_CMP_DATA</displayName>
+    <description>GPADC CH3 Compare Data Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH0_DATA</name>
+    <displayName>GP_CH0_DATA</displayName>
+    <description>GPADC CH0 Data Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH1_DATA</name>
+    <displayName>GP_CH1_DATA</displayName>
+    <description>GPADC CH1 Data Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH2_DATA</name>
+    <displayName>GP_CH2_DATA</displayName>
+    <description>GPADC CH2 Data Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GP_CH3_DATA</name>
+    <displayName>GP_CH3_DATA</displayName>
+    <description>GPADC CH3 Data Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>GPIOA</name>
   <description>Port Controller</description>
   <baseAddress>0x0300B000</baseAddress>

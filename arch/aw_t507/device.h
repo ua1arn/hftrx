@@ -202,6 +202,7 @@ typedef enum IRQn
 #define TSG_BASE ((uintptr_t) 0x05060040)             /*!< TSG Transport Stream Controller Base */
 #define TSF_BASE ((uintptr_t) 0x05060100)             /*!< TSF Transport Stream Controller Base */
 #define TSD_BASE ((uintptr_t) 0x05060180)             /*!< TSD Transport Stream Controller Base */
+#define GPADC_BASE ((uintptr_t) 0x05070000)           /*!< GPADC  Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
 #define DMIC_BASE ((uintptr_t) 0x05095000)            /*!< DMIC Digital Microphone Interface Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x05096000)     /*!< AUDIO_CODEC Audio Codec Base */
@@ -1066,6 +1067,38 @@ typedef struct G2D_TOP_Type
     volatile uint32_t RCQ_HEADER_HIGH_ADDR;           /*!< Offset 0x030 Register Configuration Queue Header bits 39..32 */
     volatile uint32_t RCQ_HEADER_LEN;                 /*!< Offset 0x034 Register Configuration Queue length bits 15..0 */
 } G2D_TOP_TypeDef; /* size of structure = 0x038 */
+/*
+ * @brief GPADC
+ */
+/*!< GPADC  */
+typedef struct GPADC_Type
+{
+    volatile uint32_t GP_SR_CON;                      /*!< Offset 0x000 GPADC Sample Rate Configure Register */
+    volatile uint32_t GP_CTRL;                        /*!< Offset 0x004 GPADC Control Register */
+    volatile uint32_t GP_CS_EN;                       /*!< Offset 0x008 GPADC */
+    volatile uint32_t GP_FIFO_INTC;                   /*!< Offset 0x00C GPADC FIFO Interrupt Control Register */
+    volatile uint32_t GP_FIFO_INTS;                   /*!< Offset 0x010 GPADC FIFO Interrupt Status Register */
+    volatile uint32_t GP_FIFO_DATA;                   /*!< Offset 0x014 GPADC FIFO Data Register */
+    volatile uint32_t GP_CDATA;                       /*!< Offset 0x018 GPADC Calibration Data Register */
+             uint32_t reserved_0x01C;
+    volatile uint32_t GP_DATAL_INTC;                  /*!< Offset 0x020 GPADC Data Low Interrupt Configure Register */
+    volatile uint32_t GP_DATAH_INTC;                  /*!< Offset 0x024 GPADC Data High Interrupt Configure Register */
+    volatile uint32_t GP_DATA_INTC;                   /*!< Offset 0x028 GPADC Data Interrupt Configure Register */
+             uint32_t reserved_0x02C;
+    volatile uint32_t GP_DATAL_INTS;                  /*!< Offset 0x030 GPADC Data Low Interrupt Status Register */
+    volatile uint32_t GP_DATAH_INTS;                  /*!< Offset 0x034 GPADC Data High Interrupt Status Register */
+    volatile uint32_t GP_DATA_INTS;                   /*!< Offset 0x038 GPADC Data Interrupt Status Register */
+             uint32_t reserved_0x03C;
+    volatile uint32_t GP_CH0_CMP_DATA;                /*!< Offset 0x040 GPADC CH0 Compare Data Register */
+    volatile uint32_t GP_CH1_CMP_DATA;                /*!< Offset 0x044 GPADC CH1 Compare Data Register */
+    volatile uint32_t GP_CH2_CMP_DATA;                /*!< Offset 0x048 GPADC CH2 Compare Data Register */
+    volatile uint32_t GP_CH3_CMP_DATA;                /*!< Offset 0x04C GPADC CH3 Compare Data Register */
+             uint32_t reserved_0x050 [0x000C];
+    volatile uint32_t GP_CH0_DATA;                    /*!< Offset 0x080 GPADC CH0 Data Register */
+    volatile uint32_t GP_CH1_DATA;                    /*!< Offset 0x084 GPADC CH1 Data Register */
+    volatile uint32_t GP_CH2_DATA;                    /*!< Offset 0x088 GPADC CH2 Data Register */
+    volatile uint32_t GP_CH3_DATA;                    /*!< Offset 0x08C GPADC CH3 Data Register */
+} GPADC_TypeDef; /* size of structure = 0x090 */
 /*
  * @brief GPIO
  */
@@ -1967,6 +2000,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TSG ((TSG_TypeDef *) TSG_BASE)                /*!< TSG Transport Stream Controller register set access pointer */
 #define TSF ((TSF_TypeDef *) TSF_BASE)                /*!< TSF Transport Stream Controller register set access pointer */
 #define TSD ((TSD_TypeDef *) TSD_BASE)                /*!< TSD Transport Stream Controller register set access pointer */
+#define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC Digital Microphone Interface register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
