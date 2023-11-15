@@ -852,11 +852,13 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		{
 			// OHCI connected
  			PRINTF("Device Disonnect handler, release to OHCI ownership portsc=%08X\n", portsc);
+			HAL_EHCI_Disconnect_Callback(hehci);
 		}
  		else
  		{
 // 			PRINTF("Device Disconnect handler, portsc=%08X\n", portsc);
-			HAL_EHCI_Disconnect_Callback(hehci);
+ 			TP();
+ 			HAL_EHCI_Disconnect_Callback(hehci);
  		}
 	}
 
@@ -902,14 +904,20 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
 			(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
+			hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
+//			while ((hehci->ohci->HcControl & cpu_to_le32(UINT32_C(1) << 3)) == 0)
+//				;
+
 			PRINTF("Back to EHCI\n");
 			//HAL_EHCI_PortEnabled_Callback(hehci);
- 			HAL_EHCI_Connect_Callback(hehci);
+ 			//HAL_EHCI_Connect_Callback(hehci);
 
 		}
+		else
 		{
+			hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
 			PRINTF("Move to OHCI\n");
-			HAL_EHCI_Disconnect_Callback(hehci);
+			//HAL_EHCI_Disconnect_Callback(hehci);
 
 		}
 		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 6);	/* reset interrupt */
@@ -2108,19 +2116,20 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	if (speed != USBH_SPEED_HIGH && hehci->ohci != NULL)
 	{
 		// передать управление портом к companion controller (OHCI)
-//		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
-//		portsc |= EHCI_PORTSC_OWNER;
-//		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
-//		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+		portsc |= EHCI_PORTSC_OWNER;
+		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+
+		hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
+//		while ((hehci->ohci->HcControl & cpu_to_le32(UINT32_C(1) << 3)) == 0)
+//			;
 
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 
 #if 0
 		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
-//		hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
-//		while ((hehci->ohci->HcControl & cpu_to_le32(UINT32_C(1) << 3)) == 0)
-//			;
 
 
 //		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 1);    // pes
