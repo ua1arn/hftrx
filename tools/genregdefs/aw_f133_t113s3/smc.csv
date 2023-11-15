@@ -1,4 +1,5 @@
 #type; SMC; Secure Memory Control (SMC) - Sets secure area of DRAM
 #base; SMC 0x03007000
+
 #irq; SMC 76
 

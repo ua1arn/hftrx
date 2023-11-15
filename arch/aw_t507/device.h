@@ -44,6 +44,8 @@ typedef enum IRQn
     TWI4_IRQn = 42,                                   /*!< TWI  */
     SPI0_IRQn = 44,                                   /*!< SPI Serial Peripheral Interface */
     SPI1_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface */
+    EMAC0_IRQn = 46,                                  /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
+    EMAC1_IRQn = 47,                                  /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
     PWM_IRQn = 48,                                    /*!< PWM Pulse Width Modulation module */
     TS_IRQn = 49,                                     /*!< TSC Transport Stream Controller */
     GPADC_IRQn = 50,                                  /*!< GPADC  */
@@ -93,6 +95,7 @@ typedef enum IRQn
     GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
     GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
     GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
+    ALARM0_IRQn = 136,                                /*!< RTC Real Time Clock */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
     C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
@@ -200,6 +203,8 @@ typedef enum IRQn
 #define SCR_BASE ((uintptr_t) 0x05005000)             /*!< SCR Smart Card Reader Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
+#define EMAC0_BASE ((uintptr_t) 0x05020000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
+#define EMAC1_BASE ((uintptr_t) 0x05030000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
 #define TSC_BASE ((uintptr_t) 0x05060000)             /*!< TSC Transport Stream Controller Base */
 #define TSG_BASE ((uintptr_t) 0x05060040)             /*!< TSG Transport Stream Controller Base */
 #define TSF_BASE ((uintptr_t) 0x05060100)             /*!< TSF Transport Stream Controller Base */
@@ -237,6 +242,7 @@ typedef enum IRQn
 #define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC  Base */
+#define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM  Base */
 #define R_WDOG_BASE ((uintptr_t) 0x07020400)          /*!< R_WDOG  Base */
@@ -926,11 +932,11 @@ typedef struct DE_VSU_Type
 typedef struct DE_XX_Type
 {
              uint32_t reserved_0x000 [0x0039];
-    volatile uint32_t addr [0x003];                   /*!< Offset 0x0E4 какое-то поле 32 бит */
-    volatile uint32_t flags;                          /*!< Offset 0x0F0 какое-то поле с работающими битами 0x00030010 (17, 16, 4) */
-    volatile uint32_t value1;                         /*!< Offset 0x0F4 какое-то поле 32 бит */
-    volatile uint32_t flags2;                         /*!< Offset 0x0F8 какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2) */
-    volatile uint32_t value2;                         /*!< Offset 0x0FC какое-то поле 32 бит */
+    volatile uint32_t ADDR [0x003];                   /*!< Offset 0x0E4 какое-то поле 32 бит */
+    volatile uint32_t FLAGS;                          /*!< Offset 0x0F0 какое-то поле с работающими битами 0x00030010 (17, 16, 4) */
+    volatile uint32_t VALUE1;                         /*!< Offset 0x0F4 какое-то поле 32 бит */
+    volatile uint32_t FLAGS2;                         /*!< Offset 0x0F8 какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2) */
+    volatile uint32_t VALUE2;                         /*!< Offset 0x0FC какое-то поле 32 бит */
 } DE_XX_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DISP_IF_TOP
@@ -1002,6 +1008,47 @@ typedef struct DMIC_Type
     volatile uint32_t HPF_COEF_REG;                   /*!< Offset 0x03C High Pass Filter Coef Register */
     volatile uint32_t HPF_GAIN_REG;                   /*!< Offset 0x040 High Pass Filter Gain Register */
 } DMIC_TypeDef; /* size of structure = 0x044 */
+/*
+ * @brief EMAC
+ */
+/*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
+typedef struct EMAC_Type
+{
+    volatile uint32_t EMAC_BASIC_CTL0;                /*!< Offset 0x000 EMAC Basic Control Register0 */
+    volatile uint32_t EMAC_BASIC_CTL1;                /*!< Offset 0x004 EMAC Basic Control Register1 */
+    volatile uint32_t EMAC_INT_STA;                   /*!< Offset 0x008 EMAC Interrupt Status Register */
+    volatile uint32_t EMAC_INT_EN;                    /*!< Offset 0x00C EMAC Interrupt Enable Register */
+    volatile uint32_t EMAC_TX_CTL0;                   /*!< Offset 0x010 EMAC Transmit Control Register0 */
+    volatile uint32_t EMAC_TX_CTL1;                   /*!< Offset 0x014 (null) */
+             uint32_t reserved_0x018;
+    volatile uint32_t EMAC_TX_FLOW_CTL;               /*!< Offset 0x01C EMAC Transmit Flow Control Register */
+    volatile uint32_t EMAC_TX_DMA_DESC_LIST;          /*!< Offset 0x020 EMAC Transmit Descriptor List Address Register */
+    volatile uint32_t EMAC_RX_CTL0;                   /*!< Offset 0x024 EMAC Receive Control Register0 */
+    volatile uint32_t EMAC_RX_CTL1;                   /*!< Offset 0x028 EMAC Receive Control Register1 */
+             uint32_t reserved_0x02C [0x0002];
+    volatile uint32_t EMAC_RX_DMA_DESC_LIST;          /*!< Offset 0x034 EMAC Receive Descriptor List Address Register */
+    volatile uint32_t EMAC_RX_FRM_FLT;                /*!< Offset 0x038 EMAC Receive Frame Filter Register */
+             uint32_t reserved_0x03C;
+    volatile uint32_t EMAC_RX_HASH0;                  /*!< Offset 0x040 EMAC Hash Table Register0 */
+    volatile uint32_t EMAC_RX_HASH1;                  /*!< Offset 0x044 EMAC Hash Table Register1 */
+    volatile uint32_t EMAC_MII_CMD;                   /*!< Offset 0x048 EMAC Management Interface Command Register */
+    volatile uint32_t EMAC_MII_DATA;                  /*!< Offset 0x04C EMAC Management Interface Data Register */
+    struct
+    {
+        volatile uint32_t HIGH;                       /*!< Offset 0x050 EMAC MAC Address High Register */
+        volatile uint32_t LOW;                        /*!< Offset 0x054 EMAC MAC Address Low Register */
+    } EMAC_ADDR [0x008];                              /*!< Offset 0x050 EMAC MAC Address N (N=0-7) */
+             uint32_t reserved_0x090 [0x0008];
+    volatile uint32_t EMAC_TX_DMA_STA;                /*!< Offset 0x0B0 EMAC Transmit DMA Status Register */
+    volatile uint32_t EMAC_TX_CUR_DESC;               /*!< Offset 0x0B4 EMAC Current Transmit Descriptor Register */
+    volatile uint32_t EMAC_TX_CUR_BUF;                /*!< Offset 0x0B8 EMAC Current Transmit Buffer Address Register */
+             uint32_t reserved_0x0BC;
+    volatile uint32_t EMAC_RX_DMA_STA;                /*!< Offset 0x0C0 EMAC Receive DMA Status Register */
+    volatile uint32_t EMAC_RX_CUR_DESC;               /*!< Offset 0x0C4 EMAC Current Receive Descriptor Register */
+    volatile uint32_t EMAC_RX_CUR_BUF;                /*!< Offset 0x0C8 EMAC Current Receive Buffer Address Register */
+             uint32_t reserved_0x0CC;
+    volatile uint32_t EMAC_RGMII_STA;                 /*!< Offset 0x0D0 EMAC RGMII Status Register */
+} EMAC_TypeDef; /* size of structure = 0x0D4 */
 /*
  * @brief G2D_MIXER
  */
@@ -1388,6 +1435,46 @@ typedef struct PWM_Type
                  uint32_t reserved_0x018 [0x0002];
     } CH [0x006];                                     /*!< Offset 0x060 Channels[0..5] */
 } PWM_TypeDef; /* size of structure = 0x120 */
+/*
+ * @brief RTC
+ */
+/*!< RTC Real Time Clock */
+typedef struct RTC_Type
+{
+    volatile uint32_t LOSC_CTRL_REG;                  /*!< Offset 0x000 Low Oscillator Control Register */
+    volatile uint32_t LOSC_AUTO_SWT_STA_REG;          /*!< Offset 0x004 LOSC Auto Switch Status Register */
+    volatile uint32_t INTOSC_CLK_PRESCAL_REG;         /*!< Offset 0x008 Internal OSC Clock Prescalar Register */
+    volatile uint32_t INTOSC_CLK_AUTO_CALI_REG;       /*!< Offset 0x00C Internal OSC Clock Auto Calibration Register */
+    volatile uint32_t RTC_DAY_REG;                    /*!< Offset 0x010 RTC Year-Month-Day Register */
+    volatile uint32_t RTC_HH_MM_SS_REG;               /*!< Offset 0x014 RTC Hour-Minute-Second Register */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t ALARM0_COUNTER_REG;             /*!< Offset 0x020 Alarm 0 Counter Register */
+    volatile uint32_t ALARM0_CUR_VLU_REG;             /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
+    volatile uint32_t ALARM0_ENABLE_REG;              /*!< Offset 0x028 Alarm 0 Enable Register */
+    volatile uint32_t ALARM0_IRQ_EN;                  /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
+    volatile uint32_t ALARM0_IRQ_STA_REG;             /*!< Offset 0x030 Alarm 0 IRQ Status Register */
+             uint32_t reserved_0x034 [0x0007];
+    volatile uint32_t ALARM_CONFIG_REG;               /*!< Offset 0x050 Alarm Configuration Register */
+             uint32_t reserved_0x054 [0x0003];
+    volatile uint32_t F32K_FANOUT_GATING_REG;         /*!< Offset 0x060 32k Fanout Output Gating Register */
+             uint32_t reserved_0x064 [0x0027];
+    volatile uint32_t GP_DATA_REG [0x010];            /*!< Offset 0x100 General Purpose Register (N=0~15) */
+             uint32_t reserved_0x140 [0x0008];
+    volatile uint32_t DCXO_CTRL_REG;                  /*!< Offset 0x160 DCXO Control Register */
+             uint32_t reserved_0x164 [0x000B];
+    volatile uint32_t RTC_VIO_REG;                    /*!< Offset 0x190 RTC_VIO Regulate Register */
+             uint32_t reserved_0x194 [0x0017];
+    volatile uint32_t IC_CHARA_REG;                   /*!< Offset 0x1F0 IC Characteristic Register */
+    volatile uint32_t VDDOFF_GATING_SOF_REG;          /*!< Offset 0x1F4 VDD To RTC Isolation Software Control Register */
+    volatile uint32_t SP_STDBY_FLAG_REG;              /*!< Offset 0x1F8 Super Standby Flag Register */
+    volatile uint32_t SP_STDBY_SOFT_ENTRY_REG;        /*!< Offset 0x1FC Super Standby Software Entry Register */
+    volatile uint32_t USB_STBY_CTRL_REG;              /*!< Offset 0x200 USB Standby Control Register */
+    volatile uint32_t EFUSE_HV_PWRSWT_CTRL_REG;       /*!< Offset 0x204 Efuse High Voltage Power Switch Control Register */
+             uint32_t reserved_0x208 [0x0002];
+    volatile uint32_t CRY_CONFIG_REG;                 /*!< Offset 0x210 Crypt Configuration Register */
+    volatile uint32_t CRY_KEY_REG;                    /*!< Offset 0x214 Crypt Key Register */
+    volatile uint32_t CRY_EN_REG;                     /*!< Offset 0x218 Crypt Enable Register */
+} RTC_TypeDef; /* size of structure = 0x21C */
 /*
  * @brief SCR
  */
@@ -2055,6 +2142,8 @@ typedef struct USB_OHCI_Capability_Type
 #define SCR ((SCR_TypeDef *) SCR_BASE)                /*!< SCR Smart Card Reader register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define EMAC0 ((EMAC_TypeDef *) EMAC0_BASE)           /*!< EMAC0 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */
+#define EMAC1 ((EMAC_TypeDef *) EMAC1_BASE)           /*!< EMAC1 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */
 #define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
 #define TSG ((TSG_TypeDef *) TSG_BASE)                /*!< TSG Transport Stream Controller register set access pointer */
 #define TSF ((TSF_TypeDef *) TSF_BASE)                /*!< TSF Transport Stream Controller register set access pointer */
@@ -2089,6 +2178,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
+#define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
 #define R_PIO ((GPIO_TypeDef *) R_PIO_BASE)           /*!< R_PIO Port Controller register set access pointer */
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */

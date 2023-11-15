@@ -103,6 +103,7 @@ typedef enum IRQn
     CSI_TDM_IRQn = 137,                               /*!< CSIC_TOP  */
     CSI_TOP_PKT_IRQn = 138,                           /*!< CSIC_TOP  */
     TVD_IRQn = 139,                                   /*!< TVD_TOP Video Decoding */
+    ALARM0_IRQn = 176,                                /*!< RTC Real Time Clock */
     C0_CTI0_IRQn = 192,                               /*!< C0_CPUX_CFG  */
     C0_CTI1_IRQn = 193,                               /*!< C0_CPUX_CFG  */
     C0_COMMTX0_IRQn = 196,                            /*!< C0_CPUX_CFG  */

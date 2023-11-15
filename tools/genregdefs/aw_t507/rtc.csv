@@ -1,0 +1,30 @@
+#type; RTC; Real Time Clock
+#base; RTC 0x07000000
+
+#irq; ALARM0 136
+
+#regdef; LOSC_CTRL_REG; 0x0000; Low Oscillator Control Register
+#regdef; LOSC_AUTO_SWT_STA_REG; 0x0004; LOSC Auto Switch Status Register
+#regdef; INTOSC_CLK_PRESCAL_REG; 0x0008; Internal OSC Clock Prescalar Register
+#regdef; INTOSC_CLK_AUTO_CALI_REG; 0x000C; Internal OSC Clock Auto Calibration Register
+#regdef; RTC_DAY_REG; 0x0010; RTC Year-Month-Day Register
+#regdef; RTC_HH_MM_SS_REG; 0x0014; RTC Hour-Minute-Second Register
+#regdef; ALARM0_COUNTER_REG; 0x0020; Alarm 0 Counter Register
+#regdef; ALARM0_CUR_VLU_REG; 0x0024; Alarm 0 Counter Current Value Register
+#regdef; ALARM0_ENABLE_REG; 0x0028; Alarm 0 Enable Register
+#regdef; ALARM0_IRQ_EN; 0x002C; Alarm 0 IRQ Enable Register
+#regdef; ALARM0_IRQ_STA_REG; 0x0030; Alarm 0 IRQ Status Register
+#regdef; ALARM_CONFIG_REG; 0x0050; Alarm Configuration Register
+#regdef; F32K_FANOUT_GATING_REG; 0x0060; 32k Fanout Output Gating Register
+#regdef; GP_DATA_REG; 0x0100 16; General Purpose Register (N=0~15)
+#regdef; DCXO_CTRL_REG; 0x0160; DCXO Control Register
+#regdef; RTC_VIO_REG; 0x0190; RTC_VIO Regulate Register
+#regdef; IC_CHARA_REG; 0x01F0; IC Characteristic Register
+#regdef; VDDOFF_GATING_SOF_REG; 0x01F4; VDD To RTC Isolation Software Control Register
+#regdef; SP_STDBY_FLAG_REG; 0x01F8; Super Standby Flag Register
+#regdef; SP_STDBY_SOFT_ENTRY_REG; 0x01FC; Super Standby Software Entry Register
+#regdef; USB_STBY_CTRL_REG; 0x0200; USB Standby Control Register
+#regdef; EFUSE_HV_PWRSWT_CTRL_REG; 0x0204; Efuse High Voltage Power Switch Control Register
+#regdef; CRY_CONFIG_REG; 0x0210; Crypt Configuration Register
+#regdef; CRY_KEY_REG; 0x0214; Crypt Key Register
+#regdef; CRY_EN_REG; 0x0218; Crypt Enable Register

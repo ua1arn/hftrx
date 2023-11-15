@@ -4020,8 +4020,8 @@
     <dim>3</dim>
     <addressOffset>0x000000E4</addressOffset>
     <register>
-     <name>addr</name>
-     <displayName>addr</displayName>
+     <name>ADDR</name>
+     <displayName>ADDR</displayName>
      <description>какое-то поле 32 бит</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -4031,8 +4031,8 @@
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
-    <name>flags</name>
-    <displayName>flags</displayName>
+    <name>FLAGS</name>
+    <displayName>FLAGS</displayName>
     <description>какое-то поле с работающими битами 0x00030010 (17, 16, 4)</description>
     <addressOffset>0x0F0</addressOffset>
     <size>0x20</size>
@@ -4040,8 +4040,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>value1</name>
-    <displayName>value1</displayName>
+    <name>VALUE1</name>
+    <displayName>VALUE1</displayName>
     <description>какое-то поле 32 бит</description>
     <addressOffset>0x0F4</addressOffset>
     <size>0x20</size>
@@ -4049,8 +4049,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>flags2</name>
-    <displayName>flags2</displayName>
+    <name>FLAGS2</name>
+    <displayName>FLAGS2</displayName>
     <description>какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2)</description>
     <addressOffset>0x0F8</addressOffset>
     <size>0x20</size>
@@ -4058,8 +4058,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>value2</name>
-    <displayName>value2</displayName>
+    <name>VALUE2</name>
+    <displayName>VALUE2</displayName>
     <description>какое-то поле 32 бит</description>
     <addressOffset>0x0FC</addressOffset>
     <size>0x20</size>
@@ -4450,6 +4450,269 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral>
+  <name>EMAC0</name>
+  <description>The Ethernet Medium Access Controller (EMAC) enables a host to transmi</description>
+  <baseAddress>0x05020000</baseAddress>
+  <interrupt>
+   <name>EMAC0</name>
+   <value>46</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>EMAC1</name>
+   <value>47</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>EMAC_BASIC_CTL0</name>
+    <displayName>EMAC_BASIC_CTL0</displayName>
+    <description>EMAC Basic Control Register0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_BASIC_CTL1</name>
+    <displayName>EMAC_BASIC_CTL1</displayName>
+    <description>EMAC Basic Control Register1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_INT_STA</name>
+    <displayName>EMAC_INT_STA</displayName>
+    <description>EMAC Interrupt Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_INT_EN</name>
+    <displayName>EMAC_INT_EN</displayName>
+    <description>EMAC Interrupt Enable Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_TX_CTL0</name>
+    <displayName>EMAC_TX_CTL0</displayName>
+    <description>EMAC Transmit Control Register0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_TX_CTL1</name>
+    <displayName>EMAC_TX_CTL1</displayName>
+    <description></description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_TX_FLOW_CTL</name>
+    <displayName>EMAC_TX_FLOW_CTL</displayName>
+    <description>EMAC Transmit Flow Control Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_TX_DMA_DESC_LIST</name>
+    <displayName>EMAC_TX_DMA_DESC_LIST</displayName>
+    <description>EMAC Transmit Descriptor List Address Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_CTL0</name>
+    <displayName>EMAC_RX_CTL0</displayName>
+    <description>EMAC Receive Control Register0</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_CTL1</name>
+    <displayName>EMAC_RX_CTL1</displayName>
+    <description>EMAC Receive Control Register1</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_DMA_DESC_LIST</name>
+    <displayName>EMAC_RX_DMA_DESC_LIST</displayName>
+    <description>EMAC Receive Descriptor List Address Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_FRM_FLT</name>
+    <displayName>EMAC_RX_FRM_FLT</displayName>
+    <description>EMAC Receive Frame Filter Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_HASH0</name>
+    <displayName>EMAC_RX_HASH0</displayName>
+    <description>EMAC Hash Table Register0</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_HASH1</name>
+    <displayName>EMAC_RX_HASH1</displayName>
+    <description>EMAC Hash Table Register1</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_MII_CMD</name>
+    <displayName>EMAC_MII_CMD</displayName>
+    <description>EMAC Management Interface Command Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_MII_DATA</name>
+    <displayName>EMAC_MII_DATA</displayName>
+    <description>EMAC Management Interface Data Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000050</addressOffset>
+    <registers>
+     <register>
+      <name>HIGH</name>
+      <displayName>HIGH</displayName>
+      <description>EMAC MAC Address High Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>LOW</name>
+      <displayName>LOW</displayName>
+      <description>EMAC MAC Address Low Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <register>
+    <name>EMAC_TX_DMA_STA</name>
+    <displayName>EMAC_TX_DMA_STA</displayName>
+    <description>EMAC Transmit DMA Status Register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_TX_CUR_DESC</name>
+    <displayName>EMAC_TX_CUR_DESC</displayName>
+    <description>EMAC Current Transmit Descriptor Register</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_TX_CUR_BUF</name>
+    <displayName>EMAC_TX_CUR_BUF</displayName>
+    <description>EMAC Current Transmit Buffer Address Register</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_DMA_STA</name>
+    <displayName>EMAC_RX_DMA_STA</displayName>
+    <description>EMAC Receive DMA Status Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_CUR_DESC</name>
+    <displayName>EMAC_RX_CUR_DESC</displayName>
+    <description>EMAC Current Receive Descriptor Register</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RX_CUR_BUF</name>
+    <displayName>EMAC_RX_CUR_BUF</displayName>
+    <description>EMAC Current Receive Buffer Address Register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EMAC_RGMII_STA</name>
+    <displayName>EMAC_RGMII_STA</displayName>
+    <description>EMAC RGMII Status Register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="EMAC0">
+  <name>EMAC1</name>
+  <baseAddress>0x05030000</baseAddress>
+  <interrupt>
+   <name>EMAC0</name>
+   <value>46</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>EMAC1</name>
+   <value>47</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>G2D_MIXER</name>
@@ -7073,6 +7336,248 @@
     </registers>
     <dimIncrement>0x0C0</dimIncrement>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>RTC</name>
+  <description>Real Time Clock</description>
+  <baseAddress>0x07000000</baseAddress>
+  <interrupt>
+   <name>ALARM0</name>
+   <value>136</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>LOSC_CTRL_REG</name>
+    <displayName>LOSC_CTRL_REG</displayName>
+    <description>Low Oscillator Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LOSC_AUTO_SWT_STA_REG</name>
+    <displayName>LOSC_AUTO_SWT_STA_REG</displayName>
+    <description>LOSC Auto Switch Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTOSC_CLK_PRESCAL_REG</name>
+    <displayName>INTOSC_CLK_PRESCAL_REG</displayName>
+    <description>Internal OSC Clock Prescalar Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTOSC_CLK_AUTO_CALI_REG</name>
+    <displayName>INTOSC_CLK_AUTO_CALI_REG</displayName>
+    <description>Internal OSC Clock Auto Calibration Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_DAY_REG</name>
+    <displayName>RTC_DAY_REG</displayName>
+    <description>RTC Year-Month-Day Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_HH_MM_SS_REG</name>
+    <displayName>RTC_HH_MM_SS_REG</displayName>
+    <description>RTC Hour-Minute-Second Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_COUNTER_REG</name>
+    <displayName>ALARM0_COUNTER_REG</displayName>
+    <description>Alarm 0 Counter Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_CUR_VLU_REG</name>
+    <displayName>ALARM0_CUR_VLU_REG</displayName>
+    <description>Alarm 0 Counter Current Value Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_ENABLE_REG</name>
+    <displayName>ALARM0_ENABLE_REG</displayName>
+    <description>Alarm 0 Enable Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_IRQ_EN</name>
+    <displayName>ALARM0_IRQ_EN</displayName>
+    <description>Alarm 0 IRQ Enable Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_IRQ_STA_REG</name>
+    <displayName>ALARM0_IRQ_STA_REG</displayName>
+    <description>Alarm 0 IRQ Status Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM_CONFIG_REG</name>
+    <displayName>ALARM_CONFIG_REG</displayName>
+    <description>Alarm Configuration Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>F32K_FANOUT_GATING_REG</name>
+    <displayName>F32K_FANOUT_GATING_REG</displayName>
+    <description>32k Fanout Output Gating Register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>GP_DATA_REG</name>
+     <displayName>GP_DATA_REG</displayName>
+     <description>General Purpose Register (N=0~15)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <register>
+    <name>DCXO_CTRL_REG</name>
+    <displayName>DCXO_CTRL_REG</displayName>
+    <description>DCXO Control Register</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_VIO_REG</name>
+    <displayName>RTC_VIO_REG</displayName>
+    <description>RTC_VIO Regulate Register</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CHARA_REG</name>
+    <displayName>IC_CHARA_REG</displayName>
+    <description>IC Characteristic Register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDDOFF_GATING_SOF_REG</name>
+    <displayName>VDDOFF_GATING_SOF_REG</displayName>
+    <description>VDD To RTC Isolation Software Control Register</description>
+    <addressOffset>0x1F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SP_STDBY_FLAG_REG</name>
+    <displayName>SP_STDBY_FLAG_REG</displayName>
+    <description>Super Standby Flag Register</description>
+    <addressOffset>0x1F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SP_STDBY_SOFT_ENTRY_REG</name>
+    <displayName>SP_STDBY_SOFT_ENTRY_REG</displayName>
+    <description>Super Standby Software Entry Register</description>
+    <addressOffset>0x1FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB_STBY_CTRL_REG</name>
+    <displayName>USB_STBY_CTRL_REG</displayName>
+    <description>USB Standby Control Register</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EFUSE_HV_PWRSWT_CTRL_REG</name>
+    <displayName>EFUSE_HV_PWRSWT_CTRL_REG</displayName>
+    <description>Efuse High Voltage Power Switch Control Register</description>
+    <addressOffset>0x204</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CRY_CONFIG_REG</name>
+    <displayName>CRY_CONFIG_REG</displayName>
+    <description>Crypt Configuration Register</description>
+    <addressOffset>0x210</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CRY_KEY_REG</name>
+    <displayName>CRY_KEY_REG</displayName>
+    <description>Crypt Key Register</description>
+    <addressOffset>0x214</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CRY_EN_REG</name>
+    <displayName>CRY_EN_REG</displayName>
+    <description>Crypt Enable Register</description>
+    <addressOffset>0x218</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

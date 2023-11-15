@@ -1,6 +1,9 @@
 #type; RTC; Real Time Clock
 #base; RTC 0x07090000
 
+#irq; ALARM0 176
+#irqrv; ALARM0 160
+
 #regdef; LOSC_CTRL_REG; 0x0000; Low Oscillator Control Register
 #regdef; LOSC_AUTO_SWT_STA_REG; 0x0004; Low Oscillator Auto Switch Status Register
 #regdef; INTOSC_CLK_PRESCAL_REG; 0x0008; Internal OSC Clock Pre-scaler Register
