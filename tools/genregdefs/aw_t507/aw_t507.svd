@@ -6771,6 +6771,54 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>LRADC</name>
+  <description></description>
+  <baseAddress>0x05070800</baseAddress>
+  <interrupt>
+   <name>LRADC</name>
+   <value>52</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>LRADC_CTRL</name>
+    <displayName>LRADC_CTRL</displayName>
+    <description>LRADC Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LRADC_INTC</name>
+    <displayName>LRADC_INTC</displayName>
+    <description>LRADC Interrupt Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LRADC_INTS</name>
+    <displayName>LRADC_INTS</displayName>
+    <description>LRADC Interrupt Status Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LRADC_DATA0</name>
+    <displayName>LRADC_DATA0</displayName>
+    <description>LRADC Data Register0</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>PWM</name>
   <description>Pulse Width Modulation module</description>
   <baseAddress>0x0300A000</baseAddress>
@@ -6923,6 +6971,135 @@
     </registers>
     <dimIncrement>0x0C0</dimIncrement>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>SCR</name>
+  <description>Smart Card Reader</description>
+  <baseAddress>0x05005000</baseAddress>
+  <interrupt>
+   <name>SMCARD</name>
+   <value>94</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>SCR_CSR</name>
+    <displayName>SCR_CSR</displayName>
+    <description>Smart Card Reader Control and Status Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_INTEN</name>
+    <displayName>SCR_INTEN</displayName>
+    <description>Smart Card Reader Interrupt Enable Register 1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_INTST</name>
+    <displayName>SCR_INTST</displayName>
+    <description>Smart Card Reader Interrupt Status Register 1</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_FCSR</name>
+    <displayName>SCR_FCSR</displayName>
+    <description>Smart Card Reader FIFO Control and Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_FCNT</name>
+    <displayName>SCR_FCNT</displayName>
+    <description>Smart Card Reader RX and TX FIFO Counter Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_RPT</name>
+    <displayName>SCR_RPT</displayName>
+    <description>Smart Card Reader RX and TX Repeat Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_DIV</name>
+    <displayName>SCR_DIV</displayName>
+    <description>Smart Card Reader Clock and Baud Divisor Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_LTIM</name>
+    <displayName>SCR_LTIM</displayName>
+    <description>Smart Card Reader Line Time Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_CTIM</name>
+    <displayName>SCR_CTIM</displayName>
+    <description>Smart Card Reader Character Time Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_LCTLR</name>
+    <displayName>SCR_LCTLR</displayName>
+    <description>Smart Card Reader Line Control Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_FSM</name>
+    <displayName>SCR_FSM</displayName>
+    <description>Smart Card Reader FSM Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_DT</name>
+    <displayName>SCR_DT</displayName>
+    <description>Smart Card Reader Debounce Time Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SCR_FIFO</name>
+    <displayName>SCR_FIFO</displayName>
+    <description>Smart Card Reader RX and TX FIFO Access Point</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

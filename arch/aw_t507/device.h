@@ -79,6 +79,7 @@ typedef enum IRQn
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
     AudioCodec_DAC_IRQn = 90,                         /*!< AUDIO_CODEC AudioCodec_DAC interrupt */
     IOMMU_IRQn = 93,                                  /*!< IOMMU IOMMU */
+    SMCARD_IRQn = 94,                                 /*!< SCR Smart Card Reader */
     HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
@@ -196,6 +197,7 @@ typedef enum IRQn
 #define TWI2_BASE ((uintptr_t) 0x05002800)            /*!< TWI  Base */
 #define TWI3_BASE ((uintptr_t) 0x05002C00)            /*!< TWI  Base */
 #define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
+#define SCR_BASE ((uintptr_t) 0x05005000)             /*!< SCR Smart Card Reader Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define TSC_BASE ((uintptr_t) 0x05060000)             /*!< TSC Transport Stream Controller Base */
@@ -204,6 +206,7 @@ typedef enum IRQn
 #define TSD_BASE ((uintptr_t) 0x05060180)             /*!< TSD Transport Stream Controller Base */
 #define GPADC_BASE ((uintptr_t) 0x05070000)           /*!< GPADC  Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
+#define LRADC_BASE ((uintptr_t) 0x05070800)           /*!< LRADC  Base */
 #define DMIC_BASE ((uintptr_t) 0x05095000)            /*!< DMIC Digital Microphone Interface Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x05096000)     /*!< AUDIO_CODEC Audio Codec Base */
 #define AHUB_BASE ((uintptr_t) 0x05097000)            /*!< AHUB Audio HUB Base */
@@ -1324,6 +1327,17 @@ typedef struct IOMMU_Type
     volatile uint32_t IOMMU_PMU_ML_REG6;              /*!< Offset 0x368 IOMMU Max Latency Register 6 */
 } IOMMU_TypeDef; /* size of structure = 0x36C */
 /*
+ * @brief LRADC
+ */
+/*!< LRADC  */
+typedef struct LRADC_Type
+{
+    volatile uint32_t LRADC_CTRL;                     /*!< Offset 0x000 LRADC Control Register */
+    volatile uint32_t LRADC_INTC;                     /*!< Offset 0x004 LRADC Interrupt Control Register */
+    volatile uint32_t LRADC_INTS;                     /*!< Offset 0x008 LRADC Interrupt Status Register */
+    volatile uint32_t LRADC_DATA0;                    /*!< Offset 0x00C LRADC Data Register0 */
+} LRADC_TypeDef; /* size of structure = 0x010 */
+/*
  * @brief PWM
  */
 /*!< PWM Pulse Width Modulation module */
@@ -1353,6 +1367,29 @@ typedef struct PWM_Type
                  uint32_t reserved_0x018 [0x0002];
     } CH [0x006];                                     /*!< Offset 0x060 Channels[0..5] */
 } PWM_TypeDef; /* size of structure = 0x120 */
+/*
+ * @brief SCR
+ */
+/*!< SCR Smart Card Reader */
+typedef struct SCR_Type
+{
+    volatile uint32_t SCR_CSR;                        /*!< Offset 0x000 Smart Card Reader Control and Status Register */
+    volatile uint32_t SCR_INTEN;                      /*!< Offset 0x004 Smart Card Reader Interrupt Enable Register 1 */
+    volatile uint32_t SCR_INTST;                      /*!< Offset 0x008 Smart Card Reader Interrupt Status Register 1 */
+    volatile uint32_t SCR_FCSR;                       /*!< Offset 0x00C Smart Card Reader FIFO Control and Status Register */
+    volatile uint32_t SCR_FCNT;                       /*!< Offset 0x010 Smart Card Reader RX and TX FIFO Counter Register */
+    volatile uint32_t SCR_RPT;                        /*!< Offset 0x014 Smart Card Reader RX and TX Repeat Register */
+    volatile uint32_t SCR_DIV;                        /*!< Offset 0x018 Smart Card Reader Clock and Baud Divisor Register */
+    volatile uint32_t SCR_LTIM;                       /*!< Offset 0x01C Smart Card Reader Line Time Register */
+    volatile uint32_t SCR_CTIM;                       /*!< Offset 0x020 Smart Card Reader Character Time Register */
+             uint32_t reserved_0x024 [0x0003];
+    volatile uint32_t SCR_LCTLR;                      /*!< Offset 0x030 Smart Card Reader Line Control Register */
+             uint32_t reserved_0x034 [0x0002];
+    volatile uint32_t SCR_FSM;                        /*!< Offset 0x03C Smart Card Reader FSM Register */
+    volatile uint32_t SCR_DT;                         /*!< Offset 0x040 Smart Card Reader Debounce Time Register */
+             uint32_t reserved_0x044 [0x002F];
+    volatile uint32_t SCR_FIFO;                       /*!< Offset 0x100 Smart Card Reader RX and TX FIFO Access Point */
+} SCR_TypeDef; /* size of structure = 0x104 */
 /*
  * @brief SMHC
  */
@@ -1994,6 +2031,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
 #define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
 #define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
+#define SCR ((SCR_TypeDef *) SCR_BASE)                /*!< SCR Smart Card Reader register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
@@ -2002,6 +2040,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TSD ((TSD_TypeDef *) TSD_BASE)                /*!< TSD Transport Stream Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
+#define LRADC ((LRADC_TypeDef *) LRADC_BASE)          /*!< LRADC  register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC Digital Microphone Interface register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
 #define AHUB ((AHUB_TypeDef *) AHUB_BASE)             /*!< AHUB Audio HUB register set access pointer */

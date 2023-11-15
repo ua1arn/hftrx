@@ -1,0 +1,19 @@
+#type; SCR; Smart Card Reader
+#irq; SMCARD 94
+
+#base; SCR 0x05005000
+
+#regdef; SCR_CSR; 0x0000; Smart Card Reader Control and Status Register
+#regdef; SCR_INTEN; 0x0004; Smart Card Reader Interrupt Enable Register 1
+#regdef; SCR_INTST; 0x0008; Smart Card Reader Interrupt Status Register 1
+#regdef; SCR_FCSR; 0x000C; Smart Card Reader FIFO Control and Status Register
+#regdef; SCR_FCNT; 0x0010; Smart Card Reader RX and TX FIFO Counter Register
+#regdef; SCR_RPT; 0x0014; Smart Card Reader RX and TX Repeat Register
+#regdef; SCR_DIV; 0x0018; Smart Card Reader Clock and Baud Divisor Register
+#regdef; SCR_LTIM; 0x001C; Smart Card Reader Line Time Register
+#regdef; SCR_CTIM; 0x0020; Smart Card Reader Character Time Register
+#regdef; SCR_LCTLR; 0x0030; Smart Card Reader Line Control Register
+#regdef; SCR_FSM; 0x003C; Smart Card Reader FSM Register
+#regdef; SCR_DT; 0x0040; Smart Card Reader Debounce Time Register
+#regdef; SCR_FIFO; 0x0100; Smart Card Reader RX and TX FIFO Access Point
+

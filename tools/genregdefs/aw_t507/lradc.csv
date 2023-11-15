@@ -1,2 +1,9 @@
 #type; LRADC; 
 #irq; LRADC 52
+
+#base; LRADC 0x05070800
+
+#regdef; LRADC_CTRL; 0x0000; LRADC Control Register
+#regdef; LRADC_INTC; 0x0004; LRADC Interrupt Control Register
+#regdef; LRADC_INTS; 0x0008; LRADC Interrupt Status Register
+#regdef; LRADC_DATA0; 0x000C; LRADC Data Register0
