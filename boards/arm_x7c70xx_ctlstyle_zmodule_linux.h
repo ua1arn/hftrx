@@ -10,8 +10,8 @@
 #ifndef ARM_XC7ZXX_BGAXXX_CTLSTYLE_ZMODULE_H_INCLUDED
 #define ARM_XC7ZXX_BGAXXX_CTLSTYLE_ZMODULE_H_INCLUDED 1
 
-	#if ! defined(XC7Z010)
-		#error Wrong CPU selected. XC7Z010 expected
+	#if ! defined(XC7Z020)
+		#error Wrong CPU selected. XC7Z020 expected
 	#endif /* ! defined(XC7Z020) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -64,8 +64,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
-	//#define CTLREGMODE_ZYNQ_4205	1
+	//#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_UA3REO_EXTBOARD	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -105,8 +105,7 @@
 	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
-	#define WITHLVGL			1
+	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B			1
 #endif /* WITHISBOOTLOADER */
 
 #if WITHISBOOTLOADER
@@ -225,23 +224,22 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#define WITHAA				1		/* Поддержка сглаживания изображений */
 		#if 1
-			#define REALREFERENCE_FREQ 		61433400L
+//			#define REALREFERENCE_FREQ 		61433400L
 			#define WITHTOUCHGUI			1
 			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		180
+			#define WITHAFGAINDEFAULT		140
 //			#define WITHTHERMOLEVEL		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
+//			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 //			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //			#define WITHLFM					1
 //			#define WITHNMEA				1
 //			#define WITHEXTRFBOARDTEST		1
-			#define IQMODEM_BLOCKMEMORY		1
 			#define DMABUFCLUSTER			32
 #endif
 	#elif LCDMODE_LQ043T3DX02K

@@ -213,7 +213,6 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define IQMODEM_BLOCKMEMORY	1
 	#define WITHIQSHIFT			1
 	#define DMABUFCLUSTER	32
 

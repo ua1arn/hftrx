@@ -30,18 +30,61 @@
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ZMODULE 1
 
-#define AXI_IQ_FTW_ADDR			0x43c80000
-#define AXI_IQ_FTW_SUB_ADDR		0x43cd0000
-#define AXI_IQ_RTS_ADDR			0x43cb0000
-#define AXI_MODEM_CTRL_ADDR		0x43c90000
-#define AXI_IQ_FIFO_RX_ADDR		0x43cc0000
-#define AXI_IQ_FIFO_TX_ADDR		0x43c60000
-#define AXI_IQ_RX_COUNT_ADDR	0x43c40000
-#define AXI_IQ_TX_COUNT_ADDR	0x43ca0000
-#define AXI_ADI_ADDR			0x43c10000
-#define AXI_FIFO_PHONES_ADDR	0x43c70000
-#define AXI_FIR_RELOAD_ADDR		0x43c50000
-#define AXI_FIFO_MIC_ADDR		0x43c20000
+// defines from xparameters.h
+
+/* Peripheral Definitions for peripheral AUDIO_AXI_I2S_ADI_0 */
+#define XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR 0x43C20000
+#define XPAR_AUDIO_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
+
+
+/* Peripheral Definitions for peripheral AUDIO_FIFO_MIC */
+#define XPAR_AUDIO_FIFO_MIC_BASEADDR 0x43C50000
+#define XPAR_AUDIO_FIFO_MIC_HIGHADDR 0x43C50FFF
+
+
+/* Peripheral Definitions for peripheral AUDIO_FIFO_PHONES */
+#define XPAR_AUDIO_FIFO_PHONES_BASEADDR 0x43C30000
+#define XPAR_AUDIO_FIFO_PHONES_HIGHADDR 0x43C30FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_FIFO_IQ_TX */
+#define XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR 0x43C60000
+#define XPAR_IQ_MODEM_FIFO_IQ_TX_HIGHADDR 0x43C60FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_FIR_RELOAD_RX */
+#define XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR 0x43C80000
+#define XPAR_IQ_MODEM_FIR_RELOAD_RX_HIGHADDR 0x43C80FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_AXI_DDS_FTW */
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR 0x43CB0000
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_HIGHADDR 0x43CB0FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_AXI_DDS_FTW_SUB */
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR 0x43CC0000
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_HIGHADDR 0x43CC0FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_AXI_DDS_RTS */
+#define XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR 0x43CD0000
+#define XPAR_IQ_MODEM_AXI_DDS_RTS_HIGHADDR 0x43CD0FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_BLKMEM_CNT */
+#define XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR 0x43C90000
+#define XPAR_IQ_MODEM_BLKMEM_CNT_HIGHADDR 0x43C90FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_BLKMEM_READER */
+#define XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR 0x43CA0000
+#define XPAR_IQ_MODEM_BLKMEM_READER_HIGHADDR 0x43CA0FFF
+
+
+/* Peripheral Definitions for peripheral IQ_MODEM_MODEM_CONTROL */
+#define XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR 0x43C40000
+#define XPAR_IQ_MODEM_MODEM_CONTROL_HIGHADDR 0x43C40FFF
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
@@ -190,11 +233,11 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911 || TSC1_TYPE == TSC_TYPE_ILI2102)
 
 	void gt911_interrupt_handler(void);
-	#define BOARD_GT911_INT_PIN 	66
-	#define BOARD_GT911_RESET_PIN 	58
+	#define BOARD_GT911_INT_PIN 	61
+	#define BOARD_GT911_RESET_PIN 	62
 
 	#define BOARD_GT911_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_RESET_PIN, 1); else xc7z_writepin(BOARD_GT911_RESET_PIN, 0);  } while (0)
 
@@ -213,8 +256,10 @@
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
 #endif /* WITHTHERMOLEVEL */
 
-#define PREAMP_MIO				64
-#define TARGET_RFADC_PGA_EMIO	65
+#define PREAMP_MIO					69
+#define TARGET_OPA2674_CTRL_EMIO	65
+#define TARGET_RFADC_PGA_EMIO		66
+#define TARGET_RFADC_RAND_EMIO		68
 
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -273,8 +318,8 @@
 	// Выводы подключения енкодера #1
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		29
-	#define ENCODER2_BITB		28
+	#define ENCODER2_BITA		58
+	#define ENCODER2_BITB		59
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -589,9 +634,8 @@
 
 #if WITHSPIHW || WITHSPISW
 
-	#define TARGET_EXT_MIO	57
-
-	#define targetext		TARGET_EXT_MIO
+	#define targetextctl	57
+	#define targetnvram		63
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
@@ -605,13 +649,15 @@
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			xc7z_writepin(TARGET_EXT_MIO, 1);		\
+			xc7z_writepin(targetextctl, 1);		\
+			xc7z_writepin(targetnvram, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			xc7z_gpio_output(TARGET_EXT_MIO); \
+			xc7z_gpio_output(targetextctl); \
+			xc7z_gpio_output(targetnvram); \
 		} while (0)
 
 	// MOSI & SCK port
@@ -619,18 +665,18 @@
 	#define	SPI_MOSI_MIO 	55
 	#define	SPI_MISO_MIO 	56
 
-	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)
-	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); } while (0)
+	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); } while (0)
+	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); } while (0)
 
-	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); } while (0)
-	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); } while (0)
+	#define SPI_MOSI_C()	do { xc7z_writepin(SPI_MOSI_MIO, 0); } while (0)
+	#define SPI_MOSI_S()	do { xc7z_writepin(SPI_MOSI_MIO, 1); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
 		xc7z_gpio_output(SPI_SCLK_MIO); \
 		xc7z_gpio_output(SPI_MOSI_MIO); \
-		xc7z_gpio_input(SPI_MISO_MIO); \
+		xc7z_gpio_output(SPI_MISO_MIO); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \

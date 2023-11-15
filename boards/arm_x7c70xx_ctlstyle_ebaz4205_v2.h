@@ -240,7 +240,6 @@
 //			#define WITHLFM					1
 //			#define WITHNMEA				1
 //			#define WITHEXTRFBOARDTEST		1
-			#define IQMODEM_BLOCKMEMORY		1
 			#define DMABUFCLUSTER			32
 			#define WITHBUFFERSSMALLDEBUG	1
 //			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */

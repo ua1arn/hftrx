@@ -19662,7 +19662,9 @@ application_initialize(void)
 	hamradio_gui_enc2_update();
 #endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
+#if WITHUSEUSBBT
 	bt_initialize();
+#endif /* WITHUSEUSBBT */
 }
 
 #if WITHSPISLAVE

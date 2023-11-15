@@ -213,7 +213,7 @@ int linux_framebuffer_init(void)
 	screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
 
 	// Map the device to memory
-	fbp = mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
+	fbp = (uint32_t *) mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
 	if (* fbp == -1) {
 		PRINTF("Error: failed to map framebuffer device to memory");
 		exit(4);
@@ -257,7 +257,7 @@ void linux_xgpio_init(void)
 	close(ff);
 
 	XGpioPs_Config * gpiocfg = XGpioPs_LookupConfig(0);
-	gpiops_ptr = get_highmem_ptr(gpiocfg->BaseAddr);
+	gpiops_ptr = (uint32_t *) get_highmem_ptr(gpiocfg->BaseAddr);
 	XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, (uintptr_t) gpiops_ptr);
 #endif
 }
@@ -301,7 +301,7 @@ uint_fast8_t xc7z_readpin(uint8_t pin)
 
 void xc7z_gpio_input(uint8_t pin)
 {
-#if WITHPS7BOARD_EBAZ_7020
+#if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 0);
 #endif
 }
@@ -388,34 +388,10 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	return rc;
 }
 
-uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, const uint8_t size)
-{
-	int rc;
-
-	uint8_t regbuf[2] = { (reg >> 8), (reg & 0xFF), };
-
-	if (fd_i2c)
-	{
-		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
-			PRINTF("Failed to set slave\n");
-
-		rc = write(fd_i2c, regbuf, 2);
-		if (rc < 0)
-			PRINTF("Tried to write to address '0x%02x'\n", slave_address);
-
-
-		rc = read(fd_i2c, buf, size);
-		if (rc < 0)
-			PRINTF("Tried to read from address '0x%02x'\n", slave_address);
-	}
-
-	return rc;
-}
-
 /*************************************************************/
 
 void * iq_rx_blkmem;
-volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl,  * ph_fifo, * iq_count_rx, * iq_count_tx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
+volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 int fd_int = 0;
@@ -423,25 +399,19 @@ uintptr_t addr32rx;
 
 void linux_iq_init(void)
 {
-	ftw = 			get_highmem_ptr(AXI_IQ_FTW_ADDR);
-	ftw_sub = 		get_highmem_ptr(AXI_IQ_FTW_SUB_ADDR);
-	rts = 			get_highmem_ptr(AXI_IQ_RTS_ADDR);
-	ph_fifo = 		get_highmem_ptr(AXI_FIFO_PHONES_ADDR);
-	iq_fifo_tx = 	get_highmem_ptr(AXI_IQ_FIFO_TX_ADDR);
-	mic_fifo = 		get_highmem_ptr(AXI_FIFO_MIC_ADDR);
-	modem_ctrl = 	get_highmem_ptr(AXI_MODEM_CTRL_ADDR);
-	iq_count_rx = 	get_highmem_ptr(AXI_IQ_RX_COUNT_ADDR);
-	iq_count_tx = 	get_highmem_ptr(AXI_IQ_TX_COUNT_ADDR);
+	ftw = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR);
+	ftw_sub = 		(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR);
+	rts = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR);
+	ph_fifo = 		(uint32_t *) get_highmem_ptr(XPAR_AUDIO_FIFO_PHONES_BASEADDR);
+	iq_fifo_tx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR);
+	mic_fifo = 		(uint32_t *) get_highmem_ptr(XPAR_AUDIO_FIFO_MIC_BASEADDR);
+	modem_ctrl = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR);
+	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
+	iq_rx_blkmem = (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 
-#if IQMODEM_BLOCKMEMORY
-	iq_rx_blkmem = get_blockmem_ptr(AXI_IQ_FIFO_RX_ADDR, 1);
-#else
-	iq_fifo_rx = get_highmem_ptr(AXI_IQ_FIFO_RX_ADDR);
-#endif /* IQMODEM_BLOCKMEMORY */
-
-	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
-	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
-	reg_write(AXI_ADI_ADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
+	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
+	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
+	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
 
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
@@ -455,60 +425,47 @@ void linux_iq_thread(void)
 	static int rx_stage = 0;
 	uint32_t * r = (uint32_t *) addr32rx;
 
-#if IQMODEM_BLOCKMEMORY
+	uint32_t pos = * iq_count_rx;
+	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
+	memcpy(r, iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
+
+	save_dmabuffer32rx(addr32rx);
+	addr32rx = allocate_dmabuffer32rx();
+
+	rx_stage += CNT32RX;
+
+	while (rx_stage >= CNT16TX)
 	{
-		uint32_t pos = * iq_count_rx;
-		uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
-		memcpy(r, iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
-#else
-	uint32_t iqcnt = * iq_count_rx;
-	if (iqcnt >= DMABUFFSIZE32RX)
-	{
-		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
-			r[i] = * iq_fifo_rx;
-#endif /* IQMODEM_BLOCKMEMORY */
+		const uintptr_t addr2 = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr2;
 
-		save_dmabuffer32rx(addr32rx);
-		addr32rx = allocate_dmabuffer32rx();
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			* ph_fifo = b[i];
 
-		rx_stage += CNT32RX;
-
-		while (rx_stage >= CNT16TX)
-		{
-			const uintptr_t addr2 = getfilled_dmabuffer16tx();
-			uint32_t * b = (uint32_t *) addr2;
-
-			for (int i = 0; i < DMABUFFSIZE16TX; i ++)
-				* ph_fifo = b[i];
-
-			release_dmabuffer16tx(addr2);
-			rx_stage -= CNT16TX;
-		}
+		release_dmabuffer16tx(addr2);
+		rx_stage -= CNT16TX;
 	}
 
-	if (* iq_count_tx < DMABUFFSIZE32TX)
-	{
 #if WITHFT8
-		if (! ft8_get_state())
+	if (! ft8_get_state())
 #endif /* WITHFT8 */
-		{
-			uintptr_t addr_mic = allocate_dmabuffer16rx();
-			uint32_t * m = (uint32_t *) addr_mic;
+	{
+		uintptr_t addr_mic = allocate_dmabuffer16rx();
+		uint32_t * m = (uint32_t *) addr_mic;
 
-			for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
-				m[i] = * mic_fifo;
+		for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
+			m[i] = * mic_fifo;
 
-			save_dmabuffer16rx(addr_mic);
-		}
-
-		const uintptr_t addr = getfilled_dmabuffer32tx_main();
-		uint32_t * r = (uint32_t *) addr;
-
-		for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-			* iq_fifo_tx = r[i];
-
-		release_dmabuffer32tx(addr);
+		save_dmabuffer16rx(addr_mic);
 	}
+
+	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	uint32_t * t = (uint32_t *) addr;
+
+	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+		* iq_fifo_tx = t[i];
+
+	release_dmabuffer32tx(addr);
 }
 
 void linux_iq_interrupt_thread(void)
@@ -710,7 +667,7 @@ void update_modem_ctrl(void)
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
 			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
-			| (! hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
+			| (hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
 			| 0;
 
 	* modem_ctrl = v;
@@ -731,14 +688,14 @@ void xcz_rxtx_state(uint8_t tx)
 void xcz_dds_rts(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-    * rts = v;
+	* rts = v;
     mirror_ncorts = v;
 }
 
 void xcz_dds_ftw(const uint_least64_t * val)
 {
 	uint32_t v = * val;
-    * ftw = v;
+	* ftw = v;
     mirror_nco1 = v;
 }
 
@@ -809,7 +766,7 @@ static adapter_t plfircoefsout;		/* параметры прербразован�
 void board_fpga_fir_initialize(void)
 {
 	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
-	fir_reload = get_highmem_ptr(AXI_FIR_RELOAD_ADDR);
+	fir_reload = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR);
 }
 
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)

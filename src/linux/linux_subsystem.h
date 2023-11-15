@@ -96,8 +96,6 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
 uint_fast8_t gpio_readpin(uint8_t pin);
 void gpio_writepin(uint8_t pin, uint8_t val);
 
-uint16_t linux_i2c_read(uint16_t slave_address, uint16_t reg, uint8_t * buf, const uint8_t size);
-
 void cs_i2c_assert(spitarget_t target);
 void cs_i2c_deassert(spitarget_t target);
 void cs_i2c_disable(void);
