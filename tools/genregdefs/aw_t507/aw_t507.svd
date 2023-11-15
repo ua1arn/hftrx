@@ -4683,7 +4683,7 @@
   </peripheral>
   <peripheral>
   <name>GPIOA</name>
-  <description></description>
+  <description>Port Controller</description>
   <baseAddress>0x0300B000</baseAddress>
   <registers>
    <cluster>
@@ -4768,12 +4768,16 @@
   <baseAddress>0x0300B120</baseAddress>
   </peripheral>
   <peripheral derivedFrom="GPIOA">
+  <name>R_PIO</name>
+  <baseAddress>0x07022000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
   <name>GPIOL</name>
   <baseAddress>0x07022000</baseAddress>
   </peripheral>
   <peripheral>
   <name>GPIOBLOCK</name>
-  <description></description>
+  <description>Port Controller</description>
   <baseAddress>0x0300B000</baseAddress>
   <registers>
    <cluster>
@@ -8650,6 +8654,40 @@
   <peripheral derivedFrom="TWI0">
   <name>TWI4</name>
   <baseAddress>0x05003000</baseAddress>
+  <interrupt>
+   <name>TWI0</name>
+   <value>38</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI1</name>
+   <value>39</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI2</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI3</name>
+   <value>41</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWI4</name>
+   <value>42</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_TWI0</name>
+   <value>137</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="TWI0">
+  <name>R_TWI</name>
+  <baseAddress>0x07081400</baseAddress>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>

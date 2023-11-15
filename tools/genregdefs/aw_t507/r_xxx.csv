@@ -1,0 +1,14 @@
+#type; RTC
+#base; RTC		0x07000000
+
+#type; R_CPUCFG
+#base; R_CPUCFG	0x07000400
+
+#type; PRCM
+#base; PRCM		0x07010000
+
+#type; R_WDOG
+#base; R_WDOG	0x07020400
+
+#type; R_UART
+#base; R_UART	0x07080000

@@ -1,16 +1,20 @@
 #type; TWI
+
 #base; TWI0 0x05002000
 #base; TWI1 0x05002400
 #base; TWI2 0x05002800
 #base; TWI3 0x05002C00
 #base; TWI4 0x05003000
-#base; S_TWI0 0x07081400
+#base; R_TWI	0x07081400; S_TWI0
+#base; S_TWI0	0x07081400; R_TWI
+
 #irq; TWI0 38
 #irq; TWI1 39
 #irq; TWI2 40
 #irq; TWI3 41
 #irq; TWI4 42
 #irq; S_TWI0 137
+
 #regdef; TWI_ADDR; 0x0000; TWI Slave Address Register
 #regdef; TWI_XADDR; 0x0004; TWI Extended Slave Address Register
 #regdef; TWI_DATA; 0x0008; TWI Data Byte Register

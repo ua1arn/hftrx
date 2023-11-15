@@ -1,22 +1,24 @@
-#type; GPIO
+#type; GPIO; Port Controller
+
 #base; GPIOA 0x0300B000
 ##base; GPIOB 0x0300B024
-#base; GPIOC 0x0300B048
-#base; GPIOD 0x0300B06C
-#base; GPIOE 0x0300B090
-#base; GPIOF 0x0300B0B4
-#base; GPIOG 0x0300B0D8
-#base; GPIOH 0x0300B0FC
-#base; GPIOI 0x0300B120
+#base; GPIOC 	0x0300B048
+#base; GPIOD 	0x0300B06C
+#base; GPIOE 	0x0300B090
+#base; GPIOF 	0x0300B0B4
+#base; GPIOG 	0x0300B0D8
+#base; GPIOH 	0x0300B0FC
+#base; GPIOI 	0x0300B120
 
-#base; GPIOL 0x07022000
+#base; R_PIO	0x07022000; GPIOL
+#base; GPIOL 	0x07022000; R_PIO
 
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
 #regdef; DRV; 0x014 2; Multi_Driving Register
 #regdef; PULL; 0x01C 2; Pull Register
 
-#type; GPIOBLOCK
+#type; GPIOBLOCK; Port Controller
 #base; GPIOBLOCK 0x0300B000
 #base; GPIOBLOCK_L 0x01F02C00
 
