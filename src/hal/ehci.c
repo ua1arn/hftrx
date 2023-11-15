@@ -1140,14 +1140,15 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		OHCI: HcRhPortStatus[0]=00000100
 //		OHCI: HcRhPortStatus[1]=00000000
 
-//		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 0); // PortEnableStatus
+		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 0); // PortEnableStatus
+		local_delay_ms(PowerOnToPowerGoodTime);
 
 //		PRINTF("init OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 //		PRINTF("init OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 
 //		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
-		hehci->ohci->HcRevision |= cpu_to_le32(UINT32_C(1) << 5);	// BulkListEnable
-		hehci->ohci->HcRevision |= cpu_to_le32(UINT32_C(1) << 4);	// ControlListEnable
+////		hehci->ohci->HcRevision |= cpu_to_le32(UINT32_C(1) << 5);	// BulkListEnable
+////		hehci->ohci->HcRevision |= cpu_to_le32(UINT32_C(1) << 4);	// ControlListEnable
 		//hehci->ohci->HcRevision |= cpu_to_le32(UINT32_C(1) << 2);	// PeriodicListEnable
 //		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 	}
@@ -2078,18 +2079,20 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("speed=USB_SPEED_FULL, portsc=%08X\n", portsc);
 	}
 
-	if (speed != USBH_SPEED_HIGH && hehci->ohci != 0 && 0)
+	if (speed != USBH_SPEED_HIGH && hehci->ohci != NULL)
 	{
 		ASSERT(hehci->ohci != NULL);
 		// передать управление портом к companion controller (OHCI)
-		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
-		portsc |= EHCI_PORTSC_OWNER;
-		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
-		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+//		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+//		portsc |= EHCI_PORTSC_OWNER;
+//		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+//		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
+		//unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
-		unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
+
+#if 0
 //		hehci->ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
 //		while ((hehci->ohci->HcControl & cpu_to_le32(UINT32_C(1) << 3)) == 0)
 //			;
@@ -2100,7 +2103,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
 		PRINTF("OHCI: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]));
 		local_delay_ms(PowerOnToPowerGoodTime);
-//		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 0); // PortEnableStatus
+		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 0); // PortEnableStatus
 		local_delay_ms(PowerOnToPowerGoodTime);
 
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
@@ -2109,6 +2112,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 //		hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] = cpu_to_le32(UINT32_C(1) << 4);	// port reset
 //		while ((hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT] & cpu_to_le32(UINT32_C(1) << 4)) != 0)
 //			;
+#endif
 		PRINTF("OHCI: %s Speed device attached\n", (le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]) & (UINT32_C(1) << 9)) ? "Low" : "Full");
 	}
 #endif /* CPUSTYLE_XC7Z */
