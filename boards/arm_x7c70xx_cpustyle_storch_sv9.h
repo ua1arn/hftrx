@@ -21,7 +21,7 @@
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
 //#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
@@ -34,14 +34,14 @@
 //#define WITHPS7BOARD_ANTMINER 1
 #define WITHPS7BOARD_MYC_Y7Z020 1
 
-#define XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR		65
-#define XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR			64
-#define XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR			63
-#define XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR			62
+#define XPAR_FABRIC_AXI_FIFO_PHONES_IRQ_INTR		63
+#define XPAR_FABRIC_AXI_FIFO_MIC_IRQ_INTR			65
+#define XPAR_FABRIC_AXI_FIFO_IQ_RX_IRQ_INTR			61
+#define XPAR_FABRIC_AXI_FIFO_IQ_TX_IRQ_INTR			64
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT	47
-#define CALIBRATION_IQ_CIC_RX_SHIFT	0	// not use in this bitstream
-#define CALIBRATION_TX_SHIFT	24
+#define CALIBRATION_IQ_FIR_RX_SHIFT		50
+#define CALIBRATION_IQ_CIC_RX_SHIFT		62
+#define CALIBRATION_TX_SHIFT			28
 
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
@@ -1271,7 +1271,7 @@
 			TUNE_INITIALIZE(); \
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
-			ETHERNET_INITIALIZE(); \
+			/*ETHERNET_INITIALIZE(); */\
 			USB_ULPI_INITIALIZE(); \
 		} while (0)
 

@@ -2061,9 +2061,7 @@ static void window_utilites_process(void)
 #if WITHLFM
 		add_element("btn_lfm",      100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
-#if WITHIQSHIFT
 		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
-#endif /* WITHIQSHIFT */
 
 		x = 0;
 		y = 0;
@@ -2133,12 +2131,10 @@ static void window_utilites_process(void)
 				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
-#if WITHIQSHIFT
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_shift"))
 			{
 				open_window(get_win(WINDOW_SHIFT));
 			}
-#endif /* WITHIQSHIFT */
 		}
 		break;
 
@@ -4043,7 +4039,6 @@ static void window_gui_settings_process(void)
 
 static void window_shift_process(void)
 {
-#if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static unsigned update = 0, cic_test = 0;
@@ -4199,8 +4194,6 @@ static void window_shift_process(void)
 			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", iq_cic_test_process());
 		}
 	}
-
-#endif /* WITHIQSHIFT */
 }
 
 // *********************************************************************************************************************************************************************
