@@ -851,7 +851,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		else if ((portsc & EHCI_PORTSC_OWNER) != 0)
 		{
 			// OHCI connected
- 			PRINTF("Device Disonnect handler, OHCI ownership portsc=%08X\n", portsc);
+ 			PRINTF("Device Disonnect handler, release to OHCI ownership portsc=%08X\n", portsc);
 		}
  		else
  		{
@@ -895,7 +895,22 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 	const unsigned HcInterruptStatus = le32_to_cpu(hehci->ohci->HcInterruptStatus);
 	if ((HcInterruptStatus & (UINT32_C(1) << 6)) != 0)
 	{
-		PRINTF("HAL_OHCI_IRQHandler: RootHubStatusChange HcInterruptStatus=%08X\n", HcInterruptStatus);
+		const uint32_t HcRhPortStatus = le32_to_cpu(hehci->ohci->HcRhPortStatus[WITHOHCIHW_OHCIPORT]);
+		//PRINTF("HAL_OHCI_IRQHandler: RootHubStatusChange HcInterruptStatus=%08X\n", HcInterruptStatus);
+		PRINTF("HAL_OHCI_IRQHandler: HcRhPortStatus[%d]=%08X\n", WITHOHCIHW_OHCIPORT, (unsigned) HcRhPortStatus);
+		if ((HcRhPortStatus & 0x01) == 0) // CurrentConnectStatus
+		{
+			// передать управление портом к EHCI
+			uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+			portsc &= ~ EHCI_PORTSC_OWNER;
+			hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+			(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+
+			PRINTF("Back to EHCI\n");
+			//HAL_EHCI_PortEnabled_Callback(hehci);
+ 			HAL_EHCI_Disconnect_Callback(hehci);
+
+		}
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 5)) != 0)
@@ -1093,8 +1108,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	{
 		uint_fast32_t portsc = hehci->portsc[porti];
 
- 		////portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI - already zero after set EHCI_CONFIGFLAG_CF
-		portsc &= ~ EHCI_PORTSC_CHANGE;
+ 		portsc &= ~ EHCI_PORTSC_CHANGE;
 		portsc |= EHCI_PORTSC_PP;
 
 		hehci->portsc[porti] = portsc;
@@ -2081,12 +2095,11 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 
 	if (speed != USBH_SPEED_HIGH && hehci->ohci != NULL)
 	{
-		ASSERT(hehci->ohci != NULL);
 		// передать управление портом к companion controller (OHCI)
-//		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
-//		portsc |= EHCI_PORTSC_OWNER;
-//		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
-//		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+		portsc |= EHCI_PORTSC_OWNER;
+		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 
 		//unsigned PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 		PRINTF("OHCI: HcRhStatus=%08X\n", le32_to_cpu(hehci->ohci->HcRhStatus));
@@ -2141,7 +2154,6 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	if (resetIsActive)
 	{
  		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
- 		portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI
 		/* Reset port */
  		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
@@ -2152,7 +2164,6 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	else
 	{
 		uint_fast32_t portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
- 		portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI
  		/* Release Reset port */
  		portsc &= ~ EHCI_PORTSC_PR;	 /** Port reset */
 
