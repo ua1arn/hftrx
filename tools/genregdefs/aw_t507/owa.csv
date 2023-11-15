@@ -1,3 +1,15 @@
-#type; OWA; 
+#type; OWA; One Wire Audio
 #irq; OWA 53
 
+#base; OWA 0x05093000
+
+#regdef; OWA_GEN_CTL; 0x0000 OWA General Control Register
+#regdef; OWA_TX_CFIG; 0x0004; OWA TX Configuration Register
+#regdef; OWA_ISTA; 0x000C; OWA Interrupt Status Register
+#regdef; OWA_FCTL; 0x0014; OWA FIFO Control Register
+#regdef; OWA_FSTA; 0x0018; OWA FIFO; Status Register
+#regdef; OWA_INT; 0x001C; OWA Interrupt Control Register
+#regdef; OWA_TX_FIFO; 0x0020; OWA TX FIFO Register
+#regdef; OWA_TX_CNT; 0x0024; OWA TX Counter Register
+#regdef; OWA_TX_CHSTA0; 0x002C; OWA TX Channel Status Register0
+#regdef; OWA_TX_CHSTA1; 0x0030; OWA TX Channel Status Register1

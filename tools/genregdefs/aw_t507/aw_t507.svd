@@ -6819,6 +6819,108 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>OWA</name>
+  <description>One Wire Audio</description>
+  <baseAddress>0x05093000</baseAddress>
+  <interrupt>
+   <name>OWA</name>
+   <value>53</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>OWA_GEN_CTL</name>
+    <displayName>OWA_GEN_CTL</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_TX_CFIG</name>
+    <displayName>OWA_TX_CFIG</displayName>
+    <description>OWA TX Configuration Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_ISTA</name>
+    <displayName>OWA_ISTA</displayName>
+    <description>OWA Interrupt Status Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_FCTL</name>
+    <displayName>OWA_FCTL</displayName>
+    <description>OWA FIFO Control Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_FSTA</name>
+    <displayName>OWA_FSTA</displayName>
+    <description>OWA FIFO</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_INT</name>
+    <displayName>OWA_INT</displayName>
+    <description>OWA Interrupt Control Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_TX_FIFO</name>
+    <displayName>OWA_TX_FIFO</displayName>
+    <description>OWA TX FIFO Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_TX_CNT</name>
+    <displayName>OWA_TX_CNT</displayName>
+    <description>OWA TX Counter Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_TX_CHSTA0</name>
+    <displayName>OWA_TX_CHSTA0</displayName>
+    <description>OWA TX Channel Status Register0</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_TX_CHSTA1</name>
+    <displayName>OWA_TX_CHSTA1</displayName>
+    <description>OWA TX Channel Status Register1</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>PWM</name>
   <description>Pulse Width Modulation module</description>
   <baseAddress>0x0300A000</baseAddress>

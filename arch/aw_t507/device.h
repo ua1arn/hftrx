@@ -49,7 +49,7 @@ typedef enum IRQn
     GPADC_IRQn = 50,                                  /*!< GPADC  */
     THS_IRQn = 51,                                    /*!< THS THS interrupt */
     LRADC_IRQn = 52,                                  /*!< LRADC  */
-    OWA_IRQn = 53,                                    /*!< OWA  */
+    OWA_IRQn = 53,                                    /*!< OWA One Wire Audio */
     DMIC_IRQn = 54,                                   /*!< DMIC Digital Microphone Interface */
     AudioCodec_ADC_IRQn = 55,                         /*!< AUDIO_CODEC AudioCodec_ADC interrupt */
     AHUB_IRQn = 56,                                   /*!< AHUB AudioHub interrupt */
@@ -207,6 +207,7 @@ typedef enum IRQn
 #define GPADC_BASE ((uintptr_t) 0x05070000)           /*!< GPADC  Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
 #define LRADC_BASE ((uintptr_t) 0x05070800)           /*!< LRADC  Base */
+#define OWA_BASE ((uintptr_t) 0x05093000)             /*!< OWA One Wire Audio Base */
 #define DMIC_BASE ((uintptr_t) 0x05095000)            /*!< DMIC Digital Microphone Interface Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x05096000)     /*!< AUDIO_CODEC Audio Codec Base */
 #define AHUB_BASE ((uintptr_t) 0x05097000)            /*!< AHUB Audio HUB Base */
@@ -1338,6 +1339,26 @@ typedef struct LRADC_Type
     volatile uint32_t LRADC_DATA0;                    /*!< Offset 0x00C LRADC Data Register0 */
 } LRADC_TypeDef; /* size of structure = 0x010 */
 /*
+ * @brief OWA
+ */
+/*!< OWA One Wire Audio */
+typedef struct OWA_Type
+{
+    volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x000 (null) */
+    volatile uint32_t OWA_TX_CFIG;                    /*!< Offset 0x004 OWA TX Configuration Register */
+             uint32_t reserved_0x008;
+    volatile uint32_t OWA_ISTA;                       /*!< Offset 0x00C OWA Interrupt Status Register */
+             uint32_t reserved_0x010;
+    volatile uint32_t OWA_FCTL;                       /*!< Offset 0x014 OWA FIFO Control Register */
+    volatile uint32_t OWA_FSTA;                       /*!< Offset 0x018 OWA FIFO */
+    volatile uint32_t OWA_INT;                        /*!< Offset 0x01C OWA Interrupt Control Register */
+    volatile uint32_t OWA_TX_FIFO;                    /*!< Offset 0x020 OWA TX FIFO Register */
+    volatile uint32_t OWA_TX_CNT;                     /*!< Offset 0x024 OWA TX Counter Register */
+             uint32_t reserved_0x028;
+    volatile uint32_t OWA_TX_CHSTA0;                  /*!< Offset 0x02C OWA TX Channel Status Register0 */
+    volatile uint32_t OWA_TX_CHSTA1;                  /*!< Offset 0x030 OWA TX Channel Status Register1 */
+} OWA_TypeDef; /* size of structure = 0x034 */
+/*
  * @brief PWM
  */
 /*!< PWM Pulse Width Modulation module */
@@ -2041,6 +2062,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define LRADC ((LRADC_TypeDef *) LRADC_BASE)          /*!< LRADC  register set access pointer */
+#define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC Digital Microphone Interface register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */
 #define AHUB ((AHUB_TypeDef *) AHUB_BASE)             /*!< AHUB Audio HUB register set access pointer */
