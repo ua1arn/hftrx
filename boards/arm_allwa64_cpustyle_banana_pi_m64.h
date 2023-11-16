@@ -78,6 +78,8 @@
 	#define WITHUSBHOST_DMAENABLE 1
 
 //	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	#define WITHTINYUSB 1
+//	#define BOARD_TUH_RHPORT 1
 //	#define WITHUSBHW_EHCI		USBEHCI1	/* host only port ? 0x01C1B000  */
 	//#define WITHUSBHW_OHCI		USBOHCI1	/* host-only port */
 
@@ -158,6 +160,8 @@
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 
+	#define WITHTINYUSB 1
+	#define BOARD_TUH_RHPORT 1
 	#define WITHUSBHW_EHCI		USBEHCI1
 	#define WITHUSBHW_OHCI		USBOHCI1
 

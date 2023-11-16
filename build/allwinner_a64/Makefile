@@ -147,7 +147,7 @@ DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # tinyusb
 SRCDIRS += $(PRJROOT)/lib/tinyusb/src
 DINCDIR += $(PRJROOT)/lib/tinyusb/src
@@ -192,7 +192,7 @@ SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
