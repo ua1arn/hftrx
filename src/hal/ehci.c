@@ -1920,7 +1920,7 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 {
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef *) phost->pData;
 
-#if WITHEHCIHWSOFTSPOLL
+#if 1//WITHEHCIHWSOFTSPOLL
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& hehci->asynclock);
@@ -2402,7 +2402,7 @@ void MX_USB_HOST_Process(void)
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
 	USBH_Process(& hUsbHostHS);
 
-#if 1//WITHEHCIHWSOFTSPOLL
+#if WITHEHCIHWSOFTSPOLL
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& hehci->asynclock);
