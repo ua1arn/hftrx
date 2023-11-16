@@ -81,13 +81,13 @@ typedef struct TU_ATTR_ALIGNED(16)
   volatile uint32_t condition_code : 4;
 
 	// Word 1
-	volatile uint8_t* current_buffer_pointer;
+	volatile uint32_t current_buffer_pointer;
 
 	// Word 2 : next TD
 	volatile uint32_t next;
 
 	// Word 3
-	uint8_t* buffer_end;
+	volatile uint32_t buffer_end;
 } ohci_gtd_t;
 
 TU_VERIFY_STATIC( sizeof(ohci_gtd_t) == 16, "size is not correct" );

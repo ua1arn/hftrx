@@ -986,9 +986,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
-#if WITHTINYUSB
-	//return HAL_OK;
-#endif
 
 	// 	ehci_init(& ehcidevice0, hehci->Instance);
 	//    INIT_LIST_HEAD(& ehcidevice0.endpoints);
@@ -1023,6 +1020,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
+
 
 	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
 	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
@@ -1204,6 +1202,10 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 	}
 
+#if WITHTINYUSB && CFG_TUH_ENABLED && TUP_USBIP_EHCI
+	ehci_init(BOARD_TUH_RHPORT, (uintptr_t) WITHUSBHW_EHCI, opregspacebase);
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
+#endif
 	return HAL_OK;
 }
 

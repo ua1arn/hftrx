@@ -32,6 +32,7 @@
 #include "tusb.h"
 #include "host/usbh.h"
 
+#if TUP_USBIP_OHCI
 // Enable USB interrupt
 void hcd_int_enable(uint8_t rhport)
 {
@@ -43,6 +44,12 @@ void hcd_int_disable(uint8_t rhport)
 {
 
 }
+#endif
+
+
+bool hcd_dcache_clean(void const* addr, uint32_t data_size) { dcache_clean((uintptr_t) addr, data_size); return true; }
+bool hcd_dcache_invalidate(void const* addr, uint32_t data_size) { dcache_invalidate((uintptr_t) addr, data_size); return true; }
+bool hcd_dcache_clean_invalidate(void const* addr, uint32_t data_size) { dcache_clean_invalidate((uintptr_t) addr, data_size); return true; }
 
 //--------------------------------------------------------------------+
 // Host HID
