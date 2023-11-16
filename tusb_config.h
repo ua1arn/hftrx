@@ -35,7 +35,8 @@
 #define CFG_TUH_MSC	1
 #define CFG_TUH_HID	1
 #define CFG_TUH_CDC	1
-#define CFG_TUSB_DEBUG 0	// 0..3
+//#define CFG_TUH_BTH	1
+#define CFG_TUSB_DEBUG 3	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
 #define CFG_TUH_DEVICE_MAX	4
@@ -82,13 +83,9 @@
  * - CFG_TUSB_MEM SECTION : __attribute__ (( section(".usb_ram") ))
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
-#ifndef CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_SECTION
-#endif
 
-#ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN        __attribute__ ((aligned(64)))
-#endif
+#define CFG_TUSB_MEM_SECTION RAMNC
+#define CFG_TUSB_MEM_SECTION RAMNC
 
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
@@ -103,6 +100,18 @@
 
 // DFU buffer size, it has to be set to the buffer size used in TUD_DFU_DESCRIPTOR
 #define CFG_TUD_DFU_XFER_BUFSIZE  (TUD_OPT_HIGH_SPEED ? 512 : 64)
+
+
+#define LPC_USB_BASE WITHUSBHW_OHCI
+
+#define CI_HS_REG(_port)        ((void *) WITHUSBHW_EHCI)
+//------------- DCD -------------//
+#define CI_DCD_INT_ENABLE(_p)   do { } while (0)
+#define CI_DCD_INT_DISABLE(_p)  do { } while (0)
+
+//------------- HCD -------------//
+#define CI_HCD_INT_ENABLE(_p)   do { } while (0)
+#define CI_HCD_INT_DISABLE(_p)  do { } while (0)
 
 #ifdef __cplusplus
  }
