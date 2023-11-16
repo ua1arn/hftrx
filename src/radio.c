@@ -13001,7 +13001,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 // Градусы в десятых долях
 // Read from thermo sensor ST LM235Z (2 kOhm to +12)
-int_fast16_t hamradio_get_temperature_value(void)
+int_fast16_t hamradio_get_PAtemp_value(void)
 {
 	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 
@@ -13030,7 +13030,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 	}
 	else
 	{
-		PRINTF(PSTR("hamradio_get_temperature_value: ref=%u\n"), ref);
+		PRINTF(PSTR("hamradio_get_PAtemp_value: ref=%u\n"), ref);
 		return 999;
 	}
 
@@ -16350,8 +16350,8 @@ uint_fast8_t hamradio_get_txdisable(void)
 	}
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if WITHTHERMOLEVEL
-	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_temperature_value(), (int) gtempvmax * 10);
-	if (gheatprot != 0 && hamradio_get_temperature_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
+	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
+	if (gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX

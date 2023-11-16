@@ -1336,7 +1336,7 @@ static void gui_main_process(void)
 #if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 		if (hamradio_get_tx())
 		{
-			const ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
+			const ldiv_t t = ldiv(hamradio_get_PAtemp_value(), 10);
 			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
 			PRINTF("%s\n", buf);		// пока вывод в консоль
 		}

@@ -2535,7 +2535,7 @@ static void display2_thermo4(
 	)
 {
 #if WITHTHERMOLEVEL
-	int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
+	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 
 	// 50+ - красный
 	// 30+ - желтый
@@ -2571,7 +2571,7 @@ static void display2_thermo5(
 	)
 {
 #if WITHTHERMOLEVEL
-	int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
+	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 
 	// 50+ - красный
 	// 30+ - желтый
