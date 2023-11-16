@@ -129,7 +129,7 @@ void tuh_task(void)
 bool tuh_task_event_ready(void);
 
 #ifndef _TUSB_HCD_H_
-extern void hcd_int_handler(uint8_t rhport);
+extern void hcd_int_handler(uint8_t rhport, int inirq);
 #endif
 
 // Interrupt handler, name alias to HCD

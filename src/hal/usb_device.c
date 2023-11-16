@@ -176,7 +176,7 @@ void MX_USB_DEVICE_DeInit(void)
 
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 static void
 board_usb_tspool(void * ctx)
@@ -216,6 +216,9 @@ void MX_USB_HOST_DeInit(void)
 
 }
 
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI) */
+
+#if defined (WITHUSBHW_HOST)
 /* User-mode function */
 void MX_USB_HOST_Process(void)
 {

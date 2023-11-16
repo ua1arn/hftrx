@@ -11,3 +11,6 @@
 [submodule "lib/hftrx_btstack"]
 	path = lib/hftrx_btstack
 	url = https://github.com/ua1arn/hftrx_btstack.git
+[submodule "lib/tinyusb"]
+	path = lib/tinyusb
+	url = https://github.com/hathach/tinyusb.git
