@@ -505,6 +505,9 @@ static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 //	(void) EHCIx->USBCMD;
 //	while ((EHCIx->USBSTS & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
 //		;
+#if WITHTINYUSB
+	return;
+#endif
 
 	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
@@ -519,6 +522,9 @@ static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 
 static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 {
+#if WITHTINYUSB
+	return;
+#endif
 	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
@@ -716,7 +722,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-#if WITHTINYUSB && TUP_USBIP_EHCI
+#if WITHTINYUSB //&& TUP_USBIP_EHCI
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
 	return;
 #endif
@@ -895,7 +901,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
-#if WITHTINYUSB && TUP_USBIP_OHCI
+#if WITHTINYUSB //&& TUP_USBIP_OHCI
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
 	return;
 #endif
@@ -1064,6 +1070,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	}
 	dcache_clean_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 
+
+#if ! WITHTINYUSB
+
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
 	// Читаем командный регистр
@@ -1126,16 +1135,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//	1 HAL_EHCI_Init: PORTSC=00002000
 	//	2 HAL_EHCI_Init: PORTSC=00000000
 	//	3 HAL_EHCI_Init: PORTSC=00001000
-
-	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
-	/* Route all ports to EHCI controller */
-	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
-#if ! WITHTINYUSB
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
-#endif
-	(void) * hehci->configFlag;
-	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
-	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
 	/* Enable power to all ports */
 	unsigned porti = WITHEHCIHW_EHCIPORT;
@@ -1202,9 +1201,23 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 	}
 
+#endif /* ! WITHTINYUSB */
+
 #if WITHTINYUSB
 	tuh_init(BOARD_TUH_RHPORT);
 #endif /* WITHTINYUSB */
+
+
+	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
+	/* Route all ports to EHCI controller */
+	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
+#if ! WITHTINYUSB
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
+#endif /* ! WITHTINYUSB */
+	(void) * hehci->configFlag;
+	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
+	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
+
 	return HAL_OK;
 }
 
@@ -1509,6 +1522,10 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
                                            uint8_t do_ping)
 {
 	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+
+#if WITHTINYUSB
+	return HAL_OK;
+#endif
 
 	hc->ep_is_in = direction;
 	hc->ep_type = ep_type;
