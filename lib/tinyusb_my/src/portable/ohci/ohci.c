@@ -677,7 +677,7 @@ static void done_queue_isr(uint8_t hostid)
   ohci_data_clean_invalidate();
 }
 
-void hcd_int_handler(uint8_t hostid)
+void hcd_int_handler(uint8_t hostid, int inirq)
 {
   uint32_t const int_en     = OHCI_REG->interrupt_enable;
   uint32_t const int_status = OHCI_REG->interrupt_status & int_en;
