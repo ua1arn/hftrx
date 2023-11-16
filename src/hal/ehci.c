@@ -1027,47 +1027,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
 	LCLSPINLOCK_INITIALIZE(& hehci->asynclock);
 
-	// https://habr.com/ru/post/426421/
-	// Read the Command register
-	// Читаем командный регистр
-	// Write it back, setting bit 2 (the Reset bit)
-	// Записываем его обратно, выставляя бит 2(Reset)
-	// and making sure the two schedule Enable bits are clear.
-	// и проверяем, что 2 очереди выключены
-	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
-	// A small delay here would be good. You don't want to read
-	// Небольшая задержка здесь будет неплоха, Вы не должны читать
-	// the register before it has a chance to actually set the bit
-	// регистр перед тем, как у него не появится шанса выставить бит
-	(void) EHCIx->USBCMD;
-	// Now wait for the controller to clear the reset bit.
-	// Ждем пока контроллер сбросит бит Reset
-	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
-		;
-	// Again, a small delay here would be good to allow the
-	// reset to actually become complete.
-	// Опять задержка
-	(void) EHCIx->USBCMD;
-
-	USBH_POSTRESET_INIT();
-
-#if WITHUSBHOST_HIGHSPEEDULPI
-	//ulpi_chip_debug();
-#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-
-
-	// wait for the halted bit to become set
-	// Ждем пока бит Halted не будет выставлен
-	while ((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0)
-		;
-	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
-	// Замечу, что все мои дескрипторы и элементы очереди выровнены на границу 128 байт
-
-	// Disable interrupts
-	// Отключаем прерывания
-	//hc->opRegs->usbIntr = 0;
-	EHCIx->USBINTR = 0;
-
 	/* подготовка кольцевого списка QH */
 	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++ i)
 	{
@@ -1104,6 +1063,47 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
 	}
 	dcache_clean_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
+
+	// https://habr.com/ru/post/426421/
+	// Read the Command register
+	// Читаем командный регистр
+	// Write it back, setting bit 2 (the Reset bit)
+	// Записываем его обратно, выставляя бит 2(Reset)
+	// and making sure the two schedule Enable bits are clear.
+	// и проверяем, что 2 очереди выключены
+	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	// A small delay here would be good. You don't want to read
+	// Небольшая задержка здесь будет неплоха, Вы не должны читать
+	// the register before it has a chance to actually set the bit
+	// регистр перед тем, как у него не появится шанса выставить бит
+	(void) EHCIx->USBCMD;
+	// Now wait for the controller to clear the reset bit.
+	// Ждем пока контроллер сбросит бит Reset
+	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
+		;
+	// Again, a small delay here would be good to allow the
+	// reset to actually become complete.
+	// Опять задержка
+	(void) EHCIx->USBCMD;
+
+	USBH_POSTRESET_INIT();
+
+	// wait for the halted bit to become set
+	// Ждем пока бит Halted не будет выставлен
+	while ((EHCIx->USBSTS & EHCI_USBSTS_HCH) == 0)
+		;
+	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
+	// Замечу, что все мои дескрипторы и элементы очереди выровнены на границу 128 байт
+
+	// Disable interrupts
+	// Отключаем прерывания
+	//hc->opRegs->usbIntr = 0;
+	EHCIx->USBINTR = 0;
+
+#if WITHUSBHOST_HIGHSPEEDULPI
+	//ulpi_chip_debug();
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
@@ -1202,10 +1202,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		PRINTF("init OHCI: HcRevision=%08X\n", le32_to_cpu(hehci->ohci->HcRevision));
 	}
 
-#if WITHTINYUSB && CFG_TUH_ENABLED && TUP_USBIP_EHCI
-	ehci_init(BOARD_TUH_RHPORT, (uintptr_t) WITHUSBHW_EHCI, opregspacebase);
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
-#endif
+#if WITHTINYUSB
+	tuh_init(BOARD_TUH_RHPORT);
+#endif /* WITHTINYUSB */
 	return HAL_OK;
 }
 
@@ -1410,6 +1409,9 @@ void ulpi_chip_vbuson(uint_fast8_t state)
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 {
+#if WITHTINYUSB
+	return HAL_OK;
+#endif /* WITHTINYUSB */
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
  	// Enable controller
  	// Запускаем контроллер, 8 микро-фреймов, включаем
@@ -1450,10 +1452,6 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 	(void) EHCI_DriveVbus(hehci->Instance, UINT32_C(1));
 	__HAL_UNLOCK(hehci);
 
-#if WITHTINYUSB
-	tuh_init(BOARD_TUH_RHPORT);
-#endif /* WITHTINYUSB */
-
 	return HAL_OK;
 }
 
@@ -1465,6 +1463,9 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
+#if WITHTINYUSB
+	return HAL_OK;
+#endif /* WITHTINYUSB */
 	__HAL_LOCK(hehci);
 	(void) EHCI_StopHost(hehci->Instance);
 
