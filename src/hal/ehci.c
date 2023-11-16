@@ -12,9 +12,13 @@
 #include "board.h"
 #include "gpio.h"
 
-#include "usb_device.h"
+//#include "usb_device.h"
 #include "usbh_core.h"
 #include "ehci.h"
+
+#if WITHTINYUSB
+	#include "tusb.h"
+#endif
 
 #if defined (WITHUSBHW_EHCI)
 
@@ -712,7 +716,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
- 	/* Защита от вызовов при неинициализированном объекте при опросе. */
+#if WITHTINYUSB && TUP_USBIP_EHCI
+	hcd_int_handler(BOARD_TUH_RHPORT, 1);
+	return;
+#endif
+	/* Защита от вызовов при неинициализированном объекте при опросе. */
  	if (EHCIx == NULL)
  		return;
 
@@ -887,6 +895,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
+#if WITHTINYUSB && TUP_USBIP_OHCI
+	hcd_int_handler(BOARD_TUH_RHPORT, 1);
+	return;
+#endif
 	if (hehci->ohci == NULL)
 		return;
 	//ASSERT(0);
@@ -923,8 +935,8 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 6);	/* reset interrupt */
 
 	}
-#if WITHTINYUSB
-	hcd_int_handler(BOARD_TUH_RHPORT);
+#if WITHTINYUSB && 1
+	hcd_int_handler(BOARD_TUH_RHPORT, 1);
 	return;
 #else
 	if ((HcInterruptStatus & (UINT32_C(1) << 5)) != 0)
@@ -974,6 +986,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
+#if WITHTINYUSB
+	//return HAL_OK;
+#endif
 
 	// 	ehci_init(& ehcidevice0, hehci->Instance);
 	//    INIT_LIST_HEAD(& ehcidevice0.endpoints);
@@ -1117,7 +1132,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//PRINTF("1 HAL_EHCI_Init: PORTSC=%08X @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
+////	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
 	(void) * hehci->configFlag;
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
@@ -2383,34 +2398,6 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 }
 
 /* User-mode function */
-void MX_USB_HOST_Init(void)
-{
-	static ticker_t usbticker;
-	/* Init Host Library,Add Supported Class and Start the library*/
-	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
-
-#if WITHUSEUSBBT
-	USBH_RegisterClass(& hUsbHostHS, USBH_BLUETOOTH_CLASS);
-#endif /* WITHUSEUSBBT */
-#if WITHUSEUSBFLASH
-	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
-#endif /* WITHUSEUSBFLASH */
-#if 1
-	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
-	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
-#endif /* WITHUSEUSBFLASH */
-	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	//ticker_add(& usbticker);
-
-}
-
-/* User-mode function */
-void MX_USB_HOST_DeInit(void)
-{
-	USBH_DeInit(& hUsbHostHS);
-}
-
-/* User-mode function */
 void MX_USB_HOST_Process(void)
 {
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
@@ -2452,13 +2439,13 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 	const unsigned OHCIx_12M_SRC_SEL = 1;	// OHCI3_12M_SRC_SEL 01: 12M divided from 24 MHz
 
-	{
-		// PHY2 enable
-		CCU->USB2_CLK_REG = (CCU->USB2_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
-		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
-		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
-		SetupHostUsbPhyc(USBPHYC2);
-	}
+//	{
+//		// PHY2 enable
+//		CCU->USB2_CLK_REG = (CCU->USB2_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
+//		CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
+//		CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
+//		SetupHostUsbPhyc(USBPHYC2);
+//	}
 
 	if (0)
 	{
@@ -2492,8 +2479,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC0);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB20_HOST0_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB20_HOST0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST0_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else if (WITHUSBHW_EHCI == USB20_HOST1_EHCI)
@@ -2521,8 +2508,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC1);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB20_HOST1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else if (WITHUSBHW_EHCI == USB20_HOST2_EHCI)
@@ -2550,8 +2537,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC2);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB20_HOST2_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST2_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else if (WITHUSBHW_EHCI == USB20_HOST3_EHCI)
@@ -2577,8 +2564,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC3);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB20_HOST3_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB20_HOST3_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
@@ -2696,8 +2683,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		USBOTG0->PHY_OTGCTL &= ~ (UINT32_C(1) << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
@@ -2723,8 +2710,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
-		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
