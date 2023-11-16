@@ -286,7 +286,7 @@ void LowerIrql(IRQL_t newIRQL);
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-	#define RAMNC //__attribute__((section(".ramnc")))
+	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_T507
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
