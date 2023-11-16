@@ -11819,7 +11819,7 @@ void hightests(void)
 			rendertest2(DIM_X, DIM_Y);
 			display_flush();		// наблюдаем процесс
 			const time_t end = time(NULL);
-#if WITHTHERMOLEVEL
+#if defined (GET_CPU_TEMPERATURE)
 		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
 #else /* WITHTHERMOLEVEL */
 		PRINTF("tiger: cnt=%u, %d s\n", cnt, (int) (end - start));

@@ -16049,7 +16049,7 @@ static void dpc_1stimer(void * arg)
 	//gui_gnssupdate();
 #endif /*WITHTOUCHGUI */
 
-#if WITHTHERMOLEVEL && ! WITHTOUCHGUI && 0
+#if defined (GET_CPU_TEMPERATURE) && ! WITHTOUCHGUI && 0
 	uint8_t c = GET_CPU_TEMPERATURE();
 	PRINTF(PSTR("CPU temp: %dC\n"), c);
 #endif

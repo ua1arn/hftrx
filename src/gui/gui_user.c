@@ -1278,7 +1278,7 @@ static void gui_main_process(void)
 
 			case INFOBAR_CPU_TEMP:
 			{
-	#if WITHTHERMOLEVEL
+	#if defined (GET_CPU_TEMPERATURE)
 				// вывод температуры процессора, если поддерживается
 				static float cpu_temp = 0;
 				if (update)
@@ -1289,7 +1289,7 @@ static void gui_main_process(void)
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
 				local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORMAIN_RED : COLORMAIN_WHITE);
-	#endif /* WITHTHERMOLEVEL */
+	#endif /* defined (GET_CPU_TEMPERATURE) */
 			}
 				break;
 
