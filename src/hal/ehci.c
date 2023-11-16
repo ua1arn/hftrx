@@ -1228,13 +1228,6 @@ void USBH_EHCI_IRQHandler(void)
 	HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
-// TinyUSB interface
-void ohci_disconnect_handler(void)
-{
-//	hehci_USB.ohci->HcCommandStatus = cpu_to_le32(UINT32_C(1) << 3);	// OwnershipChangeRequest
-	//HAL_EHCI_Disconnect_Callback(& hehci_USB);
-}
-
 #if WITHUSBHOST_HIGHSPEEDULPI
 #if CPUSTYLE_XC7Z && defined (WITHUSBHW_EHCI)
 // https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
@@ -1927,6 +1920,7 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 {
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef *) phost->pData;
 
+#if WITHEHCIHWSOFTSPOLL
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& hehci->asynclock);
@@ -1934,6 +1928,7 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 	HAL_OHCI_IRQHandler(& hehci_USB);
 	LCLSPIN_UNLOCK(& hehci->asynclock);
 	LowerIrql(oldIrql);
+#endif
 
 #if WITHINTEGRATEDDSP
 	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
@@ -2407,6 +2402,7 @@ void MX_USB_HOST_Process(void)
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
 	USBH_Process(& hUsbHostHS);
 
+#if 1//WITHEHCIHWSOFTSPOLL
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	LCLSPIN_LOCK(& hehci->asynclock);
@@ -2414,6 +2410,7 @@ void MX_USB_HOST_Process(void)
 	HAL_OHCI_IRQHandler(& hehci_USB);
 	LCLSPIN_UNLOCK(& hehci->asynclock);
 	LowerIrql(oldIrql);
+#endif
 #if WITHTINYUSB
     //tuh_task();
     tuh_task_ext(UINT32_MAX, 0);
@@ -2483,8 +2480,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC0);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB20_HOST0_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB20_HOST0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST0_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else if (WITHUSBHW_EHCI == USB20_HOST1_EHCI)
@@ -2512,8 +2509,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC1);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB20_HOST1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else if (WITHUSBHW_EHCI == USB20_HOST2_EHCI)
@@ -2541,8 +2538,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC2);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB20_HOST2_EHCI_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST2_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST2_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else if (WITHUSBHW_EHCI == USB20_HOST3_EHCI)
@@ -2568,8 +2565,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		SetupHostUsbPhyc(USBPHYC3);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB20_HOST3_EHCI_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST3_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB20_HOST3_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
@@ -2628,6 +2625,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		SetupHostUsbPhyc(USBPHY0);
 
+#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USBOHCI0_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USBEHCI0_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else
 	{
@@ -2651,6 +2652,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 25);	// USB-EHCI0_RST.
 
 		SetupHostUsbPhyc(USBPHY1);
+
+#if WITHEHCIHWSOFTSPOLL == 0
+	arm_hardware_set_handler_system(USBOHCI1_IRQn, USBH_OHCI_IRQHandler);
+	arm_hardware_set_handler_system(USBEHCI1_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -2687,8 +2693,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		USBOTG0->PHY_OTGCTL &= ~ (UINT32_C(1) << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
@@ -2714,8 +2720,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
 
 	#if WITHEHCIHWSOFTSPOLL == 0
-//		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
-//		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
