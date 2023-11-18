@@ -162,6 +162,12 @@ DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
 ifeq (1, 0)
+# custom app
+SRCDIRS += $(PRJROOT)/lib/xhelpert507
+DINCDIR += $(PRJROOT)/lib/xhelpert507
+endif
+
+ifeq (1, 0)
 # OpenVG
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
