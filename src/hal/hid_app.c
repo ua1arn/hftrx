@@ -36,13 +36,13 @@
 // Enable USB interrupt
 void hcd_int_enable(uint8_t rhport)
 {
-	 GIC_EnableIRQ(WITHUSBHW_OHCI_IRQ);
+	arm_hardware_enable_handler(WITHUSBHW_OHCI_IRQ);
 }
 
 // Disable USB interrupt
 void hcd_int_disable(uint8_t rhport)
 {
-	 GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
 }
 #endif
 

@@ -2159,6 +2159,51 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
+// Enable interrupt vector
+void arm_hardware_enable_handler(uint_fast16_t int_ida)
+{
+	const IRQn_Type int_id = (IRQn_Type) int_ida;
+	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
+	ASSERT(arm_hardware_cpuid() == 0);
+
+#if CPUSTYLE_AT91SAM7S
+
+	const uint_fast32_t mask32 = (1UL << int_id);
+
+	AT91C_BASE_AIC->AIC_IECR = mask32;	// enable interrupt
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+	VERIFY(IRQ_Enable(int_id) == 0);
+
+	#if WITHSMPSYSTEM
+		arm_hardware_populate(int_id);
+	#endif /* WITHSMPSYSTEM */
+
+#elif CPUSTYLE_RISCV
+
+	/* Enable interrupt handler */
+		const div_t d = div(int_id, 32);
+		ASSERT(d.quot < 10);
+
+		const unsigned mask = (1u << d.rem);
+		PLIC->PLIC_MIE_REGn [d.quot] |= mask;
+
+#elif CPUSTYLE_CA53
+	#warning implement for CPUSTYLE_CA53
+
+#elif defined (__CORTEX_M)
+
+	NVIC_EnableIRQ(int_id);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	#warning Implement arm_hardware_disable_handler
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
 // Disable interrupt vector
 void arm_hardware_disable_handler(uint_fast16_t int_ida)
 {

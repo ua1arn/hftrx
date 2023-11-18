@@ -2605,8 +2605,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 #if WITHTINYUSB
-	GIC_DisableIRQ(WITHUSBHW_EHCI_IRQ);
-	GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
 #endif /* WITHTINYUSB */
 
 #elif CPUSTYLE_A64

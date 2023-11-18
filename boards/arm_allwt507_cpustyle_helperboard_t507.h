@@ -157,6 +157,7 @@
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_OTG_IRQ	USB20_OTG_DEVICE_IRQn
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI

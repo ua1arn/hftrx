@@ -104,12 +104,12 @@
 #define CI_HS_REG(_port)        ((void *) WITHUSBHW_EHCI)
 
  //------------- DCD -------------//
- #define CI_DCD_INT_ENABLE(_p)   do { xGIC_EnableIRQ(WITHUSBHW_EHCI_IRQ); GIC_EnableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
- #define CI_DCD_INT_DISABLE(_p)  do { xGIC_DisableIRQ(WITHUSBHW_EHCI_IRQ); GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define CI_DCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_OTG_IRQ); } while (0)
+ #define CI_DCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OTG_IRQ); } while (0)
 
  //------------- HCD -------------//
- #define CI_HCD_INT_ENABLE(_p)   do { GIC_EnableIRQ(WITHUSBHW_EHCI_IRQ); GIC_EnableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
- #define CI_HCD_INT_DISABLE(_p)  do { GIC_DisableIRQ(WITHUSBHW_EHCI_IRQ); GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define CI_HCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_enable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define CI_HCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
 
 #ifdef __cplusplus
  }

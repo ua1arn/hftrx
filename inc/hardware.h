@@ -968,6 +968,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
+void arm_hardware_enable_handler(uint_fast16_t int_id);
 void arm_hardware_disable_handler(uint_fast16_t int_id);
 uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
 uint_fast8_t arm_hardware_clustersize(void);
