@@ -108,8 +108,8 @@
  #define CI_DCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OTG_IRQ); } while (0)
 
  //------------- HCD -------------//
- #define CI_HCD_INT_ENABLE(_p)   do { } while (0)
- #define CI_HCD_INT_DISABLE(_p)  do { } while (0)
+ #define CI_HCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_enable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define CI_HCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ); arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ); } while (0)
 
  void ohciehci_clk_init(void);
 
