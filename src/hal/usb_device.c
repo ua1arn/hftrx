@@ -43,7 +43,7 @@ void Error_Handler(void);
 	__ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_OHCI) || defined (WITHUSBHW_EHCI)
 	/* USB Host Core handle declaration. */
 	__ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
@@ -177,20 +177,10 @@ void MX_USB_DEVICE_DeInit(void)
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-static void
-board_usb_tspool(void * ctx)
-{
-#if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUsbHostHS);
-
-#endif /* defined (WITHUSBHW_HOST) */
-}
 
 /* User-mode function */
 void MX_USB_HOST_Init(void)
 {
-	static ticker_t usbticker;
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
@@ -204,9 +194,6 @@ void MX_USB_HOST_Init(void)
 	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
 	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
 #endif /* WITHUSEUSBFLASH */
-	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	//ticker_add(& usbticker);
-
 }
 
 /* User-mode function */
@@ -218,11 +205,32 @@ void MX_USB_HOST_DeInit(void)
 
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI) */
 
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 /* User-mode function */
 void MX_USB_HOST_Process(void)
 {
+#if WITHTINYUSB
+//#if WITHEHCIHWSOFTSPOLL
+//	hcd_int_handler(BOARD_TUH_RHPORT, 0);
+//#endif
+    //tuh_task();
+    tuh_task_ext(UINT32_MAX, 0);
+
+#else /* WITHTINYUSB */
+
 	USBH_Process(& hUsbHostHS);
+
+#if WITHEHCIHWSOFTSPOLL
+	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& hehci->asynclock);
+	HAL_EHCI_IRQHandler(& hehci_USB);
+	HAL_OHCI_IRQHandler(& hehci_USB);
+	LCLSPIN_UNLOCK(& hehci->asynclock);
+	LowerIrql(oldIrql);
+#endif
+#endif /* WITHTINYUSB */
 }
 
 #endif /* defined (WITHUSBHW_HOST) */
@@ -328,6 +336,8 @@ void board_usb_activate(void)
 
 void board_usb_deactivate(void)
 {
+#if WITHTINYUSB
+#else /* WITHTINYUSB */
 #if WITHUSBHW
 	//PRINTF(PSTR("board_usb_deactivate start.\n"));
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
@@ -338,7 +348,9 @@ void board_usb_deactivate(void)
 #endif /* defined (WITHUSBHW_DEVICE) */
 	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 #endif /* WITHUSBHW */
+#endif /* WITHTINYUSB */
 }
+
 void board_usbh_polling(void)
 {
 #if WITHUSBHW

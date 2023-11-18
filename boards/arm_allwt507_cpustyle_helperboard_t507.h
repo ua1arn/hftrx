@@ -169,7 +169,7 @@
 //	#define WITHUSBHOST_DMAENABLE 1
 
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 

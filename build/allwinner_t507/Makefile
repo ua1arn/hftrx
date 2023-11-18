@@ -147,7 +147,7 @@ DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
 

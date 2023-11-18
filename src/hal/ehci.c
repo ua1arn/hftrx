@@ -32,9 +32,6 @@
 
 //#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
-/* USB Host Core handle declaration. */
-USBH_HandleTypeDef hUsbHostHS;
-
 static EHCI_HandleTypeDef hehci_USB;
 
 #if CPUSTYLE_XC7Z
@@ -2406,32 +2403,6 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 	usb_status = USBH_Get_USB_Status(hal_status);
 
 	return usb_status;
-}
-
-/* User-mode function */
-void MX_USB_HOST_Process(void)
-{
-#if WITHTINYUSB
-#if WITHEHCIHWSOFTSPOLL
-	hcd_int_handler(BOARD_TUH_RHPORT, 0);
-#endif
-    //tuh_task();
-    tuh_task_ext(UINT32_MAX, 0);
-    return;
-#endif /* WITHTINYUSB */
-
-	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
-	USBH_Process(& hUsbHostHS);
-
-#if WITHEHCIHWSOFTSPOLL
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& hehci->asynclock);
-	HAL_EHCI_IRQHandler(& hehci_USB);
-	HAL_OHCI_IRQHandler(& hehci_USB);
-	LCLSPIN_UNLOCK(& hehci->asynclock);
-	LowerIrql(oldIrql);
-#endif
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
