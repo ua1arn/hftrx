@@ -515,8 +515,8 @@ void ohciehci_clk_init(void)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 #if WITHTINYUSB
-	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
-	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+//	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+//	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
 #endif /* WITHTINYUSB */
 
 #elif CPUSTYLE_A64

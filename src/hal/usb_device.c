@@ -189,7 +189,7 @@ void MX_USB_HOST_Init(void)
 	TARGET_USBFS_VBUSON_SET(1);
 	local_delay_ms(100);
 	ohciehci_clk_init();
-//	tuh_init(BOARD_TUH_RHPORT);
+	tuh_init(BOARD_TUH_RHPORT);
 #else /* WITHTINYUSB */
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
@@ -225,7 +225,7 @@ void MX_USB_HOST_DeInit(void)
 void MX_USB_HOST_Process(void)
 {
 #if WITHTINYUSB
-	//tuh_task();
+	tuh_task();
 #else
 	USBH_Process(& hUsbHostHS);
 #endif
