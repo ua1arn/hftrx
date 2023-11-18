@@ -142,6 +142,11 @@ enum {
   PID_FROM_TD = 0,
 };
 
+// weak dcache for non-cacheable MCU
+TU_ATTR_WEAK bool hcd_dcache_clean(void const* addr, uint32_t data_size) { (void) addr; (void) data_size; return true; }
+TU_ATTR_WEAK bool hcd_dcache_invalidate(void const* addr, uint32_t data_size) { (void) addr; (void) data_size; return true; }
+TU_ATTR_WEAK bool hcd_dcache_clean_invalidate(void const* addr, uint32_t data_size) { (void) addr; (void) data_size; return true; }
+
 //--------------------------------------------------------------------+
 // INTERNAL OBJECT & FUNCTION DECLARATION
 //--------------------------------------------------------------------+
@@ -160,8 +165,8 @@ static void ed_list_remove_by_addr(ohci_ed_t * p_head, uint8_t dev_addr);
 
 static void ohci_data_clean_invalidate(void)
 {
-	dcache_clean_invalidate((uintptr_t) & ohci_data, sizeof ohci_data);
-	dcache_clean_invalidate((uintptr_t) & p_ed_head, sizeof p_ed_head);
+	hcd_dcache_clean_invalidate((uintptr_t) & ohci_data, sizeof ohci_data);
+	hcd_dcache_clean_invalidate((uintptr_t) & p_ed_head, sizeof p_ed_head);
 }
 
 //--------------------------------------------------------------------+
@@ -494,7 +499,7 @@ bool hcd_edpt_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_endpoint_t const 
 bool hcd_setup_send(uint8_t rhport, uint8_t dev_addr, uint8_t const setup_packet[8])
 {
   (void) rhport;
-  dcache_clean((uintptr_t) setup_packet, 8);
+  hcd_dcache_clean((uintptr_t) setup_packet, 8);
 
   ohci_ed_t* ed   = &ohci_data.control[dev_addr].ed;
   ohci_gtd_t *qtd = &ohci_data.control[dev_addr].gtd;
@@ -522,9 +527,9 @@ bool hcd_edpt_xfer(uint8_t rhport, uint8_t dev_addr, uint8_t ep_addr, uint8_t * 
   uint8_t const dir   = tu_edpt_dir(ep_addr);
 
   if (dir == TUSB_DIR_IN)
-	  dcache_clean_invalidate((uintptr_t) buffer, buflen);
+	  hcd_dcache_clean_invalidate((uintptr_t) buffer, buflen);
   else
-	  dcache_clean((uintptr_t) buffer, buflen);
+	  hcd_dcache_clean((uintptr_t) buffer, buflen);
 
   if ( epnum == 0 )
   {
