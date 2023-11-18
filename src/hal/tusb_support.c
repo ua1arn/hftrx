@@ -346,12 +346,16 @@ void USBH_POSTRESET_INIT(void)
 
 void USBH_OHCI_IRQHandler(void)
 {
+#if TUP_USBIP_OHCI
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
+#endif
 }
 
 void USBH_EHCI_IRQHandler(void)
 {
+#if TUP_USBIP_EHCI
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
+#endif
 }
 
 // Host clocks intialize
