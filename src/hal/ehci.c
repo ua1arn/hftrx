@@ -722,10 +722,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-#if WITHTINYUSB //&& TUP_USBIP_EHCI
-	hcd_int_handler(BOARD_TUH_RHPORT, 1);
-	return;
-#endif
 	/* Защита от вызовов при неинициализированном объекте при опросе. */
  	if (EHCIx == NULL)
  		return;
@@ -901,10 +897,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
-#if WITHTINYUSB //&& TUP_USBIP_OHCI
-	hcd_int_handler(BOARD_TUH_RHPORT, 1);
-	return;
-#endif
 	if (hehci->ohci == NULL)
 		return;
 	//ASSERT(0);
@@ -938,52 +930,40 @@ void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			//HAL_EHCI_Disconnect_Callback(hehci);
 
 		}
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 6);	/* reset interrupt */
 
 	}
-#if WITHTINYUSB && 1
-	hcd_int_handler(BOARD_TUH_RHPORT, 1);
-	return;
-#else
 	if ((HcInterruptStatus & (UINT32_C(1) << 5)) != 0)
 	{
 		//PRINTF("HAL_OHCI_IRQHandler: FrameNumberOverflow HcInterruptStatus=%08X\n", HcInterruptStatus);
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 5);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 4)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: UnrecoverableError HcInterruptStatus=%08X\n", HcInterruptStatus);
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 4);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 3)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: ResumeDetected HcInterruptStatus=%08X\n", HcInterruptStatus);
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 3);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 2)) != 0)
 	{
 		//PRINTF("HAL_OHCI_IRQHandler: StartofFrame HcInterruptStatus=%08X\n", HcInterruptStatus);
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 2);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 1)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: WritebackDoneHead HcInterruptStatus=%08X\n", HcInterruptStatus);
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 1);	/* reset interrupt */
 
 	}
 	if ((HcInterruptStatus & (UINT32_C(1) << 0)) != 0)
 	{
 		PRINTF("HAL_OHCI_IRQHandler: SchedulingOverrun HcInterruptStatus=%08X\n", HcInterruptStatus);
-		hehci->ohci->HcInterruptStatus = cpu_to_le32(UINT32_C(1) << 0);	/* reset interrupt */
 
 	}
 
-	//hehci->ohci->HcInterruptStatus = cpu_to_le32(HcInterruptStatus);	/* reset interrupt */
-#endif /* WITHTINYUSB */
+	hehci->ohci->HcInterruptStatus = cpu_to_le32(HcInterruptStatus);	/* reset interrupt */
 }
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
@@ -1213,8 +1193,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//PRINTF("1 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 #if ! WITHTINYUSB
 	* hehci->configFlag = EHCI_CONFIGFLAG_CF;	// Если нет WITHTINYUSB
-#endif /* ! WITHTINYUSB */
 	(void) * hehci->configFlag;
+#endif /* ! WITHTINYUSB */
 	//PRINTF("2 *hehci->configFlag=%u\n",(unsigned) *hehci->configFlag);
 	//PRINTF("2 HAL_EHCI_Init: PORTSC=%08X\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
@@ -1229,12 +1209,20 @@ HAL_StatusTypeDef HAL_EHCI_DeInit(EHCI_HandleTypeDef *hehci)
 
 void USBH_OHCI_IRQHandler(void)
 {
+#if WITHTINYUSB //&& TUP_USBIP_OHCI
+	hcd_int_handler(BOARD_TUH_RHPORT, 1);
+	return;
+#endif
 	//ehci_bus_poll(& usbbus0);
 	HAL_OHCI_IRQHandler(& hehci_USB);
 }
 
 void USBH_EHCI_IRQHandler(void)
 {
+#if WITHTINYUSB //&& TUP_USBIP_EHCI
+	hcd_int_handler(BOARD_TUH_RHPORT, 1);
+	return;
+#endif
 	//ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
 	HAL_EHCI_IRQHandler(& hehci_USB);
@@ -1522,10 +1510,6 @@ static HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
                                            uint8_t do_ping)
 {
 	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
-
-#if WITHTINYUSB
-	return HAL_OK;
-#endif
 
 	hc->ep_is_in = direction;
 	hc->ep_type = ep_type;
@@ -1890,6 +1874,11 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
 		uint32_t length, uint8_t do_ping)
 {
+#if WITHTINYUSB
+	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
+
+	return USBH_FAIL;
+#endif
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef *) phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
@@ -1927,7 +1916,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  * @retval URB state
  *          This parameter can be one of the these values:
  *            @arg URB_IDLE
- *            @arg URB_DONE - nex state
+ *            @arg URB_DONE - next state
  *            @arg URB_NOTREADY = USBH_URB_NOTREADY = end waiting
  *            @arg URB_NYET
  *            @arg URB_ERROR - USBH_URB_ERROR = end waiting
@@ -1937,6 +1926,11 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe)
 {
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef *) phost->pData;
+
+#if WITHTINYUSB
+	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
+	return URB_IDLE;
+#endif
 
 #if 1//WITHEHCIHWSOFTSPOLL
 	IRQL_t oldIrql;
@@ -2417,6 +2411,15 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 /* User-mode function */
 void MX_USB_HOST_Process(void)
 {
+#if WITHTINYUSB
+#if WITHEHCIHWSOFTSPOLL
+	hcd_int_handler(BOARD_TUH_RHPORT, 0);
+#endif
+    //tuh_task();
+    tuh_task_ext(UINT32_MAX, 0);
+    return;
+#endif /* WITHTINYUSB */
+
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
 	USBH_Process(& hUsbHostHS);
 
@@ -2429,10 +2432,6 @@ void MX_USB_HOST_Process(void)
 	LCLSPIN_UNLOCK(& hehci->asynclock);
 	LowerIrql(oldIrql);
 #endif
-#if WITHTINYUSB
-    //tuh_task();
-    tuh_task_ext(UINT32_MAX, 0);
-#endif /* WITHTINYUSB */
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
