@@ -16,7 +16,11 @@
 
 #include "src/fatfs/ff.h"
 #include "src/fatfs/diskio.h"		/* FatFs lower layer API */
+#if WITHTINYUSB
+#include "tusb.h"
+#else
 #include "../../Class/MSC/Inc/usbh_msc.h"
+#endif
 
 #include "usbd_def.h"
 #include "usbd_core.h"

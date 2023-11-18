@@ -16209,7 +16209,7 @@ void app_processing(
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW
 	if (bootloader_withusb())
-		board_usbh_polling();     // usb device polling
+		board_usbh_polling();     // usb host & device polling
 #endif /* WITHUSBHW */
 #if WITHWAVPLAYER || WITHSENDWAV
 	spoolplayfile();
@@ -19762,7 +19762,7 @@ static void hamradio_main_initialize(void)
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW
 	if (bootloader_withusb())
-		board_usbh_polling();     // usb device polling
+		board_usbh_polling();     // usb host & device polling
 #endif /* WITHUSBHW */
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */

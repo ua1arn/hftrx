@@ -146,14 +146,14 @@ DINCDIR += $(MDLWUSBDIR)/Core/Inc
 SRCDIRS += $(MDLWUSBDIR)
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # ST USB HOST
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
 

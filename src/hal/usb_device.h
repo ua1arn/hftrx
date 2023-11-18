@@ -33,7 +33,7 @@
 #endif
 
 
-#if WITHUSBHW
+#if WITHUSBHW && ! WITHTINYUSB
 
 #if WITHUSEUSBBT
 #include "../src/bt/usbh_bluetooth.h"
@@ -44,7 +44,7 @@
 #include "../../Class/HID/Inc/usbh_hid.h"
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
-#endif /* WITHUSBHW */
+#endif /* WITHUSBHW && ! WITHTINYUSB */
 
 /* Includes ------------------------------------------------------------------*/
 #if CPUSTYLE_R7S721
@@ -91,7 +91,13 @@
 
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
+#if WITHUSBHW && ! WITHTINYUSB
 #include "usbh_core.h"
+
+extern USBH_HandleTypeDef hUsbHostHS;
+
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
+#endif
 
 /* USER CODE END INCLUDE */
 
@@ -178,9 +184,6 @@ void MX_USB_HOST_DeInit(void);
 void MX_USB_HOST_Process(void);
 void MX_USB_DEVICE_Process(void);
 
-extern USBH_HandleTypeDef hUsbHostHS;
-
-void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 
 #ifdef __cplusplus
 }
