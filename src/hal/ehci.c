@@ -2604,8 +2604,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		arm_hardware_set_handler_system(USB20_HOST3_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
-//	GIC_DisableIRQ(WITHUSBHW_EHCI_IRQ);
-//	GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ);
+#if WITHTINYUSB
+	GIC_DisableIRQ(WITHUSBHW_EHCI_IRQ);
+	GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
 
 #elif CPUSTYLE_A64
 
