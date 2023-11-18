@@ -21,7 +21,7 @@
 // Enable Device stack
 //#define CFG_TUD_ENABLED       1
 #define CFG_TUH_ENABLED 1
- //#define TUP_USBIP_OHCI 1
+//#define TUP_USBIP_OHCI 1
 #define TUP_USBIP_EHCI 1
 
 #define CFG_TUD_ENDPPOINT_MAX 	5
@@ -102,13 +102,23 @@
 #define LPC_USB_BASE WITHUSBHW_OHCI
 
 #define CI_HS_REG(_port)        ((void *) WITHUSBHW_EHCI)
-//------------- DCD -------------//
-#define CI_DCD_INT_ENABLE(_p)   do { } while (0)
-#define CI_DCD_INT_DISABLE(_p)  do { } while (0)
 
-//------------- HCD -------------//
-#define CI_HCD_INT_ENABLE(_p)   do { } while (0)
-#define CI_HCD_INT_DISABLE(_p)  do { } while (0)
+ //------------- DCD -------------//
+ #define xCI_DCD_INT_ENABLE(_p)   do { GIC_EnableIRQ(WITHUSBHW_EHCI_IRQ); GIC_EnableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define xCI_DCD_INT_DISABLE(_p)  do { GIC_DisableIRQ(WITHUSBHW_EHCI_IRQ); GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
+
+ //------------- HCD -------------//
+ #define xCI_HCD_INT_ENABLE(_p)   do { GIC_EnableIRQ(WITHUSBHW_EHCI_IRQ); GIC_EnableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define xCI_HCD_INT_DISABLE(_p)  do { GIC_DisableIRQ(WITHUSBHW_EHCI_IRQ); GIC_DisableIRQ(WITHUSBHW_OHCI_IRQ); } while (0)
+
+ //------------- DCD -------------//
+ #define CI_DCD_INT_ENABLE(_p)   do {} while (0)
+ #define CI_DCD_INT_DISABLE(_p)  do {} while (0)
+
+ //------------- HCD -------------//
+ #define CI_HCD_INT_ENABLE(_p)   do {} while (0)
+ #define CI_HCD_INT_DISABLE(_p)  do {} while (0)
+
 
 #ifdef __cplusplus
  }
