@@ -156,7 +156,6 @@ endif
 ifeq (1, 1)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
-
 SRCDIRS += $(PRJROOT)/lib/tinyusb/src
 DINCDIR += $(PRJROOT)/lib/tinyusb/src
 endif
