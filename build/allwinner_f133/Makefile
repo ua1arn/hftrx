@@ -70,7 +70,7 @@ DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
+TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -161,8 +161,8 @@ endif
 ifeq (1, 1)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
-SRCDIRS += $(PRJROOT)/lib/tinyusb/src
-DINCDIR += $(PRJROOT)/lib/tinyusb/src
+SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
+DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
 endif
 
 ifeq (1, 0)

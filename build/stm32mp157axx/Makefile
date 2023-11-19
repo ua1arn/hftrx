@@ -69,7 +69,7 @@ MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
+TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
