@@ -49,17 +49,25 @@
 
 #include <stdint.h>
 
+#if WITHTINYUSB
+#include "tusb.h"
+#else
 #include "usbh_core.h"
+#endif
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
+#if WITHTINYUSB
+
+#else /* WITHTINYUSB */
 /* Bluetooth Class Codes */
 #define USB_BLUETOOTH_CLASS                                 0xE0U
 
 extern USBH_ClassTypeDef  Bluetooth_Class;
 #define USBH_BLUETOOTH_CLASS    &Bluetooth_Class
+#endif /* WITHTINYUSB */
 
 /**
  * @brief Check stack if a packet can be sent now
