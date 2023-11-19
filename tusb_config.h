@@ -21,8 +21,8 @@
 // Enable Device stack
 //#define CFG_TUD_ENABLED       1
 #define CFG_TUH_ENABLED 1
-#define TUP_USBIP_OHCI 1
-//#define TUP_USBIP_EHCI 1
+//#define TUP_USBIP_OHCI 1
+#define TUP_USBIP_EHCI 1
 
 #define CFG_TUH_ENDPOINT_MAX 	16
 #define CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST
@@ -35,7 +35,7 @@
 #define CFG_TUH_CDC	1
 #define CFG_TUH_BTH	1
 
-#define CFG_TUSB_DEBUG 0	// 0..3
+#define CFG_TUSB_DEBUG 3	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
 #define CFG_TUH_DEVICE_MAX	4
