@@ -21,6 +21,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "board.h"
 #include "formats.h"
 #include "gpio.h"
 
@@ -381,8 +382,8 @@ void board_usbh_polling(void)
 
 uint_fast8_t hamradio_get_usbh_active(void)
 {
-#if WITHTINYUSB
-	return 1;
+#if WITHTINYUSB && CFG_TUH_ENABLED
+	return tuh_msc_mounted(1);
 #elif WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
 	return hUsbHostHS.device.is_connected != 0;

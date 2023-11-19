@@ -33,7 +33,7 @@
 #define CFG_TUH_HID	4
 #define CFG_TUH_CDC	1
 //#define CFG_TUH_BTH	1
-#define CFG_TUSB_DEBUG 2	// 0..3
+#define CFG_TUSB_DEBUG 0	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
 #define CFG_TUH_DEVICE_MAX	4

@@ -996,8 +996,6 @@ void network_spool(void);
 
 //#define UNUSED(x) ((void)(x))
 
-#define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
-
 
 #define  ARRAY_SIZE(a)  (sizeof (a) / sizeof (a) [0])
 
