@@ -186,7 +186,7 @@ void MX_USB_DEVICE_DeInit(void)
 void MX_USB_HOST_Init(void)
 {
 #if WITHTINYUSB
-	TARGET_USBFS_VBUSON_SET(1);
+	board_set_usbhostvbuson(1);
 	local_delay_ms(100);
 	ohciehci_clk_init();
 	tuh_init(BOARD_TUH_RHPORT);
