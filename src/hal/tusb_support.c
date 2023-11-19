@@ -608,6 +608,10 @@ void ohciehci_clk_init(void)
 	arm_hardware_set_handler_system(USBEHCI1_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
+#if WITHTINYUSB
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
@@ -675,6 +679,10 @@ void ohciehci_clk_init(void)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	}
+#if WITHTINYUSB
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
 
 	if ((void *) WITHUSBHW_EHCI == USBEHCI0)
 	{
@@ -743,6 +751,10 @@ void ohciehci_clk_init(void)
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
+#if WITHTINYUSB
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
 
 #elif CPUSTYLE_XC7Z
 
@@ -815,6 +827,10 @@ void ohciehci_clk_init(void)
 		{
 			ASSERT(0);
 		}
+#if WITHTINYUSB
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
 
 #else
 
