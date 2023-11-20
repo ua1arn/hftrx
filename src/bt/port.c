@@ -360,16 +360,26 @@ void port_main(void){
     //btstack_run_loop_execute();
 }
 
+#if WITHTINYUSB
+void tuh_bth_mount_cb(uint8_t idx)
+{
+	PRINTF("bt_initialize start\n");
+	port_main();
+	PRINTF("bt_initialize done\n");
+}
 
+#endif
 
 /* Bluetooth initialize */
 void bt_initialize(void)
 {
+
+#if ! WITHTINYUSB
 	PRINTF("bt_initialize start\n");
-
 	port_main();
-
 	PRINTF("bt_initialize done\n");
+#endif
+
 }
 
 /* Bluetooth enable */
