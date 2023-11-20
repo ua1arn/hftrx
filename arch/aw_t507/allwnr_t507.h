@@ -194,7 +194,6 @@ enum DMAC_DstReqType
 	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
 };
 
-
 #if defined (USE_HAL_DRIVER)
   #include "t113s3_hal.h"
 #endif /* USE_HAL_DRIVER */
