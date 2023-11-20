@@ -167,12 +167,6 @@ DINCDIR += $(PRJROOT)/lib/LuPng
 endif
 
 ifeq (1, 0)
-# custom app
-SRCDIRS += $(PRJROOT)/lib/xhelpert507
-DINCDIR += $(PRJROOT)/lib/xhelpert507
-endif
-
-ifeq (1, 0)
 # OpenVG
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
@@ -219,6 +213,12 @@ ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
+endif
+
+ifeq (1, 0)
+# custom application
+SRCDIRS += $(PRJROOT)/lib/xhelpert507
+DINCDIR += $(PRJROOT)/lib/xhelpert507
 endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
