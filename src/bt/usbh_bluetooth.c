@@ -48,6 +48,35 @@
 #include "btstack_util.h"
 #include "bluetooth.h"
 
+#if WITHTINYUSB
+
+// higher-layer callbacks
+static void (*usbh_packet_sent)(void);
+static void (*usbh_packet_received)(uint8_t packet_type, uint8_t * packet, uint16_t size);
+
+void usbh_bluetooth_set_packet_sent(void (*callback)(void)){
+    usbh_packet_sent = callback;
+}
+
+
+void usbh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size)){
+    usbh_packet_received = callback;
+}
+
+bool usbh_bluetooth_can_send_now(void){
+    return tu_fifo_remaining(0);
+}
+
+void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
+	tuh_bth_send_cmd(0, packet, len);
+}
+
+void usbh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
+	tuh_bth_send_acl(0, packet, len);
+}
+
+#else /* WITHTINYUSB */
+
 typedef struct {
     uint8_t acl_in_ep;
     uint8_t acl_in_pipe;
@@ -395,5 +424,7 @@ void usbh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
     acl_len    = len;
     usbh_out_state = USBH_OUT_ACL_SEND;
 }
+
+#endif /* WITHTINYUSB */
 
 #endif /* WITHUSEUSBBT */

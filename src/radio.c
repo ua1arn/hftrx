@@ -16280,6 +16280,7 @@ processmessages(
 
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
 #if WITHUSEUSBBT
+		void btstack_run_loop_embedded_execute_once(void);
 		btstack_run_loop_embedded_execute_once();
 #endif /* WITHUSEUSBBT */
 	app_processing(inmenu, mp);
