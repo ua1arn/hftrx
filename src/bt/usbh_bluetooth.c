@@ -56,7 +56,7 @@ static void (*usbh_packet_received)(uint8_t packet_type, uint8_t * packet, uint1
 
 void tuh_bth_rx_cb(uint8_t idx)
 {
-	uint8_t buf [512];
+	uint8_t buf [HCI_ACL_PAYLOAD_SIZE];
 	uint32_t const bufsize = sizeof buf;
 
 	uint32_t count = tuh_bth_read(idx, buf, bufsize);

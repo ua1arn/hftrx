@@ -346,10 +346,10 @@ void port_main(void){
     rfcomm_init();	// везде в примерах убрать
 
     // hand over to btstack embedded code
-    //VERIFY(! spp_counter_btstack_main(0, NULL));
+    VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
     //VERIFY(! a2dp_sink_btstack_main(0, NULL));
-    VERIFY(! hfp_hf_btstack_main(0, NULL));
+    //VERIFY(! hfp_hf_btstack_main(0, NULL));
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
