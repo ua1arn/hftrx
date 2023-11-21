@@ -67,12 +67,12 @@ void tuh_bth_rx_cb(uint8_t idx)
 
 }
 // Invoked when received notificaion
-void tuh_bth_event_cb(uint8_t idx)
+void tuh_bth_event_cb(uint8_t idx, uint8_t * buffer, uint16_t size)
 {
-	TP();
-	static uint8_t buf[64];
+	PRINTF("usbh_packet_received (event)\n");
+	printhex(0, buffer, size);
 	if (usbh_packet_received)
-		usbh_packet_received(HCI_EVENT_PACKET, buf, 1);
+		usbh_packet_received(HCI_EVENT_PACKET, buffer, size);
 }
 
 void tuh_bth_tx_complete_cb(uint8_t idx)
@@ -364,8 +364,8 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                     // event complete
                     if (hci_event_offset >= event_size){
                         hci_event_offset = 0;
-                    	//PRINTF("usbh_packet_received (event)\n");
-                    	//printhex(0, hci_event, event_size);
+                    	PRINTF("usbh_packet_received (event)\n");
+                    	printhex(0, hci_event, event_size);
                         ASSERT(usbh_packet_received);
                         (*usbh_packet_received)(HCI_EVENT_PACKET, hci_event, event_size);
                     }
@@ -412,8 +412,8 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                 printf("Extra HCI EVENT!\n");
             }
             if (hci_acl_in_offset >= acl_size){
-            	//PRINTF("usbh_packet_received (data)\n");
-            	//printhex(0, hci_acl_in_packet, acl_size);
+            	PRINTF("usbh_packet_received (data)\n");
+            	printhex(0, hci_acl_in_packet, acl_size);
                 ASSERT(usbh_packet_received);
                 (*usbh_packet_received)(HCI_ACL_DATA_PACKET, hci_acl_in_packet, acl_size);
                 hci_acl_in_offset = 0;
@@ -459,8 +459,8 @@ bool usbh_bluetooth_can_send_now(void){
 }
 
 void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
-	//PRINTF("usbh_bluetooth_send_cmd\n");
-	//printhex(0, packet, len);
+	PRINTF("usbh_bluetooth_send_cmd\n");
+	printhex(0, packet, len);
     btstack_assert(usbh_out_state == USBH_OUT_IDLE);
     cmd_packet = packet;
     cmd_len    = len;
@@ -468,8 +468,8 @@ void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 }
 
 void usbh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
-	//PRINTF("usbh_bluetooth_send_acl\n");
-	//printhex(0, packet, len);
+	PRINTF("usbh_bluetooth_send_acl\n");
+	printhex(0, packet, len);
     btstack_assert(usbh_out_state == USBH_OUT_IDLE);
     acl_packet = packet;
     acl_len    = len;
