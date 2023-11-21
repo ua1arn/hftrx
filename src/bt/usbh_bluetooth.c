@@ -101,6 +101,7 @@ void usbh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, ui
 static const int bth_idx = 0;
 
 bool usbh_bluetooth_can_send_now(void){
+    return true;
     return tuh_bth_write_available(bth_idx);
 }
 
