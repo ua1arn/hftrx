@@ -56,9 +56,8 @@ static void (*usbh_packet_received)(uint8_t packet_type, uint8_t * packet, uint1
 
 void tuh_bth_rx_cb(uint8_t idx)
 {
-	TP();
-	uint8_t buf[64];
-	uint32_t const bufsize = 64;
+	uint8_t buf [512];
+	uint32_t const bufsize = sizeof buf;
 
 	uint32_t count = tuh_cdc_read(idx, buf, bufsize);
 //	PRINTF("usbh_packet_received (data)\n");

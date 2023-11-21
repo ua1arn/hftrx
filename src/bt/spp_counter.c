@@ -104,15 +104,15 @@ static void spp_service_setup(void){
     sm_init();
 #endif
 
-#if 0
-    rfcomm_init();
+#if 1
+    //rfcomm_init();
     rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
 #endif
 
     // init SDP, create record for SPP and register with SDP
     //sdp_init();
     memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
-    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, WITHBRANDSTR " SPP Counter");
+    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, "SPP Counter");
     btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
     sdp_register_service(spp_service_buffer);
 }

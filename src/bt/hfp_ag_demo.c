@@ -749,7 +749,7 @@ int hfp_ag_btstack_main(int argc, const char * argv[]){
         (1<<HFP_AGSF_THREE_WAY_CALLING);
 
     // HFP
-    rfcomm_init();
+    //rfcomm_init();
     hfp_ag_init(rfcomm_channel_nr);
     hfp_ag_init_supported_features(supported_features);
     hfp_ag_init_codecs(sizeof(codecs), codecs);

@@ -203,20 +203,20 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
     case BTSTACK_EVENT_STATE:
         if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) return;
         gap_local_bd_addr(local_addr);
-        printf("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+        PRINTF("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
         break;
     case HCI_EVENT_PIN_CODE_REQUEST:
-        printf("Pin code request - using '0000'\n");
+        PRINTF("Pin code request - using '0000'\n");
         hci_event_pin_code_request_get_bd_addr(packet, address);
         gap_pin_code_response(address, "0000");
         break;
     case GAP_EVENT_PAIRING_COMPLETE:
-        printf("Paired!\n");
+        PRINTF("Paired!\n");
         break;
     case HCI_EVENT_USER_CONFIRMATION_REQUEST:
         // ssp: inform about user confirmation request
-        printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
-        printf("SSP User Confirmation Auto accept\n");
+        PRINTF("User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+        PRINTF("User Confirmation Auto accept\n");
         break;
 	default:
 		break;
@@ -224,7 +224,7 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 }
 
 void btstack_assert_failed(const char * file, uint16_t line_nr){
-    printf("ASSERT in %s, line %u failed - HALT\n", file, line_nr);
+    PRINTF("ASSERT in %s, line %u failed - HALT\n", file, line_nr);
     while(1);
 }
 
@@ -292,7 +292,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 void port_main(void){
 
-    printf("BTstack on STM32 F4 Discovery with USB support starting...\n");
+    PRINTF("BTstack on STM32 F4 Discovery with USB support starting...\n");
 
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
@@ -341,17 +341,18 @@ void port_main(void){
     hci_event_callback_registration.callback = &packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
 
-    sdp_init();		// везде убрать
-    l2cap_init();	// везде убрать
-    rfcomm_init();	// везде убрать
+    sdp_init();		// везде в примерах убрать
+    l2cap_init();	// везде в примерах убрать
+    rfcomm_init();	// везде в примерах убрать
 
     // hand over to btstack embedded code
-    VERIFY(! spp_counter_btstack_main(0, NULL));
+    //VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
     //VERIFY(! a2dp_sink_btstack_main(0, NULL));
     VERIFY(! hfp_hf_btstack_main(0, NULL));
 
-    gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
+    //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
+    gap_set_local_name(WITHBRANDSTR " BTx");
     gap_discoverable_control(1);
 //    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
 //    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
