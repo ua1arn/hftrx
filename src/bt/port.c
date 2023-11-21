@@ -292,7 +292,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 void port_main(void){
 
-    PRINTF("BTstack on STM32 F4 Discovery with USB support starting...\n");
+    //PRINTF("BTstack on STM32 F4 Discovery with USB support starting...\n");
 
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
@@ -366,8 +366,10 @@ void port_main(void){
 #if WITHTINYUSB
 void tuh_bth_mount_cb(uint8_t idx)
 {
+	static int v = 1;
 	PRINTF("bt_initialize start\n");
-	port_main();
+	if (v) port_main();
+	v = 0;
 	PRINTF("bt_initialize done\n");
 }
 
