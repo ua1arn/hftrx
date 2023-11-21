@@ -2048,6 +2048,7 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 	// vl, vr: 32 bit, signed - преобразуем к требуемому формату для передачи по USB здесь.
 	void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 	{
+#if WITHUSBUACIN
 #if WITHUSBUACIN2
 	#if WITHRTS96
 		if (uacinrtsalt == UACINRTSALT_RTS96)
@@ -2067,6 +2068,7 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 	#if WITHRTS192
 	#endif /* WITHRTS192 */
 #endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 	}
 
 #endif /* WITHRTS96 */

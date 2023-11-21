@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 BlueKitchen GmbH
+ * Copyright (C) 2016 BlueKitchen GmbH
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,75 +30,54 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Please inquire about commercial licensing options at
+ * Please inquire about commercial licensing options at 
  * contact@bluekitchen-gmbh.com
  *
  */
+ 
+/*
+ * sco_demo_util.h - send/receive test data via SCO, used by hfp_*_demo and hsp_*_demo
+ */
 
-// *****************************************************************************
-//
-// USB Bluetooth Host Class for STM32Cube USB Host Library
-//
-// *****************************************************************************
 
-#ifndef USBH_BLUETOOTH_H
-#define USBH_BLUETOOTH_H
+#ifndef SCO_DEMO_UTIL_H
+#define SCO_DEMO_UTIL_H
 
-#include "btstack_config.h"
-#include "btstack_bool.h"
-
-#include <stdint.h>
-
-#if WITHTINYUSB
-#include "tusb.h"
-#else
-#include "usbh_core.h"
-#endif
+#include "hci.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
-#if WITHTINYUSB
-
-#else /* WITHTINYUSB */
-/* Bluetooth Class Codes */
-#define USB_BLUETOOTH_CLASS                                 0xE0U
-
-extern USBH_ClassTypeDef  Bluetooth_Class;
-#define USBH_BLUETOOTH_CLASS    &Bluetooth_Class
-#endif /* WITHTINYUSB */
+/**
+ * @brief Init demo SCO data production/consumtion
+ */
+void sco_demo_init(void);
 
 /**
- * @brief Check stack if a packet can be sent now
- * @return true if packet can be sent
+ * @brief Set codec (cvsd:0x01, msbc:0x02) and initalize wav writter and portaudio .
+ * @param codec
  */
-bool usbh_bluetooth_can_send_now(void);
+ void sco_demo_set_codec(uint8_t codec);
 
 /**
- * @brief Send HCI Command packet
- * @param packet
- * @param len
+ * @brief Send next data on con_handle
+ * @param con_handle
  */
-void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len);
+void sco_demo_send(hci_con_handle_t con_handle);
 
 /**
- * @brief Send HCI ACL packet
- * @param packet
- * @param len
+ * @brief Process received data
  */
-void usbh_bluetooth_send_acl(const uint8_t * packet, uint16_t len);
+void sco_demo_receive(uint8_t * packet, uint16_t size);
 
 /**
- * @brief Set packet sent callback
- * @param callback
+ * @brief Close WAV writer, stop portaudio stream
  */
-void usbh_bluetooth_set_packet_sent(void (*callback)(void));
+void sco_demo_close(void);
 
-/**
- * @brief Set packet handler
- * @param callback
- */
-void usbh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size));
+#if defined __cplusplus
+}
+#endif
 
 #endif

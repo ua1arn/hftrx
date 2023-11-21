@@ -146,31 +146,24 @@ DINCDIR += $(MDLWUSBDIR)/Core/Inc
 SRCDIRS += $(MDLWUSBDIR)
 endif
 
-ifeq (1, 1)
+ifeq (1, 0)
 # ST USB HOST
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
-
-SRCDIRS += $(PRJROOT)/lib/tinyusb/src
-DINCDIR += $(PRJROOT)/lib/tinyusb/src
+SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
+DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
 endif
 
 ifeq (1, 0)
 # LuPng
 SRCDIRS += $(PRJROOT)/lib/LuPng
 DINCDIR += $(PRJROOT)/lib/LuPng
-endif
-
-ifeq (1, 0)
-# custom app
-SRCDIRS += $(PRJROOT)/lib/xhelpert507
-DINCDIR += $(PRJROOT)/lib/xhelpert507
 endif
 
 ifeq (1, 0)
@@ -216,10 +209,16 @@ SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # btstack
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
+endif
+
+ifeq (1, 0)
+# custom application
+SRCDIRS += $(PRJROOT)/lib/xhelpert507
+DINCDIR += $(PRJROOT)/lib/xhelpert507
 endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)

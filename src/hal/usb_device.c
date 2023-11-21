@@ -21,10 +21,15 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "board.h"
 #include "formats.h"
+#include "gpio.h"
 
 #if WITHUSBHW
 
+#if WITHTINYUSB
+#include "tusb.h"
+#endif
 #include "usb_device.h"
 
 /* USER CODE BEGIN PV */
@@ -43,7 +48,7 @@ void Error_Handler(void);
 	__ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_OHCI) || defined (WITHUSBHW_EHCI)
+#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_OHCI) || defined (WITHUSBHW_EHCI))
 	/* USB Host Core handle declaration. */
 	__ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
@@ -181,6 +186,12 @@ void MX_USB_DEVICE_DeInit(void)
 /* User-mode function */
 void MX_USB_HOST_Init(void)
 {
+#if WITHTINYUSB
+	board_set_usbhostvbuson(1);
+	local_delay_ms(100);
+	ohciehci_clk_init();
+	tuh_init(BOARD_TUH_RHPORT);
+#else /* WITHTINYUSB */
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
@@ -194,13 +205,18 @@ void MX_USB_HOST_Init(void)
 	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
 	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
 #endif /* WITHUSEUSBFLASH */
+#endif /* WITHTINYUSB */
 }
 
 /* User-mode function */
 void MX_USB_HOST_DeInit(void)
 {
+#if WITHTINYUSB
+//	tuh_deinit(BOARD_TUH_RHPORT);
+//	ohciehci_clk_deinit();
+#else /* WITHTINYUSB */
 	USBH_DeInit(& hUsbHostHS);
-
+#endif
 }
 
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI) */
@@ -210,16 +226,10 @@ void MX_USB_HOST_DeInit(void)
 void MX_USB_HOST_Process(void)
 {
 #if WITHTINYUSB
-//#if WITHEHCIHWSOFTSPOLL
-//	hcd_int_handler(BOARD_TUH_RHPORT, 0);
-//#endif
-    //tuh_task();
-    tuh_task_ext(UINT32_MAX, 0);
-
-#else /* WITHTINYUSB */
-
+	tuh_task();
+#else
 	USBH_Process(& hUsbHostHS);
-
+#endif
 #if WITHEHCIHWSOFTSPOLL
 	EHCI_HandleTypeDef * const hehci = (EHCI_HandleTypeDef*) hUsbHostHS.pData;
 	IRQL_t oldIrql;
@@ -230,7 +240,6 @@ void MX_USB_HOST_Process(void)
 	LCLSPIN_UNLOCK(& hehci->asynclock);
 	LowerIrql(oldIrql);
 #endif
-#endif /* WITHTINYUSB */
 }
 
 #endif /* defined (WITHUSBHW_HOST) */
@@ -324,7 +333,7 @@ void board_usb_activate(void)
 		Error_Handler();
 	}
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 	if (USBH_Start(& hUsbHostHS) != USBH_OK)
 	{
 		Error_Handler();
@@ -355,7 +364,15 @@ void board_usbh_polling(void)
 {
 #if WITHUSBHW
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+#if WITHTINYUSB
+//#if WITHEHCIHWSOFTSPOLL
+//	hcd_int_handler(BOARD_TUH_RHPORT, 0);
+//#endif
+    //tuh_task();
+    tuh_task_ext(UINT32_MAX, 0);
+#else /* WITHTINYUSB */
 	MX_USB_HOST_Process();
+#endif
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Process();
@@ -365,7 +382,9 @@ void board_usbh_polling(void)
 
 uint_fast8_t hamradio_get_usbh_active(void)
 {
-#if WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+#if WITHTINYUSB && CFG_TUH_ENABLED
+	return tuh_msc_mounted(1);
+#elif WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
 	return hUsbHostHS.device.is_connected != 0;
 #else
@@ -373,7 +392,7 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
-#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 
 
 /** Status of the application. */

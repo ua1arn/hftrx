@@ -68,11 +68,9 @@ LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
-MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
-MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
+TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -141,38 +139,59 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(DSP3DDIR)/src
 
 ifeq (1, 0)
+# lvgl
+SRCDIRS += $(PRJROOT)/lvgl/src
+DINCDIR += $(PRJROOT)/lvgl/src
+endif
+
+ifeq (1, 1)
+# ST USB DEVICE
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+DINCDIR += $(MDLWUSBDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR)
+endif
+
+ifeq (1, 0)
+# ST USB HOST
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+DINCDIR += $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWHOSTDIR)
+endif
+
+ifeq (1, 1)
 # tinyusb
-SRCDIRS += $(TINYUSBDIR)/src
-DINCDIR += $(TINYUSBDIR)/src
+# https://github.com/hathach/tinyusb.git
+SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
+DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
 endif
 
 ifeq (1, 0)
 # LuPng
-SRCDIRS += $(LUPNGDIR)
-DINCDIR += $(LUPNGDIR)
+SRCDIRS += $(PRJROOT)/lib/LuPng
+DINCDIR += $(PRJROOT)/lib/LuPng
+endif
+
+ifeq (1, 0)
+# OpenVG
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
+DINCDIR += \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
+SRCDIRS += $(OPENVGDIR)/src
+UDEFS += -D"EGL_STATIC_LIBRARY"=1
 endif
 
 ifeq (1, 0)
 # LWIP
-SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 DINCDIR += \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http
-endif
-
-ifeq (1, 0)
-# RTOS
-#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
-DINCDIR += \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include
-endif
-
-ifeq (1, 0)
-# OPENVG
-SRCDIRS += $(OPENVGDIR)/src
-DINCDIR += $(OPENVGDIR)/include/VG $(OPENVGDIR)/include $(OPENVGDIR)/include/EGL $(OPENVGDIR)/src
+SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 endif
 
 ifeq (1, 0)
@@ -183,6 +202,12 @@ DINCDIR += \
 	$(RTOSDIR)/portable/GCC/ARM_CA9
 SRCDIRS += $(RTOSDIR)
 ASRC_APP += $(call rwildcard, $(RTOSDIR)/portable/GCC/ARM_CA9, *.S)
+endif
+
+ifeq (1, 0)
+# btstack
+# https://github.com/bluekitchen/btstack.git
+include ../btstack.mak
 endif
 
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)

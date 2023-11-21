@@ -2548,8 +2548,8 @@ void hardware_twi_master_configure(void)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 	const int TWIx = TWIHARD_IX;
-	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);	// De-assert reset
 	CCU->TWI_BGR_REG |= 1u << (0 + TWIx);	// Open the clock gate
+	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);	// De-assert reset
 
 	pdat_i2c.virt = (uintptr_t) TWIHARD_PTR;
 	pdat_i2c.io = TWIHARD_PTR;

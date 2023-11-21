@@ -112,9 +112,19 @@ void user_uart5_ontxchar(void * ctx);
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-	//#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
+	#define WITHTINYUSB 1
+	#define BOARD_TUH_RHPORT 1
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+
+	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
+	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
+	#define WITHUSBHW_EHCI_IX	3
+
+	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
+	#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
+	#define WITHUSBHW_OHCI_IX	3
+
+	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
@@ -201,11 +211,18 @@ void user_uart5_ontxchar(void * ctx);
 //	#define WITHUSBHOST_DMAENABLE 1
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	//#define WITHTINYUSB 1
+
+	#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
+
 	#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
+	#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
+	#define WITHUSBHW_EHCI_IX	3
+
 	#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
+	#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
+	#define WITHUSBHW_OHCI_IX	3
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port

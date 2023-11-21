@@ -1123,9 +1123,9 @@ int axp853_initialize(void)
 	VERIFY(0 == axp858_set_dcdc1(3300));
 	VERIFY(0 == axp858_set_dcdc2(970));		// CPU
 	VERIFY(0 == axp858_set_dcdc3(970));
-#if WITHGPUHW
+//#if WITHGPUHW
 	VERIFY(0 == axp858_set_dcdc4(970));	// VDD-GPU
-#endif /* WITHGPUHW */
+//#endif /* WITHGPUHW */
 	VERIFY(0 == axp858_set_dcdc5(1100));		// VCC-DRAM - 1.1V for LPDDR4
 	VERIFY(0 == axp858_set_aldo1(1800));		// VCC_PG, SDIO
 	VERIFY(0 == axp858_set_aldo2(1800));

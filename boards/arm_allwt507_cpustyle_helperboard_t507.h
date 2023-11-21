@@ -27,8 +27,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHC0HW	1		/* TF CARD */
@@ -49,6 +47,7 @@
 
 #if WITHISBOOTLOADER
 
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHC0HW	1		/* TF CARD */
 	//#define WITHSDHC1HW	1		/* SDIO */
@@ -119,6 +118,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHC0HW	1		/* TF CARD */
 	//#define WITHSDHC1HW	1		/* SDIO */
@@ -169,7 +169,7 @@
 //	#define WITHUSBHOST_DMAENABLE 1
 
 
-	//#define WITHTINYUSB 1
+	#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 
@@ -244,20 +244,6 @@
 
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
-
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-	// AXP853T on HelperBoard T507 Core Board
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
-	// See WITHSDRAM_AXP308
-	int axp853_initialize(void);
-
-	/* Контроллер питания AXP305 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		axp853_initialize(); /* Voltages are set here */ \
-	} while (0)
 
 #endif /* WITHISBOOTLOADER */
 
@@ -799,7 +785,8 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1
+#if WITHTWISW
+	// BOOTLOASER version
 	// PL0 S-TWI0-SCK
 	// PL1 S-TWI0-SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
@@ -832,7 +819,7 @@
 
 
 
-#elif WITHTWISW || WITHTWIHW
+#elif WITHTWIHW
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)

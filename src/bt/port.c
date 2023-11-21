@@ -343,33 +343,45 @@ void port_main(void){
 
     sdp_init();		// везде убрать
     l2cap_init();	// везде убрать
+    rfcomm_init();	// везде убрать
 
     // hand over to btstack embedded code
     VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    VERIFY(! a2dp_sink_btstack_main(0, NULL));
+    //VERIFY(! a2dp_sink_btstack_main(0, NULL));
+    VERIFY(! hfp_hf_btstack_main(0, NULL));
 
     gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_discoverable_control(1);
-    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
-   // turn on!
+//    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
+//    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+//    // turn on!
     hci_power_control(HCI_POWER_ON);
 
     // go
     //btstack_run_loop_execute();
 }
 
+#if WITHTINYUSB
+void tuh_bth_mount_cb(uint8_t idx)
+{
+	PRINTF("bt_initialize start\n");
+	port_main();
+	PRINTF("bt_initialize done\n");
+}
 
+#endif
 
 /* Bluetooth initialize */
 void bt_initialize(void)
 {
+
+#if ! WITHTINYUSB
 	PRINTF("bt_initialize start\n");
-
 	port_main();
-
 	PRINTF("bt_initialize done\n");
+#endif
+
 }
 
 /* Bluetooth enable */

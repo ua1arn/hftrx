@@ -8,6 +8,54 @@
 #ifndef SRC_HAL_ALLWNRT113S3_HAL_H_
 #define SRC_HAL_ALLWNRT113S3_HAL_H_
 
+/** @addtogroup Exported_types
+  * @{
+  */
+typedef enum
+{
+  RESET = 0,
+  SET = !RESET
+} FlagStatus, ITStatus;
+
+typedef enum
+{
+  DISABLE = 0,
+  ENABLE = !DISABLE
+} FunctionalState;
+#define IS_FUNCTIONAL_STATE(STATE) (((STATE) == DISABLE) || ((STATE) == ENABLE))
+
+typedef enum
+{
+  ERROR = 0,
+  SUCCESS = !ERROR
+} ErrorStatus;
+
+/**
+  * @}
+  */
+
+
+/** @addtogroup Exported_macros
+  * @{
+  */
+#define SET_BIT(REG, BIT)     ((REG) |= (BIT))
+
+#define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
+
+#define READ_BIT(REG, BIT)    ((REG) & (BIT))
+
+#define CLEAR_REG(REG)        ((REG) = (0x0))
+
+#define WRITE_REG(REG, VAL)   ((REG) = (VAL))
+
+#define READ_REG(REG)         ((REG))
+
+#define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
+
+#define POSITION_VAL(VAL)     (__CLZ(__RBIT(VAL)))
+
+#define UNUSED(x) ((void)(sizeof(x)))
+
 #if  defined ( __GNUC__ )
   #ifndef __weak
     #define __weak   __attribute__((weak))

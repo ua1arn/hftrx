@@ -2177,9 +2177,9 @@ void arm_hardware_enable_handler(uint_fast16_t int_ida)
 
 	VERIFY(IRQ_Enable(int_id) == 0);
 
-	#if WITHSMPSYSTEM
-		arm_hardware_populate(int_id);
-	#endif /* WITHSMPSYSTEM */
+//	#if WITHSMPSYSTEM
+//		arm_hardware_populate(int_id);
+//	#endif /* WITHSMPSYSTEM */
 
 #elif CPUSTYLE_RISCV
 
@@ -2222,9 +2222,9 @@ void arm_hardware_disable_handler(uint_fast16_t int_ida)
 
 	VERIFY(IRQ_Disable(int_id) == 0);
 
-	#if WITHSMPSYSTEM
-		arm_hardware_populate(int_id);
-	#endif /* WITHSMPSYSTEM */
+//	#if WITHSMPSYSTEM
+//		arm_hardware_populate(int_id);
+//	#endif /* WITHSMPSYSTEM */
 
 #elif CPUSTYLE_RISCV
 

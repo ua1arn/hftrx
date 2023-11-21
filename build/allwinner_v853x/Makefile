@@ -151,7 +151,7 @@ endif
 
 ifeq (1, 0)
 # tinyusb
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
+TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 SRCDIRS += $(TINYUSBDIR)/src
 DINCDIR += $(TINYUSBDIR)/src
 endif

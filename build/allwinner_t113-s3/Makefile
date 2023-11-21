@@ -67,8 +67,6 @@ CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
-MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
-MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
@@ -143,19 +141,27 @@ DINCDIR += $(PRJROOT)/lvgl/src
 endif
 
 ifeq (1, 1)
-# ST USB
-DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
-SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+# ST USB DEVICE
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+DINCDIR += $(MDLWUSBDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR)
 endif
 
 ifeq (1, 0)
-# tinyusb
-TINYUSBDIR = $(PRJROOT)/lib/tinyusb
-SRCDIRS += $(TINYUSBDIR)/src
-DINCDIR += $(TINYUSBDIR)/src
+# ST USB HOST
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+DINCDIR += $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWHOSTDIR)
 endif
 
 ifeq (1, 1)
+# tinyusb
+# https://github.com/hathach/tinyusb.git
+SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
+DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
+endif
+
+ifeq (1, 0)
 # LuPng
 SRCDIRS += $(PRJROOT)/lib/LuPng
 DINCDIR += $(PRJROOT)/lib/LuPng

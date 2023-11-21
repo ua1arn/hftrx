@@ -21,23 +21,25 @@
 // Enable Device stack
 //#define CFG_TUD_ENABLED       1
 #define CFG_TUH_ENABLED 1
-//#define TUP_USBIP_OHCI 1
-#define TUP_USBIP_EHCI 1
+#define TUP_USBIP_OHCI 1
+//#define TUP_USBIP_EHCI 1
 
-#define CFG_TUD_ENDPPOINT_MAX 	5
 #define CFG_TUH_ENDPOINT_MAX 	16
 #define CFG_TUSB_RHPORT0_MODE OPT_MODE_HOST
 //#define BOARD_TUD_MAX_SPEED OPT_MODE_HIGH_SPEED
 //#define BOARD_TUH_MAX_SPEED OPT_MODE_HIGH_SPEED
+
 #define CFG_TUH_HUB 4
-#define CFG_TUH_MSC	1
+#define CFG_TUH_MSC	4
 #define CFG_TUH_HID	4
-#define CFG_TUH_CDC	1
-//#define CFG_TUH_BTH	1
-#define CFG_TUSB_DEBUG 2	// 0..3
+#define CFG_TUH_CDC	4
+#define CFG_TUH_CDC_FTDI 12
+#define CFG_TUH_BTH	4
+
+#define CFG_TUSB_DEBUG 0	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
-#define CFG_TUH_DEVICE_MAX	4
+#define CFG_TUH_DEVICE_MAX	8
 #define CFG_TUH_ENUMERATION_BUFSIZE	2048
 
 //--------------------------------------------------------------------+
@@ -109,7 +111,9 @@
 
  //------------- HCD -------------//
  #define CI_HCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_enable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
- #define CI_HCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
+ #define CI_HCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ); arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ); } while (0)
+
+ void ohciehci_clk_init(void);
 
 #ifdef __cplusplus
  }
