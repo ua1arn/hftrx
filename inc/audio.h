@@ -62,7 +62,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate windo
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || (CPUSTYLE_T113 && WITHDSPLOCALFIR)
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_T507
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
@@ -151,7 +151,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate windo
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
-#elif CPUSTYLE_T113 && WITHDSPLOCALFIR
+#elif (CPUSTYLE_T113 || CPUSTYLE_T507)  && WITHDSPLOCALFIR
 
 	/* параметры входного/выходного адаптеров */
 	// IF RX

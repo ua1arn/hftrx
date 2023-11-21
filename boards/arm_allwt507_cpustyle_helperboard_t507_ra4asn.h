@@ -15,8 +15,8 @@
 #ifndef ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED
 #define ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
@@ -29,8 +29,8 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHC0HW	1		/* TF CARD */
@@ -45,6 +45,9 @@
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
+#define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
+#define CALIBRATION_IQ_CIC_RX_SHIFT		63
+#define CALIBRATION_TX_SHIFT			29
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -743,7 +746,7 @@
 	#define TARGET_POWERBTN_BIT 0//(UINT32_C(1) << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOA)) & BOARD_GPIOD_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOD)) & BOARD_GPIOD_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -823,8 +826,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_pioh_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PH2 - TWI2_SCL */ \
-		arm_hardware_pioh_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PH3 - TWI2_SDA */ \
+		arm_hardware_pioh_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF5);	/* PH2 - TWI2_SCL */ \
+		arm_hardware_pioh_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH3 - TWI2_SDA */ \
 		} while (0) 
 	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
@@ -956,13 +959,13 @@
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
-	#define HARDWARE_DCDC_PWMCH 4	/* PWM0 */
+	#define HARDWARE_DCDC_PWMCH 0	/* PWM0 */
 
 	// PD28 - DC-DC synchro output
-	// PWM5 AF6
+	// PWM0 AF2
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_piod_altfn2((UINT32_C(1) << 28), GPIO_CFG_AF5); /* PI14 - PWM0 */ \
+		arm_hardware_piod_altfn2((UINT32_C(1) << 28), GPIO_CFG_AF2); /* PD28 - PWM0 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
@@ -1151,10 +1154,46 @@
 			arm_hardware_piod_inputs(BOARD_GPIOD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
+	#define PREAMP_GPIO_BIT		(UINT32_C(1) << 0)	// PE0
+	#define ADC_PGA_GPIO_BIT	(UINT32_C(1) << 1)	// PE1
+	#define ADC_RAND_GPIO_BIT	(UINT32_C(1) << 2)	// PE2
+	#define DAC_SLEEP_GPIO_BIT	(UINT32_C(1) << 13)	// PI13
+	#define OPA2674_GPIO_BIT	(UINT32_C(1) << 23)	// PD23
+
+	#define PREAMP_GPIO_SETSTATE(state) do { \
+			gpioX_setstate(GPIOE, PREAMP_GPIO_BIT, !! (state) * PREAMP_GPIO_BIT); \
+	} while (0)
+
+	#define ADC_PGA_GPIO_SETSTATE(state) do { \
+			gpioX_setstate(GPIOE, ADC_PGA_GPIO_BIT, !! (state) * ADC_PGA_GPIO_BIT); \
+	} while (0)
+
+	#define ADC_RAND_GPIO_SETSTATE(state) do { \
+			gpioX_setstate(GPIOE, ADC_RAND_GPIO_BIT, !! (state) * ADC_RAND_GPIO_BIT); \
+	} while (0)
+
+	#define DAC_SLEEP_GPIO_SETSTATE(state) do { \
+			gpioX_setstate(GPIOI, DAC_SLEEP_GPIO_BIT, !! (state) * DAC_SLEEP_GPIO_BIT); \
+	} while (0)
+
+	#define OPA2674_GPIO_SETSTATE(state) do { \
+			gpioX_setstate(GPIOD, OPA2674_GPIO_BIT, !! (state) * OPA2674_GPIO_BIT); \
+	} while (0)
+
+	#define HARDWARE_GPIOREG_INITIALIZE() do { \
+		arm_hardware_pioe_outputs2m(PREAMP_GPIO_BIT, 1 * PREAMP_GPIO_BIT); \
+		arm_hardware_pioe_outputs2m(ADC_PGA_GPIO_BIT, 1 * ADC_PGA_GPIO_BIT); \
+		arm_hardware_pioe_outputs2m(ADC_RAND_GPIO_BIT, 1 * ADC_RAND_GPIO_BIT); \
+		arm_hardware_pioi_outputs2m(DAC_SLEEP_GPIO_BIT, 1 * DAC_SLEEP_GPIO_BIT); \
+		arm_hardware_piod_outputs2m(OPA2674_GPIO_BIT, 1 * OPA2674_GPIO_BIT); \
+	} while (0)
+
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			/*BOARD_BLINK_INITIALIZE(); */\
 			HARDWARE_KBD_INITIALIZE(); \
+			HARDWARE_GPIOREG_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			HARDWARE_DCDC_INITIALIZE(); \
 			USBD_EHCI_INITIALIZE(); \

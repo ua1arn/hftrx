@@ -730,6 +730,26 @@ prog_gpioreg(void)
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
 
+#if defined (PREAMP_GPIO_SETSTATE)
+	PREAMP_GPIO_SETSTATE(1);
+#endif
+
+#if defined (ADC_PGA_GPIO_SETSTATE)
+	ADC_PGA_GPIO_SETSTATE(glob_preamp);
+#endif
+
+#if defined (ADC_RAND_GPIO_SETSTATE)
+	ADC_RAND_GPIO_SETSTATE(glob_adcrand);
+#endif
+
+#if defined (DAC_SLEEP_GPIO_SETSTATE)
+	DAC_SLEEP_GPIO_SETSTATE(! glob_tx);
+#endif
+
+#if defined (OPA2674_GPIO_SETSTATE)
+	OPA2674_GPIO_SETSTATE(! glob_tx);
+#endif
+
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 	xcz_rxtx_state(glob_tx);
 #if defined (PREAMP_MIO)
