@@ -737,14 +737,15 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     uint16_t hf_supported_features          =
         (1<<HFP_HFSF_ESCO_S4)               |
         (1<<HFP_HFSF_CLI_PRESENTATION_CAPABILITY) |
-        (1<<HFP_HFSF_HF_INDICATORS)         |
+        //(1<<HFP_HFSF_HF_INDICATORS)         |
         (1<<HFP_HFSF_CODEC_NEGOTIATION)     |
-        (1<<HFP_HFSF_ENHANCED_CALL_STATUS)  |
-        (1<<HFP_HFSF_VOICE_RECOGNITION_FUNCTION)  |
+        //(1<<HFP_HFSF_ENHANCED_CALL_STATUS)  |
+        //(1<<HFP_HFSF_VOICE_RECOGNITION_FUNCTION)  |
         (1<<HFP_HFSF_ENHANCED_VOICE_RECOGNITION_STATUS) |
-        (1<<HFP_HFSF_VOICE_RECOGNITION_TEXT) |
-        (1<<HFP_HFSF_EC_NR_FUNCTION) |
-        (1<<HFP_HFSF_REMOTE_VOLUME_CONTROL);
+        //(1<<HFP_HFSF_VOICE_RECOGNITION_TEXT) |
+        //(1<<HFP_HFSF_EC_NR_FUNCTION) |
+        //(1<<HFP_HFSF_REMOTE_VOLUME_CONTROL) |
+		0;
 
     hfp_hf_init(rfcomm_channel_nr);
     hfp_hf_init_supported_features(hf_supported_features);
