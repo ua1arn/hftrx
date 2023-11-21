@@ -36,7 +36,7 @@
 #define CFG_TUH_CDC_FTDI 12
 #define CFG_TUH_BTH	4
 
-#define CFG_TUSB_DEBUG 3	// 0..3
+#define CFG_TUSB_DEBUG 0	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
 #define CFG_TUH_DEVICE_MAX	8
