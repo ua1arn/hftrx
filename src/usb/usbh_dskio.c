@@ -21,12 +21,12 @@
 #else
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #include "usbd_def.h"
+//#include "usb_device.h"
 #endif
 
 
 #if WITHUSEUSBFLASH
 
-#include "usb_device.h"
 #include "sdcard.h"
 //#include "src/fatfs/ff.h"
 #define USB_DEFAULT_BLOCK_SIZE 512
@@ -86,18 +86,28 @@ bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const * cb_da
   return true;
 }
 
+static uint8_t devad;
+
+
+uint_fast8_t hamradio_get_usbh_active(void)
+{
+	return devad != 0 && tuh_msc_mounted(devad);
+}
+
 //------------- IMPLEMENTATION -------------//
 void tuh_msc_mount_cb(uint8_t dev_addr)
 {
-  //PRINTF("A MassStorage device is mounted\r\n");
+  PRINTF("A MassStorage device is mounted, dev_addr=%u\n", dev_addr);
 
   uint8_t const lun = 0;
   tuh_msc_inquiry(dev_addr, lun, &inquiry_resp, inquiry_complete_cb, 0);
+  devad = dev_addr;
 }
 
 void tuh_msc_umount_cb(uint8_t dev_addr)
 {
-  //PRINTF("A MassStorage device is unmounted\r\n");
+	  devad = 0;
+	  PRINTF("A MassStorage device is unmounted\r\n");
 //
 //  uint8_t const drive_num = dev_addr-1;
 //  char drive_path[3] = "0:";
@@ -141,8 +151,7 @@ static DSTATUS USB_disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-  uint8_t dev_addr = pdrv + 1;
-  return tuh_msc_mounted(dev_addr) ? 0 : STA_NODISK;
+  return devad && tuh_msc_mounted(devad) ? 0 : STA_NODISK;
 }
 
 static DSTATUS USB_disk_initialize (
@@ -160,11 +169,10 @@ static DRESULT USB_disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	uint8_t const dev_addr = pdrv + 1;
 	uint8_t const lun = 0;
 
 	_disk_busy[pdrv] = true;
-	tuh_msc_read10(dev_addr, lun, buff, sector, (uint16_t) count, disk_io_complete, 0);
+	tuh_msc_read10(devad, lun, buff, sector, (uint16_t) count, disk_io_complete, 0);
 	wait_for_disk_io(pdrv);
 
 	return RES_OK;
@@ -179,11 +187,10 @@ static DRESULT USB_disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	uint8_t const dev_addr = pdrv + 1;
 	uint8_t const lun = 0;
 
 	_disk_busy[pdrv] = true;
-	tuh_msc_write10(dev_addr, lun, buff, sector, (uint16_t) count, disk_io_complete, 0);
+	tuh_msc_write10(devad, lun, buff, sector, (uint16_t) count, disk_io_complete, 0);
 	wait_for_disk_io(pdrv);
 
 	return RES_OK;
@@ -224,8 +231,6 @@ static DRESULT USB_disk_write (
 //	return RES_OK;
 //}
 
-
-#define DEVAD 1
 static
 DSTATUS USB_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
@@ -263,7 +268,7 @@ DRESULT USB_Get_Sector_Count (
 	LBA_t  *buff	/* Data buffer to store read data */
 	)
 {
-	* buff = tuh_msc_get_block_count(DEVAD, lun);
+	* buff = tuh_msc_get_block_count(devad, lun);
 	return RES_OK;
 }
 
@@ -274,7 +279,7 @@ DRESULT USB_Get_Block_Size(
 	DWORD  *buff	/* Data buffer to store read data */
 	)
 {
-	* buff = tuh_msc_get_block_size(DEVAD, lun);
+	* buff = tuh_msc_get_block_size(devad, lun);
 	return RES_OK;
 }
 
@@ -463,6 +468,14 @@ DRESULT USB_Get_Block_Size(
     }
 	return res;
 }
+
+
+uint_fast8_t hamradio_get_usbh_active(void)
+{
+	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
+	return hUsbHostHS.device.is_connected != 0;
+}
+
 #endif /* WITHTINYUSB */
 
 const struct drvfunc USBH_drvfunc =
@@ -475,6 +488,13 @@ const struct drvfunc USBH_drvfunc =
 	USB_Get_Sector_Count,
 	USB_Get_Block_Size,
 };
+
+#else
+
+uint_fast8_t hamradio_get_usbh_active(void)
+{
+	return  0;
+}
 
 #endif /* WITHUSEUSBFLASH */
 

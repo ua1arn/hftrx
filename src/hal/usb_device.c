@@ -380,18 +380,6 @@ void board_usbh_polling(void)
 #endif /* WITHUSBHW */
 }
 
-uint_fast8_t hamradio_get_usbh_active(void)
-{
-#if WITHTINYUSB && CFG_TUH_ENABLED
-	return tuh_msc_mounted(1);
-#elif WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
-	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
-	return hUsbHostHS.device.is_connected != 0;
-#else
-	return  0;
-#endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
-}
-
 #if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 
 
