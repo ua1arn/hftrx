@@ -36,6 +36,12 @@
  *
  */
 
+
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
 #define BTSTACK_FILE__ "hfp_hf_demo.c"
 
 /*
@@ -803,3 +809,4 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 }
 /* LISTING_END */
 /* EXAMPLE_END */
+#endif /* WITHUSEUSBBT */
