@@ -3072,7 +3072,7 @@ struct nvmap
 	uint8_t gkeybeep10;	/* тон озвучки нажатий клавиш */
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
 
-#if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN)
+#if  WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
 	uint8_t	ggrpusb; // последний посещённый пункт группы
 #endif
 

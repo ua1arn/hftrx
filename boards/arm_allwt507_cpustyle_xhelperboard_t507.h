@@ -289,19 +289,6 @@ void user_uart5_ontxchar(void * ctx);
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-	// AXP853T on HelperBoard T507 Core Board
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
-	// See WITHSDRAM_AXP308
-	int axp853_initialize(void);
-
-	/* Контроллер питания AXP305 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		axp853_initialize(); /* Voltages are set here */ \
-	} while (0)
-
 #endif /* WITHISBOOTLOADER */
 
 #define LS020_RS				(0 * UINT32_C(1) << 9)			// PA9 signal
