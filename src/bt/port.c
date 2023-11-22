@@ -240,7 +240,7 @@ static uint32_t hal_fram_get_alignment(void * context){
 static void hal_fram_erase(void * context, int bank){
 //	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
 	if (bank > 1) return;
-	PRINTF("hal_fram_erase: bank=%u\n", (unsigned) bank);
+//	PRINTF("hal_fram_erase: bank=%u\n", (unsigned) bank);
 //	FLASH_EraseInitTypeDef eraseInit;
 //	eraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
 //	eraseInit.Sector = self->sectors[bank];
@@ -300,7 +300,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 void tuh_bth_mount_cb(uint8_t idx)
 {
-	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
+//	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
     btstack_run_loop_init(btstack_run_loop_embedded_get_instance());

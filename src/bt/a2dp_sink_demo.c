@@ -116,8 +116,8 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-    0xFF,//(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
-    0xFF,//(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
+	(AVDTP_SBC_48000 << 4) | (AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
+    (AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };
 
@@ -302,7 +302,8 @@ static int setup_demo(void){
     // - Create and register A2DP Sink service record
     memset(sdp_avdtp_sink_service_buffer, 0, sizeof(sdp_avdtp_sink_service_buffer));
     a2dp_sink_create_sdp_record(sdp_avdtp_sink_service_buffer, sdp_create_service_record_handle(),
-                                AVDTP_SINK_FEATURE_MASK_HEADPHONE, NULL, NULL);
+                                AVDTP_SINK_FEATURE_MASK_HEADPHONE | AVDTP_SINK_FEATURE_MASK_SPEAKER,
+								NULL, NULL);
     btstack_assert(de_get_len( sdp_avdtp_sink_service_buffer) <= sizeof(sdp_avdtp_sink_service_buffer));
     sdp_register_service(sdp_avdtp_sink_service_buffer);
 
