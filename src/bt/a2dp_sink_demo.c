@@ -273,10 +273,10 @@ static int setup_demo(void){
 #endif
 
     // Init profiles
-    a2dp_sink_init();
-    avrcp_init();
-    avrcp_controller_init();
-    avrcp_target_init();
+//    a2dp_sink_init();
+//    avrcp_init();
+//    avrcp_controller_init();
+//    avrcp_target_init();
 
 
     // Configure A2DP Sink

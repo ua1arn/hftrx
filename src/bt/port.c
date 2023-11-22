@@ -294,8 +294,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 void tuh_bth_mount_cb(uint8_t idx)
 {
-	PRINTF("+++++++++++++++++++++++++++++++++++++++++++++++++++++ tuh_bth_mount_cb: idx=%u\n", idx);
-	TP();
+	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
     btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
@@ -354,6 +353,11 @@ void tuh_bth_mount_cb(uint8_t idx)
     sdp_init();		// везде в примерах убрать
     l2cap_init();	// везде в примерах убрать
     rfcomm_init();	// везде в примерах убрать
+    // Init profiles
+    a2dp_sink_init();
+    avrcp_init();
+    avrcp_controller_init();
+    avrcp_target_init();
 
     // hand over to btstack embedded code
     //VERIFY(! spp_counter_btstack_main(0, NULL));
@@ -376,7 +380,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
-	PRINTF("************************************************** tuh_bth_umount_cb: idx=%u\n", idx);
+	//PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
     //hci_power_control(HCI_POWER_OFF);
 	hci_remove_event_handler(&hci_event_callback_registration);
 	hci_deinit();

@@ -91,7 +91,7 @@ static btstack_packet_callback_registration_t hci_event_callback_registration;
 /* LISTING_START(SPPSetup): SPP service setup */ 
 static void spp_service_setup(void){
 
-#if 0
+#if 1
     // register for HCI events
     hci_event_callback_registration.callback = &packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
