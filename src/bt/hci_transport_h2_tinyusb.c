@@ -83,16 +83,13 @@ void tuh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uin
 static const int bth_idx = 0;
 
 bool tuh_bluetooth_can_send_now(void){
-     return 1;
+     return tuh_bth_can_send_now(bth_idx);
 }
 
 void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 	PRINTF("send_cmd\n");
 	printhex(0, packet, len);
 	tuh_bth_send_cmd(bth_idx, packet, len);
-
-    ASSERT(tuh_packet_sent);
-     (*tuh_packet_sent)();
 }
 
 
@@ -133,7 +130,7 @@ void tuh_bth_send_acl_cb(uint8_t idx)
 
 void tuh_bth_send_cmd_cb(uint8_t idx)
 {
-	//PRINTF("send_cmd callback\n");
+	//PRINTF("end_cmd callback\n");
 	ASSERT(tuh_packet_sent);
     (*tuh_packet_sent)();
 }

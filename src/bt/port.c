@@ -294,6 +294,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 void tuh_bth_mount_cb(uint8_t idx)
 {
+	PRINTF("+++++++++++++++++++++++++++++++++++++++++++++++++++++ tuh_bth_mount_cb: idx=%u\n", idx);
 	TP();
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
@@ -375,6 +376,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
+	PRINTF("************************************************** tuh_bth_umount_cb: idx=%u\n", idx);
     //hci_power_control(HCI_POWER_OFF);
 	hci_remove_event_handler(&hci_event_callback_registration);
 	hci_deinit();
