@@ -116,7 +116,7 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-	(AVDTP_SBC_48000 << 4) | (AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
+	(AVDTP_SBC_16000 << 4) | 1*(AVDTP_SBC_48000 << 4) | 1*(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | 0*AVDTP_SBC_DUAL_CHANNEL,
     (AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };
@@ -360,8 +360,8 @@ static int setup_demo(void){
 
 
     // Register for HCI events
-    hci_event_callback_registration.callback = &hci_packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
+//    hci_event_callback_registration.callback = &hci_packet_handler;
+//    hci_add_event_handler(&hci_event_callback_registration);
 
     // Inform about audio playback / test options
 #ifdef HAVE_POSIX_FILE_IO
