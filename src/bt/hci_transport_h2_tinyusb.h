@@ -53,7 +53,7 @@ extern "C" {
 * @brief Setup H2 instance for tinyusb Host Stack
 * https://github.com/hathach/tinyusb
 */
-const hci_transport_t * hci_transport_h2_tinyusb_instance(void);
+const hci_transport_t * hci_transport_h2_tinyusb_instance(uint8_t idx);
 
 #if defined __cplusplus
 }

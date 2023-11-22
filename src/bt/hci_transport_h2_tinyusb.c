@@ -88,7 +88,7 @@ void tuh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uin
     tuh_packet_received = callback;
 }
 
-static const int bth_idx = 0;
+static int bth_idx = 0;
 
 bool tuh_bluetooth_can_send_now(void){
      return /*st == ST_ALL_READY && */tuh_bth_can_send_now(bth_idx);
@@ -213,7 +213,7 @@ static void hci_transport_h2_tinyusb_set_sco_config(uint16_t voice_setting, int 
     log_info("hci_transport_h2_tinyusb_send_packet, voice 0x%02x, num connections %u", voice_setting, num_connections);
 }
 
-const hci_transport_t * hci_transport_h2_tinyusb_instance(void) {
+const hci_transport_t * hci_transport_h2_tinyusb_instance(uint8_t idx) {
 
     static const hci_transport_t instance = {
             /* const char * name; */                                        "H4",
@@ -227,6 +227,7 @@ const hci_transport_t * hci_transport_h2_tinyusb_instance(void) {
             /* void   (*reset_link)(void); */                               NULL,
             /* void   (*set_sco_config)(uint16_t voice_setting, int num_connections); */ &hci_transport_h2_tinyusb_set_sco_config,
     };
+    bth_idx = idx;
     return &instance;
 }
 

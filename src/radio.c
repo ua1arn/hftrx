@@ -2924,6 +2924,9 @@ struct bandgroup_tag {
 */
 struct nvmap
 {
+#if WITHUSEUSBBT
+	uint8_t tlvbt [TLVBT_SIZE];
+#endif /* WITHUSEUSBBT */
 	uint8_t lockmode;			/* блокировка валкодера */
 #if WITHENCODER2
 	uint8_t enc2state;
@@ -3547,6 +3550,14 @@ filter_t fi_2p0_455 =
 #define RMT_MICEQPARAMS_BASE(i, j) OFFSETOF(struct nvmap, micprof_cells [(i)].eq_params[(j)])
 #define RMT_MICPSAVE_BASE(i) OFFSETOF(struct nvmap, micprof_cells [(i)].cell_saved)
 
+#if WITHUSEUSBBT
+
+unsigned nvram_tlv_getparam(unsigned * base)
+{
+	* base = OFFSETOF(struct nvmap, tlvbt);
+	return TLVBT_SIZE;
+}
+#endif /* WITHUSEUSBBT */
 
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы

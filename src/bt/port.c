@@ -35,12 +35,8 @@
  *
  */
 
-#define __BTSTACK_FILE__ "port.c"
-
-// include STM32 first to avoid warning about redefinition of UNUSED
-//#include "stm32f4xx_hal.h"
-//#include "main.h"
 #include "hardware.h"
+#include "board.h"
 #include "formats.h"
 
 #if WITHUSEUSBBT
@@ -231,7 +227,9 @@ void btstack_assert_failed(const char * file, uint16_t line_nr){
 
 static uint32_t hal_fram_get_size(void * context){
 //	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
-	return 1024;//self->sector_size;
+	unsigned tlvbase;
+	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
+	return tlvsize;;
 }
 
 static uint32_t hal_fram_get_alignment(void * context){
@@ -262,8 +260,12 @@ static void hal_fram_read(void * context, int bank, uint32_t offset, uint8_t * b
 //	if ((offset + size) > self->sector_size) return;
 //
 //	memcpy(buffer, ((uint8_t *) self->banks[bank]) + offset, size);
-	memset(buffer, 0, size);
+//	memset(buffer, 0, size);
 	//PRINTF("hal_fram_read: bank=%u, off=%u, size=%u\n", (unsigned) bank, (unsigned) offset, (unsigned) size);
+	unsigned tlvbase;
+	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
+	ASSERT(offset + size <= tlvsize);
+	nvram_read(tlvbase + offset, buffer, size);
 }
 
 static void hal_fram_write(void * context, int bank, uint32_t offset, const uint8_t * data, uint32_t size){
@@ -281,6 +283,10 @@ static void hal_fram_write(void * context, int bank, uint32_t offset, const uint
 //	HAL_FLASH_Lock();
 	//printhex(0, data, size);
 	//PRINTF("hal_fram_write: bank=%u, off=%u, size=%u\n", (unsigned) bank, (unsigned) offset, (unsigned) size);
+	unsigned tlvbase;
+	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
+	ASSERT(offset + size <= tlvsize);
+	nvram_write(tlvbase + offset, data, size);
 }
 
 static const hal_flash_bank_t hal_fram_bank_impl = {
@@ -312,7 +318,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     // init HCI
 #if WITHTINYUSB
-    hci_init(hci_transport_h2_tinyusb_instance(), NULL);
+    hci_init(hci_transport_h2_tinyusb_instance(idx), NULL);
 #else /* WITHTINYUSB */
     hci_init(hci_transport_h2_stm32_instance(), NULL);
 #endif /* WITHTINYUSB */

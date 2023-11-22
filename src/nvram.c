@@ -135,7 +135,7 @@ eeprom_a1_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
 	uint8_t * data,
-	uint_fast8_t len)
+	unsigned len)
 {
 	const uint8_t cmd [] =
 	{
@@ -172,7 +172,7 @@ eeprom_a2_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
 	uint8_t * data,
-	uint_fast8_t len)
+	unsigned len)
 {
 	const uint8_t cmd [] =
 	{
@@ -269,7 +269,7 @@ eeprom_initialize(
 
 static void  
 //NOINLINEAT
-nvram_write_withinpage(uint_least16_t addr, const uint8_t * data, uint_fast8_t len)
+nvram_write_withinpage(uint_least16_t addr, const uint8_t * data, unsigned len)
 {
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования EEPROM */
@@ -407,9 +407,8 @@ void nvram_initialize(void)
 
 //static uint8_t simnvram [NVRAM_END + 1];
 
-static void  
-//NOINLINEAT
-nvram_write(nvramaddress_t addr, const uint8_t * data, uint_fast8_t len)
+void
+nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
 {
 	ASSERT((addr + len - 1) <= NVRAM_END);
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -436,7 +435,7 @@ nvram_write(nvramaddress_t addr, const uint8_t * data, uint_fast8_t len)
 	}
 	else
 	{
-		ASSERT(0);
+		memcpy(p, data, len);
 	}
 	//dcache_clean((uintptr_t) BKPSRAM_BASE, 4096);
 	stm32f4xx_bddisable();
@@ -480,9 +479,8 @@ nvram_write(nvramaddress_t addr, const uint8_t * data, uint_fast8_t len)
 #endif
 }
 
-static void  
-//NOINLINEAT
-nvram_read(nvramaddress_t addr, uint8_t * data, uint_fast8_t len)
+void
+nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
 {
 	ASSERT((addr + len - 1) <= NVRAM_END);
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -508,7 +506,7 @@ nvram_read(nvramaddress_t addr, uint8_t * data, uint_fast8_t len)
 	}
 	else
 	{
-		ASSERT(0);
+		memcpy(data, b, len);
 	}
 
 #elif (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM)
