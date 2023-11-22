@@ -4640,7 +4640,8 @@ int __attribute__((used)) (_read)(int fd, char * ptr, int len) {
 		if (c == 0x0D)
 			break;
 		*ptr++ = c;
-		dbg_putchar(c);
+		while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
+			;
 	}
 	return (len - i);
 }
@@ -4650,7 +4651,11 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	int i;
 
 	for (i = 0; i < len; i++)
-		dbg_putchar(* ptr ++);
+	{
+		const char c = * ptr ++;
+		while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
+			;
+	}
 	return (i);
 }
 
