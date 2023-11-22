@@ -85,7 +85,7 @@ static void (*usbh_packet_received)(uint8_t packet_type, uint8_t * packet, uint1
 
 static void dibgprint(const char * title, const void * p, uint16_t n)
 {
-#if 1
+#if 0
 	PRINTF("%s\n", title);
 	printhex(0, p, n);
 #endif

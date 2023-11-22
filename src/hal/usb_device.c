@@ -368,9 +368,8 @@ void board_usbh_polling(void)
 //#if WITHEHCIHWSOFTSPOLL
 //	hcd_int_handler(BOARD_TUH_RHPORT, 0);
 //#endif
-    //tuh_task();
-    tuh_task_ext(UINT32_MAX, 0);
-#else /* WITHTINYUSB */
+    tuh_task();
+ #else /* WITHTINYUSB */
 	MX_USB_HOST_Process();
 #endif
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */

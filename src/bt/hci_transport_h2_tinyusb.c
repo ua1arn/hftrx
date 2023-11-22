@@ -63,17 +63,11 @@
 
 static void dibgprint(const char * title, const void * p, uint16_t n)
 {
-#if 1
+#if 0
 	PRINTF("%s\n", title);
 	printhex(0, p, n);
 #endif
 }
-
-static enum {
-	ST_ALL_READY,
-	ST_WAIT_CMD,
-	ST_WAIT_ACL
-} st = ST_ALL_READY;
 
 static  void (*packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size) = NULL;
 
@@ -97,13 +91,13 @@ void tuh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uin
 static const int bth_idx = 0;
 
 bool tuh_bluetooth_can_send_now(void){
-     return st == ST_ALL_READY && tuh_bth_can_send_now(bth_idx);
+     return /*st == ST_ALL_READY && */tuh_bth_can_send_now(bth_idx);
 }
 
 void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 	dibgprint("send_cmd", packet, len);
 	tuh_bth_send_cmd(bth_idx, packet, len);
-	st = ST_WAIT_CMD;
+//	st = ST_WAIT_CMD;
 }
 
 
@@ -129,8 +123,10 @@ void tuh_bth_rx_acl_cb(uint8_t idx)
 
 void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
 	dibgprint("send_acl", packet, len);
+	while (! tuh_bth_can_send_now(bth_idx))
+		tuh_task();
 	tuh_bth_send_acl(bth_idx, packet, len);
-	st = ST_WAIT_ACL;
+//	st = ST_WAIT_ACL;
 }
 
 void tuh_bth_send_acl_cb(uint8_t idx)
@@ -138,7 +134,7 @@ void tuh_bth_send_acl_cb(uint8_t idx)
 	//PRINTF("send_acl callback\n");
 	ASSERT(tuh_packet_sent);
     (*tuh_packet_sent)();
-	st = ST_ALL_READY;
+//	st = ST_ALL_READY;
 }
 
 void tuh_bth_send_cmd_cb(uint8_t idx)
@@ -146,7 +142,7 @@ void tuh_bth_send_cmd_cb(uint8_t idx)
 	//PRINTF("end_cmd callback\n");
 	ASSERT(tuh_packet_sent);
     (*tuh_packet_sent)();
-	st = ST_ALL_READY;
+//	st = ST_ALL_READY;
 }
 
 static void hci_transport_h2_tinyusb_process(btstack_data_source_t *ds, btstack_data_source_callback_type_t callback_type) {
