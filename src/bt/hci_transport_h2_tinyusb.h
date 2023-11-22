@@ -38,8 +38,8 @@
 /*
  *  hci_transport_h2_tinyusb.h
  */
-#ifndef HCI_TRANSPORT_STM32_H
-#define HCI_TRANSPORT_STM32_H
+#ifndef HCI_TRANSPORT_TINYUSB_H
+#define HCI_TRANSPORT_TINYUSB_H
 
 #include <stdint.h>
 #include "btstack_defines.h"
@@ -59,4 +59,4 @@ const hci_transport_t * hci_transport_h2_tinyusb_instance(void);
 }
 #endif
 
-#endif // HCI_TRANSPORT_STM32_H
+#endif // HCI_TRANSPORT_TINYUSB_H

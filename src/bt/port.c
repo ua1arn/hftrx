@@ -291,13 +291,18 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 	/* void (*write)(..);             */ &hal_fram_write,
 };
 
-void port_main(void){
 
-    //PRINTF("BTstack on STM32 F4 Discovery with USB support starting...\n");
-
+#if WITHTINYUSB
+void tuh_bth_mount_cb(uint8_t idx)
+{
+	TP();
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
     btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
+
+
+    //PRINTF("BTstack on STM32 F4 Discovery with USB support starting...\n");
+
 
     // uncomment to enable packet logger
 #ifdef ENABLE_SEGGER_RTT
@@ -368,14 +373,12 @@ void port_main(void){
     //btstack_run_loop_execute();
 }
 
-#if WITHTINYUSB
-void tuh_bth_mount_cb(uint8_t idx)
+
+void tuh_bth_umount_cb(uint8_t idx)
 {
-	static int v = 1;
-	PRINTF("bt_initialize start\n");
-	if (v) port_main();
-	v = 0;
-	PRINTF("bt_initialize done\n");
+	hci_deinit();
+//	btstack_run_loop_deinit();
+//	btstack_memory_deinit();
 }
 
 #endif
