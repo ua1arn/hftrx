@@ -63,6 +63,7 @@
 //#include "hal_flash_bank_stm32.h"
 #include "hci_transport.h"
 #include "hci_transport_h2_stm32.h"
+#include "hci_transport_h2_tinyusb.h"
 
 #ifdef ENABLE_SEGGER_RTT
 #include "SEGGER_RTT.h"
@@ -306,7 +307,11 @@ void port_main(void){
 #endif
 
     // init HCI
+#if WITHTINYUSB
+    hci_init(hci_transport_h2_tinyusb_instance(), NULL);
+#else /* WITHTINYUSB */
     hci_init(hci_transport_h2_stm32_instance(), NULL);
+#endif /* WITHTINYUSB */
 
     // setup TLV Flash Sector implementation
 //    const hal_flash_bank_t * hal_flash_bank_impl = hal_flash_bank_stm32_init_instance(

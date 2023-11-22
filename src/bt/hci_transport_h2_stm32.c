@@ -46,7 +46,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && ! WITHTINYUSB
 
 // include STM32 first to avoid warning about redefinition of UNUSED
 //#include "usb_host.h"

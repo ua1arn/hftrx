@@ -35,64 +35,28 @@
  *
  */
 
-// *****************************************************************************
-//
-// USB Bluetooth Host Class for STM32Cube USB Host Library
-//
-// *****************************************************************************
-
-#ifndef USBH_BLUETOOTH_H
-#define USBH_BLUETOOTH_H
-
-#include "btstack_config.h"
-#include "btstack_bool.h"
+/*
+ *  hci_transport_h2_tinyusb.h
+ */
+#ifndef HCI_TRANSPORT_STM32_H
+#define HCI_TRANSPORT_STM32_H
 
 #include <stdint.h>
-
-#if ! WITHTINYUSB
-#include "usbh_core.h"
-
-/* Bluetooth Class Codes */
-#define USB_BLUETOOTH_CLASS                                 0xE0U
-
-extern USBH_ClassTypeDef  Bluetooth_Class;
-#define USBH_BLUETOOTH_CLASS    &Bluetooth_Class
-#endif
+#include "btstack_defines.h"
+#include "hci_transport.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Check stack if a packet can be sent now
- * @return true if packet can be sent
- */
-bool usbh_bluetooth_can_send_now(void);
+/*
+* @brief Setup H2 instance for tinyusb Host Stack
+* https://github.com/hathach/tinyusb
+*/
+const hci_transport_t * hci_transport_h2_tinyusb_instance(void);
 
-/**
- * @brief Send HCI Command packet
- * @param packet
- * @param len
- */
-void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len);
-
-/**
- * @brief Send HCI ACL packet
- * @param packet
- * @param len
- */
-void usbh_bluetooth_send_acl(const uint8_t * packet, uint16_t len);
-
-/**
- * @brief Set packet sent callback
- * @param callback
- */
-void usbh_bluetooth_set_packet_sent(void (*callback)(void));
-
-/**
- * @brief Set packet handler
- * @param callback
- */
-void usbh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uint8_t * packet, uint16_t size));
-
+#if defined __cplusplus
+}
 #endif
+
+#endif // HCI_TRANSPORT_STM32_H
