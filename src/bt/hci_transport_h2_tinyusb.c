@@ -47,7 +47,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHTINYUSB
 
 
 #include <stddef.h>
@@ -87,7 +87,7 @@ bool tuh_bluetooth_can_send_now(void){
 }
 
 void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
-	PRINTF("tuh_bluetooth_send_cmd\n");
+	PRINTF("send_cmd\n");
 	printhex(0, packet, len);
 	tuh_bth_send_cmd(bth_idx, packet, len);
 
@@ -99,7 +99,7 @@ void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 // Invoked when received notificaion
 void tuh_bth_event_cb(uint8_t idx, uint8_t * buffer, uint16_t size)
 {
-	PRINTF("tuh_packet_received (event)\n");
+	PRINTF("packet_received (event)\n");
 	printhex(0, buffer, size);
 	if (tuh_packet_received)
 		tuh_packet_received(HCI_EVENT_PACKET, buffer, size);
@@ -111,7 +111,7 @@ void tuh_bth_rx_acl_cb(uint8_t idx)
 	uint32_t const bufsize = sizeof buf;
 
 	uint32_t count = tuh_bth_read(idx, buf, bufsize);
-	PRINTF("tuh_packet_received (acl)\n");
+	PRINTF("packet_received (acl)\n");
 	printhex(0, buf, count);
 	if (tuh_packet_received)
 		tuh_packet_received(HCI_ACL_DATA_PACKET, buf, count);
@@ -119,14 +119,21 @@ void tuh_bth_rx_acl_cb(uint8_t idx)
 }
 
 void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
-	PRINTF("tuh_bluetooth_send_acl\n");
+	PRINTF("send_acl\n");
 	printhex(0, packet, len);
 	tuh_bth_send_acl(bth_idx, packet, len);
 }
 
 void tuh_bth_send_acl_cb(uint8_t idx)
 {
-	//PRINTF("tuh_bluetooth_send_acl callback\n");
+	//PRINTF("send_acl callback\n");
+	ASSERT(tuh_packet_sent);
+    (*tuh_packet_sent)();
+}
+
+void tuh_bth_send_cmd_cb(uint8_t idx)
+{
+	//PRINTF("send_cmd callback\n");
 	ASSERT(tuh_packet_sent);
     (*tuh_packet_sent)();
 }
@@ -217,4 +224,4 @@ const hci_transport_t * hci_transport_h2_tinyusb_instance(void) {
 }
 
 
-#endif /* WITHUSEUSBBT */
+#endif /* WITHUSEUSBBT && WITHTINYUSB */

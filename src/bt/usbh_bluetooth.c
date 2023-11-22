@@ -35,19 +35,20 @@
  *
  */
 
-#define BTSTACK_FILE__ "usbh_bluetooth.c"
+#define BTSTACK_FILE__ "bluetooth.c"
 
 #include "hardware.h"
 #include "formats.h"
 
 #if WITHUSEUSBBT && ! WITHTINYUSB
 
-#include "usbh_bluetooth.h"
+#include "bluetooth.h"
 #include "btstack_debug.h"
 #include "hci.h"
 #include "btstack_util.h"
 #include "bluetooth.h"
 
+#include "usbh_bluetooth.h"
 
 typedef struct {
     uint8_t acl_in_ep;
@@ -61,9 +62,7 @@ typedef struct {
     uint8_t event_in_pipe;
     uint16_t event_in_len;
     uint32_t event_in_frame;
-#if ! WITHTINYUSB
     USBH_TargetTypeDef bttarget;
-#endif
 } USB_Bluetooth_t;
 
 static enum {
@@ -102,8 +101,6 @@ static uint16_t hci_acl_in_offset;
 static uint8_t  hci_acl_in_buffer[HCI_INCOMING_PRE_BUFFER_SIZE + HCI_ACL_BUFFER_SIZE];
 static uint8_t  * hci_acl_in_packet = &hci_acl_in_buffer[HCI_INCOMING_PRE_BUFFER_SIZE];
 
-#if WITHTINYUSB
-#else /* WITHTINYUSB */
 USBH_StatusTypeDef usbh_bluetooth_start_acl_in_transfer(USBH_HandleTypeDef *phost, USB_Bluetooth_t * usb){
     uint16_t acl_in_transfer_size = btstack_min(usb->acl_in_len, HCI_ACL_BUFFER_SIZE - hci_acl_in_offset);
 	usb->acl_in_frame = phost->Timer;
@@ -124,22 +121,22 @@ USBH_StatusTypeDef USBH_Bluetooth_InterfaceInit(USBH_HandleTypeDef *phost, const
     int16_t event_in = -1;
     for (ep_index=0;ep_index<num_endpoints;ep_index++){
         USBH_EpDescTypeDef * ep_desc = &interface->Ep_Desc[ep_index];
-        printf("Interface %u, endpoint #%u: address 0x%02x, attributes 0x%02x, packet size %u, poll %u\n",
+        PRINTF("Interface %u, endpoint #%u: address 0x%02x, attributes 0x%02x, packet size %u, poll %u\n",
                interface_index, ep_index, ep_desc->bEndpointAddress, ep_desc->bmAttributes, ep_desc->wMaxPacketSize, ep_desc->bInterval);
         // type interrupt, direction incoming
         if  (((ep_desc->bEndpointAddress & USB_EP_DIR_MSK) == USB_EP_DIR_MSK) && (ep_desc->bmAttributes == USB_EP_TYPE_INTR)){
             event_in = ep_index;
-            puts("-> HCI Event");
+            PRINTF("-> HCI Event\n");
         }
         // type bulk, direction incoming
         if  (((ep_desc->bEndpointAddress & USB_EP_DIR_MSK) == USB_EP_DIR_MSK) && (ep_desc->bmAttributes == USB_EP_TYPE_BULK)){
             acl_in = ep_index;
-            puts("-> HCI ACL IN");
+            PRINTF("-> HCI ACL IN\n");
         }
         // type bulk, direction incoming
         if  (((ep_desc->bEndpointAddress & USB_EP_DIR_MSK) == 0) && (ep_desc->bmAttributes == USB_EP_TYPE_BULK)){
             acl_out = ep_index;
-            puts("-> HCI ACL OUT");
+            PRINTF("-> HCI ACL OUT\n");
         }
     }
 
@@ -209,7 +206,7 @@ USBH_StatusTypeDef USBH_Bluetooth_ClassRequest(USBH_HandleTypeDef *phost){
     usbh_out_state = USBH_OUT_IDLE;
     usbh_in_state = USBH_IN_SUBMIT_REQUEST;
     // notify host stack
-	PRINTF("usbh_packet_sent callback\n");
+	PRINTF("packet_sent callback\n");
     ASSERT(usbh_packet_sent);
     (*usbh_packet_sent)();
     return USBH_OK;
@@ -232,7 +229,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
             if (status == USBH_OK) {
                 usbh_out_state = USBH_OUT_IDLE;
                 // notify host stack
-            	PRINTF("usbh_packet_sent callback\n");
+            	PRINTF("packet_sent callback\n");
 				ASSERT(usbh_packet_sent);
                 (*usbh_packet_sent)();
             }
@@ -255,7 +252,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                     acl_len -= transfer_size;
                     if (acl_len == 0){
                         usbh_out_state = USBH_OUT_IDLE;
-                    	PRINTF("usbh_packet_sent callback\n");
+                    	PRINTF("packet_sent callback\n");
                         // notify host stack
                         ASSERT(usbh_packet_sent);
                         (*usbh_packet_sent)();
@@ -296,7 +293,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                     // event complete
                     if (hci_event_offset >= event_size){
                         hci_event_offset = 0;
-                    	PRINTF("usbh_packet_received (event)\n");
+                    	PRINTF("packet_received (event)\n");
                     	printhex(0, hci_event, event_size);
                         ASSERT(usbh_packet_received);
                         (*usbh_packet_received)(HCI_EVENT_PACKET, hci_event, event_size);
@@ -341,10 +338,10 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
             acl_size = 4 + little_endian_read_16(hci_acl_in_packet, 2);
             // acl complete
             if (hci_acl_in_offset > acl_size){
-                printf("Extra HCI EVENT!\n");
+                PRINTF("Extra HCI EVENT!\n");
             }
             if (hci_acl_in_offset >= acl_size){
-            	PRINTF("usbh_packet_received (acl)\n");
+            	PRINTF("packet_received (acl)\n");
             	printhex(0, hci_acl_in_packet, acl_size);
                 ASSERT(usbh_packet_received);
                 (*usbh_packet_received)(HCI_ACL_DATA_PACKET, hci_acl_in_packet, acl_size);
@@ -374,7 +371,6 @@ USBH_ClassTypeDef  Bluetooth_Class = {
     USBH_Bluetooth_SOFProcess,
     NULL,
 };
-#endif /* WITHTINYUSB */
 
 
 void usbh_bluetooth_set_packet_sent(void (*callback)(void)){
@@ -391,7 +387,7 @@ bool usbh_bluetooth_can_send_now(void){
 }
 
 void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
-	PRINTF("usbh_bluetooth_send_cmd\n");
+	PRINTF("send_cmd\n");
 	printhex(0, packet, len);
     btstack_assert(usbh_out_state == USBH_OUT_IDLE);
     cmd_packet = packet;
@@ -400,7 +396,7 @@ void usbh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 }
 
 void usbh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
-	PRINTF("usbh_bluetooth_send_acl\n");
+	PRINTF("send_acl\n");
 	printhex(0, packet, len);
     btstack_assert(usbh_out_state == USBH_OUT_IDLE);
     acl_packet = packet;
