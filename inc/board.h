@@ -299,7 +299,7 @@ uint_fast8_t restore_i8(nvramaddress_t addr); /* выборка по указа�
 void nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len);
 void nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len);
 
-#define TLVBT_SIZE 1024
+#define TLVBT_SIZE 128
 unsigned nvram_tlv_getparam(unsigned * base);
 
 /* получить значение forward & reflected ADC */
