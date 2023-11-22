@@ -292,7 +292,6 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 };
 
 
-#if WITHTINYUSB
 void tuh_bth_mount_cb(uint8_t idx)
 {
 	TP();
@@ -376,23 +375,21 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
+    //hci_power_control(HCI_POWER_OFF);
+	hci_remove_event_handler(&hci_event_callback_registration);
 	hci_deinit();
 //	btstack_run_loop_deinit();
 //	btstack_memory_deinit();
 }
 
-#endif
-
 /* Bluetooth initialize */
 void bt_initialize(void)
 {
-
 #if ! WITHTINYUSB
 	PRINTF("bt_initialize start\n");
-	port_main();
+	tuh_bth_mount_cb(1);
 	PRINTF("bt_initialize done\n");
 #endif
-
 }
 
 /* Bluetooth enable */
