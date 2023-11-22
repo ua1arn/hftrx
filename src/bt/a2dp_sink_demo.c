@@ -669,6 +669,7 @@ static void dump_sbc_configuration(media_codec_configuration_sbc_t * configurati
 static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
+    dbg_putchar('!');
     if (packet_type != HCI_EVENT_PACKET) return;
     if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
         bd_addr_t address;
@@ -765,6 +766,7 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
     uint8_t  status;
     bd_addr_t address;
 
+	PRINTF("%s:\n", __func__);
     a2dp_sink_demo_avrcp_connection_t * connection = &a2dp_sink_demo_avrcp_connection;
 
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -811,6 +813,7 @@ static void avrcp_controller_packet_handler(uint8_t packet_type, uint16_t channe
     UNUSED(channel);
     UNUSED(size);
 
+	PRINTF("%s:\n", __func__);
     // helper to print c strings
     uint8_t avrcp_subevent_value[256];
     uint8_t play_status;
@@ -980,6 +983,7 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
     UNUSED(channel);
     UNUSED(size);
 
+	PRINTF("%s:\n", __func__);
     if (packet_type != HCI_EVENT_PACKET) return;
     if (hci_event_packet_get_type(packet) != HCI_EVENT_AVRCP_META) return;
     
@@ -1020,6 +1024,7 @@ static void a2dp_sink_packet_handler(uint8_t packet_type, uint16_t channel, uint
     UNUSED(size);
     uint8_t status;
 
+	PRINTF("%s:\n", __func__);
     uint8_t allocation_method;
 
     if (packet_type != HCI_EVENT_PACKET) return;
