@@ -209,6 +209,7 @@ USBH_StatusTypeDef USBH_Bluetooth_ClassRequest(USBH_HandleTypeDef *phost){
     usbh_out_state = USBH_OUT_IDLE;
     usbh_in_state = USBH_IN_SUBMIT_REQUEST;
     // notify host stack
+	PRINTF("usbh_packet_sent callback\n");
     ASSERT(usbh_packet_sent);
     (*usbh_packet_sent)();
     return USBH_OK;
@@ -231,7 +232,8 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
             if (status == USBH_OK) {
                 usbh_out_state = USBH_OUT_IDLE;
                 // notify host stack
-                ASSERT(usbh_packet_sent);
+            	PRINTF("usbh_packet_sent callback\n");
+				ASSERT(usbh_packet_sent);
                 (*usbh_packet_sent)();
             }
             break;
@@ -253,6 +255,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                     acl_len -= transfer_size;
                     if (acl_len == 0){
                         usbh_out_state = USBH_OUT_IDLE;
+                    	PRINTF("usbh_packet_sent callback\n");
                         // notify host stack
                         ASSERT(usbh_packet_sent);
                         (*usbh_packet_sent)();
@@ -341,7 +344,7 @@ USBH_StatusTypeDef USBH_Bluetooth_Process(USBH_HandleTypeDef *phost){
                 printf("Extra HCI EVENT!\n");
             }
             if (hci_acl_in_offset >= acl_size){
-            	PRINTF("usbh_packet_received (data)\n");
+            	PRINTF("usbh_packet_received (acl)\n");
             	printhex(0, hci_acl_in_packet, acl_size);
                 ASSERT(usbh_packet_received);
                 (*usbh_packet_received)(HCI_ACL_DATA_PACKET, hci_acl_in_packet, acl_size);
