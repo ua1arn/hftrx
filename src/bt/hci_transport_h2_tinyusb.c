@@ -61,6 +61,14 @@
 
 #include "tusb.h"
 
+static void dibgprint(const char * title, const void * p, uint16_t n)
+{
+#if 1
+	PRINTF("%s\n", title);
+	printhex(0, p, n);
+#endif
+}
+
 static  void (*packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size) = NULL;
 
 // data source for integration with BTstack Runloop
@@ -87,8 +95,7 @@ bool tuh_bluetooth_can_send_now(void){
 }
 
 void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
-	PRINTF("send_cmd\n");
-	printhex(0, packet, len);
+	dibgprint("send_cmd", packet, len);
 	tuh_bth_send_cmd(bth_idx, packet, len);
 }
 
@@ -96,8 +103,7 @@ void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 // Invoked when received notificaion
 void tuh_bth_event_cb(uint8_t idx, uint8_t * buffer, uint16_t size)
 {
-	PRINTF("packet_received (event)\n");
-	printhex(0, buffer, size);
+	dibgprint("packet_received (event)", buffer, size);
 	if (tuh_packet_received)
 		tuh_packet_received(HCI_EVENT_PACKET, buffer, size);
 }
@@ -108,16 +114,14 @@ void tuh_bth_rx_acl_cb(uint8_t idx)
 	uint32_t const bufsize = sizeof buf;
 
 	uint32_t count = tuh_bth_read(idx, buf, bufsize);
-	PRINTF("packet_received (acl)\n");
-	printhex(0, buf, count);
+	dibgprint("packet_received (acl)",buf, count);
 	if (tuh_packet_received)
 		tuh_packet_received(HCI_ACL_DATA_PACKET, buf, count);
 
 }
 
 void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
-	PRINTF("send_acl\n");
-	printhex(0, packet, len);
+	dibgprint("send_acl", packet, len);
 	tuh_bth_send_acl(bth_idx, packet, len);
 }
 
