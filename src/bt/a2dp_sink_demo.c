@@ -75,6 +75,7 @@
 #include <string.h>
 
 #include "btstack.h"
+
 #include "btstack_resample.h"
 
 //#define AVRCP_BROWSING_ENABLED
@@ -116,8 +117,8 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-	(AVDTP_SBC_16000 << 4) | 1*(AVDTP_SBC_48000 << 4) | 1*(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | 0*AVDTP_SBC_DUAL_CHANNEL,
-    (AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
+    0xFF,//(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
+    0xFF,//(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };
 
@@ -128,8 +129,8 @@ static char * wav_filename = "a2dp_sink_demo.wav";
 #endif
 
 // SBC Decoder for WAV file or live playback
-static btstack_sbc_decoder_state_t state;
-static btstack_sbc_mode_t mode = SBC_MODE_STANDARD;
+static const btstack_sbc_decoder_t *   sbc_decoder_instance;
+static btstack_sbc_decoder_bluedroid_t sbc_decoder_context;
 
 // ring buffer for SBC Frames
 // below 30: add samples, 30-40: fine, above 40: drop samples
@@ -261,8 +262,8 @@ static void stdin_process(char cmd);
 static int setup_demo(void){
 
     // init protocols
-    //l2cap_init();
-    //sdp_init();
+    l2cap_init();
+    sdp_init();
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
@@ -273,10 +274,10 @@ static int setup_demo(void){
 #endif
 
     // Init profiles
-//    a2dp_sink_init();
-//    avrcp_init();
-//    avrcp_controller_init();
-//    avrcp_target_init();
+    a2dp_sink_init();
+    avrcp_init();
+    avrcp_controller_init();
+    avrcp_target_init();
 
 
     // Configure A2DP Sink
@@ -302,8 +303,7 @@ static int setup_demo(void){
     // - Create and register A2DP Sink service record
     memset(sdp_avdtp_sink_service_buffer, 0, sizeof(sdp_avdtp_sink_service_buffer));
     a2dp_sink_create_sdp_record(sdp_avdtp_sink_service_buffer, sdp_create_service_record_handle(),
-                                AVDTP_SINK_FEATURE_MASK_HEADPHONE | AVDTP_SINK_FEATURE_MASK_SPEAKER,
-								NULL, NULL);
+                                AVDTP_SINK_FEATURE_MASK_HEADPHONE, NULL, NULL);
     btstack_assert(de_get_len( sdp_avdtp_sink_service_buffer) <= sizeof(sdp_avdtp_sink_service_buffer));
     sdp_register_service(sdp_avdtp_sink_service_buffer);
 
@@ -343,10 +343,10 @@ static int setup_demo(void){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    ////gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
+    //gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
 
     // - Allow to show up in Bluetooth inquiry
-    ////gap_discoverable_control(1);
+    gap_discoverable_control(1);
 
     // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Loudspeaker
     gap_set_class_of_device(0x200414);
@@ -360,8 +360,8 @@ static int setup_demo(void){
 
 
     // Register for HCI events
-//    hci_event_callback_registration.callback = &hci_packet_handler;
-//    hci_add_event_handler(&hci_event_callback_registration);
+    hci_event_callback_registration.callback = &hci_packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
 
     // Inform about audio playback / test options
 #ifdef HAVE_POSIX_FILE_IO
@@ -381,6 +381,7 @@ static int setup_demo(void){
 
 static void playback_handler(int16_t * buffer, uint16_t num_audio_frames){
 
+    dbg_putchar('.');
 #ifdef STORE_TO_WAV_FILE
     int       wav_samples = num_audio_frames * NUM_CHANNELS;
     int16_t * wav_buffer  = buffer;
@@ -405,7 +406,7 @@ static void playback_handler(int16_t * buffer, uint16_t num_audio_frames){
         // decode frame
         uint8_t sbc_frame[MAX_SBC_FRAME_SIZE];
         btstack_ring_buffer_read(&sbc_frame_ring_buffer, sbc_frame, sbc_frame_size, &bytes_read);
-        btstack_sbc_decoder_process_data(&state, 0, sbc_frame, sbc_frame_size);
+        sbc_decoder_instance->decode_signed_16(&sbc_decoder_context, 0, sbc_frame, sbc_frame_size);
     }
 
 #ifdef STORE_TO_WAV_FILE
@@ -418,7 +419,7 @@ static void handle_pcm_data(int16_t * data, int num_audio_frames, int num_channe
     UNUSED(sample_rate);
     UNUSED(context);
     UNUSED(num_channels);   // must be stereo == 2
-
+    dbg_putchar(':');
     const btstack_audio_sink_t * audio_sink = btstack_audio_sink_get_instance();
     if (!audio_sink){
 #ifdef STORE_TO_WAV_FILE
@@ -450,7 +451,8 @@ static void handle_pcm_data(int16_t * data, int num_audio_frames, int num_channe
 
 static int media_processing_init(media_codec_configuration_sbc_t * configuration){
     if (media_initialized) return 0;
-    btstack_sbc_decoder_init(&state, mode, handle_pcm_data, NULL);
+    sbc_decoder_instance = btstack_sbc_decoder_bluedroid_init_instance(&sbc_decoder_context);
+    sbc_decoder_instance->configure(&sbc_decoder_context, SBC_MODE_STANDARD, handle_pcm_data, NULL);
 
 #ifdef STORE_TO_WAV_FILE
     wav_writer_open(wav_filename, configuration->num_channels, configuration->sampling_frequency);
@@ -515,9 +517,9 @@ static void media_processing_close(void){
 
 #ifdef STORE_TO_WAV_FILE                 
     wav_writer_close();
-    uint32_t total_frames_nr = state.good_frames_nr + state.bad_frames_nr + state.zero_frames_nr;
+    uint32_t total_frames_nr = sbc_decoder_context.good_frames_nr + sbc_decoder_context.bad_frames_nr + sbc_decoder_context.zero_frames_nr;
 
-    printf("WAV Writer: Decoding done. Processed %u SBC frames:\n - %d good\n - %d bad\n", total_frames_nr, state.good_frames_nr, total_frames_nr - state.good_frames_nr);
+    printf("WAV Writer: Decoding done. Processed %u SBC frames:\n - %d good\n - %d bad\n", total_frames_nr, sbc_decoder_context.good_frames_nr, total_frames_nr - sbc_decoder_context.good_frames_nr);
     printf("WAV Writer: Wrote %u audio frames to wav file: %s\n", audio_frame_count, wav_filename);
 #endif
 
@@ -543,7 +545,7 @@ static int read_sbc_header(uint8_t * packet, int size, int * offset, avdtp_sbc_c
 static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16_t size){
     UNUSED(seid);
     int pos = 0;
-     
+    dbg_putchar('!');
     avdtp_media_packet_header_t media_header;
     if (!read_media_data_header(packet, size, &pos, &media_header)) return;
     
@@ -556,10 +558,9 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
     const btstack_audio_sink_t * audio = btstack_audio_sink_get_instance();
     // process data right away if there's no audio implementation active, e.g. on posix systems to store as .wav
     if (!audio){
-        btstack_sbc_decoder_process_data(&state, 0, packet_begin, packet_length);
+        sbc_decoder_instance->decode_signed_16(&sbc_decoder_context, 0, packet_begin, packet_length);
         return;
     }
-
 
     // store sbc frame size for buffer management
     sbc_frame_size = packet_length / sbc_header.num_frames;
@@ -607,6 +608,7 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
 static int read_sbc_header(uint8_t * packet, int size, int * offset, avdtp_sbc_codec_header_t * sbc_header){
     int sbc_header_len = 12; // without crc
     int pos = *offset;
+    dbg_putchar('$');
     
     if (size - pos < sbc_header_len){
         printf("Not enough data to read SBC header, expected %d, received %d\n", sbc_header_len, size-pos);
@@ -667,13 +669,13 @@ static void dump_sbc_configuration(media_codec_configuration_sbc_t * configurati
 static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
-//    if (packet_type != HCI_EVENT_PACKET) return;
-//    if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
-//        bd_addr_t address;
-//        printf("Pin code request - using '0000'\n");
-//        hci_event_pin_code_request_get_bd_addr(packet, address);
-//        gap_pin_code_response(address, "0000");
-//    }
+    if (packet_type != HCI_EVENT_PACKET) return;
+    if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
+        bd_addr_t address;
+        printf("Pin code request - using '0000'\n");
+        hci_event_pin_code_request_get_bd_addr(packet, address);
+        gap_pin_code_response(address, "0000");
+    }
 }
 
 #ifdef ENABLE_AVRCP_COVER_ART
@@ -1382,8 +1384,7 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
     UNUSED(argc);
     (void)argv;
 
-    int err = setup_demo();
-    if (err) return err;
+    setup_demo();
 
 #ifdef HAVE_BTSTACK_STDIN
     // parse human-readable Bluetooth address
@@ -1393,7 +1394,7 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 
     // turn on!
     printf("Starting BTstack ...\n");
-    //hci_power_control(HCI_POWER_ON);
+    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

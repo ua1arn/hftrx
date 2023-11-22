@@ -52,6 +52,7 @@ ${BTSTACK_ROOT}/src/classic/btstack_link_key_db_tlv.c \
 ${BTSTACK_ROOT}/src/classic/btstack_sbc_decoder_bluedroid.c \
 ${BTSTACK_ROOT}/src/classic/btstack_sbc_encoder_bluedroid.c \
 ${BTSTACK_ROOT}/src/classic/btstack_sbc_plc.c \
+${BTSTACK_ROOT}/src/classic/btstack_sbc_bluedroid.c \
 ${BTSTACK_ROOT}/src/classic/device_id_server.c \
 ${BTSTACK_ROOT}/src/classic/goep_client.c \
 ${BTSTACK_ROOT}/src/classic/hfp.c \

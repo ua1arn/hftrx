@@ -297,6 +297,184 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 	/* void (*write)(..);             */ &hal_fram_write,
 };
 
+//////////////////////////////////////////////
+
+static int source_active;
+static int sink_active;
+
+
+static int btstack_audio_storch_sink_init(
+    uint8_t channels,
+    uint32_t samplerate,
+    void (*playback)(int16_t * buffer, uint16_t num_samples)
+){
+	PRINTF("%s:\n", __func__);
+    btstack_assert(playback != NULL);
+    btstack_assert(channels != 0);
+
+#ifdef HAVE_HAL_AUDIO_SINK_STEREO_ONLY
+    // always use stereo from hal, duplicate samples if needed
+    output_duplicate_samples = channels != 2;
+    channels = 2;
+#endif
+
+//    playback_callback  = playback;
+//    sink_samplerate = samplerate;
+//    hal_audio_sink_init(channels, samplerate, &btstack_audio_audio_played);
+
+    return 0;
+}
+
+static uint32_t btstack_audio_storch_sink_get_samplerate(void) {
+    return 48000;//BSP_AUDIO_OUT_GetFrequency();
+}
+
+static uint32_t source_samplerate = 0;
+
+static int btstack_audio_storch_source_init(
+    uint8_t channels,
+    uint32_t samplerate,
+    void (*recording)(const int16_t * buffer, uint16_t num_samples)
+){
+	PRINTF("%s:\n", __func__);
+    if (!recording){
+        PRINTF("No recording callback\n");
+        return 1;
+    }
+
+//    recording_callback  = recording;
+//    source_samplerate = samplerate;
+//    hal_audio_source_init(channels, samplerate, &btstack_audio_audio_recorded);
+
+    return 0;
+}
+
+static uint32_t btstack_audio_storch_source_get_samplerate(void) {
+	PRINTF("%s:\n", __func__);
+    return source_samplerate;
+}
+
+static void btstack_audio_storch_sink_set_volume(uint8_t volume){
+    UNUSED(volume);
+	PRINTF("%s:\n", __func__);
+}
+
+static void btstack_audio_storch_source_set_gain(uint8_t gain){
+    UNUSED(gain);
+	PRINTF("%s:\n", __func__);
+}
+
+static void btstack_audio_storch_sink_start_stream(void){
+	PRINTF("%s:\n", __func__);
+//    output_buffer_count   = hal_audio_sink_get_num_output_buffers();
+//    output_buffer_samples = hal_audio_sink_get_num_output_buffer_samples();
+//
+//    btstack_assert(output_buffer_samples > 0);
+//
+//    // pre-fill HAL buffers
+//    uint16_t i;
+//    for (i=0;i<output_buffer_count;i++){
+//        int16_t * buffer = hal_audio_sink_get_output_buffer(i);
+//        (*playback_callback)(buffer, output_buffer_samples);
+//    }
+//
+//    output_buffer_to_play = 0;
+//    output_buffer_to_fill = 0;
+//
+//    // start playback
+//    hal_audio_sink_start();
+//
+//    // start timer
+//    btstack_run_loop_set_timer_handler(&driver_timer_sink, &driver_timer_handler_sink);
+//    btstack_run_loop_set_timer(&driver_timer_sink, DRIVER_POLL_INTERVAL_MS);
+//    btstack_run_loop_add_timer(&driver_timer_sink);
+
+    // state
+    sink_active = 1;
+}
+
+static void btstack_audio_storch_source_start_stream(void){
+    // just started, no data ready
+	PRINTF("%s:\n", __func__);
+//    input_buffer_ready = 0;
+//
+//    // start recording
+//    hal_audio_source_start();
+//
+//    // start timer
+//    btstack_run_loop_set_timer_handler(&driver_timer_source, &driver_timer_handler_source);
+//    btstack_run_loop_set_timer(&driver_timer_source, DRIVER_POLL_INTERVAL_MS);
+//    btstack_run_loop_add_timer(&driver_timer_source);
+
+    // state
+    source_active = 1;
+}
+
+static void btstack_audio_storch_sink_stop_stream(void){
+    // stop stream
+	PRINTF("%s:\n", __func__);
+//    hal_audio_sink_stop();
+//    // stop timer
+//    btstack_run_loop_remove_timer(&driver_timer_sink);
+    // state
+    sink_active = 0;
+}
+
+static void btstack_audio_storch_source_stop_stream(void){
+    // stop stream
+	PRINTF("%s:\n", __func__);
+//    hal_audio_source_stop();
+//    // stop timer
+//    btstack_run_loop_remove_timer(&driver_timer_source);
+    // state
+    source_active = 0;
+}
+
+static void btstack_audio_storch_sink_close(void){
+    // stop stream if needed
+    if (sink_active){
+        btstack_audio_storch_sink_stop_stream();
+    }
+    // close HAL
+//    hal_audio_sink_close();
+}
+
+static void btstack_audio_storch_source_close(void){
+    // stop stream if needed
+	PRINTF("%s:\n", __func__);
+    if (source_active){
+        btstack_audio_storch_source_stop_stream();
+    }
+    // close HAL
+//    hal_audio_source_close();
+}
+
+static const btstack_audio_sink_t btstack_audio_storch_sink = {
+        .init           = &btstack_audio_storch_sink_init,
+        .get_samplerate = &btstack_audio_storch_sink_get_samplerate,
+        .set_volume     = &btstack_audio_storch_sink_set_volume,
+        .start_stream   = &btstack_audio_storch_sink_start_stream,
+        .stop_stream    = &btstack_audio_storch_sink_stop_stream,
+        .close          = &btstack_audio_storch_sink_close
+};
+
+static const btstack_audio_source_t btstack_audio_storch_source = {
+        .init           = &btstack_audio_storch_source_init,
+        .get_samplerate = &btstack_audio_storch_source_get_samplerate,
+        .set_gain       = &btstack_audio_storch_source_set_gain,
+        .start_stream   = &btstack_audio_storch_source_start_stream,
+        .stop_stream    = &btstack_audio_storch_source_stop_stream,
+        .close          = &btstack_audio_storch_source_close
+};
+
+const btstack_audio_sink_t * btstack_audio_storch_sink_get_instance(void){
+    return &btstack_audio_storch_sink;
+}
+
+const btstack_audio_source_t * btstack_audio_storch_source_get_instance(void){
+    return &btstack_audio_storch_source;
+}
+
 
 void tuh_bth_mount_cb(uint8_t idx)
 {
@@ -346,24 +524,22 @@ void tuh_bth_mount_cb(uint8_t idx)
     // setup LE Device DB using TLV
     ////le_device_db_tlv_configure(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
 
-#ifdef HAVE_HAL_AUDIO
     // setup audio
-   	btstack_audio_sink_set_instance(btstack_audio_embedded_sink_get_instance());
-    btstack_audio_source_set_instance(btstack_audio_embedded_source_get_instance());
-#endif
+	btstack_audio_sink_set_instance(btstack_audio_storch_sink_get_instance());
+	btstack_audio_source_set_instance(btstack_audio_storch_source_get_instance());
 
-    // inform about BTstack state
-    hci_event_callback_registration.callback = &packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
-
-    sdp_init();		// везде в примерах убрать
-    l2cap_init();	// везде в примерах убрать
-    rfcomm_init();	// везде в примерах убрать
-    // Init profiles
-    a2dp_sink_init();
-    avrcp_init();
-    avrcp_controller_init();
-    avrcp_target_init();
+//    // inform about BTstack state
+//    hci_event_callback_registration.callback = &packet_handler;
+//    hci_add_event_handler(&hci_event_callback_registration);
+//
+//    sdp_init();		// везде в примерах убрать
+//    l2cap_init();	// везде в примерах убрать
+//    rfcomm_init();	// везде в примерах убрать
+//    // Init profiles
+//    a2dp_sink_init();
+//    avrcp_init();
+//    avrcp_controller_init();
+//    avrcp_target_init();
 
     // hand over to btstack embedded code
     //VERIFY(! spp_counter_btstack_main(0, NULL));
