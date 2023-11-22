@@ -29,17 +29,17 @@
 //#define BOARD_TUD_MAX_SPEED OPT_MODE_HIGH_SPEED
 //#define BOARD_TUH_MAX_SPEED OPT_MODE_HIGH_SPEED
 
-#define CFG_TUH_HUB 4
-#define CFG_TUH_MSC	4
+#define CFG_TUH_MSC	1	// количество поддерживаемых устройств
 #define CFG_TUH_HID	4
-#define CFG_TUH_CDC	4
-#define CFG_TUH_CDC_FTDI 12
-#define CFG_TUH_BTH	4
+#define CFG_TUH_CDC	12	// количество поддерживаемых устройств
+#define CFG_TUH_CDC_FTDI 1	// 0/1 - поддержка FTDI CHIP
+#define CFG_TUH_BTH	1	// количество поддерживаемых устройств
 
 #define CFG_TUSB_DEBUG 0	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
-#define CFG_TUH_DEVICE_MAX	8
+#define CFG_TUH_HUB 8
+#define CFG_TUH_DEVICE_MAX	4	// Не должно быть больше чем CFG_TUH_HUB
 #define CFG_TUH_ENUMERATION_BUFSIZE	2048
 
 //--------------------------------------------------------------------+
