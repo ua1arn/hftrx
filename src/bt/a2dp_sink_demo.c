@@ -117,7 +117,7 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-    0xFF,//(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
+	0*0x0F | (AVDTP_SBC_48000 << 4) | (AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | AVDTP_SBC_MONO,
     0xFF,//(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };
@@ -563,7 +563,7 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
     sbc_frame_size = packet_length / sbc_header.num_frames;
     int status = btstack_ring_buffer_write(&sbc_frame_ring_buffer, packet_begin, packet_length);
     if (status != ERROR_CODE_SUCCESS){
-        printf("Error storing samples in SBC ring buffer!!!\n");
+        //printf("Error storing samples in SBC ring buffer!!!\n");
     }
 
     // decide on audio sync drift based on number of sbc frames in queue
