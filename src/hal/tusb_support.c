@@ -834,7 +834,7 @@ void ohciehci_clk_init(void)
 
 #else
 
-	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
+	#warning ohciehci_clk_init Not implemented for CPUSTYLE_xxxxx
 
 #endif
 #endif /* defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI) */
@@ -1105,7 +1105,7 @@ void usbdevice_clk_init(void)
 
 	}
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 //	void SetupUsbPhyc(USBPHYC_TypeDef * phy);
 //
@@ -1283,7 +1283,7 @@ void usbdevice_clk_init(void)
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #else
-	#error HAL_PCD_MspInit should be implemented
+	#error usbdevice_clk_init should be implemented
 
 #endif
 

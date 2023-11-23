@@ -478,21 +478,13 @@ const btstack_audio_source_t * btstack_audio_storch_source_get_instance(void){
 
 void tuh_bth_mount_cb(uint8_t idx)
 {
-//	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
+	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
     btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
 
-
-    //PRINTF("BTstack on STM32 F4 Discovery with USB support starting...\n");
-
-
     // uncomment to enable packet logger
-#ifdef ENABLE_SEGGER_RTT
-    // hci_dump_init(hci_dump_segger_rtt_stdout_get_instance());
-#else
-    // hci_dump_init(hci_dump_embedded_stdout_get_instance());
-#endif
+    ////hci_dump_init(hci_dump_embedded_stdout_get_instance());
 
     // init HCI
 #if WITHTINYUSB
@@ -547,6 +539,7 @@ void tuh_bth_mount_cb(uint8_t idx)
     VERIFY(! a2dp_sink_btstack_main(0, NULL));
     //VERIFY(! hfp_hf_btstack_main(0, NULL));
     //VERIFY(! hsp_hs_btstack_main(0, NULL));
+    //VERIFY(! spp_streamer_btstack_main(0, NULL));
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
@@ -563,7 +556,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
-	//PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
+	PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
     //hci_power_control(HCI_POWER_OFF);
 	hci_remove_event_handler(&hci_event_callback_registration);
 	hci_deinit();

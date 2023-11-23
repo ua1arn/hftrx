@@ -7,5 +7,6 @@ int a2dp_source_btstack_main(int argc, const char * argv[]);
 int hfp_hf_btstack_main(int argc, const char * argv[]);
 int hfp_ag_btstack_main(int argc, const char * argv[]);
 int hsp_hs_btstack_main(int argc, const char * argv[]);
+int spp_streamer_btstack_main(int argc, const char * argv[]);
 
 #endif

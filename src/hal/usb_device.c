@@ -114,6 +114,10 @@ uint_fast8_t hardware_usbd_get_vbusnow(void)
   */
 void MX_USB_DEVICE_Init(void)
 {
+#if WITHTINYUSB && CFG_TUD_ENABLED
+	usbdevice_clk_init();
+	tud_init(BOARD_TUD_RHPORT);
+#else /* WITHTINYUSB && CFG_TUD_ENABLED */
   /* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
   /* USER CODE END USB_DEVICE_Init_PreTreatment */
 
@@ -165,18 +169,19 @@ void MX_USB_DEVICE_Init(void)
 #if WITHUSBDMSC
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_MSC);
 #endif /* WITHUSBDMSC */
-
- /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
-  
-  /* USER CODE END USB_DEVICE_Init_PostTreatment */
+#endif /* WITHTINYUSB && CFG_TUD_ENABLED */
 }
 
 void MX_USB_DEVICE_DeInit(void)
 {
+#if WITHTINYUSB && CFG_TUD_ENABLED
+
+#else /* WITHTINYUSB && CFG_TUD_ENABLED */
 	if (USBD_Stop(&hUsbDeviceHS) != USBD_OK)
 	{
 		Error_Handler();
 	}
+#endif /* WITHTINYUSB && CFG_TUD_ENABLED */
 }
 
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -186,12 +191,12 @@ void MX_USB_DEVICE_DeInit(void)
 /* User-mode function */
 void MX_USB_HOST_Init(void)
 {
-#if WITHTINYUSB
+#if WITHTINYUSB && CFG_TUH_ENABLED
 	board_set_usbhostvbuson(1);
 	local_delay_ms(100);
 	ohciehci_clk_init();
 	tuh_init(BOARD_TUH_RHPORT);
-#else /* WITHTINYUSB */
+#else /* WITHTINYUSB && CFG_TUH_ENABLED */
 	/* Init Host Library, Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
@@ -205,13 +210,13 @@ void MX_USB_HOST_Init(void)
 	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
 	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
 #endif /* WITHUSEUSBFLASH */
-#endif /* WITHTINYUSB */
+#endif /* WITHTINYUSB && CFG_TUH_ENABLED */
 }
 
 /* User-mode function */
 void MX_USB_HOST_DeInit(void)
 {
-#if WITHTINYUSB
+#if WITHTINYUSB && CFG_TUH_ENABLED
 //	tuh_deinit(BOARD_TUH_RHPORT);
 //	ohciehci_clk_deinit();
 #else /* WITHTINYUSB */
@@ -225,7 +230,7 @@ void MX_USB_HOST_DeInit(void)
 /* User-mode function */
 void MX_USB_HOST_Process(void)
 {
-#if WITHTINYUSB
+#if WITHTINYUSB && CFG_TUH_ENABLED
 	tuh_task();
 #else
 	USBH_Process(& hUsbHostHS);
@@ -328,10 +333,16 @@ void board_usb_activate(void)
 
 #endif /* WITHUSBDEV_HSDESC */
 	//PRINTF("board_usb_activate\n");
+
+#if WITHTINYUSB && CFG_TUD_ENABLED
+#else /* WITHTINYUSB && CFG_TUD_ENABLED */
+
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
 	{
 		Error_Handler();
 	}
+#endif /* WITHTINYUSB && CFG_TUD_ENABLED */
+
 #endif /* defined (WITHUSBHW_DEVICE) */
 #if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 	if (USBH_Start(& hUsbHostHS) != USBH_OK)

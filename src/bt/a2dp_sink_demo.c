@@ -117,7 +117,7 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-	0*0x0F | (AVDTP_SBC_48000 << 4) | (AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | AVDTP_SBC_MONO,
+	0*(AVDTP_SBC_32000 << 4) | 0*(AVDTP_SBC_16000 << 4) | 0*(AVDTP_SBC_48000 << 4) | 1*(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | AVDTP_SBC_MONO,
     0xFF,//(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };
