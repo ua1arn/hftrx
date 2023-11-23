@@ -658,6 +658,16 @@ save_i32(nvramaddress_t addr, uint_fast32_t v)
 {
 }
 
+void nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
+{
+
+}
+
+void nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
+{
+	memset(data, 0xFF, len);
+}
+
 #endif
 
 #endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
