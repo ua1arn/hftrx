@@ -38,8 +38,8 @@
 #define CFG_TUSB_DEBUG 0	// 0..3
 #define TUP_OHCI_RHPORTS 1
 
-//#define CFG_TUH_HUB 8
-//#define CFG_TUH_DEVICE_MAX	4	// Не должно быть больше чем CFG_TUH_HUB
+#define CFG_TUH_HUB 8
+#define CFG_TUH_DEVICE_MAX	4	// Не должно быть больше чем CFG_TUH_HUB
 
 #define CFG_TUH_ENUMERATION_BUFSIZE	2048
 
@@ -104,15 +104,27 @@
 
 #define LPC_USB_BASE WITHUSBHW_OHCI
 
-#define CI_HS_REG(_port)        ((void *) WITHUSBHW_EHCI)
+#if defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
+	#define CI_HS_REG(_port)        ((void *) WITHUSBHW_EHCI)
 
- //------------- DCD -------------//
- #define CI_DCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_OTG_IRQ); } while (0)
- #define CI_DCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OTG_IRQ); } while (0)
+	//------------- DCD -------------//
+	#define CI_DCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_OTG_IRQ); } while (0)
+	#define CI_DCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OTG_IRQ); } while (0)
 
- //------------- HCD -------------//
- #define CI_HCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_enable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
- #define CI_HCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ); arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ); } while (0)
+	//------------- HCD -------------//
+	#define CI_HCD_INT_ENABLE(_p)   do { arm_hardware_enable_handler(WITHUSBHW_EHCI_IRQ); arm_hardware_enable_handler(WITHUSBHW_OHCI_IRQ); } while (0)
+	#define CI_HCD_INT_DISABLE(_p)  do { arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ); arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ); } while (0)
+#else
+	#define CI_HS_REG(_port)        (NULL)
+
+	//------------- DCD -------------//
+	#define CI_DCD_INT_ENABLE(_p)   do { } while (0)
+	#define CI_DCD_INT_DISABLE(_p)  do { } while (0)
+
+	//------------- HCD -------------//
+	#define CI_HCD_INT_ENABLE(_p)   do { } while (0)
+	#define CI_HCD_INT_DISABLE(_p)  do { } while (0)
+#endif
 
  void ohciehci_clk_init(void);
 

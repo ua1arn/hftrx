@@ -192,7 +192,7 @@ void MX_USB_HOST_Init(void)
 	ohciehci_clk_init();
 	tuh_init(BOARD_TUH_RHPORT);
 #else /* WITHTINYUSB */
-	/* Init Host Library,Add Supported Class and Start the library*/
+	/* Init Host Library, Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
 #if WITHUSEUSBBT

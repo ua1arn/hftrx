@@ -35,6 +35,8 @@
 
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
+#define WITHTINYUSB 1
+
 #if WITHDEBUG
 	#define WITHDEBUG_UART2	1
 	#define WITHUART2HW	1
@@ -167,7 +169,6 @@
 //	#define WITHUSBHOST_DMAENABLE 1
 
 
-	#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 

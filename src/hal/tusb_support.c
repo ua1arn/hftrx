@@ -346,14 +346,14 @@ void USBH_POSTRESET_INIT(void)
 
 void USBH_OHCI_IRQHandler(void)
 {
-#if TUP_USBIP_OHCI
+#if TUP_USBIP_OHCI && defined (WITHUSBHW_OHCI)
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
 #endif
 }
 
 void USBH_EHCI_IRQHandler(void)
 {
-#if TUP_USBIP_EHCI
+#if TUP_USBIP_EHCI && defined (WITHUSBHW_EHCI)
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
 #endif
 }
@@ -361,7 +361,7 @@ void USBH_EHCI_IRQHandler(void)
 // Host clocks intialize
 void ohciehci_clk_init(void)
 {
-
+#if defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
 #if CPUSTYLE_T507
 
 	CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
@@ -837,7 +837,7 @@ void ohciehci_clk_init(void)
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
-
+#endif /* defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI) */
 }
 #endif
 #endif /* WITHTINYUSB */
