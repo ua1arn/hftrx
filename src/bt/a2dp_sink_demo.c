@@ -346,8 +346,8 @@ static int setup_demo(void){
     //gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
 
     // - Allow to show up in Bluetooth inquiry
-    gap_discoverable_control(1);
-
+//    gap_discoverable_control(1);
+//
     // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Loudspeaker
     gap_set_class_of_device(0x200414);
 
@@ -418,6 +418,7 @@ static void handle_pcm_data(int16_t * data, int num_audio_frames, int num_channe
     UNUSED(sample_rate);
     UNUSED(context);
     UNUSED(num_channels);   // must be stereo == 2
+
     const btstack_audio_sink_t * audio_sink = btstack_audio_sink_get_instance();
     if (!audio_sink){
 #ifdef STORE_TO_WAV_FILE
@@ -543,6 +544,7 @@ static int read_sbc_header(uint8_t * packet, int size, int * offset, avdtp_sbc_c
 static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16_t size){
     UNUSED(seid);
     int pos = 0;
+     
     avdtp_media_packet_header_t media_header;
     if (!read_media_data_header(packet, size, &pos, &media_header)) return;
     
@@ -563,7 +565,7 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
     sbc_frame_size = packet_length / sbc_header.num_frames;
     int status = btstack_ring_buffer_write(&sbc_frame_ring_buffer, packet_begin, packet_length);
     if (status != ERROR_CODE_SUCCESS){
-        //printf("Error storing samples in SBC ring buffer!!!\n");
+        printf("Error storing samples in SBC ring buffer!!!\n");
     }
 
     // decide on audio sync drift based on number of sbc frames in queue
@@ -605,7 +607,7 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
 static int read_sbc_header(uint8_t * packet, int size, int * offset, avdtp_sbc_codec_header_t * sbc_header){
     int sbc_header_len = 12; // without crc
     int pos = *offset;
-
+    
     if (size - pos < sbc_header_len){
         printf("Not enough data to read SBC header, expected %d, received %d\n", sbc_header_len, size-pos);
         return 0;
@@ -761,7 +763,6 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
     uint8_t  status;
     bd_addr_t address;
 
-	PRINTF("%s:\n", __func__);
     a2dp_sink_demo_avrcp_connection_t * connection = &a2dp_sink_demo_avrcp_connection;
 
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -808,7 +809,6 @@ static void avrcp_controller_packet_handler(uint8_t packet_type, uint16_t channe
     UNUSED(channel);
     UNUSED(size);
 
-	PRINTF("%s:\n", __func__);
     // helper to print c strings
     uint8_t avrcp_subevent_value[256];
     uint8_t play_status;
@@ -978,7 +978,6 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
     UNUSED(channel);
     UNUSED(size);
 
-	PRINTF("%s:\n", __func__);
     if (packet_type != HCI_EVENT_PACKET) return;
     if (hci_event_packet_get_type(packet) != HCI_EVENT_AVRCP_META) return;
     
@@ -1019,7 +1018,6 @@ static void a2dp_sink_packet_handler(uint8_t packet_type, uint16_t channel, uint
     UNUSED(size);
     uint8_t status;
 
-	PRINTF("%s:\n", __func__);
     uint8_t allocation_method;
 
     if (packet_type != HCI_EVENT_PACKET) return;
@@ -1393,8 +1391,8 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-    printf("Starting BTstack ...\n");
-    hci_power_control(HCI_POWER_ON);
+//    printf("Starting BTstack ...\n");
+//    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

@@ -544,8 +544,8 @@ void tuh_bth_mount_cb(uint8_t idx)
     // hand over to btstack embedded code
     //VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    //VERIFY(! a2dp_sink_btstack_main(0, NULL));
-    VERIFY(! hfp_hf_btstack_main(0, NULL));
+    VERIFY(! a2dp_sink_btstack_main(0, NULL));
+    //VERIFY(! hfp_hf_btstack_main(0, NULL));
     //VERIFY(! hsp_hs_btstack_main(0, NULL));
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
