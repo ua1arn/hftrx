@@ -15,6 +15,7 @@
 #include "hardware.h"
 #include "formats.h"
 
+#if WITHTINYUSB
 
 #define CFG_TUSB_MCU OPT_MCU_F1C100S
 
@@ -127,7 +128,9 @@
 #endif
 
  void ohciehci_clk_init(void);
+ void usbdevice_clk_init(void);
 
+#endif /* WITHTINYUSB */
 #ifdef __cplusplus
  }
 #endif

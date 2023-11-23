@@ -569,7 +569,7 @@ void tuh_bth_umount_cb(uint8_t idx)
 	hci_deinit();
 //	btstack_run_loop_deinit();
 //	btstack_memory_deinit();
-	ASSERT(0);
+//	ASSERT(0);
 }
 
 /* Bluetooth initialize */
