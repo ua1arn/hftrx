@@ -24,6 +24,10 @@
 #include "dspdefines.h"
 //#define WITHAUTOTUNER_N7DDCALGO  1  /* использование алгоритма N7DDC */
 
+#if WITHUSEUSBBT
+#include "btstack.h"
+#endif /* WITHUSEUSBBT */
+
 #if WITHFT8
 	#include "ft8.h"
 #endif /* WITHFT8 */
@@ -19959,7 +19963,7 @@ hamradio_main_step(void)
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 			}
-	#if WITHDEBUG
+	#if WITHDEBUG && ! defined (HAVE_BTSTACK_STDIN)
 			{
 //				void zdataprint(void);
 //				void zcountsprint(void);
