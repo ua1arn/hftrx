@@ -731,9 +731,9 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 
     // Init protocols
     // init L2CAP
-//    l2cap_init();
-//    rfcomm_init();
-//    sdp_init();
+    l2cap_init();
+    rfcomm_init();
+    sdp_init();
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
@@ -743,15 +743,14 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     uint16_t hf_supported_features          =
         (1<<HFP_HFSF_ESCO_S4)               |
         (1<<HFP_HFSF_CLI_PRESENTATION_CAPABILITY) |
-        //(1<<HFP_HFSF_HF_INDICATORS)         |
+        (1<<HFP_HFSF_HF_INDICATORS)         |
         (1<<HFP_HFSF_CODEC_NEGOTIATION)     |
-        //(1<<HFP_HFSF_ENHANCED_CALL_STATUS)  |
-        //(1<<HFP_HFSF_VOICE_RECOGNITION_FUNCTION)  |
+        (1<<HFP_HFSF_ENHANCED_CALL_STATUS)  |
+        (1<<HFP_HFSF_VOICE_RECOGNITION_FUNCTION)  |
         (1<<HFP_HFSF_ENHANCED_VOICE_RECOGNITION_STATUS) |
-        //(1<<HFP_HFSF_VOICE_RECOGNITION_TEXT) |
-        //(1<<HFP_HFSF_EC_NR_FUNCTION) |
-        //(1<<HFP_HFSF_REMOTE_VOLUME_CONTROL) |
-		0;
+        (1<<HFP_HFSF_VOICE_RECOGNITION_TEXT) |
+        (1<<HFP_HFSF_EC_NR_FUNCTION) |
+        (1<<HFP_HFSF_REMOTE_VOLUME_CONTROL);
 
     hfp_hf_init(rfcomm_channel_nr);
     hfp_hf_init_supported_features(hf_supported_features);
@@ -804,7 +803,7 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-    //hci_power_control(HCI_POWER_ON);
+    hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* LISTING_END */
