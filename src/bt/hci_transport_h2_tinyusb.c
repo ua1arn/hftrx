@@ -109,15 +109,11 @@ void tuh_bth_event_cb(uint8_t idx, uint8_t * buffer, uint16_t size)
 		tuh_packet_received(HCI_EVENT_PACKET, buffer, size);
 }
 
-void tuh_bth_rx_acl_cb(uint8_t idx)
+void tuh_bth_rx_acl_cb(uint8_t idx, uint8_t* buffer, uint16_t count)
 {
-	uint8_t buf [HCI_ACL_PAYLOAD_SIZE];
-	uint32_t const bufsize = sizeof buf;
-
-	uint32_t count = tuh_bth_read(idx, buf, bufsize);
-	dibgprint("packet_received (acl)",buf, count);
+	dibgprint("packet_received (acl)", buffer, count);
 	if (tuh_packet_received)
-		tuh_packet_received(HCI_ACL_DATA_PACKET, buf, count);
+		tuh_packet_received(HCI_ACL_DATA_PACKET, buffer, count);
 
 }
 

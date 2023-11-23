@@ -381,7 +381,6 @@ static int setup_demo(void){
 
 static void playback_handler(int16_t * buffer, uint16_t num_audio_frames){
 
-    dbg_putchar('.');
 #ifdef STORE_TO_WAV_FILE
     int       wav_samples = num_audio_frames * NUM_CHANNELS;
     int16_t * wav_buffer  = buffer;
@@ -419,7 +418,6 @@ static void handle_pcm_data(int16_t * data, int num_audio_frames, int num_channe
     UNUSED(sample_rate);
     UNUSED(context);
     UNUSED(num_channels);   // must be stereo == 2
-    dbg_putchar(':');
     const btstack_audio_sink_t * audio_sink = btstack_audio_sink_get_instance();
     if (!audio_sink){
 #ifdef STORE_TO_WAV_FILE
@@ -545,7 +543,6 @@ static int read_sbc_header(uint8_t * packet, int size, int * offset, avdtp_sbc_c
 static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16_t size){
     UNUSED(seid);
     int pos = 0;
-    dbg_putchar('!');
     avdtp_media_packet_header_t media_header;
     if (!read_media_data_header(packet, size, &pos, &media_header)) return;
     
@@ -608,8 +605,7 @@ static void handle_l2cap_media_data_packet(uint8_t seid, uint8_t *packet, uint16
 static int read_sbc_header(uint8_t * packet, int size, int * offset, avdtp_sbc_codec_header_t * sbc_header){
     int sbc_header_len = 12; // without crc
     int pos = *offset;
-    dbg_putchar('$');
-    
+
     if (size - pos < sbc_header_len){
         printf("Not enough data to read SBC header, expected %d, received %d\n", sbc_header_len, size-pos);
         return 0;
@@ -669,7 +665,6 @@ static void dump_sbc_configuration(media_codec_configuration_sbc_t * configurati
 static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
-    dbg_putchar('!');
     if (packet_type != HCI_EVENT_PACKET) return;
     if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
         bd_addr_t address;
