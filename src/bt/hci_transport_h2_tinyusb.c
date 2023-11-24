@@ -61,6 +61,7 @@
 
 #include "tusb.h"
 
+
 static void dibgprint(const char * title, const void * p, uint16_t n)
 {
 #if 0
@@ -79,6 +80,24 @@ static btstack_data_source_t transport_data_source;
 static void (*tuh_packet_sent)(void);
 static void (*tuh_packet_received)(uint8_t packet_type, uint8_t * packet, uint16_t size);
 
+static int bth_idx = 0;
+static int bth_dev_addr = 1;
+static int pdrv = 0;
+
+static void cmd_io_complete(tuh_xfer_t* xfer)
+{
+	dibgprint("packet sent2 (cmd)", NULL, 0);
+	ASSERT(tuh_packet_sent);
+  (*tuh_packet_sent)();
+}
+
+static void acl_io_complete(tuh_xfer_t* xfer)
+{
+	dibgprint("packet sent2 (acl)", NULL, 0);
+	ASSERT(tuh_packet_sent);
+	(*tuh_packet_sent)();
+}
+
 void tuh_bluetooth_set_packet_sent(void (*callback)(void)){
     tuh_packet_sent = callback;
 }
@@ -88,16 +107,18 @@ void tuh_bluetooth_set_packet_received(void (*callback)(uint8_t packet_type, uin
     tuh_packet_received = callback;
 }
 
-static int bth_idx = 0;
-
 bool tuh_bluetooth_can_send_now(void){
      return /*st == ST_ALL_READY && */tuh_bth_can_send_now(bth_idx);
 }
 
 void tuh_bluetooth_send_cmd(const uint8_t * packet, uint16_t len){
 	dibgprint("send_cmd", packet, len);
-	tuh_bth_send_cmd(bth_idx, packet, len);
-//	st = ST_WAIT_CMD;
+	tuh_bth_send_cmd(bth_idx, packet, len, cmd_io_complete, 0);
+}
+
+void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
+	dibgprint("send_acl", packet, len);
+	tuh_bth_send_acl(bth_idx, packet, len, acl_io_complete, 0);
 }
 
 
@@ -117,35 +138,25 @@ void tuh_bth_rx_acl_cb(uint8_t idx, uint8_t* buffer, uint16_t count)
 
 }
 
-void tuh_bluetooth_send_acl(const uint8_t * packet, uint16_t len){
-	dibgprint("send_acl", packet, len);
-	while (! tuh_bth_can_send_now(bth_idx))
-		tuh_task();
-	tuh_bth_send_acl(bth_idx, packet, len);
-//	st = ST_WAIT_ACL;
-}
-
 void tuh_bth_send_acl_cb(uint8_t idx)
 {
-	//PRINTF("send_acl callback\n");
+	dibgprint("packet sent (acl)", NULL, 0);
 	ASSERT(tuh_packet_sent);
-    (*tuh_packet_sent)();
-//	st = ST_ALL_READY;
+	(*tuh_packet_sent)();
 }
 
 void tuh_bth_send_cmd_cb(uint8_t idx)
 {
-	//PRINTF("end_cmd callback\n");
+	dibgprint("packet sent (cmd)", NULL, 0);
 	ASSERT(tuh_packet_sent);
-    (*tuh_packet_sent)();
-//	st = ST_ALL_READY;
+	(*tuh_packet_sent)();
 }
 
 static void hci_transport_h2_tinyusb_process(btstack_data_source_t *ds, btstack_data_source_callback_type_t callback_type) {
     switch (callback_type){
-//        case DATA_SOURCE_CALLBACK_POLL:
-//            MX_USB_HOST_Process();
-//            break;
+        case DATA_SOURCE_CALLBACK_POLL:
+			tuh_task();
+            break;
         default:
             break;
     }
@@ -188,7 +199,7 @@ static void hci_transport_h2_tinyusb_register_packet_handler(void (*handler)(uin
 }
 
 static int hci_transport_h2_tinyusb_can_send_now(uint8_t packet_type){
-    return 1;//tuh_bluetooth_can_send_now();
+    return tuh_bluetooth_can_send_now();
 }
 
 static int hci_transport_h2_tinyusb_send_packet(uint8_t packet_type, uint8_t * packet, int size){
