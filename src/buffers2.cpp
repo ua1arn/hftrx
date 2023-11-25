@@ -14,7 +14,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #define BUFOVERSIZE 1
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
@@ -91,9 +91,9 @@ static const uint_fast8_t uacoutalt = 0;
 template<typename apptype, int ss, int nch>
 class adapters
 {
+public:
 	const char * name;
 	adapter_t adp;
-public:
 	adapters(int leftbit, int rightspace, const char * aname) :
 		name(aname)
 	{
@@ -1415,19 +1415,26 @@ typedef struct
 	enum { ss = 1, nch = 2 };	// resampling support
 } btio48_t;
 
+
+#define BTIO44P1_SAMPLEBYTES 2
+#define BTIO44P1_CHANNELS 2
+
 // Буфер на стороне 44.1 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  FLOAT_t buff [441 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [441 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = 1, nch = 2 };	// resampling support
+	enum { ss = 1, nch = BTIO44P1_CHANNELS };	// resampling support
 } btio44p1_t;
+
+typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btio44p1adpt_t;
+static btio44p1adpt_t btio44p1adpt(BTIO44P1_SAMPLEBYTES * 8, 0, "btio44p1");
 
 typedef buffitem<btio48_t> btio48buf_t;
 typedef buffitem<btio44p1_t> btio44p1buf_t;
 
 typedef dmahandle<FLOAT_t, btio48buf_t, 0, 1> btio48dma_t;
-typedef dmahandle<FLOAT_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
+typedef dmahandle<int16_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
 
 static btio44p1buf_t  btout44p1buf [BTOUT48_CAPACITY];
 static btio48buf_t  btout48buf [BTOUT48_CAPACITY];
@@ -1469,9 +1476,10 @@ static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 	btio44p1_t * addr;
 	if (! btout44p1.get_freebufferforced(& addr))
 		return false;
-	const FLOAT_t * const src = addr->buff;
+	const int16_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 
+	adpt_input(& btio44p1adpt.adp, src [0]);	// получить sample
 	memset(dst, 0, ndst * sizeof * dst);	// stub
 
 	btout44p1.release_buffer(addr);
@@ -1516,7 +1524,7 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferbtio44p1(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabufferbtio44p1(int16_t * b, int16_t ch0, int16_t ch1)
 {
 	b [0] = ch0;
 	b [1] = ch1;
@@ -1531,6 +1539,21 @@ void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 void elfill_dmabufferbtin44p1(FLOAT_t ch0, FLOAT_t ch1)
 {
 	btin44p1.savedata(ch0, ch1, putcbf_dmabufferbtio44p1);
+}
+
+uintptr_t allocate_dmabuffertoutbt44p1(void)
+{
+	btio44p1_t * dest;
+	while (! btout44p1.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout44p1(uintptr_t addr);
+void save_dmabuffertoutbt44p1(uintptr_t addr)
+{
+	btio44p1_t * const p = CONTAINING_RECORD(addr, btio44p1_t, buff);
+	btout44p1.release_buffer(p);
 }
 
 #endif /* WITHUSEUSBBT */
@@ -2914,8 +2937,11 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 
 void buffers_diagnostics(void)
 {
+#if WITHUSEUSBBT
+	btout44p1.debug();
+#endif
 #if WITHINTEGRATEDDSP
-#if 1
+#if 0
 	denoise16list.debug();
 	codec16rx.debug();
 	codec16tx.debug();
@@ -2923,7 +2949,7 @@ void buffers_diagnostics(void)
 	voice32tx.debug();
 	voice32rx.debug();
 #endif
-#if 1
+#if 0
 	// USB
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
 	uacout48.debug();
@@ -2948,6 +2974,9 @@ void buffers_diagnostics(void)
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
 {
+#if WITHUSEUSBBT
+	btout44p1.spool10ms();
+#endif
 #if WITHINTEGRATEDDSP
 	// internal sources/targets
 	//denoise16list.spool10ms();

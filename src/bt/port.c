@@ -41,6 +41,7 @@
 
 #if WITHUSEUSBBT
 
+#include "buffers.h"
 
 #include "port.h"
 
@@ -299,6 +300,16 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 //////////////////////////////////////////////
 
+#define DRIVER_POLL_INTERVAL_MS          25
+
+// client
+static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
+static void (*recording_callback)(const int16_t * buffer, uint16_t num_samples);
+
+// timer to fill output ring buffer
+static btstack_timer_source_t  driver_timer_sink;
+static btstack_timer_source_t  driver_timer_source;
+
 static int source_active;
 static int sink_active;
 
@@ -308,7 +319,8 @@ static int btstack_audio_storch_sink_init(
     uint32_t samplerate,
     void (*playback)(int16_t * buffer, uint16_t num_samples)
 ){
-	PRINTF("%s:\n", __func__);
+	////PRINTF("%s:\n", __func__);
+	PRINTF("btstack_audio_storch_sink_init: channels=%u, samplerate=%u\n", (unsigned) channels, (unsigned) samplerate);
     btstack_assert(playback != NULL);
     btstack_assert(channels != 0);
 
@@ -318,11 +330,49 @@ static int btstack_audio_storch_sink_init(
     channels = 2;
 #endif
 
-//    playback_callback  = playback;
-//    sink_samplerate = samplerate;
-//    hal_audio_sink_init(channels, samplerate, &btstack_audio_audio_played);
+    playback_callback  = playback;
+    //sink_samplerate = samplerate;
+    //hal_audio_sink_init(channels, samplerate, &btstack_audio_audio_played);
 
     return 0;
+}
+
+
+static void driver_timer_handler_sink(btstack_timer_source_t * ts){
+
+	//PRINTF("%s:\n", __func__);
+	uintptr_t addr = allocate_dmabuffertoutbt44p1();
+    (*playback_callback)((int16_t *) addr, 441);
+    //printhex(0, (int16_t *) addr, 441 * 2 * 2);
+    save_dmabuffertoutbt44p1(addr);
+    // playback buffer ready to fill
+//    while (output_buffer_to_play != output_buffer_to_fill){
+//        (*playback_callback)(output_buffers[output_buffer_to_fill], NUM_FRAMES_PER_PA_BUFFER);
+//
+//        // next
+//        output_buffer_to_fill = (output_buffer_to_fill + 1 ) % NUM_OUTPUT_BUFFERS;
+//    }
+
+    // re-set timer
+    btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
+    btstack_run_loop_add_timer(ts);
+}
+
+static void driver_timer_handler_source(btstack_timer_source_t * ts){
+
+	//PRINTF("%s:\n", __func__);
+   // recording buffer ready to process
+//    if (input_buffer_to_record != input_buffer_to_fill){
+//
+//        (*recording_callback)(input_buffers[input_buffer_to_record], NUM_FRAMES_PER_PA_BUFFER);
+//
+//        // next
+//        input_buffer_to_record = (input_buffer_to_record + 1 ) % NUM_INPUT_BUFFERS;
+//    }
+
+    // re-set timer
+    btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
+    btstack_run_loop_add_timer(ts);
 }
 
 static uint32_t btstack_audio_storch_sink_get_samplerate(void) {
@@ -336,7 +386,7 @@ static int btstack_audio_storch_source_init(
     uint32_t samplerate,
     void (*recording)(const int16_t * buffer, uint16_t num_samples)
 ){
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
     if (!recording){
         PRINTF("No recording callback\n");
         return 1;
@@ -350,22 +400,22 @@ static int btstack_audio_storch_source_init(
 }
 
 static uint32_t btstack_audio_storch_source_get_samplerate(void) {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
     return source_samplerate;
 }
 
 static void btstack_audio_storch_sink_set_volume(uint8_t volume){
     UNUSED(volume);
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 }
 
 static void btstack_audio_storch_source_set_gain(uint8_t gain){
     UNUSED(gain);
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 }
 
 static void btstack_audio_storch_sink_start_stream(void){
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 //    output_buffer_count   = hal_audio_sink_get_num_output_buffers();
 //    output_buffer_samples = hal_audio_sink_get_num_output_buffer_samples();
 //
@@ -384,10 +434,10 @@ static void btstack_audio_storch_sink_start_stream(void){
 //    // start playback
 //    hal_audio_sink_start();
 //
-//    // start timer
-//    btstack_run_loop_set_timer_handler(&driver_timer_sink, &driver_timer_handler_sink);
-//    btstack_run_loop_set_timer(&driver_timer_sink, DRIVER_POLL_INTERVAL_MS);
-//    btstack_run_loop_add_timer(&driver_timer_sink);
+    // start timer
+    btstack_run_loop_set_timer_handler(&driver_timer_sink, &driver_timer_handler_sink);
+    btstack_run_loop_set_timer(&driver_timer_sink, DRIVER_POLL_INTERVAL_MS);
+    btstack_run_loop_add_timer(&driver_timer_sink);
 
     // state
     sink_active = 1;
@@ -395,16 +445,16 @@ static void btstack_audio_storch_sink_start_stream(void){
 
 static void btstack_audio_storch_source_start_stream(void){
     // just started, no data ready
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 //    input_buffer_ready = 0;
 //
 //    // start recording
 //    hal_audio_source_start();
 //
-//    // start timer
-//    btstack_run_loop_set_timer_handler(&driver_timer_source, &driver_timer_handler_source);
-//    btstack_run_loop_set_timer(&driver_timer_source, DRIVER_POLL_INTERVAL_MS);
-//    btstack_run_loop_add_timer(&driver_timer_source);
+    // start timer
+    btstack_run_loop_set_timer_handler(&driver_timer_source, &driver_timer_handler_source);
+    btstack_run_loop_set_timer(&driver_timer_source, DRIVER_POLL_INTERVAL_MS);
+    btstack_run_loop_add_timer(&driver_timer_source);
 
     // state
     source_active = 1;
@@ -412,20 +462,20 @@ static void btstack_audio_storch_source_start_stream(void){
 
 static void btstack_audio_storch_sink_stop_stream(void){
     // stop stream
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 //    hal_audio_sink_stop();
-//    // stop timer
-//    btstack_run_loop_remove_timer(&driver_timer_sink);
+    // stop timer
+    btstack_run_loop_remove_timer(&driver_timer_sink);
     // state
     sink_active = 0;
 }
 
 static void btstack_audio_storch_source_stop_stream(void){
     // stop stream
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 //    hal_audio_source_stop();
-//    // stop timer
-//    btstack_run_loop_remove_timer(&driver_timer_source);
+    // stop timer
+    btstack_run_loop_remove_timer(&driver_timer_source);
     // state
     source_active = 0;
 }
@@ -441,7 +491,7 @@ static void btstack_audio_storch_sink_close(void){
 
 static void btstack_audio_storch_source_close(void){
     // stop stream if needed
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
     if (source_active){
         btstack_audio_storch_source_stop_stream();
     }

@@ -475,11 +475,6 @@ uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest);
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1);
 
-// Сторона 44.1 кГц
-uint_fast8_t elfetch_dmabufferbtout44p1(FLOAT_t * dest);
-void elfill_dmabufferbtin44p1(FLOAT_t ch0, FLOAT_t ch1);
-
-
 /* Сервис очереди сэмплов */
 typedef struct { int dummy; } VOICE_t;
 
