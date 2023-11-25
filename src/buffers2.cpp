@@ -1445,30 +1445,34 @@ static btio44p1dma_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_S
 
 
 // Заполнение с ресэмплингом буфера даннфми из btin48
-// n - требуемое количество сэмплов
-// возвращает признак того что данные в источнике есть
-static bool fetchdata_btin48(FLOAT_t * p, unsigned n)
+// n - требуемое количество samples
+// возвращает признак того, что данные в источнике есть
+static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 {
 	btio48_t * addr;
 	if (! btin48.get_freebufferforced(& addr))
 		return false;
+	const FLOAT_t * const src = addr->buff;
+	unsigned nsrc = ARRAY_SIZE(addr->buff);
 
-	memset(p, 0, n * sizeof * p);
+	memset(dst, 0, ndst * sizeof * dst);	// stub
 
 	btin48.release_buffer(addr);
 	return true;
 }
 
 // Заполнение с ресэмплингом буфера даннфми из btout44p1
-// n - требуемое количество сэмплов
-// возвращает признак того что данные в источнике есть
-static bool fetchdata_btout44p1(FLOAT_t * p, unsigned n)
+// n - требуемое количество samples
+// возвращает признак того, что данные в источнике есть
+static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 {
 	btio44p1_t * addr;
 	if (! btout44p1.get_freebufferforced(& addr))
 		return false;
+	const FLOAT_t * const src = addr->buff;
+	unsigned nsrc = ARRAY_SIZE(addr->buff);
 
-	memset(p, 0, n * sizeof * p);
+	memset(dst, 0, ndst * sizeof * dst);	// stub
 
 	btout44p1.release_buffer(addr);
 	return true;
