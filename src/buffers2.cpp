@@ -702,7 +702,30 @@ public:
 			rbn = 0;
 		}
 		rbn += getcbf(rb->buff + rbn, dest);
-		if (rbn >= ARRAY_SIZE(wb->buff))
+		if (rbn >= ARRAY_SIZE(rb->buff))
+		{
+			parent_t::release_buffer(rb);
+			rb = NULL;
+		}
+		return 1;
+	}
+
+	uint_fast8_t fetchdata_resample(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillresampled)(sample_t *, unsigned n))
+	{
+		if (rb == NULL)
+		{
+			if (! parent_t::get_freebuffer(& rb))
+				return 0;
+			if (!fillresampled(rb->buff, ARRAY_SIZE(rb->buff)))
+			{
+				parent_t::release_buffer(rb);
+				rb = NULL;
+				return 0;
+			}
+			rbn = 0;
+		}
+		rbn += getcbf(rb->buff + rbn, dest);
+		if (rbn >= ARRAY_SIZE(rb->buff))
 		{
 			parent_t::release_buffer(rb);
 			rb = NULL;
@@ -1387,7 +1410,7 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 // Буфер на стороне 48 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [480 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  FLOAT_t buff [480 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = 1, nch = 2 };	// resampling support
 } btio48_t;
@@ -1395,7 +1418,7 @@ typedef struct
 // Буфер на стороне 44.1 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [441 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  FLOAT_t buff [441 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = 1, nch = 2 };	// resampling support
 } btio44p1_t;
@@ -1403,8 +1426,8 @@ typedef struct
 typedef buffitem<btio48_t> btio48buf_t;
 typedef buffitem<btio44p1_t> btio44p1buf_t;
 
-typedef dmahandle<int16_t, btio48buf_t, 0, 1> btio48dma_t;
-typedef dmahandle<int16_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
+typedef dmahandle<FLOAT_t, btio48buf_t, 0, 1> btio48dma_t;
+typedef dmahandle<FLOAT_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
 
 static btio44p1buf_t  btout44p1buf [BTOUT48_CAPACITY];
 static btio48buf_t  btout48buf [BTOUT48_CAPACITY];
@@ -1413,25 +1436,97 @@ static btio44p1buf_t  btin44p1buf [BTIN48_CAPACITY];
 static btio48buf_t  btin48buf [BTIN48_CAPACITY];
 
 /* Канал из трансивера в BT */
-static btio48dma_t btin48dma(IRQL_REALTIME, "btin48", btin48buf, ARRAY_SIZE(btin48buf));
-static btio44p1dma_t btin44p1dma(IRQL_REALTIME, "btin44p1", btin44p1buf, ARRAY_SIZE(btin44p1buf));
+static btio48dma_t btin48(IRQL_REALTIME, "btin48", btin48buf, ARRAY_SIZE(btin48buf));
+static btio44p1dma_t btin44p1(IRQL_REALTIME, "btin44p1", btin44p1buf, ARRAY_SIZE(btin44p1buf));
 
 /* Канал из BT в трансивер */
-static btio48dma_t btout48dma(IRQL_REALTIME, "btout48", btout48buf, ARRAY_SIZE(btout48buf));
-static btio44p1dma_t btout44p1dma(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
+static btio48dma_t btout48(IRQL_REALTIME, "btout48", btout48buf, ARRAY_SIZE(btout48buf));
+static btio44p1dma_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
 
 
-// заглушки функций обмена звуком черз Bluetooth
+// Заполнение с ресэмплингом буфера даннфми из btin48
+// n - требуемое количество сэмплов
+// возвращает признак того что данные в источнике есть
+static bool fetchdata_btin48(FLOAT_t * p, unsigned n)
+{
+	btio48_t * addr;
+	if (! btin48.get_freebufferforced(& addr))
+		return false;
+
+	memset(p, 0, n * sizeof * p);
+
+	btin48.release_buffer(addr);
+	return true;
+}
+
+// Заполнение с ресэмплингом буфера даннфми из btout44p1
+// n - требуемое количество сэмплов
+// возвращает признак того что данные в источнике есть
+static bool fetchdata_btout44p1(FLOAT_t * p, unsigned n)
+{
+	btio44p1_t * addr;
+	if (! btout44p1.get_freebufferforced(& addr))
+		return false;
+
+	memset(p, 0, n * sizeof * p);
+
+	btout44p1.release_buffer(addr);
+	return true;
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabufferbtout48(FLOAT_t * b, FLOAT_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return 2;
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return 2;
+}
+
+// Функции обмена звуком черз Bluetooth
 // Resampling к/от 44.1 делается прозрачно
 
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
-	return 0;
+	return btout48.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout44p1);
+}
+
+uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
+{
+	return btout48.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_btin48);
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [0] = ch0;
+	b [1] = ch1;
+	return 2;
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned putcbf_dmabufferbtio44p1(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+{
+	b [0] = ch0;
+	b [1] = ch1;
+	return 2;
 }
 
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
+	btin48.savedata(ch0, ch1, putcbf_dmabufferbtio48);
+}
 
+void elfill_dmabufferbtin44p1(FLOAT_t ch0, FLOAT_t ch1)
+{
+	btin44p1.savedata(ch0, ch1, putcbf_dmabufferbtio44p1);
 }
 
 #endif /* WITHUSEUSBBT */
