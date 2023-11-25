@@ -1454,6 +1454,7 @@ static btio44p1dma_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_S
 // Заполнение с ресэмплингом буфера данными из btin48
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
+// btin44p1 -> resampler -> btin48
 static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 {
 	btio48_t * addr;
@@ -1461,8 +1462,19 @@ static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 		return false;
 	const FLOAT_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
+	ASSERT(ndst == 480 * 2);
 
-	memset(dst, 0, ndst * sizeof * dst);	// stub
+	//memset(dst, 0, ndst * sizeof * dst);	// stub
+	unsigned dsti;
+	unsigned dsttop = ndst / 2 - 1;
+	unsigned srctop = 441 - 1;
+	for (dsti = 0; dsti <= dsttop; ++ dsti)
+	{
+		unsigned srci = dsti * srctop / dsttop;
+		dst [dsti * 2 + 0] = adpt_output(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
+		dst [dsti * 2 + 1] = adpt_output(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+
+	}
 
 	btin48.release_buffer(addr);
 	return true;
@@ -1471,6 +1483,7 @@ static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 // Заполнение с ресэмплингом буфера данными из btout44p1
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
+// btout48 -> resampler -> btout44p1
 static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 {
 	btio44p1_t * addr;
@@ -1479,8 +1492,18 @@ static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 	const int16_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 
-	adpt_input(& btio44p1adpt.adp, src [0]);	// получить sample
-	memset(dst, 0, ndst * sizeof * dst);	// stub
+	//memset(dst, 0, ndst * sizeof * dst);	// stub
+	ASSERT(ndst == 441 * 2);
+	unsigned srci;
+	unsigned dsttop = ndst / 2 - 1;
+	unsigned srctop = 480 - 1;
+	for (srci = 0; srci <= srctop; ++ srci)
+	{
+		unsigned dsti = srci * srctop / dsttop;
+		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+
+	}
 
 	btout44p1.release_buffer(addr);
 	return true;
