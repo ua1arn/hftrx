@@ -1444,7 +1444,7 @@ static btio48dma_t btout48(IRQL_REALTIME, "btout48", btout48buf, ARRAY_SIZE(btou
 static btio44p1dma_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
 
 
-// Заполнение с ресэмплингом буфера даннфми из btin48
+// Заполнение с ресэмплингом буфера данными из btin48
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
@@ -1461,7 +1461,7 @@ static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 	return true;
 }
 
-// Заполнение с ресэмплингом буфера даннфми из btout44p1
+// Заполнение с ресэмплингом буфера данными из btout44p1
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
