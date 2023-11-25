@@ -1495,7 +1495,7 @@ static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 		return false;
 	const int16_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
-
+	//printhex(0, addr->buff, sizeof addr->buff);
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
 	//PRINTF("fetchdata_btout44p1: ndst=%u\n", ndst);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
@@ -1505,10 +1505,10 @@ static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 	for (dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = get_lout();
-		dst [dsti * 2 + 1] = get_rout();
-//		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
-//		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+//		dst [dsti * 2 + 0] = get_lout();
+//		dst [dsti * 2 + 1] = get_rout();
 
 	}
 
@@ -1912,7 +1912,13 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 // При отсутствии данных в очереди - возвращаем 0
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
-	//return elfetch_dmabufferbtout48(v->ivqv);
+#if WITHUSEUSBBT
+	extern int glob_btenable;
+	if (glob_btenable)
+	{
+		return elfetch_dmabufferbtout48(v->ivqv);
+	}
+#endif /* WITHUSEUSBBT */
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	return elfetch_dmabufferuacout48(v->ivqv);
 #endif

@@ -69,6 +69,8 @@
 #include "hci_dump_embedded_stdout.h"
 #endif
 
+
+int glob_btenable;
 /**
   * @brief  Initializes wave recording.
   * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
@@ -344,7 +346,7 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 	{
 		uintptr_t addr = allocate_dmabuffertoutbt44p1();
 	    (*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1() / sizeof (int16_t) / 2);
-	    //printhex(0, (int16_t *) addr, 441 * 2 * 2);
+	    //printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
 	    save_dmabuffertoutbt44p1(addr);
 	}
     // playback buffer ready to fill
@@ -630,7 +632,7 @@ void bt_initialize(void)
 /* Bluetooth enable */
 void bt_enable(uint_fast8_t v)
 {
-
+	glob_btenable = !! v;
 }
 
 
