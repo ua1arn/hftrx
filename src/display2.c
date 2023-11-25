@@ -3448,7 +3448,7 @@ static void display2_legend(
 enum
 {
 	ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
-	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду
+	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду и спектру
 	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
 	WFY0 = GRID2Y(BDCO_WFLRX),				// смещение по вертикали в пикселях части отведенной водопаду
 	SPDY = GRID2Y(BDCV_SPMRX),				// размер по вертикали в пикселях части отведенной спектру
@@ -5654,7 +5654,7 @@ static void display2_latchwaterfall(
 
 #if (! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781)
 #else
-	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
+	wfrow = (wfrow == 0) ? (WFROWS - 1) : (wfrow - 1);
 #endif
 
 #if WITHVIEW_3DSS
