@@ -3539,7 +3539,7 @@ typedef struct {
 #elif WITHFASTWATERFLOW && WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = WFDY };
+	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возмодности динамисеского изменения высоты отображаемого водопада
 	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
@@ -3547,7 +3547,7 @@ typedef struct {
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = WFDY };
+	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возмодности динамисеского изменения высоты отображаемого водопада
 	enum { PALETTESIZE = 256 };
 
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
@@ -5745,9 +5745,10 @@ static void display2_waterfall(
 	if (glob_view_style != VIEW_3DSS)
 #endif /* WITHVIEW_3DSS */
 	{
+
 		PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
-		const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
-		const uint_fast16_t p2h = wfrow;		// высота нижней части в результируюшем изображении
+		const uint_fast16_t p1h = ulmin16(WFROWS - wfrow, WFDY);	// высота верхней части в результируюшем изображении
+		const uint_fast16_t p2h = ulmin16(wfrow, WFDY - p1h);		// высота нижней части в результируюшем изображении
 		const uint_fast16_t p1y = WFY0;
 		const uint_fast16_t p2y = WFY0 + p1h;
 
