@@ -1524,30 +1524,14 @@ static void display2_rec3(
 {
 #if WITHUSEAUDIOREC
 
-#if defined (RTC1_TYPE)
-
 	const uint_fast8_t state = hamradio_get_rec_value();
-	uint_fast8_t hour, minute, seconds;
-
-	board_rtc_cached_gettime(& hour, & minute, & seconds);
-
 	static const FLASHMEM char text_pau [] = "PAU";
 	static const FLASHMEM char text_rec [] = "REC";
 	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
 
 	/* формирование мигающей надписи REC */
-	display2_text_P(x, y, labels, ((seconds & 0x01) && state) ? colors_2state_rec : colors_2state, state);
+	display2_text_P(x, y, labels, habradio_get_blinkphase() ? colors_2state_rec : colors_2state, state);
 
-#else /* defined (RTC1_TYPE) */
-
-	const uint_fast8_t state = hamradio_get_rec_value();
-	static const FLASHMEM char text_pau [] = "PAU";
-	static const FLASHMEM char text_rec [] = "REC";
-	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
-
-	display2_text_P(x, y, labels, colors_2state_rec, state);
-
-#endif /* defined (RTC1_TYPE) */
 #endif /* WITHUSEAUDIOREC */
 }
 

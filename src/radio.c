@@ -4518,12 +4518,19 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 static uint_fast8_t menuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
+static uint_fast8_t gblinkphase;
 
 uint_fast8_t amenuset(void)
 {
 	if ((dimmflag || sleepflag || dimmmode))
 		return display_getpagesleep();
 	return menuset;
+}
+
+/* состояние для мерцающих индикаторов на диспле */
+uint_fast8_t habradio_get_blinkphase(void)
+{
+	return gblinkphase;
 }
 
 uint_fast8_t habradio_get_classa(void)
@@ -16069,7 +16076,7 @@ static void dpc_1stimer(void * arg)
 	gui_update();
 	//gui_gnssupdate();
 #endif /*WITHTOUCHGUI */
-
+	gblinkphase = ! gblinkphase;
 #if defined (GET_CPU_TEMPERATURE) && ! WITHTOUCHGUI && 0
 	uint8_t c = GET_CPU_TEMPERATURE();
 	PRINTF(PSTR("CPU temp: %dC\n"), c);
