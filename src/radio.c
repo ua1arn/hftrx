@@ -3595,6 +3595,7 @@ static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 static uint_fast16_t gstep;
+static uint_fast16_t gstepbigv;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 static uint_fast8_t gagcmode;
 #if WITHIF4DSP
@@ -8309,11 +8310,13 @@ setgsubmode(
 	if (gusefast || gbigstep)
 	{
 		gstep = pmodet->step10 [1] * 10;
+		gstepbigv = pmodet->step10 [1] * 10;
 		gencderate = 1;
 	}
 	else
 	{
 		gstep = pmodet->step10 [0] * 10;
+		gstepbigv = pmodet->step10 [1] * 10;
 		gencderate = gstep / STEP_MINIMAL;
 	}
 }
@@ -20070,7 +20073,7 @@ hamradio_main_step(void)
 				{
 					/* Валкодер B: вращали "вниз" */
 					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstep * jumpsize2 * - nrotate2), gstep, tune_bottom(bi_sub));
+					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) gstepbigv * jumpsize2 * - nrotate2), gstepbigv, tune_bottom(bi_sub));
 					//gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - (jumpsize2 * - nrotate2), gstep, TUNE_BOTTOM);
 					freqchanged = 1;
 				}
@@ -20078,8 +20081,8 @@ hamradio_main_step(void)
 				{
 					/* Валкодер B: вращали "вверх" */
 					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstep * jumpsize2 * nrotate2), gstep, tune_top(bi_sub));
-					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstep, TUNE_TOP);
+					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) gstepbigv * jumpsize2 * nrotate2), gstepbigv, tune_top(bi_sub));
+					//gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + (jumpsize2 * nrotate2), gstepbigv, TUNE_TOP);
 					freqchanged = 1;
 				}
 #endif /* ! WITHTOUCHGUI */
