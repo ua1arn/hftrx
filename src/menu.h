@@ -242,6 +242,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gviewstyle,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHVIEW_3DSS
 	{
 		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
 		ITEM_VALUE,
@@ -252,6 +253,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gview3dss_mark,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#endif /* WITHVIEW_3DSS */
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
