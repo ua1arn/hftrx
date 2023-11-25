@@ -42,8 +42,8 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
 
-#define BTIN48_CAPACITY 100
-#define BTOUT48_CAPACITY 100
+#define BTIN48_CAPACITY 12
+#define BTOUT48_CAPACITY 12
 
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
@@ -1405,26 +1405,28 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 
 #if WITHUSEUSBBT
 
+#define BTSSCALE 10
+
+#define BTIO44P1_SAMPLEBYTES 2
+#define BTIO44P1_CHANNELS 2
+
 // resampling 44.1 <-> 48 делается на интервале 10 мс
 
 // Буфер на стороне 48 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  FLOAT_t buff [480 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  FLOAT_t buff [BTSSCALE * 480 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = 1, nch = 2 };	// resampling support
+	enum { ss = sizeof (FLOAT_t), nch = 2 };	// resampling support
 } btio48_t;
 
-
-#define BTIO44P1_SAMPLEBYTES 2
-#define BTIO44P1_CHANNELS 2
 
 // Буфер на стороне 44.1 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [441 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 441 * BTIO44P1_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = 1, nch = BTIO44P1_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO44P1_CHANNELS };	// resampling support
 } btio44p1_t;
 
 typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btio44p1adpt_t;
@@ -1434,21 +1436,23 @@ typedef buffitem<btio48_t> btio48buf_t;
 typedef buffitem<btio44p1_t> btio44p1buf_t;
 
 typedef dmahandle<FLOAT_t, btio48buf_t, 0, 1> btio48dma_t;
+typedef dmahandle<FLOAT_t, btio48buf_t, 1, 1> btio48dmaRS_t;
 typedef dmahandle<int16_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
+typedef dmahandle<int16_t, btio44p1buf_t, 1, 1> btio44p1dmaRS_t;
 
 static btio44p1buf_t  btout44p1buf [BTOUT48_CAPACITY];
-static btio48buf_t  btout48buf [BTOUT48_CAPACITY];
+static btio48buf_t  btout48buf [2];
 
-static btio44p1buf_t  btin44p1buf [BTIN48_CAPACITY];
+static btio44p1buf_t  btin44p1buf [2];
 static btio48buf_t  btin48buf [BTIN48_CAPACITY];
 
 /* Канал из трансивера в BT */
-static btio48dma_t btin48(IRQL_REALTIME, "btin48", btin48buf, ARRAY_SIZE(btin48buf));
+static btio48dmaRS_t btin48(IRQL_REALTIME, "btin48", btin48buf, ARRAY_SIZE(btin48buf));
 static btio44p1dma_t btin44p1(IRQL_REALTIME, "btin44p1", btin44p1buf, ARRAY_SIZE(btin44p1buf));
 
 /* Канал из BT в трансивер */
+static btio44p1dmaRS_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
 static btio48dma_t btout48(IRQL_REALTIME, "btout48", btout48buf, ARRAY_SIZE(btout48buf));
-static btio44p1dma_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
 
 
 // Заполнение с ресэмплингом буфера данными из btin48
@@ -1458,16 +1462,16 @@ static btio44p1dma_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_S
 static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 {
 	btio48_t * addr;
-	if (! btin48.get_freebufferforced(& addr))
+	if (! btin48.get_readybuffer(& addr))
 		return false;
 	const FLOAT_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
-	ASSERT(ndst == 480 * 2);
+	ASSERT(ndst == BTSSCALE * 480 * 2);
 
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
 	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
-	unsigned srctop = 441 - 1;
+	unsigned srctop = BTSSCALE * 441 - 1;
 	for (dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
@@ -1487,21 +1491,24 @@ static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 {
 	btio44p1_t * addr;
-	if (! btout44p1.get_freebufferforced(& addr))
+	if (! btout44p1.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	ASSERT(ndst == 441 * 2);
+	//PRINTF("fetchdata_btout44p1: ndst=%u\n", ndst);
+	ASSERT(ndst == BTSSCALE * 480 * 2);
 	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
-	unsigned srctop = 480 - 1;
+	unsigned srctop = BTSSCALE * 441 - 1;
 	for (dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = get_lout();
+		dst [dsti * 2 + 1] = get_rout();
+//		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
+//		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
 
 	}
 
@@ -1577,6 +1584,11 @@ void save_dmabuffertoutbt44p1(uintptr_t addr)
 {
 	btio44p1_t * const p = CONTAINING_RECORD(addr, btio44p1_t, buff);
 	btout44p1.save_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtout44p1(void)
+{
+	return btout44p1.get_datasize();
 }
 
 #endif /* WITHUSEUSBBT */
@@ -1900,6 +1912,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 // При отсутствии данных в очереди - возвращаем 0
 RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
+	//return elfetch_dmabufferbtout48(v->ivqv);
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	return elfetch_dmabufferuacout48(v->ivqv);
 #endif

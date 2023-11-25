@@ -689,6 +689,7 @@ int_fast32_t datasize_dmabufferuacin48(void);
 uintptr_t allocate_dmabuffertoutbt44p1(void);
 //void release_dmabufferbttout44p1(uintptr_t addr);
 void save_dmabuffertoutbt44p1(uintptr_t addr);
+int_fast32_t datasize_dmabufferbtout44p1(void);
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);

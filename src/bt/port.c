@@ -300,7 +300,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 //////////////////////////////////////////////
 
-#define DRIVER_POLL_INTERVAL_MS          10
+#define DRIVER_POLL_INTERVAL_MS          100
 
 // client
 static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
@@ -341,10 +341,12 @@ static int btstack_audio_storch_sink_init(
 static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 
 	//PRINTF("%s:\n", __func__);
-	uintptr_t addr = allocate_dmabuffertoutbt44p1();
-    (*playback_callback)((int16_t *) addr, 441);
-    //printhex(0, (int16_t *) addr, 441 * 2 * 2);
-    save_dmabuffertoutbt44p1(addr);
+	{
+		uintptr_t addr = allocate_dmabuffertoutbt44p1();
+	    (*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1() / sizeof (int16_t) / 2);
+	    //printhex(0, (int16_t *) addr, 441 * 2 * 2);
+	    save_dmabuffertoutbt44p1(addr);
+	}
     // playback buffer ready to fill
 //    while (output_buffer_to_play != output_buffer_to_fill){
 //        (*playback_callback)(output_buffers[output_buffer_to_fill], NUM_FRAMES_PER_PA_BUFFER);
