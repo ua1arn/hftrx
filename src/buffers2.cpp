@@ -1376,6 +1376,41 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 
+#if WITHUSEUSBBT
+
+// resampling 44.1 <-> 48 делается на интервале 10 мс
+
+typedef struct
+{
+	ALIGNX_BEGIN  int16_t buff [480 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	enum { ss = 1, nch = 2 };	// resampling support
+} btio48_t;
+
+typedef struct
+{
+	ALIGNX_BEGIN  int16_t buff [441 * 2] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	enum { ss = 1, nch = 2 };	// resampling support
+} btio44p1_t;
+
+typedef buffitem<btio48_t> btio48buf_t;
+typedef buffitem<btio44p1_t> btio44p1buf_t;
+
+// заглушки функций обмена звуком черз Bluetooth
+// Resampling к/от 44.1 делается прозрачно
+
+uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
+{
+	return 0;
+}
+
+void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
+{
+
+}
+
+#endif /* WITHUSEUSBBT */
 ///////////////////////////////////////
 ///
 

@@ -471,6 +471,9 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
 //uint_fast8_t elfetch_dmabuffer16moni(FLOAT_t * dest);
 
+uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest);
+void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1);
+
 
 /* Сервис очереди сэмплов */
 typedef struct { int dummy; } VOICE_t;
