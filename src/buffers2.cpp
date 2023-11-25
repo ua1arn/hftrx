@@ -1494,12 +1494,12 @@ static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
 	ASSERT(ndst == 441 * 2);
-	unsigned srci;
+	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
 	unsigned srctop = 480 - 1;
-	for (srci = 0; srci <= srctop; ++ srci)
+	for (dsti = 0; dsti <= dsttop; ++ dsti)
 	{
-		unsigned dsti = srci * srctop / dsttop;
+		unsigned srci = dsti * srctop / dsttop;
 		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
 		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
 
