@@ -3045,6 +3045,7 @@ struct nvmap
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
 	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
 	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
+	uint8_t grxbwsatu;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 
 #endif /* WITHSPECTRUMWF */
 
@@ -3810,6 +3811,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
+	static uint_fast8_t grxbwsatu = 100;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 #if defined (WITHSPECBETA_DEFAULT)
 	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
 #else /* defined (WITHSPECBETA_DEFAULT) */
@@ -11785,16 +11787,17 @@ updateboardZZZ(
 			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwfl);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
-			board_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
+			display2_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
 			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
+			display2_set_rxbwsatu(grxbwsatu);	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
 		#endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
-		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 	#if WITHAFEQUALIZER
 		board_set_equalizer_rx(geqrx);

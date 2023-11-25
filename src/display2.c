@@ -487,6 +487,7 @@ static void display2_legend_tx(
 // waterfall/spectrum parameters
 static uint_fast8_t glob_view_style;		/* стиль отображения спектра и панорамы */
 static uint_fast8_t gview3dss_mark;			/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+static uint_fast8_t glob_rxbwsatu = 100;	// 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре.
 
 static int_fast16_t glob_topdb = 30;		/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -5294,6 +5295,36 @@ uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
 		return v;
 }
 
+static int scalecolor(int component, int m, int delta)
+{
+	return component * m / delta;
+}
+
+/* получение цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
+{
+#if defined (COLORPIP_SHADED)
+	return colorfg;
+#else
+	const int fg_a = COLORPIP_A(colorfg);
+	const int fg_r = COLORPIP_R(colorfg);
+	const int fg_g = COLORPIP_G(colorfg);
+	const int fg_b = COLORPIP_B(colorfg);
+
+	const int bg_a = COLORPIP_A(colorbg);
+	const int bg_r = COLORPIP_R(colorbg);
+	const int bg_g = COLORPIP_G(colorbg);
+	const int bg_b = COLORPIP_B(colorbg);
+
+	const int delta_r = fg_r - bg_r;
+	const int delta_g = fg_g - bg_g;
+	const int delta_b = fg_b - bg_b;
+
+	unsigned m = glob_rxbwsatu;	// 0..100
+	return TFTALPHA(fg_a, TFTRGB(scalecolor(delta_r, m, 100) + bg_r, scalecolor(delta_g, m, 100) + bg_g, scalecolor(delta_b, m, 100) + bg_b));
+#endif
+}
+
 // подготовка изображения спектра
 static void display2_spectrum(
 	uint_fast8_t x0, 
@@ -5380,6 +5411,7 @@ static void display2_spectrum(
 #else
 	const uint_fast16_t spy = ALLDY - 15;
 #endif
+	const COLORPIP_T rxbwcolor = display2_rxbwcolor(COLORMAIN_SPECTRUMBG2, COLORPIP_SPECTRUMBG);
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
@@ -5517,7 +5549,7 @@ static void display2_spectrum(
 			// Изображение "шторки".
 			if (xleft < xrightv)
 			{
-				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, COLORMAIN_SPECTRUMBG2);
+				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
 			}
 
 			uint_fast16_t ylast = 0;
@@ -6529,9 +6561,16 @@ board_set_bottomdb(int_fast16_t v)
 
 /* Шаг сетки уровней в децибелах. (0-отключаем отображение сетки уровней) */
 void
-board_set_lvlgridstep(uint_fast8_t v)
+display2_set_lvlgridstep(uint_fast8_t v)
 {
 	glob_lvlgridstep = v;
+}
+
+/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+void
+display2_set_rxbwsatu(uint_fast8_t v)
+{
+	glob_rxbwsatu = v;
 }
 
 /* верхний предел FFT - waterflow */
@@ -6565,7 +6604,7 @@ board_set_wflevelsep(uint_fast8_t v)
 
 // Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 void
-board_set_showdbm(uint_fast8_t v)
+display2_set_showdbm(uint_fast8_t v)
 {
 	glob_showdbm = v != 0;
 }

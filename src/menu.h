@@ -312,6 +312,16 @@ static const FLASHMEM struct menudef menutable [] =
 		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	{
+		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+		offsetof(struct nvmap, grxbwsatu),
+		nvramoffs0,
+		NULL,
+		& grxbwsatu,
+		getzerobase, /* складывается со смещением и отображается */
+	},
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
