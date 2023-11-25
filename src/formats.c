@@ -564,6 +564,13 @@ int dbg_putchar(int c)
 	return c;
 }
 
+int dbg_writechar(int c)
+{
+	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
+		;
+	return c;
+}
+
 int dbg_puts_impl_P(const FLASHMEM char * s)
 {
 	char c;
@@ -601,6 +608,11 @@ int dbg_getchar(char * r)
 }
 
 int dbg_putchar(int c)
+{
+	return c;
+}
+
+int dbg_writechar(int c)
 {
 	return c;
 }

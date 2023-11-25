@@ -35,8 +35,9 @@ void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
 int dbg_puts_impl_P(const FLASHMEM char * s);
 int dbg_puts_impl(const char * s);
 int dbg_putchar(int c);
+int dbg_writechar(int c);	/* вывод символа без преобразования '\n' в пару символов '\r' '\n' */
 int dbg_getchar(char * r);
-void dbg_flush(void); // дождаться, пока будут переданы все символы, ы том числе и из FIFO
+void dbg_flush(void); /* дождаться, пока будут переданы все символы, ы том числе и из FIFO */
 
 #if WITHDEBUG
 	#define TP() \
