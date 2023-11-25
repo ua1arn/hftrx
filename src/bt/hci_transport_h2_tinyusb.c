@@ -145,13 +145,6 @@ void tuh_bth_send_acl_cb(uint8_t idx)
 	(*tuh_packet_sent)();
 }
 
-void tuh_bth_send_cmd_cb(uint8_t idx)
-{
-	dibgprint("packet sent (cmd)", NULL, 0);
-	ASSERT(tuh_packet_sent);
-	(*tuh_packet_sent)();
-}
-
 static void hci_transport_h2_tinyusb_process(btstack_data_source_t *ds, btstack_data_source_callback_type_t callback_type) {
     switch (callback_type){
         case DATA_SOURCE_CALLBACK_POLL:
