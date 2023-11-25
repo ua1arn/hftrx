@@ -3539,7 +3539,7 @@ typedef struct {
 #elif WITHFASTWATERFLOW && WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возмодности динамисеского изменения высоты отображаемого водопада
+	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возможности динамисеского изменения высоты отображаемого водопада
 	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
@@ -3547,7 +3547,7 @@ typedef struct {
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возмодности динамисеского изменения высоты отображаемого водопада
+	enum { WFROWS = ALLDY };	// буфер больше чем WFDY - для возможности динамисеского изменения высоты отображаемого водопада
 	enum { PALETTESIZE = 256 };
 
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
