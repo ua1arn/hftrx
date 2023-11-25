@@ -149,7 +149,7 @@ uint8_t BSP_AUDIO_IN_Record(uint16_t* pbuf, uint32_t size)
   */
 uint32_t BSP_AUDIO_OUT_GetFrequency(uint32_t AudioFreq)
 {
-  return 8000;//bsp_audio_out_frequency;
+  return 48000;//bsp_audio_out_frequency;
 }
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
@@ -188,7 +188,7 @@ void hal_cpu_enable_irqs_and_sleep(void){
 //#define HAL_FLASH_BANK_0_SECTOR FLASH_SECTOR_10
 //#define HAL_FLASH_BANK_1_SECTOR FLASH_SECTOR_11
 
-int btstack_main(int argc, char ** argv);
+//int btstack_main(int argc, char ** argv);
 
 // main.c
 static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
@@ -300,7 +300,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 //////////////////////////////////////////////
 
-#define DRIVER_POLL_INTERVAL_MS          25
+#define DRIVER_POLL_INTERVAL_MS          10
 
 // client
 static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
