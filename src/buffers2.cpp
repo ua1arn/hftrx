@@ -41,6 +41,10 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
+
+#define BTIN48_CAPACITY 100
+#define BTOUT48_CAPACITY 100
+
 #define MESSAGE_CAPACITY (12)
 #define MESSAGE_IRQL IRQL_SYSTEM
 
@@ -1380,22 +1384,42 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 
 // resampling 44.1 <-> 48 делается на интервале 10 мс
 
+// Буфер на стороне 48 кГц
 typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [480 * 2] ALIGNX_END;
-	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = 1, nch = 2 };	// resampling support
 } btio48_t;
 
+// Буфер на стороне 44.1 кГц
 typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [441 * 2] ALIGNX_END;
-	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = 1, nch = 2 };	// resampling support
 } btio44p1_t;
 
 typedef buffitem<btio48_t> btio48buf_t;
 typedef buffitem<btio44p1_t> btio44p1buf_t;
+
+typedef dmahandle<int16_t, btio48buf_t, 0, 1> btio48dma_t;
+typedef dmahandle<int16_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
+
+static btio44p1buf_t  btout44p1buf [BTOUT48_CAPACITY];
+static btio48buf_t  btout48buf [BTOUT48_CAPACITY];
+
+static btio44p1buf_t  btin44p1buf [BTIN48_CAPACITY];
+static btio48buf_t  btin48buf [BTIN48_CAPACITY];
+
+/* Канал из трансивера в BT */
+static btio48dma_t btin48dma(IRQL_REALTIME, "btin48", btin48buf, ARRAY_SIZE(btin48buf));
+static btio44p1dma_t btin44p1dma(IRQL_REALTIME, "btin44p1", btin44p1buf, ARRAY_SIZE(btin44p1buf));
+
+/* Канал из BT в трансивер */
+static btio48dma_t btout48dma(IRQL_REALTIME, "btout48", btout48buf, ARRAY_SIZE(btout48buf));
+static btio44p1dma_t btout44p1dma(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
+
 
 // заглушки функций обмена звуком черз Bluetooth
 // Resampling к/от 44.1 делается прозрачно
