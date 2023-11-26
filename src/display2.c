@@ -3502,14 +3502,14 @@ typedef struct {
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = WFDY };
+	enum { WFROWS = ALLDY };
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = WFDY };
+	enum { WFROWS = ALLDY };
 	enum { PALETTESIZE = 256 };
 	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
@@ -3517,7 +3517,7 @@ typedef struct {
 #elif (LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)) && LCDMODE_LTDC
 
 	enum { PALETTESIZE = COLORPIP_BASE };
-	enum { WFROWS = WFDY };
+	enum { WFROWS = ALLDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW && WITHGRADIENT_FIXED
@@ -5786,6 +5786,17 @@ static void display2_waterfall(
 	(void) x0;
 	(void) y0;
 	(void) pctx;
+}
+
+// // подготовка изображения спектра и волрада
+static void display2_gcombo(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	dctx_t * pctx
+	)
+{
+	display2_spectrum(x0, y0, pctx);
+	display2_waterfall(x0, y0, pctx);
 }
 
 static void display2_colorbuff(
