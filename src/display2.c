@@ -3429,15 +3429,19 @@ static void display2_legend(
 
 #if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
-enum
-{
-	ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
-	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду и спектру
-	WFDY = GRID2Y(BDCV_WFLRX),				// размер по вертикали в пикселях части отведенной водопаду
-	WFY0 = GRID2Y(BDCO_WFLRX),				// смещение по вертикали в пикселях части отведенной водопаду
-	SPDY = GRID2Y(BDCV_SPMRX),				// размер по вертикали в пикселях части отведенной спектру
-	SPY0 = GRID2Y(BDCO_SPMRX)				// смещение по вертикали в пикселях части отведенной спектру
-};
+static const uint_fast8_t BDCO_WFLRX = BDCV_SPMRX;	// смещение водопада по вертикали в ячейках от начала общего поля
+#if WITHTOUCHGUI
+static const uint_fast8_t BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX - 10;    // вертикальный размер водопада в ячейках - GUI version
+#else /* WITHTOUCHGUI */
+static const uint_fast8_t BDCV_WFLRX = BDCV_ALLRX - BDCV_SPMRX;	// вертикальный размер водопада в ячейках
+#endif /* WITHTOUCHGUI */
+static const uint_fast16_t WFDY = GRID2Y(BDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+static const uint_fast16_t WFY0 = GRID2Y(BDCO_WFLRX);				// смещение по вертикали в пикселях части отведенной водопаду
+static const uint_fast16_t SPY0 = GRID2Y(BDCO_SPMRX);				// смещение по вертикали в пикселях части отведенной спектру
+
+#define ALLDX 	(GRID2X(CHARS2GRID(BDTH_ALLRX)))
+#define ALLDY 	(GRID2Y(BDCV_ALLRX))
+#define SPDY 	(GRID2Y(BDCV_SPMRX))				// размер по вертикали в пикселях части отведенной спектру
 
 // Параметры фильтров данных спектра и водопада
 // устанавливаются через меню
@@ -3549,7 +3553,7 @@ typedef struct {
 
 #else
 
-	enum { WFROWS = WFDY };
+	enum { WFROWS = ALLDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };

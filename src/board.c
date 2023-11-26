@@ -7779,6 +7779,25 @@ void board_rtc_getdatetime(
 	* seconds = COMPILE_SECOND;
 }
 
+// Функция-заглушка для работы FAT FS на системах без RTC
+void board_rtc_gettime(
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * seconds
+	)
+{
+	// Алгоритм найден тут: https://electronix.ru/forum/index.php?showtopic=141655&view=findpost&p=1495868
+	static const char ts [] = __TIME__;
+
+	#define COMPILE_HOUR   (((ts [0]-'0')*10) + (ts [1]-'0'))
+	#define COMPILE_MINUTE (((ts [3]-'0')*10) + (ts [4]-'0'))
+	#define COMPILE_SECOND (((ts [6]-'0')*10) + (ts [7]-'0'))
+
+	* hour = COMPILE_HOUR;
+	* minute = COMPILE_MINUTE;
+	* seconds = COMPILE_SECOND;
+}
+
 #endif /* defined (RTC1_TYPE) */
 
 // функции без задержек на чтение из аппаратного RTC
