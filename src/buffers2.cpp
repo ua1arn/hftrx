@@ -1405,7 +1405,7 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 
 #if WITHUSEUSBBT
 
-#define BTSSCALE 50
+#define BTSSCALE 20
 
 #define BTIO44P1_SAMPLEBYTES 2
 #define BTIO44P1_CHANNELS 2

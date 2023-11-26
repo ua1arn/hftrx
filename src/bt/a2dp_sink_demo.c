@@ -97,7 +97,7 @@
 
 #define NUM_CHANNELS 2
 #define BYTES_PER_FRAME     (2*NUM_CHANNELS)
-#define MAX_SBC_FRAME_SIZE 1200	// was: 120
+#define MAX_SBC_FRAME_SIZE (120 * 5)	// was: 120
 
 #ifdef HAVE_BTSTACK_STDIN
 static const char * device_addr_string = "00:1B:DC:08:E2:72"; // pts v5.0
