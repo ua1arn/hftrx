@@ -1571,6 +1571,7 @@ void elfill_dmabufferbtin44p1(FLOAT_t ch0, FLOAT_t ch1)
 	btin44p1.savedata(ch0, ch1, putcbf_dmabufferbtio44p1);
 }
 
+// can not be zero
 uintptr_t allocate_dmabuffertoutbt44p1(void)
 {
 	btio44p1_t * dest;
