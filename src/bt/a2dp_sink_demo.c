@@ -97,7 +97,7 @@
 
 #define NUM_CHANNELS 2
 #define BYTES_PER_FRAME     (2*NUM_CHANNELS)
-#define MAX_SBC_FRAME_SIZE 120
+#define MAX_SBC_FRAME_SIZE 1200	// was: 120
 
 #ifdef HAVE_BTSTACK_STDIN
 static const char * device_addr_string = "00:1B:DC:08:E2:72"; // pts v5.0
@@ -117,7 +117,7 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-	0*(AVDTP_SBC_32000 << 4) | 0*(AVDTP_SBC_16000 << 4) | 0*(AVDTP_SBC_48000 << 4) | 1*(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | AVDTP_SBC_MONO,
+	1*(AVDTP_SBC_32000 << 4) | 1*(AVDTP_SBC_16000 << 4) | 1*(AVDTP_SBC_48000 << 4) | 1*(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | AVDTP_SBC_MONO,
     0xFF,//(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };

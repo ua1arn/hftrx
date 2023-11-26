@@ -302,7 +302,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 //////////////////////////////////////////////
 
-#define DRIVER_POLL_INTERVAL_MS          100
+#define DRIVER_POLL_INTERVAL_MS          (500 - 1)
 
 // client
 static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
