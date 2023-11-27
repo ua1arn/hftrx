@@ -1410,6 +1410,12 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 #define BTIO44P1_SAMPLEBYTES 2
 #define BTIO44P1_CHANNELS 2
 
+#define BTIO32_SAMPLEBYTES 2
+#define BTIO32_CHANNELS 2
+
+#define BTIO16_SAMPLEBYTES 2
+#define BTIO16_CHANNELS 2
+
 // resampling 44.1 <-> 48 делается на интервале 10 мс
 
 // Буфер на стороне 48 кГц
@@ -1418,7 +1424,7 @@ typedef struct
 	ALIGNX_BEGIN  FLOAT_t buff [BTSSCALE * 480 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = sizeof (FLOAT_t), nch = 2 };	// resampling support
-} btio48_t;
+} btio48k_t;
 
 
 // Буфер на стороне 44.1 кГц
@@ -1427,42 +1433,68 @@ typedef struct
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 441 * BTIO44P1_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = sizeof (int16_t), nch = BTIO44P1_CHANNELS };	// resampling support
-} btio44p1_t;
+} btio44p1k_t;
 
-typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btio44p1adpt_t;
-static btio44p1adpt_t btio44p1adpt(BTIO44P1_SAMPLEBYTES * 8, 0, "btio44p1");
+// Буфер на стороне 32 кГц
+typedef struct
+{
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 32 * BTIO32_CHANNELS] ALIGNX_END;
+	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	enum { ss = sizeof (int16_t), nch = BTIO32_CHANNELS };	// resampling support
+} btio32k_t;
 
-typedef buffitem<btio48_t> btio48buf_t;
-typedef buffitem<btio44p1_t> btio44p1buf_t;
+// Буфер на стороне 16 кГц
+typedef struct
+{
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 16 * BTIO16_CHANNELS] ALIGNX_END;
+	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
+	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// resampling support
+} btio16k_t;
 
-typedef dmahandle<FLOAT_t, btio48buf_t, 0, 1> btio48dma_t;
-typedef dmahandle<FLOAT_t, btio48buf_t, 1, 1> btio48dmaRS_t;
-typedef dmahandle<int16_t, btio44p1buf_t, 0, 1> btio44p1dma_t;
-typedef dmahandle<int16_t, btio44p1buf_t, 1, 1> btio44p1dmaRS_t;
+typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btioadpt_t;
+static btioadpt_t btioadpt(BTIO44P1_SAMPLEBYTES * 8, 0, "btioadpt");
 
-static btio44p1buf_t  btout44p1buf [BTOUT48_CAPACITY];
-static btio48buf_t  btout48buf [2];
+typedef buffitem<btio48k_t> btio48kbuf_t;
+typedef buffitem<btio44p1k_t> btio44p1kbuf_t;
+typedef buffitem<btio32k_t> btio32kbuf_t;
+typedef buffitem<btio16k_t> btio16kbuf_t;
 
-static btio44p1buf_t  btin44p1buf [2];
-static btio48buf_t  btin48buf [BTIN48_CAPACITY];
+typedef dmahandle<FLOAT_t, btio48kbuf_t, 0, 1> btio48kdma_t;
+typedef dmahandle<FLOAT_t, btio48kbuf_t, 1, 1> btio48kdmaRS_t;
+typedef dmahandle<int16_t, btio44p1kbuf_t, 0, 1> btio44p1kdma_t;
+typedef dmahandle<int16_t, btio44p1kbuf_t, 1, 1> btio44p1kdmaRS_t;
+typedef dmahandle<int16_t, btio32kbuf_t, 0, 1> btio32kdma_t;
+typedef dmahandle<int16_t, btio32kbuf_t, 1, 1> btio32kdmaRS_t;
+typedef dmahandle<int16_t, btio16kbuf_t, 0, 1> btio16kdma_t;
+typedef dmahandle<int16_t, btio16kbuf_t, 1, 1> btio16kdmaRS_t;
+
+static btio44p1kbuf_t  btout44p1kbuf [BTOUT48_CAPACITY];
+static btio32kbuf_t  btout32kbuf [BTOUT48_CAPACITY];
+static btio16kbuf_t  btout16kbuf [BTOUT48_CAPACITY];
+static btio48kbuf_t  btout48kbuf [2];
+
+static btio44p1kbuf_t  btin44p1kbuf [2];
+static btio48kbuf_t  btin48kbuf [BTIN48_CAPACITY];
 
 /* Канал из трансивера в BT */
-static btio48dmaRS_t btin48(IRQL_REALTIME, "btin48", btin48buf, ARRAY_SIZE(btin48buf));
-static btio44p1dma_t btin44p1(IRQL_REALTIME, "btin44p1", btin44p1buf, ARRAY_SIZE(btin44p1buf));
+static btio48kdmaRS_t btin48k(IRQL_REALTIME, "btin48k", btin48kbuf, ARRAY_SIZE(btin48kbuf));
+static btio44p1kdma_t btin44p1k(IRQL_REALTIME, "btin44p1k", btin44p1kbuf, ARRAY_SIZE(btin44p1kbuf));
 
 /* Канал из BT в трансивер */
-static btio44p1dmaRS_t btout44p1(IRQL_REALTIME, "btout44p1", btout44p1buf, ARRAY_SIZE(btout44p1buf));
-static btio48dma_t btout48(IRQL_REALTIME, "btout48", btout48buf, ARRAY_SIZE(btout48buf));
+static btio44p1kdmaRS_t btout44p1k(IRQL_REALTIME, "btout44p1k", btout44p1kbuf, ARRAY_SIZE(btout44p1kbuf));
+static btio32kdmaRS_t btout32k(IRQL_REALTIME, "btout32k", btout32kbuf, ARRAY_SIZE(btout32kbuf));
+static btio16kdmaRS_t btout16k(IRQL_REALTIME, "btout16k", btout16kbuf, ARRAY_SIZE(btout16kbuf));
+static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
 
-// Заполнение с ресэмплингом буфера данными из btin48
+// Заполнение с ресэмплингом буфера данными из btin48k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btin44p1 -> resampler -> btin48
+// btin44p1k -> resampler -> btin48k
 static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 {
-	btio48_t * addr;
-	if (! btin48.get_readybuffer(& addr))
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
 		return false;
 	const FLOAT_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
@@ -1475,23 +1507,23 @@ static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 	for (dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_output(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_output(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
 
 	}
 
-	btin48.release_buffer(addr);
+	btin48k.release_buffer(addr);
 	return true;
 }
 
-// Заполнение с ресэмплингом буфера данными из btout44p1
+// Заполнение с ресэмплингом буфера данными из btout44p1k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btout48 -> resampler -> btout44p1
+// btout48k -> resampler -> btout44p1k
 static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 {
-	btio44p1_t * addr;
-	if (! btout44p1.get_readybuffer(& addr))
+	btio44p1k_t * addr;
+	if (! btout44p1k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
@@ -1505,14 +1537,14 @@ static bool fetchdata_btout44p1(FLOAT_t * dst, unsigned ndst)
 	for (dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btio44p1adpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
 
-	btout44p1.release_buffer(addr);
+	btout44p1k.release_buffer(addr);
 	return true;
 }
 
@@ -1537,12 +1569,12 @@ static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
 
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
-	return btout48.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout44p1);
+	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout44p1);
 }
 
 uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
 {
-	return btout48.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_btin48);
+	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_btin48);
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -1554,7 +1586,7 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferbtio44p1(int16_t * b, int16_t ch0, int16_t ch1)
+static unsigned putcbf_dmabufferbtio44p1k(int16_t * b, int16_t ch0, int16_t ch1)
 {
 	b [0] = ch0;
 	b [1] = ch1;
@@ -1563,33 +1595,74 @@ static unsigned putcbf_dmabufferbtio44p1(int16_t * b, int16_t ch0, int16_t ch1)
 
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	btin48.savedata(ch0, ch1, putcbf_dmabufferbtio48);
-}
-
-void elfill_dmabufferbtin44p1(FLOAT_t ch0, FLOAT_t ch1)
-{
-	btin44p1.savedata(ch0, ch1, putcbf_dmabufferbtio44p1);
+	btin48k.savedata(ch0, ch1, putcbf_dmabufferbtio48);
 }
 
 // can not be zero
-uintptr_t allocate_dmabuffertoutbt44p1(void)
+uintptr_t allocate_dmabuffertoutbt44p1k(void)
 {
-	btio44p1_t * dest;
-	while (! btout44p1.get_freebufferforced(& dest))
+	btio44p1k_t * dest;
+	while (! btout44p1k.get_freebufferforced(& dest))
 		ASSERT(0);
 	return (uintptr_t) & dest->buff;
 }
 
 //void release_dmabufferbttout44p1(uintptr_t addr);
-void save_dmabuffertoutbt44p1(uintptr_t addr)
+void save_dmabuffertoutbt44p1k(uintptr_t addr)
 {
-	btio44p1_t * const p = CONTAINING_RECORD(addr, btio44p1_t, buff);
-	btout44p1.save_buffer(p);
+	btio44p1k_t * const p = CONTAINING_RECORD(addr, btio44p1k_t, buff);
+	btout44p1k.save_buffer(p);
 }
 
-int_fast32_t datasize_dmabufferbtout44p1(void)
+int_fast32_t datasize_dmabufferbtout44p1k(void)
 {
-	return btout44p1.get_datasize();
+	return btout44p1k.get_datasize();
+}
+///////
+///
+
+// can not be zero
+uintptr_t allocate_dmabuffertoutbt32k(void)
+{
+	btio32k_t * dest;
+	while (! btout32k.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout32(uintptr_t addr);
+void save_dmabuffertoutbt32k(uintptr_t addr)
+{
+	btio32k_t * const p = CONTAINING_RECORD(addr, btio32k_t, buff);
+	btout32k.save_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtout32k(void)
+{
+	return btout32k.get_datasize();
+}
+/////////////
+///
+
+// can not be zero
+uintptr_t allocate_dmabuffertoutbt16k(void)
+{
+	btio16k_t * dest;
+	while (! btout16k.get_freebufferforced(& dest))
+		ASSERT(0);
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout16(uintptr_t addr);
+void save_dmabuffertoutbt16k(uintptr_t addr)
+{
+	btio16k_t * const p = CONTAINING_RECORD(addr, btio16k_t, buff);
+	btout16k.save_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtout16k(void)
+{
+	return btout16k.get_datasize();
 }
 
 #endif /* WITHUSEUSBBT */
@@ -2981,7 +3054,7 @@ void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
 void buffers_diagnostics(void)
 {
 #if WITHUSEUSBBT
-	btout44p1.debug();
+	btout44p1k.debug();
 #endif
 #if WITHINTEGRATEDDSP
 #if 0
@@ -3018,7 +3091,7 @@ void buffers_diagnostics(void)
 static void buffers_spool(void * ctx)
 {
 #if WITHUSEUSBBT
-	btout44p1.spool10ms();
+	btout44p1k.spool10ms();
 #endif
 #if WITHINTEGRATEDDSP
 	// internal sources/targets

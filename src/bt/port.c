@@ -344,10 +344,10 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 
 	//PRINTF("%s:\n", __func__);
 	{
-		uintptr_t addr = allocate_dmabuffertoutbt44p1();
-	    (*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1() / sizeof (int16_t) / 2);
+		uintptr_t addr = allocate_dmabuffertoutbt44p1k();
+	    (*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
 	    //printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
-	    save_dmabuffertoutbt44p1(addr);
+	    save_dmabuffertoutbt44p1k(addr);
 	}
     // playback buffer ready to fill
 //    while (output_buffer_to_play != output_buffer_to_fill){

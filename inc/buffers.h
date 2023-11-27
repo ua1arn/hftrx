@@ -686,10 +686,19 @@ int_fast32_t cachesize_dmabufferuacin48(void);
 int_fast32_t datasize_dmabufferuacin48(void);
 
 // Сторона BT 44.1 кГц
-uintptr_t allocate_dmabuffertoutbt44p1(void);
-//void release_dmabufferbttout44p1(uintptr_t addr);
-void save_dmabuffertoutbt44p1(uintptr_t addr);
-int_fast32_t datasize_dmabufferbtout44p1(void);
+uintptr_t allocate_dmabuffertoutbt44p1k(void);
+void save_dmabuffertoutbt44p1k(uintptr_t addr);
+int_fast32_t datasize_dmabufferbtout44p1k(void);
+
+// Сторона BT 32 кГц
+uintptr_t allocate_dmabuffertoutbt32k(void);
+void save_dmabuffertoutbt32k(uintptr_t addr);
+int_fast32_t datasize_dmabufferbtout32k(void);
+
+// Сторона BT 16 кГц
+uintptr_t allocate_dmabuffertoutbt16k(void);
+void save_dmabuffertoutbt16k(uintptr_t addr);
+int_fast16_t datasize_dmabufferbtout16k(void);
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);
