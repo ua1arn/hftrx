@@ -3389,6 +3389,7 @@ void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
 uint_fast8_t hamradio_get_gmikeagcgain(void);
 void hamradio_set_gmikeagcgain(uint_fast8_t v);
 uint32_t hamradio_get_gadcrand(void);
+void hamradio_set_gdactest(uint8_t v);
 
 #if WITHVOX
 void hamradio_set_gvoxenable(uint_fast8_t v);
