@@ -41,6 +41,7 @@
 
 #if WITHUSEUSBBT
 
+
 #define BTSTACK_FILE__ "hsp_hs_demo.c"
 
 /*
@@ -312,17 +313,18 @@ int hsp_hs_btstack_main(int argc, const char * argv[]){
 #endif
 
     //gap_set_local_name("HSP HS Demo 00:00:00:00:00:00");
-    gap_discoverable_control(1);
+    //gap_discoverable_control(1);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
     gap_set_class_of_device(0x240404);
+    gap_set_default_link_policy_settings( LM_LINK_POLICY_ENABLE_ROLE_SWITCH | LM_LINK_POLICY_ENABLE_SNIFF_MODE );
 
     // Parse human readable Bluetooth address.
     sscanf_bd_addr(device_addr_string, device_addr);
     
     // turn on!
-    hci_power_control(HCI_POWER_ON);
+    //hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* LISTING_END */
 /* EXAMPLE_END */
-#endif /* WITHUSEUSBBT */
+#endif

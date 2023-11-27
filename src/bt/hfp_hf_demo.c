@@ -773,7 +773,7 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
+    //gap_set_local_name("HFP HF Demo 00:00:00:00:00:00");
 
     // - Allow to show up in Bluetooth inquiry
     //gap_discoverable_control(1);
@@ -808,4 +808,4 @@ int hfp_hf_btstack_main(int argc, const char * argv[]){
 }
 /* LISTING_END */
 /* EXAMPLE_END */
-#endif /* WITHUSEUSBBT */
+#endif

@@ -700,6 +700,11 @@ uintptr_t allocate_dmabuffertoutbt16k(void);
 void save_dmabuffertoutbt16k(uintptr_t addr);
 int_fast16_t datasize_dmabufferbtout16k(void);
 
+// Сторона BT 8 кГц
+uintptr_t allocate_dmabuffertoutbt8k(void);
+void save_dmabuffertoutbt8k(uintptr_t addr);
+int_fast16_t datasize_dmabufferbtout8k(void);
+
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);
 void releaserecordbuffer(void * dest);

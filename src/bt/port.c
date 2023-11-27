@@ -301,8 +301,9 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 };
 
 //////////////////////////////////////////////
+#define BTSSCALE 20
 
-#define DRIVER_POLL_INTERVAL_MS          (200 - 1)
+#define DRIVER_POLL_INTERVAL_MS          (BTSSCALE * 10 - 1)
 
 // client
 static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
@@ -314,7 +315,7 @@ static btstack_timer_source_t  driver_timer_source;
 
 static int source_active;
 static int sink_active;
-
+static uint32_t sink_samplerate;
 
 static int btstack_audio_storch_sink_init(
     uint8_t channels,
@@ -333,7 +334,7 @@ static int btstack_audio_storch_sink_init(
 #endif
 
     playback_callback  = playback;
-    //sink_samplerate = samplerate;
+    sink_samplerate = samplerate;
     //hal_audio_sink_init(channels, samplerate, &btstack_audio_audio_played);
 
     return 0;
@@ -343,11 +344,40 @@ static int btstack_audio_storch_sink_init(
 static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 
 	//PRINTF("%s:\n", __func__);
+	switch (sink_samplerate)
 	{
-		uintptr_t addr = allocate_dmabuffertoutbt44p1k();
-	    (*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
-	    //printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
-	    save_dmabuffertoutbt44p1k(addr);
+	case 44100:
+		{
+			uintptr_t addr = allocate_dmabuffertoutbt44p1k();
+			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
+			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
+			save_dmabuffertoutbt44p1k(addr);
+		}
+		break;
+	case 32000:
+		{
+			uintptr_t addr = allocate_dmabuffertoutbt32k();
+			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / 2);
+			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout32k());
+			save_dmabuffertoutbt32k(addr);
+		}
+		break;
+	case 16000:
+		{
+			uintptr_t addr = allocate_dmabuffertoutbt16k();
+			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / 1);
+			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
+			save_dmabuffertoutbt16k(addr);
+		}
+		break;
+	case 8000:
+		{
+			uintptr_t addr = allocate_dmabuffertoutbt8k();
+			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / 1);
+			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
+			save_dmabuffertoutbt8k(addr);
+		}
+		break;
 	}
     // playback buffer ready to fill
 //    while (output_buffer_to_play != output_buffer_to_fill){
