@@ -1504,7 +1504,7 @@ static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin44p1k -> resampler -> btin48k
-static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
+static bool fetchdata_simple_btin48(FLOAT_t * dst, unsigned ndst)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
@@ -1533,7 +1533,7 @@ static bool fetchdata_btin48(FLOAT_t * dst, unsigned ndst)
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout48k -> resampler -> btout44p1k
-static bool fetchdata_btout44p1k(FLOAT_t * dst, unsigned ndst)
+static bool fetchdata_simple_btout44p1k(FLOAT_t * dst, unsigned ndst)
 {
 	btio44p1k_t * addr;
 	if (! btout44p1k.get_readybuffer(& addr))
@@ -1542,7 +1542,7 @@ static bool fetchdata_btout44p1k(FLOAT_t * dst, unsigned ndst)
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 	//printhex(0, addr->buff, sizeof addr->buff);
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_btout44p1: ndst=%u\n", ndst);
+	//PRINTF("fetchdata_simple_btout44p1: ndst=%u\n", ndst);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
 	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
@@ -1565,7 +1565,7 @@ static bool fetchdata_btout44p1k(FLOAT_t * dst, unsigned ndst)
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout48k -> resampler -> btout44p1k
-static bool fetchdata_btout32k(FLOAT_t * dst, unsigned ndst)
+static bool fetchdata_simple_btout32k(FLOAT_t * dst, unsigned ndst)
 {
 	btio32k_t * addr;
 	if (! btout32k.get_readybuffer(& addr))
@@ -1574,7 +1574,7 @@ static bool fetchdata_btout32k(FLOAT_t * dst, unsigned ndst)
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 	//printhex(0, addr->buff, sizeof addr->buff);
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_btout32: ndst=%u\n", ndst);
+	//PRINTF("fetchdata_simple_btout32: ndst=%u\n", ndst);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
 	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
@@ -1597,7 +1597,7 @@ static bool fetchdata_btout32k(FLOAT_t * dst, unsigned ndst)
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout48k -> resampler -> btout16k
-static bool fetchdata_btout16k(FLOAT_t * dst, unsigned ndst)
+static bool fetchdata_simple_btout16k(FLOAT_t * dst, unsigned ndst)
 {
 	btio16k_t * addr;
 	if (! btout16k.get_readybuffer(& addr))
@@ -1606,7 +1606,7 @@ static bool fetchdata_btout16k(FLOAT_t * dst, unsigned ndst)
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 	//printhex(0, addr->buff, sizeof addr->buff);
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_btout16: ndst=%u\n", ndst);
+	//PRINTF("fetchdata_simple_btout16: ndst=%u\n", ndst);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
 	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
@@ -1629,7 +1629,7 @@ static bool fetchdata_btout16k(FLOAT_t * dst, unsigned ndst)
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout48k -> resampler -> btout16k
-static bool fetchdata_btout8k(FLOAT_t * dst, unsigned ndst)
+static bool fetchdata_simple_btout8k(FLOAT_t * dst, unsigned ndst)
 {
 	btio8k_t * addr;
 	if (! btout8k.get_readybuffer(& addr))
@@ -1638,7 +1638,7 @@ static bool fetchdata_btout8k(FLOAT_t * dst, unsigned ndst)
 	unsigned nsrc = ARRAY_SIZE(addr->buff);
 	//printhex(0, addr->buff, sizeof addr->buff);
 	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_btout16: ndst=%u\n", ndst);
+	//PRINTF("fetchdata_simple_btout16: ndst=%u\n", ndst);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
 	unsigned dsti;
 	unsigned dsttop = ndst / 2 - 1;
@@ -1678,15 +1678,15 @@ static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
 
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
-	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout44p1k);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout32k);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout16k);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_btout8k);
+	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout44p1k);
+	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout32k);
+	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout16k);
+	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout8k);
 }
 
 uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
 {
-	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_btin48);
+	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_simple_btin48);
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
