@@ -316,6 +316,7 @@ static btstack_timer_source_t  driver_timer_source;
 static int source_active;
 static int sink_active;
 static uint32_t sink_samplerate;
+static uint32_t source_samplerate;
 
 static int btstack_audio_storch_sink_init(
     uint8_t channels,
@@ -387,7 +388,6 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 }
 
 static void driver_timer_handler_source(btstack_timer_source_t * ts){
-#if 0
 	//PRINTF("%s:\n", __func__);
    // recording buffer ready to process
 //    if (input_buffer_to_record != input_buffer_to_fill){
@@ -398,7 +398,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 //        input_buffer_to_record = (input_buffer_to_record + 1 ) % NUM_INPUT_BUFFERS;
 //    }
 	uintptr_t addr;
-	switch (sink_samplerate)
+	switch (source_samplerate)
 	{
 	case 44100:
 		addr = getfilled_dmabufferbtin44p1k();
@@ -423,7 +423,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / 2);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / 1);
 			release_dmabufferbtin16k(addr);
 		}
 		break;
@@ -432,12 +432,12 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / 2);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / 1);
 			release_dmabufferbtin8k(addr);
 		}
 		break;
 	}
-#endif
+
     // re-set timer
     //btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
     ts->timeout += DRIVER_POLL_INTERVAL_MS;
@@ -447,8 +447,6 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 static uint32_t btstack_audio_storch_sink_get_samplerate(void) {
     return 48000;//BSP_AUDIO_OUT_GetFrequency();
 }
-
-static uint32_t source_samplerate = 0;
 
 static int btstack_audio_storch_source_init(
     uint8_t channels,
@@ -461,8 +459,8 @@ static int btstack_audio_storch_source_init(
         return 1;
     }
 
-//    recording_callback  = recording;
-//    source_samplerate = samplerate;
+    recording_callback  = recording;
+    source_samplerate = samplerate;
 //    hal_audio_source_init(channels, samplerate, &btstack_audio_audio_recorded);
 
     return 0;

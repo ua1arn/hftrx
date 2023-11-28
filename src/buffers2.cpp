@@ -1486,11 +1486,17 @@ static btio8kbuf_t  btout8kbuf [BTOUT48_CAPACITY];
 static btio48kbuf_t  btout48kbuf [2];
 
 static btio44p1kbuf_t  btin44p1kbuf [2];
+static btio32kbuf_t  btin32kbuf [2];
+static btio16kbuf_t  btin16kbuf [2];
+static btio8kbuf_t  btin8kbuf [2];
 static btio48kbuf_t  btin48kbuf [BTIN48_CAPACITY];
 
 /* Канал из трансивера в BT */
 static btio48kdmaRS_t btin48k(IRQL_REALTIME, "btin48k", btin48kbuf, ARRAY_SIZE(btin48kbuf));
 static btio44p1kdma_t btin44p1k(IRQL_REALTIME, "btin44p1k", btin44p1kbuf, ARRAY_SIZE(btin44p1kbuf));
+static btio32kdma_t btin32k(IRQL_REALTIME, "btin32k", btin32kbuf, ARRAY_SIZE(btin32kbuf));
+static btio16kdma_t btin16k(IRQL_REALTIME, "btin16k", btin16kbuf, ARRAY_SIZE(btin16kbuf));
+static btio8kdma_t btin8k(IRQL_REALTIME, "btin8k", btin8kbuf, ARRAY_SIZE(btin8kbuf));
 
 /* Канал из BT в трансивер */
 static btio44p1kdmaRS_t btout44p1k(IRQL_REALTIME, "btout44p1k", btout44p1kbuf, ARRAY_SIZE(btout44p1kbuf));
@@ -1709,7 +1715,7 @@ void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
 	btin48k.savedata(ch0, ch1, putcbf_dmabufferbtio48);
 }
-
+///////
 // can not be zero
 uintptr_t allocate_dmabufferbtout44p1k(void)
 {
@@ -1799,6 +1805,99 @@ int_fast32_t datasize_dmabufferbtout8k(void)
 {
 	return btout8k.get_datasize();
 }
+
+///
+///
+// can be zero
+uintptr_t getfilled_dmabufferbtin44p1k(void)
+{
+	btio44p1k_t * dest;
+	if (! btin44p1k.get_readybuffer(& dest))
+		return 0;
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout44p1(uintptr_t addr);
+void release_dmabufferbtin44p1k(uintptr_t addr)
+{
+	btio44p1k_t * const p = CONTAINING_RECORD(addr, btio44p1k_t, buff);
+	btin44p1k.release_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtin44p1k(void)
+{
+	return btin44p1k.get_datasize();
+}
+///////
+///
+
+// can be zero
+uintptr_t getfilled_dmabufferbtin32k(void)
+{
+	btio32k_t * dest;
+	if (! btin32k.get_readybuffer(& dest))
+		return 0;
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout32(uintptr_t addr);
+void release_dmabufferbtin32k(uintptr_t addr)
+{
+	btio32k_t * const p = CONTAINING_RECORD(addr, btio32k_t, buff);
+	btin32k.release_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtin32k(void)
+{
+	return btin32k.get_datasize();
+}
+/////////////
+///
+
+// can be zero
+uintptr_t getfilled_dmabufferbtin16k(void)
+{
+	btio16k_t * dest;
+	if (! btin16k.get_readybuffer(& dest))
+		return 0;
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout16(uintptr_t addr);
+void release_dmabufferbtin16k(uintptr_t addr)
+{
+	btio16k_t * const p = CONTAINING_RECORD(addr, btio16k_t, buff);
+	btin16k.release_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtin16k(void)
+{
+	return btin16k.get_datasize();
+}
+/////////////
+///
+
+// can be zero
+uintptr_t getfilled_dmabufferbtin8k(void)
+{
+	btio8k_t * dest;
+	if (! btin8k.get_readybuffer(& dest))
+		return 0;
+	return (uintptr_t) & dest->buff;
+}
+
+//void release_dmabufferbttout16(uintptr_t addr);
+void release_dmabufferbtin8k(uintptr_t addr)
+{
+	btio8k_t * const p = CONTAINING_RECORD(addr, btio8k_t, buff);
+	btin8k.release_buffer(p);
+}
+
+int_fast32_t datasize_dmabufferbtin8k(void)
+{
+	return btin8k.get_datasize();
+}
+
 
 #endif /* WITHUSEUSBBT */
 ///////////////////////////////////////
