@@ -303,7 +303,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 //////////////////////////////////////////////
 #define BTSSCALE 20
 
-#define DRIVER_POLL_INTERVAL_MS          (BTSSCALE * 10 - 1)
+#define DRIVER_POLL_INTERVAL_MS          (BTSSCALE * 10)
 
 // client
 static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
@@ -388,7 +388,8 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 //    }
 
     // re-set timer
-    btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
+    //btstack_run_loop_set_timer(&driver_timer_sink, DRIVER_POLL_INTERVAL_MS);
+    ts->timeout += DRIVER_POLL_INTERVAL_MS;
     btstack_run_loop_add_timer(ts);
 }
 
@@ -405,7 +406,8 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 //    }
 
     // re-set timer
-    btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
+    //btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
+    ts->timeout += DRIVER_POLL_INTERVAL_MS;
     btstack_run_loop_add_timer(ts);
 }
 
