@@ -1891,25 +1891,12 @@ typedef struct UART_Type
              uint32_t reserved_0x0A8 [0x0002];
     volatile uint32_t UART_DBG_DLL;                   /*!< Offset 0x0B0 UART Debug DLL Register */
     volatile uint32_t UART_DBG_DLH;                   /*!< Offset 0x0B4 UART Debug DLH Register */
-             uint32_t reserved_0x0B8 [0x000E];
-    volatile uint32_t UART_A_FCC;                     /*!< Offset 0x0F0 UART FIFO Clock Control Register */
-             uint32_t reserved_0x0F4 [0x0003];
-    volatile uint32_t UART_A_RXDMA_CTRL;              /*!< Offset 0x100 UART RXDMA Control Register */
-    volatile uint32_t UART_A_RXDMA_STR;               /*!< Offset 0x104 UART RXDMA Start Register */
-    volatile uint32_t UART_A_RXDMA_STA;               /*!< Offset 0x108 UART RXDMA Status Register */
-    volatile uint32_t UART_A_RXDMA_LMT;               /*!< Offset 0x10C UART RXDMA Limit Register */
-    volatile uint32_t UART_A_RXDMA_SADDRL;            /*!< Offset 0x110 UART RXDMA Buffer Start Address Low Register */
-    volatile uint32_t UART_A_RXDMA_SADDRH;            /*!< Offset 0x114 UART RXDMA Buffer Start Address High Register */
-    volatile uint32_t UART_A_RXDMA_BL;                /*!< Offset 0x118 UART RXDMA Buffer Length Register */
-             uint32_t reserved_0x11C;
-    volatile uint32_t UART_A_RXDMA_IE;                /*!< Offset 0x120 UART RXDMA Interrupt Enable Register */
-    volatile uint32_t UART_A_RXDMA_IS;                /*!< Offset 0x124 UART RXDMA Interrupt Status Register */
-    volatile uint32_t UART_A_RXDMA_WADDRL;            /*!< Offset 0x128 UART RXDMA Write Address Low Register */
-    volatile uint32_t UART_A_RXDMA_WADDRH;            /*!< Offset 0x12C UART RXDMA Write Address high Register */
-    volatile uint32_t UART_A_RXDMA_RADDRL;            /*!< Offset 0x130 UART RXDMA Read Address Low Register */
-    volatile uint32_t UART_A_RXDMA_RADDRH;            /*!< Offset 0x134 UART RXDMA Read Address high Register */
-    volatile uint32_t UART_A_RXDMA_DCNT;              /*!< Offset 0x138 UART RADMA Data Count Register */
-} UART_TypeDef; /* size of structure = 0x13C */
+             uint32_t reserved_0x0B8 [0x0002];
+    volatile uint32_t UART_485_CTL;                   /*!< Offset 0x0C0 UART RS485 Control and Status Register */
+    volatile uint32_t RS485_ADDR_MATCH;               /*!< Offset 0x0C4 UART RS485 Addres Match Register  */
+    volatile uint32_t BUS_IDLE_CHECK;                 /*!< Offset 0x0C8 UART RS485 Bus Idle Check Register */
+    volatile uint32_t TX_DLY;                         /*!< Offset 0x0CC UART TX Delay Register */
+} UART_TypeDef; /* size of structure = 0x0D0 */
 /*
  * @brief USBEHCI
  */

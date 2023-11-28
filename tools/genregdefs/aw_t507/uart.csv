@@ -27,18 +27,8 @@
 #regdef; UART_HALT; 0x00A4; UART Halt TX Register
 #regdef; UART_DBG_DLL; 0x00B0; UART Debug DLL Register
 #regdef; UART_DBG_DLH; 0x00B4; UART Debug DLH Register
-#regdef; UART_A_FCC; 0x00F0; UART FIFO Clock Control Register
-#regdef; UART_A_RXDMA_CTRL; 0x0100; UART RXDMA Control Register
-#regdef; UART_A_RXDMA_STR; 0x0104; UART RXDMA Start Register
-#regdef; UART_A_RXDMA_STA; 0x0108; UART RXDMA Status Register
-#regdef; UART_A_RXDMA_LMT; 0x010C; UART RXDMA Limit Register
-#regdef; UART_A_RXDMA_SADDRL; 0x0110; UART RXDMA Buffer Start Address Low Register
-#regdef; UART_A_RXDMA_SADDRH; 0x0114; UART RXDMA Buffer Start Address High Register
-#regdef; UART_A_RXDMA_BL; 0x0118; UART RXDMA Buffer Length Register
-#regdef; UART_A_RXDMA_IE; 0x0120; UART RXDMA Interrupt Enable Register
-#regdef; UART_A_RXDMA_IS; 0x0124; UART RXDMA Interrupt Status Register
-#regdef; UART_A_RXDMA_WADDRL; 0x0128; UART RXDMA Write Address Low Register
-#regdef; UART_A_RXDMA_WADDRH; 0x012C; UART RXDMA Write Address high Register
-#regdef; UART_A_RXDMA_RADDRL; 0x0130; UART RXDMA Read Address Low Register
-#regdef; UART_A_RXDMA_RADDRH; 0x0134; UART RXDMA Read Address high Register
-#regdef; UART_A_RXDMA_DCNT; 0x0138; UART RADMA Data Count Register
+
+#regdef; UART_485_CTL; 0x00C0; UART RS485 Control and Status Register
+#regdef; RS485_ADDR_MATCH; 0x00C4; UART RS485 Addres Match Register 
+#regdef; BUS_IDLE_CHECK; 0x00C8; UART RS485 Bus Idle Check Register
+#regdef; TX_DLY; 0x00CC; UART TX Delay Register
