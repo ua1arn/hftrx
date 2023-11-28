@@ -1711,7 +1711,7 @@ void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // can not be zero
-uintptr_t allocate_dmabuffertoutbt44p1k(void)
+uintptr_t allocate_dmabufferbtout44p1k(void)
 {
 	btio44p1k_t * dest;
 	while (! btout44p1k.get_freebufferforced(& dest))
@@ -1720,7 +1720,7 @@ uintptr_t allocate_dmabuffertoutbt44p1k(void)
 }
 
 //void release_dmabufferbttout44p1(uintptr_t addr);
-void save_dmabuffertoutbt44p1k(uintptr_t addr)
+void save_dmabufferbtout44p1k(uintptr_t addr)
 {
 	btio44p1k_t * const p = CONTAINING_RECORD(addr, btio44p1k_t, buff);
 	btout44p1k.save_buffer(p);
@@ -1734,7 +1734,7 @@ int_fast32_t datasize_dmabufferbtout44p1k(void)
 ///
 
 // can not be zero
-uintptr_t allocate_dmabuffertoutbt32k(void)
+uintptr_t allocate_dmabufferbtout32k(void)
 {
 	btio32k_t * dest;
 	while (! btout32k.get_freebufferforced(& dest))
@@ -1743,7 +1743,7 @@ uintptr_t allocate_dmabuffertoutbt32k(void)
 }
 
 //void release_dmabufferbttout32(uintptr_t addr);
-void save_dmabuffertoutbt32k(uintptr_t addr)
+void save_dmabufferbtout32k(uintptr_t addr)
 {
 	btio32k_t * const p = CONTAINING_RECORD(addr, btio32k_t, buff);
 	btout32k.save_buffer(p);
@@ -1757,7 +1757,7 @@ int_fast32_t datasize_dmabufferbtout32k(void)
 ///
 
 // can not be zero
-uintptr_t allocate_dmabuffertoutbt16k(void)
+uintptr_t allocate_dmabufferbtout16k(void)
 {
 	btio16k_t * dest;
 	while (! btout16k.get_freebufferforced(& dest))
@@ -1766,7 +1766,7 @@ uintptr_t allocate_dmabuffertoutbt16k(void)
 }
 
 //void release_dmabufferbttout16(uintptr_t addr);
-void save_dmabuffertoutbt16k(uintptr_t addr)
+void save_dmabufferbtout16k(uintptr_t addr)
 {
 	btio16k_t * const p = CONTAINING_RECORD(addr, btio16k_t, buff);
 	btout16k.save_buffer(p);
@@ -1780,7 +1780,7 @@ int_fast32_t datasize_dmabufferbtout16k(void)
 ///
 
 // can not be zero
-uintptr_t allocate_dmabuffertoutbt8k(void)
+uintptr_t allocate_dmabufferbtout8k(void)
 {
 	btio8k_t * dest;
 	while (! btout8k.get_freebufferforced(& dest))
@@ -1789,7 +1789,7 @@ uintptr_t allocate_dmabuffertoutbt8k(void)
 }
 
 //void release_dmabufferbttout16(uintptr_t addr);
-void save_dmabuffertoutbt8k(uintptr_t addr)
+void save_dmabufferbtout8k(uintptr_t addr)
 {
 	btio8k_t * const p = CONTAINING_RECORD(addr, btio8k_t, buff);
 	btout8k.save_buffer(p);
