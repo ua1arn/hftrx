@@ -239,9 +239,20 @@ void ticker_add(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
 	InsertHeadVList(& tickers, & p->item);
+	LCLSPIN_UNLOCK(& tickerslock);
+	LowerIrql(oldIrql);
+}
+
+void ticker_remove(ticker_t * p)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(TICKER_IRQL, & oldIrql);
+	LCLSPIN_LOCK(& tickerslock);
+	RemoveEntryVList(& p->item);
 	LCLSPIN_UNLOCK(& tickerslock);
 	LowerIrql(oldIrql);
 }
@@ -251,7 +262,7 @@ void ticker_start(ticker_t * p)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
 	switch (p->mode)
 	{
@@ -269,7 +280,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 {
 	IRQL_t oldIrql;
 
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
 	if (p->period < nticks)
 	{
@@ -286,6 +297,9 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 
 static void tickers_event(void)
 {
+	IRQL_t oldIrql;
+
+	RiseIrql(TICKER_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
 	PVLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers;)
@@ -320,13 +334,13 @@ static void tickers_event(void)
 		t = tnext;
 	}
 	LCLSPIN_UNLOCK(& tickerslock);
+	LowerIrql(oldIrql);
 }
 
 void tickers_initialize(void)
 {
 	LCLSPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
-
 }
 
 // инициализация списка обработчиков конца преобразования АЦП
