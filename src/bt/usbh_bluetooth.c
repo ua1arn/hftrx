@@ -40,7 +40,7 @@
 #include "hardware.h"
 #include "formats.h"
 
-#if WITHUSEUSBBT && ! WITHTINYUSB
+#if WITHUSBHW && WITHUSEUSBBT && ! WITHTINYUSB
 
 #include "bluetooth.h"
 #include "btstack_debug.h"

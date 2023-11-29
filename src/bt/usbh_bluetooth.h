@@ -49,7 +49,7 @@
 
 #include <stdint.h>
 
-#if ! WITHTINYUSB
+#if WITHUSBHW && ! WITHTINYUSB
 #include "usbh_core.h"
 
 /* Bluetooth Class Codes */
