@@ -10668,136 +10668,37 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_A_FCC</name>
-    <displayName>UART_A_FCC</displayName>
-    <description>UART FIFO Clock Control Register</description>
-    <addressOffset>0x0F0</addressOffset>
+    <name>UART_485_CTL</name>
+    <displayName>UART_485_CTL</displayName>
+    <description>UART RS485 Control and Status Register</description>
+    <addressOffset>0x0C0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_A_RXDMA_CTRL</name>
-    <displayName>UART_A_RXDMA_CTRL</displayName>
-    <description>UART RXDMA Control Register</description>
-    <addressOffset>0x100</addressOffset>
+    <name>RS485_ADDR_MATCH</name>
+    <displayName>RS485_ADDR_MATCH</displayName>
+    <description>UART RS485 Addres Match Register </description>
+    <addressOffset>0x0C4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_A_RXDMA_STR</name>
-    <displayName>UART_A_RXDMA_STR</displayName>
-    <description>UART RXDMA Start Register</description>
-    <addressOffset>0x104</addressOffset>
+    <name>BUS_IDLE_CHECK</name>
+    <displayName>BUS_IDLE_CHECK</displayName>
+    <description>UART RS485 Bus Idle Check Register</description>
+    <addressOffset>0x0C8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_A_RXDMA_STA</name>
-    <displayName>UART_A_RXDMA_STA</displayName>
-    <description>UART RXDMA Status Register</description>
-    <addressOffset>0x108</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_LMT</name>
-    <displayName>UART_A_RXDMA_LMT</displayName>
-    <description>UART RXDMA Limit Register</description>
-    <addressOffset>0x10C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_SADDRL</name>
-    <displayName>UART_A_RXDMA_SADDRL</displayName>
-    <description>UART RXDMA Buffer Start Address Low Register</description>
-    <addressOffset>0x110</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_SADDRH</name>
-    <displayName>UART_A_RXDMA_SADDRH</displayName>
-    <description>UART RXDMA Buffer Start Address High Register</description>
-    <addressOffset>0x114</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_BL</name>
-    <displayName>UART_A_RXDMA_BL</displayName>
-    <description>UART RXDMA Buffer Length Register</description>
-    <addressOffset>0x118</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_IE</name>
-    <displayName>UART_A_RXDMA_IE</displayName>
-    <description>UART RXDMA Interrupt Enable Register</description>
-    <addressOffset>0x120</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_IS</name>
-    <displayName>UART_A_RXDMA_IS</displayName>
-    <description>UART RXDMA Interrupt Status Register</description>
-    <addressOffset>0x124</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_WADDRL</name>
-    <displayName>UART_A_RXDMA_WADDRL</displayName>
-    <description>UART RXDMA Write Address Low Register</description>
-    <addressOffset>0x128</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_WADDRH</name>
-    <displayName>UART_A_RXDMA_WADDRH</displayName>
-    <description>UART RXDMA Write Address high Register</description>
-    <addressOffset>0x12C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_RADDRL</name>
-    <displayName>UART_A_RXDMA_RADDRL</displayName>
-    <description>UART RXDMA Read Address Low Register</description>
-    <addressOffset>0x130</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_RADDRH</name>
-    <displayName>UART_A_RXDMA_RADDRH</displayName>
-    <description>UART RXDMA Read Address high Register</description>
-    <addressOffset>0x134</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_A_RXDMA_DCNT</name>
-    <displayName>UART_A_RXDMA_DCNT</displayName>
-    <description>UART RADMA Data Count Register</description>
-    <addressOffset>0x138</addressOffset>
+    <name>TX_DLY</name>
+    <displayName>TX_DLY</displayName>
+    <description>UART TX Delay Register</description>
+    <addressOffset>0x0CC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

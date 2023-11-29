@@ -316,6 +316,7 @@ static btstack_timer_source_t  driver_timer_source;
 static int source_active;
 static int sink_active;
 static uint32_t sink_samplerate;
+static uint32_t source_samplerate;
 
 static int btstack_audio_storch_sink_init(
     uint8_t channels,
@@ -344,39 +345,32 @@ static int btstack_audio_storch_sink_init(
 static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 
 	//PRINTF("%s:\n", __func__);
+	uintptr_t addr;
 	switch (sink_samplerate)
 	{
 	case 44100:
-		{
-			uintptr_t addr = allocate_dmabuffertoutbt44p1k();
-			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
-			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
-			save_dmabuffertoutbt44p1k(addr);
-		}
+		addr = allocate_dmabufferbtout44p1k();
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
+		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
+		save_dmabufferbtout44p1k(addr);
 		break;
 	case 32000:
-		{
-			uintptr_t addr = allocate_dmabuffertoutbt32k();
-			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / 2);
-			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout32k());
-			save_dmabuffertoutbt32k(addr);
-		}
+		addr = allocate_dmabufferbtout32k();
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / 2);
+		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout32k());
+		save_dmabufferbtout32k(addr);
 		break;
 	case 16000:
-		{
-			uintptr_t addr = allocate_dmabuffertoutbt16k();
-			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / 1);
-			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
-			save_dmabuffertoutbt16k(addr);
-		}
+		addr = allocate_dmabufferbtout16k();
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / 1);
+		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
+		save_dmabufferbtout16k(addr);
 		break;
 	case 8000:
-		{
-			uintptr_t addr = allocate_dmabuffertoutbt8k();
-			(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / 1);
-			//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
-			save_dmabuffertoutbt8k(addr);
-		}
+		addr = allocate_dmabufferbtout8k();
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / 1);
+		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
+		save_dmabufferbtout8k(addr);
 		break;
 	}
     // playback buffer ready to fill
@@ -394,7 +388,6 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 }
 
 static void driver_timer_handler_source(btstack_timer_source_t * ts){
-
 	//PRINTF("%s:\n", __func__);
    // recording buffer ready to process
 //    if (input_buffer_to_record != input_buffer_to_fill){
@@ -404,6 +397,46 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 //        // next
 //        input_buffer_to_record = (input_buffer_to_record + 1 ) % NUM_INPUT_BUFFERS;
 //    }
+	uintptr_t addr;
+	switch (source_samplerate)
+	{
+	case 44100:
+		addr = getfilled_dmabufferbtin44p1k();
+		if (addr != 0)
+		{
+			ASSERT(recording_callback != NULL);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin44p1k() / sizeof (int16_t) / 2);
+			release_dmabufferbtin44p1k(addr);
+		}
+		break;
+	case 32000:
+		addr = getfilled_dmabufferbtin32k();
+		if (addr != 0)
+		{
+			ASSERT(recording_callback != NULL);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin32k() / sizeof (int16_t) / 2);
+			release_dmabufferbtin32k(addr);
+		}
+		break;
+	case 16000:
+		addr = getfilled_dmabufferbtin16k();
+		if (addr != 0)
+		{
+			ASSERT(recording_callback != NULL);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / 1);
+			release_dmabufferbtin16k(addr);
+		}
+		break;
+	case 8000:
+		addr = getfilled_dmabufferbtin8k();
+		if (addr != 0)
+		{
+			ASSERT(recording_callback != NULL);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / 1);
+			release_dmabufferbtin8k(addr);
+		}
+		break;
+	}
 
     // re-set timer
     //btstack_run_loop_set_timer(ts, DRIVER_POLL_INTERVAL_MS);
@@ -414,8 +447,6 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 static uint32_t btstack_audio_storch_sink_get_samplerate(void) {
     return 48000;//BSP_AUDIO_OUT_GetFrequency();
 }
-
-static uint32_t source_samplerate = 0;
 
 static int btstack_audio_storch_source_init(
     uint8_t channels,
@@ -428,8 +459,8 @@ static int btstack_audio_storch_source_init(
         return 1;
     }
 
-//    recording_callback  = recording;
-//    source_samplerate = samplerate;
+    recording_callback  = recording;
+    source_samplerate = samplerate;
 //    hal_audio_source_init(channels, samplerate, &btstack_audio_audio_recorded);
 
     return 0;

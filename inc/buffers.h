@@ -685,25 +685,53 @@ void save_dmabufferuacin48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacin48(void);
 int_fast32_t datasize_dmabufferuacin48(void);
 
+// BTH OUT
 // Сторона BT 44.1 кГц
-uintptr_t allocate_dmabuffertoutbt44p1k(void);
-void save_dmabuffertoutbt44p1k(uintptr_t addr);
+uintptr_t allocate_dmabufferbtout44p1k(void);
+void save_dmabufferbtout44p1k(uintptr_t addr);
 int_fast32_t datasize_dmabufferbtout44p1k(void);
 
+// BTH OUT
 // Сторона BT 32 кГц
-uintptr_t allocate_dmabuffertoutbt32k(void);
-void save_dmabuffertoutbt32k(uintptr_t addr);
+uintptr_t allocate_dmabufferbtout32k(void);
+void save_dmabufferbtout32k(uintptr_t addr);
 int_fast32_t datasize_dmabufferbtout32k(void);
 
+// BTH OUT
 // Сторона BT 16 кГц
-uintptr_t allocate_dmabuffertoutbt16k(void);
-void save_dmabuffertoutbt16k(uintptr_t addr);
+uintptr_t allocate_dmabufferbtout16k(void);
+void save_dmabufferbtout16k(uintptr_t addr);
 int_fast16_t datasize_dmabufferbtout16k(void);
 
+// BTH OUT
 // Сторона BT 8 кГц
-uintptr_t allocate_dmabuffertoutbt8k(void);
-void save_dmabuffertoutbt8k(uintptr_t addr);
+uintptr_t allocate_dmabufferbtout8k(void);
+void save_dmabufferbtout8k(uintptr_t addr);
 int_fast16_t datasize_dmabufferbtout8k(void);
+
+// BTH IN
+// Сторона BT 44.1 кГц
+uintptr_t getfilled_dmabufferbtin44p1k(void);
+void release_dmabufferbtin44p1k(uintptr_t addr);
+int_fast32_t datasize_dmabufferbtin44p1k(void);
+
+// BTH IN
+// Сторона BT 32 кГц
+uintptr_t getfilled_dmabufferbtin32k(void);
+void release_dmabufferbtin32k(uintptr_t addr);
+int_fast32_t datasize_dmabufferbtin32k(void);
+
+// BTH IN
+// Сторона BT 16 кГц
+uintptr_t getfilled_dmabufferbtin16k(void);
+void release_dmabufferbtin16k(uintptr_t addr);
+int_fast16_t datasize_dmabufferbtin16k(void);
+
+// BTH IN
+// Сторона BT 8 кГц
+uintptr_t getfilled_dmabufferbtin8k(void);
+void release_dmabufferbtin8k(uintptr_t addr);
+int_fast16_t datasize_dmabufferbtin8k(void);
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);

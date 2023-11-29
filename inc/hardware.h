@@ -895,6 +895,8 @@ calcdivround2(
 
 #include "mslist.h"
 
+#define TICKER_IRQL IRQL_SYSTEM
+
 enum ticker_mode
 {
 	TICKERMD_PERIODIC,
@@ -916,7 +918,7 @@ void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), v
 void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
 void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
 void ticker_add(ticker_t * p);
-void ticker_del(ticker_t * p);
+void ticker_remove(ticker_t * p);
 
 typedef struct adcdone_tag
 {
