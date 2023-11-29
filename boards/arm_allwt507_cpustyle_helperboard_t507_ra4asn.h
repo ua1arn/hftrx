@@ -38,8 +38,8 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHDEBUG_UART2	1
-	#define WITHUART2HW	1
+    #define WITHDEBUG_UART0    1
+    #define WITHUART0HW    1
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
