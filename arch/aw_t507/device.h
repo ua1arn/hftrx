@@ -241,10 +241,10 @@ typedef enum IRQn
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
-#define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC  Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
+#define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC  Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
-#define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM  Base */
+#define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
 #define R_WDOG_BASE ((uintptr_t) 0x07020400)          /*!< R_WDOG  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO Port Controller Base */
 #define R_PIO_BASE ((uintptr_t) 0x07022000)           /*!< GPIO Port Controller Base */
@@ -1406,6 +1406,51 @@ typedef struct OWA_Type
     volatile uint32_t OWA_TX_CHSTA1;                  /*!< Offset 0x030 OWA TX Channel Status Register1 */
 } OWA_TypeDef; /* size of structure = 0x034 */
 /*
+ * @brief PRCM
+ */
+/*!< PRCM Power Reset Clock Management module */
+typedef struct PRCM_Type
+{
+    volatile uint32_t CPUS_CFG_REG;                   /*!< Offset 0x000 CPUS Configuration Register */
+             uint32_t reserved_0x004 [0x0002];
+    volatile uint32_t APBS1_CFG_REG;                  /*!< Offset 0x00C APBS1 Configuration Register */
+             uint32_t reserved_0x010 [0x0047];
+    volatile uint32_t R_TWD_BGR_REG;                  /*!< Offset 0x12C R_TWD Bus Gating Reset Register */
+             uint32_t reserved_0x130 [0x001B];
+    volatile uint32_t R_TWI_BGR_REG;                  /*!< Offset 0x19C R_TWI Bus Gating Reset Register */
+             uint32_t reserved_0x1A0 [0x0003];
+    volatile uint32_t R_CAN_BGR_REG;                  /*!< Offset 0x1AC R_CAN Bus Gating Reset Register */
+             uint32_t reserved_0x1B0 [0x0003];
+    volatile uint32_t R_RSB_BGR_REG;                  /*!< Offset 0x1BC R_RSB Bus Gating Reset Register */
+    volatile uint32_t R_IR_RX_CLK_REG;                /*!< Offset 0x1C0 R_IR_RX Clock Register */
+             uint32_t reserved_0x1C4 [0x0002];
+    volatile uint32_t R_IR_RX_BGR_REG;                /*!< Offset 0x1CC R_IR_RX Bus Gating Reset Register */
+             uint32_t reserved_0x1D0 [0x000F];
+    volatile uint32_t RTC_BGR_REG;                    /*!< Offset 0x20C RTC Bus Gating Reset Register */
+             uint32_t reserved_0x210 [0x000C];
+    volatile uint32_t PLL_CTRL_REG0;                  /*!< Offset 0x240 PLL Control Register 0 */
+    volatile uint32_t PLL_CTRL_REG1;                  /*!< Offset 0x244 PLL Control Register 1 */
+             uint32_t reserved_0x248 [0x0002];
+    volatile uint32_t VDD_SYS_PWROFF_GATING_REG;      /*!< Offset 0x250 VDD_SYS Power Off Gating Register */
+    volatile uint32_t GPU_PWROFF_GATING;              /*!< Offset 0x254 GPU Power Off Gating Register */
+    volatile uint32_t VE_PWROFF_GATING;               /*!< Offset 0x258 VE Power Off Gating Register */
+             uint32_t reserved_0x25C [0x0005];
+    volatile uint32_t RAM_CFG_REG;                    /*!< Offset 0x270 RAM Configuration Register */
+    volatile uint32_t RAM_TEST_CTRL_REG;              /*!< Offset 0x274 RAM Test Control Register */
+             uint32_t reserved_0x278 [0x0006];
+    volatile uint32_t PRCM_SEC_SWITCH_REG;            /*!< Offset 0x290 PRCM Security Switch Register */
+             uint32_t reserved_0x294 [0x001F];
+    volatile uint32_t RES_CAL_CTRL_REG;               /*!< Offset 0x310 Resistor Calibration Control Register */
+    volatile uint32_t RES200_CTRL_REG;                /*!< Offset 0x314 200ohms Resistor Manual Control Register */
+    volatile uint32_t RES240_CTRL_REG;                /*!< Offset 0x318 240ohms Resistor Manual Control Register */
+    volatile uint32_t RES_CAL_STATUS_REG;             /*!< Offset 0x31C Resistor Calibration Status Register */
+    volatile uint32_t NMI_IRQ_CTRL_REG;               /*!< Offset 0x320 NMI Interrupt Control Register */
+    volatile uint32_t NMI_IRQ_ENABLE_REG;             /*!< Offset 0x324 NMI Interrupt Enable Register */
+    volatile uint32_t NMI_IRQ_PEND_REG;               /*!< Offset 0x328 NMI Interrupt Pending Register */
+             uint32_t reserved_0x32C [0x0031];
+    volatile uint32_t PRCM_VERSION_REG;               /*!< Offset 0x3F0 PRCM Version Register */
+} PRCM_TypeDef; /* size of structure = 0x3F4 */
+/*
  * @brief PWM
  */
 /*!< PWM Pulse Width Modulation module */
@@ -2166,6 +2211,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
+#define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
 #define R_PIO ((GPIO_TypeDef *) R_PIO_BASE)           /*!< R_PIO Port Controller register set access pointer */
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
