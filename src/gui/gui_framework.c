@@ -1165,8 +1165,8 @@ static void draw_button(const button_t * const bh)
 				bg, bh->w, bh->h, 0, 0, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
 	}
 
-	const uint_fast8_t shiftX = bh->state == PRESSED ? 1 : 0;
-	const uint_fast8_t shiftY = bh->state == PRESSED ? 1 : 0;
+	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;
+	const uint_fast16_t shiftY = bh->state == PRESSED ? 1 : 0;
 	const COLORPIP_T textcolor = COLORMAIN_BLACK;
 
 	if (strchr(bh->text, delimeters [0]) == NULL)
