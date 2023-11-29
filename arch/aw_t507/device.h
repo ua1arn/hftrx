@@ -241,8 +241,8 @@ typedef enum IRQn
 #define TCON_LCD1_BASE ((uintptr_t) 0x06512000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
-#define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC  Base */
+#define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
 #define R_WDOG_BASE ((uintptr_t) 0x07020400)          /*!< R_WDOG  Base */
@@ -251,6 +251,7 @@ typedef enum IRQn
 #define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< R_UART  Base */
 #define R_TWI_BASE ((uintptr_t) 0x07081400)           /*!< TWI  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
+#define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
 #define CPU_SUBSYS_CTRL_T507_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List Base */
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
@@ -1521,6 +1522,29 @@ typedef struct RTC_Type
     volatile uint32_t CRY_EN_REG;                     /*!< Offset 0x218 Crypt Enable Register */
 } RTC_TypeDef; /* size of structure = 0x21C */
 /*
+ * @brief R_CAN
+ */
+/*!< R_CAN Car Area Network controller */
+typedef struct R_CAN_Type
+{
+    volatile uint32_t CAN_MSEL;                       /*!< Offset 0x000 CAN mode select register */
+    volatile uint32_t CAN_CMD;                        /*!< Offset 0x004 CAN command register */
+    volatile uint32_t CAN_STA;                        /*!< Offset 0x008 CAN status register */
+    volatile uint32_t CAN_INT;                        /*!< Offset 0x00C CAN interrupt register */
+    volatile uint32_t CAN_INTEN;                      /*!< Offset 0x010 CAN interrupt enable register */
+    volatile uint32_t CAN_BUSTIME;                    /*!< Offset 0x014 CAN bus timing register */
+    volatile uint32_t CAN_TEWL;                       /*!< Offset 0x018 CAN TX error warning limit register */
+    volatile uint32_t CAN_ERRC;                       /*!< Offset 0x01C CAN error counter register */
+    volatile uint32_t CAN_RMCNT;                      /*!< Offset 0x020 CAN receive message counter register */
+    volatile uint32_t CAN_RBUF_SADDR;                 /*!< Offset 0x024 CAN receive buffer start address register */
+    volatile uint32_t CAN_ACPC;                       /*!< Offset 0x028 CAN acceptance code 0 register(reset mode) */
+    volatile uint32_t CAN_ACPM;                       /*!< Offset 0x02C CAN acceptance mask 0 register(reset mode) */
+             uint32_t reserved_0x030 [0x0004];
+    volatile uint32_t CAN_TRBUF [0x00D];              /*!< Offset 0x040 CAN TX/RX message buffer N (n=0..12) register */
+             uint32_t reserved_0x074 [0x0043];
+    volatile uint32_t CAN_RBUF_RBACK [0x030];         /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
+} R_CAN_TypeDef; /* size of structure = 0x240 */
+/*
  * @brief SCR
  */
 /*!< SCR Smart Card Reader */
@@ -2216,6 +2240,7 @@ typedef struct USB_OHCI_Capability_Type
 #define R_PIO ((GPIO_TypeDef *) R_PIO_BASE)           /*!< R_PIO Port Controller register set access pointer */
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
+#define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
 #define CPU_SUBSYS_CTRL_T507 ((CPU_SUBSYS_CTRL_T507_TypeDef *) CPU_SUBSYS_CTRL_T507_BASE)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List register set access pointer */
 #define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */

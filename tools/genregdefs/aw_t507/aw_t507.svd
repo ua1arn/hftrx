@@ -7813,6 +7813,149 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>R_CAN0</name>
+  <description>Car Area Network controller</description>
+  <baseAddress>0x07082000</baseAddress>
+  <registers>
+   <register>
+    <name>CAN_MSEL</name>
+    <displayName>CAN_MSEL</displayName>
+    <description>CAN mode select register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_CMD</name>
+    <displayName>CAN_CMD</displayName>
+    <description>CAN command register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_STA</name>
+    <displayName>CAN_STA</displayName>
+    <description>CAN status register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_INT</name>
+    <displayName>CAN_INT</displayName>
+    <description>CAN interrupt register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_INTEN</name>
+    <displayName>CAN_INTEN</displayName>
+    <description>CAN interrupt enable register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_BUSTIME</name>
+    <displayName>CAN_BUSTIME</displayName>
+    <description>CAN bus timing register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_TEWL</name>
+    <displayName>CAN_TEWL</displayName>
+    <description>CAN TX error warning limit register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_ERRC</name>
+    <displayName>CAN_ERRC</displayName>
+    <description>CAN error counter register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_RMCNT</name>
+    <displayName>CAN_RMCNT</displayName>
+    <description>CAN receive message counter register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_RBUF_SADDR</name>
+    <displayName>CAN_RBUF_SADDR</displayName>
+    <description>CAN receive buffer start address register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_ACPC</name>
+    <displayName>CAN_ACPC</displayName>
+    <description>CAN acceptance code 0 register(reset mode)</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAN_ACPM</name>
+    <displayName>CAN_ACPM</displayName>
+    <description>CAN acceptance mask 0 register(reset mode)</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>13</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <register>
+     <name>CAN_TRBUF</name>
+     <displayName>CAN_TRBUF</displayName>
+     <description>CAN TX/RX message buffer N (n=0..12) register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x034</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>48</dim>
+    <addressOffset>0x00000180</addressOffset>
+    <register>
+     <name>CAN_RBUF_RBACK</name>
+     <displayName>CAN_RBUF_RBACK</displayName>
+     <description>CAN transmit buffer for read back register (0x0180 ~0x1b0)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x0C0</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SCR</name>
   <description>Smart Card Reader</description>
   <baseAddress>0x05005000</baseAddress>
