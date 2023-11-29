@@ -2319,7 +2319,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 		N = ulmin16(N, 256);
 		N = ulmax16(N, 1);
 
-		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
+		CCU->PLL_VIDEO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27) & ~ (UINT32_C(0xFF) << 8);
 		CCU->PLL_VIDEO1_CTRL_REG |= (N - 1) * UINT32_C(1) << 8;
 		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 31;	// PLL ENABLE
 		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 29;	// LOCK_ENABLE
@@ -2327,7 +2327,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 			;
 		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
 
-		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
+		PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
     	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
@@ -2780,39 +2780,7 @@ static void lvds_t507_corrections(void)
 {
 #if CPUSTYLE_T507
 	unsigned i;
-	static const uint32_t ccuv [] =
-	{
-		0x8a002900, 0x00000000, 0x00000000, 0x00000000,
-		0xb8004100, 0x00000000, 0x08002301, 0x00000000,
-		0xb8003100, 0x00000000, 0x89003100, 0x00000000,
-		0x80001800, 0x00000000, 0x00000000, 0x00000000,
-		0x88001d03, 0x00000000, 0x88004701, 0x00000000,
-		0x88006213, 0x00000000, 0x88002301, 0x00000000,
-		0x88001c00, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x89021501, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x88002301, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0xd1303333, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0x00000000, 0x00000000,
-		0x00000000, 0x00000000, 0xc001288d, 0x00000000,
-	};
-	// CCU
-	for (i = 1; i < ARRAY_SIZE(ccuv); ++ i)
-	{
-		* (volatile uint32_t *) (CCU_BASE + i * 4) = ccuv [i];
-	}
-
+#if 0
 	// HDMI_PHY
 	static const uint32_t hdmi_phy [] =
 	{
@@ -2824,7 +2792,9 @@ static void lvds_t507_corrections(void)
 	{
 		* (volatile uint32_t *) (HDMI_PHY_BASE + i * 4) = hdmi_phy [i];
 	}
+#endif
 
+#if 0
 
 	// TCON_LCD0
 	* (volatile uint32_t *) 0x0000000006511004 = 0x80000002;
@@ -2843,13 +2813,15 @@ static void lvds_t507_corrections(void)
 	* (volatile uint32_t *) 0x0000000006511220 = 0xc1f40320;
 	* (volatile uint32_t *) 0x000000000651123c = 0x0003e814;
 	* (volatile uint32_t *) 0x0000000006511240 = 0x01f401f4;
-
+#endif
+#if 0
 	// HDMI_TX0
 	* (volatile uint32_t *) 0x0000000006000000 = 0x00000021;
 	* (volatile uint32_t *) 0x0000000006000004 = 0x0000009f;
 	* (volatile uint32_t *) 0x0000000006000170 = 0x00000002;	// !!!!
 	* (volatile uint32_t *) 0x0000000006000180 = 0x00000018;
 	* (volatile uint32_t *) 0x0000000006000200 = 0x00000001;
+#endif
 #endif /* CPUSTYLE_T507 */
 }
 
