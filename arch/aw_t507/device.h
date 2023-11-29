@@ -99,6 +99,7 @@ typedef enum IRQn
     S_TWI0_IRQn = 137,                                /*!< TWI  */
     TWD_IRQn = 140,                                   /*!< TWD Trust Watchdog */
     R_RSB_IRQn = 141,                                 /*!< R_RSB  */
+    R_UART_IRQn = 144,                                /*!< UART R_UART */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
     C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
     C0_CTI2_IRQn = 162,                               /*!< C0_CPUX_CFG_T507 C0_CTI2 Interrupt */
@@ -249,7 +250,7 @@ typedef enum IRQn
 #define R_WDOG_BASE ((uintptr_t) 0x07020400)          /*!< R_WDOG  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO Port Controller Base */
 #define R_PIO_BASE ((uintptr_t) 0x07022000)           /*!< GPIO Port Controller Base */
-#define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< R_UART  Base */
+#define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< UART  Base */
 #define R_TWI_BASE ((uintptr_t) 0x07081400)           /*!< TWI  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
@@ -2240,6 +2241,7 @@ typedef struct USB_OHCI_Capability_Type
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
 #define R_PIO ((GPIO_TypeDef *) R_PIO_BASE)           /*!< R_PIO Port Controller register set access pointer */
+#define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */

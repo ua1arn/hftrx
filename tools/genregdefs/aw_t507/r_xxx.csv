@@ -4,9 +4,6 @@
 #type; R_WDOG
 #base; R_WDOG	0x07020400
 
-#type; R_UART
-#base; R_UART	0x07080000
-
 #type; R_RSB
 #base; R_RSB	0x07083000
 #irq; R_RSB 141

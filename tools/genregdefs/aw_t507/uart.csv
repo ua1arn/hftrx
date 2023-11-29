@@ -1,4 +1,5 @@
 #type; UART
+
 #base; UART0 0x05000000
 #base; UART1 0x05000400
 #base; UART2 0x05000800
@@ -11,6 +12,16 @@
 #irq; UART3 35
 #irq; UART4 36
 #irq; UART5 37
+
+
+# 
+# https://github.com/MotorolaMobilityLLC/kernel-msm/blob/0df9925d29dec5ada24e08238cec2a16e5fd38e0/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi#L307
+#
+
+#base; R_UART	0x07080000; R_UART
+#irq; R_UART 144; R_UART
+
+
 #regdef; UART_RBR_THR_DLL; 0x0000; UART Receive Buffer Register/Transmit Holding Register
 #regdef; UART_DLH_IER; 0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register
 #regdef; UART_IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register

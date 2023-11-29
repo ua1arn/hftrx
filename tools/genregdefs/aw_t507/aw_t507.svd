@@ -10665,6 +10665,11 @@
    <value>37</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>UART_RBR_THR_DLL</name>
@@ -10881,6 +10886,11 @@
    <value>37</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART2</name>
@@ -10913,6 +10923,11 @@
   <interrupt>
    <name>UART5</name>
    <value>37</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
    <description></description>
   </interrupt>
   </peripheral>
@@ -10949,6 +10964,11 @@
    <value>37</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART4</name>
@@ -10983,6 +11003,11 @@
    <value>37</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="UART0">
   <name>UART5</name>
@@ -11015,6 +11040,50 @@
   <interrupt>
    <name>UART5</name>
    <value>37</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="UART0">
+  <name>R_UART</name>
+  <baseAddress>0x07080000</baseAddress>
+  <interrupt>
+   <name>UART0</name>
+   <value>32</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART1</name>
+   <value>33</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART2</name>
+   <value>34</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART3</name>
+   <value>35</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART4</name>
+   <value>36</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>UART5</name>
+   <value>37</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_UART</name>
+   <value>144</value>
    <description></description>
   </interrupt>
   </peripheral>
