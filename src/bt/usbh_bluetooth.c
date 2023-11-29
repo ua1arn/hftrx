@@ -398,4 +398,4 @@ USBH_ClassTypeDef  Bluetooth_Class = {
     NULL,
 };
 
-#endif /* WITHUSEUSBBT && ! WITHTINYUSB */
+#endif /* WITHUSBHW && WITHUSEUSBBT && ! WITHTINYUSB */

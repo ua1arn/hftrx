@@ -2354,6 +2354,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
 
+    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+
     CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
 
