@@ -1554,7 +1554,6 @@ void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
 
 #elif LCDMODE_LTDC
 
-// Скопировать цветной буфр в drqw buffer
 void colpip_copy_to_draw(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника
 	int_fast32_t srcinvalidatesize,

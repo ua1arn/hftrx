@@ -1182,12 +1182,18 @@ static void draw_button(const button_t * const bh)
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
 #if WITHALTERNATIVEFONTS
-		UB_Font_DrawPString(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
-				shift + y1 + j, text2, & FONT_BUTTONS, COLORMAIN_BLACK);
+		UB_Font_DrawPString(fr, DIM_X, DIM_Y,
+				shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
+				shift + y1 + j,
+				text2, & FONT_BUTTONS, COLORMAIN_BLACK
+				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
-		UB_Font_DrawPString(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
-				shift + bh->h + y1 - FONT_BUTTONS.height - j, text2, & FONT_BUTTONS, COLORMAIN_BLACK);
+		UB_Font_DrawPString(fr, DIM_X, DIM_Y,
+				shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
+				shift + bh->h + y1 - FONT_BUTTONS.height - j,
+				text2, & FONT_BUTTONS, COLORMAIN_BLACK
+				);
 #else
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
 				shift + y1 + j, text2, COLORMAIN_BLACK);
@@ -1245,11 +1251,10 @@ static void draw_slider(slider_t * sl)
 static void fill_button_bg_buf(btn_bg_t * v)
 {
 	PACKEDCOLORPIP_T * buf;
-	uint_fast8_t w, h;
 
-	w = v->w;
-	h = v->h;
-	size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORPIP_T);
+	const uint_fast16_t w = v->w;
+	const uint_fast16_t h = v->h;
+	const size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORPIP_T);
 
 	v->bg_non_pressed = 	(PACKEDCOLORPIP_T *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_non_pressed);
@@ -1273,6 +1278,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
+	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_pressed;
 #if GUI_OLDBUTTONSTYLE
@@ -1288,6 +1294,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
+	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_locked;
 #if GUI_OLDBUTTONSTYLE
@@ -1300,6 +1307,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
+	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_locked_pressed;
 #if GUI_OLDBUTTONSTYLE
@@ -1315,6 +1323,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
+	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_disabled;
 #if GUI_OLDBUTTONSTYLE
@@ -1327,6 +1336,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
+	dcache_clean((uintptr_t) buf, s);
 }
 
 /* Инициализация GUI */
