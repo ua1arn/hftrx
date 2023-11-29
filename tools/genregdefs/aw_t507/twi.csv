@@ -7,6 +7,7 @@
 #base; TWI4 0x05003000
 #base; R_TWI	0x07081400; S_TWI0
 #base; S_TWI0	0x07081400; R_TWI
+##base; S_TWI1	0x07081800; R_TWI1
 
 #irq; TWI0 38
 #irq; TWI1 39
