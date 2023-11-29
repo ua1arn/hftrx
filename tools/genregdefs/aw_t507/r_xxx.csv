@@ -4,9 +4,6 @@
 #type; R_CPUCFG
 #base; R_CPUCFG	0x07000400
 
-#type; PRCM
-#base; PRCM		0x07010000
-
 #type; R_WDOG
 #base; R_WDOG	0x07020400
 

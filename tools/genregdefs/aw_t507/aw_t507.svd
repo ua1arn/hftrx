@@ -7184,6 +7184,238 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>PRCM</name>
+  <description>Power Reset Clock Management module</description>
+  <baseAddress>0x07010000</baseAddress>
+  <registers>
+   <register>
+    <name>CPUS_CFG_REG</name>
+    <displayName>CPUS_CFG_REG</displayName>
+    <description>CPUS Configuration Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APBS1_CFG_REG</name>
+    <displayName>APBS1_CFG_REG</displayName>
+    <description>APBS1 Configuration Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_TWD_BGR_REG</name>
+    <displayName>R_TWD_BGR_REG</displayName>
+    <description>R_TWD Bus Gating Reset Register</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_TWI_BGR_REG</name>
+    <displayName>R_TWI_BGR_REG</displayName>
+    <description>R_TWI Bus Gating Reset Register</description>
+    <addressOffset>0x19C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_CAN_BGR_REG</name>
+    <displayName>R_CAN_BGR_REG</displayName>
+    <description>R_CAN Bus Gating Reset Register</description>
+    <addressOffset>0x1AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_RSB_BGR_REG</name>
+    <displayName>R_RSB_BGR_REG</displayName>
+    <description>R_RSB Bus Gating Reset Register</description>
+    <addressOffset>0x1BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_IR_RX_CLK_REG</name>
+    <displayName>R_IR_RX_CLK_REG</displayName>
+    <description>R_IR_RX Clock Register</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>R_IR_RX_BGR_REG</name>
+    <displayName>R_IR_RX_BGR_REG</displayName>
+    <description>R_IR_RX Bus Gating Reset Register</description>
+    <addressOffset>0x1CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_BGR_REG</name>
+    <displayName>RTC_BGR_REG</displayName>
+    <description>RTC Bus Gating Reset Register</description>
+    <addressOffset>0x20C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_CTRL_REG0</name>
+    <displayName>PLL_CTRL_REG0</displayName>
+    <description>PLL Control Register 0</description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_CTRL_REG1</name>
+    <displayName>PLL_CTRL_REG1</displayName>
+    <description>PLL Control Register 1</description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDD_SYS_PWROFF_GATING_REG</name>
+    <displayName>VDD_SYS_PWROFF_GATING_REG</displayName>
+    <description>VDD_SYS Power Off Gating Register</description>
+    <addressOffset>0x250</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_PWROFF_GATING</name>
+    <displayName>GPU_PWROFF_GATING</displayName>
+    <description>GPU Power Off Gating Register</description>
+    <addressOffset>0x254</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_PWROFF_GATING</name>
+    <displayName>VE_PWROFF_GATING</displayName>
+    <description>VE Power Off Gating Register</description>
+    <addressOffset>0x258</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RAM_CFG_REG</name>
+    <displayName>RAM_CFG_REG</displayName>
+    <description>RAM Configuration Register</description>
+    <addressOffset>0x270</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RAM_TEST_CTRL_REG</name>
+    <displayName>RAM_TEST_CTRL_REG</displayName>
+    <description>RAM Test Control Register</description>
+    <addressOffset>0x274</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRCM_SEC_SWITCH_REG</name>
+    <displayName>PRCM_SEC_SWITCH_REG</displayName>
+    <description>PRCM Security Switch Register</description>
+    <addressOffset>0x290</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RES_CAL_CTRL_REG</name>
+    <displayName>RES_CAL_CTRL_REG</displayName>
+    <description>Resistor Calibration Control Register</description>
+    <addressOffset>0x310</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RES200_CTRL_REG</name>
+    <displayName>RES200_CTRL_REG</displayName>
+    <description>200ohms Resistor Manual Control Register</description>
+    <addressOffset>0x314</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RES240_CTRL_REG</name>
+    <displayName>RES240_CTRL_REG</displayName>
+    <description>240ohms Resistor Manual Control Register</description>
+    <addressOffset>0x318</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RES_CAL_STATUS_REG</name>
+    <displayName>RES_CAL_STATUS_REG</displayName>
+    <description>Resistor Calibration Status Register</description>
+    <addressOffset>0x31C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NMI_IRQ_CTRL_REG</name>
+    <displayName>NMI_IRQ_CTRL_REG</displayName>
+    <description>NMI Interrupt Control Register</description>
+    <addressOffset>0x320</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NMI_IRQ_ENABLE_REG</name>
+    <displayName>NMI_IRQ_ENABLE_REG</displayName>
+    <description>NMI Interrupt Enable Register</description>
+    <addressOffset>0x324</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NMI_IRQ_PEND_REG</name>
+    <displayName>NMI_IRQ_PEND_REG</displayName>
+    <description>NMI Interrupt Pending Register</description>
+    <addressOffset>0x328</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRCM_VERSION_REG</name>
+    <displayName>PRCM_VERSION_REG</displayName>
+    <description>PRCM Version Register</description>
+    <addressOffset>0x3F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>PWM</name>
   <description>Pulse Width Modulation module</description>
   <baseAddress>0x0300A000</baseAddress>

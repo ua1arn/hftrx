@@ -1,0 +1,28 @@
+#type; PRCM; Power Reset Clock Management module
+#base; PRCM 0x07010000
+
+#regdef; CPUS_CFG_REG; 0x0000; CPUS Configuration Register
+#regdef; APBS1_CFG_REG; 0x000C; APBS1 Configuration Register
+#regdef; R_TWD_BGR_REG; 0x012C; R_TWD Bus Gating Reset Register
+#regdef; R_TWI_BGR_REG; 0x019C; R_TWI Bus Gating Reset Register
+#regdef; R_CAN_BGR_REG; 0x01AC; R_CAN Bus Gating Reset Register
+#regdef; R_RSB_BGR_REG; 0x01BC; R_RSB Bus Gating Reset Register
+#regdef; R_IR_RX_CLK_REG; 0x01C0; R_IR_RX Clock Register
+#regdef; R_IR_RX_BGR_REG; 0x01CC; R_IR_RX Bus Gating Reset Register
+#regdef; RTC_BGR_REG; 0x020C; RTC Bus Gating Reset Register
+#regdef; PLL_CTRL_REG0; 0x0240; PLL Control Register 0
+#regdef; PLL_CTRL_REG1; 0x0244; PLL Control Register 1
+#regdef; VDD_SYS_PWROFF_GATING_REG; 0x0250; VDD_SYS Power Off Gating Register
+#regdef; GPU_PWROFF_GATING; 0x0254; GPU Power Off Gating Register
+#regdef; VE_PWROFF_GATING; 0x0258; VE Power Off Gating Register
+#regdef; RAM_CFG_REG; 0x0270; RAM Configuration Register
+#regdef; RAM_TEST_CTRL_REG; 0x0274; RAM Test Control Register
+#regdef; PRCM_SEC_SWITCH_REG; 0x0290; PRCM Security Switch Register
+#regdef; RES_CAL_CTRL_REG; 0x0310; Resistor Calibration Control Register
+#regdef; RES200_CTRL_REG; 0x0314; 200ohms Resistor Manual Control Register
+#regdef; RES240_CTRL_REG; 0x0318; 240ohms Resistor Manual Control Register
+#regdef; RES_CAL_STATUS_REG; 0x031C; Resistor Calibration Status Register
+#regdef; NMI_IRQ_CTRL_REG; 0x0320; NMI Interrupt Control Register
+#regdef; NMI_IRQ_ENABLE_REG; 0x0324; NMI Interrupt Enable Register
+#regdef; NMI_IRQ_PEND_REG; 0x0328; NMI Interrupt Pending Register
+#regdef; PRCM_VERSION_REG; 0x03F0; PRCM Version Register
