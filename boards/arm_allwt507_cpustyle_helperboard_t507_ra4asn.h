@@ -29,8 +29,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHC0HW	1		/* TF CARD */
@@ -40,8 +38,8 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHDEBUG_UART0	1
-	#define WITHUART0HW	1
+	#define WITHDEBUG_UART2	1
+	#define WITHUART2HW	1
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -250,20 +248,6 @@
 
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
-
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-	// AXP853T on HelperBoard T507 Core Board
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
-	// See WITHSDRAM_AXP308
-	int axp853_initialize(void);
-
-	/* Контроллер питания AXP305 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		axp853_initialize(); /* Voltages are set here */ \
-	} while (0)
 
 #endif /* WITHISBOOTLOADER */
 
@@ -770,6 +754,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHISBOOTLOADER
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PL0 S-TWI0-SCK
 	// PL1 S-TWI0-SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
@@ -800,9 +786,10 @@
 	#define	TWIHARD_IX 0x	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0x	/* 0 - TWI0, 1: TWI1... */
 
+#else /* WITHISBOOTLOADER */
 
-
-#elif WITHTWISW || WITHTWIHW
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PH2 - TWI2_SCL
 	// PH3 - TWI2_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 2)
@@ -834,7 +821,7 @@
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 
 
-#endif /* WITHTWISW || WITHTWIHW */
+#endif /* WITHISBOOTLOADER */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
