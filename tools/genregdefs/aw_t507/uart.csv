@@ -43,3 +43,5 @@
 #regdef; RS485_ADDR_MATCH; 0x00C4; UART RS485 Addres Match Register 
 #regdef; BUS_IDLE_CHECK; 0x00C8; UART RS485 Bus Idle Check Register
 #regdef; TX_DLY; 0x00CC; UART TX Delay Register
+
+#regdef; padding 0; 0x400; set size

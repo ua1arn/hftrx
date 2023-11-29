@@ -1052,7 +1052,8 @@ typedef struct EMAC_Type
     volatile uint32_t EMAC_RX_CUR_BUF;                /*!< Offset 0x0C8 EMAC Current Receive Buffer Address Register */
              uint32_t reserved_0x0CC;
     volatile uint32_t EMAC_RGMII_STA;                 /*!< Offset 0x0D0 EMAC RGMII Status Register */
-} EMAC_TypeDef; /* size of structure = 0x0D4 */
+             uint32_t reserved_0x0D4 [0x3FCB];
+} EMAC_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief G2D_MIXER
  */
@@ -1937,7 +1938,8 @@ typedef struct TWI_Type
              uint32_t reserved_0x220 [0x0038];
     volatile uint32_t TWI_DRV_SEND_FIFO_ACC;          /*!< Offset 0x300 TWI_DRV Send Data FIFO Access Register */
     volatile uint32_t TWI_DRV_RECV_FIFO_ACC;          /*!< Offset 0x304 TWI_DRV Receive Data FIFO Access Register */
-} TWI_TypeDef; /* size of structure = 0x308 */
+             uint32_t reserved_0x308 [0x003E];
+} TWI_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief UART
  */
@@ -1968,7 +1970,8 @@ typedef struct UART_Type
     volatile uint32_t RS485_ADDR_MATCH;               /*!< Offset 0x0C4 UART RS485 Addres Match Register  */
     volatile uint32_t BUS_IDLE_CHECK;                 /*!< Offset 0x0C8 UART RS485 Bus Idle Check Register */
     volatile uint32_t TX_DLY;                         /*!< Offset 0x0CC UART TX Delay Register */
-} UART_TypeDef; /* size of structure = 0x0D0 */
+             uint32_t reserved_0x0D0 [0x00CC];
+} UART_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief USBEHCI
  */
