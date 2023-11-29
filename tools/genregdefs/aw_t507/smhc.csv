@@ -49,3 +49,5 @@
 #regdef; SMHC_SAMP_DL; 0x0144; Sample Delay Control Register
 #regdef; SMHC_DS_DL; 0x0148; Data Strobe Delay Control Register (Only for SMHC2)
 #regdef; SMHC_FIFO; 0x0200; Read/Write FIFO
+
+#regdef; padding 0; 0x1000; set size

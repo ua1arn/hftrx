@@ -438,7 +438,8 @@ typedef struct CAN_Type
     volatile uint32_t CAN_RBUF_RBACK [0x030];         /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
              uint32_t reserved_0x240 [0x0030];
     volatile uint32_t CAN_VERSION;                    /*!< Offset 0x300 CAN Version Register */
-} CAN_TypeDef; /* size of structure = 0x304 */
+             uint32_t reserved_0x304 [0x003F];
+} CAN_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief CCU
  */
@@ -2244,7 +2245,8 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_HS400_DL;                  /*!< Offset 0x14C HS400 Delay Control Register */
              uint32_t reserved_0x150 [0x002C];
     volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/Write FIFO */
-} SMHC_TypeDef; /* size of structure = 0x204 */
+             uint32_t reserved_0x204 [0x037F];
+} SMHC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SPI
  */
@@ -2287,7 +2289,8 @@ typedef struct SPI_Type
     volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
-} SPI_TypeDef; /* size of structure = 0x304 */
+             uint32_t reserved_0x304 [0x033F];
+} SPI_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SPINLOCK
  */
@@ -2674,7 +2677,8 @@ typedef struct TWI_Type
              uint32_t reserved_0x220 [0x0038];
     volatile uint32_t TWI_DRV_SEND_FIFO_ACC;          /*!< Offset 0x300 TWI_DRV Send Data FIFO Access Register */
     volatile uint32_t TWI_DRV_RECV_FIFO_ACC;          /*!< Offset 0x304 TWI_DRV Receive Data FIFO Access Register */
-} TWI_TypeDef; /* size of structure = 0x308 */
+             uint32_t reserved_0x308 [0x003E];
+} TWI_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief UART
  */
@@ -2718,7 +2722,8 @@ typedef struct UART_Type
     volatile uint32_t UART_A_RXDMA_RADDRL;            /*!< Offset 0x130 UART RXDMA Read Address Low Register */
     volatile uint32_t UART_A_RXDMA_RADDRH;            /*!< Offset 0x134 UART RXDMA Read Address high Register */
     volatile uint32_t UART_A_RXDMA_DCNT;              /*!< Offset 0x138 UART RADMA Data Count Register */
-} UART_TypeDef; /* size of structure = 0x13C */
+             uint32_t reserved_0x13C [0x00B1];
+} UART_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief USBEHCI
  */

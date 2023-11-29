@@ -23,3 +23,5 @@
 #regdef; SPI_NDMA_MODE_CTL; 0x0088; SPI Normal DMA Mode Control Register
 #regdef; SPI_TXD; 0x0200; SPI TX Data Register
 #regdef; SPI_RXD; 0x0300; SPI RX Data Register
+
+#regdef; padding 0; 0x1000; set size

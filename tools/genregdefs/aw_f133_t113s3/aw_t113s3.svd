@@ -11613,6 +11613,11 @@
   <name>RTC</name>
   <description>Real Time Clock</description>
   <baseAddress>0x07090000</baseAddress>
+  <interrupt>
+   <name>ALARM0</name>
+   <value>160</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>LOSC_CTRL_REG</name>

@@ -16,3 +16,5 @@
 #regdef; TWI_SRST; 0x0018; TWI Software Reset Register
 #regdef; TWI_EFR; 0x001C; TWI Enhance Feature Register
 #regdef; TWI_LCR; 0x0020; TWI Line Control Register
+
+#regdef; padding 0; 0x400; set size

@@ -48,3 +48,5 @@
 #regdef; UART_A_RXDMA_RADDRL; 0x0130; UART RXDMA Read Address Low Register
 #regdef; UART_A_RXDMA_RADDRH; 0x0134; UART RXDMA Read Address high Register
 #regdef; UART_A_RXDMA_DCNT; 0x0138; UART RADMA Data Count Register
+
+#regdef; padding 0; 0x400; set size

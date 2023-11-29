@@ -1623,7 +1623,8 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x148 Data Strobe Delay Control Register (Only for SMHC2) */
              uint32_t reserved_0x14C [0x002D];
     volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/Write FIFO */
-} SMHC_TypeDef; /* size of structure = 0x204 */
+             uint32_t reserved_0x204 [0x037F];
+} SMHC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SPI
  */
@@ -1656,7 +1657,8 @@ typedef struct SPI_Type
     volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
              uint32_t reserved_0x204 [0x003F];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
-} SPI_TypeDef; /* size of structure = 0x304 */
+             uint32_t reserved_0x304 [0x033F];
+} SPI_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SYS_CFG
  */

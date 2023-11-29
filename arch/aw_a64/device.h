@@ -1633,7 +1633,8 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x148 Data strobe delay control Register */
              uint32_t reserved_0x14C [0x002D];
     volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/ Write FIFO */
-} SMHC_TypeDef; /* size of structure = 0x204 */
+             uint32_t reserved_0x204 [0x037F];
+} SMHC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SPI
  */
@@ -1958,7 +1959,8 @@ typedef struct TWI_Type
     volatile uint32_t TWI_SRST;                       /*!< Offset 0x018 TWI Software Reset Register */
     volatile uint32_t TWI_EFR;                        /*!< Offset 0x01C TWI Enhance Feature Register */
     volatile uint32_t TWI_LCR;                        /*!< Offset 0x020 TWI Line Control Register */
-} TWI_TypeDef; /* size of structure = 0x024 */
+             uint32_t reserved_0x024 [0x00F7];
+} TWI_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief UART
  */
@@ -2002,7 +2004,8 @@ typedef struct UART_Type
     volatile uint32_t UART_A_RXDMA_RADDRL;            /*!< Offset 0x130 UART RXDMA Read Address Low Register */
     volatile uint32_t UART_A_RXDMA_RADDRH;            /*!< Offset 0x134 UART RXDMA Read Address high Register */
     volatile uint32_t UART_A_RXDMA_DCNT;              /*!< Offset 0x138 UART RADMA Data Count Register */
-} UART_TypeDef; /* size of structure = 0x13C */
+             uint32_t reserved_0x13C [0x00B1];
+} UART_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief USBEHCI
  */
