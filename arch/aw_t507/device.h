@@ -97,6 +97,7 @@ typedef enum IRQn
     GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
     ALARM0_IRQn = 136,                                /*!< RTC Real Time Clock */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
+    TWD_IRQn = 140,                                   /*!< TWD Trust Watchdog */
     R_RSB_IRQn = 141,                                 /*!< R_RSB  */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
     C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
@@ -243,7 +244,6 @@ typedef enum IRQn
 #define TCON_TV0_BASE ((uintptr_t) 0x06515000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
-#define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC  Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
 #define R_WDOG_BASE ((uintptr_t) 0x07020400)          /*!< R_WDOG  Base */

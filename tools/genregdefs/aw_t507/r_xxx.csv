@@ -1,6 +1,3 @@
-#type; RTC
-#base; RTC		0x07000000
-
 #type; R_CPUCFG
 #base; R_CPUCFG	0x07000400
 
@@ -13,3 +10,6 @@
 #type; R_RSB
 #base; R_RSB	0x07083000
 #irq; R_RSB 141
+
+#type; TWD; Trust Watchdog
+#irq; TWD 140; Trust Watchdog
