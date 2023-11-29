@@ -1157,20 +1157,27 @@ static void draw_button(const button_t * const bh)
 		else if (! bh->is_locked && bh->state != PRESSED)
 			bg = b1->bg_non_pressed;
 		ASSERT(bg != NULL);
-		colpip_bitblt((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, y1, (uintptr_t) bg, GXSIZE(bh->w, bh->h), bg, bh->w, bh->h, 0, 0, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
+		colpip_bitblt(
+				(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof * fr,	// cache parameters
+				fr, DIM_X, DIM_Y, 	// target window
+				x1, y1,	// target position
+				(uintptr_t) bg, GXSIZE(bh->w, bh->h) * sizeof * bg, 	// cache parameters
+				bg, bh->w, bh->h, 0, 0, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
 	}
 
-	uint_fast8_t shift = bh->state == PRESSED ? 1 : 0;
+	const uint_fast8_t shiftX = bh->state == PRESSED ? 1 : 0;
+	const uint_fast8_t shiftY = bh->state == PRESSED ? 1 : 0;
+	const COLORPIP_T textcolor = COLORMAIN_BLACK;
 
 	if (strchr(bh->text, delimeters [0]) == NULL)
 	{
 		/* Однострочная надпись */
 #if WITHALTERNATIVEFONTS
-		UB_Font_DrawPString(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (getwidth_Pstring(bh->text, & FONT_BUTTONS))) / 2,
-					shift + y1 + (bh->h - FONT_BUTTONS.height) / 2, bh->text, & FONT_BUTTONS, COLORMAIN_BLACK);
+		UB_Font_DrawPString(fr, DIM_X, DIM_Y, shiftX + x1 + (bh->w - (getwidth_Pstring(bh->text, & FONT_BUTTONS))) / 2,
+				shiftY + y1 + (bh->h - FONT_BUTTONS.height) / 2, bh->text, & FONT_BUTTONS, textcolor);
 #else
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(bh->text))) / 2,
-				shift + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, COLORMAIN_BLACK);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, shiftX + x1 + (bh->w - (strwidth2(bh->text))) / 2,
+				shiftY + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, textcolor);
 #endif /* WITHALTERNATIVEFONTS */
 	}
 	else
@@ -1183,16 +1190,16 @@ static void draw_button(const button_t * const bh)
 		char * text2 = strtok_r(buf, delimeters, & next);
 #if WITHALTERNATIVEFONTS
 		UB_Font_DrawPString(fr, DIM_X, DIM_Y,
-				shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
-				shift + y1 + j,
-				text2, & FONT_BUTTONS, COLORMAIN_BLACK
+				shiftX + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
+				shiftY + y1 + j,
+				text2, & FONT_BUTTONS, textcolor
 				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
 		UB_Font_DrawPString(fr, DIM_X, DIM_Y,
-				shift + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
-				shift + bh->h + y1 - FONT_BUTTONS.height - j,
-				text2, & FONT_BUTTONS, COLORMAIN_BLACK
+				shiftX + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
+				shiftY + bh->h + y1 - FONT_BUTTONS.height - j,
+				text2, & FONT_BUTTONS, textcolor
 				);
 #else
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
@@ -1278,7 +1285,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
-	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_pressed;
 #if GUI_OLDBUTTONSTYLE
@@ -1294,7 +1300,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
-	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_locked;
 #if GUI_OLDBUTTONSTYLE
@@ -1307,7 +1312,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
-	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_locked_pressed;
 #if GUI_OLDBUTTONSTYLE
@@ -1323,7 +1327,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
-	dcache_clean((uintptr_t) buf, s);
 
 	buf = v->bg_disabled;
 #if GUI_OLDBUTTONSTYLE
@@ -1336,7 +1339,6 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	colmain_rounded_rect(buf, w, h, 0, 0, w - 1, h - 1, button_round_radius, COLORMAIN_GRAY, 0);
 	colmain_rounded_rect(buf, w, h, 2, 2, w - 3, h - 3, button_round_radius, COLORMAIN_BLACK, 0);
 #endif /* GUI_OLDBUTTONSTYLE */
-	dcache_clean((uintptr_t) buf, s);
 }
 
 /* Инициализация GUI */
