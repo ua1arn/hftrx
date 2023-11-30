@@ -2581,8 +2581,9 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 
 // https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/u-boot/arch/arm/include/asm/arch-sunxi/lcdc.h#L105
 // step6 - LVDS controller configuration
-static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsigned lvds_num)
+static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
 {
+	unsigned lvds_num = 0;
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
@@ -2876,7 +2877,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	t113_DSI_controller_configuration(vdmode);
-	t113_LVDS_controller_configuration(vdmode, 0);
+	t113_LVDS_controller_configuration(vdmode);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
@@ -2913,7 +2914,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 #endif
 	t113_DSI_controller_configuration(vdmode);
-	t113_LVDS_controller_configuration(vdmode, 0);
+	t113_LVDS_controller_configuration(vdmode);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
