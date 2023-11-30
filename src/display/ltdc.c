@@ -2356,12 +2356,12 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
 
-    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
-    CCU->HDMI_BGR_REG |= ~ 0u;
+//    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+//    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+//
+//    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
 //    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
 #endif /* WITHLVDSHW */
 
     local_delay_us(10);
@@ -2610,7 +2610,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 //	local_delay_ms(1);
 //	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 //	local_delay_ms(1);
-	PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
+	//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// Documented as LCD_LVDS_ANA0_REG
@@ -2639,7 +2639,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 	local_delay_ms(1);
 	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 	local_delay_ms(1);
-	PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
+	//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 
 #else
 #endif
@@ -2775,6 +2775,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
 }
+#if 0
 
 static void lvds_t507_corrections(void)
 {
@@ -2855,10 +2856,10 @@ performdump(const char * name, unsigned long base, unsigned long size)
 	PRINTF("---\n");
 #endif /* CPUSTYLE_T507 */
 }
+#endif
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
-	lvds_t507_corrections();
 	unsigned prei = 0;
 	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
@@ -2881,19 +2882,11 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 
-	lvds_t507_corrections();
-
-//	performdump("CCU", 0x03001000, 0x400);
-//	performdump("DISP_IF_TOP", 0x06510000, 0x30);
-//	performdump("TCON_LCD0", TCON_LCD0_BASE, 0x400);	//TCON_LCD0_BASE;
-//	performdump("HDMI_TX0", 0x06000000, 0x400);
-//	performdump("HDMI_PHY", 0x06010000, 0x400);	//TCON_LCD0_BASE;
 }
 
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
-
 	unsigned prei = 0;
 	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
 	// step0 - CCU configuration
@@ -2910,6 +2903,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
+	// These CPUs not support DSI at all
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
