@@ -298,7 +298,7 @@ bootloader: BOOT2
 	
 # Take from tc1_t507_boot.map
 SystemInitAddr_H616 = 0x0003170c
-SystemInitAddr_T507 = 0x00032460
+SystemInitAddr_T507 = 0x00032ed0
 
 # Invoke SystemInit 
 ddrinit_h616: h616_fsbl_frz.alw32
