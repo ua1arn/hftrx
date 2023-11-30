@@ -2298,7 +2298,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	unsigned ix = TCONLCD_IX;	// TCON_LCD0
+	const unsigned lvdsix = 0;
+	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -2349,10 +2350,10 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 //    PRINTF("CCU->TCON_LCD_BGR_REG=%08X\n", (unsigned) CCU->TCON_LCD_BGR_REG);
 
 #if WITHLVDSHW
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << (16 + lvdsix)); // LVDS0_RST: De-assert reset
 //    CCU->LVDS_BGR_REG |= ~ 0u;
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
 
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
 
@@ -2366,8 +2367,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     local_delay_us(10);
 
-    TCON_LCD0->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
-    TCON_LCD1->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Configure TCONLCD clock */
