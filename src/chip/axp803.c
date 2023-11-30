@@ -1084,9 +1084,8 @@ static int pmu_axp858_ap_reset_enable(void)
 
 int axp853_initialize(void)
 {
-	uint8_t axp_chip_id;
+	uint8_t axp_chip_id = 0xFF;
 	int ret;
-	uint8_t reg_value;
     PRINTF("PMIC: AXP853T/AXP858\n");
 	ret = pmic_bus_init();
 	if (ret)
