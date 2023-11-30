@@ -2298,19 +2298,19 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	const unsigned lvdsix = 0;
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
-//	CCU->DISPLAY_IF_TOP_BGR_REG |= ~ 0u;
-//    PRINTF("CCU->DISPLAY_IF_TOP_BGR_REG=%08X\n", (unsigned) CCU->DISPLAY_IF_TOP_BGR_REG);
-
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
 
+    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
+    		0x00 * (UINT32_C(1) << 0) | // DE_PORT0_PERIPH_SEL: TCON_LCD0
+    		0x01 * (UINT32_C(1) << 4) | // DE_PORT1_PERIPH_SEL: TCON_LCD1
+			0;
     if (needfreq != 0)
     {
     	// LVDS mode
@@ -2346,16 +2346,13 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 	CCU->TCON_LCD_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
 	CCU->TCON_LCD_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
 
-//	CCU->TCON_LCD_BGR_REG |= ~ 0u;
-//    PRINTF("CCU->TCON_LCD_BGR_REG=%08X\n", (unsigned) CCU->TCON_LCD_BGR_REG);
-
 #if WITHLVDSHW
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << (16 + lvdsix)); // LVDS0_RST: De-assert reset
-//    CCU->LVDS_BGR_REG |= ~ 0u;
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
 //    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
 
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
 
 //    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
 //    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
@@ -2370,6 +2367,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+
 	/* Configure TCONLCD clock */
     if (needfreq != 0)
     {
@@ -2581,9 +2579,8 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 
 // https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/u-boot/arch/arm/include/asm/arch-sunxi/lcdc.h#L105
 // step6 - LVDS controller configuration
-static void t113_LVDS_controller_configuration(const videomode_t * vdmode)
+static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsigned lvds_num)
 {
-	unsigned lvds_num = 0;
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
@@ -2877,7 +2874,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	t113_DSI_controller_configuration(vdmode);
-	t113_LVDS_controller_configuration(vdmode);
+	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
@@ -2914,7 +2911,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 #endif
 	t113_DSI_controller_configuration(vdmode);
-	t113_LVDS_controller_configuration(vdmode);
+	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function(vdmode);
 	// step8 - same as step6 in HV mode: Open module enable
@@ -3150,11 +3147,11 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
 {
 	hardware_tcon_initialize(vdmode);
-	hardware_de_initialize(vdmode);
 
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
 
+	hardware_de_initialize(vdmode);
 }
 
 /* ожидаем начало кадра */

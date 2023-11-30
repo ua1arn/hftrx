@@ -97,6 +97,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define BOARD_CONFIG_DRAM_CLK 792
 	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
 
+	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 
@@ -1013,6 +1014,7 @@ void user_uart5_ontxchar(void * ctx);
 		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
 		0)
 
+	/* LVDS0 connections */
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
@@ -1024,6 +1026,20 @@ void user_uart5_ontxchar(void * ctx);
 		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
+	} while (0)
+
+	/* LVDS1 connections */
+	#define xxxxxxxHARDWARE_LVDS_INITIALIZE() do { \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF3); 	/* PD10 LVDS1_V0P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF3); 	/* PD11 LVDS1_V0N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF3); 	/* PD12 LVDS1_V1P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF3); 	/* PD13 LVDS1_V1N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF3); 	/* PD14 LVDS1_V2P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF3); 	/* PD15 LVDS1_V2N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3); 	/* PD16 LVDS1_CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF3); 	/* PD17 LVDS1_CKN */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF3); 	/* PD18 LVDS1_V3P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF3); 	/* PD19 LVDS1_V3N */ \
 	} while (0)
 
 	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
