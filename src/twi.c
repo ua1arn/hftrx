@@ -2444,10 +2444,25 @@ void hardware_twi_master_configure(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	const int TWIx = TWIHARD_IX;
-	CCU->TWI_BGR_REG |= 1u << (0 + TWIx);	// Open the clock gate
-	CCU->TWI_BGR_REG &= ~ (1u << (16 + TWIx));	// Assert reset
-	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);	// De-assert reset
+	if (0)
+	{
+
+	}
+#if defined (S_TWI0)
+	else if (TWIHARD_PTR == S_TWI0)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+	}
+#endif /* defined (S_TWI0) */
+	else
+	{
+		const unsigned TWIx = TWIHARD_IX;
+		CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+		CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
+		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+	}
 
 	pdat_i2c.virt = (uintptr_t) TWIHARD_PTR;
 	pdat_i2c.io = TWIHARD_PTR;
