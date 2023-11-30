@@ -243,6 +243,11 @@
 
 #else /* WITHISBOOTLOADER */
 
+
+	#define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
+	#define CALIBRATION_IQ_CIC_RX_SHIFT		63
+	#define CALIBRATION_TX_SHIFT			29
+
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define FORMATFROMLIBRARY 	1
@@ -657,5 +662,8 @@
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+
+	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
 #endif /* ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED */

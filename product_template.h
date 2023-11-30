@@ -262,28 +262,28 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
 #elif (CPUSTYLE_A64) && CTLSTYLE_STORCH_V7 && 1
-	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
+	#define WITHISBOOTLOADER_DDR	(0 && WITHISBOOTLOADER)	/* Allwinner A64-H (Banana Pi BPI-M64) - инициализатор DDR памяти на плате */
 	#include "boards/arm_allwa64_ctlstyle_banana_pi_m64.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa64_cpustyle_banana_pi_m64.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
-	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* Orange Pi Zero 2 - инициализатор DDR памяти на плате */
+	#define WITHISBOOTLOADER_DDR	(0 && WITHISBOOTLOADER)	/* Orange Pi Zero 2 - инициализатор DDR памяти на плате */
 	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	//#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
+	//#define WITHISBOOTLOADER_DDR	(0 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
 	#include "boards/arm_allwt507_ctlstyle_helperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_helperboard_t507.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
+	//#define WITHISBOOTLOADER_DDR	(0 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
 	#include "boards/arm_allwt507_ctlstyle_helperboard_t507_ra4asn.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_helperboard_t507_ra4asn.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	//#define WITHISBOOTLOADER_DDR	(1 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
+	//#define WITHISBOOTLOADER_DDR	(0 && WITHISBOOTLOADER)	/* HelperBoard T507 Core Board - инициализатор LPDDR4 памяти на плате */
 	#define WITHISBOOTLOADER 1
 	#include "boards/arm_allwt507_ctlstyle_xhelperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

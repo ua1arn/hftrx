@@ -43,19 +43,12 @@
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
-#define CALIBRATION_IQ_CIC_RX_SHIFT		63
-#define CALIBRATION_TX_SHIFT			29
-
-// OHCI at USB1HSFSP2_BASE
-////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
-
 #if WITHISBOOTLOADER
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHC0HW	1		/* TF CARD */
+	#define WITHSDHC0HW	1		/* TF CARD */
 	//#define WITHSDHC1HW	1		/* SDIO */
-	#define WITHSDHC2HW	1		/* EMMC */
+	//#define WITHSDHC2HW	1		/* EMMC */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
@@ -77,7 +70,7 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 	#define BOARD_TUH_RHPORT 1
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	//#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
@@ -1003,57 +996,11 @@
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
-		const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
-		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
-		const portholder_t MODEmask = (UINT32_C(1) << 9); 	/* PA9 mode */ \
-		/* set LCD DE/SYNC mode */ \
-		arm_hardware_pioa_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PA9 = state */ \
-		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
-		arm_hardware_piod_altfn50(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
-		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn50(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
-		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
-		/* pixel clock */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
-		/* RED */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF2); /* R3 PD19 LCD_D19 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 20, GPIO_CFG_AF2); /* R4 PD20 LCD_D20 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 21, GPIO_CFG_AF2); /* R5 PD21 LCD_D21 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 22, GPIO_CFG_AF2); /* R6 PD22 LCD_D22 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 23, GPIO_CFG_AF2); /* R7 PD23 LCD_D23 */ \
-		/* GREEN */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); 	/* G2 PD10 LCD_D10 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); 	/* G3 PD11 LCD_D11 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); 	/* G4 PD12 LCD_D12 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); 	/* G5 PD13 LCD_D13 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* G6 PD14 LCD_D14 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* G7 PD15 LCD_D15 */ \
-		/* BLUE  */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* B3 PD3 LCD_D3 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* B4 PD4 LCD_D4 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* B5 PD5 LCD_D5 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF2); 	/* B6 PD6 LCD_D6 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* B7 PD7 LCD_D7 */ \
 	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
-		const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
-		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
-		const portholder_t MODEmask = (UINT32_C(1) << 9); 	/* PA9 mode */ \
-		arm_hardware_piod_outputs(VSmask, 0 * VSmask); /* PD27 LCD_VSYNC */ \
-		local_delay_ms(5); \
-		/* while ((gpioX_getinputs(GPIOD) & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((gpioX_getinputs(GPIOD) & VSmask) == 0) ; */ /* дождаться 1 */ \
-		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
-		local_delay_ms(5); \
-		arm_hardware_piod_altfn20(VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
 	} while (0)
 
 	#define LCD_LVDS_IF_REG_VALUE ( \
@@ -1137,7 +1084,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_GPIOD_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PD21: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */
+	#define BOARD_GPIOD_USERBOOT_BIT	BOARD_GPIOD_ENC2BTN_BIT	/* PD21: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOD)) & BOARD_GPIOD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 			arm_hardware_piod_inputs(BOARD_GPIOD_USERBOOT_BIT); /* set as input with pull-up */ \
