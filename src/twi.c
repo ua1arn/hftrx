@@ -113,20 +113,10 @@ static void i2c_delay(const i2cp_t * p)
 	#error Undefined CPUSTYLE_xxx
 #endif
 
-#if WITHTWIHW
+#if defined (TWISOFT_INITIALIZE)
 
-#if CPUSTYLE_ATMEGA
-
-#include <util/twi.h>
-
-void i2c_initialize(void)
+static void i2c_softbusrelease(void)
 {
-	const i2cp_t * const p1 = & i2cp_1;
-	const i2cp_t * const p2 = & i2cp_2;
-
-#if 1
-	TWISOFT_INITIALIZE();
-
 	uint_fast8_t i;
 	// release I2C bus
 	CLR_TWD();
@@ -141,10 +131,47 @@ void i2c_initialize(void)
 		CLR_TWCK();
 		SET_TWCK();
 	}
-#endif
+}
+
+#endif /* defined (TWISOFT_INITIALIZE) */
+
+#if defined (TWISOFT2_INITIALIZE)
+
+static void i2c2_softbusrelease(void)
+{
+	uint_fast8_t i;
+	// release I2C bus
+	CLR2_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR2_TWCK();
+		SET2_TWCK();
+	}
+	SET2_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR2_TWCK();
+		SET2_TWCK();
+	}
+}
+
+#endif /* defined (TWISOFT2_INITIALIZE) */
+
+#if WITHTWIHW
+
+#if CPUSTYLE_ATMEGA
+
+#include <util/twi.h>
+
+void i2c_initialize(void)
+{
+	const i2cp_t * const p1 = & i2cp_1;
+	const i2cp_t * const p2 = & i2cp_2;
 
 	TWISOFT_INITIALIZE();
+	i2c_softbusrelease();
 	hardware_twi_master_configure();
+
 #if WITHTWIHW
 	TWIHARD_INITIALIZE();
 #endif
@@ -441,26 +468,8 @@ void i2c_initialize(void)
 {
 	const i2cp_t * const p1 = & i2cp_1;
 	const i2cp_t * const p2 = & i2cp_2;
-#if 1
 	TWISOFT_INITIALIZE();
-
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-#endif
-
-	TWISOFT_INITIALIZE();
+	i2c_softbusrelease();
 
     // Configure clock
 	hardware_twi_master_configure();
@@ -888,26 +897,8 @@ void i2c_initialize(void)
 {
 	const i2cp_t * const p1 = & i2cp_1;
 	const i2cp_t * const p2 = & i2cp_2;
-#if 1
 	TWISOFT_INITIALIZE();
-
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-#endif
-
-	TWISOFT_INITIALIZE();
+	i2c_softbusrelease();
 	
 	hardware_twi_master_configure();
 #if WITHTWIHW
@@ -1361,25 +1352,8 @@ void i2c_initialize(void)
 {
 	const i2cp_t * const p1 = & i2cp_1;
 	const i2cp_t * const p2 = & i2cp_2;
-#if 1
 	TWISOFT_INITIALIZE();
-
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-#endif
-
+	i2c_softbusrelease();
     // Configure clock
 	hardware_twi_master_configure();
 	// 
@@ -1394,26 +1368,8 @@ void i2c_initialize(void)
 {
 	const i2cp_t * const p1 = & i2cp_1;
 	const i2cp_t * const p2 = & i2cp_2;
-#if 1
 	TWISOFT_INITIALIZE();
-
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-#endif
-
-	TWISOFT_INITIALIZE();
+	i2c_softbusrelease();
 
 	hardware_twi_master_configure();
 #if WITHTWIHW
@@ -1538,38 +1494,13 @@ void i2c_initialize(void)
 #if 0
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
-
-#if 0
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-
-#endif
-
-	SET_TWD();
-	i2c_delay(p);
-	SET_TWCK();
-	i2c_delay(p);
+	i2c_softbusrelease();
 
 #ifdef TWISOFT2_INITIALIZE
 
 	TWISOFT2_INITIALIZE();
+	i2c2_softbusrelease();
 
-	SET2_TWD();
-	i2c_delay(p);
-	SET2_TWCK();
-	i2c_delay(p);
 #endif
 
 #endif
@@ -1984,24 +1915,10 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 void i2c_initialize(void)
 {
 	TWISOFT_INITIALIZE();
+	i2c_softbusrelease();
 
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-
-	TWIHARD_INITIALIZE();
 	hardware_twi_master_configure();
+	TWIHARD_INITIALIZE();
 
 	t113_i2c_stop(&pdat_i2c);
 }
@@ -2036,24 +1953,7 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 
 #if 0
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		i2c_delay(p1);
-		SET_TWCK();
-		i2c_delay(p1);
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		i2c_delay(p1);
-		SET_TWCK();
-		i2c_delay(p1);
-	}
+	i2c_softbusrelease();
 
 #endif
 
@@ -2065,11 +1965,8 @@ void i2c_initialize(void)
 #ifdef TWISOFT2_INITIALIZE
 
 	TWISOFT2_INITIALIZE();
+	i2c2_softbusrelease();
 
-	SET2_TWD();
-	i2c_delay(p2);
-	SET2_TWCK();
-	i2c_delay(p2);
 #endif
 
 #if WITHTWIHW
@@ -2545,10 +2442,11 @@ void hardware_twi_master_configure(void)
 
 	#warning Should be implemented for CPUSTYLE_A64
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	const int TWIx = TWIHARD_IX;
 	CCU->TWI_BGR_REG |= 1u << (0 + TWIx);	// Open the clock gate
+	CCU->TWI_BGR_REG &= ~ (1u << (16 + TWIx));	// Assert reset
 	CCU->TWI_BGR_REG |= 1u << (16 + TWIx);	// De-assert reset
 
 	pdat_i2c.virt = (uintptr_t) TWIHARD_PTR;
@@ -2556,7 +2454,7 @@ void hardware_twi_master_configure(void)
 
 	t113_i2c_set_rate(&pdat_i2c, 400000);
 
-	pdat_i2c.io->TWI_CNTR =  1u << 6;
+	pdat_i2c.io->TWI_CNTR =  1u << 6;	// BUS_EN
 
 	pdat_i2c.io->TWI_SRST |= 1u << 0;
 	while ((pdat_i2c.io->TWI_SRST & (1u << 0)) != 0)
