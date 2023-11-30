@@ -8820,6 +8820,35 @@ arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate)
 #endif
 }
 
+
+/* включение подтягивающих резисторов к питанию (up) или к земле (down). */
+void
+arm_hardware_piol_updown(portholder_t up, portholder_t down)
+{
+#if CPUSTYLE_STM32F1XX
+	stm32f10x_pioX_pupdr(GPIOL, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	tm32f30x_pioX_pupdr(GPIOL, up, down);
+
+#elif CPUSTYLE_STM32MP1
+
+	tm32mp1_pioX_pupdr(GPIOL, up, down);
+
+#elif CPUSTYLE_AT91SAM7S
+
+#elif CPUSTYLE_ALLWINNER
+
+	gpioX_updown(GPIOL, up, down);
+
+#elif CPUSTYLE_VM14
+	/* no pull-up or pull-down control */
+
+#elif defined (GPIOL)
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+
 #endif /* defined (GPIOL) */
 
 #if defined (GPIOA)
