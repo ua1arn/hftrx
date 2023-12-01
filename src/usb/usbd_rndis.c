@@ -1,5 +1,5 @@
 /*
- * usbd_cdc.c
+ * usbd_rndis.c
  * Проект HF Dream Receiver (КВ приёмник мечты)
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
@@ -1080,9 +1080,9 @@ const USBD_ClassTypeDef USBD_CLASS_RNDIS =
 	usbd_rndis_ep0_recv,
 	usbd_rndis_data_in,
 	usbd_rndis_data_out,
-	NULL,
-	NULL,
-	NULL,
+	NULL, /*SOF */
+	NULL, /*ISOIn*/
+	NULL, /*ISOOut*/
 };
 
 
