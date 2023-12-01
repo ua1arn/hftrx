@@ -1011,7 +1011,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 
 #if 0
 	// тестирование вывода на кодек
-	for (unsigned i = 0; i < ARRAY_SIZE(phones->buff); i += DMABUFFSTEP16TX)
+	for (unsigned i = 0; i < ARRAY_SIZE(dest->buff); i += DMABUFFSTEP16TX)
 	{
 		dest->buff [i + DMABUFF16TX_LEFT] = adpt_output(& afcodectx, get_lout());
 		dest->buff [i + DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, get_rout());

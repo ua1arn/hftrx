@@ -5319,16 +5319,16 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	{
 	default:
 	case 0x00:
-		clk = allwnrt113_get_audio0pll1x_freq();
+		clk = t507_get_pll_audio_1x_freq();
 		break;
 	case 0x01:
-		clk = allwnrt113_get_audio0pll2x_freq();
+		clk = t507_get_pll_audio_2x_freq();
 		break;
 	case 0x02:
-		clk = allwnrt113_get_audio0pll4x_freq();
+		clk = t507_get_pll_audio_4x_freq();
 		break;
 	case 0x03:
-		clk = allwnrt113_get_audio0pllhs_freq();
+		clk = t507_get_pll_audio_hs_freq();
 		break;
 	}
 //	//TP();
@@ -5360,7 +5360,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
 
 
-	PRINTF("AudioCodec: allwnrt113_get_audio0pllhs_freq()=%u kHz\n", (unsigned) (allwnrt113_get_audio0pllhs_freq() / 1000));
+	PRINTF("AudioCodec: allwnrt113_get_audio0pllhs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
 	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
 	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_1x_freq() / 1000));
 

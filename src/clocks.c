@@ -2303,6 +2303,7 @@ uint_fast32_t allwnrt113_get_hdmi_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_tcon0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON0_CLK_REG;
@@ -2318,6 +2319,7 @@ uint_fast32_t allwnrt113_get_tcon0_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_tcon1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON1_CLK_REG;
@@ -2334,6 +2336,7 @@ uint_fast32_t allwnrt113_get_tcon1_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_de_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
@@ -2350,6 +2353,7 @@ uint_fast32_t allwnrt113_get_de_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_ce_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->DE_CLK_REG;
@@ -2370,6 +2374,7 @@ uint_fast32_t allwnrt113_get_ce_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_ths_freq(void)
 {
 	static const unsigned dividers [4] = { 1, 2, 4, 6 };
@@ -2384,6 +2389,7 @@ uint_fast32_t allwnrt113_get_ths_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_nand_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->NAND_CLK_REG;
@@ -2470,21 +2476,25 @@ void allwnr_t507_pll_initialize(int forced)
 {
 }
 
+// T507
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
     return REFINFREQ;	// 24 MHz usually
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_rtc32k_freq(void)
 {
     return LSEFREQ;
 }
 
+// T507
 uint_fast32_t allwnr_t507_get_rc16m_freq(void)
 {
     return 16000000u;
 }
 
+// T507
 uint_fast64_t allwnr_t507_get_pll_cpux_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_CPUX_CTRL_REG;
@@ -2628,7 +2638,7 @@ uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1);
 }
 
-uint_fast64_t allwnr_t507_get_pll_audio_x4_freq(void)
+uint_fast64_t t507_get_pll_audio_x4_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_AUDIO_CTRL_REG;
 	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x3F);	// PLL_FACTOR_P
@@ -2641,29 +2651,6 @@ uint_fast64_t allwnr_t507_get_pll_audio_x4_freq(void)
 	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
 	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M0 / M1 / P;
-}
-
-uint_fast64_t allwnr_t507_get_pll_audio_hs_freq(void)
-{
-	const uint_fast32_t pllreg = CCU->PLL_AUDIO_CTRL_REG;
-	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
-	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
-	//	PLL_AUDIO(hs) = 24 MHz*N/M1
-	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
-	//	PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
-	//	PLL_AUDIO(1X) =	24 MHz*N/ M0/M1/P/4
-	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1;
-}
-
-uint_fast32_t allwnr_t507_get_pll_audio_x1_freq(void)
-{
-	return allwnr_t507_get_pll_audio_x4_freq() / 4;
-}
-
-uint_fast32_t allwnr_t507_get_pll_audio_x2_freq(void)
-{
-	return allwnr_t507_get_pll_audio_x4_freq() / 2;
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
@@ -2997,32 +2984,33 @@ uint_fast32_t allwnr_t507_get_ahub_freq(void)
 	default:
 	case 0x00:
 		// 00: PLL_AUDIO(1X)
-		return allwnr_t507_get_pll_audio_x1_freq() / divider;
+		return t507_get_pll_audio_x1_freq() / divider;
 	case 0x01:
 		// 01: PLL_AUDIO(2X)
-		return allwnr_t507_get_pll_audio_x2_freq() / divider;
+		return t507_get_pll_audio_x2_freq() / divider;
 	case 0x02:
 		// 10: PLL_AUDIO(4X)
-		return allwnr_t507_get_pll_audio_x4_freq() / divider;
+		return t507_get_pll_audio_x4_freq() / divider;
 	case 0x03:
 		// 11: PLL_AUDIO(hs)
-		return allwnr_t507_get_pll_audio_hs_freq() / divider;
+		return t507_get_pll_audio_hs_freq() / divider;
 	}
 }
 
-uint_fast32_t allwnrt113_get_audio0pllhs_freq(void)
+uint_fast64_t t507_get_pll_audio_hs_freq(void)
 {
-	// PLL_AUDIO(hs) 24 MHz*N/M1
-	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
-	//const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x0F);
-	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
-	const uint_fast32_t M1 = UINT32_C(1) + ((reg >> 1) & 0x01);
-
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1;
-
+    const uint_fast32_t pllreg = CCU->PLL_AUDIO_CTRL_REG;
+    const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);    // PLL_FACTOR_N
+    const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);    // PLL_INPUT_DIV_M1
+    //    PLL_AUDIO(hs) = 24 MHz*N/M1
+    //    PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
+    //    PLL_AUDIO(2X) = 24 MHz*N/ M0/M1/P/2
+    //    PLL_AUDIO(1X) =    24 MHz*N/ M0/M1/P/4
+    //    The default value of PLL_AUDIO(4X) is 24.5714 MHz.
+    return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / M1;
 }
 
-uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
+uint_fast32_t t507_get_pll_audio_4x_freq(void)
 {
 	// PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
 	const uint_fast32_t reg = CCU->PLL_AUDIO_CTRL_REG;
@@ -3032,17 +3020,16 @@ uint_fast32_t allwnrt113_get_audio0pll4x_freq(void)
 	const uint_fast32_t M0 = UINT32_C(1) + ((reg >> 0) & 0x01);
 
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N / (M0 * M1 * P);
-
 }
 
-uint_fast32_t allwnrt113_get_audio0pll2x_freq(void)
+uint_fast32_t t507_get_pll_audio_2x_freq(void)
 {
-	return allwnrt113_get_audio0pll4x_freq() / 2;
+	return t507_get_pll_audio_4x_freq() / 2;
 }
 
-uint_fast32_t allwnrt113_get_audio0pll1x_freq(void)
+uint_fast32_t t507_get_pll_audio_1x_freq(void)
 {
-	return allwnrt113_get_audio0pll4x_freq() / 4;
+	return t507_get_pll_audio_4x_freq() / 4;
 }
 
 uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void)
@@ -3059,13 +3046,13 @@ uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void)
 	{
 	default:
 	case 0x00:	/* 00: PLL_AUDIO(1X) */
-		return allwnrt113_get_audio0pll1x_freq() / M;
+		return t507_get_pll_audio_1x_freq() / M;
 	case 0x01:	/* 01: PLL_AUDIO(2X) */
-		return allwnrt113_get_audio0pll2x_freq() / M;
+		return t507_get_pll_audio_2x_freq() / M;
 	case 0x02: 	/* 10: PLL_AUDIO(4X) */
-		return allwnrt113_get_audio0pll4x_freq() / M;
+		return t507_get_pll_audio_4x_freq() / M;
 	case 0x03: 	/* 11: PLL_AUDIO(hs) */
-		return allwnrt113_get_audio0pllhs_freq() / M;
+		return t507_get_pll_audio_hs_freq() / M;
 	}
 }
 
@@ -3083,13 +3070,13 @@ uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void)
 	{
 	default:
 	case 0x00:	/* 00: PLL_AUDIO(1X) */
-		return allwnrt113_get_audio0pll1x_freq() / M;
+		return t507_get_pll_audio_1x_freq() / M;
 	case 0x01:	/* 01: PLL_AUDIO(2X) */
-		return allwnrt113_get_audio0pll2x_freq() / M;
+		return t507_get_pll_audio_2x_freq() / M;
 	case 0x02: 	/* 10: PLL_AUDIO(4X) */
-		return allwnrt113_get_audio0pll4x_freq() / M;
+		return t507_get_pll_audio_4x_freq() / M;
 	case 0x03: 	/* 11: PLL_AUDIO(hs) */
-		return allwnrt113_get_audio0pllhs_freq() / M;
+		return t507_get_pll_audio_hs_freq() / M;
 	}
 }
 
