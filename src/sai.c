@@ -5308,7 +5308,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
 	}
 
-	const unsigned long src = 0x02;
+	const unsigned long src = 0x03;
 	//	Clock Source Select
 	//	00: PLL_AUDIO(1X)
 	//	01: PLL_AUDIO(2X)
