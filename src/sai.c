@@ -5294,7 +5294,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
 
-	if (1)
+	if (0)
 	{
 		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
 		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
