@@ -1587,7 +1587,7 @@ static void write32(uintptr_t a, uint32_t v)
 }
 
 static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
-	uint64_t pclk = allwnrt113_get_twi_freq();	//clk_get_rate(pdat->clk);
+	uint64_t pclk = TWIHARD_FREQ;	//clk_get_rate(pdat->clk);
 	uint_fast64_t freq, delta, best = 0x7fffffffffffffffLL;
 	int tm = 5, tn = 0;
 	int m, n;

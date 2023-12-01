@@ -687,7 +687,7 @@
 		} while (0) 
 	#define	TWIHARD_IX x3	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR xTWI3	/* 0 - TWI0, 1: TWI1... */
-
+	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 

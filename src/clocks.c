@@ -2287,6 +2287,13 @@ uint_fast32_t allwnrt113_get_twi_freq(void)
 	return allwnr_a64_get_apb2_freq();
 }
 
+// A64
+// The clock of the TWI is from APB2
+uint_fast32_t allwnrt113_get_s_twi_freq(void)
+{
+	return allwnr_a64_get_apbs2_freq();
+}
+
 uint_fast32_t allwnrt113_get_hdmi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI_CLK_REG;
@@ -3170,6 +3177,13 @@ uint_fast32_t allwnrt113_get_uart_freq(void)
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
 	return allwnr_t507_get_apb2_freq();
+}
+
+// The working clock of S_TWI is APBS2.
+uint_fast32_t allwnrt113_get_s_twi_freq(void)
+{
+	return allwnr_t507_get_apb2_freq();
+	//return allwnr_t507_get_apbs2_freq();
 }
 
 // T507
