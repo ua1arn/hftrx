@@ -2924,8 +2924,8 @@ static unsigned USBD_UAC2_CloclMultiplier_req_48k(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	const uint_fast32_t denominator = FPGADECIMATION;
-	const uint_fast32_t numerator = DDS1_CLK_MUL;
+	const uint_fast32_t denominator = 1;
+	const uint_fast32_t numerator = 1;
 
 	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
@@ -2971,8 +2971,8 @@ static unsigned USBD_UAC2_CloclMultiplier_req_96k(
 	const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 	const uint_fast8_t controlID = HI_BYTE(req->wValue);
 	const uint_fast8_t channelNumber = LO_BYTE(req->wValue);
-	const uint_fast32_t denominator = FPGADECIMATION / 2;
-	const uint_fast32_t numerator = DDS1_CLK_MUL;
+	const uint_fast32_t denominator = 1;
+	const uint_fast32_t numerator = 1;
 
 	//PRINTF("%s: bRequest=%02X, terminalID=%02X controlID=%02X %s\n", __func__, req->bRequest, terminalID, controlID, (req->bmRequest & USB_REQ_TYPE_DIR) ? "IN" : "OUT");
 	if (req->bmRequest & USB_REQ_TYPE_DIR)
