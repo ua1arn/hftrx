@@ -1505,11 +1505,15 @@ static btio16kdmaRS_t btout16k(IRQL_REALTIME, "btout16k", btout16kbuf, ARRAY_SIZ
 static btio8kdmaRS_t btout8k(IRQL_REALTIME, "btout8k", btout8kbuf, ARRAY_SIZE(btout8kbuf));
 static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
+enum { fltout44p1knumStages = 3 };
+static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
+static FLOAT_t fltout44p1kstate [4 * fltout44p1knumStages];	// state buffer and size is always 4 * numStages
+static FLOAT_t fltout44p1kcoeffs [5];
 
 // Заполнение с ресэмплингом буфера данными из btin48k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btin44p1k -> resampler -> btin48k
+// btin48k -> resampler -> btin44p1k
 static bool fetchdata_simple_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
@@ -1537,33 +1541,33 @@ static bool fetchdata_simple_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 // Заполнение с ресэмплингом буфера данными из btout44p1k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btout48k -> resampler -> btout44p1k
+// btout44p1k -> resampler -> btout48k
 static bool fetchdata_simple_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio44p1k_t * addr;
 	if (! btout44p1k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	//printhex(0, addr->buff, sizeof addr->buff);
-	//PRINTF("fetchdata_simple_btout44p1: ndst=%u\n", ndst);
+
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	unsigned dsttop = dstframes - 1;
 	unsigned srctop = srcframes - 1;	// 44100
 	ASSERT(dstframes == BTSSCALE * 480);
 	ASSERT(dstframes >= srcframes);
-	memset(dst, 0, ndst * sizeof * dst);
+
+	ARM_MORPH(arm_fill)(0, dst, ndst);
 	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-
+	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
 	btout44p1k.release_buffer(addr);
 	return true;
 }
@@ -1899,6 +1903,142 @@ int_fast32_t datasize_dmabufferbtin8k(void)
 	return btin8k.get_datasize();
 }
 
+///////////////////////////////
+///
+
+typedef enum // BiQuad filter type for automatic calculation
+{
+	BIQUAD_onepolelp,
+	BIQUAD_onepolehp,
+	BIQUAD_lowpass,
+	BIQUAD_highpass,
+	BIQUAD_bandpass,
+	BIQUAD_notch,
+	BIQUAD_peak,
+	BIQUAD_lowShelf,
+	BIQUAD_highShelf
+} BIQUAD_TYPE;
+
+
+// automatic calculation of the Biquad filter
+static void calcBiquad(BIQUAD_TYPE type, float32_t Fc, float32_t Fs, float32_t Q, float32_t peakGain, float32_t *outCoeffs)
+{
+	FLOAT_t a0, a1, a2, b1, b2, norm;
+
+	FLOAT_t V = POWF(10, fabsf(peakGain) / 20);
+	FLOAT_t K = TANF(M_PI * Fc / Fs);
+	switch (type) {
+	case BIQUAD_onepolelp:
+		b1 = EXPF(-2.0f * M_PI * (Fc / Fs));
+		a0 = 1.0f - b1;
+		b1 = -b1;
+		a1 = a2 = b2 = 0;
+		break;
+
+	case BIQUAD_onepolehp:
+		b1 = -EXPF(-2.0f * M_PI * (0.5f - Fc / Fs));
+		a0 = 1.0f + b1;
+		b1 = -b1;
+		a1 = a2 = b2 = 0;
+		break;
+
+	case BIQUAD_lowpass:
+		norm = 1.0f / (1.0f + K / Q + K * K);
+		a0 = K * K * norm;
+		a1 = 2.0f * a0;
+		a2 = a0;
+		b1 = 2.0f * (K * K - 1.0f) * norm;
+		b2 = (1.0f - K / Q + K * K) * norm;
+		break;
+
+	case BIQUAD_highpass:
+		norm = 1.0f / (1.0f + K / Q + K * K);
+		a0 = 1.0f * norm;
+		a1 = -2.0f * a0;
+		a2 = a0;
+		b1 = 2.0f * (K * K - 1.0f) * norm;
+		b2 = (1.0f - K / Q + K * K) * norm;
+		break;
+
+	case BIQUAD_bandpass:
+		norm = 1.0f / (1.0f + K / Q + K * K);
+		a0 = K / Q * norm;
+		a1 = 0;
+		a2 = -a0;
+		b1 = 2.0f * (K * K - 1.0f) * norm;
+		b2 = (1.0f - K / Q + K * K) * norm;
+		break;
+
+	case BIQUAD_notch:
+		norm = 1.0f / (1.0f + K / Q + K * K);
+		a0 = (1.0f + K * K) * norm;
+		a1 = 2.0f * (K * K - 1.0f) * norm;
+		a2 = a0;
+		b1 = a1;
+		b2 = (1.0f - K / Q + K * K) * norm;
+		break;
+
+	case BIQUAD_peak:
+		if (peakGain >= 0) {
+			norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
+			a0 = (1.0f + V / Q * K + K * K) * norm;
+			a1 = 2.0f * (K * K - 1.0f) * norm;
+			a2 = (1.0f - V / Q * K + K * K) * norm;
+			b1 = a1;
+			b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
+		} else {
+			norm = 1.0f / (1.0f + V / Q * K + K * K);
+			a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
+			a1 = 2.0f * (K * K - 1.0f) * norm;
+			a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
+			b1 = a1;
+			b2 = (1.0f - V / Q * K + K * K) * norm;
+		}
+		break;
+	case BIQUAD_lowShelf:
+		if (peakGain >= 0) {
+			norm = 1.0f / (1.0f + M_SQRT2 * K + K * K);
+			a0 = (1.0f + SQRTF(2.0f * V) * K + V * K * K) * norm;
+			a1 = 2.0f * (V * K * K - 1.0f) * norm;
+			a2 = (1.0f - SQRTF(2.0f * V) * K + V * K * K) * norm;
+			b1 = 2.0f * (K * K - 1.0f) * norm;
+			b2 = (1.0f - M_SQRT2 * K + K * K) * norm;
+		} else {
+			norm = 1.0f / (1.0f + SQRTF(2.0f * V) * K + V * K * K);
+			a0 = (1.0f + M_SQRT2 * K + K * K) * norm;
+			a1 = 2.0f * (K * K - 1.0f) * norm;
+			a2 = (1.0f - M_SQRT2 * K + K * K) * norm;
+			b1 = 2.0f * (V * K * K - 1.0f) * norm;
+			b2 = (1.0f - SQRTF(2.0f * V) * K + V * K * K) * norm;
+		}
+		break;
+	case BIQUAD_highShelf:
+	default:
+		if (peakGain >= 0) {
+			norm = 1.0f / (1.0f + M_SQRT2 * K + K * K);
+			a0 = (V + SQRTF(2.0f * V) * K + K * K) * norm;
+			a1 = 2.0f * (K * K - V) * norm;
+			a2 = (V - SQRTF(2.0f * V) * K + K * K) * norm;
+			b1 = 2.0f * (K * K - 1.0f) * norm;
+			b2 = (1.0f - M_SQRT2 * K + K * K) * norm;
+		} else {
+			norm = 1.0f / (V + SQRTF(2.0f * V) * K + K * K);
+			a0 = (1.0f + M_SQRT2 * K + K * K) * norm;
+			a1 = 2.0f * (K * K - 1.0f) * norm;
+			a2 = (1.0f - M_SQRT2 * K + K * K) * norm;
+			b1 = 2.0f * (K * K - V) * norm;
+			b2 = (V - SQRTF(2.0f * V) * K + K * K) * norm;
+		}
+		break;
+	}
+
+	// save coefficients
+	outCoeffs[0] = a0;
+	outCoeffs[1] = a1;
+	outCoeffs[2] = a2;
+	outCoeffs[3] = -b1;
+	outCoeffs[4] = -b2;
+}
 
 #endif /* WITHUSEUSBBT */
 ///////////////////////////////////////
@@ -3414,7 +3554,12 @@ void buffers_initialize(void)
 
 #endif /* WITHRTS192 */
 
+#if WITHUSEUSBBT
 
+	calcBiquad(BIQUAD_lowpass, 44100 / 2, 48000, 1, 1, fltout44p1kcoeffs);
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, fltout44p1knumStages, fltout44p1kcoeffs, fltout44p1kstate);
+
+#endif /* WITHUSEUSBBT */
 
 #endif /* WITHINTEGRATEDDSP */
 }
