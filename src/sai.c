@@ -5460,9 +5460,12 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 
+	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);
+
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 
 	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 0);	// HUB_EN
@@ -5478,23 +5481,26 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 
 	// Offset 0x310 DAC Analog Control Register
-	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 15) | (UINT32_C(1) << 14);	// DACL_EN, DACR_EN
-	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 13) | (UINT32_C(1) << 11);	// LINEOUTLEN, LINEOUTREN
-	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 12) | (UINT32_C(1) << 10);	// LMUTE, RMUTE
-
-	AUDIO_CODEC->DAC_REG |= 0x1F * (UINT32_C(1) << 0); // LINEOUT volume control
+	AUDIO_CODEC->DAC_REG =
+		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
+//		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
+//		(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE
+//		0x1F * (UINT32_C(1) << 0) | // LINEOUT volume control
+		0;
+//	PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
 
 	// Offset 0x314 MIXER Analog Control Register
-	AUDIO_CODEC->MIXER_REG |= 1 * (UINT32_C(1) << 20);	// DACL_EN
-	AUDIO_CODEC->MIXER_REG |= 1 * (UINT32_C(1) << 16);	// DACR_EN
-
-	AUDIO_CODEC->MIXER_REG |= (UINT32_C(1) << 11);	// LMIXEN
-	AUDIO_CODEC->MIXER_REG |= (UINT32_C(1) << 10);	// RMIXEN
+	AUDIO_CODEC->MIXER_REG =
+//		1 * (UINT32_C(1) << 20) |	// DACL_EN
+//		1 * (UINT32_C(1) << 16) |	// DACR_EN
+//		(UINT32_C(1) << 11) |	// LMIXEN
+//		(UINT32_C(1) << 10) |	// RMIXEN
+		0;
 
 
 	AUDIO_CODEC->RAMP_REG |=
 	   (UINT32_C(1) << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
-	   (UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
+	   //(UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
 	   0;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -5612,10 +5618,12 @@ static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 	if (state)
 	{
 		AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);		// DAC Digital Part Enable
+		//AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 	}
 	else
 	{
 		AUDIO_CODEC->AC_DAC_DPC &= ~ (UINT32_C(1) << 31);	// DAC Digital Part Enable
+		//AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(1) << 4);	// DAC_DRQ_EN
 	}
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	if (state)
