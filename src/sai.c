@@ -5294,10 +5294,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
 
-	if (0)
+	if (1)
 	{
 		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
 		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
+
 		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
 			(N - 1) * (UINT32_C(1) << 8) |
 			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
@@ -5349,16 +5352,17 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	10: PLL_AUDIO(4X)
 	//	11: PLL_AUDIO(hs)
 
-	const unsigned long src_1x = 0x00;
+	const unsigned long src_1x = 0x02;
 	const unsigned long src_4x = 0x02;
 
+	// AudioCodec тактируется от AUDIO_CODEC_1X_CLK_REG
 	const portholder_t codec_clk_1x_reg =
 		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src_1x << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
 	const portholder_t codec_clk_4x_reg =
-		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		//(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src_4x << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
@@ -5461,7 +5465,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 
-	AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 0);	// HUB_EN
+	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 0);	// HUB_EN
 
 
 
@@ -5473,8 +5477,19 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
     ///-------------
 
 
-	// DAC Analog Control Register
+	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 15) | (UINT32_C(1) << 14);	// DACL_EN, DACR_EN
+	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 13) | (UINT32_C(1) << 11);	// LINEOUTLEN, LINEOUTREN
+	AUDIO_CODEC->DAC_REG |= (UINT32_C(1) << 12) | (UINT32_C(1) << 10);	// LMUTE, RMUTE
+
+	AUDIO_CODEC->DAC_REG |= 0x1F * (UINT32_C(1) << 0); // LINEOUT volume control
+
+	// Offset 0x314 MIXER Analog Control Register
+	AUDIO_CODEC->MIXER_REG |= 1 * (UINT32_C(1) << 20);	// DACL_EN
+	AUDIO_CODEC->MIXER_REG |= 1 * (UINT32_C(1) << 16);	// DACR_EN
+
+	AUDIO_CODEC->MIXER_REG |= (UINT32_C(1) << 11);	// LMIXEN
+	AUDIO_CODEC->MIXER_REG |= (UINT32_C(1) << 10);	// RMIXEN
 
 
 	AUDIO_CODEC->RAMP_REG |=
