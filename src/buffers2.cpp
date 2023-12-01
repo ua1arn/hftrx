@@ -1507,7 +1507,7 @@ static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(
 
 
 #define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
-#define RTTY_LPF_STAGES 2
+#define BTAUDIO_LPF_STAGES 2
 #define TRX_SAMPLERATE ARMI2SRATE
 
 #define IIR_BIQUAD_MAX_SECTIONS 15
@@ -1521,11 +1521,10 @@ typedef struct iir_filter {
     double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
 } iir_filter_t;
 
-static iir_filter_t f0;
-enum { fltout44p1knumStages = RTTY_LPF_STAGES };
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
-static FLOAT_t fltout44p1kstate [4 * fltout44p1knumStages];	// state buffer and size is always 4 * numStages
-static FLOAT_t fltout44p1kcoeffs [BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout32k;
+static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout16k;
+static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout8k;
 
 // Заполнение с ресэмплингом буфера данными из btin48k
 // n - требуемое количество samples
@@ -1588,7 +1587,7 @@ static bool fetchdata_RS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
 	btout44p1k.release_buffer(addr);
 	return true;
 }
@@ -1936,147 +1935,11 @@ int_fast32_t datasize_dmabufferbtin8k(void)
 ///////////////////////////////
 ///
 
-typedef enum // BiQuad filter type for automatic calculation
-{
-	BIQUAD_onepolelp,
-	BIQUAD_onepolehp,
-	BIQUAD_lowpass,
-	BIQUAD_highpass,
-	BIQUAD_bandpass,
-	BIQUAD_notch,
-	BIQUAD_peak,
-	BIQUAD_lowShelf,
-	BIQUAD_highShelf
-} BIQUAD_TYPE;
-
-
-// automatic calculation of the Biquad filter
-static void calcBiquad(BIQUAD_TYPE type, float32_t Fc, float32_t Fs, float32_t Q, float32_t peakGain, float32_t *outCoeffs)
-{
-	FLOAT_t a0, a1, a2, b1, b2, norm;
-
-	FLOAT_t V = POWF(10, fabsf(peakGain) / 20);
-	FLOAT_t K = TANF(M_PI * Fc / Fs);
-
-	switch (type) {
-	case BIQUAD_onepolelp:
-		b1 = EXPF(-2.0f * M_PI * (Fc / Fs));
-		a0 = 1.0f - b1;
-		b1 = -b1;
-		a1 = a2 = b2 = 0;
-		break;
-
-	case BIQUAD_onepolehp:
-		b1 = -EXPF(-2.0f * M_PI * (0.5f - Fc / Fs));
-		a0 = 1.0f + b1;
-		b1 = -b1;
-		a1 = a2 = b2 = 0;
-		break;
-
-	case BIQUAD_lowpass:
-		norm = 1.0f / (1.0f + K / Q + K * K);
-		a0 = K * K * norm;
-		a1 = 2.0f * a0;
-		a2 = a0;
-		b1 = 2.0f * (K * K - 1.0f) * norm;
-		b2 = (1.0f - K / Q + K * K) * norm;
-		break;
-
-	case BIQUAD_highpass:
-		norm = 1.0f / (1.0f + K / Q + K * K);
-		a0 = 1.0f * norm;
-		a1 = -2.0f * a0;
-		a2 = a0;
-		b1 = 2.0f * (K * K - 1.0f) * norm;
-		b2 = (1.0f - K / Q + K * K) * norm;
-		break;
-
-	case BIQUAD_bandpass:
-		norm = 1.0f / (1.0f + K / Q + K * K);
-		a0 = K / Q * norm;
-		a1 = 0;
-		a2 = -a0;
-		b1 = 2.0f * (K * K - 1.0f) * norm;
-		b2 = (1.0f - K / Q + K * K) * norm;
-		break;
-
-	case BIQUAD_notch:
-		norm = 1.0f / (1.0f + K / Q + K * K);
-		a0 = (1.0f + K * K) * norm;
-		a1 = 2.0f * (K * K - 1.0f) * norm;
-		a2 = a0;
-		b1 = a1;
-		b2 = (1.0f - K / Q + K * K) * norm;
-		break;
-
-	case BIQUAD_peak:
-		if (peakGain >= 0) {
-			norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
-			a0 = (1.0f + V / Q * K + K * K) * norm;
-			a1 = 2.0f * (K * K - 1.0f) * norm;
-			a2 = (1.0f - V / Q * K + K * K) * norm;
-			b1 = a1;
-			b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-		} else {
-			norm = 1.0f / (1.0f + V / Q * K + K * K);
-			a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
-			a1 = 2.0f * (K * K - 1.0f) * norm;
-			a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-			b1 = a1;
-			b2 = (1.0f - V / Q * K + K * K) * norm;
-		}
-		break;
-	case BIQUAD_lowShelf:
-		if (peakGain >= 0) {
-			norm = 1.0f / (1.0f + M_SQRT2 * K + K * K);
-			a0 = (1.0f + SQRTF(2.0f * V) * K + V * K * K) * norm;
-			a1 = 2.0f * (V * K * K - 1.0f) * norm;
-			a2 = (1.0f - SQRTF(2.0f * V) * K + V * K * K) * norm;
-			b1 = 2.0f * (K * K - 1.0f) * norm;
-			b2 = (1.0f - M_SQRT2 * K + K * K) * norm;
-		} else {
-			norm = 1.0f / (1.0f + SQRTF(2.0f * V) * K + V * K * K);
-			a0 = (1.0f + M_SQRT2 * K + K * K) * norm;
-			a1 = 2.0f * (K * K - 1.0f) * norm;
-			a2 = (1.0f - M_SQRT2 * K + K * K) * norm;
-			b1 = 2.0f * (V * K * K - 1.0f) * norm;
-			b2 = (1.0f - SQRTF(2.0f * V) * K + V * K * K) * norm;
-		}
-		break;
-	case BIQUAD_highShelf:
-	default:
-		if (peakGain >= 0) {
-			norm = 1.0f / (1.0f + M_SQRT2 * K + K * K);
-			a0 = (V + SQRTF(2.0f * V) * K + K * K) * norm;
-			a1 = 2.0f * (K * K - V) * norm;
-			a2 = (V - SQRTF(2.0f * V) * K + K * K) * norm;
-			b1 = 2.0f * (K * K - 1.0f) * norm;
-			b2 = (1.0f - M_SQRT2 * K + K * K) * norm;
-		} else {
-			norm = 1.0f / (V + SQRTF(2.0f * V) * K + K * K);
-			a0 = (1.0f + M_SQRT2 * K + K * K) * norm;
-			a1 = 2.0f * (K * K - 1.0f) * norm;
-			a2 = (1.0f - M_SQRT2 * K + K * K) * norm;
-			b1 = 2.0f * (K * K - V) * norm;
-			b2 = (V - SQRTF(2.0f * V) * K + K * K) * norm;
-		}
-		break;
-	}
-
-	// save coefficients
-	outCoeffs[0] = a0;
-	outCoeffs[1] = a1;
-	outCoeffs[2] = a2;
-	outCoeffs[3] = -b1;
-	outCoeffs[4] = -b2;
-}
-
-
-static void biquad_create(iir_filter_t *filter, int sections)
+static void biquad_create(iir_filter_t *filter, unsigned sect_num)
 {
 	memset(filter, 0, sizeof * filter);
 
-	filter->sections = sections;
+	filter->sections = sect_num;
 	filter->sect_ord = IIR_BIQUAD_SECTION_ORDER;
 
 	memset(filter->a, 0, sizeof filter->a);
@@ -2084,10 +1947,10 @@ static void biquad_create(iir_filter_t *filter, int sections)
 	memset(filter->d, 0, sizeof filter->d);
 }
 
-static void fill_biquad_coeffs(iir_filter_t *filter, float32_t *coeffs, uint8_t sect_num)
+static void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num)
 {
 	//transpose and save coefficients
-	uint16_t ind = 0;
+	unsigned ind = 0;
 	for(uint8_t sect = 0; sect < sect_num; sect++)
 	{
 		coeffs[ind + 0] = filter->b[sect * 3 + 0];
@@ -2099,10 +1962,10 @@ static void fill_biquad_coeffs(iir_filter_t *filter, float32_t *coeffs, uint8_t 
 	}
 }
 
-static void biquad_init_lowpass(struct iir_filter *filter, float32_t fs, float32_t f) {
+static void biquad_init_lowpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t fc) {
 	double *a = filter->a;
 	double *b = filter->b;
-	double w = 2.0 * M_PI * (float64_t)f / (float64_t)fs;
+	double w = 2 * M_PI * fc / fs;
 	double phi, alpha;
 	int i, k;
 	int n;
@@ -3644,13 +3507,49 @@ void buffers_initialize(void)
 
 #if WITHUSEUSBBT
 
-	//calcBiquad(BIQUAD_lowpass, 44100 / 2, 48000, 1, 1, fltout44p1kcoeffs);
-	//RTTY LPF Filter
-	biquad_create(& f0, RTTY_LPF_STAGES);
-	biquad_init_lowpass(& f0, 44100 / 2, 48000);
-	fill_biquad_coeffs(& f0, fltout44p1kcoeffs, RTTY_LPF_STAGES);
 
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, fltout44p1knumStages, fltout44p1kcoeffs, fltout44p1kstate);
+	iir_filter_t f0;
+	const FLOAT_t samplerate = ARMI2SRATE;	// 48 kHz
+	{
+		// 44.1 kHs -> 48 kHz
+		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
+		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+
+		biquad_create(& f0, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 44100 / 2);
+		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, BTAUDIO_LPF_STAGES, coeffs, state);
+	}
+	{
+		// 32 kHs -> 48 kHz
+		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
+		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+
+		biquad_create(& f0, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 32000 / 2);
+		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout32k, BTAUDIO_LPF_STAGES, coeffs, state);
+	}
+	{
+		// 16 kHs -> 48 kHz
+		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
+		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+
+		biquad_create(& f0, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 16000 / 2);
+		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout16k, BTAUDIO_LPF_STAGES, coeffs, state);
+	}
+	{
+		// 8 kHs -> 48 kHz
+		static FLOAT_t state [4 * BTAUDIO_LPF_STAGES];	// state buffer and size is always 4 * numStages
+		static FLOAT_t coeffs [BIQUAD_COEFF_IN_STAGE * BTAUDIO_LPF_STAGES];
+
+		biquad_create(& f0, BTAUDIO_LPF_STAGES);
+		biquad_init_lowpass(& f0, samplerate, 8000 / 2);
+		fill_biquad_coeffs(& f0, coeffs, BTAUDIO_LPF_STAGES);
+		ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout8k, BTAUDIO_LPF_STAGES, coeffs, state);
+	}
 
 #endif /* WITHUSEUSBBT */
 
