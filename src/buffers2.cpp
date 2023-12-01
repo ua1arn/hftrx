@@ -1505,16 +1505,33 @@ static btio16kdmaRS_t btout16k(IRQL_REALTIME, "btout16k", btout16kbuf, ARRAY_SIZ
 static btio8kdmaRS_t btout8k(IRQL_REALTIME, "btout8k", btout8kbuf, ARRAY_SIZE(btout8kbuf));
 static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
-enum { fltout44p1knumStages = 3 };
+
+#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
+#define RTTY_LPF_STAGES 2
+#define TRX_SAMPLERATE ARMI2SRATE
+
+#define IIR_BIQUAD_MAX_SECTIONS 15
+#define IIR_BIQUAD_SECTION_ORDER 2
+
+typedef struct iir_filter {
+    int sections;
+    int sect_ord;
+    double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
+} iir_filter_t;
+
+static iir_filter_t f0;
+enum { fltout44p1knumStages = RTTY_LPF_STAGES };
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
 static FLOAT_t fltout44p1kstate [4 * fltout44p1knumStages];	// state buffer and size is always 4 * numStages
-static FLOAT_t fltout44p1kcoeffs [5];
+static FLOAT_t fltout44p1kcoeffs [BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES];
 
 // Заполнение с ресэмплингом буфера данными из btin48k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btin48k -> resampler -> btin44p1k
-static bool fetchdata_simple_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_RS_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
@@ -1523,14 +1540,17 @@ static bool fetchdata_simple_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 	//unsigned nsrc = ARRAY_SIZE(addr->buff);
 	ASSERT(ndst == BTSSCALE * 480 * 2);
 
-	memset(dst, 0, ndst * sizeof * dst);	// stub
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	unsigned dsttop = ndst / 2 - 1;
 	unsigned srctop = BTSSCALE * nsrc / 2 - 1;
+	//ARM_MORPH(arm_fill)(0, dst, ndst);
 	for (unsigned srci = 0; srci <= srctop; ++ srci)
 	{
 		const unsigned dsti = srci * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 
 	}
 
@@ -1542,7 +1562,7 @@ static bool fetchdata_simple_btin48(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
 // btout44p1k -> resampler -> btout48k
-static bool fetchdata_simple_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+static bool fetchdata_RS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio44p1k_t * addr;
 	if (! btout44p1k.get_readybuffer(& addr))
@@ -1553,9 +1573,10 @@ static bool fetchdata_simple_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned n
 	const unsigned dstframes = ndst / ndstch;
 	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 	unsigned dsttop = dstframes - 1;
-	unsigned srctop = srcframes - 1;	// 44100
-	ASSERT(dstframes == BTSSCALE * 480);
+	unsigned srctop = srcframes - 1;
 	ASSERT(dstframes >= srcframes);
+	ASSERT(nsrcch == 2);
+	ASSERT(ndstch == 2);
 
 	ARM_MORPH(arm_fill)(0, dst, ndst);
 	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
@@ -1572,34 +1593,37 @@ static bool fetchdata_simple_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned n
 	return true;
 }
 
-// Заполнение с ресэмплингом буфера данными из btout44p1k
+// Заполнение с ресэмплингом буфера данными из btout32k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btout48k -> resampler -> btout44p1k
-static bool fetchdata_simple_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+// btout32k -> resampler -> btout48k
+static bool fetchdata_RS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio32k_t * addr;
 	if (! btout32k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	//printhex(0, addr->buff, sizeof addr->buff);
-	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_simple_btout32: ndst=%u\n", ndst);
-	ASSERT(ndst == BTSSCALE * 480 * 2);
-	unsigned dsti;
-	unsigned dsttop = ndst / 2 - 1;
-	unsigned srctop = BTSSCALE * 320 - 1;	// 32000
-	for (dsti = 0; dsti <= dsttop; ++ dsti)
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	unsigned dsttop = dstframes - 1;
+	unsigned srctop = srcframes - 1;
+	ASSERT(dstframes >= srcframes);
+	ASSERT(nsrcch == 2);
+	ASSERT(ndstch == 2);
+
+	ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-
+	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout32k, dst, dst, dstframes);
 	btout32k.release_buffer(addr);
 	return true;
 }
@@ -1607,63 +1631,69 @@ static bool fetchdata_simple_btout32k(FLOAT_t * dst, unsigned ndst, unsigned nds
 // Заполнение с ресэмплингом буфера данными из btout16k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btout48k -> resampler -> btout16k
-static bool fetchdata_simple_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+// btout16k -> resampler -> btout48k
+static bool fetchdata_RS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio16k_t * addr;
 	if (! btout16k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	//printhex(0, addr->buff, sizeof addr->buff);
-	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_simple_btout16: ndst=%u\n", ndst);
-	ASSERT(ndst == BTSSCALE * 480 * ndstch);
-	unsigned dsti;
-	unsigned dsttop = ndst / ndstch - 1;
-	unsigned srctop = BTSSCALE * 160 - 1;	// 16000
-	for (dsti = 0; dsti <= dsttop; ++ dsti)
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	unsigned dsttop = dstframes - 1;
+	unsigned srctop = srcframes - 1;
+	ASSERT(dstframes >= srcframes);
+	ASSERT(nsrcch == 2);
+	ASSERT(ndstch == 2);
+
+	ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 1 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 1 + 0]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-
+	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout16k, dst, dst, dstframes);
 	btout16k.release_buffer(addr);
 	return true;
 }
 
-// Заполнение с ресэмплингом буфера данными из btout16k
+// Заполнение с ресэмплингом буфера данными из btout8k
 // n - требуемое количество samples
 // возвращает признак того, что данные в источнике есть
-// btout48k -> resampler -> btout16k
-static bool fetchdata_simple_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+// btout8k -> resampler -> btout48k
+static bool fetchdata_RS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio8k_t * addr;
 	if (! btout8k.get_readybuffer(& addr))
 		return false;
 	const int16_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	//printhex(0, addr->buff, sizeof addr->buff);
-	//memset(dst, 0, ndst * sizeof * dst);	// stub
-	//PRINTF("fetchdata_simple_btout16: ndst=%u\n", ndst);
-	ASSERT(ndst == BTSSCALE * 480 * ndstch);
-	unsigned dsti;
-	unsigned dsttop = ndst / ndstch - 1;
-	unsigned srctop = BTSSCALE * 80 - 1;	// 8000
-	for (dsti = 0; dsti <= dsttop; ++ dsti)
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
+	unsigned dsttop = dstframes - 1;
+	unsigned srctop = srcframes - 1;
+	ASSERT(dstframes >= srcframes);
+	ASSERT(nsrcch == 1);
+	ASSERT(ndstch == 2);
+
+	ARM_MORPH(arm_fill)(0, dst, ndst);
+	for (unsigned dsti = 0; dsti <= dsttop; ++ dsti)
 	{
 		unsigned srci = dsti * srctop / dsttop;
-		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 1 + 0]);	// получить sample
-		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 1 + 0]);	// получить sample
+		dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
+		dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
 //		dst [dsti * 2 + 0] = get_lout();
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-
+	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout8k, dst, dst, dstframes);
 	btout8k.release_buffer(addr);
 	return true;
 }
@@ -1689,16 +1719,16 @@ static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
 
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
-	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout32k, nsrc, btio32k_t::nch);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout16k, nsrc, btio16k_t::nch);
-	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_simple_btout8k, nsrc, btio8k_t::nch);
+	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch);
+	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout32k, nsrc, btio32k_t::nch);
+	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout16k, nsrc, btio16k_t::nch);
+	//return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_RS_btout8k, nsrc, btio8k_t::nch);
 }
 
-uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
-{
-	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_simple_btin48, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
-}
+//uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
+//{
+//	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_RS_btin48, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
+//}
 
 // Возвращает количество элементов буфера, обработанных за вызов
 static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
@@ -1709,12 +1739,12 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferbtio44p1k(int16_t * b, int16_t ch0, int16_t ch1)
-{
-	b [0] = ch0;
-	b [1] = ch1;
-	return 2;
-}
+//static unsigned putcbf_dmabufferbtio44p1k(int16_t * b, int16_t ch0, int16_t ch1)
+//{
+//	b [0] = ch0;
+//	b [1] = ch1;
+//	return 2;
+//}
 
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -1927,6 +1957,7 @@ static void calcBiquad(BIQUAD_TYPE type, float32_t Fc, float32_t Fs, float32_t Q
 
 	FLOAT_t V = POWF(10, fabsf(peakGain) / 20);
 	FLOAT_t K = TANF(M_PI * Fc / Fs);
+
 	switch (type) {
 	case BIQUAD_onepolelp:
 		b1 = EXPF(-2.0f * M_PI * (Fc / Fs));
@@ -2038,6 +2069,63 @@ static void calcBiquad(BIQUAD_TYPE type, float32_t Fc, float32_t Fs, float32_t Q
 	outCoeffs[2] = a2;
 	outCoeffs[3] = -b1;
 	outCoeffs[4] = -b2;
+}
+
+
+static void biquad_create(iir_filter_t *filter, int sections)
+{
+	memset(filter, 0, sizeof * filter);
+
+	filter->sections = sections;
+	filter->sect_ord = IIR_BIQUAD_SECTION_ORDER;
+
+	memset(filter->a, 0, sizeof filter->a);
+	memset(filter->b, 0, sizeof filter->b);
+	memset(filter->d, 0, sizeof filter->d);
+}
+
+static void fill_biquad_coeffs(iir_filter_t *filter, float32_t *coeffs, uint8_t sect_num)
+{
+	//transpose and save coefficients
+	uint16_t ind = 0;
+	for(uint8_t sect = 0; sect < sect_num; sect++)
+	{
+		coeffs[ind + 0] = filter->b[sect * 3 + 0];
+		coeffs[ind + 1] = filter->b[sect * 3 + 1];
+		coeffs[ind + 2] = filter->b[sect * 3 + 2];
+		coeffs[ind + 3] = -filter->a[sect * 3 + 1];
+		coeffs[ind + 4] = -filter->a[sect * 3 + 2];
+		ind += 5;
+	}
+}
+
+static void biquad_init_lowpass(struct iir_filter *filter, float32_t fs, float32_t f) {
+	double *a = filter->a;
+	double *b = filter->b;
+	double w = 2.0 * M_PI * (float64_t)f / (float64_t)fs;
+	double phi, alpha;
+	int i, k;
+	int n;
+
+	n = filter->sections;
+	for (i = 0; i < n; i += 1) {
+		k = n - i - 1.0;
+		phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
+		alpha = sin(w) * cos(phi);
+
+		b[0] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
+		b[1] = (1.0 - cos(w)) / (1.0 + alpha);
+		b[2] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
+		a[0] = 1.0;
+		a[1] = -2.0 * cos(w) / (1.0 + alpha);
+		a[2] = (1.0 - alpha) / (1.0 + alpha);
+		a += 3;
+		b += 3;
+	}
+
+	for (i = 0; i < (n + 1) * 2; i += 1) {
+		filter->d[i] = 0;
+	}
 }
 
 #endif /* WITHUSEUSBBT */
@@ -3556,7 +3644,12 @@ void buffers_initialize(void)
 
 #if WITHUSEUSBBT
 
-	calcBiquad(BIQUAD_lowpass, 44100 / 2, 48000, 1, 1, fltout44p1kcoeffs);
+	//calcBiquad(BIQUAD_lowpass, 44100 / 2, 48000, 1, 1, fltout44p1kcoeffs);
+	//RTTY LPF Filter
+	biquad_create(& f0, RTTY_LPF_STAGES);
+	biquad_init_lowpass(& f0, 44100 / 2, 48000);
+	fill_biquad_coeffs(& f0, fltout44p1kcoeffs, RTTY_LPF_STAGES);
+
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T_init)(& fltout44p1k, fltout44p1knumStages, fltout44p1kcoeffs, fltout44p1kstate);
 
 #endif /* WITHUSEUSBBT */
