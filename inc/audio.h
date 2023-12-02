@@ -534,9 +534,7 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right);
 void recordsampleUAC(FLOAT_t left, FLOAT_t right);
 void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
 
-#if WITHINTEGRATEDDSP
 void dsp_fillphones(unsigned nsamples);			// перед передачей по DMA в аудиокодек
-#endif /* WITHINTEGRATEDDSP */
 
 typedef FLOAT_t speexel_t;
 uint_fast8_t takespeexready(speexel_t * * dest);
@@ -589,8 +587,6 @@ void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right);	// Сохранение 
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv);
 void process_dmabuffer32rx(const IFADCvalue_t * buff);
 
-#if WITHAFEQUALIZER
-
 enum {
 	AF_EQUALIZER_BANDS = 3,		// число полос
 	AF_EQUALIZER_BASE = 8,		// предел регулировки
@@ -611,7 +607,30 @@ void hamradio_set_geqrx(uint_fast8_t v);
 
 void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 
-#endif /* WITHAFEQUALIZER */
+//////////////////////////
+/// IIR
+
+#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
+
+#define IIR_BIQUAD_MAX_SECTIONS 15
+#define IIR_BIQUAD_SECTION_ORDER 2
+
+typedef struct iir_filter {
+    int sections;
+    int sect_ord;
+    double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
+} iir_filter_t;
+
+void biquad_create(iir_filter_t *filter, unsigned sect_num);
+void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num);
+
+void biquad_zero(iir_filter_t *filter);
+void biquad_init_lowpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t fc);
+void biquad_init_bandpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
+void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
+void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA
 

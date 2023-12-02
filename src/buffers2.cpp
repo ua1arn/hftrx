@@ -1495,21 +1495,6 @@ static btio8kdmaRS_t btout8k(IRQL_REALTIME, "btout8k", btout8kbuf, ARRAY_SIZE(bt
 static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
 
-#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
-#define BTAUDIO_LPF_STAGES 2
-#define TRX_SAMPLERATE ARMI2SRATE
-
-#define IIR_BIQUAD_MAX_SECTIONS 15
-#define IIR_BIQUAD_SECTION_ORDER 2
-
-typedef struct iir_filter {
-    int sections;
-    int sect_ord;
-    double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
-    double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
-    double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
-} iir_filter_t;
-
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout32k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout16k;
@@ -1923,62 +1908,6 @@ int_fast32_t datasize_dmabufferbtin8k(void)
 
 ///////////////////////////////
 ///
-
-static void biquad_create(iir_filter_t *filter, unsigned sect_num)
-{
-	memset(filter, 0, sizeof * filter);
-
-	filter->sections = sect_num;
-	filter->sect_ord = IIR_BIQUAD_SECTION_ORDER;
-
-	memset(filter->a, 0, sizeof filter->a);
-	memset(filter->b, 0, sizeof filter->b);
-	memset(filter->d, 0, sizeof filter->d);
-}
-
-static void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num)
-{
-	//transpose and save coefficients
-	unsigned ind = 0;
-	for(uint8_t sect = 0; sect < sect_num; sect++)
-	{
-		coeffs[ind + 0] = filter->b[sect * 3 + 0];
-		coeffs[ind + 1] = filter->b[sect * 3 + 1];
-		coeffs[ind + 2] = filter->b[sect * 3 + 2];
-		coeffs[ind + 3] = -filter->a[sect * 3 + 1];
-		coeffs[ind + 4] = -filter->a[sect * 3 + 2];
-		ind += 5;
-	}
-}
-
-static void biquad_init_lowpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t fc) {
-	double *a = filter->a;
-	double *b = filter->b;
-	double w = 2 * M_PI * fc / fs;
-	double phi, alpha;
-	int i, k;
-	int n;
-
-	n = filter->sections;
-	for (i = 0; i < n; i += 1) {
-		k = n - i - 1.0;
-		phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
-		alpha = sin(w) * cos(phi);
-
-		b[0] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
-		b[1] = (1.0 - cos(w)) / (1.0 + alpha);
-		b[2] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
-		a[0] = 1.0;
-		a[1] = -2.0 * cos(w) / (1.0 + alpha);
-		a[2] = (1.0 - alpha) / (1.0 + alpha);
-		a += 3;
-		b += 3;
-	}
-
-	for (i = 0; i < (n + 1) * 2; i += 1) {
-		filter->d[i] = 0;
-	}
-}
 
 #endif /* WITHUSEUSBBT */
 ///////////////////////////////////////
@@ -3497,6 +3426,7 @@ void buffers_initialize(void)
 #if WITHUSEUSBBT
 
 
+	#define BTAUDIO_LPF_STAGES 2
 	iir_filter_t f0;
 	const FLOAT_t samplerate = ARMI2SRATE;	// 48 kHz
 	{
