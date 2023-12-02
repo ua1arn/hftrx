@@ -747,26 +747,15 @@ public:
 // Система буферизации аудиоданных
 //
 
-#if 1
-	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
-	//enum { SKIPPEDBLOCKS = 4000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
-	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 2000 сэмплов
-	enum { SKIPPEDBLOCKS = 2000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
-
-#else
-	// исправляемая погрешность = 0.1% - один сэмпл добавить/убрать на 1000 сэмплов
-	enum { SKIPPEDBLOCKS = 1000 / (DMABUFFSIZE16RX / DMABUFFSTEP16RX) };
-#endif
-
 enum { CNT16RX = DMABUFFSIZE16RX / DMABUFFSTEP16RX };
 enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 enum { CNT16MONI = DMABUFFSIZE16MONI / DMABUFFSTEP16MONI };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 //enum { CNT32RTS96 = DMABUFFSIZE32RTS96 / DMABUFFSTEP32RTS96 };
-enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
-enum { MIKELEVEL = 6 };
-enum { PHONESLEVEL = 6 };
+//enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
+//enum { MIKELEVEL = 6 };
+//enum { PHONESLEVEL = 6 };
 
 // Denoise operations
 
@@ -1622,7 +1611,7 @@ static bool fetchdata_RS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout32k, dst, dst, dstframes);
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout32k, dst, dst, dstframes);
 	btout32k.release_buffer(addr);
 	return true;
 }
@@ -1657,7 +1646,7 @@ static bool fetchdata_RS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch,
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout16k, dst, dst, dstframes);
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout16k, dst, dst, dstframes);
 	btout16k.release_buffer(addr);
 	return true;
 }
@@ -1692,7 +1681,7 @@ static bool fetchdata_RS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, 
 //		dst [dsti * 2 + 1] = get_rout();
 
 	}
-	//ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout8k, dst, dst, dstframes);
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout8k, dst, dst, dstframes);
 	btout8k.release_buffer(addr);
 	return true;
 }
