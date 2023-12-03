@@ -82,6 +82,8 @@ void gt911_set_reg(uint_fast16_t reg)
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
 	i2c_write(reg & 0xFF);
+	i2c_waitsend();
+	i2c_stop();
 #endif
 }
 
@@ -113,6 +115,7 @@ void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 		}
 		i2c_read(buf ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 	}
+	i2c_stop();
 #endif
 }
 
@@ -126,6 +129,8 @@ void gt911_write_reg(uint_fast16_t reg, uint8_t val)
 	i2c_write(reg >> 8);
 	i2c_write(reg & 0xFF);
 	i2c_write(val);
+	i2c_waitsend();
+	i2c_stop();
 #endif
 }
 

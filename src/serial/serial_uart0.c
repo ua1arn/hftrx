@@ -136,7 +136,6 @@
 
 	void nmea_parser0_init(void)
 	{
-		NMEA_INITIALIZE();
 		serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 

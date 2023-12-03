@@ -1169,6 +1169,11 @@ static void ALLW_GPIO_IRQ_Handler_GPIOD(void)
 		stmpe811_interrupt_handler();
 #endif /* BOARD_GPIOD_STMPE811_INT_PIN */
 
+#if defined (BOARD_PPSIN_BIT) && WITHNMEA
+	if ((status & BOARD_PPSIN_BIT) != 0)
+		spool_nmeapps();
+#endif /* defined (BOARD_PPSIN_BIT) && WITHNMEA */
+
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOE(void)

@@ -4622,7 +4622,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(000, glob_tx);	// tx & ant 1-2
 
 		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 		spi_unselect(target);
 	}
 }

@@ -245,6 +245,11 @@ void nmeagnss_onrxchar(uint_fast8_t c)
 	LowerIrql(oldIrql);
 }
 
+void nmeagnss_sendchar(void * ctx)
+{
+
+}
+
 /* user-mode callback */
 static void gnss_spool(void * ctx)
 {
@@ -292,7 +297,10 @@ void nmeagnss_initialize(void)
 	HARDWARE_NMEA_SET_SPEED(baudrate);
 	HARDWARE_NMEA_ENABLERX(1);
 	HARDWARE_NMEA_ENABLETX(0);
+	NMEA_INITIALIZE();
+#if CPUSTYLE_XC7Z
 	nmea_parser0_init();
+#endif /* CPUSTYLE_XC7Z */
 
 #endif /*  ! LINUX_SUBSYSTEM */
 }
