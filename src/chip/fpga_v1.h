@@ -8,7 +8,8 @@
 
 extern const phase_t phase_0;
 
-#define FPGA_SPIMODE SPIC_MODE3
+#define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
+#define FPGAREG_V1_SPIMODE		SPIC_MODE3
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
 #define FPGA_DECODE_NCO1	(1u << 1)
@@ -24,7 +25,7 @@ board_fpga1_spi_send_frame(
 	unsigned int size
 	)
 {
-	prog_spi_io(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, FPGAREG_V1_SPISPEED, FPGAREG_V1_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
 }
 
 // Read a frame of bytes via SPI

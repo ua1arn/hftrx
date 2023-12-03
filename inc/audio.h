@@ -605,7 +605,7 @@ void board_set_equalizer_tx_gains(const uint_fast8_t * p);
 uint_fast8_t hamradio_get_geqrx(void);
 void hamradio_set_geqrx(uint_fast8_t v);
 
-void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
+void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
 
 //////////////////////////
 /// IIR
