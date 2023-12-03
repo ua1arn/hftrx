@@ -839,7 +839,7 @@ void user_uart5_ontxchar(void * ctx);
 
 #endif /* WITHKEYBOARD */
 
-#if WITHBOOT
+#if WITHISBOOTLOADER
 	// I2C/TWI
 	// BOOTLOASER version
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
