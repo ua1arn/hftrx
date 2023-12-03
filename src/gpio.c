@@ -1380,7 +1380,9 @@ void gpioX_setstate(
 	static void 
 	stm32f10x_pioX_onchangeinterrupt(portholder_t ipins,
 			portholder_t raise, portholder_t fall,
-			portholder_t portcode, uint32_t priority)
+			portholder_t portcode, uint32_t priority,
+			LIST_ENTRY * head, einthandler_t * h
+			)
 	{
 		//const portholder_t portcode = AFIO_EXTICR1_EXTI0_PB;	// PORT B
 		RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;     //включить тактирование альтернативных функций
@@ -1487,7 +1489,8 @@ void gpioX_setstate(
 			portholder_t raise, portholder_t fall,
 			portholder_t portcode, /* 0x00: PAxx, 0x01: PBxx, .. 0x0a: PKxx */
 			uint32_t priority,
-			uint_fast8_t targetcpu
+			uint_fast8_t targetcpu,
+			LIST_ENTRY * head, einthandler_t * h
 			)
 	{
 		// CPU1 = MPU and CPU2 = MCU
@@ -10231,7 +10234,6 @@ arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
-
 
 #elif (CPUSTYLE_A64)
 

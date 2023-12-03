@@ -285,11 +285,13 @@
 			static einthandler_t h2; \
 			arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER_BITS, GPIO_CFG_EINT); \
 			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1, spool_encinterrupt); \
+			einthandler_initialize(& h1, BOARD_GPIOA_ENCODER_BITS, spool_encinterrupt); \
+			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/*arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENCODER2_BITS); \
 			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER2_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(0 * BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2, spool_encinterrupt2); \
+			einthandler_initialize(& h2, 0*BOARD_GPIOA_ENCODER2_BITS, spool_encinterrupt2); \
+			arm_hardware_pioa_onchangeinterrupt(0*BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
 #endif
