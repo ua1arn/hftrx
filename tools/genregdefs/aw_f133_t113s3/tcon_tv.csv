@@ -30,3 +30,6 @@
 #regdef; TV_DATA_IO_TRI0_REG; 0x0338; TCON Data IO Enable Control0
 #regdef; TV_DATA_IO_TRI1_REG; 0x033C; TCON Data IO Enable Control1
 #regdef; TV_PIXELDEPTH_MODE_REG; 0x0340; TV Pixeldepth Mode Control Register
+
+#regdef; padding 0; 0x01000; set size
+

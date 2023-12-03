@@ -1739,7 +1739,8 @@ typedef struct TCON_LCD_Type
              uint32_t reserved_0x800 [0x01FD];
     volatile uint32_t LCD_3D_FIFO_BIST_REG;           /*!< Offset 0xFF4 LCD 3D FIFO Bist Register */
     volatile uint32_t LCD_TRI_FIFO_BIST_REG;          /*!< Offset 0xFF8 LCD Trigger FIFO Bist Register */
-} TCON_LCD_TypeDef; /* size of structure = 0xFFC */
+             uint32_t reserved_0xFFC;
+} TCON_LCD_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief TCON_TV
  */
@@ -1785,7 +1786,8 @@ typedef struct TCON_TV_Type
     volatile uint32_t TV_DATA_TRI0_REG;               /*!< Offset 0x338 TV Data IO Trigger0 Register */
     volatile uint32_t TV_DATA_TRI1_REG;               /*!< Offset 0x33C TV Data IO Trigger1 Register */
     volatile uint32_t TV_PIXELDEPTH_MODE_REG;         /*!< Offset 0x340 TV Pixel */
-} TCON_TV_TypeDef; /* size of structure = 0x344 */
+             uint32_t reserved_0x344 [0x032F];
+} TCON_TV_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief THS
  */

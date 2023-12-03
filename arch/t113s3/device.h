@@ -2326,7 +2326,8 @@ typedef struct TCON_LCD_Type
     volatile uint32_t LCD_SLAVE_STOP_POS_REG;         /*!< Offset 0x238 LCD Slave Stop Position Register */
              uint32_t reserved_0x23C [0x0071];
     volatile uint32_t LCD_GAMMA_TABLE_REG [0x100];    /*!< Offset 0x400 LCD Gamma Table Register */
-} TCON_LCD_TypeDef; /* size of structure = 0x800 */
+             uint32_t reserved_0x800 [0x0200];
+} TCON_LCD_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief TCON_TV
  */
@@ -2372,7 +2373,8 @@ typedef struct TCON_TV_Type
     volatile uint32_t TV_DATA_IO_TRI0_REG;            /*!< Offset 0x338 TCON Data IO Enable Control0 */
     volatile uint32_t TV_DATA_IO_TRI1_REG;            /*!< Offset 0x33C TCON Data IO Enable Control1 */
     volatile uint32_t TV_PIXELDEPTH_MODE_REG;         /*!< Offset 0x340 TV Pixeldepth Mode Control Register */
-} TCON_TV_TypeDef; /* size of structure = 0x344 */
+             uint32_t reserved_0x344 [0x032F];
+} TCON_TV_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief THS
  */

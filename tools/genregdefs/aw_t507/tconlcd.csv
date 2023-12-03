@@ -53,6 +53,7 @@
 #regdef; LCD_GAMMA_TABLE_REG; 0x0400 256; LCD Gamma Table Register 0x0400-0x07FF
 #regdef; LCD_3D_FIFO_BIST_REG; 0x0FF4; LCD 3D FIFO Bist Register
 #regdef; LCD_TRI_FIFO_BIST_REG; 0x0FF8; LCD Trigger FIFO Bist Register
+#regdef; padding 0; 0x01000; set size
 
 #type; DISP_IF_TOP; display interface top (DISP_IF_TOP)
 
