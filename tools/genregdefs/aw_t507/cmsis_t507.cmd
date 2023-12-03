@@ -1,7 +1,7 @@
 SET CONVERTER=..\Debug\genregdefs.exe
 SET OUTFILE=..\..\..\arch\aw_t507\device.h
 SET FILELIST= ^
-	ccu.csv prcm.csv gic.csv gpio.csv ^
+	ccu.csv sid.csv prcm.csv gic.csv gpio.csv ^
 	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
 	emac.csv gpu.csv ^
 	uart.csv r_can.csv spi.csv twi.csv smhc.csv scr.csv timer.csv pwm.csv ^
