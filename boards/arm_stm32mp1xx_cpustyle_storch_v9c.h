@@ -397,9 +397,10 @@
 		#define BOARD_PPSIN_BIT (UINT32_C(1) << 14)		/* PD7 - PPS signal from GPS */
 
 		#define NMEA_INITIALIZE() do { \
+			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_PPSIN_BIT); \
 			arm_hardware_piod_updown(0, BOARD_PPSIN_BIT); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 		} while (0)
 
 #endif /* WITHLFM */
