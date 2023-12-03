@@ -160,11 +160,11 @@
 	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
+	#define WITHUSBHW_EHCI_IRQ	USBH_EHCI_IRQn
 	#define WITHUSBHW_EHCI_IX	0
 
-	#define WITHUSBHW_OHCI		USB1_OHCI
-	#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
+	#define WITHUSBHW_OHCI		USB1HSFSP2_BASE
+	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
 	#define WITHUSBHW_OHCI_IX	0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */

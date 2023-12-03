@@ -27,6 +27,7 @@
 
 #if WITHTINYUSB
 #include "formats.h"
+#include "gpio.h"
 //#include "bsp/board.h"
 
 #include "tusb.h"

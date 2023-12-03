@@ -16,6 +16,12 @@
 
 static 	LIST_ENTRY einthead [26];	// a..z lists
 
+void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler)
+{
+	eih->mask = mask;
+	eih->handler = handler;
+}
+
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYLE_ALLWINNER
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 portholder_t
@@ -1066,12 +1072,6 @@ static void gpioX_updownoff(
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
 
 	gpioX_unlock(gpio, oldIrql);
-}
-
-void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler)
-{
-	eih->mask = mask;
-	eih->handler = handler;
 }
 
 /* Вызов обработчика для указанных битов порта */

@@ -61,15 +61,12 @@ OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 RTOSXDIR = $(CMSISDIR)/RTOS2
 LUPNGDIR = $(PRJROOT)/lib/LuPng
-TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -141,13 +138,22 @@ DINCDIR += $(PRJROOT)/lvgl/src
 endif
 
 ifeq (1, 1)
-# ST USB
-DINCDIR += $(MDLWUSBDIR)/Core/Inc $(MDLWHOSTDIR)/Core/Inc
-SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+# ST USB DEVICE
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+DINCDIR += $(MDLWUSBDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR)
 endif
 
 ifeq (1, 0)
+# ST USB HOST
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+DINCDIR += $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWHOSTDIR)
+endif
+
+ifeq (1, 1)
 # tinyusb
+TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
 SRCDIRS += $(TINYUSBDIR)/src
 DINCDIR += $(TINYUSBDIR)/src
 endif
@@ -160,6 +166,7 @@ endif
 
 ifeq (1, 0)
 # LwIP
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 DINCDIR += \
 	$(LWIPDIR)/src/include \
@@ -170,6 +177,7 @@ endif
 ifeq (1, 0)
 # OpenVG
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
 SRCDIRS += $(OPENVGDIR)/src
 DINCDIR += \
 	$(OPENVGDIR)/include/VG \
