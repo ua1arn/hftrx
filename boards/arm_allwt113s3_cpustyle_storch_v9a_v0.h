@@ -253,12 +253,16 @@
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
+		static einthandler_t h1; \
+		static einthandler_t h2; \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupt); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupt2); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 	} while (0)
 
 #endif

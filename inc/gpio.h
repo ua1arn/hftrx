@@ -22,6 +22,8 @@ typedef struct einthandler
 	eintcb_t handler;
 } einthandler_t;
 
+void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler);
+
 #if CPUSTYLE_STM32MP1
 
 	#define BSRR_S(v) ((v) * GPIO_BSRR_BS0)	/* Преобразование значения для установки бита в регистре */
@@ -440,18 +442,18 @@ void arm_hardware_piob_periphd(portholder_t pins);		// выводы присое
 void arm_hardware_pioa_only(portholder_t pins);		// выводы присоединены к PIO
 void arm_hardware_piob_only(portholder_t pins);		// выводы присоединены к PIO
 
-void arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pioj_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_piok_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pioz_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb);
+void arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_pioj_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_piok_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
+void arm_hardware_pioz_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
 
 void arm_hardware_pioa_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piob_altfn2(portholder_t opins, unsigned af);
@@ -586,19 +588,19 @@ void arm_hardware_pio10_alternative(portholder_t iopins, unsigned alt);
 void arm_hardware_pio11_alternative(portholder_t iopins, unsigned alt);
 
 // R7S721 pin change interrupts
-void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);
-void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);	// RZ/A1H
-void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t cb);	// RZ/A1H
+void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);
+void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);	// RZ/A1H
+void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h);	// RZ/A1H
 
 void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void));
 

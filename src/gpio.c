@@ -1068,6 +1068,12 @@ static void gpioX_updownoff(
 	gpioX_unlock(gpio, oldIrql);
 }
 
+void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler)
+{
+	eih->mask = mask;
+	eih->handler = handler;
+}
+
 /* Вызов обработчика для указанных битов порта */
 static void
 gpioX_invokeinterrupt(
@@ -1186,7 +1192,7 @@ gpioX_onchangeinterrupt(
 		uint32_t priority,
 		uint_fast8_t targetcpu,
 		void (* group_handler)(void),
-		LIST_ENTRY * head, einthandler_t * h, eintcb_t cb
+		LIST_ENTRY * head, einthandler_t * h
 		)
 {
 	unsigned pos;
@@ -1244,7 +1250,6 @@ gpioX_onchangeinterrupt(
 		/* Регистрация обработчика для указанных битов порта */
 		arm_hardware_disable_handler(int_id);
 		h->mask = ipins;
-		h->handler = cb;
 		InsertHeadList(head, & h->item);
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 		break;
@@ -9869,7 +9874,7 @@ arm_hardware_pioz_updownoff(portholder_t ipins)
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -9892,31 +9897,31 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	(void) PIOA->PIO_ISR; // consume interrupt request
 	PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
-	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, tgcpu, & einthead ['A' - 'A'], h, cb);
+	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, tgcpu, & einthead ['A' - 'A'], h);
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, & einthead ['A' - 'A'], h, cb);	// PORT A
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, & einthead ['A' - 'A'], h);	// PORT A
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, & einthead ['A' - 'A'], h, cb);	// PORT A
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PA, priority, & einthead ['A' - 'A'], h);	// PORT A
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, tgcpu, & einthead ['A' - 'A'], h, cb);	// PORT A
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, tgcpu, & einthead ['A' - 'A'], h);	// PORT A
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h, cb);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h);	// PORT A
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h, cb);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, PA_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h);	// PORT A
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h, cb);	// PORT A
+	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h);	// PORT A
 
 #elif CPUSTYLE_VM14
 	//#warning Undefined CPUSTYLE_VM14
@@ -9939,7 +9944,7 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -9951,29 +9956,29 @@ arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, & einthead ['B' - 'A'], h, cb);	// PORT B
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PB, priority, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, & einthead ['B' - 'A'], h, cb);	// PORT B
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PB, priority, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, tgcpu, & einthead ['B' - 'A'], h, cb);	// PORT B
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PB, priority, tgcpu, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h, cb);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h, cb);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h, cb);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif CPUSTYLE_VM14
 	//#warning Undefined CPUSTYLE_VM14
@@ -9996,7 +10001,7 @@ arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10008,29 +10013,29 @@ arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, & einthead ['C' - 'A'], h, cb);	// PORT C
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PC, priority, & einthead ['C' - 'A'], h);	// PORT C
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, & einthead ['C' - 'A'], h, cb);	// PORT C
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PC, priority, & einthead ['C' - 'A'], h);	// PORT C
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, tgcpu, & einthead ['C' - 'A'], h, cb);	// PORT C
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PC, priority, tgcpu, & einthead ['C' - 'A'], h);	// PORT C
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h, cb);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h);	// PORT C
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOC, GPIOINTC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h, cb);	// PORT C
+	//gpioX_onchangeinterrupt(GPIOC, GPIOINTC, PC_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h);	// PORT C
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h, cb);	// PORT C
+	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h);	// PORT C
 
 #elif CPUSTYLE_VM14
 	//#warning Undefined CPUSTYLE_VM14
@@ -10052,7 +10057,7 @@ arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10064,32 +10069,32 @@ arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, & einthead ['D' - 'A'], h, cb);	// PORT D
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PD, priority, & einthead ['D' - 'A'], h);	// PORT D
 
 #elif CPUSTYLE_STM32L0XX
 
-	//stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, & einthead ['D' - 'A'], h, cb);	// PORT D
+	//stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, & einthead ['D' - 'A'], h);	// PORT D
 	#warning must be implemented
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, & einthead ['D' - 'A'], h, cb);	// PORT D
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PD, priority, & einthead ['D' - 'A'], h);	// PORT D
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, tgcpu, & einthead ['D' - 'A'], h, cb);	// PORTD
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, tgcpu, & einthead ['D' - 'A'], h);	// PORTD
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h, cb);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h);	// PORT D
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOD, GPIOINTD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h, cb);	// PORT D
+	//gpioX_onchangeinterrupt(GPIOD, GPIOINTD, PD_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h);	// PORT D
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h, cb);	// PORT D
+	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h);	// PORT D
 
 #elif CPUSTYLE_VM14
 	//#warning Undefined CPUSTYLE_VM14
@@ -10110,7 +10115,7 @@ arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10122,27 +10127,27 @@ arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, & einthead ['E' - 'A'], h, cb);	// PORT E
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PE, priority, & einthead ['E' - 'A'], h);	// PORT E
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, & einthead ['E' - 'A'], h, cb);	// PORT E
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PE, priority, & einthead ['E' - 'A'], h);	// PORT E
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, tgcpu, & einthead ['E' - 'A'], h, cb);	// PORT E
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, tgcpu, & einthead ['E' - 'A'], h);	// PORT E
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h, cb);	// PORT E
+	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h, cb);	// PORT E
+	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
 
 #elif (CPUSTYLE_T507)
 
-	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h, cb);	// PORT E
+	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10156,7 +10161,7 @@ arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10168,27 +10173,27 @@ arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, tgcpu, & einthead ['F' - 'A'], h, cb);	// PORT F
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PF, priority, tgcpu, & einthead ['F' - 'A'], h);	// PORT F
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, & einthead ['F' - 'A'], h, cb);	// PORT F
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, & einthead ['F' - 'A'], h);	// PORT F
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, tgcpu, & einthead ['F' - 'A'], h, cb);	// PORT F
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, tgcpu, & einthead ['F' - 'A'], h);	// PORT F
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h, cb);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h);	// PORT F
 
 #elif (CPUSTYLE_A64)
 
-	//gpioX_onchangeinterrupt(GPIOF, GPIOINTF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h, cb);	// PORT F
+	//gpioX_onchangeinterrupt(GPIOF, GPIOINTF, PF_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h);	// PORT F
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h, cb);	// PORT F
+	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h);	// PORT F
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10201,7 +10206,7 @@ arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -10213,28 +10218,28 @@ arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, tgcpu, & einthead ['G' - 'A'], h, cb);	// PORT G
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PG, priority, tgcpu, & einthead ['G' - 'A'], h);	// PORT G
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, & einthead ['G' - 'A'], h, cb);	// PORT G
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, & einthead ['G' - 'A'], h);	// PORT G
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, tgcpu, & einthead ['G' - 'A'], h, cb);	// PORT G
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, tgcpu, & einthead ['G' - 'A'], h);	// PORT G
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h, cb);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
 
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h, cb);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, PG_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h, cb);	// PORT G
+	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10248,31 +10253,31 @@ arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void 
-arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu, & einthead ['H' - 'A'], h, cb);	// PORT H
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu, & einthead ['H' - 'A'], h);	// PORT H
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, & einthead ['H' - 'A'], h, cb);	// PORT H
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, & einthead ['H' - 'A'], h);	// PORT H
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, tgcpu, & einthead ['H' - 'A'], h, cb);	// PORT H
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PH, priority, tgcpu, & einthead ['H' - 'A'], h);	// PORT H
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h, cb);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h);	// PORT H
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h, cb);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h);	// PORT H
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h, cb);	// PORT H
+	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h);	// PORT H
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -10286,31 +10291,31 @@ arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 // эти функции не меняют программирование выводов (на ввод или на вывод),
 // только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
 void
-arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h, eintcb_t cb)
+arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
 {
 #if CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu, & einthead ['I' - 'A'], h, cb);	// PORT I
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu, & einthead ['I' - 'A'], h);	// PORT I
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, & einthead ['I' - 'A'], h, cb);	// PORT I
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, & einthead ['I' - 'A'], h);	// PORT I
 
 #elif CPUSTYLE_STM32MP1
 
-	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PI, priority, tgcpu, & einthead ['I' - 'A'], h, cb);	// PORT I
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PI, priority, tgcpu, & einthead ['I' - 'A'], h);	// PORT I
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h, cb);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h);	// PORT I
 
 #elif (CPUSTYLE_A64)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h, cb);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, PI_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h);	// PORT I
 
 #elif (CPUSTYLE_T507)
 
-	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h, cb);	// PORT I
+	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h);	// PORT I
 
 #else
 	#error Undefined CPUSTYLE_XXX

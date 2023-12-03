@@ -247,10 +247,12 @@
 		static einthandler_t h2; \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1, spool_encinterrupt); \
+		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupt); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2, spool_encinterrupt2); \
+		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupt2); \
+		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 	} while (0)
 
 	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
@@ -993,9 +995,11 @@
 	#define BOARD_STMPE811_RESET_PIN (UINT32_C(1) << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
+		static einthandler_t h; \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_STMPE811_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_STMPE811_INT_PIN, 0); \
-		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_STMPE811_INT_PIN, 1 * BOARD_GPIOE_STMPE811_INT_PIN, 0 * BOARD_GPIOE_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		einthandler_initialize(& h, 0 * BOARD_GPIOE_STMPE811_INT_PIN, stmpe811_interrupt_handler); \
+		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_STMPE811_INT_PIN, 1 * BOARD_GPIOE_STMPE811_INT_PIN, 0 * BOARD_GPIOE_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 	} while (0)
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
@@ -1025,8 +1029,10 @@
 	} while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
+		static einthandler_t h; \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_GT911_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_GT911_INT_PIN, 0); \
+		einthandler_initialize(& h, 0 * gt911_interrupt_handler); \
 		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_GT911_INT_PIN, 1 * BOARD_GPIOE_GT911_INT_PIN, 0 * BOARD_GPIOE_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 	//gt911_interrupt_handler
