@@ -280,12 +280,16 @@
 
 	#define ENCODER_INITIALIZE() \
 		do { \
+			static einthandler_t h1; \
+			static einthandler_t h2; \
 			arm_hardware_piog_inputs(ENCODER_BITS); \
 			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupt); \
+			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			einthandler_initialize(& h2, 0*ENCODER2_BITS, spool_encinterrupt2); \
+			arm_hardware_piog_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
 #endif

@@ -152,10 +152,20 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
 
+	#define WITHTINYUSB 1
+	#define BOARD_TUH_RHPORT 1
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW_EHCI		USB1_EHCI
+
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHOHCIHW_OHCIPORT 0
+
+	#define WITHUSBHW_EHCI		USB1_EHCI
+	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
+	#define WITHUSBHW_EHCI_IX	0
+
+	#define WITHUSBHW_OHCI		USB1_OHCI
+	#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
+	#define WITHUSBHW_OHCI_IX	0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -288,12 +298,16 @@
 
 	#define ENCODER_INITIALIZE() \
 		do { \
+			static einthandler_t h1; \
+			static einthandler_t h2; \
 			arm_hardware_pioe_inputs(ENCODER_BITS); \
 			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
-			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupt); \
+			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			arm_hardware_pioe_inputs(ENCODER2_BITS); \
 			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
-			arm_hardware_pioe_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			einthandler_initialize(& h2, 0*ENCODER2_BITS, spool_encinterrupt2); \
+			arm_hardware_pioe_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
 #endif
@@ -397,9 +411,10 @@
 		#define BOARD_PPSIN_BIT (UINT32_C(1) << 14)		/* PD7 - PPS signal from GPS */
 
 		#define NMEA_INITIALIZE() do { \
+			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_PPSIN_BIT); \
 			arm_hardware_piod_updown(0, BOARD_PPSIN_BIT); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, 1 * BOARD_PPSIN_BIT, 0 * BOARD_PPSIN_BIT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 		} while (0)
 
 #endif /* WITHLFM */
