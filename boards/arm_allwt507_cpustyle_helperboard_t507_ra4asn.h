@@ -280,12 +280,12 @@
 			static einthandler_t h2; \
 			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER_BITS, GPIO_CFG_EINT); \
 			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupt); \
+			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupt); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/*arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_piod_inputs(BOARD_GPIOD_ENCODER2_BITS); \
 			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, 0*BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupt2); \
+			einthandler_initialize(& h2, 0*BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupt2); \
 			arm_hardware_piod_onchangeinterrupt(0*BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 

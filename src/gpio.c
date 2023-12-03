@@ -22,6 +22,23 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 	eih->handler = handler;
 }
 
+/* Вызов обработчика для указанных битов порта */
+static void
+gpioX_invokeinterrupt(
+	LIST_ENTRY * head,
+	portholder_t mask
+	)
+{
+	PLIST_ENTRY t;
+	for (t = head->Blink; t != head; t = t->Blink)
+	{
+		ASSERT(t != NULL);
+		einthandler_t * const p = CONTAINING_RECORD(t, einthandler_t, item);
+		if (p->mask & mask)
+			p->handler();
+	}
+}
+
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYLE_ALLWINNER
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 portholder_t
@@ -1072,23 +1089,6 @@ static void gpioX_updownoff(
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
 
 	gpioX_unlock(gpio, oldIrql);
-}
-
-/* Вызов обработчика для указанных битов порта */
-static void
-gpioX_invokeinterrupt(
-	LIST_ENTRY * head,
-	portholder_t mask
-	)
-{
-	PLIST_ENTRY t;
-	for (t = head->Blink; t != head; t = t->Blink)
-	{
-		ASSERT(t != NULL);
-		einthandler_t * const p = CONTAINING_RECORD(t, einthandler_t, item);
-		if (p->mask & mask)
-			p->handler();
-	}
 }
 
 static void ALLW_GPIO_IRQ_Handler_GPIOA(void)
