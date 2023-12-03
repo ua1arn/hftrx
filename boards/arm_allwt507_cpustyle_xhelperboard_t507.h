@@ -28,9 +28,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 
 //#define WITHSDHC0HW	1		/* TF CARD */
