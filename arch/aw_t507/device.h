@@ -1573,6 +1573,17 @@ typedef struct SCR_Type
     volatile uint32_t SCR_FIFO;                       /*!< Offset 0x100 Smart Card Reader RX and TX FIFO Access Point */
 } SCR_TypeDef; /* size of structure = 0x104 */
 /*
+ * @brief SID
+ */
+/*!< SID  */
+typedef struct SID_Type
+{
+             uint32_t reserved_0x000 [0x0005];
+    volatile uint32_t SID_THS;                        /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
+             uint32_t reserved_0x018 [0x007A];
+    volatile uint32_t SID_DATA [0x004];               /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
+} SID_TypeDef; /* size of structure = 0x210 */
+/*
  * @brief SMHC
  */
 /*!< SMHC SD-MMC Host Controller */
@@ -2173,6 +2184,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Port Controller register set access pointer */
