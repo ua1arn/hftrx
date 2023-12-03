@@ -1178,7 +1178,7 @@
 		static einthandler_t h; \
 		arm_hardware_piod_altfn20(BOARD_PPSIN_BIT, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0); \
-		einthandler_initialize(& h, 0*BOARD_PPSIN_BIT, spool_nmeapps); \
+		einthandler_initialize(& h, BOARD_PPSIN_BIT, spool_nmeapps); \
 		arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, BOARD_PPSIN_BIT, 0, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 	} while (0)
 
