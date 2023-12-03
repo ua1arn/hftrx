@@ -1069,7 +1069,8 @@
 			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_GT911_INT_PIN); \
 			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, 1); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, gt911_interrupt_handler); \
+			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_GT911_INT_PIN, 1*BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 		} while (0)
 		//gt911_interrupt_handler
 
