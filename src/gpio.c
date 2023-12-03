@@ -14,7 +14,7 @@
 
 #define GPIOIRQL IRQL_SYSTEM
 
-static 	LIST_ENTRY einthead [26];	// a..z lists
+static LIST_ENTRY einthead [26];	// a..z lists
 
 void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler)
 {
