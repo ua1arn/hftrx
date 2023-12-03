@@ -16,6 +16,7 @@
 #if WITHGNSS
 
 #include "board.h"
+#include "gpio.h"
 #include <string.h>
 #include <ctype.h>
 
