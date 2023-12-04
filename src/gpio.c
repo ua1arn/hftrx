@@ -674,7 +674,7 @@ void sysinit_gpio_initialize(void)
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
-		InitializeListHead(& einthead [i])
+		InitializeListHead(& einthead [i]);
 	}
 }
 

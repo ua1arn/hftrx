@@ -7079,10 +7079,10 @@ restart:
 
 #if WITHDSPEXTFIR
 
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+
 static adapter_t plfircoefsout;
 static adapter_t plfircoefsout32;
-
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 #include "xc7z_inc.h"
 
@@ -7132,7 +7132,67 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 }
-#elif ! LINUX_SUBSYSTEM
+#elif ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+
+static adapter_t * plfircoefsout = NULL;
+
+void board_fpga_fir_initialize(void)
+{
+	/* FPGA FIR коэффициенты */
+	plfircoefsout = malloc(sizeof(adapter_t));
+	adpt_initialize(plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
+	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+}
+
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+	const int iHalfLen = (Ntap - 1) / 2;
+	int i = 0, m = 0, bits = 0;
+	IRQL_t irql;
+
+	if (plfircoefsout == NULL)
+		return;
+
+	// Приведение разрядности значений коэффициентов к CWidth
+	for (; i <= iHalfLen; ++ i)
+	{
+		int32_t coeff = adpt_output(plfircoefsout, kf [i]);
+		m = coeff > m ? coeff : m;
+	}
+
+	while(m > 0)
+	{
+		m  = m >> 1;
+		bits ++;
+	}
+
+	bits = CWidth - bits - 1;
+
+	spi_operate_lock(& irql);
+	spi_select(targetfpga1, CTLREG_SPIMODE);
+
+	for (i = 0; i <= iHalfLen; ++ i)
+	{
+		int32_t coeff = adpt_output(plfircoefsout, kf [i]);
+
+		hardware_spi_b8_p2(13);
+		hardware_spi_b32_p1(coeff << bits);
+	}
+
+	i -= 1;
+	for (; -- i >= 0;)
+	{
+		int32_t coeff = adpt_output(plfircoefsout, kf [i]);
+
+		hardware_spi_b8_p2(13);
+		hardware_spi_b32_p1(coeff << bits);
+	}
+
+	spi_unselect(targetfpga1);
+	spi_operate_unlock(irql);
+}
+
+#else
 
 void board_fpga_fir_initialize(void)
 {
@@ -10095,7 +10155,10 @@ static void fpga_prog_shift(uint8_t addr, uint8_t val)
 	rbtype_t rbbuff [5] = { 0 };
 	RBVAL8(040, addr);
 	RBVAL8(000, val);
+
+	spi_select(targetfpga1, CTLREG_SPIMODE);
 	board_fpga1_spi_send_frame(targetfpga1, rbbuff, ARRAY_SIZE(rbbuff));
+	spi_unselect(targetfpga1);
 }
 
 uint8_t iq_shift_cic_rx(uint8_t val)
