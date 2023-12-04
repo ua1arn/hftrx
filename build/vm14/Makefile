@@ -206,6 +206,8 @@ ASRC_APP = $(PRJROOT)/src/crt_CortexA_CPUn.S $(PRJROOT)/src/crt_CortexA.S
 ASRC_BOOT = $(PRJROOT)/src/crt_CortexA_CPUn.S $(PRJROOT)/src/crt_CortexA.S
 endif
 
+ASRC_APP += $(call rwildcard, $(PRJROOT)/src/mcom_runtime/dsp, *.S)
+
 VPATH = $(PRJROOT)
 
 #
@@ -272,7 +274,9 @@ allZ:
 bootloader: BOOT2
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
-	./bin2ihex -l 0x20000000 -s $(PROJECT)_boot.bin >$(PROJECT)_boot.hex
+	busybox echo autorun 0 >$(PROJECT)_boot.hex
+	./bin2ihex -l 0x20000000 -s $(PROJECT)_boot.bin >> $(PROJECT)_boot.hex
+	busybox echo commitspiflash >> $(PROJECT)_boot.hex
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 	
