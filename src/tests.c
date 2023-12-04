@@ -5335,6 +5335,13 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
+	if ((THS->THS_DATA_INTS & 1) == 1)
+	{
+		uint32_t t = (THS->THSx_DATA[0]) & 0xFFF;
+		PRINTF("%2.1f\n", ((float) t - 3255.0f) / -12.401f);
+	}
+#endif
 #if 0 && WITHFQMETER
 	{
 		const uint32_t v = board_get_fqmeter();
@@ -10555,6 +10562,15 @@ void hightests(void)
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
+#if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
+	CCU->THS_BGR_REG |= (1 << 16) | (1 << 0);
+	THS->THS_CTRL |= (0x1df << 16) | 0x2f;
+	THS->THS_PER |= 0x3a << 12;
+	THS->THS_FILTER |= (1 << 2) | 1;
+	THS->THSx_CDATA[0] = * (uint32_t *) (SID_BASE + 0x214);
+	THS->THSx_CDATA[1] = * (uint32_t *) (SID_BASE + 0x218);
+	THS->THS_EN |= (1 << 0);
+#endif
 #if CPUSTYLE_VM14 && 1
 	{
 		vm41nandtest();
