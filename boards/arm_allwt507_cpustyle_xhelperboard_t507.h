@@ -82,11 +82,6 @@ void user_uart5_ontxchar(void * ctx);
 #endif
 
 
-#if ! WITHDEBUG_UART0
-#endif
-// OHCI at USB1HSFSP2_BASE
-////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
-
 #if WITHISBOOTLOADER
 
 	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
@@ -96,10 +91,6 @@ void user_uart5_ontxchar(void * ctx);
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
-	//#define WITHGPUHW	1	/* Graphic processor unit */
-
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -285,7 +276,6 @@ void user_uart5_ontxchar(void * ctx);
 
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
 
 #endif /* WITHISBOOTLOADER */
 
