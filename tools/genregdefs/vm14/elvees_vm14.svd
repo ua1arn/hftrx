@@ -2163,6 +2163,24 @@
   <baseAddress>0x38095000</baseAddress>
   <registers>
    <register>
+    <name>SYS_PWR_UP</name>
+    <displayName>SYS_PWR_UP</displayName>
+    <description>undocumented</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PWR_DOWN</name>
+    <displayName>SYS_PWR_DOWN</displayName>
+    <description>undocumented</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>SYS_PWR_STATUS</name>
     <displayName>SYS_PWR_STATUS</displayName>
     <description>Регистр статуса доменов</description>

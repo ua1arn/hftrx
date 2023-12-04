@@ -414,7 +414,9 @@ typedef struct NORMPORT_Type
 /*!< PMCTR Контроллер управления энергопотреблением */
 typedef struct PMCTR_Type
 {
-             uint32_t reserved_0x000 [0x0003];
+    volatile uint32_t SYS_PWR_UP;                     /*!< Offset 0x000 undocumented */
+    volatile uint32_t SYS_PWR_DOWN;                   /*!< Offset 0x004 undocumented */
+             uint32_t reserved_0x008;
     volatile uint32_t SYS_PWR_STATUS;                 /*!< Offset 0x00C Регистр статуса доменов */
     volatile uint32_t SYS_PWR_IMASK;                  /*!< Offset 0x010 Регистр маски прерывания SYS_PWR_INT */
     volatile uint32_t SYS_PWR_IRSTAT;                 /*!< Offset 0x014 Регистр наличного статуса прерывания SYS_PWR_ISTAT */
