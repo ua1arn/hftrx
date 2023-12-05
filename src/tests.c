@@ -10574,15 +10574,14 @@ void hightests(void)
 	//	03006200: 33007C00 FC004808 01488718 14771E8F 00000000 FB6B10F0 BB706B6C 196DA6DB
 	//	03006220: 5A5B5C5C 00065C5C 1B809432 02810000 00000000 00000000 00000000 00000000
 
-	const unsigned c1 = 0x0C5C;
-	const unsigned c2 = 0x0C5C;
-	const unsigned c3 = 0x0C5C;
-	const unsigned c4 = 0x0C5C;
+	const unsigned THS0_CDATA = (* (volatile uint32_t *) (SID_BASE + 0x220) >> 0) & 0x0FFF;
+	const unsigned THS1_CDATA = 0x0C5C;
+	const unsigned THS2_CDATA = 0x0C5C;
+	const unsigned THS3_CDATA = 0x0C5C;
 
-	THS->THSx_CDATA[0] = (c2 << 16) | c1;
-	THS->THSx_CDATA[1] = (c4 << 16) | c3;
-//	THS->THSx_CDATA[0] = * (volatile uint32_t *) (SID_BASE + 0x220);
-//	THS->THSx_CDATA[1] = * (volatile uint32_t *) (SID_BASE + 0x224);
+	THS->THSx_CDATA[0] = (THS1_CDATA << 16) | THS0_CDATA;
+	THS->THSx_CDATA[1] = (THS3_CDATA << 16) | THS2_CDATA;
+
 	THS->THS_EN |= (1 << 0);
 
 //	printhex32(SID_BASE, SID, sizeof * SID);
