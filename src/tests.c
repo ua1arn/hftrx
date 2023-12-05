@@ -5336,10 +5336,11 @@ static void serial_irq_loopback_test(void)
 void looptests(void)
 {
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
-	if ((THS->THS_DATA_INTS & 1) == 1)
+	if ((THS->THS_DATA_INTS & 0x01) != 0)
 	{
-		uint32_t t = (THS->THSx_DATA[0]) & 0xFFF;
-		PRINTF("%2.1f\n", ((float) t - 3255.0f) / -12.401f);
+		THS->THS_DATA_INTS = 0x01;
+		const uint32_t t = (THS->THSx_DATA[0]) & 0xFFF;
+		PRINTF("t=%08" PRIx32 ", %2.1f\n", t, ((float) t - 3255.0f) / -12.401f);
 	}
 #endif
 #if 0 && WITHFQMETER
@@ -10563,13 +10564,21 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
-	CCU->THS_BGR_REG |= (1 << 16) | (1 << 0);
-	THS->THS_CTRL |= (0x1df << 16) | 0x2f;
-	THS->THS_PER |= 0x3a << 12;
-	THS->THS_FILTER |= (1 << 2) | 1;
-	THS->THSx_CDATA[0] = * (uint32_t *) (SID_BASE + 0x214);
-	THS->THSx_CDATA[1] = * (uint32_t *) (SID_BASE + 0x218);
+	CCU->THS_BGR_REG |= (1 << 0); // THS_GATING
+	CCU->THS_BGR_REG |= (1 << 16); // THS_RESET
+	THS->THS_EN &= ~ (1 << 0);
+	THS->THS_CTRL = (0x1df << 16) | 0x2f;
+	THS->THS_PER = 0x3a << 12;
+	THS->THS_FILTER = (1 << 2) | 1;
+//	unsigned v = 0x5C5C;
+//	THS->THSx_CDATA[0] = (v << 16) | v;
+//	THS->THSx_CDATA[1] = (v << 16) | v;
+	THS->THSx_CDATA[0] = * (volatile uint32_t *) (SID_BASE + 0x220);
+	THS->THSx_CDATA[1] = * (volatile uint32_t *) (SID_BASE + 0x224);
 	THS->THS_EN |= (1 << 0);
+
+//	printhex32(SID_BASE, SID, sizeof * SID);
+//	printhex32(THS_BASE, THS, sizeof * THS);
 #endif
 #if CPUSTYLE_VM14 && 1
 	{
