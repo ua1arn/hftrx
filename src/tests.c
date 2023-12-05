@@ -10570,11 +10570,11 @@ void hightests(void)
 	THS->THS_CTRL = (0x1df << 16) | 0x2f;
 	THS->THS_PER = 0x3a << 12;
 	THS->THS_FILTER = (1 << 2) | 1;
-//	unsigned v = 0x5C5C;
-//	THS->THSx_CDATA[0] = (v << 16) | v;
-//	THS->THSx_CDATA[1] = (v << 16) | v;
-	THS->THSx_CDATA[0] = * (volatile uint32_t *) (SID_BASE + 0x220);
-	THS->THSx_CDATA[1] = * (volatile uint32_t *) (SID_BASE + 0x224);
+	unsigned v = 0x0C5C;
+	THS->THSx_CDATA[0] = (v << 16) | v;
+	THS->THSx_CDATA[1] = (v << 16) | v;
+//	THS->THSx_CDATA[0] = * (volatile uint32_t *) (SID_BASE + 0x220);
+//	THS->THSx_CDATA[1] = * (volatile uint32_t *) (SID_BASE + 0x224);
 	THS->THS_EN |= (1 << 0);
 
 //	printhex32(SID_BASE, SID, sizeof * SID);
