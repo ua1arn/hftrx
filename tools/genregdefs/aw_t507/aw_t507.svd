@@ -8089,15 +8089,6 @@
   <description></description>
   <baseAddress>0x03006000</baseAddress>
   <registers>
-   <register>
-    <name>SID_THS</name>
-    <displayName>SID_THS</displayName>
-    <description>[27:16]: The calibration value of the T-sensor.</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
    <cluster>
     <dim>4</dim>
     <addressOffset>0x00000200</addressOffset>

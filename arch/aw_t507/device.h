@@ -1578,11 +1578,10 @@ typedef struct SCR_Type
 /*!< SID  */
 typedef struct SID_Type
 {
-             uint32_t reserved_0x000 [0x0005];
-    volatile uint32_t SID_THS;                        /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
-             uint32_t reserved_0x018 [0x007A];
+             uint32_t reserved_0x000 [0x0080];
     volatile uint32_t SID_DATA [0x004];               /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
-} SID_TypeDef; /* size of structure = 0x210 */
+             uint32_t reserved_0x210 [0x037C];
+} SID_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SMHC
  */
