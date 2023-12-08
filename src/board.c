@@ -4575,6 +4575,10 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
+
 	enum
 	{
 		HARDWARE_OPA2674I_FULLPOWER = 0x03,
@@ -10147,7 +10151,7 @@ void board_get_serialnr(uint_fast32_t * sn)
 #define FPGA_DECODE_FIR_SHIFT	(11u)
 #define FPGA_DECODE_TX_SHIFT	(12u)
 
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 static uint8_t rx_cic_shift, rx_fir_shift, tx_shift;
 
 static void fpga_prog_shift(uint8_t addr, uint8_t val)
