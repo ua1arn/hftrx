@@ -155,7 +155,7 @@ static uint_fast8_t 	glob_user2;
 static uint_fast8_t 	glob_user3;
 static uint_fast8_t 	glob_user4;
 static uint_fast8_t 	glob_user5;
-static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
+static uint_fast8_t		glob_attvalue;	// значение аттенюатора в дециюбелах
 static uint_fast8_t		glob_tsc_reset = 1;
 static uint_fast8_t		glob_showovf = 1;	/* Показ индикатора переполнения АЦП */
 
@@ -4597,7 +4597,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	{
 		spitarget_t target = targetextctl;
 		rbtype_t rbbuff [3] = { 0 };
-		const uint_fast8_t att_db = revbits8(hamradio_get_att_db()) >> 3;
+		const uint_fast8_t att_db = revbits8(glob_attvalue) >> 3;
 		const uint_fast8_t bpf1 = glob_bandf == 5 || glob_bandf == 6;
 		const uint_fast8_t bpf2 = glob_bandf >= 1 || glob_bandf <= 4;
 

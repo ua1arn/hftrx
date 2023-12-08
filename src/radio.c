@@ -519,15 +519,6 @@ enum {
 	VFOMODES_COUNT
 };
 
-/*
-	Коды управления постоянной времени АРУ на плате
-		AGC_CODE_SLOW = 0x04, //0x07,
-		AGC_CODE_MED  = 0x02,	//0x03,
-		AGC_CODE_FAST = 0x01, //0x01,
-		AGC_CODE_OFF = 0x00
-
-*/
-
 #if WITHNOATTNOPREAMP
 
 	/* строки, выводимые на индикатор для обозначения режимов.
@@ -642,7 +633,6 @@ enum {
 
 #elif WITHATT2_6DB
 	/* Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ */
-
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 
@@ -728,14 +718,14 @@ enum {
 static uint_fast8_t gattpresh;	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
 
 // вернуть положительное значение в случае необходимости коррекции С-метра на величину аттенюатора
-// и отрицательное щначение в случае коррекции на величину усиления.
+// и отрицательное значение в случае коррекции на величину усиления.
 // Возвращаем с точностью 0.1 дБ
 
 static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast8_t pre)
 {
 	if (gattpresh && ! xvrtr)
 	{
-		// если не трансвертор и не отклбчено - корректируем S-meter
+		// если не трансвертор и не отключено - корректируем S-meter
 		return pampmodes [pre].atten10 + attmodes [att].atten10;
 	}
 	else
@@ -11237,9 +11227,11 @@ updateboardZZZ(
 		#elif WITHONEATTONEAMP
 			board_set_att(attmodes [gatt].codeatt);
 			board_set_preamp(attmodes [gatt].codepre);
+			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#else /* WITHONEATTONEAMP */
 			board_set_att(attmodes [gatt].code);
 			board_set_preamp(pampmodes [gpamp].code);
+			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
 		#if ! WITHAGCMODENONE
 			board_set_boardagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
