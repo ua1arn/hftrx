@@ -630,7 +630,12 @@ int sdhci_t113_init(struct sdhci_t * sdhci)
 
  sdhci_t113_clock();                        //клок, гейт, ресет
 
+#if WITHSDHCHW1P8V
+ sdhci->voltage   = MMC_VDD_165_195;
+#else /* WITHSDHCHW1P8V */
  sdhci->voltage   = MMC_VDD_27_36;
+#endif /* WITHSDHCHW1P8V */
+
 #if WITHSDHCHW8BIT
  sdhci->width     = MMC_BUS_WIDTH_8;
 #elif WITHSDHCHW4BIT

@@ -493,6 +493,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnrt113_get_smhc2_freq())
 	#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
+	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF3);	/* PC6 - SDC2-CMD	*/ \
