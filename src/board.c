@@ -7086,7 +7086,6 @@ restart:
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 static adapter_t plfircoefsout;
-static adapter_t plfircoefsout32;
 
 #include "xc7z_inc.h"
 
@@ -7136,6 +7135,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 #endif /* ! WITHDSPLOCALTXFIR */
 	}
 }
+
 #elif ! LINUX_SUBSYSTEM && FPGA_ARTIX7
 
 static adapter_t * plfircoefsout = NULL;
@@ -7198,13 +7198,14 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 #else
 
+static adapter_t plfircoefsout;
+
 void board_fpga_fir_initialize(void)
 {
 	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
 
 	/* FPGA FIR коэффициенты */
 	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
-	adpt_initialize(& plfircoefsout32, 32, 0, "plfircoefsout32");
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
