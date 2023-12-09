@@ -117,8 +117,8 @@ enum {
 enum {
 	OCR_BUSY 			= 0x80000000,
 	OCR_HCS 			= 0x40000000,
-	OCR_VOLTAGE_MASK	= 0x00ffff80,
-	OCR_ACCESS_MODE		= 0x60000000,
+	OCR_VOLTAGE_MASK	= 0x00ffff80,	// bits: 23..15: 2.7V..3.6V, bit 7: 1.70–1.95V
+	OCR_ACCESS_MODE		= 0x60000000,	// bits 30..29: 00: byte mode, 10: sector mode
 };
 
 enum {

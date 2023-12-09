@@ -393,7 +393,12 @@ static int mmc_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 		return 0;
 	}
 
-	card->ocr = 0x00FF8080;
+	if (hci->voltage & MMC_VDD_27_36)
+		card->ocr = 0x00FF8080;
+	else if (hci->voltage & MMC_VDD_165_195)
+		card->ocr = 0x00000080;
+	else
+		card->ocr = 0x00FF8080;
 
 	cmd.cmdidx = MMC_SEND_OP_COND;
 	cmd.cmdarg = 0;
