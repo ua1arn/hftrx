@@ -501,11 +501,6 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 			clock = 5000000;
 
 		//PRINTF("sdhci->instance->SMHC_SFC=%08X\n", sdhci->instance->SMHC_SFC);
-		sdhci->instance->SMHC_SFC =
-				(3u << 1) |
-				(1u << 0) |
-				0;
-
 	    ratio = SMHCHARD_FREQ / (1 * clock);	// Для SMHC2 требует выяснения
 	}
 	else
@@ -605,6 +600,12 @@ void sdhci_t113_clock(void)
 			((SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
+
+		SMHCHARD_PTR->SMHC_SFC =
+				(3u << 1) | // STOP_CLK_CTRL
+				(1u << 0) |	// BYPASS_EN When set, sample FIFO will be
+				0;
+
 	}
 }
 
