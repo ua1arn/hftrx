@@ -163,7 +163,7 @@ static int sd_send_if_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
 	struct sdhci_cmd_t cmd = { 0 };
 
-	cmd.cmdidx = SD_CMD_SEND_IF_COND;
+	cmd.cmdidx = SD_CMD_SEND_IF_COND;	// eMMC: meaning SEND_EXT_CSD
 	if(hci->voltage & MMC_VDD_27_36)
 		cmd.cmdarg = (0x1 << 8);
 	else if(hci->voltage & MMC_VDD_165_195)

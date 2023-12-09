@@ -27,12 +27,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHC0HW	1		/* TF CARD */
-//#define WITHSDHC1HW	1		/* SDIO */
-//#define WITHSDHC2HW	1		/* EMMC */
-
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 

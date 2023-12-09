@@ -500,18 +500,21 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 		if (clock > 5000000)
 			clock = 5000000;
 
+		//PRINTF("sdhci->instance->SMHC_SFC=%08X\n", sdhci->instance->SMHC_SFC);
 		sdhci->instance->SMHC_SFC =
-				//(4u << 1) |
+				(3u << 1) |
 				(1u << 0) |
 				0;
 
-       ratio= SMHCHARD_FREQ / (clock);	// Измерения показали, что деление на 4 а не на 2
+	    ratio = SMHCHARD_FREQ / (1 * clock);	// Для SMHC2 требует выяснения
 	}
 	else
 	{
-        ratio= SMHCHARD_FREQ / (4 * clock);	// Измерения показали, что деление на 4 а не на 2
+	    ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения показали, что деление на 4 а не на 2
 	}
-	if (ratio == 0)
+
+
+    if (ratio == 0)
 		ratio = 1;
 	else if (ratio > 255)
 		ratio = 255;
