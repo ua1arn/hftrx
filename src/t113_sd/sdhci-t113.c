@@ -601,11 +601,14 @@ void sdhci_t113_clock(void)
 			0;
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
 
+		SMHCHARD_PTR->SMHC_FIFOTH = 0x300F00F0;
+		SMHCHARD_PTR->SMHC_THLD = 0x02000004;
 		SMHCHARD_PTR->SMHC_SFC =
 				(3u << 1) | // STOP_CLK_CTRL
 				(1u << 0) |	// BYPASS_EN When set, sample FIFO will be
 				0;
-
+		SMHCHARD_PTR->SMHC_CSDC = 0x00000006;
+		SMHCHARD_PTR->SMHC_NTSR = 0;
 	}
 }
 
