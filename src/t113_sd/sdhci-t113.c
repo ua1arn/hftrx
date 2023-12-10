@@ -569,6 +569,17 @@ void sdhci_t113_clock(void)
 
 	if (SMHCHARD_PTR == SMHC2)
 	{
+
+		SMHCHARD_PTR->SMHC_FIFOTH = 0x300F00F0;
+		SMHCHARD_PTR->SMHC_THLD = 0x02000004;
+		SMHCHARD_PTR->SMHC_SFC =
+				(3u << 1) | // STOP_CLK_CTRL
+				(1u << 0) |	// BYPASS_EN When set, sample FIFO will be
+				0;
+		SMHCHARD_PTR->SMHC_CSDC = 0x00000006;
+		SMHCHARD_PTR->SMHC_NTSR = 0;
+		//SMHCHARD_PTR->EMMC_DDR_SBIT_DET |= (UINT32_C(1) << 31);
+
 		//	The steps to calibrate delay chain are as follows:
 		//	Step1: Enable SMHC. In order to calibrate delay chain by operation registers in SMHC, SMHC must be enabled through SMHC Bus Gating Reset Register and SMHC0/1/2 Clock Register.
 		//	Step2: Configure a proper clock for SMHC. Calibration delay chain is based on the clock for SMHC from Clock Control Unit(CCU). Calibration delay chain is an internal function in SMHC and does not need device. So, it is unnecessary to open clock signal for device. The recommended clock frequency is 200 MHz.
@@ -583,11 +594,11 @@ void sdhci_t113_clock(void)
 		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 15);
 		while ((SMHCHARD_PTR->SMHC_SAMP_DL & (UINT32_C(1) << 14)) == 0)
 			;
-		//PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
 		SMHCHARD_PTR->SMHC_SAMP_DL = (SMHCHARD_PTR->SMHC_SAMP_DL & ~ (UINT32_C(0x3F) << 0)) |
 			((SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
+		//PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
 
 		/* Delay calibration */
 		SMHCHARD_PTR->SMHC_DS_DL = 0xA0;
@@ -595,20 +606,12 @@ void sdhci_t113_clock(void)
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 15);
 		while ((SMHCHARD_PTR->SMHC_DS_DL & (UINT32_C(1) << 14)) == 0)
 			;
-		//PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
 		SMHCHARD_PTR->SMHC_DS_DL = (SMHCHARD_PTR->SMHC_DS_DL & ~ (UINT32_C(0x3F) << 0)) |
 			((SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
+		//PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
 
-		SMHCHARD_PTR->SMHC_FIFOTH = 0x300F00F0;
-		SMHCHARD_PTR->SMHC_THLD = 0x02000004;
-		SMHCHARD_PTR->SMHC_SFC =
-				(3u << 1) | // STOP_CLK_CTRL
-				(1u << 0) |	// BYPASS_EN When set, sample FIFO will be
-				0;
-		SMHCHARD_PTR->SMHC_CSDC = 0x00000006;
-		SMHCHARD_PTR->SMHC_NTSR = 0;
 	}
 }
 
