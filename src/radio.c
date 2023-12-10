@@ -943,7 +943,7 @@ static const FLASHMEM struct {
 	char label5 [6];
 }  antmodes [] =
 {
-#if WITHTX
+#if WITHTX && 0
 	{	{ 0, 0, },	"1R-1T" },
 	{	{ 1, 1, },	"2R-2T" },
 	{	{ 0, 1, },	"1R-2T" },
