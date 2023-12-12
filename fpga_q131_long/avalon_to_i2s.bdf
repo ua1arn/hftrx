@@ -87,7 +87,7 @@ applicable agreement for further details.
 	(input)
 	(rect 240 696 408 712)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "rf_wsp" (rect 5 0 39 12)(font "Arial" ))
+	(text "rf_wsp" (rect 5 0 38 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -103,7 +103,7 @@ applicable agreement for further details.
 	(input)
 	(rect 240 680 408 696)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "rf_wsd" (rect 5 0 39 12)(font "Arial" ))
+	(text "rf_wsd" (rect 5 0 38 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -119,7 +119,7 @@ applicable agreement for further details.
 	(input)
 	(rect 240 664 408 680)
 	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
-	(text "rf_sck" (rect 5 0 37 12)(font "Arial" ))
+	(text "rf_sck" (rect 5 0 36 12)(font "Arial" ))
 	(pt 168 8)
 	(drawing
 		(line (pt 84 12)(pt 109 12))
@@ -276,7 +276,7 @@ applicable agreement for further details.
 	(annotation_block (parameter)(rect 688 8 886 78))
 )
 (symbol
-	(rect 392 256 520 336)
+	(rect 432 256 560 336)
 	(text "lpm_decode_2ch" (rect 16 0 131 16)(font "Arial" (font_size 10)))
 	(text "inst18" (rect 8 64 37 76)(font "Arial" ))
 	(port
@@ -468,41 +468,13 @@ applicable agreement for further details.
 	)
 )
 (connector
-	(pt 392 304)
-	(pt 312 304)
-)
-(connector
 	(pt 312 256)
 	(pt 296 256)
-)
-(connector
-	(pt 312 304)
-	(pt 312 256)
-)
-(connector
-	(pt 392 288)
-	(pt 296 288)
-)
-(connector
-	(pt 520 304)
-	(pt 544 304)
-)
-(connector
-	(pt 520 288)
-	(pt 544 288)
 )
 (connector
 	(pt 632 184)
 	(pt 688 184)
 	(color 255 0 0)
-)
-(connector
-	(pt 544 200)
-	(pt 688 200)
-)
-(connector
-	(pt 544 288)
-	(pt 544 200)
 )
 (connector
 	(pt 320 88)
@@ -535,10 +507,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt 544 608)
-	(pt 976 608)
-)
-(connector
 	(pt 632 624)
 	(pt 976 624)
 )
@@ -567,10 +535,6 @@ applicable agreement for further details.
 	(pt 752 328)
 	(pt 904 328)
 	(bus)
-)
-(connector
-	(pt 544 304)
-	(pt 544 608)
 )
 (connector
 	(pt 960 584)
@@ -608,18 +572,54 @@ applicable agreement for further details.
 	(pt 976 672)
 )
 (connector
+	(pt 1168 824)
+	(pt 584 824)
+)
+(connector
 	(pt 632 184)
 	(pt 632 624)
 )
 (connector
-	(pt 632 624)
-	(pt 632 824)
+	(pt 584 608)
+	(pt 976 608)
 )
 (connector
-	(pt 632 824)
-	(pt 1168 824)
+	(pt 688 200)
+	(pt 584 200)
+)
+(connector
+	(pt 312 256)
+	(pt 312 304)
+)
+(connector
+	(pt 584 304)
+	(pt 560 304)
+)
+(connector
+	(pt 584 288)
+	(pt 560 288)
+)
+(connector
+	(pt 584 200)
+	(pt 584 288)
+)
+(connector
+	(pt 584 304)
+	(pt 584 608)
+)
+(connector
+	(pt 584 608)
+	(pt 584 824)
+)
+(connector
+	(pt 296 288)
+	(pt 432 288)
+)
+(connector
+	(pt 312 304)
+	(pt 432 304)
 )
 (junction (pt 600 168))
 (junction (pt 632 184))
-(junction (pt 632 624))
+(junction (pt 584 608))
 (text "Word Select:\nThe word select line indicates the channel being transmitted:\nWS = 0; channel 1 (left);\nWS = 1; channel 2 (right)." (rect 672 752 1015 808)(font "Arial" (font_size 8)))
