@@ -356,6 +356,16 @@ uint_fast8_t kbd_scan(uint_fast8_t * v)
 	return f;
 }
 
+void kbd_pass(void)
+{
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& irqllock, & oldIrql);
+
+	kbd_spool(NULL);
+
+	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
+}
+
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
