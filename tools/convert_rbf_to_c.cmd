@@ -1,4 +1,5 @@
-set SRCPATH=..\fpga_q131_long\output_files
+set SRCPATH=..\fpga_q131\output_files
+set SRCPATHLONG=..\fpga_q131_long\output_files
 rem set SRCPATH=..\fpga_q181std\output_files
 
 @rem STM32F/STM32H
@@ -26,7 +27,7 @@ rbf2c.exe %SRCPATH%\t1_v9c_2ch.rbf ..\rbf\rbfimage_v9c_2ch.h
 
 rbf2c.exe %SRCPATH%\t1_v9d_2ch.rbf ..\rbf\rbfimage_v9d_2ch.h
 
-rbf2c.exe %SRCPATH%\t1_v9m_velo.rbf ..\rbf\rbfimage_v9m_velo.h
-bin2c.exe %SRCPATH%\t1_v9m_velo.zip ..\rbf\rbfimage_v9m_velo_zip.h
+rbf2c.exe %SRCPATHLONG%\t1_v9m_velo.rbf ..\rbf\rbfimage_v9m_velo.h
+bin2c.exe %SRCPATHLONG%\t1_v9m_velo.zip ..\rbf\rbfimage_v9m_velo_zip.h
 
 pause
