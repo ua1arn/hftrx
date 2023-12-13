@@ -35,7 +35,7 @@
 //#define WITHSDHC1HW	1		/* SDIO */
 //#define WITHSDHC2HW	1		/* EMMC */
 
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
+#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #define FPGA_ARTIX7		1
 
@@ -1188,6 +1188,26 @@
 
 #endif /* WITHNMEA */
 
+#if WITHETHHW
+
+	//PA0 - PA9 EMAC RMII
+	#define ETHERNET_INITIALIZE() do { \
+			arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 3, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 4, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 5, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 6, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 7, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 8, GPIO_CFG_AF2);	\
+			arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
+		} while (0)
+
+#else
+	#define ETHERNET_INITIALIZE() do { } while (0)
+#endif /* WITHETHHW */
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			/*BOARD_BLINK_INITIALIZE(); */\
@@ -1195,6 +1215,7 @@
 			HARDWARE_GPIOREG_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			HARDWARE_DCDC_INITIALIZE(); \
+			ETHERNET_INITIALIZE(); \
 			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
