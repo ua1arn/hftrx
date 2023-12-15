@@ -13996,7 +13996,7 @@ static void nranswer(uint_fast8_t arg)
 }
 #endif /* WITHIF4DSP */
 
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && WITHTX
 static void pcanswer(uint_fast8_t arg)
 {
 	static const FLASHMEM char fmt_1 [] =
@@ -14005,14 +14005,14 @@ static void pcanswer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 
 	// answer mode
-	// Нормирование значений WITHPOWERTRIMMIN..WITHPOWERTRIMMAX к диапазону Kenwook CAT
+	// Нормирование значений WITHPOWERTRIMMIN..WITHPOWERTRIMMAX к диапазону Kenwood CAT
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) ((gnormalpower.value - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
 		);
 	cat_answer(len);
 }
 
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM && WITHTX */
 
 #if WITHCATEXT && WITHELKEY
 
@@ -14564,9 +14564,9 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	aganswer,
 	sqanswer,
 #endif /* WITHIF4DSP */
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && WITHTX
 	pcanswer,
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM && WITHTX */
 #if WITHIF4DSP
 	nranswer,
 #endif /* WITHIF4DSP */
@@ -14996,7 +14996,7 @@ processcatmsg(
 			cat_answer_request(CAT_RG_INDEX);	// rganswer
 		}
 	}
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && WITHTX
 	else if (match2('P', 'C'))
 	{
 		// Sets and reads the output power
@@ -15015,7 +15015,7 @@ processcatmsg(
 			cat_answer_request(CAT_PC_INDEX);	// pcanswer
 		}
 	}
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM && WITHTX */
 #endif /* WITHIF4DSP */
 	else if (match2('R', 'A'))
 	{

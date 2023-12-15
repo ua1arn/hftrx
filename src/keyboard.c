@@ -415,4 +415,9 @@ uint_fast8_t kbd_scan(uint_fast8_t * v)
 	return 0;
 }
 
+
+void kbd_pass(void)
+{
+}
+
 #endif /* WITHKEYBOARD */
