@@ -93,6 +93,8 @@
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
+	//#define WITHTINYUSB 1
+
 #else /* WITHISBOOTLOADER */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
