@@ -44,10 +44,10 @@ void Error_Handler(void)
 #include "usbd_core.h"
 #include "usb_device.h"
 
-#if ! WITHTINYUSB
-#include "usbh_def.h"
-#include "usbh_core.h"
-#endif
+//#if ! WITHTINYUSB
+//#include "usbh_def.h"
+//#include "usbh_core.h"
+//#endif
 
 /* USER CODE BEGIN Includes */
 

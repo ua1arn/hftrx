@@ -33,7 +33,7 @@
 #include "tusb.h"
 #include "host/usbh.h"
 
-#if TUP_USBIP_OHCI
+#if TUP_USBIP_OHCI && defined WITHUSBHW_OHCI
 // Enable USB interrupt
 void hcd_int_enable(uint8_t rhport)
 {
@@ -45,7 +45,7 @@ void hcd_int_disable(uint8_t rhport)
 {
 	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
 }
-#endif
+#endif /* TUP_USBIP_OHCI && defined WITHUSBHW_OHCI */
 
 
 bool hcd_dcache_clean(void const* addr, uint32_t data_size) { dcache_clean((uintptr_t) addr, data_size); return true; }
@@ -319,7 +319,7 @@ void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
 }
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && defined (WITHUSBHW_EHCI)
 
 USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
 {

@@ -39,10 +39,11 @@
 #include "../src/bt/usbh_bluetooth.h"
 #endif /* WITHUSEUSBBT */
 #if WITHUSEUSBFLASH
-#include "../../Class/MSC/Inc/usbh_msc.h"
+//#include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
-#include "../../Class/HID/Inc/usbh_hid.h"
-#include "../../Class/HUB/Inc/usbh_hub.h"
+
+//#include "../../Class/HID/Inc/usbh_hid.h"
+//#include "../../Class/HUB/Inc/usbh_hub.h"
 
 #endif /* WITHUSBHW && ! WITHTINYUSB */
 
@@ -91,13 +92,13 @@
 
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
-#if WITHUSBHW && ! WITHTINYUSB
-#include "usbh_core.h"
-
-extern USBH_HandleTypeDef hUsbHostHS;
-
-void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
-#endif
+//#if WITHUSBHW && ! WITHTINYUSB
+////#include "usbh_core.h"
+//
+//extern USBH_HandleTypeDef hUsbHostHS;
+//
+//void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
+//#endif
 
 /* USER CODE END INCLUDE */
 

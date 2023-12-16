@@ -19,7 +19,7 @@
 #if WITHTINYUSB
 #include "tusb.h"
 #else
-#include "../../Class/MSC/Inc/usbh_msc.h"
+//#include "../../Class/MSC/Inc/usbh_msc.h"
 #include "usbd_def.h"
 //#include "usb_device.h"
 #endif
