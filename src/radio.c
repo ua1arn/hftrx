@@ -482,9 +482,9 @@ enum
 	CAT_AG_INDEX,		// aganswer()
 	CAT_SQ_INDEX,		// sqanswer()
 #endif /* WITHIF4DSP */
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && WITHTX
 	CAT_PC_INDEX,		// pcanswer()
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM && WITHTX */
 #if WITHIF4DSP
 	CAT_NR_INDEX,		// nranswer()
 #endif /* WITHIF4DSP */
