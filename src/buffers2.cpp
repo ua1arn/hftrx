@@ -985,12 +985,13 @@ static void dsp_loopback(unsigned nsamples)
 	}
 }
 
+
 // can not be zero
 uintptr_t getfilled_dmabuffer16tx(void)
 {
 #if WITHUSBHEADSET
 	dsp_loopback(CNT16TX);
-#else /* WITHUSBHEADSET */
+#elif defined CODEC1_TYPE
 	dsp_fillphones(CNT16TX);
 #endif
 
@@ -1171,6 +1172,9 @@ void save_dmabuffer32tx(uintptr_t addr)
 // can not be be zero
 uintptr_t getfilled_dmabuffer32tx(void)
 {
+#if ! defined CODEC1_TYPE
+	dsp_fillphones(CNT32TX);
+#endif
 	voice32tx_t * dest;
 	while (! voice32tx.get_readybuffer(& dest) && ! voice32tx.get_freebufferforced(& dest))
 		ASSERT(0);
