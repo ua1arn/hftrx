@@ -5,8 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// rmainunit_sv9e.pcb Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// banana-pi board - Allwinner A64-H
 
 #ifndef ARM_ALWA65_BANANA_PI_V9A_H_INCLUDED
 #define ARM_ALWA65_BANANA_PI_V9A_H_INCLUDED 1

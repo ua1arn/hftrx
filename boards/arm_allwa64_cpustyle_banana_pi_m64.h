@@ -6,7 +6,7 @@
 // UA1ARN
 //
 
-// mango-pi board
+// banana-pi board - Allwinner A64-H
 
 #ifndef ARM_ALWA65_BANANA_PI_H_INCLUDED
 #define ARM_ALWA65_BANANA_PI_H_INCLUDED 1
@@ -24,9 +24,6 @@
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
@@ -700,6 +697,10 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHISBOOTLOADER
+
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+
 	// PL0 - S_TWI_SCK
 	// PL1 - S_TWI_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
@@ -732,6 +733,10 @@
 	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
+
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+
 	// PL0 - S_TWI_SCK
 	// PL1 - S_TWI_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
