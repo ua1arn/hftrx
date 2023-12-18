@@ -997,7 +997,6 @@
 	void stmpe811_interrupt_handler(void);
 
 	#define BOARD_GPIOE_STMPE811_INT_PIN (UINT32_C(1) << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
-	#define BOARD_STMPE811_RESET_PIN (UINT32_C(1) << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
 		static einthandler_t h; \

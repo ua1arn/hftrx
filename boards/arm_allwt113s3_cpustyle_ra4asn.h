@@ -972,7 +972,6 @@
 	void stmpe811_interrupt_handler(void);
 
 	#define BOARD_GPIOE_STMPE811_INT_PIN (UINT32_C(1) << 12)		// PE12
-	#define BOARD_STMPE811_RESET_PIN (UINT32_C(1) << 13)	// PE13
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
 		static einthandler_t h; \

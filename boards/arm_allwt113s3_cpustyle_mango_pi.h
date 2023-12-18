@@ -1050,7 +1050,6 @@
 		void stmpe811_interrupt_handler(void);
 
 		#define BOARD_STMPE811_INT_PIN (UINT32_C(1) << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
-		//#define BOARD_STMPE811_RESET_PIN (UINT32_C(1) << 4)	/* PD4 : tsc/LCD reset, XS26, pin 22 */
 
 		#define BOARD_STMPE811_INT_CONNECT() do { \
 			arm_hardware_pioa_inputs(BOARD_STMPE811_INT_PIN); \
