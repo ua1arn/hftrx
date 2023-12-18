@@ -251,7 +251,7 @@ static void s3402_initialize(void)
 {
 	// BOARD_TP_RESX - active low
 	//	x-gpios = <&gpiog 0 GPIO_ACTIVE_HIGH>; /* TP_RESX_18 */
-	const portholder_t BOARD_TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
+	const portholder_t BOARD_TP_RESX = (UINT32_C(1) << 0);	// PG0 - TP_RESX_18 - pin 03
 	arm_hardware_piog_outputs(BOARD_TP_RESX, 0 * BOARD_TP_RESX);
 	local_delay_ms(5);
 	arm_hardware_piog_outputs(BOARD_TP_RESX, 1 * BOARD_TP_RESX);
@@ -404,24 +404,34 @@ void ili2102_initialize(void)
 
 #if TSC1_TYPE == TSC_TYPE_AWTPADC
 
+// https://github.com/RT-Thread/rt-thread/blob/master/bsp/allwinner/libraries/sunxi-hal/hal/source/tpadc/hal_tpadc.c
+
 void awgpadc_initialize(void)
 {
-	CCU->TPADC_BGR_REG = 0;
-	CCU->TPADC_BGR_REG |= (1u << 0);	// Gating clock to TPADC
-	CCU->TPADC_BGR_REG |= (1u << 16);	// De-assert TPADC RESET
+	CCU->TPADC_CLK_REG = 0x00 * (UINT32_C(1) << 31);	// 000: HOSC
+	CCU->TPADC_CLK_REG = (UINT32_C(1) << 31);	// TPADC_CLK_GATING
+
+	CCU->TPADC_BGR_REG |= (UINT32_C(1) << 0);	// Gating clock to TPADC
+	CCU->TPADC_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert TPADC RESET
+	CCU->TPADC_BGR_REG |= (UINT32_C(1) << 16);	// De-assert TPADC RESET
 
 	TPADC->TP_CTRL_REG1 =
-		(0u << 0) |
+		0 * (UINT32_C(1) << 4) | // TP_MODE_SELECT
+		0x0F * (UINT32_C(1) << 0) | // ADC_CHAN3_SELECT..ADC_CHAN0_SELECT
 		0;
+	TPADC->TP_CTRL_REG1 |= (UINT32_C(1) << 7); 	// TOUCH_PAN_CALI_EN
+	while ((TPADC->TP_CTRL_REG1 & (UINT32_C(1) << 7)) != 0)
+		;
+	TPADC->TP_CTRL_REG1 |= (UINT32_C(1) << 5); 	// TP_EN
 }
 
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
-	if ((TPADC->TP_INT_FIFO_STAT_REG & (1u << 16)) != 0)
+	if ((TPADC->TP_INT_FIFO_STAT_REG & (UINT32_C(1) << 16)) != 0)
 	{
 		const uint_fast32_t v = TPADC->TP_DATA_REG & 0xFFF;
-		TPADC->TP_INT_FIFO_STAT_REG = (1u << 16); // Clear FIFO data pending flag
+		TPADC->TP_INT_FIFO_STAT_REG = (UINT32_C(1) << 16); // Clear FIFO data pending flag
 		* xr = 0;
 		* yr = 0;
 		return 0 * 1;
