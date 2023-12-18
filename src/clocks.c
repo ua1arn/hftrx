@@ -9511,7 +9511,7 @@ void SystemCoreClockUpdate(void)
 
 	void hardware_dcdcfreq_pwm_initialize(unsigned pwmch)
 	{
-	#if CPUSTYLE_T507
+	#if CPUSTYLE_T507 || CPUSTYLE_H616
 		unsigned value;
 		//const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		const uint_fast8_t prei = calcdivider(2, ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
@@ -9574,6 +9574,20 @@ void SystemCoreClockUpdate(void)
 	void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle)
 	{
 		//PRINTF("hardware_dcdcfreq_pwm_setdiv: pwmch=%u, cycle=%u (PER=%08u)\n", pwmch, (unsigned) cycle, (unsigned) PWM->PER);
+		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
+		PWM->CH [pwmch].PPR =
+			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */
+			(cycle / 2) * (UINT32_C(1) << 0) |	/* PWM_ACT_CYCLE */
+			0;
+		// 0: PWM period register is ready to write
+		while ((PWM->CH [pwmch].PCR & (UINT32_C(1) << 11)) != 0)	/* PWM_PERIOD_RDY */
+			;
+	}
+
+	void hardware_bl_pwm_set_duty(unsigned pwmch, uint_fast32_t freq, uint_fast32_t duty)
+	{
+		unsigned cycle = 100;	// TODO: use freq for calculations
+		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u (PER=%08u)\n", pwmch, (unsigned) cycle, (unsigned) PWM->PER);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */

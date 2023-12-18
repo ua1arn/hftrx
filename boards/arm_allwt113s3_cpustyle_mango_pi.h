@@ -887,46 +887,44 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-	#if LCDMODE_LQ043T3DX02K
-		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
-		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
-		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
-		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-	#else
-		/* Заглушка для работы без дисплея */
-		#define WITHLCDBACKLIGHTMIN	0
-		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
-	#endif
+#if LCDMODE_LQ043T3DX02K
+	#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+	#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+	#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+	#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
+	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+#else
+	/* Заглушка для работы без дисплея */
+	#define WITHLCDBACKLIGHTMIN	0
+	#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+#endif
 
-	#if 0
-		/* BL0: PA14. BL1: PA15 */
-		#define	HARDWARE_BL_INITIALIZE() do { \
-			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA15:PA14 */ \
-			const portholder_t ENmask = 0 * (UINT32_C(1) << 1); /* PF1 - not in this hardware  */ \
-			arm_hardware_pioa_opendrain(BLpins, 0); \
-			} while (0)
+#if 0
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	/* Яркость Управлятся через PWM */
+	#define HARDWARE_BL_PWMCH 7	/* PWM7 */
+	#define HARDWARE_BL_FREQ 	20000	/* Частота PWM управления подсветкой */
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 (PWM7, Alt FN 5) */ \
+		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
+		/*arm_hardware_piof_altfn2(ENmask, GPIO_CFG_AF5); */ /* PD22 - PWM7 */ \
+		arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
+	} while (0)
+	#define HARDWARE_BL_SETDUTY(d) do { \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, d); \
+	} while (0)
 
-		/* установка яркости и включение/выключение преобразователя подсветки */
-		/* BL0: PA14. BL1: PA15 */
-		#define HARDWARE_BL_SET(en, level) do { \
-			const portholder_t Vlevel = (level) & 0x03; \
-			const portholder_t ENmask = 0 * (UINT32_C(1) << 1); /* PF1 - not in this hardware */ \
-			const portholder_t BLpins = (UINT32_C(1) << 15) | (UINT32_C(1) << 14); /* PA15:PA14 */ \
-			const portholder_t BLstate = (~ Vlevel) << 14; \
-			GPIOA->BSRR = \
-				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
-				BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
-				0; \
-			__DSB(); \
-		} while (0)
-	#endif
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 */ \
+		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
+	} while (0)
+#endif
 
 #if WITHLTDCHW
 

@@ -949,6 +949,8 @@
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
 	#define HARDWARE_DCDC_PWMCH 0	/* PWM0 */
+	#define HARDWARE_BL_PWMCH 0	/* PWM0 */
+	#define HARDWARE_BL_FREQ 	20000	/* Частота PWM управления подсветкой */
 
 	// PD28 - DC-DC synchro output
 	// PWM0 AF2
@@ -958,6 +960,9 @@
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
+	} while (0)
+	#define HARDWARE_BL_SETDUTY(d) do { \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, d); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
