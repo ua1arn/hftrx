@@ -843,9 +843,15 @@ void ohciehci_clk_init(void)
 #endif /* CFG_TUH_ENABLED && (defined (TUP_USBIP_OHCI) || defined (TUP_USBIP_EHCI)) */
 
 #if CFG_TUD_ENABLED
+
+void tusb_dev_handled(void)
+{
+	dcd_int_handler(0);
+
+}
+
 void usbdevice_clk_init(void)
 {
-
 #if CPUSTYLE_R7S721
 
 	if (WITHUSBHW_DEVICE == & USB200)
@@ -935,7 +941,7 @@ void usbdevice_clk_init(void)
 			//arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
 			//arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
 		}
-		arm_hardware_set_handler_system(OTG_IRQn, device_OTG_HS_IRQHandler);
+		arm_hardware_set_handler_system(OTG_IRQn, tusb_dev_handled);
 
 	}
 
@@ -990,7 +996,7 @@ void usbdevice_clk_init(void)
 			arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
 			arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
 		}
-		arm_hardware_set_handler_system(OTG_HS_IRQn, device_OTG_HS_IRQHandler);
+		arm_hardware_set_handler_system(OTG_HS_IRQn, tusb_dev_handled);
 
 	}
 	else if (WITHUSBHW_DEVICE == USB2_OTG_FS)	// legacy name is USB_OTG_FS
@@ -1084,7 +1090,7 @@ void usbdevice_clk_init(void)
 			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
 			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
 		}
-		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & device_OTG_HS_IRQHandler);
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & tusb_dev_handled);
 		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
 		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
 
@@ -1150,7 +1156,8 @@ void usbdevice_clk_init(void)
 
 	//USB20_OTG_PHYC->USB_CTRL = UINT32_C(0x4300CC01);	// младший бит не влияет... вообще ничего не влияет
 	//USBPHYC0->USB_CTRL =  UINT32_C(0x4300CC00);	// влияет!
-	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, tusb_dev_handled);
+	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
 	// Work
 	//	USB20_OTG_PHYC_BASE:
@@ -1212,7 +1219,8 @@ void usbdevice_clk_init(void)
 	CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
 
 
-	arm_hardware_set_handler_system(USBOTG0_IRQn, device_OTG_HS_IRQHandler);
+	arm_hardware_set_handler_system(USBOTG0_IRQn, tusb_dev_handled);
+	arm_hardware_disable_handler(USBOTG0_IRQn);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
@@ -1281,7 +1289,8 @@ void usbdevice_clk_init(void)
 	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
 	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
 
-	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, tusb_dev_handled);
+	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 
 #else
 	#error usbdevice_clk_init should be implemented

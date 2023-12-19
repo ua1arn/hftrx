@@ -35,7 +35,10 @@ void Error_Handler(void)
 
 #endif /* WITHUSBHW */
 
-#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
+#if WITHTINYUSB
+#include "tusb.h"
+#endif
+#if WITHUSBHW && defined (WITHUSBHW_DEVICE) && ! (WITHTINYUSB && CFG_TUD_ENABLED)
 
 #include "gpio.h"
 #include "src/usb/usbch9.h"

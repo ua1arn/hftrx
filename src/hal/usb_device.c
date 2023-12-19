@@ -254,12 +254,11 @@ void MX_USB_HOST_Process(void)
 /* User-mode function */
 void MX_USB_DEVICE_Process(void)
 {
-#if CPUSTYLE_ALLWINNER
+#if (CPUSTYLE_ALLWINNER) && WITHUSBHW && defined (WITHUSBHW_DEVICE) && ! (WITHTINYUSB && CFG_TUD_ENABLED)
     usb_device_function0(&hUsbDeviceHS);
 #endif /* CPUSTYLE_ALLWINNER */
 }
 #endif /* defined (WITHUSBHW_DEVICE) */
-
 /**
   * @}
   */

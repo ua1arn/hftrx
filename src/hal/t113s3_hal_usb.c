@@ -6,8 +6,10 @@
 //
 
 #include "hardware.h"
-
-#if (CPUSTYLE_ALLWINNER) && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+#if WITHTINYUSB
+#include "tusb.h"
+#endif
+#if (CPUSTYLE_ALLWINNER) && WITHUSBHW && defined (WITHUSBHW_DEVICE) && ! (WITHTINYUSB && CFG_TUD_ENABLED)
 
 #include "board.h"
 #include "buffers.h"
