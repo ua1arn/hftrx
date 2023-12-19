@@ -428,7 +428,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 		#define COLORMAIN_DARKRED  COLORPIP_GRIDCOLOR2	// COLORPIP_DARKRED
 	#endif /* LCDMODE_MAIN_L8 */
 
-#else /* LCDMODE_PIP_L8 */
+#else /* */
 
 	// определение основных цветов
 	///
@@ -526,7 +526,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define COLORMAIN_YELLOW COLOR_YELLOW
 	#define COLORMAIN_DARKRED  COLOR_DARKRED
 
-#endif /* LCDMODE_PIP_L8 */
+#endif /* */
 
 
 // Цвета используемые для отображения

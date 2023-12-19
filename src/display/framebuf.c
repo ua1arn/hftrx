@@ -593,17 +593,8 @@ static void t113_fillrect(
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_PIP_L8
-	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
-	#define MDMA_CTCR_xSIZE_PIP			0x00	// 1 byte
-	////#define DMA2D_OPFCCR_CM_VALUE_MAIN	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
+#if 1
 
-#elif LCDMODE_PIP_RGB565
-	#define DMA2D_FGPFCCR_CM_VALUE_PIP	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
-	#define DMA2D_OPFCCR_CM_VALUE_PIP	(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
-	#define MDMA_CTCR_xSIZE_PIP			0x01	// 2 byte
-
-#else /* LCDMODE_MAIN_L8 */
 	#define DMA2D_FGPFCCR_CM_VALUE_PIP	DMA2D_FGPFCCR_CM_VALUE_MAIN
 	#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
 	#define MDMA_CTCR_xSIZE_PIP			MDMA_CTCR_xSIZE_MAIN
@@ -1585,15 +1576,7 @@ void colpip_fillrect(
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
 
-#if LCDMODE_PIP_L8
-	hwaccel_rect_u8((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
-
-#elif LCDMODE_PIP_RGB565
-	hwaccel_rect_u16((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
-
-#elif LCDMODE_PIP_L24
-	hwaccel_rect_u24((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
-#elif LCDMODE_MAIN_L8
+#if LCDMODE_MAIN_L8
 	hwaccel_rect_u8((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_RGB565
@@ -1824,16 +1807,7 @@ void colpip_fill(
 	COLORPIP_T color
 	)
 {
-#if LCDMODE_PIP_L8
-	hwaccel_rect_u8((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_PIP_RGB565
-	hwaccel_rect_u16((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_PIP_L24
-	hwaccel_rect_u24((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_MAIN_L8
+#if LCDMODE_MAIN_L8
 	hwaccel_rect_u8((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_RGB565
@@ -3395,10 +3369,9 @@ COLORPIP_T getshadedcolor(
 
 
 #else /*  */
-	//#warning LCDMODE_PIP_L8 or LCDMODE_PIP_RGB565 not defined
 	return dot;
 
-#endif /* LCDMODE_PIP_L8 */
+#endif /* */
 }
 
 #if defined (COLORPIP_SHADED)
@@ -3512,7 +3485,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 #endif /* COLORSTYLE_ATS52 */
 
-#elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
+#elif LCDMODE_COLORED && ! LCDMODE_DUMMY
 	//PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
@@ -3527,7 +3500,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 
 #else
 	#warning Monochrome display without indexing colors
-#endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
+#endif /* */
 }
 
 #endif /* ! (LCDMODE_DUMMY || LCDMODE_HD44780) */

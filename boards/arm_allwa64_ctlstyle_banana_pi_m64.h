@@ -155,7 +155,6 @@
 	// not tested
 	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
 	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
-	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */

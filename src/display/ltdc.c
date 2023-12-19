@@ -166,7 +166,6 @@ VDC5_fillLUT_L8(
 
 static void vdc5fb_init_syscnt(struct st_vdc5 * vdc, const videomode_t * vdmode)
 {
-
 	/* Ignore all irqs here */
 	vdc->SYSCNT_INT4 = 0x00000000;
 	vdc->SYSCNT_INT5 = 0x00000000;
@@ -260,9 +259,6 @@ static void vdc5fb_init_scalers(struct st_vdc5 * const vdc, const videomode_t * 
 	SETREG32_CK(& vdc->SC0_SCL0_DS7, 11, 16, HEIGHT);// SC0_RES_OUT_VW Number of Valid Lines in Vertical Direction Output by Scaling-down Control Block (lines)
 	SETREG32_CK(& vdc->SC0_SCL0_DS7, 11, 0, WIDTH);	// SC0_RES_OUT_HW Number of Valid Horizontal Pixels Output by Scaling-Down Control Block (video-image clock cycles)
 
-
-	
-
 	SETREG32_CK(& vdc->SC0_SCL0_US8, 1, 4,	1); // SC0_RES_IBUS_SYNC_SEL 1: Sync signals from the graphics processing block
 	SETREG32_CK(& vdc->SC0_SCL0_US8, 1, 4,	1); // SC0_RES_DISP_ON 1: Frame display off
 #endif
@@ -296,17 +292,10 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
 #endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_PIP_L8
-	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
-	const unsigned grx_rdswa_PIP = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
-#elif LCDMODE_PIP_ARGB888
-	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
-	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
-#else
 	// LCDMODE_PIP_RGB565
-	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
-	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
-#endif
+//	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
+//	const unsigned grx_rdswa_PIP = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
+
 	////////////////////////////////////////////////////////////////
 	// GR0
 	SETREG32_CK(& vdc->GR0_FLM_RD, 1, 0, 0);	// GR0_R_ENB Frame Buffer Read Enable
@@ -361,12 +350,10 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	//vdc->GR2_CLUT ^= (UINT32_C(1) << 16);	// GR2_CLT_SEL Switch to filled table
 //#endif /* LCDMODE_MAIN_L8 */
 
-//#if LCDMODE_PIP_L8
 	// PIP on GR3
 	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
-//#endif /* LCDMODE_PIP_L8 */
 
 	////////////////////////////////////////////////////////////////
 	// GR3 - PIP screen
@@ -391,8 +378,6 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, WIDTH);			// GR3_GRC_HW
 
-//#if LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565
-
 	/* Adjust GR3 parameters for PIP mode (GR2 - mani window, GR3 - PIP) */
 
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable
@@ -408,7 +393,6 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 	SETREG32_CK(& vdc->GR3_AB3, 11, 16, LEFTMARGIN + pipwnd.x);	// GR3_GRC_HS
 	SETREG32_CK(& vdc->GR3_AB3, 11, 0, pipwnd.w);			// GR3_GRC_HW
 
-//#endif /* LCDMODE_PIP_L8 || LCDMODE_PIP_RGB565 */
 }
 /* Palette reload */
 static void vdc5fb_L8_palette(struct st_vdc5 * const vdc)
@@ -424,13 +408,13 @@ static void vdc5fb_L8_palette(struct st_vdc5 * const vdc)
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x00);			// GR2_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR2_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR2_CLUT, 1, 16, 0x01);			// GR2_CLT_SEL
-#endif /* LCDMODE_PIP_L8 */
-#if LCDMODE_PIP_L8
+#endif /* */
+#if 0
 	// PIP on GR3
 	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x00);			// GR3_CLT_SEL
 	VDC5_fillLUT_L8(& VDC5_CH0_GR3_CLUT_TBL, xltrgb24);
 	SETREG32_CK(& vdc->GR3_CLUT_INT, 1, 16, 0x01);			// GR3_CLT_SEL
-#endif /* LCDMODE_PIP_L8 */
+#endif /* */
 }
 
 static void vdc5fb_init_outcnt(struct st_vdc5 * const vdc, const videomode_t * vdmode)
@@ -758,10 +742,6 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 
 
 	ltdc_tfcon_cfg(vdmode);
-
-#if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
-	hardware_ltdc_pip_off();
-#endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
 
 	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
@@ -1437,13 +1417,6 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 
 	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 
-#if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
-	pipparams_t pipwnd;
-	display2_getpipparams(& pipwnd);
-
-	//PRINTF(PSTR("hardware_ltdc_initialize: pip: x/y=%u/%u, w/h=%u/%u\n"), pipwnd.x, pipwnd.y, pipwnd.w, pipwnd.h);
-#endif /* LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8 */
-
 	LTDC_InitStruct.LTDC_HSPolarity = vdmode->hsyncneg ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
 	/* Initialize the vertical synchronization polarity as active low */  
@@ -1506,32 +1479,6 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#if LCDMODE_PIP_L8
-
-	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
-
-	// Bottom layer
-	LCDx_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
-	LCDx_LayerInitPIP(LAYER_PIP);	// довести инициализацию
-
-#elif LCDMODE_PIP_RGB565
-
-	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
-
-	// Bottom layer
-	LCDx_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
-	LCDx_LayerInitPIP(LAYER_PIP);	// довести инициализацию
-
-#elif LCDMODE_PIP_RGB888
-
-	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
-
-	// Bottom layer
-	LCDx_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
-	LCDx_LayerInitPIP(LAYER_PIP);	// довести инициализацию
-
-#endif /* LCDMODE_PIP_RGB565 */
-
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 		; //hardware_nonguiyield();
@@ -1549,9 +1496,6 @@ hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 #elif LCDMODE_MAIN_L8
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_MAIN_L8 */
-#if LCDMODE_PIP_L8
-	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
-#endif /* LCDMODE_PIP_L8 */
 
 	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 		; //hardware_nonguiyield();
@@ -1644,16 +1588,7 @@ void hardware_ltdc_L8_palette(void)
 	(void) LTDC->SRCR;
 	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 		;//hardware_nonguiyield();
-#endif /* LCDMODE_PIP_L8 */
-#if LCDMODE_PIP_L8
-	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
-
-	/* LTDC reload configuration */
-	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
-	(void) LTDC->SRCR;
-	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
-		;//hardware_nonguiyield();
-#endif /* LCDMODE_PIP_L8 */
+#endif /* */
 }
 
 

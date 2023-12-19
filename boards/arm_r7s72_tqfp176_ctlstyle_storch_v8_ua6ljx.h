@@ -112,9 +112,6 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
-	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
-	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 	#define LCDMODE_V2	1	/* только главный экран, без PIP */
 	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
@@ -127,17 +124,6 @@
 	//#define LCDMODE_S1D13781_NHWACCEL 1	/* Неиспользоване аппаратных особенностей EPSON S1D13781 при выводе графики */
 	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
 	#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* Частота генератора, установленного на контроллере дисплея */
-
-#elif 0
-
-	// not tested
-	#define LCDMODE_ILI8961	1	/* 320 * 240 HHT270C-8961-6A6, RGB, ILI8961, use LCDMODE_LTDC_L24 */
-	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
-	#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
-
-	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
-	//#define LCDMODE_ILI8961_TOPDOWN	1
 
 #elif 0
 

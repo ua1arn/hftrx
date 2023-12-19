@@ -173,13 +173,6 @@
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	//#define LCDMODE_DUMMY	1
 	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
-	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана */
-	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана (но главный экран 16 бит) */
-	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
-
-	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */

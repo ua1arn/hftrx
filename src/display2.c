@@ -1151,11 +1151,11 @@ display2_clearbg(
 	dctx_t * pctx
 	)
 {
-#if LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
+#if LCDMODE_LTDC
 
 	colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
 
-#endif /* LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
+#endif /* LCDMODE_LTDC */
 }
 
 // Завершение отрисовки, переключение на следующий фреймбуфер
@@ -1166,11 +1166,11 @@ display2_nextfb(
 	dctx_t * pctx
 	)
 {
-#if WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
+#if WITHLTDCHW && LCDMODE_LTDC
 
 	display_snapshot(colmain_fb_draw(), DIM_X, DIM_Y);	/* запись видимого изображения */
 	display_nextfb();
-#endif /* WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
+#endif /* WITHLTDCHW && LCDMODE_LTDC */
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -3510,20 +3510,6 @@ typedef struct {
 	enum { PALETTESIZE = COLORPIP_BASE };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
-
-	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { WFROWS = ALLDY };
-	enum { PALETTESIZE = 256 };
-	static PACKEDCOLORPIP_T wfpalette [PALETTESIZE];
-	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
-
-#elif (LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)) && LCDMODE_LTDC
-
-	enum { PALETTESIZE = COLORPIP_BASE };
-	enum { WFROWS = ALLDY };
-	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
-
 #elif WITHFASTWATERFLOW && WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
@@ -3548,8 +3534,6 @@ typedef struct {
 
 	enum { PALETTESIZE = 256 };
 	static RAMBIGDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
-
-#elif LCDMODE_PIP_L8
 
 #else
 
@@ -5721,7 +5705,7 @@ static void display2_waterfall(
 
 	// следы спектра ("водопад") на монохромных дисплеях
 
-#elif WITHFASTWATERFLOW || LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
+#elif WITHFASTWATERFLOW || ! LCDMODE_MAIN_L8
 	// следы спектра ("водопад") на цветных дисплеях
 	/* быстрое отображение водопада (но требует больше памяти) */
 

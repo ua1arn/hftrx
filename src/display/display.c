@@ -1527,32 +1527,7 @@ display_getbgcolor(void)
 }
 
 
-#if LCDMODE_LTDC && (LCDMODE_MAIN_L8 && LCDMODE_PIP_RGB565) || (! LCDMODE_MAIN_L8 && LCDMODE_PIP_L8)
-
-// Выдать буфер на дисплей
-// В случае фреймбуфеных дисплеев - формат цвета и там и там одинаковый
-// если разный - то заглушка
-
-//#warning colpip_copy_to_draw is dummy for this LCDMODE_LTDC combination
-
-void colpip_copy_to_draw(
-	const PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t col,	// горизонтальная координата левого верхнего угла на экране (0..dx-1) слева направо
-	uint_fast16_t row	// вертикальная координата левого верхнего угла на экране (0..dy-1) сверху вниз
-	)
-{
-	ASSERT(0);
-}
-
-
-// Координаты в пикселях
-void display_plotfrom(uint_fast16_t x, uint_fast16_t y)
-{
-}
-
-#elif LCDMODE_LTDC
+#if LCDMODE_LTDC
 
 void colpip_copy_to_draw(
 	uintptr_t srcinvalidateaddr,	// параметры clean источника

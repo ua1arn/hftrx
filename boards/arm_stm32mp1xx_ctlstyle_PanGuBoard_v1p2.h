@@ -281,7 +281,6 @@
 	//#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB8888, без PIP */
 
 	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
-	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
