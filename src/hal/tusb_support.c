@@ -28,11 +28,14 @@
 #if WITHTINYUSB
 #include "formats.h"
 #include "gpio.h"
-//#include "bsp/board.h"
+
+#include "buffers.h"
 
 #include "tusb.h"
 #include "host/usbh.h"
 
+#include "src/usb/usb200.h"
+#include "src/usb/usbch9.h"
 #include "usbd_def.h"
 
 #if TUP_USBIP_OHCI && defined WITHUSBHW_OHCI
@@ -868,6 +871,199 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
   else
 	  return NULL;
 }
+
+#if WITHUSBCDCACM && WITHWAWXXUSB
+
+static LCLSPINLOCK_t lockusbdev = LCLSPINLOCK_INIT;
+//static usb_struct * volatile gpusb = NULL;
+
+// Control signal bitmap values for the SetControlLineState request
+// (usbcdc11.pdf, 6.2.14, Table 51)
+#define CDC_DTE_PRESENT                         (1 << 0)
+#define CDC_ACTIVATE_CARRIER                    (1 << 1)
+
+// Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
+//static uint8_t altinterfaces [INTERFACE_count];
+
+static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
+
+static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
+static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
+
+static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
+
+//static uint32_t dwDTERate [WITHUSBCDCACM_N];
+
+#define MAIN_CDC_OFFSET 0
+#if WITHUSBCDCACM_N > 1
+	#define SECOND_CDC_OFFSET 1
+#endif /* WITHUSBCDCACM_N > 1 */
+
+static LCLSPINLOCK_t catlock = LCLSPINLOCK_INIT;
+
+/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
+/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
+/* Биты: RTS = 0x02, DTR = 0x01 */
+
+// Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc1_getrts(void)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc1_getdtr(void)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+}
+
+// Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getrts(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getdtr(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
+static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+
+/* временное решение для передачи (вызывается при запрещённых прерываниях). */
+void usbd_cdc_send(const void * buff, size_t length)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& lockusbdev);
+
+	const unsigned offset = MAIN_CDC_OFFSET;
+//	if (gpusb != NULL)
+//	{
+//		usb_struct * const pusb = gpusb;
+//		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+//		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
+//			return;
+//		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+//		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
+//		memcpy(cdcXbuffin [offset], buff, n);
+//		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
+//		usbd_cdc_txlen [offset] = n;
+//		//printhex(0, cdcXbuffin [offset], usbd_cdc_txlen [offset]);
+//		pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+//// 		do
+////  		{
+////  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+////  		}
+////  		while(ret == USB_RETVAL_NOTCOMP);
+//	}
+	LCLSPIN_UNLOCK(& lockusbdev);
+	LowerIrql(oldIrql);
+}
+
+uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+//	if (gpusb != NULL)
+//	{
+//		usb_struct * const pusb = gpusb;
+//		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+//		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
+//			return 0;
+//		return 1;
+//	}
+	return 0;
+}
+
+/* Разрешение/запрещение прерывания по передаче символа */
+void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	usbd_cdc_txenabled [offset] = state;
+	LCLSPIN_UNLOCK(& catlock);
+}
+
+/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
+/* Разрешение/запрещение прерываний про приёму символа */
+void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	usbd_cdcX_rxenabled [offset] = state;
+	LCLSPIN_UNLOCK(& catlock);
+}
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void
+usbd_cdc_tx(void * ctx, uint_fast8_t c)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	//USBD_HandleTypeDef * const pdev = ctx;
+	(void) ctx;
+	LCLSPIN_LOCK(& catlock);
+	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
+	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
+	LCLSPIN_UNLOCK(& catlock);
+}
+
+/* использование буфера принятых данных */
+static void cdcXout_buffer_save(
+	const uint8_t * data,
+	unsigned length,
+	unsigned offset
+	)
+{
+	unsigned i;
+	//PRINTF("1:%u '%*.*s'", length, length, length, data);
+
+	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
+	{
+		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
+	}
+}
+#endif
 
 void tusb_dev_handled(void)
 {
