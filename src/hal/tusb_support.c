@@ -33,6 +33,8 @@
 #include "tusb.h"
 #include "host/usbh.h"
 
+#include "usbd_def.h"
+
 #if TUP_USBIP_OHCI && defined WITHUSBHW_OHCI
 // Enable USB interrupt
 void hcd_int_enable(uint8_t rhport)
@@ -843,6 +845,29 @@ void ohciehci_clk_init(void)
 #endif /* CFG_TUH_ENABLED && (defined (TUP_USBIP_OHCI) || defined (TUP_USBIP_EHCI)) */
 
 #if CFG_TUD_ENABLED
+
+
+uint8_t const * tud_descriptor_device_cb(void)
+{
+  (void) index; // for multiple configurations
+  return DeviceDescrTbl [0].data;
+}
+// Invoked when received GET CONFIGURATION DESCRIPTOR
+// Application return pointer to descriptor
+// Descriptor contents must exist long enough for transfer to complete
+uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
+{
+  (void) index; // for multiple configurations
+  return ConfigDescrTbl [index].data;
+}
+
+uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
+  (void) langid;
+  if (index < usbd_get_stringsdesc_count())
+	  return (uint16_t const *) StringDescrTbl [index].data;
+  else
+	  return NULL;
+}
 
 void tusb_dev_handled(void)
 {

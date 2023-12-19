@@ -21,6 +21,27 @@
 
 // Enable Device stack
 //#define CFG_TUD_ENABLED       1
+
+#define BOARD_TUD_MAX_SPEED 1
+
+ //------------- CLASS -------------//
+#define CFG_TUD_CDC               1
+//#define CFG_TUD_HID               1
+//#define CFG_TUD_DFU               1
+//#define CFG_TUD_AUDIO             2
+
+#define CFG_TUD_MSC               0
+#define CFG_TUD_MIDI              0
+#define CFG_TUD_VENDOR            0
+
+ // CDC FIFO size of TX and RX
+ #define CFG_TUD_CDC_RX_BUFSIZE   64//(TUD_OPT_HIGH_SPEED ? 512 : 64)
+ #define CFG_TUD_CDC_TX_BUFSIZE   64//(TUD_OPT_HIGH_SPEED ? 512 : 64)
+
+ // CDC Endpoint transfer buffer size, more is faster
+ #define CFG_TUD_CDC_EP_BUFSIZE   64//(TUD_OPT_HIGH_SPEED ? 512 : 64)
+
+
 #define CFG_TUH_ENABLED 1
 #define TUP_USBIP_OHCI 1
 //#define TUP_USBIP_EHCI 1
@@ -55,9 +76,9 @@
 #endif
 
 // RHPort max operational speed can defined by board.mk
-#ifndef BOARD_TUD_MAX_SPEED
-#define BOARD_TUD_MAX_SPEED   OPT_MODE_DEFAULT_SPEED
-#endif
+//#ifndef BOARD_TUD_MAX_SPEED
+//#define BOARD_TUD_MAX_SPEED   OPT_MODE_DEFAULT_SPEED
+//#endif
 
 //--------------------------------------------------------------------
 // COMMON CONFIGURATION
@@ -101,7 +122,7 @@
 //#define CFG_TUD_DFU               1
 
 // DFU buffer size, it has to be set to the buffer size used in TUD_DFU_DESCRIPTOR
-#define CFG_TUD_DFU_XFER_BUFSIZE  (TUD_OPT_HIGH_SPEED ? 512 : 64)
+#define CFG_TUD_DFU_XFER_BUFSIZE  64//(TUD_OPT_HIGH_SPEED ? 512 : 64)
 
 
 #define LPC_USB_BASE WITHUSBHW_OHCI
