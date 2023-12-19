@@ -22,8 +22,6 @@
 // Enable Device stack
 //#define CFG_TUD_ENABLED       1
 
-#define BOARD_TUD_MAX_SPEED 1
-
  //------------- CLASS -------------//
 #define CFG_TUD_CDC               1
 //#define CFG_TUD_HID               1
@@ -97,6 +95,8 @@
 #define CFG_TUSB_DEBUG        3
 #endif
 
+//#define BOARD_TUD_MAX_SPEED   OPT_MODE_DEFAULT_SPEED
+#define BOARD_TUD_MAX_SPEED   OPT_MODE_HIGH_SPEED
 // Default is max speed that hardware controller could support with on-chip PHY
 #define CFG_TUD_MAX_SPEED     BOARD_TUD_MAX_SPEED
 
