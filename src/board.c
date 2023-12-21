@@ -7196,7 +7196,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	spi_operate_unlock(irql);
 }
 
-#else
+#elif ! LINUX_SUBSYSTEM
 
 static adapter_t plfircoefsout;
 

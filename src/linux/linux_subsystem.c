@@ -77,7 +77,7 @@ void * get_blockmem_ptr(uint32_t addr, uint8_t pages)
 	return blkptr;
 }
 
-void process_linux_timer_spool(void)
+void * process_linux_timer_spool(void * args)
 {
 	while(1)
 	{
@@ -87,7 +87,7 @@ void process_linux_timer_spool(void)
 	}
 }
 
-void linux_encoder_spool(void)
+void * linux_encoder_spool(void * args)
 {
 	while(1)
 	{
@@ -98,7 +98,7 @@ void linux_encoder_spool(void)
 
 #if WITHNMEA && WITHLFM
 
-void linux_nmea_spool(void)
+void linux_nmea_spool(void * args)
 {
 	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
 	linux_run_shell_cmd(argv);
@@ -122,7 +122,7 @@ void linux_nmea_spool(void)
 	}
 }
 
-void linux_pps_thread(void)
+void linux_pps_thread(void * args)
 {
 	uint32_t uio_key = 1;
 	uint32_t uio_value = 0;
@@ -235,20 +235,18 @@ void framebuffer_close(void)
 
 /********************** EMIO ************************/
 
-volatile uint32_t * xgpo, * xgpi;
+#include "./gpiops/xgpiops.h"
 
-#if CPUSTYLE_XC7Z
-	#include "./gpiops/xgpiops.h"
-	static XGpioPs xc7z_gpio;
-	uint32_t * gpiops_ptr;
-#endif /* CPUSTYLE_XC7Z */
+//volatile uint32_t * xgpo, * xgpi;
+static XGpioPs xc7z_gpio;
+uint32_t * gpiops_ptr;
 
 void linux_xgpio_init(void)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	xgpo = get_highmem_ptr(AXI_XGPO_ADDR);
 	xgpi = get_highmem_ptr(AXI_XGPI_ADDR);
-#elif CPUSTYLE_XC7Z
+#else
 	int ff = open("/sys/class/gpio/export", O_WRONLY);
 	if (! ff)
 		perror("Unable to open /sys/class/gpio/export");
@@ -264,17 +262,17 @@ void linux_xgpio_init(void)
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	uint32_t v = * xgpi;
 	return (v >> pin) & 1;
-#elif CPUSTYLE_XC7Z
+#else
 	return XGpioPs_ReadPin(& xc7z_gpio, pin);
 #endif
 }
 
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 {
-#if CPUSTYLE_XCZU
+#if 0
 	uint32_t mask = 1 << pin;
 	uint32_t rw = * xgpo;
 
@@ -284,7 +282,7 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 		rw &= ~mask;
 
 	* xgpo = rw;
-#elif CPUSTYLE_XC7Z
+#else
 	XGpioPs_WritePin(& xc7z_gpio, pin, val);
 #endif
 }
@@ -301,17 +299,13 @@ uint_fast8_t xc7z_readpin(uint8_t pin)
 
 void xc7z_gpio_input(uint8_t pin)
 {
-#if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 0);
-#endif
 }
 
 void xc7z_gpio_output(uint8_t pin)
 {
-#if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 1);
 	XGpioPs_SetOutputEnablePin(& xc7z_gpio, pin, 1);
-#endif /* CPUSTYLE_XC7Z */
 }
 
 void gpio_writepin(uint8_t pin, uint8_t val)
@@ -468,7 +462,7 @@ void linux_iq_thread(void)
 	release_dmabuffer32tx(addr);
 }
 
-void linux_iq_interrupt_thread(void)
+void * linux_iq_interrupt_thread(void * args)
 {
 	uint32_t uio_key = 1;
 	uint32_t uio_value = 0;
@@ -476,7 +470,7 @@ void linux_iq_interrupt_thread(void)
 	fd_int = open(LINUX_IQ_INT_FILE, O_RDWR);
     if (fd_int < 0) {
         PRINTF("%s open failed\n", LINUX_IQ_INT_FILE);
-        return;
+        return NULL;
     }
 
     addr32rx = allocate_dmabuffer32rx();
@@ -485,15 +479,15 @@ void linux_iq_interrupt_thread(void)
     {
 #if 1
         //Acknowledge IRQ
-        if (write(fd_int, &uio_key, sizeof(uio_key)) < 0) {
+        if (write(fd_int, & uio_key, sizeof(uio_key)) < 0) {
             PRINTF("Failed to acknowledge IRQ: %s\n", strerror(errno));
-            return;
+            return NULL;
         }
 
         //Wait for next IRQ
-        if (read(fd_int, &uio_value, sizeof(uio_value)) < 0) {
+        if (read(fd_int, & uio_value, sizeof(uio_value)) < 0) {
             PRINTF("Failed to wait for IRQ: %s\n", strerror(errno));
-            return;
+            return NULL;
         }
 
         linux_iq_thread();
@@ -554,7 +548,7 @@ void safe_cond_wait(struct cond_thread * ct)
 	pthread_mutex_unlock(& ct->ready_mutex);
 }
 
-void linux_create_thread(pthread_t * tid, void * process, int priority, int cpuid)
+void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid)
 {
 	pthread_attr_t attr;
 	struct sched_param param;
@@ -587,29 +581,16 @@ void linux_cancel_thread(pthread_t tid)
 
 void linux_subsystem_init(void)
 {
-#if 1 //CPUSTYLE_XCZU
 	char spid[6];
 	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
 	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
 	linux_run_shell_cmd(argv);
-#endif /* CPUSTYLE_XCZU */
 
 	linux_xgpio_init();
 	linux_iq_init();
 }
 
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
-
-#if WITHTHERMOLEVEL && CPUSTYLE_XCZU
-#include "../sysmon/xsysmonpsu.h"
-static XSysMonPsu xczu_sysmon;
-
-float xczu_get_cpu_temperature(void)
-{
-	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
-	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
-}
-#endif /* WITHTHERMOLEVEL && CPUSTYLE_XCZU */
 
 void linux_user_init(void)
 {
@@ -627,18 +608,6 @@ void linux_user_init(void)
 	uint32_t fan_pwm_duty = FS * (1.0f - 0.8f) - 1;
 	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
-
-#if WITHTHERMOLEVEL && CPUSTYLE_XCZU
-	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
-	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
-	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
-	if (Status != XST_SUCCESS) {
-		PRINTF("sysmon init error %d\n", Status);
-		ASSERT(0);
-	}
-	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
-	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
-#endif /* WITHTHERMOLEVEL && CPUSTYLE_XCZU */
 
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
@@ -955,74 +924,5 @@ unsigned long xc7z_get_arm_freq(void)
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line) {}
 void LowerIrql(IRQL_t newIRQL) {}
-
-#if CS_BY_I2C
-
-static uint8_t cs_nvram = 1;
-static uint8_t cs_ext1 = 1;
-static uint8_t cs_ext2 = 1;
-
-void pcf8575_write_pins(uint8_t buf[2])
-{
-#if WITHTWIHW
-		i2chw_write(PCF8575CTS_ADDR, buf, 2);
-#elif WITHTWISW
-		i2c_start(PCF8575CTS_ADDR);
-		i2c_write(buf[0]);
-		i2c_write(buf[1]);
-#endif /* WITHTWIHW */
-}
-
-void cs_i2c_assert(spitarget_t target)
-{
-	if (target < 256)
-	{
-		gpio_writepin((target), 0);
-	}
-	else
-	{
-		uint8_t buf[2] = { 0, 0, };
-
-		cs_nvram = target == targetnvram ? 0 : 1;
-		cs_ext1 = target == targetext1 ? 0 : 1;
-		cs_ext2 = target == targetext2 ? 0 : 1;
-
-		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
-		pcf8575_write_pins(buf);
-	}
-}
-
-void cs_i2c_deassert(spitarget_t target)
-{
-	if (target < 256)
-	{
-		gpio_writepin(targetctl1, 1);
-	}
-	else
-	{
-		uint8_t buf[2] = { 0, 0, };
-		cs_nvram = 1;
-		cs_ext1 = 1;
-		cs_ext2 = 1;
-
-		buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
-		pcf8575_write_pins(buf);
-	}
-}
-
-void cs_i2c_disable(void)
-{
-	gpio_writepin(targetctl1, 1);
-
-	uint8_t buf[2] = { 0, 0, };
-	cs_nvram = 1;
-	cs_ext1 = 1;
-	cs_ext2 = 1;
-
-	buf[1] = (cs_nvram << 0) | (cs_ext1 << 1) | (cs_ext1 << 2);
-	pcf8575_write_pins(buf);
-}
-
-#endif /* CS_BY_I2C */
 
 #endif /* LINUX_SUBSYSTEM */
