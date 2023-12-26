@@ -998,12 +998,12 @@ static void usb_write_ep_fifo(pusb_struct pusb, uint32_t ep_no, uintptr_t src_ad
 }
 
 
-static void usb_ep0_start_send(pusb_struct pusb, uintptr_t addr, uint32_t len)
+static void usb_ep0_start_send(pusb_struct pusb, const uint8_t * addr, uint32_t len)
 {
 	uint32_t is_last;
 	uint32_t byte_trans;
 
-	pusb->ep0_xfer_srcaddr = addr;
+	pusb->ep0_xfer_srcaddr = (uintptr_t) addr;
 	pusb->ep0_xfer_residue = len;
 
 	if (pusb->ep0_xfer_residue<pusb->ep0_maxpktsz)
@@ -1039,7 +1039,7 @@ static void usb_ep0_start_send(pusb_struct pusb, uintptr_t addr, uint32_t len)
 
 static void usb_ep0_ctl_status_send(pusb_struct pusb)
 {
-	usb_ep0_start_send(pusb, 0, 0);
+	usb_ep0_start_send(pusb, NULL, 0);
 }
 
 static void usb_ep0_ctl_error(pusb_struct pusb)
@@ -3058,7 +3058,6 @@ static uint8_t dfu_dev_status [6];
 
 #endif /* WITHUSBDFU */
 
-// в конце выполняем usb_ep0_start_send
 // После возврата отсюда ставим
 //	pusb->ep0_xfer_state = USB_EP0_DATA;
 static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
@@ -3083,8 +3082,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 #endif
 				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 				USBD_poke_u16(& buff [0], dev_config_status);
-				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-				pusb->ep0_xfer_residue = AWUSB_MIN(2, ep0_setup->wLength);
+				usb_ep0_start_send(pusb, buff, AWUSB_MIN(2, ep0_setup->wLength));
 			}
 		    	break;
 			case USB_REQ_GET_DESCRIPTOR :
@@ -3092,19 +3090,17 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 				{
 					case USB_DESC_TYPE_DEVICE:              //Get Device Desc
 						pusb->ep0_maxpktsz = USB_OTG_MAX_EP0_SIZE; // *((uint8_t*)(pusb->device.dev_desc+7));
-						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceDescrTbl [temp].data;
-						pusb->ep0_xfer_residue = AWUSB_MIN(DeviceDescrTbl [temp].size, ep0_setup->wLength);
+						usb_ep0_start_send(pusb, DeviceDescrTbl [temp].data, AWUSB_MIN(DeviceDescrTbl [temp].size, ep0_setup->wLength));
 						break;
 					case USB_DESC_TYPE_CONFIGURATION:              //Get Configuration Desc
 					   	if (index < USBD_CONFIGCOUNT)
 					   	{
-							pusb->ep0_xfer_srcaddr = (uintptr_t)ConfigDescrTbl [index].data;
-							pusb->ep0_xfer_residue = AWUSB_MIN(ConfigDescrTbl [index].size, ep0_setup->wLength);
+							usb_ep0_start_send(pusb, ConfigDescrTbl [index].data, AWUSB_MIN(ConfigDescrTbl [index].size, ep0_setup->wLength));
 					   	}
 						else
 						{
-						    pusb->ep0_xfer_residue = 0;
 							PRINTF("Unknown Configuration Desc!!\n");
+							usb_ep0_ctl_error(pusb);
 						}
 						break;
 					case USB_DESC_TYPE_STRING:             //Get String Desc
@@ -3113,76 +3109,70 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 							// WCID devices support
 							// Microsoft OS String Descriptor, ReqLength=0x12
 							// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
-							pusb->ep0_xfer_srcaddr = (uintptr_t)MsftStringDescr [0].data;
-							pusb->ep0_xfer_residue = AWUSB_MIN(MsftStringDescr [0].size, ep0_setup->wLength);
+							usb_ep0_start_send(pusb, MsftStringDescr [0].data, AWUSB_MIN(MsftStringDescr [0].size, ep0_setup->wLength));
 					   	}
 					   	else if (index < usbd_get_stringsdesc_count())
 						{
-							pusb->ep0_xfer_srcaddr = (uintptr_t)StringDescrTbl [index].data;
-							pusb->ep0_xfer_residue = AWUSB_MIN(StringDescrTbl [index].size, ep0_setup->wLength);
+							usb_ep0_start_send(pusb, StringDescrTbl [index].data, AWUSB_MIN(StringDescrTbl [index].size, ep0_setup->wLength));
 						}
 						else
 						{
-						    pusb->ep0_xfer_residue = 0;
 							PRINTF("Unknown String Desc!! 0x%02X\n", index);
+							usb_ep0_ctl_error(pusb);
 						}
 						break;
 					case USB_DESC_TYPE_INTERFACE:           //Get Interface Desc
-					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Interface Descriptor\n");
+					    usb_ep0_ctl_status_send(pusb);
 				    	break;
 					case USB_DESC_TYPE_ENDPOINT:          //Get Endpoint Desc
-					    pusb->ep0_xfer_residue = 0;
 					    PRINTF("usb_device: Get Endpoint Descriptor\n");
+					    usb_ep0_ctl_status_send(pusb);
 				    	break;
 					case USB_DESC_TYPE_DEVICE_QUALIFIER:           //Get Device Qualifier
-						pusb->ep0_xfer_srcaddr = (uintptr_t)DeviceQualifierTbl [0].data;
-						pusb->ep0_xfer_residue = AWUSB_MIN(DeviceQualifierTbl [0].size, ep0_setup->wLength);
+						usb_ep0_start_send(pusb, DeviceQualifierTbl [0].data, AWUSB_MIN(DeviceQualifierTbl [0].size, ep0_setup->wLength));
 				    	break;
 					case USB_DESC_TYPE_OTG:
-					    pusb->ep0_xfer_srcaddr = (uintptr_t) OtgDescTbl[0].data;
-					    pusb->ep0_xfer_residue = AWUSB_MIN(OtgDescTbl [0].size, ep0_setup->wLength);
+						usb_ep0_start_send(pusb, OtgDescTbl[0].data, AWUSB_MIN(OtgDescTbl [0].size, ep0_setup->wLength));
 				    	break;
 					case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
-						pusb->ep0_xfer_srcaddr = (uintptr_t)OtherSpeedConfigurationTbl [0].data;
-						pusb->ep0_xfer_residue = AWUSB_MIN(OtherSpeedConfigurationTbl [0].size, ep0_setup->wLength);
+						usb_ep0_start_send(pusb, OtherSpeedConfigurationTbl[0].data, AWUSB_MIN(OtherSpeedConfigurationTbl [0].size, ep0_setup->wLength));
 				    	break;
 					case USB_DESC_TYPE_BOS:
 						if (BinaryDeviceObjectStoreTbl [0].size != 0)
 						{
-							pusb->ep0_xfer_residue = AWUSB_MIN(BinaryDeviceObjectStoreTbl [0].size, ep0_setup->wLength);
-							pusb->ep0_xfer_srcaddr = (uintptr_t)BinaryDeviceObjectStoreTbl [0].data;
+							usb_ep0_start_send(pusb, BinaryDeviceObjectStoreTbl[0].data, AWUSB_MIN(BinaryDeviceObjectStoreTbl [0].size, ep0_setup->wLength));
 						}
 						else
 						{
-							pusb->ep0_xfer_residue = 0;
+							usb_ep0_ctl_error(pusb);
 						}
 						break;
-					default  :
-					    pusb->ep0_xfer_residue = 0;
+					default:
 					    PRINTF("usb_device: Get Unknown Descriptor 0x%02X\n", HI_BYTE(ep0_setup->wValue));
+						usb_ep0_ctl_error(pusb);
+						break;
 				}
 		      	break;
 	     	case USB_REQ_GET_CONFIGURATION :
 			{
 				static uint8_t ALIGNX_BEGIN buff [64] ALIGNX_END;
 				PRINTF("usb_device: Get Configuration\n");
-				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-				pusb->ep0_xfer_residue = 1;
+				usb_ep0_start_send(pusb, buff, AWUSB_MIN(1, ep0_setup->wLength));
 			}
 				break;
 			case USB_REQ_GET_INTERFACE :
-				pusb->ep0_xfer_residue = 0;
 				PRINTF("usb_device: Get Interface\n");
+				usb_ep0_ctl_status_send(pusb);
 				break;
 			case USB_REQ_SYNCH_FRAME :
-				pusb->ep0_xfer_residue = 0;
 				PRINTF("usb_device: Sync Frame\n");
+				usb_ep0_ctl_status_send(pusb);
 				break;
 
 	      	default   :
-	        	pusb->ep0_xfer_residue = 0;
 	        	PRINTF("usb_device: Unknown Standard Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+				usb_ep0_ctl_error(pusb);
 		    	break;
 		}
 	}
@@ -3215,8 +3205,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 						buff [4] = 0;	// 1 stop bit
 						buff [5] = 0;	// parity=none
 						buff [6] = 8;	// bDataBits
-						pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-						pusb->ep0_xfer_residue =  AWUSB_MIN(7, ep0_setup->wLength);;
+						usb_ep0_start_send(pusb, buff, AWUSB_MIN(7, ep0_setup->wLength));
 					}
 					break;
 				case CDC_SET_CONTROL_LINE_STATE:
@@ -3234,9 +3223,8 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 				switch (ep0_setup->bRequest)
 				{
 				case 0x00FE :
-					pusb->ep0_xfer_srcaddr = (uintptr_t) pusb->device_msc.MaxLUNv;
-					pusb->ep0_xfer_residue = 1;
 					//PRINTF("usb_device: Get MaxLUN, ifc=%u\n", interfacev);
+					usb_ep0_start_send(pusb, pusb->device_msc.MaxLUNv, 1);
 					break;
 				}
 			}
@@ -3319,8 +3307,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 				}
 				ASSERT(len != 0);
 				ASSERT(ep0_setup->wLength != 0);
-				pusb->ep0_xfer_srcaddr = (uintptr_t) buff;
-				pusb->ep0_xfer_residue = ulmin16(len, ep0_setup->wLength);
+				usb_ep0_start_send(pusb, buff, ulmin16(len, ep0_setup->wLength));
 				break;
 
 			}
@@ -3334,24 +3321,28 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 				{
 				case DFU_DETACH:
 					TP();
+					usb_ep0_ctl_status_send(pusb);
 					break;
 				case DFU_DNLOAD:
 					TP();
+					usb_ep0_ctl_status_send(pusb);
 					break;
 				case DFU_UPLOAD:
 					TP();
+					usb_ep0_ctl_status_send(pusb);
 					break;
 				case DFU_GETSTATUS:
 					dfu_dev_status[0] = 0;
 				    dfu_dev_status[4] = dfu_dev_state;
-					pusb->ep0_xfer_srcaddr = (uintptr_t) dfu_dev_status;
-					pusb->ep0_xfer_residue = AWUSB_MIN(6, ep0_setup->wLength);
+					usb_ep0_start_send(pusb, dfu_dev_status, AWUSB_MIN(6, ep0_setup->wLength));
 					break;
 				case DFU_CLRSTATUS:
 					TP();
+					usb_ep0_ctl_status_send(pusb);
 					break;
 				case DFU_GETSTATE:
 					TP();
+					usb_ep0_ctl_status_send(pusb);
 					break;
 				case DFU_ABORT:
 					TP();
@@ -3359,6 +3350,7 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 				default:
 					pusb->ep0_xfer_residue = 0;
 					PRINTF("ep0_in_handler: INTERFACE_DFU_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					usb_ep0_ctl_status_send(pusb);
 					break;
 				}
 			}
@@ -3400,26 +3392,25 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 				switch (ep0_setup->bRequest)
 				{
 				case MTP_REQ_RESET:
-					pusb->ep0_xfer_residue = AWUSB_MIN(0, ep0_setup->wLength);
 					PRINTF("ep0_in: INTERFACE_MTP_CONTROL MTP_REQ_RESET ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					usb_ep0_start_send(pusb, NULL, AWUSB_MIN(0, ep0_setup->wLength));
 					break;
 				case MTP_REQ_GET_DEVICE_STATUS:
 					USBD_poke_u32(mtp_dev_status, (MTP_RESPONSE_OK << 16) | 4);
-					pusb->ep0_xfer_srcaddr = (uintptr_t) mtp_dev_status;
-					pusb->ep0_xfer_residue = 4;//AWUSB_MIN(4, ep0_setup->wLength);
 					PRINTF("ep0_in: INTERFACE_MTP_CONTROL MTP_REQ_GET_DEVICE_STATUS ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					usb_ep0_start_send(pusb, mtp_dev_status, AWUSB_MIN(4, ep0_setup->wLength));
 					break;
 				default:
-					pusb->ep0_xfer_residue = AWUSB_MIN(0, ep0_setup->wLength);
 					PRINTF("ep0_in: INTERFACE_MTP_CONTROL Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+					usb_ep0_start_send(pusb, NULL, AWUSB_MIN(0, ep0_setup->wLength));
 					break;
 				}
 			}
 			break;
 #endif /* WITHUSBDMTP */
 		default:
-			pusb->ep0_xfer_residue = 0;
 			PRINTF("ep0_in: Unknown Class-Specific Request ifc=%u, bRequest=0x%02X\n", interfacev, ep0_setup->bRequest);
+			usb_ep0_ctl_error(pusb);
 			break;
 		}
 	}
@@ -3435,12 +3426,11 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 			// Extended Properties OS Descriptor support
 			if (ifc < ARRAY_SIZE(ExtOsPropDescTbl) && ExtOsPropDescTbl[ifc].size != 0)
 			{
-				pusb->ep0_xfer_srcaddr = (uintptr_t)ExtOsPropDescTbl [ifc].data;
-				pusb->ep0_xfer_residue = AWUSB_MIN(ExtOsPropDescTbl [ifc].size, ep0_setup->wLength);
+				usb_ep0_start_send(pusb, ExtOsPropDescTbl [ifc].data, AWUSB_MIN(ExtOsPropDescTbl [ifc].size, ep0_setup->wLength));
 			}
 			else
 			{
-				pusb->ep0_xfer_residue = 0;
+				usb_ep0_ctl_error(pusb);
 			}
 		}
 		else if (ep0_setup->bRequest == USBD_WCID_VENDOR_CODE && ep0_setup->wIndex == 0x04)
@@ -3448,18 +3438,18 @@ static int32_t ep0_setup_in_handler_all(pusb_struct pusb)
 			//const uint_fast8_t ifc = LO_BYTE(ep0_setup->wValue);
 			//PRINTF("usb_device: WCID Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X, wLength=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
 
-			pusb->ep0_xfer_srcaddr = (uintptr_t)MsftCompFeatureDescr [0].data;
-			pusb->ep0_xfer_residue = AWUSB_MIN(MsftCompFeatureDescr [0].size, ep0_setup->wLength);
+			usb_ep0_start_send(pusb, MsftCompFeatureDescr [0].data, AWUSB_MIN(MsftCompFeatureDescr [0].size, ep0_setup->wLength));
 		}
 		else
 		{
 			PRINTF("usb_device: Unknown Vendor-Specific Request = 0x%02X, wValue=0x%04X, wIndex=0x%04X, wLength=0x%04X\n", ep0_setup->bRequest, ep0_setup->wValue, ep0_setup->wIndex, ep0_setup->wLength);
-			pusb->ep0_xfer_residue = 0;
+			usb_ep0_ctl_error(pusb);
 		}
 	}
 	else
 	{
 		PRINTF("usb_device: Unknown EP0 IN!!, 0x%02X\n", ep0_setup->bmRequest & USB_REQ_TYPE_MASK);
+		usb_ep0_ctl_error(pusb);
 	}
 
 	return 0;
@@ -3639,10 +3629,6 @@ static int32_t ep0_setup_in_handler(pusb_struct pusb)
 	default:
 		TP();
 		break;
-	}
-	if (ep0_setup->bmRequest & 0x80) //in
-	{
-		usb_ep0_start_send(pusb, pusb->ep0_xfer_srcaddr, pusb->ep0_xfer_residue);
 	}
 	return 0;
 }
@@ -4969,7 +4955,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 		pusb->ep0_xfer_srcaddr = (uintptr_t) pBuf;
 		pusb->ep0_xfer_residue = len;
 
-		usb_ep0_start_send(pusb, (uintptr_t) pBuf, len);
+		usb_ep0_start_send(pusb, pBuf, len);
 
 	   	pusb->ep0_xfer_state = USB_EP0_DATA;
   }
