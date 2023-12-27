@@ -3628,6 +3628,7 @@ static int32_t ep0_setup_in_handler(pusb_struct pusb)
 		break;
 	default:
 		TP();
+		usb_ep0_ctl_error(pusb);
 		break;
 	}
 	return 0;
