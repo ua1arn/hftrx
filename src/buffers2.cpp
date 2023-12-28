@@ -3308,7 +3308,7 @@ void buffers_diagnostics(void)
 	btout8k.debug();
 #endif
 #if WITHINTEGRATEDDSP
-#if 0
+#if 1
 	denoise16list.debug();
 	codec16rx.debug();
 	codec16tx.debug();
