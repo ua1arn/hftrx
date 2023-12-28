@@ -377,12 +377,13 @@ static void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t 
 
 	reg_val = (maxpayload & 0x7FF);
 	reg_val |= ((pktcnt-1) & 0x1F) << 11;
-	WITHUSBHW_DEVICE->USB_TXMAXP = reg_val;
+	WITHUSBHW_DEVICE->USB_TXMAXP = reg_val;	// TXCSR bits 15..0
 }
 
 static uint32_t usb_get_eptx_maxpkt(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_TXMAXP;
+	uint32_t v = WITHUSBHW_DEVICE->USB_TXMAXP;	// TXCSR bits 15..0
+	return (v&0x7ff)*(((v&0xf800)>>11)+1);
 }
 
 //static void usb_ep0_disable_ping(pusb_struct pusb)
@@ -405,7 +406,7 @@ static uint32_t usb_get_eptx_maxpkt(pusb_struct pusb)
 
 static void usb_ep0_flush_fifo(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_TXCSRHI |= USB_CSR0_FLUSHFIFO;
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= USB_CSR0_FLUSHFIFO;	// CSR0 bit 24
 }
 
 static uint32_t usb_ep0_is_naktimeout(pusb_struct pusb)
@@ -486,12 +487,12 @@ static uint32_t usb_get_eptx_csr(pusb_struct pusb)
 
 static void usb_set_eptx_csr(pusb_struct pusb, uint32_t csr)
 {
-	 WITHUSBHW_DEVICE->USB_TXCSRHI = csr;
+	 WITHUSBHW_DEVICE->USB_TXCSRHI = csr;	// TXCSR bits 31..16
 }
 
 static void usb_eptx_flush_fifo(pusb_struct pusb)
 {
-	 WITHUSBHW_DEVICE->USB_TXCSRHI = (UINT32_C(1) << 3);
+	 WITHUSBHW_DEVICE->USB_TXCSRHI = (UINT32_C(1) << 3);	// TXCSR bit 19
 }
 
 static void usb_set_eprx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t pktcnt)
@@ -505,13 +506,13 @@ static void usb_set_eprx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t 
 
 static uint32_t usb_get_eprx_maxpkt(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_RXMAXP & 0xFFFF;
+	uint32_t v = WITHUSBHW_DEVICE->USB_RXMAXP;
+	return (v & 0x7ff)*(((v & 0xf800)>>11)+1);
 }
 
 static uint32_t usb_get_eprx_csr(pusb_struct pusb)
 {
 	return WITHUSBHW_DEVICE->USB_RXCSRHI;
-	//return get_hvalue(USBOTG0_BASE + USB_hRXCSR_OFF);
 }
 
 static void usb_set_eprx_csr(pusb_struct pusb, uint32_t csr)
@@ -527,7 +528,6 @@ static void usb_set_eprx_csrhi24(pusb_struct pusb, uint32_t csrhi)
 static void usb_eprx_flush_fifo(pusb_struct pusb)
 {
 	WITHUSBHW_DEVICE->USB_RXCSRHI = UINT32_C(1) << 4;
-	//put_hvalue(USBOTG0_BASE + USB_hRXCSR_OFF, UINT32_C(1) << 4);
 }
 
 static uint32_t usb_get_ep0_count(pusb_struct pusb)
@@ -1136,7 +1136,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 
 	usb_select_ep(pusb, ep_no);
 	maxpkt = usb_get_eprx_maxpkt(pusb);
-	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
 
 	switch (pusb->eprx_xfer_state[ep_no-1])
 	{
@@ -1408,7 +1407,6 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 #endif
 	usb_select_ep(pusb, ep_no);
 	maxpkt = usb_get_eptx_maxpkt(pusb);
-	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
 
 	switch (pusb->eptx_xfer_state[ep_no-1])
 	{
@@ -1582,7 +1580,6 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 	 			{
 	 				pusb->eptx_xfer_tranferredv[ep_no-1] = byte_count;
 			    	maxpkt = usb_get_eptx_maxpkt(pusb);
-			    	maxpkt = (maxpkt&0x7ff)*(((maxpkt&0xf800)>>11)+1);
 			    	if (aw_module(byte_count, maxpkt))
 			    	{
 				   		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb)|USB_TXCSR_TXPKTRDY);
