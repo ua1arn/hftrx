@@ -2515,7 +2515,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
 		ITEM_VALUE,
-		10, 300,			/* 10.0 MHz.. 30.0 MHz in 100 kHz steps */
+		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
 		offsetof(struct nvmap, lfmstart100k),
 		nvramoffs0,
 		& lfmstart100k,
@@ -2525,7 +2525,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
 		ITEM_VALUE,
-		10, 350,			/* 0.0 MHz.. 35.0 MHz in 100 kHz steps */
+		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
 		offsetof(struct nvmap, lfmstop100k),
 		nvramoffs0,
 		& lfmstop100k,
@@ -2565,7 +2565,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase,
 	},
     {
-        QLABEL("LFM OFFS"), 5 + WSIGNFLAG, 0, 0,     ISTEP1,
+        QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, 0,     ISTEP1,
         ITEM_VALUE,
         0, 2 * LFMFREQBIAS,            /*  */
         offsetof(struct nvmap, lfmfreqbias),
