@@ -975,11 +975,11 @@ uint_fast8_t getexitkey(void)
 	return KBD_CODE_DISPMODE;
 }
 
-#elif KEYBOARD_SINGLE
+#elif KEYBOARD_SINGLE	// кнопка только на энкодере
 
 const struct qmkey qmdefs [NQMKEYS] =
 {
-	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD, 			' ', },
+	{ KIF_ERASE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)
