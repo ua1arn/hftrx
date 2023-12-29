@@ -362,13 +362,11 @@ static void usb_select_ep(pusb_struct pusb, uint32_t ep_no)
 	if (ep_no > USB_MAX_EP_NO)
 		return;
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (0x0F << 16)) | ((0x0F & ep_no) << 16); // EPIND
-	//put_bvalue(USBOTG0_BASE + USB_bINDEX_OFF, ep_no);
 }
 
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
 {
 	WITHUSBHW_DEVICE->USB_TESTC = (WITHUSBHW_DEVICE->USB_TESTC & ~ 0x7FF) | (bm & 0x7FF);
-	//put_bvalue(USBOTG0_BASE + USB_bTESTMODE_OFF, bm & 0xFF);
 }
 
 static void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t pktcnt)
@@ -383,7 +381,7 @@ static void usb_set_eptx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t 
 static uint32_t usb_get_eptx_maxpkt(pusb_struct pusb)
 {
 	uint32_t v = WITHUSBHW_DEVICE->USB_TXMAXP;	// TXCSR bits 15..0
-	return (v&0x7ff)*(((v&0xf800)>>11)+1);
+	return (v & 0x7ff) * (((v & 0xf800) >> 11) + 1);
 }
 
 //static void usb_ep0_disable_ping(pusb_struct pusb)
@@ -416,56 +414,32 @@ static uint32_t usb_ep0_is_naktimeout(pusb_struct pusb)
 
 static void usb_ep0_clear_naktimeout(pusb_struct pusb)
 {
-	uint32_t reg_val;
-
-	reg_val = WITHUSBHW_DEVICE->USB_TXCSRHI;
-	reg_val &= ~ (UINT32_C(1) << 7);
-	WITHUSBHW_DEVICE->USB_TXCSRHI = reg_val;
+	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 7);
 }
 
 static void usb_ep0_set_statuspkt(pusb_struct pusb)
 {
-	uint32_t reg_val;
-
-	reg_val = WITHUSBHW_DEVICE->USB_TXCSRHI;
-	reg_val |= (UINT32_C(1) << 6);
-	WITHUSBHW_DEVICE->USB_TXCSRHI = reg_val;
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);
 }
 
 static void usb_ep0_clear_statuspkt(pusb_struct pusb)
 {
-	uint32_t reg_val;
-
-	reg_val = WITHUSBHW_DEVICE->USB_TXCSRHI;
-	reg_val &= ~ (UINT32_C(1) << 6);
-	WITHUSBHW_DEVICE->USB_TXCSRHI = reg_val;
+	WITHUSBHW_DEVICE->USB_TXCSRHI &= ~ (UINT32_C(1) << 6);
 }
 
 static void usb_ep0_set_reqpkt(pusb_struct pusb)
 {
-	uint32_t reg_val;
-
-	reg_val = WITHUSBHW_DEVICE->USB_TXCSRHI;
-	reg_val |= (UINT32_C(1) << 5);
-	WITHUSBHW_DEVICE->USB_TXCSRHI = reg_val;
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 5);
 }
 
 static void usb_ep0_clear_setupend(pusb_struct pusb)
 {
-	uint32_t reg_val;
-
-	reg_val = WITHUSBHW_DEVICE->USB_TXCSRHI;
-	reg_val |= (UINT32_C(1) << 7);
-	WITHUSBHW_DEVICE->USB_TXCSRHI = reg_val;
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 7);
 }
 
 static void usb_ep0_clear_rxpktrdy(pusb_struct pusb)
 {
-	uint32_t reg_val;
-
-	reg_val = WITHUSBHW_DEVICE->USB_TXCSRHI;
-	reg_val |= (UINT32_C(1) << 6);
-	WITHUSBHW_DEVICE->USB_TXCSRHI = reg_val;
+	WITHUSBHW_DEVICE->USB_TXCSRHI |= (UINT32_C(1) << 6);
 }
 
 
@@ -500,14 +474,14 @@ static void usb_set_eprx_maxpkt(pusb_struct pusb, uint32_t maxpayload, uint32_t 
 	uint32_t reg_val;
 
 	reg_val = maxpayload & 0x7FF;
-	reg_val |= ((pktcnt-1) & 0x1f) << 11;
+	reg_val |= ((pktcnt - 1) & 0x1F) << 11;
 	WITHUSBHW_DEVICE->USB_RXMAXP = reg_val & 0xFFFF;
 }
 
 static uint32_t usb_get_eprx_maxpkt(pusb_struct pusb)
 {
 	uint32_t v = WITHUSBHW_DEVICE->USB_RXMAXP;
-	return (v & 0x7ff)*(((v & 0xf800)>>11)+1);
+	return (v & 0x7ff) * (((v & 0xf800) >> 11) + 1);
 }
 
 static uint32_t usb_get_eprx_csr(pusb_struct pusb)
