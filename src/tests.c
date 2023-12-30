@@ -11132,11 +11132,6 @@ void hightests(void)
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
 
-
-		TP();
-		testde();
-		TP();
-
 		int phase = 0;
 		unsigned c = 0;
 		while(1)
