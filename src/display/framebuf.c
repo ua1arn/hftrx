@@ -358,6 +358,8 @@ static uint_fast32_t awxx_bld_ctl2(
 #define VSU_ZOOM4_SIZE	1
 #define VSU_ZOOM5_SIZE	1
 
+// Note: VPHASE1 is a register with 1 bit signed, 3 bit integer and 18 bit fraction. Valid value ranges from -0x3FFFF .. 0x3FFFF
+
 #define VSU_PHASE_NUM            32
 #define VSU_PHASE_FRAC_BITWIDTH  19
 #define VSU_PHASE_FRAC_REG_SHIFT 1
@@ -366,7 +368,7 @@ static uint_fast32_t awxx_bld_ctl2(
 static void fltfillzero(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 64;
+	unsigned n = 32;
 	for (i = 0; i < n; ++ i)
 	{
 		p [i] = 0;
@@ -376,7 +378,7 @@ static void fltfillzero(volatile uint32_t * p)
 static void fltfill_y_v(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 64;
+	unsigned n = 32;
 	for (i = 0; i < n; ++ i)
 	{
 		p [i] = 0;
@@ -418,7 +420,7 @@ static void fltfill_y_v(volatile uint32_t * p)
 static void fltfillbypass(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 64;
+	unsigned n = 32;
 	for (i = 0; i < n; ++ i)
 	{
 		p [i] = 0;
@@ -467,35 +469,16 @@ static void aw_g2d_prepare(void)
 	//G2D_VSU->VS_CTRL = 0x00010101;
 	G2D_VSU->VS_CTRL = 0x000000101;
 
-	fltfillbypass(G2D_VSU->VS_Y_HCOEF);	// 0x200
-	fltfillbypass(G2D_VSU->VS_C_HCOEF);	// 0x400
+	fltfillbypass(G2D_VSU->VS_Y_HCOEF);	// 0x200 при применении fltfill_y_v менее размазано при увеличении
+	fltfillbypass(G2D_VSU->VS_C_HCOEF);	// 0x400 при применении fltfill_y_v менее размазано при увеличении
 
 	fltfillzero(G2D_VSU->VS_Y_VCOEF);	// 0x300
 	//fltfill_y_v(G2D_VSU->VS_Y_VCOEF);	// 0x300
-
-//	G2D_VSU->VS_Y_HCOEF[0] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_Y_HCOEF[1] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_Y_HCOEF[2] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_Y_HCOEF[3] = 0x00004000; /* 0x00004000 */
-//
-//	G2D_VSU->VS_Y_VCOEF[0] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_Y_VCOEF[1] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_Y_VCOEF[2] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_Y_VCOEF[3] = 0x00004000; /* 0x00004000 */
-//
-//	G2D_VSU->VS_C_HCOEF[0] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_C_HCOEF[1] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_C_HCOEF[2] = 0x00004000; /* 0x00004000 */
-//	G2D_VSU->VS_C_HCOEF[3] = 0x00004000; /* 0x00004000 */
 
 //	if (fmt >= G2D_FORMAT_IYUV422_Y1U0Y0V0)
 //		write_wvalue(VS_CTRL, 0x10001);
 //	else
 //		write_wvalue(VS_CTRL, 0x00001);
-
-//	/* set */ * ((volatile uint32_t *) (G2D_VSU_BASE + 0x00c0)) = 0x006D0095;	// VS_C_SIZE
-//	/* set */ * ((volatile uint32_t *) (G2D_VSU_BASE + 0x00c8)) = 0x00180000;	// VS_C_HSTEP
-//	/* set */ * ((volatile uint32_t *) (G2D_VSU_BASE + 0x00cc)) = 0x00181C0E;	// VS_C_HPHASE
 
 	G2D_VSU->VS_CTRL = 0x00000000;
 }
