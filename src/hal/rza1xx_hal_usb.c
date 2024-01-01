@@ -19,9 +19,6 @@
 #include "gpio.h"
 #include "buffers.h"
 
-#include "src/gui/gui.h"
-#include "src/display/display.h"
-
 #include <string.h>
 
 #include "src/usb/usb200.h"

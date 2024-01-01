@@ -393,7 +393,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define COLORPIP_GREEN       (COLORPIP_BASE + 7) // TFTRGB(0x00, 0xFF, 0x00)
 	#define COLORPIP_RED         (COLORPIP_BASE + 8) // TFTRGB(0xFF, 0x00, 0x00)
 
-	#define COLORMAIN_LOCKED  	 	(COLORPIP_BASE + 9) // TFTRGB(0x3C, 0x3C, 0x00)
+	#define COLORPIP_LOCKED  	 	(COLORPIP_BASE + 9) // TFTRGB(0x3C, 0x3C, 0x00)
 	#define COLORPIP_GRIDCOLOR0		(COLORPIP_BASE + 10) // TFTRGB(128, 0, 0)		//COLOR_GRAY - center marker
 	#define COLORPIP_GRIDCOLOR2		(COLORPIP_BASE + 11) // TFTRGB(96, 96, 96)		//COLOR_DARKRED - other markers
 	#define COLORPIP_SPECTRUMBG		(COLORPIP_BASE + 12) // TFTRGB(0, 64, 24)			//
@@ -425,7 +425,10 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 		#define COLORMAIN_GRAY COLORPIP_GRAY
 		#define COLORMAIN_DARKGREEN COLORPIP_DARKGREEN
 		#define COLORMAIN_YELLOW COLORPIP_YELLOW
+
+		#define COLORPIP_GRIDDIGITS  COLORPIP_GRIDCOLOR2
 		#define COLORMAIN_DARKRED  COLORPIP_GRIDCOLOR2	// COLORPIP_DARKRED
+		#define COLORPIP_DARKRED  COLORPIP_GRIDCOLOR2
 	#endif /* LCDMODE_MAIN_L8 */
 
 #else /* */
@@ -490,7 +493,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define COLORPIP_RED         TFTRGB(0xFF, 0x00, 0x00)
 	#define COLORPIP_DARKRED   	 TFTRGB(0x40, 0x00, 0x00)
 
-	#define COLORMAIN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+	#define COLORPIP_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
 
 	#if COLORSTYLE_ATS52
 		// new (for ats52).
