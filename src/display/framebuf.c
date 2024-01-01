@@ -246,7 +246,7 @@ static COLORPIP_T bgcolor;
 static PACKEDCOLORPIP_T bgscreen [GXSIZE(DIM_X, DIM_Y)];
 
 /* Заполнение цветом фона - будет использоваться для аппаратной оптимизации заполнения копированием */
-static void aw_g2d_prepare(void)
+static void aw_g2d_initialize(void)
 {
 	bgcolor = display_getbgcolor();
 	// программная реализация
@@ -256,7 +256,7 @@ static void aw_g2d_prepare(void)
 		bgscreen [i] = bgcolor;
 	}
 	dcache_clean_invalidate((uintptr_t) bgscreen, sizeof bgscreen);
-	//PRINTF("aw_g2d_prepare: bgcolor=%08X\n", (unsigned) bgcolor);
+	//PRINTF("aw_g2d_initialize: bgcolor=%08X\n", (unsigned) bgcolor);
 }
 
 
@@ -286,6 +286,10 @@ static void t113_fillrect(
 }
 
 #else
+
+static void aw_g2d_initialize(void)
+{
+}
 
 static unsigned awxx_get_ui_attr(unsigned srcFormat)
 {
@@ -365,24 +369,11 @@ static uint_fast32_t awxx_bld_ctl2(
 #define VSU_PHASE_FRAC_REG_SHIFT 1
 #define VSU_FB_FRAC_BITWIDTH     32
 
-static void fltfillzero(volatile uint32_t * p)
+static void vsu_fir_linear(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 64;
-	for (i = 0; i < n; ++ i)
-	{
-		p [i] = 0;
-	}
-}
-
-static void fltfill_y_v(volatile uint32_t * p)
-{
-	unsigned i;
-	unsigned n = 64;
-	for (i = 0; i < n; ++ i)
-	{
-		p [i] = 0;
-	}
+	const unsigned N = 64;
+	// taken from linearcoefftab32
 	static const uint32_t values [] =
 	{
 		0x00004000, 0x00023E00, 0x00043C00, 0x00063A00,
@@ -394,20 +385,20 @@ static void fltfill_y_v(volatile uint32_t * p)
 		0x00301000, 0x00320E00, 0x00340C00, 0x00360A00,
 		0x00380800, 0x003A0600, 0x003C0400, 0x003E0200,
 	};
-	for (i = 0; i < ARRAY_SIZE(values); ++ i)
+	for (i = 0; i < ARRAY_SIZE(values) && i < N; ++ i)
 	{
 		p [i] = values [i];
 	}
-}
-
-static void fltfillbypass(volatile uint32_t * p)
-{
-	unsigned i;
-	unsigned n = 64;
-	for (i = 0; i < n; ++ i)
+	for (; i < N; ++ i)
 	{
 		p [i] = 0;
 	}
+}
+
+static void vsu_fir_byexample(volatile uint32_t * p)
+{
+	unsigned i;
+	const unsigned N = 64;
 	static const uint32_t values [] =
 	{
 		0xFF0C2A0B, 0xFF0D2A0A, 0xFF0E2A09, 0xFF0F2A08,
@@ -419,45 +410,14 @@ static void fltfillbypass(volatile uint32_t * p)
 		0x042815FF, 0x052814FF, 0x052913FF, 0x06291100,
 		0x072A10FF, 0x082A0E00, 0x092A0D00, 0x0A2A0C00,
 	};
-	for (i = 0; i < ARRAY_SIZE(values); ++ i)
+	for (i = 0; i < ARRAY_SIZE(values) && i < N; ++ i)
 	{
 		p [i] = values [i];
 	}
-}
-
-static void aw_g2d_prepare(void)
-{
-//	if (fmt > G2D_FORMAT_IYUV422_Y1U0Y0V0)
-//		write_wvalue(VS_CTRL, 0x10101);
-//	else
-//		write_wvalue(VS_CTRL, 0x00000101);
-
-	//G2D_VSU->VS_CTRL = 0x00010101;
-	G2D_VSU->VS_CTRL = 0x000000101;
-
-	fltfillzero(G2D_VSU->VS_Y_HCOEF);	// 0x200
-	fltfillzero(G2D_VSU->VS_Y_VCOEF);	// 0x300
-	fltfillzero(G2D_VSU->VS_C_HCOEF);	// 0x400
-
-//	PRINTF("aw_g2d_prepare:\n");
-//
-//	PRINTF("VS_Y_HCOEF:\n");
-//	printhex32(G2D_VSU->VS_Y_HCOEF, G2D_VSU->VS_Y_HCOEF, sizeof G2D_VSU->VS_Y_HCOEF);
-//	PRINTF("VS_C_HCOEF:\n");
-//	printhex32(G2D_VSU->VS_C_HCOEF, G2D_VSU->VS_C_HCOEF, sizeof G2D_VSU->VS_C_HCOEF);
-//	PRINTF("VS_Y_VCOEF:\n");
-//	printhex32(G2D_VSU->VS_Y_VCOEF, G2D_VSU->VS_Y_VCOEF, sizeof G2D_VSU->VS_Y_VCOEF);
-
-	fltfillbypass(G2D_VSU->VS_Y_HCOEF);	// 0x200 при применении fltfill_y_v менее размазано при увеличении
-	fltfillbypass(G2D_VSU->VS_C_HCOEF);	// 0x400 при применении fltfill_y_v менее размазано при увеличении
-	fltfill_y_v(G2D_VSU->VS_Y_VCOEF);	// 0x300
-
-//	if (fmt >= G2D_FORMAT_IYUV422_Y1U0Y0V0)
-//		write_wvalue(VS_CTRL, 0x10001);
-//	else
-//		write_wvalue(VS_CTRL, 0x00001);
-
-	G2D_VSU->VS_CTRL = 0x00000000;
+	for (; i < N; ++ i)
+	{
+		p [i] = 0;
+	}
 }
 
 static void t113_fillrect(
@@ -858,7 +818,7 @@ void arm_hardware_mdma_initialize(void)
 	// audio1: allwnrt113_get_g2d_freq()=768000000
 	//PRINTF("allwnrt113_get_g2d_freq()=%" PRIuFAST32 "\n", allwnrt113_get_g2d_freq());
 
-	aw_g2d_prepare();	/* stretchblt filters load */
+	aw_g2d_initialize();
 	 //mixer_set_reg_base(G2D_BASE);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
@@ -2238,17 +2198,41 @@ void hwaccel_stretchblt(
 		G2D_VSU->VS_OUT_SIZE = tsizehw;
 		G2D_VSU->VS_GLB_ALPHA = 0x000000FF;
 
+		//
 		G2D_VSU->VS_Y_SIZE = ssizehw;
 		G2D_VSU->VS_Y_HSTEP = hstep;
 		G2D_VSU->VS_Y_VSTEP = vstep;
 		G2D_VSU->VS_Y_HPHASE = 0;
 		G2D_VSU->VS_Y_VPHASE0 = 0;
 
+		// chroma
 		G2D_VSU->VS_C_SIZE = ssizehw;
 		G2D_VSU->VS_C_HSTEP = hstep;
 		G2D_VSU->VS_C_VSTEP = vstep;
 		G2D_VSU->VS_C_HPHASE = 0;
 		G2D_VSU->VS_C_VPHASE0 = 0;
+
+		//	if (fmt > G2D_FORMAT_IYUV422_Y1U0Y0V0)
+		//		write_wvalue(VS_CTRL, 0x10101);
+		//	else
+		//		write_wvalue(VS_CTRL, 0x00000101);
+
+		//G2D_VSU->VS_CTRL = 0x00010101;
+		G2D_VSU->VS_CTRL |= (UINT32_C(1) << 8);
+
+		//	vsu_fir_byexample(G2D_VSU->VS_Y_HCOEF);	// 0x200 при применении vsu_fir_linear менее размазано при увеличении
+		//	vsu_fir_byexample(G2D_VSU->VS_C_HCOEF);	// 0x400 при применении vsu_fir_linear менее размазано при увеличении
+		vsu_fir_linear(G2D_VSU->VS_Y_HCOEF);	// 0x200
+		vsu_fir_linear(G2D_VSU->VS_C_HCOEF);	// 0x400
+
+		vsu_fir_linear(G2D_VSU->VS_Y_VCOEF);	// 0x300
+
+		//	if (fmt >= G2D_FORMAT_IYUV422_Y1U0Y0V0)
+		//		write_wvalue(VS_CTRL, 0x10001);
+		//	else
+		//		write_wvalue(VS_CTRL, 0x00001);
+
+		G2D_VSU->VS_CTRL &= ~ (UINT32_C(1) << 8);
 	}
 	else
 	{
