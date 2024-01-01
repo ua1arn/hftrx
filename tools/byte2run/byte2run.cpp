@@ -71,7 +71,7 @@ oneselector(int tft565, const char * fg, const char * bg, int first)
     const char * const pfx = prefixes [tft565];
 
 	printf(" " "%sif (fg == %s_%s && bg == %s_%s)" " \\" "\n", (first ? "else " : ""), prefixes [0], fg, prefixes [0], bg);
-	printf(" " " " "%s = & %s_%s_%s_%s_%s;" " \\" "\n", "tgt", name565, pfx, fg, pfx, bg);
+	printf(" " " " "(%s) = & %s_%s_%s_%s_%s;" " \\" "\n", "tgt", name565, pfx, fg, pfx, bg);
 }
 
 static void
@@ -103,8 +103,9 @@ static const char * const array [][2] =
 	{	"YELLOW",   "BLACK"		},
 	{	"BLACK",	"GREEN"		},
 	{	"BLACK",	"RED"		},
-	{	"SPECTRUMBG2",	"BLACK"		},     // ���� ������� ��������������� ���������
+	//{	"SPECTRUMBG2",	"BLACK"		},     // ���� ������� ��������������� ���������
 	{	"GRAY",	"BLACK"		},     // ���� ������� ��������������� ���������
+	{	"DARKGREEN",	"BLACK"		},
 };
 
 

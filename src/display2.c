@@ -137,7 +137,9 @@ static void display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t
 
 #if COLORSTYLE_RED
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_RED;
-#else /* COLORSTYLE_RED */
+#elif COLORSTYLE_GREEN
+	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_GREEN;
+#else /* */
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLUE_YELLOW_RED;
 #endif /* COLORSTYLE_RED */
 
@@ -5077,8 +5079,10 @@ display_colorgrid_xor(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркер на центре
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR0;	// макркер на центре
 	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;	// макркеры частот сетки
+	const COLORPIP_T colordigits = COLORPIP_GRIDDIGITS;	// макркеры частот сетки
+
 	//
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -5100,7 +5104,7 @@ display_colorgrid_xor(
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(BUFDIM_X, xtext, freqw))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, colordigits);
 					colpip_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -5119,8 +5123,7 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 }
 
 // отрисовка маркеров частот
-static
-void
+static void
 display_colorgrid_set(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
@@ -5129,8 +5132,9 @@ display_colorgrid_set(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркер на центре
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR0;	// макркер на центре
 	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;
+	const COLORPIP_T colordigits = COLORPIP_GRIDDIGITS;	// макркеры частот сетки
 	const uint_fast8_t markerh = 10;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -5164,7 +5168,7 @@ display_colorgrid_set(
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(BUFDIM_X, xtext, freqw))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, colordigits);
 					colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + markerh, h - markerh, color);
 				}
 				else
@@ -5186,8 +5190,8 @@ display_colorgrid_3dss(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркер на центре
-	const COLORPIP_T color = COLORPIP_GREEN;
+	const COLORPIP_T colorcenter = COLORPIP_GRIDCOLOR0;	// макркер на центре
+	const COLORPIP_T colorgrid = COLORPIP_GREEN;
 	const uint_fast16_t row = row0 + h + 3;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -5210,11 +5214,11 @@ display_colorgrid_3dss(
 				if (isvisibletext(BUFDIM_X, xtext, freqw))
 					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row, buf2, COLORPIP_YELLOW);
 
-				colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
+				colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, colorgrid);
 			}
 		}
 	}
-	colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+	colpip_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, colorcenter);	// center frequency marker
 }
 
 // Спектр на монохромных дисплеях
@@ -5370,7 +5374,7 @@ static void display2_spectrum(
 	{
 		display_pixelbuffer_clear(spectmonoscr, ALLDX, SPDY);
 	}
-	colmain_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG);
+	colmain_setcolors(COLORPIP_SPECTRUMBG, COLORPIP_SPECTRUMFG); // цвет спектра при сполошном заполнении
 
 #else /* */
 	PACKEDCOLORPIP_T * const colorpip = getscratchwnd();
@@ -5383,7 +5387,7 @@ static void display2_spectrum(
 #else
 	const uint_fast16_t spy = ALLDY - 15;
 #endif
-	const COLORPIP_T rxbwcolor = display2_rxbwcolor(COLORMAIN_SPECTRUMBG2, COLORPIP_SPECTRUMBG);
+	const COLORPIP_T rxbwcolor = display2_rxbwcolor(COLORPIP_SPECTRUMBG2, COLORPIP_SPECTRUMBG);
 
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием

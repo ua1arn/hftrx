@@ -321,8 +321,7 @@ display_scroll_up(
 static PACKEDCOLORPIP_T ltdc_fg = COLORMAIN_WHITE, ltdc_bg = COLORMAIN_BLACK;
 
 #if ! LCDMODE_LTDC_L24
-static const FLASHMEM PACKEDCOLORPIP_T (* byte2runmain) [256][8] = & byte2runmain_COLORMAIN_WHITE_COLORMAIN_BLACK;
-//static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
+static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
 #endif /* ! LCDMODE_LTDC_L24 */
 
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
@@ -344,7 +343,7 @@ void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 
 #if ! LCDMODE_LTDC_L24
 
-	COLORMAIN_SELECTOR(byte2runmain);
+	COLORPIP_SELECTOR(byte2runpip);
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
@@ -485,7 +484,7 @@ ltdc_vertical_pixN(
 	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(buffer, dx, dy, x, y);
 	// размещаем пиксели по горизонтали
 	// TODO: для паттернов шире чем восемь бит, повторить нужное число раз.
-	const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runmain) [pattern];
+	const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [pattern];
 	memcpy(tgr, pcl, sizeof (* pcl) * w);
 	//dcache_clean((uintptr_t) tgr, sizeof (PACKEDCOLORPIP_T) * w);
 #endif /* LCDMODE_LTDC_L24 */
@@ -505,12 +504,12 @@ void RAMFUNC ltdc_horizontal_pixels(
 
 	for (col = 0; w >= 8; col += 8, w -= 8)
 	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runmain) [* raster ++];
+		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
 	}
 	if (w != 0)
 	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runmain) [* raster ++];
+		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
 		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
 	}
 	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
