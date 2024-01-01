@@ -368,7 +368,7 @@ static uint_fast32_t awxx_bld_ctl2(
 static void fltfillzero(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 32;
+	unsigned n = 64;
 	for (i = 0; i < n; ++ i)
 	{
 		p [i] = 0;
@@ -378,85 +378,51 @@ static void fltfillzero(volatile uint32_t * p)
 static void fltfill_y_v(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 32;
+	unsigned n = 64;
 	for (i = 0; i < n; ++ i)
 	{
 		p [i] = 0;
 	}
-	* (p + 0x00 / 4) = 0x00004000;
-	* (p + 0x04 / 4) = 0x00023E00;
-	* (p + 0x08 / 4) = 0x00043C00;
-	* (p + 0x0c / 4) = 0x00063A00;
-	* (p + 0x10 / 4) = 0x00083800;
-	* (p + 0x14 / 4) = 0x000A3600;
-	* (p + 0x18 / 4) = 0x000C3400;
-	* (p + 0x1c / 4) = 0x000E3200;
-	* (p + 0x20 / 4) = 0x00103000;
-	* (p + 0x24 / 4) = 0x00122E00;
-	* (p + 0x28 / 4) = 0x00142C00;
-	* (p + 0x2c / 4) = 0x00162A00;
-	* (p + 0x30 / 4) = 0x00182800;
-	* (p + 0x34 / 4) = 0x001A2600;
-	* (p + 0x38 / 4) = 0x001C2400;
-	* (p + 0x3c / 4) = 0x001E2200;
-	* (p + 0x40 / 4) = 0x00202000;
-	* (p + 0x44 / 4) = 0x00221E00;
-	* (p + 0x48 / 4) = 0x00241C00;
-	* (p + 0x4c / 4) = 0x00261A00;
-	* (p + 0x50 / 4) = 0x00281800;
-	* (p + 0x54 / 4) = 0x002A1600;
-	* (p + 0x58 / 4) = 0x002C1400;
-	* (p + 0x5c / 4) = 0x002E1200;
-	* (p + 0x60 / 4) = 0x00301000;
-	* (p + 0x64 / 4) = 0x00320E00;
-	* (p + 0x68 / 4) = 0x00340C00;
-	* (p + 0x6c / 4) = 0x00360A00;
-	* (p + 0x70 / 4) = 0x00380800;
-	* (p + 0x74 / 4) = 0x003A0600;
-	* (p + 0x78 / 4) = 0x003C0400;
-	* (p + 0x7c / 4) = 0x003E0200;
+	static const uint32_t values [] =
+	{
+		0x00004000, 0x00023E00, 0x00043C00, 0x00063A00,
+		0x00083800, 0x000A3600, 0x000C3400, 0x000E3200,
+		0x00103000, 0x00122E00, 0x00142C00, 0x00162A00,
+		0x00182800, 0x001A2600, 0x001C2400, 0x001E2200,
+		0x00202000, 0x00221E00, 0x00241C00, 0x00261A00,
+		0x00281800, 0x002A1600, 0x002C1400, 0x002E1200,
+		0x00301000, 0x00320E00, 0x00340C00, 0x00360A00,
+		0x00380800, 0x003A0600, 0x003C0400, 0x003E0200,
+	};
+	for (i = 0; i < ARRAY_SIZE(values); ++ i)
+	{
+		p [i] = values [i];
+	}
 }
 
 static void fltfillbypass(volatile uint32_t * p)
 {
 	unsigned i;
-	unsigned n = 32;
+	unsigned n = 64;
 	for (i = 0; i < n; ++ i)
 	{
 		p [i] = 0;
 	}
-	* (p + 0x00 / 4) = 0xFF0C2A0B;
-	* (p + 0x04 / 4) = 0xFF0D2A0A;
-	* (p + 0x08 / 4) = 0xFF0E2A09;
-	* (p + 0x0c / 4) = 0xFF0F2A08;
-	* (p + 0x10 / 4) = 0xFF102A07;
-	* (p + 0x14 / 4) = 0xFF112A06;
-	* (p + 0x18 / 4) = 0xFF132905;
-	* (p + 0x1c / 4) = 0xFF142904;
-	* (p + 0x20 / 4) = 0xFF162803;
-	* (p + 0x24 / 4) = 0xFF172703;
-	* (p + 0x28 / 4) = 0xFF182702;
-	* (p + 0x2c / 4) = 0xFF1A2601;
-	* (p + 0x30 / 4) = 0xFF1B2501;
-	* (p + 0x34 / 4) = 0xFF1C2401;
-	* (p + 0x38 / 4) = 0xFF1E2300;
-	* (p + 0x3c / 4) = 0xFF1F2200;
-	* (p + 0x40 / 4) = 0x00202000;
-	* (p + 0x44 / 4) = 0x00211F00;
-	* (p + 0x48 / 4) = 0x01221D00;
-	* (p + 0x4c / 4) = 0x01231C00;
-	* (p + 0x50 / 4) = 0x01251BFF;
-	* (p + 0x54 / 4) = 0x02251AFF;
-	* (p + 0x58 / 4) = 0x032618FF;
-	* (p + 0x5c / 4) = 0x032717FF;
-	* (p + 0x60 / 4) = 0x042815FF;
-	* (p + 0x64 / 4) = 0x052814FF;
-	* (p + 0x68 / 4) = 0x052913FF;
-	* (p + 0x6c / 4) = 0x06291100;
-	* (p + 0x70 / 4) = 0x072A10FF;
-	* (p + 0x74 / 4) = 0x082A0E00;
-	* (p + 0x78 / 4) = 0x092A0D00;
-	* (p + 0x7c / 4) = 0x0A2A0C00;
+	static const uint32_t values [] =
+	{
+		0xFF0C2A0B, 0xFF0D2A0A, 0xFF0E2A09, 0xFF0F2A08,
+		0xFF102A07, 0xFF112A06, 0xFF132905, 0xFF142904,
+		0xFF162803, 0xFF172703, 0xFF182702, 0xFF1A2601,
+		0xFF1B2501, 0xFF1C2401, 0xFF1E2300, 0xFF1F2200,
+		0x00202000, 0x00211F00, 0x01221D00, 0x01231C00,
+		0x01251BFF, 0x02251AFF, 0x032618FF, 0x032717FF,
+		0x042815FF, 0x052814FF, 0x052913FF, 0x06291100,
+		0x072A10FF, 0x082A0E00, 0x092A0D00, 0x0A2A0C00,
+	};
+	for (i = 0; i < ARRAY_SIZE(values); ++ i)
+	{
+		p [i] = values [i];
+	}
 }
 
 static void aw_g2d_prepare(void)
@@ -469,11 +435,22 @@ static void aw_g2d_prepare(void)
 	//G2D_VSU->VS_CTRL = 0x00010101;
 	G2D_VSU->VS_CTRL = 0x000000101;
 
+	fltfillzero(G2D_VSU->VS_Y_HCOEF);	// 0x200
+	fltfillzero(G2D_VSU->VS_Y_VCOEF);	// 0x300
+	fltfillzero(G2D_VSU->VS_C_HCOEF);	// 0x400
+
+//	PRINTF("aw_g2d_prepare:\n");
+//
+//	PRINTF("VS_Y_HCOEF:\n");
+//	printhex32(G2D_VSU->VS_Y_HCOEF, G2D_VSU->VS_Y_HCOEF, sizeof G2D_VSU->VS_Y_HCOEF);
+//	PRINTF("VS_C_HCOEF:\n");
+//	printhex32(G2D_VSU->VS_C_HCOEF, G2D_VSU->VS_C_HCOEF, sizeof G2D_VSU->VS_C_HCOEF);
+//	PRINTF("VS_Y_VCOEF:\n");
+//	printhex32(G2D_VSU->VS_Y_VCOEF, G2D_VSU->VS_Y_VCOEF, sizeof G2D_VSU->VS_Y_VCOEF);
+
 	fltfillbypass(G2D_VSU->VS_Y_HCOEF);	// 0x200 при применении fltfill_y_v менее размазано при увеличении
 	fltfillbypass(G2D_VSU->VS_C_HCOEF);	// 0x400 при применении fltfill_y_v менее размазано при увеличении
-
-	fltfillzero(G2D_VSU->VS_Y_VCOEF);	// 0x300
-	//fltfill_y_v(G2D_VSU->VS_Y_VCOEF);	// 0x300
+	fltfill_y_v(G2D_VSU->VS_Y_VCOEF);	// 0x300
 
 //	if (fmt >= G2D_FORMAT_IYUV422_Y1U0Y0V0)
 //		write_wvalue(VS_CTRL, 0x10001);
