@@ -16246,10 +16246,16 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
+			// FIXME: mp->label is not null-terminated
+			ASSERT3(pv16 [valoffset] <= mp->qupper, __FILE__, __LINE__, mp->label);
+			ASSERT3(pv16 [valoffset] >= mp->qbottom, __FILE__, __LINE__, mp->label);
 			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
+			// FIXME: mp->label is not null-terminated
+			ASSERT3(pv8 [valoffset] <= mp->qupper, __FILE__, __LINE__, mp->label);
+			ASSERT3(pv8 [valoffset] >= mp->qbottom, __FILE__, __LINE__, mp->label);
 			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 	}
