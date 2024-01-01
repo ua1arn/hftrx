@@ -8,11 +8,10 @@
 
 #include "hardware.h"
 #include "bootloader.h"
-#include "gui/gui.h"
 #include "board.h"
 #include "keyboard.h"
 #include "encoder.h"
-#include "display2.h"
+//#include "display2.h"
 
 #include "spi.h"	// bootloader_readimage definition
 #include "formats.h"
@@ -298,14 +297,14 @@ void bootloader_fatfs_mainloop(void)
 #else /* WITHISBOOTLOADERFATFS */
 
 // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
-{
-
-}
+//void display2_keyboard_screen0(
+//	uint_fast8_t x,
+//	uint_fast8_t y,
+//	dctx_t * pctx
+//	)
+//{
+//
+//}
 
 #if WITHISBOOTLOADER0
 

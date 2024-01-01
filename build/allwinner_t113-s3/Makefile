@@ -61,7 +61,7 @@ CORE += -mfpu=neon-vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast
+OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
