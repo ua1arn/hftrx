@@ -2900,7 +2900,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
-	const adapter_t * const ap = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
+	const adapter_t * const adptfir = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
 
 #if WITHDSPEXTDDC
 	#if WITHDSPLOCALFIR
@@ -2924,7 +2924,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			fir_design_passtrough(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, txfiltergain);
 	#else /* WITHDSPLOCALFIR */
 		(void) dspmode;
-		fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, ap);
+		fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
 	#endif /* WITHDSPLOCALFIR */
 #if WITHDSPLOCALTXFIR
 		if (isdspmodetx(dspmode))
@@ -2965,7 +2965,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
 
 		if (1)
-			fir_design_integer_lowpass_scaledL(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwndL_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1, & fpgafircoefsout, ap);
+			fir_design_integer_lowpass_scaledL(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwndL_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1, adptfir);
 		else
 		{
 			const int iCoefNum = Ntap_trxi_IQ;
@@ -2979,13 +2979,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 				fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
 				fir_design_scaleL(dCoeff, iCoefNum, 1 / testgain_float_DCL(dCoeff, iCoefNum));
 			}
-			fir_design_copy_integersL(FIRCoef_trxi_IQ, dCoeff, iCoefNum, ap);
+			fir_design_copy_integersL(FIRCoef_trxi_IQ, dCoeff, iCoefNum, adptfir);
 		}
 
 		#else /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
 
 		if (1)
-			fir_design_integer_lowpass_scaled(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1, & fpgafircoefsout);
+			fir_design_integer_lowpass_scaled(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1, adptfir);
 		else
 		{
 			const int iCoefNum = Ntap_trxi_IQ;
@@ -2999,7 +2999,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 				fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));
 			}
-			fir_design_copy_integers(FIRCoef_trxi_IQ, dCoeff, iCoefNum, ap);
+			fir_design_copy_integers(FIRCoef_trxi_IQ, dCoeff, iCoefNum, adptfir);
 		}
 
 		#endif /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
@@ -3009,7 +3009,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 
 #if WITHDSPEXTFIR && WITHDSPLOCALFIR
 	// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-	fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, ap);
+	fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
 #endif /* WITHDSPEXTDDC && WITHDSPLOCALFIR */
 
 	// Диагностика
@@ -3019,8 +3019,8 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		unsigned n = Ntap_trxi_IQ / 2 + 1;
 		for (i = 0; i < n; ++ i)
 		{
-			PRINTF("%-4u: k=%d, kf=%f, conv=%d\n", i, FIRCoef_trxi_IQ [i], dCoeff_trx_IQ [i], adpt_output(& fpgafircoefsout, dCoeff_trx_IQ [i]));
-			ASSERT(FIRCoef_trxi_IQ [i] == adpt_output(& fpgafircoefsout, dCoeff_trx_IQ [i]));
+			PRINTF("%-4u: k=%d, kf=%f, conv=%d\n", i, FIRCoef_trxi_IQ [i], dCoeff_trx_IQ [i], adpt_output(adptfir, dCoeff_trx_IQ [i]));
+			ASSERT(FIRCoef_trxi_IQ [i] == adpt_output(adptfir, dCoeff_trx_IQ [i]));
 		}
 		PRINTF("FIR Filter Ntap=%u gain=%f\n", Ntap_trxi_IQ, testgain_float_DC(dCoeff_trx_IQ, Ntap_trxi_IQ));
 	}
