@@ -137,7 +137,7 @@ static void display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t
 
 #if COLORSTYLE_RED
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_RED;
-#elif COLORSTYLE_GREEN
+#elif COLORSTYLE_GREEN && 0
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLACK_GREEN;
 #else /* */
 	static uint_fast8_t glob_colorstyle = GRADIENT_BLUE_YELLOW_RED;
