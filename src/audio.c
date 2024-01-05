@@ -2886,7 +2886,7 @@ static int inside(int low, int val, int high)
 
 static int_fast16_t audio_validatebw6(int_fast16_t n)
 {
-	const int_fast16_t bw6limit = ARMSAIRATE - 2;
+	const int_fast16_t bw6limit = ARMSAIRATE / 2;
 	return (n == INT16_MAX || n < bw6limit) ? n : INT16_MAX;
 }
 
@@ -2912,11 +2912,11 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 #endif /* WITHDSPEXTDDC */
 
-//	PRINTF(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
+	//PRINTF(PSTR("audio_setup_wiver: fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
 
 	if (fullbw6 == INT16_MAX)
 	{
-		//PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
+		PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
 			fir_design_passtrough(FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ, rxfiltergain);
@@ -2934,7 +2934,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
-		//PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6=%u\n"), (unsigned) glob_fullbw6);
+		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
 		{
@@ -2961,7 +2961,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 				fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, 1);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	#endif /* WITHDSPLOCALTXFIR */
 
-		(void) dspmode;
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
 
 		if (1)
