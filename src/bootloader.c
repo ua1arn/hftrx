@@ -108,7 +108,10 @@ static uint_fast8_t bootloader_copyapp(
 	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
 	//printhex(appoffset, tmpbuff, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
+	{
+		printhex(appoffset, tmpbuff, HEADERSIZE);
 		return 1;
+	}
 	* ip = hdr->image_entry_point;
 	PRINTF("bootloader_copyapp: ip=%08X (addr=%08X, len=%08X)\n", (unsigned) * ip, (unsigned) hdr->load_address, (unsigned) hdr->image_length);
 	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
@@ -349,7 +352,7 @@ void bootloader_mainloop(void)
 			uintptr_t ip;
 			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
 			{
-				PRINTF("bootloader_mainloop: No application image\n");
+				PRINTF("bootloader_mainloop: No application image at offset 0x%08X\n", (unsigned) BOOTLOADER_SELFSIZE);
 				break;
 			}
 #if WITHUSBHW
