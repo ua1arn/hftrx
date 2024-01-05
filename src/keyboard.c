@@ -359,11 +359,11 @@ uint_fast8_t kbd_scan(uint_fast8_t * v)
 void kbd_pass(void)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& irqllock, & oldIrql);
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
 	kbd_spool(NULL);
 
-	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
+	LowerIrql(oldIrql);
 }
 
 /* инициализация переменных работы с клавиатурой */

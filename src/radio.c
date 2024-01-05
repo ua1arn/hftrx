@@ -19077,13 +19077,20 @@ void initialize2(void)
 			{
 				while (kbd_scan(& kbch) == 0)
 				{
-					void kbd_pass(void);
-					//kbd_pass();                           // FIXME: на t507 срабатывает spinlock
-					local_delay_ms(1000 / TICKS_FREQUENCY);	// FIXME: разобраться почему не работает без
+					kbd_pass();
+					local_delay_ms(1000 / TICKS_FREQUENCY);
 				}
 				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
-				if (kbch == KBD_CODE_SPLIT || kbch == KBD_CODE_ERASECONFIG || kbch == KBD_ENC2_PRESS)
+				switch (kbch)
+				{
+				case KBD_CODE_SPLIT:
+				case KBD_CODE_ERASECONFIG:
+				case KBD_ENC2_PRESS:
 					break;
+				default:
+					continue;
+				}
+				break;
 			}
 			display2_bgreset();
 		}
