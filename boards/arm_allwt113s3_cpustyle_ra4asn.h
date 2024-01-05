@@ -17,12 +17,6 @@
 #define CALIBRATION_IQ_CIC_RX_SHIFT		63
 #define CALIBRATION_TX_SHIFT			29
 
-//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. */
-
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 //#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -57,6 +51,13 @@
 #define BOARD_TUH_RHPORT 1
 
 #if WITHISBOOTLOADER
+
+	#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+	#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+	#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+	//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+	//#define WITHSPISW 	1	/* Использование программного управления SPI. */
+	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -106,7 +107,15 @@
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
+	//#define WITHTINYUSB 1
+
 #else /* WITHISBOOTLOADER */
+
+	//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+	//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+	//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+	//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+	#define WITHSPISW 	1	/* Использование программного управления SPI. */
 
 	#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
 	#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
@@ -487,7 +496,89 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if (WITHSPIHW || WITHSPISW) && WITHISBOOTLOADER
+	// Набор определений для работы без внешнего дешифратора
+
+	#define targetdataflash 0xFF
+	#define targetnone 0x00
+
+	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B
+	#define targetctl1		(UINT32_C(1) << 20)		// PD20 board control registers chain
+	#define targetfpga1		(UINT32_C(1) << 21)		// PD21 FPGA control registers CS1
+
+	/* Select specified chip. */
+	#define SPI_CS_ASSERT(target)	do { \
+		switch (target) { \
+		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
+		case targetnvram: { gpioX_setstate(GPIOG, (target), 0 * (target)); } break; \
+		case targetfpga1: { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
+		case targetctl1: { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
+		default: case targetnone: break; \
+		} \
+	} while (0)
+
+	/* Unelect specified chip. */
+	#define SPI_CS_DEASSERT(target)	do { \
+		switch (target) { \
+		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
+		case targetnvram: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
+		case targetfpga1: { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
+		case targetctl1: { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
+		default: case targetnone: break; \
+		} \
+	} while (0)
+
+	/* инициализация линий выбора периферийных микросхем */
+	#define SPI_ALLCS_INITIALIZE() do { \
+		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
+		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_piod_outputs(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_piod_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
+	} while (0)
+
+	// MOSI & SCK port
+	#define	SPI_SCLK_BIT			(UINT32_C(1) << 2)	// PC2 SPI0_CLK
+	#define	SPI_MOSI_BIT			(UINT32_C(1) << 4)	// PC4 SPI0_MOSI
+	#define	SPI_MISO_BIT			(UINT32_C(1) << 5)	// PC5 SPI0_MISO
+
+	/* Выводы соединения с QSPI BOOT NOR FLASH */
+	//#define SPDIF_SCLK_BIT (UINT32_C(1) << 2)	// PC2 SPI0_CLK
+	#define SPDIF_NCS_BIT (UINT32_C(1) << 3)	// PC3 SPI0_CS
+	//#define SPDIF_MOSI_BIT (UINT32_C(1) << 4)	// PC4 SPI0_MOSI
+	//#define SPDIF_MISO_BIT (UINT32_C(1) << 5)	// PC5 SPI0_MISO
+	#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
+	#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
+
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
+
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
+
+	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
+
+	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+
+	#define SPIIO_INITIALIZE() do { \
+		arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
+		arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
+		arm_hardware_pioc_altfn2(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
+		arm_hardware_pioc_altfn2(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
+		arm_hardware_pioc_altfn2(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+	} while (0)
+	#define HARDWARE_SPI_CONNECT() do { \
+	} while (0)
+	#define HARDWARE_SPI_DISCONNECT() do { \
+	} while (0)
+	#define HARDWARE_SPI_CONNECT_MOSI() do { \
+	} while (0)
+	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
+	} while (0)
+
+#elif (WITHSPIHW || WITHSPISW) && ! WITHISBOOTLOADER
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
