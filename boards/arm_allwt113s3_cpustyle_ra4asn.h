@@ -141,7 +141,7 @@
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -756,26 +756,24 @@
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
-	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 12)	/* PE12 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_PORT_S(v)	do {  } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do {  } while (0)
+	#define FPGA_NCONFIG_BIT		(0)
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	(GPIOE->DATA)
-	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 13)	/* PE13 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 7)	/* PE7 */
 
-	#define FPGA_NSTATUS_INPUT		(GPIOB->DATA)
-	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 2)	/* PB2 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_INPUT		FPGA_CONF_DONE_INPUT
+	#define FPGA_NSTATUS_BIT		FPGA_CONF_DONE_BIT
 
-	#define FPGA_INIT_DONE_INPUT	(GPIOE->DATA)
-	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 10)	/* PE10 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_INPUT	(0)
+	#define FPGA_INIT_DONE_BIT		(0)
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-		arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-		arm_hardware_piob_inputs(FPGA_NSTATUS_BIT); \
 		arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
-		arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
+		arm_hardware_pioe_updown(FPGA_CONF_DONE_BIT, 0); \
 	} while (0)
 
 	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
@@ -784,13 +782,7 @@
 	} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
-	/*
-		After the option bit to enable INIT_DONE is programmed into the device (during the first
-		frame of configuration data), the INIT_DONE pin goes low.
-		When initialization is complete, the INIT_DONE pin is released and pulled high. 
-		This low-to-high transition signals that the device has entered user mode.
-	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_CONF_DONE_INPUT & FPGA_CONF_DONE_BIT) != 0)
 
 #else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
