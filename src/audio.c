@@ -4486,7 +4486,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-	enum { DUALRXFLT = 1 };
+	//enum { DUALRXFLT = 1 };
 
 	FLOAT_t r;
 	switch (dspmode)
@@ -4534,7 +4534,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 #endif /* WITHMODEM */
 
 	case DSPCTL_MODE_RX_NFM:
-		if (/*DUALRXFLT || */ pathi == 0)
+		if (DUALRXFLT || pathi == 0)
 		{
 			// Демодуляция NBFM
 			const FLOAT_t sigpower = agc_getsigpower(vp0f);
@@ -4574,7 +4574,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		break;
 
 	case DSPCTL_MODE_RX_SAM:
-		if (/*DUALRXFLT || */pathi == 0)
+		if (DUALRXFLT || pathi == 0)
 		{
 			/* synchronous AM demodulation */
 			// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляции

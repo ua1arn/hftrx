@@ -89,14 +89,17 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate windo
 	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_XC7Z
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(1023)
+		#define DUALRXFLT 1
 
 	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_F133
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(511)
+		#define DUALRXFLT 0
 
 	#else /* CPUSTYLE_STM32MP1 */
 		#define	Ntap_rx_AUDIO	NtapValidate(511)
 		#define Ntap_tx_MIKE	NtapValidate(511)
+		#define DUALRXFLT 0
 
 	#endif /* CPUSTYLE_STM32MP1 */
 
