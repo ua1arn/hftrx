@@ -1262,20 +1262,22 @@ static const char FLASHMEM
 // Частоты перестройки границ полосы пропускания
 typedef struct
 {
-	uint_fast16_t granulationleft;	// дискретность изменения параметра через CAT или меню
-	uint_fast16_t granulationright;	// дискретность изменения параметра через CAT или меню
-	uint_fast8_t left10_width10_low, left10_width10_high;	// пределы изменения параметров
-	uint_fast8_t right100_low, right100_high;	// пределы изменения параметров
+	uint16_t granulationleft;	// дискретность изменения параметра через CAT или меню
+	uint16_t granulationright;	// дискретность изменения параметра через CAT или меню
+	uint8_t left10_width10_low, left10_width10_high;	// пределы изменения параметров
+	uint8_t right100_low, right100_high;	// пределы изменения параметров
 } bwlimits_t;
 
 typedef struct
 {
+	/* константные параметры */
 	const bwlimits_t * limits;
-	uint_fast8_t bwpropi;	// BWPROPI_xxxx
-	uint_fast8_t type;		// BWSET_SINGLE/BWSET_PAIR
-	uint_fast8_t left10_width10, right100;	// left выполняет роль width для телеграфных (BWSET_SINGLE) фильтров
-	//uint_fast8_t fltsofter;
-	uint_fast8_t afresponce;	/* скат АЧХ - на Samplerate/2 АЧХ становится на столько децибел  */
+	uint8_t bwpropi;	// BWPROPI_xxxx
+	uint8_t type;		// BWSET_SINGLE/BWSET_PAIR
+	/* параметры, изменяемые через меню */
+	uint_fast8_t left10_width10, right100;	/* left выполняет роль width для телеграфных (BWSET_SINGLE) фильтров */
+	//uint_fast8_t fltsofter;	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint_fast8_t afresponce;	/* наклон АЧХ - на Samplerate/2 АЧХ становится на столько децибел  */
 } bwprop_t;
 
 // Частоты границ полосы пропускания
