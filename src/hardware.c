@@ -2767,7 +2767,7 @@ sysinit_perfmeter_initialize(void)
 
 #if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
 
-	#if WITHDEBUG
+	#if WITHDEBUG || 1
 //	{
 //		uint32_t value;
 //		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
