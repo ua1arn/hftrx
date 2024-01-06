@@ -212,7 +212,7 @@ static const FLASHMEM struct menudef menutable [] =
 	{
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
-		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
+		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
 		offsetof(struct nvmap, gdisplayfreqsfps),
 		nvramoffs0,
 		NULL,
