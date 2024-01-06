@@ -337,7 +337,7 @@
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTSIZEWIDE 2048		/* Отображение спектра и волопада */
 		#define WITHSPECBETA_DEFAULT	30
 		#if 0
 			#define WITHTOUCHGUI		1
