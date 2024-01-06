@@ -2260,15 +2260,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OWA_RX_CLK_REG</name>
-    <displayName>OWA_RX_CLK_REG</displayName>
-    <description>OWA_RX Clock Register</description>
-    <addressOffset>0xA28</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>OWA_BGR_REG</name>
     <displayName>OWA_BGR_REG</displayName>
     <description>OWA Bus Gating Reset Register</description>

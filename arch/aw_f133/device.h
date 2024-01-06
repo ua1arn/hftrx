@@ -537,7 +537,7 @@ typedef struct CCU_Type
     volatile uint32_t I2S2_ASRC_CLK_REG;              /*!< Offset 0xA1C I2S2_ASRC Clock Register */
     volatile uint32_t I2S_BGR_REG;                    /*!< Offset 0xA20 I2S Bus Gating Reset Register */
     volatile uint32_t OWA_TX_CLK_REG;                 /*!< Offset 0xA24 OWA_TX Clock Register */
-    volatile uint32_t OWA_RX_CLK_REG;                 /*!< Offset 0xA28 OWA_RX Clock Register */
+             uint32_t reserved_0xA28;
     volatile uint32_t OWA_BGR_REG;                    /*!< Offset 0xA2C OWA Bus Gating Reset Register */
              uint32_t reserved_0xA30 [0x0004];
     volatile uint32_t DMIC_CLK_REG;                   /*!< Offset 0xA40 DMIC Clock Register */

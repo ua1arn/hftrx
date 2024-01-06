@@ -1,5 +1,6 @@
 #type; OWA; One Wire Audio (TX only)
 #base; OWA 0x02036000
+
 #irq; OWA 55
 #irqrv; OWA 39
 
