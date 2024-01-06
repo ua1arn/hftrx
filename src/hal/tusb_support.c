@@ -271,7 +271,7 @@ static void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
 	//PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
 }
 
-#elif (CPUSTYLE_T507)
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 //USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
 //{
@@ -399,10 +399,11 @@ void ohciehci_clk_init(void)
 
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
 
+#if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (4 + ix));	// USBEHCI0_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (20 + ix));	// USBEHCI0_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (20 + ix));	// USBEHCI0_RST
-
+#endif
 #if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (0 + ix));	// USBOHCI0_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// USBOHCI0_RST
@@ -432,10 +433,11 @@ void ohciehci_clk_init(void)
 		arm_hardware_disable_handler(USB20_HOST1_OHCI_IRQn);
 		arm_hardware_disable_handler(USB20_HOST1_EHCI_IRQn);
 
+#if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (4 + ix));	// USBEHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (20 + ix));	// USBEHCI1_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (20 + ix));	// USBEHCI1_RST
-
+#endif
 #if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (0 + ix));	// USBOHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// USBOHCI1_RST
@@ -465,10 +467,11 @@ void ohciehci_clk_init(void)
 		arm_hardware_disable_handler(USB20_HOST2_OHCI_IRQn);
 		arm_hardware_disable_handler(USB20_HOST2_EHCI_IRQn);
 
+#if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (4 + ix));	// USBEHCI2_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (20 + ix));	// USBEHCI2_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (20 + ix));	// USBEHCI2_RST
-
+#endif
 #if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (0 + ix));	// USBOHCI2_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// USBOHCI2_RST
@@ -498,10 +501,11 @@ void ohciehci_clk_init(void)
 		arm_hardware_disable_handler(USB20_HOST3_OHCI_IRQn);
 		arm_hardware_disable_handler(USB20_HOST3_EHCI_IRQn);
 
+#if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (4 + ix));	// USBEHCI3_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (20 + ix));	// USBEHCI3_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (20 + ix));	// USBEHCI3_RST
-
+#endif
 #if defined WITHUSBHW_OHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << (0 + ix));	// USBOHCI3_GATING
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// USBOHCI3_RST
@@ -644,11 +648,13 @@ void ohciehci_clk_init(void)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
 
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
+#if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 4);	// USBEHCI0_GATING
-
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 20);	// USBEHCI0_RST
+#endif
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 0);	// USBOHCI0_GATING
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 16);	// USBOHCI0_RST
 
 		USBOTG0->PHY_OTGCTL &= ~ (UINT32_C(1) << 0); 	// Host mode. Route phy0 to EHCI/OHCI
 
@@ -673,11 +679,13 @@ void ohciehci_clk_init(void)
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 17);	// USBOHCI1_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 21);	// USBEHCI1_RST
 
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
+#if TUP_USBIP_EHCI
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 5);	// USBEHCI1_GATING
-
-		CCU->USB_BGR_REG |= (UINT32_C(1) << 17);	// USBOHCI1_RST
 		CCU->USB_BGR_REG |= (UINT32_C(1) << 21);	// USBEHCI1_RST
+#endif
+
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG |= (UINT32_C(1) << 17);	// USBOHCI1_RST
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
