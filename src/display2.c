@@ -373,14 +373,12 @@ static const COLORPAIR_T colors_1stateBlue [1] =
 };
 
 // Параметры отображения частоты дополнительного приемника
-// синий
 static const COLORPAIR_T colors_2freqB [2] =
 {
 	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
-	{	COLORMAIN_YELLOW,	LABELBACK,	},
+	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
-// синий
 static const COLORPAIR_T colors_2modeB [2] =
 {
 	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},

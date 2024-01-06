@@ -580,7 +580,9 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 #if COLORSTYLE_RED
 	// "All-in-red": FT1000 inspired color scheme
 	#define DESIGNBIGCOLOR 		COLORMAIN_RED 		// DARK RED
+
 	#define DESIGNBIGCOLORB 	COLORMAIN_RED		// цвет частоты дополнительного приемника
+	#define DESIGNBIGCOLORBINACTIVE COLORMAIN_DARKRED
 
 	#define FMENUACTIVETEXT		COLORMAIN_WHITE
 	#define FMENUACTIVEBACK		COLORMAIN_DARKRED
@@ -600,6 +602,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	/* цветовая схема для Александра ATS52 */
 	#define DESIGNBIGCOLOR 		COLORMAIN_YELLOW 	// GOLD
 	#define DESIGNBIGCOLORB 	COLORMAIN_YELLOW		// цвет частоты дополнительного приемника
+	#define DESIGNBIGCOLORBINACTIVE COLORMAIN_DARKGREEN
 
 	#define FMENUACTIVETEXT		COLORMAIN_YELLOW
 	#define FMENUACTIVEBACK		COLORMAIN_DARKGREEN
@@ -620,7 +623,7 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	/* цветовая схема для эксперементов */
 	#define DESIGNBIGCOLOR 		COLORMAIN_YELLOW 	// GOLD
 
-	#define DESIGNBIGCOLORB 	COLORMAIN_GREEN		// цвет частоты дополнительного приемника
+	#define DESIGNBIGCOLORB 	COLORMAIN_YELLOW		// цвет частоты и режима ополнительного приемника
 	#define DESIGNBIGCOLORBINACTIVE COLORMAIN_DARKGREEN
 
 	#define FMENUACTIVETEXT		COLORMAIN_WHITE
