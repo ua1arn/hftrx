@@ -11391,51 +11391,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>WAKEUP_MASK0_REG</name>
-    <displayName>WAKEUP_MASK0_REG</displayName>
-    <description>Wakeup Mask0 Register</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WAKEUP_MASK1_REG</name>
-    <displayName>WAKEUP_MASK1_REG</displayName>
-    <description>Wakeup Mask1 Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WAKEUP_MASK2_REG</name>
-    <displayName>WAKEUP_MASK2_REG</displayName>
-    <description>Wakeup Mask2 Register</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WAKEUP_MASK3_REG</name>
-    <displayName>WAKEUP_MASK3_REG</displayName>
-    <description>Wakeup Mask3 Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>WAKEUP_MASK4_REG</name>
-    <displayName>WAKEUP_MASK4_REG</displayName>
-    <description>Wakeup Mask4 Register</description>
-    <addressOffset>0x034</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>5</dim>
+    <addressOffset>0x00000024</addressOffset>
+    <register>
+     <name>WAKEUP_MASK_REG</name>
+     <displayName>WAKEUP_MASK_REG</displayName>
+     <description>Wakeup Mask0..Mask4 Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x014</dimIncrement>
+   </cluster>
    <register>
     <name>TS_TMODE_SEL_REG</name>
     <displayName>TS_TMODE_SEL_REG</displayName>
@@ -11481,51 +11450,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>IRQ_MODE0_REG</name>
-    <displayName>IRQ_MODE0_REG</displayName>
-    <description>IRQ Mode0 Register</description>
-    <addressOffset>0x060</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IRQ_MODE1_REG</name>
-    <displayName>IRQ_MODE1_REG</displayName>
-    <description>IRQ Mode1 Register</description>
-    <addressOffset>0x064</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IRQ_MODE2_REG</name>
-    <displayName>IRQ_MODE2_REG</displayName>
-    <description>IRQ Mode2 Register</description>
-    <addressOffset>0x068</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IRQ_MODE3_REG</name>
-    <displayName>IRQ_MODE3_REG</displayName>
-    <description>IRQ Mode3 Register</description>
-    <addressOffset>0x06C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IRQ_MODE4_REG</name>
-    <displayName>IRQ_MODE4_REG</displayName>
-    <description>IRQ Mode4 Register</description>
-    <addressOffset>0x070</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>5</dim>
+    <addressOffset>0x00000060</addressOffset>
+    <register>
+     <name>IRQ_MODE_REG</name>
+     <displayName>IRQ_MODE_REG</displayName>
+     <description>IRQ Mode0..Mode4 Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x014</dimIncrement>
+   </cluster>
    <register>
     <name>RISC_AXI_PMU_CTRL</name>
     <displayName>RISC_AXI_PMU_CTRL</displayName>

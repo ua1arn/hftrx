@@ -1936,11 +1936,7 @@ typedef struct RISC_CFG_Type
              uint32_t reserved_0x014 [0x0002];
     volatile uint32_t ROM_CFG_REG;                    /*!< Offset 0x01C ROM Configuration Register */
     volatile uint32_t WAKEUP_EN_REG;                  /*!< Offset 0x020 Wakeup Enable Register */
-    volatile uint32_t WAKEUP_MASK0_REG;               /*!< Offset 0x024 Wakeup Mask0 Register */
-    volatile uint32_t WAKEUP_MASK1_REG;               /*!< Offset 0x028 Wakeup Mask1 Register */
-    volatile uint32_t WAKEUP_MASK2_REG;               /*!< Offset 0x02C Wakeup Mask2 Register */
-    volatile uint32_t WAKEUP_MASK3_REG;               /*!< Offset 0x030 Wakeup Mask3 Register */
-    volatile uint32_t WAKEUP_MASK4_REG;               /*!< Offset 0x034 Wakeup Mask4 Register */
+    volatile uint32_t WAKEUP_MASK_REG [0x005];        /*!< Offset 0x024 Wakeup Mask0..Mask4 Register */
              uint32_t reserved_0x038 [0x0002];
     volatile uint32_t TS_TMODE_SEL_REG;               /*!< Offset 0x040 Timestamp Test Mode Select Register */
     volatile uint32_t SRAM_ADDR_TWIST_REG;            /*!< Offset 0x044 SRAM Address Twist Register */
@@ -1949,11 +1945,7 @@ typedef struct RISC_CFG_Type
     volatile uint32_t RETITE_PC0_REG;                 /*!< Offset 0x050 Retire PC0 Register */
     volatile uint32_t RETITE_PC1_REG;                 /*!< Offset 0x054 Retire PC1 Register */
              uint32_t reserved_0x058 [0x0002];
-    volatile uint32_t IRQ_MODE0_REG;                  /*!< Offset 0x060 IRQ Mode0 Register */
-    volatile uint32_t IRQ_MODE1_REG;                  /*!< Offset 0x064 IRQ Mode1 Register */
-    volatile uint32_t IRQ_MODE2_REG;                  /*!< Offset 0x068 IRQ Mode2 Register */
-    volatile uint32_t IRQ_MODE3_REG;                  /*!< Offset 0x06C IRQ Mode3 Register */
-    volatile uint32_t IRQ_MODE4_REG;                  /*!< Offset 0x070 IRQ Mode4 Register */
+    volatile uint32_t IRQ_MODE_REG [0x005];           /*!< Offset 0x060 IRQ Mode0..Mode4 Register */
              uint32_t reserved_0x074 [0x0024];
     volatile uint32_t RISC_AXI_PMU_CTRL;              /*!< Offset 0x104 RISC AXI PMU Control Register */
     volatile uint32_t RISC_AXI_PMU_PRD;               /*!< Offset 0x108 RISC AXI PMU Period Register */
