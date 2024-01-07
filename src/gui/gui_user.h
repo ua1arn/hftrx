@@ -54,10 +54,14 @@ enum {
 	WINDOW_MENU,					// системное меню
 	WINDOW_MENU_PARAMS,
 	WINDOW_UIF,						// быстрое меню по нажатию заранее определенных кнопок
+#if WITHSWRSCAN
 	WINDOW_SWR_SCANNER,				// сканер КСВ по диапазону
+#endif /* WITHSWRSCAN */
 	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
 	WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
+#if WITHREVERB
 	WINDOW_AP_REVERB_SETT,			// параметры ревербератора
+#endif /* WITHREVERB */
 	WINDOW_AP_MIC_SETT,				// настройки микрофона
 	WINDOW_AP_MIC_PROF,				// профили микрофона (заготовка окна)
 	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
@@ -78,7 +82,9 @@ enum {
 #endif /* #if WITHFT8 */
 	WINDOW_INFOBAR_MENU,
 	WINDOW_AF_EQ,
+#if WITHIQSHIFT
 	WINDOW_SHIFT,
+#endif /* WITHIQSHIFT */
 	WINDOW_TIME,
 	WINDOW_KBD,
 	WINDOW_KBD_TEST,
