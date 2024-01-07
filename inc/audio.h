@@ -67,6 +67,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate windo
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
+		#define DUALRXFLT		1
 
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
