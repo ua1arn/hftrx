@@ -17,6 +17,8 @@
 #define CALIBRATION_IQ_CIC_RX_SHIFT		63
 #define CALIBRATION_TX_SHIFT			29
 
+#define FPGA_ARTIX7	1
+
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 //#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
