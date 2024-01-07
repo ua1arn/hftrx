@@ -335,6 +335,7 @@
 			#define WITHFT8					1
 			#define REALREFERENCE_FREQ 		122879000L
 			#define WITHSWRPROT				0	/* защита от превышения КСВ */
+			#define WITHSWRSCAN				1	/* сканирование КСВ по диапазону, при наличии аппаратной возможности */
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15

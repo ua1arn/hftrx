@@ -247,10 +247,14 @@ static window_t windows [] = {
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_process, },
 	{ WINDOW_MENU_PARAMS,    WINDOW_MENU,		    ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_params_process, },
 	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	"",   		   	 		 0, window_uif_process, },
+#if WITHSWRSCAN
 	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, "SWR band scanner",		 0, window_swrscan_process, },
+#endif /* WITHSWRSCAN */
 	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, "Audio settings", 		 1, window_audiosettings_process, },
 	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "MIC TX equalizer",		 1, window_ap_mic_eq_process, },
+#if WITHREVERB
 	{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "Reverberator settings", 1, window_ap_reverb_process, },
+#endif /* WITHREVERB */
 	{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "Microphone settings", 	 1, window_ap_mic_process, },
 	{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "Microphone profiles", 	 1, window_ap_mic_prof_process, },
 	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, "Transmit settings", 	 1, window_tx_process, },
@@ -271,7 +275,9 @@ static window_t windows [] = {
 #endif /* #if WITHFT8 */
 	{ WINDOW_INFOBAR_MENU, 	 NO_PARENT_WINDOW,		ALIGN_MANUAL,   "",		 				 0, window_infobar_menu_process, },
 	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, window_af_eq_process, },
+#if WITHIQSHIFT
 	{ WINDOW_SHIFT, 	 	 WINDOW_UTILS,			ALIGN_CENTER_X, "IQ shift",				 1, window_shift_process, },
+#endif /* WITHIQSHIFT */
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_process, },
 	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_process, },
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_process, },
@@ -2050,9 +2056,9 @@ static void window_utilites_process(void)
 #if WITHGUIDEBUG
 		add_element("btn_debug",  100, 44, 0, 0, "Debug|view");
 #endif /* WITHGUIDEBUG */
-#if WITHTX
+#if WITHSWRSCAN
 		add_element("btn_SWRscan",  100, 44, 0, 0, "SWR|scanner");
-#endif /* WITHTX */
+#endif /* WITHSWRSCAN */
 		add_element("btn_kbdtest",  100, 44, 0, 0, "Keyboard|test");
 		add_element("btn_3d",       100, 44, 0, 0, "Donut|3d");
 #if WITHLWIP
@@ -2061,7 +2067,9 @@ static void window_utilites_process(void)
 #if WITHLFM
 		add_element("btn_lfm",      100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
+#if WITHIQSHIFT
 		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
+#endif /* WITHIQSHIFT */
 
 		x = 0;
 		y = 0;
@@ -2106,12 +2114,12 @@ static void window_utilites_process(void)
 			{
 				open_window(get_win(WINDOW_3D));
 			}
-#if WITHTX
+#if WITHSWRSCAN
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_SWRscan"))
 			{
 				open_window(get_win(WINDOW_SWR_SCANNER));
 			}
-#endif /* WITHTX */
+#endif /* WITHSWRSCAN */
 #if WITHLWIP
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_pingtest"))
 			{
@@ -2131,10 +2139,12 @@ static void window_utilites_process(void)
 				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
+#if WITHIQSHIFT
 			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_shift"))
 			{
 				open_window(get_win(WINDOW_SHIFT));
 			}
+#endif /* WITHIQSHIFT */
 		}
 		break;
 
@@ -2149,7 +2159,7 @@ static void window_utilites_process(void)
 // переделать полностью
 static void window_swrscan_process(void)
 {
-#if WITHTX
+#if WITHSWRSCAN
 	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 	uint_fast16_t gr_w = 500, gr_h = 250;												// размеры области графика
 	uint_fast8_t interval = 20;
@@ -2344,7 +2354,7 @@ static void window_swrscan_process(void)
 				colpip_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORMAIN_YELLOW, 1);
 		}
 	}
-#endif /* WITHTX */
+#endif /* WITHSWRSCAN */
 }
 
 // *********************************************************************************************************************************************************************
@@ -2865,15 +2875,17 @@ static void window_audiosettings_process(void)
 			button_t * const btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
 			button_t * const btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
-			if (bh == btn_reverb_settings)
-			{
-				open_window(winRS);
-			}
-			else if (bh == btn_monitor)
+			if (bh == btn_monitor)
 			{
 				hamradio_set_gmoniflag(! hamradio_get_gmoniflag());
 				update = 1;
 			}
+#if WITHREVERB
+			else if (bh == btn_reverb_settings)
+			{
+				open_window(winRS);
+			}
+#endif /* WITHREVERB */
 #if WITHAFCODEC1HAVEPROC
 			else if (bh == btn_mic_eq)
 			{
@@ -4039,6 +4051,7 @@ static void window_gui_settings_process(void)
 
 static void window_shift_process(void)
 {
+#if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
 
 	static unsigned update = 0, cic_test = 0;
@@ -4194,6 +4207,7 @@ static void window_shift_process(void)
 			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", iq_cic_test_process());
 		}
 	}
+#endif /* WITHIQSHIFT */
 }
 
 // *********************************************************************************************************************************************************************
