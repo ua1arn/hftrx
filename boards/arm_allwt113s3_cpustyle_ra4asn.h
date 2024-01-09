@@ -13,12 +13,6 @@
 #ifndef ARM_ALLW_T113_CPUSTYLE_RA4ASN_H_INCLUDED
 #define ARM_ALLW_T113_CPUSTYLE_RA4ASN_H_INCLUDED 1
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
-#define CALIBRATION_IQ_CIC_RX_SHIFT		63
-#define CALIBRATION_TX_SHIFT			29
-
-#define FPGA_ARTIX7	1
-
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 //#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */

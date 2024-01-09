@@ -295,8 +295,16 @@
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 
 	// FPGA section
-	#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+
+	#define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
+	#define CALIBRATION_IQ_CIC_RX_SHIFT		63
+	#define CALIBRATION_TX_SHIFT			29
+
+	#define FPGA_ARTIX7	1
+
+	#define WITHFPGAWAIT_ARTIX7	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"	// для WITHFPGAPIPE_CODEC1
 	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала

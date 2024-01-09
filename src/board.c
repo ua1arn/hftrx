@@ -7010,9 +7010,7 @@ restart:
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
 }
 
-#elif WITHFPGAWAIT_AS
-
-#if FPGA_ARTIX7
+#elif WITHFPGAWAIT_ARTIX7
 
 /* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 static void board_fpga_loader_wait_AS(void)
@@ -7027,7 +7025,7 @@ static void board_fpga_loader_wait_AS(void)
 	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
 }
 
-#else	// FPGA Cyclone IV
+#elif WITHFPGAWAIT_AS
 
 /* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 static void board_fpga_loader_wait_AS(void)
@@ -7058,7 +7056,7 @@ static void board_fpga_loader_wait_AS(void)
 		;
 	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
 }
-#endif /* FPGA_ARTIX7 */
+
 #endif
 
 /* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
