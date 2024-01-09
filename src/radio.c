@@ -3986,8 +3986,8 @@ enum
 
 	#if WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
-			enum { nopttsig = 1 };		// устройство без органов управления и индикации
-			enum { nokeysig = 3 };		// устройство без органов управления и индикации
+			enum { nopttsig = BOARD_CATSIG_SER1_DTR };		// устройство без органов управления и индикации
+			enum { nokeysig = BOARD_CATSIG_NONE };		// устройство без органов управления и индикации
 		#else /* LCDMODE_DUMMY || ! WITHKEYBOARD */
 			enum { nopttsig = BOARD_CATSIG_NONE };
 			enum { nokeysig = BOARD_CATSIG_NONE };

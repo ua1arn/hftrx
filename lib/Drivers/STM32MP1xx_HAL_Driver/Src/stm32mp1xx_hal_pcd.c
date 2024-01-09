@@ -189,7 +189,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   }
 
   /* Force Device Mode*/
-  (void)USB_SetCurrentMode(hpcd->Instance, USB_DEVICE_MODE);
+  (void)USB_SetCurrentMode(USBx, USB_DEVICE_MODE);
 
   /* Init endpoints structures */
   for (i = 0U; i < hpcd->Init.dev_endpoints; i++)
@@ -217,7 +217,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
   }
 
   /* Init Device */
-  if (USB_DevInit(hpcd->Instance, hpcd->Init) != HAL_OK)
+  if (USB_DevInit(USBx, hpcd->Init) != HAL_OK)
   {
     hpcd->State = HAL_PCD_STATE_ERROR;
     return HAL_ERROR;
@@ -232,7 +232,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
     (void)HAL_PCDEx_ActivateLPM(hpcd);
   }
 
-  (void)USB_DevDisconnect(hpcd->Instance);
+  (void)USB_DevDisconnect(USBx);
 
   return HAL_OK;
 }
