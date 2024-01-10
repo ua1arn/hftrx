@@ -4667,6 +4667,80 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHEXTRFBOARDTEST */
 }
 
+#elif CTLREGMODE_RA4ASN_BOARD
+
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+#if defined(DDS1_TYPE)
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif
+
+	enum
+	{
+		HARDWARE_OPA2674I_FULLPOWER = 0x03,
+		HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+		HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+		HARDWARE_OPA2674I_SHUTDOWN = 0x00
+	};
+	static const FLASHMEM uint_fast8_t powerxlat [] =
+	{
+		HARDWARE_OPA2674I_IDLEPOWER,
+		HARDWARE_OPA2674I_POWERCUTBACK,
+		HARDWARE_OPA2674I_FULLPOWER,
+	};
+
+	const spitarget_t target = targetctl1;
+	const uint_fast8_t txgated = glob_tx && glob_txgate;
+
+	{
+		const spitarget_t target = targetctl1;
+		rbtype_t rbbuff [1] = { 0 };
+
+		RBBIT(007, 0);
+		RBVAL(005, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);
+		RBBIT(004, ! glob_preamp);
+		RBBIT(003, ! glob_tx);
+		RBBIT(002, glob_adcrand);
+		RBBIT(001, 0);
+		RBBIT(000, glob_dither);
+
+		board_ctlregs_spi_send_frame(target, rbbuff, ARRAY_SIZE(rbbuff));
+	}
+
+#if WITHRFUNIT				// UA3REO RF-UNIT rev.2
+	{
+		const spitarget_t target = targetext;
+		rbtype_t rbbuff [2] = { 0 };
+
+		/* U1 */
+		RBBIT(017, 0);					//
+		RBBIT(016, 0);			//
+		RBBIT(015, 0);		//
+		RBBIT(014, 0);					//
+		RBBIT(013, 0);	//
+		RBBIT(012, 0);	//
+		RBBIT(011, 0);	//
+		RBBIT(010, glob_tx);			//
+
+		/* U3 */
+		RBBIT(007, 0);					//
+		RBBIT(006, 0);					//
+		RBBIT(005, 0);					//
+		RBBIT(004, 0);					//
+		RBBIT(003, 0);					//
+		RBBIT(002, 0);	//
+		RBBIT(001, 0);	//
+		RBBIT(000, glob_tx);	//
+
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	}
+#endif /* WITHRFUNIT */
+}
+
 #elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */

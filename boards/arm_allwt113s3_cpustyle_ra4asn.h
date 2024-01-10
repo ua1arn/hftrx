@@ -577,20 +577,20 @@
 #elif (WITHSPIHW || WITHSPISW) && ! WITHISBOOTLOADER
 	// Набор определений для работы без внешнего дешифратора
 
-	#define targetdataflash 0xFF
 	#define targetnone 0x00
 
-	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B
+	#define targetnvram		(UINT32_C(1) << 2)		// PE2 nvram FM25L16B
+	#define targetext		(UINT32_C(1) << 3)		// PE3 UA3REO RF-UNIT rev.2
 	#define targetctl1		(UINT32_C(1) << 20)		// PD20 board control registers chain
 	#define targetfpga1		(UINT32_C(1) << 21)		// PD21 FPGA control registers CS1
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
-		case targetnvram: { gpioX_setstate(GPIOG, (target), 0 * (target)); } break; \
+		case targetnvram: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetext:   { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		case targetfpga1: { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
-		case targetctl1: { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
+		case targetctl1:  { gpioX_setstate(GPIOD, (target), 0 * (target)); } break; \
 		default: case targetnone: break; \
 		} \
 	} while (0)
@@ -598,18 +598,18 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetdataflash: { gpioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; /* PC3 SPI0_CS */ \
-		case targetnvram: { gpioX_setstate(GPIOG, (target), 1 * (target)); } break; \
+		case targetnvram: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
+		case targetext:   { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
 		case targetfpga1: { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
-		case targetctl1: { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
+		case targetctl1:  { gpioX_setstate(GPIOD, (target), 1 * (target)); } break; \
 		default: case targetnone: break; \
 		} \
 	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
-		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs(targetext, 1 * targetnvram); /*  */ \
 		arm_hardware_piod_outputs(targetctl1, 1 * targetctl1); /*  */ \
 		arm_hardware_piod_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
 	} while (0)
