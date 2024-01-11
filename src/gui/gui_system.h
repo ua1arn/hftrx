@@ -23,7 +23,6 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...);
 void elements_state (window_t * win);
 void remove_end_line_spaces(char * str);
 const char * remove_start_line_spaces(const char * str);
-void reset_tracking(void);
 uint_fast8_t check_for_parent_window(void);
 void get_gui_tracking(int_fast16_t * x, int_fast16_t * y);
 void textfield_add_string(text_field_t * tf, const char * str, COLORPIP_T color);

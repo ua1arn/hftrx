@@ -395,18 +395,14 @@ void gui_update(void)
 	}
 }
 
-/* Сброс данных трекинга тачскрина */
-void reset_tracking(void)
-{
-	gui.vector_move_x = 0;
-	gui.vector_move_y = 0;
-}
-
 /* Получить относительные координаты перемещения точки касания экрана */
 void get_gui_tracking(int_fast16_t * x, int_fast16_t * y)
 {
 	* x = gui.vector_move_x;
 	* y = gui.vector_move_y;
+
+	gui.vector_move_x = 0;
+	gui.vector_move_y = 0;
 }
 
 /* Возврат ссылки на запись в структуре по названию и типу окна */
@@ -1440,7 +1436,9 @@ static void slider_process(slider_t * sl)
 	int v = sl->value + roundf((sl->orientation ? gui.vector_move_x : gui.vector_move_y) / sl->step);
 	if (v >= 0 && v <= sl->size / sl->step)
 		sl->value = v;
-	reset_tracking();
+
+	gui.vector_move_x = 0;
+	gui.vector_move_y = 0;
 }
 
 /* Рассчитать размеры текстового поля */
@@ -1559,7 +1557,8 @@ static void set_state_record(gui_element_t * val)
 				if (! strcmp(ta->name, "ta_winmove"))
 				{
 					move_window(val->win, gui.vector_move_x, gui.vector_move_y);
-					reset_tracking();
+					gui.vector_move_x = 0;
+					gui.vector_move_y = 0;
 				}
 				else if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
 					dump_queue(val->win);
@@ -1634,7 +1633,8 @@ static void process_gui(void)
 	if (gui.is_tracking && ! gui.is_touching_screen)
 	{
 		gui.is_tracking = 0;
-		reset_tracking();
+		gui.vector_move_x = 0;
+		gui.vector_move_y = 0;
 		x_old = 0;
 		y_old = 0;
 	}
@@ -1644,8 +1644,8 @@ static void process_gui(void)
 		ASSERT(p != NULL);
 		if (p->is_trackable && gui.is_touching_screen)
 		{
-			gui.vector_move_x = x_old ? gui.vector_move_x + gui.last_pressed_x - x_old : 0; // проверить, нужно ли оставить накопление
-			gui.vector_move_y = y_old ? gui.vector_move_y + gui.last_pressed_y - y_old : 0;
+			gui.vector_move_x = x_old ? gui.last_pressed_x - x_old : 0;
+			gui.vector_move_y = y_old ? gui.last_pressed_y - y_old : 0;
 
 			if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 			{

@@ -609,7 +609,7 @@
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
 		arm_hardware_pioe_outputs(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs(targetext, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs(targetext, 1 * targetext); /*  */ \
 		arm_hardware_piod_outputs(targetctl1, 1 * targetctl1); /*  */ \
 		arm_hardware_piod_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
 	} while (0)

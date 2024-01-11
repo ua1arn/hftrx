@@ -6,6 +6,7 @@
 // Поддержка DS1307/DS3231 real time clock - tnx for UR3QTD
 //
 
+#include <string.h>
 #include "hardware.h"
 #include "formats.h"
 #include "board.h"

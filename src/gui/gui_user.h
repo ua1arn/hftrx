@@ -173,7 +173,7 @@ typedef struct {
 
 enum {
 	enc2step_default = 1,
-	freq_swipe_step_default = 3,
+	freq_swipe_step_default = 2,
 	freq_swipe_enable_default = 0,
 	micprofile_default = UINT8_MAX,
 };
