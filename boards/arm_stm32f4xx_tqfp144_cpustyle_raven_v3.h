@@ -459,14 +459,14 @@
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOF->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOF->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define FPGA_NCONFIG_BIT		(1UL << 15)	/* PF15 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_BIT		(1UL << 15)	/* PF15 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	(GPIOE->IDR)
 	#define FPGA_NSTATUS_INPUT		(GPIOE->IDR)
 
-	#define FPGA_CONF_DONE_BIT		(1UL << 14)	/* PE14 bit conneced to CONF_DONE pin ALTERA FPGA */
-	#define FPGA_NSTATUS_BIT		(1UL << 15)	/* PE15 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(1UL << 14)	/* PE14 bit connected to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_NSTATUS_BIT		(1UL << 15)	/* PE15 bit connected to NSTATUS pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \

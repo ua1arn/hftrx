@@ -659,17 +659,17 @@
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { R7S721_TARGET_PORT_S(1, v); } while (0)
 	#define FPGA_NCONFIG_PORT_C(v)	do { R7S721_TARGET_PORT_C(1, v); } while (0)
-	#define FPGA_NCONFIG_BIT		(1UL << 1)	/* P1_1 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_BIT		(1UL << 1)	/* P1_1 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	(R7S721_INPUT_PORT(1))
-	#define FPGA_CONF_DONE_BIT		(1UL << 2)	/* P1_2 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(1UL << 2)	/* P1_2 bit connected to CONF_DONE pin ALTERA FPGA */
 
 	#define FPGA_NSTATUS_INPUT		(R7S721_INPUT_PORT(1))
-	#define FPGA_NSTATUS_BIT		(1UL << 3)	/* P1_3 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_BIT		(1UL << 3)	/* P1_3 bit connected to NSTATUS pin ALTERA FPGA */
 
 	#define FPGA_INIT_DONE_INPUT	(R7S721_INPUT_PORT(1))
-	#define FPGA_INIT_DONE_BIT		(1UL << 0)	/* P1_0 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_BIT		(1UL << 0)	/* P1_0 bit connected to INIT_DONE pin ALTERA FPGA */
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*

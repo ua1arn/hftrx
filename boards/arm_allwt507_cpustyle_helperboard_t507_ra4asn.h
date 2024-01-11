@@ -829,17 +829,17 @@
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
 	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
-	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 14)	/* PE14 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 14)	/* PE14 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 16)	/* PE16 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 16)	/* PE16 bit connected to CONF_DONE pin ALTERA FPGA */
 
 	#define FPGA_NSTATUS_INPUT		gpioX_getinputs(GPIOE)
-	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 15)	/* PE15 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 15)	/* PE15 bit connected to NSTATUS pin ALTERA FPGA */
 
 	#define FPGA_INIT_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 17)	/* PE17 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 17)	/* PE17 bit connected to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \

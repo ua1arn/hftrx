@@ -735,17 +735,17 @@
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define FPGA_NCONFIG_BIT		(1UL << 11)	/* PC11 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_BIT		(1UL << 11)	/* PC11 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	(GPIOC->IDR)
-	#define FPGA_CONF_DONE_BIT		(1UL << 10)	/* PC10 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(1UL << 10)	/* PC10 bit connected to CONF_DONE pin ALTERA FPGA */
 
 	#define FPGA_NSTATUS_INPUT		(GPIOC->IDR)
-	#define FPGA_NSTATUS_BIT		(1UL << 9)	/* PC9 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_BIT		(1UL << 9)	/* PC9 bit connected to NSTATUS pin ALTERA FPGA */
 
 	#define FPGA_INIT_DONE_INPUT	(GPIOC->IDR)
-	#define FPGA_INIT_DONE_BIT		(1UL << 12)	/* PC12 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_BIT		(1UL << 12)	/* PC12 bit connected to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
