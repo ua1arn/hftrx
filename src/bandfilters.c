@@ -47,6 +47,22 @@
 	};
 	#define BANDCALCS ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
+#elif \
+		BANDSELSTYLE_UA3REO_RFUNIT_V2
+
+	static const fseltype_t board_bandfs [] =
+	{
+		(fseltype_t) (  800000u >> BANDDIVPOWER),
+		(fseltype_t) ( 1500000u >> BANDDIVPOWER),
+		(fseltype_t) ( 3400000u >> BANDDIVPOWER),
+		(fseltype_t) ( 6000000u >> BANDDIVPOWER),
+		(fseltype_t) ( 8000000u >> BANDDIVPOWER),
+		(fseltype_t) (10000000u >> BANDDIVPOWER),
+		(fseltype_t) (15000000u >> BANDDIVPOWER),
+		(fseltype_t) (20000000u >> BANDDIVPOWER),
+	};
+	#define BANDCALCS	ARRAY_SIZE(board_bandfs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+
 #elif CTLREGMODE16_NIKOLAI
 
 	// диапазонные фильтры по запросу RX3QSP

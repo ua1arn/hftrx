@@ -4717,24 +4717,24 @@ prog_ctrlreg(uint_fast8_t plane)
 		rbtype_t rbbuff [2] = { 0 };
 
 		/* U1 */
-		RBBIT(017, 0);					//
-		RBBIT(016, 0);			//
-		RBBIT(015, 0);		//
-		RBBIT(014, 0);					//
-		RBBIT(013, 0);	//
-		RBBIT(012, 0);	//
-		RBBIT(011, 0);	//
-		RBBIT(010, glob_tx);			//
+		RBBIT(017, 0);
+		RBBIT(016, glob_att);
+		RBBIT(015, ! glob_bandf);
+		RBBIT(014, glob_bandf);
+		RBBIT(013, glob_bandf == 1);
+		RBBIT(012, glob_bandf == 2);
+		RBBIT(011, glob_bandf == 3);
+		RBBIT(010, glob_tx);
 
 		/* U3 */
-		RBBIT(007, 0);					//
-		RBBIT(006, 0);					//
-		RBBIT(005, 0);					//
-		RBBIT(004, 0);					//
-		RBBIT(003, 0);					//
-		RBBIT(002, 0);	//
-		RBBIT(001, 0);	//
-		RBBIT(000, glob_tx);	//
+		RBBIT(007, 0);
+		RBBIT(006, 0);
+		RBBIT(005, 0);
+		RBBIT(004, glob_bandf == 8);
+		RBBIT(003, glob_bandf == 7);
+		RBBIT(002, glob_bandf == 6);
+		RBBIT(001, glob_bandf == 5);
+		RBBIT(000, glob_bandf == 4);
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
