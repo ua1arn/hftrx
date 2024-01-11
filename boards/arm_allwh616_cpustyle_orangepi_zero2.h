@@ -615,9 +615,9 @@
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioc_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PC0 SPI0_CLK */ \
-			arm_hardware_pioc_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PC2 SPI0_MOSI */ \
-			arm_hardware_pioc_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
+			arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PC0 SPI0_CLK */ \
+			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PC2 SPI0_MOSI */ \
+		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
 		} while (0)
 
 	#elif WITHSPISW
