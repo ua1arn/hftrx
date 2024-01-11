@@ -776,8 +776,7 @@ static void gui_main_process(void)
 				int_fast16_t move_x = 0, move_y = 0;
 				get_gui_tracking(& move_x, & move_y);
 				if (move_x != 0)
-					hamradio_set_freq(hamradio_get_freq_rx() - ((move_x / 10) * freq_swipe));
-				reset_tracking();
+					hamradio_set_freq(hamradio_get_freq_rx() - (int) (move_x  * freq_swipe));
 			}
 		}
 
