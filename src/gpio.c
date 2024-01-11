@@ -47,14 +47,14 @@ power4(uint_fast8_t v)
 #if 1
 	portholder_t r = 0;
 
-	r |= (v & (1U << 0)) ? (1uL << 0) : 0;
-	r |= (v & (1U << 1)) ? (1uL << 4) : 0;
-	r |= (v & (1U << 2)) ? (1uL << 8) : 0;
-	r |= (v & (1U << 3)) ? (1uL << 12) : 0;
-	r |= (v & (1U << 4)) ? (1uL << 16) : 0;
-	r |= (v & (1U << 5)) ? (1uL << 20) : 0;
-	r |= (v & (1U << 6)) ? (1uL << 24) : 0;
-	r |= (v & (1U << 7)) ? (1uL << 28) : 0;
+	r |= (v & (1U << 0)) ? (UINT32_C(1) << 0) : 0;
+	r |= (v & (1U << 1)) ? (UINT32_C(1) << 4) : 0;
+	r |= (v & (1U << 2)) ? (UINT32_C(1) << 8) : 0;
+	r |= (v & (1U << 3)) ? (UINT32_C(1) << 12) : 0;
+	r |= (v & (1U << 4)) ? (UINT32_C(1) << 16) : 0;
+	r |= (v & (1U << 5)) ? (UINT32_C(1) << 20) : 0;
+	r |= (v & (1U << 6)) ? (UINT32_C(1) << 24) : 0;
+	r |= (v & (1U << 7)) ? (UINT32_C(1) << 28) : 0;
 
 	return r;
 #else
@@ -104,22 +104,22 @@ power2(uint_fast16_t v)
 {
 	portholder_t r = 0;
 
-	r |= (v & (1U << 0)) ? (1uL << 0) : 0;
-	r |= (v & (1U << 1)) ? (1uL << 2) : 0;
-	r |= (v & (1U << 2)) ? (1uL << 4) : 0;
-	r |= (v & (1U << 3)) ? (1uL << 6) : 0;
-	r |= (v & (1U << 4)) ? (1uL << 8) : 0;
-	r |= (v & (1U << 5)) ? (1uL << 10) : 0;
-	r |= (v & (1U << 6)) ? (1uL << 12) : 0;
-	r |= (v & (1U << 7)) ? (1uL << 14) : 0;
-	r |= (v & (1U << 8)) ? (1uL << 16) : 0;
-	r |= (v & (1U << 9)) ? (1uL << 18) : 0;
-	r |= (v & (1U << 10)) ? (1uL << 20) : 0;
-	r |= (v & (1U << 11)) ? (1uL << 22) : 0;
-	r |= (v & (1U << 12)) ? (1uL << 24) : 0;
-	r |= (v & (1U << 13)) ? (1uL << 26) : 0;
-	r |= (v & (1U << 14)) ? (1uL << 28) : 0;
-	r |= (v & (1U << 15)) ? (1uL << 30) : 0;
+	r |= (v & (1U << 0)) ? (UINT32_C(1) << 0) : 0;
+	r |= (v & (1U << 1)) ? (UINT32_C(1) << 2) : 0;
+	r |= (v & (1U << 2)) ? (UINT32_C(1) << 4) : 0;
+	r |= (v & (1U << 3)) ? (UINT32_C(1) << 6) : 0;
+	r |= (v & (1U << 4)) ? (UINT32_C(1) << 8) : 0;
+	r |= (v & (1U << 5)) ? (UINT32_C(1) << 10) : 0;
+	r |= (v & (1U << 6)) ? (UINT32_C(1) << 12) : 0;
+	r |= (v & (1U << 7)) ? (UINT32_C(1) << 14) : 0;
+	r |= (v & (1U << 8)) ? (UINT32_C(1) << 16) : 0;
+	r |= (v & (1U << 9)) ? (UINT32_C(1) << 18) : 0;
+	r |= (v & (1U << 10)) ? (UINT32_C(1) << 20) : 0;
+	r |= (v & (1U << 11)) ? (UINT32_C(1) << 22) : 0;
+	r |= (v & (1U << 12)) ? (UINT32_C(1) << 24) : 0;
+	r |= (v & (1U << 13)) ? (UINT32_C(1) << 26) : 0;
+	r |= (v & (1U << 14)) ? (UINT32_C(1) << 28) : 0;
+	r |= (v & (1U << 15)) ? (UINT32_C(1) << 30) : 0;
 
 	return r;
 }
@@ -130,10 +130,10 @@ power8(uint_fast8_t v)
 {
 	portholder_t r = 0;
 
-	r |= (v & (1U << 0)) ? (1uL << 0) : 0;
-	r |= (v & (1U << 1)) ? (1uL << 8) : 0;
-	r |= (v & (1U << 2)) ? (1uL << 16) : 0;
-	r |= (v & (1U << 3)) ? (1uL << 24) : 0;
+	r |= (v & (1U << 0)) ? (UINT32_C(1) << 0) : 0;
+	r |= (v & (1U << 1)) ? (UINT32_C(1) << 8) : 0;
+	r |= (v & (1U << 2)) ? (UINT32_C(1) << 16) : 0;
+	r |= (v & (1U << 3)) ? (UINT32_C(1) << 24) : 0;
 
 	return r;
 }
@@ -222,7 +222,7 @@ static void r7s721_pio_onchangeinterrupt(
 	int bitpos;
 	for (bitpos = 0; bitpos < width; ++ bitpos)
 	{
-		portholder_t mask = 1uL << bitpos;
+		portholder_t mask = UINT32_C(1) << bitpos;
 		if ((ipins & mask) == 0)
 			continue;
 		const IRQn_ID_t int_id = irqbase + bitpos;
@@ -564,56 +564,56 @@ static void r7s721_IRQn_IRQHandler(void)
 	if ((irqrr & (1U << 0)) != 0)
 	{
 		enum { irq = 0 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 1)) != 0)
 	{
 		enum { irq = 1 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 2)) != 0)
 	{
 		enum { irq = 2 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 3)) != 0)
 	{
 		enum { irq = 3 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 4)) != 0)
 	{
 		enum { irq = 4 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 5)) != 0)
 	{
 		enum { irq = 5 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 6)) != 0)
 	{
 		enum { irq = 6 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
 	else if ((irqrr & (1U << 7)) != 0)
 	{
 		enum { irq = 7 };
-		INTC.IRQRR = (uint16_t) ~ (1u << irq);
+		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
 		(* r7s721_IRQn_user [irq])();
 	}
@@ -887,21 +887,21 @@ void sysinit_gpio_initialize(void)
 #if CPUSTYLE_A64
 
 	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock);
-	CCU->BUS_CLK_GATING_REG2 |= (1u << 5);	// PIO_GATING - not need - already set
+	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;
 
 	uint32_t reg_val;
 	// R_GPIO reset deassert
-	reg_val = readl(R_PRCM_BASE+0xb0);
-	reg_val |= (1u << 0);
+	reg_val = readl(R_PRCM_BASE + 0xb0);
+	reg_val |= (UINT32_C(1) << 0);
 	writel(reg_val, R_PRCM_BASE+0xb0);
 
 	// R_GPIO GATING open
 	// Valid bit 7..0
 	// bit 0 = GPIO(L) gating
 	// bit 6 = TWI gating
-	reg_val = readl(R_PRCM_BASE+0x28);
-	reg_val |= (1u << 0);
+	reg_val = readl(R_PRCM_BASE + 0x28);
+	reg_val |= (UINT32_C(1) << 0);
 	writel(reg_val, R_PRCM_BASE+0x28);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
@@ -1409,7 +1409,7 @@ void gpioX_setstate(
 		uint_fast8_t i;
 		for (i = 0; i < 16; ++ i)
 		{
-			const portholder_t pinmask = (portholder_t) 1uL << i;
+			const portholder_t pinmask = (portholder_t) UINT32_C(1) << i;
 			if ((ipins & pinmask) == 0)
 				continue;	// Эти биты не трогаем
 
@@ -1959,7 +1959,7 @@ arm_hardware_pioa_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOA; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOA; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOA->PIO_PER = ipins;				// initial disconnect - PIO enable
 	AT91C_BASE_PIOA->PIO_ODR = ipins;		// this pin not output.
@@ -1967,7 +1967,7 @@ arm_hardware_pioa_inputs(portholder_t ipins)
 	//AT91C_BASE_PIOA->PIO_IFER = ipins;	// glitch filter enable
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOA);	// разрешить тактированние этого блока
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA);	// разрешить тактированние этого блока
 
     PIOA->PIO_PER = ipins;	// initial disconnect - PIO enable
     PIOA->PIO_ODR = ipins; // эти выводы на  ввод
@@ -2032,7 +2032,7 @@ arm_hardware_pioa_inputs(portholder_t ipins)
 	GPIOA->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOA->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2046,7 +2046,7 @@ arm_hardware_piob_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOB);	// разрешить тактированние этого блока
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOB);	// разрешить тактированние этого блока
 
     PIOA->PIO_PER = ipins;	// initial disconnect - PIO enable
     PIOB->PIO_ODR = ipins; // эти выводы на  ввод
@@ -2112,7 +2112,7 @@ arm_hardware_piob_inputs(portholder_t ipins)
 	GPIOB->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOB->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2126,7 +2126,7 @@ arm_hardware_pioc_inputs(portholder_t ipins)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOC);	// разрешить тактированние этого блока
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOC);	// разрешить тактированние этого блока
 
     PIOA->PIO_PER = ipins;	// initial disconnect - PIO enable
     PIOC->PIO_ODR = ipins; // эти выводы на  ввод
@@ -2192,7 +2192,7 @@ arm_hardware_pioc_inputs(portholder_t ipins)
 	GPIOC->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOC->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2248,8 +2248,6 @@ arm_hardware_piod_inputs(portholder_t ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYLE_AT91SAM7S
-
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
@@ -2264,7 +2262,7 @@ arm_hardware_piod_inputs(portholder_t ipins)
 	GPIOD->gpio_swport_ctl &= ~ ipins;	/* no alt function */
 	GPIOD->gpio_swport_ddr &= ~ ipins;	/* switch to intput */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2313,14 +2311,12 @@ arm_hardware_pioe_inputs(portholder_t ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOE, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
-#elif CPUSTYLE_AT91SAM7S
-
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2373,7 +2369,7 @@ arm_hardware_piof_inputs(portholder_t ipins)
 	//gpioX_poweron(GPIOF);
 	gpioX_prog(GPIOF, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
-#elif defined (GPIOF)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2426,7 +2422,7 @@ arm_hardware_piog_inputs(portholder_t ipins)
 	//gpioX_poweron(GPIOG);
 	gpioX_prog(GPIOG, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
-#elif defined (GPIG)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2488,7 +2484,7 @@ arm_hardware_pioa_analoginput(portholder_t ipins)
 
 #elif CPUSTYLE_VM14
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2550,7 +2546,7 @@ arm_hardware_piob_analoginput(portholder_t ipins)
 
 #elif CPUSTYLE_VM14
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2612,7 +2608,7 @@ arm_hardware_pioc_analoginput(portholder_t ipins)
 
 #elif CPUSTYLE_VM14
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2628,7 +2624,7 @@ arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOA; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOA; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -2639,7 +2635,7 @@ arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOA);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA);
 
  	PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -2720,7 +2716,7 @@ arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOA, opins, initialstate);
 	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2733,7 +2729,7 @@ arm_hardware_pioa_outputs10m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOA; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOA; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -2744,7 +2740,7 @@ arm_hardware_pioa_outputs10m(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOA);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA);
 
  	PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -2825,7 +2821,7 @@ arm_hardware_pioa_outputs10m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOA, opins, initialstate);
 	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT10M, ALWNR_GPIO_PULL_OUTPUT10M);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2837,7 +2833,7 @@ arm_hardware_pioa_outputs50m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOA; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOA; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -2848,7 +2844,7 @@ arm_hardware_pioa_outputs50m(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOA);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA);
 
  	PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -2930,7 +2926,7 @@ arm_hardware_pioa_outputs50m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOA, opins, initialstate);
 	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -2947,7 +2943,7 @@ arm_hardware_piob_outputs(portholder_t opins, portholder_t initialstate)
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOB);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOB);
 
  	PIOB->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOB->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3028,7 +3024,7 @@ arm_hardware_piob_outputs(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOB, opins, initialstate);
 	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3041,7 +3037,7 @@ arm_hardware_piob_outputs50m(portholder_t opins, portholder_t initialstate)
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOB; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOB; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOB->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOB->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3052,7 +3048,7 @@ arm_hardware_piob_outputs50m(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOB);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOB);
 
  	PIOB->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOB->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3133,7 +3129,7 @@ arm_hardware_piob_outputs50m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOB, opins, initialstate);
 	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3150,7 +3146,7 @@ arm_hardware_pioc_outputs50m(portholder_t opins, portholder_t initialstate)
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOC; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOC; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOC->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOC->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3161,7 +3157,7 @@ arm_hardware_pioc_outputs50m(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOC);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOC);
 
  	PIOC->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOC->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3242,7 +3238,7 @@ arm_hardware_pioc_outputs50m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOC, opins, initialstate);
 	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3260,7 +3256,7 @@ arm_hardware_piod_outputs50m(portholder_t opins, portholder_t initialstate)
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOD; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOD; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOD->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOD->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3271,7 +3267,7 @@ arm_hardware_piod_outputs50m(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOD);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOD);
 
  	PIOD->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
  	PIOD->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3352,7 +3348,7 @@ arm_hardware_piod_outputs50m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOD, opins, initialstate);
 	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3370,7 +3366,7 @@ arm_hardware_pioe_outputs50m(portholder_t opins, portholder_t initialstate)
 #if CPUSTYLE_AT91SAM7S
 #elif CPUSTYLE_AT91SAM9XE
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOE; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOE; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOE->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOE->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3381,7 +3377,7 @@ arm_hardware_pioe_outputs50m(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOE);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOE);
 
  	PIOE->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
  	PIOE->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3452,7 +3448,7 @@ arm_hardware_pioe_outputs50m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOE, opins, initialstate);
 	gpioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3468,7 +3464,7 @@ arm_hardware_pioc_outputs(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOC);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOC);
 
  	PIOC->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOC->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -3551,7 +3547,7 @@ arm_hardware_pioc_outputs(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOC, opins, initialstate);
 	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3638,7 +3634,7 @@ arm_hardware_pioa_outputs2m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOA, opins, initialstate);
 	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3725,7 +3721,7 @@ arm_hardware_piob_outputs2m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOB, opins, initialstate);
 	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3813,7 +3809,7 @@ arm_hardware_pioc_outputs2m(portholder_t opins, portholder_t initialstate)
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3902,7 +3898,7 @@ arm_hardware_piod_outputs2m(portholder_t opins, portholder_t initialstate)
 	GPIOD->gpio_swport_ctl &= ~ opins;
 	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -3977,7 +3973,7 @@ arm_hardware_piod_outputs(portholder_t opins, portholder_t initialstate)
 	GPIOD->gpio_swport_ctl &= ~ opins;
 	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -4047,7 +4043,7 @@ arm_hardware_pioe_outputs(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOE, opins, initialstate);
 	gpioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -4112,7 +4108,7 @@ arm_hardware_pioe_outputs2m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOE, opins, initialstate);
 	gpioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -4179,9 +4175,8 @@ arm_hardware_piof_outputs(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOF, opins, initialstate);
 	gpioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
-#elif defined (GPIOF)
+#else
 	#error Undefined CPUSTYLE_XXX
-
 
 #endif
 }
@@ -4243,9 +4238,8 @@ arm_hardware_piof_outputs2m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOF, opins, initialstate);
 	gpioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
-#elif defined (GPIOF)
+#else
 	#error Undefined CPUSTYLE_XXX
-
 
 #endif
 }
@@ -4312,7 +4306,7 @@ arm_hardware_piog_outputs(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOG, opins, initialstate);
 	gpioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
-#elif defined (GPIOG)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -5182,7 +5176,7 @@ arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
-	AT91C_BASE_PMC->PMC_PCER = 1uL << AT91C_ID_PIOA; // разрешить тактированние этого блока
+	AT91C_BASE_PMC->PMC_PCER = UINT32_C(1) << AT91C_ID_PIOA; // разрешить тактированние этого блока
 
 	AT91C_BASE_PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	AT91C_BASE_PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -5193,7 +5187,7 @@ arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	PMC->PMC_PCER0 = (1uL << ID_PIOA);
+	PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA);
 
  	PIOA->PIO_SODR = (opins & initialstate);	// Установка единицы в регистре данных
 	PIOA->PIO_CODR = (opins & ~ initialstate);	// Установка нулей в регистре данных
@@ -5274,7 +5268,7 @@ arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 	GPIOA->gpio_swport_ctl &= ~ opins;
 	GPIOA->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -5361,9 +5355,8 @@ arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate)
 	GPIOB->gpio_swport_ctl &= ~ opins;
 	GPIOB->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
-
 
 #endif
 }
@@ -5449,7 +5442,7 @@ arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate)
 	GPIOC->gpio_swport_ctl &= ~ opins;
 	GPIOC->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -5536,7 +5529,7 @@ arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate)
 	GPIOD->gpio_swport_ctl &= ~ opins;
 	GPIOD->gpio_swport_ddr |= opins;	/* switch to output */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -5603,7 +5596,7 @@ arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate)
 	//gpioX_poweron(GPIOE);
 	gpioX_setopendrain(GPIOE, opins, initialstate);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6042,7 +6035,7 @@ arm_hardware_pioa_altfn50(portholder_t opins, unsigned af)
 	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6125,7 +6118,7 @@ arm_hardware_piob_altfn50(portholder_t opins, unsigned af)
 	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6200,7 +6193,7 @@ arm_hardware_pioc_altfn50(portholder_t opins, unsigned af)
 	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6276,7 +6269,7 @@ arm_hardware_piod_altfn20(portholder_t opins, unsigned af)
 	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6348,7 +6341,7 @@ arm_hardware_piod_altfn50(portholder_t opins, unsigned af)
 	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6432,7 +6425,7 @@ arm_hardware_pioa_altfn2(portholder_t opins, unsigned af)
 //	//gpioX_poweron(GPIOA);
 	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6512,7 +6505,7 @@ arm_hardware_pioa_altfn20(portholder_t opins, unsigned af)
 //	//gpioX_poweron(GPIOA);
 	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6596,7 +6589,7 @@ arm_hardware_piob_altfn2(portholder_t opins, unsigned af)
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6676,7 +6669,7 @@ arm_hardware_piob_altfn20(portholder_t opins, unsigned af)
 	//gpioX_poweron(GPIOB);
 	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6760,7 +6753,7 @@ arm_hardware_pioc_altfn2(portholder_t opins, unsigned af)
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6840,7 +6833,7 @@ arm_hardware_pioc_altfn20(portholder_t opins, unsigned af)
 	//gpioX_poweron(GPIOC);
 	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -6916,7 +6909,7 @@ arm_hardware_piod_altfn2(portholder_t opins, unsigned af)
 	//gpioX_poweron(GPIOD);
 	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -8701,7 +8694,7 @@ arm_hardware_piol_updown(portholder_t up, portholder_t down)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOL)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -8784,12 +8777,11 @@ void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af)
 	GPIOA->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOA->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
 }
-
 #endif /* defined (GPIOA) */
 
 #if defined (GPIOB)
@@ -8867,7 +8859,7 @@ void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af)
 	GPIOB->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOB->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -8949,7 +8941,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af)
 	GPIOC->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOC->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9030,7 +9022,7 @@ void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af)
 	GPIOD->gpio_swport_ddr &= ~ (! af * opins);	/* switch to input */
 	GPIOD->gpio_swport_ddr |= (!! af * opins);	/* switch to output */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9091,12 +9083,11 @@ void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af)
 	//gpioX_poweron(GPIOE);
 	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
 }
-
 #endif /* defined (GPIOE) */
 
 #if defined (GPIOF)
@@ -9239,7 +9230,7 @@ arm_hardware_pioa_updown(portholder_t up, portholder_t down)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9271,7 +9262,7 @@ arm_hardware_piob_updown(portholder_t up, portholder_t down)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9303,7 +9294,7 @@ arm_hardware_pioc_updown(portholder_t up, portholder_t down)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9335,7 +9326,7 @@ arm_hardware_piod_updown(portholder_t up, portholder_t down)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9364,7 +9355,7 @@ arm_hardware_pioe_updown(portholder_t up, portholder_t down)
 
 	gpioX_updown(GPIOE, up, down);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9566,7 +9557,7 @@ arm_hardware_pioa_updownoff(portholder_t ipins)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9598,7 +9589,7 @@ arm_hardware_piob_updownoff(portholder_t ipins)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9630,7 +9621,7 @@ arm_hardware_pioc_updownoff(portholder_t ipins)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9662,7 +9653,7 @@ arm_hardware_piod_updownoff(portholder_t ipins)
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
 
-#elif defined (GPIOD)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9691,7 +9682,7 @@ arm_hardware_pioe_updownoff(portholder_t ipins)
 
 	gpioX_updownoff(GPIOE, ipins);
 
-#elif defined (GPIOE)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9886,13 +9877,13 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	AT91C_BASE_PIOA->PIO_IER = (ipins);	// interrupt on change pin enable
 
 	// programming interrupts from PIOA
-	AT91C_BASE_AIC->AIC_IDCR = (1uL << AT91C_ID_PIOA);
+	AT91C_BASE_AIC->AIC_IDCR = (UINT32_C(1) << AT91C_ID_PIOA);
 	AT91C_BASE_AIC->AIC_SVR [AT91C_ID_PIOA] = (AT91_REG) AT91F_PIOA_IRQHandler;
 	AT91C_BASE_AIC->AIC_SMR [AT91C_ID_PIOA] = 
 		(AT91C_AIC_SRCTYPE & AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL) |
 		(AT91C_AIC_PRIOR & priority);
-	AT91C_BASE_AIC->AIC_ICCR = (1uL << AT91C_ID_PIOA);		// clear pending interrupt
-	AT91C_BASE_AIC->AIC_IECR = (1uL << AT91C_ID_PIOA);	// enable inerrupt
+	AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << AT91C_ID_PIOA);		// clear pending interrupt
+	AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << AT91C_ID_PIOA);	// enable inerrupt
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -9933,7 +9924,7 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	gpioX_lock(GPIOA, & oldIrql);
 	gpioX_unlock(GPIOA, oldIrql);
 
-#elif defined (GPIOA)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -9990,7 +9981,7 @@ arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	gpioX_lock(GPIOB, & oldIrql);
 	gpioX_unlock(GPIOB, oldIrql);
 
-#elif defined (GPIOB)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
@@ -10047,7 +10038,7 @@ arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	gpioX_lock(GPIOC, & oldIrql);
 	gpioX_unlock(GPIOC, oldIrql);
 
-#elif defined (GPIOC)
+#else
 	#error Undefined CPUSTYLE_XXX
 
 #endif
