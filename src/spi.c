@@ -5991,6 +5991,7 @@ int testchipDATAFLASH(void)
 		if (seekparamSFDPDATAFLASH(& ptp, & len4, 0x00, lastparam))
 		{
 			PRINTF("SFDP parameter 0x00 not found\n");
+			releaseDATAFLASH(oldIrql, oldIrql2);
 			return 0;
 		}
 

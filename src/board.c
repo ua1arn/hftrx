@@ -6787,12 +6787,16 @@ restart:
 		{
 			local_delay_ms(1);
 			if (-- w == 0)
+			{
+				FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 				goto restart;
+			}
 		}
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
 		{
 			//PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+			FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 			goto restart;
 		}
 		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
@@ -6978,7 +6982,10 @@ restart:
 		{
 			local_delay_ms(1);
 			if (-- w == 0)
+			{
+				FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 				goto restart;
+			}
 		}
 		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
 		if (board_fpga_get_CONF_DONE() != 0)
