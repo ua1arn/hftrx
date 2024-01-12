@@ -171,7 +171,9 @@
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
-		#if WITHUSBDEV_HSDESC
+		#if WITHLWIP
+
+		#elif WITHUSBDEV_HSDESC
 			#define WITHUAC2		1	/* UAC2 support */
 			#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
 			#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
@@ -211,6 +213,9 @@
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	#else
+		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
