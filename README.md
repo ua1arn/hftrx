@@ -5,6 +5,8 @@
 
 ## Микроконтроллер:
 
+### Windows
+
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
 1.1 **ARM:** ARM GNU Toolchain https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads (последняя проверенная сборка (Arm GNU Toolchain 11.3.Rel1) 11.3.1 20220712) <br>
 1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/avr-gcc-builds/<br>
@@ -39,6 +41,47 @@ https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v1
 5.1 Скопилированные прошивки находятся в папке /build/<процессор>/ <br>
 5.2 Для обновления прошивки процессора RENESAS через bootloader в командных файлах используется уилилита из проекта https://sourceforge.net/projects/dfu-util/files/latest/download
 
+### Linux
+
+Пакеты, которые необходимо установить:
+- arm-none-eabi-gcc (gcc-arm-none-eabi for Ubuntu)
+- arm-none-eabi-newlib (libnewlib-arm-none-eabi for Ubuntu)
+- dfu-util
+
+В зависимости от микроконтроллера выбирается каталог сборки образа (для Сокол Про `build/stm32mp157axx`). Дальше каталог сборки образа подразумевается в переменной `BUILD_DIR`
+
+#### Сборка утилит
+
+Все скрипты приведены для запуска из корня репозитория
+
+- stm32image
+  ```shell
+  cd tools/stm32image
+  make
+  cp stm32image $BUILD_DIR
+  ```
+- bin2ihex
+  ```shell
+  cd tools/bin2ihex
+  make
+  cp bin2ihex $BUILD_DIR
+  ```
+
+#### Сборка образов
+
+##### Образ приложения
+- Скопировать `product_template.h` в `product.h`
+- Затянуть все подмодули командой `git submodule update --init --recursive`
+- В каталоге `$BUILD_DIR` выполнить `make`
+
+##### Загрузчик
+- Скопировать `product_template.h` в `product.h`
+- В `product.h` раскомментировать строку 
+  ```C
+  #define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
+  ```
+- Затянуть все подмодули командой `git submodule update --init --recursive`
+- В каталоге `$BUILD_DIR` выполнить `make bootloader`
 
 ## FPGA:
 
