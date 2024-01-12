@@ -8927,7 +8927,16 @@ void SystemCoreClockUpdate(void)
 #if WITHDCDCFREQCTL && ! LINUX_SUBSYSTEM
 
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
-	#define PWMTICKSFREQ (allwnrt113_get_apb0_freq() / 2)	/* Allwinner t113-s3 */
+	#if CPUSTYLE_T507 || CPUSTYLE_H616
+		// Note: The working clock of PWM is from APB1 or OSC24M.
+		#define PWMTICKSFREQ (allwnr_t507_get_apb1_freq() / 2)	/* Allwinner t113-s3 */
+
+	#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+		#define PWMTICKSFREQ (allwnrt113_get_apb0_freq() / 2)	/* Allwinner t507 / H616 */
+	#else
+		//#error Wrong CPUSTYLE_xxx
+
+	#endif
 	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
@@ -9533,7 +9542,7 @@ void SystemCoreClockUpdate(void)
 			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
 			0;
 
-	#else
+	#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_apb0_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		//PRINTF("hardware_dcdcfreq_pwm_initialize: allwnrt113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnrt113_get_apb0_freq(), prei, value);
@@ -9569,6 +9578,8 @@ void SystemCoreClockUpdate(void)
 		//	Step 4 PWM starting/stoping phase: Configure PCNTR[PWM_COUNTER_START] after the clock gating is enabled and before the PWM is enabled. You can verify whether the configuration was successful by reading back PCNTR[PWM_COUNTER_STATUS].
 		//	Step 5 Enable PWM: Configure PER to select the corresponding PWM enable bit; when selecting pulse mode, PCR[PWM_PUL_START] needs to be enabled.
 //		PWM->PER |= (1u << (0 + IX));
+	#else
+		#error Wrong CPUSTYLE_xxx
 	#endif
 	}
 
@@ -9588,8 +9599,8 @@ void SystemCoreClockUpdate(void)
 	// d: 0..100 - требуемое заполнение выходного сигнала в проценнтах
 	void hardware_bl_pwm_set_duty(unsigned pwmch, uint_fast32_t freq, uint_fast32_t d)
 	{
-		unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
-		unsigned duty = cycle - cycle * d / 100;
+		const unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
+		const unsigned duty = cycle - cycle * d / 100;
 		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) cycle, (unsigned) duty);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
