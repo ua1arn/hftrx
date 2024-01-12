@@ -118,7 +118,7 @@
 	//#define WITHSDHC1HW	1		/* SDIO */
 	//#define WITHSDHC2HW	1		/* EMMC */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#if WITHINTEGRATEDDSP
 
