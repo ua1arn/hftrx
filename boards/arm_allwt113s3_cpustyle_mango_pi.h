@@ -913,13 +913,11 @@
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 (PWM7, Alt FN 5) */ \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
-		/*arm_hardware_piod_altfn2(ENmask, GPIO_CFG_AF5); */ /* PD22 - PWM7 */ \
-		arm_hardware_piod_outputs(ENmask, 1 * ENmask); \
+		arm_hardware_piod_altfn2(ENmask, GPIO_CFG_AF5); /* PD22 - PWM7 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 */ \
-		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! en * ((level) - WITHLCDBACKLIGHTMIN + 1) * 100 / (WITHLCDBACKLIGHTMAX - WITHLCDBACKLIGHTMIN + 1)); \
 	} while (0)
 #endif
 
