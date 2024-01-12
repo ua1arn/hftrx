@@ -10,6 +10,7 @@
 //	Video Display Controller 5 (7): Output Controller
 
 #include "hardware.h"
+#include "formats.h"	// for debug prints
 
 #if WITHLTDCHW
 
@@ -18,7 +19,6 @@
 #include <string.h>
 #include <limits.h>
 
-#include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "src/touch/touch.h"
 
