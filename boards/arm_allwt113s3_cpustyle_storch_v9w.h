@@ -841,7 +841,10 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-#if 1
+#if WITHISBOOTLOADER
+	#define	HARDWARE_BL_INITIALIZE() do { \
+	} while (0)
+#else /* WITHISBOOTLOADER */
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* Яркость Управлятся через 75HC595 или PWM */
 	#define HARDWARE_BL_PWMCH 7	/* PWM7 */
