@@ -120,7 +120,9 @@
 	#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 	#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
-	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
+	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
+
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */

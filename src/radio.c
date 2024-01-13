@@ -3829,6 +3829,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER
 		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
+	#elif defined (WITHLCDBACKLIGHTDEF)
+		static uint_fast8_t gbglight = WITHLCDBACKLIGHTDEF;
 	#else /* WITHISBOOTLOADER */
 		static uint_fast8_t gbglight = WITHLCDBACKLIGHTMIN;
 	#endif /* WITHISBOOTLOADER */
