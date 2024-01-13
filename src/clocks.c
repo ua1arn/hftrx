@@ -8933,6 +8933,10 @@ void SystemCoreClockUpdate(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	#define PWMTICKSFREQ (allwnrt113_get_apb0_freq() / 2)	/* Allwinner t113-s3 */
+
+#elif CPUSTYLE_R7S721
+	#define PWMTICKSFREQ (P0CLOCK_FREQ / 2)	/* Renesas RZ-A1x */
+
 #else
 	//#error Wrong CPUSTYLE_xxx
 
@@ -9046,9 +9050,6 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 	{ 14 , 53063971, 53159971, },	/* dcdc=1071428 Hz */
 	{ 13 , 53159971, 54000000, },	/* dcdc=1153846 Hz */
 };
-
-// пока до проверки работоспособности.
-return calcdivround_p0clock(760000uL * 2);	// на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
 
 #elif CPUSTYLE_STM32H7XX
 // пока для проверки работоспособности. Таблицу надо расчитать.
@@ -9373,6 +9374,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 };
 #endif
 
+#if WITHDCDCFREQCTL
 /*
 	получение делителя частоты для синхронизации DC-DC конверторов
 	для исключения попадания в полосу обзора панорамы гармоник этой частоты.
@@ -9398,6 +9400,9 @@ hardware_dcdc_calcdivider(
 #if WITHPS7BOARD_MYC_Y7Z020
 
 	return 1;
+#elif CPUSTYLE_R7S721
+	// пока до проверки работоспособности.
+	return calcdivround_p0clock(760000 * 2);    // на выходе формирователя делитель на 2 - требуемую частоту умножаем на два
 #endif
 
 	uint_fast8_t high = ARRAY_SIZE(dcdcfreqtable);
@@ -9419,6 +9424,7 @@ hardware_dcdc_calcdivider(
 found:
 	return dcdcfreqtable [middle].dcdcdiv;
 }
+#endif /* WITHDCDCFREQCTL */
 
 #if CPUSTYLE_STM32H7XX
 
