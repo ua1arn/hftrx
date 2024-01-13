@@ -97,7 +97,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
+	#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 
 	#if WITHINTEGRATEDDSP
 
@@ -799,7 +800,10 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
-#if WITHDCDCFREQCTL
+#if WITHISBOOTLOADER
+	#define	HARDWARE_DCDC_INITIALIZE() do { \
+	} while (0)
+#elif WITHDCDCFREQCTL
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
@@ -823,6 +827,46 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
+
+#if WITHISBOOTLOADER
+	#define	HARDWARE_BL_INITIALIZE() do { \
+	} while (0)
+#elif WITHBLPWMCTL
+	/* Управление яркостью подсветки через выход PWN */
+	#if LCDMODE_LQ043T3DX02K
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTDEF	4	// значение яркости по уиолчанию
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
+		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTDEF	4	// значение яркости по уиолчанию
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#else
+		/* Заглушка для работы без дисплея */
+		#define WITHLCDBACKLIGHTMIN	0
+		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+	#endif
+	/* установка яркости и включение/выключение преобразователя подсветки */
+	/* Яркость Управлятся через 75HC595 или PWM */
+	#define HARDWARE_BL_PWMCH 7	/* PWM7 */
+	#define HARDWARE_BL_FREQ 	10000	/* Частота PWM управления подсветкой */
+	#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 (PWM7, Alt FN 5) */ \
+		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
+		arm_hardware_piod_altfn2(ENmask, GPIO_CFG_AF5); /* PD22 - PWM7 */ \
+	} while (0)
+	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
+	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
+	#define HARDWARE_BL_SET(en, level) do { \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * 100 / WITHLCDBACKLIGHTMAX); \
+	} while (0)
+#else /* WITHISBOOTLOADER */
 	#if LCDMODE_LQ043T3DX02K
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
@@ -840,24 +884,15 @@
 		#define WITHLCDBACKLIGHTMIN	0
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
-
-#if WITHISBOOTLOADER
-	#define	HARDWARE_BL_INITIALIZE() do { \
-	} while (0)
-#else /* WITHISBOOTLOADER */
-	/* установка яркости и включение/выключение преобразователя подсветки */
-	/* Яркость Управлятся через 75HC595 или PWM */
-	#define HARDWARE_BL_PWMCH 7	/* PWM7 */
-	#define HARDWARE_BL_FREQ 	10000	/* Частота PWM управления подсветкой */
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 (PWM7, Alt FN 5) */ \
-		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
-		arm_hardware_piod_altfn2(ENmask, GPIO_CFG_AF5); /* PD22 - PWM7 */ \
+        arm_hardware_piod_outputs(ENmask, 1 * ENmask); /* PD22 - PWM7 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
-		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! en * ((level) - WITHLCDBACKLIGHTMIN + 1) * 100 / (WITHLCDBACKLIGHTMAX - WITHLCDBACKLIGHTMIN + 1)); \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 */ \
+		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
 	} while (0)
 #endif
 
