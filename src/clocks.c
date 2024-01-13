@@ -8951,7 +8951,7 @@ struct DCDCFREQ
 /* number of dividers=25 13..38 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 15000000 /* DCDC clock frequency */
-static const FLASHMEM struct FREQ dcdcfreqtable [] = {
+static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 	{ 13 , 30000   , 1134000 , },	/* dcdc=1153846 Hz */
 	{ 14 , 1134000 , 1230000 , },	/* dcdc=1071428 Hz */
 	{ 13 , 1230000 , 2286000 , },	/* dcdc=1153846 Hz */
@@ -9053,7 +9053,7 @@ return calcdivround_p0clock(760000uL * 2);	// на выходе формиров
 #elif CPUSTYLE_STM32H7XX
 // пока для проверки работоспособности. Таблицу надо расчитать.
 #define BOARDDCDCSYNC 333333 /* DCDC clock frequency */
-static const FLASHMEM struct FREQ dcdcfreqtable [] = {
+static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
   { 63, 26900000uL,  UINT32_MAX },
   { 63, 6900000uL,  26900000uL },
   { 62, 0,		6900000uL },
@@ -9275,7 +9275,7 @@ static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 /* number of dividers=53 27..80 */
 /* Analyze up to 50 harmonics. */
 #define BOARDDCDCSYNC 32000000 /* DCDC clock frequency */
-static const FLASHMEM struct FREQ dcdcfreqtable [] = {
+static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {
 	{ 27 , 30000   , 1182000 , },	/* dcdc=1185185 Hz */
 	{ 29 , 1182000 , 1230000 , },	/* dcdc=1103448 Hz */
 	{ 28 , 1230000 , 1278000 , },	/* dcdc=1142857 Hz */
