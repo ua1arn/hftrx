@@ -397,6 +397,7 @@ void board_set_amdepth(uint_fast8_t n);		/* Глубина модуляции в
 void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
 void board_set_lo6(int_fast32_t f);
 void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
+void board_set_fltsofter(uint_fast8_t n);	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 
 void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */

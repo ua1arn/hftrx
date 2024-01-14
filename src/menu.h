@@ -501,6 +501,16 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 	{
+		QLABEL("CW W SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
+		nvramoffs0,
+		NULL,
+		& bwprop_cwwide.fltsofter,
+		getzerobase,
+	},
+	{
 		QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
@@ -509,6 +519,16 @@ static const FLASHMEM struct menudef menutable [] =
 		NULL,
 		& bwprop_cwnarrow.left10_width10,
 		getzerobase, 
+	},
+	{
+		QLABEL("CW N SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for NARROW
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
+		nvramoffs0,
+		NULL,
+		& bwprop_cwnarrow.fltsofter,
+		getzerobase,
 	},
 	{
 		QLABEL("SSB W HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
