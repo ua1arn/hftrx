@@ -4710,10 +4710,10 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		RBBIT(007, 0);
 		RBVAL(005, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);
-		RBBIT(004, ! glob_preamp);
+		RBBIT(004, 0);
 		RBBIT(003, ! glob_tx);
 		RBBIT(002, glob_adcrand);
-		RBBIT(001, 0);
+		RBBIT(001, glob_preamp);
 		RBBIT(000, glob_dither);
 
 		board_ctlregs_spi_send_frame(target, rbbuff, ARRAY_SIZE(rbbuff));

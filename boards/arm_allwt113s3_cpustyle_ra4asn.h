@@ -577,9 +577,11 @@
 	} while (0)
 
 #elif (WITHSPIHW || WITHSPISW) && ! WITHISBOOTLOADER
-	// Набор определений для работы без внешнего дешифратора
+
 
 	#define targetnone 0x00
+
+#if 1	// Набор определений для работы без внешнего дешифратора
 
 	#define targetnvram		(UINT32_C(1) << 2)		// PE2 nvram FM25L16B
 	#define targetext		(UINT32_C(1) << 3)		// PE3 UA3REO RF-UNIT rev.2
@@ -610,11 +612,39 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		arm_hardware_pioe_outputs(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs(targetext, 1 * targetext); /*  */ \
-		arm_hardware_piod_outputs(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_piod_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs2m(targetext, 1 * targetext); /*  */ \
+		arm_hardware_piod_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_piod_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
 	} while (0)
+
+#else
+
+	#define targetfpga1		(UINT32_C(1))		// FPGA control registers
+	#define targetctl1		(UINT32_C(2))		// board control registers chain
+	#define targetext		(UINT32_C(3))		// UA3REO RF-UNIT rev.2
+
+	#define SPI_CS0			(UINT32_C(1) << 20)	// PD20 address[0]
+	#define SPI_CS1			(UINT32_C(1) << 21)	// PD21 address[1]
+
+	#define SPI_CS_ASSERT(target)	do { \
+		uint8_t a0 = (target >> 0) & 1;  \
+		uint8_t a1 = (target >> 1) & 1;  \
+		gpioX_setstate(GPIOD, SPI_CS0, a0 * SPI_CS0); \
+		gpioX_setstate(GPIOD, SPI_CS1, a1 * SPI_CS1); \
+	} while (0)
+
+	#define SPI_CS_DEASSERT(target)	do { \
+		gpioX_setstate(GPIOD, SPI_CS0, 0 * SPI_CS0); \
+		gpioX_setstate(GPIOD, SPI_CS1, 0 * SPI_CS1); \
+	} while (0)
+
+	#define SPI_ALLCS_INITIALIZE() do { \
+		arm_hardware_piod_outputs2m(SPI_CS0, 0 * SPI_CS0); /*  */ \
+		arm_hardware_piod_outputs2m(SPI_CS1, 0 * SPI_CS1); /*  */ \
+	} while (0)
+
+#endif
 
 	// MOSI & SCK port
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 10)	// PE10
@@ -643,8 +673,8 @@
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioe_outputs(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); \
-		arm_hardware_pioe_outputs(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); \
+		arm_hardware_pioe_outputs2m(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); \
+		arm_hardware_pioe_outputs2m(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); \
 		arm_hardware_pioe_inputs(SPI_MISO_BIT); \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
