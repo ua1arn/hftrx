@@ -12737,9 +12737,9 @@ const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 // Four-character wide printed current RX/TX bandwidth value
 const char * hamradio_get_rxbw_value4(void)
 {
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	static char s [5];
-	int width = bwseti_getwidth(bwseti);
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	int_fast32_t width = getif6bw(gmode, gtx, bwseti_getwide(bwseti));
 	if (width >= 1000000)
 		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
@@ -12769,9 +12769,10 @@ const FLASHMEM char * hamradio_get_rxbw_label3_P(void)
 // FIXME: stub implementation
 const char * hamradio_get_rxbw_value4(void)
 {
-	//const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	static char s [5];
-	int_fast32_t width = 10; // 10=1kHz //bwseti_getwidth(bwseti);
+//	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+//	int_fast32_t width = getif6bw(gmode, gtx, bwseti_getwide(bwseti));
+	int_fast32_t width = 10;
 	if (width >= 1000000)
 		width = (1000000 - 1);
 	int_fast16_t w100 = (width + 50) / 100;
