@@ -9334,7 +9334,7 @@ updateboard2(void)
 #if WITHENCODER
 	encoder_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
-	display_setbgcolor(gbluebgnd ? COLORMAIN_BLUE : COLORMAIN_BLACK);
+	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
 
 
@@ -16397,7 +16397,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 	memset(nolabel, ' ', sizeof nolabel - 1);
 	nolabel [sizeof nolabel - 1] = '\0';
 
-	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
@@ -16489,7 +16489,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 	memset(nolabel, ' ', sizeof nolabel - 1);
 	nolabel [sizeof nolabel - 1] = '\0';
 
-	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -16572,7 +16572,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * 
 	memset(nolabel, ' ', VALUEW);
 	nolabel [VALUEW] = '\0';
 
-	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -17799,7 +17799,7 @@ void display2_popup(
 	const uint_fast16_t w = GRID2X(LABELW);
 	const uint_fast16_t h = GRID2Y(mw.ystep) * sizePopUp;
 
-	//display_fillrect(x, y, w, h, COLORMAIN_DARKGREEN);	// Фон
+	//display_fillrect(x, y, w, h, COLORPIP_DARKGREEN);	// Фон
 
 	for (i = 0; i < sizePopUp; ++ i)
 	{

@@ -2495,7 +2495,7 @@ void hwaccel_stretchblt(
 #else
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	colpip_fillrect(dst, dx, dy, 0, 0, w, h, COLORMAIN_GREEN);
+	colpip_fillrect(dst, dx, dy, 0, 0, w, h, COLORPIP_GREEN);
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 
 #endif
