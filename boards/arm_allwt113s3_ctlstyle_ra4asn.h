@@ -297,7 +297,7 @@
 
 	#define CALIBRATION_IQ_FIR_RX_SHIFT		56 // 50 - ext FIR, 56 - local FIR
 	#define CALIBRATION_IQ_CIC_RX_SHIFT		63
-	#define CALIBRATION_TX_SHIFT			29
+	#define CALIBRATION_TX_SHIFT			27
 
 	#define FPGA_ARTIX7	1
 
@@ -344,7 +344,7 @@
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	220
+			#define WITHAFGAINDEFAULT	200
 			//#define WITHTHERMOLEVEL	1
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
