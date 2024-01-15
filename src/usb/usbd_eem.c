@@ -223,11 +223,11 @@ uint8_t  USBD_CDC_EEM_SetRxBuffer        (USBD_HandleTypeDef   *pdev,
 #endif
 
 #if 1
-uint8_t  USBD_CDC_EEM_ReceivePacket      (USBD_HandleTypeDef *pdev,
+USBD_StatusTypeDef  USBD_CDC_EEM_ReceivePacket      (USBD_HandleTypeDef *pdev,
                                           uint8_t*pbuf);
 #endif
 
-uint8_t  USBD_CDC_EEM_TransmitPacket     (USBD_HandleTypeDef *pdev,
+USBD_StatusTypeDef  USBD_CDC_EEM_TransmitPacket     (USBD_HandleTypeDef *pdev,
                                           eem_transmitter_state_enum tx_state);
 /**
   * @}

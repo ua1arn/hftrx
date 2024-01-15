@@ -3895,9 +3895,17 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0035, 0);			// D5: CTLSPARE2
 		RBBIT(0034, glob_rxantenna);			// D4: CTLSPARE1 - RX ANT
 		RBBIT(0033, 0);			// D3: not used
+	#if WITHBLPWMCTL && WITHLCDBACKLIGHT
+		// Имеется управление яркостью подсветки дисплея через PWM
+		RBBIT(0032, 1);			// D2: LCD_BL_ENABLE
+		RBBIT(0031, 1);			// LCD_BL1
+		RBBIT(0030, 1);			// LCD_BL0
+	#elif WITHLCDBACKLIGHT
+		/* Аналоговое управление яркостью подсветки */
 		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
 		RBBIT(0031, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x02));	// LCD_BL1
 		RBBIT(0030, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x01));	// LCD_BL0
+	#endif /* WITHBLPWMCTL */
 
 		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
@@ -4702,10 +4710,10 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		RBBIT(007, 0);
 		RBVAL(005, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);
-		RBBIT(004, ! glob_preamp);
+		RBBIT(004, 0);
 		RBBIT(003, ! glob_tx);
 		RBBIT(002, glob_adcrand);
-		RBBIT(001, 0);
+		RBBIT(001, glob_preamp);
 		RBBIT(000, glob_dither);
 
 		board_ctlregs_spi_send_frame(target, rbbuff, ARRAY_SIZE(rbbuff));

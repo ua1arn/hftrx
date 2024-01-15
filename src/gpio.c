@@ -782,8 +782,11 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 
 #elif CPUSTYLE_ALLWINNER
 
-// DRV: 0x00 = level0, 0x01 = level1, 0x02 - level2, 0x03 - level3
+// DRV: 0x00 = level0 (180 oHm), 0x01 = level1 (120 oHm), 0x02 - level2 (100 oHm), 0x03 - level3 (50 oHm)
+// Information taken from PD23_DRV description in T5_Series_User_Manual
+
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+
 #define ALWNR_GPIO_DRV_OUTPUT 0x03
 #define ALWNR_GPIO_PULL_OUTPUT 0x00
 
@@ -796,12 +799,11 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_OUTPUT20M 0x02
 #define ALWNR_GPIO_PULL_OUTPUT20M 0x00
 
-#define ALWNR_GPIO_DRV_OUTPUT50M 0x03
+#define ALWNR_GPIO_DRV_OUTPUT50M 0x03	// Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_OUTPUT50M 0x00
 
-#define ALWNR_GPIO_CFG_OPENDRAIN GPIO_CFG_OUT
-#define ALWNR_GPIO_DRV_OPENDRAIN 0x03
-#define ALWNR_GPIO_PULL_OPENDRAIN 0x00
+#define ALWNR_GPIO_DRV_OPENDRAIN 0x03	// Maximum streingth (50 OHm)
+#define ALWNR_GPIO_PULL_OPENDRAIN 0x00	// Pull-up/down disable
 
 #define ALWNR_GPIO_DRV_INPUT 0x02
 #define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
@@ -810,12 +812,12 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
 
 #define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03
-#define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x00
+#define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x00	// Pull-up/down disable
 
 #define ALWNR_GPIO_DRV_AF20M 0x02
 #define ALWNR_GPIO_PULL_AF20M 0x00
 
-#define ALWNR_GPIO_DRV_AF50M 0x03
+#define ALWNR_GPIO_DRV_AF50M 0x03	// Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
 static LCLSPINLOCK_t gpiodata_locks [16] =
@@ -1034,17 +1036,15 @@ void gpioX_setopendrain(
 	portholder_t state
 	)
 {
-	const portholder_t zeroes = mask & ~ state;
-	const portholder_t ones = mask & state;
 	IRQL_t oldIrql;
 
 	/* на этом процессоре имитируем oprn drain перепрограммированием на вход */
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafe(gpio, ones | zeroes, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
-	gpio->DATA = (gpio->DATA & ~ zeroes);
-	gpioX_progUnsafe(gpio, zeroes, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	gpioX_progUnsafe(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_progUnsafe(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);	// tie to GND
+	gpio->DATA = (gpio->DATA & ~ mask);	/* если не в режиме вывода, записи игнорируются */
 
 	gpioX_unlock(gpio, oldIrql);
 }
