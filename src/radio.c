@@ -7636,10 +7636,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #if WITHIF4DSP
 #if ! WITHPOTAFGAIN
 	{
-		"VOLUME   ",
+		"VOLUME   ",				// Громкость в процентах
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
-		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
+		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX,
 		OFFSETOF(struct nvmap, afgain1),
 		nvramoffs0,
 		valoffset0,
@@ -7651,10 +7651,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 #endif /* ! WITHPOTAFGAIN */
 #if ! WITHPOTIFGAIN
 	{
-		"RF GAIN  ",
+		"RF GAIN  ",			// Усиление ПЧ/ВЧ в процентах
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
-		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
+		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX,
 		OFFSETOF(struct nvmap, rfgain1),
 		nvramoffs0,
 		valoffset0,
@@ -7664,10 +7664,23 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 #endif /* ! WITHPOTIFGAIN */
+	{
+		"CW N SOFT",	// CW filter edges for NARROW
+		RJ_UNSIGNED,		// rj
+		ISTEP1,
+		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
+		nvramoffs0,
+		valoffset0,
+		& bwprop_cwnarrow.fltsofter,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	{
-		"CW SPEED ",
+		"CW SPEED ",		// WPM
 		RJ_UNSIGNED,		// rj
 		ISTEP1,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
