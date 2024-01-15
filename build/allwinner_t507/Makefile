@@ -306,9 +306,13 @@ ddrinit_h616: h616_fsbl_frz.alw32
 	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr_H616)
 
-ddrinit_t507:
+ddrinit_t507_:
 	$(XFEL) ddr lpddr4
 	busybox sleep 1s
+
+ddrinit_t507:
+	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32
+	$(XFEL) exec $(SystemInitAddr_T507)
 
 app_run: $(PROJECT)_app.alw32 ddrinit_t507
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
