@@ -371,8 +371,30 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 }
 #endif /* __cplusplus */
 
+// Цвета используемые для отображения
+// различных элементов на основном экране.
+
+#define LCOLOR	COLORMAIN_GREEN		// цвет левой половины S-метра
+#define RCOLOR	COLORMAIN_RED			// цвет правой половины S-метра
+#define PWRCOLOR	COLORMAIN_RED		// цвет измерителя мощности
+#define SWRCOLOR	COLORMAIN_YELLOW		// цвет SWR-метра
+
+#define OVFCOLOR COLORMAIN_RED
+#define LOCKCOLOR COLORMAIN_RED
+#define TXRXMODECOLOR COLORMAIN_BLACK
+#define MODECOLORBG_TX COLORMAIN_RED
+#define MODECOLORBG_RX	COLORMAIN_GREEN
+
+#define MENUGROUPCOLOR COLORMAIN_YELLOW
+#define MENUCOLOR COLORMAIN_WHITE
+#define MNUVALCOLOR COLORMAIN_WHITE
+#define MENUSELCOLOR	COLORMAIN_GREEN
+
+//#define AFSPECTRE_COLOR COLORMAIN_YELLOW
+#define AFSPECTRE_COLOR COLORPIP_SPECTRUMBG2
 
 #if defined (COLORPIP_SHADED)
+	// LCDMODE_MAIN_L8 also defied
 
 	// цвета
 	// 0..COLORPIP_BASE-1 - волопад
@@ -543,7 +565,6 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 
 	#endif
 
-
 	// Цвета, используемые на основном экране
 	#define COLORMAIN_BLACK COLOR_BLACK
 	#define COLORMAIN_WHITE COLOR_WHITE
@@ -556,26 +577,6 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define COLORMAIN_DARKRED  COLOR_DARKRED
 
 #endif /* */
-
-
-// Цвета используемые для отображения
-// различных элементов на основном экране.
-
-#define LCOLOR	COLORMAIN_GREEN		// цвет левой половины S-метра
-#define RCOLOR	COLORMAIN_RED			// цвет правой половины S-метра
-#define PWRCOLOR	COLORMAIN_RED		// цвет измерителя мощности
-#define SWRCOLOR	COLORMAIN_YELLOW		// цвет SWR-метра
-
-#define OVFCOLOR COLORMAIN_RED
-#define LOCKCOLOR COLORMAIN_RED
-#define TXRXMODECOLOR COLORMAIN_BLACK
-#define MODECOLORBG_TX COLORMAIN_RED
-#define MODECOLORBG_RX	COLORMAIN_GREEN
-
-#define MENUGROUPCOLOR COLORMAIN_YELLOW
-#define MENUCOLOR COLORMAIN_WHITE
-#define MNUVALCOLOR COLORMAIN_WHITE
-#define MENUSELCOLOR	COLORMAIN_GREEN
 
 #if COLORSTYLE_RED
 	// "All-in-red": FT1000 inspired color scheme
@@ -680,8 +681,5 @@ void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность 
 	#define FMENUBACK			COLORMAIN_BLACK
 
 #endif /* COLORSTYLE_RED */
-
-//#define AFSPECTRE_COLOR COLORMAIN_YELLOW
-#define AFSPECTRE_COLOR COLORPIP_SPECTRUMBG2
 
 #endif /* BOARD_H_INCLUDED */
