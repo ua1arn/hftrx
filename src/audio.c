@@ -114,7 +114,7 @@ static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокоча
 
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
-//static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
+static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch;
 
@@ -2251,15 +2251,13 @@ static void fir_design_scaleL(double * dCoeff, int iCoefNum, double dScale)
 	arm_scale_f64(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
 }
 
-#if 0
 /* получение ограничнного размера фильтра */
-static int getCoefNumLtdValidated(int iCoefNum)
+static int getCoefNumLtdValidated(int iCoefNum, uint_fast8_t pathi)
 {
 	enum { WITHFILTSOFTDENOM = 10, WITHFILTSOFTSCALE = 8 };	// Количество коэффициентов уменьшается до 0.2 от исходного значения
-	const int iCoefNumLtd = iCoefNum * WITHFILTSOFTSCALE * (glob_fltsofter - WITHFILTSOFTMIN) / (WITHFILTSOFTDENOM * (WITHFILTSOFTMAX - WITHFILTSOFTMIN));
+	const int iCoefNumLtd = iCoefNum * WITHFILTSOFTSCALE * (glob_fltsofter [pathi] - WITHFILTSOFTMIN) / (WITHFILTSOFTDENOM * (WITHFILTSOFTMAX - WITHFILTSOFTMIN));
 	return NtapValidate(iCoefNum - iCoefNumLtd);
 }
-#endif
 
 /* расчёт паарметров - частота для функций постоения фильтров */
 #define GETNORMFREQ(freq)	((freq) * 2 / (FLOAT_t) ARMSAIRATE)
@@ -6603,7 +6601,6 @@ void board_set_fullbw6(int_fast16_t n)
 	}
 }
 
-#if 0
 /* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 /* WITHFILTSOFTMIN..WITHFILTSOFTMAX */
 void board_set_fltsofter(uint_fast8_t n)
@@ -6614,7 +6611,6 @@ void board_set_fltsofter(uint_fast8_t n)
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
-#endif
 
 void 
 board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза фильтра НЧ по приему */

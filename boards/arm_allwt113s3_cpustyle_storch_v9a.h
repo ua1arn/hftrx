@@ -97,7 +97,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
+	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 
 	#if WITHINTEGRATEDDSP
 

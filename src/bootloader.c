@@ -338,8 +338,10 @@ void bootloader_mainloop(void)
 	PRINTF("bootloader_mainloop: wait user/USB loop [%p]\n", bootloader_mainloop);
 	PRINTF("bootloader_mainloop: user user/USB loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 
+#if WITHLCDBACKLIGHT
 	board_set_bglight(1, WITHLCDBACKLIGHTMIN);	// выключить подсветку
 	board_update();
+#endif /* WITHLCDBACKLIGHT */
 
 #if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) && ! WITHISBOOTLOADERRAWDISK
 

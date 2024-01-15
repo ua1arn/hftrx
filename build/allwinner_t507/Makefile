@@ -21,7 +21,8 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+_XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+XFEL = ./xfel_lpddr4
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -304,6 +305,10 @@ SystemInitAddr_T507 = 0x00032ed0
 ddrinit_h616: h616_fsbl_frz.alw32
 	$(XFEL) write 0x00028000 h616_fsbl_frz.alw32
 	$(XFEL) exec $(SystemInitAddr_H616)
+
+ddrinit_t507_:
+	$(XFEL) ddr lpddr4
+	busybox sleep 1s
 
 ddrinit_t507:
 	$(XFEL) write 0x00028000 t507_fsbl_frz.alw32

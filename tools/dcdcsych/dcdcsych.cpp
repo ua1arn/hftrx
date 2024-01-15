@@ -97,7 +97,8 @@ void buildtable(
     fprintf(fp, "/* fsync=%u, wflwidth=%u */\n", fsync, wflwidth);
     fprintf(fp, "/* number of dividers=%u %u..%u */\n", dcdcdivn, dcdcdivmax, dcdcdivmin);
     fprintf(fp, "/* Analyze up to %u harmonics. */\n", MAXHARMONICS);
-	fprintf(fp, "static const FLASHMEM struct FREQ freqs [] = {\n");
+    fprintf(fp, "#define BOARDDCDCSYNC %u /* DCDC clock frequency */\n", fsync);
+	fprintf(fp, "static const FLASHMEM struct DCDCFREQ dcdcfreqtable [] = {\n");
 
     // Fill frequencies tble
     // in order frequency maximal to minimal
