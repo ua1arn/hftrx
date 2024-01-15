@@ -95,19 +95,22 @@ static const char * const array [][2] =
 	{	"WHITE",	"BLACK"		},     // zero index used as default case
 	{	"WHITE",	"GREEN"	    },
 	{	"WHITE",	"DARKGREEN"	},
-	{	"BLACK",	"DARKGREEN"	},
-	{	"GREEN",	"BLACK"		},	// s-meter
 	{	"WHITE",	"DARKRED"	},
+	{	"WHITE",	"GRAY"	},
+
+	{	"BLACK",	"DARKGREEN"	},
 	{	"BLACK",	"DARKRED"	},
-	{	"RED",	  "BLACK"		},	// s-meter
-	{	"YELLOW",   "BLACK"		},
 	{	"BLACK",	"GREEN"		},
 	{	"BLACK",	"RED"		},
-	//{	"SPECTRUMBG2",	"BLACK"		},     // ���� ������� ��������������� ���������
-	{	"GRAY",	"BLACK"		},     // ���� ������� ��������������� ���������
-	{	"DARKGREEN",	"BLACK"		},
-};
+	{	"BLACK",	"GRAY"		},
 
+	{	"GREEN",	"BLACK"		},	// s-meter
+	{	"RED",	  	"BLACK"		},	// s-meter
+	{	"YELLOW",   "BLACK"		},
+	{	"GRAY",		"BLACK"		},
+	{	"DARKGREEN","BLACK"		},
+	{	"BLUE",		"BLACK"		},
+};
 
 static void oneset(int tft565)
 {
