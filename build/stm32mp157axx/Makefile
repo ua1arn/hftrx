@@ -279,8 +279,8 @@ allZ:
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
 app_run: $(PROJECT)_app.stm32
-	./dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.stm32"
-	./dfu-util --alt 2 --detach
+	dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.stm32"
+	dfu-util --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
 	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
