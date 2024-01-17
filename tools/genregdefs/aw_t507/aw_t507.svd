@@ -10801,24 +10801,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_DMA_REQ_EN</name>
-    <displayName>UART_DMA_REQ_EN</displayName>
-    <description>UART DMA Request Enable Register</description>
-    <addressOffset>0x08C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>UART_HALT</name>
-    <displayName>UART_HALT</displayName>
-    <description>UART Halt TX Register</description>
-    <addressOffset>0x0A4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>UART_DBG_DLL</name>
     <displayName>UART_DBG_DLL</displayName>
     <description>UART Debug DLL Register</description>

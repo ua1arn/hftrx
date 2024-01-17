@@ -1974,10 +1974,7 @@ typedef struct UART_Type
     volatile uint32_t UART_TFL;                       /*!< Offset 0x080 UART Transmit FIFO Level Register */
     volatile uint32_t UART_RFL;                       /*!< Offset 0x084 UART Receive FIFO Level Register */
     volatile uint32_t UART_HSK;                       /*!< Offset 0x088 UART DMA Handshake Configuration Register */
-    volatile uint32_t UART_DMA_REQ_EN;                /*!< Offset 0x08C UART DMA Request Enable Register */
-             uint32_t reserved_0x090 [0x0005];
-    volatile uint32_t UART_HALT;                      /*!< Offset 0x0A4 UART Halt TX Register */
-             uint32_t reserved_0x0A8 [0x0002];
+             uint32_t reserved_0x08C [0x0009];
     volatile uint32_t UART_DBG_DLL;                   /*!< Offset 0x0B0 UART Debug DLL Register */
     volatile uint32_t UART_DBG_DLH;                   /*!< Offset 0x0B4 UART Debug DLH Register */
              uint32_t reserved_0x0B8 [0x0002];

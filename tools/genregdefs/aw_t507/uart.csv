@@ -34,8 +34,8 @@
 #regdef; UART_TFL; 0x0080; UART Transmit FIFO Level Register
 #regdef; UART_RFL; 0x0084; UART Receive FIFO Level Register
 #regdef; UART_HSK; 0x0088; UART DMA Handshake Configuration Register
-#regdef; UART_DMA_REQ_EN; 0x008C; UART DMA Request Enable Register
-#regdef; UART_HALT; 0x00A4; UART Halt TX Register
+##regdef; UART_DMA_REQ_EN; 0x008C; UART DMA Request Enable Register
+##regdef; UART_HALT; 0x00A4; UART Halt TX Register
 #regdef; UART_DBG_DLL; 0x00B0; UART Debug DLL Register
 #regdef; UART_DBG_DLH; 0x00B4; UART Debug DLH Register
 
