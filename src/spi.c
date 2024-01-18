@@ -5991,7 +5991,7 @@ int testchipDATAFLASH(void)
 		if (seekparamSFDPDATAFLASH(& ptp, & len4, 0x00, lastparam))
 		{
 			releaseDATAFLASH(oldIrql, oldIrql2);
-			PRINTF("SFDP parameter 0x00 not found ***************************************************************\n");
+			PRINTF("SFDP parameter 0x00 not found\n");
 			return 1;
 		}
 
@@ -5999,7 +5999,7 @@ int testchipDATAFLASH(void)
 		if (len4 < 9 || len4 > 16)
 		{
 			releaseDATAFLASH(oldIrql, oldIrql2);
-			PRINTF("SFDP layout wrong ***************************************************************\n");
+			PRINTF("SFDP layout wrong\n");
 			return 1;
 		}
 		uint8_t buff32 [len4 * 4];
@@ -6065,7 +6065,7 @@ int testchipDATAFLASH(void)
 	}
 	else
 	{
-		PRINTF("SFDP signature not found ***************************************************************\n");
+		PRINTF("SFDP signature not found\n");
 	}
 
 	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
