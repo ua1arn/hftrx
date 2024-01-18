@@ -44,8 +44,6 @@ enum
 #define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_4TERM
 #define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_NUTTALL	// такой же тип окна испольуется по умолчанию в HDSDR
 
-FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate window function (blackman-harris, hamming, rectangular)
-
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
