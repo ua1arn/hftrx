@@ -19,3 +19,5 @@ boards/atmega644_ctlstyle_v1.h
 *.clw
 *.opt
 *.bin
+
+.settings/language.settings.xml
