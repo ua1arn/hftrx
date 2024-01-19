@@ -21,3 +21,4 @@ boards/atmega644_ctlstyle_v1.h
 *.bin
 
 .settings/language.settings.xml
+*.o
