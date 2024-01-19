@@ -2154,13 +2154,12 @@ static void fir_design_bandstop(FLOAT_t * dCoeff, int iCoefNum, int iCoefNumLimi
 }
 
 // Расчёт фильтра без наложения оконной функции
-static void fir_design_passtrough(FLOAT_t * dCoeff, int iCoefNum, int iCoefNumLimited, FLOAT_t dGain)
+static void fir_design_passtrough(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dGain)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
-	const int iHalfLenLimited = (iCoefNumLimited - 1) / 2;
 	int iCnt;
 
-	for (iCnt = 1; iCnt <= iHalfLenLimited; iCnt ++)
+	for (iCnt = 1; iCnt <= iHalfLen; iCnt ++)
 	{
 		dCoeff [iHalfLen - iCnt] = 0;
 	}
@@ -2343,9 +2342,9 @@ static void fir_design_copy_integers(int32_t * lCoeff, const FLOAT_t * dCoeff, i
 	}
 }
 
-static void fir_design_integers_passtrough(FLOAT_t * dCoeff, int32_t *lCoeff, int iCoefNum, int iCoefNumLimited, FLOAT_t dGain, const adapter_t * ap)
+static void fir_design_integers_passtrough(FLOAT_t * dCoeff, int32_t *lCoeff, int iCoefNum, FLOAT_t dGain, const adapter_t * ap)
 {
-	fir_design_passtrough(dCoeff, iCoefNum, iCoefNumLimited, dGain);
+	fir_design_passtrough(dCoeff, iCoefNum, dGain);
 	fir_design_copy_integers(lCoeff, dCoeff, iCoefNum, ap);
 }
 
@@ -2784,7 +2783,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 
 	#else /* WITHDSPLOCALFIR */
 
-		fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
+		fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
 
 	#endif /* WITHDSPLOCALFIR */
 
@@ -2929,7 +2928,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
-		fir_design_passtrough(dCoeff, iCoefNum, iCoefNum, 1);
+		fir_design_passtrough(dCoeff, iCoefNum, 1);
 		break;
 	}
 
@@ -3054,7 +3053,7 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 	case DSPCTL_MODE_RX_DRM:
 		// audio
 		// В этом режиме фильтр не используется
-		fir_design_passtrough(dCoeff, iCoefNum, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
 		break;
 
 
@@ -3067,7 +3066,7 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 
 	// в режиме передачи
 	default:
-		fir_design_passtrough(dCoeff, iCoefNum, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
 }
