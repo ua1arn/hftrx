@@ -231,6 +231,7 @@ typedef enum IRQn
 #define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Video Decoding Base */
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG RISC-V core configuration register Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
+#define R_CCU_BASE ((uintptr_t) 0x07010000)           /*!< R_CCU  Base */
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
@@ -2154,11 +2155,15 @@ typedef struct RTC_Type
 /*!< R_CPUCFG  */
 typedef struct R_CPUCFG_Type
 {
-             uint32_t reserved_0x000 [0x0070];
+    volatile uint32_t REGxx;                          /*!< Offset 0x000 Bit 31 and bit 0 R/W, bit 0 can be related to RISC-C vore */
+             uint32_t reserved_0x004 [0x006F];
     volatile uint32_t HOTPLUGFLAG;                    /*!< Offset 0x1C0 The Hotplug Flag Register is 0x070005C0. */
     volatile uint32_t SOFTENTRY [0x004];              /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
     volatile uint32_t SUP_STAN_FLAG;                  /*!< Offset 0x1D4 Super Standby Flag (bit 16) */
-} R_CPUCFG_TypeDef; /* size of structure = 0x1D8 */
+             uint32_t reserved_0x1D8;
+    volatile uint32_t RV_HOTPLUGFLAG;                 /*!< Offset 0x1DC RV The Hotplug Flag Register (key value 0xFA50392F) */
+    volatile uint32_t RC_SOFTENTRY [0x004];           /*!< Offset 0x1E0 RV The Soft Entry Address Register */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1F0 */
 /*
  * @brief R_PRCM
  */

@@ -1,6 +1,9 @@
 #type; R_CPUCFG
 #base; R_CPUCFG 0x07000400
 
+#regdef; REGxx; 0x0000; Bit 31 and bit 0 R/W, bit 0 can be related to RISC-C vore
 #regdef; HOTPLUGFLAG; 0x01C0; The Hotplug Flag Register is 0x070005C0.
 #regdef; SOFTENTRY; 0x01C4 4; The Soft Entry Address Register of CPUx (x=0..1)
 #regdef; SUP_STAN_FLAG; 0x01D4; Super Standby Flag (bit 16)
+#regdef; RV_HOTPLUGFLAG; 0x01DC; RV The Hotplug Flag Register (key value 0xFA50392F)
+#regdef; RC_SOFTENTRY; 0x01E0 4; RV The Soft Entry Address Register

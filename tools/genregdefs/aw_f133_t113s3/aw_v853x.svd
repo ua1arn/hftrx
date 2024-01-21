@@ -12475,6 +12475,15 @@
   <baseAddress>0x07000400</baseAddress>
   <registers>
    <register>
+    <name>REGxx</name>
+    <displayName>REGxx</displayName>
+    <description>Bit 31 and bit 0 R/W, bit 0 can be related to RISC-C vore</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>HOTPLUGFLAG</name>
     <displayName>HOTPLUGFLAG</displayName>
     <description>The Hotplug Flag Register is 0x070005C0.</description>
@@ -12506,6 +12515,29 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>RV_HOTPLUGFLAG</name>
+    <displayName>RV_HOTPLUGFLAG</displayName>
+    <description>RV The Hotplug Flag Register (key value 0xFA50392F)</description>
+    <addressOffset>0x1DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000001E0</addressOffset>
+    <register>
+     <name>RC_SOFTENTRY</name>
+     <displayName>RC_SOFTENTRY</displayName>
+     <description>RV The Soft Entry Address Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>

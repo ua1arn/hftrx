@@ -10852,24 +10852,33 @@ void hightests(void)
 		//printhex32(0x070005E0, (void *) 0x070005E0, 4);
 
 		//printhex(0x06000000, (void *) 0x06000000, 0x10000);
+		CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+				//0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
+				0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
+				0;
+		CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
+
 		CCU->RISC_GATING_REG = 1*(UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
 		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 
 		PRINTF("RISC_CFG->WORK_MODE_REG=%08" PRIX32 "\n", RISC_CFG->WORK_MODE_REG);
+		PRINTF("allwnrf133_get_riscv_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_freq());
+		PRINTF("allwnrf133_get_riscv_axi_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_axi_freq());
 
 		RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) code;
 		RISC_CFG->RISC_STA_ADD1_REG = 0;//(uint32_t) (uintptr_t) code >> 32;
 		//memset(RISC_CFG, ~ 0u, sizeof * RISC_CFG);
+        * (volatile uint32_t *) R_CPUCFG_BASE |= UINT32_C(1) << 0;    // 0x07000400 - seems has no effect
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0x01;	/* tested on Allwinner F133 */
 
-		PRINTF("allwnrf133_get_riscv_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_freq());
+
 		PRINTF("CCU->RISC_GATING_REG=%08" PRIX32 ", CCU->RISC_CFG_BGR_REG=%08" PRIX32 "\n", CCU->RISC_GATING_REG, CCU->RISC_CFG_BGR_REG);
 		PRINTF("RISC_CFG->RISC_STA_ADD0_REG=%08" PRIX32 ", RISC_CFG->RISC_STA_ADD1_REG=%08" PRIX32 "\n", RISC_CFG->RISC_STA_ADD0_REG, RISC_CFG->RISC_STA_ADD1_REG);
 		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		local_delay_ms(3000);
 		//((void (*) (void)) code)();		/* test code invokation for risc-v here */
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0x01;	/* tested on Allwinner F133 */
-		//TP();
-		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
+		TP();
+		printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		for (;;)
 			;
 	}
