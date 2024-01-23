@@ -8106,6 +8106,18 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>SMC</name>
+  <description></description>
+  <baseAddress>0x03007000</baseAddress>
+  <interrupt>
+   <name>SMC</name>
+   <value>79</value>
+   <description></description>
+  </interrupt>
+  <registers>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SMHC0</name>
   <description>SD-MMC Host Controller</description>
   <baseAddress>0x04020000</baseAddress>
@@ -8547,6 +8559,13 @@
    <value>69</value>
    <description></description>
   </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>SPC</name>
+  <description></description>
+  <baseAddress>0x03008000</baseAddress>
+  <registers>
+  </registers>
   </peripheral>
   <peripheral>
   <name>SPI0</name>

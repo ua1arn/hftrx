@@ -69,6 +69,7 @@ typedef enum IRQn
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
     DMAC_IRQn = 74,                                   /*!< DMAC  */
+    SMC_IRQn = 79,                                    /*!< SMC  */
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
     WATCHDOG_IRQn = 82,                               /*!< TIMER  */
@@ -169,6 +170,8 @@ typedef enum IRQn
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID  Base */
+#define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
+#define SPC_BASE ((uintptr_t) 0x03008000)             /*!< SPC  Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Port Controller Base */
@@ -652,7 +655,8 @@ typedef struct CCU_Type
     volatile uint32_t FRE_DOWN_LIM_REG;               /*!< Offset 0xF10 Frequency Down Limit Register */
              uint32_t reserved_0xF14 [0x0003];
     volatile uint32_t CCU_24M_27M_CLK_OUTPUT_REG;     /*!< Offset 0xF20 24M or 27M Clock Output Register */
-} CCU_TypeDef; /* size of structure = 0xF24 */
+             uint32_t reserved_0xF24 [0x0037];
+} CCU_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief CE
  */
@@ -678,7 +682,8 @@ typedef struct CE_Type
              uint32_t reserved_0x04C [0x0002];
     volatile uint32_t CE_XCSA;                        /*!< Offset 0x054 XTS Algorithm DMA Current Source Address */
     volatile uint32_t CE_XCDA;                        /*!< Offset 0x058 XTS Algorithm DMA Current Destination Address */
-} CE_TypeDef; /* size of structure = 0x05C */
+             uint32_t reserved_0x05C [0x01E9];
+} CE_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief CPU_SUBSYS_CTRL_H616
  */
@@ -1525,7 +1530,8 @@ typedef struct RTC_Type
     volatile uint32_t CRY_CONFIG_REG;                 /*!< Offset 0x210 Crypt Configuration Register */
     volatile uint32_t CRY_KEY_REG;                    /*!< Offset 0x214 Crypt Key Register */
     volatile uint32_t CRY_EN_REG;                     /*!< Offset 0x218 Crypt Enable Register */
-} RTC_TypeDef; /* size of structure = 0x21C */
+             uint32_t reserved_0x21C [0x0079];
+} RTC_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief R_CAN
  */
@@ -1571,7 +1577,8 @@ typedef struct SCR_Type
     volatile uint32_t SCR_DT;                         /*!< Offset 0x040 Smart Card Reader Debounce Time Register */
              uint32_t reserved_0x044 [0x002F];
     volatile uint32_t SCR_FIFO;                       /*!< Offset 0x100 Smart Card Reader RX and TX FIFO Access Point */
-} SCR_TypeDef; /* size of structure = 0x104 */
+             uint32_t reserved_0x104 [0x00BF];
+} SCR_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief SID
  */
@@ -1582,6 +1589,14 @@ typedef struct SID_Type
     volatile uint32_t SID_DATA [0x004];               /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
              uint32_t reserved_0x210 [0x037C];
 } SID_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief SMC
+ */
+/*!< SMC  */
+typedef struct SMC_Type
+{
+             uint32_t reserved_0x000 [0x0400];
+} SMC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SMHC
  */
@@ -1636,6 +1651,14 @@ typedef struct SMHC_Type
     volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x200 Read/Write FIFO */
              uint32_t reserved_0x204 [0x037F];
 } SMHC_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief SPC
+ */
+/*!< SPC  */
+typedef struct SPC_Type
+{
+             uint32_t reserved_0x000 [0x0400];
+} SPC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SPI
  */
@@ -2181,6 +2204,8 @@ typedef struct USB_OHCI_Capability_Type
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
+#define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
+#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Port Controller register set access pointer */

@@ -140,3 +140,5 @@
 #regdef; FRE_UP_LIM_REG; 0x0F0C; Frequency Up Limit Register
 #regdef; FRE_DOWN_LIM_REG; 0x0F10; Frequency Down Limit Register
 #regdef; CCU_24M_27M_CLK_OUTPUT_REG; 0x0F20; 24M or 27M Clock Output Register
+
+#regdef; padding 0; 0x1000; set size
