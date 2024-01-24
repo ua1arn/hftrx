@@ -2756,6 +2756,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	static int32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];
 	static FLOAT_t dCoeff_trx_IQ [NtapCoeffs(Ntap_trxi_IQ)];
 
+	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
 	const adapter_t * const adptfir = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
 
@@ -2815,21 +2816,20 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
 		#endif
 	#endif /* WITHDSPEXTFIR */
-		const uint_fast8_t dspmode = glob_dspmodes [pathi];
 		const int cutfreq = fullbw6 / 2;
 		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
-			fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+			fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 		else if (isdspmodetx(dspmode))
-			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 
 	#else /* WITHDSPLOCALFIR */
 
 		#if WITHDSPLOCALTXFIR
 			if (isdspmodetx(dspmode))
-				fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, 1);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+				fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, 1);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 		#endif /* WITHDSPLOCALTXFIR */
 
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
@@ -5579,11 +5579,11 @@ void dsp_initialize(void)
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
 
 #if WITHDSPLOCALFIR	
-	fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ);
-	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
+	fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ);
+	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 #endif /* WITHDSPLOCALFIR */
 #if WITHDSPLOCALTXFIR
-	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
+	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 #endif /* WITHDSPLOCALTXFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
