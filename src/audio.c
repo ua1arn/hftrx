@@ -354,18 +354,16 @@ void endstamp3(void)
 
 	// Фильтр для квадратурных каналов приёмника (floating point).
 	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)];
-	static RAMDTCM FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// подготовленные значения функции окна
+
+#endif /* WITHDSPLOCALFIR */
+
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 
 	// Фильтр для квадратурных каналов передатчика (floating point)
 	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)];
 	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
 
-#endif /* WITHDSPLOCALFIR */
-
-#if WITHDSPLOCALTXFIR
-	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)];
-	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
-#endif /* WITHDSPLOCALTXFIR */
+#endif /* WITHDSPLOCALFIR || WITHDSPLOCALTXFIR */
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
@@ -2821,9 +2819,16 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
+		{
+			static FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_rx_SSB_IQ)];			// значения функции окна
+			fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, getCoefNumLtdValidated(Ntap_rx_SSB_IQ, fltsofter));
 			fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+		}
 		else if (isdspmodetx(dspmode))
+		{
+			// FIRCwnd_tx_SSB_IQ заполнен в dsp_initialze
 			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+		}
 
 	#else /* WITHDSPLOCALFIR */
 
@@ -5578,13 +5583,9 @@ void dsp_initialize(void)
 	fir_design_windowbuff_half(FIRCwnd_tx_MIKE, Ntap_tx_MIKE, Ntap_tx_MIKE);
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
 
-#if WITHDSPLOCALFIR	
-	fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ);
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ);
-#endif /* WITHDSPLOCALFIR */
-#if WITHDSPLOCALTXFIR
-	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ);
-#endif /* WITHDSPLOCALTXFIR */
+#endif /* WITHDSPLOCALFIR || WITHDSPLOCALTXFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
