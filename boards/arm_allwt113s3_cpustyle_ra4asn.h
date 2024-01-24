@@ -247,31 +247,26 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOE->DATA)
-	#define ENCODER_BITA		(UINT32_C(1) << 8)		// PE8
-	#define ENCODER_BITB		(UINT32_C(1) << 7)		// PE7
+	#define ENCODER_INPUT_PORT	(0)
+	#define ENCODER_BITA		(0)
+	#define ENCODER_BITB		(0)
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOE->DATA)
-	#define ENCODER2_BITA		(UINT32_C(1) << 5)		// PE5
-	#define ENCODER2_BITB		(UINT32_C(1) << 4)		// PE4
+	#define ENCODER2_INPUT_PORT	(GPIOG->DATA)
+	#define ENCODER2_BITA		(UINT32_C(1) << 2)		// PG2
+	#define ENCODER2_BITB		(UINT32_C(1) << 1)		// PG1
 
-
-	#define BOARD_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define BOARD_GPIOG_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	#define ENCODER_INITIALIZE() do { \
-		static einthandler_t h1; \
 		static einthandler_t h2; \
-		arm_hardware_pioe_altfn20(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1, spool_encinterrupt); \
-		arm_hardware_pioe_altfn20(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2, spool_encinterrupt2); \
+		arm_hardware_piog_altfn20(BOARD_GPIOG_ENCODER2_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piog_updown(BOARD_GPIOG_ENCODER2_BITS, 0); \
+		einthandler_initialize(& h2, BOARD_GPIOG_ENCODER2_BITS, spool_encinterrupt2); \
+		arm_hardware_piog_onchangeinterrupt(0 * BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 	} while (0)
 
-	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
+	#define ENCODER_BITS_GET() (0)
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 #endif
@@ -716,7 +711,7 @@
 		arm_hardware_piod_updown(RXMASK, 0); \
 	} while (0)
 
-#define TARGET_ENC2BTN_BIT (UINT32_C(1) << 6)	// PE6 - second encoder button with pull-up
+#define TARGET_ENC2BTN_BIT (UINT32_C(1) << 0)	// PG0 - second encoder button with pull-up
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
@@ -725,7 +720,7 @@
 
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_GET	(((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	(((GPIOG->DATA) & TARGET_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -734,8 +729,8 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
-			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, 0); /* PE6: pull-up second encoder button */ \
+			arm_hardware_piog_inputs(TARGET_ENC2BTN_BIT); \
+			arm_hardware_piog_updown(TARGET_ENC2BTN_BIT, 0); /* PE6: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
 			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
