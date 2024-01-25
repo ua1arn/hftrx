@@ -649,7 +649,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static LCLSPINLOCK_t gpiodata_locks [8] =
+static LCLSPINLOCK_t gpiodatas_ctx [8] =
 {
 		LCLSPINLOCK_INIT,
 		LCLSPINLOCK_INIT,
@@ -667,9 +667,9 @@ void sysinit_gpio_initialize(void)
 {
 	unsigned i;
 
-	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiodata_locks [i];
+		LCLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
 		LCLSPINLOCK_INITIALIZE(lck);
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
@@ -680,14 +680,14 @@ void sysinit_gpio_initialize(void)
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
+	LCLSPINLOCK_t * const lck = & gpiodatas_ctx [bank];
 	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
+	LCLSPINLOCK_t * const lck = & gpiodatas_ctx [bank];
 	LCLSPIN_UNLOCK(lck);
 	LowerIrql(oldIrql);
 }
@@ -826,24 +826,24 @@ typedef struct gpio_ctx
 	portholder_t data;
 } gpio_ctx_t;
 
-static gpio_ctx_t gpiodata_locks [16];
+static gpio_ctx_t gpiodatas_ctx [16];
 
-static gpio_ctx_t gpiodata_L_lock;
+static gpio_ctx_t gpiodata_L_ctx;
 
 static gpio_ctx_t * gpioX_get_ctx(GPIO_TypeDef * gpio)
 {
 #if CPUSTYLE_A64
 	if (gpio == GPIOL)
-		return & gpiodata_L_lock;
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+		return & gpiodata_L_ctx;
+	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 	if (gpio == GPIOL)
-		return & gpiodata_L_lock;
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
+		return & gpiodata_L_ctx;
+	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -871,10 +871,11 @@ void sysinit_gpio_initialize(void)
 {
 	unsigned i;
 
-	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
-		gpio_ctx_t * const lck = & gpiodata_locks [i];
+		gpio_ctx_t * const lck = & gpiodatas_ctx [i];
 		LCLSPINLOCK_INITIALIZE(& lck->lock);
+		lck->data = 0;
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
@@ -883,7 +884,9 @@ void sysinit_gpio_initialize(void)
 
 #if CPUSTYLE_A64
 
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock);
+	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
+	gpiodata_L_ctx.data = 0;
+
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;
 
@@ -903,7 +906,8 @@ void sysinit_gpio_initialize(void)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock.lock);
+	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
+	gpiodata_L_ctx.data = 0;
 
 #endif /* CPUSTYLE_A64 */
 }

@@ -59,8 +59,9 @@ enum
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
+		#define DUALRXFLT		0
 
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
@@ -72,12 +73,14 @@ enum
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
+		#define DUALRXFLT		0
 
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
+		#define DUALRXFLT		0
 
 	#endif
 
