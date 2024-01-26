@@ -15882,7 +15882,10 @@ processmessages(
 	app_processing(inmenu, mp);
 
 	if ((* kbready = kbd_scan(kbch)) != 0)
-		board_wakeup();
+	{
+		if (board_wakeup())
+			* kbch = KBD_CODE_MAX;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
+	}
 	else
 		* kbch = KBD_CODE_MAX;
 
