@@ -7672,8 +7672,8 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
 		nvramoffs0,
 		valoffset0,
-		& bwprop_cwnarrow.fltsofter,
 		NULL,
+		& bwprop_cwnarrow.fltsofter,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
