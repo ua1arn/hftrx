@@ -826,20 +826,21 @@ typedef struct gpio_ctx
 	portholder_t data;
 } gpio_ctx_t;
 
-static gpio_ctx_t gpiodatas_ctx [16];
-
+static gpio_ctx_t gpiodatas_ctx [16];	/* GPIOA..GPIOO */
+#if defined (GPIOL)
 static gpio_ctx_t gpiodata_L_ctx;
+#endif /* defined (GPIOL) */
 
 static gpio_ctx_t * gpioX_get_ctx(GPIO_TypeDef * gpio)
 {
-#if CPUSTYLE_A64
+#if defined (GPIOL)
 	if (gpio == GPIOL)
 		return & gpiodata_L_ctx;
+#endif /* defined (GPIOL) */
+#if CPUSTYLE_A64
 	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
-	if (gpio == GPIOL)
-		return & gpiodata_L_ctx;
 	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
@@ -882,10 +883,12 @@ void sysinit_gpio_initialize(void)
 		InitializeListHead(& einthead [i]);
 	}
 
-#if CPUSTYLE_A64
-
+#if defined (GPIOL)
 	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
 	gpiodata_L_ctx.data = 0;
+#endif /* defined (GPIOL) */
+
+#if CPUSTYLE_A64
 
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;
@@ -905,9 +908,6 @@ void sysinit_gpio_initialize(void)
 	writel(reg_val, R_PRCM_BASE+0x28);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
-
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
-	gpiodata_L_ctx.data = 0;
 
 #endif /* CPUSTYLE_A64 */
 }
