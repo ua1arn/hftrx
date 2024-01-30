@@ -3806,10 +3806,17 @@ prog_ctrlreg(uint_fast8_t plane)
 		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
 			#error Wrong config
 		#endif /* ! SHORTSET_7L8C && ! FULLSET_7L8C */
-		/* 7 indictors, 8 capacitors */
-		RBVAL8(0100, glob_tuner_C);
-		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0070, glob_tuner_L, 7);
+		if (n7ddcext)
+		{
+
+		}
+		else
+		{
+			/* 7 indictors, 8 capacitors */
+			RBVAL8(0100, glob_tuner_C);
+			RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+			RBVAL(0070, glob_tuner_L, 7);
+		}
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
