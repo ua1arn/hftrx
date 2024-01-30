@@ -5619,6 +5619,7 @@ static void auto_tune(void)
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {
+	TP();
 }
 
 #else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */

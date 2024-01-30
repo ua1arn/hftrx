@@ -2667,7 +2667,14 @@ static void display2_classa7(
 	)
 {
 #if WITHPACLASSA
-	display_at(x, y, habradio_get_classa() ? "CLASS A" : "       ");
+	const uint_fast8_t active = habradio_get_classa();
+	#if LCDMODE_COLORED
+		static const char classa_text [] = "CLASS A";
+		static const char classa_null [] = "       ";
+		display_2states_P(x, y, active, classa_text, classa_text);
+	#else /* LCDMODE_COLORED */
+		display_at_P(x, y, active ? classa_text : classa_null);
+	#endif /* LCDMODE_COLORED */
 #endif /* WITHPACLASSA */
 }
 
