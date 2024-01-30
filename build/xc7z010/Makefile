@@ -30,7 +30,7 @@ XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z010.elf
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
