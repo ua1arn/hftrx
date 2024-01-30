@@ -531,11 +531,11 @@
 		//#define WITHBBOXMIKESRC BOARD_TXAUDIO_2TONE
 	#endif
 
-
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
+
 	#if 0
 		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCEXT 1
