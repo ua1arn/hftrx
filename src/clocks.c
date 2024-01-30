@@ -8945,6 +8945,9 @@ void SystemCoreClockUpdate(void)
 #elif CPUSTYLE_R7S721
 	#define PWMTICKSFREQ (P0CLOCK_FREQ / 2)	/* Renesas RZ-A1x */
 
+#elif CPUSTYLE_STM32MP1
+	#define PWMTICKSFREQ 32000000
+
 #else
 	//#error Wrong CPUSTYLE_xxx
 
