@@ -1,5 +1,5 @@
 ﻿/*
- * allwnr_t13s3.h
+ * allwnr_a64.h
  *
  *  Created on: 31 мая 2022 г.
  *      Author: User
@@ -8,8 +8,8 @@
  *       reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
  */
 
-#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_A64_H_
+#define ARCH_ALLWNR_A64_H_
 
 /**
  * @brief ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
@@ -227,4 +227,4 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
 
 #endif
 
-#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_A64_H_ */
