@@ -4,8 +4,8 @@
  * The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
  */
 
-#ifndef ARCH_ALLWNR_F133_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_F133_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_F133__H_
+#define ARCH_ALLWNR_F133__H_
 
 /*
  * sun20i
@@ -361,4 +361,4 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
   return (result);
 }
 
-#endif /* ARCH_ALLWNR_F133_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_F133__H_ */

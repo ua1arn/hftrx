@@ -1,17 +1,16 @@
 ﻿/*
- * allwnr_t13s3.h
- *
- *  Created on: 31 мая 2022 г.
- *      Author: User
+ * allwnr_t507.h
  *
  *       For details of A7 CPUX signals, refer to the technical
  *       reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
  */
 
-#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_T507_H_
+#define ARCH_ALLWNR_T507_H_
 
 /**
+ * Allwinner T507/T517/T507-H/T517-H
+ *
  * @brief ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
  *
  * sun50iw9p1
@@ -219,4 +218,4 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
 
 #endif
 
-#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_T507_H_ */

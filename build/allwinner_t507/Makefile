@@ -15,7 +15,7 @@
 
 ##############################################################################################
 # Start of default section
-# sun50iw9p1 Allwinner T507 (HelperBoarf T507)
+# sun50iw9p1 Allwinner T507/T517/T507-H/T517-H (HelperBoarf T507)
 
 TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
