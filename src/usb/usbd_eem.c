@@ -119,7 +119,7 @@ typedef struct _USBD_CDC_EEM_Itf
 
 typedef struct
 {
-  uint32_t data [CDC_EEM_CMD_PACKET_SIZE/4]; /* control transfers */     /* Force 32bits alignment */
+  __ALIGN_BEGIN uint32_t data [CDC_EEM_CMD_PACKET_SIZE/4] __ALIGN_END; /* control transfers */     /* Force 32bits alignment */
   uint8_t  CmdOpCode;
   uint8_t  CmdLength;
 
@@ -145,7 +145,7 @@ USBD_CDC_EEM_HandleTypeDef;
 
 typedef struct
 {
-  uint32_t data[USBD_CDCEEM_BUFSIZE/4];      /* Force 32bits alignment */
+  __ALIGN_BEGIN uint32_t data[USBD_CDCEEM_BUFSIZE/4] __ALIGN_END;      /* Force 32bits alignment */
   uint8_t  CmdOpCode;
   uint8_t  CmdLength;
   uint8_t  *RxBuffer;
