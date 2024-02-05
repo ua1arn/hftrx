@@ -50,6 +50,9 @@ ULIBS +=
 
 SRCDIRS += $(PRJROOT)/src
 
+CSRC =
+CPPSRC =
+
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
@@ -59,7 +62,9 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 VPATH = $(SRCDIR)
 
-OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
+OBJSA 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC))
+OBJS 	= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
+OBJSCPP = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 
@@ -69,18 +74,25 @@ CPFLAGS = $(CFLAGS) $(LDFLAGS)
 LINKONLYOBJECTS = 
 
 ## Build
-all: $(OBJS) $(TARGET) tc1_atmega644_10.hex tc1_atmega644_10.eep size
+all: info $(OBJS) $(OBJSA) $(OBJSCPP) $(TARGET) tc1_atmega644_10.hex tc1_atmega644_10.eep size
+
+info:
+	$(CC) --version
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CPP) -c -std=gnu++11 -fno-rtti -fexceptions $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
-$(TARGET): $(OBJS)
-	 $(CC) $(LDFLAGS) $(OBJS) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
+$(TARGET): $(OBJS) $(OBJSA) $(OBJSCPP)
+	 $(CPP) $(LDFLAGS) $(OBJS) $(OBJSA) $(OBJSCPP) $(LINKONLYOBJECTS) $(LIBDIR) $(LIBS) -o $(TARGET)
 
 %.hex: $(TARGET)
 	avr-objcopy -O ihex $(HEX_FLASH_FLAGS)  $< $@
@@ -98,7 +110,7 @@ size: ${TARGET}
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf $(OBJS) tc1_atmega644_10.elf ./*.d tc1_atmega644_10.hex tc1_atmega644_10.eep
+	-rm -rf $(OBJS) $(OBJSA) $(OBJSCPP) tc1_atmega644_10.elf ./*.d tc1_atmega644_10.hex tc1_atmega644_10.eep
 	-rm -fR $(OBJDIR)
 	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
 	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map $(PROJECT)_boot.hex $(PROJECT)_boot.bin
