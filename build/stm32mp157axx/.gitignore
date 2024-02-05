@@ -1,3 +1,9 @@
 obj
+*.obj
+*.pch
+
+*.o
+*.o.d
+
 tc1_stm32mp157axx*.*
 *.stm32

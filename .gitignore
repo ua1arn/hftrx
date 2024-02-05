@@ -7,8 +7,6 @@ boards/atmega644_ctlstyle_v1.h
 *.prefs
 .settings/*.*
 *.log
-*.obj
-*.pch
 *.tlog
 *.cnt
 *.bsc
@@ -21,4 +19,12 @@ boards/atmega644_ctlstyle_v1.h
 *.bin
 
 .settings/language.settings.xml
-*.o
+.cproject
+.project
+
+# Builded tools for linux
+build/stm32mp157axx/bin2ihex
+build/stm32mp157axx/stm32image
+tools/bin2ihex/bin2ihex
+tools/stm32image/stm32image
+
