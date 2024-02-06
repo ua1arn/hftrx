@@ -288,13 +288,13 @@ display_wrdatabar_end(void)
 
 
 uint_fast16_t
-display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return uc1608_put_char_big(xpix, c, lowhalf);
 }
 
 uint_fast16_t
-display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
+display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, char c, uint_fast8_t lowhalf)
 {
 	return uc1608_put_char_half(xpix, c, lowhalf);
 }

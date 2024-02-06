@@ -4257,6 +4257,14 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 	}
 }
 
+uint_fast32_t allwnrf133_get_riscv_axi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->RISC_CLK_REG;
+	const uint_fast32_t N = 1u + ((clkreg >> 8) & 0x03);	// RISC_AXI_DIV_CFG
+	//const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	// RISC_DIV_CFG
+	return allwnrf133_get_riscv_freq() / N;
+}
+
 // DSP (HiFi4)
 uint_fast32_t allwnrt113_get_dsp_freq(void)
 {
@@ -8936,6 +8944,9 @@ void SystemCoreClockUpdate(void)
 
 #elif CPUSTYLE_R7S721
 	#define PWMTICKSFREQ (P0CLOCK_FREQ / 2)	/* Renesas RZ-A1x */
+
+#elif CPUSTYLE_STM32MP1
+	#define PWMTICKSFREQ 32000000
 
 #else
 	//#error Wrong CPUSTYLE_xxx

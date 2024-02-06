@@ -83,7 +83,7 @@ typedef uint_least64_t phase_t;
 #define WITHAVOXLEVELMAX	100
 
 #define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
-#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
+#define WITHFILTSOFTMAX		10		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
 #define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора % */
 #define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */

@@ -318,7 +318,7 @@ display_scroll_up(
 #include "./byte2crun.h"
 #endif /* ! LCDMODE_LTDC_L24 */
 
-static PACKEDCOLORPIP_T ltdc_fg = COLORMAIN_WHITE, ltdc_bg = COLORMAIN_BLACK;
+static PACKEDCOLORPIP_T ltdc_fg = COLORPIP_WHITE, ltdc_bg = COLORPIP_BLACK;
 
 #if ! LCDMODE_LTDC_L24
 static const FLASHMEM PACKEDCOLORPIP_T (* byte2runpip) [256][8] = & byte2runpip_COLORPIP_WHITE_COLORPIP_BLACK;
@@ -1504,7 +1504,7 @@ void display_value_small_xy(
 }
 
 #if LCDMODE_COLORED
-static COLORPIP_T bgcolor = COLORMAIN_BLACK;
+static COLORPIP_T bgcolor = COLORPIP_BLACK;
 #endif /* LCDMODE_COLORED */
 
 void
@@ -1966,7 +1966,7 @@ void display_hardware_initialize(void)
 	// RENESAS Video Display Controller 5
 	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
 	hardware_ltdc_initialize(frames, vdmode);
-	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+	colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();

@@ -649,7 +649,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static LCLSPINLOCK_t gpiodata_locks [8] =
+static LCLSPINLOCK_t gpiodatas_ctx [8] =
 {
 		LCLSPINLOCK_INIT,
 		LCLSPINLOCK_INIT,
@@ -667,9 +667,9 @@ void sysinit_gpio_initialize(void)
 {
 	unsigned i;
 
-	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiodata_locks [i];
+		LCLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
 		LCLSPINLOCK_INITIALIZE(lck);
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
@@ -680,14 +680,14 @@ void sysinit_gpio_initialize(void)
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
+	LCLSPINLOCK_t * const lck = & gpiodatas_ctx [bank];
 	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiodata_locks [bank];
+	LCLSPINLOCK_t * const lck = & gpiodatas_ctx [bank];
 	LCLSPIN_UNLOCK(lck);
 	LowerIrql(oldIrql);
 }
@@ -820,35 +820,31 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03	// Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static LCLSPINLOCK_t gpiodata_locks [16] =
+typedef struct gpio_ctx
 {
-	LCLSPINLOCK_INIT,	// GPIOA
-	LCLSPINLOCK_INIT,	// GPIOB - in T113-S3
-	LCLSPINLOCK_INIT,	// GPIOC - in T113-S3
-	LCLSPINLOCK_INIT,	// GPIOD - in T113-S3
-	LCLSPINLOCK_INIT,	// GPIOE - in T113-S3
-	LCLSPINLOCK_INIT,	// GPIOF - in T113-S3
-	LCLSPINLOCK_INIT,	// GPIOG - in T113-S3
-	LCLSPINLOCK_INIT,	// GPIOH
-	LCLSPINLOCK_INIT,	// GPIOI
-};
+	LCLSPINLOCK_t lock;
+	portholder_t data;
+} gpio_ctx_t;
 
-static LCLSPINLOCK_t gpiodata_L_lock = LCLSPINLOCK_INIT;
+static gpio_ctx_t gpiodatas_ctx [16];	/* GPIOA..GPIOO */
+#if defined (GPIOL)
+static gpio_ctx_t gpiodata_L_ctx;
+#endif /* defined (GPIOL) */
 
-static LCLSPINLOCK_t * gpioX_get_lock(GPIO_TypeDef * gpio)
+static gpio_ctx_t * gpioX_get_ctx(GPIO_TypeDef * gpio)
 {
-#if CPUSTYLE_A64
+#if defined (GPIOL)
 	if (gpio == GPIOL)
-		return & gpiodata_L_lock;
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+		return & gpiodata_L_ctx;
+#endif /* defined (GPIOL) */
+#if CPUSTYLE_A64
+	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
-	if (gpio == GPIOL)
-		return & gpiodata_L_lock;
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
+	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
-	return & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
+	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -876,19 +872,24 @@ void sysinit_gpio_initialize(void)
 {
 	unsigned i;
 
-	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiodata_locks [i];
-		LCLSPINLOCK_INITIALIZE(lck);
+		gpio_ctx_t * const lck = & gpiodatas_ctx [i];
+		LCLSPINLOCK_INITIALIZE(& lck->lock);
+		lck->data = 0;
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
 	{
 		InitializeListHead(& einthead [i]);
 	}
 
+#if defined (GPIOL)
+	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
+	gpiodata_L_ctx.data = 0;
+#endif /* defined (GPIOL) */
+
 #if CPUSTYLE_A64
 
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock);
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
 	RTC->GPL_HOLD_OUTPUT_REG = 0;
 
@@ -908,8 +909,6 @@ void sysinit_gpio_initialize(void)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
-	LCLSPINLOCK_INITIALIZE(& gpiodata_L_lock);
-
 #endif /* CPUSTYLE_A64 */
 }
 
@@ -922,14 +921,14 @@ typedef uint32_t irqstatus_t;
 
 static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
+	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
 	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
 static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	LCLSPINLOCK_t * const lck = gpioX_get_lock(gpio);
+	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
 	LCLSPIN_UNLOCK(lck);
 	LowerIrql(irql);
 }
@@ -944,8 +943,10 @@ void gpioX_setstate(
 {
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
+	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
 
-	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
+	* data = (* data & ~ mask) | (state & mask);
+	gpio->DATA = * data;
 	(void) gpio->DATA;
 
 	gpioX_unlock(gpio, oldIrql);
@@ -1038,13 +1039,37 @@ void gpioX_setopendrain(
 {
 	IRQL_t oldIrql;
 
-	/* на этом процессоре имитируем oprn drain перепрограммированием на вход */
+	/* на этом процессоре имитируем open drain перепрограммированием на вход */
 
 	gpioX_lock(gpio, & oldIrql);
 
 	gpioX_progUnsafe(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 	gpioX_progUnsafe(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);	// tie to GND
-	gpio->DATA = (gpio->DATA & ~ mask);	/* если не в режиме вывода, записи игнорируются */
+
+	gpioX_unlock(gpio, oldIrql);
+}
+
+static void gpioX_opendrain_iniialize(
+	GPIO_TypeDef * gpio,
+	portholder_t mask,
+	portholder_t state
+	)
+{
+	IRQL_t oldIrql;
+
+	/* на этом процессоре имитируем open drain перепрограммированием на вход */
+
+	gpioX_lock(gpio, & oldIrql);
+
+	/* установить регистр данных для всех относящихся выводов в 0 */
+	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
+	* data &= ~ mask;
+
+	gpioX_progUnsafe(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpio->DATA = * data;	/* если не в режиме вывода или disabled, записи игнорируются */
+
+	gpioX_progUnsafe(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_progUnsafe(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -5255,7 +5280,7 @@ arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-	gpioX_setopendrain(GPIOA, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOA, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5342,7 +5367,7 @@ arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
-	gpioX_setopendrain(GPIOB, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOB, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5429,7 +5454,7 @@ arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
-	gpioX_setopendrain(GPIOC, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOC, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5516,7 +5541,7 @@ arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
-	gpioX_setopendrain(GPIOD, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOD, opins, initialstate);
 
 #elif CPUSTYLE_VM14
 
@@ -5594,7 +5619,7 @@ arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
-	gpioX_setopendrain(GPIOE, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOE, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5659,7 +5684,7 @@ arm_hardware_piof_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
-	gpioX_setopendrain(GPIOF, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOF, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5721,7 +5746,7 @@ arm_hardware_piog_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_setopendrain(GPIOG, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOG, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5784,7 +5809,7 @@ arm_hardware_pioh_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_setopendrain(GPIOH, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOH, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8663,7 +8688,7 @@ arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_setopendrain(GPIOL, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOL, opins, initialstate);
 
 #else
 	#error Undefined CPUSTYLE_XXX

@@ -263,7 +263,7 @@ static void ls020_clear(COLORPIP_T bg)
 {
 	unsigned i;
 
-	ls020_setcolor(COLORMAIN_WHITE, bg);
+	ls020_setcolor(COLORPIP_WHITE, bg);
 	ls020_gotoxy(0, 0);
 	ls020_set_windowh(DIM_Y);
 

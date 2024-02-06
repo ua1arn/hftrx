@@ -28,3 +28,5 @@
 #regdef; CRY_CONFIG_REG; 0x0210; Crypt Configuration Register
 #regdef; CRY_KEY_REG; 0x0214; Crypt Key Register
 #regdef; CRY_EN_REG; 0x0218; Crypt Enable Register
+
+#regdef; padding 0; 0x400; set size

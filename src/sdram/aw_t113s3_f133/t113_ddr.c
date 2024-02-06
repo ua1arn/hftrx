@@ -881,8 +881,9 @@ void mctl_phy_ac_remapping(dram_para_t *para)
 	//SID->SID_DATA [0]
 	// T113-S3: 0x60 (sid=93406000 ac004814 01440821 5c6b1bcb)
 	// F133-A:  0x5C (sid=93005c00 ac004814 01425a4c 644c1dcb)
-	val = (unsigned int)(read32(SID_BASE + 0x200) << 0x10) >> 0x18;
+	val = (unsigned int)(read32(SID_BASE + 0x200) << 0x10) >> 0x18;		// SID_DATA array
 	PRINTF("mark_id: 0x%x\n", val);
+	(void) val;
 
 	if ((para->dram_tpr13 >> 18) & 0x3) {
 		pcfg = cfg7;

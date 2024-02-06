@@ -5503,6 +5503,13 @@ static uint_fast8_t tuneabort(void)
 }
 
 #if ! WITHAUTOTUNER_N7DDCEXT
+
+static void scanminLk_init(void)
+{
+
+}
+
+
 // Перебор значений L в поиске минимума SWR
 // Если прервана настройка - возврат не-0
 static uint_fast8_t scanminLk(tus_t * tus)
@@ -5534,6 +5541,11 @@ static uint_fast8_t scanminLk(tus_t * tus)
 	tunerind = tus->tunerind;	// лучшее запомненное
 	PRINTF("scanminLk done ****************\n");
 	return 0;
+}
+
+static void scanminCk_init(void)
+{
+
 }
 
 // Перебор значений C в поиске минимума SWR
@@ -5619,94 +5631,137 @@ static void auto_tune(void)
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {
+	TP();
 }
 
 #else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */
 
-/* отсюда не возвращаемся пока не настроится тюнер */
-static void auto_tune(void)
+static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_ant;
+static tus_t tunerstatuses [KSCH_COUNT];
+
+enum phases
+{
+	PHASE_ABORT,
+	PHASE_DONE,
+	PHASE_CONTINUE
+};
+
+static void auto_tune0_init(void)
+{
+}
+// 1 - aborted
+static enum phases auto_tune0(void)
 {
 	unsigned ndummies;
 	const uint_fast8_t tx = 1;
-	tus_t statuses [KSCH_COUNT];
-	unsigned cshindex;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const uint_fast32_t freq = gfreqs [bi];
-	const uint_fast8_t bg = getfreqbandgroup(freq);
-	const uint_fast8_t ant = geteffantenna(freq);
+	tuner_bg = getfreqbandgroup(freq);
+	tuner_ant = geteffantenna(freq);
 
 	PRINTF(PSTR("auto_tune start\n"));
 	for (ndummies = 5; ndummies --; )
 	{
 		if (tuneabort())
-			goto aborted;
+			return PHASE_ABORT; //goto aborted;
 		local_delay_ms(50);
 		adcvalholder_t r;
 		adcvalholder_t f;
 		const uint_fast16_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
 		tuner_waitadc();
 	}
+	return PHASE_DONE;
+}
+
+
+static void auto_tune1_init(void)
+{
+	tunertype = 0;
+}
+
+// 1 - aborted
+static enum phases auto_tune1(void)
+{
+
 	// Попытка согласовать двумя схемами
-	for (tunertype = 0; tunertype < KSCH_COUNT; ++ tunertype)
+
+	tunerstatuses [tunertype].tunertype = tunertype;
+	tunerind = LMIN;
+	if (tunertype == 0)
 	{
-		statuses [tunertype].tunertype = tunertype;
-		tunerind = LMIN;
-		if (tunertype == 0)
-		{
-			PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
-			if (scanminCk(& statuses [tunertype]) != 0)
-				goto aborted;
-			PRINTF("scanminCk finish: C=%u\n", tunercap);
-			updateboard_tuner();
-		}
-		else
-		{
-			statuses [1] = statuses [0];
-			statuses [1].tunertype = tunertype;
-		}
-
-		// проверка - а может уже нашли подходяшее согласование?
-		////if (statuses [tunertype].swr <= TUS_SWR1p1)
-		////	goto NoMoreTune;
-
-		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
-		if (scanminLk(& statuses [tunertype]) != 0)
-			goto aborted;
-		PRINTF("scanminLk finish: L=%u\n", tunerind);
+		PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
+		scanminCk_init();
+		if (scanminCk(& tunerstatuses [tunertype]) != 0)
+			return PHASE_ABORT; //goto aborted;
+		PRINTF("scanminCk finish: C=%u\n", tunercap);
 		updateboard_tuner();
-
-		// проверка - а может уже нашли подходяшее согласование?
-		////if (statuses [tunertype].swr <= TUS_SWR1p1)
-		////	goto NoMoreTune;
 	}
+	else
+	{
+		tunerstatuses [1] = tunerstatuses [0];
+		tunerstatuses [1].tunertype = tunertype;
+	}
+
+	// проверка - а может уже нашли подходяшее согласование?
+	////if (tunerstatuses [tunertype].swr <= TUS_SWR1p1)
+	////	goto NoMoreTune;
+
+	PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
+	scanminLk_init();
+	if (scanminLk(& tunerstatuses [tunertype]) != 0)
+		return PHASE_ABORT; //goto aborted;
+	PRINTF("scanminLk finish: L=%u\n", tunerind);
+	updateboard_tuner();
+
+	// проверка - а может уже нашли подходяшее согласование?
+	////if (tunerstatuses [tunertype].swr <= TUS_SWR1p1)
+	////	goto NoMoreTune;
+
+	return (++ tunertype >= KSCH_COUNT) ? PHASE_DONE : PHASE_CONTINUE;
+}
+
+static unsigned tuner_cshindex;
+
+static void auto_tune2_init(void)
+{
 	// Выбираем наилучший результат согласования
-	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
+	tuner_cshindex = findbestswr(tunerstatuses, sizeof tunerstatuses / sizeof tunerstatuses [0]);
 	PRINTF(PSTR("auto_tune loop done\n"));
-	printtunerstate("Selected 1", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
-	tunertype = statuses [cshindex].tunertype;
-	tunerind = statuses [cshindex].tunerind;
-	tunercap = statuses [cshindex].tunercap;
-	if (scanminCk(& statuses [cshindex]) != 0)
-		goto aborted;
-	printtunerstate("Selected 2", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
+	printtunerstate("Selected 1", tunerstatuses [tuner_cshindex].swr, tunerstatuses [tuner_cshindex].r, tunerstatuses [tuner_cshindex].f);
+	tunertype = tunerstatuses [tuner_cshindex].tunertype;
+	tunerind = tunerstatuses [tuner_cshindex].tunerind;
+	tunercap = tunerstatuses [tuner_cshindex].tunercap;
+	scanminCk_init();
+}
+
+// 1 - aborted
+static enum phases auto_tune2(void)
+{
+	if (scanminCk(& tunerstatuses [tuner_cshindex]) != 0)
+		return PHASE_ABORT; //goto aborted;
+	printtunerstate("Selected 2", tunerstatuses [tuner_cshindex].swr, tunerstatuses [tuner_cshindex].r, tunerstatuses [tuner_cshindex].f);
 	// Устанавливаем аппаратуру в состояние при лучшем результате
-	tunertype = statuses [cshindex].tunertype;
-	tunerind = statuses [cshindex].tunerind;
-	tunercap = statuses [cshindex].tunercap;
+	tunertype = tunerstatuses [tuner_cshindex].tunertype;
+	tunerind = tunerstatuses [tuner_cshindex].tunerind;
+	tunercap = tunerstatuses [tuner_cshindex].tunercap;
 	updateboard_tuner();
 	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
-	storetuner(bg, ant);
-	return;
-
-aborted:
-	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
-	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunerind), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].oants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
-	updateboard_tuner();
-	return;
+	storetuner(tuner_bg, tuner_ant);
+	return PHASE_DONE;
 }
+
+// aborting
+static void auto_tune3(void)
+{
+	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
+	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunercap), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunerind), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].oants [tuner_ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	updateboard_tuner();
+}
+
 #endif /* ! WITHAUTOTUNER_N7DDCEXT */
 #endif /* WITHAUTOTUNER */
 
@@ -7672,8 +7727,8 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
 		nvramoffs0,
 		valoffset0,
-		& bwprop_cwnarrow.fltsofter,
 		NULL,
+		& bwprop_cwnarrow.fltsofter,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -9334,7 +9389,7 @@ updateboard2(void)
 #if WITHENCODER
 	encoder_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
-	display_setbgcolor(gbluebgnd ? COLORMAIN_BLUE : COLORMAIN_BLACK);
+	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
 
 
@@ -15882,7 +15937,10 @@ processmessages(
 	app_processing(inmenu, mp);
 
 	if ((* kbready = kbd_scan(kbch)) != 0)
-		board_wakeup();
+	{
+		if (board_wakeup())
+			* kbch = KBD_CODE_MAX;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
+	}
 	else
 		* kbch = KBD_CODE_MAX;
 
@@ -16397,7 +16455,7 @@ void display2_multilinemenu_block_groups(uint_fast8_t x, uint_fast8_t y, dctx_t 
 	memset(nolabel, ' ', sizeof nolabel - 1);
 	nolabel [sizeof nolabel - 1] = '\0';
 
-	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
@@ -16489,7 +16547,7 @@ void display2_multilinemenu_block_params(uint_fast8_t x, uint_fast8_t y, dctx_t 
 	memset(nolabel, ' ', sizeof nolabel - 1);
 	nolabel [sizeof nolabel - 1] = '\0';
 
-	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -16572,7 +16630,7 @@ void display2_multilinemenu_block_vals(uint_fast8_t x, uint_fast8_t y, dctx_t * 
 	memset(nolabel, ' ', VALUEW);
 	nolabel [VALUEW] = '\0';
 
-	colmain_setcolors(COLORMAIN_WHITE, BGCOLOR);
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -17799,7 +17857,7 @@ void display2_popup(
 	const uint_fast16_t w = GRID2X(LABELW);
 	const uint_fast16_t h = GRID2Y(mw.ystep) * sizePopUp;
 
-	//display_fillrect(x, y, w, h, COLORMAIN_DARKGREEN);	// Фон
+	//display_fillrect(x, y, w, h, COLORPIP_DARKGREEN);	// Фон
 
 	for (i = 0; i < sizePopUp; ++ i)
 	{
@@ -19312,11 +19370,22 @@ dspcontrol_mainloop(void)
 }
 #endif /* WITHSPISLAVE */
 
+#if WITHAUTOTUNER
 
-// инициализация машины состояний тюнера
-static void hamradio_tune_initialize(void)
+enum tnrstate
 {
-}
+	TUNERSTATE_0,
+	TUNERSTATE_01,
+	TUNERSTATE_1,
+	TUNERSTATE_2,
+	TUNERSTATE_DONE,
+	TUNERSTATE_ABORTING,
+};
+
+static enum tnrstate tunerstate = TUNERSTATE_0;
+
+
+#endif /* WITHAUTOTUNER */
 
 // работа в машине состояний тюнера
 // возврат STTE_OK для перехода на следующее состояние
@@ -19324,15 +19393,88 @@ static void hamradio_tune_initialize(void)
 static STTE_t hamradio_tune_step(void)
 {
 #if WITHAUTOTUNER
-	processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-	display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-	updateboard(1, 0);
-	auto_tune();
-	//auto_tune_n7ddc();
-	reqautotune = 0;
-	updateboard(1, 0);
-#endif /* WITHAUTOTUNER */
+	switch (tunerstate)
+	{
+	case TUNERSTATE_0:
+		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
+		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		updateboard(1, 0);
+		auto_tune0_init();
+		tunerstate = TUNERSTATE_01;
+		break;
+
+	case TUNERSTATE_01:
+		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		switch (auto_tune0())
+		{
+		case PHASE_ABORT:
+			tunerstate = TUNERSTATE_ABORTING;
+			break;
+		case PHASE_DONE:
+			auto_tune1_init();
+			tunerstate = TUNERSTATE_1;
+			break;
+		default:
+			// keep state
+			break;
+		}
+		break;
+
+	case TUNERSTATE_1:
+		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		switch (auto_tune1())
+		{
+		case PHASE_ABORT:
+			tunerstate = TUNERSTATE_ABORTING;
+			break;
+		case PHASE_DONE:
+			auto_tune2_init();
+			tunerstate = TUNERSTATE_2;
+			break;
+		default:
+			// keep state
+			break;
+		}
+		break;
+
+	case TUNERSTATE_2:
+		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		switch (auto_tune2())
+		{
+		case PHASE_ABORT:
+			tunerstate = TUNERSTATE_ABORTING;
+			break;
+		case PHASE_DONE:
+			tunerstate = TUNERSTATE_DONE;
+			break;
+		default:
+			// keep state
+			break;
+		}
+
+	case TUNERSTATE_ABORTING:
+		display2_redrawbarstimed(0, 0, NULL);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		auto_tune3();
+		reqautotune = 0;
+		updateboard(1, 0);
+		tunerstate = TUNERSTATE_0;
+		break;
+
+	case TUNERSTATE_DONE:
+		reqautotune = 0;
+		updateboard(1, 0);
+		tunerstate = TUNERSTATE_0;
+		break;
+
+	default:
+		break;
+	}
+
+	return tunerstate == TUNERSTATE_0 ? STTE_OK : STTE_BUSY;
+
+#else /* WITHAUTOTUNER */
 	return STTE_OK;
+#endif /* WITHAUTOTUNER */
 }
 
 // инициализация машины состояний меню

@@ -1,0 +1,5 @@
+#type; SMC
+#base; SMC 0x03007000
+#irq; SMC 79
+
+#regdef; padding 0; 0x1000; set size

@@ -563,9 +563,11 @@
 
 #endif /* CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA */
 
-	//#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
-	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
-	#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#ifndef WITHLCDBACKLIGHTMAX
+		//#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
+		#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
+		#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
+		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
+	#endif
 
 #endif /* ATMEGA_CPUSTYLE_V8A_H_INCLUDED */

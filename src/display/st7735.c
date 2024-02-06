@@ -727,7 +727,7 @@ static void st7735_clear(COLORPIP_T bg)
 	unsigned long i;
 	
 	st7735_gotoxy(0, 0);
-	st7735_setcolor(COLORMAIN_WHITE, bg, bg);
+	st7735_setcolor(COLORPIP_WHITE, bg, bg);
 
 #if WITHSPIEXT16 && WITHSPIHWDMA
 	// в глубине вызовов будет испольщоваться st7735_colorbuf

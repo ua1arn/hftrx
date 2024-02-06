@@ -36,8 +36,8 @@ enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 
 // цвета отрисовки
-#define VTTY_FG COLORMAIN_GREEN
-#define VTTY_BG COLORMAIN_BLACK
+#define VTTY_FG COLORPIP_GREEN
+#define VTTY_BG COLORPIP_BLACK
 
 typedef struct vtty_tag
 {

@@ -1,0 +1,6 @@
+# sun20i-d1-r-ccu from https://github.com/Evlers/linux_kernel_t113/blob/d7d8c971c9c5d436c03f85b9bd18e0f90abbec00/arch/arm/boot/dts/sun8i-t113.dtsi#L1227
+# see also R_PRCM
+
+#type; R_CCU
+#base; R_CCU 0x07010000
+
