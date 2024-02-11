@@ -424,7 +424,7 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 #if WITHUSBDEV_HSDESC
-	/* вариант передачи с периодом 0.125 мс */
+	/* вариант передачи с периодом 0.5 мс */
 	#define OUTSAMPLES_AUDIO48	24 /* количество сэмплов за SOF в UAC OUT */
 	#define UAC_GROUPING_DMAC 1	/* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
