@@ -424,12 +424,13 @@ extern "C" {
 #define FSINTERVAL_255MS 255
 
 #if WITHUSBDEV_HSDESC
-	/* вариант передачи с периодом 0.5 мс */
-	#define OUTSAMPLES_AUDIO48	24 /* количество сэмплов за SOF в UAC OUT */
+	/* вариант передачи с периодом 0.125 мс */
+	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за SOF в UAC OUT */
+	#define UAC_GROUPING_DMAC 1	/* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
-	#define HSINTERVAL_AUDIO48 3	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
-	#define HSINTERVAL_RTS96 3
-	#define HSINTERVAL_RTS192 3
+	#define HSINTERVAL_AUDIO48 4	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
+	#define HSINTERVAL_RTS96 4
+	#define HSINTERVAL_RTS192 4
 
 	#define FSINTERVAL_AUDIO48 1
 	#define FSINTERVAL_AUDIO48 1
@@ -439,6 +440,7 @@ extern "C" {
 #elif WITHUSBDEV_HSDESC
 /* вариант передачи с периодом 1 мс */
 	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за SOF в UAC OUT */
+	#define UAC_GROUPING_DMAC 1 /* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
 	#define HSINTERVAL_AUDIO48 4	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
 	#define HSINTERVAL_RTS96 4
@@ -450,6 +452,7 @@ extern "C" {
 
 #else /* WITHUSBDEV_HSDESC */
 	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за милисекунду в UAC OUT */
+	#define UAC_GROUPING_DMAC 1 /* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
 	#define HSINTERVAL_AUDIO48 1	// dummy parameter
 	#define HSINTERVAL_RTS96 1		// dummy parameter
