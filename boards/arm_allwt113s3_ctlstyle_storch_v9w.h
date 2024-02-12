@@ -696,7 +696,7 @@
 		KI2 = BOARD_ADCXKIN(5),
 		KI3 = BOARD_ADCXKIN(6),
 		KI4 = BOARD_ADCXKIN(7),
-		KI5 = BOARD_ADCX1IN(2)		// другой АЦП - сейчас кнопка второго валкодера
+		KI5 = BOARD_ADCX1IN(3)		// другой АЦП - сейчас кнопка второго валкодера
 	};
 
 	#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП
