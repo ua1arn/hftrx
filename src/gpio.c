@@ -946,8 +946,10 @@ void gpioX_setstate(
 	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
 
 	* data = (* data & ~ mask) | (state & mask);
+
 	gpio->DATA = * data;
 	(void) gpio->DATA;
+	//ASSERT((gpio->DATA & mask) == (state & mask));
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -1057,21 +1059,28 @@ static void gpioX_opendrain_iniialize(
 {
 	IRQL_t oldIrql;
 
+	PRINTF("gpioX_opendrain_iniialize[%p]: mask=%08u, state=%08u\n", gpio, (unsigned) mask, (unsigned) state);
 	/* на этом процессоре имитируем open drain перепрограммированием на вход */
 
 	gpioX_lock(gpio, & oldIrql);
+
+	gpioX_progUnsafe(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 	/* установить регистр данных для всех относящихся выводов в 0 */
 	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
 	* data &= ~ mask;
 
-	gpioX_progUnsafe(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 	gpio->DATA = * data;	/* если не в режиме вывода или disabled, записи игнорируются */
+	(void) gpio->DATA;
+	//ASSERT((gpio->DATA & mask) == (0 & mask));
+	//printhex32((uintptr_t) gpio, gpio, sizeof * gpio);
 
 	gpioX_progUnsafe(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 	gpioX_progUnsafe(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
+
+	//printhex32((uintptr_t) gpio, gpio, sizeof * gpio);
 }
 
 static void gpioX_updown(
