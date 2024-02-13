@@ -799,7 +799,7 @@
 		arm_hardware_pioe_updown(FPGA_CONF_DONE_BIT, 0); \
 	} while (0)
 
-	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
 		/* board_fpga_reset(); */ \
 	} while (0)
@@ -809,7 +809,7 @@
 
 #else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
 		/* board_fpga_reset(); */ \
 	} while (0)

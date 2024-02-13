@@ -7187,6 +7187,7 @@ void board_fpga_reset(void)
 	}
 restart:
 	;
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 
 #endif
 }
