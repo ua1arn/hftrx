@@ -1683,10 +1683,18 @@ void display_copyrotate(
 	enum { PIXEL_SIZE_CODE = 1 };
 
 #if WITHMDMAHW && CPUSTYLE_ALLWINNER
-	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
-	const uintptr_t saddr = (uintptr_t) sbuffer;
 	const uintptr_t taddr = (uintptr_t) buffer;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	// source address для 4-х квадрантов
+	const uintptr_t saddr [] =
+	{
+		(uintptr_t) sbuffer,	// 0 CCW
+		(uintptr_t) sbuffer,	// 90 CCW
+		(uintptr_t) sbuffer,	// 180 CCW
+		(uintptr_t) sbuffer,	// 270 CCW
+	};
+	// source size для 4-х квадрантов
 	const uint_fast32_t ssizehw [4] =
 	{
 		((h - 1) << 16) | ((w - 1) << 0),	// source size 0 CCW
