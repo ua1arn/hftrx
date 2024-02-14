@@ -937,7 +937,7 @@ static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
 /*!< Atomic port state change */
 void gpioX_setstate(
 	GPIO_TypeDef * gpio,
-	portholder_t mask,
+	portholder_t iopins,
 	portholder_t state
 	)
 {
@@ -945,11 +945,10 @@ void gpioX_setstate(
 	gpioX_lock(gpio, & oldIrql);
 	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
 
-	* data = (* data & ~ mask) | (state & mask);
+	* data = (* data & ~ iopins) | (state & iopins);
 
 	gpio->DATA = * data;
 	(void) gpio->DATA;
-	//ASSERT((gpio->DATA & mask) == (state & mask));
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -1016,6 +1015,49 @@ static void gpioX_progUnsafe(
 #endif
 }
 
+static void gpioX_progUnsafeNoPull(
+	GPIO_TypeDef * gpio,
+	portholder_t iopins,
+	unsigned cfg,
+	unsigned drv
+	)
+{
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
+	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
+	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
+	const portholder_t cfg3 = power4(iopins >> 24);	/* CFG3 bits */
+
+	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 and DRV0 bits */
+	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 and DRV1 bits */
+
+	gpio->CFG [0] = (gpio->CFG [0] & ~ (cfg0 * 0x0F)) | (cfg * cfg0);
+	gpio->CFG [1] = (gpio->CFG [1] & ~ (cfg1 * 0x0F)) | (cfg * cfg1);
+	gpio->CFG [2] = (gpio->CFG [2] & ~ (cfg2 * 0x0F)) | (cfg * cfg2);
+	gpio->CFG [3] = (gpio->CFG [3] & ~ (cfg3 * 0x0F)) | (cfg * cfg3);
+
+	gpio->DRV [0] = (gpio->DRV [0] & ~ (pull0 * 0x03)) | (drv * pull0);
+	gpio->DRV [1] = (gpio->DRV [1] & ~ (pull1 * 0x03)) | (drv * pull1);
+
+#else
+	const portholder_t mask0 = power4(iopins >> 0);		/* CFG0 and DRV0 bits */
+	const portholder_t mask1 = power4(iopins >> 8);		/* CFG1 and DRV1 bits */
+	const portholder_t mask2 = power4(iopins >> 16);	/* CFG2 and DRV2 bits */
+	const portholder_t mask3 = power4(iopins >> 24);	/* CFG3 and DRV3 bits */
+
+	gpio->CFG [0] = (gpio->CFG [0] & ~ (mask0 * 0x0F)) | (cfg * mask0);
+	gpio->CFG [1] = (gpio->CFG [1] & ~ (mask1 * 0x0F)) | (cfg * mask1);
+	gpio->CFG [2] = (gpio->CFG [2] & ~ (mask2 * 0x0F)) | (cfg * mask2);
+	gpio->CFG [3] = (gpio->CFG [3] & ~ (mask3 * 0x0F)) | (cfg * mask3);
+
+	gpio->DRV [0] = (gpio->DRV [0] & ~ (mask0 * 0x0F)) | (drv * mask0);
+	gpio->DRV [1] = (gpio->DRV [1] & ~ (mask1 * 0x0F)) | (drv * mask1);
+	gpio->DRV [2] = (gpio->DRV [2] & ~ (mask2 * 0x0F)) | (drv * mask2);
+	gpio->DRV [3] = (gpio->DRV [3] & ~ (mask3 * 0x0F)) | (drv * mask3);
+
+#endif
+}
+
 static void gpioX_prog(
 	GPIO_TypeDef * gpio,
 	portholder_t iopins,
@@ -1045,8 +1087,8 @@ void gpioX_setopendrain(
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafe(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
-	gpioX_progUnsafe(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);	// tie to GND
+	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN);
+	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -1059,12 +1101,11 @@ static void gpioX_opendrain_iniialize(
 {
 	IRQL_t oldIrql;
 
-	PRINTF("gpioX_opendrain_iniialize[%p]: mask=%08u, state=%08u\n", gpio, (unsigned) mask, (unsigned) state);
 	/* на этом процессоре имитируем open drain перепрограммированием на вход */
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafe(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	gpioX_progUnsafeNoPull(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN);
 
 	/* установить регистр данных для всех относящихся выводов в 0 */
 	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
@@ -1072,15 +1113,11 @@ static void gpioX_opendrain_iniialize(
 
 	gpio->DATA = * data;	/* если не в режиме вывода или disabled, записи игнорируются */
 	(void) gpio->DATA;
-	//ASSERT((gpio->DATA & mask) == (0 & mask));
-	//printhex32((uintptr_t) gpio, gpio, sizeof * gpio);
 
-	gpioX_progUnsafe(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
-	gpioX_progUnsafe(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);	// tie to GND
+	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN);
+	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
-
-	//printhex32((uintptr_t) gpio, gpio, sizeof * gpio);
 }
 
 static void gpioX_updown(
