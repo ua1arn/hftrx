@@ -1687,8 +1687,15 @@ void display_copyrotate(
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t saddr = (uintptr_t) sbuffer;
 	const uintptr_t taddr = (uintptr_t) buffer;
-	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0);	// source size
+	const uint_fast32_t ssizehw [4] =
+	{
+		((h - 1) << 16) | ((w - 1) << 0),	// source size 0 CCW
+		((w - 1) << 16) | ((h - 1) << 0),	// source size 90 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// source size 180 CCW
+		((w - 1) << 16) | ((h - 1) << 0),	// source size 270 CCW
+	};
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0); // target size
+	const unsigned quadrant = (angle % 360) / 90;
 
 #endif /* WITHMDMAHW && CPUSTYLE_ALLWINNER */
 }
