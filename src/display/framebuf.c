@@ -1659,7 +1659,39 @@ void colpip_fillrect(
 #endif
 }
 
+// копирование с поворотом
+void display_copyrotate(
+	PACKEDCOLORPIP_T * buffer, // target buffer
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
+	PACKEDCOLORPIP_T * sbuffer,	// source buffer
+	uint_fast16_t sdx,	// ширина буфера
+	uint_fast16_t sdy,	// высота буфера
+	uint_fast16_t sx,	// начальная координата
+	uint_fast16_t sy,	// начальная координата
+	uint_fast8_t mx,	// X mirror flag
+	uint_fast8_t my,	// X mirror flag
+	uint_fast8_t angle	// positive CCW angle
+	)
+{
+	if (w == 0 || h == 0)
+		return;
+	enum { PIXEL_SIZE = sizeof * buffer };
+	enum { PIXEL_SIZE_CODE = 1 };
 
+#if WITHMDMAHW && CPUSTYLE_ALLWINNER
+	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const uintptr_t saddr = (uintptr_t) sbuffer;
+	const uintptr_t taddr = (uintptr_t) buffer;
+	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0);	// source size
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0); // target size
+
+#endif /* WITHMDMAHW && CPUSTYLE_ALLWINNER */
+}
 
 void colpip_putpixel(
 	PACKEDCOLORPIP_T * buffer,

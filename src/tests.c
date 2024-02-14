@@ -11008,9 +11008,10 @@ void hightests(void)
 		colpip_line(fbpic3, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
 		colpip_line(fbpic3, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
 		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		dcache_clean((uintptr_t) fbpic3, GXSIZE(picx, picy) * sizeof fbpic3 [0]);
 
 		/* непрозрачный фон */
-		unsigned bgalpha = 128;
+		unsigned bgalpha = 255;
 		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
@@ -11165,6 +11166,44 @@ void hightests(void)
 			phase = ! phase;
 			c = (c + 1) % 256;
 		}
+		for (;;)
+			;
+	}
+#endif
+#if 0 && LCDMODE_LTDC
+	{
+		// display_copyrotate test
+		COLORPIP_T keycolor = COLORPIP_KEY;
+		enum { picy = 100, picx = 100 };
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		static PACKEDCOLORPIP_T layer0 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T fgpic [GXSIZE(picx, picy)];
+
+		/* непрозрачный фон */
+		unsigned bgalpha = 255;
+		colpip_fillrect(layer0, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+
+		/* тестовое изображение */
+		unsigned fgalpha = 255;
+		colpip_fillrect(fgpic, picx, picy, 0, 0, picx, picy, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* opaque color transparent black */
+		colpip_string_tbg(fgpic, picx, picy, 0, 0, "F", TFTALPHA(fgalpha, COLORPIP_RED));
+		dcache_clean((uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0]);
+
+		/* копируем изображение в верхний слой БЕЗ цветового ключа */
+		colpip_bitblt(
+				(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+				layer0, DIM_X, DIM_Y,
+				0, 0,
+				(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+				fgpic, picx, picy,
+				0, 0,	// координаты окна источника
+				picx, picy, // размер окна источника
+				BITBLT_FLAG_NONE, keycolor
+				);
+
+		hardware_ltdc_main_set4((uintptr_t) layer0, (uintptr_t) 0, (uintptr_t) 0, (uintptr_t) 0);
 		for (;;)
 			;
 	}

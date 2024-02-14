@@ -1167,18 +1167,38 @@ void display_floodfill(
 	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - более медленная закраска любого контура
 	);
 
+// копирование с поворотом
+void display_copyrotate(
+	PACKEDCOLORPIP_T * buffer, // target buffer
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
+	PACKEDCOLORPIP_T * sbuffer,	// source buffer
+	uint_fast16_t sdx,	// ширина буфера
+	uint_fast16_t sdy,	// высота буфера
+	uint_fast16_t sx,	// начальная координата
+	uint_fast16_t sy,	// начальная координата
+	uint_fast8_t mx,	// X mirror flag
+	uint_fast8_t my,	// X mirror flag
+	uint_fast8_t angle	// positive CCW angle
+	);
+
 COLORPIP_T getshadedcolor(
 	COLORPIP_T dot, // исходный цвет
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	);
 
-void display_do_AA(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-		uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
-		uint_fast16_t width,
-		uint_fast16_t height);
+void display_do_AA(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
+	uint_fast16_t width,
+	uint_fast16_t height
+	);
 
 #define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
 #define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
