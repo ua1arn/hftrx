@@ -11165,9 +11165,12 @@ void hightests(void)
 
 			phase = ! phase;
 			c = (c + 1) % 256;
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
-			;
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 	}
 #endif
 #if 0 && LCDMODE_LTDC
@@ -11191,21 +11194,32 @@ void hightests(void)
 		colpip_string_tbg(fgpic, picx, picy, 0, 0, "F", TFTALPHA(fgalpha, COLORPIP_RED));
 		dcache_clean((uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0]);
 
-		/* копируем изображение в верхний слой БЕЗ цветового ключа */
-		colpip_bitblt(
-				(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
-				layer0, DIM_X, DIM_Y,
-				0, 0,
-				(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
-				fgpic, picx, picy,
-				0, 0,	// координаты окна источника
-				picx, picy, // размер окна источника
-				BITBLT_FLAG_NONE, keycolor
-				);
+		unsigned tpos;
+		for (tpos = 0; tpos < 6; ++ tpos)
+		{
+			const uint_fast16_t x = tpos * (picx + 5);
+			const uint_fast16_t y = 100;
+			/* рисуем прямоугольники под размещение повёрнутых изображений */
+			colpip_fillrect(layer0, DIM_X, DIM_Y, x, y, picx + 2, picy + 2, TFTALPHA(fgalpha, COLORPIP_WHITE));	/* opaque color transparent black */
+			/* копируем изображение в верхний слой БЕЗ цветового ключа */
+			colpip_bitblt(
+					(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+					layer0, DIM_X, DIM_Y,
+					x + 1, y + 1,	// получатель Позиция
+					(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+					fgpic, picx, picy,
+					0, 0,	// координаты окна источника
+					picx, picy, // размер окна источника
+					BITBLT_FLAG_NONE, keycolor
+					);
+		}
+
 
 		hardware_ltdc_main_set4((uintptr_t) layer0, (uintptr_t) 0, (uintptr_t) 0, (uintptr_t) 0);
 		for (;;)
-			;
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 	}
 #endif
 #if 0 && CPUSTYLE_T113
