@@ -11177,7 +11177,7 @@ void hightests(void)
 	{
 		// display_copyrotate test
 		COLORPIP_T keycolor = COLORPIP_KEY;
-		enum { picy = 100, picx = 100 };
+		enum { picx = 100, picy = 50 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
@@ -11194,15 +11194,16 @@ void hightests(void)
 		colpip_string_tbg(fgpic, picx, picy, 0, 0, "F", TFTALPHA(fgalpha, COLORPIP_RED));
 		dcache_clean((uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0]);
 
+		unsigned grid = picx + 5;
 		unsigned tpos;
-		for (tpos = 0; tpos < 6; ++ tpos)
+		for (tpos = 0; tpos < 7; ++ tpos)
 		{
-			const uint_fast16_t x = tpos * (picx + 5);
-			const uint_fast16_t y = 100;
+			const uint_fast16_t x = tpos * grid;
+			const uint_fast16_t y = grid;
 			/* рисуем прямоугольники под размещение повёрнутых изображений */
-			colpip_fillrect(layer0, DIM_X, DIM_Y, x, y, picx + 2, picy + 2, TFTALPHA(fgalpha, COLORPIP_WHITE));	/* opaque color transparent black */
+			colpip_fillrect(layer0, DIM_X, DIM_Y, x, y, grid - 3, grid - 3, TFTALPHA(fgalpha, COLORPIP_WHITE));	/* opaque color transparent black */
 
-			if (tpos >= 4)
+			if (tpos >= 7)
 			{
 				/* копируем изображение в верхний слой БЕЗ цветового ключа */
 				colpip_bitblt(
@@ -11215,6 +11216,20 @@ void hightests(void)
 						picx, picy, // размер окна источника
 						BITBLT_FLAG_NONE, keycolor
 						);
+			}
+			else if (tpos >= 4)
+			{
+				display_copyrotate(
+					layer0, DIM_X, DIM_Y,
+					x + 1, y + 1,	// получатель Позиция
+					fgpic, picx, picy,
+					0, 0,	// координаты окна источника
+					picx, picy, // размер окна источника
+					tpos == 4,	// X mirror flag
+					tpos == 5,	// Y mirror flag
+					0 * tpos	// positive CCW angle
+					);
+
 			}
 			else
 			{

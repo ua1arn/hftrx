@@ -1686,21 +1686,15 @@ void display_copyrotate(
 	const uintptr_t saddr = (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	// target address для 4-х квадрантов
-	const uintptr_t taddr4 [] =
-	{
-		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 0 CCW
-		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 90 CCW
-		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 180 CCW
-		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 270 CCW
-	};
+	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y);
 	// target size для 4-х квадрантов
+	// похоже, поворот учитывать не требуется. Но просто для "красоты" оставлю четыре варианта.
 	const uint_fast32_t tsizehw4 [4] =
 	{
-		((h - 1) << 16) | ((w - 1) << 0),	// target size 0 CCW
-		((h - 1) << 16) | ((w - 1) << 0),	// target size 90 CCW
-		((h - 1) << 16) | ((w - 1) << 0),	// target size 180 CCW
-		((h - 1) << 16) | ((w - 1) << 0),	// target size 270 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size if 0 CCW
+		((w - 1) << 16) | ((h - 1) << 0),	// target size if 90 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size if 180 CCW
+		((w - 1) << 16) | ((h - 1) << 0),	// target size if 270 CCW
 	};
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const unsigned quadrant = (angle % 360) / 90;
@@ -1725,8 +1719,8 @@ void display_copyrotate(
 	//	G2D_ROT->ROT_OPITCH1 = tstride;
 	//	G2D_ROT->ROT_OPITCH2 = tstride;
 		G2D_ROT->ROT_OSIZE = tsizehw4 [quadrant];
-		G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr4 [quadrant]);
-		G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr4 [quadrant]) & 0xff;
+		G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
+		G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
 	//	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
 	//	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
 	//	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
