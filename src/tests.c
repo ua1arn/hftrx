@@ -11201,17 +11201,35 @@ void hightests(void)
 			const uint_fast16_t y = 100;
 			/* рисуем прямоугольники под размещение повёрнутых изображений */
 			colpip_fillrect(layer0, DIM_X, DIM_Y, x, y, picx + 2, picy + 2, TFTALPHA(fgalpha, COLORPIP_WHITE));	/* opaque color transparent black */
-			/* копируем изображение в верхний слой БЕЗ цветового ключа */
-			colpip_bitblt(
-					(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+
+			if (tpos >= 4)
+			{
+				/* копируем изображение в верхний слой БЕЗ цветового ключа */
+				colpip_bitblt(
+						(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+						layer0, DIM_X, DIM_Y,
+						x + 1, y + 1,	// получатель Позиция
+						(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+						fgpic, picx, picy,
+						0, 0,	// координаты окна источника
+						picx, picy, // размер окна источника
+						BITBLT_FLAG_NONE, keycolor
+						);
+			}
+			else
+			{
+				display_copyrotate(
 					layer0, DIM_X, DIM_Y,
 					x + 1, y + 1,	// получатель Позиция
-					(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
 					fgpic, picx, picy,
 					0, 0,	// координаты окна источника
 					picx, picy, // размер окна источника
-					BITBLT_FLAG_NONE, keycolor
+					0,	// X mirror flag
+					0,	// Y mirror flag
+					90 * tpos	// positive CCW angle
 					);
+
+			}
 		}
 
 
