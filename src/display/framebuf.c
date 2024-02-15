@@ -1683,26 +1683,26 @@ void display_copyrotate(
 	enum { PIXEL_SIZE_CODE = 1 };
 
 #if WITHMDMAHW && CPUSTYLE_ALLWINNER
-	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y);
+	const uintptr_t saddr = (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
-	// source address для 4-х квадрантов
-	const uintptr_t saddr4 [] =
+	// target address для 4-х квадрантов
+	const uintptr_t taddr4 [] =
 	{
-		(uintptr_t) (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy),	// 0 CCW
-		(uintptr_t) (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy),	// 90 CCW
-		(uintptr_t) (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy),	// 180 CCW
-		(uintptr_t) (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy),	// 270 CCW
+		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 0 CCW
+		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 90 CCW
+		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 180 CCW
+		(uintptr_t) (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y),	// 270 CCW
 	};
-	// source size для 4-х квадрантов
-	const uint_fast32_t ssizehw4 [4] =
+	// target size для 4-х квадрантов
+	const uint_fast32_t tsizehw4 [4] =
 	{
-		((h - 1) << 16) | ((w - 1) << 0),	// source size 0 CCW
-		((w - 1) << 16) | ((h - 1) << 0),	// source size 90 CCW
-		((h - 1) << 16) | ((w - 1) << 0),	// source size 180 CCW
-		((w - 1) << 16) | ((h - 1) << 0),	// source size 270 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size 0 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size 90 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size 180 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size 270 CCW
 	};
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0); // target size
+	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const unsigned quadrant = (angle % 360) / 90;
 
 	{
@@ -1710,12 +1710,12 @@ void display_copyrotate(
 
 		G2D_ROT->ROT_CTL = 0;
 		G2D_ROT->ROT_IFMT = VI_ImageFormat;
-		G2D_ROT->ROT_ISIZE = ssizehw4 [quadrant];
+		G2D_ROT->ROT_ISIZE = ssizehw;
 		G2D_ROT->ROT_IPITCH0 = sstride;
 	//	G2D_ROT->ROT_IPITCH1 = sstride;
 	//	G2D_ROT->ROT_IPITCH2 = sstride;
-		G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr4 [quadrant]);
-		G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr4 [quadrant]) & 0xff;
+		G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
+		G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
 	//	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
 	//	G2D_ROT->ROT_IHADD1 = ptr_hi32(saddr) & 0xff;
 	//	G2D_ROT->ROT_ILADD2 = ptr_lo32(saddr);
@@ -1724,17 +1724,17 @@ void display_copyrotate(
 		G2D_ROT->ROT_OPITCH0 = tstride;
 	//	G2D_ROT->ROT_OPITCH1 = tstride;
 	//	G2D_ROT->ROT_OPITCH2 = tstride;
-		G2D_ROT->ROT_OSIZE = tsizehw;
-		G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
-		G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
+		G2D_ROT->ROT_OSIZE = tsizehw4 [quadrant];
+		G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr4 [quadrant]);
+		G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr4 [quadrant]) & 0xff;
 	//	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
 	//	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
 	//	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
 	//	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
 
-		//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
-		//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
-		//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
+		G2D_ROT->ROT_CTL |= !! mx * (UINT32_C(1) << 7);	// flip horisontal
+		G2D_ROT->ROT_CTL |= !! my * (UINT32_C(1) << 6);	// flip vertical
+		G2D_ROT->ROT_CTL |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 		G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 		awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
 
