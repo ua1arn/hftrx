@@ -1936,7 +1936,7 @@ static DE_BLD_TypeDef * de3_getbld(int ix)
 {
 #if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	return DE_BLD;
+	return ix == 1 ? DE_BLD  : NULL;
 
 #else
 	switch (ix)
@@ -2049,6 +2049,8 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned color)
 {
 	DE_BLD_TypeDef * const bld = de3_getbld(ix);
+	if (bld == NULL)
+		return;
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 	// 5.10.8.2 OVL_UI memory block size register
 	// 28..16: LAY_HEIGHT
@@ -3110,6 +3112,8 @@ static void hardware_ltdc_vsync(void)
 void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
 	DE_BLD_TypeDef * const bld = de3_getbld(BLDIX);
+	if (bld == NULL)
+		return;
 	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	t113_de_set_address_vi(p1, 1);
@@ -3126,6 +3130,8 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	DE_BLD_TypeDef * const bld = de3_getbld(BLDIX);
+	if (bld == NULL)
+		return;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address_vi(layer0, 1);	// VI1
@@ -3151,8 +3157,11 @@ void hardware_ltdc_main_set(uintptr_t p1)
 {
 	t113_de_set_address_vi(p1, 1);
 	//t113_de_set_address_ui(p1, 1);
+	DE_BLD_TypeDef * const bld = de3_getbld(BLDIX);
+	if (bld == NULL)
+		return;
 
-	de3_getbld(BLDIX)->BLD_EN_COLOR_CTL =
+	bld->BLD_EN_COLOR_CTL =
 			((de3_getvi(1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
 			//((de3_getui(1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
 			0;
