@@ -1904,7 +1904,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define UI_POS_BIT(ui) (1u << ((ui) + 11 - 1))
 #endif
 
-static DE_VI_TypeDef * de3_getvi(int ix)
+static DE_VI_TypeDef * de3_getvi(int rtmixix, int ix)
 {
 	switch (ix)
 	{
@@ -1918,7 +1918,7 @@ static DE_VI_TypeDef * de3_getvi(int ix)
 
 }
 
-static DE_UI_TypeDef * de3_getui(int ix)
+static DE_UI_TypeDef * de3_getui(int rtmixix, int ix)
 {
 	switch (ix)
 	{
@@ -1993,7 +1993,7 @@ static void inline t113_de_update(void)
 /* VI (VI0) */
 static inline void t113_de_set_address_vi(uintptr_t vram, int vich)
 {
-	DE_VI_TypeDef * const vi = de3_getvi(vich);
+	DE_VI_TypeDef * const vi = de3_getvi(BLDIX, vich);
 
 	if (vi == NULL)
 		return;
@@ -2025,7 +2025,7 @@ static inline void t113_de_set_address_vi(uintptr_t vram, int vich)
 
 static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 {
-	DE_UI_TypeDef * const ui = de3_getui(uich);
+	DE_UI_TypeDef * const ui = de3_getui(BLDIX, uich);
 
 	if (ui == NULL)
 		return;
@@ -2117,7 +2117,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 	int vich = 1;
 	for (vich = 1; vich <= VI_LASTIX; vich ++)
 	{
-		DE_VI_TypeDef * const vi = de3_getvi(vich);
+		DE_VI_TypeDef * const vi = de3_getvi(BLDIX, vich);
 		if (vi == NULL)
 			continue;
 
@@ -2137,7 +2137,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 	for (uich = 1; uich <= UI_LASTIX; ++ uich)
 	{
 		//DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-		DE_UI_TypeDef * const ui = de3_getui(uich);
+		DE_UI_TypeDef * const ui = de3_getui(BLDIX, uich);
 		if (ui == NULL)
 			continue;
 
@@ -3136,7 +3136,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getvi(BLDIX, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
 		0;
 
 	t113_de_update();
@@ -3158,10 +3158,10 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	// 5.10.9.1 BLD fill color control register
 	// BLD_EN_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-		((de3_getui(1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
-		((de3_getui(2) != NULL) * (layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
-		((de3_getui(3) != NULL) * (layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
+		((de3_getvi(BLDIX, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getui(BLDIX, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+		((de3_getui(BLDIX, 2) != NULL) * (layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
+		((de3_getui(BLDIX, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
 		0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
@@ -3178,8 +3178,8 @@ void hardware_ltdc_main_set(uintptr_t p1)
 		return;
 
 	bld->BLD_EN_COLOR_CTL =
-			((de3_getvi(1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-			//((de3_getui(1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+			((de3_getvi(BLDIX, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+			//((de3_getui(BLDIX, 1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
 			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
