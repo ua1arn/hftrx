@@ -1936,7 +1936,12 @@ static DE_BLD_TypeDef * de3_getbld(int ix)
 {
 #if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	return ix == 1 ? DE_BLD  : NULL;
+	switch (ix)
+	{
+	default: return NULL;
+	case 1: return DE_BLD1;
+	case 2: return DE_BLD2;
+	}
 
 #else
 	switch (ix)
@@ -3035,12 +3040,23 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP before:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
+    // Enable RT-Mix 0
 	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
 	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
 	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
-
 	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
+
+    // Enable RT-Mix 1
+	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
+	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
+	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
+	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
+
 	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* Already zero */
+
+//	DE_TOP->BUS_CFG |= ~ 0u;
+//	DE_TOP->GATE_CFG |= ~ 0u;
+//	DE_TOP->RST_CFG |= ~ 0u;
 
 //	PRINTF("DE_TOP after:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
