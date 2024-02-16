@@ -3066,27 +3066,28 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP before:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
-    if (1)
+    if (RTMIXIX == 1)
     {
-        // Enable RT-Mix 0
+        // Enable RT-Mixer 0
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
     	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
+
+    	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
     }
 
-    if (0)
+    if (RTMIXIX == 2)
     {
-        // Enable RT-Mix 1
+        // Enable RT-Mixer 1
     	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
     	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
     	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
 
+    	DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
     }
 
-	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
-	//DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
 
 //	PRINTF("DE_TOP after:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
