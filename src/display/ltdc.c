@@ -3020,9 +3020,19 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 
- 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// CORE0_SCLK_GATE
- 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+    if (1)
+    {
+     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// CORE0_HCLK_GATE
 
+    }
+
+    if (0)
+    {
+     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 1;	// CORE1_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 1;	// CORE1_HCLK_GATE
+
+    }
  	// Only one bit writable
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
