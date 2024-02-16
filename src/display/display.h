@@ -1174,7 +1174,7 @@ void display_copyrotate(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	PACKEDCOLORPIP_T * sbuffer,	// source buffer
+	const PACKEDCOLORPIP_T * sbuffer,	// source buffer
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
 	uint_fast16_t sx,	// начальная координата
@@ -1182,7 +1182,7 @@ void display_copyrotate(
 	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
 	uint_fast8_t mx,	// X mirror flag
 	uint_fast8_t my,	// X mirror flag
-	uint_fast8_t angle	// positive CCW angle
+	unsigned angle	// positive CCW angle
 	);
 
 COLORPIP_T getshadedcolor(

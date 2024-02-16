@@ -1666,7 +1666,7 @@ void display_copyrotate(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	PACKEDCOLORPIP_T * sbuffer,	// source buffer
+	const PACKEDCOLORPIP_T * sbuffer,	// source buffer
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
 	uint_fast16_t sx,	// начальная координата
@@ -1674,7 +1674,7 @@ void display_copyrotate(
 	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
 	uint_fast8_t mx,	// X mirror flag
 	uint_fast8_t my,	// X mirror flag
-	uint_fast8_t angle	// positive CCW angle
+	unsigned angle	// positive CCW angle
 	)
 {
 	if (w == 0 || h == 0)
@@ -1683,7 +1683,7 @@ void display_copyrotate(
 	enum { PIXEL_SIZE_CODE = 1 };
 
 #if WITHMDMAHW && CPUSTYLE_ALLWINNER
-	const uintptr_t saddr = (uintptr_t) colpip_mem_at(sbuffer, sdx, sdy, sx, sy);
+	const uintptr_t saddr = (uintptr_t) colpip_const_mem_at(sbuffer, sdx, sdy, sx, sy);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) colpip_mem_at(buffer, dx, dy, x, y);
