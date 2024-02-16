@@ -1128,7 +1128,9 @@ typedef struct DE_TOP_Type
     volatile uint32_t RST_CFG;                        /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
     volatile uint32_t DIV_CFG;                        /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
     volatile uint32_t SEL_CFG;                        /*!< Offset 0x010 ? DE2TCON ? MUX register */
-} DE_TOP_TypeDef; /* size of structure = 0x014 */
+             uint32_t reserved_0x014 [0x0004];
+    volatile uint32_t DE_IP_CFG;                      /*!< Offset 0x024 DE IP Configure Register */
+} DE_TOP_TypeDef; /* size of structure = 0x028 */
 /*
  * @brief DE_UI
  */

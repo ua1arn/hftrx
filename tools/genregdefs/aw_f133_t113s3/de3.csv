@@ -16,6 +16,7 @@
 #regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
 #regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
 #regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
+#regdef; DE_IP_CFG; 	0x024;	DE IP Configure Register
 
 #type; DE_GLB; Display Engine (DE) - Global Control
 #base; DE_GLB 0x05100000; RT-Mixer 0
