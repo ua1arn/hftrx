@@ -1894,15 +1894,14 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define VI_LASTIX 1
 	#define UI_LASTIX 1
 	/* BLD_EN_COLOR_CTL positions 8..11 */
-	#define VI_POS_BIT(vi) (1u << ((vi) + 8 - 1))
-	#define UI_POS_BIT(ui) (1u << ((ui) + (8 + VI_LASTIX) - 1))
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
 	#define VI_LASTIX 3
 	#define UI_LASTIX 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
-	#define VI_POS_BIT(vi) (1u << ((vi) + 8 - 1))
-	#define UI_POS_BIT(ui) (1u << ((ui) + (8 + VI_LASTIX) - 1))
 #endif
+
+#define VI_POS_BIT(vi) (UINT32_C(1) << ((vi) + 8 - 1))
+#define UI_POS_BIT(ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixix)
 {
@@ -2031,7 +2030,7 @@ static void t113_de_set_address_vi(uintptr_t vram, int vich)
 		0;
 
 	vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] = ptr_lo32(vram);	// The setting of this register is U/UV channel address.
-	vi->TOP_HADDR [0] = (ptr_hi32(vram) & 0xFF) << VI_CFG_INDEX;						// The setting of this register is U/UV channel address.
+	vi->TOP_HADDR [0] = (ptr_hi32(vram) & 0xFF) << (8 * VI_CFG_INDEX);						// The setting of this register is U/UV channel address.
 	vi->CFG [VI_CFG_INDEX].ATTR = attr;
 
 	ASSERT(vi->CFG [VI_CFG_INDEX].TOP_LADDR [0] == ptr_lo32(vram));
