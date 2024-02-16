@@ -3027,6 +3027,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
+#if 0
+	//PRINTF("DE_TOP after:\n");
+	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
+	// Offset 0x24: 0x01020905
+	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
+	PRINTF("DE_IP_CFG.RTD1_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
+#endif
+
 	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
 	if (glb == NULL)
 		return;
@@ -3089,8 +3100,16 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     }
 
 
-//	PRINTF("DE_TOP after:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
+#if 0
+	//PRINTF("DE_TOP after:\n");
+	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
+	// Offset 0x24: 0x01020905
+	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
+	PRINTF("DE_IP_CFG.RTD1_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
+#endif
 
 	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
 	if (glb == NULL)
