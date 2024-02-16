@@ -1944,11 +1944,11 @@ static DE_UI_TypeDef * de3_getui(int rtmixix, int ix)
 
 }
 
-static DE_BLD_TypeDef * de3_getbld(int ix)
+static DE_BLD_TypeDef * de3_getbld(int rtmixix)
 {
 #if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	switch (ix)
+	switch (rtmixix)
 	{
 	default: return NULL;
 	case 1: return DE_BLD1;
@@ -1956,7 +1956,7 @@ static DE_BLD_TypeDef * de3_getbld(int ix)
 	}
 
 #else
-	switch (ix)
+	switch (rtmixix)
 	{
 	default: return NULL;
 	case 1: return DE_BLD1;
@@ -2066,9 +2066,9 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
-static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned color)
+static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixix, unsigned color)
 {
-	DE_BLD_TypeDef * const bld = de3_getbld(ix);
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixix);
 	if (bld == NULL)
 		return;
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -2082,7 +2082,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 
 	/* DE submodules */
 
-	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixix);
 	if (glb == NULL)
 		return;
 
@@ -2974,9 +2974,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	glb->GLB_STS = 0;
 
-    return;
-//	PRINTF("DE_TOP AHB final:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+	//	PRINTF("DE_TOP AHB final:\n");
+	//	printhex32(DE_TOP_BASE, DE_TOP, 256);
+
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
