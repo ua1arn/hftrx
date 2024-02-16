@@ -4463,7 +4463,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_BLD</name>
+  <name>DE_BLD1</name>
   <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x05101000</baseAddress>
   <registers>
@@ -4617,6 +4617,10 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_BLD1">
+  <name>DE_BLD2</name>
+  <baseAddress>0x05201000</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_GLB</name>
   <description>Display Engine (DE) - Global Control</description>
@@ -4659,6 +4663,10 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_GLB">
+  <name>DEb_GLB</name>
+  <baseAddress>0x05200000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DE_TOP</name>
@@ -4987,6 +4995,10 @@
     <dimIncrement>0x008</dimIncrement>
    </cluster>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_VI1">
+  <name>DEb_VI1</name>
+  <baseAddress>0x05202000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DMAC</name>

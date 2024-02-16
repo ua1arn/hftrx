@@ -1909,7 +1909,11 @@ static DE_VI_TypeDef * de3_getvi(int rtmixix, int ix)
 	switch (ix)
 	{
 	default: return NULL;
-	case 1: return DE_VI1;
+#ifdef DEb_VI1
+	case 1: return rtmixix == 1 ? DE_VI1 : DEb_VI1;
+#else
+	case 1: return rtmixix == 1 ? DE_VI1 : NULL;
+#endif
 #if VI_LASTIX > 1
 	case 2: return DE_VI2;
 	case 3: return DE_VI3;
@@ -1923,7 +1927,7 @@ static DE_UI_TypeDef * de3_getui(int rtmixix, int ix)
 	switch (ix)
 	{
 	default: return NULL;
-	case 1: return DE_UI1;
+	case 1: return rtmixix == 1 ? DE_UI1 : NULL;
 #if UI_LASTIX > 1
 	case 2: return DE_UI2;
 	case 3: return DE_UI3;
@@ -3040,23 +3044,27 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP before:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
-    // Enable RT-Mix 0
-	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
-	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
-	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
-	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
+    if (1)
+    {
+        // Enable RT-Mix 0
+    	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
+    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
+    	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
+    }
 
-    // Enable RT-Mix 1
-	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
-	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
-	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
-	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
+    if (0)
+    {
+        // Enable RT-Mix 1
+    	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
+    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
+    	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
 
-	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* Already zero */
+    }
 
-//	DE_TOP->BUS_CFG |= ~ 0u;
-//	DE_TOP->GATE_CFG |= ~ 0u;
-//	DE_TOP->RST_CFG |= ~ 0u;
+	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+	//DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
 
 //	PRINTF("DE_TOP after:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
