@@ -1898,6 +1898,10 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define VI_LASTIX 3
 	#define UI_LASTIX 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
+#else
+	#error Unexpected CPUSTYLE_xxx
+	#define VI_LASTIX 1
+	#define UI_LASTIX 1
 #endif
 
 #define VI_POS_BIT(vi) (UINT32_C(1) << ((vi) + 8 - 1))
