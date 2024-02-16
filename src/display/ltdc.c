@@ -1904,6 +1904,15 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define UI_POS_BIT(ui) (1u << ((ui) + 11 - 1))
 #endif
 
+static DE_GLB_TypeDef * de3_getglb(int rtmixix)
+{
+#ifdef DEb_GLB
+	return rtmixix == 1 ? DE_GLB : DEb_GLB;
+#else
+	return rtmixix == 1 ? DE_GLB : NULL;
+#endif
+}
+
 static DE_VI_TypeDef * de3_getvi(int rtmixix, int ix)
 {
 	switch (ix)
@@ -1987,15 +1996,18 @@ static uint32_t ptr_lo32(uintptr_t v)
 	static const uint32_t ui_format = 0x0A;
 #endif
 
-static void inline t113_de_update(void)
+static void t113_de_update(void)
 {
-	DE_GLB->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
-	while ((DE_GLB->GLB_DBUFFER & UINT32_C(1)) != 0)
+	DE_GLB_TypeDef * const glb = de3_getglb(BLDIX);
+	if (glb == NULL)
+		return;
+	glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
+	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
 		;
 }
 
 /* VI (VI0) */
-static inline void t113_de_set_address_vi(uintptr_t vram, int vich)
+static void t113_de_set_address_vi(uintptr_t vram, int vich)
 {
 	DE_VI_TypeDef * const vi = de3_getvi(BLDIX, vich);
 
@@ -2071,9 +2083,12 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int ix, unsigned
 
 	/* DE submodules */
 
+	DE_GLB_TypeDef * const glb = de3_getglb(BLDIX);
+	if (glb == NULL)
+		return;
 
-	DE_GLB->GLB_SIZE = ovl_ui_mbsize;
-	ASSERT(DE_GLB->GLB_SIZE == ovl_ui_mbsize);
+	glb->GLB_SIZE = ovl_ui_mbsize;
+	ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
@@ -2941,21 +2956,24 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP AHB reset:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
-	DE_GLB->GLB_CTL =
+	DE_GLB_TypeDef * const glb = de3_getglb(BLDIX);
+	if (glb == NULL)
+		return;
+	glb->GLB_CTL =
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
 
-	//DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
+	//glb->GLB_CLK |= (UINT32_C(1) << 0);
 
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
 
-	//ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
+	//ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
 
-	DE_GLB->GLB_STS = 0;
+	glb->GLB_STS = 0;
 
     return;
 //	PRINTF("DE_TOP AHB final:\n");
@@ -3009,20 +3027,24 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
-	DE_GLB->GLB_CTL =
+	DE_GLB_TypeDef * const glb = de3_getglb(BLDIX);
+	if (glb == NULL)
+		return;
+
+	glb->GLB_CTL =
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
 
-	DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
+	glb->GLB_CLK |= (UINT32_C(1) << 0);
 
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
 	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
 
-	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
+	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-	DE_GLB->GLB_STS = 0;
+	glb->GLB_STS = 0;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
@@ -3069,18 +3091,22 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP after:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
-	DE_GLB->GLB_CTL =
+	DE_GLB_TypeDef * const glb = de3_getglb(BLDIX);
+	if (glb == NULL)
+		return;
+
+	glb->GLB_CTL =
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
 
-//	PRINTF("1 DE_GLB->GLB_CLK=%08" PRIX32 "\n", DE_GLB->GLB_CLK);
-//	DE_GLB->GLB_CLK |= (UINT32_C(1) << 0);
-//	PRINTF("2 DE_GLB->GLB_CLK=%08" PRIX32 "\n", DE_GLB->GLB_CLK);
+//	PRINTF("1 glb->GLB_CLK=%08" PRIX32 "\n", glb->GLB_CLK);
+//	glb->GLB_CLK |= (UINT32_C(1) << 0);
+//	PRINTF("2 glb->GLB_CLK=%08" PRIX32 "\n", glb->GLB_CLK);
 
-	ASSERT(DE_GLB->GLB_CTL & (UINT32_C(1) << 0));
+	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-	DE_GLB->GLB_STS = 0;
+	glb->GLB_STS = 0;
 
 #else
 	#error Undefined CPUSTYLE_xxx
@@ -3118,10 +3144,14 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(void)
 {
-	const uint_fast8_t state = (DE_GLB->GLB_STS >> 8) & 1;
+
+	DE_GLB_TypeDef * const glb = de3_getglb(BLDIX);
+	if (glb == NULL)
+		return;
+	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
 	for (;;)
 	{
-		const uint_fast8_t state2 = (DE_GLB->GLB_STS >> 8) & 1;
+		const uint_fast8_t state2 = (glb->GLB_STS >> 8) & 1;
 		if (state != state2)
 			break;
 		hardware_nonguiyield();
