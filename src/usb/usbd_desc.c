@@ -2937,9 +2937,9 @@ static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 #elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
 	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_OUT48);
-	#if WITHRTS96 || WITHRTS192
+	#if (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2
 		n += fill_UAC1_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_INRTS);
-	#endif /* WITHRTS96 || WITHRTS192 */
+	#endif /* (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2 */
 
 #else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 	#if WITHUSBUACIN2
@@ -2979,9 +2979,9 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 #elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
 	n += fill_UAC2_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, UACOFFS_IN48_OUT48);
-	#if WITHRTS96 || WITHRTS192
+	#if (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2
 		n += fill_UAC2_INRTS_function(fill, p + n, maxsize - n, highspeed, UACOFFS_INRTS);
-	#endif /* WITHRTS96 || WITHRTS192 */
+	#endif /*(WITHRTS96 || WITHRTS192) && WITHUSBUACIN2 */
 
 #else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 	#if WITHUSBUACIN2
