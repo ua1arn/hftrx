@@ -9322,7 +9322,7 @@ makebandf2adjust(
 static uint_fast8_t
 getactualtxpwr(void)
 {
-	return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
+	return getactualdownpower() ? gtunepower : ((gclassamode ? gclassapower : WITHPOWERTRIMMAX) * gnormalpower.value / WITHPOWERTRIMMAX);
 }
 
 /* Возвращает 0..WITHPOWERTRIMMAX */
