@@ -77,6 +77,7 @@ typedef enum IRQn
     TPADC_IRQn = 94,                                  /*!< TPADC  */
     WATCHDOG_IRQn = 95,                               /*!< TIMER  */
     IOMMU_IRQn = 96,                                  /*!< IOMMU  */
+    VE_IRQn = 98,                                     /*!< VE Video Encoding */
     GPIOB_NS_IRQn = 101,                              /*!< GPIOINT  */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  */
     GPIOC_NS_IRQn = 103,                              /*!< GPIOINT  */
@@ -127,6 +128,7 @@ typedef enum IRQn
 #define DSP_TZMA_BASE ((uintptr_t) 0x01700C00)        /*!< DSP_TZMA  Base */
 #define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Message Box Base */
 #define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)     /*!< xDSP_MSGBOX  Base */
+#define VE_BASE ((uintptr_t) 0x01C0E000)              /*!< VE Video Encoding Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
 #define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO  Base */

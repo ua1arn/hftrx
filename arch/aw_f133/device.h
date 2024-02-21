@@ -49,6 +49,7 @@ typedef enum IRQn
     TPADC_IRQn = 78,                                  /*!< TPADC  */
     WATCHDOG_IRQn = 79,                               /*!< TIMER  */
     IOMMU_IRQn = 80,                                  /*!< IOMMU  */
+    VE_IRQn = 82,                                     /*!< VE Video Encoding */
     GPIOB_NS_IRQn = 85,                               /*!< GPIOINT  */
     GPIOC_NS_IRQn = 87,                               /*!< GPIOINT  */
     GPIOD_NS_IRQn = 89,                               /*!< GPIOINT  */
@@ -88,6 +89,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define VE_BASE ((uintptr_t) 0x01C0E000)              /*!< VE Video Encoding Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
 #define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO  Base */
