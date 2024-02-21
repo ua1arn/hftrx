@@ -656,7 +656,8 @@ typedef struct CCU_Type
     volatile uint32_t CLK27M_FAN_REG;                 /*!< Offset 0xF34 CLK27M FANOUT Register */
     volatile uint32_t PCLK_FAN_REG;                   /*!< Offset 0xF38 PCLK FANOUT Register */
     volatile uint32_t CCU_FAN_REG;                    /*!< Offset 0xF3C CCU FANOUT Register */
-} CCU_TypeDef; /* size of structure = 0xF40 */
+             uint32_t reserved_0xF40 [0x0030];
+} CCU_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief CE
  */
@@ -2897,11 +2898,20 @@ typedef struct USB_OHCI_Capability_Type
     volatile uint32_t O_HcRhStatus;                   /*!< Offset 0x050 OHCI Root Hub Status Register */
     volatile uint32_t O_HcRhPortStatus [0x001];       /*!< Offset 0x054 OHCI Root Hub Port Status Register */
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
+/*
+ * @brief VE
+ */
+/*!< VE Video Encoding */
+typedef struct VE_Type
+{
+             uint32_t reserved_0x000 [0x0800];
+} VE_TypeDef; /* size of structure = 0x2000 */
 
 
 /* Access pointers */
 
 #define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
+#define VE ((VE_TypeDef *) VE_BASE)                   /*!< VE Video Encoding register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */

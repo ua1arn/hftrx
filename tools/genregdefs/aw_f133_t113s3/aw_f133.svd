@@ -15991,6 +15991,18 @@
    <description></description>
   </interrupt>
   </peripheral>
+  <peripheral>
+  <name>VE</name>
+  <description>Video Encoding</description>
+  <baseAddress>0x01C0E000</baseAddress>
+  <interrupt>
+   <name>VE</name>
+   <value>82</value>
+   <description></description>
+  </interrupt>
+  <registers>
+  </registers>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

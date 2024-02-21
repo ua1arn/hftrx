@@ -2,3 +2,5 @@
 #base; VE 0x01C0E000
 #irq; VE 98
 #irqrv; VE 82
+
+#regdef; padding 0; 0x2000; Need for address arithmetics
