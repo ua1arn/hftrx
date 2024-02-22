@@ -279,7 +279,7 @@ static void t113_fillrect(
 	{
 		//const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
-		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw. 0);
+		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
 	}
 	else
 	{
@@ -2119,7 +2119,7 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw);
+	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Копирование - использование G2D для формирования изображений */
@@ -2355,7 +2355,7 @@ void hwaccel_stretchblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	hwaccel_rotcopy(srclinear, sstride, ssizehw, dstlinear, tstride, tsizehw);
+	hwaccel_rotcopy(srclinear, sstride, ssizehw, dstlinear, tstride, tsizehw, 0);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
 	/* Использование G2D для формирования изображений */
