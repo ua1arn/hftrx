@@ -1034,7 +1034,7 @@ display2_smeter15(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
-					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift,
+					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
@@ -1068,7 +1068,7 @@ display2_smeter15(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
-					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift,
+					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
@@ -5738,11 +5738,12 @@ static void display2_waterfall(
 			ASSERT(atwflj(0, wfrow) != NULL);
 			colpip_bitblt(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
-					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+					colorpip, BUFDIM_X, BUFDIM_Y,
+					0, p1y,	// координаты получателя
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
-					atwflj(0, wfrow),	// начальный адрес источника
+					atwflj(0, 0),	// начальный адрес источника
 					ALLDX, p1h, 	// размеры источника
-					0, 0,	// координаты окна источника
+					0, wfrow,	// координаты окна источника
 					ALLDX, p1h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
 		}
@@ -5752,7 +5753,8 @@ static void display2_waterfall(
 			/* перенос старой части растра */
 			colpip_bitblt(
 					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
-					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+					colorpip, BUFDIM_X, BUFDIM_Y,
+					0, p2y,		// координаты получателя
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					atwflj(0, 0),	// начальный адрес источника
 					ALLDX, p2h, 	// размеры источника

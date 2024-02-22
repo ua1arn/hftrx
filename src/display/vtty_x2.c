@@ -132,9 +132,9 @@ void display_vtty_x2_show(
 				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
-				VTTYx2_DX, tgh1,	// размеры источника
-				0, 0,	// координаты окна источника
+				vt->fb,	// начальный адрес источника
+				VTTYx2_DX, VTTYx2_DY,	// размеры источника
+				0, tgh2,	// координаты окна источника
 				VTTYx2_DX, tgh1,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
@@ -145,8 +145,8 @@ void display_vtty_x2_show(
 				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
-				VTTYx2_DX, tgh2,// размеры источника
+				vt->fb,	// начальный адрес источника
+				VTTYx2_DX, VTTYx2_DY,// размеры источника
 				0, 0,	// координаты окна источника
 				VTTYx2_DX, tgh2,// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
