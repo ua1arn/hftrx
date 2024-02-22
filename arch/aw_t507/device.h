@@ -92,6 +92,7 @@ typedef enum IRQn
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     CE_NS_IRQn = 123,                                 /*!< CE CE_NS interrupt */
     CE_S_IRQn = 124,                                  /*!< CE CE interrupt */
+    VE_IRQn = 125,                                    /*!< VE Video Encoding */
     GPU_EVENT_IRQn = 126,                             /*!< GPU GPU_EVENT interrupt */
     GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
     GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
@@ -165,6 +166,7 @@ typedef enum IRQn
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
 #define CE_NS_BASE ((uintptr_t) 0x01904000)           /*!< CE The Crypto Engine (CE) module Base */
 #define CE_S_BASE ((uintptr_t) 0x01904800)            /*!< CE The Crypto Engine (CE) module Base */
+#define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK Port Controller Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
@@ -2173,6 +2175,117 @@ typedef struct USB_OHCI_Capability_Type
     volatile uint32_t O_HcRhStatus;                   /*!< Offset 0x050 OHCI Root Hub Status Register */
     volatile uint32_t O_HcRhPortStatus [0x001];       /*!< Offset 0x054 OHCI Root Hub Port Status Register */
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
+/*
+ * @brief VE
+ */
+/*!< VE Video Encoding */
+typedef struct VE_Type
+{
+    volatile uint32_t VE_CTRL;                        /*!< Offset 0x000  */
+             uint32_t reserved_0x004 [0x003B];
+    volatile uint32_t VE_VERSION;                     /*!< Offset 0x0F0  */
+             uint32_t reserved_0x0F4 [0x0003];
+    volatile uint32_t VE_MPEG_PIC_HDR;                /*!< Offset 0x100  */
+             uint32_t reserved_0x104;
+    volatile uint32_t VE_MPEG_SIZE;                   /*!< Offset 0x108  */
+    volatile uint32_t VE_MPEG_FRAME_SIZE;             /*!< Offset 0x10C  */
+             uint32_t reserved_0x110;
+    volatile uint32_t VE_MPEG_CTRL;                   /*!< Offset 0x114  */
+    volatile uint32_t VE_MPEG_TRIGGER;                /*!< Offset 0x118  */
+    volatile uint32_t VE_MPEG_STATUS;                 /*!< Offset 0x11C  */
+             uint32_t reserved_0x120 [0x0002];
+    volatile uint32_t VE_MPEG_VLD_ADDR;               /*!< Offset 0x128  */
+    volatile uint32_t VE_MPEG_VLD_OFFSET;             /*!< Offset 0x12C  */
+    volatile uint32_t VE_MPEG_VLD_LEN;                /*!< Offset 0x130  */
+    volatile uint32_t VE_MPEG_VLD_END;                /*!< Offset 0x134  */
+             uint32_t reserved_0x138 [0x0004];
+    volatile uint32_t VE_MPEG_REC_LUMA;               /*!< Offset 0x148  */
+    volatile uint32_t VE_MPEG_REC_CHROMA;             /*!< Offset 0x14C  */
+    volatile uint32_t VE_MPEG_FWD_LUMA;               /*!< Offset 0x150  */
+    volatile uint32_t VE_MPEG_FWD_CHROMA;             /*!< Offset 0x154  */
+    volatile uint32_t VE_MPEG_BACK_LUMA;              /*!< Offset 0x158  */
+    volatile uint32_t VE_MPEG_BACK_CHROMA;            /*!< Offset 0x15C  */
+             uint32_t reserved_0x160 [0x0008];
+    volatile uint32_t VE_MPEG_IQ_MIN_INPUT;           /*!< Offset 0x180  */
+             uint32_t reserved_0x184 [0x000D];
+    volatile uint32_t VE_MPEG_JPEG_SIZE;              /*!< Offset 0x1B8  */
+             uint32_t reserved_0x1BC;
+    volatile uint32_t VE_MPEG_JPEG_RES_INT;           /*!< Offset 0x1C0  */
+             uint32_t reserved_0x1C4 [0x0002];
+    volatile uint32_t VE_MPEG_ROT_LUMA;               /*!< Offset 0x1CC  */
+    volatile uint32_t VE_MPEG_ROT_CHROMA;             /*!< Offset 0x1D0  */
+    volatile uint32_t VE_MPEG_SDROT_CTRL;             /*!< Offset 0x1D4  */
+             uint32_t reserved_0x1D8 [0x0002];
+    volatile uint32_t VE_MPEG_RAM_WRITE_PTR;          /*!< Offset 0x1E0  */
+    volatile uint32_t VE_MPEG_RAM_WRITE_DATA;         /*!< Offset 0x1E4  */
+             uint32_t reserved_0x1E8 [0x0006];
+    volatile uint32_t VE_H264_FRAME_SIZE;             /*!< Offset 0x200  */
+    volatile uint32_t VE_H264_PIC_HDR;                /*!< Offset 0x204  */
+    volatile uint32_t VE_H264_SLICE_HDR;              /*!< Offset 0x208  */
+    volatile uint32_t VE_H264_SLICE_HDR2;             /*!< Offset 0x20C  */
+    volatile uint32_t VE_H264_PRED_WEIGHT;            /*!< Offset 0x210  */
+             uint32_t reserved_0x214 [0x0002];
+    volatile uint32_t VE_H264_QP_PARAM;               /*!< Offset 0x21C  */
+    volatile uint32_t VE_H264_CTRL;                   /*!< Offset 0x220  */
+    volatile uint32_t VE_H264_TRIGGER;                /*!< Offset 0x224  */
+    volatile uint32_t VE_H264_STATUS;                 /*!< Offset 0x228  */
+    volatile uint32_t VE_H264_CUR_MB_NUM;             /*!< Offset 0x22C  */
+    volatile uint32_t VE_H264_VLD_ADDR;               /*!< Offset 0x230  */
+    volatile uint32_t VE_H264_VLD_OFFSET;             /*!< Offset 0x234  */
+    volatile uint32_t VE_H264_VLD_LEN;                /*!< Offset 0x238  */
+    volatile uint32_t VE_H264_VLD_END;                /*!< Offset 0x23C  */
+    volatile uint32_t VE_H264_SDROT_CTRL;             /*!< Offset 0x240  */
+             uint32_t reserved_0x244 [0x0002];
+    volatile uint32_t VE_H264_OUTPUT_FRAME_IDX;       /*!< Offset 0x24C  */
+    volatile uint32_t VE_H264_EXTRA_BUFFER1;          /*!< Offset 0x250  */
+    volatile uint32_t VE_H264_EXTRA_BUFFER2;          /*!< Offset 0x254  */
+             uint32_t reserved_0x258 [0x0021];
+    volatile uint32_t VE_H264_BASIC_BITS;             /*!< Offset 0x2DC  */
+    volatile uint32_t VE_H264_RAM_WRITE_PTR;          /*!< Offset 0x2E0  */
+    volatile uint32_t VE_H264_RAM_WRITE_DATA;         /*!< Offset 0x2E4  */
+             uint32_t reserved_0x2E8 [0x0046];
+    volatile uint32_t VE_SRAM_H264_FRAMEBUFFER_LIST;  /*!< Offset 0x400  */
+             uint32_t reserved_0x404 [0x008F];
+    volatile uint32_t VE_SRAM_H264_REF_LIST0;         /*!< Offset 0x640  */
+             uint32_t reserved_0x644 [0x0008];
+    volatile uint32_t VE_SRAM_H264_REF_LIST1;         /*!< Offset 0x664  */
+             uint32_t reserved_0x668 [0x0066];
+    volatile uint32_t VE_SRAM_H264_SCALING_LISTS;     /*!< Offset 0x800  */
+             uint32_t reserved_0x804 [0x007F];
+    volatile uint32_t VE_ISP_PIC_SIZE;                /*!< Offset 0xA00  */
+    volatile uint32_t VE_ISP_PIC_STRIDE;              /*!< Offset 0xA04  */
+    volatile uint32_t VE_ISP_CTRL;                    /*!< Offset 0xA08  */
+             uint32_t reserved_0xA0C [0x001B];
+    volatile uint32_t VE_ISP_PIC_LUMA;                /*!< Offset 0xA78  */
+    volatile uint32_t VE_ISP_PIC_CHROMA;              /*!< Offset 0xA7C  */
+             uint32_t reserved_0xA80 [0x0021];
+    volatile uint32_t VE_AVC_PARAM;                   /*!< Offset 0xB04  */
+    volatile uint32_t VE_AVC_QP;                      /*!< Offset 0xB08  */
+             uint32_t reserved_0xB0C;
+    volatile uint32_t VE_AVC_MOTION_EST;              /*!< Offset 0xB10  */
+    volatile uint32_t VE_AVC_CTRL;                    /*!< Offset 0xB14  */
+    volatile uint32_t VE_AVC_TRIGGER;                 /*!< Offset 0xB18  */
+    volatile uint32_t VE_AVC_STATUS;                  /*!< Offset 0xB1C  */
+    volatile uint32_t VE_AVC_BASIC_BITS;              /*!< Offset 0xB20  */
+             uint32_t reserved_0xB24 [0x0017];
+    volatile uint32_t VE_AVC_VLE_ADDR;                /*!< Offset 0xB80  */
+    volatile uint32_t VE_AVC_VLE_END;                 /*!< Offset 0xB84  */
+    volatile uint32_t VE_AVC_VLE_OFFSET;              /*!< Offset 0xB88  */
+    volatile uint32_t VE_AVC_VLE_MAX;                 /*!< Offset 0xB8C  */
+    volatile uint32_t VE_AVC_VLE_LENGTH;              /*!< Offset 0xB90  */
+             uint32_t reserved_0xB94 [0x0003];
+    volatile uint32_t VE_AVC_REF_LUMA;                /*!< Offset 0xBA0  */
+    volatile uint32_t VE_AVC_REF_CHROMA;              /*!< Offset 0xBA4  */
+             uint32_t reserved_0xBA8 [0x0002];
+    volatile uint32_t VE_AVC_REC_LUMA;                /*!< Offset 0xBB0  */
+    volatile uint32_t VE_AVC_REC_CHROMA;              /*!< Offset 0xBB4  */
+    volatile uint32_t VE_AVC_REF_SLUMA;               /*!< Offset 0xBB8  */
+    volatile uint32_t VE_AVC_REC_SLUMA;               /*!< Offset 0xBBC  */
+    volatile uint32_t VE_AVC_MB_INFO;                 /*!< Offset 0xBC0  */
+             uint32_t reserved_0xBC4 [0x0007];
+    volatile uint32_t VE_AVC_SDRAM_INDEX;             /*!< Offset 0xBE0  */
+    volatile uint32_t VE_AVC_SDRAM_DATA;              /*!< Offset 0xBE4  */
+} VE_TypeDef; /* size of structure = 0xBE8 */
 
 
 /* Access pointers */
@@ -2199,6 +2312,7 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S The Crypto Engine (CE) module register set access pointer */
+#define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L Port Controller register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
