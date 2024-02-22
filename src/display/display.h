@@ -833,6 +833,24 @@ void colpip_stretchblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	);
 
+// копирование с поворотом
+void colpip_copyrotate(
+	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
+	PACKEDCOLORPIP_T * __restrict buffer, // target buffer
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
+	const PACKEDCOLORPIP_T * __restrict sbuffer,	// source buffer
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	// начальная координата
+	uint_fast16_t sy,	// начальная координата
+	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
+	uint_fast8_t mx,	// X mirror flag
+	uint_fast8_t my,	// X mirror flag
+	unsigned angle	// positive CCW angle
+	);
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
 void colpip_bitblt_ra90(
@@ -1165,24 +1183,6 @@ void display_floodfill(
 	COLORPIP_T newColor,
 	COLORPIP_T oldColor,
 	uint_fast8_t type	// 0 - быстрая закраска (только выпуклый контур), 1 - более медленная закраска любого контура
-	);
-
-// копирование с поворотом
-void display_copyrotate(
-	PACKEDCOLORPIP_T * buffer, // target buffer
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y,	// начальная координата
-	const PACKEDCOLORPIP_T * sbuffer,	// source buffer
-	uint_fast16_t sdx,	// ширина буфера
-	uint_fast16_t sdy,	// высота буфера
-	uint_fast16_t sx,	// начальная координата
-	uint_fast16_t sy,	// начальная координата
-	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
-	uint_fast8_t mx,	// X mirror flag
-	uint_fast8_t my,	// X mirror flag
-	unsigned angle	// positive CCW angle
 	);
 
 COLORPIP_T getshadedcolor(

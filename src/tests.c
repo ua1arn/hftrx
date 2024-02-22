@@ -11175,7 +11175,7 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_LTDC
 	{
-		// display_copyrotate test
+		// colpip_copyrotate test
 		COLORPIP_T keycolor = COLORPIP_KEY;
 		enum { picx = 100, picy = 50 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -11219,10 +11219,12 @@ void hightests(void)
 			}
 			else if (tpos >= 4)
 			{
-				display_copyrotate(
+				colpip_copyrotate(
+					(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
 					layer0, DIM_X, DIM_Y,
 					x + 1, y + 1,	// получатель Позиция
-					fgpic, picx, picy,
+					(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+					fgpic, picx, picy,	// буфер источника
 					0, 0,	// координаты окна источника
 					picx, picy, // размер окна источника
 					tpos == 4,	// X mirror flag
@@ -11233,10 +11235,12 @@ void hightests(void)
 			}
 			else
 			{
-				display_copyrotate(
+				colpip_copyrotate(
+					(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
 					layer0, DIM_X, DIM_Y,
 					x + 1, y + 1,	// получатель Позиция
-					fgpic, picx, picy,
+					(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+					fgpic, picx, picy,	// буфер источника
 					0, 0,	// координаты окна источника
 					picx, picy, // размер окна источника
 					0,	// X mirror flag

@@ -203,7 +203,8 @@ hwaccel_rotcopy(
 	uint_fast32_t ssizehw,
 	uintptr_t taddr,
 	unsigned tstride,
-	uint_fast32_t tsizehw
+	uint_fast32_t tsizehw,
+	uint_fast32_t rot_ctl
 	)
 {
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
@@ -235,6 +236,7 @@ hwaccel_rotcopy(
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
+	G2D_ROT->ROT_CTL = rot_ctl;
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
 
@@ -277,7 +279,7 @@ static void t113_fillrect(
 	{
 		//const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
-		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw);
+		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw. 0);
 	}
 	else
 	{
@@ -1660,13 +1662,15 @@ void colpip_fillrect(
 }
 
 // копирование с поворотом
-void display_copyrotate(
-	PACKEDCOLORPIP_T * buffer, // target buffer
+void colpip_copyrotate(
+	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
+	PACKEDCOLORPIP_T * __restrict buffer, // target buffer
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
-	const PACKEDCOLORPIP_T * sbuffer,	// source buffer
+	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
+	const PACKEDCOLORPIP_T * __restrict sbuffer,	// source buffer
 	uint_fast16_t sdx,	// ширина буфера
 	uint_fast16_t sdy,	// высота буфера
 	uint_fast16_t sx,	// начальная координата
@@ -1680,7 +1684,7 @@ void display_copyrotate(
 	if (w == 0 || h == 0)
 		return;
 	enum { PIXEL_SIZE = sizeof * buffer };
-	enum { PIXEL_SIZE_CODE = 1 };
+//	enum { PIXEL_SIZE_CODE = 1 };
 
 #if WITHMDMAHW && CPUSTYLE_ALLWINNER
 	const uintptr_t saddr = (uintptr_t) colpip_const_mem_at(sbuffer, sdx, sdy, sx, sy);
@@ -1696,45 +1700,19 @@ void display_copyrotate(
 		((h - 1) << 16) | ((w - 1) << 0),	// target size if 180 CCW
 		((w - 1) << 16) | ((h - 1) << 0),	// target size if 270 CCW
 	};
-	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
+
 	const unsigned quadrant = (angle % 360) / 90;
+	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
+	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
+	uint_fast32_t rot_ctl = 0;
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horisontal
+	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
+	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 
-	{
-		ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
+	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 
-		G2D_ROT->ROT_CTL = 0;
-		G2D_ROT->ROT_IFMT = VI_ImageFormat;
-		G2D_ROT->ROT_ISIZE = ssizehw;
-		G2D_ROT->ROT_IPITCH0 = sstride;
-	//	G2D_ROT->ROT_IPITCH1 = sstride;
-	//	G2D_ROT->ROT_IPITCH2 = sstride;
-		G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
-		G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
-	//	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
-	//	G2D_ROT->ROT_IHADD1 = ptr_hi32(saddr) & 0xff;
-	//	G2D_ROT->ROT_ILADD2 = ptr_lo32(saddr);
-	//	G2D_ROT->ROT_IHADD2 = ptr_hi32(saddr) & 0xff;
-
-		G2D_ROT->ROT_OPITCH0 = tstride;
-	//	G2D_ROT->ROT_OPITCH1 = tstride;
-	//	G2D_ROT->ROT_OPITCH2 = tstride;
-		G2D_ROT->ROT_OSIZE = tsizehw4 [quadrant];
-		G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
-		G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
-	//	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
-	//	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
-	//	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
-	//	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
-
-		G2D_ROT->ROT_CTL |= !! mx * (UINT32_C(1) << 7);	// flip horisontal
-		G2D_ROT->ROT_CTL |= !! my * (UINT32_C(1) << 6);	// flip vertical
-		G2D_ROT->ROT_CTL |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
-		G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
-		awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
-
-
-
-	}
 #endif /* WITHMDMAHW && CPUSTYLE_ALLWINNER */
 }
 
