@@ -5748,7 +5748,7 @@ static void display2_waterfall(
 					0, p1y,	// координаты получателя
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 					atwflj(0, 0),	// начальный адрес источника
-					ALLDX, p1h, 	// размеры источника
+					ALLDX, WFROWS, 	// размеры источника
 					0, wfrow,	// координаты окна источника
 					ALLDX, p1h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
@@ -5763,7 +5763,7 @@ static void display2_waterfall(
 					0, p2y,		// координаты получателя
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					atwflj(0, 0),	// начальный адрес источника
-					ALLDX, p2h, 	// размеры источника
+					ALLDX, WFROWS, 	// размеры источника
 					0, 0,	// координаты окна источника
 					ALLDX, p2h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
