@@ -110,6 +110,8 @@ static const char * const array [][2] =
 	{	"GRAY",		"BLACK"		},
 	{	"DARKGREEN","BLACK"		},
 	{	"BLUE",		"BLACK"		},
+	{	"DARKCYAN",	"BLACK"		},
+	{	"CYAN",		"BLACK"		},
 };
 
 static void oneset(int tft565)

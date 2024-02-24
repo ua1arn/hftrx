@@ -352,6 +352,12 @@ static const COLORPAIR_T colors_1state [1] =
 	{	LABELTEXT,	LABELBACK,	},
 };
 
+// Параметры отображения текстов без вариантов
+static const COLORPAIR_T colors_1statevoltage [1] =
+{
+	{	DESIGNCOLORSTATETEXT,	DESIGNCOLORSTATEBACK,	},
+};
+
 // Параметры отображения состояний FUNC MENU из двух вариантов
 static const COLORPAIR_T colors_2fmenu [2] =
 {
@@ -2076,7 +2082,7 @@ static void display_lockstate3(
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
 
-	static const FLASHMEM char text0 [] = "    ";
+	static const FLASHMEM char text0 [] = "   ";
 	static const FLASHMEM char text1 [] = "LCK";
 	static const FLASHMEM char text2 [] = "FST";
 #if LCDMODE_COLORED
@@ -2164,7 +2170,7 @@ static void display2_rxbwval4(
 {
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
 	ASSERT(strlen(labels [0]) == 4);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 }
 
 // RX path bandwidth
@@ -2482,7 +2488,7 @@ static void display2_voltlevelV5(
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
-	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -2503,7 +2509,7 @@ static void display_voltlevel4(
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display_voltlevel4: volt=%u\n", volt);
 
-	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -2598,7 +2604,7 @@ static void display2_currlevelA6(
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2610,7 +2616,7 @@ static void display2_currlevelA6(
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2635,7 +2641,7 @@ static void display2_currlevel5(
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2647,7 +2653,7 @@ static void display2_currlevel5(
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2695,7 +2701,7 @@ static void display_siglevel7(
 	(void) v;
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 7);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -2716,7 +2722,7 @@ static void display2_siglevel4(
 	(void) v;
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 4);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -2740,7 +2746,7 @@ static void display2_span9(
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 9);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 
 #endif /* WITHIF4DSP */
 }
