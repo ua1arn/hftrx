@@ -13631,7 +13631,7 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(UINT32_C(1) << (c + 3), 0, 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), UINT32_C(1) << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3u"), 1u << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13646,7 +13646,7 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(0, UINT32_C(1) << (c + 2), 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), UINT32_C(1) << (c + 2));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3u"), 1u << (c + 2));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13661,7 +13661,7 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(0, 0, UINT32_C(1) << (c + 3)));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), UINT32_C(1) << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3u"), 1u << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
