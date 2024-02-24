@@ -10855,6 +10855,11 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 #endif /* WITHCAT */
 
+uint_fast8_t hamradio_get_ft8cn(void)
+{
+	return gusb_ft8cn;
+}
+
 /*
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи

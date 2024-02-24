@@ -3514,6 +3514,8 @@ uint_fast8_t islfmstart(unsigned now);
 void bt_initialize(void);
 void bt_enable(uint_fast8_t v);
 
+uint_fast8_t hamradio_get_ft8cn(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

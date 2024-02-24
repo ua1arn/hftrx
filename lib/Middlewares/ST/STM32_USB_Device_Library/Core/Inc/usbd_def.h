@@ -408,7 +408,7 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t *addr)
   * @{
   */
 
-void usbd_descriptors_initialize(uint_fast8_t deschs);
+void usbd_descriptors_initialize(uint_fast8_t HSdesc, uint_fast8_t ft8cnv);
 
 struct descholder
 {
