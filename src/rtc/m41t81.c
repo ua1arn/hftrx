@@ -9,10 +9,11 @@
 //
 
 #include "hardware.h"
-#include "formats.h"
-#include "board.h"
 
 #if defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_M41T81)
+#include "formats.h"
+#include "board.h"
+#include <string.h>
 
 #define M41T81_ADDRESS_W	0xD0	
 #define M41T81_ADDRESS_R	(M41T81_ADDRESS_W | 0x01)
