@@ -8,9 +8,10 @@ void genonjectset(const char * obj, const char * comment)
 	fprintf(stdout, "/* %s */\n", comment);
 	fprintf(stdout, "uintptr_t allocate_dmabuffer%s(void);\n", obj);
 	fprintf(stdout, "uintptr_t getfilled_dmabuffer%s(void);\n", obj);
-	fprintf(stdout, "int_fast32_t cachesize_dmabuffer%s(void);\n", obj);
 	fprintf(stdout, "void release_dmabuffer%s(uintptr_t addr);\n", obj);
 	fprintf(stdout, "void save_dmabuffer%s(uintptr_t addr);\n", obj);
+	fprintf(stdout, "int_fast32_t cachesize_dmabuffer%s(void);\n", obj);
+	fprintf(stdout, "int_fast32_t datasize_dmabuffer%s(void);\n", obj);
 
 	fprintf(stdout, "\n");
 
@@ -26,17 +27,17 @@ struct params
 static const struct params params0 [] = 
 {
 	{	"32rx",	"FPGA to CPU", },
-	{	"32tx",	"CPU to FPGA", },
+	{	"32tx_main",	"CPU to FPGA", },
+	{	"32tx_sub",	"CPU to FPGA", },
 	{	"16rx",	"CODEC to CPU", },
 	{	"16tx",	"CPU to CODEC", },
 
-	{	"rts192",	"FPGA to CPU", },
+	{	"32rts192",	"FPGA to CPU", },
 
-	{	"uacin",	"usb audio48 to host", },
-	{	"uacinrts96"	"usb rts96 to host", },
+	{	"uacin48",	"usb audio48 to host", },
+	{	"uacinrts96",	"usb rts96 to host", },
 	{	"uacinrts192",	"usb rts192 to host", },
-	{	"uacinX",	"usb audio48/rts to host", },
-	{	"uacout",	"usb audio48 from host", },
+	{	"uacout48",	"usb audio48 from host", },
 
 	{	"btout8k",	"BT audio to radio, samplerate 8000", },
 	{	"btout16k",	"BT audio to radio, samplerate 16000", },
