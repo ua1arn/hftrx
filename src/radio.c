@@ -3147,7 +3147,7 @@ struct nvmap
 	#if WITHUSEUSBBT
 		uint8_t gusbbt;	/* управление трансивером произволится по USB BT каналу, звуук на передачу так же оттуда */
 	#endif /* WITHUSEUSBBT */
-	#if WITHUSBUAC
+	#if WITHUSBHW && WITHUSBUAC
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
@@ -3155,7 +3155,7 @@ struct nvmap
 			uint8_t gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 */
 		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBHW && WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
@@ -10857,7 +10857,11 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 uint_fast8_t hamradio_get_ft8cn(void)
 {
+#if WITHUSBHW && WITHUSBUAC
 	return gusb_ft8cn;
+#else /* WITHUSBHW && WITHUSBUAC */
+	return  0;
+#endif /* WITHUSBHW && WITHUSBUAC */
 }
 
 /*
