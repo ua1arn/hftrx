@@ -9957,7 +9957,7 @@ void hardware_cw_diagnostics(
 
 #if WITHSPIHW || WITHSPISW
 
-static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED1M;
+static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
 static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 static const unsigned MCP3208_usCsDelay = 0;
 
