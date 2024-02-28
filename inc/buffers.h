@@ -346,6 +346,12 @@ extern "C" {
 
 #endif /* WITHDSPEXTDDC */
 
+#if 1
+	// stub
+	// параметры дополнительного канала передачи в FPGA
+	#define DMABUFFSTEP32TXSUB	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+#endif
+
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 
 	/* встороенный в процессор кодек */
@@ -380,6 +386,11 @@ extern "C" {
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
 #endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
+
+#if 1
+	#define DMABUFFSTEP16RX8K		2		/* 2 - каждому сэмплу при получении от AUDIO CODEC соответствует два числа в DMA буфере */
+	#define DMABUFFSTEP16TX8K		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
+#endif
 
 // Конфигурация потоков в Input Terminal Descriptor
 // bNrChannels в 4.3.2.1 Input Terminal Descriptor образуется подсчетом битов в данном поле
@@ -598,10 +609,12 @@ extern "C" {
 #define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
 
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX)		/* AF CODEC ADC */
+#define DMABUFFSIZE16RX8K	(DMABUFCLUSTER * DMABUFFSTEP16RX8K)		/* AF CODEC ADC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 //#define DMABUFFSIZE32RTS96 (DMABUFCLUSTER * DMABUFFSTEP32RTS96)		/* FPGA RX or IF CODEC RX */
 
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
+#define DMABUFFSIZE16TX8K	(DMABUFCLUSTER * DMABUFFSTEP16TX8K * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
 #define DMABUFFSIZE32TXSUB (DMABUFCLUSTER * DMABUFFSTEP32TXSUB * DMABUFSCALE)	/* Additional channel FPGA TX or IF CODEC TX	*/
 

@@ -4228,6 +4228,7 @@ static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 #endif /* defined(I2S0) && WITHI2S0HW */
 
 #if defined(I2S1) && WITHI2S1HW
+
 static void hardware_i2s1_enable(uint_fast8_t state)
 {
 	hardware_i2s_enable(1, I2S1, state);
@@ -4255,6 +4256,7 @@ static void hardware_i2s1_slave_duplex_initialize_fpga(void)
 #endif /* defined(I2S1) && WITHI2S1HW */
 
 #if defined(I2S2) && WITHI2S2HW
+
 static void hardware_i2s2_enable(uint_fast8_t state)
 {
 	hardware_i2s_enable(2, I2S2, state);
@@ -4278,9 +4280,8 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 	hardware_i2s_initialize(2, I2S2, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(1);
 }
+
 #endif /* defined(I2S2) && WITHI2S2HW */
-
-
 
 // DMA Source/Destination Data Width
 // 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4412,7 +4413,8 @@ static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 #endif
 }
 
-#if WITHI2S0HW
+#if defined (I20) && WITHI2S0HW
+
 static void DMAC_I2S0_RX_initialize_codec1(void)
 {
 	const unsigned ix = 0;	// I2S0
@@ -4524,9 +4526,11 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-#endif /* WITHI2S1HW */
 
-#if WITHI2S1HW
+#endif /* defined (I20) && WITHI2S0HW */
+
+#if defined (I2S1) && WITHI2S1HW
+
 static void DMAC_I2S1_RX_initialize_codec1(void)
 {
 	const unsigned ix = 1;	// I2S1
@@ -4638,9 +4642,122 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-#endif /* WITHI2S1HW */
 
-#if WITHI2S2HW
+static void DMAC_I2S1_RX_initialize_codec1_8k(void)
+{
+	const unsigned ix = 1;	// I2S1
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_AudioCodec_RX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);		// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16RX8K * dw;
+	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
+	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
+
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
+	const uint_fast32_t configDMAC =
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = portaddr;				// Source Address
+		descr0 [i] [2] = dma_invalidate16rx8k(allocate_dmabuffer16rx8k());				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	dcache_clean(descraddr, sizeof descr0);
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k);
+
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+static void DMAC_I2S1_TX_initialize_codec1_8k(void)
+{
+	const unsigned ix = 1;	// I2S1
+	const size_t dw = sizeof (aubufv_t);
+	static ALIGNX_BEGIN uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMAC_AudioCodec_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16TX8K * dw;
+	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
+	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
+
+	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
+	const uint_fast32_t configDMAC =
+		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
+		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		1 * (UINT32_C(1) << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
+		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		0 * (UINT32_C(1) << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
+		0;
+
+	DMAC_clock_initialize();
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
+	{
+		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+		descr0 [i] [0] = configDMAC;			// Cofigurarion
+		descr0 [i] [1] = dma_flush16tx8k(allocate_dmabuffer16tx8k());			// Source Address
+		descr0 [i] [2] = portaddr;				// Destination Address
+		descr0 [i] [3] = NBYTES;				// Byte Counter
+		descr0 [i] [4] = parameterDMAC;			// Parameter
+		descr0 [i] [5] = (uintptr_t) descr0 [inext];	// Link to next
+	}
+
+	uintptr_t descraddr = (uintptr_t) descr0;
+	dcache_clean(descraddr, sizeof descr0);
+
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != descraddr)
+		;
+
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k);
+
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+}
+
+#endif /* defined (I2S1) && WITHI2S1HW */
+
+#if defined (I2S2) && WITHI2S2HW
 
 static void DMAC_I2S2_TX_initialize_codec1(void)
 {
@@ -4697,9 +4814,11 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-#endif
 
-#if WITHI2S1HW
+#endif /* defined (I2S2) && WITHI2S2HW */
+
+#if defined (I2S1) && WITHI2S1HW
+
 static void DMAC_I2S1_RX_initialize_fpga(void)
 {
 	const unsigned ix = 1;	// I2S1
@@ -4755,7 +4874,8 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
-#endif
+
+#endif /* defined (I2S1) && WITHI2S1HW */
 
 #if defined (I2S2) && WITHI2S2HW
 
@@ -5834,6 +5954,7 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 #endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 
 #if defined(I2S1) && WITHI2S1HW
+
 static const codechw_t audiocodechw_i2s1_duplex_slave =
 {
 	hardware_i2s1_slave_duplex_initialize_codec1,
@@ -5844,6 +5965,18 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-slave"
 };
+
+static const codechw_t audiocodechw_8k_i2s1_duplex_slave =
+{
+	hardware_i2s1_slave_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S1_RX_initialize_codec1_8k,
+	DMAC_I2S1_TX_initialize_codec1_8k,
+	hardware_i2s1_enable,
+	hardware_dummy_enable,
+	"audiocodechw_8k-i2s1-duplex-slave"
+};
+
 #endif /* defined(I2S1) && WITHI2S1HW */
 
 #if defined(I2S2) && WITHI2S2HW
