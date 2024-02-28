@@ -786,6 +786,22 @@ void save_dmabuffer16tx(uintptr_t addr);
 int_fast32_t cachesize_dmabuffer16tx(void);
 int_fast32_t datasize_dmabuffer16tx(void);
 
+/* CODEC to CPU, sample rate 8000 */
+uintptr_t allocate_dmabuffer16rx8k(void);
+uintptr_t getfilled_dmabuffer16rx8k(void);
+void release_dmabuffer16rx8k(uintptr_t addr);
+void save_dmabuffer16rx8k(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer16rx8k(void);
+int_fast32_t datasize_dmabuffer16rx8k(void);
+
+/* CPU to CODEC, sample rate 8000 */
+uintptr_t allocate_dmabuffer16tx8k(void);
+uintptr_t getfilled_dmabuffer16tx8k(void);
+void release_dmabuffer16tx8k(uintptr_t addr);
+void save_dmabuffer16tx8k(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer16tx8k(void);
+int_fast32_t datasize_dmabuffer16tx8k(void);
+
 /* FPGA to CPU */
 uintptr_t allocate_dmabuffer32rts192(void);
 uintptr_t getfilled_dmabuffer32rts192(void);
@@ -826,7 +842,7 @@ void save_dmabufferuacout48(uintptr_t addr);
 int_fast32_t cachesize_dmabufferuacout48(void);
 int_fast32_t datasize_dmabufferuacout48(void);
 
-/* BT audio to radio, samplerate 8000 */
+/* BT audio to radio, sample rate 8000 */
 uintptr_t allocate_dmabufferbtout8k(void);
 uintptr_t getfilled_dmabufferbtout8k(void);
 void release_dmabufferbtout8k(uintptr_t addr);
@@ -834,7 +850,7 @@ void save_dmabufferbtout8k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtout8k(void);
 int_fast32_t datasize_dmabufferbtout8k(void);
 
-/* BT audio to radio, samplerate 16000 */
+/* BT audio to radio, sample rate 16000 */
 uintptr_t allocate_dmabufferbtout16k(void);
 uintptr_t getfilled_dmabufferbtout16k(void);
 void release_dmabufferbtout16k(uintptr_t addr);
@@ -842,7 +858,7 @@ void save_dmabufferbtout16k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtout16k(void);
 int_fast32_t datasize_dmabufferbtout16k(void);
 
-/* BT audio to radio, samplerate 32000 */
+/* BT audio to radio, sample rate 32000 */
 uintptr_t allocate_dmabufferbtout32k(void);
 uintptr_t getfilled_dmabufferbtout32k(void);
 void release_dmabufferbtout32k(uintptr_t addr);
@@ -850,7 +866,7 @@ void save_dmabufferbtout32k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtout32k(void);
 int_fast32_t datasize_dmabufferbtout32k(void);
 
-/* BT audio to radio, samplerate 44100 */
+/* BT audio to radio, sample rate 44100 */
 uintptr_t allocate_dmabufferbtout44p1k(void);
 uintptr_t getfilled_dmabufferbtout44p1k(void);
 void release_dmabufferbtout44p1k(uintptr_t addr);
@@ -858,7 +874,7 @@ void save_dmabufferbtout44p1k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtout44p1k(void);
 int_fast32_t datasize_dmabufferbtout44p1k(void);
 
-/* BT audio from radio, samplerate 8000 */
+/* BT audio from radio, sample rate 8000 */
 uintptr_t allocate_dmabufferbtin8k(void);
 uintptr_t getfilled_dmabufferbtin8k(void);
 void release_dmabufferbtin8k(uintptr_t addr);
@@ -866,7 +882,7 @@ void save_dmabufferbtin8k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtin8k(void);
 int_fast32_t datasize_dmabufferbtin8k(void);
 
-/* BT audio from radio, samplerate 16000 */
+/* BT audio from radio, sample rate 16000 */
 uintptr_t allocate_dmabufferbtin16k(void);
 uintptr_t getfilled_dmabufferbtin16k(void);
 void release_dmabufferbtin16k(uintptr_t addr);
@@ -874,7 +890,7 @@ void save_dmabufferbtin16k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtin16k(void);
 int_fast32_t datasize_dmabufferbtin16k(void);
 
-/* BT audio from radio, samplerate 32000 */
+/* BT audio from radio, sample rate 32000 */
 uintptr_t allocate_dmabufferbtin32k(void);
 uintptr_t getfilled_dmabufferbtin32k(void);
 void release_dmabufferbtin32k(uintptr_t addr);
@@ -882,7 +898,7 @@ void save_dmabufferbtin32k(uintptr_t addr);
 int_fast32_t cachesize_dmabufferbtin32k(void);
 int_fast32_t datasize_dmabufferbtin32k(void);
 
-/* BT audio from radio, samplerate 44100 */
+/* BT audio from radio, sample rate 44100 */
 uintptr_t allocate_dmabufferbtin44p1k(void);
 uintptr_t getfilled_dmabufferbtin44p1k(void);
 void release_dmabufferbtin44p1k(uintptr_t addr);

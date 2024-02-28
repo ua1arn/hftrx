@@ -60,6 +60,27 @@ dma_flush16tx(uintptr_t addr)
 
 // Сейчас в эту память будем читать по DMA
 static uintptr_t
+dma_invalidate16rx8k(uintptr_t addr)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((cachesize_dmabuffer16rx8k() % DCACHEROWSIZE) == 0);
+	dcache_invalidate(addr, cachesize_dmabuffer16rx8k());
+	return addr;
+}
+
+// Сейчас эта память будет записываться по DMA куда-то
+// Потом содержимое не требуется
+static uintptr_t
+dma_flush16tx8k(uintptr_t addr)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((cachesize_dmabuffer16tx8k() % DCACHEROWSIZE) == 0);
+	dcache_clean_invalidate(addr, cachesize_dmabuffer16tx8k());
+	return addr;
+}
+
+// Сейчас в эту память будем читать по DMA
+static uintptr_t
 dma_invalidate32rts192(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
@@ -4296,6 +4317,29 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(unsigned dmach)
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
+}
+
+/* Приём от кодека на скорости 8000 */
+/* от встроенного в процессор или подключенного по I2S */
+static void DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k(unsigned dmach)
+{
+	const uintptr_t newaddr = dma_invalidate16rx8k(allocate_dmabuffer16rx8k());
+	const uintptr_t addr = DMAC_RX_swap(dmach, newaddr);
+
+	/* Работа с только что принятыми данными */
+	save_dmabuffer16rx8k(addr);
+}
+
+
+/* Передача в кодек на скорости 8000 */
+/* на встроенный в процессор или подключенный по I2S */
+static void DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k(unsigned dmach)
+{
+	const uintptr_t newaddr = dma_flush16tx8k(getfilled_dmabuffer16tx8k());
+	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
+
+	/* Работа с только что передаными данными */
+	release_dmabuffer16tx8k(addr);
 }
 
 /* Приём от FPGA */

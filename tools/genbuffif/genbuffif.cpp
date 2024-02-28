@@ -29,8 +29,12 @@ static const struct params params0 [] =
 	{	"32rx",	"FPGA to CPU", },
 	{	"32tx",	"CPU to FPGA", },
 	{	"32tx_sub",	"CPU to FPGA (additional channel)", },
+
 	{	"16rx",	"CODEC to CPU", },
 	{	"16tx",	"CPU to CODEC", },
+
+	{	"16rx8k",	"CODEC to CPU, sample rate 8000", },
+	{	"16tx8k",	"CPU to CODEC, sample rate 8000", },
 
 	{	"32rts192",	"FPGA to CPU", },
 
@@ -39,15 +43,15 @@ static const struct params params0 [] =
 	{	"uacinrts192",	"usb rts192 to host", },
 	{	"uacout48",	"usb audio48 from host", },
 
-	{	"btout8k",	"BT audio to radio, samplerate 8000", },
-	{	"btout16k",	"BT audio to radio, samplerate 16000", },
-	{	"btout32k",	"BT audio to radio, samplerate 32000", },
-	{	"btout44p1k",	"BT audio to radio, samplerate 44100", },
+	{	"btout8k",	"BT audio to radio, sample rate 8000", },
+	{	"btout16k",	"BT audio to radio, sample rate 16000", },
+	{	"btout32k",	"BT audio to radio, sample rate 32000", },
+	{	"btout44p1k",	"BT audio to radio, sample rate 44100", },
 
-	{	"btin8k",	"BT audio from radio, samplerate 8000", },
-	{	"btin16k",	"BT audio from radio, samplerate 16000", },
-	{	"btin32k",	"BT audio from radio, samplerate 32000", },
-	{	"btin44p1k",	"BT audio from radio, samplerate 44100", },
+	{	"btin8k",	"BT audio from radio, sample rate 8000", },
+	{	"btin16k",	"BT audio from radio, sample rate 16000", },
+	{	"btin32k",	"BT audio from radio, sample rate 32000", },
+	{	"btin44p1k",	"BT audio from radio, sample rate 44100", },
 
 };
 
