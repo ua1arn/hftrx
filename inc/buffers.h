@@ -747,164 +747,164 @@ int_fast16_t datasize_dmabufferbtin8k(void);
 
 //+++++++++++++++++++++
 /* FPGA to CPU */
-uintptr_t allocate_dmabuffer32rx(void);
-uintptr_t getfilled_dmabuffer32rx(void);
+uintptr_t allocate_dmabuffer32rx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32rx(void); /* take from queue */
 void release_dmabuffer32rx(uintptr_t addr);
-void save_dmabuffer32rx(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer32rx(void);
-int_fast32_t datasize_dmabuffer32rx(void);
+void save_dmabuffer32rx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32rx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32rx(void); /* parameter for DMA */
 
 /* CPU to FPGA */
-uintptr_t allocate_dmabuffer32tx(void);
-uintptr_t getfilled_dmabuffer32tx(void);
+uintptr_t allocate_dmabuffer32tx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32tx(void); /* take from queue */
 void release_dmabuffer32tx(uintptr_t addr);
-void save_dmabuffer32tx(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer32tx(void);
-int_fast32_t datasize_dmabuffer32tx(void);
+void save_dmabuffer32tx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32tx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32tx(void); /* parameter for DMA */
 
 /* CPU to FPGA (additional channel) */
-uintptr_t allocate_dmabuffer32tx_sub(void);
-uintptr_t getfilled_dmabuffer32tx_sub(void);
+uintptr_t allocate_dmabuffer32tx_sub(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32tx_sub(void); /* take from queue */
 void release_dmabuffer32tx_sub(uintptr_t addr);
-void save_dmabuffer32tx_sub(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer32tx_sub(void);
-int_fast32_t datasize_dmabuffer32tx_sub(void);
+void save_dmabuffer32tx_sub(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32tx_sub(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32tx_sub(void); /* parameter for DMA */
 
 /* CODEC to CPU */
-uintptr_t allocate_dmabuffer16rx(void);
-uintptr_t getfilled_dmabuffer16rx(void);
+uintptr_t allocate_dmabuffer16rx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16rx(void); /* take from queue */
 void release_dmabuffer16rx(uintptr_t addr);
-void save_dmabuffer16rx(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer16rx(void);
-int_fast32_t datasize_dmabuffer16rx(void);
+void save_dmabuffer16rx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16rx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16rx(void); /* parameter for DMA */
 
 /* CPU to CODEC */
-uintptr_t allocate_dmabuffer16tx(void);
-uintptr_t getfilled_dmabuffer16tx(void);
+uintptr_t allocate_dmabuffer16tx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16tx(void); /* take from queue */
 void release_dmabuffer16tx(uintptr_t addr);
-void save_dmabuffer16tx(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer16tx(void);
-int_fast32_t datasize_dmabuffer16tx(void);
+void save_dmabuffer16tx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16tx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16tx(void); /* parameter for DMA */
 
 /* CODEC to CPU, sample rate 8000 */
-uintptr_t allocate_dmabuffer16rx8k(void);
-uintptr_t getfilled_dmabuffer16rx8k(void);
+uintptr_t allocate_dmabuffer16rx8k(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16rx8k(void); /* take from queue */
 void release_dmabuffer16rx8k(uintptr_t addr);
-void save_dmabuffer16rx8k(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer16rx8k(void);
-int_fast32_t datasize_dmabuffer16rx8k(void);
+void save_dmabuffer16rx8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16rx8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16rx8k(void); /* parameter for DMA */
 
 /* CPU to CODEC, sample rate 8000 */
-uintptr_t allocate_dmabuffer16tx8k(void);
-uintptr_t getfilled_dmabuffer16tx8k(void);
+uintptr_t allocate_dmabuffer16tx8k(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16tx8k(void); /* take from queue */
 void release_dmabuffer16tx8k(uintptr_t addr);
-void save_dmabuffer16tx8k(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer16tx8k(void);
-int_fast32_t datasize_dmabuffer16tx8k(void);
+void save_dmabuffer16tx8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16tx8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16tx8k(void); /* parameter for DMA */
 
 /* FPGA to CPU */
-uintptr_t allocate_dmabuffer32rts192(void);
-uintptr_t getfilled_dmabuffer32rts192(void);
+uintptr_t allocate_dmabuffer32rts192(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32rts192(void); /* take from queue */
 void release_dmabuffer32rts192(uintptr_t addr);
-void save_dmabuffer32rts192(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer32rts192(void);
-int_fast32_t datasize_dmabuffer32rts192(void);
+void save_dmabuffer32rts192(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32rts192(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32rts192(void); /* parameter for DMA */
 
 /* usb audio48 to host */
-uintptr_t allocate_dmabufferuacin48(void);
-uintptr_t getfilled_dmabufferuacin48(void);
+uintptr_t allocate_dmabufferuacin48(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacin48(void); /* take from queue */
 void release_dmabufferuacin48(uintptr_t addr);
-void save_dmabufferuacin48(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacin48(void);
-int_fast32_t datasize_dmabufferuacin48(void);
+void save_dmabufferuacin48(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacin48(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacin48(void); /* parameter for DMA */
 
 /* usb rts96 to host */
-uintptr_t allocate_dmabufferuacinrts96(void);
-uintptr_t getfilled_dmabufferuacinrts96(void);
+uintptr_t allocate_dmabufferuacinrts96(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacinrts96(void); /* take from queue */
 void release_dmabufferuacinrts96(uintptr_t addr);
-void save_dmabufferuacinrts96(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacinrts96(void);
-int_fast32_t datasize_dmabufferuacinrts96(void);
+void save_dmabufferuacinrts96(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacinrts96(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacinrts96(void); /* parameter for DMA */
 
 /* usb rts192 to host */
-uintptr_t allocate_dmabufferuacinrts192(void);
-uintptr_t getfilled_dmabufferuacinrts192(void);
+uintptr_t allocate_dmabufferuacinrts192(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacinrts192(void); /* take from queue */
 void release_dmabufferuacinrts192(uintptr_t addr);
-void save_dmabufferuacinrts192(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacinrts192(void);
-int_fast32_t datasize_dmabufferuacinrts192(void);
+void save_dmabufferuacinrts192(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacinrts192(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacinrts192(void); /* parameter for DMA */
 
 /* usb audio48 from host */
-uintptr_t allocate_dmabufferuacout48(void);
-uintptr_t getfilled_dmabufferuacout48(void);
+uintptr_t allocate_dmabufferuacout48(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacout48(void); /* take from queue */
 void release_dmabufferuacout48(uintptr_t addr);
-void save_dmabufferuacout48(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacout48(void);
-int_fast32_t datasize_dmabufferuacout48(void);
+void save_dmabufferuacout48(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacout48(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacout48(void); /* parameter for DMA */
 
 /* BT audio to radio, sample rate 8000 */
-uintptr_t allocate_dmabufferbtout8k(void);
-uintptr_t getfilled_dmabufferbtout8k(void);
+uintptr_t allocate_dmabufferbtout8k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout8k(void); /* take from queue */
 void release_dmabufferbtout8k(uintptr_t addr);
-void save_dmabufferbtout8k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtout8k(void);
-int_fast32_t datasize_dmabufferbtout8k(void);
+void save_dmabufferbtout8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout8k(void); /* parameter for DMA */
 
 /* BT audio to radio, sample rate 16000 */
-uintptr_t allocate_dmabufferbtout16k(void);
-uintptr_t getfilled_dmabufferbtout16k(void);
+uintptr_t allocate_dmabufferbtout16k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout16k(void); /* take from queue */
 void release_dmabufferbtout16k(uintptr_t addr);
-void save_dmabufferbtout16k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtout16k(void);
-int_fast32_t datasize_dmabufferbtout16k(void);
+void save_dmabufferbtout16k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout16k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout16k(void); /* parameter for DMA */
 
 /* BT audio to radio, sample rate 32000 */
-uintptr_t allocate_dmabufferbtout32k(void);
-uintptr_t getfilled_dmabufferbtout32k(void);
+uintptr_t allocate_dmabufferbtout32k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout32k(void); /* take from queue */
 void release_dmabufferbtout32k(uintptr_t addr);
-void save_dmabufferbtout32k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtout32k(void);
-int_fast32_t datasize_dmabufferbtout32k(void);
+void save_dmabufferbtout32k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout32k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout32k(void); /* parameter for DMA */
 
 /* BT audio to radio, sample rate 44100 */
-uintptr_t allocate_dmabufferbtout44p1k(void);
-uintptr_t getfilled_dmabufferbtout44p1k(void);
+uintptr_t allocate_dmabufferbtout44p1k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout44p1k(void); /* take from queue */
 void release_dmabufferbtout44p1k(uintptr_t addr);
-void save_dmabufferbtout44p1k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtout44p1k(void);
-int_fast32_t datasize_dmabufferbtout44p1k(void);
+void save_dmabufferbtout44p1k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout44p1k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout44p1k(void); /* parameter for DMA */
 
 /* BT audio from radio, sample rate 8000 */
-uintptr_t allocate_dmabufferbtin8k(void);
-uintptr_t getfilled_dmabufferbtin8k(void);
+uintptr_t allocate_dmabufferbtin8k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin8k(void); /* take from queue */
 void release_dmabufferbtin8k(uintptr_t addr);
-void save_dmabufferbtin8k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtin8k(void);
-int_fast32_t datasize_dmabufferbtin8k(void);
+void save_dmabufferbtin8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin8k(void); /* parameter for DMA */
 
 /* BT audio from radio, sample rate 16000 */
-uintptr_t allocate_dmabufferbtin16k(void);
-uintptr_t getfilled_dmabufferbtin16k(void);
+uintptr_t allocate_dmabufferbtin16k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin16k(void); /* take from queue */
 void release_dmabufferbtin16k(uintptr_t addr);
-void save_dmabufferbtin16k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtin16k(void);
-int_fast32_t datasize_dmabufferbtin16k(void);
+void save_dmabufferbtin16k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin16k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin16k(void); /* parameter for DMA */
 
 /* BT audio from radio, sample rate 32000 */
-uintptr_t allocate_dmabufferbtin32k(void);
-uintptr_t getfilled_dmabufferbtin32k(void);
+uintptr_t allocate_dmabufferbtin32k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin32k(void); /* take from queue */
 void release_dmabufferbtin32k(uintptr_t addr);
-void save_dmabufferbtin32k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtin32k(void);
-int_fast32_t datasize_dmabufferbtin32k(void);
+void save_dmabufferbtin32k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin32k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin32k(void); /* parameter for DMA */
 
 /* BT audio from radio, sample rate 44100 */
-uintptr_t allocate_dmabufferbtin44p1k(void);
-uintptr_t getfilled_dmabufferbtin44p1k(void);
+uintptr_t allocate_dmabufferbtin44p1k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin44p1k(void); /* take from queue */
 void release_dmabufferbtin44p1k(uintptr_t addr);
-void save_dmabufferbtin44p1k(uintptr_t addr);
-int_fast32_t cachesize_dmabufferbtin44p1k(void);
-int_fast32_t datasize_dmabufferbtin44p1k(void);
+void save_dmabufferbtin44p1k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin44p1k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin44p1k(void); /* parameter for DMA */
 
 //-----------------------
 

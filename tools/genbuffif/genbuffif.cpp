@@ -6,12 +6,12 @@
 void genonjectset(const char * obj, const char * comment)
 {
 	fprintf(stdout, "/* %s */\n", comment);
-	fprintf(stdout, "uintptr_t allocate_dmabuffer%s(void);\n", obj);
-	fprintf(stdout, "uintptr_t getfilled_dmabuffer%s(void);\n", obj);
+	fprintf(stdout, "uintptr_t allocate_dmabuffer%s(void); /* take free buffer */\n", obj);
+	fprintf(stdout, "uintptr_t getfilled_dmabuffer%s(void); /* take from queue */\n", obj);
 	fprintf(stdout, "void release_dmabuffer%s(uintptr_t addr);\n", obj);
-	fprintf(stdout, "void save_dmabuffer%s(uintptr_t addr);\n", obj);
-	fprintf(stdout, "int_fast32_t cachesize_dmabuffer%s(void);\n", obj);
-	fprintf(stdout, "int_fast32_t datasize_dmabuffer%s(void);\n", obj);
+	fprintf(stdout, "void save_dmabuffer%s(uintptr_t addr); /* save to queue */\n", obj);
+	fprintf(stdout, "int_fast32_t cachesize_dmabuffer%s(void); /* parameter for cache manipulation functions */\n", obj);
+	fprintf(stdout, "int_fast32_t datasize_dmabuffer%s(void); /* parameter for DMA */\n", obj);
 
 	fprintf(stdout, "\n");
 
