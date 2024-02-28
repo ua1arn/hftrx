@@ -4413,7 +4413,7 @@ static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 #endif
 }
 
-#if defined (I20) && WITHI2S0HW
+#if defined (I2S0) && WITHI2S0HW
 
 static void DMAC_I2S0_RX_initialize_codec1(void)
 {
