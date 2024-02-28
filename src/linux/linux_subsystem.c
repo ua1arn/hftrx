@@ -453,7 +453,7 @@ void linux_iq_thread(void)
 		save_dmabuffer16rx(addr_mic);
 	}
 
-	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	const uintptr_t addr = getfilled_dmabuffer32tx();
 	uint32_t * t = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit

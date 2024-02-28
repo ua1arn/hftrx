@@ -1179,7 +1179,23 @@ uintptr_t getfilled_dmabuffer32tx(void)
 	voice32tx_t * dest;
 	while (! voice32tx.get_readybuffer(& dest) && ! voice32tx.get_freebufferforced(& dest))
 		ASSERT(0);
-	return (uintptr_t) dest->buff;
+	const uintptr_t addr = (uintptr_t) dest->buff;
+
+	// дополнение совместно передаваемыми данными
+
+#if WITHFPGAPIPE_CODEC1
+	/* при необходимости добавляем слоты для передачи на кодек */
+	const uintptr_t addr16 = getfilled_dmabuffer16tx();
+	pipe_dmabuffer32tx(addr, addr16);
+	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
+#endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_NCORX0
+#endif /* WITHFPGAPIPE_NCORX0 */
+#if WITHFPGAPIPE_NCORX1
+#endif /* WITHFPGAPIPE_NCORX1 */
+#if WITHFPGAPIPE_NCORTS
+#endif /* WITHFPGAPIPE_NCORTS */
+	return addr;
 }
 
 
@@ -1211,30 +1227,6 @@ pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 
 #endif /* WITHFPGAPIPE_CODEC1 */
 
-// can not be be zero
-uintptr_t getfilled_dmabuffer32tx_main(void)
-{
-	uintptr_t addr = getfilled_dmabuffer32tx();
-#if WITHFPGAPIPE_CODEC1
-	/* при необходимости добавляем слоты для передачи на кодек */
-	const uintptr_t addr16 = getfilled_dmabuffer16tx();
-	pipe_dmabuffer32tx(addr, addr16);
-	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
-#endif /* WITHFPGAPIPE_CODEC1 */
-#if WITHFPGAPIPE_NCORX0
-#endif /* WITHFPGAPIPE_NCORX0 */
-#if WITHFPGAPIPE_NCORX1
-#endif /* WITHFPGAPIPE_NCORX1 */
-#if WITHFPGAPIPE_NCORTS
-#endif /* WITHFPGAPIPE_NCORTS */
-	return addr;
-}
-
-// can not be be zero
-uintptr_t getfilled_dmabuffer32tx_sub(void)
-{
-	return allocate_dmabuffer32tx();
-}
 
 // I/Q data from FPGA or IF CODEC
 // I/Q data from FPGA or IF CODEC

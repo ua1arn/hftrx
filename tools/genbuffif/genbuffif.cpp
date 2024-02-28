@@ -27,8 +27,8 @@ struct params
 static const struct params params0 [] = 
 {
 	{	"32rx",	"FPGA to CPU", },
-	{	"32tx_main",	"CPU to FPGA", },
-	{	"32tx_sub",	"CPU to FPGA", },
+	{	"32tx",	"CPU to FPGA", },
+	{	"32tx_sub",	"CPU to FPGA (additional channel)", },
 	{	"16rx",	"CODEC to CPU", },
 	{	"16tx",	"CPU to CODEC", },
 

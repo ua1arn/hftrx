@@ -88,6 +88,16 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 	return addr;
 }
 
+// Сейчас эта память будет записываться по DMA куда-то
+// Потом содержимое не требуется
+static uintptr_t dma_flush32tx_sub(uintptr_t addr)
+{
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((cachesize_dmabuffer32tx_sub() % DCACHEROWSIZE) == 0);
+	dcache_clean_invalidate(addr, cachesize_dmabuffer32tx_sub());
+	return addr;
+}
+
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 /* DMA word length parameter */
@@ -1816,11 +1826,11 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 		const uint_fast8_t b = (DMA2_Stream1->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
-			release_dmabuffer32tx(stm32_dmaswap(& DMA2_Stream1->M0AR, dma_flush32tx(getfilled_dmabuffer32tx_main())));
+			release_dmabuffer32tx(stm32_dmaswap(& DMA2_Stream1->M0AR, dma_flush32tx(getfilled_dmabuffer32tx())));
 		}
 		else
 		{
-			release_dmabuffer32tx(stm32_dmaswap(& DMA2_Stream1->M1AR, dma_flush32tx(getfilled_dmabuffer32tx_main())));
+			release_dmabuffer32tx(stm32_dmaswap(& DMA2_Stream1->M1AR, dma_flush32tx(getfilled_dmabuffer32tx())));
 		}
 	}
 
@@ -2532,12 +2542,12 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		if (b != 0)
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx());
 		}
 		else
 		{
 			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx_main());
+			DMA2_Stream4->M1AR =  dma_flush32tx(getfilled_dmabuffer32tx());
 		}
 	}
 
@@ -2547,7 +2557,7 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 
 // TX	SAI2_A	DMA2	Stream 4	Channel 3
 // Use dcache_clean
-void DMA2_Stream4_IRQHandler_32txsub(void)
+void DMA2_Stream4_IRQHandler_32tx_sub(void)
 {
 	// проверка условия может потребоваться при добавлении обработчика ошибки
 	if ((DMA2->HISR & DMA_HISR_TCIF4) != 0)
@@ -2559,13 +2569,13 @@ void DMA2_Stream4_IRQHandler_32txsub(void)
 
 		if (b != 0)
 		{
-			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_sub());
+			release_dmabuffer32tx_sub(DMA2_Stream4->M0AR);
+			DMA2_Stream4->M0AR = dma_flush32tx_sub(getfilled_dmabuffer32tx_sub());
 		}
 		else
 		{
-			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_sub());
+			release_dmabuffer32tx_sub(DMA2_Stream4->M1AR);
+			DMA2_Stream4->M1AR = dma_flush32tx_sub(getfilled_dmabuffer32tx_sub());
 		}
 	}
 
@@ -2600,10 +2610,10 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
-	DMA2_Stream4->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
+	DMA2_Stream4->M0AR = dma_flush32tx_sub(allocate_dmabuffer32tx_sub());
+	DMA2_Stream4->M1AR = dma_flush32tx_sub(allocate_dmabuffer32tx_sub());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE32TX * DMA_SxNDT_0);
+		(DMABUFFSIZE32TXSUB * DMA_SxNDT_0);
 
 	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DMA2_Stream4->CR =
@@ -2630,7 +2640,7 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 	DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream4->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-	arm_hardware_set_handler_realtime(DMA2_Stream4_IRQn, DMA2_Stream4_IRQHandler_32txsub);
+	arm_hardware_set_handler_realtime(DMA2_Stream4_IRQn, DMA2_Stream4_IRQHandler_32tx_sub);
 
 	DMA2_Stream4->CR |= DMA_SxCR_EN;
 }
@@ -4301,7 +4311,7 @@ static void DMA_I2Sx_RX_Handler_fpga(unsigned dmach)
 /* Передача в FPGA */
 static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 {
-	const uintptr_t newaddr = dma_flush32tx(getfilled_dmabuffer32tx_main());
+	const uintptr_t newaddr = dma_flush32tx(getfilled_dmabuffer32tx());
 	const uintptr_t addr = DMAC_TX_swap(dmach, newaddr);
 
 	/* Работа с только что передаными данными */
@@ -6379,14 +6389,14 @@ static void r7s721_ssif1_txdma_fpgatx(void)
 	if (b != 0)
 	{
 		const uintptr_t addr = DMAC3.N0SA_n;
-		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.N0SA_n = dma_flush32tx(getfilled_dmabuffer32tx());
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}
 	else
 	{
 		const uintptr_t addr = DMAC3.N1SA_n;
-		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx_main());
+		DMAC3.N1SA_n = dma_flush32tx(getfilled_dmabuffer32tx());
 		DMAC3.CHCFG_n |= DMAC3_CHCFG_n_REN;	// REN bit
 		release_dmabuffer32tx(addr);
 	}

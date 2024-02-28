@@ -603,6 +603,7 @@ extern "C" {
 
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
+#define DMABUFFSIZE32TXSUB (DMABUFCLUSTER * DMABUFFSTEP32TXSUB * DMABUFSCALE)	/* Additional channel FPGA TX or IF CODEC TX	*/
 
 #define DMABUFFSTEP32RTS192 2
 #define DMABUFFSIZE32RTS192	(DMABUFCLUSTER * DMABUFFSTEP32RTS192)		/* RTS192 data from I2S */
@@ -613,15 +614,28 @@ extern "C" {
 
 // Buffers interface functions
 void buffers_initialize(void);
+void dsp_processtx(unsigned nsamples);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
+uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+// WITHUSBUACIN2 specific
+uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
+
+#if 0
 // передача на fpga
 uintptr_t allocate_dmabuffer32tx(void);
 void release_dmabuffer32tx(uintptr_t addr);
 void save_dmabuffer32tx(uintptr_t addr);
 int_fast32_t cachesize_dmabuffer32tx(void);
-uintptr_t getfilled_dmabuffer32tx_main(void);
+uintptr_t getfilled_dmabuffer32tx(void);
+
+// передача на fpga (канал 2)
+uintptr_t allocate_dmabuffer32tx_sub(void);
+void release_dmabuffer32tx_sub(uintptr_t addr);
+void save_dmabuffer32tx_sub(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32tx_sub(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
-void dsp_processtx(unsigned nsamples);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
 
 // буферы передачи на кодек
 uintptr_t allocate_dmabuffer16tx(void);
@@ -648,12 +662,6 @@ uintptr_t allocate_dmabuffer32rts192(void);
 int_fast32_t cachesize_dmabuffer32rts192(void);
 void release_dmabuffer32rts192(uintptr_t addr);
 void save_dmabuffer32rts192(uintptr_t addr);
-
-uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-// WITHUSBUACIN2 specific
-uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
-void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
 // Буфер обмена по USB
 void release_dmabufferuacinrts192(uintptr_t addr);
@@ -734,6 +742,155 @@ int_fast16_t datasize_dmabufferbtin16k(void);
 uintptr_t getfilled_dmabufferbtin8k(void);
 void release_dmabufferbtin8k(uintptr_t addr);
 int_fast16_t datasize_dmabufferbtin8k(void);
+
+#endif
+
+//+++++++++++++++++++++
+/* FPGA to CPU */
+uintptr_t allocate_dmabuffer32rx(void);
+uintptr_t getfilled_dmabuffer32rx(void);
+void release_dmabuffer32rx(uintptr_t addr);
+void save_dmabuffer32rx(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32rx(void);
+int_fast32_t datasize_dmabuffer32rx(void);
+
+/* CPU to FPGA */
+uintptr_t allocate_dmabuffer32tx(void);
+uintptr_t getfilled_dmabuffer32tx(void);
+void release_dmabuffer32tx(uintptr_t addr);
+void save_dmabuffer32tx(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32tx(void);
+int_fast32_t datasize_dmabuffer32tx(void);
+
+/* CPU to FPGA (additional channel) */
+uintptr_t allocate_dmabuffer32tx_sub(void);
+uintptr_t getfilled_dmabuffer32tx_sub(void);
+void release_dmabuffer32tx_sub(uintptr_t addr);
+void save_dmabuffer32tx_sub(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32tx_sub(void);
+int_fast32_t datasize_dmabuffer32tx_sub(void);
+
+/* CODEC to CPU */
+uintptr_t allocate_dmabuffer16rx(void);
+uintptr_t getfilled_dmabuffer16rx(void);
+void release_dmabuffer16rx(uintptr_t addr);
+void save_dmabuffer16rx(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer16rx(void);
+int_fast32_t datasize_dmabuffer16rx(void);
+
+/* CPU to CODEC */
+uintptr_t allocate_dmabuffer16tx(void);
+uintptr_t getfilled_dmabuffer16tx(void);
+void release_dmabuffer16tx(uintptr_t addr);
+void save_dmabuffer16tx(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer16tx(void);
+int_fast32_t datasize_dmabuffer16tx(void);
+
+/* FPGA to CPU */
+uintptr_t allocate_dmabuffer32rts192(void);
+uintptr_t getfilled_dmabuffer32rts192(void);
+void release_dmabuffer32rts192(uintptr_t addr);
+void save_dmabuffer32rts192(uintptr_t addr);
+int_fast32_t cachesize_dmabuffer32rts192(void);
+int_fast32_t datasize_dmabuffer32rts192(void);
+
+/* usb audio48 to host */
+uintptr_t allocate_dmabufferuacin48(void);
+uintptr_t getfilled_dmabufferuacin48(void);
+void release_dmabufferuacin48(uintptr_t addr);
+void save_dmabufferuacin48(uintptr_t addr);
+int_fast32_t cachesize_dmabufferuacin48(void);
+int_fast32_t datasize_dmabufferuacin48(void);
+
+/* usb rts96 to host */
+uintptr_t allocate_dmabufferuacinrts96(void);
+uintptr_t getfilled_dmabufferuacinrts96(void);
+void release_dmabufferuacinrts96(uintptr_t addr);
+void save_dmabufferuacinrts96(uintptr_t addr);
+int_fast32_t cachesize_dmabufferuacinrts96(void);
+int_fast32_t datasize_dmabufferuacinrts96(void);
+
+/* usb rts192 to host */
+uintptr_t allocate_dmabufferuacinrts192(void);
+uintptr_t getfilled_dmabufferuacinrts192(void);
+void release_dmabufferuacinrts192(uintptr_t addr);
+void save_dmabufferuacinrts192(uintptr_t addr);
+int_fast32_t cachesize_dmabufferuacinrts192(void);
+int_fast32_t datasize_dmabufferuacinrts192(void);
+
+/* usb audio48 from host */
+uintptr_t allocate_dmabufferuacout48(void);
+uintptr_t getfilled_dmabufferuacout48(void);
+void release_dmabufferuacout48(uintptr_t addr);
+void save_dmabufferuacout48(uintptr_t addr);
+int_fast32_t cachesize_dmabufferuacout48(void);
+int_fast32_t datasize_dmabufferuacout48(void);
+
+/* BT audio to radio, samplerate 8000 */
+uintptr_t allocate_dmabufferbtout8k(void);
+uintptr_t getfilled_dmabufferbtout8k(void);
+void release_dmabufferbtout8k(uintptr_t addr);
+void save_dmabufferbtout8k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtout8k(void);
+int_fast32_t datasize_dmabufferbtout8k(void);
+
+/* BT audio to radio, samplerate 16000 */
+uintptr_t allocate_dmabufferbtout16k(void);
+uintptr_t getfilled_dmabufferbtout16k(void);
+void release_dmabufferbtout16k(uintptr_t addr);
+void save_dmabufferbtout16k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtout16k(void);
+int_fast32_t datasize_dmabufferbtout16k(void);
+
+/* BT audio to radio, samplerate 32000 */
+uintptr_t allocate_dmabufferbtout32k(void);
+uintptr_t getfilled_dmabufferbtout32k(void);
+void release_dmabufferbtout32k(uintptr_t addr);
+void save_dmabufferbtout32k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtout32k(void);
+int_fast32_t datasize_dmabufferbtout32k(void);
+
+/* BT audio to radio, samplerate 44100 */
+uintptr_t allocate_dmabufferbtout44p1k(void);
+uintptr_t getfilled_dmabufferbtout44p1k(void);
+void release_dmabufferbtout44p1k(uintptr_t addr);
+void save_dmabufferbtout44p1k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtout44p1k(void);
+int_fast32_t datasize_dmabufferbtout44p1k(void);
+
+/* BT audio from radio, samplerate 8000 */
+uintptr_t allocate_dmabufferbtin8k(void);
+uintptr_t getfilled_dmabufferbtin8k(void);
+void release_dmabufferbtin8k(uintptr_t addr);
+void save_dmabufferbtin8k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtin8k(void);
+int_fast32_t datasize_dmabufferbtin8k(void);
+
+/* BT audio from radio, samplerate 16000 */
+uintptr_t allocate_dmabufferbtin16k(void);
+uintptr_t getfilled_dmabufferbtin16k(void);
+void release_dmabufferbtin16k(uintptr_t addr);
+void save_dmabufferbtin16k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtin16k(void);
+int_fast32_t datasize_dmabufferbtin16k(void);
+
+/* BT audio from radio, samplerate 32000 */
+uintptr_t allocate_dmabufferbtin32k(void);
+uintptr_t getfilled_dmabufferbtin32k(void);
+void release_dmabufferbtin32k(uintptr_t addr);
+void save_dmabufferbtin32k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtin32k(void);
+int_fast32_t datasize_dmabufferbtin32k(void);
+
+/* BT audio from radio, samplerate 44100 */
+uintptr_t allocate_dmabufferbtin44p1k(void);
+uintptr_t getfilled_dmabufferbtin44p1k(void);
+void release_dmabufferbtin44p1k(uintptr_t addr);
+void save_dmabufferbtin44p1k(uintptr_t addr);
+int_fast32_t cachesize_dmabufferbtin44p1k(void);
+int_fast32_t datasize_dmabufferbtin44p1k(void);
+
+//-----------------------
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);
