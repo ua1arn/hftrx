@@ -43,6 +43,7 @@
 #if WITHDEBUG
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHDEBUG_UART4	1
 #endif /* WITHDEBUG */
 
 #if WITHLFM
@@ -50,8 +51,12 @@
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-#define WITHDEBUG_UART4	1
+#if 0
+	#define WITHCAT_USART4		1
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
+#endif
+
 #define BOARD_TUH_RHPORT 1
 
 #if WITHISBOOTLOADER

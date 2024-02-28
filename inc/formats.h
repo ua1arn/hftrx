@@ -589,6 +589,70 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
+#if WITHCAT && WITHUART4HW && WITHCAT_USART4
+	// CAT функции работают через UART4
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT_INITIALIZE() do { \
+			hardware_uart4_initialize(0, DEBUGSPEED, 8, 0, 0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
+			hardware_uart4_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT_ENABLETX(v) do { \
+			hardware_uart4_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT_ENABLERX(v) do { \
+			hardware_uart4_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_CAT_TX(ctx, c) do { \
+			hardware_uart4_tx((ctx), (c)); \
+		} while (0)
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния PTT
+	#if FROMCAT_BIT_RTS != 0
+		#define HARDWARE_CAT_GET_RTS() ((FROMCAT_TARGET_PIN_RTS & FROMCAT_BIT_RTS) == 0)
+	#else /* FROMCAT_BIT_RTS != 0 */
+		#define HARDWARE_CAT_GET_RTS() (0)
+	#endif /* FROMCAT_BIT_RTS != 0 */
+	// Вызывается из обработчика перерываний (или из user-mode программы) для получения состояния нажатия ключа
+	#if FROMCAT_BIT_DTR != 0
+		#define HARDWARE_CAT_GET_DTR() ((FROMCAT_TARGET_PIN_DTR & FROMCAT_BIT_DTR) == 0)
+	#else /* FROMCAT_BIT_DTR != 0 */
+		#define HARDWARE_CAT_GET_DTR() (0)
+	#endif /* FROMCAT_BIT_DTR != 0 */
+
+	/* заглушка для второго канала CAT */
+	#define HARDWARE_CAT2_GET_RTS() (0)
+	#define HARDWARE_CAT2_GET_DTR() (0)
+
+	// вызывается из обработчика прерываний UART4
+	// с принятым символом
+	#define HARDWARE_UART4_ONRXCHAR(c) do { \
+			cat2_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART4
+	#define HARDWARE_UART4_ONOVERFLOW() do { \
+			cat2_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART4
+	// по готовности передатчика
+	#define HARDWARE_UART4_ONTXCHAR(ctx) do { \
+			cat2_sendchar(ctx); \
+		} while (0)
+	// вызывается из обработчика прерываний UART4
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART4_ONTXDONE(ctx) do { \
+			cat2_txdone(ctx); \
+		} while (0)
+
+#endif /* WITHCAT && WITHUART4HW && WITHCAT_USART4 */
+
 #if WITHLWIP && WITHUART7HW && WITHCAT7_UART7
 	// CAT7 функции работают через UART7
 	// Вызывается из user-mode программы
