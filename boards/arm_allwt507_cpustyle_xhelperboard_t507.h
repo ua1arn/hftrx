@@ -1124,7 +1124,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); /* set as input with pull-up */ \
-		} while (0)
+	} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
@@ -1132,6 +1132,10 @@ void user_uart5_ontxchar(void * ctx);
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			USBD_EHCI_INITIALIZE(); \
-		} while (0)
+	} while (0)
+
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALW_T507_CPU_XHELPERBOARD_H_INCLUDED */

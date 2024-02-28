@@ -1202,17 +1202,17 @@
 
 	//PA0 - PA9 EMAC RMII
 	#define ETHERNET_INITIALIZE() do { \
-			arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 3, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 4, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 5, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 6, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 7, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 8, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
-		} while (0)
+		arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 3, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 4, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 5, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 6, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 7, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 8, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
+	} while (0)
 
 #else
 	#define ETHERNET_INITIALIZE() do { } while (0)
@@ -1220,13 +1220,16 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*BOARD_BLINK_INITIALIZE(); */\
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_GPIOREG_INITIALIZE(); \
-			/*HARDWARE_DAC_INITIALIZE(); */\
-			HARDWARE_DCDC_INITIALIZE(); \
-			ETHERNET_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-		} while (0)
+		/*BOARD_BLINK_INITIALIZE(); */\
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_GPIOREG_INITIALIZE(); \
+		/*HARDWARE_DAC_INITIALIZE(); */\
+		HARDWARE_DCDC_INITIALIZE(); \
+		ETHERNET_INITIALIZE(); \
+		USBD_EHCI_INITIALIZE(); \
+	} while (0)
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED */

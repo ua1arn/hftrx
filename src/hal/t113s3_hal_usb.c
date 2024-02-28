@@ -3537,6 +3537,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
       			break;
     		}
 	      	break;
+#if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
     		// work
     		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
@@ -3550,6 +3551,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
        		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
+#endif /* WITHUSBCDCACM */
     	default   :
      		PRINTF("usb_device: Unknown EP0 OUT: ifc=%u, 0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
 			pusb->ep0_xfer_residue = 0;

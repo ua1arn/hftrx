@@ -1088,4 +1088,7 @@
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
+
 #endif /* ARM_ALWT113S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */

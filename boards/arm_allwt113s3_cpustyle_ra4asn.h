@@ -1154,4 +1154,7 @@
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
+
 #endif /* ARM_ALLW_T113_CPUSTYLE_RA4ASN_H_INCLUDED */
