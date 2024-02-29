@@ -5516,10 +5516,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //	else if (divider > 15)
 //		divider = 15;
 
-	//PRINTF("VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
 	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
 	local_delay_ms(10);
-	//PRINTF("VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
 
 	unsigned divider = 1;
 	PRINTF("AudioCodec: divider=%u, mclkf=%u, lrckf=%u\n", divider, (unsigned) mclkf, (unsigned) lrckf);
@@ -5536,12 +5534,10 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// AudioCodec тактируется от AUDIO_CODEC_1X_CLK_REG
 	const portholder_t codec_clk_1x_reg =
-		//(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src_1x << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
 	const portholder_t codec_clk_4x_reg =
-		////(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src_4x << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
@@ -5550,14 +5546,10 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_4X_CLK_REG = codec_clk_4x_reg;
 
 	CCU->AUDIO_CODEC_1X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
-	CCU->AUDIO_CODEC_4X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
+	//CCU->AUDIO_CODEC_4X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
 
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
-
-//	PRINTF("AUDIO_CODEC_1X_CLK_REG=%08X\n", (unsigned) CCU->AUDIO_CODEC_1X_CLK_REG);
-//	PRINTF("AUDIO_CODEC_4X_CLK_REG=%08X\n", (unsigned) CCU->AUDIO_CODEC_4X_CLK_REG);
-//	PRINTF("AUDIO_CODEC_BGR_REG=%08X\n", (unsigned) CCU->AUDIO_CODEC_BGR_REG);
 
 //	PRINTF("AudioCodec: t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
