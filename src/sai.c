@@ -5639,8 +5639,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 
-	AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);
-
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
@@ -5661,7 +5659,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->DAC_REG =
 		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
 		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
-		(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
+		//(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
 		0x1F * (UINT32_C(1) << 0) | // LINEOUT volume control
 		0;
 //	PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
@@ -5674,10 +5672,15 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //		(UINT32_C(1) << 10) |	// RMIXEN
 		0;
 
+	AUDIO_CODEC->RAMP_REG =
+		0x00 * (UINT32_C(1) << 4) |	// RS Ramp Step
+		1 * (UINT32_C(1) << 0) |	// RDEN Ramp Digital Enable
+		0;
+
 	//0x0000000005096310: 0x00153d1f 0x00aa0d33 0x00000000 0x00000011
-	AUDIO_CODEC->DAC_REG = 0x00153D1F;
+	//AUDIO_CODEC->DAC_REG = 0x00153D1F;
 	AUDIO_CODEC->MIXER_REG = 0x00AA0D33;
-	AUDIO_CODEC->RAMP_REG = 0x00000011;
+	//AUDIO_CODEC->RAMP_REG = 0x00000011;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// anatol
