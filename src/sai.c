@@ -5526,23 +5526,26 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	10: PLL_AUDIO(4X)
 	//	11: PLL_AUDIO(hs)
 
-	const unsigned long src_1x = 0x02;
-	const unsigned long src_4x = 0x02;
+	const unsigned long src_1x = 0x02;	// 10: PLL_AUDIO(4X)
+	const unsigned long src_4x = 0x02;	// 10: PLL_AUDIO(4X)
 
 	// AudioCodec тактируется от AUDIO_CODEC_1X_CLK_REG
 	const portholder_t codec_clk_1x_reg =
-		(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		//(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src_1x << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
 	const portholder_t codec_clk_4x_reg =
-		//(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		////(UINT32_C(1) << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src_4x << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
 		0;
 
 	CCU->AUDIO_CODEC_1X_CLK_REG = codec_clk_1x_reg;
 	CCU->AUDIO_CODEC_4X_CLK_REG = codec_clk_4x_reg;
+
+	CCU->AUDIO_CODEC_1X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
+	CCU->AUDIO_CODEC_4X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
 
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
@@ -5630,11 +5633,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	PRINTF("PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
+
 	ASSERT(DMABUFFSTEP16TX == 2);
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 
-	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);
+	AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);
 
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_DAC_FIFOC &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
@@ -5643,8 +5648,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->AC_DAC_FIFOC |= (UINT32_C(1) << 4);	// DAC_DRQ_EN
 
 	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 0);	// HUB_EN
-
-
 
     ///-----LDO-----
 	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
@@ -5657,9 +5660,9 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
 		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
-//		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
-//		(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE
-//		0x1F * (UINT32_C(1) << 0) | // LINEOUT volume control
+		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
+		(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
+		0x1F * (UINT32_C(1) << 0) | // LINEOUT volume control
 		0;
 //	PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
 
@@ -5671,6 +5674,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //		(UINT32_C(1) << 10) |	// RMIXEN
 		0;
 
+	//0x0000000005096310: 0x00153d1f 0x00aa0d33 0x00000000 0x00000011
+	AUDIO_CODEC->DAC_REG = 0x00153D1F;
+	AUDIO_CODEC->MIXER_REG = 0x00AA0D33;
+	AUDIO_CODEC->RAMP_REG = 0x00000011;
+	TP();
+	for (;;)
+		;
 
 	AUDIO_CODEC->RAMP_REG |=
 	   (UINT32_C(1) << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
