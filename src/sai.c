@@ -5516,6 +5516,11 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //	else if (divider > 15)
 //		divider = 15;
 
+	//PRINTF("VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
+	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+	local_delay_ms(10);
+	//PRINTF("VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
+
 	unsigned divider = 1;
 	PRINTF("AudioCodec: divider=%u, mclkf=%u, lrckf=%u\n", divider, (unsigned) mclkf, (unsigned) lrckf);
 
@@ -5550,6 +5555,9 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (UINT32_C(1) << 16);	// AUDIO_CODEC Reset
 
+	PRINTF("AUDIO_CODEC_1X_CLK_REG=%08X\n", (unsigned) CCU->AUDIO_CODEC_1X_CLK_REG);
+	PRINTF("AUDIO_CODEC_4X_CLK_REG=%08X\n", (unsigned) CCU->AUDIO_CODEC_4X_CLK_REG);
+	PRINTF("AUDIO_CODEC_BGR_REG=%08X\n", (unsigned) CCU->AUDIO_CODEC_BGR_REG);
 
 	PRINTF("AudioCodec: t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
 	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
@@ -5749,21 +5757,22 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		0x00000000, 0x00000000, 0x00000000, 0x00000000,
 
 	};
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(f0); ++ i)
-	{
-		volatile uint32_t * const p = (volatile uint32_t *) (AUDIO_CODEC_BASE + i * 4);
-		* p = f0 [i];
-		(void) * p;
-	}
-	TP();
-	for (;;)
-		;
+//	unsigned i;
+//	for (i = 0; i < ARRAY_SIZE(f0); ++ i)
+//	{
+//		volatile uint32_t * const p = (volatile uint32_t *) (AUDIO_CODEC_BASE + i * 4);
+//		* p = f0 [i];
+//		(void) * p;
+//	}
+//	TP();
+//	printhex32(AUDIO_CODEC_BASE, AUDIO_CODEC, sizeof * AUDIO_CODEC);
+//	for (;;)
+//		;
 
-	AUDIO_CODEC->RAMP_REG |=
-	   (UINT32_C(1) << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
-	   //(UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
-	   0;
+//	AUDIO_CODEC->RAMP_REG |=
+//	   (UINT32_C(1) << 15) | // HP_PULL_OUT_EN Heanphone Pullout Enable
+//	   //(UINT32_C(1) << 0) | // RD_EN Ramp Digital Enable
+//	   0;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// anatol
