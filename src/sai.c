@@ -5666,10 +5666,10 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// Offset 0x314 MIXER Analog Control Register
 	AUDIO_CODEC->MIXER_REG =
-//		1 * (UINT32_C(1) << 20) |	// DACL_EN
-//		1 * (UINT32_C(1) << 16) |	// DACR_EN
-//		(UINT32_C(1) << 11) |	// LMIXEN
-//		(UINT32_C(1) << 10) |	// RMIXEN
+		0x0A * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		0x0A * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		1 * (UINT32_C(1) << 11) |	// LMIXEN
+		1 * (UINT32_C(1) << 10) |	// RMIXEN
 		0;
 
 	AUDIO_CODEC->RAMP_REG =
@@ -5679,7 +5679,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	//0x0000000005096310: 0x00153d1f 0x00aa0d33 0x00000000 0x00000011
 	//AUDIO_CODEC->DAC_REG = 0x00153D1F;
-	AUDIO_CODEC->MIXER_REG = 0x00AA0D33;
+	//AUDIO_CODEC->MIXER_REG = 0x00AA0D33;
 	//AUDIO_CODEC->RAMP_REG = 0x00000011;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
