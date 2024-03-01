@@ -1257,6 +1257,7 @@ extern "C" {
 #define CODEC_TYPE_NAU8822L		43	// NUVOTON NAU8822L
 #define CODEC_TYPE_WM8994		44	// CIRRUS LOGIC WM8994ECS/R
 #define CODEC_TYPE_CS42L51		45	// CIRRUS LOGIC CS42L51
+#define CODEC_TYPE_AWHWCODEC	46	// Allwinner embedded audio codec
 
 #define RTC_TYPE_DS1305		50	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 #define RTC_TYPE_DS1307		51	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */

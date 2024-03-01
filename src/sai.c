@@ -5666,8 +5666,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// Offset 0x314 MIXER Analog Control Register
 	AUDIO_CODEC->MIXER_REG =
-		0x0A * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
-		0x0A * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
 		1 * (UINT32_C(1) << 11) |	// LMIXEN
 		1 * (UINT32_C(1) << 10) |	// RMIXEN
 		0;
@@ -5964,7 +5964,21 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 /* Установка громкости на наушники */
 static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
-	uint_fast16_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
+	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
+	// Offset 0x310 DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG =
+		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
+		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
+		//(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
+		level * (UINT32_C(1) << 0) | // LINEOUT volume control
+		0;
+	// Offset 0x314 MIXER Analog Control Register
+	AUDIO_CODEC->MIXER_REG =
+		!! mutespk * 0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		!! mutespk * 0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		1 * (UINT32_C(1) << 11) |	// LMIXEN
+		1 * (UINT32_C(1) << 10) |	// RMIXEN
+		0;
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
