@@ -5658,26 +5658,25 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 #if 0
 	// moved to audiocodechw_setvolume
-	PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
-
+	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
+		1 * (UINT32_C(1) << 9) | 	// RSWITCH - use 1: VRA1
 		1 * (UINT32_C(1) << 20) |	// IOPVRS VRA2 Buffer OP Bias Current Select
 		1 * (UINT32_C(1) << 18) |	// ILINEOUTAMPS LINEOUTL/R AMP Bias Current Select
 		1 * (UINT32_C(1) << 16) |	// IOPDACS OPDAC Bias Current Select
 		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
 		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
 		//(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
-		0x1F * (UINT32_C(1) << 0) | // LINEOUT volume control
+		level * (UINT32_C(1) << 0) | // LINEOUT volume control
 		0;
-	PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
 
 	// Offset 0x314 MIXER Analog Control Register
 	AUDIO_CODEC->MIXER_REG =
-		0x0A * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
-		0x0A * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
-		1 * (UINT32_C(1) << 11) |	// LMIXEN
-		1 * (UINT32_C(1) << 10) |	// RMIXEN
+		! mute * 0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		! mute * 0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		1 * (UINT32_C(1) << 11) |	// LMIXEN: 0 - на 6 dB меньше
+		1 * (UINT32_C(1) << 10) |	// RMIXEN: 0 - на 6 dB меньше
 		0;
 #endif
 
@@ -6001,6 +6000,7 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 		1 * (UINT32_C(1) << 11) |	// LMIXEN: 0 - на 6 dB меньше
 		1 * (UINT32_C(1) << 10) |	// RMIXEN: 0 - на 6 dB меньше
 		0;
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 #endif
