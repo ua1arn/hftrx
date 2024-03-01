@@ -2849,30 +2849,6 @@ saverts96pair(const IFADCvalue_t * buff)
 	}
 }
 
-// использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
-saverts96(const IFADCvalue_t * buff)
-{
-	// формирование отображения спектра
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swaprts != 0)
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0Q],	// current
-			buff [DMABUF32RXRTS0I]
-			);
-	}
-	else
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0I],	// current
-			buff [DMABUF32RXRTS0Q]
-			);
-	}
-}
-
 #endif /* WITHDSPEXTDDC && WITHRTS96 */
 
 #if WITHDSPEXTDDC && WITHRTS192
@@ -3047,9 +3023,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		// Тестирование - заменить приянтые квадратуры синтезированными
 		inject_testsignals(b);
 #endif
-#if FPGAMODE_GW2A
-		saverts96(b);	// использование данных о спектре, передаваемых в общем фрейме
-#elif WITHRTS96
+#if WITHRTS96
 		saverts96pair(b);	// использование данных о спектре, передаваемых в общем фрейме
 #elif WITHRTS192
 		saverts192quad(b);	// использование данных о спектре, передаваемых в общем фрейме

@@ -5100,13 +5100,7 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 	dbuff [DMABUF32RX0I] = adpt_output(& ifcodecrx, simval.IV);
 	dbuff [DMABUF32RX0Q] = adpt_output(& ifcodecrx, simval.QV);
 
-#if FPGAMODE_GW2A
-	// панорама
-	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RXRTS0I] = adpt_output(& ifspectrumin96, simval0.IV);
-	dbuff [DMABUF32RXRTS0Q] = adpt_output(& ifspectrumin96, simval0.QV);
-
-#elif WITHRTS96
+#if WITHRTS96
 	// панорама
 	// previous - oldest
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
@@ -5418,11 +5412,7 @@ int_fast32_t dsp_get_samplerateuacin_audio48(void)
 // todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
 int_fast32_t dsp_get_samplerateuacin_RTS96(void)
 {
-#if FPGAMODE_GW2A
-	return dsp_get_sampleraterxscaled(1);
-#else
 	return dsp_get_sampleraterxscaled(2);
-#endif
 }
 
 // UAC IN samplerate
