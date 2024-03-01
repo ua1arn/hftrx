@@ -5958,6 +5958,68 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 
 #endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_AWHWCODEC)
+// Allwinner embedded audio codec
+
+/* Установка громкости на наушники */
+static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+{
+	uint_fast16_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
+}
+
+/* Выбор LINE IN как источника для АЦП вместо микрофона */
+static void audiocodechw_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+{
+
+}
+
+/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+static void audiocodechw_setprocparams(
+	uint_fast8_t procenable,		/* включение обработки */
+	const uint_fast8_t * gains		/* массив с параметрами */
+	)
+{
+
+}
+
+static void audiocodechw_initialize_fullduplex(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
+{
+}
+
+static void audiocodechw_stop(void)
+{
+
+}
+
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t audiocodechw_clocksneed(void)
+{
+	return 1;
+}
+
+const codec1if_t *
+board_getaudiocodecif(void)
+{
+
+	static const char codecname [] = "audiocodechw";
+
+	/* Интерфейс управления кодеком */
+	static const codec1if_t ifc =
+	{
+		audiocodechw_clocksneed,
+		audiocodechw_stop,
+		audiocodechw_initialize_fullduplex,
+		audiocodechw_setvolume,		/* Установка громкости на наушники */
+		audiocodechw_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
+		audiocodechw_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+		codecname				/* Название кодека (всегда последний элемент в структуре) */
+	};
+
+	return & ifc;
+}
+
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_AWHWCODEC) */
+
 #if defined(I2S1) && WITHI2S1HW
 
 static const codechw_t audiocodechw_i2s1_duplex_slave =

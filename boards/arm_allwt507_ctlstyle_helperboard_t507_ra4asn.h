@@ -240,6 +240,7 @@
 
 #else /* WITHISBOOTLOADER */
 
+	//#define WITHUSBHEADSET	1
 	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
 	//#define CTLREGMODE_NOCTLREG 1
 	#define CTLREGMODE_UA3REO_EXTBOARD	1
@@ -269,6 +270,7 @@
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
+	//#define CODEC1_TYPE CODEC_TYPE_AWHWCODEC
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
