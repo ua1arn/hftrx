@@ -5975,8 +5975,10 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 /* Установка громкости на наушники */
 static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
+#if WITHUSBHEADSET
 	gain = BOARD_AFGAIN_MAX;
-	PRINTF("audiocodechw_setvolume: gain=%u\n", (unsigned) gain);
+#endif /* WITHUSBHEADSET */
+	PRINTF("audiocodechw_setvolume: gain=%u, mute=%u, mutespk=%u\n", (unsigned) gain, (unsigned) mute, (unsigned) mutespk);
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
@@ -5991,10 +5993,10 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 
 	// Offset 0x314 MIXER Analog Control Register
 	AUDIO_CODEC->MIXER_REG =
-		0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
-		0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
-		1 * (UINT32_C(1) << 11) |	// LMIXEN
-		1 * (UINT32_C(1) << 10) |	// RMIXEN
+		! mute * 0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		! mute * 0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		1 * (UINT32_C(1) << 11) |	// LMIXEN: 0 - на 6 dB меньше
+		1 * (UINT32_C(1) << 10) |	// RMIXEN: 0 - на 6 dB меньше
 		0;
 }
 
