@@ -10564,6 +10564,9 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
+    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+
 	CCU->THS_BGR_REG |= (1 << 0); // THS_GATING
 	CCU->THS_BGR_REG |= (1 << 16); // THS_RESET
 	THS->THS_EN &= ~ (1 << 0);
