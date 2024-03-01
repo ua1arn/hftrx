@@ -5656,6 +5656,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
     ///-------------
 
+#if 0
+	// moved to audiocodechw_setvolume
 	PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
 
 	// Offset 0x310 DAC Analog Control Register
@@ -5677,6 +5679,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		1 * (UINT32_C(1) << 11) |	// LMIXEN
 		1 * (UINT32_C(1) << 10) |	// RMIXEN
 		0;
+#endif
 
 	AUDIO_CODEC->RAMP_REG =
 		0x00 * (UINT32_C(1) << 4) |	// RS Ramp Step
@@ -5972,6 +5975,8 @@ static const codechw_t audiocodechw_AudioCodec_duplex_master =
 /* Установка громкости на наушники */
 static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
+	gain = BOARD_AFGAIN_MAX;
+	PRINTF("audiocodechw_setvolume: gain=%u\n", (unsigned) gain);
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
@@ -5982,6 +5987,14 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
 		//(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
 		level * (UINT32_C(1) << 0) | // LINEOUT volume control
+		0;
+
+	// Offset 0x314 MIXER Analog Control Register
+	AUDIO_CODEC->MIXER_REG =
+		0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		1 * (UINT32_C(1) << 11) |	// LMIXEN
+		1 * (UINT32_C(1) << 10) |	// RMIXEN
 		0;
 }
 
