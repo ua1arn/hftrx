@@ -5980,6 +5980,7 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 	gain = BOARD_AFGAIN_MAX;
 #endif /* WITHUSBHEADSET */
 	PRINTF("audiocodechw_setvolume: gain=%u, mute=%u, mutespk=%u\n", (unsigned) gain, (unsigned) mute, (unsigned) mutespk);
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
@@ -6000,6 +6001,9 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 		1 * (UINT32_C(1) << 11) |	// LMIXEN: 0 - на 6 dB меньше
 		1 * (UINT32_C(1) << 10) |	// RMIXEN: 0 - на 6 dB меньше
 		0;
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+#endif
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
