@@ -134,9 +134,14 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
+
 SRCDIRS += $(PRJROOT)/src
-SRCDIRS += $(ARCHDIR)
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
+SRCDIRS += $(ARCHDIR)
 
 ifeq (1, 0)
 # lvgl
@@ -209,13 +214,6 @@ ifeq (1, 0)
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
 endif
-
-SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
-
-
-# taken from
-# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
-rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
