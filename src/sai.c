@@ -5681,9 +5681,10 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		0;
 #endif
 
+	// not needed - switched by RSWITCH
 	AUDIO_CODEC->RAMP_REG =
-		0x00 * (UINT32_C(1) << 4) |	// RS Ramp Step
-		1 * (UINT32_C(1) << 0) |	// RDEN Ramp Digital Enable
+//		0x00 * (UINT32_C(1) << 4) |	// RS Ramp Step
+//		1 * (UINT32_C(1) << 0) |	// RDEN Ramp Digital Enable
 		0;
 
 	//PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
@@ -5982,6 +5983,7 @@ static void audiocodechw_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_f
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register
 	AUDIO_CODEC->DAC_REG =
+		1 * (UINT32_C(1) << 9) | 	// RSWITCH - use 1: VRA1
 		1 * (UINT32_C(1) << 20) |	// IOPVRS VRA2 Buffer OP Bias Current Select
 		1 * (UINT32_C(1) << 18) |	// ILINEOUTAMPS LINEOUTL/R AMP Bias Current Select
 		1 * (UINT32_C(1) << 16) |	// IOPDACS OPDAC Bias Current Select
