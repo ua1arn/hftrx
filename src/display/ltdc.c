@@ -3074,14 +3074,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		//glb->GLB_STS = 0;
 	}
 
-    /* эта инициацизация требуется только на рабочем RT-Mixer */
-    {
-    	const int rtmixid = RTMIXID;
-
-		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-		t113_de_update(rtmixid);
-    }
-
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on this CPU) */
@@ -3189,19 +3181,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
     }
 
-    /* эта инициацизация требуется только на рабочем RT-Mixer */
+#else
+	#error Undefined CPUSTYLE_xxx
+#endif
+
+    /* эта инициализация требуется только на рабочем RT-Mixer */
     {
     	const int rtmixid = RTMIXID;
 
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);
     }
-
-#else
-	#error Undefined CPUSTYLE_xxx
-#endif
-
-
 }
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
