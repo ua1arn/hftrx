@@ -3097,12 +3097,39 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 #if 0
 	//PRINTF("DE_TOP after:\n");
 	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
-	// Offset 0x24: 0x01020905
+	//    DE_IP_CFG=01020905
+	//    DE_IP_CFG.RTD1_DI_NO=0
+	//    DE_IP_CFG.RTD1_UI_NO=0
+	//    DE_IP_CFG.RTD1_VIDEO_NO=1
+	//    DE_IP_CFG.RTD1_FBD_NO=0
+	//    DE_IP_CFG.RTD1_DNS_NO=0
+	//    DE_IP_CFG.RTD1_VEP_NO=1
+	//    DE_IP_CFG.RTD1_DEP_NO=0
+	//    DE_IP_CFG.RTD0_DI_NO=0
+	//    DE_IP_CFG.RTD0_UI_NO=1
+	//    DE_IP_CFG.RTD0_VIDEO_NO=1
+	//    DE_IP_CFG.RTD0_FBD_NO=0
+	//    DE_IP_CFG.RTD0_DNS_NO=0
+	//    DE_IP_CFG.RTD0_VEP_NO=2
+	//    DE_IP_CFG.RTD0_DEP_NO=1
+
 	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
-	PRINTF("DE_IP_CFG.RTD1_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
-	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
+
+	PRINTF("DE_IP_CFG.RTD1_DI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 30) & 0x03);
+	PRINTF("DE_IP_CFG.RTD1_UI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_FBD_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 21) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_DNS_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 19) & 0x03);
+	PRINTF("DE_IP_CFG.RTD1_VEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 17) & 0x03);
+	PRINTF("DE_IP_CFG.RTD1_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 16) & 0x01);
+
+	PRINTF("DE_IP_CFG.RTD0_DI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 14) & 0x03);
+	PRINTF("DE_IP_CFG.RTD0_UI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_FBD_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 5) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_DNS_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 3) & 0x03);
+	PRINTF("DE_IP_CFG.RTD0_VEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 1) & 0x03);
+	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
 #endif
 
     if (1)
