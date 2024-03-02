@@ -1888,7 +1888,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
 
-#define RTMIXID 1
+#define RTMIXID 1	/* 1 or 2 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX 1
@@ -3114,7 +3114,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
 
+    	/* перенаправление выхода DE */
     	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb == NULL)
 			return;
@@ -3127,12 +3129,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
 		glb->GLB_STS = 0;
-
-		t113_de_update(rtmixid);
-
-		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-
-		t113_de_update(rtmixid);
     }
 
     if (RTMIXID == 2)
@@ -3144,7 +3140,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
 
+    	/* перенаправление выхода DE */
     	DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
+
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb == NULL)
 			return;
@@ -3158,10 +3156,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 		glb->GLB_STS = 0;
 
-		t113_de_update(rtmixid);
+    }
+
+    /* эта инициадизация требуется только на рабочем RT-Mixer */
+    {
+    	const int rtmixid = RTMIXID;
 
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-
 		t113_de_update(rtmixid);
     }
 
