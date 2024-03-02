@@ -2976,7 +2976,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	//ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
 
-	glb->GLB_STS = 0;
+	//glb->GLB_STS = 0;
 
 	//	PRINTF("DE_TOP AHB final:\n");
 	//	printhex32(DE_TOP_BASE, DE_TOP, 256);
@@ -3071,7 +3071,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-		glb->GLB_STS = 0;
+		//glb->GLB_STS = 0;
 	}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -3105,7 +3105,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
 #endif
 
-    if (1)//(RTMIXID == 1)
+    if (1)
     {
 		const int rtmixid = 1;
         // Enable RT-Mixer 0
@@ -3117,18 +3117,19 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     	/* перенаправление выхода DE */
     	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
 
+    	/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer 1 */
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb == NULL)
 			return;
 
 		glb->GLB_CTL =
-				(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
-				(UINT32_C(1) << 0) |		// EN RT enable/disable
+				//(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+				(UINT32_C(1) << 0) |		// EN RT enable/disable Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer
 				0;
 
 		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-		glb->GLB_STS = 0;
+		//glb->GLB_STS = 0;
     }
 
     if (RTMIXID == 2)
@@ -3148,13 +3149,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			return;
 
 		glb->GLB_CTL =
-				(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+				//(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 				(UINT32_C(1) << 0) |		// EN RT enable/disable
 				0;
 
 		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-		glb->GLB_STS = 0;
+		//glb->GLB_STS = 0;
 
     }
 
