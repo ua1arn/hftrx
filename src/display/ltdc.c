@@ -3149,7 +3149,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		if (glb != NULL)
 		{
 			glb->GLB_CTL =
-					//(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+					0x01 * (UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 					(UINT32_C(1) << 0) |		// EN RT enable/disable Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для раьоты RT Mixer
 					0;
 
@@ -3173,7 +3173,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		if (glb != NULL)
 		{
 			glb->GLB_CTL =
-					//(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+					0x01 * (UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 					(UINT32_C(1) << 0) |		// EN RT enable/disable
 					0;
 
