@@ -1888,11 +1888,11 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
 
-#define RTMIXIX 1
+#define RTMIXID 1
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX 1
-	#define UI_LASTIX 1
+	#define UI_LASTIX 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
 	#define VI_LASTIX 3
@@ -1907,24 +1907,24 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define VI_POS_BIT(vi) (UINT32_C(1) << ((vi) + 8 - 1))
 #define UI_POS_BIT(ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
 
-static DE_GLB_TypeDef * de3_getglb(int rtmixix)
+static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
 #ifdef DEb_GLB
-	return rtmixix == 1 ? DE_GLB : DEb_GLB;
+	return rtmixid == 1 ? DE_GLB : DEb_GLB;
 #else
-	return rtmixix == 1 ? DE_GLB : NULL;
+	return rtmixid == 1 ? DE_GLB : NULL;
 #endif
 }
 
-static DE_VI_TypeDef * de3_getvi(int rtmixix, int ix)
+static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 {
 	switch (ix)
 	{
 	default: return NULL;
 #ifdef DEb_VI1
-	case 1: return rtmixix == 1 ? DE_VI1 : DEb_VI1;
+	case 1: return rtmixid == 1 ? DE_VI1 : DEb_VI1;
 #else
-	case 1: return rtmixix == 1 ? DE_VI1 : NULL;
+	case 1: return rtmixid == 1 ? DE_VI1 : NULL;
 #endif
 #if VI_LASTIX > 1
 	case 2: return DE_VI2;
@@ -1934,12 +1934,12 @@ static DE_VI_TypeDef * de3_getvi(int rtmixix, int ix)
 
 }
 
-static DE_UI_TypeDef * de3_getui(int rtmixix, int ix)
+static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 {
 	switch (ix)
 	{
 	default: return NULL;
-	case 1: return rtmixix == 1 ? DE_UI1 : NULL;
+	case 1: return rtmixid == 1 ? DE_UI1 : NULL;
 #if UI_LASTIX > 1
 	case 2: return DE_UI2;
 	case 3: return DE_UI3;
@@ -1948,11 +1948,11 @@ static DE_UI_TypeDef * de3_getui(int rtmixix, int ix)
 
 }
 
-static DE_BLD_TypeDef * de3_getbld(int rtmixix)
+static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 {
 #if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
-	switch (rtmixix)
+	switch (rtmixid)
 	{
 	default: return NULL;
 	case 1: return DE_BLD1;
@@ -1960,7 +1960,7 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixix)
 	}
 
 #else
-	switch (rtmixix)
+	switch (rtmixid)
 	{
 	default: return NULL;
 	case 1: return DE_BLD1;
@@ -1999,9 +1999,9 @@ static uint32_t ptr_lo32(uintptr_t v)
 	static const uint32_t ui_format = 0x0A;
 #endif
 
-static void t113_de_update(void)
+static void t113_de_update(int rtmixid)
 {
-	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 	if (glb == NULL)
 		return;
 	glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
@@ -2010,9 +2010,9 @@ static void t113_de_update(void)
 }
 
 /* VI (VI0) */
-static void t113_de_set_address_vi(uintptr_t vram, int vich)
+static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 {
-	DE_VI_TypeDef * const vi = de3_getvi(RTMIXIX, vich);
+	DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
 
 	if (vi == NULL)
 		return;
@@ -2042,9 +2042,9 @@ static void t113_de_set_address_vi(uintptr_t vram, int vich)
 
 }
 
-static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
+static inline void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 {
-	DE_UI_TypeDef * const ui = de3_getui(RTMIXIX, uich);
+	DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
 
 	if (ui == NULL)
 		return;
@@ -2070,9 +2070,9 @@ static inline void t113_de_set_address_ui(uintptr_t vram, int uich)
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
-static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixix, unsigned color)
+static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned color)
 {
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixix);
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 	// Allwinner_DE2.0_Spec_V1.0.pdf
@@ -2086,7 +2086,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixix, uns
 
 	/* DE submodules */
 
-	DE_GLB_TypeDef * const glb = de3_getglb(rtmixix);
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 	if (glb == NULL)
 		return;
 
@@ -2139,7 +2139,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixix, uns
 	int vich = 1;
 	for (vich = 1; vich <= VI_LASTIX; vich ++)
 	{
-		DE_VI_TypeDef * const vi = de3_getvi(RTMIXIX, vich);
+		DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
 		if (vi == NULL)
 			continue;
 
@@ -2159,7 +2159,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixix, uns
 	for (uich = 1; uich <= UI_LASTIX; ++ uich)
 	{
 		//DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
-		DE_UI_TypeDef * const ui = de3_getui(RTMIXIX, uich);
+		DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
 		if (ui == NULL)
 			continue;
 
@@ -2959,7 +2959,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP AHB reset:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
-	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
+	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXID);
 	if (glb == NULL)
 		return;
 	glb->GLB_CTL =
@@ -3021,6 +3021,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
  	/* Global DE settings */
 
+#if 0
+	//PRINTF("DE_TOP after:\n");
+	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
+	// Offset 0x24: 0x01020905
+	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
+	PRINTF("DE_IP_CFG.RTD1_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
+#endif
+
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 
     if (1)
@@ -3040,35 +3051,28 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
-#if 0
-	//PRINTF("DE_TOP after:\n");
-	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
-	// Offset 0x24: 0x01020905
-	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
-	PRINTF("DE_IP_CFG.RTD1_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
-	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
-#endif
+	{
+		const int rtmixid = RTMIXID;
 
-	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
-	if (glb == NULL)
-		return;
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb == NULL)
+			return;
 
-	glb->GLB_CTL =
-			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
-			(UINT32_C(1) << 0) |		// EN RT enable/disable
-			0;
+		glb->GLB_CTL =
+				(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+				(UINT32_C(1) << 0) |		// EN RT enable/disable
+				0;
 
-	glb->GLB_CLK |= (UINT32_C(1) << 0);
+		glb->GLB_CLK |= (UINT32_C(1) << 0);
 
-	//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
-	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
-	//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
+		//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
+		//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
+		//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
 
-	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-	glb->GLB_STS = 0;
+		glb->GLB_STS = 0;
+	}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
@@ -3090,29 +3094,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("DE_TOP before:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
-    if (RTMIXIX == 1)
-    {
-        // Enable RT-Mixer 0
-    	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
-    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
-    	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
-    	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
-
-    	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
-    }
-
-    if (RTMIXIX == 2)
-    {
-        // Enable RT-Mixer 1
-    	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
-    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
-    	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
-    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
-
-    	DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
-    }
-
-
 #if 0
 	//PRINTF("DE_TOP after:\n");
 	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
@@ -3124,32 +3105,71 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
 #endif
 
-	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
-	if (glb == NULL)
-		return;
+    if (1)//(RTMIXID == 1)
+    {
+		const int rtmixid = 1;
+        // Enable RT-Mixer 0
+    	DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
+    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
+    	DE_TOP->RST_CFG |= UINT32_C(1) << 0;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
 
-	glb->GLB_CTL =
-			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
-			(UINT32_C(1) << 0) |		// EN RT enable/disable
-			0;
+    	DE_TOP->SEL_CFG &= ~ (UINT32_C(1) << 0);	/* MIXER0->TCON0; MIXER1->TCON1 */
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb == NULL)
+			return;
 
-//	PRINTF("1 glb->GLB_CLK=%08" PRIX32 "\n", glb->GLB_CLK);
-//	glb->GLB_CLK |= (UINT32_C(1) << 0);
-//	PRINTF("2 glb->GLB_CLK=%08" PRIX32 "\n", glb->GLB_CLK);
+		glb->GLB_CTL =
+				(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+				(UINT32_C(1) << 0) |		// EN RT enable/disable
+				0;
 
-	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 
-	glb->GLB_STS = 0;
+		glb->GLB_STS = 0;
+
+		t113_de_update(rtmixid);
+
+		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+
+		t113_de_update(rtmixid);
+    }
+
+    if (RTMIXID == 2)
+    {
+    	const int rtmixid = 2;
+       // Enable RT-Mixer 1
+    	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
+    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
+    	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
+
+    	DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb == NULL)
+			return;
+
+		glb->GLB_CTL =
+				(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+				(UINT32_C(1) << 0) |		// EN RT enable/disable
+				0;
+
+		ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+
+		glb->GLB_STS = 0;
+
+		t113_de_update(rtmixid);
+
+		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+
+		t113_de_update(rtmixid);
+    }
 
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
 
-	t113_de_update();
 
-	t113_de_set_mode(vdmode, RTMIXIX, COLOR24(255, 255, 0));	// yellow
-
-	t113_de_update();
 }
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
@@ -3177,8 +3197,8 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(void)
 {
-
-	DE_GLB_TypeDef * const glb = de3_getglb(RTMIXIX);
+	const int rtmixid = RTMIXID;
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 	if (glb == NULL)
 		return;
 	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
@@ -3198,63 +3218,66 @@ static void hardware_ltdc_vsync(void)
 /* Вызывается из display_flush, используется только в тестах */
 void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 {
-	DE_BLD_TypeDef * const bld = de3_getbld(RTMIXIX);
+	const int rtmixid = RTMIXID;
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
-	t113_de_set_address_vi(p1, 1);
+	t113_de_set_address_vi(rtmixid, p1, 1);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(RTMIXIX, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
 		0;
 
-	t113_de_update();
+	t113_de_update(rtmixid);
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
-	DE_BLD_TypeDef * const bld = de3_getbld(RTMIXIX);
+	const int rtmixid = RTMIXID;
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 
 	// Note: the layer priority is layer3>layer2>layer1>layer0
-	t113_de_set_address_vi(layer0, 1);	// VI1
-	t113_de_set_address_ui(layer1, 1);	// UI1
-	t113_de_set_address_ui(layer2, 2);	// UI2
-	t113_de_set_address_ui(layer3, 3);	// UI3
+	t113_de_set_address_vi(rtmixid, layer0, 1);	// VI1
+	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
+	t113_de_set_address_ui(rtmixid, layer2, 2);	// UI2
+	t113_de_set_address_ui(rtmixid, layer3, 3);	// UI3
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_EN_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(RTMIXIX, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-		((de3_getui(RTMIXIX, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
-		((de3_getui(RTMIXIX, 2) != NULL) * (layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
-		((de3_getui(RTMIXIX, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
+		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+		((de3_getui(rtmixid, 2) != NULL) * (layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
+		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
 		0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	t113_de_update();
+	t113_de_update(rtmixid);
 }
 
 /* set visible buffer start. Wait VSYNC. */
 void hardware_ltdc_main_set(uintptr_t p1)
 {
-	t113_de_set_address_vi(p1, 1);
+	const int rtmixid = RTMIXID;
+	t113_de_set_address_vi(rtmixid, p1, 1);
 	//t113_de_set_address_ui(p1, 1);
-	DE_BLD_TypeDef * const bld = de3_getbld(RTMIXIX);
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
 
 	bld->BLD_EN_COLOR_CTL =
-			((de3_getvi(RTMIXIX, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-			//((de3_getui(RTMIXIX, 1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+			((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
 			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	t113_de_update();
+	t113_de_update(rtmixid);
 }
 
 /* Palette reload */
