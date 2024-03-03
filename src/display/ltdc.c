@@ -1955,16 +1955,16 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	switch (rtmixid)
 	{
 	default: return NULL;
-	case 1: return DE_BLD1;
-	case 2: return DE_BLD2;
+	case 1: return DE_BLD;
+	case 2: return DEb_BLD;
 	}
 
 #else
 	switch (rtmixid)
 	{
 	default: return NULL;
-	case 1: return DE_BLD1;
-	case 2: return DE_BLD2;
+	case 1: return DE_BLD;
+	case 2: return DEb_BLD;
 	}
 #endif
 }

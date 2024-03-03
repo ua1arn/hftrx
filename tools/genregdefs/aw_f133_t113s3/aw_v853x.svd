@@ -5482,7 +5482,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_BLD1</name>
+  <name>DE_BLD</name>
   <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x05101000</baseAddress>
   <registers>
@@ -5636,8 +5636,8 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_BLD1">
-  <name>DE_BLD2</name>
+  <peripheral derivedFrom="DE_BLD">
+  <name>DEb_BLD</name>
   <baseAddress>0x05201000</baseAddress>
   </peripheral>
   <peripheral>

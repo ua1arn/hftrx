@@ -158,8 +158,8 @@ typedef enum IRQn
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_BLD1_BASE ((uintptr_t) 0x01281000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DE_BLD2_BASE ((uintptr_t) 0x012A1000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_BLD_BASE ((uintptr_t) 0x01281000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DEb_BLD_BASE ((uintptr_t) 0x012A1000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
@@ -2305,8 +2305,8 @@ typedef struct VE_Type
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
-#define DE_BLD1 ((DE_BLD_TypeDef *) DE_BLD1_BASE)     /*!< DE_BLD1 Display Engine (DE) - Blender register set access pointer */
-#define DE_BLD2 ((DE_BLD_TypeDef *) DE_BLD2_BASE)     /*!< DE_BLD2 Display Engine (DE) - Blender register set access pointer */
+#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
+#define DEb_BLD ((DE_BLD_TypeDef *) DEb_BLD_BASE)     /*!< DEb_BLD Display Engine (DE) - Blender register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */

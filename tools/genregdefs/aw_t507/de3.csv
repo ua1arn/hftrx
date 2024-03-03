@@ -64,8 +64,8 @@
 
 #type; DE_BLD; Display Engine (DE) - Blender
 
-#base; DE_BLD1 0x01281000
-#base; DE_BLD2 0x012A1000
+#base; DE_BLD 0x01281000
+#base; DEb_BLD 0x012A1000
 
 # Blender with six inputs
 

@@ -4618,7 +4618,7 @@
   </registers>
   </peripheral>
   <peripheral derivedFrom="DE_BLD1">
-  <name>DE_BLD2</name>
+  <name>DEb_BLD</name>
   <baseAddress>0x05201000</baseAddress>
   </peripheral>
   <peripheral>

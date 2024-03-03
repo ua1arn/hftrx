@@ -10480,7 +10480,7 @@ void testde(void)
 //		* p = v;
 //	}
 //	{
-//		uint32_t volatile * const p = (uint32_t volatile *) (DE_BLD1_BASE + 0x80);
+//		uint32_t volatile * const p = (uint32_t volatile *) (DE_BLD_BASE + 0x80);
 //		//uint32_t v = * p;
 //		//* p = ~ 0u;
 //		PRINTF("BLD SIGN=%08X\n", * p);

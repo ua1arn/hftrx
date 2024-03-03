@@ -28,8 +28,8 @@
 #regdef; GLB_SIZE;		0x00C;	Global size register
 
 #type; DE_BLD; Display Engine (DE) - Blender
-#base; DE_BLD1 0x05101000; RT-Mixer 0
-#base; DE_BLD2 0x05201000; RT-Mixer 1
+#base; DE_BLD 0x05101000; RT-Mixer 0
+#base; DEb_BLD 0x05201000; RT-Mixer 1
 
 #regdef; BLD_EN_COLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
 #aggreg; CH; 0x004 6; Pipe [0..3] - but six elements
