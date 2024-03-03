@@ -14215,6 +14215,68 @@ scaletopointssmeter(
 #endif
 }
 
+#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
+
+// SWR report
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodswrmeter(void)
+{
+	//const uint_fast8_t pathi = 0;	// A or B path
+
+	//enum { FS = SWRMIN * 15 / 10 };	// swr=1.0..4.0
+	adcvalholder_t r;
+	const adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
+	//const uint_fast16_t fullscale = FS - SWRMIN;
+	uint_fast16_t swr10;		// рассчитанное  значение
+	if (f < minforward)
+		swr10 = 0;	// SWR=1
+	else if (f <= r)
+		swr10 = 30;		// SWR is infinite
+	else
+		swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
+	// v = 10..40 for swr 1..4
+	// swr10 = 0..30 for swr 1..4
+	return swr10;	// tested with ARCP950. 0: SWR=1.0, 5: SWR=1.3, 10: SWR=1.8, 15: SWR=3.0
+}
+
+// COMP report
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodcompmeter(void)
+{
+	return 0;
+}
+
+// ALC report
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodalcmeter(void)
+{
+	return 0;
+}
+
+// RF (power)
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodpowermeter(void)
+{
+	uint_fast8_t pwrtrace;
+	uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+
+	if (pwrtrace > maxpwrcali)
+		pwrtrace = maxpwrcali;
+
+	return pwrtrace * 30 / maxpwrcali;
+}
+
+#else /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
+
+// RF (power)
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodpowermeter(void)
+{
+	return 0;
+}
+
+#endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
+
 static void smanswer(uint_fast8_t arg)
 {
 	// s-meter state answer
@@ -14242,7 +14304,7 @@ static void smanswer(uint_fast8_t arg)
 		{
 			// answer mode
 			const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_1,
-				(int) scaletopointssmeter(v, 0, UINT8_MAX)
+				(int) (gtx ? kenwoodpowermeter() : scaletopointssmeter(v, 0, UINT8_MAX))
 				);
 			cat_answer(len);
 		}
@@ -14330,48 +14392,6 @@ static void ananswer(uint_fast8_t arg)
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-
-// SWR report
-// 0000 ~ 0030: Meter value in dots
-static uint_fast8_t kenwoodswrmeter(void)
-{
-	//const uint_fast8_t pathi = 0;	// A or B path
-
-	//enum { FS = SWRMIN * 15 / 10 };	// swr=1.0..4.0
-	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
-	//const uint_fast16_t fullscale = FS - SWRMIN;
-	uint_fast16_t swr10;		// рассчитанное  значение
-	if (f < minforward)
-		swr10 = 0;	// SWR=1
-	else if (f <= r)
-		swr10 = 30;		// SWR is infinite
-	else
-		swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
-	// v = 10..40 for swr 1..4
-	// swr10 = 0..30 for swr 1..4
-	return swr10;	// tested with ARCP950. 0: SWR=1.0, 5: SWR=1.3, 10: SWR=1.8, 15: SWR=3.0
-}
-
-// COMP report
-// 0000 ~ 0030: Meter value in dots
-static uint_fast8_t kenwoodcompmeter(void)
-{
-	return 0;
-}
-
-// ALC report
-// 0000 ~ 0030: Meter value in dots
-static uint_fast8_t kenwoodalcmeter(void)
-{
-	uint_fast8_t pwrtrace;
-	uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-
-	if (pwrtrace > maxpwrcali)
-		pwrtrace = maxpwrcali;
-
-	return pwrtrace * 30 / maxpwrcali;
-}
 
 // SWR
 static void rm1answer(uint_fast8_t arg)
