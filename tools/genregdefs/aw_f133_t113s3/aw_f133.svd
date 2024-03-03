@@ -4463,7 +4463,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_BLD1</name>
+  <name>DE_BLD</name>
   <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x05101000</baseAddress>
   <registers>
@@ -4617,9 +4617,25 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_BLD1">
+  <peripheral derivedFrom="DE_BLD">
   <name>DEb_BLD</name>
   <baseAddress>0x05201000</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>DE_DEP</name>
+  <description></description>
+  <baseAddress>0x051A0000</baseAddress>
+  <registers>
+   <register>
+    <name>CFG</name>
+    <displayName>CFG</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
   </peripheral>
   <peripheral>
   <name>DE_GLB</name>
@@ -4837,6 +4853,30 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE_VEP0</name>
+  <description></description>
+  <baseAddress>0x05120000</baseAddress>
+  <registers>
+   <register>
+    <name>CFG</name>
+    <displayName>CFG</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_VEP0">
+  <name>DE_VEP1</name>
+  <baseAddress>0x05140000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VEP0">
+  <name>DEb_VEP0</name>
+  <baseAddress>0x05220000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DE_VI1</name>

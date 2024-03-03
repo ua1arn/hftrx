@@ -89,3 +89,23 @@
 #regdef;  TOP_HADDR; 0x080; 
 #regdef;  BOT_HADDR; 0x084; 
 #regdef;  OVL_SIZE; 0x088; 
+
+# exploration - not final info
+
+#type; DE_VEP
+
+#base; DE_VEP0 0x05120000
+#base; DE_VEP1 0x05140000
+#base; DEb_VEP0 0x05220000
+
+#regdef; CFG; 0x000;
+
+# exploration - not final info
+
+#type; DE_DEP
+
+#base; DE_DEP 0x051A0000
+
+#regdef; CFG; 0x000;
+
+
