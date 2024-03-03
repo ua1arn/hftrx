@@ -14331,6 +14331,8 @@ static void ananswer(uint_fast8_t arg)
 
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 
+// SWR report
+// 0000 ~ 0030: Meter value in dots
 static uint_fast8_t kenwoodswrmeter(void)
 {
 	//const uint_fast8_t pathi = 0;	// A or B path
@@ -14349,6 +14351,26 @@ static uint_fast8_t kenwoodswrmeter(void)
 	// v = 10..40 for swr 1..4
 	// swr10 = 0..30 for swr 1..4
 	return swr10;	// tested with ARCP950. 0: SWR=1.0, 5: SWR=1.3, 10: SWR=1.8, 15: SWR=3.0
+}
+
+// COMP report
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodcompmeter(void)
+{
+	return 0;
+}
+
+// ALC report
+// 0000 ~ 0030: Meter value in dots
+static uint_fast8_t kenwoodalcmeter(void)
+{
+	uint_fast8_t pwrtrace;
+	uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
+
+	if (pwrtrace > maxpwrcali)
+		pwrtrace = maxpwrcali;
+
+	return pwrtrace * 30 / maxpwrcali;
 }
 
 // SWR
@@ -14382,7 +14404,7 @@ static void rm2answer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) 0
+		(int) kenwoodcompmeter()
 		);
 	cat_answer(len);
 }
@@ -14391,7 +14413,7 @@ static void rm2answer(uint_fast8_t arg)
 static void rm3answer(uint_fast8_t arg)
 {
 	//const uint_fast8_t pathi = 0;	// A or B path
-	// COMP report
+	// ALC report
 	static const FLASHMEM char fmt_1 [] =
 		"RM"			// 2 characters - status information code
 		"3"				// 1 char - 3 - ALC
@@ -14400,7 +14422,7 @@ static void rm3answer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) 0
+		(int) kenwoodalcmeter()
 		);
 	cat_answer(len);
 }
