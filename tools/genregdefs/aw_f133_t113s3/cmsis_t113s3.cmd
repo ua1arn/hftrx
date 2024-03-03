@@ -1,4 +1,4 @@
-#rem CONFIG_MACH_SUN8xxxx
+@rem CONFIG_MACH_SUN8xxxx
 
 SET CONVERTER=..\Debug\genregdefs.exe
 SET OUTFILE=..\..\..\arch\t113s3\device.h

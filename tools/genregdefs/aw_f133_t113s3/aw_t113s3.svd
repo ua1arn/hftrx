@@ -4632,18 +4632,25 @@
   </peripheral>
   <peripheral>
   <name>DE_DEP</name>
-  <description></description>
+  <description>DRC (dynamic range controller)</description>
   <baseAddress>0x051A0000</baseAddress>
   <registers>
-   <register>
-    <name>CFG</name>
-    <displayName>CFG</displayName>
-    <description></description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x8000</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>
@@ -4865,18 +4872,105 @@
   </peripheral>
   <peripheral>
   <name>DE_VEP0</name>
-  <description></description>
+  <description>Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks</description>
   <baseAddress>0x05120000</baseAddress>
   <registers>
-   <register>
-    <name>CFG</name>
-    <displayName>CFG</displayName>
-    <description></description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x800</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00000800</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x800</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00001000</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x800</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00001800</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x800</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00002000</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x800</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>1</dim>
+    <addressOffset>0x00007000</addressOffset>
+    <registers>
+     <register>
+      <name>CFG</name>
+      <displayName>CFG</displayName>
+      <description></description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x1000</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral derivedFrom="DE_VEP0">

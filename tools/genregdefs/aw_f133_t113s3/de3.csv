@@ -92,20 +92,46 @@
 
 # exploration - not final info
 
-#type; DE_VEP
+#type; DE_VEP; Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks
 
 #base; DE_VEP0 0x05120000
 #base; DE_VEP1 0x05140000
 #base; DEb_VEP0 0x05220000
 
-#regdef; CFG; 0x000;
+#aggreg; FCE; 0x0000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; PEAK; 0x0800 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; LCTI; 0x1000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; BLS; 0x1800 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; FCC; 0x2000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; VEP_TOP; 0x7000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x1000; Need for address arithmetics
+#aggregend;
 
 # exploration - not final info
 
-#type; DE_DEP
+#type; DE_DEP; DRC (dynamic range controller)
 
 #base; DE_DEP 0x051A0000
 
-#regdef; CFG; 0x000;
+#aggreg; DRC; 0x0000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x8000; Need for address arithmetics
+#aggregend;
 
 
