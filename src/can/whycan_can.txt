@@ -1,0 +1,205 @@
+#define  CAN0  0x02504000
+#define  CAN1  0x02504400
+
+
+#define CAN_OFFSET(can_base,offset)          (*((volatile uint32_t *)(can_base + (offset))))
+
+#define CAN_MSEL(can_base)       CAN_OFFSET(can_base,0x0000) //CAN mode select register
+#define CAN_CMD(can_base)        CAN_OFFSET(can_base,0x0004)  //CAN command register
+#define CAN_STA(can_base)        CAN_OFFSET(can_base,0x0008)  //CAN status register
+#define CAN_INT(can_base)        CAN_OFFSET(can_base,0x000C)  //CAN interrupt register
+#define CAN_INTEN(can_base)      CAN_OFFSET(can_base,0x0010) //CAN interrupt enable register
+#define CAN_BUSTIME(can_base)    CAN_OFFSET(can_base,0x0014) //CAN bus timing register
+#define CAN_TEWL(can_base)       CAN_OFFSET(can_base,0x0018)  //CAN TX error warning limit register
+#define CAN_ERRC(can_base)       CAN_OFFSET(can_base,0x001c)  //CAN error counter register
+#define CAN_RMCNT(can_base)      CAN_OFFSET(can_base,0x0020)  //CAN receive message counter register
+#define CAN_RBUF_SADDR(can_base) CAN_OFFSET(can_base,0x0024) //CAN receive buffer start address register
+#define CAN_TRBUF0(can_base)     CAN_OFFSET(can_base,0x0040) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF1(can_base)     CAN_OFFSET(can_base,0x0044) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF2(can_base)     CAN_OFFSET(can_base,0x0048) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF3(can_base)     CAN_OFFSET(can_base,0x004c) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF4(can_base)     CAN_OFFSET(can_base,0x0050) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF5(can_base)     CAN_OFFSET(can_base,0x0054) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF6(can_base)     CAN_OFFSET(can_base,0x0058) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF7(can_base)     CAN_OFFSET(can_base,0x005c) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF8(can_base)     CAN_OFFSET(can_base,0x0060) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF9(can_base)     CAN_OFFSET(can_base,0x0064) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF10(can_base)    CAN_OFFSET(can_base,0x0068) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF11(can_base)    CAN_OFFSET(can_base,0x006c) //CAN TX/RX message buffer 0 register
+#define CAN_TRBUF12(can_base)    CAN_OFFSET(can_base,0x0070) //CAN TX/RX message buffer 0 register
+#define CAN_ACPC(can_base)       CAN_OFFSET(can_base,0x0028) //CAN acceptance code 0 register(reset mode)
+#define CAN_ACPM(can_base)       CAN_OFFSET(can_base,0x002C) //CAN acceptance mask 0 register(reset mode)
+#define CAN_RBUF_RBACK(can_base) CAN_OFFSET(can_base,0x0180) //~0x1b0 //CAN transmit buffer for read back register
+#define CAN_VERSION(can_base)    CAN_OFFSET(can_base,0x0300) //CAN Version Register
+
+
+
+
+typedef  struct _t113_can_control_t_
+{
+  volatile uint32_t  * can_clk_gate;
+  uint32_t  can_base;
+  uint32_t  int_id;
+  
+}t113_can_control_t;
+
+
+t113_can_control_t t113_can[2] = 
+{
+  {
+    (volatile uint32_t  *)0x0200192C,
+    0x02504000,
+    53
+  },
+  {
+    (volatile uint32_t  *)0x0200192C,
+    0x02504400,
+    54
+  }
+    
+};
+
+uint32_t rxd_buf[13];
+
+void t113_can_irq_handle(void*  p)
+{
+   uint32_t    can_base = (uint32_t) p;
+   uint32_t    int_sta =   CAN_INT(can_base);
+   if(int_sta &  1)
+   {
+       /* 接收中断 */
+       can_read_data(can_base,rxd_buf);
+       /*  后续处理  */
+   }
+   if(int_sta & 2 )
+   {
+      /*发送中断*/    
+   }
+   if(int_sta & 0xFC )
+   {
+      /* 错 误 中断  */
+   }
+   
+   CAN_INT(can_base) = int_sta;
+   
+}
+       
+
+void ini_can(int can_id)
+{
+    if(can_id > 1) return;
+    
+    GPIOB->CFG0  &= ~(0xff00 <<  (can_id * 8));
+    GPIOB->CFG0  |=  (0x8800 <<  (can_id * 8)); 
+    GPIOB->DRV0  |=  (0x3300 <<  (can_id * 8));
+    
+    t113_can_control_t * can_info = &t113_can[can_id];
+    
+    uint32_t   can_base = can_info->can_base;
+    
+    int can_int_id = can_info->int_id;
+
+    *can_info->can_clk_gate  |= (1 << (16 + can_id)) | (1 << can_id);/* CCU_CAN_BGR */
+    
+    
+   
+    CAN_MSEL(can_base) |= 1; /* Reset mode selected*/
+   /* 500KHz CAN速率 */
+    CAN_BUSTIME(can_base) = (9          /* apb_clk = 100Mz , 100/10 = 10MHz*/ 
+                           | (1 << 14)   /* Synchronization Jump Width :2 Tq clock cycles */
+                           | (13 << 16)  /*Phase Segment 1 : 14 Tq clock cycles  */
+                           | ( 3 << 20)  /*Phase Segment 2 :  4 Tq clock cycles  */
+                           | ( 0 << 23));  /*  Bus line is sampled three times at the sample point */
+  
+   CAN_ACPC(can_base)  = 0xffffffff; /*实际使用时根据需要设置滤波*/
+   CAN_ACPM(can_base)  = 0xffffffff; /*实际使用时根据需要设置滤波*/
+   
+   
+   CAN_MSEL(can_base) &= (~1); 
+   
+   // CAN_MSEL(can_base) |= (1 << 2); /* Loopback Mode */
+  
+   CAN_MSEL(can_base) |= (1 << 3);/* Single Filter  */
+   
+   
+   bsp_int_vect_set(can_int_id,  /* Assign ISR handler. */
+                   1u,            /* 中断的优先级         */
+                   1u,            /* 中断的目标CPU        */
+                   (void *)can_base,        /* 参数      */
+                   t113_can_irq_handle);
+  
+   
+    irq_enable(can_int_id);//
+    /* 使能中断  */
+    CAN_INTEN(can_base) = 0x0FF;
+    
+}
+void can_send_data(uint32_t    can_base,uint8_t * buf,int  len)
+{
+  
+    CAN_CMD(can_base) |= (1 << 2);
+  
+    CAN_MSEL(can_base) &= (~1); 
+     
+    int retry = 1000;
+    do{
+      
+       if(--retry == 0) break;
+    }while(!(CAN_STA(can_base) & (1 << 2)));
+    
+    if(retry == 0) return;//
+    
+    uint32_t * des =  &CAN_TRBUF0(can_base);
+    
+    for(int i = 0; i < len; i++)
+     des[i] = buf[i];
+     
+    //CAN_CMD(can_base) = (1 << 4);
+     CAN_CMD(can_base) |= (1 << 0);
+}
+void can_read_data(uint32_t    can_base,uint8_t * buf)
+{
+    uint32_t * src =  &CAN_TRBUF0(can_base);
+    for(int i = 0; i < 13; i++)
+       buf[i] = (char)src[i];
+   
+     CAN_CMD(can_base) |= (1 << 2);
+}
+
+
+uint8_t can_teat_data[13] = 
+   {
+      8,
+      0,
+      0x80,
+      0x55, /*   SFF - TX data byte 1 / EFF- ID[12:5]  */
+      0x55, /*  SFF-TX data byte2[7:3] / EFF-ID[4:0]
+                SFF-TX data byte2[2:0] */  
+      0x55, /* SFF-TX data byte 3 / EFF-TX data byte 1 */
+      0x55, /* SDATA4_EDATA2  SFF-TX data byte 4 / EFF-TX data byte 2  */
+      0x55, /* SDATA5_EDATA3 SFF-TX data byte 5 / EFF-TX data byte 3   */
+      0x55,/* SDATA5_EDATA4  SFF-TX data byte 6 / EFF-TX data byte 4   */
+      0x55,/* SDATA5_EDATA5  SFF-TX data byte 7 / EFF-TX data byte 5   */
+      0x55,/* SDATA5_EDATA6  SFF-TX data byte 8 / EFF-TX data byte 6   */
+      0x55, /* SDATA5_EDATA7   */
+      0x55 /*  SDATA5_EDATA8   */
+   };
+
+
+/* can_id: is 0 or 1 */
+void t113_can_test(void)s
+{
+    ini_can(0);
+    ini_can(1);
+    
+   while(1)
+   {
+    
+    can_send_data(CAN0,can_data);
+     ms_delay(500);
+    can_send_data(CAN1,can_data);
+     ms_delay(500);
+
+   }
+   
+}
