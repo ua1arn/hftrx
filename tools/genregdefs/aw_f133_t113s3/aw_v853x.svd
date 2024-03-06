@@ -1467,24 +1467,6 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>CAN_ACPC</name>
-    <displayName>CAN_ACPC</displayName>
-    <description>CAN acceptance code 0 register(reset mode)</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CAN_ACPM</name>
-    <displayName>CAN_ACPM</displayName>
-    <description>CAN acceptance mask 0 register(reset mode)</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
    <cluster>
     <dim>13</dim>
     <addressOffset>0x00000040</addressOffset>

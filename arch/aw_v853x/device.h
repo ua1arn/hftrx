@@ -440,9 +440,7 @@ typedef struct CAN_Type
     volatile uint32_t CAN_ERRC;                       /*!< Offset 0x01C CAN error counter register */
     volatile uint32_t CAN_RMCNT;                      /*!< Offset 0x020 CAN receive message counter register */
     volatile uint32_t CAN_RBUF_SADDR;                 /*!< Offset 0x024 CAN receive buffer start address register */
-    volatile uint32_t CAN_ACPC;                       /*!< Offset 0x028 CAN acceptance code 0 register(reset mode) */
-    volatile uint32_t CAN_ACPM;                       /*!< Offset 0x02C CAN acceptance mask 0 register(reset mode) */
-             uint32_t reserved_0x030 [0x0004];
+             uint32_t reserved_0x028 [0x0006];
     volatile uint32_t CAN_TRBUF [0x00D];              /*!< Offset 0x040 CAN TX/RX message buffer N (n=0..12) register */
              uint32_t reserved_0x074 [0x0043];
     volatile uint32_t CAN_RBUF_RBACK [0x030];         /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
