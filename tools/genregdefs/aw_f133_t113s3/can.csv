@@ -6,20 +6,20 @@
 #irqrv; CAN0 37
 #irqrv; CAN1 38
 
-#regdef;CAN_MSEL; 0x0000; CAN mode select register
-#regdef;CAN_CMD; 0x0004; CAN command register
-#regdef;CAN_STA; 0x0008; CAN status register
-#regdef;CAN_INT; 0x000C; CAN interrupt register
-#regdef;CAN_INTEN; 0x0010; CAN interrupt enable register
-#regdef;CAN_BUSTIME; 0x0014; CAN bus timing register
-#regdef;CAN_TEWL; 0x0018; CAN TX error warning limit register
-#regdef;CAN_ERRC; 0x001c; CAN error counter register
-#regdef;CAN_RMCNT; 0x0020; CAN receive message counter register
-#regdef;CAN_RBUF_SADDR; 0x0024; CAN receive buffer start address register
-##regdef;CAN_ACPC; 0x0028; CAN acceptance code 0 register(reset mode)
-##regdef;CAN_ACPM; 0x002C; CAN acceptance mask 0 register(reset mode)
-#regdef;CAN_TRBUF; 0x0040 13; CAN TX/RX message buffer N (n=0..12) register
-#regdef;CAN_RBUF_RBACK; 0x0180 0x30; CAN transmit buffer for read back register (0x0180 ~0x1b0)
-#regdef;CAN_VERSION; 0x0300; CAN Version Register
+#regdef; CAN_MSEL; 0x0000; CAN mode select register
+#regdef; CAN_CMD; 0x0004; CAN command register
+#regdef; CAN_STA; 0x0008; CAN status register
+#regdef; CAN_INT; 0x000C; CAN interrupt register
+#regdef; CAN_INTEN; 0x0010; CAN interrupt enable register
+#regdef; CAN_BUSTIME; 0x0014; CAN bus timing register
+#regdef; CAN_TEWL; 0x0018; CAN TX error warning limit register
+#regdef; CAN_ERRC; 0x001c; CAN error counter register
+#regdef; CAN_RMCNT; 0x0020; CAN receive message counter register
+#regdef; CAN_RBUF_SADDR; 0x0024; CAN receive buffer start address register
+#regdef; CAN_ACPC; 0x0028; CAN acceptance code 0 register(reset mode)
+#regdef; CAN_ACPM; 0x002C; CAN acceptance mask 0 register(reset mode)
+#regdef; CAN_TRBUF; 0x0040 13; CAN TX/RX message buffer N (n=0..12) register
+#regdef; CAN_RBUF_RBACK; 0x0180 0x30; CAN transmit buffer for read back register (0x0180 ~0x1b0)
+#regdef; CAN_VERSION; 0x0300; CAN Version Register
 
-#regdef; padding 0; 0x400; set size
+#regdef;  padding 0; 0x400; set size

@@ -4017,6 +4017,13 @@ uint_fast32_t allwnrt113_get_uart_freq(void)
 }
 
 // T113
+// The clock of the CAN is from APB1.
+uint_fast32_t allwnrt113_get_can_freq(void)
+{
+	return allwnrt113_get_apb1_freq();
+}
+
+// T113
 // The clock of the TWI is from APB1.
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
