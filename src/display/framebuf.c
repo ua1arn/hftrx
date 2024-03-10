@@ -909,8 +909,11 @@ void arm_hardware_mdma_initialize(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
+	// В Linux используется 300 МГц
+	// https://github.com/duvitech-llc/tina-t113-linux-5.4/blob/150c69d4f2b0886db269cc7883f007e2cdcd839c/drivers/char/sunxi_g2d/g2d_rcq/g2d.c#L432
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-	unsigned M = 3;	/* M = 1..32 */
+	//unsigned M = 3;	/* 400 MHz M = 1..32 */
+	unsigned M = 4;	/* 300 MHz M = 1..32 */
 	unsigned divider = 0;
 
 	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
