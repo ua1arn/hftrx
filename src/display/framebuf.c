@@ -910,7 +910,7 @@ void arm_hardware_mdma_initialize(void)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 	//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-	unsigned M = 5;	/* M = 1..32 */
+	unsigned M = 3;	/* M = 1..32 */
 	unsigned divider = 0;
 
 	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
