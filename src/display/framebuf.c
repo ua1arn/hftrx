@@ -211,22 +211,23 @@ hwaccel_rotcopy(
 
 	G2D_ROT->ROT_CTL = 0;
 	G2D_ROT->ROT_IFMT = VI_ImageFormat;
+
 	G2D_ROT->ROT_ISIZE = ssizehw;
-	G2D_ROT->ROT_IPITCH0 = sstride;
-//	G2D_ROT->ROT_IPITCH1 = sstride;
-//	G2D_ROT->ROT_IPITCH2 = sstride;
-	G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr);
+	G2D_ROT->ROT_IPITCH0 = sstride;	// Y/RGB/ARGB data memory. Should be 128bit aligned.
+//	G2D_ROT->ROT_IPITCH1 = sstride;	// U/UV data memory
+//	G2D_ROT->ROT_IPITCH2 = sstride; // V data memory
+	G2D_ROT->ROT_ILADD0 = ptr_lo32(saddr); // Should be 128bit aligned.
 	G2D_ROT->ROT_IHADD0 = ptr_hi32(saddr) & 0xff;
 //	G2D_ROT->ROT_ILADD1 = ptr_lo32(saddr);
 //	G2D_ROT->ROT_IHADD1 = ptr_hi32(saddr) & 0xff;
 //	G2D_ROT->ROT_ILADD2 = ptr_lo32(saddr);
 //	G2D_ROT->ROT_IHADD2 = ptr_hi32(saddr) & 0xff;
 
-	G2D_ROT->ROT_OPITCH0 = tstride;
+	G2D_ROT->ROT_OPITCH0 = tstride;	// Should be 128bit aligned.
 //	G2D_ROT->ROT_OPITCH1 = tstride;
 //	G2D_ROT->ROT_OPITCH2 = tstride;
 	G2D_ROT->ROT_OSIZE = tsizehw;
-	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);
+	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);	// Alignment not required
 	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
 //	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
 //	G2D_ROT->ROT_OHADD1 = ptr_hi32(taddr) & 0xff;
@@ -235,7 +236,7 @@ hwaccel_rotcopy(
 
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
-	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg)
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg) CW
 	G2D_ROT->ROT_CTL = rot_ctl;
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
