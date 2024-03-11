@@ -65,7 +65,7 @@
 
 	 STACKSIZESYSBOOT = 512
   
-	.section .isr_vector, "ax"
+	.section .isr_vector
 	.code 32
         
 /****************************************************************************/
@@ -143,7 +143,7 @@ FIQAddr_rtos:       .word FIQ_Handler
    .ltorg
 
 
-   .section .startup0, "ax"
+   .section .startup0
    .code 32
    
    .extern _start
