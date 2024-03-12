@@ -1029,8 +1029,6 @@ void IRQ_Handler_GIC(void)
 	// GICD_IPRIORITYR
 
 //	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
-
-
 //	switch (gicver)
 //	{
 //	case 0x01:	// GICv1
@@ -1045,7 +1043,7 @@ void IRQ_Handler_GIC(void)
 
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
 
-	const IRQn_ID_t int_id = gicc_iar & 0x3ffuL;
+	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
