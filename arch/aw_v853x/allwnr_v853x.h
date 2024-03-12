@@ -20,7 +20,7 @@
 
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                    7U      /*!< Cortex-A# Core                              */
-#define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
+#define __CA_REV                 0x0005U      /*!< Core revision r0p5 [15:8] rev [7:0] patch */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
