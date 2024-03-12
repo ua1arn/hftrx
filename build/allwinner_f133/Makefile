@@ -295,7 +295,7 @@ app_run: $(PROJECT)_app.f133
 	$(XFEL) exec 0x40000100 
 
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.f133
+	-$(XFEL) spinor write 0x00000000 fsbl.f133
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.f133
 
 erase:
