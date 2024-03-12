@@ -978,62 +978,17 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if 0//CPUSTYLE_R7S721
 
-/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
-void IRQ_Handler_GIC(void)
-{
-	//dbg_putchar('/');
-	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	//irqlog_record(1, irqn);
-	//static const char hex [16] = "0123456789ABCDEF";
-	//dbg_putchar(hex [(irqn >> 8) & 0x0F]);
-	//dbg_putchar(hex [(irqn >> 4) & 0x0F]);
-	//dbg_putchar(hex [(irqn >> 0) & 0x0F]);
-	////ASSERT(irqn != 0x3FC && irqn != 0x3FD);
-	IRQHandler_t const handler = IRQ_GetHandler(irqn);
-
-#if 0
-	switch (irqn)
-	{
-	//case PL310ERR_IRQn:
-	//	break;
-	default:
-		PRINTF(PSTR("IRQ_Handler_GICv1: irq=%d, handler=%p\n"), (int) irqn, (void *) handler);
-		break;
-	}
-#endif
-	if (handler != NULL)
-	{
-#if WITHNESTEDINTERRUPTS
-
-		__enable_irq();						/* modify I bit in CPSR */
-		(* handler)();	    /* Call interrupt handler */
-		__disable_irq();					/* modify I bit in CPSR */
-
-#else /* WITHNESTEDINTERRUPTS */
-
-		(* handler)();	    /* Call interrupt handler */
-
-#endif /* WITHNESTEDINTERRUPTS */
-	}
-	//irqlog_record(2, irqn);
-	//dbg_putchar('\\');
-	IRQ_EndOfInterrupt(irqn);
-}
-
-#elif 1//CPUSTYLE_R7S721
-
-#define INT_ID_MASK		0x3ffuL
+//#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
-#define PENDING_G1_INTID	1022uL
+//#define PENDING_G1_INTID	1022uL
 /* Constant to indicate a spurious interrupt in all GIC versions */
-#define GIC_SPURIOUS_INTERRUPT		1023uL
+//#define GIC_SPURIOUS_INTERRUPT		1023uL
 /*
  * Constant passed to the interrupt handler in the 'id' field when the
  * framework does not read the gic registers to determine the interrupt id.
  */
-#define INTR_ID_UNAVAILABLE		0xFFFFFFFFuL
+//#define INTR_ID_UNAVAILABLE		0xFFFFFFFFuL
 
 /*******************************************************************************
  * This function returns the id of the highest priority pending interrupt at
@@ -1153,7 +1108,6 @@ void IRQ_Handler_GIC(void)
 	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
-#endif
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
