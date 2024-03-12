@@ -18,9 +18,9 @@
 //#define RISC_WDG_BASE 			0x06011000
 //#define RISC_TIMESTAMP_BASE 	0x06012000
 
-// DRAM Space (SYS domain)
-#define DRAM_SPACE_SIZE			0x04000000u			/* 64 MB */
 #define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
+#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
+#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
 
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                    0U      /*!< Cortex-A# Core                              */

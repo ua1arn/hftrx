@@ -12,7 +12,6 @@
 #define ARCH_ALLWNR_V853X_H_
 
 // DRAM Space (SYS domain)
-#define DRAM_SPACE_SIZE			0x08000000u			/* 128 MB */
 #define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
 #define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
 #define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */

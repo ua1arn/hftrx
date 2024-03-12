@@ -30,27 +30,6 @@
 //#define C0_CPUX_CFG_BASE		((uintptr_t) 0x09010000)
 #define C0_CPUX_MBIST_BASE		((uintptr_t) 0x09020000)	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
-// DRAM Space (SYS domain)
-#define DRAM_SPACE_SIZE			0x08000000u			/* 128 MB */
-#define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
-#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
-#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
-
-//#define G2D_TOP_BASE        (0x00000 + G2D_BASE)
-//#define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
-//#define G2D_BLD_BASE        (0x00400 + G2D_BASE)
-//#define G2D_V0_BASE         (0x00800 + G2D_BASE)
-//#define G2D_UI0_BASE        (0x01000 + G2D_BASE)
-//#define G2D_UI1_BASE        (0x01800 + G2D_BASE)
-//#define G2D_UI2_BASE        (0x02000 + G2D_BASE)
-//#define G2D_WB_BASE         (0x03000 + G2D_BASE)
-//#define G2D_VSU_BASE        (0x08000 + G2D_BASE)
-//#define G2D_ROT_BASE        (0x28000 + G2D_BASE)
-//#define G2D_GSU_BASE        (0x30000 + G2D_BASE)
-
-//#define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x03021000)
-//#define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x03022000)
-
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                   53U      /*!< Cortex-A# Core                              */
 #define __CA_REV                 0x0004U      /*!< Core revision r0p4 [15:8] rev [7:0] patch */
