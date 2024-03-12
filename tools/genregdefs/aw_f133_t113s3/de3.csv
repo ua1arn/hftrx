@@ -54,7 +54,6 @@
 #base; DE_VI1 0x05102000; RT-Mixer 0 VI surface
 #base; DEb_VI1 0x05202000; RT-Mixer 1 VI surface
 
-
 #aggreg; CFG; 0x000 4;
 #regdef; ATTR; 0x000;
 #regdef; SIZE; 0x004;
@@ -69,6 +68,8 @@
 #regdef; OVL_SIZE; 0x0E8 2; OVL_V overlay window size register
 #regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
 #regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
+
+#regdef; padding 0; 0x800; set size
 
 #type; DE_UI; Display Engine (DE) - UI surface
 
@@ -89,6 +90,8 @@
 #regdef;  TOP_HADDR; 0x080; 
 #regdef;  BOT_HADDR; 0x084; 
 #regdef;  OVL_SIZE; 0x088; 
+
+#regdef; padding 0; 0x800; set size
 
 # exploration - not final info
 

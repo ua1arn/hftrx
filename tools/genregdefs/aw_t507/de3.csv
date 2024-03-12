@@ -112,6 +112,8 @@
 
 #regdef; FBD_V_CTL; 0x300; OVL_V FBD control register
 
+#regdef; padding 0; 0x800; set size
+
 #type; DE_UI; Display Engine (DE) - UI surface
 
 #base; DE_UI1   0x011C1000
@@ -157,6 +159,8 @@
 ##regdef; OVL_UI_FBD_BIST_START_ADDR; 0x384; OVL_UI FBD bist start address register
 ##regdef; OVL_UI_FBD_BIST_END_ADDR; 0x388; OVL_UI FBD bist end address register
 ##regdef; OVL_UI_FBD_BIST_MARK; 0x38C; OVL_UI FBD bist data mark register
+
+#regdef; padding 0; 0x800; set size
 
 
 # RT-Mixer0 blocks

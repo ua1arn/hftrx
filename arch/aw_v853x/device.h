@@ -1170,7 +1170,8 @@ typedef struct DE_UI_Type
     volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
     volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
     volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
-} DE_UI_TypeDef; /* size of structure = 0x08C */
+             uint32_t reserved_0x08C [0x01DD];
+} DE_UI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief DE_VEP
  */
@@ -1230,7 +1231,8 @@ typedef struct DE_VI_Type
     volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
-} DE_VI_TypeDef; /* size of structure = 0x100 */
+             uint32_t reserved_0x100 [0x01C0];
+} DE_VI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief DMAC
  */
@@ -1591,7 +1593,8 @@ typedef struct G2D_UI_Type
     volatile uint32_t UI_FILLC;                       /*!< Offset 0x014 UIx_FILLC */
     volatile uint32_t UI_HADD;                        /*!< Offset 0x018 UIx_HADD */
     volatile uint32_t UI_SIZE;                        /*!< Offset 0x01C UIx_SIZE */
-} G2D_UI_TypeDef; /* size of structure = 0x020 */
+             uint32_t reserved_0x020 [0x01F8];
+} G2D_UI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief G2D_VI
  */
@@ -1614,7 +1617,8 @@ typedef struct G2D_VI_Type
     volatile uint32_t V0_HDS_CTL1;                    /*!< Offset 0x034 V0_HDS_CTL1 */
     volatile uint32_t V0_VDS_CTL0;                    /*!< Offset 0x038 V0_VDS_CTL0 */
     volatile uint32_t V0_VDS_CTL1;                    /*!< Offset 0x03C V0_VDS_CTL1 */
-} G2D_VI_TypeDef; /* size of structure = 0x040 */
+             uint32_t reserved_0x040 [0x01F0];
+} G2D_VI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief G2D_VSU
  */

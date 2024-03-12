@@ -859,7 +859,8 @@ typedef struct DE_UI_Type
     volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
     volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
     volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
-} DE_UI_TypeDef; /* size of structure = 0x08C */
+             uint32_t reserved_0x08C [0x01DD];
+} DE_UI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief DE_VI
  */
@@ -883,7 +884,8 @@ typedef struct DE_VI_Type
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
              uint32_t reserved_0x100 [0x0080];
     volatile uint32_t FBD_V_CTL;                      /*!< Offset 0x300 OVL_V FBD control register */
-} DE_VI_TypeDef; /* size of structure = 0x304 */
+             uint32_t reserved_0x304 [0x013F];
+} DE_VI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief DE_VSU
  */

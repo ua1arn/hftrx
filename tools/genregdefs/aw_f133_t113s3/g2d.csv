@@ -99,6 +99,8 @@
 #regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
 #regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
 
+#regdef; padding 0; 0x800; set size
+
 #type; G2D_WB; Graphic 2D (G2D) Engine Write Back
 #base; G2D_WB 0x05413000
 
@@ -127,6 +129,8 @@
 #regdef; UI_FILLC; 0x14; UIx_FILLC
 #regdef; UI_HADD; 0x18; UIx_HADD
 #regdef; UI_SIZE; 0x1C; UIx_SIZE
+
+#regdef; padding 0; 0x800; set size
 
 #type; G2D_VSU; Graphic 2D Video Scaler
 #base; G2D_VSU 0x05418000
