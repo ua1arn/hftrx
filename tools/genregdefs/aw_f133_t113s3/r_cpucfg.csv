@@ -7,3 +7,4 @@
 #regdef; SUP_STAN_FLAG; 0x01D4; Super Standby Flag (bit 16)
 #regdef; RV_HOTPLUGFLAG; 0x01DC; RV The Hotplug Flag Register (key value 0xFA50392F)
 #regdef; RC_SOFTENTRY; 0x01E0 4; RV The Soft Entry Address Register
+#typeend;
