@@ -44,7 +44,7 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(64);
+		. = ALIGN(32);
 		KEEP(*(.startup0))
 
 		*(.text*)
@@ -68,8 +68,6 @@ SECTIONS
 		*(.rodata*  .srodata*)
 
 		KEEP(*(.eh_frame*))
-		
-		*(.itcm*)
 		
 		. = ALIGN(4);
 		KEEP(*(.isr_vector))
@@ -100,11 +98,11 @@ SECTIONS
 	/*
 		QUAD (__etext)
 		QUAD (__data_start__)
-		QUAD (__data_end__ - __data_start__)
+		QUAD ((__data_end__ - __data_start__) / 4)
+	*/
 		QUAD (__etext2)
 		QUAD (__data2_start__)
-		QUAD (__data2_end__ - __data2_start__)
-	*/
+		QUAD ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end64__ = .;
 	} > RAM
 
@@ -116,24 +114,22 @@ SECTIONS
 		. = ALIGN(8);
 		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
-		QUAD (__bss_end__ - __bss_start__)
+		QUAD ((__bss_end__ - __bss_start__) / 4)
 	/*
 		QUAD (__bss2_start__)
-		QUAD (__bss2_end__ - __bss2_start__)
+		QUAD ((__bss2_end__ - __bss2_start__) / 4)
 	*/
 		__zero_table_end64__ = .;
 	} > RAM
 
-	__etext = .;
+	/* __etext = .; */
 
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-
 		. = ALIGN(64);
 
 		*(.data* .sdata*)
-		*(.dtcm*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -157,11 +153,26 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-
 		/* All data end */
+
 		__data_end__ = .;
 
 	} > RAM
+
+	__etext2 = .;
+
+	.sysram : AT (__etext2)
+	{
+		__data2_start__ = .;
+
+		*(.itcm*)
+		*(.dtcm*)
+
+		__data2_end__ = .;
+	} > RAM /* was: STSRAN */
+
+	. = __etext2 + __data2_end__ - __data2_start__;
+
 
 	.bss (NOLOAD):
 	{
@@ -177,14 +188,7 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.noinit*)
-
-	} > RAM
-
-	.vram (NOLOAD):
-	{
-		. = ALIGN(64);
 		*(.framebuff*)
-
 	} > DDR3
 
 	.heap (NOLOAD):
@@ -209,6 +213,9 @@ SECTIONS
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
+
+	/* PROVIDE(__TTB_BASE = ORIGIN(TTB)); */
+	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/

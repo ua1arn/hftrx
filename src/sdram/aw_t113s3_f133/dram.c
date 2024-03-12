@@ -13,7 +13,7 @@
 #if WITHSDRAMHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #include "formats.h"
-#include <src/sdram/aw_t113s3_f133/t113_dram.h>
+#include "t113_dram.h"
 
 
 #include "spi.h"
