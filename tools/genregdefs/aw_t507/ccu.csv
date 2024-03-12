@@ -142,3 +142,4 @@
 #regdef; CCU_24M_27M_CLK_OUTPUT_REG; 0x0F20; 24M or 27M Clock Output Register
 
 #regdef; padding 0; 0x1000; set size
+#typeend;

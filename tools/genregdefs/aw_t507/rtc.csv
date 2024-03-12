@@ -30,3 +30,4 @@
 #regdef; CRY_EN_REG; 0x0218; Crypt Enable Register
 
 #regdef; padding 0; 0x400; set size
+#typeend;

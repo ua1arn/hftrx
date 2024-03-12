@@ -50,3 +50,4 @@
 #regdef; UART_A_RXDMA_DCNT; 0x0138; UART RADMA Data Count Register
 
 #regdef; padding 0; 0x400; set size
+#typeend;

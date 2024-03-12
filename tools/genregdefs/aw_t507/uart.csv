@@ -45,3 +45,4 @@
 #regdef; TX_DLY; 0x00CC; UART TX Delay Register
 
 #regdef; padding 0; 0x400; set size
+#typeend;

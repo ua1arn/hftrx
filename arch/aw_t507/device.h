@@ -2287,7 +2287,12 @@ typedef struct VE_Type
              uint32_t reserved_0xBC4 [0x0007];
     volatile uint32_t VE_AVC_SDRAM_INDEX;             /*!< Offset 0xBE0  */
     volatile uint32_t VE_AVC_SDRAM_DATA;              /*!< Offset 0xBE4  */
-} VE_TypeDef; /* size of structure = 0xBE8 */
+             uint32_t reserved_0xBE8 [0x0506];
+} VE_TypeDef; /* size of structure = 0x2000 */
+
+
+/* Defines */
+
 
 
 /* Access pointers */

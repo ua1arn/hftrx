@@ -90,3 +90,4 @@
 #regdef; VE_AVC_SDRAM_DATA; 0xbe4;
 ;
 #regdef; padding 0; 0x2000; Need for address arithmetics
+#typeend;

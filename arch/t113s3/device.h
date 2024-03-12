@@ -3002,6 +3002,10 @@ typedef struct VE_Type
 } VE_TypeDef; /* size of structure = 0xBE8 */
 
 
+/* Defines */
+
+
+
 /* Access pointers */
 
 #define DSP0_CFG ((DSP_CFG_TypeDef *) DSP0_CFG_BASE)  /*!< DSP0_CFG  register set access pointer */

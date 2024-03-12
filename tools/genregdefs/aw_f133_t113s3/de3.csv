@@ -48,6 +48,7 @@
 #regdef; CK_MAX; 0x0C0 4;
 #regdef; CK_MIN; 0x0E0 4;
 #regdef; OUT_CTL; 0x0FC;
+#typeend;
 
 #type; DE_VI; Display Engine (DE) - VI surface
 
@@ -70,6 +71,7 @@
 #regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
 
 #regdef; padding 0; 0x800; set size
+#typeend;
 
 #type; DE_UI; Display Engine (DE) - UI surface
 
@@ -92,6 +94,7 @@
 #regdef;  OVL_SIZE; 0x088; 
 
 #regdef; padding 0; 0x800; set size
+#typeend;
 
 # exploration - not final info
 
@@ -125,6 +128,7 @@
 #regdef;  CFG; 0x000; 
 #regdef; padding 0; 0x1000; Need for address arithmetics
 #aggregend;
+#typeend;
 
 # exploration - not final info
 
@@ -136,5 +140,4 @@
 #regdef;  CFG; 0x000; 
 #regdef; padding 0; 0x8000; Need for address arithmetics
 #aggregend;
-
-
+#typeend;

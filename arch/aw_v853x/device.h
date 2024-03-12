@@ -3069,6 +3069,10 @@ typedef struct VE_Type
 } VE_TypeDef; /* size of structure = 0xBE8 */
 
 
+/* Defines */
+
+
+
 /* Access pointers */
 
 #define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */

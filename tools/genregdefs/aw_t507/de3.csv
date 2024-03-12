@@ -88,6 +88,7 @@
 #regdef; OUT_CTL; 0x00FC;
 #regdef; CSC_CTL; 0x0100; SUN50I_MIXER_BLEND_CSC_CTL 
 #regdef; CSC_COEFF; 0x0110 12; SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4)
+#typeend;
 
 #type; DE_VI; Display Engine (DE) - VI surface
 
@@ -113,6 +114,7 @@
 #regdef; FBD_V_CTL; 0x300; OVL_V FBD control register
 
 #regdef; padding 0; 0x800; set size
+#typeend;
 
 #type; DE_UI; Display Engine (DE) - UI surface
 
@@ -161,6 +163,7 @@
 ##regdef; OVL_UI_FBD_BIST_MARK; 0x38C; OVL_UI FBD bist data mark register
 
 #regdef; padding 0; 0x800; set size
+#typeend;
 
 
 # RT-Mixer0 blocks
@@ -200,6 +203,7 @@
 #regdef; VSU_C_HCOEF0_REGN; 0x600 32; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
 #regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
 #regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
+#typeend;
 
 # define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)
@@ -235,6 +239,7 @@
 #regdef; CSC_C23_REG; 0x07C; CSC Constant 23 Register
 #regdef; CE_LUT_REGN; 0x200 128; 0x200+N*4 CE LUT register N (N=0:127)
 #regdef; HIST_CNT_REGN; 0x400 256; 0x400+N*4 Histogram count register N (N=0:255)
+#typeend;
 
 # define SUN50I_MIXER_BLS_EN			0x71800
 #type; DE_BLS; Blue Level Stretch (BLS)
@@ -247,6 +252,7 @@
 #regdef; BLS_ATTLUT_REG; 0x10 4; 0x10+N*0x4 BLS attenuation LUT register, +N*0x4 (N = 0,1,2,3)
 #regdef; BLS_POS_REG; 0x20; BLS blue zone position register
 #regdef; BLS_GAINLUT_REG; 0x30 4; 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3)
+#typeend;
 
 #type; DE_XX
 
@@ -260,4 +266,5 @@
 #regdef; VALUE1; 0x00F4; какое-то поле 32 бит
 #regdef; FLAGS2; 0x00F8; какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2)
 #regdef; VALUE2; 0x00FC; какое-то поле 32 бит
+#typeend;
 

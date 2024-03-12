@@ -23,3 +23,4 @@
 #regdef; CAN_VERSION; 0x0300; CAN Version Register
 
 #regdef;  padding 0; 0x400; set size
+#typeend;

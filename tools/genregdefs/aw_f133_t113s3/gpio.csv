@@ -12,6 +12,7 @@
 #regdef; DRV; 0x014 4; Multi_Driving Register
 #regdef; PULL; 0x024 2; Pull Register
 #regdef; padding 0; 0x030; Need for address arithmetics
+#typeend;
 
 #type; GPIOBLOCK
 
@@ -34,6 +35,7 @@
 #regdef; PIO_POW_MOD_SEL; 0x0340; PIO Group Withstand Voltage Mode Select Register
 #regdef; PIO_POW_MS_CTL; 0x0344; PIO Group Withstand Voltage Mode Select Control Register
 #regdef; PIO_POW_VAL; 0x0348; PIO Group Power Value Register
+#typeend;
 
 #type; GPIOINT
 
@@ -68,3 +70,4 @@
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
 #regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#typeend;

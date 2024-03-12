@@ -555,6 +555,11 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 			nextline(fp);
 			return;
 
+		} else if (strcmp(token0, "#typeend;") == 0 || strcmp(token0, "#typeend;\n") == 0) {
+			/* parsed */
+			nextline(fp);
+			return;
+
 		} else {
 			break;
 		}
@@ -1238,6 +1243,9 @@ static void generate_cmsis(void) {
 	if (1) {
 		/* defines */
 		PLIST_ENTRY t;
+		emitline(0, "\n");
+		emitline(0, "/* Defines */\n");
+		emitline(0, "\n");
 
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);

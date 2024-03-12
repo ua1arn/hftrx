@@ -43,6 +43,8 @@
 
 #aggregend;
 
+#typeend;
+
 #type; I2S_PCM
 
 #base; I2S0 0x05097200; H_I2S0
@@ -71,3 +73,4 @@
 #regdef; I2Sn_SDIN_SLOTCTR; 0x0070; I2Sn Input Slot Control
 #regdef; I2Sn_SDINCHMAP; 0x0074 4; I2Sn SDIN Channel Mapping 0..3
 #regdef; padding 0; 0x0100; Placeholder for 0x100 alignment
+#typeend;

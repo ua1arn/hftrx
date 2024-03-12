@@ -2893,6 +2893,10 @@ typedef struct VE_Type
 } VE_TypeDef; /* size of structure = 0xBE8 */
 
 
+/* Defines */
+
+
+
 /* Access pointers */
 
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */

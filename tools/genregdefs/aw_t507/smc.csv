@@ -3,3 +3,4 @@
 #irq; SMC 79
 
 #regdef; padding 0; 0x1000; set size
+#typeend;

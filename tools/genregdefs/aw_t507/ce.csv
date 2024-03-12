@@ -22,3 +22,4 @@
 #regdef; CE_XCDA; 0x0058; XTS Algorithm DMA Current Destination Address
 
 #regdef; padding 0; 0x800; set size
+#typeend;

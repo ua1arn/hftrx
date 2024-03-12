@@ -18,3 +18,4 @@
 #regdef; TWI_LCR; 0x0020; TWI Line Control Register
 
 #regdef; padding 0; 0x400; set size
+#typeend;

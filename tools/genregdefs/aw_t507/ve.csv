@@ -87,5 +87,6 @@
 #regdef; VE_AVC_MB_INFO; 0xbc0;
 #regdef; VE_AVC_SDRAM_INDEX; 0xbe0;
 #regdef; VE_AVC_SDRAM_DATA; 0xbe4;
-;
+
 #regdef; padding 0; 0x2000; Need for address arithmetics
+#typeend;

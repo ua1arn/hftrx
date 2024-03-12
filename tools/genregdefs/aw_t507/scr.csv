@@ -18,3 +18,4 @@
 #regdef; SCR_FIFO; 0x0100; Smart Card Reader RX and TX FIFO Access Point
 
 #regdef; padding 0; 0x400; set size
+#typeend;

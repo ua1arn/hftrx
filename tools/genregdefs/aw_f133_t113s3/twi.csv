@@ -32,3 +32,4 @@
 #regdef; TWI_DRV_RECV_FIFO_ACC; 0x0304; TWI_DRV Receive Data FIFO Access Register
 
 #regdef; padding 0; 0x400; set size
+#typeend;
