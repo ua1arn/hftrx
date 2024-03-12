@@ -6,7 +6,7 @@ MEMORY
 {
    RAM (rwx)	: ORIGIN = 0x00020000 + 256, LENGTH = 160k - 256		/*  */
    bootRAM (rwx)	: ORIGIN = 0x00028000 + 256, LENGTH = 160k - 32k - 256		/*  */
-   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 64M	/*  */
+   DDR3 (rwx) : ORIGIN = 0x40000000 + 16M, LENGTH = 64M - 16M	/*  */
 }
 
 /* Library configurations */
@@ -100,9 +100,11 @@ SECTIONS
 		QUAD (__data_start__)
 		QUAD ((__data_end__ - __data_start__) / 4)
 	*/
+	/*
 		QUAD (__etext2)
 		QUAD (__data2_start__)
 		QUAD ((__data2_end__ - __data2_start__) / 4)
+	*/
 		__copy_table_end64__ = .;
 	} > RAM
 
@@ -130,6 +132,8 @@ SECTIONS
 		. = ALIGN(64);
 
 		*(.data* .sdata*)
+		*(.itcm*)
+		*(.dtcm*)
 
 		. = ALIGN(4);
 		/* preinit data */
@@ -159,6 +163,7 @@ SECTIONS
 
 	} > RAM
 
+	/*
 	__etext2 = .;
 
 	.sysram : AT (__etext2)
@@ -169,11 +174,12 @@ SECTIONS
 		*(.dtcm*)
 
 		__data2_end__ = .;
-	} > RAM /* was: STSRAN */
+	} > RAM
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
-
+   */
+	
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
