@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if 1 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 1 && CPUSTYLE_T113
 
 #include "formats.h"
 #include "clocks.h"

@@ -293,6 +293,10 @@ app_run: $(PROJECT)_app.f133
 	$(XFEL) ddr f133
 	$(XFEL) write 0x40000000 $(PROJECT)_app.f133
 	$(XFEL) exec 0x40000100 
+  
+_app_run: fsbl.f133
+	$(XFEL) write 0x00028000 fsbl.f133
+	$(XFEL) exec 0x00028100 
 
 flash:
 	-$(XFEL) spinor write 0x00000000 fsbl.f133
