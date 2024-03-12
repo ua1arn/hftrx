@@ -5,6 +5,7 @@
 MEMORY
 {
    RAM (rwx)	: ORIGIN = 0x00020000 + 256, LENGTH = 160k - 256		/*  */
+   bootRAM (rwx)	: ORIGIN = 0x00028000 + 256, LENGTH = 160k - 32k - 256		/*  */
    DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 64M	/*  */
 }
 
