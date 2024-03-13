@@ -2874,6 +2874,11 @@ sysinit_vbar_initialize(void)
 	ASSERT(csr_read_mtvec() == vbaseval);
 
 	PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY;
+	{
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(PLIC->PLIC_MIE_REGn); ++ i)
+			PLIC->PLIC_MIE_REGn [i] = 0;
+	}
 
 	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Enable interrupts routing
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
