@@ -3207,6 +3207,12 @@ sysinit_hwprepare_initialize(void)
 	L1C_DisableCaches();
 	MMU_Disable();
 #endif /* (__CORTEX_A != 0) */
+#if CPUSTYLE_F133
+	/* disable interrupts*/
+	csr_clr_bits_mie(MIE_MSI_BIT_MASK | MIE_MTI_BIT_MASK | MIE_MEI_BIT_MASK);	// MSI MTI MEI
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
+
+#endif /* CPUSTYLE_F133 */
 }
 
 /* инициадихации кеш-памяти, спцифические для CORE0 */

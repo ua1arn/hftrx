@@ -133,6 +133,11 @@ bootloader_launch_app(uintptr_t ip)
 #if (__L2C_PRESENT == 1)
 	L2C_Disable();
 #endif
+#if (__CORTEX_A != 0)
+	L1C_DisableCaches();
+	L1C_DisableBTAC();
+#endif
+
 
 #if CPUSTYLE_F133
 	/* disable memory cache */
