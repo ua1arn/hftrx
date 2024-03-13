@@ -62,6 +62,7 @@ CORE += -mfpu=neon-vfpv4
 # Define optimisation level here
 #OPT = -Og
 OPT = -Ofast -flto
+#OPT = -Os -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -284,6 +285,11 @@ app_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
+	
+# bootloader debug - check allwnr_t113s3_boot.ld
+_app_run: fsbl.alw32
+	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) exec 0x00028100 
 
 app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) ddr t113-s3
