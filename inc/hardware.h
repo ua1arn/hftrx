@@ -1092,6 +1092,7 @@ void applowinitialize(void);
 void initialize2(void);
 void application_mainloop(void);
 void application_initialize(void);
+void SystemDeInit(void);	/* bootloader support function */
 
 #if LINUX_SUBSYSTEM
 	#include <src/linux/linux_subsystem.h>

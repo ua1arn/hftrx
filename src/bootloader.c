@@ -127,36 +127,9 @@ bootloader_launch_app(uintptr_t ip)
 	dcache_clean_all();
 	global_disableIRQ();
 
-#if (__L2C_PRESENT == 1)
-	L2C_Disable();
-#endif
-
-
-#if (__GIC_PRESENT == 1)
-	// keep enabled foe CPU1 start
-	//GIC_DisableInterface();
-	//GIC_DisableDistributor();
-
-	// Disable all IRQs
-	{
-		// Get ITLinesNumber
-		const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
-		unsigned i;
-		// 32 - skip SGI handlers (keep enabled for CPU1 start).
-		for (i = 32; i < n; ++ i)
-			IRQ_Disable(i);
-	}
-#endif
-
-#if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
-
-	MMU_Disable();
-	MMU_InvalidateTLB();
-	__ISB();
-	__DSB();
-#endif
-
+	SystemDeInit();	/* выключить memory cache и MMU */
 	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+
 
 	(* (void (*)(void)) ip)();
 
