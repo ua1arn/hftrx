@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW
-#if 1 && CPUSTYLE_F133
+#if 1 && (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #include "formats.h"
 #include "clocks.h"
@@ -712,7 +712,7 @@ static void mctl_sys_init(dram_para_t *para) {
 
   // set ddr pll clock
   para->dram_clk = ccu_set_pll_ddr_clk(0, para) / 2;
-  PRINTF("DDR CLK = %d MHz\n", para->dram_clk * 2);
+  PRINTF("DDR CLK = %d MHz\n", (int) (para->dram_clk * 2));
 
   udelay(100);
   dram_disable_all_master();
@@ -870,7 +870,7 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
     return;
 
   fuse = (readl(SYS_SID_BASE + SYS_EFUSE_REG) & 0xf00) >> 8;
-  PRINTF("DDR efuse: 0x%x\n", fuse);
+  PRINTF("DDR efuse: 0x%x\n", (unsigned) fuse);
 
   if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
     /* if fuse is 0xa then D1s -> no remap*/
@@ -932,13 +932,13 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
   writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
 
   PRINTF("MCTL_COM_REMAP0 = 0x%x\n",
-                  readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
+		  (unsigned) readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
   PRINTF("MCTL_COM_REMAP1 = 0x%x\n",
-                  readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
+		  (unsigned) readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
   PRINTF("MCTL_COM_REMAP2 = 0x%x\n",
-                  readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
+		  (unsigned) readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
   PRINTF("MCTL_COM_REMAP3 = 0x%x\n",
-                  readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
+		  (unsigned) readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
 }
 
 // Init the controller channel. The key part is placing commands in the main
@@ -1172,8 +1172,8 @@ static int dqs_gate_detect(dram_para_t *para) {
         if ((para->dram_tpr13 & 0x20000000) == 0) {
           return 0;
         }
-        PRINTF("DX0 state: %d\n", dx1);
-        PRINTF("DX1 state: %d\n", dx2);
+        PRINTF("DX0 state: %d\n", (int) dx1);
+        PRINTF("DX1 state: %d\n", (int) dx2);
         return 0;
       }
       para->dram_para2 = (para->dram_para2 & 0xfffffff0) | 0x1001;
@@ -1204,14 +1204,14 @@ static int dramc_simple_wr_test(uint32_t mem_mb, int len) {
     v2 = patt1 + i;
     if (v1 != v2) {
       PRINTF("DRAM: simple test FAIL\n");
-      PRINTF("%x != %x at address %p\n", v1, v2, (void *) (addr + i));
+      PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, (void *) (addr + i));
       return 1;
     }
     v1 = readl((unsigned long)(addr + offs + i));
     v2 = patt2 + i;
     if (v1 != v2) {
       PRINTF("DRAM: simple test FAIL\n");
-      PRINTF("%x != %x at address %p\n", v1, v2, (void *) (addr + offs + i));
+      PRINTF("%x != %x at address %p\n", (unsigned) v1, (unsigned) v2, (void *) (addr + offs + i));
       return 1;
     }
   }
@@ -1321,12 +1321,12 @@ static int auto_scan_dram_size(dram_para_t *para) {
       i = 16;
     addr_line += i;
 
-    PRINTF("rank %d row = %d \n", current_rank, i);
+    PRINTF("rank %d row = %d \n", (int) current_rank, (int) i);
 
     /* Store rows in para 1 */
     para->dram_para1 &= ~(0xffU << (16 * current_rank + 4));
     para->dram_para1 |= (i << (16 * current_rank + 4));
-    PRINTF("para->dram_para1 = 0x%x\n", para->dram_para1);
+    PRINTF("para->dram_para1 = 0x%x\n", (unsigned) para->dram_para1);
 
     /* Set bank mode for current rank */
     if (current_rank == 1) { /* Set bank mode for rank0 */
@@ -1353,12 +1353,12 @@ static int auto_scan_dram_size(dram_para_t *para) {
     }
 
     addr_line += i + 2;
-    PRINTF("rank %d bank = %d \n", current_rank, (4 + i * 4));
+    PRINTF("rank %d bank = %d \n", (int) current_rank, (int) (4 + i * 4));
 
     /* Store bank in para 1 */
     para->dram_para1 &= ~(0xfU << (16 * current_rank + 12));
     para->dram_para1 |= (i << (16 * current_rank + 12));
-    PRINTF("para->dram_para1 = 0x%x\n", para->dram_para1);
+    PRINTF("para->dram_para1 = 0x%x\n", (unsigned) para->dram_para1);
 
     /* Set page mode for rank0 */
     if (current_rank == 1) {
@@ -1400,12 +1400,12 @@ static int auto_scan_dram_size(dram_para_t *para) {
       i = (0x1U << (i - 10));
     }
 
-    PRINTF("rank %d page size = %d KB \n", current_rank, i);
+    PRINTF("rank %d page size = %d KB \n", (int) current_rank, (int) i);
 
     /* Store page in para 1 */
     para->dram_para1 &= ~(0xfU << (16 * current_rank));
     para->dram_para1 |= (i << (16 * current_rank));
-    PRINTF("para->dram_para1 = 0x%x\n", para->dram_para1);
+    PRINTF("para->dram_para1 = 0x%x\n", (unsigned) para->dram_para1);
   }
 
   /* check dual rank config */
@@ -1480,12 +1480,12 @@ int init_DRAM(int type, dram_para_t *para) {
   uint32_t rc, mem_size_mb;
 
   PRINTF("DRAM BOOT DRIVE INFO: %s\n", "V0.24");
-  PRINTF("DRAM CLK = %d MHz\n", para->dram_clk);
-  PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", para->dram_type);
+  PRINTF("DRAM CLK = %d MHz\n", (int) para->dram_clk);
+  PRINTF("DRAM Type = %d (2:DDR2,3:DDR3)\n", (int) para->dram_type);
   if ((para->dram_odt_en & 0x1) == 0)
     PRINTF("DRAMC read ODT off\n");
   else
-    PRINTF("DRAMC ZQ value: 0x%x\n", para->dram_zq);
+    PRINTF("DRAMC ZQ value: 0x%x\n", (unsigned) para->dram_zq);
 
   /* Test ZQ status */
   if (para->dram_tpr13 & (1 << 16)) {
@@ -1503,7 +1503,7 @@ int init_DRAM(int type, dram_para_t *para) {
     setbits_le32((SYS_CONTROL_REG_BASE + ZQ_CAL_CTRL_REG), (1 << 0));
     udelay(20);
     PRINTF("ZQ value = 0x%x\n",
-                    readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
+    		(unsigned) readl((SYS_CONTROL_REG_BASE + ZQ_RES_STATUS_REG)));
   }
 
   dram_voltage_set(para);
@@ -1521,7 +1521,7 @@ int init_DRAM(int type, dram_para_t *para) {
   if ((rc & 0x44) == 0)
     PRINTF("DRAM ODT off\n");
   else
-    PRINTF("DRAM ODT value: 0x%x\n", rc);
+    PRINTF("DRAM ODT value: 0x%x\n", (unsigned) rc);
 
   /* Init core, final run */
   if (mctl_core_init(para) == 0) {
@@ -1538,7 +1538,7 @@ int init_DRAM(int type, dram_para_t *para) {
     rc = (rc >> 16) & ~(1 << 15);
   } else {
     rc = DRAMC_get_dram_size();
-    PRINTF("DRAM: size = %dMB\n", rc);
+    PRINTF("DRAM: size = %dMB\n", (int) rc);
     para->dram_para2 = (para->dram_para2 & 0xffffU) | rc << 16;
   }
   mem_size_mb = rc;
@@ -1595,5 +1595,5 @@ int init_DRAM(int type, dram_para_t *para) {
 }
 
 
-#endif /* CPUSTYLE_T113 */
+#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 #endif /* WITHSDRAMHW */
