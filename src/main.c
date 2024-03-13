@@ -61,12 +61,12 @@ main(void)
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 	sysinit_gpio_initialize();
 #endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
-#if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
+#if WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
-#endif /* WITHDEBUG && ! CPUSTYLE_ARM */
+#endif /* WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
