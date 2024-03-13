@@ -164,8 +164,11 @@ bootloader_launch_app(uintptr_t ip)
 			IRQ_Disable(i);
 	}
 #endif
+
 #if CPUSTYLE_F133
 	/* disable interrupts*/
+	csr_clr_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
 
 #endif /* CPUSTYLE_F133 */
 

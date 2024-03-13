@@ -2875,7 +2875,7 @@ sysinit_vbar_initialize(void)
 
 	PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY;
 
-	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Enable interrupts routing
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
 
