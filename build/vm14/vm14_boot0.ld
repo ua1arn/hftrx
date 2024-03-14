@@ -4,10 +4,10 @@
 
 MEMORY
 {
-  cRAM (rwx)	 : ORIGIN = 0x00000800, 			LENGTH = 64K - 10K		/*  */
-  RAM (rwx)	 : ORIGIN = 0x20000000, 			LENGTH = 64K - 10K		/*  */
-  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 1024M - 16k		/*  */
-  TTB (rwx)  : ORIGIN = 0x40000000 + 1024M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+	  ROM (rwx)	 : ORIGIN = 0x00000000, 				LENGTH = 2K		/*  */
+	  RAM (rwx)	 : ORIGIN = 0x00000000 + 64K - 9K, 			LENGTH = 8K		/*  */
+	  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 1024M - 16k		/*  */
+	  TTB (rwx)  : ORIGIN = 0x40000000 + 1024M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
 }
 
 /* Library configurations */
@@ -39,7 +39,6 @@ MEMORY
  *   __StackTop
  *   __stack
  */
-
 	 ENTRY(Reset_Handler)
 
 SECTIONS
@@ -49,9 +48,6 @@ SECTIONS
 		. = ALIGN(64);
 		KEEP(*(.startup0))
 
-		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -76,37 +72,40 @@ SECTIONS
 		
 		*(.itcm*)
 		
-	} > RAM
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		
+	} > ROM
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > RAM
+	} > ROM
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > RAM
+	} > ROM
 	__exidx_end = .;
 
-	/* To copy multiple ROM to RAM sections,
+	/* To copy multiple RAM to RAM sections,
 	 * uncomment .copy.table section and,
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	.copy.table :
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
-	/*
 		LONG (__etext)
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
+		/*
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end__ = .;
-	} > RAM
+	} > ROM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -122,11 +121,11 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > RAM
+	} > ROM
 
 	__etext = .;
 
-	.data : /*AT (__etext)*/
+	.data : AT (__etext)
 	{
 		__data_start__ = .;
 
@@ -157,12 +156,11 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		*(.CPU_Internal*)
 
 		/* All data end */
 		__data_end__ = .;
 
-	} > RAM
+	} > ROM
 
 	.bss (NOLOAD):
 	{
@@ -186,16 +184,6 @@ SECTIONS
 		. = ALIGN(64);
 		*(.framebuff*)
 
-	} > DDR3
-
-	.ramnc BLOCK(1M) (NOLOAD):
-	{
-		PROVIDE(__RAMNC_BASE = .);
-		__bss2_start__ = .;
-		*(.ramnc*)
-		__bss2_end__ = .;
-		. = ALIGN(1M);
-		PROVIDE(__RAMNC_TOP = .);
 	} > DDR3
 
 	.heap (NOLOAD):
