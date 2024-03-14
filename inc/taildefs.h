@@ -325,13 +325,13 @@ void LowerIrql(IRQL_t newIRQL);
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
-	#define RAMNC //__attribute__((section(".ramnc")))
+	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_F133
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))

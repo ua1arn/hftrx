@@ -472,11 +472,21 @@ void hardware_uart0_flush(void)
 	while ((UART0->UART_USR & (1u << 2)) == 0)	// TFE Transmit FIFO Empty
 		;
 
+#elif CPUSTYLE_VM14
+
+	for (;;)
+	{
+		if ((UART0->UART_USR & (1u << 1)) == 0)	// TFNF TX FIFO Not Full
+			continue;
+		if ((UART0->UART_USR & (1u << 2)) == 0)	// TFE TX FIFO empty
+			continue;
+		if ((UART0->UART_TFL & 0xFF) != 0)
+			continue;
+	}
+
 #else
 	//#error Undefined CPUSTYLE_XXX
 #endif
-
-
 }
 
 /* приём символа, если готов порт */
