@@ -26,7 +26,7 @@
 #include "reg-dram.h"
 #define LOCAL_MAX(a, b) ((a) > (b) ? (a) : (b))
 //+++
-#define D1S_CCU_BASE (0x02001000)
+#define D1S_CCU_BASE (CCU_BASE) //(0x02001000)
 
 #define CCU_PLL_CPU_CTRL_REG (0x000)
 #define CCU_PLL_DDR_CTRL_REG (0x010)
@@ -101,16 +101,6 @@ enum sunxi_dram_type {
 
 #define SYS_DRAM_BASE_ADDR 0x40000000
 
-#define MC_MEMC_BASE        0x03202000    /* MC */
-
-// Sources taker from:
-//	https://raw.githubusercontent.com/szemzoa/awboot/main/arch/arm32/mach-t113s3/mctl_hal.c
-//	https://github.com/szemzoa/awboot/blob/main/arch/arm32/mach-t113s3/mctl_hal.c
-
-typedef uintptr_t virtual_addr_t;
-
-// SPDX-License-Identifier: GPL-2.0+
-
 static void sdelay(unsigned us)
 {
 	local_delay_us(us * 10);
@@ -118,29 +108,27 @@ static void sdelay(unsigned us)
 
 static uint32_t read32(uintptr_t addr)
 {
-	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	__DSB();
 }
 
-static void write32ptr(void * addr, uint32_t value)
-{
-	write32((uintptr_t) addr, value);
-}
+//static void write32ptr(void * addr, uint32_t value)
+//{
+//	write32((uintptr_t) addr, value);
+//}
 
-static uint32_t read32ptr(void * addr)
-{
-	return read32((uintptr_t) addr);
-}
-////////////////////
-///
-///
-/// https://github.com/YuzukiHD/TinyKasKit/blob/865beecf2b6e5c3779fe7e989e672f2cea6113f7/d1s-dramc/src/sys/sys-dram.c#L63
+//static uint32_t read32ptr(void * addr)
+//{
+//	return read32((uintptr_t) addr);
+//}
+
+
+// Sources taker from:
+// https://github.com/YuzukiHD/TinyKasKit/blob/865beecf2b6e5c3779fe7e989e672f2cea6113f7/d1s-dramc/src/sys/sys-dram.c#L63
 
 // SPDX-License-Identifier: GPL-2.0+
 /*
