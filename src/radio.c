@@ -4040,7 +4040,7 @@ enum
 	#else /* WITHUSEUSBBT */
 		enum { gusbbt = 0 };
 	#endif /* WITHUSEUSBBT */
-	#if WITHUSBUAC
+	#if WITHUSBHW && WITHUSBUAC
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
@@ -4052,11 +4052,11 @@ enum
 		#if WITHRTS96 || WITHRTS192
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 */
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBHW && WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		#define EQUALIZERBASE 12
 		static int_fast32_t getequalizerbase(void)
@@ -8276,9 +8276,9 @@ loadsavedstate(void)
 #endif /* WITHANTSELECT2 */
 
 #if WITHIF4DSP
-	#if WITHUSBUAC && WITHTX
+	#if WITHUSBHW && WITHUSBUAC
 		gdatamode = loadvfy8up(RMT_DATAMODE_BASE, 0, 1, gdatamode);
-	#endif /* WITHUSBUAC && WITHTX */
+	#endif /* WITHUSBHW && WITHUSBUAC */
 	// Загрузка позиции выбора полосы пропускания и значений границ для всех режимов работы
 	// Сохранение происходит при модификации в обработчика нажатия клавиши BW
 	bwseti_load();
@@ -12450,7 +12450,7 @@ uif_key_changenr(void)
 	updateboard(1, 1);
 }
 
-#if WITHUSBUAC
+#if WITHUSBHW && WITHUSBUAC
 
 /* переключение источника звука с USB или обычного для данного режима */
 static void
@@ -12461,7 +12461,7 @@ uif_key_click_datamode(void)
 	updateboard(1, 0);
 }
 
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBHW && WITHUSBUAC */
 
 
 #else /* WITHIF4DSP */
