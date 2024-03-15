@@ -46,7 +46,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # For details of A7 CPUX signals, refer to the technical reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
 # sun8i
@@ -62,6 +62,7 @@ CORE += -mfpu=neon-vfpv4
 # Define optimisation level here
 #OPT = -Og
 OPT = -Ofast -flto
+#OPT = -Os -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -284,6 +285,11 @@ app_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
+	
+# bootloader debug - check allwnr_t113s3_boot.ld
+_app_run: fsbl.alw32
+	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) exec 0x00028100 
 
 app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) ddr t113-s3

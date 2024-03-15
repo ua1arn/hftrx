@@ -44,7 +44,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -57,7 +57,7 @@ CORE += -mfpu=vfpv4
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Os
-OPT = -Ofast -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -249,8 +249,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
-LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) $(call ld-option, --no-warn-rwx-segments)
+LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) $(call ld-option, --no-warn-rwx-segments)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -279,8 +279,8 @@ allZ:
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
 app_run: $(PROJECT)_app.stm32
-	./dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.stm32"
-	./dfu-util --alt 2 --detach
+	dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.stm32"
+	dfu-util --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
 	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32

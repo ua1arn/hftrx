@@ -4,8 +4,9 @@
 
 MEMORY
 {
-  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 		LENGTH = 2048M - 16k - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
-  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  SRAM 		(rwx) : ORIGIN = 0x20000000, 				LENGTH = 64K		/*  */
+  VRAM      (rwx) : ORIGIN = 0x3B000000,                LENGTH = 1M              /* 128бит*64к = 1Мб */
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 		LENGTH = 1024M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
 }
 
 /* Library configurations */
@@ -97,6 +98,9 @@ SECTIONS
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
+		LONG (__etext3)
+		LONG (__data3_start__)
+		LONG (__data3_end__ - __data3_start__)
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -165,11 +169,23 @@ SECTIONS
 
 		*(.itcm*)
 		*(.dtcm*)
-
 		__data2_end__ = .;
-	} > RAM /* was: STSRAN */
+	} > SRAM
 
 	. = __etext2 + __data2_end__ - __data2_start__;
+
+
+	__etext3 = .;
+
+	.sysram2 : AT (__etext3)
+	{
+		__data3_start__ = .;
+		. = ALIGN(64);
+		*(.CPU_Internal*)
+		__data3_end__ = .;
+	} > SRAM
+
+	. = __etext3 + __data3_end__ - __data3_start__;
 
 
 	.bss (NOLOAD):
@@ -189,6 +205,23 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
+	.ttb BLOCK(16k) (NOLOAD):
+	{
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > RAM
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
+	} > RAM
+
 	.heap (NOLOAD):
 	{
 		__HeapBase = .;
@@ -206,14 +239,17 @@ SECTIONS
 		KEEP(*(.stack*))
 	} > RAM
 
+	.noinit (NOLOAD):
+	{
+		. = ALIGN(64);
+		*(.VRam_data*)
+	} > VRAM
+
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
-
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
-	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")

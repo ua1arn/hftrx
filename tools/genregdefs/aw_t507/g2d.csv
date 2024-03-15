@@ -79,6 +79,9 @@
 ##regdef; UI_HADD; 0x18; UIx_HADD
 ##regdef; UI_SIZE; 0x1C; UIx_SIZE
 
+##regdef; padding 0; 0x800; set size
+##typeend;
+
 #type; G2D_ROT; Graphic 2D Rotate
 #base; G2D_ROT 0x014A8000
 
@@ -112,5 +115,6 @@
 #regdef; LBC_ENC_CTL; 0xC8; Encode control (bit 31 - is lossy)
 #regdef; LBC_CTL; 0xCC; 
 #regdef; LBC_DEC_CTL; 0xD0; Decode control (bit 31 - is lossy) 
+#typeend;
 
 

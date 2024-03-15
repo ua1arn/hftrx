@@ -51,3 +51,4 @@
 #regdef; SMHC_FIFO; 0x0200; Read/Write FIFO
 
 #regdef; padding 0; 0x1000; set size
+#typeend;

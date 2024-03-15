@@ -4,8 +4,8 @@
  * The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
  */
 
-#ifndef ARCH_ALLWNR_F133_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_F133_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_F133__H_
+#define ARCH_ALLWNR_F133__H_
 
 /*
  * sun20i
@@ -18,13 +18,13 @@
 //#define RISC_WDG_BASE 			0x06011000
 //#define RISC_TIMESTAMP_BASE 	0x06012000
 
-// DRAM Space (SYS domain)
-#define DRAM_SPACE_SIZE			0x04000000u			/* 64 MB */
 #define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
+#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
+#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
 
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                    0U      /*!< Cortex-A# Core                              */
-#define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
+#define __CA_REV                 0x0000U      /*!< Core revision r0p0 [15:8] rev [7:0] patch */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 0U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 0U      /*!< Set to 1 if TIM is present                  */
@@ -361,4 +361,4 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
   return (result);
 }
 
-#endif /* ARCH_ALLWNR_F133_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_F133__H_ */

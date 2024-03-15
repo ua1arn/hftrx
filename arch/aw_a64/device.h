@@ -2175,6 +2175,10 @@ typedef struct USB_OHCI_Capability_Type
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
 
 
+/* Defines */
+
+
+
 /* Access pointers */
 
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine Top register set access pointer */

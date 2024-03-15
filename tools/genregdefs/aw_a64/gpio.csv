@@ -28,6 +28,8 @@
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
 #regdef; padding 0; 0x020; PB External Interrupt Debounce Register
 #aggregend;
+#typeend;
+
 ##
 #type; GPIOINT
 #base; GPIOINTB 0x01C20A00
@@ -48,3 +50,4 @@
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
 #regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#typeend;

@@ -1155,8 +1155,8 @@ extern "C" {
 	#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
 	#define ARM_USER_PRIORITY			0	/*  Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
-	#define global_enableIRQ() do { csr_set_bits_mie(MIE_MEI_BIT_MASK); } while (0)
-	#define global_disableIRQ() do { csr_clr_bits_mie(MIE_MEI_BIT_MASK); } while (0)
+	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
@@ -1257,6 +1257,7 @@ extern "C" {
 #define CODEC_TYPE_NAU8822L		43	// NUVOTON NAU8822L
 #define CODEC_TYPE_WM8994		44	// CIRRUS LOGIC WM8994ECS/R
 #define CODEC_TYPE_CS42L51		45	// CIRRUS LOGIC CS42L51
+#define CODEC_TYPE_AWHWCODEC	46	// Allwinner embedded audio codec
 
 #define RTC_TYPE_DS1305		50	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 #define RTC_TYPE_DS1307		51	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */

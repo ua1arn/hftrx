@@ -71,10 +71,6 @@
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
 	//#define CTLREGMODE_NOCTLREG 1
 
-	
-	
-	
-
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
 
@@ -99,9 +95,9 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
+	//#define KEYB_FPANEL20_V0B	1	/* 20 кнопок на 6 линий - KI5 соединен с кнопкой второго валкодера */
 	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
-	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
+
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -328,7 +324,9 @@
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_UA1CEI	1
 	//#define COLORSTYLE_RED	1
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -696,9 +694,12 @@
 		KI1 = BOARD_ADCXKIN(4),
 		KI2 = BOARD_ADCXKIN(5),
 		KI3 = BOARD_ADCXKIN(6),
-		KI4 = BOARD_ADCXKIN(7)
+		KI4 = BOARD_ADCXKIN(7),
+		KI5 = BOARD_ADCX1IN(3)		// другой АЦП - сейчас кнопка второго валкодера
 	};
 
+	//#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП
+	//#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 

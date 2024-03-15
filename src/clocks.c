@@ -4017,6 +4017,13 @@ uint_fast32_t allwnrt113_get_uart_freq(void)
 }
 
 // T113
+// The clock of the CAN is from APB1.
+uint_fast32_t allwnrt113_get_can_freq(void)
+{
+	return allwnrt113_get_apb1_freq();
+}
+
+// T113
 // The clock of the TWI is from APB1.
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
@@ -4257,6 +4264,14 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 	}
 }
 
+uint_fast32_t allwnrf133_get_riscv_axi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->RISC_CLK_REG;
+	const uint_fast32_t N = 1u + ((clkreg >> 8) & 0x03);	// RISC_AXI_DIV_CFG
+	//const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x1F);	// RISC_DIV_CFG
+	return allwnrf133_get_riscv_freq() / N;
+}
+
 // DSP (HiFi4)
 uint_fast32_t allwnrt113_get_dsp_freq(void)
 {
@@ -4330,6 +4345,7 @@ void allwnrt113_pll_initialize(void)
 
 #if CPUSTYLE_VM14
 
+#if 1
 // 1892ВМ14Я ELVEES multicore.ru
 
 /********MCOM-02 REGMAP DEFINE*******************************************/
@@ -4423,10 +4439,13 @@ static unsigned int getCurrentDSPFreq(void)
 
 static void setCPUPLLFreq(unsigned int MHz)
 {
+    CMCTR->SEL_APLL = 0;
+    (void) CMCTR->SEL_APLL;
     int sel = (MHz / DEFAULT_XTI_CLOCK) - 1;
     if (sel < 0)
         sel = 0;
     CMCTR->SEL_APLL = sel;
+    (void) CMCTR->SEL_APLL;
     while (!(CMCTR->SEL_APLL & PLL_LOCK_BIT))
         ;
 }
@@ -4508,6 +4527,7 @@ static int setDSPFreq(unsigned int MHz)
     (void) last_freq;
     return 0;
 }
+#endif
 
 uint_fast32_t elveesvm14_get_arm_freq(void)
 {
@@ -4523,13 +4543,37 @@ static uint32_t elveesvm14_get_xtal_freq(void)
 uint_fast32_t elveesvm14_get_usart_freq(void)
 {
 	return SYSFREQ * 1000 * 1000; // elveesvm14_get_xtal_freq();
+	//return 24000000;//SYSFREQ * 1000 * 1000; // elveesvm14_get_xtal_freq();
 }
+
+
+//    write32(0x38094068, 0xf);  //# CMCTR.GATE_DSP_CTR
+//    write32(0x3809410c, 0x1);  //# CMCTR.SEL_SPLL
+//    write32(0x38094100, 0x2);  //# CMCTR.SEL_APLL
+//    write32(0x38094104, 0x2);  //# CMCTR.SEL_CPLL
+//    write32(0x38094114, 0x2);  //# CMCTR.SEL_UPLL
+//    write32(0x38094108, 0x4);  //# CMCTR.SEL_DPLL
+//    write32(0x38094048, 0x21); //# CMCTR.GATE_CORE_CTR
+//    //write32(0x3809404c, 0xffffffff); //# CMCTR.GATE_SYS_CTR
+//    //# setup registers to allow high frequences
+//    write32(0x38094004, 0x1);   //# DIV_MPU_CTR = 1;
+//    write32(0x38094008, 0x3);   //# DIV_ATB_CTR = 3;
+//    write32(0x3809400c, 0x1);   //# DIV_APB_CTR = 1;
+//    write32(0x38094014, 0x1);   //# GATE_MPU_CTR = 1;
 
 void vm14_pll_initialize(void)
 {
+	CMCTR->DIV_MPU_CTR = 0x01;
+	CMCTR->DIV_ATB_CTR = 0x03;
+	CMCTR->DIV_APB_CTR = 0x01;
+	CMCTR->DIV_MPU_CTR = 0x01;
+	CMCTR->GATE_MPU_CTR |= 0x01;
 	setSystemFreq(SYSFREQ);
-	//setCPUFreq(MAX_CPU_FREQ_MHZ);
-	//setCPUFreq(96);
+#if WITHISBOOTLOADER
+	setCPUFreq(768);
+#else
+	setCPUFreq(768);
+#endif
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -8936,6 +8980,9 @@ void SystemCoreClockUpdate(void)
 
 #elif CPUSTYLE_R7S721
 	#define PWMTICKSFREQ (P0CLOCK_FREQ / 2)	/* Renesas RZ-A1x */
+
+#elif CPUSTYLE_STM32MP1
+	#define PWMTICKSFREQ 32000000
 
 #else
 	//#error Wrong CPUSTYLE_xxx

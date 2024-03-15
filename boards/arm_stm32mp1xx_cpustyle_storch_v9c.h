@@ -43,6 +43,7 @@
 #if WITHDEBUG
 	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHDEBUG_UART4	1
 #endif /* WITHDEBUG */
 
 #if WITHLFM
@@ -50,8 +51,12 @@
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-#define WITHDEBUG_UART4	1
+#if 0
+	#define WITHCAT_USART4		1
+	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART4HW	1	/* PG11, PB2 Используется периферийный контроллер последовательного порта #4 */
+#endif
+
 #define BOARD_TUH_RHPORT 1
 
 #if WITHISBOOTLOADER
@@ -143,7 +148,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -168,6 +173,7 @@
 	#define WITHUSBHW_OHCI_IX	0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHCAT_LWIP		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
@@ -205,9 +211,6 @@
 		#endif /* WITHUSBDEV_HSDESC */
 
 	#endif /* WITHINTEGRATEDDSP */
-
-	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 
 	#if WITHLWIP
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
@@ -1208,5 +1211,8 @@
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9c_2ch.h"
 
 	#define USERFIRSTSBLOCK 0	/* виртуальный раздел на SD CARD начинается с этого блока. */
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    7
 
 #endif /* ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_H_INCLUDED */

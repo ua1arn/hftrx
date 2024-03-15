@@ -755,10 +755,12 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHISBOOTLOADER
+	// I2C/TWI
+	// BOOTLOASER version
 	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-	// PL0 S-TWI0-SCK
-	// PL1 S-TWI0-SDA
+	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
+	// PL1 S-TWI0-SDA - На плате нет pull-up резисторов
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
 	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
 	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
@@ -773,6 +775,8 @@
 	#define	TWISOFT_INITIALIZE() do { \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
 		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
@@ -781,11 +785,14 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4x);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4x);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
 	} while (0)
-	#define	TWIHARD_IX 0x	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_PTR TWI0x	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_FREQ (allwnrt113_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #else /* WITHISBOOTLOADER */
 
@@ -1195,17 +1202,17 @@
 
 	//PA0 - PA9 EMAC RMII
 	#define ETHERNET_INITIALIZE() do { \
-			arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 3, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 4, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 5, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 6, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 7, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 8, GPIO_CFG_AF2);	\
-			arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
-		} while (0)
+		arm_hardware_pioa_altfn50(1 << 0, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 1, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 2, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 3, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 4, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 5, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 6, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 7, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 8, GPIO_CFG_AF2);	\
+		arm_hardware_pioa_altfn50(1 << 9, GPIO_CFG_AF2);	\
+	} while (0)
 
 #else
 	#define ETHERNET_INITIALIZE() do { } while (0)
@@ -1213,13 +1220,16 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*BOARD_BLINK_INITIALIZE(); */\
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_GPIOREG_INITIALIZE(); \
-			/*HARDWARE_DAC_INITIALIZE(); */\
-			HARDWARE_DCDC_INITIALIZE(); \
-			ETHERNET_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-		} while (0)
+		/*BOARD_BLINK_INITIALIZE(); */\
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_GPIOREG_INITIALIZE(); \
+		/*HARDWARE_DAC_INITIALIZE(); */\
+		HARDWARE_DCDC_INITIALIZE(); \
+		ETHERNET_INITIALIZE(); \
+		USBD_EHCI_INITIALIZE(); \
+	} while (0)
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED */

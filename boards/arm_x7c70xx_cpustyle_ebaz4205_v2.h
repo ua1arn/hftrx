@@ -44,7 +44,7 @@
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_UART1	1
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHNMEA
 

@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    system_allwnr_t113s3.h
+  * @file    system_allwnr_t507.h
   ******************************************************************************
   */
-#ifndef __SYSTEM_ALLWNR_T113S3_H
-#define __SYSTEM_ALLWNR_T113S3_H
+#ifndef __SYSTEM_ALLWNR_T507_H
+#define __SYSTEM_ALLWNR_T507_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -29,4 +29,4 @@ extern void SystemCoreClockUpdate(void);
 }
 #endif
 
-#endif /*__SYSTEM_ALLWNR_T113S3_H */
+#endif /*__SYSTEM_ALLWNR_T507_H */

@@ -4,9 +4,10 @@
 
 MEMORY
 {
-  RAM (rwx)	 : ORIGIN = 0x20000000, 			LENGTH = 64K - 16K		/*  */
-  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 2048M - 16k		/*  */
-  TTB (rwx)  : ORIGIN = 0x40000000 + 2048M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
+  cRAM (rwx)	 : ORIGIN = 0x00000800, 			LENGTH = 64K - 10K		/*  */
+  RAM (rwx)	 : ORIGIN = 0x20000000, 			LENGTH = 64K - 10K		/*  */
+  DDR3 (rwx) : ORIGIN = 0x40000000, 				LENGTH = 1024M - 16k		/*  */
+  TTB (rwx)  : ORIGIN = 0x40000000 + 1024M - 16k, 	LENGTH = 16k	/* last 16 kB DDR3 RAM for TTB */
 }
 
 /* Library configurations */
@@ -38,20 +39,19 @@ MEMORY
  *   __StackTop
  *   __stack
  */
-	 ENTRY(__Vectors)
+
+	 ENTRY(Reset_Handler)
 
 SECTIONS
 {
 	.text :
 	{
 		. = ALIGN(64);
-		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
-		
-		. = ALIGN(64);
 		KEEP(*(.startup0))
 
+		. = ALIGN(64);
+		KEEP(*(.isr_vector))
+		
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -157,6 +157,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
+		*(.CPU_Internal*)
 
 		/* All data end */
 		__data_end__ = .;
@@ -185,6 +186,16 @@ SECTIONS
 		. = ALIGN(64);
 		*(.framebuff*)
 
+	} > DDR3
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
 	} > DDR3
 
 	.heap (NOLOAD):

@@ -1,0 +1,5 @@
+#type; SPC
+#base; SPC 0x03008000
+
+#regdef; padding 0; 0x1000; set size
+#typeend;

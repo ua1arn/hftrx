@@ -833,6 +833,24 @@ void colpip_stretchblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	);
 
+// копирование с поворотом
+void colpip_copyrotate(
+	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
+	PACKEDCOLORPIP_T * __restrict buffer, // target buffer
+	uint_fast16_t dx,	uint_fast16_t dy,	// получатель
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uintptr_t srcinvalidateaddr,	int_fast32_t srcinvalidatesize,	// параметры clean источника
+	const PACKEDCOLORPIP_T * __restrict sbuffer,	// source buffer
+	uint_fast16_t sdx,	uint_fast16_t sdy,	// источник Размеры буфера в пикселях
+	uint_fast16_t sx,	// начальная координата
+	uint_fast16_t sy,	// начальная координата
+	uint_fast16_t w, uint_fast16_t h,	// source rectangle size
+	uint_fast8_t mx,	// X mirror flag
+	uint_fast8_t my,	// X mirror flag
+	unsigned angle	// positive CCW angle
+	);
+
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 // с поворотом вправо на 90 градусов
 void colpip_bitblt_ra90(
@@ -1172,13 +1190,15 @@ COLORPIP_T getshadedcolor(
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	);
 
-void display_do_AA(PACKEDCOLORPIP_T * __restrict buffer,
-		uint_fast16_t dx,
-		uint_fast16_t dy,
-		uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-		uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
-		uint_fast16_t width,
-		uint_fast16_t height);
+void display_do_AA(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,
+	uint_fast16_t dy,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз)
+	uint_fast16_t width,
+	uint_fast16_t height
+	);
 
 #define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
 #define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения

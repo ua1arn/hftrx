@@ -5,7 +5,6 @@
 MEMORY
 {
   RAM (rwx) 	: ORIGIN = 0x40000100, LENGTH = 64M - 256 	/* DDR internal memory - 64 MB - 16 kB - 256 B*/
-  TTB (rwx)  	: ORIGIN = 0x43FFC000, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
   SRAM_A1 (rwx)	: ORIGIN = 0x00020000, LENGTH = 160k	/*  */
 }
 
@@ -76,6 +75,12 @@ SECTIONS
 
 	} > RAM
 
+	.gcc_except_table :
+	{
+		*(.gcc_except_table)
+		*(.gcc_except_table.*)
+	} > RAM
+
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
@@ -131,21 +136,18 @@ SECTIONS
 
 		*(.data* .sdata*)
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
-
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
 		KEEP(*(.init_array))
 		PROVIDE_HIDDEN (__init_array_end = .);
-
-
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -214,7 +216,7 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
+	/* PROVIDE(__TTB_BASE = ORIGIN(TTB)); */
 	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */

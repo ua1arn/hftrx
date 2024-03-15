@@ -99,6 +99,9 @@
 #regdef; V0_VDS_CTL0; 0x38; V0_VDS_CTL0
 #regdef; V0_VDS_CTL1; 0x3C; V0_VDS_CTL1
 
+#regdef; padding 0; 0x800; set size
+#typeend;
+
 #type; G2D_WB; Graphic 2D (G2D) Engine Write Back
 #base; G2D_WB 0x05413000
 
@@ -113,6 +116,7 @@
 #regdef; WB_HADD1; 0x20; WB_HADD1
 #regdef; WB_LADD2; 0x24; WB_LADD2
 #regdef; WB_HADD2; 0x28; WB_HADD2
+#typeend;
 
 #type; G2D_UI; Graphic 2D UI surface
 #base; G2D_UI0 0x05411000
@@ -127,6 +131,9 @@
 #regdef; UI_FILLC; 0x14; UIx_FILLC
 #regdef; UI_HADD; 0x18; UIx_HADD
 #regdef; UI_SIZE; 0x1C; UIx_SIZE
+
+#regdef; padding 0; 0x800; set size
+#typeend;
 
 #type; G2D_VSU; Graphic 2D Video Scaler
 #base; G2D_VSU 0x05418000
@@ -151,6 +158,7 @@
 #regdef; VS_Y_HCOEF; 0x200 64; VS_Y_HCOEF[N]. N=0..31
 #regdef; VS_Y_VCOEF; 0x300 64; VS_Y_VCOEF[N]. N=0..31
 #regdef; VS_C_HCOEF; 0x400 64; VS_C_HCOEF[N]. N=0..31
+#typeend;
 
 #type; G2D_ROT; Graphic 2D Rotate
 #base; G2D_ROT 0x05438000
@@ -185,4 +193,5 @@
 #regdef; LBC_ENC_CTL; 0xC8; Encode control (bit 31 - is lossy)
 #regdef; LBC_CTL; 0xCC;
 #regdef; LBC_DEC_CTL; 0xD0; Decode control (bit 31 - is lossy) 
+#typeend;
 

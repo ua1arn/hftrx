@@ -1,5 +1,93 @@
-#type; VE
-#base; VE xxxx
+#type; VE; Video Encoding
+#base; VENCODER 0x01C0E000
 #irq; VE 98
-#irqv; VE 82
+#irqrv; VE 82
 
+# See also https://linux-sunxi.org/VE_Register_guide
+
+#regdef; VE_CTRL; 0x000;
+#regdef; VE_VERSION; 0x0f0;
+
+#regdef; VE_MPEG_PIC_HDR; 0x100;
+#regdef; VE_MPEG_SIZE; 0x108;
+#regdef; VE_MPEG_FRAME_SIZE; 0x10c;
+#regdef; VE_MPEG_CTRL; 0x114;
+#regdef; VE_MPEG_TRIGGER; 0x118;
+#regdef; VE_MPEG_STATUS; 0x11c;
+#regdef; VE_MPEG_VLD_ADDR; 0x128;
+#regdef; VE_MPEG_VLD_OFFSET; 0x12c;
+#regdef; VE_MPEG_VLD_LEN; 0x130;
+#regdef; VE_MPEG_VLD_END; 0x134;
+#regdef; VE_MPEG_REC_LUMA; 0x148;
+#regdef; VE_MPEG_REC_CHROMA; 0x14c;
+#regdef; VE_MPEG_FWD_LUMA; 0x150;
+#regdef; VE_MPEG_FWD_CHROMA; 0x154;
+#regdef; VE_MPEG_BACK_LUMA; 0x158;
+#regdef; VE_MPEG_BACK_CHROMA; 0x15c;
+#regdef; VE_MPEG_IQ_MIN_INPUT; 0x180;
+#regdef; VE_MPEG_JPEG_SIZE; 0x1b8;
+#regdef; VE_MPEG_JPEG_RES_INT; 0x1c0;
+#regdef; VE_MPEG_ROT_LUMA; 0x1cc;
+#regdef; VE_MPEG_ROT_CHROMA; 0x1d0;
+#regdef; VE_MPEG_SDROT_CTRL; 0x1d4;
+#regdef; VE_MPEG_RAM_WRITE_PTR; 0x1e0;
+#regdef; VE_MPEG_RAM_WRITE_DATA; 0x1e4;
+
+#regdef; VE_H264_FRAME_SIZE; 0x200;
+#regdef; VE_H264_PIC_HDR; 0x204;
+#regdef; VE_H264_SLICE_HDR; 0x208;
+#regdef; VE_H264_SLICE_HDR2; 0x20c;
+#regdef; VE_H264_PRED_WEIGHT; 0x210;
+#regdef; VE_H264_QP_PARAM; 0x21c;
+#regdef; VE_H264_CTRL; 0x220;
+#regdef; VE_H264_TRIGGER; 0x224;
+#regdef; VE_H264_STATUS; 0x228;
+#regdef; VE_H264_CUR_MB_NUM; 0x22c;
+#regdef; VE_H264_VLD_ADDR; 0x230;
+#regdef; VE_H264_VLD_OFFSET; 0x234;
+#regdef; VE_H264_VLD_LEN; 0x238;
+#regdef; VE_H264_VLD_END; 0x23c;
+#regdef; VE_H264_SDROT_CTRL; 0x240;
+#regdef; VE_H264_OUTPUT_FRAME_IDX; 0x24c;
+#regdef; VE_H264_EXTRA_BUFFER1; 0x250;
+#regdef; VE_H264_EXTRA_BUFFER2; 0x254;
+#regdef; VE_H264_BASIC_BITS; 0x2dc;
+#regdef; VE_H264_RAM_WRITE_PTR; 0x2e0;
+#regdef; VE_H264_RAM_WRITE_DATA; 0x2e4;
+
+##regdef; VE_SRAM_H264_PRED_WEIGHT_TABLE; 0x000;
+#regdef; VE_SRAM_H264_FRAMEBUFFER_LIST; 0x400;
+#regdef; VE_SRAM_H264_REF_LIST0; 0x640;
+#regdef; VE_SRAM_H264_REF_LIST1; 0x664;
+#regdef; VE_SRAM_H264_SCALING_LISTS; 0x800;
+
+#regdef; VE_ISP_PIC_SIZE; 0xa00;
+#regdef; VE_ISP_PIC_STRIDE; 0xa04;
+#regdef; VE_ISP_CTRL; 0xa08;
+#regdef; VE_ISP_PIC_LUMA; 0xa78;
+#regdef; VE_ISP_PIC_CHROMA; 0xa7c;
+
+#regdef; VE_AVC_PARAM; 0xb04;
+#regdef; VE_AVC_QP; 0xb08;
+#regdef; VE_AVC_MOTION_EST; 0xb10;
+#regdef; VE_AVC_CTRL; 0xb14;
+#regdef; VE_AVC_TRIGGER; 0xb18;
+#regdef; VE_AVC_STATUS; 0xb1c;
+#regdef; VE_AVC_BASIC_BITS; 0xb20;
+#regdef; VE_AVC_VLE_ADDR; 0xb80;
+#regdef; VE_AVC_VLE_END; 0xb84;
+#regdef; VE_AVC_VLE_OFFSET; 0xb88;
+#regdef; VE_AVC_VLE_MAX; 0xb8c;
+#regdef; VE_AVC_VLE_LENGTH; 0xb90;
+#regdef; VE_AVC_REF_LUMA; 0xba0;
+#regdef; VE_AVC_REF_CHROMA; 0xba4;
+#regdef; VE_AVC_REC_LUMA; 0xbb0;
+#regdef; VE_AVC_REC_CHROMA; 0xbb4;
+#regdef; VE_AVC_REF_SLUMA; 0xbb8;
+#regdef; VE_AVC_REC_SLUMA; 0xbbc;
+#regdef; VE_AVC_MB_INFO; 0xbc0;
+#regdef; VE_AVC_SDRAM_INDEX; 0xbe0;
+#regdef; VE_AVC_SDRAM_DATA; 0xbe4;
+;
+#regdef; padding 0; 0x2000; Need for address arithmetics
+#typeend;

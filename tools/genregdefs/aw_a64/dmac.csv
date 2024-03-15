@@ -20,3 +20,4 @@
 #regdef; DMAC_PKG_NUM_REGN; 0x030; DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040
 #regdef; padding 0; 0x40; Placeholder for 0x40 alignment
 #aggregend;
+#typeend;

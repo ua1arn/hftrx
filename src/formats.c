@@ -488,7 +488,10 @@ printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
 		debug_printf_P(PSTR("%08" PRIX32 ":"), (uint32_t) (voffs + i * ROWSIZE * 8));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %08" PRIX32 "%08" PRIX32), (uint32_t) (buff [i * ROWSIZE + j] >> 32), (uint32_t) (buff [i * ROWSIZE + j] >> 0));
+		{
+			const uint64_t v = buff [i * ROWSIZE + j];
+			debug_printf_P(PSTR(" %08" PRIX32 "%08" PRIX32), (uint32_t) (v >> 32), (uint32_t) (v >> 0));
+		}
 
 		debug_printf_P(PSTR("\n"));
 	}

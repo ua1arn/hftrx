@@ -127,9 +127,31 @@ bootloader_launch_app(uintptr_t ip)
 	dcache_clean_all();
 	global_disableIRQ();
 
+	/* вынесение в отдельную функцию приводит к незхапуску application */
+	{
+
 #if (__L2C_PRESENT == 1)
 	L2C_Disable();
 #endif
+#if (__CORTEX_A != 0)
+	L1C_DisableCaches();
+	L1C_DisableBTAC();
+#endif
+
+
+#if CPUSTYLE_F133
+	/* disable memory cache */
+//	csr_read_mhint=0x4000
+//	csr_read_mxstatus=0xc0408000
+//	csr_read_mhcr=0x109
+//	csr_read_mcor=0x3
+	csr_write_mhint(0x4000);
+	csr_write_mxstatus(0xc0408000);
+
+	csr_write_mhcr(0x109);
+	csr_write_mcor(0x3);
+
+#endif /* CPUSTYLE_F133 */
 
 
 #if (__GIC_PRESENT == 1)
@@ -148,6 +170,14 @@ bootloader_launch_app(uintptr_t ip)
 	}
 #endif
 
+#if CPUSTYLE_F133
+	/* disable interrupts*/
+	csr_clr_bits_mie(MIE_MEI_BIT_MASK);	// MEI
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
+
+#endif /* CPUSTYLE_F133 */
+
+
 #if (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__))
 
 	MMU_Disable();
@@ -156,7 +186,14 @@ bootloader_launch_app(uintptr_t ip)
 	__DSB();
 #endif
 
+#if CPUSTYLE_F133
+	/* disable MMU */
+
+#endif /* CPUSTYLE_F133 */
+
+	}
 	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
+
 
 	(* (void (*)(void)) ip)();
 

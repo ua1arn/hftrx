@@ -75,6 +75,7 @@ typedef enum IRQn
     TPADC_IRQn = 94,                                  /*!< TPADC  */
     WATCHDOG_IRQn = 95,                               /*!< TIMER  */
     IOMMU_IRQn = 96,                                  /*!< IOMMU  */
+    VE_IRQn = 98,                                     /*!< VE Video Encoding */
     GPIOB_NS_IRQn = 101,                              /*!< GPIOINT  */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  */
     GPIOC_NS_IRQn = 103,                              /*!< GPIOINT  */
@@ -126,6 +127,7 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Message Box Base */
+#define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
 #define GPIOC_BASE ((uintptr_t) 0x02000060)           /*!< GPIO  Base */
@@ -200,6 +202,13 @@ typedef enum IRQn
 #define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_VI1_BASE ((uintptr_t) 0x05102000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_VEP0_BASE ((uintptr_t) 0x05120000)         /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_VEP1_BASE ((uintptr_t) 0x05140000)         /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_DEP_BASE ((uintptr_t) 0x051A0000)          /*!< DE_DEP DRC (dynamic range controller) Base */
+#define DEb_GLB_BASE ((uintptr_t) 0x05200000)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DEb_BLD_BASE ((uintptr_t) 0x05201000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DEb_VI1_BASE ((uintptr_t) 0x05202000)         /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DEb_VEP0_BASE ((uintptr_t) 0x05220000)        /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
@@ -231,6 +240,7 @@ typedef enum IRQn
 #define TVD0_BASE ((uintptr_t) 0x05C01000)            /*!< TVD0 Video Decoding Base */
 #define RISC_CFG_BASE ((uintptr_t) 0x06010000)        /*!< RISC_CFG RISC-V core configuration register Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
+#define R_CCU_BASE ((uintptr_t) 0x07010000)           /*!< R_CCU  Base */
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
@@ -650,7 +660,8 @@ typedef struct CCU_Type
     volatile uint32_t CLK27M_FAN_REG;                 /*!< Offset 0xF34 CLK27M FANOUT Register */
     volatile uint32_t PCLK_FAN_REG;                   /*!< Offset 0xF38 PCLK FANOUT Register */
     volatile uint32_t CCU_FAN_REG;                    /*!< Offset 0xF3C CCU FANOUT Register */
-} CCU_TypeDef; /* size of structure = 0xF40 */
+             uint32_t reserved_0xF40 [0x0030];
+} CCU_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief CE
  */
@@ -1103,6 +1114,18 @@ typedef struct DE_BLD_Type
     volatile uint32_t OUT_CTL;                        /*!< Offset 0x0FC  */
 } DE_BLD_TypeDef; /* size of structure = 0x100 */
 /*
+ * @brief DE_DEP
+ */
+/*!< DE_DEP DRC (dynamic range controller) */
+typedef struct DE_DEP_Type
+{
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x000  */
+                 uint32_t reserved_0x004 [0x1FFF];
+    } DRC [0x001];                                    /*!< Offset 0x000  */
+} DE_DEP_TypeDef; /* size of structure = 0x8000 */
+/*
  * @brief DE_GLB
  */
 /*!< DE_GLB Display Engine (DE) - Global Control */
@@ -1124,7 +1147,9 @@ typedef struct DE_TOP_Type
     volatile uint32_t RST_CFG;                        /*!< Offset 0x008 AHB_RESET DE AHB Reset register */
     volatile uint32_t DIV_CFG;                        /*!< Offset 0x00C SCLK_DIV DE SCLK Division register */
     volatile uint32_t SEL_CFG;                        /*!< Offset 0x010 ? DE2TCON ? MUX register */
-} DE_TOP_TypeDef; /* size of structure = 0x014 */
+             uint32_t reserved_0x014 [0x0004];
+    volatile uint32_t DE_IP_CFG;                      /*!< Offset 0x024 DE IP Configure Register */
+} DE_TOP_TypeDef; /* size of structure = 0x028 */
 /*
  * @brief DE_UI
  */
@@ -1145,7 +1170,46 @@ typedef struct DE_UI_Type
     volatile uint32_t TOP_HADDR;                      /*!< Offset 0x080  */
     volatile uint32_t BOT_HADDR;                      /*!< Offset 0x084  */
     volatile uint32_t OVL_SIZE;                       /*!< Offset 0x088  */
-} DE_UI_TypeDef; /* size of structure = 0x08C */
+             uint32_t reserved_0x08C [0x01DD];
+} DE_UI_TypeDef; /* size of structure = 0x800 */
+/*
+ * @brief DE_VEP
+ */
+/*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks */
+typedef struct DE_VEP_Type
+{
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x000  */
+                 uint32_t reserved_0x004 [0x01FF];
+    } FCE [0x001];                                    /*!< Offset 0x000  */
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x800  */
+                 uint32_t reserved_0x004 [0x01FF];
+    } PEAK [0x001];                                   /*!< Offset 0x800  */
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x1000  */
+                 uint32_t reserved_0x004 [0x01FF];
+    } LCTI [0x001];                                   /*!< Offset 0x1000  */
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x1800  */
+                 uint32_t reserved_0x004 [0x01FF];
+    } BLS [0x001];                                    /*!< Offset 0x1800  */
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x2000  */
+                 uint32_t reserved_0x004 [0x01FF];
+    } FCC [0x001];                                    /*!< Offset 0x2000  */
+             uint32_t reserved_0x2800 [0x1200];
+    struct
+    {
+        volatile uint32_t CFG;                        /*!< Offset 0x7000  */
+                 uint32_t reserved_0x004 [0x03FF];
+    } VEP_TOP [0x001];                                /*!< Offset 0x7000  */
+} DE_VEP_TypeDef; /* size of structure = 0x8000 */
 /*
  * @brief DE_VI
  */
@@ -1167,7 +1231,8 @@ typedef struct DE_VI_Type
     volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
-} DE_VI_TypeDef; /* size of structure = 0x100 */
+             uint32_t reserved_0x100 [0x01C0];
+} DE_VI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief DMAC
  */
@@ -1528,7 +1593,8 @@ typedef struct G2D_UI_Type
     volatile uint32_t UI_FILLC;                       /*!< Offset 0x014 UIx_FILLC */
     volatile uint32_t UI_HADD;                        /*!< Offset 0x018 UIx_HADD */
     volatile uint32_t UI_SIZE;                        /*!< Offset 0x01C UIx_SIZE */
-} G2D_UI_TypeDef; /* size of structure = 0x020 */
+             uint32_t reserved_0x020 [0x01F8];
+} G2D_UI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief G2D_VI
  */
@@ -1551,7 +1617,8 @@ typedef struct G2D_VI_Type
     volatile uint32_t V0_HDS_CTL1;                    /*!< Offset 0x034 V0_HDS_CTL1 */
     volatile uint32_t V0_VDS_CTL0;                    /*!< Offset 0x038 V0_VDS_CTL0 */
     volatile uint32_t V0_VDS_CTL1;                    /*!< Offset 0x03C V0_VDS_CTL1 */
-} G2D_VI_TypeDef; /* size of structure = 0x040 */
+             uint32_t reserved_0x040 [0x01F0];
+} G2D_VI_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief G2D_VSU
  */
@@ -2154,11 +2221,15 @@ typedef struct RTC_Type
 /*!< R_CPUCFG  */
 typedef struct R_CPUCFG_Type
 {
-             uint32_t reserved_0x000 [0x0070];
+    volatile uint32_t REGxx;                          /*!< Offset 0x000 Bit 31 and bit 0 R/W, bit 0 can be related to RISC-C vore */
+             uint32_t reserved_0x004 [0x006F];
     volatile uint32_t HOTPLUGFLAG;                    /*!< Offset 0x1C0 The Hotplug Flag Register is 0x070005C0. */
     volatile uint32_t SOFTENTRY [0x004];              /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
     volatile uint32_t SUP_STAN_FLAG;                  /*!< Offset 0x1D4 Super Standby Flag (bit 16) */
-} R_CPUCFG_TypeDef; /* size of structure = 0x1D8 */
+             uint32_t reserved_0x1D8;
+    volatile uint32_t RV_HOTPLUGFLAG;                 /*!< Offset 0x1DC RV The Hotplug Flag Register (key value 0xFA50392F) */
+    volatile uint32_t RC_SOFTENTRY [0x004];           /*!< Offset 0x1E0 RV The Soft Entry Address Register */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1F0 */
 /*
  * @brief R_PRCM
  */
@@ -2885,11 +2956,127 @@ typedef struct USB_OHCI_Capability_Type
     volatile uint32_t O_HcRhStatus;                   /*!< Offset 0x050 OHCI Root Hub Status Register */
     volatile uint32_t O_HcRhPortStatus [0x001];       /*!< Offset 0x054 OHCI Root Hub Port Status Register */
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
+/*
+ * @brief VE
+ */
+/*!< VE Video Encoding */
+typedef struct VE_Type
+{
+    volatile uint32_t VE_CTRL;                        /*!< Offset 0x000  */
+             uint32_t reserved_0x004 [0x003B];
+    volatile uint32_t VE_VERSION;                     /*!< Offset 0x0F0  */
+             uint32_t reserved_0x0F4 [0x0003];
+    volatile uint32_t VE_MPEG_PIC_HDR;                /*!< Offset 0x100  */
+             uint32_t reserved_0x104;
+    volatile uint32_t VE_MPEG_SIZE;                   /*!< Offset 0x108  */
+    volatile uint32_t VE_MPEG_FRAME_SIZE;             /*!< Offset 0x10C  */
+             uint32_t reserved_0x110;
+    volatile uint32_t VE_MPEG_CTRL;                   /*!< Offset 0x114  */
+    volatile uint32_t VE_MPEG_TRIGGER;                /*!< Offset 0x118  */
+    volatile uint32_t VE_MPEG_STATUS;                 /*!< Offset 0x11C  */
+             uint32_t reserved_0x120 [0x0002];
+    volatile uint32_t VE_MPEG_VLD_ADDR;               /*!< Offset 0x128  */
+    volatile uint32_t VE_MPEG_VLD_OFFSET;             /*!< Offset 0x12C  */
+    volatile uint32_t VE_MPEG_VLD_LEN;                /*!< Offset 0x130  */
+    volatile uint32_t VE_MPEG_VLD_END;                /*!< Offset 0x134  */
+             uint32_t reserved_0x138 [0x0004];
+    volatile uint32_t VE_MPEG_REC_LUMA;               /*!< Offset 0x148  */
+    volatile uint32_t VE_MPEG_REC_CHROMA;             /*!< Offset 0x14C  */
+    volatile uint32_t VE_MPEG_FWD_LUMA;               /*!< Offset 0x150  */
+    volatile uint32_t VE_MPEG_FWD_CHROMA;             /*!< Offset 0x154  */
+    volatile uint32_t VE_MPEG_BACK_LUMA;              /*!< Offset 0x158  */
+    volatile uint32_t VE_MPEG_BACK_CHROMA;            /*!< Offset 0x15C  */
+             uint32_t reserved_0x160 [0x0008];
+    volatile uint32_t VE_MPEG_IQ_MIN_INPUT;           /*!< Offset 0x180  */
+             uint32_t reserved_0x184 [0x000D];
+    volatile uint32_t VE_MPEG_JPEG_SIZE;              /*!< Offset 0x1B8  */
+             uint32_t reserved_0x1BC;
+    volatile uint32_t VE_MPEG_JPEG_RES_INT;           /*!< Offset 0x1C0  */
+             uint32_t reserved_0x1C4 [0x0002];
+    volatile uint32_t VE_MPEG_ROT_LUMA;               /*!< Offset 0x1CC  */
+    volatile uint32_t VE_MPEG_ROT_CHROMA;             /*!< Offset 0x1D0  */
+    volatile uint32_t VE_MPEG_SDROT_CTRL;             /*!< Offset 0x1D4  */
+             uint32_t reserved_0x1D8 [0x0002];
+    volatile uint32_t VE_MPEG_RAM_WRITE_PTR;          /*!< Offset 0x1E0  */
+    volatile uint32_t VE_MPEG_RAM_WRITE_DATA;         /*!< Offset 0x1E4  */
+             uint32_t reserved_0x1E8 [0x0006];
+    volatile uint32_t VE_H264_FRAME_SIZE;             /*!< Offset 0x200  */
+    volatile uint32_t VE_H264_PIC_HDR;                /*!< Offset 0x204  */
+    volatile uint32_t VE_H264_SLICE_HDR;              /*!< Offset 0x208  */
+    volatile uint32_t VE_H264_SLICE_HDR2;             /*!< Offset 0x20C  */
+    volatile uint32_t VE_H264_PRED_WEIGHT;            /*!< Offset 0x210  */
+             uint32_t reserved_0x214 [0x0002];
+    volatile uint32_t VE_H264_QP_PARAM;               /*!< Offset 0x21C  */
+    volatile uint32_t VE_H264_CTRL;                   /*!< Offset 0x220  */
+    volatile uint32_t VE_H264_TRIGGER;                /*!< Offset 0x224  */
+    volatile uint32_t VE_H264_STATUS;                 /*!< Offset 0x228  */
+    volatile uint32_t VE_H264_CUR_MB_NUM;             /*!< Offset 0x22C  */
+    volatile uint32_t VE_H264_VLD_ADDR;               /*!< Offset 0x230  */
+    volatile uint32_t VE_H264_VLD_OFFSET;             /*!< Offset 0x234  */
+    volatile uint32_t VE_H264_VLD_LEN;                /*!< Offset 0x238  */
+    volatile uint32_t VE_H264_VLD_END;                /*!< Offset 0x23C  */
+    volatile uint32_t VE_H264_SDROT_CTRL;             /*!< Offset 0x240  */
+             uint32_t reserved_0x244 [0x0002];
+    volatile uint32_t VE_H264_OUTPUT_FRAME_IDX;       /*!< Offset 0x24C  */
+    volatile uint32_t VE_H264_EXTRA_BUFFER1;          /*!< Offset 0x250  */
+    volatile uint32_t VE_H264_EXTRA_BUFFER2;          /*!< Offset 0x254  */
+             uint32_t reserved_0x258 [0x0021];
+    volatile uint32_t VE_H264_BASIC_BITS;             /*!< Offset 0x2DC  */
+    volatile uint32_t VE_H264_RAM_WRITE_PTR;          /*!< Offset 0x2E0  */
+    volatile uint32_t VE_H264_RAM_WRITE_DATA;         /*!< Offset 0x2E4  */
+             uint32_t reserved_0x2E8 [0x0046];
+    volatile uint32_t VE_SRAM_H264_FRAMEBUFFER_LIST;  /*!< Offset 0x400  */
+             uint32_t reserved_0x404 [0x008F];
+    volatile uint32_t VE_SRAM_H264_REF_LIST0;         /*!< Offset 0x640  */
+             uint32_t reserved_0x644 [0x0008];
+    volatile uint32_t VE_SRAM_H264_REF_LIST1;         /*!< Offset 0x664  */
+             uint32_t reserved_0x668 [0x0066];
+    volatile uint32_t VE_SRAM_H264_SCALING_LISTS;     /*!< Offset 0x800  */
+             uint32_t reserved_0x804 [0x007F];
+    volatile uint32_t VE_ISP_PIC_SIZE;                /*!< Offset 0xA00  */
+    volatile uint32_t VE_ISP_PIC_STRIDE;              /*!< Offset 0xA04  */
+    volatile uint32_t VE_ISP_CTRL;                    /*!< Offset 0xA08  */
+             uint32_t reserved_0xA0C [0x001B];
+    volatile uint32_t VE_ISP_PIC_LUMA;                /*!< Offset 0xA78  */
+    volatile uint32_t VE_ISP_PIC_CHROMA;              /*!< Offset 0xA7C  */
+             uint32_t reserved_0xA80 [0x0021];
+    volatile uint32_t VE_AVC_PARAM;                   /*!< Offset 0xB04  */
+    volatile uint32_t VE_AVC_QP;                      /*!< Offset 0xB08  */
+             uint32_t reserved_0xB0C;
+    volatile uint32_t VE_AVC_MOTION_EST;              /*!< Offset 0xB10  */
+    volatile uint32_t VE_AVC_CTRL;                    /*!< Offset 0xB14  */
+    volatile uint32_t VE_AVC_TRIGGER;                 /*!< Offset 0xB18  */
+    volatile uint32_t VE_AVC_STATUS;                  /*!< Offset 0xB1C  */
+    volatile uint32_t VE_AVC_BASIC_BITS;              /*!< Offset 0xB20  */
+             uint32_t reserved_0xB24 [0x0017];
+    volatile uint32_t VE_AVC_VLE_ADDR;                /*!< Offset 0xB80  */
+    volatile uint32_t VE_AVC_VLE_END;                 /*!< Offset 0xB84  */
+    volatile uint32_t VE_AVC_VLE_OFFSET;              /*!< Offset 0xB88  */
+    volatile uint32_t VE_AVC_VLE_MAX;                 /*!< Offset 0xB8C  */
+    volatile uint32_t VE_AVC_VLE_LENGTH;              /*!< Offset 0xB90  */
+             uint32_t reserved_0xB94 [0x0003];
+    volatile uint32_t VE_AVC_REF_LUMA;                /*!< Offset 0xBA0  */
+    volatile uint32_t VE_AVC_REF_CHROMA;              /*!< Offset 0xBA4  */
+             uint32_t reserved_0xBA8 [0x0002];
+    volatile uint32_t VE_AVC_REC_LUMA;                /*!< Offset 0xBB0  */
+    volatile uint32_t VE_AVC_REC_CHROMA;              /*!< Offset 0xBB4  */
+    volatile uint32_t VE_AVC_REF_SLUMA;               /*!< Offset 0xBB8  */
+    volatile uint32_t VE_AVC_REC_SLUMA;               /*!< Offset 0xBBC  */
+    volatile uint32_t VE_AVC_MB_INFO;                 /*!< Offset 0xBC0  */
+             uint32_t reserved_0xBC4 [0x0007];
+    volatile uint32_t VE_AVC_SDRAM_INDEX;             /*!< Offset 0xBE0  */
+    volatile uint32_t VE_AVC_SDRAM_DATA;              /*!< Offset 0xBE4  */
+} VE_TypeDef; /* size of structure = 0xBE8 */
+
+
+/* Defines */
+
 
 
 /* Access pointers */
 
 #define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
+#define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC  register set access pointer */
@@ -2958,6 +3145,13 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
+#define DE_VEP0 ((DE_VEP_TypeDef *) DE_VEP0_BASE)     /*!< DE_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
+#define DE_VEP1 ((DE_VEP_TypeDef *) DE_VEP1_BASE)     /*!< DE_VEP1 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
+#define DE_DEP ((DE_DEP_TypeDef *) DE_DEP_BASE)       /*!< DE_DEP DRC (dynamic range controller) register set access pointer */
+#define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DEb_BLD ((DE_BLD_TypeDef *) DEb_BLD_BASE)     /*!< DEb_BLD Display Engine (DE) - Blender register set access pointer */
+#define DEb_VI1 ((DE_VI_TypeDef *) DEb_VI1_BASE)      /*!< DEb_VI1 Display Engine (DE) - VI surface register set access pointer */
+#define DEb_VEP0 ((DE_VEP_TypeDef *) DEb_VEP0_BASE)   /*!< DEb_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */

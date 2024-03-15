@@ -2242,7 +2242,6 @@ unsigned long sunxi_dram_init(void)
 
 	mctl_set_master_priority();
 
-	return 1024;
 	return size;
 };
 
@@ -2376,13 +2375,13 @@ void arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 
-	long int memsize;
-	long int memsizeMB;
-	memsizeMB = sunxi_dram_init();
-	memsize = memsizeMB * 1024 * 1024;
+	unsigned long memsizeB;
+	unsigned long memsizeMB;
+	memsizeB = sunxi_dram_init();
+	memsizeMB = memsizeB / 1024 / 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
-	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", memsize, memsize / 1024 / 1024);
+	PRINTF("arm_hardware_sdram_initialize: result=%08lx bytes, %lu MB\n", memsizeB, memsizeMB);
 
 #if 0
 	if (xdramc_simple_wr_test(memsizeMB, 64))

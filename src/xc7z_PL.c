@@ -46,7 +46,7 @@ void xcz_fifo_phones_inthandler(void);
 #define BCLK_DIV_MASK 		 		0x000000FF
 #define LRCLK_DIV_MASK 		 		0x00FF0000
 
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 static uint8_t rx_cic_shift, rx_fir_shift, tx_shift, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
 
 void update_modem_ctrl(void)
@@ -231,7 +231,7 @@ void xcz_if_tx_init(void)
 void xcz_dma_if_tx_inthandler(void)
 {
 #if WITHTX
-	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	const uintptr_t addr = getfilled_dmabuffer32tx();
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit

@@ -119,12 +119,13 @@ static void nau8822_input_config(void)
 static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	//PRINTF("nau8822_setvolume: gain=%d, mute=%d, mutespk=%d\n", (int) gain, (int) mute, (int) mutespk);
-	uint_fast8_t vmutehp = 0;
-	uint_fast8_t vmutespk = 0;
+	uint_fast16_t vmutehp = 0;
+	uint_fast16_t vmutespk = 0;
+	uint_fast16_t vmuteaux12 = 0x01;	// default value
 	// 0x3F: +6 dB
 	// 0x39: 0 dB: 2.7..2.8 volt p-p at each SPK output
-	uint_fast8_t levelhp = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_HP_MAX - NAU8822L_OUT_HP_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_HP_MIN;
-	uint_fast8_t levelspk = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_SPK_MAX - NAU8822L_OUT_SPK_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_SPK_MIN;
+	uint_fast16_t levelhp = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_HP_MAX - NAU8822L_OUT_HP_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_HP_MIN;
+	uint_fast16_t levelspk = (gain - BOARD_AFGAIN_MIN) * (NAU8822L_OUT_SPK_MAX - NAU8822L_OUT_SPK_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + NAU8822L_OUT_SPK_MIN;
 	if (mute)
 	{
 		vmutehp = 0x40;
@@ -133,6 +134,7 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	if (mutespk)
 	{
 		vmutespk = 0x40;
+		vmuteaux12 = 0x40;
 	}
 	//debug_printf_P(PSTR("nau8822_setvolume: level=%02x start\n"), level);
 
@@ -143,6 +145,9 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	// Установка уровня вывода на динамик
 	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0x100);
+
+	nau8822_setreg(NAU8822_AUX2_MIXER_CONTROL, vmuteaux12);		// aux2
+	nau8822_setreg(NAU8822_AUX1_MIXER_CONTROL, vmuteaux12);		// aux1
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
@@ -261,28 +266,28 @@ static void nau8822_setprocparams(
 	// Выключено - все значения по умолчанию
 	// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
 	nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
-		0 * (1u << 8) |	// 0 = block operates on digital stream from ADC
-		freq * (1u << 5) | // EQ1CF Equalizer band 1 low pass -3dB cut-off frequency selection
-		getbandgain(gains + 0, procenable) * (1u << 0) | // EQ Band 1 digital gain control.
+		0 * (UINT16_C(1) << 8) |	// 0 = block operates on digital stream from ADC
+		freq * (UINT16_C(1) << 5) | // EQ1CF Equalizer band 1 low pass -3dB cut-off frequency selection
+		getbandgain(gains + 0, procenable) * (UINT16_C(1) << 0) | // EQ Band 1 digital gain control.
 		0);
 	nau8822_setreg(NAU8822_EQ2, // peak 1 - 0x02C reset value
-		wide * (1u << 8) |	// EQ2BW 0 = narrow band characteristic
-		freq * (1u << 5) | // EQ2CF Equalizer Band 2 center frequency selection
-		getbandgain(gains + 1, procenable) * (1u << 0) | // EQ Band 2 digital gain control.
+		wide * (UINT16_C(1) << 8) |	// EQ2BW 0 = narrow band characteristic
+		freq * (UINT16_C(1) << 5) | // EQ2CF Equalizer Band 2 center frequency selection
+		getbandgain(gains + 1, procenable) * (UINT16_C(1) << 0) | // EQ Band 2 digital gain control.
 		0);
 	nau8822_setreg(NAU8822_EQ3, // peak 2 - 0x02C reset value
-		wide * (1u << 8) |	// EQ3BW 0 = narrow band characteristic
-		freq * (1u << 5) | // EQ3CF Equalizer Band 3 center frequency selection
-		getbandgain(gains + 2, procenable) * (1u << 0) | // EQ Band 3 digital gain control.
+		wide * (UINT16_C(1) << 8) |	// EQ3BW 0 = narrow band characteristic
+		freq * (UINT16_C(1) << 5) | // EQ3CF Equalizer Band 3 center frequency selection
+		getbandgain(gains + 2, procenable) * (UINT16_C(1) << 0) | // EQ Band 3 digital gain control.
 		0);
 	nau8822_setreg(NAU8822_EQ4, // peak 3 - 0x02C reset value
-		wide * (1u << 8) |	// EQ4BW 0 = narrow band characteristic
-		freq * (1u << 5) | // EQ4CF Equalizer Band 4 center frequency selection
-		getbandgain(gains + 3, procenable) * (1u << 0) | // EQ Band 4 digital gain control.
+		wide * (UINT16_C(1) << 8) |	// EQ4BW 0 = narrow band characteristic
+		freq * (UINT16_C(1) << 5) | // EQ4CF Equalizer Band 4 center frequency selection
+		getbandgain(gains + 3, procenable) * (UINT16_C(1) << 0) | // EQ Band 4 digital gain control.
 		0);
 	nau8822_setreg(NAU8822_EQ5, // high curoff - 0x02C reset value
-		freq * (1u << 5) | // EQ5CF Equalizer Band 5 low pass -3dB cut-off frequency selection
-		getbandgain(gains + 4, procenable) * (1u << 0) | // EQ Band 5 digital gain control.
+		freq * (UINT16_C(1) << 5) | // EQ5CF Equalizer Band 5 low pass -3dB cut-off frequency selection
+		getbandgain(gains + 4, procenable) * (UINT16_C(1) << 0) | // EQ Band 5 digital gain control.
 		0);
 }
 
@@ -332,13 +337,13 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	}
 
 #if CODEC_TYPE_NAU8822_USE_8KS
-	const uint_fast16_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05u * (1u << 2); // SMPLR=0x05 (8 kHz)
-	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_val = 0x05u * (1u << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
+	const uint_fast16_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x05u * (UINT16_C(1) << 2); // SMPLR=0x05 (8 kHz)
+	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_val = 0x05u * (UINT16_C(1) << 5);	// 0x05: divide by 6 MCLKSEL master clock prescaler
 	const uint_fast32_t ws = 8000;
 #else /* CODEC_TYPE_NAU8822_USE_8KS */
-	const uint_fast16_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00u * (1u << 2); // SMPLR=0x00 (48kHz)
-	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_val = 0x00u * (1u << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
-	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_PLL_val = (1u << 8) | 0x02u * (1u << 5);	// PLL Scaling of master clock source for internal 256fs rate divide by 1
+	const uint_fast16_t NAU8822_ADDITIONAL_CONTROL_SMPLR_val = 0x00u * (UINT16_C(1) << 2); // SMPLR=0x00 (48kHz)
+	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_val = 0x00u * (UINT16_C(1) << 5);	// Scaling of master clock source for internal 256fs rate divide by 1
+	const uint_fast16_t NAU8822_CLOCKING_MCLKSEL_PLL_val = (UINT16_C(1) << 8) | 2 * (UINT16_C(1) << 5);	// PLL Scaling of master clock source for internal 256fs rate divide by 1
 	const uint_fast32_t ws = 48000;
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
@@ -370,8 +375,8 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	nau8822_setreg(NAU8822_CLOCKING,	// reg 0x06
 		//NAU8822_CLOCKING_MCLKSEL_PLL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
 		NAU8822_CLOCKING_MCLKSEL_val |	// Scaling of master clock source for internal 256fs rate divide by 1
-		nau8822_ilog2(divider) * (1u << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
-		master * (1u << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
+		nau8822_ilog2(divider) * (UINT16_C(1) << 2) |	// BCLKSEL: Scaling of output frequency at BCLK pin#8 when chip is in master mode
+		master * (UINT16_C(1) << 0) |	// 1 = FS and BCLK are driven as outputs by internally generated clocks
 		0);
 
 #if CODEC1_FORMATI2S_PHILIPS
@@ -428,15 +433,15 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 	//nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x063 | 0x01c); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
 	//nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x01e); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
 	nau8822_setreg(NAU8822_OUTPUT_CONTROL,
-			(1uL << 4) |	// AUX1BST
-			(1uL << 3) |	// AUX2BST
-			(1uL << 2) |	// SPKBST: LSPKOUT and RSPKOUT speaker amplifier gain boost control
-			(1uL << 1) |	// TSEN
+			(UINT16_C(1) << 4) |	// AUX1BST
+			(UINT16_C(1) << 3) |	// AUX2BST
+			(UINT16_C(1) << 2) |	// SPKBST: LSPKOUT and RSPKOUT speaker amplifier gain boost control
+			(UINT16_C(1) << 1) |	// TSEN
 			0
 			); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
 
-	//nau8822_setreg(NAU8822_AUX2_MIXER_CONTROL, 0x040);	// 0x40 - AUX2 muted, 0x01 (default) - connected to LEFT DAC
-	//nau8822_setreg(NAU8822_AUX1_MIXER_CONTROL, 0x040);	// 0x40 - AUX1 muted, 0x01 (default) - connected to RIGHT DAC
+	nau8822_setreg(NAU8822_AUX2_MIXER_CONTROL, 0x001);	// 0x40 - AUX2 muted, 0x01 (default) - connected to LEFT DAC
+	nau8822_setreg(NAU8822_AUX1_MIXER_CONTROL, 0x001);	// 0x40 - AUX1 muted, 0x01 (default) - connected to RIGHT DAC
 
 	nau8822_setreg(NAU8822_LEFT_MIXER_CONTROL, 0x001);
 	nau8822_setreg(NAU8822_RIGHT_MIXER_CONTROL, 0x001);

@@ -27,6 +27,10 @@
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+
+//#define WITHCAN0HW 1
+#define WITHCAN1HW 1
+
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
@@ -121,7 +125,13 @@
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#if WITHFUSBDFS
+		//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#elif WITHFUSBDHS
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#else
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#endif
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -654,6 +664,23 @@
 		arm_hardware_pioe_updown(RXMASK, 0); \
 	} while (0)
 
+// WITHCAN0HW
+#define HARDWARE_CAN0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 2; /* PB2 CAN0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 3; /* PB3 CAN0_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_updown(RXMASK, 0); \
+	} while (0)
+
+// WITHCAN1HW
+#define HARDWARE_CAN1_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 4; /* PB4 CAN1_TX - Header P2 pins */ \
+		const portholder_t RXMASK = UINT32_C(1) << 5; /* PB5 CAN1_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_updown(RXMASK, 0); \
+	} while (0)
 
 #define TARGET_ENC2BTN_BIT (UINT32_C(1) << 15)	// PE15 - second encoder button with pull-up
 
@@ -1114,15 +1141,18 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			BOARD_BLINK_INITIALIZE(); \
-			/*HARDWARE_KBD_INITIALIZE(); */\
-			/*HARDWARE_DAC_INITIALIZE(); */\
-			/*HARDWARE_BL_INITIALIZE(); */\
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			/*USBD_EHCI_INITIALIZE(); */\
-		} while (0)
+		BOARD_BLINK_INITIALIZE(); \
+		/*HARDWARE_KBD_INITIALIZE(); */\
+		/*HARDWARE_DAC_INITIALIZE(); */\
+		/*HARDWARE_BL_INITIALIZE(); */\
+		HARDWARE_DCDC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		BOARD_USERBOOT_INITIALIZE(); \
+		/*USBD_EHCI_INITIALIZE(); */\
+	} while (0)
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED */

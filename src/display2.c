@@ -36,7 +36,7 @@
 #endif /* LCDMODE_LTDC */
 
 static const COLORPIP_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
-static const COLORPIP_T color_alt_red = COLORMAIN_RED;
+static const COLORPIP_T color_alt_red = COLORPIP_RED;
 
 void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg);
 
@@ -72,7 +72,7 @@ static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORPIP_T);
 		lbl->label_bg = (PACKEDCOLORPIP_T *) malloc(lbl->size);
 		ASSERT(lbl->label_bg != NULL);
-		colpip_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORMAIN_BLACK);
+		colpip_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORPIP_BLACK);
 		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
@@ -319,8 +319,8 @@ typedef struct colorpair_tag
 // Параметры отображения состояния прием/пеердача
 static const COLORPAIR_T colors_2rxtx [2] =
 {
-	{	COLORMAIN_GREEN,	COLORMAIN_BLACK,	},	// RX
-	{	COLORMAIN_RED,		COLORMAIN_BLACK,	},	// TX
+	{	COLORPIP_GREEN,	COLORPIP_BLACK,	},	// RX
+	{	COLORPIP_RED,		COLORPIP_BLACK,	},	// TX
 };
 
 // Параметры отображения состояний из трех вариантов
@@ -343,13 +343,19 @@ static const COLORPAIR_T colors_2state [2] =
 static const COLORPAIR_T colors_2state_rec [2] =
 {
 	{	LABELINACTIVETEXT,	LABELINACTIVEBACK,	},
-	{	COLORMAIN_RED,	COLORMAIN_BLACK,	},
+	{	COLORPIP_RED,	COLORPIP_BLACK,	},
 };
 
 // Параметры отображения текстов без вариантов
 static const COLORPAIR_T colors_1state [1] =
 {
 	{	LABELTEXT,	LABELBACK,	},
+};
+
+// Параметры отображения текстов без вариантов
+static const COLORPAIR_T colors_1statevoltage [1] =
+{
+	{	DESIGNCOLORSTATETEXT,	DESIGNCOLORSTATEBACK,	},
 };
 
 // Параметры отображения состояний FUNC MENU из двух вариантов
@@ -409,11 +415,11 @@ display2_testvidget(
 {
 	const uint_fast16_t x = GRID2X(xcell);
 	const uint_fast16_t y = GRID2X(ycell);
-	//colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, 100, 100, COLORMAIN_GREEN);
+	//colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, 100, 100, COLORPIP_GREEN);
 
-	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 0, "Hello", COLORMAIN_WHITE);
-	colpip_string_x2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 20, "Test", COLORMAIN_WHITE);
-	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORMAIN_WHITE);
+	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 0, "Hello", COLORPIP_WHITE);
+	colpip_string_x2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 20, "Test", COLORPIP_WHITE);
+	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORPIP_WHITE);
 
 }
 #endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
@@ -689,8 +695,8 @@ display2_smeter15_layout(
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const COLORPIP_T smeter = COLORMAIN_WHITE;
-	const COLORPIP_T smeterplus = COLORMAIN_DARKRED;
+	const COLORPIP_T smeter = COLORPIP_WHITE;
+	const COLORPIP_T smeterplus = COLORPIP_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	PACKEDCOLORPIP_T * bg;
@@ -706,9 +712,9 @@ display2_smeter15_layout(
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX];
 		ASSERT(bg != NULL);
 #if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORMAIN_BLACK);
+		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORPIP_BLACK);
 #else
-		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
 
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
 		{
@@ -720,7 +726,7 @@ display2_smeter15_layout(
 				colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
 				polar_to_dek(xb, yb, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORMAIN_YELLOW);
+				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
 			}
 			else
 				colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
@@ -734,19 +740,19 @@ display2_smeter15_layout(
 			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORMAIN_YELLOW);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORPIP_YELLOW);
 		}
 		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
 		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
-		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX];
 		ASSERT(bg != NULL);
 #if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORMAIN_BLACK);
+		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORPIP_BLACK);
 #else
-		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
@@ -756,7 +762,7 @@ display2_smeter15_layout(
 			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markers [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORMAIN_YELLOW);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
@@ -771,7 +777,7 @@ display2_smeter15_layout(
 			colpip_radius(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterplus, 1, 1);
 			polar_to_dek(xb, yb, markersR [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORMAIN_RED);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_RED);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
@@ -779,7 +785,7 @@ display2_smeter15_layout(
 		}
 		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
 		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterplus, 1, 1);
-		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
+		colpip_segm(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 		break;
 
@@ -788,65 +794,65 @@ display2_smeter15_layout(
 
 		bg = smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX];
 		ASSERT(bg != NULL);
-		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
-//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
-//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
-		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORMAIN_WHITE, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORPIP_WHITE, 0);
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
 		{
 			if (i % 2 == 0)
 			{
 				char buf2 [10];
-				colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORMAIN_WHITE, 0);
+				colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
+				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
 			}
 			else
-				colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORMAIN_WHITE, 0);
+				colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
 		}
 
-		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORMAIN_WHITE, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORPIP_WHITE, 0);
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 		{
 			char buf2 [10];
-			colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORMAIN_WHITE, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORPIP_WHITE, 0);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORMAIN_YELLOW);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
 		}
 
 		bg = smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX];
-		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
-//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_WHITE, 0);
-//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORMAIN_WHITE, 0);
+		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
+//		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
-		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORMAIN_WHITE, 0);
-		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORMAIN_RED, 0);
-		colpip_string2_tbg(bg, SM_BG_W, SM_BG_H, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORMAIN_YELLOW);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
+		colpip_line(bg, SM_BG_W, SM_BG_H, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
+		colpip_string2_tbg(bg, SM_BG_W, SM_BG_H, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORPIP_YELLOW);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
 			char buf2 [10];
 			uint_fast16_t xx, yy;
-			colpip_line(bg, SM_BG_W, SM_BG_H, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORMAIN_WHITE, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markers [i] - SMALLCHARW3 / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
-			colpip_line(bg, SM_BG_W, SM_BG_H, markers2 [i], smpr->r1, markers2 [i], smpr->r1 - 5, COLORMAIN_WHITE, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markers2 [i], smpr->r1, markers2 [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
 		}
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
 		{
 			char buf2 [10];
-			colpip_line(bg, SM_BG_W, SM_BG_H, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORMAIN_RED, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORPIP_RED, 0);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
-			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORMAIN_YELLOW);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, markersR [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
-			colpip_line(bg, SM_BG_W, SM_BG_H, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORMAIN_RED, 0);
+			colpip_line(bg, SM_BG_W, SM_BG_H, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORPIP_RED, 0);
 		}
 
 		break;
@@ -965,7 +971,7 @@ display2_smeter15(
 
 	int gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
 
-	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORMAIN_GREEN, 1);
+	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORPIP_GREEN, 1);
 
 	if (is_tx)
 	{
@@ -1034,7 +1040,7 @@ display2_smeter15(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
-					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift,
+					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
@@ -1044,17 +1050,17 @@ display2_smeter15(
 			if (gswr > smpr->gs)
 			{
 				uint_fast16_t xx, yy;
-				const COLORPIP_T color = COLORMAIN_YELLOW;
+				const COLORPIP_T color = COLORPIP_YELLOW;
 
 				colpip_segm(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r2 + 2, 1, color, 0, 1);
 				colpip_segm(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, gswr, smpr->r1 - 2, 1, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, smpr->gs, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gswr, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				polar_to_dek(xc, yc, gswr - 1, smpr->r1 - 4, & xx, & yy, 1);
-				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORMAIN_BLACK, 1);
+				display_floodfill(fr, DIM_X, DIM_Y, xx, yy, color, COLORPIP_BLACK, 1);
 			}
 
-			const COLORPIP_T color = COLORMAIN_GREEN;
+			const COLORPIP_T color = COLORPIP_GREEN;
 			colpip_radius(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 			colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 			colpip_radius(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
@@ -1068,7 +1074,7 @@ display2_smeter15(
 					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORPIP_T),
-					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift,
+					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
@@ -1077,7 +1083,7 @@ display2_smeter15(
 #else
 			{
 				// Рисование peak value (риска)
-				const COLORPIP_T color = COLORMAIN_YELLOW;
+				const COLORPIP_T color = COLORPIP_YELLOW;
 				colpip_radius(fr, DIM_X, DIM_Y, xc - 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc + 1, yc, gv_trace, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
@@ -1085,7 +1091,7 @@ display2_smeter15(
 
 			{
 				// Рисование стрелки
-				const COLORPIP_T color = COLORMAIN_GREEN;
+				const COLORPIP_T color = COLORPIP_GREEN;
 				colpip_radius(fr, DIM_X, DIM_Y, xc - 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 				colpip_radius(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
@@ -1113,10 +1119,10 @@ display2_smeter15(
 					BITBLT_FLAG_NONE, 0);
 
 			if(gp > smpr->gs)
-				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gp, y0 + smpr->r1 + 20, COLORMAIN_GREEN, 1);
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gp, y0 + smpr->r1 + 20, COLORPIP_GREEN, 1);
 
 			if(gswr > smpr->gs)
-				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r2 - 20, x0 + gswr, y0 + smpr->r2 - 5, COLORMAIN_GREEN, 1);
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r2 - 20, x0 + gswr, y0 + smpr->r2 - 5, COLORPIP_GREEN, 1);
 		}
 		else
 		{
@@ -1131,10 +1137,10 @@ display2_smeter15(
 					);
 
 			if(gv > smpr->gs)
-				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gv, y0 + smpr->r1 + 20, COLORMAIN_GREEN, 1);
+				colpip_rect(fr, DIM_X, DIM_Y, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gv, y0 + smpr->r1 + 20, COLORPIP_GREEN, 1);
 
 			if(gv_trace > smpr->gs)
-				colpip_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORMAIN_YELLOW, 0);
+				colpip_line(fr, DIM_X, DIM_Y, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORPIP_YELLOW, 0);
 		}
 
 		break;
@@ -1427,7 +1433,7 @@ display2_text_P(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 #if WITHALTERNATIVELAYOUT
-	layout_label1_medium(xcell, ycell, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(xcell, ycell, labels [state], strlen_P(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 #else
 	colmain_setcolors(colors [state].fg, colors [state].bg);
 	display_at_P(xcell, ycell, labels [state]);
@@ -1445,7 +1451,7 @@ display2_text_alt_P(
 	uint_fast8_t state
 	)
 {
-	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 }
 
 // отображение текста с атрибутами по состоянию
@@ -1511,7 +1517,7 @@ static void display_txrxstate5alt(
 	static const FLASHMEM char text0 [] = "RX";
 	static const FLASHMEM char text1 [] = "TX";
 	const FLASHMEM char * const labels [2] = { text0, text1 };
-	layout_label1_medium(x, y, labels [state], 2, 5, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
+	layout_label1_medium(x, y, labels [state], 2, 5, state ? COLORPIP_WHITE : COLORPIP_BLACK, state ? COLORPIP_RED : COLORPIP_GRAY);
 #endif /* WITHTX */
 }
 
@@ -1754,7 +1760,7 @@ static void display2_notch7alt(
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
 	const char FLASHMEM * const labels [2] = { label, label, };
-	layout_label1_medium(x, y, label, strlen_P(label), 7, COLORMAIN_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(x, y, label, strlen_P(label), 7, COLORPIP_BLACK, colors_2state_alt [state]);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -1811,7 +1817,7 @@ static void display2_vfomode5alt(
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 }
 
 // VFO mode with memory ch info
@@ -2076,7 +2082,7 @@ static void display_lockstate3(
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
 
-	static const FLASHMEM char text0 [] = "    ";
+	static const FLASHMEM char text0 [] = "   ";
 	static const FLASHMEM char text1 [] = "LCK";
 	static const FLASHMEM char text2 [] = "FST";
 #if LCDMODE_COLORED
@@ -2121,7 +2127,7 @@ static void display2_lockstate5alt(
 	static const FLASHMEM char text1 [] = "LOCK";
 	static const FLASHMEM char text2 [] = "FAST";
 
-	layout_label1_medium(x, y, fastv ? text2 : text1, 4, chars_W2, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
+	layout_label1_medium(x, y, fastv ? text2 : text1, 4, chars_W2, COLORPIP_BLACK, colors_2state_alt [lockv || fastv]);
 }
 
 
@@ -2164,7 +2170,7 @@ static void display2_rxbwval4(
 {
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
 	ASSERT(strlen(labels [0]) == 4);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 }
 
 // RX path bandwidth
@@ -2177,7 +2183,7 @@ static void display2_rxbwval6alt(
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
 	enum { state = 0 };
 	ASSERT(strlen(labels [0]) == 4);
-	layout_label1_medium(x, y, labels [state], 4, 6, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
+	layout_label1_medium(x, y, labels [state], 4, 6, state ? COLORPIP_WHITE : COLORPIP_BLACK, state ? COLORPIP_RED : COLORPIP_GRAY);
 }
 
 
@@ -2286,17 +2292,17 @@ static void display2_preovf5alt(
 	if (boad_fpga_adcoverflow() != 0)
 	{
 		const char str [] = "OVF";
-		layout_label1_medium(x, y, str, 3, chars_W2, COLORMAIN_WHITE, OVFCOLOR);
+		layout_label1_medium(x, y, str, 3, chars_W2, COLORPIP_WHITE, OVFCOLOR);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		const char str [] = "MIC";
-		layout_label1_medium(x, y, str, 3, chars_W2, COLORMAIN_WHITE, OVFCOLOR);
+		layout_label1_medium(x, y, str, 3, chars_W2, COLORPIP_WHITE, OVFCOLOR);
 	}
 	else
 	{
 		const char * str = hamradio_get_pre_value_P();
-		layout_label1_medium(x, y, str, strlen_P(str), chars_W2, COLORMAIN_BLACK, colors_2state_alt [1]);
+		layout_label1_medium(x, y, str, strlen_P(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
 	}
 }
 
@@ -2327,10 +2333,10 @@ static void display2_ant7alt(
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
-	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #elif WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
-	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
 }
 
@@ -2354,7 +2360,7 @@ static void display2_att5alt(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
-	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORMAIN_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [1]);
 }
 
 // HP/LP
@@ -2482,7 +2488,7 @@ static void display2_voltlevelV5(
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
-	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -2503,7 +2509,7 @@ static void display_voltlevel4(
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display_voltlevel4: volt=%u\n", volt);
 
-	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -2531,14 +2537,14 @@ static void display2_thermo4(
 	if (tempv < 0)
 	{
 		tempv = 999; //- tempv;
-		colmain_setcolors(COLORMAIN_WHITE, display_getbgcolor());
+		colmain_setcolors(COLORPIP_WHITE, display_getbgcolor());
 	}
 	else if (tempv >= 500)
-		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
+		colmain_setcolors(COLORPIP_RED, display_getbgcolor());
 	else if (tempv >= 300)
-		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
+		colmain_setcolors(COLORPIP_YELLOW, display_getbgcolor());
 	else
-		colmain_setcolors(COLORMAIN_GREEN, display_getbgcolor());
+		colmain_setcolors(COLORPIP_GREEN, display_getbgcolor());
 
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -2567,14 +2573,14 @@ static void display2_thermo5(
 	if (tempv < 0)
 	{
 		tempv = 999; //- tempv;
-		colmain_setcolors(COLORMAIN_WHITE, display_getbgcolor());
+		colmain_setcolors(COLORPIP_WHITE, display_getbgcolor());
 	}
 	else if (tempv >= 500)
-		colmain_setcolors(COLORMAIN_RED, display_getbgcolor());
+		colmain_setcolors(COLORPIP_RED, display_getbgcolor());
 	else if (tempv >= 300)
-		colmain_setcolors(COLORMAIN_YELLOW, display_getbgcolor());
+		colmain_setcolors(COLORPIP_YELLOW, display_getbgcolor());
 	else
-		colmain_setcolors(COLORMAIN_GREEN, display_getbgcolor());
+		colmain_setcolors(COLORPIP_GREEN, display_getbgcolor());
 
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
@@ -2598,7 +2604,7 @@ static void display2_currlevelA6(
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2610,7 +2616,7 @@ static void display2_currlevelA6(
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2635,7 +2641,7 @@ static void display2_currlevel5(
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2647,7 +2653,7 @@ static void display2_currlevel5(
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
+		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
 		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 		do
 		{
@@ -2667,7 +2673,14 @@ static void display2_classa7(
 	)
 {
 #if WITHPACLASSA
-	display_at(x, y, habradio_get_classa() ? "CLASS A" : "       ");
+	const uint_fast8_t active = habradio_get_classa();
+	#if LCDMODE_COLORED
+		static const char classa_text [] = "CLASS A";
+		static const char classa_null [] = "       ";
+		display_2states_P(x, y, active, classa_text, classa_text);
+	#else /* LCDMODE_COLORED */
+		display_at_P(x, y, active ? classa_text : classa_null);
+	#endif /* LCDMODE_COLORED */
 #endif /* WITHPACLASSA */
 }
 
@@ -2688,7 +2701,7 @@ static void display_siglevel7(
 	(void) v;
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 7);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -2709,7 +2722,7 @@ static void display2_siglevel4(
 	(void) v;
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 4);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 #endif /* WITHIF4DSP */
 }
 
@@ -2733,7 +2746,7 @@ static void display2_span9(
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 9);
-	display2_text(x, y, labels, colors_1state, 0);
+	display2_text(x, y, labels, colors_1statevoltage, 0);
 
 #endif /* WITHIF4DSP */
 }
@@ -5440,7 +5453,7 @@ static void display2_spectrum(
 
 						if (x)
 						{
-							colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_WHITE, 1);
+							colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORPIP_WHITE, 1);
 						}
 
 						gvars.envelope_y [x] = ynew - 2;
@@ -5493,7 +5506,7 @@ static void display2_spectrum(
 					return;
 
 				if (x)
-					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
+					colpip_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORPIP_BLACK, 0);
 
 				ylast_sp = y1;
 			}
@@ -5731,11 +5744,12 @@ static void display2_waterfall(
 			ASSERT(atwflj(0, wfrow) != NULL);
 			colpip_bitblt(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
-					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
+					colorpip, BUFDIM_X, BUFDIM_Y,
+					0, p1y,	// координаты получателя
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
-					atwflj(0, wfrow),	// начальный адрес источника
-					ALLDX, p1h, 	// размеры источника
-					0, 0,	// координаты окна источника
+					atwflj(0, 0),	// начальный адрес источника
+					ALLDX, WFROWS, 	// размеры источника
+					0, wfrow,	// координаты окна источника
 					ALLDX, p1h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
 		}
@@ -5745,10 +5759,11 @@ static void display2_waterfall(
 			/* перенос старой части растра */
 			colpip_bitblt(
 					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORPIP_T),
-					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
+					colorpip, BUFDIM_X, BUFDIM_Y,
+					0, p2y,		// координаты получателя
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					atwflj(0, 0),	// начальный адрес источника
-					ALLDX, p2h, 	// размеры источника
+					ALLDX, WFROWS, 	// размеры источника
 					0, 0,	// координаты окна источника
 					ALLDX, p2h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);

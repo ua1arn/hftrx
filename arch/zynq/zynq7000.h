@@ -158,7 +158,7 @@ typedef enum IRQn
 //Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
+#define __CA_REV                 0x0300U      /*!< Core revision r3p0 [15:8] rev [7:0] patch */
 
 #define __CORTEX_A                    9U      /*!< Cortex-A# Core */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */

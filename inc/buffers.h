@@ -346,6 +346,12 @@ extern "C" {
 
 #endif /* WITHDSPEXTDDC */
 
+#if 1
+	// stub
+	// параметры дополнительного канала передачи в FPGA
+	#define DMABUFFSTEP32TXSUB	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+#endif
+
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64)
 
 	/* встороенный в процессор кодек */
@@ -380,6 +386,11 @@ extern "C" {
 	#define DMABUFF16TX_RIGHT 	1		/* индекс сэмпла правого канала */
 
 #endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64) */
+
+#if 1
+	#define DMABUFFSTEP16RX8K		2		/* 2 - каждому сэмплу при получении от AUDIO CODEC соответствует два числа в DMA буфере */
+	#define DMABUFFSTEP16TX8K		2		/* 2 - каждому сэмплу при передаче в AUDIO CODEC соответствует два числа в DMA буфере */
+#endif
 
 // Конфигурация потоков в Input Terminal Descriptor
 // bNrChannels в 4.3.2.1 Input Terminal Descriptor образуется подсчетом битов в данном поле
@@ -426,12 +437,12 @@ extern "C" {
 #if WITHUSBDEV_HSDESC
 	/* вариант передачи с периодом 0.5 мс */
 	#define OUTSAMPLES_AUDIO48	24 /* количество сэмплов за SOF в UAC OUT */
+	#define UAC_GROUPING_DMAC 1	/* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
 	#define HSINTERVAL_AUDIO48 3	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
 	#define HSINTERVAL_RTS96 3
 	#define HSINTERVAL_RTS192 3
 
-	#define FSINTERVAL_AUDIO48 1
 	#define FSINTERVAL_AUDIO48 1
 	#define FSINTERVAL_RTS96 1
 	#define FSINTERVAL_RTS192 1
@@ -439,6 +450,7 @@ extern "C" {
 #elif WITHUSBDEV_HSDESC
 /* вариант передачи с периодом 1 мс */
 	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за SOF в UAC OUT */
+	#define UAC_GROUPING_DMAC 1 /* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
 	#define HSINTERVAL_AUDIO48 4	// 1 - 125 uS, 2 - 250 uS, 3 - 500 uS 4 - 1 mS
 	#define HSINTERVAL_RTS96 4
@@ -450,6 +462,7 @@ extern "C" {
 
 #else /* WITHUSBDEV_HSDESC */
 	#define OUTSAMPLES_AUDIO48	48 /* количество сэмплов за милисекунду в UAC OUT */
+	#define UAC_GROUPING_DMAC 1 /* Во сколько раз реже происходит прерывание по буферу обмена - увеличение размера буфера DMA */
 
 	#define HSINTERVAL_AUDIO48 1	// dummy parameter
 	#define HSINTERVAL_RTS96 1		// dummy parameter
@@ -596,11 +609,14 @@ extern "C" {
 #define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
 
 #define DMABUFFSIZE16RX	(DMABUFCLUSTER * DMABUFFSTEP16RX)		/* AF CODEC ADC */
+#define DMABUFFSIZE16RX8K	(DMABUFCLUSTER * DMABUFFSTEP16RX8K)		/* AF CODEC ADC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 //#define DMABUFFSIZE32RTS96 (DMABUFCLUSTER * DMABUFFSTEP32RTS96)		/* FPGA RX or IF CODEC RX */
 
 #define DMABUFFSIZE16TX	(DMABUFCLUSTER * DMABUFFSTEP16TX * DMABUFSCALE)		/* AF CODEC DAC */
+#define DMABUFFSIZE16TX8K	(DMABUFCLUSTER * DMABUFFSTEP16TX8K * DMABUFSCALE)		/* AF CODEC DAC */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
+#define DMABUFFSIZE32TXSUB (DMABUFCLUSTER * DMABUFFSTEP32TXSUB * DMABUFSCALE)	/* Additional channel FPGA TX or IF CODEC TX	*/
 
 #define DMABUFFSTEP32RTS192 2
 #define DMABUFFSIZE32RTS192	(DMABUFCLUSTER * DMABUFFSTEP32RTS192)		/* RTS192 data from I2S */
@@ -611,41 +627,7 @@ extern "C" {
 
 // Buffers interface functions
 void buffers_initialize(void);
-
-// передача на fpga
-uintptr_t allocate_dmabuffer32tx(void);
-void release_dmabuffer32tx(uintptr_t addr);
-void save_dmabuffer32tx(uintptr_t addr);
-int_fast32_t cachesize_dmabuffer32tx(void);
-uintptr_t getfilled_dmabuffer32tx_main(void);
-uintptr_t getfilled_dmabuffer32tx_sub(void);
 void dsp_processtx(unsigned nsamples);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
-
-// буферы передачи на кодек
-uintptr_t allocate_dmabuffer16tx(void);
-int_fast32_t cachesize_dmabuffer16tx(void);
-void release_dmabuffer16tx(uintptr_t addr);
-uintptr_t getfilled_dmabuffer16tx(void);
-
-// прием с кодека
-uintptr_t allocate_dmabuffer16rx(void);
-//uintptr_t getfilled_dmabuffer16rx(void);
-int_fast32_t cachesize_dmabuffer16rx(void);
-void release_dmabuffer16rx(uintptr_t addr);
-void save_dmabuffer16rx(uintptr_t addr);
-
-// прием с FPGA
-uintptr_t allocate_dmabuffer32rx(void);
-uintptr_t getfilled_dmabuffer32rx(void);
-int_fast32_t cachesize_dmabuffer32rx(void);
-void release_dmabuffer32rx(uintptr_t addr);
-void save_dmabuffer32rx(uintptr_t addr);
-
-// прием с FPGA (отдельный канал спектра)
-uintptr_t allocate_dmabuffer32rts192(void);
-int_fast32_t cachesize_dmabuffer32rts192(void);
-void release_dmabuffer32rts192(uintptr_t addr);
-void save_dmabuffer32rts192(uintptr_t addr);
 
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
@@ -653,85 +635,168 @@ void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер
 uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 
-// Буфер обмена по USB
-void release_dmabufferuacinrts192(uintptr_t addr);
-uintptr_t allocate_dmabufferuacinrts192(void);
-uintptr_t getfilled_dmabufferuacinrts192(void);
-void save_dmabufferuacinrts192(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacinrts192(void);
-int_fast32_t datasize_dmabufferuacinrts192(void);
+//+++++++++++++++++++++
+/* FPGA to CPU */
+uintptr_t allocate_dmabuffer32rx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32rx(void); /* take from queue */
+void release_dmabuffer32rx(uintptr_t addr);
+void save_dmabuffer32rx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32rx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32rx(void); /* parameter for DMA */
 
-// Буфер обмена по USB
-void release_dmabufferuacinrts96(uintptr_t addr);
-uintptr_t allocate_dmabufferuacinrts96(void);
-uintptr_t getfilled_dmabufferuacinrts96(void);
-void save_dmabufferuacinrts96(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacinrts96(void);
-int_fast32_t datasize_dmabufferuacinrts96(void);
+/* CPU to FPGA */
+uintptr_t allocate_dmabuffer32tx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32tx(void); /* take from queue */
+void release_dmabuffer32tx(uintptr_t addr);
+void save_dmabuffer32tx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32tx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32tx(void); /* parameter for DMA */
 
-// Буфер обмена по USB
-uintptr_t allocate_dmabufferuacout48(void);
-//uintptr_t getfilled_dmabufferuacout48(void);
-void release_dmabufferuacout48(uintptr_t addr);
-void save_dmabufferuacout48(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacout48(void);
-int_fast32_t datasize_dmabufferuacout48(void);
+/* CPU to FPGA (additional channel) */
+uintptr_t allocate_dmabuffer32tx_sub(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32tx_sub(void); /* take from queue */
+void release_dmabuffer32tx_sub(uintptr_t addr);
+void save_dmabuffer32tx_sub(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32tx_sub(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32tx_sub(void); /* parameter for DMA */
 
-// Буфер обмена по USB
-uintptr_t allocate_dmabufferuacin48(void);
+/* CODEC to CPU */
+uintptr_t allocate_dmabuffer16rx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16rx(void); /* take from queue */
+void release_dmabuffer16rx(uintptr_t addr);
+void save_dmabuffer16rx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16rx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16rx(void); /* parameter for DMA */
+
+/* CPU to CODEC */
+uintptr_t allocate_dmabuffer16tx(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16tx(void); /* take from queue */
+void release_dmabuffer16tx(uintptr_t addr);
+void save_dmabuffer16tx(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16tx(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16tx(void); /* parameter for DMA */
+
+/* CODEC to CPU, sample rate 8000 */
+uintptr_t allocate_dmabuffer16rx8k(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16rx8k(void); /* take from queue */
+void release_dmabuffer16rx8k(uintptr_t addr);
+void save_dmabuffer16rx8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16rx8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16rx8k(void); /* parameter for DMA */
+
+/* CPU to CODEC, sample rate 8000 */
+uintptr_t allocate_dmabuffer16tx8k(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer16tx8k(void); /* take from queue */
+void release_dmabuffer16tx8k(uintptr_t addr);
+void save_dmabuffer16tx8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer16tx8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer16tx8k(void); /* parameter for DMA */
+
+/* FPGA to CPU */
+uintptr_t allocate_dmabuffer32rts192(void); /* take free buffer */
+uintptr_t getfilled_dmabuffer32rts192(void); /* take from queue */
+void release_dmabuffer32rts192(uintptr_t addr);
+void save_dmabuffer32rts192(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabuffer32rts192(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabuffer32rts192(void); /* parameter for DMA */
+
+/* usb audio48 to host */
+uintptr_t allocate_dmabufferuacin48(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacin48(void); /* take from queue */
 void release_dmabufferuacin48(uintptr_t addr);
-uintptr_t getfilled_dmabufferuacin48(void);
-void save_dmabufferuacin48(uintptr_t addr);
-int_fast32_t cachesize_dmabufferuacin48(void);
-int_fast32_t datasize_dmabufferuacin48(void);
+void save_dmabufferuacin48(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacin48(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacin48(void); /* parameter for DMA */
 
-// BTH OUT
-// Сторона BT 44.1 кГц
-uintptr_t allocate_dmabufferbtout44p1k(void);
-void save_dmabufferbtout44p1k(uintptr_t addr);
-int_fast32_t datasize_dmabufferbtout44p1k(void);
+/* usb rts96 to host */
+uintptr_t allocate_dmabufferuacinrts96(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacinrts96(void); /* take from queue */
+void release_dmabufferuacinrts96(uintptr_t addr);
+void save_dmabufferuacinrts96(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacinrts96(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacinrts96(void); /* parameter for DMA */
 
-// BTH OUT
-// Сторона BT 32 кГц
-uintptr_t allocate_dmabufferbtout32k(void);
-void save_dmabufferbtout32k(uintptr_t addr);
-int_fast32_t datasize_dmabufferbtout32k(void);
+/* usb rts192 to host */
+uintptr_t allocate_dmabufferuacinrts192(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacinrts192(void); /* take from queue */
+void release_dmabufferuacinrts192(uintptr_t addr);
+void save_dmabufferuacinrts192(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacinrts192(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacinrts192(void); /* parameter for DMA */
 
-// BTH OUT
-// Сторона BT 16 кГц
-uintptr_t allocate_dmabufferbtout16k(void);
-void save_dmabufferbtout16k(uintptr_t addr);
-int_fast16_t datasize_dmabufferbtout16k(void);
+/* usb audio48 from host */
+uintptr_t allocate_dmabufferuacout48(void); /* take free buffer */
+uintptr_t getfilled_dmabufferuacout48(void); /* take from queue */
+void release_dmabufferuacout48(uintptr_t addr);
+void save_dmabufferuacout48(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferuacout48(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferuacout48(void); /* parameter for DMA */
 
-// BTH OUT
-// Сторона BT 8 кГц
-uintptr_t allocate_dmabufferbtout8k(void);
-void save_dmabufferbtout8k(uintptr_t addr);
-int_fast16_t datasize_dmabufferbtout8k(void);
+/* BT audio to radio, sample rate 8000 */
+uintptr_t allocate_dmabufferbtout8k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout8k(void); /* take from queue */
+void release_dmabufferbtout8k(uintptr_t addr);
+void save_dmabufferbtout8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout8k(void); /* parameter for DMA */
 
-// BTH IN
-// Сторона BT 44.1 кГц
-uintptr_t getfilled_dmabufferbtin44p1k(void);
-void release_dmabufferbtin44p1k(uintptr_t addr);
-int_fast32_t datasize_dmabufferbtin44p1k(void);
+/* BT audio to radio, sample rate 16000 */
+uintptr_t allocate_dmabufferbtout16k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout16k(void); /* take from queue */
+void release_dmabufferbtout16k(uintptr_t addr);
+void save_dmabufferbtout16k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout16k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout16k(void); /* parameter for DMA */
 
-// BTH IN
-// Сторона BT 32 кГц
-uintptr_t getfilled_dmabufferbtin32k(void);
-void release_dmabufferbtin32k(uintptr_t addr);
-int_fast32_t datasize_dmabufferbtin32k(void);
+/* BT audio to radio, sample rate 32000 */
+uintptr_t allocate_dmabufferbtout32k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout32k(void); /* take from queue */
+void release_dmabufferbtout32k(uintptr_t addr);
+void save_dmabufferbtout32k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout32k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout32k(void); /* parameter for DMA */
 
-// BTH IN
-// Сторона BT 16 кГц
-uintptr_t getfilled_dmabufferbtin16k(void);
-void release_dmabufferbtin16k(uintptr_t addr);
-int_fast16_t datasize_dmabufferbtin16k(void);
+/* BT audio to radio, sample rate 44100 */
+uintptr_t allocate_dmabufferbtout44p1k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtout44p1k(void); /* take from queue */
+void release_dmabufferbtout44p1k(uintptr_t addr);
+void save_dmabufferbtout44p1k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtout44p1k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtout44p1k(void); /* parameter for DMA */
 
-// BTH IN
-// Сторона BT 8 кГц
-uintptr_t getfilled_dmabufferbtin8k(void);
+/* BT audio from radio, sample rate 8000 */
+uintptr_t allocate_dmabufferbtin8k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin8k(void); /* take from queue */
 void release_dmabufferbtin8k(uintptr_t addr);
-int_fast16_t datasize_dmabufferbtin8k(void);
+void save_dmabufferbtin8k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin8k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin8k(void); /* parameter for DMA */
+
+/* BT audio from radio, sample rate 16000 */
+uintptr_t allocate_dmabufferbtin16k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin16k(void); /* take from queue */
+void release_dmabufferbtin16k(uintptr_t addr);
+void save_dmabufferbtin16k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin16k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin16k(void); /* parameter for DMA */
+
+/* BT audio from radio, sample rate 32000 */
+uintptr_t allocate_dmabufferbtin32k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin32k(void); /* take from queue */
+void release_dmabufferbtin32k(uintptr_t addr);
+void save_dmabufferbtin32k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin32k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin32k(void); /* parameter for DMA */
+
+/* BT audio from radio, sample rate 44100 */
+uintptr_t allocate_dmabufferbtin44p1k(void); /* take free buffer */
+uintptr_t getfilled_dmabufferbtin44p1k(void); /* take from queue */
+void release_dmabufferbtin44p1k(uintptr_t addr);
+void save_dmabufferbtin44p1k(uintptr_t addr); /* save to queue */
+int_fast32_t cachesize_dmabufferbtin44p1k(void); /* parameter for cache manipulation functions */
+int_fast32_t datasize_dmabufferbtin44p1k(void); /* parameter for DMA */
+
+//-----------------------
 
 /* audio samples for recording */
 unsigned takerecordbuffer(void * * dest);

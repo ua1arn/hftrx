@@ -54,6 +54,7 @@
 #regdef; LCD_3D_FIFO_BIST_REG; 0x0FF4; LCD 3D FIFO Bist Register
 #regdef; LCD_TRI_FIFO_BIST_REG; 0x0FF8; LCD Trigger FIFO Bist Register
 #regdef; padding 0; 0x01000; set size
+#typeend;
 
 #type; DISP_IF_TOP; display interface top (DISP_IF_TOP)
 
@@ -62,3 +63,4 @@
 #regdef; TV_CLK_SRC_RGB_SRC; 0x0000; TCON_TV CClock SSelect and RGB Source S Select Register
 #regdef; DE_PORT_PERH_SEL; 0x001C; DE Source Select TCON R Register
 #regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister
+#typeend;

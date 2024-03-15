@@ -124,3 +124,5 @@
 #regdef; CLK27M_FAN_REG; 0x0F34; CLK27M FANOUT Register
 #regdef; PCLK_FAN_REG; 0x0F38; PCLK FANOUT Register
 #regdef; CCU_FAN_REG; 0x0F3C; CCU FANOUT Register
+
+#regdef; padding 0; 0x1000; Need for address arithmetics

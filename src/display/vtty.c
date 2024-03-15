@@ -36,8 +36,8 @@ enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
 
 // цвета отрисовки
-#define VTTY_FG COLORMAIN_GREEN
-#define VTTY_BG COLORMAIN_BLACK
+#define VTTY_FG COLORPIP_GREEN
+#define VTTY_BG COLORPIP_BLACK
 
 typedef struct vtty_tag
 {
@@ -135,9 +135,9 @@ static void display_vtty_show(
 				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, tgh2),	// начальный адрес источника
-				VTTY_DX, tgh1,	// размеры источника
-				0, 0,	// координаты окна источника
+				vt->fb,	// начальный адрес источника
+				VTTY_DX, VTTY_DY,	// размеры источника
+				0, tgh2,	// координаты окна источника
 				VTTY_DX, tgh1,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
@@ -148,8 +148,8 @@ static void display_vtty_show(
 				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTY_DX, VTTY_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTY_DX, VTTY_DY, 0, 0),	// начальный адрес источника
-				VTTY_DX, tgh2,	// размеры источника
+				vt->fb,	// начальный адрес источника
+				VTTY_DX, VTTY_DY,	// размеры источника
 				0, 0,	// координаты окна источника
 				VTTY_DX, tgh2,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);

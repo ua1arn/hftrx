@@ -39,6 +39,7 @@
 #regdef; CK_MAX; 0x00C0 4;
 #regdef; CK_MIN; 0x00E0 4;
 #regdef; OUT_CTL; 0x00FC;
+#typeend;
 
 #type; DE_CSR
 #base; DE_CSR 0x01020000
@@ -65,6 +66,7 @@
 #regdef; OMEN_HADD1; 0x0AC; Output U/UV memory address register1
 #regdef; OMEN_LADD2; 0x0B0; Output V memory address register0
 #regdef; OMEN_HADD2; 0x0B4; Output V memory address register1
+#typeend;
 
 #type; DE_VI
 #base; DE_VI1 0x01102000
@@ -85,6 +87,7 @@
 #regdef; OVL_SIZE; 0x0E8 2; OVL_V overlay window size register
 #regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
 #regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
+#typeend;
 
 #type; DE_UI
 #base; DE_UI1 0x01103000
@@ -104,3 +107,4 @@
 #regdef; TOP_HADDR; 0x080; 
 #regdef; BOT_HADDR; 0x084; 
 #regdef; OVL_SIZE; 0x088; 
+#typeend;

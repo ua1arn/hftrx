@@ -30,8 +30,9 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 
 #define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
-#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
 #define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+
+#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
@@ -59,7 +60,6 @@ static const unsigned SKIPSAMPLES = 5000;	// раз в 5000 сэмплов до�
 #include <string.h>		// for memset
 
 static uint_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
-
 
 #if WITHINTEGRATEDDSP
 
@@ -1122,14 +1122,6 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
 
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2)
-	/* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
-	buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
-	buff [DMABUF32TX_NCO2] = dspfpga_get_nco2();
-	buff [DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
-#endif /* (DDS1_TYPE == DDS_TYPE_FPGAV1) && ! (CTLREGMODE_OLEG4Z_V1 || CTLREGMODE_OLEG4Z_V2) */
-
 #if CPUSTYLE_XC7Z && WITHLFM
 	if (iflfmactive())
 	{
@@ -1169,24 +1161,11 @@ void save_dmabuffer32tx(uintptr_t addr)
 	voice32tx.save_buffer(p);
 }
 
-// can not be be zero
-uintptr_t getfilled_dmabuffer32tx(void)
-{
-#if ! defined CODEC1_TYPE
-	dsp_fillphones(CNT32TX);
-#endif
-	voice32tx_t * dest;
-	while (! voice32tx.get_readybuffer(& dest) && ! voice32tx.get_freebufferforced(& dest))
-		ASSERT(0);
-	return (uintptr_t) dest->buff;
-}
-
-
 #if WITHFPGAPIPE_CODEC1
 
-// копирование полей в передаваемый на FPGA буфер
+// копирование полей для кодека в передаваемый на FPGA буфер
 static uintptr_t RAMFUNC
-pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
+pipe_dmabuffer32tx_codec1(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
 
@@ -1211,29 +1190,42 @@ pipe_dmabuffer32tx(uintptr_t addr32tx, uintptr_t addr16tx)
 #endif /* WITHFPGAPIPE_CODEC1 */
 
 // can not be be zero
-uintptr_t getfilled_dmabuffer32tx_main(void)
+uintptr_t getfilled_dmabuffer32tx(void)
 {
-	uintptr_t addr = getfilled_dmabuffer32tx();
+#if ! defined CODEC1_TYPE
+	dsp_fillphones(CNT32TX);
+#endif
+	unsigned i;
+	voice32tx_t * dest;
+	while (! voice32tx.get_readybuffer(& dest) && ! voice32tx.get_freebufferforced(& dest))
+		ASSERT(0);
+	const uintptr_t addr = (uintptr_t) dest->buff;
+	// дополнение совместно передаваемыми данными
+
 #if WITHFPGAPIPE_CODEC1
 	/* при необходимости добавляем слоты для передачи на кодек */
 	const uintptr_t addr16 = getfilled_dmabuffer16tx();
-	pipe_dmabuffer32tx(addr, addr16);
-	release_dmabuffer16tx(addr16);	/* освоюождаем буфер как переданный */
+	pipe_dmabuffer32tx_codec1(addr, addr16);	// копирование полей для кодека в передаваемый на FPGA буфер
+	release_dmabuffer16tx(addr16);	/* освобождаем буфер как переданный */
 #endif /* WITHFPGAPIPE_CODEC1 */
-#if WITHFPGAPIPE_NCORX0
-#endif /* WITHFPGAPIPE_NCORX0 */
-#if WITHFPGAPIPE_NCORX1
-#endif /* WITHFPGAPIPE_NCORX1 */
-#if WITHFPGAPIPE_NCORTS
-#endif /* WITHFPGAPIPE_NCORTS */
+
+	/* Слоты с информацией о частоте приёма */
+	for (i = 0; i < (unsigned) CNT32TX; ++ i)
+	{
+		IFDACvalue_t * const buff = dest->buff + i * DMABUFFSTEP32TX;
+	#if WITHFPGAPIPE_NCORX0
+		buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
+	#endif /* WITHFPGAPIPE_NCORX0 */
+	#if WITHFPGAPIPE_NCORX1
+		buff [DMABUF32TX_NCO2] = dspfpga_get_nco2();
+	#endif /* WITHFPGAPIPE_NCORX1 */
+	#if WITHFPGAPIPE_NCORTS
+		buff [DMABUF32TX_NCORTS] = dspfpga_get_ncorts();
+	#endif /* WITHFPGAPIPE_NCORTS */
+	}
 	return addr;
 }
 
-// can not be be zero
-uintptr_t getfilled_dmabuffer32tx_sub(void)
-{
-	return allocate_dmabuffer32tx();
-}
 
 // I/Q data from FPGA or IF CODEC
 // I/Q data from FPGA or IF CODEC
@@ -1311,7 +1303,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 
 typedef struct
 {
-	ALIGNX_BEGIN  uint8_t buff [UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
 } uacout48_t;
@@ -1935,7 +1927,7 @@ typedef enum
 	typedef struct
 	{
 		uacintag_t tag;
-		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
+		ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 		enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
 	} uacinrts192_t;
@@ -2012,7 +2004,7 @@ typedef enum
 	typedef struct
 	{
 		uacintag_t tag;
-		ALIGNX_BEGIN  uint8_t buff [UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
+		ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
 	} uacinrts96_t;
@@ -2091,7 +2083,7 @@ typedef enum
 typedef struct
 {
 	uacintag_t tag;
-	ALIGNX_BEGIN  uint8_t buff [UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
+	ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = UACIN_AUDIO48_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_AUDIO48 };
 } uacin48_t;
@@ -2857,30 +2849,6 @@ saverts96pair(const IFADCvalue_t * buff)
 	}
 }
 
-// использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
-saverts96(const IFADCvalue_t * buff)
-{
-	// формирование отображения спектра
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swaprts != 0)
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0Q],	// current
-			buff [DMABUF32RXRTS0I]
-			);
-	}
-	else
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0I],	// current
-			buff [DMABUF32RXRTS0Q]
-			);
-	}
-}
-
 #endif /* WITHDSPEXTDDC && WITHRTS96 */
 
 #if WITHDSPEXTDDC && WITHRTS192
@@ -3055,9 +3023,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		// Тестирование - заменить приянтые квадратуры синтезированными
 		inject_testsignals(b);
 #endif
-#if FPGAMODE_GW2A
-		saverts96(b);	// использование данных о спектре, передаваемых в общем фрейме
-#elif WITHRTS96
+#if WITHRTS96
 		saverts96pair(b);	// использование данных о спектре, передаваемых в общем фрейме
 #elif WITHRTS192
 		saverts192quad(b);	// использование данных о спектре, передаваемых в общем фрейме

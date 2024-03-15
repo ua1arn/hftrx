@@ -703,7 +703,7 @@
 		arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
 	} while (0)
 
-	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
 		/* board_fpga_reset(); */ \
 	} while (0)
@@ -719,7 +719,7 @@
 
 #else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
 		/* board_fpga_reset(); */ \
 	} while (0)
@@ -1074,5 +1074,8 @@
 		BOARD_USERBOOT_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALLWT113S3_CPUSTYLE_STORCH_V9A_V0_H_INCLUDED */

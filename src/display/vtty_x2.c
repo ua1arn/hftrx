@@ -60,8 +60,8 @@ static int gwinleft = 1;
 static int gwinright = VTTYx2_COLS;
 static int gwinbottom = VTTYx2_ROWS;
 static unsigned gattr = (0x0F << AFGPOS) | (0x00 << ABGPOS);	// FFFFBBBB
-static COLORPIP_T gfg = COLORMAIN_WHITE;
-static COLORPIP_T gbg = COLORMAIN_BLACK;
+static COLORPIP_T gfg = COLORPIP_WHITE;
+static COLORPIP_T gbg = COLORPIP_BLACK;
 
 void display_vtty_x2_initialize(void);
 int display_vtty_x2_putchar(char ch);
@@ -132,9 +132,9 @@ void display_vtty_x2_show(
 				(uintptr_t) tfb, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy1,
 				(uintptr_t) vt->fb, GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, tgh2),	// начальный адрес источника
-				VTTYx2_DX, tgh1,	// размеры источника
-				0, 0,	// координаты окна источника
+				vt->fb,	// начальный адрес источника
+				VTTYx2_DX, VTTYx2_DY,	// размеры источника
+				0, tgh2,	// координаты окна источника
 				VTTYx2_DX, tgh1,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
@@ -145,8 +145,8 @@ void display_vtty_x2_show(
 				(uintptr_t) tfb, 1 * GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T),
 				tfb, DIM_X, DIM_Y, x, y + tgy2,
 				(uintptr_t) vt->fb, 1 * GXSIZE(VTTYx2_DX, VTTYx2_DY) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
-				colpip_mem_at(vt->fb, VTTYx2_DX, VTTYx2_DY, 0, 0),	// начальный адрес источника
-				VTTYx2_DX, tgh2,// размеры источника
+				vt->fb,	// начальный адрес источника
+				VTTYx2_DX, VTTYx2_DY,// размеры источника
 				0, 0,	// координаты окна источника
 				VTTYx2_DX, tgh2,// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
@@ -365,13 +365,13 @@ static uint_fast8_t color2attr(COLORPIP_T color)
 {
 	switch (color)
 	{
-	//case COLORMAIN_GRAY: return 7;
+	//case COLORPIP_GRAY: return 7;
 	default:
-	case COLORMAIN_WHITE: return 15;
-	case COLORMAIN_BLACK: return 0;
-	case COLORMAIN_RED: return 4;
-	case COLORMAIN_GREEN: return 2;
-	case COLORMAIN_BLUE: return 1;
+	case COLORPIP_WHITE: return 15;
+	case COLORPIP_BLACK: return 0;
+	case COLORPIP_RED: return 4;
+	case COLORPIP_GREEN: return 2;
+	case COLORPIP_BLUE: return 1;
 	}
 }
 
@@ -379,13 +379,13 @@ static COLORPIP_T attr2color(uint_fast8_t v)
 {
 	switch (v)
 	{
-	//case 7: return COLORMAIN_GRAY;
+	//case 7: return COLORPIP_GRAY;
 	default:
-	case 15: return COLORMAIN_WHITE;
-	case 0: return COLORMAIN_BLACK;
-	case 4: return COLORMAIN_RED;
-	case 2: return COLORMAIN_GREEN;
-	case 1: return COLORMAIN_BLUE;
+	case 15: return COLORPIP_WHITE;
+	case 0: return COLORPIP_BLACK;
+	case 4: return COLORPIP_RED;
+	case 2: return COLORPIP_GREEN;
+	case 1: return COLORPIP_BLUE;
 	}
 }
 

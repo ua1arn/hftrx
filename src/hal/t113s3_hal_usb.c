@@ -2086,7 +2086,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
 
-static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
+static volatile uint8_t usb_cdc_control_state [WITHUSBCDCACM_N];
 
 static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
@@ -3537,6 +3537,7 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
       			break;
     		}
 	      	break;
+#if WITHUSBCDCACM
     	case CDC_SET_LINE_CODING:
     		// work
     		//PRINTF("ep0_out: CDC_SET_LINE_CODING: ifc=%u\n", interfacev);
@@ -3546,9 +3547,11 @@ static int32_t ep0_out_handler_all(pusb_struct pusb)
     	case CDC_SET_CONTROL_LINE_STATE:
     		// work
     		//PRINTF("ep0_out: CDC_SET_CONTROL_LINE_STATE: ifc=%u %02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
+    		usb_cdc_control_state [USBD_CDCACM_OFFSET_BY_INT_IFV(interfacev)] = LO_BYTE(ep0_setup->wValue);
        		pusb->ep0_xfer_state = USB_EP0_SETUP;
 			pusb->ep0_xfer_residue = 0;
 	      	break;
+#endif /* WITHUSBCDCACM */
     	default   :
      		PRINTF("usb_device: Unknown EP0 OUT: ifc=%u, 0x%02X, wLength=0x%04X\n", interfacev, ep0_setup->bRequest, ep0_setup->wLength);
 			pusb->ep0_xfer_residue = 0;

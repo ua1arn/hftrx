@@ -600,6 +600,10 @@ typedef struct UART_Type
 } UART_TypeDef; /* size of structure = 0x0A8 */
 
 
+/* Defines */
+
+
+
 /* Access pointers */
 
 #define SDMA ((SDMA_TypeDef *) SDMA_BASE)             /*!< SDMA Регистры блока управления SDMA register set access pointer */

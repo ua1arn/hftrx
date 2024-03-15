@@ -32,4 +32,4 @@
 #regdef; TV_PIXELDEPTH_MODE_REG; 0x0340; TV Pixeldepth Mode Control Register
 
 #regdef; padding 0; 0x01000; set size
-
+#typeend;

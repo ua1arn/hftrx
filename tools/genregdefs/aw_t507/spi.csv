@@ -25,3 +25,4 @@
 #regdef; SPI_RXD; 0x0300; SPI RX Data Register
 
 #regdef; padding 0; 0x1000; set size
+#typeend;

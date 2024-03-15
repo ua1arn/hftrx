@@ -5642,9 +5642,9 @@ GridTest(void)
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
-	display_fillrect(xrct0, yrct0 * 1, xrct0, yrct0, COLORMAIN_RED);
-	display_fillrect(xrct0, yrct0 * 2, xrct0, yrct0, COLORMAIN_GREEN);
-	display_fillrect(xrct0, yrct0 * 3, xrct0, yrct0, COLORMAIN_BLUE);
+	display_fillrect(xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
+	display_fillrect(xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
+	display_fillrect(xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
 /*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
@@ -5658,8 +5658,8 @@ GridTest(void)
 				 );
 */
 
-	display_fillrect(xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORMAIN_WHITE);
-	display_line(xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORMAIN_RED);
+	display_fillrect(xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
+	display_line(xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
 
 	/* Interlase clocke test.	*/
 	display_line(10,  0,  xm, 10 + 1,  col3);
@@ -5677,8 +5677,8 @@ GridTest(void)
 	// тест перестановки байтов при выборке видеоконтроллером
 	const unsigned rctx = DIM_X / 3;
 	const unsigned rcty = DIM_Y / 3;
-	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORMAIN_BLACK);
-	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORMAIN_BLACK);
+	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORPIP_BLACK);
+	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORPIP_BLACK);
 
 	display_flush();
 
@@ -6689,7 +6689,7 @@ void testpng(const void * pngbuffer)
 
 	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 
-	colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORMAIN_GRAY);
+	colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
 
 	colpip_stretchblt(
 		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
@@ -10480,7 +10480,7 @@ void testde(void)
 //		* p = v;
 //	}
 //	{
-//		uint32_t volatile * const p = (uint32_t volatile *) (DE_BLD1_BASE + 0x80);
+//		uint32_t volatile * const p = (uint32_t volatile *) (DE_BLD_BASE + 0x80);
 //		//uint32_t v = * p;
 //		//* p = ~ 0u;
 //		PRINTF("BLD SIGN=%08X\n", * p);
@@ -10564,6 +10564,9 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
+    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+
 	CCU->THS_BGR_REG |= (1 << 0); // THS_GATING
 	CCU->THS_BGR_REG |= (1 << 16); // THS_RESET
 	THS->THS_EN &= ~ (1 << 0);
@@ -10852,24 +10855,33 @@ void hightests(void)
 		//printhex32(0x070005E0, (void *) 0x070005E0, 4);
 
 		//printhex(0x06000000, (void *) 0x06000000, 0x10000);
+		CCU->RISC_CLK_REG = (CCU->RISC_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+				//0x05 * (UINT32_C(1) << 24) |	// PLL_CPU
+				0x04 * (UINT32_C(1) << 24) |	// PLL_PERI(1X)
+				0;
+		CCU->RISC_CLK_REG |= (UINT32_C(1) << 31);	// not need
+
 		CCU->RISC_GATING_REG = 1*(UINT32_C(1) << 31) | 0x16AA;	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
 		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
 
 		PRINTF("RISC_CFG->WORK_MODE_REG=%08" PRIX32 "\n", RISC_CFG->WORK_MODE_REG);
+		PRINTF("allwnrf133_get_riscv_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_freq());
+		PRINTF("allwnrf133_get_riscv_axi_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_axi_freq());
 
 		RISC_CFG->RISC_STA_ADD0_REG = (uintptr_t) code;
 		RISC_CFG->RISC_STA_ADD1_REG = 0;//(uint32_t) (uintptr_t) code >> 32;
 		//memset(RISC_CFG, ~ 0u, sizeof * RISC_CFG);
+        * (volatile uint32_t *) R_CPUCFG_BASE |= UINT32_C(1) << 0;    // 0x07000400 - seems has no effect
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0x01;	/* tested on Allwinner F133 */
 
-		PRINTF("allwnrf133_get_riscv_freq()=%" PRIuFAST32 "\n", allwnrf133_get_riscv_freq());
+
 		PRINTF("CCU->RISC_GATING_REG=%08" PRIX32 ", CCU->RISC_CFG_BGR_REG=%08" PRIX32 "\n", CCU->RISC_GATING_REG, CCU->RISC_CFG_BGR_REG);
 		PRINTF("RISC_CFG->RISC_STA_ADD0_REG=%08" PRIX32 ", RISC_CFG->RISC_STA_ADD1_REG=%08" PRIX32 "\n", RISC_CFG->RISC_STA_ADD0_REG, RISC_CFG->RISC_STA_ADD1_REG);
 		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		local_delay_ms(3000);
 		//((void (*) (void)) code)();		/* test code invokation for risc-v here */
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0x01;	/* tested on Allwinner F133 */
-		//TP();
-		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
+		TP();
+		printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		for (;;)
 			;
 	}
@@ -10999,9 +11011,10 @@ void hightests(void)
 		colpip_line(fbpic3, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
 		colpip_line(fbpic3, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
 		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		dcache_clean((uintptr_t) fbpic3, GXSIZE(picx, picy) * sizeof fbpic3 [0]);
 
 		/* непрозрачный фон */
-		unsigned bgalpha = 128;
+		unsigned bgalpha = 255;
 		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
@@ -11155,9 +11168,98 @@ void hightests(void)
 
 			phase = ! phase;
 			c = (c + 1) % 256;
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
-			;
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
+	}
+#endif
+#if 0 && LCDMODE_LTDC
+	{
+		// colpip_copyrotate test
+		COLORPIP_T keycolor = COLORPIP_KEY;
+		enum { picx = 100, picy = 50 };
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		static PACKEDCOLORPIP_T layer0 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T fgpic [GXSIZE(picx, picy)];
+
+		/* непрозрачный фон */
+		unsigned bgalpha = 255;
+		colpip_fillrect(layer0, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+
+		/* тестовое изображение */
+		unsigned fgalpha = 255;
+		colpip_fillrect(fgpic, picx, picy, 0, 0, picx, picy, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* opaque color transparent black */
+		colpip_string_tbg(fgpic, picx, picy, 0, 0, "F", TFTALPHA(fgalpha, COLORPIP_RED));
+		dcache_clean((uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0]);
+
+		unsigned grid = picx + 5;
+		unsigned tpos;
+		for (tpos = 0; tpos < 7; ++ tpos)
+		{
+			const uint_fast16_t x = tpos * grid;
+			const uint_fast16_t y = grid;
+			/* рисуем прямоугольники под размещение повёрнутых изображений */
+			colpip_fillrect(layer0, DIM_X, DIM_Y, x, y, grid - 3, grid - 3, TFTALPHA(fgalpha, COLORPIP_WHITE));	/* opaque color transparent black */
+
+			if (tpos >= 7)
+			{
+				/* копируем изображение в верхний слой БЕЗ цветового ключа */
+				colpip_bitblt(
+						(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+						layer0, DIM_X, DIM_Y,
+						x + 1, y + 1,	// получатель Позиция
+						(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+						fgpic, picx, picy,
+						0, 0,	// координаты окна источника
+						picx, picy, // размер окна источника
+						BITBLT_FLAG_NONE, keycolor
+						);
+			}
+			else if (tpos >= 4)
+			{
+				colpip_copyrotate(
+					(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+					layer0, DIM_X, DIM_Y,
+					x + 1, y + 1,	// получатель Позиция
+					(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+					fgpic, picx, picy,	// буфер источника
+					0, 0,	// координаты окна источника
+					picx, picy, // размер окна источника
+					tpos == 4,	// X mirror flag
+					tpos == 5,	// Y mirror flag
+					0 * tpos	// positive CCW angle
+					);
+
+			}
+			else
+			{
+				colpip_copyrotate(
+					(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * sizeof layer0 [0],
+					layer0, DIM_X, DIM_Y,
+					x + 1, y + 1,	// получатель Позиция
+					(uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0],
+					fgpic, picx, picy,	// буфер источника
+					0, 0,	// координаты окна источника
+					picx, picy, // размер окна источника
+					0,	// X mirror flag
+					0,	// Y mirror flag
+					90 * tpos	// positive CCW angle
+					);
+
+			}
+		}
+
+
+		hardware_ltdc_main_set4((uintptr_t) layer0, (uintptr_t) 0, (uintptr_t) 0, (uintptr_t) 0);
+		for (;;)
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 	}
 #endif
 #if 0 && CPUSTYLE_T113
@@ -11888,17 +11990,17 @@ void hightests(void)
 				break;
 			}
 			rendertest1(DIM_X, DIM_Y);
-			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_RED);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_RED);
 			display_nextfb();
 			//local_delay_ms(300);
 
 			rendertest2(DIM_X, DIM_Y);
-			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_GREEN);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_GREEN);
 			display_nextfb();
 			//local_delay_ms(300);
 
 			rendertest3(DIM_X, DIM_Y);
-			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_BLUE);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORPIP_BLUE);
 			display_nextfb();
 			//local_delay_ms(300);
 		}
@@ -13047,7 +13149,7 @@ void hightests(void)
 			{
 				char buf [4];
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
-				colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORMAIN_WHITE);
+				colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORPIP_WHITE);
 			}
 
 			x = x + wx;
@@ -13066,23 +13168,23 @@ void hightests(void)
 #if 0
 	// разметка для 9-точечной калибровки тачскрина
 	display2_bgreset();
-	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+	colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 
 	uint8_t c = 35;
 
-	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORPIP_WHITE);			// 1
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORPIP_WHITE);		// 2
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORPIP_WHITE);		// 3
 
-	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORPIP_WHITE);		// 4
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORPIP_WHITE);	// 5
 
-	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
+	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORPIP_WHITE);		// 6
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORPIP_WHITE);	// 7
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORPIP_WHITE);	// 8
 
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
+	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORPIP_WHITE);	// 9
 
 	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 	hardware_ltdc_main_set((uintptr_t) fr);
@@ -13099,7 +13201,7 @@ void hightests(void)
 		uint_fast16_t markery = 0;
 
 		display2_bgreset();
-		colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
 
 		// touch screen test
 		PRINTF(PSTR("touch screen test:\n"));
@@ -13112,14 +13214,14 @@ void hightests(void)
 			{
 				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
 				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_BLACK);
 				markerx = x / gridx * gridx;
 				markery = y / gridy * gridy;
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_WHITE);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_WHITE);
 			} else {
 				memset(msg, ' ', 63);
 				msg [63] = '\0';
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORMAIN_BLACK);
+				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_BLACK);
 			}
 			display_at(22, 26, msg);
 			local_delay_ms(10);
@@ -13532,7 +13634,7 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(UINT32_C(1) << (c + 3), 0, 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), UINT32_C(1) << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3u"), 1u << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13547,7 +13649,7 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(0, UINT32_C(1) << (c + 2), 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), UINT32_C(1) << (c + 2));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3u"), 1u << (c + 2));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13562,7 +13664,7 @@ void hightests(void)
 		{
 			display_setbgcolor(TFTRGB(0, 0, UINT32_C(1) << (c + 3)));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), UINT32_C(1) << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3u"), 1u << (c + 3));
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();

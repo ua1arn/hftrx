@@ -57,9 +57,9 @@ enum
 
 #if WITHUSBUACIN
 	USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
-	#if WITHUSBUACIN2
+	#if (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2
 		USBD_EP_RTS_IN,	// ISOC IN Аудиоданные в компьютер из TRX
-	#endif
+	#endif /* (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
 #if WITHUSBUACOUT && WITHUAC2
 	//USBD_EP_AUDIO_IN_FB,	// ISOC OUT Аудиоданные от компьютера в TRX
@@ -242,10 +242,10 @@ enum interfaces_tag
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 		#define INTERFACE_AUDIO_CONTROL_SPK 2222
-		#if WITHRTS96 || WITHRTS192
+		#if (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2
 			INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 			INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		#endif /* WITHRTS96 || WITHRTS192 */
+		#endif /* (WITHRTS96 || WITHRTS192) && WITHUSBUACIN2 */
 	#else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 		#if WITHUSBUACIN2
 			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */

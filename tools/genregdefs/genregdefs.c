@@ -30,6 +30,13 @@ static int flag_debug = 0;
 
 #endif
 
+struct defdfn {
+	LIST_ENTRY item;
+	char *name;
+	char *value;
+	char *comment;
+};
+
 struct regdfn {
 	LIST_ENTRY item;
 	LIST_ENTRY aggregate;
@@ -64,6 +71,7 @@ enum {
 struct parsedfile {
 	LIST_ENTRY item;
 	LIST_ENTRY regslist;
+	LIST_ENTRY defineslist;
 
 	char bname[VNAME_MAX];
 	char *comment;
@@ -292,6 +300,18 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 		}
 	}
 	return offs;
+}
+
+void gendefines(struct parsedfile *pfl) {
+	PLIST_ENTRY const p = & pfl->defineslist;
+	PLIST_ENTRY t;
+	for (t = p->Flink; t != p; t = t->Flink) {
+		struct defdfn *const defp = CONTAINING_RECORD(t, struct defdfn, item);
+		if (defp->comment)
+			emitline(0, "#define %s %s /* %s */\n", defp->name, defp->value, defp->comment);
+		else
+			emitline(0, "#define %s %s\n", defp->name, defp->value);
+	}
 }
 
 void genstruct(struct parsedfile *pfl) {
@@ -535,6 +555,11 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 			nextline(fp);
 			return;
 
+		} else if (strcmp(token0, "#typeend;") == 0 || strcmp(token0, "#typeend;\n") == 0) {
+			/* parsed */
+			nextline(fp);
+			return;
+
 		} else {
 			break;
 		}
@@ -670,6 +695,7 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file) {
 	pfl->irqrv_count = 0;
 
 	InitializeListHead(&pfl->regslist);
+	InitializeListHead(&pfl->defineslist);
 
 	pfl->file = strdup(file);
 	pfl->comment = NULL;
@@ -711,6 +737,15 @@ static void processfile_periphregs(struct parsedfile *pfl) {
 
 	if (!IsListEmpty(&pfl->regslist)) {
 		genstruct(pfl);
+	} else {
+		//fprintf(stderr, "#error No registers in '%s'\n", pfl->bname);
+	}
+}
+
+static void processfile_defines(struct parsedfile *pfl) {
+
+	if (!IsListEmpty(&pfl->defineslist)) {
+		gendefines(pfl);
 	} else {
 		//fprintf(stderr, "#error No registers in '%s'\n", pfl->bname);
 	}
@@ -787,6 +822,21 @@ static void freeregdfn(PLIST_ENTRY p) {
 	}
 }
 
+
+/* release memory of defines */
+static void freedefines(PLIST_ENTRY p) {
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;) {
+		struct defdfn *const defp = CONTAINING_RECORD(t, struct defdfn, item);
+		t = t->Flink;
+		free(defp->name);
+		free(defp->value);
+		free(defp->comment);
+		free(defp);
+	}
+}
+
 static void freeregs(struct parsedfile *pfl) {
 	int i;
 	for (i = 0; i < pfl->irqrv_count; ++i) {
@@ -803,6 +853,7 @@ static void freeregs(struct parsedfile *pfl) {
 	}
 	//free(pfl->sss);
 	freeregdfn(&pfl->regslist);
+	freedefines(&pfl->defineslist);
 	free(pfl->comment);
 	free(pfl->file);
 }
@@ -1185,6 +1236,20 @@ static void generate_cmsis(void) {
 		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
 			processfile_periphregs(pfl);
+		}
+		emitline(0, "\n");
+	}
+
+	if (1) {
+		/* defines */
+		PLIST_ENTRY t;
+		emitline(0, "\n");
+		emitline(0, "/* Defines */\n");
+		emitline(0, "\n");
+
+		for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+			struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+			processfile_defines(pfl);
 		}
 		emitline(0, "\n");
 	}

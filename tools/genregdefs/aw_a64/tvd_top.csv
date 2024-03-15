@@ -11,3 +11,4 @@
 #regdef; TVD_ADC_CFG; 0x0c; TVD ADC CONFIGURATION Register
 #regdef; padding 0; 0x020; Need for address arithmetics
 #aggregend;
+#typeend;

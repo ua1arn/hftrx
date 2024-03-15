@@ -325,10 +325,10 @@ void board_usb_activate(void)
 	//PRINTF("board_usb_activate [%p]\n", board_usb_activate);
 #if defined (WITHUSBHW_DEVICE)
 #if WITHUSBDEV_HSDESC
-	usbd_descriptors_initialize(1);
+	usbd_descriptors_initialize(1, hamradio_get_ft8cn());
 
 #else /* WITHUSBDEV_HSDESC */
-	usbd_descriptors_initialize(0);
+	usbd_descriptors_initialize(0, hamradio_get_ft8cn());
 
 #endif /* WITHUSBDEV_HSDESC */
 	//PRINTF("board_usb_activate\n");

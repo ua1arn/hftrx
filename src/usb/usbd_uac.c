@@ -157,9 +157,9 @@ uint_fast16_t usbd_getuacoutmaxpacket(void)
 static uint8_t altinterfaces [INTERFACE_count];
 
 #define VMAX(a, b) ((a) > (b) ? (a) : (b))
-static __ALIGN_BEGIN uint8_t uacout48buff [UACOUT_AUDIO48_DATASIZE_DMAC] __ALIGN_END;
-static __ALIGN_BEGIN uint8_t uacinbuff [VMAX(UACIN_AUDIO48_DATASIZE_DMAC, VMAX(UACIN_RTS96_DATASIZE_DMAC, UACIN_RTS192_DATASIZE_DMAC))] __ALIGN_END;
-static __ALIGN_BEGIN uint8_t uacinrtsbuff [VMAX(UACIN_RTS96_DATASIZE_DMAC, UACIN_RTS192_DATASIZE_DMAC)] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t uacout48buff [UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t uacinbuff [UAC_GROUPING_DMAC * VMAX(UACIN_AUDIO48_DATASIZE_DMAC, VMAX(UACIN_RTS96_DATASIZE_DMAC, UACIN_RTS192_DATASIZE_DMAC))] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t uacinrtsbuff [UAC_GROUPING_DMAC * VMAX(UACIN_RTS96_DATASIZE_DMAC, UACIN_RTS192_DATASIZE_DMAC)] __ALIGN_END;
 
 static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
@@ -846,10 +846,10 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		{
 			// use audio data
 			const uintptr_t addr = allocate_dmabufferuacout48();
-			memcpy((void *) addr, uacout48buff, UACOUT_AUDIO48_DATASIZE_DMAC);
+			memcpy((void *) addr, uacout48buff, UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC);
 			save_dmabufferuacout48(addr);
 			/* Prepare Out endpoint to receive next audio data packet */
-			USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacout48buff, UACOUT_AUDIO48_DATASIZE_DMAC);
+			USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacout48buff,UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC);
 		}
 		break;
 #endif /* WITHUSBUACOUT */
@@ -1006,7 +1006,7 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	/* UAC Open EP OUT */
 	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_OUT, USBD_EP_TYPE_ISOC, UACOUT_AUDIO48_DATASIZE_DMAC);
    /* UAC Prepare Out endpoint to receive 1st packet */
-	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacout48buff, UACOUT_AUDIO48_DATASIZE_DMAC);
+	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacout48buff, UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC);
 
 #endif /* WITHUSBUACOUT */
 	return USBD_OK;

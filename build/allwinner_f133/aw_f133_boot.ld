@@ -5,7 +5,8 @@
 MEMORY
 {
    RAM (rwx)	: ORIGIN = 0x00020000 + 256, LENGTH = 160k - 256		/*  */
-   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 64M	/*  */
+   debugRAM (rwx)	: ORIGIN = 0x00028000 + 256, LENGTH = 160k - 32k - 256		/* version of parameters for bootloader tests */
+   DDR3 (rwx) : ORIGIN = 0x40000000 + 16M, LENGTH = 64M - 16M	/*  */
 }
 
 /* Library configurations */
@@ -43,7 +44,7 @@ SECTIONS
 {
 	.text :
 	{
-		. = ALIGN(64);
+		. = ALIGN(32);
 		KEEP(*(.startup0))
 
 		*(.text*)
@@ -68,13 +69,17 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 		
-		*(.itcm*)
-		
 		. = ALIGN(4);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
+	} > RAM
+
+	.gcc_except_table :
+	{
+		*(.gcc_except_table)
+		*(.gcc_except_table.*)
 	} > RAM
 
 	.ARM.extab :
@@ -99,10 +104,12 @@ SECTIONS
 	/*
 		QUAD (__etext)
 		QUAD (__data_start__)
-		QUAD (__data_end__ - __data_start__)
+		QUAD ((__data_end__ - __data_start__) / 4)
+	*/
+	/*
 		QUAD (__etext2)
 		QUAD (__data2_start__)
-		QUAD (__data2_end__ - __data2_start__)
+		QUAD ((__data2_end__ - __data2_start__) / 4)
 	*/
 		__copy_table_end64__ = .;
 	} > RAM
@@ -115,40 +122,37 @@ SECTIONS
 		. = ALIGN(8);
 		__zero_table_start64__ = .;
 		QUAD (__bss_start__)
-		QUAD (__bss_end__ - __bss_start__)
+		QUAD ((__bss_end__ - __bss_start__) / 4)
 	/*
 		QUAD (__bss2_start__)
-		QUAD (__bss2_end__ - __bss2_start__)
+		QUAD ((__bss2_end__ - __bss2_start__) / 4)
 	*/
 		__zero_table_end64__ = .;
 	} > RAM
 
-	__etext = .;
+	/* __etext = .; */
 
 	.data : /*AT (__etext)*/
 	{
 		__data_start__ = .;
-
 		. = ALIGN(64);
 
 		*(.data* .sdata*)
+		*(.itcm*)
 		*(.dtcm*)
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
 		PROVIDE_HIDDEN (__preinit_array_end = .);
-
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* init data */
 		PROVIDE_HIDDEN (__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
 		KEEP(*(.init_array))
 		PROVIDE_HIDDEN (__init_array_end = .);
-
-
-		. = ALIGN(4);
+		. = ALIGN(8);
 		/* finit data */
 		PROVIDE_HIDDEN (__fini_array_start = .);
 		KEEP(*(SORT(.fini_array.*)))
@@ -156,12 +160,29 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-
 		/* All data end */
+
 		__data_end__ = .;
 
 	} > RAM
 
+	/*
+	__etext2 = .;
+
+	.sysram : AT (__etext2)
+	{
+		__data2_start__ = .;
+
+		*(.itcm*)
+		*(.dtcm*)
+
+		__data2_end__ = .;
+	} > RAM
+
+	. = __etext2 + __data2_end__ - __data2_start__;
+
+   */
+	
 	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
@@ -176,14 +197,7 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.noinit*)
-
-	} > RAM
-
-	.vram (NOLOAD):
-	{
-		. = ALIGN(64);
 		*(.framebuff*)
-
 	} > DDR3
 
 	.heap (NOLOAD):
@@ -208,6 +222,9 @@ SECTIONS
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
+
+	/* PROVIDE(__TTB_BASE = ORIGIN(TTB)); */
+	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/

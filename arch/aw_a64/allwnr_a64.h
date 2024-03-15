@@ -1,5 +1,5 @@
 ﻿/*
- * allwnr_t13s3.h
+ * allwnr_a64.h
  *
  *  Created on: 31 мая 2022 г.
  *      Author: User
@@ -8,8 +8,8 @@
  *       reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
  */
 
-#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_A64_H_
+#define ARCH_ALLWNR_A64_H_
 
 /**
  * @brief ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
@@ -30,30 +30,9 @@
 //#define C0_CPUX_CFG_BASE		((uintptr_t) 0x09010000)
 #define C0_CPUX_MBIST_BASE		((uintptr_t) 0x09020000)	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
-// DRAM Space (SYS domain)
-#define DRAM_SPACE_SIZE			0x08000000u			/* 128 MB */
-#define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
-#define DSP0_IRAM_BASE 			((uintptr_t) 0x00028000)			/* 32KB */
-#define DSP0_DRAM_BASE 			((uintptr_t) 0x00030000)			/* 32KB */
-
-//#define G2D_TOP_BASE        (0x00000 + G2D_BASE)
-//#define G2D_MIXER_BASE      (0x00100 + G2D_BASE)
-//#define G2D_BLD_BASE        (0x00400 + G2D_BASE)
-//#define G2D_V0_BASE         (0x00800 + G2D_BASE)
-//#define G2D_UI0_BASE        (0x01000 + G2D_BASE)
-//#define G2D_UI1_BASE        (0x01800 + G2D_BASE)
-//#define G2D_UI2_BASE        (0x02000 + G2D_BASE)
-//#define G2D_WB_BASE         (0x03000 + G2D_BASE)
-//#define G2D_VSU_BASE        (0x08000 + G2D_BASE)
-//#define G2D_ROT_BASE        (0x28000 + G2D_BASE)
-//#define G2D_GSU_BASE        (0x30000 + G2D_BASE)
-
-//#define	GIC_DISTRIBUTOR_BASE	 ((uintptr_t) 0x03021000)
-//#define	GIC_INTERFACE_BASE	 ((uintptr_t) 0x03022000)
-
 /* ===========================  Configuration of the ARM Cortex-A Processor and Core Peripherals  ============================ */
 #define __CORTEX_A                   53U      /*!< Cortex-A# Core                              */
-#define __CA_REV                 0x0000U      /*!< Core revision r0p0                          */
+#define __CA_REV                 0x0004U      /*!< Core revision r0p4 [15:8] rev [7:0] patch */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
@@ -227,4 +206,4 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
 
 #endif
 
-#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_A64_H_ */

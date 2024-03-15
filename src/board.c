@@ -3806,10 +3806,17 @@ prog_ctrlreg(uint_fast8_t plane)
 		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
 			#error Wrong config
 		#endif /* ! SHORTSET_7L8C && ! FULLSET_7L8C */
-		/* 7 indictors, 8 capacitors */
-		RBVAL8(0100, glob_tuner_C);
-		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0070, glob_tuner_L, 7);
+		if (n7ddcext)
+		{
+
+		}
+		else
+		{
+			/* 7 indictors, 8 capacitors */
+			RBVAL8(0100, glob_tuner_C);
+			RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+			RBVAL(0070, glob_tuner_L, 7);
+		}
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -4710,10 +4717,10 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		RBBIT(007, 0);
 		RBVAL(005, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);
-		RBBIT(004, 0);
+		RBBIT(004, ! glob_preamp);
 		RBBIT(003, ! glob_tx);
 		RBBIT(002, glob_adcrand);
-		RBBIT(001, glob_preamp);
+		RBBIT(001, 0);
 		RBBIT(000, glob_dither);
 
 		board_ctlregs_spi_send_frame(target, rbbuff, ARRAY_SIZE(rbbuff));
@@ -4737,7 +4744,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		/* U3 */
 		RBBIT(007, 0);
 		RBBIT(006, 0);
-		RBBIT(005, 0);
+		RBBIT(005, txgated);
 		RBBIT(004, glob_bandf == 8);
 		RBBIT(003, glob_bandf == 7);
 		RBBIT(002, glob_bandf == 6);
@@ -7180,6 +7187,7 @@ void board_fpga_reset(void)
 	}
 restart:
 	;
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
 
 #endif
 }
@@ -9949,7 +9957,7 @@ void hardware_cw_diagnostics(
 
 #if WITHSPIHW || WITHSPISW
 
-static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED1M;
+static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
 static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 static const unsigned MCP3208_usCsDelay = 0;
 

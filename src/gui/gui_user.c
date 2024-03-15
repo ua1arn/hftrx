@@ -218,7 +218,7 @@ void gui_add_debug(char d)
 	{
 		i = 0;
 		if (tf_debug)
-			textfield_add_string(tf_debug, str, COLORMAIN_WHITE);
+			textfield_add_string(tf_debug, str, COLORPIP_WHITE);
 		else
 		{
 			if (tmpstr_index < TEXT_ARRAY_SIZE)
@@ -757,7 +757,7 @@ static void gui_main_process(void)
 #if WITHGUIDEBUG
 		for (unsigned i = 0; i < tmpstr_index; i ++)
 		{
-			textfield_add_string(tf_debug, tmpbuf[i].text, COLORMAIN_WHITE);
+			textfield_add_string(tf_debug, tmpbuf[i].text, COLORPIP_WHITE);
 		}
 #endif /* WITHGUIDEBUG */
 	}
@@ -1046,7 +1046,7 @@ static void gui_main_process(void)
 		for(unsigned i = 1; i < infobar_num_places; i++)
 		{
 			uint_fast16_t x = infobar_label_width * i;
-			colpip_line(fr, DIM_X, DIM_Y, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORMAIN_GREEN, 0);
+			colpip_line(fr, DIM_X, DIM_Y, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
 		}
 
 		if (infobar_hl)
@@ -1054,13 +1054,13 @@ static void gui_main_process(void)
 			uint16_t x1 = infobar_selected * infobar_label_width + 2;
 			uint16_t x2 = x1 + infobar_label_width - 4;
 
-			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORMAIN_YELLOW, 1);
+			colmain_rounded_rect(fr, DIM_X, DIM_Y, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
 		}
 
 		for (unsigned current_place = 0; current_place < infobar_num_places; current_place ++)
 		{
 			uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
-			COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
 
 			switch (infobar)
 			{
@@ -1131,9 +1131,9 @@ static void gui_main_process(void)
 				}
 
 				local_snprintf_P(buf, buflen, PSTR("DNR"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORMAIN_GRAY);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
 				local_snprintf_P(buf, buflen, state ? "on" : "off");
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORMAIN_GRAY);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
 			}
 
 				break;
@@ -1182,7 +1182,7 @@ static void gui_main_process(void)
 				else
 				{
 					local_snprintf_P(buf, buflen, PSTR("IF shift"));
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, COLORMAIN_GRAY);
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
 				}
 			}
 				break;
@@ -1291,9 +1291,9 @@ static void gui_main_process(void)
 
 				unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
 				local_snprintf_P(buf, buflen, PSTR("CPU temp"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORMAIN_RED : COLORMAIN_WHITE);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 	#endif /* defined (GET_CPU_TEMPERATURE) */
 			}
 				break;
@@ -1308,10 +1308,10 @@ static void gui_main_process(void)
 					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
 					remove_end_line_spaces(buf);
 					unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.val);
 					remove_end_line_spaces(buf);
-					COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+					COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
 					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
 				}
 				else
@@ -1320,9 +1320,9 @@ static void gui_main_process(void)
 					// текущее время
 					local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 					unsigned xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
 					local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((seconds & 1) ? ' ' : ':'), minute);
-					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
 	#endif 	/* defined (RTC1_TYPE) */
 				}
 			}
@@ -1414,7 +1414,7 @@ static void window_memory_process(void)
 		win->bh_ptr = malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
-		add_element("lbl_note1", 0, FONT_MEDIUM, COLORMAIN_WHITE, 30);
+		add_element("lbl_note1", 0, FONT_MEDIUM, COLORPIP_WHITE, 30);
 
 		x = 0;
 		y = 0;
@@ -1533,8 +1533,8 @@ static void window_bands_process(void)
 		GUI_MEM_ASSERT(bands);
 		hamradio_get_bands(bands, 0, 1);
 
-		add_element("lbl_ham", 0, FONT_LARGE, COLORMAIN_WHITE, 10);
-		add_element("lbl_bcast", 0, FONT_LARGE, COLORMAIN_WHITE, 16);
+		add_element("lbl_ham", 0, FONT_LARGE, COLORPIP_WHITE, 10);
+		add_element("lbl_bcast", 0, FONT_LARGE, COLORPIP_WHITE, 16);
 
 		win->bh_count = bandnum + 1;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
@@ -1824,12 +1824,12 @@ static void window_display_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topSP",    "Top    : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_SP_TOP, 	},
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomSP", "Bottom : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_SP_BOTTOM, },
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topWF",    "Top    : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_WF_TOP, 	},
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomWF", "Bottom : xxx db", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_DISPLAY_WF_BOTTOM, },
-			{	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_sp",	   "Spectrum", 		  FONT_LARGE,  COLORMAIN_WHITE, },
-			{	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_wf", 	   "Waterfall", 	  FONT_LARGE,  COLORMAIN_WHITE, },
+			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topSP",    "Top    : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_SP_TOP, 	},
+			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomSP", "Bottom : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_SP_BOTTOM, },
+			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topWF",    "Top    : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_WF_TOP, 	},
+			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomWF", "Bottom : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_WF_BOTTOM, },
+			{	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_sp",	   "Spectrum", 		  FONT_LARGE,  COLORPIP_WHITE, },
+			{	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_wf", 	   "Waterfall", 	  FONT_LARGE,  COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -2015,10 +2015,10 @@ static void window_display_process(void)
 		local_snprintf_P(btn_params->text, ARRAY_SIZE(btn_params->text), PSTR("WF params|%s"), hamradio_get_gwflevelsep() ? "separate" : "from SP");
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORPIP_WHITE;
 
 		ASSERT(display_t.select < win->lh_count);
-		win->lh_ptr [display_t.select].color = COLORMAIN_YELLOW;
+		win->lh_ptr [display_t.select].color = COLORPIP_YELLOW;
 
 		label_t * lbl_topSP = find_gui_element(TYPE_LABEL, win, "lbl_topSP");
 		label_t * lbl_bottomSP = find_gui_element(TYPE_LABEL, win, "lbl_bottomSP");
@@ -2186,9 +2186,9 @@ static void window_swrscan_process(void)
 		add_element("btn_swr_start", 86, 44, 0, 0, "Start");
 		add_element("btn_swr_OK",    86, 44, 0, 0, "OK");
 
-		add_element("lbl_swr_bottom", 0, FONT_SMALL, COLORMAIN_WHITE, 16);
-		add_element("lbl_swr_top",    0, FONT_SMALL, COLORMAIN_WHITE, 16);
-		add_element("lbl_swr_error",  0, FONT_MEDIUM, COLORMAIN_WHITE, 16);
+		add_element("lbl_swr_bottom", 0, FONT_SMALL, COLORPIP_WHITE, 16);
+		add_element("lbl_swr_top",    0, FONT_SMALL, COLORPIP_WHITE, 16);
+		add_element("lbl_swr_error",  0, FONT_MEDIUM, COLORPIP_WHITE, 16);
 
 		mid_w = 0 + gr_w / 2;
 		btn_swr_start = find_gui_element(TYPE_BUTTON, win, "btn_swr_start");
@@ -2321,36 +2321,36 @@ static void window_swrscan_process(void)
 	{
 		// отрисовка фона графика и разметки
 		uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
-		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORMAIN_WHITE, 0);
-		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORMAIN_WHITE, 0);
+		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORPIP_WHITE, 0);
+		colpip_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORPIP_WHITE, 0);
 
 		char buf [5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-		colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORMAIN_WHITE);
+		colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
 			if (yy < 0)
 				break;
 
-			colpip_line(fr, DIM_X, DIM_Y, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORMAIN_DARKGREEN, 0);
+			colpip_line(fr, DIM_X, DIM_Y, gr_x, win->y1 + yy, win->x1 + x1, win->y1 + yy, COLORPIP_DARKGREEN, 0);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
-			colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORMAIN_WHITE);
+			colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, win->y1 + yy - SMALLCHARH3 / 2, buf, COLORPIP_WHITE);
 		}
 
 		if (lbl_swr_error->visible)				// фон сообщения об ошибке
 		{
-			colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORMAIN_RED);
+			colpip_fillrect(fr, DIM_X, DIM_Y, win->x1 + 0, win->y1 + lbl_swr_error->y - 5, gr_w, get_label_height(lbl_swr_error) + 5, COLORPIP_RED);
 		}
 		else									// маркер текущей частоты
 		{
-			colpip_line(fr, DIM_X, DIM_Y, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORMAIN_RED, 0);
+			colpip_line(fr, DIM_X, DIM_Y, gr_x + current_freq_x, gr_y, gr_x + current_freq_x, win->y1 + y1, COLORPIP_RED, 0);
 		}
 
 		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
-				colpip_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORMAIN_YELLOW, 1);
+				colpip_line(fr, DIM_X, DIM_Y, gr_x + j - 2, gr_y - y_vals [j - 2], gr_x + j - 1, gr_y - y_vals [j - 1], COLORPIP_YELLOW, 1);
 		}
 	}
 #endif /* WITHSWRSCAN */
@@ -2500,15 +2500,15 @@ static void window_tx_vox_process(void)
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level",   	 "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_min",  "", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_max",  "", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level_min",  "", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level_max",  "", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level_min", "", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level_max", "", FONT_SMALL, COLORMAIN_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level",   	 "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_min",  "", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_max",  "", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level_min",  "", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level_max",  "", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level_min", "", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level_max", "", FONT_SMALL, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -2686,8 +2686,8 @@ static void window_tx_power_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORMAIN_WHITE, 0, },
-			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORMAIN_WHITE, 1, },
+			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORPIP_WHITE, 0, },
+			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORPIP_WHITE, 1, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -2793,10 +2793,10 @@ static void window_tx_power_process(void)
 		}
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORPIP_WHITE;
 
 		ASSERT(pw.select < win->lh_count);
-		win->lh_ptr [pw.select].color = COLORMAIN_YELLOW;
+		win->lh_ptr [pw.select].color = COLORPIP_YELLOW;
 	}
 
 #endif /* WITHPOWERTRIM && WITHTX */
@@ -2997,12 +2997,12 @@ static void window_ap_reverb_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_max", 	"", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_min", 	"", FONT_SMALL, COLORMAIN_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_max", 	"", FONT_SMALL, COLORMAIN_WHITE, },
+			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_min", 	"", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_max", 	"", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_min", 	"", FONT_SMALL, COLORPIP_WHITE, },
+			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_max", 	"", FONT_SMALL, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -3148,16 +3148,16 @@ static void window_ap_mic_eq_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_val",   "", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_val",   "", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_name", "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_name", "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -3262,13 +3262,13 @@ static void window_ap_mic_eq_process(void)
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
 		colpip_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
 		colpip_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
 	}
 #endif /* WITHAFCODEC1HAVEPROC */
 }
@@ -3303,12 +3303,12 @@ static void window_af_eq_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq400_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1500_val", 	"", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq2700_val",  "", FONT_LARGE, COLORMAIN_YELLOW, },
-			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq400_name",  "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1500_name", "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq2700_name", "", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq400_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1500_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq2700_val",  "", FONT_LARGE, COLORPIP_YELLOW, },
+			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq400_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1500_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq2700_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -3435,14 +3435,14 @@ static void window_af_eq_process(void)
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
 		gui_drawline(30, mid_y + yy, win->w - eq_w, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		gui_drawstring(30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
+		gui_drawstring(30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
 
 		gui_drawline(30, mid_y - yy, win->w - eq_w, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		gui_drawstring(30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
+		gui_drawstring(30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORPIP_WHITE);
 	}
 #endif /* WITHAFEQUALIZER */
 }
@@ -3475,15 +3475,15 @@ static void window_ap_mic_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel", 	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip",  	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   	  "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel_min", "", FONT_SMALL,  COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel_max", "", FONT_SMALL,  COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip_min",  "", FONT_SMALL,  COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip_max",  "", FONT_SMALL,  COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC_min",   "", FONT_SMALL,  COLORMAIN_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC_max",   "", FONT_SMALL,  COLORMAIN_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel", 	  "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip",  	  "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   	  "", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel_min", "", FONT_SMALL,  COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel_max", "", FONT_SMALL,  COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip_min",  "", FONT_SMALL,  COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip_max",  "", FONT_SMALL,  COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC_min",   "", FONT_SMALL,  COLORPIP_WHITE, },
+			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC_max",   "", FONT_SMALL,  COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -3798,9 +3798,9 @@ static void window_notch_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORMAIN_YELLOW, },
-			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORMAIN_WHITE,  },
-			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		   FONT_MEDIUM, COLORMAIN_WHITE,  },
+			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORPIP_YELLOW, },
+			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORPIP_WHITE,  },
+			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		   FONT_MEDIUM, COLORPIP_WHITE,  },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -3934,10 +3934,10 @@ static void window_notch_process(void)
 		notch.updated = 0;
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORPIP_WHITE;
 
 		ASSERT(notch.select < win->lh_count);
-		win->lh_ptr [notch.select].color = COLORMAIN_YELLOW;
+		win->lh_ptr [notch.select].color = COLORPIP_YELLOW;
 
 		unsigned type = hamradio_get_gnotchtype();
 		btn_Auto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
@@ -4065,10 +4065,10 @@ static void window_shift_process(void)
 		enc.select = 0;
 		enc.change = 0;
 
-		add_element("lbl_rx_cic_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
-		add_element("lbl_rx_fir_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
-		add_element("lbl_tx_shift", 0, FONT_MEDIUM, COLORMAIN_WHITE, 13);
-		add_element("lbl_iq_test", 0, FONT_MEDIUM, COLORMAIN_WHITE, 23);
+		add_element("lbl_rx_cic_shift", 0, FONT_MEDIUM, COLORPIP_WHITE, 13);
+		add_element("lbl_rx_fir_shift", 0, FONT_MEDIUM, COLORPIP_WHITE, 13);
+		add_element("lbl_tx_shift", 0, FONT_MEDIUM, COLORPIP_WHITE, 13);
+		add_element("lbl_iq_test", 0, FONT_MEDIUM, COLORPIP_WHITE, 23);
 
 		add_element("btn_p", 50, 50, 0, 0, "+");
 		add_element("btn_m", 50, 50, 0, 0, "-");
@@ -4160,25 +4160,25 @@ static void window_shift_process(void)
 		enc.updated = 0;
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORPIP_WHITE;
 
 		ASSERT(enc.select < win->lh_count);
 
 		if (enc.select == 0)
 		{
-			win->lh_ptr [0].color = COLORMAIN_YELLOW;
+			win->lh_ptr [0].color = COLORPIP_YELLOW;
 			unsigned v = iq_shift_cic_rx(0);
 			iq_shift_cic_rx(v + enc.change);
 		}
 		else if (enc.select == 1)
 		{
-			win->lh_ptr [1].color = COLORMAIN_YELLOW;
+			win->lh_ptr [1].color = COLORPIP_YELLOW;
 			unsigned v = iq_shift_fir_rx(0);
 			iq_shift_fir_rx(v + enc.change);
 		}
 		else if (enc.select == 2)
 		{
-			win->lh_ptr [2].color = COLORMAIN_YELLOW;
+			win->lh_ptr [2].color = COLORPIP_YELLOW;
 			unsigned v = iq_shift_tx(0);
 			iq_shift_tx(v + enc.change);
 		}
@@ -4257,7 +4257,7 @@ static void window_uif_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", "**", FONT_LARGE, COLORMAIN_WHITE, },
+			{	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", "**", FONT_LARGE, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -4372,7 +4372,7 @@ void hamradio_gui_parse_ft8buf(void)
 
 static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 {
-	* color = COLORMAIN_WHITE;
+	* color = COLORPIP_WHITE;
 	* cq_flag = 0;
 	char tmpstr [TEXT_ARRAY_SIZE];
 	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
@@ -4391,14 +4391,14 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 
 	if (! strcmp(lexem[3], "CQ") && strcmp(lexem[4], "CQ") && strcmp(lexem[4], "DX"))
 	{
-		* color = COLORMAIN_GREEN;
+		* color = COLORPIP_GREEN;
 		* cq_flag = 1;
 		if (idx_cqcall < ARRAY_SIZE(cq_call))
 			strcpy(cq_call [idx_cqcall ++], lexem[4]);
 	}
 	else if (! strcmp(lexem[3], gui_nvram.ft8_callsign))
 	{
-		* color = COLORMAIN_RED;
+		* color = COLORPIP_RED;
 		* cq_flag = 1;
 		strcpy(cq_call [idx_cqcall ++], lexem[4]);
 	}
@@ -4493,9 +4493,9 @@ static void window_ft8_settings_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_callsign", "**********", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_qth",  	  "**********", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_txfreq",   "**********", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_callsign", "**********", FONT_MEDIUM, COLORPIP_WHITE, },
+			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_qth",  	  "**********", FONT_MEDIUM, COLORPIP_WHITE, },
+			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_txfreq",   "**********", FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -4607,18 +4607,18 @@ static void window_ft8_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_cq_title", "CQ:", FONT_LARGE, COLORMAIN_GREEN, },
-			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_tx_title", "TX:", FONT_LARGE, COLORMAIN_GREEN, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq0", "********", FONT_MEDIUM, COLORMAIN_WHITE, 0, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq1", "********", FONT_MEDIUM, COLORMAIN_WHITE, 1, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq2", "********", FONT_MEDIUM, COLORMAIN_WHITE, 2, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq3", "********", FONT_MEDIUM, COLORMAIN_WHITE, 3, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq4", "********", FONT_MEDIUM, COLORMAIN_WHITE, 4, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq5", "********", FONT_MEDIUM, COLORMAIN_WHITE, 5, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg0", "", FONT_MEDIUM, COLORMAIN_WHITE, 10, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg1", "", FONT_MEDIUM, COLORMAIN_WHITE, 11, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg2", "", FONT_MEDIUM, COLORMAIN_WHITE, 12, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg3", "", FONT_MEDIUM, COLORMAIN_WHITE, 13, },
+			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_cq_title", "CQ:", FONT_LARGE, COLORPIP_GREEN, },
+			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_tx_title", "TX:", FONT_LARGE, COLORPIP_GREEN, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq0", "********", FONT_MEDIUM, COLORPIP_WHITE, 0, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq1", "********", FONT_MEDIUM, COLORPIP_WHITE, 1, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq2", "********", FONT_MEDIUM, COLORPIP_WHITE, 2, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq3", "********", FONT_MEDIUM, COLORPIP_WHITE, 3, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq4", "********", FONT_MEDIUM, COLORPIP_WHITE, 4, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq5", "********", FONT_MEDIUM, COLORPIP_WHITE, 5, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg0", "", FONT_MEDIUM, COLORPIP_WHITE, 10, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg1", "", FONT_MEDIUM, COLORPIP_WHITE, 11, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg2", "", FONT_MEDIUM, COLORPIP_WHITE, 12, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg3", "", FONT_MEDIUM, COLORPIP_WHITE, 13, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -4837,14 +4837,14 @@ static void window_ft8_process(void)
 		{
 			label_t * lh = lh_array_cq [i].ptr;
 			lh->visible = NON_VISIBLE;
-			lh->color = COLORMAIN_WHITE;
+			lh->color = COLORPIP_WHITE;
 			if (strlen(cq_call [i]))
 			{
 				strcpy(lh->text, cq_call [i]);
 				lh->visible = VISIBLE;
 
 				if (lh->index == selected_label_cq)
-					lh->color = COLORMAIN_YELLOW;
+					lh->color = COLORPIP_YELLOW;
 			}
 		}
 
@@ -4853,9 +4853,9 @@ static void window_ft8_process(void)
 			label_t * lh = lh_array_tx [i].ptr;
 
 			if (i == selected_label_tx)
-				lh->color = COLORMAIN_YELLOW;
+				lh->color = COLORPIP_YELLOW;
 			else
-				lh->color = COLORMAIN_WHITE;
+				lh->color = COLORPIP_WHITE;
 		}
 
 		if (labels_tx_update)
@@ -4903,10 +4903,10 @@ static void window_af_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_BP_LOW, 	},
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_high",    "High cut : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_BP_HIGH, 	},
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_afr",     "AFR      : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_AFR, 		},
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ", FONT_MEDIUM, COLORMAIN_WHITE, TYPE_IF_SHIFT, },
+			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_BP_LOW, 	},
+			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_high",    "High cut : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_BP_HIGH, 	},
+			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_afr",     "AFR      : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_AFR, 		},
+			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_IF_SHIFT, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -5045,10 +5045,10 @@ static void window_af_process(void)
 		}
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORPIP_WHITE;
 
 		ASSERT(bp_t.select < win->lh_count);
-		win->lh_ptr [bp_t.select].color = COLORMAIN_YELLOW;
+		win->lh_ptr [bp_t.select].color = COLORPIP_YELLOW;
 
 		label_t * const lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
 		label_t * const lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
@@ -5415,12 +5415,12 @@ static void window_time_process(void)
 		uint8_t interval = 60;
 
 		static const label_t labels [] = {
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_year",   "****", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_month", 	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_day",  	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_hour",   	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_minute",   "**", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_second", 	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_year",   "****", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_month", 	"**", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_day",  	"**", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_hour",   	"**", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_minute",   "**", FONT_MEDIUM, COLORPIP_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_second", 	"**", FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -5783,8 +5783,8 @@ static void window_kbd_test_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_num",  "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text", "********************", FONT_MEDIUM, COLORPIP_WHITE, },
+			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_num",  "********************", FONT_MEDIUM, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -5855,7 +5855,7 @@ static void window_ping_process(void)
 
 		add_element("btn_edit", 86, 30, 0, 0, "Set IP");
 		add_element("btn_ping", 86, 30, 0, 0, "Ping");
-		add_element("lbl_ip", 0, FONT_MEDIUM, COLORMAIN_WHITE, 16);
+		add_element("lbl_ip", 0, FONT_MEDIUM, COLORPIP_WHITE, 16);
 		add_element("tf_ping", 35, 20, UP, & gothic_11x13);
 
 		tf_ping = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ping");
@@ -5904,7 +5904,7 @@ static void window_ping_process(void)
 					{
 						char str[30];
 						local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, val);
-						textfield_add_string(tf_ping, str, COLORMAIN_RED);
+						textfield_add_string(tf_ping, str, COLORPIP_RED);
 					}
 					else
 					{
@@ -5938,14 +5938,14 @@ static void window_ping_process(void)
 			{
 				char str[30];
 				local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Answer from %s: %d ms"), ip_str, resp);
-				textfield_add_string(tf_ping, str, COLORMAIN_WHITE);
+				textfield_add_string(tf_ping, str, COLORPIP_WHITE);
 
 				int send = ping_send_ip(ip_str);
 				if(send)
 				{
 					char str[30];
 					local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, send);
-					textfield_add_string(tf_ping, str, COLORMAIN_RED);
+					textfield_add_string(tf_ping, str, COLORPIP_RED);
 					is_ping = 0;
 					update = 1;
 				}
@@ -6021,7 +6021,7 @@ static void window_3d_process(void)
 
 		textfield_clean(tf_3d);
 		for (int k = 0; k < 22; k ++)
-			textfield_add_string(tf_3d, b[k], COLORMAIN_WHITE);
+			textfield_add_string(tf_3d, b[k], COLORPIP_WHITE);
 
 		A += 0.08;
 		B += 0.04;
@@ -6245,14 +6245,14 @@ static void window_lfm_process(void)
 		enc.updated = 1;
 
 		static const label_t labels [] = {
-			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime",		"NMEA time:", 	FONT_MEDIUM, COLORMAIN_WHITE, 0, },
-			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime_val",	"00:00:00", 	FONT_MEDIUM, COLORMAIN_GREEN, 1, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset",		"Time offset:",	FONT_MEDIUM, COLORMAIN_WHITE, 2, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 3, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq",    	"Stop freq:",	FONT_MEDIUM, COLORMAIN_WHITE, 4, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq_val",	"xx MHz",		FONT_MEDIUM, COLORMAIN_WHITE, 5, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval",    	"Interval:",	FONT_MEDIUM, COLORMAIN_WHITE, 6, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval_val",	"xx sec",		FONT_MEDIUM, COLORMAIN_WHITE, 7, },
+			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime",		"NMEA time:", 	FONT_MEDIUM, COLORPIP_WHITE, 0, },
+			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime_val",	"00:00:00", 	FONT_MEDIUM, COLORPIP_GREEN, 1, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset",		"Time offset:",	FONT_MEDIUM, COLORPIP_WHITE, 2, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset_val",	"xx sec",		FONT_MEDIUM, COLORPIP_WHITE, 3, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq",    	"Stop freq:",	FONT_MEDIUM, COLORPIP_WHITE, 4, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq_val",	"xx MHz",		FONT_MEDIUM, COLORPIP_WHITE, 5, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval",    	"Interval:",	FONT_MEDIUM, COLORPIP_WHITE, 6, },
+			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval_val",	"xx sec",		FONT_MEDIUM, COLORPIP_WHITE, 7, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		unsigned labels_size = sizeof(labels);
@@ -6348,28 +6348,28 @@ static void window_lfm_process(void)
 		enc.updated = 0;
 
 		for(unsigned i = 2; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
+			win->lh_ptr [i].color = COLORPIP_WHITE;
 
 		ASSERT(enc.select < win->lh_count);
 
 		if (enc.select == 2 || enc.select == 3)
 		{
-			win->lh_ptr [2].color = COLORMAIN_YELLOW;
-			win->lh_ptr [3].color = COLORMAIN_YELLOW;
+			win->lh_ptr [2].color = COLORPIP_YELLOW;
+			win->lh_ptr [3].color = COLORPIP_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmtoffset();
 			hamradio_set_lfmtoffset(v + enc.change);
 		}
 		else if (enc.select == 4 || enc.select == 5)
 		{
-			win->lh_ptr [4].color = COLORMAIN_YELLOW;
-			win->lh_ptr [5].color = COLORMAIN_YELLOW;
+			win->lh_ptr [4].color = COLORPIP_YELLOW;
+			win->lh_ptr [5].color = COLORPIP_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmstop100k();
 			hamradio_set_lfmstop100k(v + enc.change * 10);
 		}
 		else if (enc.select == 6 || enc.select == 7)
 		{
-			win->lh_ptr [6].color = COLORMAIN_YELLOW;
-			win->lh_ptr [7].color = COLORMAIN_YELLOW;
+			win->lh_ptr [6].color = COLORPIP_YELLOW;
+			win->lh_ptr [7].color = COLORPIP_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmtinterval();
 			hamradio_set_lfmtinterval(v + enc.change);
 		}

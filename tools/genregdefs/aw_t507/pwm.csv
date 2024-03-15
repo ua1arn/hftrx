@@ -23,3 +23,4 @@
 #regdef; padding 0; 0x0020; fill space up to 0x20 bytes
 
 #aggregend;
+#typeend;

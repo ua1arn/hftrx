@@ -179,7 +179,7 @@ static void notify(uint_fast8_t offset, uint_fast16_t state)
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
 
-static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
+static volatile uint8_t usb_cdc_control_state [WITHUSBCDCACM_N];
 
 static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
@@ -522,7 +522,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				case CDC_SET_CONTROL_LINE_STATE:
 					// Выполнение этого запроса не требует дополнительного чтения данных
 					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_CONTROL_LINE_STATE, wValue=%04X\n"), req->wValue);
-					usb_cdc_control_state [offset] = req->wValue;
+					usb_cdc_control_state [offset] = LO_BYTE(req->wValue);
 					ASSERT(req->wLength == 0);
 					break;
 

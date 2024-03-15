@@ -32,3 +32,4 @@
 #regdef; WD; 0xE80; RW Сторожевой регистр
 #regdef; periph_id_n; 0xFE0; RO ID регистры периферии.
 #regdef; pcell_id_n; 0xFF0; RO ID регистры компонента.
+#typeend;

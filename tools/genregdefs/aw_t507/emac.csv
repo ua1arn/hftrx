@@ -34,5 +34,6 @@
 #regdef; EMAC_RX_CUR_BUF; 0x00C8; EMAC Current Receive Buffer Address Register
 #regdef; EMAC_RGMII_STA; 0x00D0; EMAC RGMII Status Register
 #regdef; padding 0; 0x10000; set size
+#typeend;
 
 

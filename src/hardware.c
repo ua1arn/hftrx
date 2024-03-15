@@ -2874,8 +2874,13 @@ sysinit_vbar_initialize(void)
 	ASSERT(csr_read_mtvec() == vbaseval);
 
 	PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY;
+	{
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(PLIC->PLIC_MIE_REGn); ++ i)
+			PLIC->PLIC_MIE_REGn [i] = 0;
+	}
 
-	//csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Enable interrupts routing
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
 
@@ -3202,6 +3207,12 @@ sysinit_hwprepare_initialize(void)
 	L1C_DisableCaches();
 	MMU_Disable();
 #endif /* (__CORTEX_A != 0) */
+#if CPUSTYLE_F133
+	/* disable interrupts*/
+	csr_clr_bits_mie(MIE_MSI_BIT_MASK | MIE_MTI_BIT_MASK | MIE_MEI_BIT_MASK);	// MSI MTI MEI
+	csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Disable interrupts routing
+
+#endif /* CPUSTYLE_F133 */
 }
 
 /* инициадихации кеш-памяти, спцифические для CORE0 */
@@ -3251,6 +3262,10 @@ SystemInit(void)
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
+//	PRINTF("csr_read_mhint=0x%lx\n", (long unsigned) csr_read_mhint());
+//	PRINTF("csr_read_mxstatus=0x%lx\n", (long unsigned) csr_read_mxstatus());
+//	PRINTF("csr_read_mhcr=0x%lx\n", (long unsigned) csr_read_mhcr());
+//	PRINTF("csr_read_mcor=0x%lx\n", (long unsigned) csr_read_mcor());
 	sysinit_pmic_initialize();
 	sysinit_pll_initialize(1);	// PLL iniitialize - overdrived freq
 	sysinit_perfmeter_initialize();
@@ -3262,7 +3277,6 @@ SystemInit(void)
 #endif
 #endif /* ! LINUX_SUBSYSTEM */
 }
-
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 

@@ -790,8 +790,8 @@
 	// BOOTLOASER version
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-	// PL0 S-TWI0-SCK
-	// PL1 S-TWI0-SDA
+	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
+	// PL1 S-TWI0-SDA - На плате нет pull-up резисторов
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
 	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
 	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
@@ -806,6 +806,8 @@
 	#define	TWISOFT_INITIALIZE() do { \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
 		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
@@ -1275,20 +1277,23 @@
 	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */
 	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); /* set as input with pull-up */ \
-		} while (0)
+		arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); /* set as input with pull-up */ \
+	} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*BOARD_BLINK_INITIALIZE(); */\
-			HARDWARE_KBD_INITIALIZE(); \
-			/*HARDWARE_DAC_INITIALIZE(); */\
-			HARDWARE_BL_INITIALIZE(); \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-		} while (0)
+		/*BOARD_BLINK_INITIALIZE(); */\
+		HARDWARE_KBD_INITIALIZE(); \
+		/*HARDWARE_DAC_INITIALIZE(); */\
+		HARDWARE_BL_INITIALIZE(); \
+		HARDWARE_DCDC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		BOARD_USERBOOT_INITIALIZE(); \
+		USBD_EHCI_INITIALIZE(); \
+	} while (0)
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALW_T507_CPU_HELPERBOARD_H_INCLUDED */

@@ -28,6 +28,7 @@ OBJDIR = obj
 PROJECT = tc1_vm14
 
 # Define linker script file here
+LDSCRIPT_BOOT0 = ./vm14_boot0.ld
 LDSCRIPT_BOOT = ./vm14_boot.ld
 LDSCRIPT_APP = ./vm14_app.ld
 ARCHDIR = $(PRJROOT)/arch/vm14
@@ -57,7 +58,7 @@ CORE += -mfpu=neon-vfpv3
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-#OPT = -Os -flto
+#OPT = -Os -flto=4 --specs=nano.specs
 OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
@@ -203,7 +204,8 @@ else
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
 ASRC_APP = $(PRJROOT)/src/crt_CortexA_CPUn.S $(PRJROOT)/src/crt_CortexA.S
-ASRC_BOOT = $(PRJROOT)/src/crt_CortexA_CPUn.S $(PRJROOT)/src/crt_CortexA.S
+ASRC_BOOT = $(PRJROOT)/src/crt_CortexA.S
+ASRC_BOOT0 = $(PRJROOT)/src/crt_CortexA_BOOT0.S
 endif
 
 ASRC_APP += $(call rwildcard, $(PRJROOT)/src/mcom_runtime/dsp, *.S)
@@ -222,6 +224,7 @@ ADEFS   = $(DADEFS) $(UADEFS)
 
 OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
 OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
+OBJSA_BOOT0 += $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT0))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
@@ -244,6 +247,7 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
+LDFLAGS_BOOT0 = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT0) -Wl,-Map=$(PROJECT)_boot0.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 
@@ -265,6 +269,8 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 all: APP2 $(PROJECT)_app.alw32
 
+lib: BOOT0
+
 allZ:
 	@echo Src
 	@echo $(abspath $(CSRC))
@@ -273,7 +279,11 @@ allZ:
 
 bootloader: BOOT2
 
-BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT0: version $(PROJECT)_boot0.bin
+
+BOOT2: version $(PROJECT)_boot.hex $(PROJECT)_boot.bin
+
+BOOT2xx: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 	busybox echo autorun 0 >$(PROJECT)_boot.hex
 	./bin2ihex -l 0x20000000 -s $(PROJECT)_boot.bin >> $(PROJECT)_boot.hex
 	busybox echo commitspiflash >> $(PROJECT)_boot.hex
@@ -291,9 +301,13 @@ $(OBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJSA_APP) $(ZOBJSA):
+$(OBJSA_APP) $(OBJSA_BOOT0) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
+
+%_boot0.elf: $(OBJS) $(OBJSA_BOOT0) $(LDSCRIPT_BOOT0)
+	$(GPP) $(OBJS) $(OBJSA_BOOT0) $(LDFLAGS_BOOT0) $(LIBS) -o $@
+	$(SIZE) $@
 
 %_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
@@ -311,8 +325,9 @@ $(OBJSA_APP) $(ZOBJSA):
 
 clean: version
 	-$(RM) -R $(OBJDIR)
-	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
-	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) $(PROJECT)_boot0.elf $(PROJECT)_boot0.hex
+	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.hex
+	-$(RM) $(PROJECT)_app.*
 
 version:
 	$(CC) --version

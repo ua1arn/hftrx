@@ -46,7 +46,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/12.2.1/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
@@ -57,9 +57,9 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
+#OPT = -Ofast -flto
 #OPT = -Os -flto
-#OPT = -Os
+OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
@@ -134,9 +134,14 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
+
 SRCDIRS += $(PRJROOT)/src
-SRCDIRS += $(ARCHDIR)
+#SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 #SRCDIRS += $(DSP3DDIR)/src
+SRCDIRS += $(ARCHDIR)
 
 ifeq (1, 0)
 # lvgl
@@ -209,13 +214,6 @@ ifeq (1, 0)
 # https://github.com/bluekitchen/btstack.git
 include ../btstack.mak
 endif
-
-SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
-
-
-# taken from
-# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
-rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
@@ -295,13 +293,19 @@ app_run: $(PROJECT)_app.f133
 	$(XFEL) ddr f133
 	$(XFEL) write 0x40000000 $(PROJECT)_app.f133
 	$(XFEL) exec 0x40000100 
+  
+# bootloader debug - check aw_f133_boot.ld
+_app_run: fsbl.f133
+	$(XFEL) write 0x00028000 fsbl.f133
+	$(XFEL) exec 0x00028100 
 
 flash:
-	$(XFEL) spinor write 0x00000000 fsbl.f133
+	-$(XFEL) spinor write 0x00000000 fsbl.f133
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.f133
 
 erase:
 	$(XFEL) spinor erase 0x00000000 1024
+	$(XFEL) spinor erase 0x00040000 1024
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

@@ -131,7 +131,13 @@
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#if WITHFUSBDFS
+		//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#elif WITHFUSBDHS
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#else
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#endif
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -616,7 +622,7 @@
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	#define TARGET_POWERBTN_BIT 0//(UINT32_C(1) << 8)	// PAxx - ~CPU_POWER_SW signal
+	//#define TARGET_POWERBTN_BIT 0//(UINT32_C(1) << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
 	// P7_8
@@ -625,7 +631,7 @@
 
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_GET	0//((gpioX_getinputs(GPIOx) & TARGET_POWERBTN_BIT) == 0)
+	//#define TARGET_POWERBTN_GET	((gpioX_getinputs(GPIOx) & TARGET_POWERBTN_BIT) == 0)
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
@@ -701,7 +707,7 @@
 		arm_hardware_piog_inputs(FPGA_INIT_DONE_BIT); \
 	} while (0)
 
-	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
 		/* board_fpga_reset(); */ \
 	} while (0)
@@ -717,7 +723,7 @@
 
 #else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-	/* необходимость функции под вопросом (некоторый FPGA не нрузятся с этой процедурой) */
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
 		/* board_fpga_reset(); */ \
 	} while (0)
@@ -838,14 +844,14 @@
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTDEF	4	// значение яркости по уиолчанию
+		#define WITHLCDBACKLIGHTDEF	5	// значение яркости по уиолчанию
 		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
 		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 		#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTDEF	4	// значение яркости по уиолчанию
+		#define WITHLCDBACKLIGHTDEF	5	// значение яркости по уиолчанию
 		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	#else
 		/* Заглушка для работы без дисплея */
@@ -1063,9 +1069,9 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
+	#define BOARD_IS_USERBOOT() (0) //(((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
+			/*arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); *//* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
@@ -1081,5 +1087,8 @@
 		BOARD_USERBOOT_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
+
+	// TUSB parameters
+	#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALWT113S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */
