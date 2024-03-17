@@ -388,7 +388,7 @@ void bootloader_mainloop(void)
 		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
 		do
 		{
-			uintptr_t ip;
+			uintptr_t ip = 0xDEADBEEF;
 			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
 			{
 				PRINTF("bootloader_mainloop: No application image at offset 0x%08X\n", (unsigned) BOOTLOADER_SELFSIZE);
@@ -400,7 +400,7 @@ void bootloader_mainloop(void)
 			if (bootloader_withusb())
 				board_usb_deinitialize();
 #endif /* WITHUSBHW */
-			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
+			PRINTF("bootloader_mainloop: ip=%08X\n", (unsigned) ip);
 			bootloader_launch_app(ip);
 
 		} while (0);
