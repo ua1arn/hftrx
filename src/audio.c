@@ -2815,7 +2815,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		#endif
 	#endif /* WITHDSPEXTFIR */
 		const int cutfreq = fullbw6 / 2;
-		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
+//		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))

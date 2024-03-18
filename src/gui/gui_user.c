@@ -2058,7 +2058,6 @@ static void window_utilites_process(void)
 #if WITHSWRSCAN
 		add_element("btn_SWRscan",  100, 44, 0, 0, "SWR|scanner");
 #endif /* WITHSWRSCAN */
-		add_element("btn_kbdtest",  100, 44, 0, 0, "Keyboard|test");
 		add_element("btn_3d",       100, 44, 0, 0, "Donut|3d");
 #if WITHLWIP
 		add_element("btn_pingtest", 100, 44, 0, 0, "IP ping|test");
@@ -2105,11 +2104,7 @@ static void window_utilites_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_kbdtest"))
-			{
-				open_window(get_win(WINDOW_KBD_TEST));
-			}
-			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_3d"))
+			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_3d"))
 			{
 				open_window(get_win(WINDOW_3D));
 			}
@@ -4479,29 +4474,16 @@ static void window_ft8_settings_process(void)
 		win->first_call = 0;
 		unsigned interval = 10;
 
-		static const button_t buttons [] = {
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_callsign",  "Callsign", },
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_qth", 		"QTH", },
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq", 		"TX freq", },
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_eq",	"", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_OK", 		"OK", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		add_element("btn_callsign", 86, 30, 0, 0, "Callsign");
+		add_element("btn_qth", 86, 30, 0, 0, "QTH");
+		add_element("btn_freq", 86, 30, 0, 0, "TX freq");
+		add_element("btn_freq_eq", 86, 30, 0, 0, "");
+		add_element("btn_time0", 86, 30, 0, 0, "Time >0<");
+		add_element("btn_OK", 40, 40, 0, 0, "OK");
 
-		static const label_t labels [] = {
-			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_callsign", "**********", FONT_MEDIUM, COLORPIP_WHITE, },
-			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_qth",  	  "**********", FONT_MEDIUM, COLORPIP_WHITE, },
-			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_txfreq",   "**********", FONT_MEDIUM, COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		add_element("lbl_callsign", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		add_element("lbl_qth", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		add_element("lbl_txfreq", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
 
 		label_t * lbl_callsign = find_gui_element(TYPE_LABEL, win, "lbl_callsign");
 		label_t * lbl_qth = find_gui_element(TYPE_LABEL, win, "lbl_qth");
@@ -4510,6 +4492,7 @@ static void window_ft8_settings_process(void)
 		button_t * btn_qth = find_gui_element(TYPE_BUTTON, win, "btn_qth");
 		button_t * btn_freq = find_gui_element(TYPE_BUTTON, win, "btn_freq");
 		button_t * btn_OK = find_gui_element(TYPE_BUTTON, win, "btn_OK");
+		button_t * btn_time0 = find_gui_element(TYPE_BUTTON, win, "btn_time0");
 
 		unsigned lbllen = get_label_width(lbl_callsign);
 
@@ -4542,8 +4525,12 @@ static void window_ft8_settings_process(void)
 		lbl_qth->visible = VISIBLE;
 		local_snprintf_P(lbl_qth->text, ARRAY_SIZE(lbl_qth->text), "%s", gui_nvram.ft8_qth);
 
-		btn_OK->x1 = btn_callsign->x1 + btn_callsign->w + interval;
-		btn_OK->y1 = btn_callsign->y1;
+		btn_time0->x1 = btn_qth->x1;
+		btn_time0->y1 = btn_qth->y1 + btn_qth->h + interval * 2;
+		btn_time0->visible = VISIBLE;
+
+		btn_OK->x1 = 0;
+		btn_OK->y1 = btn_time0->y1;
 		btn_OK->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -4556,16 +4543,25 @@ static void window_ft8_settings_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			button_t * btn_OK = find_gui_element(TYPE_BUTTON, win, "btn_OK");
-			button_t * btn_freq = find_gui_element(TYPE_BUTTON, win, "btn_freq");
 
-			if (bh == btn_OK)
+			if (bh == find_gui_element(TYPE_BUTTON, win, "btn_OK"))
 			{
 				close_window(OPEN_PARENT_WINDOW);
 			}
-			else if (bh == btn_freq)
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_freq"))
 			{
-				keyboard_edit_digits(& gui_nvram.ft8_txfreq_val);
+				uint32_t f = gui_nvram.ft8_txfreq_val;
+				keyboard_edit_digits(& f);
+				uint32_t l = hamradio_get_low_bp(0) * 10;
+				uint32_t h = hamradio_get_high_bp(0) * 10;
+				gui_nvram.ft8_txfreq_val = (f >= l && f <= h) ? f : gui_nvram.ft8_txfreq_val;
+			}
+			else if (bh == find_gui_element(TYPE_BUTTON, win, "btn_time0"))
+			{
+				uint_fast8_t hour, minute, seconds;
+				board_rtc_cached_gettime(& hour, & minute, & seconds);
+				seconds = 0;
+				//board_rtc_settime(hour, minute, seconds);
 			}
 			else if (bh->payload == 1)
 				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
@@ -4594,37 +4590,23 @@ static void window_ft8_process(void)
 	{
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_tx", 	  "Transmit", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_filter",   "View|all", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_bands",    "FT8|bands", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_settings", "Edit|settings", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		add_element("btn_tx", 86, 44, 0, 0, "Transmit");
+		add_element("btn_filter", 86, 44, 0, 0, "View|all");
+		add_element("btn_bands", 86, 44, 0, 0, "FT8|bands");
+		add_element("btn_settings", 86, 44, 0, 0, "Edit|settings");
 
-		static const label_t labels [] = {
-			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_cq_title", "CQ:", FONT_LARGE, COLORPIP_GREEN, },
-			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_tx_title", "TX:", FONT_LARGE, COLORPIP_GREEN, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq0", "********", FONT_MEDIUM, COLORPIP_WHITE, 0, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq1", "********", FONT_MEDIUM, COLORPIP_WHITE, 1, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq2", "********", FONT_MEDIUM, COLORPIP_WHITE, 2, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq3", "********", FONT_MEDIUM, COLORPIP_WHITE, 3, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq4", "********", FONT_MEDIUM, COLORPIP_WHITE, 4, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq5", "********", FONT_MEDIUM, COLORPIP_WHITE, 5, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg0", "", FONT_MEDIUM, COLORPIP_WHITE, 10, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg1", "", FONT_MEDIUM, COLORPIP_WHITE, 11, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg2", "", FONT_MEDIUM, COLORPIP_WHITE, 12, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg3", "", FONT_MEDIUM, COLORPIP_WHITE, 13, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		add_element("lbl_cq_title", 0, FONT_LARGE, COLORPIP_GREEN, 3);
+		add_element("lbl_tx_title", 0, FONT_LARGE, COLORPIP_GREEN, 3);
+		add_element("lbl_cq0", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
+		add_element("lbl_cq1", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
+		add_element("lbl_cq2", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
+		add_element("lbl_cq3", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
+		add_element("lbl_cq4", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
+		add_element("lbl_cq5", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
+		add_element("lbl_txmsg0", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		add_element("lbl_txmsg1", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		add_element("lbl_txmsg2", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		add_element("lbl_txmsg3", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
 
 		static const text_field_t text_field [] = {
 			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, UP, & gothic_11x13, "tf_ft8", },
@@ -4653,7 +4635,9 @@ static void window_ft8_process(void)
 
 		lbl_cq_title->x = tf_ft8->x1 + tf_ft8->w + 70;
 		lbl_cq_title->y = 0;
+		lbl_cq_title->state = DISABLED;
 		lbl_cq_title->visible = VISIBLE;
+		local_snprintf_P(lbl_cq_title->text, ARRAY_SIZE(lbl_cq_title->text), "CQ:");
 
 		x = lbl_cq_title->x;
 		y = lbl_cq_title->y + interval;
@@ -4664,13 +4648,16 @@ static void window_ft8_process(void)
 			lh = find_gui_element(TYPE_LABEL, win, lh_name);
 			lh->x = x;
 			lh->y = y;
+			lh->index = i;
 			y += interval;
 			lh_array_cq [i].ptr = lh;
 		}
 
 		lbl_tx_title->x = lbl_cq_title->x + get_label_width(lh_array_cq [0].ptr) + 10;
 		lbl_tx_title->y = 0;
+		lbl_tx_title->state = DISABLED;
 		lbl_tx_title->visible = VISIBLE;
+		local_snprintf_P(lbl_tx_title->text, ARRAY_SIZE(lbl_tx_title->text), "TX:");
 
 		x = lbl_tx_title->x;
 		y = lbl_tx_title->y + interval;
@@ -4681,6 +4668,7 @@ static void window_ft8_process(void)
 			lh = find_gui_element(TYPE_LABEL, win, lh_name);
 			lh->x = x;
 			lh->y = y;
+			lh->index = 10 + i;
 			lh->visible = VISIBLE;
 			y += interval;
 			lh_array_tx [i].ptr = lh;

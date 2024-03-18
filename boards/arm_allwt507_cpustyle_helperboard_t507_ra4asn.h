@@ -757,8 +757,8 @@
 #if WITHISBOOTLOADER
 	// I2C/TWI
 	// BOOTLOASER version
-	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
 	// PL1 S-TWI0-SDA - На плате нет pull-up резисторов
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
