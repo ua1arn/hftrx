@@ -20,6 +20,7 @@
 
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 
+#define USESPIDFSHARESPILOCK (WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133))
 #if WITHSPIHW || WITHSPISW
 
 #if UC1608_CSP
@@ -4007,22 +4008,24 @@ void nand_tests(void)
 
 #if WIHSPIDFHW || WIHSPIDFSW || WIHSPIDFOVERSPI
 
+#define SPIDF_SPEEDC SPIC_SPEEDFAST
+
 static IRQLSPINLOCK_t spidflock;
 
 static void accureDATAFLASH(IRQL_t * oldIRQL, IRQL_t * oldIRQL2spi)
 {
 	ASSERT(oldIRQL != oldIRQL2spi);
 	IRQLSPIN_LOCK(& spidflock, oldIRQL);
-#if	WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if	USESPIDFSHARESPILOCK
 	spi_operate_lock(oldIRQL2spi);
-#endif /* WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#endif /* USESPIDFSHARESPILOCK */
 }
 
 static void releaseDATAFLASH(IRQL_t setIRQL, IRQL_t setIRQL2spi)
 {
-#if	WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if	USESPIDFSHARESPILOCK
 	spi_operate_unlock(setIRQL2spi);
-#endif /* WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#endif /* USESPIDFSHARESPILOCK */
 	IRQLSPIN_UNLOCK(& spidflock, setIRQL);
 }
 
@@ -4449,7 +4452,7 @@ static void spidf_iostart(
 		b [i ++] = 0x00;	// dummy byte
 
 
-	hardware_spi_connect(SPIC_SPEEDFAST, SPIC_MODE0);
+	hardware_spi_connect(SPIDF_SPEEDC, SPIC_MODE0);
 
 	// assert CS
 	prog_select(targetdataflash);
