@@ -15416,7 +15416,7 @@ void lowtests(void)
 //		gpio_output2(TARGET_UART1_TX_MIO, 0, pinmode);
 //		local_delay_ms(200);
 //	}
-#if 0 && CPUSTYLE_XC7Z && defined (ZYNQBOARD_LED_RED)
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)
 	{
 		// калибровка программной задержки
 		for (;;)

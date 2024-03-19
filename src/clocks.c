@@ -5306,6 +5306,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		PTIM_SetControl(PTIM_GetControl() | 0x01);
 
 	#endif
+#elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
 #elif CPUSTYLE_XC7Z && LINUX_SUBSYSTEM
 
 #elif CPUSTYLE_T507
@@ -8730,7 +8731,7 @@ sysinit_pll_initialize(int forced)
 	stm32mp1_usb_clocks_initialize();
 	stm32mp1_audio_clocks_initialize();
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	#if WITHISBOOTLOADER
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
