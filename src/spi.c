@@ -1625,8 +1625,9 @@ void hardware_spi_master_initialize(void)
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 0);
 
-	/* De-assert SPI0 reset */
-	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 16);
+
+	//CCU->SPI_BGR_REG &= ~ (UINT32_C(1) << (ix + 16));	// Assert SPIx reset
+	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 16);	// De-assert SPIx reset
 
 	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI0_CLK_GATING
 
@@ -1977,7 +1978,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	//TP();
 	// SCLK = Clock Source/M/N.
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, allwnrt113_get_spi0_freq());
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */

@@ -2203,6 +2203,7 @@ static uint_fast32_t allwnr_a64_get_apb_freq(void)
 	return allwnr_a64_get_cpux_freq() / clkdiv;
 }
 
+// A64
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
@@ -2226,6 +2227,7 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 	}
 }
 
+// A64
 uint_fast32_t allwnrt113_get_spi1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
@@ -3162,9 +3164,62 @@ uint_fast32_t allwnr_t507_get_gpu_freq(void)
 	}
 }
 
+// T507
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
-	return WITHCPUXTAL;
+	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SCLK = Clock Source/M/N.
+	const uint_fast32_t pgdiv = M * N;
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / pgdiv;
+	case 0x01:
+		/* 001: PLL_PERI0(1X) */
+		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
+	case 0x02:
+		/* 010: PLL_PERI1(1X) */
+		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
+	case 0x03:
+		/* 011: PLL_PERI0(2X) */
+		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
+	case 0x04:
+		/* 100: PLL_PERI1(2X) */
+		return allwnr_t507_get_pll_peri1_x2_freq() / pgdiv;
+	}
+}
+
+// T507
+uint_fast32_t allwnrt113_get_spi1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
+	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	// SCLK = Clock Source/M/N.
+	const uint_fast32_t pgdiv = M * N;
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnrt113_get_hosc_freq() / pgdiv;
+	case 0x01:
+		/* 001: PLL_PERI0(1X) */
+		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
+	case 0x02:
+		/* 010: PLL_PERI1(1X) */
+		return allwnr_t507_get_pll_peri0_x1_freq() / pgdiv;
+	case 0x03:
+		/* 011: PLL_PERI0(2X) */
+		return allwnr_t507_get_pll_peri0_x2_freq() / pgdiv;
+	case 0x04:
+		/* 100: PLL_PERI1(2X) */
+		return allwnr_t507_get_pll_peri1_x2_freq() / pgdiv;
+	}
 }
 
 // The working clock of UART is APB2
@@ -4030,6 +4085,7 @@ uint_fast32_t allwnrt113_get_twi_freq(void)
 	return allwnrt113_get_apb1_freq();
 }
 
+// T113
 uint_fast32_t allwnrt113_get_spi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
@@ -4061,8 +4117,8 @@ uint_fast32_t allwnrt113_get_spi0_freq(void)
 uint_fast32_t allwnrt113_get_spi1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
-	const uint_fast32_t N = 1u << ((clkreg >> 8) & 0x03);
-	const uint_fast32_t M = 1u + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
 	// SCLK = Clock Source/M/N.
 	const uint_fast32_t pgdiv = M * N;
 	switch ((clkreg >> 24) & 0x07)
