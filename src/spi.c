@@ -1969,6 +1969,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
+	// T507 have different codes
 	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 
 	SPIHARD_CCU_CLK_REG = (SPIHARD_CCU_CLK_REG & ~ (0x03u << 24)) |
