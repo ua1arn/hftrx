@@ -4301,7 +4301,7 @@ static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
     {
         int i;
         for(i = 0; i < len; i ++)
-            * (volatile uint8_t *) & SPI0->SPI_TXD = * buf ++;
+            * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = * buf ++;
     }
     else
     {
