@@ -1287,9 +1287,9 @@ static void sys_spinor_exit(void)
 	unsigned int val;
 
 	/* Disable the spi0 controller */
-	val = SPI0->SPI_GCR;
+	val = SPIDFHARD_PTR->SPI_GCR;
 	val &= ~ ((1u << 1) | (1u << 0));
-	SPI0->SPI_GCR = val;
+	SPIDFHARD_PTR->SPI_GCR = val;
 }
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
 
@@ -4308,7 +4308,7 @@ static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
         int i;
         for(i = 0; i < len; i ++)
         {
-			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+			* (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = 0xFF;
         }
     }
 
@@ -4328,29 +4328,29 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
-		SPI0->SPI_MBC = chunk;	// total burst counter
+		SPIDFHARD_PTR->SPI_MBC = chunk;	// total burst counter
 		switch (readnb)
 		{
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-		    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		    SPIDFHARD_PTR->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPI0->SPI_BCC = chunk & 0xFFFFFF;
+			SPIDFHARD_PTR->SPI_BCC = chunk & 0xFFFFFF;
 			break;
 
 		case SPDFIO_4WIRE:
-			SPI0->SPI_BCC = (1u << 29);	/* Quad_EN */
+			SPIDFHARD_PTR->SPI_BCC = (1u << 29);	/* Quad_EN */
 			if (tx != NULL)
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-			    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPIDFHARD_PTR->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
 				// 4-wire read
-			    SPI0->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPIDFHARD_PTR->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			break;
 		case SPDFIO_2WIRE:
@@ -4358,15 +4358,15 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			break;
 		}
 
-		SPI0->SPI_TCR |= (1u << 31);	// XCH
+		SPIDFHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPI0->SPI_TCR & (1u << 31)) != 0)	// XCH
+		while ((SPIDFHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 			;
-		SPI0->SPI_BCC &= ~ (1u << 29);	/* Quad_EN */
+		SPIDFHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
 
 		for (i = 0; i < chunk; i ++)
 		{
-			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			const unsigned v = * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_RXD;
 			if (rx != NULL)
 				* rx++ = v;
 		}
