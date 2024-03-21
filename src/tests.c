@@ -10611,6 +10611,22 @@ void hightests(void)
 #endif
 #if 0
 	{
+		const spitarget_t target = targetadc2;	// PH5
+		for (;;)
+		{
+			uint_fast8_t valid;
+			PRINTF("ADC0..4: 0x%03X 0x%03X 0x%03X 0x%03X 0x%03X\n",
+					(unsigned) mcp3208_read(target, 0, 0, & valid),
+					(unsigned) mcp3208_read(target, 0, 1, & valid),
+					(unsigned) mcp3208_read(target, 0, 2, & valid),
+					(unsigned) mcp3208_read(target, 0, 3, & valid),
+					(unsigned) mcp3208_read(target, 0, 4, & valid)
+					);
+		}
+	}
+#endif
+#if 0
+	{
 		// cache line size test
 		static __ALIGNED(256) uint8_t data [256];
 		memset(data, 0xE5, sizeof data);
