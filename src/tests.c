@@ -10622,6 +10622,7 @@ void hightests(void)
 					(unsigned) mcp3208_read(target, 0, 3, & valid),
 					(unsigned) mcp3208_read(target, 0, 4, & valid)
 					);
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 	}
 #endif
