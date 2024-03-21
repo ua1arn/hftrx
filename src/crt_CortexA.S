@@ -143,7 +143,7 @@ FIQAddr_rtos:       .word FIQ_Handler
    .ltorg
 
 
-   .section .startup0, "ax"
+   .section .startup0
    .code 32
    
    .extern _start

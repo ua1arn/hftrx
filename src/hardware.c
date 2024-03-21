@@ -3275,12 +3275,46 @@ void sysinit_pmic_initialize(void)
 #endif /* BOARD_PMIC_INITIALIZE */
 }
 
+
+#if CPUSTYLE_VM14
+
+/* Сбросить второе ядро чтобы не мешало процессу загрузки */
+static void resetCPU(unsigned targetcore)
+{
+	ASSERT(targetcore != 0);
+
+    const uint32_t psmask = UINT32_C(0x03) << (targetcore * 8);	/* SCU_PWR mask */
+    ((volatile uint32_t *) SCU_CONTROL_BASE) [2] |= psmask;	/* reset target CPU */
+}
+
+//Закометарить следующую строку при сборке проекта для старта из флешки :
+//#define USE_ALT_START_FROR_SECOND_CORE 1
+//
+#ifdef USE_ALT_START_FROR_SECOND_CORE
+typedef void (*cpu_startup_remap)(void);
+static cpu_startup_remap startup_remap __attribute__ ((section (".CPU_Internal"))) = {0};
+#endif
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
 void
+SystemInit_BOOT0(void)
+{
+	resetCPU(1);
+	sysinit_fpu_initialize();
+	sysinit_gpio_initialize();
+}
+
+#endif /* CPUSTYLE_VM14 */
+
+// watchdog disable, clock initialize, cache enable
+void
 SystemInit(void)
 {
+#if CPUSTYLE_VM14
+	resetCPU(1);
+#endif /* CPUSTYLE_VM14 */
 #if ! LINUX_SUBSYSTEM
 	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
