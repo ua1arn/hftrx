@@ -6211,20 +6211,20 @@ spdif_iostartread(unsigned long len, unsigned long flashoffset)
 {
 	if (0)
 		;
-#if WIHSPIDFHW4BIT
+#if WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
 		return SPDFIO_4WIRE;
 	}
-#endif /* WIHSPIDFHW4BIT */
-#if WIHSPIDFHW2BIT
+#endif /* WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI */
+#if WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
 	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
 		return SPDFIO_2WIRE;
 	}
-#endif /* WIHSPIDFHW2BIT */
+#endif /* WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI */
 	else
 	{
 		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
