@@ -112,7 +112,7 @@ static uint_fast8_t bootloader_copyapp(
 		printhex(appoffset, tmpbuff, HEADERSIZE);
 		return 1;
 	}
-	PRINTF("bootloader_copyapp: ip=%08X (addr=%08X, len=%08X)\n", (unsigned) * ip, (unsigned) hdr->load_address, (unsigned) hdr->image_length);
+	PRINTF("bootloader_copyapp: addr=%08X, len=%08X\n", (unsigned) hdr->load_address, (unsigned) hdr->image_length);
 	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
 	PRINTF("bootloader_copyapp done.\n");
 	if (bootloader_get_start((uintptr_t) hdr, ip))	// verify
