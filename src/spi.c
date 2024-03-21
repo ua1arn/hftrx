@@ -4297,18 +4297,22 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
 {
 
+//	while ((SPIDFHARD_PTR->SPI_FSR & (UINT32_C(0x7F) << 28)) != 0)	// TB_CNT
+//		;
     if (buf != NULL)
     {
         int i;
         for(i = 0; i < len; i ++)
+        {
             * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = * buf ++;
+        }
     }
     else
     {
         int i;
         for(i = 0; i < len; i ++)
         {
-			* (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = 0xFF;
+ 			* (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = 0xFF;
         }
     }
 
@@ -4366,6 +4370,8 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 
 		for (i = 0; i < chunk; i ++)
 		{
+//        	while ((SPIDFHARD_PTR->SPI_FSR & (UINT32_C(0xFF) << 0)) == 0)	// RF_CNT
+//        		;
 			const unsigned v = * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_RXD;
 			if (rx != NULL)
 				* rx++ = v;
