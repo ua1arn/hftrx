@@ -289,7 +289,7 @@ app_run: $(PROJECT)_app.alw32
 # bootloader debug - check allwnr_t113s3_boot.ld
 _app_run: fsbl.alw32
 	$(XFEL) write 0x00028000 fsbl.alw32
-	$(XFEL) exec 0x00028100 
+	$(XFEL) exec 0x00028000 
 
 app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) ddr t113-s3
