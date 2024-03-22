@@ -311,6 +311,10 @@
 	#include "boards/arm_allwt113s3_ctlstyle_tboard_v0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_tboard_v0.h"
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_yo6puc.h"	// sabi project
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_yo6puc.h"	// sabi project
 #elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_xczuxx_ctlstyle_axu2cga_ad9640.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
