@@ -207,6 +207,8 @@ typedef struct adapter_tag
 	int rightspace;
 	int lshift32;	// input convrtsion
 	int rshift32;
+	FLOAT_t outmax;
+	FLOAT_t outmin;
 	const char * name;
 } adapter_t;
 
