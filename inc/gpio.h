@@ -17,7 +17,7 @@ extern "C" {
 typedef void (* eintcb_t)(void);
 typedef struct einthandler
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	portholder_t mask;
 	eintcb_t handler;
 } einthandler_t;
@@ -150,7 +150,7 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 	#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
 	#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
 
-#elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
 	void gpiobank_lock(unsigned bank, IRQL_t * oldIrql);

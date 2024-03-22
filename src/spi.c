@@ -361,7 +361,7 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if CPUSTYLE_XC7Z
+		#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 			return SPI_TARGET_MISO_PIN != 0;
 		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
@@ -1281,16 +1281,16 @@ static void DMA2_SPI1_TX_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
-static void sys_spinor_exit(void)
-{
-	//uintptr_t addr = 0x04025000;
-	unsigned int val;
-
-	/* Disable the spi0 controller */
-	val = SPI0->SPI_GCR;
-	val &= ~ ((1u << 1) | (1u << 0));
-	SPI0->SPI_GCR = val;
-}
+//static void sys_spinor_exit(void)
+//{
+//	//uintptr_t addr = 0x04025000;
+//	unsigned int val;
+//
+//	/* Disable the spi0 controller */
+//	val = SPIDFHARD_PTR->SPI_GCR;
+//	val &= ~ ((1u << 1) | (1u << 0));
+//	SPIDFHARD_PTR->SPI_GCR = val;
+//}
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
@@ -1625,27 +1625,28 @@ void hardware_spi_master_initialize(void)
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 0);
 
-	/* De-assert SPI0 reset */
-	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 16);
+
+	//CCU->SPI_BGR_REG &= ~ (UINT32_C(1) << (ix + 16));	// Assert SPIx reset
+	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 16);	// De-assert SPIx reset
 
 	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI0_CLK_GATING
 
-//	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-//	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
-//		;
-	SPIHARD_PTR->SPI_GCR |=
-		(0u < 1) |	// MODE: 1: Master mode
+
+	/* Do a soft reset */
+	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
+	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+		;
+
+	SPIHARD_PTR->SPI_GCR =
+		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
 		0;
 
-	/* Enable spi0 */
-	SPIHARD_PTR->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
-	/* Do a soft reset */
-//	SPIHARD_PTR->SPI_GCR |= (1u << 31);
-//	while((SPIHARD_PTR->SPI_GCR & (1u << 31)) != 0)
-//		;
+	/* Enable SPIx */
+	SPIHARD_PTR->SPI_GCR |= (UINT32_C(1) << 0);	// EN SPI Module Enable Control
 
 	// De-assert hardware CS
-	//SPI0->SPI_TCR |= (1u << 7);
+	//SPIHARD_PTR->SPI_TCR |= (1u << 7);
 
 	SPIIO_INITIALIZE();
 
@@ -1968,6 +1969,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
+	// T507 have different codes
 	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 
 	SPIHARD_CCU_CLK_REG = (SPIHARD_CCU_CLK_REG & ~ (0x03u << 24)) |
@@ -1977,7 +1979,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	//TP();
 	// SCLK = Clock Source/M/N.
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, allwnrt113_get_spi0_freq());
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
@@ -3405,13 +3407,13 @@ void RAMFUNC hardware_spi_b16_p1(
 	SPIHARD_PTR->SPI_MBC = 2;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 2;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ UINT32_C(0xFFFFFF)) |
 		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);
+	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);	/* 16bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3556,13 +3558,13 @@ void hardware_spi_b32_p1(
 	SPIHARD_PTR->SPI_MBC = 4;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 4;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ UINT32_C(0xFFFFFF)) |
 		4 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
 	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3643,13 +3645,13 @@ void hardware_spi_b8_p1(
 	SPIHARD_PTR->SPI_MBC = 1;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 1;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ UINT32_C(0xFFFFFF)) |
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v;
+	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v; /* 8bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -4295,18 +4297,22 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
 {
 
+//	while ((SPIDFHARD_PTR->SPI_FSR & (UINT32_C(0x7F) << 28)) != 0)	// TB_CNT
+//		;
     if (buf != NULL)
     {
         int i;
         for(i = 0; i < len; i ++)
-            * (volatile uint8_t *) & SPI0->SPI_TXD = * buf ++;
+        {
+            * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = * buf ++;
+        }
     }
     else
     {
         int i;
         for(i = 0; i < len; i ++)
         {
-			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+ 			* (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = 0xFF;
         }
     }
 
@@ -4326,29 +4332,29 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
-		SPI0->SPI_MBC = chunk;	// total burst counter
+		SPIDFHARD_PTR->SPI_MBC = chunk;	// total burst counter
 		switch (readnb)
 		{
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-		    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		    SPIDFHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPI0->SPI_BCC = chunk & 0xFFFFFF;
+			SPIDFHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
 			break;
 
 		case SPDFIO_4WIRE:
-			SPI0->SPI_BCC = (1u << 29);	/* Quad_EN */
+			SPIDFHARD_PTR->SPI_BCC = (1u << 29);	/* Quad_EN */
 			if (tx != NULL)
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-			    SPI0->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPIDFHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
 				// 4-wire read
-			    SPI0->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPIDFHARD_PTR->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			break;
 		case SPDFIO_2WIRE:
@@ -4356,15 +4362,17 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			break;
 		}
 
-		SPI0->SPI_TCR |= (1u << 31);	// XCH
+		SPIDFHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPI0->SPI_TCR & (1u << 31)) != 0)	// XCH
+		while ((SPIDFHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 			;
-		SPI0->SPI_BCC &= ~ (1u << 29);	/* Quad_EN */
+		SPIDFHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
 
 		for (i = 0; i < chunk; i ++)
 		{
-			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+//        	while ((SPIDFHARD_PTR->SPI_FSR & (UINT32_C(0xFF) << 0)) == 0)	// RF_CNT
+//        		;
+			const unsigned v = * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_RXD;
 			if (rx != NULL)
 				* rx++ = v;
 		}
@@ -6209,20 +6217,20 @@ spdif_iostartread(unsigned long len, unsigned long flashoffset)
 {
 	if (0)
 		;
-#if WIHSPIDFHW4BIT
+#if WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
 		return SPDFIO_4WIRE;
 	}
-#endif /* WIHSPIDFHW4BIT */
-#if WIHSPIDFHW2BIT
+#endif /* WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI */
+#if WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
 	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
 		return SPDFIO_2WIRE;
 	}
-#endif /* WIHSPIDFHW2BIT */
+#endif /* WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI */
 	else
 	{
 		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
@@ -6242,9 +6250,18 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
-	err = spidf_verify(data, len, readnb);
-	spidf_unselect();	/* done sending data to target chip */
+	while (len != 0 && err == 0)
+	{
+		const unsigned long CHUNKMAX = 0xFFFFFF;
+		unsigned long chunk = len < CHUNKMAX ? len : CHUNKMAX;
+		const uint_fast8_t readnb = spdif_iostartread(chunk, flashoffset);
+		err = spidf_verify(data, chunk, readnb);
+		spidf_unselect();	/* done sending data to target chip */
+
+		len -= chunk;
+		flashoffset += chunk;
+		data += chunk;
+	}
 
 	if (err)
 		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
@@ -6270,9 +6287,19 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 
 //	TP();
 //	PRINTF("read operation\n");
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
-	spidf_read(data, len, readnb);
-	spidf_unselect();	/* done sending data to target chip */
+	while (len != 0)
+	{
+		const unsigned long CHUNKMAX = 0xFFFFFF;
+		unsigned long chunk = len < CHUNKMAX ? len : CHUNKMAX;
+
+		const uint_fast8_t readnb = spdif_iostartread(chunk, flashoffset);
+		spidf_read(data, chunk, readnb);
+		spidf_unselect();	/* done sending data to target chip */
+
+		len -= chunk;
+		flashoffset += chunk;
+		data += chunk;
+	}
 
 #endif /* CPUSTYLE_XC7Z */
 

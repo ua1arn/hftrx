@@ -10464,11 +10464,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 }
 
 static void speex_update_rx(void)
@@ -15742,9 +15742,9 @@ static void dpc_1stimer(void * arg)
 //	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHTOUCHGUI
 	gui_update();
@@ -17041,6 +17041,8 @@ void display2_menu_valxx(
 			}
 #elif CPUSTYLE_XC7Z
 			msg = PSTR("ZYNQ 7020");
+#elif CPUSTYLE_XCZU
+			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
 #else
@@ -17752,6 +17754,8 @@ static void menu_print(void)
         			}
 			#elif CPUSTYLE_XC7Z
         			msg = PSTR("ZYNQ 7020");
+        	#elif CPUSTYLE_XCZU
+        			msg = PSTR("ZYNQ USCALE");
         	#elif CPUSTYLE_R7S721
         			msg = PSTR("RENESAS");
 			#elif CPUSTYLE_T113
@@ -19882,7 +19886,7 @@ hamradio_main_step(void)
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
-#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}

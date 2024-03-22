@@ -65,7 +65,7 @@
 
 	 STACKSIZESYSBOOT = 512
   
-	.section .isr_vector
+	.section .isr_vector, "ax"
 	.code 32
         
 /****************************************************************************/

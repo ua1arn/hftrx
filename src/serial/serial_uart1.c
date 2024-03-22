@@ -127,7 +127,7 @@
 		HARDWARE_UART1_ONTXCHAR(& SCIF1);
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	static void UART1_IRQHandler(void)
 	{

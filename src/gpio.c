@@ -14,7 +14,7 @@
 
 #define GPIOIRQL IRQL_SYSTEM
 
-static LIST_ENTRY einthead [26];	// a..z lists
+static VLIST_ENTRY einthead [26];	// a..z lists
 
 void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler)
 {
@@ -25,11 +25,11 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 /* Вызов обработчика для указанных битов порта */
 static void
 gpioX_invokeinterrupt(
-	LIST_ENTRY * head,
+	const volatile VLIST_ENTRY * head,
 	portholder_t mask
 	)
 {
-	PLIST_ENTRY t;
+	volatile VLIST_ENTRY * t;
 	for (t = head->Blink; t != head; t = t->Blink)
 	{
 		ASSERT(t != NULL);
@@ -647,9 +647,23 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 	}
 }
 
+#elif CPUSTYLE_XCZU && ! LINUX_SUBSYSTEM
+
+void xc7z_gpio_input(uint8_t pin)
+{
+}
+
+void xc7z_gpio_output(uint8_t pin)
+{
+}
+
+void sysinit_gpio_initialize(void)
+{
+}
+
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static LCLSPINLOCK_t gpiodatas_ctx [8] =
+static LCLSPINLOCK_t gpiobank_ctx [8] =
 {
 		LCLSPINLOCK_INIT,
 		LCLSPINLOCK_INIT,
@@ -667,9 +681,9 @@ void sysinit_gpio_initialize(void)
 {
 	unsigned i;
 
-	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
+	for (i = 0; i < ARRAY_SIZE(gpiobank_ctx); ++ i)
 	{
-		LCLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
+		LCLSPINLOCK_t * const lck = & gpiobank_ctx [i];
 		LCLSPINLOCK_INITIALIZE(lck);
 	}
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
@@ -680,14 +694,14 @@ void sysinit_gpio_initialize(void)
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiodatas_ctx [bank];
+	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
 	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	LCLSPINLOCK_t * const lck = & gpiodatas_ctx [bank];
+	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
 	LCLSPIN_UNLOCK(lck);
 	LowerIrql(oldIrql);
 }
@@ -826,31 +840,21 @@ typedef struct gpio_ctx
 	portholder_t data;
 } gpio_ctx_t;
 
-static gpio_ctx_t gpiodatas_ctx [16];	/* GPIOA..GPIOO */
+//TODO: revert to 16 instead 26
+static gpio_ctx_t gpiodatas_ctx [26];	/* GPIOA..GPIOP */
+
 #if defined (GPIOL)
 static gpio_ctx_t gpiodata_L_ctx;
 #endif /* defined (GPIOL) */
 
-static gpio_ctx_t * gpioX_get_ctx(GPIO_TypeDef * gpio)
+static gpio_ctx_t * gpioX_get_ctx(const GPIO_TypeDef * gpio)
 {
 #if defined (GPIOL)
 	if (gpio == GPIOL)
 		return & gpiodata_L_ctx;
 #endif /* defined (GPIOL) */
-#if CPUSTYLE_A64
-	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
 	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
-	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOB_BASE + 1];
-
-#else
-	#error Unhandled CPUSTYLE_xxx
-
-#endif /* CPUSTYLE_A64 */
-
 }
 
 
@@ -878,16 +882,16 @@ void sysinit_gpio_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& lck->lock);
 		lck->data = 0;
 	}
-	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
-	{
-		InitializeListHead(& einthead [i]);
-	}
 
 #if defined (GPIOL)
 	LCLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
 	gpiodata_L_ctx.data = 0;
 #endif /* defined (GPIOL) */
 
+	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
+	{
+		InitializeListHead(& einthead [i]);
+	}
 #if CPUSTYLE_A64
 
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
@@ -919,14 +923,14 @@ typedef uint32_t irqstatus_t;
 #endif
 
 
-static void gpioX_lock(GPIO_TypeDef * gpio, IRQL_t * oldIrql)
+static void gpioX_lock(const GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
 	RiseIrql(GPIOIRQL, oldIrql);
 	LCLSPIN_LOCK(lck);
 }
 
-static void gpioX_unlock(GPIO_TypeDef * gpio, IRQL_t irql)
+static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 {
 	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
 	LCLSPIN_UNLOCK(lck);
@@ -1263,7 +1267,7 @@ gpioX_onchangeinterrupt(
 		uint32_t priority,
 		uint_fast8_t targetcpu,
 		void (* group_handler)(void),
-		LIST_ENTRY * head, einthandler_t * h
+		volatile VLIST_ENTRY * head, volatile einthandler_t * h
 		)
 {
 	unsigned pos;
@@ -1321,7 +1325,7 @@ gpioX_onchangeinterrupt(
 		/* Регистрация обработчика для указанных битов порта */
 		arm_hardware_disable_handler(int_id);
 		h->mask = ipins;
-		InsertHeadList(head, & h->item);
+		InsertHeadVList(head, & h->item);
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 		break;
 	}
