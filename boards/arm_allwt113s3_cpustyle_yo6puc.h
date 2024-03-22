@@ -221,18 +221,18 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#define LS020_RS				(UINT32_C(1) << 11)			// PE11 signal
+#define LS020_RS				0//(UINT32_C(1) << 11)			// PE11 signal
 #define LS020_RS_SET(v) 		do { gpioX_setstate(GPIOE, LS020_RS, !! (v) * LS020_RS); } while (0)
 
 #define LS020_RS_INITIALIZE() do { \
 		arm_hardware_pioe_outputs2m(LS020_RS, LS020_RS); /* PE11 */ \
 	} while (0)
 
-#define LS020_RESET				(UINT32_C(1) << 10)			// PE10 signal
-#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOE, LS020_RESET, !! (v) * LS020_RESET); } while (0)
+#define LS020_RESET				(UINT32_C(1) << 22)			// PD22 TFT_RST signal
+#define LS020_RESET_SET(v) 		do { gpioX_setstate(GPIOD, LS020_RESET, !! (v) * LS020_RESET); } while (0)
 
 #define LS020_RESET_INITIALIZE() do { \
-		arm_hardware_pioe_outputs2m(LS020_RESET, LS020_RESET); /* PE10 */ \
+		arm_hardware_piod_outputs2m(LS020_RESET, LS020_RESET); /* PD22 */ \
 	} while (0)
 
 #if WITHENCODER
@@ -914,7 +914,7 @@
 		const portholder_t VSmask = (UINT32_C(1) << 21); 	/* PD21 LCD_VSYNC */ \
 		const portholder_t HSmask = (UINT32_C(1) << 20); 	/* PD20 LCD_HSYNC */ \
 		const portholder_t DEmask = (UINT32_C(1) << 19); 	/* PD19 LCD_DE */ \
-		const portholder_t MODEmask = (UINT32_C(1) << 0); 	/* PD0 mode */ \
+		const portholder_t MODEmask = 0*(UINT32_C(1) << 0); 	/* PD0 mode */ \
 		/* set LCD DE/SYNC mode */ \
 		arm_hardware_piod_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PD0 = state */ \
 		/* synchro signals - sync mode */ \
