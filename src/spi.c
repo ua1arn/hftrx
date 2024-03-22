@@ -3411,9 +3411,9 @@ void RAMFUNC hardware_spi_b16_p1(
 		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);
+	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);	/* 16bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3564,7 +3564,7 @@ void hardware_spi_b32_p1(
 
 	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3649,9 +3649,9 @@ void hardware_spi_b8_p1(
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v;
+	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v; /* 8bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (1u << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
