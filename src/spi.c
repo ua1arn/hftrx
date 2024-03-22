@@ -1631,22 +1631,22 @@ void hardware_spi_master_initialize(void)
 
 	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI0_CLK_GATING
 
-//	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-//	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
-//		;
-	SPIHARD_PTR->SPI_GCR |=
-		(0u < 1) |	// MODE: 1: Master mode
+
+	/* Do a soft reset */
+	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
+	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+		;
+
+	SPIHARD_PTR->SPI_GCR =
+		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
 		0;
 
-	/* Enable spi0 */
-	SPIHARD_PTR->SPI_GCR |= (1u << 7) | (1u << 1) | (1u << 0);
-	/* Do a soft reset */
-//	SPIHARD_PTR->SPI_GCR |= (1u << 31);
-//	while((SPIHARD_PTR->SPI_GCR & (1u << 31)) != 0)
-//		;
+	/* Enable SPIx */
+	SPIHARD_PTR->SPI_GCR |= (UINT32_C(1) << 0);	// EN SPI Module Enable Control
 
 	// De-assert hardware CS
-	//SPI0->SPI_TCR |= (1u << 7);
+	//SPIHARD_PTR->SPI_TCR |= (1u << 7);
 
 	SPIIO_INITIALIZE();
 
@@ -4395,8 +4395,8 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 void spidf_initialize(void)
 {
 	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
-	hardware_spi_master_initialize();
-	prog_select_init();		// spi CS initialize
+//	hardware_spi_master_initialize();
+//	prog_select_init();		// spi CS initialize
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
@@ -6250,9 +6250,18 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
-	err = spidf_verify(data, len, readnb);
-	spidf_unselect();	/* done sending data to target chip */
+	while (len != 0 && err == 0)
+	{
+		const unsigned long CHUNKMAX = 0xFFFFFF;
+		unsigned long chunk = len < CHUNKMAX ? len : CHUNKMAX;
+		const uint_fast8_t readnb = spdif_iostartread(chunk, flashoffset);
+		err = spidf_verify(data, chunk, readnb);
+		spidf_unselect();	/* done sending data to target chip */
+
+		len -= chunk;
+		flashoffset += chunk;
+		data += chunk;
+	}
 
 	if (err)
 		PRINTF(PSTR("verifyDATAFLASH: Done compare, have errors\n"));
@@ -6278,9 +6287,19 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 
 //	TP();
 //	PRINTF("read operation\n");
-	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
-	spidf_read(data, len, readnb);
-	spidf_unselect();	/* done sending data to target chip */
+	while (len != 0)
+	{
+		const unsigned long CHUNKMAX = 0xFFFFFF;
+		unsigned long chunk = len < CHUNKMAX ? len : CHUNKMAX;
+
+		const uint_fast8_t readnb = spdif_iostartread(chunk, flashoffset);
+		spidf_read(data, chunk, readnb);
+		spidf_unselect();	/* done sending data to target chip */
+
+		len -= chunk;
+		flashoffset += chunk;
+		data += chunk;
+	}
 
 #endif /* CPUSTYLE_XC7Z */
 
