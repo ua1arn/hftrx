@@ -1281,16 +1281,16 @@ static void DMA2_SPI1_TX_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
-static void sys_spinor_exit(void)
-{
-	//uintptr_t addr = 0x04025000;
-	unsigned int val;
-
-	/* Disable the spi0 controller */
-	val = SPIDFHARD_PTR->SPI_GCR;
-	val &= ~ ((1u << 1) | (1u << 0));
-	SPIDFHARD_PTR->SPI_GCR = val;
-}
+//static void sys_spinor_exit(void)
+//{
+//	//uintptr_t addr = 0x04025000;
+//	unsigned int val;
+//
+//	/* Disable the spi0 controller */
+//	val = SPIDFHARD_PTR->SPI_GCR;
+//	val &= ~ ((1u << 1) | (1u << 0));
+//	SPIDFHARD_PTR->SPI_GCR = val;
+//}
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
