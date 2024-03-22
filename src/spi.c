@@ -3407,7 +3407,7 @@ void RAMFUNC hardware_spi_b16_p1(
 	SPIHARD_PTR->SPI_MBC = 2;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 2;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ UINT32_C(0xFFFFFF)) |
 		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
@@ -3558,7 +3558,7 @@ void hardware_spi_b32_p1(
 	SPIHARD_PTR->SPI_MBC = 4;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 4;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ UINT32_C(0xFFFFFF)) |
 		4 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
@@ -3645,7 +3645,7 @@ void hardware_spi_b8_p1(
 	SPIHARD_PTR->SPI_MBC = 1;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 1;	// 23..0: Number of bursts
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ (0xFFFFFFuL)) |
+	SPIHARD_PTR->SPI_BCC = (SPIHARD_PTR->SPI_BCC & ~ UINT32_C(0xFFFFFF)) |
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
@@ -4338,9 +4338,9 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-		    SPIDFHARD_PTR->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		    SPIDFHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPIDFHARD_PTR->SPI_BCC = chunk & 0xFFFFFF;
+			SPIDFHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
 			break;
 
 		case SPDFIO_4WIRE:
@@ -4349,7 +4349,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-			    SPIDFHARD_PTR->SPI_MTC = chunk & 0xFFFFFF;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPIDFHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
@@ -4395,8 +4395,8 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 void spidf_initialize(void)
 {
 	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
-//	hardware_spi_master_initialize();
-//	prog_select_init();		// spi CS initialize
+	hardware_spi_master_initialize();
+	prog_select_init();		// spi CS initialize
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
