@@ -6,7 +6,7 @@ Dual-core ARM CortexTM-A7
 32 KB L1 I-cache + 32 KB L1 D-cache per core, and 256 KB L2 cache
 
 xfel:
-https://gitee.com/xboot/xfel/releases/v1.2.9
+https://gitee.com/xboot/xfel/releases/tag/v1.3.2
 
 Программа:
 Выполнить make clean, затем make
