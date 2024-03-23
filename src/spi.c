@@ -2013,8 +2013,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 		(void) SPIHARD_CCU_CLK_REG;
 
 		SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][SPIC_MODE3];
-		SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+		(void) SPIHARD_PTR->SPI_TCR;
 
+		// SPI delay calibration
 		SPIHARD_PTR->SPI_SAMP_DL = 0xA0;
 		(void) SPIHARD_PTR->SPI_SAMP_DL;
 		SPIHARD_PTR->SPI_SAMP_DL = 0x20;
@@ -2022,6 +2023,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 		SPIHARD_PTR->SPI_SAMP_DL |= (UINT32_C(1) << 15);
 		(void) SPIHARD_PTR->SPI_SAMP_DL;
+
 		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 15)) == 0)
 			;
 		SPIHARD_PTR->SPI_SAMP_DL &= ~ (UINT32_C(1) << 15);
