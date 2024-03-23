@@ -38,8 +38,8 @@
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
-	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
@@ -80,8 +80,8 @@
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
-	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
