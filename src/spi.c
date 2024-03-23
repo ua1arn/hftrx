@@ -1111,6 +1111,7 @@ prog_select_init(void)
 	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
+		static portholder_t spi_samp_dl_reg_val [SPIC_SPEEDS_COUNT];
 	#else
 		#error Undefined CPUSTYLE_xxx
 	#endif /* CPUSTYLE_STM32F1XX */
@@ -2005,38 +2006,43 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (2u << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (3u << 0);
 
+	if (0)
+	{
+
+		SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+		(void) SPIHARD_CCU_CLK_REG;
+
+		SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][SPIC_MODE3];
+		SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+
+		SPIHARD_PTR->SPI_SAMP_DL = 0xA0;
+		(void) SPIHARD_PTR->SPI_SAMP_DL;
+		SPIHARD_PTR->SPI_SAMP_DL = 0x20;
+		(void) SPIHARD_PTR->SPI_SAMP_DL;
+
+		SPIHARD_PTR->SPI_SAMP_DL |= (UINT32_C(1) << 15);
+		(void) SPIHARD_PTR->SPI_SAMP_DL;
+		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 15)) == 0)
+			;
+		SPIHARD_PTR->SPI_SAMP_DL &= ~ (UINT32_C(1) << 15);
+		(void) SPIHARD_PTR->SPI_SAMP_DL;
+
+		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 14)) == 0)
+			;
+		unsigned dly = (SPIHARD_PTR->SPI_SAMP_DL >> 8) & 0x3F;
+		SPIHARD_PTR->SPI_SAMP_DL = dly | (UINT32_C(1) << 7);
+
+		//PRINTF("SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
+		spi_samp_dl_reg_val [spispeedindex] = dly | (UINT32_C(1) << 7);
+
+	}
+
+
 #else
 	#error Wrong CPUSTYLE macro
 
 #endif
 }
-
-#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
-
-static void
-t113_spi_calibrate(void)
-{
-	SPIHARD_PTR->SPI_SAMP_DL = 0xA0;
-	(void) SPIHARD_PTR->SPI_SAMP_DL;
-	SPIHARD_PTR->SPI_SAMP_DL = 0x20;
-	(void) SPIHARD_PTR->SPI_SAMP_DL;
-
-	SPIHARD_PTR->SPI_SAMP_DL |= (UINT32_C(1) << 15);
-	(void) SPIHARD_PTR->SPI_SAMP_DL;
-	while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 15)) == 0)
-		;
-	SPIHARD_PTR->SPI_SAMP_DL &= ~ (UINT32_C(1) << 15);
-	(void) SPIHARD_PTR->SPI_SAMP_DL;
-
-	while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 14)) == 0)
-		;
-	unsigned dly = (SPIHARD_PTR->SPI_SAMP_DL >> 8) & 0x3F;
-	SPIHARD_PTR->SPI_SAMP_DL = dly | (UINT32_C(1) << 7);
-
-	//PRINTF("SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
-}
-
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
 
 /* управление состоянием "подключено" */
 void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
@@ -2188,6 +2194,7 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	(void) SPIHARD_CCU_CLK_REG;
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -2195,7 +2202,6 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //		SPIHARD_PTR->SPI_TCR = val;
 //		(void) SPIHARD_PTR->SPI_TCR;
 //	}
-	t113_spi_calibrate();
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -3324,6 +3330,7 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	(void) SPIHARD_CCU_CLK_REG;
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
 //	{
 //		unsigned val = SPI0->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3331,7 +3338,6 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //		SPI0->SPI_TCR = val;
 //		(void) SPI0->SPI_TCR;
 //	}
-	t113_spi_calibrate();
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -3516,6 +3522,7 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	(void) SPIHARD_CCU_CLK_REG;
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3523,7 +3530,6 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //		SPIHARD_PTR->SPI_TCR = val;
 //		(void) SPIHARD_PTR->SPI_TCR;
 //	}
-	t113_spi_calibrate();
  	HARDWARE_SPI_CONNECT();
 
 #else
