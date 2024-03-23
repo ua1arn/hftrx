@@ -25,7 +25,7 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WITHCAN0HW 1
