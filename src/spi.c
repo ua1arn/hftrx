@@ -2016,23 +2016,24 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 static void
 t113_spi_calibrate(void)
 {
-	return;
-	PRINTF("1 SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
 	SPIHARD_PTR->SPI_SAMP_DL = 0xA0;
 	(void) SPIHARD_PTR->SPI_SAMP_DL;
-	SPIHARD_PTR->SPI_SAMP_DL = 0x00;
-//	(void) SPIHARD_PTR->SPI_SAMP_DL;
+	SPIHARD_PTR->SPI_SAMP_DL = 0x20;
+	(void) SPIHARD_PTR->SPI_SAMP_DL;
+
 	SPIHARD_PTR->SPI_SAMP_DL |= (UINT32_C(1) << 15);
 	(void) SPIHARD_PTR->SPI_SAMP_DL;
-//	TP();
+	while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 15)) == 0)
+		;
+	SPIHARD_PTR->SPI_SAMP_DL &= ~ (UINT32_C(1) << 15);
+	(void) SPIHARD_PTR->SPI_SAMP_DL;
+
 	while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 14)) == 0)
-	{
-		PRINTF("2 SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
-	}
-//	TP();
+		;
 	unsigned dly = (SPIHARD_PTR->SPI_SAMP_DL >> 8) & 0x3F;
 	SPIHARD_PTR->SPI_SAMP_DL = dly | (UINT32_C(1) << 7);
-	PRINTF("3 SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
+
+	//PRINTF("SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
 }
 
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
