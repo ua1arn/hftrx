@@ -1980,7 +1980,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	// SCLK = Clock Source/M/N.
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
-	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, allwnrt113_get_spi0_freq());
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, BOARD_SPI_FREQ);
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
@@ -2006,9 +2006,8 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (2u << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (3u << 0);
 
-	if (1)
+	if (0)
 	{
-
 		SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 		(void) SPIHARD_CCU_CLK_REG;
 
@@ -2032,9 +2031,10 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 14)) == 0)
 			;
 		unsigned dly = (SPIHARD_PTR->SPI_SAMP_DL >> 8) & 0x3F;
+
 		SPIHARD_PTR->SPI_SAMP_DL = dly | (UINT32_C(1) << 7);
 
-		//PRINTF("SPIHARD_PTR->SPI_SAMP_DL=%08X\n", (unsigned) SPIHARD_PTR->SPI_SAMP_DL);
+		//PRINTF("hardware_spi_master_setfreq: prei=%u,value=%u, spispeed=%u,SPI_SAMP_DL=%08X,dly=%u\n", prei, value, (unsigned) spispeed, (unsigned) SPIHARD_PTR->SPI_SAMP_DL, dly);
 		spi_samp_dl_reg_val [spispeedindex] = dly | (UINT32_C(1) << 7);
 
 	}
