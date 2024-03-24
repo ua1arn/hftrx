@@ -21,9 +21,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
@@ -47,6 +44,9 @@
 #define BOARD_TUH_RHPORT 1
 
 #if WITHISBOOTLOADER
+
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 	#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -106,6 +106,9 @@
 	//#define WITHTINYUSB 1
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 	//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
