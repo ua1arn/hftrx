@@ -2006,7 +2006,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (2u << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (3u << 0);
 
-	if (0)
+	if (1)
 	{
 
 		SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
