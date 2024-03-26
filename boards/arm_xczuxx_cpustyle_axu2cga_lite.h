@@ -34,37 +34,35 @@
 #define USERFIRSTSBLOCK 0
 
 enum {
-	XGPI0,	// C13 encoder2 bit A
-	XGPI1,	// B10 encoder2 bit B
-	XGPI2,	// C14 encoder2 button
-	XGPI3,	// B8 spi_miso
-//	XGPI4,	// C8 ptt_in
+	XGPI0,	// encoder2 bit A
+	XGPI1,	// encoder2 bit B
+	XGPI2,	// encoder2 button
+	XGPI3,	// spi_miso
 };
 
 enum {
-	XGPO0,	// A7 cs_ctrl_int
-	XGPO1,	// C6 spi_mosi
-	XGPO2,	// A6 spi_sck
+	XGPO0,	// cs_ctrl_int
+	XGPO1,	// spi_mosi
+	XGPO2,	// spi_sck
+	XGPO3,	// cs_fram
 };
 
-#define AXI_IQ_FTW_ADDR			0x8004a000
-#define AXI_IQ_FTW_SUB_ADDR		0x80045000
-#define AXI_IQ_RTS_ADDR			0x80042000
-#define AXI_MODEM_CTRL_ADDR		0x80049000
-#define AXI_IQ_FIFO_RX_ADDR		0x80041000
-#define AXI_IQ_FIFO_TX_ADDR		0x8004c000
-#define AXI_XGPI_ADDR			0x80046000
-#define AXI_XGPO_ADDR			0x80047000
-#define AXI_IQ_RX_COUNT_ADDR	0x80044000
-#define AXI_IQ_TX_COUNT_ADDR	0x8004d000
-#define AXI_ADI_ADDR			0x80040000
-#define AXI_FIFO_PHONES_ADDR	0x80043000
-#define AXI_FIFO_MIC_ADDR		0x8004e000
-#define AXI_FIR_RELOAD_ADDR		0x8004b000
-#define AXI_DCDC_PWM_ADDR		0x80048000
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR			0x8004a000
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR		0x80045000
+#define XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR			0x80042000
+#define XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR		0x80049000
+#define XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR			0x8004c000
+#define XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR			0x80060000
+#define XPAR_AUDIO_FIFO_PHONES_BASEADDR				0x80043000
+#define XPAR_AUDIO_FIFO_MIC_BASEADDR				0x8004e000
+#define XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR		0x80050000
+#define XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR			0x80044000
+#define XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR		0x8004b000
+#define AXI_XGPI_ADDR								0x80046000
+#define AXI_XGPO_ADDR								0x80047000
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		51
-#define CALIBRATION_IQ_CIC_RX_SHIFT		58
+#define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
+#define CALIBRATION_IQ_CIC_RX_SHIFT		62
 #define CALIBRATION_TX_SHIFT			25
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
@@ -608,27 +606,21 @@ enum {
 #if WITHSPIHW || WITHSPISW
 
 	#define targetctl1		XGPO0
-
-	#define CS_BY_I2C		1
-	#define PCF8575CTS_ADDR	0x40	// A0=0, A1=0, A2=0
-
-	#define targetext1		(1 << 8)
-	#define targetext2		(2 << 8)
-	#define targetnvram		(3 << 8)
+	#define targetnvram		XGPO3
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		cs_i2c_assert(target); \
+		gpio_writepin(target, 0); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		cs_i2c_deassert(target); \
+		gpio_writepin(target, 1); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			cs_i2c_disable();		\
+			gpio_writepin(targetctl1, 1); \
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */

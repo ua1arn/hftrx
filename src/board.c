@@ -4947,6 +4947,31 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif /* WITHRFUNIT */
 }
 
+#elif CTLREGMODE_AXU2CGA_LITE
+
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	{
+		const spitarget_t target = targetctl1;
+		rbtype_t rbbuff [1] = { 0 };
+
+		RBBIT(007, 0); // display enable not use
+		RBBIT(006, glob_tsc_reset);
+		RBBIT(005, 1); // adc rand
+		RBBIT(004, 0); // adc pga
+		RBBIT(003, 0); // adc dith
+		RBBIT(002, ! glob_preamp);
+		RBBIT(001, 0); // opa2674 not use
+		RBBIT(000, 0); // opa2674 not use
+
+		board_ctlregs_spi_send_frame(target, rbbuff, ARRAY_SIZE(rbbuff));
+	}
+}
+
 #elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */

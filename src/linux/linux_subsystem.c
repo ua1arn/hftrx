@@ -235,18 +235,19 @@ void framebuffer_close(void)
 
 /********************** EMIO ************************/
 
-#include "./gpiops/xgpiops.h"
-
-//volatile uint32_t * xgpo, * xgpi;
-static XGpioPs xc7z_gpio;
-uint32_t * gpiops_ptr;
-
+#if CPUSTYLE_XC7Z
+	#include "./gpiops/xgpiops.h"
+	static XGpioPs xc7z_gpio;
+	uint32_t * gpiops_ptr;
+#elif CPUSTYLE_XCZU
+	uint32_t * xgpo, * xgpi;
+#endif
 void linux_xgpio_init(void)
 {
-#if 0
-	xgpo = get_highmem_ptr(AXI_XGPO_ADDR);
-	xgpi = get_highmem_ptr(AXI_XGPI_ADDR);
-#else
+#if CPUSTYLE_XCZU
+	xgpo = (uint32_t *) get_highmem_ptr(AXI_XGPO_ADDR);
+	xgpi = (uint32_t *) get_highmem_ptr(AXI_XGPI_ADDR);
+#elif CPUSTYLE_XC7Z
 	int ff = open("/sys/class/gpio/export", O_WRONLY);
 	if (! ff)
 		perror("Unable to open /sys/class/gpio/export");
@@ -262,17 +263,17 @@ void linux_xgpio_init(void)
 
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {
-#if 0
+#if CPUSTYLE_XCZU
 	uint32_t v = * xgpi;
 	return (v >> pin) & 1;
-#else
+#elif CPUSTYLE_XC7Z
 	return XGpioPs_ReadPin(& xc7z_gpio, pin);
 #endif
 }
 
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 {
-#if 0
+#if CPUSTYLE_XCZU
 	uint32_t mask = 1 << pin;
 	uint32_t rw = * xgpo;
 
@@ -282,7 +283,7 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 		rw &= ~mask;
 
 	* xgpo = rw;
-#else
+#elif CPUSTYLE_XC7Z
 	XGpioPs_WritePin(& xc7z_gpio, pin, val);
 #endif
 }
@@ -299,13 +300,17 @@ uint_fast8_t xc7z_readpin(uint8_t pin)
 
 void xc7z_gpio_input(uint8_t pin)
 {
+#if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 0);
+#endif
 }
 
 void xc7z_gpio_output(uint8_t pin)
 {
+#if CPUSTYLE_XC7Z
 	XGpioPs_SetDirectionPin(& xc7z_gpio, pin, 1);
 	XGpioPs_SetOutputEnablePin(& xc7z_gpio, pin, 1);
+#endif
 }
 
 void gpio_writepin(uint8_t pin, uint8_t val)
@@ -924,5 +929,7 @@ unsigned long xc7z_get_arm_freq(void)
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line) {}
 void LowerIrql(IRQL_t newIRQL) {}
+
+float xczu_get_cpu_temperature(void) { return 1.0; }
 
 #endif /* LINUX_SUBSYSTEM */

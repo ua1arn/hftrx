@@ -55,9 +55,9 @@
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 
-	//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-	#define DIRECT_96M_X1	1
-	#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
+	#define DIRECT_122M88_X1			1	/* Тактовый генератор 122.880 МГц */
+//	#define DIRECT_96M_X1				1
+	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -65,8 +65,8 @@
 	// --- вариации прошивки, специфические для разных частот
 
 //	#define CTLREGMODE_NOCTLREG	1
-	#define CTLREGMODE_XCZU_V2	1
-	#define WITHQRPBOARD_UA3REO	1
+	#define CTLREGMODE_AXU2CGA_LITE	1
+//	#define WITHQRPBOARD_UA3REO	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -182,8 +182,8 @@
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -199,7 +199,7 @@
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
@@ -230,16 +230,19 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		150
+			#define WITHAFGAINDEFAULT		230
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
-			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+//			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
+//			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //			#define WITHNMEA				1
 //			#define WITHLFM					1
 			#define WITHHWDUALVFO			1	/* 2 физически раздельных канала приема */
+			#define DMABUFCLUSTER			32
+			#define WITHIQSHIFT				1
+			#define DEFAULTDIALFREQ			3650000uL
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
