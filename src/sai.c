@@ -4102,13 +4102,13 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned mclkdiv = clk / mclkf;
 	const unsigned bclkdiv = clk / bclkf;
 
+	//PRINTF("tp: mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
+
 	const unsigned ratio = 256 / framebits;
-	const unsigned div4 = 1;
 	i2s->I2S_PCM_CLKD =
 		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
-		ratio2div(div4) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-		//ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
-		ratio2div(div4 * 64) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		ratio2div(1) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+		ratio2div(4) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
 	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
