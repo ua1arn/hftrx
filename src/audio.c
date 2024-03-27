@@ -789,6 +789,8 @@ int32_t adpt_outputL(const adapter_t * adp, double v)
 //	}
 //	ASSERT(v <= 1);
 //	ASSERT(v >= - 1);
+	v = fmin(v, adp->outmax);	// ограничить сверху
+	v = fmax(v, adp->outmin);	// ограничить снизу
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
