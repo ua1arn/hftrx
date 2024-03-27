@@ -3555,7 +3555,10 @@ static unsigned ratio2div(unsigned ratio)
 	case 128:	return CLKD_Div128;
 	case 176:	return CLKD_Div176;
 	case 192:	return CLKD_Div192;
-	default:	return CLKD_Div192;
+	default:
+		PRINTF("ratio2div: unsupported ratio=%u\n", ratio);
+		TP();
+		return CLKD_Div192;
 	}
 }
 
@@ -4096,12 +4099,16 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// (pin P2-6) lrck = 53 khz
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
+	const unsigned mclkdiv = clk / mclkf;
+	const unsigned bclkdiv = clk / bclkf;
+
 	const unsigned ratio = 256 / framebits;
 	const unsigned div4 = 1;
 	i2s->I2S_PCM_CLKD =
 		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
 		ratio2div(div4) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-		ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		//ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		ratio2div(div4 * 64) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
 	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
@@ -4272,6 +4279,13 @@ static void hardware_i2s2_enable(uint_fast8_t state)
 static void hardware_i2s2_slave_duplex_initialize_codec1(void)
 {
 	const int master = 0;
+	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(master);
+}
+
+static void hardware_i2s2_master_duplex_initialize_codec1(void)
+{
+	const int master = 1;
 	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
 	I2S2HW_INITIALIZE(master);
 }
@@ -6130,6 +6144,17 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 	hardware_i2s2_enable,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-slave"
+};
+
+static const codechw_t audiocodechw_i2s2_duplex_master =
+{
+	hardware_i2s2_master_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMAC_I2S2_RX_initialize_codec1,
+	DMAC_I2S2_TX_initialize_codec1,
+	hardware_i2s2_enable,
+	hardware_dummy_enable,
+	"audiocodechw-i2s2-duplex-master"
 };
 
 #endif /* ! defined (CPUSTYLE_A64) */
