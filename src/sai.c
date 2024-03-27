@@ -4202,27 +4202,31 @@ static void hardware_i2s0_enable(uint_fast8_t state)
 // Codec initialize
 static void hardware_i2s0_master_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(0, I2S0, 1, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	I2S0HW_INITIALIZE(1);
+	const int master = 1;
+	hardware_i2s_initialize(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	I2S0HW_INITIALIZE(master);
 }
 
 static void hardware_i2s0_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(0, I2S0, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	I2S0HW_INITIALIZE(0);
+	const int master = 0;
+	hardware_i2s_initialize(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	I2S0HW_INITIALIZE(master);
 }
 
 // FPGA interface
 static void hardware_i2s0_master_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(0, I2S0, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	I2S0HW_INITIALIZE(1);
+	const int master = 1;
+	hardware_i2s_initialize(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	I2S0HW_INITIALIZE(master);
 }
 
 static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(0, I2S0, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	I2S0HW_INITIALIZE(0);
+	const int master = 0;
+	hardware_i2s_initialize(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	I2S0HW_INITIALIZE(master);
 }
 
 #endif /* defined(I2S0) && WITHI2S0HW */
@@ -4237,20 +4241,23 @@ static void hardware_i2s1_enable(uint_fast8_t state)
 // Codec initialize
 static void hardware_i2s1_master_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(1, I2S1, 1, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S1HW_INITIALIZE(1);
+	const int master = 1;
+	hardware_i2s_initialize(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(master);
 }
 
 static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(1, I2S1, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S1HW_INITIALIZE(0);
+	const int master = 0;
+	hardware_i2s_initialize(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(master);
 }
 
 static void hardware_i2s1_slave_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(1, I2S1, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	I2S1HW_INITIALIZE(0);
+	const int master = 0;
+	hardware_i2s_initialize(1, I2S1, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	I2S1HW_INITIALIZE(master);
 }
 
 #endif /* defined(I2S1) && WITHI2S1HW */
@@ -4264,21 +4271,24 @@ static void hardware_i2s2_enable(uint_fast8_t state)
 
 static void hardware_i2s2_slave_duplex_initialize_codec1(void)
 {
-	hardware_i2s_initialize(2, I2S2, 0, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S2HW_INITIALIZE(0);
+	const int master = 0;
+	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(master);
 }
 
 static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(2, I2S2, 0, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S2HW_INITIALIZE(0);
+	const int master = 0;
+	hardware_i2s_initialize(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(master);
 }
 
 // FPGA interface
 static void hardware_i2s2_master_duplex_initialize_fpga(void)
 {
-	hardware_i2s_initialize(2, I2S2, 1, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	I2S2HW_INITIALIZE(1);
+	const int master = 1;
+	hardware_i2s_initialize(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	I2S2HW_INITIALIZE(master);
 }
 
 #endif /* defined(I2S2) && WITHI2S2HW */
