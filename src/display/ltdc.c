@@ -23,7 +23,7 @@
 #include "src/touch/touch.h"
 
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
-#define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_LVDS_INITIALIZE))
+#define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_MIPIDSI_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 
 static void ltdc_tfcon_cfg(const videomode_t * vdmode)
@@ -2822,10 +2822,11 @@ performdump(const char * name, unsigned long base, unsigned long size)
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
+	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
 	unsigned prei = 0;
-	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
+	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider, display_getdotclock(vdmode) * 7);
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider, lvdsfreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2846,13 +2847,23 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 
 }
 
+#if WITHDSIHW
+
+static uint_fast32_t display_getdsiclock(const videomode_t * vdmode, unsigned nlanes)
+{
+	unsigned pixelbits = 24;
+	return display_getdotclock(vdmode) * pixelbits / nlanes;
+}
+
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
+	const uint_fast32_t dsifreq = display_getdsiclock(vdmode, WITHMIPIDSISHW_LANES);
 	unsigned prei = 0;
-	unsigned divider = BOARD_TCONLCDFREQ / (display_getdotclock(vdmode) * 7);
+	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, dsifreq);
+	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000);
 	// step0 - CCU configuration
-	t113_tconlcd_CCU_configuration(vdmode, prei, divider, display_getdotclock(vdmode) * 7);
+	t113_tconlcd_CCU_configuration(vdmode, prei, divider, dsifreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
@@ -2882,6 +2893,8 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 
 }
+
+#endif /* WITHDSIHW */
 
 static void hardware_de_initialize(const videomode_t * vdmode)
 {

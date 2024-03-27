@@ -126,6 +126,7 @@
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
+	#define WITHMIPIDSISHW_LANES 4	/* mipi-dsi port lanes number */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
