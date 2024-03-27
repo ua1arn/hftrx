@@ -20,7 +20,8 @@ TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+XFEL = ./xfel_fixed_t113-s3
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
