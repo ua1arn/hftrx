@@ -142,6 +142,8 @@
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
+	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 
 #elif 1
 
@@ -152,6 +154,8 @@
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
+	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 
 #elif 1
 
@@ -159,6 +163,8 @@
 	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
+	#define WITHMIPIDSISHW_LANES 4	/* mipi-dsi port lanes number */
 
 #elif 0
 

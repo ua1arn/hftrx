@@ -2340,7 +2340,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
     	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
-        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
+        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
     		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
@@ -2351,7 +2351,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     {
     	ASSERT(prei >= 0 && prei <= 3);
     	ASSERT(divider >= 1 && divider <= 16);
-        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(3) << 8) | (UINT32_C(0x0F) << 0))) |
+        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
     		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
@@ -2405,11 +2405,11 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 // LVDS step2 - Clock configuration
 // TODO: this is only placeholder!
 
-static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode)
+static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigned onepixelcloks)
 {
     TCONLCD_PTR->LCD_DCLK_REG =
 		(UINT32_C(0x0F) << 28) |	// LCD_DCLK_EN
-		(UINT32_C(7) << 0) |	// LCD_DCLK_DIV
+		onepixelcloks * (UINT32_C(1) << 0) |	// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
 }
@@ -2849,25 +2849,22 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 
 #if WITHDSIHW
 
-static uint_fast32_t display_getdsiclock(const videomode_t * vdmode, unsigned nlanes)
-{
-	unsigned pixelbits = 24;
-	return display_getdotclock(vdmode) * pixelbits / nlanes;
-}
-
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
-	const uint_fast32_t dsifreq = display_getdsiclock(vdmode, WITHMIPIDSISHW_LANES);
+	unsigned pixdepth = 24;
+	const unsigned nlanes = WITHMIPIDSISHW_LANES;
+	const unsigned onepixelclocks = pixdepth / nlanes;
+	const uint_fast32_t dsifreq = display_getdotclock(vdmode) * pixdepth / nlanes;
 	unsigned prei = 0;
 	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, dsifreq);
-	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000);
+	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz, lanes=%u, depth=%u, pixelclock=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000, nlanes, pixdepth, display_getdotclock(vdmode) / 1000 / 1000);
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider, dsifreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
-	t113_MIPIDSI_clock_configuration(vdmode);
+	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open IO output
