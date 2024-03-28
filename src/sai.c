@@ -3574,7 +3574,10 @@ static unsigned width2fmt(unsigned width)
 	case 24:		return 0x05;
 	case 28:		return 0x06;
 	case 32:		return 0x07;
-	default:		TP(); return 0x07;
+	default:
+		TP();
+		PRINTF("width2fmt: unsupported width=%u\n", width);
+		return 0x07;
 	}
 }
 
@@ -3977,7 +3980,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
 	i2s->I2S_PCM_FMT0 =
-		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (UINT32_C(1) << 19) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
@@ -3990,12 +3993,14 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	{
 		// Данные берутся/появляются в младшей части регистра FIFO
 		// I2S/PCM FIFO Control Register
-		i2s->I2S_PCM_FCTL = (i2s->I2S_PCM_FCTL & ~ (0x07uL)) |
+		i2s->I2S_PCM_FCTL = (i2s->I2S_PCM_FCTL & ~ (UINT32_C(0x07))) |
 			1 * (UINT32_C(1) << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
 			3 * (UINT32_C(1) << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
 			0;
 	}
+	//i2s->I2S_PCM_FCTL |= (UINT32_C(1) << 31);
 
+	ASSERT(NSLOTS >= 1 && NSLOTS <= 8);
 	// I2S/PCM Channel Configuration Register
 	i2s->I2S_PCM_CHCFG =
 		(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_SLOT_NUM 0111: 7 channel or slot 0001: 2 channel or slot
@@ -4011,20 +4016,20 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	const unsigned bclkdiv = clk / bclkf;
 
 
-	const unsigned mclkratio = 1;
-	const unsigned bclkratio = 256 / framebits;
+	const unsigned mclkratio = 2; //1;
+	const unsigned bclkratio = 8; //256 / framebits;
 	i2s->I2S_PCM_CLKD =
 		!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
 		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
 		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
-	//PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
+	PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
 
 	const unsigned txrx_offset = 1;		// I2S format
 
 	ASSERT(din < 4);
-	ASSERT(dout < 4);
+	ASSERT(dout < 1);
 	// I2S/PCM Control Register
 	i2s->I2S_PCM_CTL = 0;
 	i2s->I2S_PCM_CTL =
@@ -4041,14 +4046,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	const portholder_t txchsel =
 		txrx_offset * (UINT32_C(1) << 12) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
-		0xFF * (UINT32_C(1) << 4) |		// TX3 Channel (Slot) Enable
+		//0xFF * (UINT32_C(1) << 4) |		// TX3 Channel (Slot) Enable
+		0x01 * (UINT32_C(1) << 4) |		// TX3 Channel (Slot) Enable
 		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX3 Channel (Slot) Number Select for Each Output
 		0;
 
 	i2s->I2S_PCM_TX0CHSEL = txchsel;
-	i2s->I2S_PCM_TX1CHSEL = txchsel;
-	i2s->I2S_PCM_TX2CHSEL = txchsel;
-	i2s->I2S_PCM_TX3CHSEL = txchsel;
+	i2s->I2S_PCM_TX1CHSEL = 0*txchsel;
+	i2s->I2S_PCM_TX2CHSEL = 0*txchsel;
+	i2s->I2S_PCM_TX3CHSEL = 0*txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
 	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
@@ -4056,6 +4062,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 3, dout, NSLOTS);	// I2S_PCM_TX3CHMAPx
+	//PRINTF("I2S0->FSTA=%08X\n", (unsigned) I2S0->I2S_PCM_FSTA);
 
 	i2s->I2S_PCM_INT = 0;
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
