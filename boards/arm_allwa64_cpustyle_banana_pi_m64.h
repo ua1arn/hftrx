@@ -113,6 +113,8 @@
 		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
 	} while (0)
 
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+
 	#if WITHINTEGRATEDDSP
 
 		#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
@@ -126,14 +128,15 @@
 		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
-		//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+		#define WITHCODEC1_I2S0_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+
+		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-		#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-	//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
@@ -316,26 +319,14 @@
 #endif
 
 	#define I2S0HW_INITIALIZE(master) do { \
-		arm_hardware_piob_altfn20(1u << 3,	GPIO_CFG_AF3); /* PB3 I2S0-MCLK	*/ \
-		arm_hardware_piob_altfn20(1u << 4,	GPIO_CFG_AF3); /* PB4 I2S0-SYNC	*/ \
-		arm_hardware_piob_altfn20(1u << 5,	GPIO_CFG_AF3); /* PB5 I2S0-BCLK	*/ \
-		arm_hardware_piob_altfn20(1u << 6,	GPIO_CFG_AF3); /* PB6 I2S0-DOUT to FPGA */ \
-		arm_hardware_piob_altfn20(1u << 7,	GPIO_CFG_AF3); /* PB7 I2S0-DIN from FPGA */ \
+		arm_hardware_piob_altfn20(0 * UINT32_C(1) << 3,	GPIO_CFG_AF3); /* PB3 PCM0-MCLK	*/ \
+		arm_hardware_piob_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PB4 PCM0-SYNC	CON2-31 */ \
+		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 PCM0-BCLK	CON2-33 */ \
+		arm_hardware_piob_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 PCM0-DOUT to codec CON2-35 */ \
+		arm_hardware_piob_altfn20(0 * UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB7 PCM0-DIN from codec */ \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
-	// Инициализируются I2S1 в дуплексном режиме.
-	// аудиокодек
-	#define I2S1HW_INITIALIZE(master) do { \
-	} while (0)
-	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
-	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
-	// Инициализируются I2S2 в дуплексном режиме.
-	// FPGA или IF codec
-	#define I2S2HW_INITIALIZE(master) do { \
-	} while (0)
-	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
-	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
 
 /* Распределение битов в ARM контроллерах */
 
