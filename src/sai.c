@@ -3835,10 +3835,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S1_CLK_REG + ix - 1;
 
 	* i2s_clk_reg =
-		(UINT32_C(1) << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
-		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
-		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
-		((uint_fast32_t) value << 0) |	// Factor M (0..31)
+		1 * (UINT32_C(1) << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+		src * (UINT32_C(1) << 24) |	// CLK_SRC_SEL
+		prei * (UINT32_C(1) << 8) |	// Factor N (0..3: /1 /2 /4 /8)
+		value * (UINT32_C(1) << 0) |	// Factor M (0..31)
 		0;
 
 	CCU->I2S_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Gating Clock for I2S/PCMx
