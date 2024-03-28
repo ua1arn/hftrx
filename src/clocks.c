@@ -2275,6 +2275,31 @@ uint_fast32_t allwnr_a64_get_apb2_freq(void)
 	}
 }
 
+// a64: not implemented finnaly - only stub
+uint_fast32_t allwnr_a64_get_apb2s_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	//	00: OSC24M
+	//	01: PLL_PERIPH0(1X)
+	//	10: PLL_PERIPH1(1X)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: LOSC
+		return allwnrt113_get_losc_freq() / (M * N);
+	case 0x01:
+		// 01: OSC24M
+		return allwnrt113_get_hosc_freq() / (M * N);
+	case 0x02:
+	case 0x03:
+		// 1X: PLL_PERIPH0(2X)
+		return allwnrt113_get_pll_periph0_x2_freq() / (M * N);
+	}
+}
+
 // A64
 // The clock of the UART is from APB2
 uint_fast32_t allwnrt113_get_uart_freq(void)

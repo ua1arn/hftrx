@@ -108,11 +108,13 @@
 		//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
 		//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-		//#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
-		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
+		//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+
+		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 
 	#endif /* WITHINTEGRATEDDSP */
 

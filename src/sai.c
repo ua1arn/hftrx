@@ -4006,7 +4006,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned mclkratio = 1;
 	const unsigned bclkratio = 256 / framebits;
 	i2s->I2S_PCM_CLKD =
-		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
+		!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
 		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
 		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
@@ -4108,13 +4108,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned mclkratio = 1;
 	const unsigned bclkratio = 256 / framebits;
 	i2s->I2S_PCM_CLKD =
-		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
+		!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
 		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
 		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
-	//PRINTF("tp: mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
-	//PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u\n", ix, mclkratio, bclkratio);
+	//PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
 
 	const unsigned txrx_offset = 1;		// I2S format
 
