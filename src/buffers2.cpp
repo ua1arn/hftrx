@@ -305,6 +305,11 @@ public:
 	bool outready;
 
 public:
+	blists() :
+		name("uninited")
+	{
+
+	}
 	blists(IRQL_t airql, const char * aname, buffitem_t * storage, unsigned capacity) :
 #if WITHBUFFERSDEBUG
 		errallocate(0),
