@@ -743,6 +743,8 @@
 	#define	TWIHARD_INITIALIZE() do { \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* TWI2-SCK PE12 SCL */ \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* TWI2-SDA PE13 SDA */ \
+		arm_hardware_pioe_updown(TARGET_TWI_TWCK, 0); \
+		arm_hardware_pioe_updown(TARGET_TWI_TWD, 0); \
 		} while (0) 
 	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */

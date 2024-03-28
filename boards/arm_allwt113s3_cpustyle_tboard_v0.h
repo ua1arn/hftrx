@@ -689,6 +689,8 @@
 	#define	TWIHARD_INITIALIZE() do { \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI_SCK AF3 */ \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI_SDA AF3 */ \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
 		} while (0) 
 	#define	TWIHARD_IX x3	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR xTWI3	/* 0 - TWI0, 1: TWI1... */
