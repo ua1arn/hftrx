@@ -89,12 +89,19 @@ static void cs4272_setreg(
 	#endif /* WITHSPILOWSUPPORTT */
 
 #else
-	// кодек управляется по I2C
-	i2c_start(CS4272_ADDRESS_W(tg));
-	i2c_write(mapv);
-	i2c_write(datav);
-	i2c_waitsend();
-	i2c_stop();
+
+	#if WITHTWIHW
+		uint8_t buff [] = { mapv, datav, };
+		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+	#elif WITHTWISW
+		// кодек управляется по I2C
+		i2c_start(CS4272_ADDRESS_W(tg));
+		i2c_write(mapv);
+		i2c_write(datav);
+		i2c_waitsend();
+		i2c_stop();
+	#endif
+
 
 	// resd back for test
 	/*
@@ -119,15 +126,22 @@ static uint_fast8_t cs4272_getreg(
 #if CODEC_TYPE_CS4272_STANDALONE
 	return v;
 #else
-	// кодек управляется по I2C
-	i2c_start(CS4272_ADDRESS_W(tg));
-	i2c_write(mapv);
-	i2c_waitsend();
-	i2c_stop();
 
-	i2c_start(CS4272_ADDRESS_R(tg));
-	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	#if WITHTWIHW
+		uint8_t buff [] = { mapv, };
+		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+		i2chw_read(CS4272_ADDRESS_R(tg), & v, 1);
+	#elif WITHTWISW
 
+		// кодек управляется по I2C
+		i2c_start(CS4272_ADDRESS_W(tg));
+		i2c_write(mapv);
+		i2c_waitsend();
+		i2c_stop();
+
+		i2c_start(CS4272_ADDRESS_R(tg));
+		i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	#endif
 	// resd back for test
 	/*
 	uint_fast8_t v1;

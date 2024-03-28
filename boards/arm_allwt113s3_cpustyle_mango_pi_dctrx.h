@@ -25,9 +25,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
 //#define WITHCAN0HW 1
 //#define WITHCAN1HW 1
 
@@ -96,11 +93,13 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-//	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
-//	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
-//	#define WITHSDHC1HW	1		/* SDIO */
+	//#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
+	//#define WITHSDHC1HW	1		/* SDIO */
 
 	#if WITHINTEGRATEDDSP
 		//#define WITHI2S1HW	1	/* Использование I2S1 */
@@ -109,9 +108,9 @@
 		//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
 		//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-		#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
+		//#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
@@ -720,14 +719,14 @@
 
 #if WITHTWISW || WITHTWIHW
 
-	// TWI2-SCK PE12 SCL
-	// TWI2-SDA PE13 SDA
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 12)		// TWI2-SCK PE12 SCL
+	// TWI2-SCK PE4 SCL
+	// TWI2-SDA PE5 SDA
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 4)		// TWI2-SCK PE4 SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOE->DATA)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
 
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 13)		// TWI2-SDA PE13 SDA
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 5)		// TWI2-SDA PE5 SDA
 	#define TARGET_TWI_TWD_PIN		(GPIOE->DATA)
 	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
 	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
@@ -744,8 +743,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* TWI2-SCK PE12 SCL */ \
-		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* TWI2-SDA PE13 SDA */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI2-SCK PE4 SCL */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI2-SDA PE5 SDA */ \
 		} while (0) 
 	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
