@@ -3338,7 +3338,9 @@ static void buffers_spool(void * ctx)
 	uacinrts96.spool10ms();
 #endif
 #endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 	uacin48.spool10ms();
+#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 	//message8.spool10ms();
 #endif /* WITHINTEGRATEDDSP */
 }
