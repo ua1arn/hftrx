@@ -3677,7 +3677,14 @@ static void I2S_fill_TXxCHMAP(
 #endif
 }
 
-//
+//void I2S_PCM0_IrqHandler(void)
+//{
+//	const uint_fast32_t ista = I2S0->I2S_PCM_ISTA;
+//	I2S0->I2S_PCM_ISTA = ista;
+//	PRINTF("I2S_PCM0_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+//	ASSERT(0);
+//}
+
 //void I2S_PCM1_IrqHandler(void)
 //{
 //	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
@@ -3685,7 +3692,7 @@ static void I2S_fill_TXxCHMAP(
 //	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
 //	ASSERT(0);
 //}
-//
+
 //void I2S_PCM2_IrqHandler(void)
 //{
 //	const uint_fast32_t ista = I2S2->I2S_PCM_ISTA;
@@ -4062,7 +4069,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 3, dout, NSLOTS);	// I2S_PCM_TX3CHMAPx
-	//PRINTF("I2S0->FSTA=%08X\n", (unsigned) I2S0->I2S_PCM_FSTA);
+
+	i2s->I2S_PCM_ISTA = 0xFF;	// clear all nnterrupts
 
 	i2s->I2S_PCM_INT = 0;
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
@@ -4071,7 +4079,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
 //	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
-	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+	//i2s->I2S_PCM_INT |= 0xFF;
+//	arm_hardware_set_handler_system(I2S_PCMx_IRQn, I2S_PCMx_IrqHandler);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Установка формата обмна */
