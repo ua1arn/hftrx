@@ -3799,7 +3799,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	// 0x00, 0x01, 0x03: 48000
 	// 0x02: ~ 48350
-	const unsigned long src = 0x01;
+	const unsigned long src = 0x03;
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -4061,7 +4061,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	/* Установка формата обмна */
 	// Каналы I2S
-	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+	//PRINTF("allwnrt113_get_i2s1_freq = %" PRIuFAST32 "\n", ix == 1 ? allwnrt113_get_i2s1_freq() : allwnrt113_get_i2s2_freq());
 
 	// Данные на выходе меняются по спадающему фронту (I2S complaint)
 	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 0, DIN sample data at positive edge;
@@ -4102,16 +4102,17 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned mclkdiv = clk / mclkf;
 	const unsigned bclkdiv = clk / bclkf;
 
-	//PRINTF("tp: mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
 
-	const unsigned ratio = 256 / framebits;
+	const unsigned mclkratio = 1;
+	const unsigned bclkratio = 256 / framebits;
 	i2s->I2S_PCM_CLKD =
 		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
-		ratio2div(1) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-		ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
-	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
+	//PRINTF("tp: mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
+	//PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u\n", ix, mclkratio, bclkratio);
 
 	const unsigned txrx_offset = 1;		// I2S format
 
