@@ -4019,10 +4019,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// I2S/PCM Control Register
 	i2s->I2S_PCM_CTL = 0;
 	i2s->I2S_PCM_CTL =
-		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// DOUT3_EN..DOUT0_EN
-		((uint_fast32_t) master << 18) | // BCLK_OUT
-		((uint_fast32_t) master << 17) | // LRCK_OUT
-		(UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
+		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// mask: DOUT3_EN..DOUT0_EN
+		master * (UINT32_C(1) << 18) | // BCLK_OUT
+		master * (UINT32_C(1) << 17) | // LRCK_OUT
+		1 * (UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
 		0;
 
 	i2s->I2S_PCM_RXCHSEL =
@@ -4120,10 +4120,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// I2S/PCM Control Register
 	i2s->I2S_PCM_CTL = 0;
 	i2s->I2S_PCM_CTL =
-		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// DOUT3_EN..DOUT0_EN
-		((uint_fast32_t) master << 18) | // BCLK_OUT
-		((uint_fast32_t) master << 17) | // LRCK_OUT
-		(UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
+		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// mask: DOUT3_EN..DOUT0_EN
+		master * (UINT32_C(1) << 18) | // BCLK_OUT
+		master * (UINT32_C(1) << 17) | // LRCK_OUT
+		1 * (UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
 		0;
 
 	i2s->I2S_PCM_RXCHSEL =
