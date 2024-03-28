@@ -190,7 +190,8 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, uint_fast8_t mast
     	);
     cs4272_setreg(tg, MODE_CONTROL_1,
 		((USE_I2S ? 0x01 : 0x00) << 0) |		/* DAC_DIF2:DAC_DIF1:DAC_DIF0 format LJ/I2S */
-		(0U << 4) |		/* ratio select: Slave Mode, MCLK/LRCK=256, SCLK/LRCK=32, 64, 128 */
+		0x00 * (UINT32_C(1) << 4) |				/* ratio select: MCLK/LRCK=256, SCLK/LRCK=64 */
+		!! master * (UINT32_C(1) << 3) |		/* master/slave mode */
 		0x00
 		);
 
