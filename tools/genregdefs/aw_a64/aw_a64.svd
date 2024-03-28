@@ -56,9 +56,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DA_RXFIFO</name>
-    <displayName>DA_RXFIFO</displayName>
-    <description>Digital Audio RX FIFO Register</description>
+    <name>AC_ADC_RXDATA</name>
+    <displayName>AC_ADC_RXDATA</displayName>
+    <description>Digital Audio RX FIFO Register (was: DA_RXFIFO)</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -92,9 +92,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DA_TXFIFO</name>
-    <displayName>DA_TXFIFO</displayName>
-    <description>Digital Audio TX FIFO Register</description>
+    <name>AC_DAC_TXDATA</name>
+    <displayName>AC_DAC_TXDATA</displayName>
+    <description>Digital Audio TX FIFO Register (was: DA_TXFIFO)</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
