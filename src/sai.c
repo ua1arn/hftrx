@@ -3758,7 +3758,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	01: PLL_AUDIO(8X)/2	- 98285714
 	//	10: PLL_AUDIO(8X)/4 - 49142857
 	//	11: PLL_AUDIO - 24571428
-	const unsigned CLK_SRC_SEL = 0;// 0x03;
+	const unsigned CLK_SRC_SEL = 0x03;
 
 	* i2s_clk_reg =
 		(UINT32_C(1) << 31) |	// SCLK_GATING.
@@ -3786,9 +3786,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		break;
 	}
 
-//	unsigned value;	/* делитель */
-//	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
-//	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
+	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%u)\n", ix, prei, value, mclkf, (unsigned) clk);
 
 //	PRINTF("i2s%u: mclkf=%u, bclkf=%u, clk=%u\n", ix, mclkf, bclkf, (unsigned) clk);
 //	PRINTF("CCU->PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
@@ -4001,16 +4001,18 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
 	// (pin P2-6) lrck = 53 khz
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
-	// BCLK = MCLK / BCLKDIV
-	const unsigned ratio = 1;// 256 / framebits;
-	const unsigned div4 = 1;
+	// BCLK = MCLK / BBUS_SOFT_RST_REG3CLKDIV
+
+	const unsigned mclkratio = 1;
+	const unsigned bclkratio = 256 / framebits;
 	i2s->I2S_PCM_CLKD =
 		1 * (UINT32_C(1) << 8) |		// MCLKO_EN
-		ratio2div(div4) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-		ratio2div(ratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
 		0;
 
-	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
+	//PRINTF("tp: mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
+	PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
 
 	const unsigned txrx_offset = 1;		// I2S format
 
