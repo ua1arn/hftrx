@@ -3965,7 +3965,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//PRINTF("AHUB->APBIF_RX [%u].APBIF_RXn_CONT=%08" PRIX32 "\n", apbifrxix, AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CONT);
 	i2s->I2Sn_RXDIF_CONT = (UINT32_C(1) << (31 - apbiftxix)); // RXn_CONTACT_RXDIF APBIF_TXDIF0..APBIF_TXDIF3
 
-#elif CPUSTYLE_A64 && 1
+#elif CPUSTYLE_A64
 	/* Установка формата обмна */
 	#warning CPUSTYLE_A64 to be implemented
 	/* Установка формата обмна */
@@ -4035,14 +4035,14 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0;
 
 	i2s->I2S_PCM_RXCHSEL =
-		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		txrx_offset * (UINT32_C(1) << 12) |	// RX_OFFSET (need for I2S mode)
+		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
 		0;
 
 	const portholder_t txchsel =
-		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
-		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
-		0xFFFF * (UINT32_C(1) << 0) |		// TX3 Channel (Slot) Enable
+		txrx_offset * (UINT32_C(1) << 12) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
+		0xFF * (UINT32_C(1) << 4) |		// TX3 Channel (Slot) Enable
+		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX3 Channel (Slot) Number Select for Each Output
 		0;
 
 	i2s->I2S_PCM_TX0CHSEL = txchsel;
