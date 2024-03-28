@@ -230,7 +230,7 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		230
+			#define WITHAFGAINDEFAULT		120
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
@@ -239,10 +239,10 @@
 //			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //			#define WITHNMEA				1
 //			#define WITHLFM					1
-			#define WITHHWDUALVFO			1	/* 2 физически раздельных канала приема */
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
 			#define DEFAULTDIALFREQ			3650000uL
+			#define WITHCPUFANPWM			1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

@@ -190,6 +190,7 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 	cfg [2] = (maxX >> 8);
 	cfg [3] = (maxY & 0xff);
 	cfg [4] = (maxY >> 8);
+	cfg [5] = 1;			// одно касание
 	cfg [15] = 0xf;			// период опроса 15 + 5 мс
 	cfg [len - 2] = gt911_calcChecksum(cfg, len - 2);
 	cfg [len - 1] = 1;
@@ -245,6 +246,10 @@ uint_fast8_t gt911_initialize(void)
 	gt911_fwResolution(DIM_X, DIM_Y);
 	gt911_write_reg(GOODIX_READ_COORD_ADDR, 0);
 	tscpresetnt = 1;
+
+	uint8_t ver[2];
+	gt911_read(GOODIX_REG_FW_VER, ver, 2);
+	PRINTF("gt9xx FW ver.: %02x%02x\n", ver[1], ver[0]);
 
 	gt911_intconnect();
 

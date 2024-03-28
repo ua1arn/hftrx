@@ -607,12 +607,23 @@ void linux_user_init(void)
 
 #if defined AXI_DCDC_PWM_ADDR
 	const float FS = powf(2, 32);
-	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
-	reg_write(AXI_DCDC_PWM_ADDR + 0, fan_pwm_period);
+	uint32_t dcdcpwm_period = 25000 * FS / REFERENCE_FREQ;
+	reg_write(AXI_DCDC_PWM_ADDR + 0, dcdc_pwm_period);
 
-	uint32_t fan_pwm_duty = FS * (1.0f - 0.8f) - 1;
-	reg_write(AXI_DCDC_PWM_ADDR + 4, fan_pwm_duty);
+	uint32_t dcdc_pwm_duty = FS * (1.0f - 0.8f) - 1;
+	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
+
+#if WITHCPUFANPWM
+	{
+		const float FS = powf(2, 32);
+		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
+		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 0, fan_pwm_period);
+
+		uint32_t fan_pwm_duty = FS * (1.0f - 0.1f) - 1;
+		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
+	}
+#endif /* WITHCPUFANPWM */
 
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
@@ -722,16 +733,6 @@ uint32_t iq_cic_test_process(void)
 }
 
 void iq_cic_test(uint32_t val) {}
-
-#if WITHHWDUALVFO
-
-void hamradio_set_hw_vfo(uint_fast8_t v)
-{
-	hw_vfo_sel = v != 0;
-	update_modem_ctrl();
-}
-
-#endif /* WITHHWDUALVFO */
 
 #if WITHDSPEXTFIR
 volatile uint32_t * fir_reload = NULL;
