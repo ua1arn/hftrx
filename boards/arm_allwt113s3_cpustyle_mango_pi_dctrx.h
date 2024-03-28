@@ -29,12 +29,7 @@
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 //#define WITHCAN0HW 1
-#define WITHCAN1HW 1
-
-#if WITHINTEGRATEDDSP
-	//#define WITHI2S1HW	1	/* Использование I2S1 */
-	#define WITHI2S2HW	1	/* Использование I2S2 */
-#endif /* WITHINTEGRATEDDSP */
+//#define WITHCAN1HW 1
 
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
@@ -101,20 +96,26 @@
 
 #else /* WITHISBOOTLOADER */
 
+	//#define WITHETHHW 1	/* Hardware Ethernet controller */
+
 //	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
 //	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
 //	#define WITHSDHC1HW	1		/* SDIO */
 
-	//#define WITHETHHW 1	/* Hardware Ethernet controller */
+	#if WITHINTEGRATEDDSP
+		//#define WITHI2S1HW	1	/* Использование I2S1 */
+		#define WITHI2S2HW	1	/* Использование I2S2 */
 
-	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
-	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
-	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
+		//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
+		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+
+	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
