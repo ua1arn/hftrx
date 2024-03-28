@@ -117,16 +117,16 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
-		#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
-		#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
-		#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
-		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
-		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+		//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+		//#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
+		//#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
+		//#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+		//#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+		//#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
-		#define WITHI2S0HW	1
-		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+		#define WITHI2S0HW	1	/* Использование I2S0 */
+		//#define WITHI2S1HW	1	/* Использование I2S1 */
+		//#define WITHI2S2HW	1	/* Использование I2S2 */
 
 		#define WITHCODEC1_I2S0_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
@@ -319,11 +319,11 @@
 #endif
 
 	#define I2S0HW_INITIALIZE(master) do { \
-		arm_hardware_piob_altfn20(0 * UINT32_C(1) << 3,	GPIO_CFG_AF3); /* PB3 PCM0-MCLK	*/ \
+		arm_hardware_piob_altfn20(UINT32_C(1) << 3,	GPIO_CFG_AF3); /* PB3 PCM0-MCLK	CON2-12 */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PB4 PCM0-SYNC	CON2-31 */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 PCM0-BCLK	CON2-33 */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 PCM0-DOUT to codec CON2-35 */ \
-		arm_hardware_piob_altfn20(0 * UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB7 PCM0-DIN from codec */ \
+		arm_hardware_piob_altfn20(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB7 PCM0-DIN from codecCON2-32 */ \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
