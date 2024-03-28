@@ -2276,7 +2276,7 @@ uint_fast32_t allwnr_a64_get_apb2_freq(void)
 }
 
 // a64: not implemented finnaly - only stub
-uint_fast32_t allwnr_a64_get_apb2s_freq(void)
+uint_fast32_t allwnr_a64_get_apbs2_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
