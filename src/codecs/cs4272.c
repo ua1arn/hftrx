@@ -7,8 +7,6 @@
 //
 #include "hardware.h"
 
-#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
-
 #include "board.h"
 
 #include "formats.h"
@@ -117,7 +115,7 @@ static uint_fast8_t cs4272_getreg(
 	uint_fast8_t mapv	// Memory Address Pointer
 	)
 {
-	uint_fast8_t v = 0xFF;
+	uint8_t v = 0xFF;
 #if CODEC_TYPE_CS4272_STANDALONE
 	return v;
 #else
@@ -146,7 +144,7 @@ static uint_fast8_t cs4272_getreg(
 #endif
 
 // MCLK должен уже подаваться в момент инициализации
-static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, , uint_fast8_t master)
+static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, uint_fast8_t master)
 {
 	board_codec2_nreset(1);	// Выставить сигнал сброса
 	board_update();
@@ -234,6 +232,8 @@ static uint_fast8_t cs4272_clocksneed(void)
 	return 1;
 }
 
+#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
+
 const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
@@ -244,6 +244,62 @@ const codec2if_t * board_getfpgacodecif(void)
 		cs4272_clocksneed
 		cs4272_initialize_fullduplex,
 		codecname
+	};
+
+	return & ifc;
+}
+
+#endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272) */
+
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)
+
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t nau8822_clocksneed(void)
+{
+	return 1;
+}
+
+static void cs4272_stop(void)
+{
+}
+
+
+/* Установка громкости на наушники */
+static void cs4272_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+{
+}
+
+
+/* Выбор LINE IN как источника для АЦП вместо микрофона */
+static void cs4272_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+{
+}
+
+
+/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+static void cs4272_setprocparams(
+	uint_fast8_t procenable,		/* включение обработки */
+	const uint_fast8_t * gains		/* массив с параметрами */
+	)
+{
+}
+
+const codec1if_t *
+board_getaudiocodecif(void)
+{
+
+	static const char codecname [] = "CS4272";
+
+	/* Интерфейс управления кодеком */
+	static const codec1if_t ifc =
+	{
+		cs4272_clocksneed,
+		cs4272_stop,
+		cs4272_initialize_fullduplex,
+		cs4272_setvolume,		/* Установка громкости на наушники */
+		cs4272_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
+		cs4272_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+		codecname				/* Название кодека (всегда последний элемент в структуре) */
 	};
 
 	return & ifc;
