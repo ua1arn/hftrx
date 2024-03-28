@@ -1,3 +1,8 @@
+
+#include "hardware.h"	/* зависящие от процессора функции работы с портами */
+
+#if LINUX_SUBSYSTEM
+
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
@@ -213,3 +218,5 @@ int rpmsg_init(void)
 
 	return 0;
 }
+
+#endif /* LINUX_SUBSYSTEM */
