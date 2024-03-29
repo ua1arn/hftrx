@@ -41,6 +41,17 @@ enum {
 	iq_test_pos			= 28,
 };
 
+#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
+#include "../sysmon/xsysmonpsu.h"
+static XSysMonPsu xczu_sysmon;
+
+float xczu_get_cpu_temperature(void)
+{
+	u32 TempRawData = XSysMonPsu_GetAdcData(& xczu_sysmon, XSM_CH_TEMP, XSYSMON_PS);
+	return XSysMonPsu_RawToTemperature_OnChip(TempRawData);
+}
+#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
+
 void * get_highmem_ptr(uint32_t addr)
 {
 	int fd;
@@ -625,6 +636,18 @@ void linux_user_init(void)
 	}
 #endif /* WITHCPUFANPWM */
 
+#if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
+	XSysMonPsu_Config * ConfigPtr = XSysMonPsu_LookupConfig(0);
+	XSysMonPsu_CfgInitialize(& xczu_sysmon, ConfigPtr, ConfigPtr->BaseAddress);
+	int Status = XSysMonPsu_SelfTest(& xczu_sysmon);
+	if (Status != XST_SUCCESS) {
+		PRINTF("sysmon init error %d\n", Status);
+		ASSERT(0);
+	}
+	XSysMonPsu_SetSequencerMode(& xczu_sysmon, XSM_SEQ_MODE_SAFE, XSYSMON_PS);
+	XSysMonPsu_SetAvg(& xczu_sysmon, XSM_AVG_256_SAMPLES, XSYSMON_PS);
+#endif /* WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU */
+
 #if WITHNMEA && WITHLFM
 	linux_create_thread(& nmea_t, linux_nmea_spool, 20, 0);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
@@ -930,7 +953,5 @@ unsigned long xc7z_get_arm_freq(void)
 
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line) {}
 void LowerIrql(IRQL_t newIRQL) {}
-
-float xczu_get_cpu_temperature(void) { return 1.0; }
 
 #endif /* LINUX_SUBSYSTEM */

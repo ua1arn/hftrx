@@ -243,6 +243,7 @@
 			#define WITHIQSHIFT				1
 			#define DEFAULTDIALFREQ			3650000uL
 			#define WITHCPUFANPWM			1
+			#define WITHCPUTHERMOLEVEL		1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
