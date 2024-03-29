@@ -305,7 +305,7 @@ unsigned audiorec_getwidth(void);
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-	#else /* CPUSTYLE_XC7Z */
+	#elif ! defined (ARMI2SMCLK) &&  ! defined (ARMSAIMCLK)
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
