@@ -21,6 +21,10 @@
 	#include "display/fonts/ub_fonts.h"
 #endif /* WITHALTERNATIVEFONTS */
 
+#if WITHRLEDECOMPRESS
+	#include "display/pictures_RLE.h"
+#endif /* WITHRLEDECOMPRESS */
+
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
 #if LCDMODE_LTDC
@@ -590,10 +594,6 @@ typedef struct {
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
-#if WITHRLEDECOMPRESS
-extern const picRLE_t smeter_bg_new;
-#endif /* WITHRLEDECOMPRESS */
-
 static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
@@ -644,7 +644,7 @@ display2_smeter15_layout(
 		break;
 	}
 
-	const int markersTX_pwr [] =
+	const uint_fast16_t markersTX_pwr [] =
 	{
 		smpr->gs,
 		smpr->gs + 2 * smpr->step1,
@@ -658,14 +658,14 @@ display2_smeter15_layout(
 		smpr->gs + 18 * smpr->step1,
 		smpr->gs + 20 * smpr->step1,
 	};
-	const int markersTX_swr [] =
+	const uint_fast16_t markersTX_swr [] =
 	{
 		smpr->gs,
 		smpr->gs + smpr->step3,
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
-	const int markers [] =
+	const uint_fast16_t markers [] =
 	{
 		//smpr->gs + 0 * smpr->step1,
 		smpr->gs + 2 * smpr->step1,		// S1
@@ -674,13 +674,13 @@ display2_smeter15_layout(
 		smpr->gs + 8 * smpr->step1,		// S7
 		smpr->gs + 10 * smpr->step1,	// S9
 	};
-	const int markersR [] =
+	const uint_fast16_t markersR [] =
 	{
 		smpr->gm + 2 * smpr->step2,	//
 		smpr->gm + 4 * smpr->step2,
 		smpr->gm + 6 * smpr->step2,
 	};
-	const int markers2 [] =
+	const uint_fast16_t markers2 [] =
 	{
 		//smpr->gs + 1 * smpr->step1,
 		smpr->gs + 3 * smpr->step1,		// S2
@@ -688,7 +688,7 @@ display2_smeter15_layout(
 		smpr->gs + 7 * smpr->step1,		// S6
 		smpr->gs + 9 * smpr->step1,		// S8
 	};
-	const int markers2R [] =
+	const uint_fast16_t markers2R [] =
 	{
 		smpr->gm + 1 * smpr->step2,
 		smpr->gm + 3 * smpr->step2,
