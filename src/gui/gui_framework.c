@@ -89,7 +89,7 @@ void add_element(const char * element_name, ...)
 	{
 	case TYPE_LABEL:
 	{
-		win->lh_ptr = realloc(win->lh_ptr, sizeof(label_t) * (win->lh_count + 1));
+		win->lh_ptr = (label_t *) realloc(win->lh_ptr, sizeof(label_t) * (win->lh_count + 1));
 		GUI_MEM_ASSERT(win->lh_ptr);
 
 		label_t * lh = & win->lh_ptr [win->lh_count];
@@ -117,7 +117,7 @@ void add_element(const char * element_name, ...)
 
 	case TYPE_BUTTON:
 	{
-		win->bh_ptr = realloc(win->bh_ptr, sizeof(button_t) * (win->bh_count + 1));
+		win->bh_ptr = (button_t *) realloc(win->bh_ptr, sizeof(button_t) * (win->bh_count + 1));
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		button_t * bh = & win->bh_ptr [win->bh_count];
@@ -137,7 +137,7 @@ void add_element(const char * element_name, ...)
 
 	case TYPE_TEXT_FIELD:
 	{
-		win->tf_ptr = realloc(win->tf_ptr, sizeof(text_field_t) * (win->tf_count + 1));
+		win->tf_ptr = (text_field_t *) realloc(win->tf_ptr, sizeof(text_field_t) * (win->tf_count + 1));
 		GUI_MEM_ASSERT(win->tf_ptr);
 
 		text_field_t * tf = & win->tf_ptr [win->tf_count];
@@ -156,7 +156,7 @@ void add_element(const char * element_name, ...)
 
 	case TYPE_TOUCH_AREA:
 	{
-		win->ta_ptr = realloc(win->ta_ptr, sizeof(touch_area_t) * (win->ta_count + 1));
+		win->ta_ptr = (touch_area_t *) realloc(win->ta_ptr, sizeof(touch_area_t) * (win->ta_count + 1));
 		GUI_MEM_ASSERT(win->ta_ptr);
 
 		touch_area_t * ta = & win->ta_ptr [win->ta_count];
@@ -1026,7 +1026,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	if (win->is_moving)
 	{
 		add_element("ta_winmove", 0, 0, win->w - window_close_button_size, window_title_height, 1);
-		touch_area_t * tm = find_gui_element(TYPE_TOUCH_AREA, win, "ta_winmove");
+		touch_area_t * tm = (touch_area_t *) find_gui_element(TYPE_TOUCH_AREA, win, "ta_winmove");
 		tm->visible = VISIBLE;
 		tm->state = CANCELLED;
 	}
