@@ -10563,6 +10563,25 @@ void hightests(void)
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
+#if 0
+	{
+		// I2C bus test
+		for (;;)
+		{
+			unsigned addr;
+			PRINTF("I2C bus scan:\n");
+			for (addr = 2; addr < 127; addr += 2)
+			{
+				// CS4272 read id sequence
+				uint8_t v = 0xFF;
+				uint8_t buff [] = { 0x08, };
+				i2chw_write(addr, buff, ARRAY_SIZE(buff));
+				i2chw_read(addr | 0x01, & v, 1);
+				PRINTF("addr=0x%02X: v=0x%02X\n", addr, v);
+			}
+		}
+	}
+#endif
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
