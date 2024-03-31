@@ -307,11 +307,19 @@
 		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
+		arm_hardware_piob_updown(UINT32_C(1) << 3, 0);	/* PB3 pull-up на выходе данных от кодека: после RESET вход в port mode */ \
 	} while (0)
 	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
 
-/* Распределение битов в ARM контроллерах */
+	#define HARDWARE_CODEC2_RESET_BIT (UINT32_C(1) << 11) // PG11 - codec reset
+	#define HARDWARE_CODEC2_RESET_INITIALIZE() do { \
+		arm_hardware_piog_outputs(HARDWARE_CODEC2_RESET_BIT, 0 * HARDWARE_CODEC2_RESET_BIT); \
+	} while (0)
+	#define HARDWARE_CODEC2_RESET_SET(state) do { \
+		 gpioX_setstate(GPIOG, HARDWARE_CODEC2_RESET_BIT, !! (state) * (HARDWARE_CODEC2_RESET_BIT)); \
+		 local_delay_us(1); \
+	} while (0)
 
 #if (WITHCAT && WITHCAT_USART2)
 	// CAT data lites
@@ -1157,6 +1165,7 @@
 		TUNE_INITIALIZE(); \
 		BOARD_USERBOOT_INITIALIZE(); \
 		/*USBD_EHCI_INITIALIZE(); */\
+		HARDWARE_CODEC2_RESET_INITIALIZE(); \
 	} while (0)
 
 	// TUSB parameters
