@@ -10570,14 +10570,14 @@ void hightests(void)
 		{
 			unsigned addr;
 			PRINTF("I2C bus scan:\n");
-			for (addr = 2; addr < 127; addr += 2)
+			for (addr = 2; addr < 254; addr += 2)
 			{
-				// CS4272 read id sequence
 				uint8_t v = 0xFF;
-				uint8_t buff [] = { 0x08, };
-				i2chw_write(addr, buff, ARRAY_SIZE(buff));
-				i2chw_read(addr | 0x01, & v, 1);
-				PRINTF("addr=0x%02X: v=0x%02X\n", addr, v);
+				int err = i2chw_read(addr | 0x01, & v, 1);
+				if (err == 0)
+				{
+					PRINTF("addr8bit=0x%02X, addr7bit=0x%02X\n", addr, addr / 2);
+				}
 			}
 		}
 	}

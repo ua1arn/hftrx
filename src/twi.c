@@ -1465,7 +1465,8 @@ void hardware_iicps_configure(void)
 	XIicPs_ClearOptions(& xc7z_iicps, XIICPS_10_BIT_ADDR_OPTION | XIICPS_SLAVE_MON_OPTION | XIICPS_REP_START_OPTION);
 }
 
-uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+/* return non-zero then error */
+ i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
@@ -1476,6 +1477,7 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	return Status;
 }
 
+/* return non-zero then error */
 uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
@@ -1846,6 +1848,7 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 //	return 1;
 //}
 
+/* return non-zero then error */
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 {
 	struct i2c_t113_pdata_t * const pdat = & pdat_i2c;
@@ -1859,7 +1862,7 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	if (res != I2C_STAT_TX_START){
 		//PRINTF("i2chw_read start error\n");
 		t113_i2c_stop(&pdat_i2c);
-		return 0;
+		return 1;
 	}
 	res = t113_i2c_read(pdat, &msgs);
 	if (res!=0){
@@ -1869,12 +1872,13 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 		pdat->io->TWI_SRST |= 1u << 0;
 		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
 			;
-		return 0;
+		return 1;
 	}
 	t113_i2c_stop(pdat);
 	return 0;
 }
 
+/* return non-zero then error */
 uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 {
 	struct i2c_t113_pdata_t *const  pdat = & pdat_i2c;
@@ -1888,7 +1892,7 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 	if (res != I2C_STAT_TX_START){
 		//PRINTF("i2chw_write start error\n");
 		t113_i2c_stop(pdat);
-		return 0;
+		return 1;
 	}
 	res = t113_i2c_write(pdat, &msgs);
 	if (res!=0){
@@ -1898,23 +1902,11 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 		pdat->io->TWI_SRST |= 1u << 0;
 		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
 			;
-		return 0;
+		return 1;
 	}
 	t113_i2c_stop(pdat);
 	return 0;
 }
-//
-//uint16_t i2chw_read2(uint16_t slave_address, uint16_t reg_address, uint8_t * buf, uint32_t size)
-//{
-//	I2C_ReadBuffer(slave_address >> 1, buf, reg_address, size);
-//	return 0;
-//}
-//
-//uint16_t i2chw_write2(uint16_t slave_address, uint16_t reg_address, const uint8_t * buf, uint32_t size)
-//{
-//	I2C_WriteBuffer(slave_address >> 1, buf, reg_address, size);
-//	return 0;
-//}
 
 void i2c_initialize(void)
 {
