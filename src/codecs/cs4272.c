@@ -177,21 +177,6 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, uint_fast8_t mast
 #if CODEC_TYPE_CS4272_STANDALONE
 	return;
 #endif /* CODEC_TYPE_CS4272_STANDALONE */
-
-#if ! CODEC_TYPE_CS4272_USE_SPI
-	{
-		const uint_fast8_t chip_id = cs4272_getreg(tg, CHIP_ID);
-		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, chip_id=0x%02X\n", (int) tg, (unsigned) chip_id);
-
-//	    cs4272_setreg(tg, DAC_VOLUME_A, 0x55);	// set attenuation
-//		const uint_fast8_t volume_a1 = cs4272_getreg(tg, DAC_VOLUME_A);
-//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a1=0x%02X\n", (int) tg, (unsigned) volume_a1);
-//
-//	    cs4272_setreg(tg, DAC_VOLUME_A, 0xAA);	// set attenuation
-//		const uint_fast8_t volume_a2 = cs4272_getreg(tg, DAC_VOLUME_A);
-//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a2=0x%02X\n", (int) tg, (unsigned) volume_a2);
-	}
-#endif /* ! CODEC_TYPE_CS4272_USE_SPI */
 	    //CODEC START SEQUENCE
     cs4272_setreg(tg, MODE_CONTROL_2,
     	MODE_CONTROL_2_PDN | MODE_CONTROL_2_CPEN	// write 0x03 to register 0x07 within 10ms of bringing RST_bar high
@@ -240,6 +225,21 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, uint_fast8_t mast
 		//0x08 |	// MUTE A
 		0);
 #endif
+
+#if ! CODEC_TYPE_CS4272_USE_SPI
+	{
+		const uint_fast8_t chip_id = cs4272_getreg(tg, CHIP_ID);
+		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, chip_id=0x%02X\n", (int) tg, (unsigned) chip_id);
+
+//	    cs4272_setreg(tg, DAC_VOLUME_A, 0x55);	// set attenuation
+//		const uint_fast8_t volume_a1 = cs4272_getreg(tg, DAC_VOLUME_A);
+//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a1=0x%02X\n", (int) tg, (unsigned) volume_a1);
+//
+//	    cs4272_setreg(tg, DAC_VOLUME_A, 0xAA);	// set attenuation
+//		const uint_fast8_t volume_a2 = cs4272_getreg(tg, DAC_VOLUME_A);
+//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a2=0x%02X\n", (int) tg, (unsigned) volume_a2);
+	}
+#endif /* ! CODEC_TYPE_CS4272_USE_SPI */
 }
 
 

@@ -302,7 +302,7 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
 	#define I2S2HW_INITIALIZE(master) do { \
-		arm_hardware_piob_updown(UINT32_C(1) << 3, 0);	/* PB3 pull-up на выходе данных от кодека: после RESET вход в port mode */ \
+		arm_hardware_piob_updown(!! (master) * UINT32_C(1) << 3, ! (master) * UINT32_C(1) << 3);	/* PB3 sdout: 1 - master, 0: slave - после RESET вход в port mode */ \
 		arm_hardware_piob_altfn20(!! (master) * UINT32_C(1) << 7, GPIO_CFG_AF3); /* PB7 I2S2-MCLK */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
