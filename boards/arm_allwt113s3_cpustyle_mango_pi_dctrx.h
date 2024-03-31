@@ -93,8 +93,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */

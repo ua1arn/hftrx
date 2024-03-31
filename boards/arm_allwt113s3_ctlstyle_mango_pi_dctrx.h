@@ -268,6 +268,9 @@
 	/* Board hardware configuration */
 
 	#define CODEC1_TYPE CODEC_TYPE_CS4272
+	#define CS4272_ADDRESS_7BITS	0x11	// I2C address: 0x20 or 0x22	- depend on adress pin state
+	//#define CS4272_ADDRESS_7BITS	0x10
+
 	//#define CODEC1_TYPE CODEC_TYPE_AWHWCODEC
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1

@@ -23,9 +23,17 @@
 #define CS4272_SPIMODE		SPIC_MODE3
 #define CS4272_SPIC_SPEED	SPIC_SPEED4M	// No more then 6 MHz
 
-#define CS4272_ADDRESS_W(tg)	((tg) ? 0x22 : 0x20)	// I2C address: 0x20 or 0x22	- depend on adress pin state
-									// Also used as SPI prefix byte
-#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
+#if defined (CS4272_ADDRESS_7BITS)
+	#define CS4272_ADDRESS_W(tg)	((CS4272_ADDRESS_7BITS) << 2)	// I2C address: 0x20 or 0x22	- depend on adress pin state
+										// Also used as SPI prefix byte
+	#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
+
+#else
+	#define CS4272_ADDRESS_W(tg)	((tg) ? 0x22 : 0x20)	// I2C address: 0x20 or 0x22	- depend on adress pin state
+										// Also used as SPI prefix byte
+	#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
+
+#endif
 
 //memory address pointers
 #define MODE_CONTROL_1 0x1 //memory address pointer for modeControl1
@@ -70,7 +78,7 @@ static void cs4272_setreg(
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		const uint8_t txbuf [3] =
 		{
-			CS4272_ADDRESS_W(0),
+			CS4272_ADDRESS_W(tg),
 			mapv,
 			datav,
 		};
@@ -80,7 +88,7 @@ static void cs4272_setreg(
 	#else /* WITHSPILOWSUPPORTT */
 
 		spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
-		spi_progval8_p1(target, CS4272_ADDRESS_W(0));		// Chip Aaddress, D0=0: write
+		spi_progval8_p1(target, CS4272_ADDRESS_W(tg));		// Chip Aaddress, D0=0: write
 		spi_progval8_p2(target, mapv);
 		spi_progval8_p2(target, datav);
 		spi_complete(target);
