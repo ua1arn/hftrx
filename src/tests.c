@@ -10566,7 +10566,8 @@ void hightests(void)
 #if 0
 	{
 		// I2C bus test
-		for (;;)
+		unsigned n = 3;
+		for (;n --;)
 		{
 			unsigned addr;
 			PRINTF("I2C bus scan:\n");
@@ -10580,6 +10581,7 @@ void hightests(void)
 				}
 			}
 		}
+		PRINTF("I2C bus scan done\n");
 	}
 #endif
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
