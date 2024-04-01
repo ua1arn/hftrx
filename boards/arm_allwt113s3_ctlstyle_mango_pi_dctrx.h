@@ -268,11 +268,14 @@
 	/* Board hardware configuration */
 
 	#define CODEC1_TYPE CODEC_TYPE_CS4272
+	#define CS4272_ADDRESS_7BITS	0x11	// I2C address: 0x20 or 0x22	- depend on adress pin state
+	//#define CS4272_ADDRESS_7BITS	0x10
+
 	//#define CODEC1_TYPE CODEC_TYPE_AWHWCODEC
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-	#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
+	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 
 	//#define CODEC_TYPE_WM8731_USE_SPI	1
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */

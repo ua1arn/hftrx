@@ -125,6 +125,7 @@ static uint_fast8_t 	glob_reset_n;
 static uint_fast8_t 	glob_i2s_enable;	// разрешение генерации тактовой частоты для I2S в FPGA
 static uint_fast8_t 	glob_lcdreset = 1;	//
 static uint_fast8_t 	glob_lctl1;
+static uint_fast8_t 	glob_codec1_nreset;
 static uint_fast8_t 	glob_codec2_nreset;
 
 static uint_fast8_t 	glob_dac1;
@@ -679,6 +680,14 @@ prog_gpioreg(void)
 #if LS020_RESET
 	LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
 #endif /* LS020_RESET */
+
+#if defined (HARDWARE_CODEC1_RESET_SET)
+	HARDWARE_CODEC1_RESET_SET(! glob_codec1_nreset);
+#endif /* defined (HARDWARE_CODEC1_RESET_SET) */
+
+#if defined (HARDWARE_CODEC2_RESET_SET)
+	HARDWARE_CODEC2_RESET_SET(! glob_codec2_nreset);
+#endif /* defined (HARDWARE_CODEC2_RESET_SET) */
 
 #if TARGET_CS4272_RESET_BIT
 	// CODEC2 reset
@@ -5307,6 +5316,17 @@ void board_codec2_nreset(uint_fast8_t v)
 	if (glob_codec2_nreset != n)
 	{
 		glob_codec2_nreset = n;
+		board_ctlreg1changed();
+	}
+}
+
+/* формирование сигнала "RESET" для codec1. 0 - снять reset. */
+void board_codec1_nreset(uint_fast8_t v)
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_codec1_nreset != n)
+	{
+		glob_codec1_nreset = n;
 		board_ctlreg1changed();
 	}
 }

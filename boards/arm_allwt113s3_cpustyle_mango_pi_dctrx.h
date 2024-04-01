@@ -302,6 +302,7 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
 	#define I2S2HW_INITIALIZE(master) do { \
+		arm_hardware_piob_updown(!! (master) * UINT32_C(1) << 3, ! (master) * UINT32_C(1) << 3);	/* PB3 sdout: 1 - master, 0: slave - после RESET вход в port mode */ \
 		arm_hardware_piob_altfn20(!! (master) * UINT32_C(1) << 7, GPIO_CFG_AF3); /* PB7 I2S2-MCLK */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
@@ -311,7 +312,14 @@
 	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
 
-/* Распределение битов в ARM контроллерах */
+	#define HARDWARE_CODEC2_RESET_BIT (UINT32_C(1) << 11) // PG11 - codec reset
+	#define HARDWARE_CODEC2_RESET_INITIALIZE() do { \
+		arm_hardware_piog_outputs(HARDWARE_CODEC2_RESET_BIT, 0 * HARDWARE_CODEC2_RESET_BIT); \
+	} while (0)
+	#define HARDWARE_CODEC2_RESET_SET(state) do { \
+		 gpioX_setstate(GPIOG, HARDWARE_CODEC2_RESET_BIT, !! (state) * (HARDWARE_CODEC2_RESET_BIT)); \
+		 local_delay_us(1); \
+	} while (0)
 
 #if (WITHCAT && WITHCAT_USART2)
 	// CAT data lites
@@ -721,37 +729,37 @@
 
 #if WITHTWISW || WITHTWIHW
 
-	// TWI2-SCK PE4 SCL
-	// TWI2-SDA PE5 SDA
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 4)		// TWI2-SCK PE4 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOE->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+	// TWI1-SCK PG8 SCL
+	// TWI1-SDA PG9 SDA
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 8)		// TWI1-SCK PG8 SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOG->DATA)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOG, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOG, (v), 1 * (v)); } while (0)
 
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 5)		// TWI2-SDA PE5 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOE->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 9)		// TWI1-SDA PG9 SDA
+	#define TARGET_TWI_TWD_PIN		(GPIOG->DATA)
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOG, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOG, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); /* TWI2-SCK PE12 SCL */ \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWD);  	/* TWI2-SDA PE13 SDA */ \
+			arm_hardware_piog_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piog_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* TWI2-SCK PE12 SCL */ \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* TWI2-SDA PE13 SDA */ \
+			arm_hardware_piog_inputs(TARGET_TWI_TWCK); 	/* TWI1-SCK PG8 SCL */ \
+			arm_hardware_piog_inputs(TARGET_TWI_TWD);	/* TWI1-SDA PG9 SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI2-SCK PE4 SCL */ \
-		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI2-SDA PE5 SDA */ \
-		arm_hardware_pioe_updown(TARGET_TWI_TWCK, 0); \
-		arm_hardware_pioe_updown(TARGET_TWI_TWD, 0); \
+		arm_hardware_piog_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
+		arm_hardware_piog_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
+		arm_hardware_piog_updown(TARGET_TWI_TWCK, 0); \
+		arm_hardware_piog_updown(TARGET_TWI_TWD, 0); \
 		} while (0) 
-	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
@@ -1157,6 +1165,7 @@
 		TUNE_INITIALIZE(); \
 		BOARD_USERBOOT_INITIALIZE(); \
 		/*USBD_EHCI_INITIALIZE(); */\
+		HARDWARE_CODEC2_RESET_INITIALIZE(); \
 	} while (0)
 
 	// TUSB parameters

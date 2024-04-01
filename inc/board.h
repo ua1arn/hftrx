@@ -159,6 +159,7 @@ void board_set_fsadcpower10(int_fast16_t v);		/*	Мощность, соотве�
 uint_fast32_t board_get_fqmeter(void);			/* получить значение измеренной частоты */
 void board_set_lo1vco(uint_fast8_t n);	// 0..3, 0..5 - code of VCO
 void board_set_lo2xtal(uint_fast8_t n);	// номер кварца для интерполяционного приемника
+void board_codec1_nreset(uint_fast8_t v);	/* формирование сигнала "RESET" для codec1. 0 - снять ресет. */
 void board_codec2_nreset(uint_fast8_t v);	/* формирование сигнала "RESET" для codec2. 0 - снять ресет. */
 void board_set_modem_speed100(uint_fast32_t v);	// скорость передачи с точностью 1/100 бод
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
