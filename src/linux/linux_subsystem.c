@@ -12,6 +12,7 @@
 #include "buffers.h"
 #include "audio.h"
 #include "ft8.h"
+#include "display2.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -405,7 +406,7 @@ volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_r
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 int fd_int = 0;
-uintptr_t addr32rx;
+static struct cond_thread ct_iq;
 
 void linux_iq_init(void)
 {
@@ -433,14 +434,14 @@ void linux_iq_thread(void)
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static int rx_stage = 0;
-	uint32_t * r = (uint32_t *) addr32rx;
 
 	uint32_t pos = * iq_count_rx;
+	uintptr_t addr32rx = allocate_dmabuffer32rx();
 	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
-	memcpy(r, iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
+	memcpy((uint8_t *) addr32rx, (uint8_t *) iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
 
 	save_dmabuffer32rx(addr32rx);
-	addr32rx = allocate_dmabuffer32rx();
+	safe_cond_signal(& ct_iq);
 
 	rx_stage += CNT32RX;
 
@@ -480,33 +481,40 @@ void linux_iq_thread(void)
 
 void * linux_iq_interrupt_thread(void * args)
 {
-	uint32_t uio_key = 1;
-	uint32_t uio_value = 0;
-
 	fd_int = open(LINUX_IQ_INT_FILE, O_RDWR);
     if (fd_int < 0) {
         PRINTF("%s open failed\n", LINUX_IQ_INT_FILE);
         return NULL;
     }
 
-    addr32rx = allocate_dmabuffer32rx();
-
     while(1)
     {
 #if 1
-        //Acknowledge IRQ
-        if (write(fd_int, & uio_key, sizeof(uio_key)) < 0) {
-            PRINTF("Failed to acknowledge IRQ: %s\n", strerror(errno));
-            return NULL;
-        }
+    	uint32_t intr = 1; /* unmask */
 
-        //Wait for next IRQ
-        if (read(fd_int, & uio_value, sizeof(uio_value)) < 0) {
-            PRINTF("Failed to wait for IRQ: %s\n", strerror(errno));
-            return NULL;
-        }
+		ssize_t nb = write(fd_int, & intr, sizeof(intr));
+		if (nb != (ssize_t) sizeof(intr)) {
+			perror("write");
+			close(fd_int);
+			exit(EXIT_FAILURE);
+		}
 
-        linux_iq_thread();
+		struct pollfd fds = {
+			.fd = fd_int,
+			.events = POLLIN,
+		};
+
+		int ret = poll(& fds, 1, -1);
+		if (ret >= 1) {
+			nb = read(fd_int, & intr, sizeof(intr));
+			if (nb == (ssize_t) sizeof(intr)) {
+				linux_iq_thread();
+			}
+		} else {
+			perror("poll()");
+			close(fd_int);
+			exit(EXIT_FAILURE);
+		}
 #else
         linux_iq_thread();
         usleep(100);
@@ -654,6 +662,16 @@ void linux_user_init(void)
 #endif /* WITHNMEA && WITHLFM */
 
 	xcz_resetn_modem_state(1);
+	linux_init_cond(& ct_iq);
+}
+
+void linux_wait_iq(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	safe_cond_wait(& ct_iq);
 }
 
 /****************************************************************/
