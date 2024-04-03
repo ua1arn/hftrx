@@ -97,19 +97,41 @@
 static void
 si535x_SendRegister(uint_fast8_t reg, uint_fast8_t data)
 {
+#if WITHTWIHW
+	const uint8_t buff [] =
+	{
+		(reg),
+		(data),
+	};
+	i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
+
+#elif WITHTWISW
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write(reg);
 	i2c_write(data);
 	i2c_waitsend();
-	i2c_stop();	
+	i2c_stop();
+
+#endif
 }
 
 static void si535x_ReadRegister(uint_fast8_t reg, uint8_t * data)
 {
+#if WITHTWIHW
+	const uint8_t buff [] =
+	{
+		(reg),
+	};
+	i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
+	i2chw_write(SI53xx_I2C_READ, data, 1);
+
+#elif WITHTWISW
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write_withrestart(reg);
 	i2c_start(SI53xx_I2C_READ);
 	i2c_read(data, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+
+#endif
 }
 
 
@@ -133,6 +155,22 @@ si535x_setupPLL(
 	const uint_fast32_t P2 = (uint32_t) (128 * num - denom * Pz);
 	const uint_fast32_t P3 = denom;
 
+#if WITHTWIHW
+	const uint8_t buff [] =
+	{
+		(pllbasereg),
+		((P3 & 0x0000FF00) >> 8),
+		((P3 & 0x000000FF)),
+		((P1 & 0x00030000) >> 16),
+		((P1 & 0x0000FF00) >> 8),
+		((P1 & 0x000000FF)),
+		(((P3 & 0x000F0000) >> 12) | ((P2 & 0x000F0000) >> 16)),
+		((P2 & 0x0000FF00) >> 8),
+		((P2 & 0x000000FF)),
+	};
+	i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
+
+#elif WITHTWISW
 	// Write Operation - Burst (Auto Address Increment)
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write(pllbasereg);
@@ -148,6 +186,8 @@ si535x_setupPLL(
 
 	i2c_waitsend();
 	i2c_stop();	
+
+#endif
 }
 
 //
@@ -161,6 +201,22 @@ si535x_setupMultisynth(uint_fast8_t synth, uint_fast32_t divider, uint_fast8_t o
 	const uint_fast32_t P2 = 0;						// P2 = 0, P3 = 1 forces an integer value for the divider
 	const uint_fast32_t P3 = 1;
 
+#if WITHTWIHW
+	const uint8_t buff [] =
+	{
+		(synth),
+		((P3 & 0x0000FF00) >> 8),				// MSx_P3[15:8]
+		((P3 & 0x000000FF)),					// MSx_P3[7:0]
+		(((P1 & 0x00030000) >> 16) | outRdiv | (divider == 4 ? 0x0c : 0x00)),;	// Rx_DIV[2:0], MSx_DIVBY4[1:0], MSx_P1[17:16]
+		((P1 & 0x0000FF00) >> 8),				// MSx_P1[15:8]
+		((P1 & 0x000000FF)),					// MSx_P1[7:0]
+		(((P3 & 0x000F0000) >> 12) | ((P2 & 0x000F0000) >> 16)),	// MSx_P3[19:16], MSx_P2[19:16]
+		((P2 & 0x0000FF00) >> 8),				// MSx_P2[15:8]
+		((P2 & 0x000000FF)),					// MSx_P2[7:0]
+	};
+	i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
+
+#elif WITHTWISW
 	// Write Operation - Burst (Auto Address Increment)
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write(synth);
@@ -176,6 +232,8 @@ si535x_setupMultisynth(uint_fast8_t synth, uint_fast32_t divider, uint_fast8_t o
 
 	i2c_waitsend();
 	i2c_stop();	
+
+#endif
 }
 
 //
