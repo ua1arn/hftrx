@@ -1849,12 +1849,13 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 //}
 
 /* return non-zero then error */
-uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+// LSB of slave_address8b ignored */
+uint16_t i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	struct i2c_t113_pdata_t * const pdat = & pdat_i2c;
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address >> 1;
+	msgs.addr = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
@@ -1879,12 +1880,13 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 }
 
 /* return non-zero then error */
-uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
+// LSB of slave_address8b ignored */
+uint16_t i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
 	struct i2c_t113_pdata_t *const  pdat = & pdat_i2c;
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address >> 1;
+	msgs.addr = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
