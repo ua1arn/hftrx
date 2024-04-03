@@ -4149,16 +4149,25 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		1 * (UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
 		0;
 
+#if WITHFPGAIF_FRAMEBITS == 64 && WITHFPGAIF_USE_I2S_DIN12 == 1
 	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
-		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		((NSLOTS * 2) - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0011: 4 channel or slot, 2 x 64b on two(!) DINx
 		0;
+		/* 4x RX slots (32b/slot) for 2x DINx. The calculated NSLOT here is 2 (with 64b frame / DINx), x2 = 4, -1 = 3, bin 0011 - Ok */
+#else
+	i2s->I2S_PCM_RXCHSEL =
+		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
+		(NSLOTS  - 1) * (UINT32_C(1) << 16) |	// RX Channel (Slot) Number Select for Input 0111: 8 channel or slot
+		0;
+#endif
 
 	const portholder_t txchsel =
 		txrx_offset * (UINT32_C(1) << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
 		(NSLOTS - 1) * (UINT32_C(1) << 16) |	// TX3 Channel (Slot) Number Select for Each Output
 		0xFFFF * (UINT32_C(1) << 0) |		// TX3 Channel (Slot) Enable
 		0;
+		/* 2x TX slots (32b/slot) for 1x DOUTx. The calculated NSLOT here is 2 (with 64b frame / DINx), -1 = 1, bin 0001 - Ok */
 
 	i2s->I2S_PCM_TX0CHSEL = txchsel;
 	i2s->I2S_PCM_TX1CHSEL = txchsel;
@@ -4166,7 +4175,13 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
+	#if WITHFPGAIF_FRAMEBITS == 64 && WITHFPGAIF_USE_I2S_DIN12 == 1
+	I2S_fill_RXCHMAP(i2s, 1, NSLOTS); // DIN1, 2 slot_32b for 64b i/q - only one DDC channel
+	I2S_fill_RXCHMAP(i2s, 2, NSLOTS); // DIN2, 2 slot_32b for 64b i/q - only one DDC channel
+	#else
 	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
+	#endif
+
 	I2S_fill_TXxCHMAP(i2s, 0, dout, NSLOTS);	// I2S_PCM_TX0CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 1, dout, NSLOTS);	// I2S_PCM_TX1CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 2, dout, NSLOTS);	// I2S_PCM_TX2CHMAPx
