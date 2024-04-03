@@ -654,18 +654,18 @@
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)		// TWI1-SCK PE0
 	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOE))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)		// TWI1-SDA PE1
 	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOE))
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-		arm_hardware_pioe_inputs(TARGET_TWI_TWCK); /* SCL */ \
-		arm_hardware_pioe_inputs(TARGET_TWI_TWD);  	/* SDA */ \
+		arm_hardware_pioe_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+		arm_hardware_pioe_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
 	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
 		arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
