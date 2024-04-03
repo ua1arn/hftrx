@@ -94,7 +94,8 @@
 
 #define SI53xx_I2C_READ  (SI53xx_I2C_WRITE | 1)		// I2C address for reading to the Si5351A
 
-static void
+/* return non-zero then error */
+static int
 si535x_SendRegister(uint_fast8_t reg, uint_fast8_t data)
 {
 #if WITHTWIHW
@@ -103,7 +104,7 @@ si535x_SendRegister(uint_fast8_t reg, uint_fast8_t data)
 		(reg),
 		(data),
 	};
-	i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
+	return i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
 
 #elif WITHTWISW
 	i2c_start(SI53xx_I2C_WRITE);
@@ -111,25 +112,29 @@ si535x_SendRegister(uint_fast8_t reg, uint_fast8_t data)
 	i2c_write(data);
 	i2c_waitsend();
 	i2c_stop();
-
+	return 0;
 #endif
 }
 
-static void si535x_ReadRegister(uint_fast8_t reg, uint8_t * data)
+/* return non-zero then error */
+static int
+si535x_ReadRegister(uint_fast8_t reg, uint8_t * data)
 {
 #if WITHTWIHW
 	const uint8_t buff [] =
 	{
 		(reg),
 	};
-	i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff));
-	i2chw_write(SI53xx_I2C_READ, data, 1);
+	if (i2chw_write(SI53xx_I2C_WRITE, buff, ARRAY_SIZE(buff)))
+		return 1;
+	return i2chw_read(SI53xx_I2C_READ, data, 1);
 
 #elif WITHTWISW
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write_withrestart(reg);
 	i2c_start(SI53xx_I2C_READ);
 	i2c_read(data, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	return 0;
 
 #endif
 }
@@ -442,7 +447,8 @@ static void si5351aInitialize(void)
 	for (;;)
 	{
 		uint8_t val;
-		si535x_ReadRegister(SI5351a_DEVICE_STATUS, & val);
+		if (si535x_ReadRegister(SI5351a_DEVICE_STATUS, & val))
+			return;	// error
 		if ((val & 0x80) == 0)	// 0: System initialization is complete. Device is ready
 			break;
 	}
