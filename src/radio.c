@@ -10660,6 +10660,9 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 void
 audioproc_spool_user(void)
 {
+#if LINUX_SUBSYSTEM
+	linux_wait_iq();
+#endif /* LINUX_SUBSYSTEM */
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready(& p))

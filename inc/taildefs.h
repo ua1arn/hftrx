@@ -147,14 +147,10 @@ typedef struct irqlspinlock_tag
 
 /* Linux targets: No any hardware IRQ control */
 
-typedef struct irqlspinlock_tag
-{
-	int irql;
-	int lock;
-} IRQLSPINLOCK_t;
+#define IRQLSPINLOCK_t lclspinlock_t
 
 //#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
-#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do {} while (0)
+#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
@@ -204,8 +200,8 @@ void LowerIrql(IRQL_t newIRQL);
 #else  /* ! LINUX_SUBSYSTEM */
 
 	/* Linux targets: No any hardware IRQ control */
-	#define IRQLSPIN_LOCK(p, oldIrql) do { } while (0)
-	#define IRQLSPIN_UNLOCK(p, oldIrql) do { } while (0)
+	#define IRQLSPIN_LOCK(p, oldIrql) do { LCLSPIN_LOCK(p); } while (0)
+	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
 
 #endif  /* ! LINUX_SUBSYSTEM */
 

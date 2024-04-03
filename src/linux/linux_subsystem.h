@@ -90,6 +90,7 @@ void safe_cond_signal(struct cond_thread * ct);
 void safe_cond_wait(struct cond_thread * ct);
 void linux_init_cond(struct cond_thread * ct);
 void linux_destroy_cond(struct cond_thread * ct);
+void linux_wait_iq(void);
 int rpmsg_init(void);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);

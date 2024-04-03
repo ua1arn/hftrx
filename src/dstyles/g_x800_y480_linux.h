@@ -2,11 +2,14 @@
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
-void linux_wait_iq(
+void wait_iq(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
-	);
+	)
+{
+	linux_wait_iq();
+}
 
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123456789"
@@ -117,7 +120,7 @@ void linux_wait_iq(
 		{	26,	20,	display2_freqX_b,	REDRM_ALL, PG0, },	// SUB FREQ
 		{	38, 20,	display2_mode3_b,	REDRM_ALL,	PG0, },	// SSB/CW/AM/FM/...
 
-		{	0,	0,	linux_wait_iq, 			REDRM_ALL,	PG0, },
+		{	0,	0,	wait_iq, 			REDRM_ALL,	PG0, },
 #if WITHBARS
 		{    0, 4,  display2_smeter15_init,	REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  display2_smeter15, 		REDRM_ALL, PG0, },	// Изображение стрелочного прибора

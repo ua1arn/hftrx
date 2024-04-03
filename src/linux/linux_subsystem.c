@@ -406,7 +406,7 @@ volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_r
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
 int fd_int = 0;
-static struct cond_thread ct_iq;
+static struct cond_thread * ct_iq = NULL;
 
 void linux_iq_init(void)
 {
@@ -441,7 +441,6 @@ void linux_iq_thread(void)
 	memcpy((uint8_t *) addr32rx, (uint8_t *) iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
 
 	save_dmabuffer32rx(addr32rx);
-	safe_cond_signal(& ct_iq);
 
 	rx_stage += CNT32RX;
 
@@ -477,6 +476,9 @@ void linux_iq_thread(void)
 		* iq_fifo_tx = t[i];
 
 	release_dmabuffer32tx(addr);
+
+	if (ct_iq)
+		safe_cond_signal(ct_iq);
 }
 
 void * linux_iq_interrupt_thread(void * args)
@@ -662,16 +664,15 @@ void linux_user_init(void)
 #endif /* WITHNMEA && WITHLFM */
 
 	xcz_resetn_modem_state(1);
-	linux_init_cond(& ct_iq);
+
+	ct_iq = (struct cond_thread *) malloc(sizeof(struct cond_thread));
+	linux_init_cond(ct_iq);
 }
 
-void linux_wait_iq(
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx
-	)
+void linux_wait_iq(void)
 {
-	safe_cond_wait(& ct_iq);
+	if (ct_iq)
+		safe_cond_wait(ct_iq);
 }
 
 /****************************************************************/
