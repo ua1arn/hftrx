@@ -126,17 +126,23 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
-	static uint_fast16_t x = 0, y = 0;
+#if LINUX_SUBSYSTEM
+	static uint32_t oldt = sys_now();
+	static uint_fast16_t x = 0, y = 0, p = 0;
 
-	if (gt911_getXY(& x, & y))
+	uint32_t t = sys_now();
+	if (t - oldt > 20)		// перед чтениями координат нужна задержка минимум на 15 + 5 ms
 	{
-		* xr = x;
-		* yr = y;
-		return 1;
+		oldt = t;
+		p = gt911_getXY(& x, & y);
 	}
+
 	* xr = x;
 	* yr = y;
-	return 0;
+	return p;
+#else
+	return gt911_getXY(xr, yr);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
