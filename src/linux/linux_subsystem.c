@@ -375,7 +375,7 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 	if (fd_i2c)
 	{
 		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
-			PRINTF("Failed to set slave\n");
+			perror("i2chw_read set slave");
 
 		rc = write(fd_i2c, buf, size);
 		if (rc < 0)
@@ -391,6 +391,9 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	if (fd_i2c)
 	{
+		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
+			perror("i2chw_read set slave");
+
 		rc = read(fd_i2c, buf, size);
 		if (rc < 0)
 			PRINTF("Tried to read from address '0x%02x'\n", slave_address);
