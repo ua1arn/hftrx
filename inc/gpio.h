@@ -497,35 +497,35 @@ void arm_hardware_piok_altfn50(portholder_t opins, unsigned af);
 void arm_hardware_piol_altfn50(portholder_t opins, unsigned af);
 void arm_hardware_pioz_altfn50(portholder_t opins, unsigned af);
 
-// включить подтяжку вверх или вниз
-void arm_hardware_pioa_updown(portholder_t up, portholder_t down);
-void arm_hardware_piob_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioc_updown(portholder_t up, portholder_t down);
-void arm_hardware_piod_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioe_updown(portholder_t up, portholder_t down);
-void arm_hardware_piof_updown(portholder_t up, portholder_t down);
-void arm_hardware_piog_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioh_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioi_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioj_updown(portholder_t up, portholder_t down);
-void arm_hardware_piok_updown(portholder_t up, portholder_t down);
-void arm_hardware_piol_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioz_updown(portholder_t up, portholder_t down);
+// установить режим подтяжки вверх или вниз
+void arm_hardware_pioa_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piob_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioc_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piod_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioe_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piof_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piog_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioh_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioi_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioj_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piok_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piol_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioz_updown(portholder_t ipins, portholder_t up, portholder_t down);
 
-// отключить подтяжку вверх или вниз
-void arm_hardware_pioa_updownoff(portholder_t ipins);
-void arm_hardware_piob_updownoff(portholder_t ipins);
-void arm_hardware_pioc_updownoff(portholder_t ipins);
-void arm_hardware_piod_updownoff(portholder_t ipins);
-void arm_hardware_pioe_updownoff(portholder_t ipins);
-void arm_hardware_piof_updownoff(portholder_t ipins);
-void arm_hardware_piog_updownoff(portholder_t ipins);
-void arm_hardware_pioh_updownoff(portholder_t ipins);
-void arm_hardware_pioi_updownoff(portholder_t ipins);
-void arm_hardware_pioj_updownoff(portholder_t ipins);
-void arm_hardware_piok_updownoff(portholder_t ipins);
-void arm_hardware_piol_updownoff(portholder_t ipins);
-void arm_hardware_pioz_updownoff(portholder_t ipins);
+/* установить режим подавления дребезга */
+void arm_hardware_pioa_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piob_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioc_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piod_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioe_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piof_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piog_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioh_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioi_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioj_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piok_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piol_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioz_debounce(portholder_t ipins, portholder_t mask);
 
 void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af);
@@ -540,6 +540,21 @@ void arm_hardware_pioj_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piok_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piol_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_pioz_periphopendrain_altfn2(portholder_t opins, unsigned af);
+
+/* Вернуть выводы в начальное состояние - как после reset процессора */
+void arm_hardware_pioa_deinitialize(portholder_t iopins);
+void arm_hardware_piob_deinitialize(portholder_t iopins);
+void arm_hardware_pioc_deinitialize(portholder_t iopins);
+void arm_hardware_piod_deinitialize(portholder_t iopins);
+void arm_hardware_pioe_deinitialize(portholder_t iopins);
+void arm_hardware_piof_deinitialize(portholder_t iopins);
+void arm_hardware_piog_deinitialize(portholder_t iopins);
+void arm_hardware_pioh_deinitialize(portholder_t iopins);
+void arm_hardware_pioi_deinitialize(portholder_t iopins);
+void arm_hardware_pioj_deinitialize(portholder_t iopins);
+void arm_hardware_piok_deinitialize(portholder_t iopins);
+void arm_hardware_piol_deinitialize(portholder_t iopins);
+void arm_hardware_pioz_deinitialize(portholder_t iopins);
 
 void arm_hardware_pioa_analoginput(portholder_t ipins);
 void arm_hardware_piob_analoginput(portholder_t ipins);

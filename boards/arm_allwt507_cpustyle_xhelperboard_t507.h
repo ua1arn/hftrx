@@ -314,11 +314,11 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define ENCODER_INITIALIZE() do { \
 			arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER_BITS, 0); \
+			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENCODER_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			/*arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENCODER2_BITS); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER2_BITS, 0); \
+			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENCODER2_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(0 * BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -413,7 +413,7 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piof_inputs(HARDWARE_SDIO_CD_BIT); /* PF6 - SDC0_DET */ \
-			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, 0); \
+			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 
@@ -554,7 +554,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_pioe_updown(0, TXDISABLE_BIT_TXDISABLE); \
+			arm_hardware_pioe_updown(TXDISABLE_BIT_TXDISABLE, 0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
 	// ---
 
@@ -571,11 +571,11 @@ void user_uart5_ontxchar(void * ctx);
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(PTT_BIT_PTT); \
-			arm_hardware_pioe_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_pioe_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
 			arm_hardware_pioe_inputs(PTT2_BIT_PTT); \
-			arm_hardware_pioe_updown(PTT2_BIT_PTT, 0); \
+			arm_hardware_pioe_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
 			arm_hardware_pioe_inputs(PTT3_BIT_PTT); \
-			arm_hardware_pioe_updown(PTT3_BIT_PTT, 0); \
+			arm_hardware_pioe_updown(_xMask, PTT3_BIT_PTT, 0); \
 		} while (0)
 	// ---
 	// TUNE input - PD11
@@ -584,7 +584,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TUNE_BIT_TUNE); \
-			arm_hardware_pioe_updown(TUNE_BIT_TUNE, 0); \
+			arm_hardware_pioe_updown(TUNE_BIT_TUNE, TUNE_BIT_TUNE, 0); \
 		} while (0)
 
 #else /* WITHTX */
@@ -610,7 +610,7 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define ELKEY_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_pioe_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_pioe_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -739,7 +739,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, 0); \
+		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART1HW
@@ -752,7 +752,7 @@ void user_uart5_ontxchar(void * ctx);
 		/*arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); *//* PG12 BT_WAKE */ \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_updown(RXMASK, 0); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART2HW
@@ -762,7 +762,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 6; /* PI6 UART2-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART3HW
@@ -772,7 +772,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 10; /* PI10 UART3-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 // WITHUART4HW
 // Используется периферийный контроллер последовательного порта UART4 */
@@ -781,7 +781,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 14; /* PI14 UART4-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART5HW
@@ -791,7 +791,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, 0); \
+		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 
@@ -815,9 +815,9 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENC2BTN_BIT); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
-			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
+			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -848,8 +848,8 @@ void user_uart5_ontxchar(void * ctx);
 	#define	TWISOFT_INITIALIZE() do { \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
-		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
 		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
@@ -860,8 +860,8 @@ void user_uart5_ontxchar(void * ctx);
 	#define	TWIHARD_INITIALIZE() do { \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
-		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
-		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
@@ -1065,7 +1065,7 @@ void user_uart5_ontxchar(void * ctx);
 
 		#define BOARD_STMPE811_INT_CONNECT() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_STMPE811_INT_PIN); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_STMPE811_INT_PIN, 0); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_STMPE811_INT_PIN, BOARD_GPIOA_STMPE811_INT_PIN, 0); \
 			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_STMPE811_INT_PIN, 1 * BOARD_GPIOA_STMPE811_INT_PIN, 0 * BOARD_GPIOA_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 		} while (0)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
@@ -1093,12 +1093,12 @@ void user_uart5_ontxchar(void * ctx);
 
 		#define BOARD_GT911_RESET_INITIO_2() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_GT911_INT_PIN, 0); \
+			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
 		} while (0)
 
 		#define BOARD_GT911_INT_CONNECT() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_GT911_INT_PIN, 0); \
+			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
 			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN, 0 * BOARD_GPIOA_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 		} while (0)
 		//gt911_interrupt_handler

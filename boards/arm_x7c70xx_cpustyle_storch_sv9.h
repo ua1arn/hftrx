@@ -445,12 +445,12 @@
 			arm_hardware_pioc_inputs(1u << 9);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_inputs(1u << 10);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_inputs(1u << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(0, 1u << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, 1u << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, 1u << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(0, 1u << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(0, 1u << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(0, 1u << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(_xMask, 0, 1u << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
@@ -463,9 +463,9 @@
 			arm_hardware_piod_inputs(1u << 2);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_inputs(1u << 12);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_inputs(1u << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_piod_updown(0, 1u << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, 1u << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, 1u << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_updown(_xMask, 0, 1u << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, 1u << 8);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
@@ -474,9 +474,9 @@
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
-			arm_hardware_piog_updown(HARDWARE_SDIO_WP_BIT, 0); \
+			arm_hardware_piog_updown(HARDWARE_SDIO_WP_BIT, HARDWARE_SDIO_WP_BIT, 0); \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PD0 - SDIO_SENSE */ \
-			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
+			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 	#define HARDWARE_SDIOSENSE_CD() ((GPIOG->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
@@ -526,7 +526,7 @@
 	#define TXDISABLE_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_piod_updown(0, TXDISABLE_BIT_TXDISABLE); \
+			arm_hardware_piod_updown(TXDISABLE_BIT_TXDISABLE, 0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
 	// ---
 	// получить бит запроса оператором перехода на пердачу

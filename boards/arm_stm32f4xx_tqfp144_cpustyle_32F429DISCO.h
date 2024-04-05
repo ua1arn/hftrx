@@ -172,7 +172,7 @@ Free:
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ENCODER_BITS); \
-			arm_hardware_piob_updown(ENCODER_BITS, 0); \
+			arm_hardware_piob_updown(_xMask, ENCODER_BITS, 0); \
 			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -195,14 +195,14 @@ Free:
 	#define FROMCAT_DTR_INITIALIZEXXX() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZEXXX() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_RTS, 0); \
 		} while (0)
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
 	#define NMEA_INITIALIZEXXX() \
@@ -286,7 +286,7 @@ Free:
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) != 0)
 	#define PTT_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(PTT_BIT_PTT); \
-			arm_hardware_pioa_updown(0, PTT_BIT_PTT); \
+			arm_hardware_pioa_updown(_xMask, 0, PTT_BIT_PTT); \
 		} while (0)
 
 #endif /* WITHTX */
@@ -522,7 +522,7 @@ Free:
 	#define	USBD_HS_FS_INITIALIZE() do { \
 		arm_hardware_piob_altfn50((1U << 14) | (1U << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
 		arm_hardware_piob_inputs(1U << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
-		arm_hardware_piob_updownoff((1U << 13) | (1U << 14) | (1U << 15)); \
+		arm_hardware_piob_updown((1U << 13) | (1U << 14) | (1U << 15), 0, 0); \
 		} while (0)
 
 	#define	USBD_FS_INITIALIZE() do { \
@@ -586,7 +586,7 @@ Free:
 	#if WITHUART1HW
 		#define HARDWARE_UART1_INITIALIZE() do { \
 				arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-				arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
+				arm_hardware_pioa_updown(_xMask, (1U << 10), 0);	/* PA10: pull-up RX data */ \
 			} while (0)
 	#endif /* WITHUART1HW */
 

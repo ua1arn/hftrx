@@ -179,7 +179,7 @@
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ENCODER_BITS); \
-			arm_hardware_piob_updown(ENCODER_BITS, 0); \
+			arm_hardware_piob_updown(_xMask, ENCODER_BITS, 0); \
 			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -212,7 +212,7 @@
 			arm_hardware_pioe_altfn20(1U << 5, AF_SAI);	/* PE5 - SAI1_SCK_A	*/ \
 			arm_hardware_pioe_altfn20(1U << 6, AF_SAI);	/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		/* #if CODEC_TYPE_CS4272_STANDALONE	*/ \
-			arm_hardware_pioe_updown(0, 1U << 6);	/* PE6: pull-down на выходе данных от кодека: после RESET вход в stand-alone mode */ \
+			arm_hardware_pioe_updown(_xMask, 0, 1U << 6);	/* PE6: pull-down на выходе данных от кодека: после RESET вход в stand-alone mode */ \
 		/* #endif */ \
 		} while (0)
 #endif /* WITHSAI1HW */
@@ -235,14 +235,14 @@
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
@@ -279,7 +279,7 @@
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_pioc_inputs(PTT_BIT_PTT); \
-			arm_hardware_pioc_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_pioc_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
 		} while (0)
 
 #endif /* WITHTX */
@@ -297,7 +297,7 @@
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_pioc_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_pioc_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_pioc_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -421,7 +421,7 @@
 #if WITHUART1HW
 	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-			arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
+			arm_hardware_pioa_updown(_xMask, (1U << 10), 0);	/* PA10: pull-up RX data */ \
 		} while (0)
 #endif /* WITHUART1HW */
 

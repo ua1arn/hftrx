@@ -1126,11 +1126,11 @@ static void gpioX_opendrain_iniialize(
 
 static void gpioX_updown(
 	GPIO_TypeDef * gpio,
+	portholder_t iopins,
 	portholder_t ioup,
 	portholder_t iodown
 	)
 {
-	const portholder_t iopins = ioup | iodown;
 	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
 	const portholder_t pull0up = power2(ioup >> 0);
 	const portholder_t pull0down = power2(iodown >> 0);
@@ -1437,18 +1437,11 @@ void gpioX_setstate(
 	  } while (0)
 
 	// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-	#define stm32f10x_pioX_pupdr(gpio, up, down) \
+	#define stm32f10x_pioX_pupdr(gpio, ipins, up, down) \
 	  do { \
 		(gpio)->BSRR = \
-			BSRR_S(up) |	/* Для включения pull-up при CNFy[1:0] = 10 */	\
-			BSRR_C(down);	/* Для включения pull-down при CNFy[1:0] = 10 */	\
-	  } while (0)
-		// отключение встроенной подтяжки на входе (так как программирование на ввод всегда включает подтяжку
-		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-	#define arm_stm32f10x_hardware_pio_pupoff(gpio, ipins) \
-	  do { \
-		/* const portholder_t ipins3 = power2(ipins); */	\
-		/* (gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | ipins3 * (0) * GPIO_PUPDR_PUPDR0_0; */ \
+			BSRR_S((ipins) & (up)) |	/* Для включения pull-up при CNFy[1:0] = 10 */	\
+			BSRR_C((ipins) & (down));	/* Для включения pull-down при CNFy[1:0] = 10 */	\
 	  } while (0)
 
 	/* разрешение прерывания по изменению состояния указанных групп выводов */
@@ -1540,13 +1533,6 @@ void gpioX_setstate(
 				up3 * (1) * GPIO_PUPDR_PUPDR0_0 | \
 				down3 * (2) * GPIO_PUPDR_PUPDR0_0 | \
 				0; \
-		  } while (0)
-		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
-		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32mp1_hardware_pio_pupoff(gpio, ipins) \
-		  do { \
-			const portholder_t ipins3 = power2(ipins);	\
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | ipins3 * (0) * GPIO_PUPDR_PUPDR0_0; \
 		  } while (0)
 
 		#define stm32mp1_pioX_altfn(gpio, opins, afn) \
@@ -1680,19 +1666,14 @@ void gpioX_setstate(
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT0)) | (iomask) * (typer); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define tm32f30x_pioX_pupdr(gpio, up, down) do { \
+		#define stm32f30x_pioX_pupdr(gpio, iopins, up, down) do { \
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPD0)) | \
+			const portholder_t iopins3 = power2(iopins); \
+			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (iopins3 * GPIO_PUPDR_PUPD0)) | \
 				up3 * (1) * GPIO_PUPDR_PUPD0_0 | \
 				down3 * (2) * GPIO_PUPDR_PUPD0_0 | \
 				0; \
-		  } while (0)
-		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
-		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) do { \
-			const portholder_t ipins3 = power2(ipins);	\
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPD0)) | ipins3 * (0) * GPIO_PUPDR_PUPD0_0; \
 		  } while (0)
 
 		#define stm32f30x_pioX_altfn(gpio, opins, afn) do { \
@@ -1813,19 +1794,14 @@ void gpioX_setstate(
 			(gpio)->OTYPER = ((gpio)->OTYPER & ~ ((iomask) * GPIO_OTYPER_OT_0)) | (iomask) * (typer); \
 		  } while (0)
 		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define tm32f30x_pioX_pupdr(gpio, up, down) do { \
+		#define stm32f30x_pioX_pupdr(gpio, iopins, up, down) do { \
 			const portholder_t up3 = power2(up); \
 			const portholder_t down3 = power2(down); \
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ ((up3 | down3) * GPIO_PUPDR_PUPDR0)) | \
+			const portholder_t iopins3 = power2(iopins); \
+			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (iopins3 * GPIO_PUPDR_PUPDR0)) | \
 				up3 * (1) * GPIO_PUPDR_PUPDR0_0 | \
 				down3 * (2) * GPIO_PUPDR_PUPDR0_0 | \
 				0; \
-		  } while (0)
-		// отключение встроенной подтяжки на входе (так как программирование на ввод в данной библиотеке всегда включает подтяжку
-		// pupdr: 0:no pulls, 1:pull-up, 2: pull-down, 3:reserved
-		#define arm_stm32f30x_hardware_pio_pupoff(gpio, ipins) do { \
-			const portholder_t ipins3 = power2(ipins);	\
-			(gpio)->PUPDR = ((gpio)->PUPDR & ~ (ipins3 * GPIO_PUPDR_PUPDR0)) | ipins3 * (0) * GPIO_PUPDR_PUPDR0_0; \
 		  } while (0)
 
 		#define stm32f30x_pioX_altfn(gpio, opins, afn) do { \
@@ -8749,22 +8725,22 @@ arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void
-arm_hardware_piol_updown(portholder_t up, portholder_t down)
+arm_hardware_piol_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOL, up, down);
+	stm32f10x_pioX_pupdr(GPIOL, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOL, up, down);
+	stm32f30x_pioX_pupdr(GPIOL, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOL, up, down);
+	tm32mp1_pioX_pupdr(GPIOL, ipins, up, down);
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOL, up, down);
+	gpioX_updown(GPIOL, ipins, up, down);
 
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
@@ -9285,22 +9261,22 @@ void arm_hardware_piog_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioa_updown(portholder_t up, portholder_t down)
+arm_hardware_pioa_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOA, up, down);
+	stm32f10x_pioX_pupdr(GPIOA, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOA, up, down);
+	stm32f30x_pioX_pupdr(GPIOA, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOA, up, down);
+	tm32mp1_pioX_pupdr(GPIOA, ipins, up, down);
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOA, up, down);
+	gpioX_updown(GPIOA, ipins, up, down);
 
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
@@ -9317,22 +9293,22 @@ arm_hardware_pioa_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piob_updown(portholder_t up, portholder_t down)
+arm_hardware_piob_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOB, up, down);
+	stm32f10x_pioX_pupdr(GPIOB, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOB, up, down);
+	stm32f30x_pioX_pupdr(GPIOB, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOB, up, down);
+	tm32mp1_pioX_pupdr(GPIOB, ipins, up, down);
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOB, up, down);
+	gpioX_updown(GPIOB, ipins, up, down);
 
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
@@ -9349,22 +9325,22 @@ arm_hardware_piob_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioc_updown(portholder_t up, portholder_t down)
+arm_hardware_pioc_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOC, up, down);
+	stm32f10x_pioX_pupdr(GPIOC, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOC, up, down);
+	stm32f30x_pioX_pupdr(GPIOC, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOC, up, down);
+	tm32mp1_pioX_pupdr(GPIOC, ipins, up, down);
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOC, up, down);
+	gpioX_updown(GPIOC, ipins, up, down);
 
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
@@ -9381,22 +9357,22 @@ arm_hardware_pioc_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piod_updown(portholder_t up, portholder_t down)
+arm_hardware_piod_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOD, up, down);
+	stm32f10x_pioX_pupdr(GPIOD, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOD, up, down);
+	stm32f30x_pioX_pupdr(GPIOD, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOD, up, down);
+	tm32mp1_pioX_pupdr(GPIOD, ipins, up, down);
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOD, up, down);
+	gpioX_updown(GPIOD, ipins, up, down);
 
 #elif CPUSTYLE_VM14
 	/* no pull-up or pull-down control */
@@ -9413,22 +9389,22 @@ arm_hardware_piod_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioe_updown(portholder_t up, portholder_t down)
+arm_hardware_pioe_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOE, up, down);
+	stm32f10x_pioX_pupdr(GPIOE, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOE, up, down);
+	stm32f30x_pioX_pupdr(GPIOE, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOE, up, down);
+	tm32mp1_pioX_pupdr(GPIOE, ipins, up, down);
 
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOE, up, down);
+	gpioX_updown(GPIOE, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9442,20 +9418,20 @@ arm_hardware_pioe_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piof_updown(portholder_t up, portholder_t down)
+arm_hardware_piof_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOF, up, down);
+	stm32f10x_pioX_pupdr(GPIOF, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOF, up, down);
+	stm32f30x_pioX_pupdr(GPIOF, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOF, up, down);
+	tm32mp1_pioX_pupdr(GPIOF, ipins, up, down);
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOF, up, down);
+	gpioX_updown(GPIOF, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9468,20 +9444,20 @@ arm_hardware_piof_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piog_updown(portholder_t up, portholder_t down)
+arm_hardware_piog_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOG, up, down);
+	stm32f10x_pioX_pupdr(GPIOG, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOG, up, down);
+	stm32f30x_pioX_pupdr(GPIOG, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOG, up, down);
+	tm32mp1_pioX_pupdr(GPIOG, ipins, up, down);
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOG, up, down);
+	gpioX_updown(GPIOG, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9494,20 +9470,20 @@ arm_hardware_piog_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioh_updown(portholder_t up, portholder_t down)
+arm_hardware_pioh_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOH, up, down);
+	stm32f10x_pioX_pupdr(GPIOH, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOH, up, down);
+	stm32f30x_pioX_pupdr(GPIOH, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOH, up, down);
+	tm32mp1_pioX_pupdr(GPIOH, ipins, up, down);
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOH, up, down);
+	gpioX_updown(GPIOH, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9520,20 +9496,20 @@ arm_hardware_pioh_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioi_updown(portholder_t up, portholder_t down)
+arm_hardware_pioi_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOI, up, down);
+	stm32f10x_pioX_pupdr(GPIOI, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOI, up, down);
+	stm32f30x_pioX_pupdr(GPIOI, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOI, up, down);
+	tm32mp1_pioX_pupdr(GPIOI, ipins, up, down);
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updown(GPIOI, up, down);
+	gpioX_updown(GPIOI, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9546,16 +9522,20 @@ arm_hardware_pioi_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_pioj_updown(portholder_t up, portholder_t down)
+arm_hardware_pioj_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOJ, up, down);
+	stm32f10x_pioX_pupdr(GPIOJ, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOJ, up, down);
+	stm32f30x_pioX_pupdr(GPIOJ, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOJ, up, down);
+	tm32mp1_pioX_pupdr(GPIOJ, ipins, up, down);
+
+#elif CPUSTYLE_ALLWINNER
+
+	gpioX_updown(GPIOJ, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9568,16 +9548,20 @@ arm_hardware_pioj_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void 
-arm_hardware_piok_updown(portholder_t up, portholder_t down)
+arm_hardware_piok_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOK, up, down);
+	stm32f10x_pioX_pupdr(GPIOK, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOK, up, down);
+	stm32f30x_pioX_pupdr(GPIOK, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOK, up, down);
+	tm32mp1_pioX_pupdr(GPIOK, ipins, up, down);
+
+#elif CPUSTYLE_ALLWINNER
+
+	gpioX_updown(GPIOK, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9590,345 +9574,20 @@ arm_hardware_piok_updown(portholder_t up, portholder_t down)
 
 /* включение подтягивающих резисторов к питанию (up) или к земле (down). */
 void
-arm_hardware_pioz_updown(portholder_t up, portholder_t down)
+arm_hardware_pioz_updown(portholder_t ipins, portholder_t up, portholder_t down)
 {
 #if CPUSTYLE_STM32F1XX
-	stm32f10x_pioX_pupdr(GPIOZ, up, down);
+	stm32f10x_pioX_pupdr(GPIOZ, ipins, up, down);
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	tm32f30x_pioX_pupdr(GPIOZ, up, down);
+	stm32f30x_pioX_pupdr(GPIOZ, ipins, up, down);
 
 #elif CPUSTYLE_STM32MP1
 
-	tm32mp1_pioX_pupdr(GPIOZ, up, down);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOZ) */
-
-#if defined (GPIOA)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_pioa_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOA, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOA, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOA, ipins);
-
-#elif CPUSTYLE_AT91SAM7S
+	tm32mp1_pioX_pupdr(GPIOZ, ipins, up, down);
 
 #elif CPUSTYLE_ALLWINNER
 
-	gpioX_updownoff(GPIOA, ipins);
-
-#elif CPUSTYLE_VM14
-	/* no pull-up or pull-down control */
-
-#else
-	#error Undefined CPUSTYLE_XXX
-
-#endif
-}
-
-#endif /* defined (GPIOA) */
-
-#if defined (GPIOB)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_piob_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOB, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOB, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOB, ipins);
-
-#elif CPUSTYLE_AT91SAM7S
-
-#elif CPUSTYLE_ALLWINNER
-
-	gpioX_updownoff(GPIOB, ipins);
-
-#elif CPUSTYLE_VM14
-	/* no pull-up or pull-down control */
-
-#else
-	#error Undefined CPUSTYLE_XXX
-
-#endif
-}
-
-#endif /* defined (GPIOB) */
-
-#if defined (GPIOC)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_pioc_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOC, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOC, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOC, ipins);
-
-#elif CPUSTYLE_AT91SAM7S
-
-#elif CPUSTYLE_ALLWINNER
-
-	gpioX_updownoff(GPIOC, ipins);
-
-#elif CPUSTYLE_VM14
-	/* no pull-up or pull-down control */
-
-#else
-	#error Undefined CPUSTYLE_XXX
-
-#endif
-}
-
-#endif /* defined (GPIOC) */
-
-#if defined (GPIOD)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_piod_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOD, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOD, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOD, ipins);
-
-#elif CPUSTYLE_AT91SAM7S
-
-#elif CPUSTYLE_ALLWINNER
-
-	gpioX_updownoff(GPIOD, ipins);
-
-#elif CPUSTYLE_VM14
-	/* no pull-up or pull-down control */
-
-#else
-	#error Undefined CPUSTYLE_XXX
-
-#endif
-}
-
-#endif /* defined (GPIOD) */
-
-#if defined (GPIOE)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_pioe_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOE, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOE, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOE, ipins);
-
-#elif CPUSTYLE_AT91SAM7S
-
-#elif CPUSTYLE_ALLWINNER
-
-	gpioX_updownoff(GPIOE, ipins);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-
-#endif
-}
-
-#endif /* defined (GPIOE) */
-
-#if defined (GPIOF)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_piof_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOF, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOF, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOF, ipins);
-
-#elif CPUSTYLE_ALLWINNER
-
-	gpioX_updownoff(GPIOF, ipins);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOF) */
-
-#if defined (GPIOG)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_piog_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOG, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOG, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOG, ipins);
-
-#elif CPUSTYLE_ALLWINNER
-
-	gpioX_updownoff(GPIOG, ipins);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOG) */
-
-
-#if defined (GPIOH)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_pioh_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOH, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOH, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOH, ipins);
-
-#elif CPUSTYLE_ALLWINNER
-
-    gpioX_updownoff(GPIOH, ipins);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOH) */
-
-#if defined (GPIOI)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_pioi_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOI, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOI, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOI, ipins);
-
-#elif CPUSTYLE_ALLWINNER
-
-    gpioX_updownoff(GPIOI, ipins);
-
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOI) */
-
-#if defined (GPIOJ)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_pioj_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOJ, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOJ, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOJ, ipins);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOJ) */
-
-#if defined (GPIOK)
-
-/* отключение подтягивающих резисторов. */
-void 
-arm_hardware_piok_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOK, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOK, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOK, ipins);
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* defined (GPIOK) */
-
-#if defined (GPIOZ)
-
-/* отключение подтягивающих резисторов. */
-void
-arm_hardware_pioz_updownoff(portholder_t ipins)
-{
-#if CPUSTYLE_STM32F1XX
-	arm_stm32f10x_hardware_pio_pupoff(GPIOZ, ipins);
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
-	arm_stm32f30x_hardware_pio_pupoff(GPIOZ, ipins);
-
-#elif CPUSTYLE_STM32MP1
-
-	arm_stm32mp1_hardware_pio_pupoff(GPIOZ, ipins);
+	gpioX_updown(GPIOZ, ipins, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX

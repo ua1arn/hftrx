@@ -179,10 +179,10 @@
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_pioe_inputs(ENCODER_BITS); \
-			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
+			arm_hardware_pioe_updown(_xMask, ENCODER_BITS, 0); \
 			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_pioe_inputs(ENCODER2_BITS); \
-			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
+			arm_hardware_pioe_updown(_xMask, ENCODER2_BITS, 0); \
 			arm_hardware_pioe_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
 		} while (0)
 
@@ -272,7 +272,7 @@
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(PTT_BIT_PTT); \
-			arm_hardware_piob_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_piob_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
 		} while (0)
 
 #endif /* WITHTX */
@@ -291,13 +291,13 @@
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 #endif
 
 #define HARDWARE_UART2_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1uL << 2) | (1uL << 3), AF_USART2); /* PA2: TX DATA line (2 MHz), PA3: RX data line */ \
-		arm_hardware_pioa_updown((1uL << 3), 0);	/* PA3: pull-up RX data */ \
+		arm_hardware_pioa_updown(_xMask, (1uL << 3), 0);	/* PA3: pull-up RX data */ \
 	} while (0)
 
 //#define SPI_IOUPDATE_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); } while (0)
@@ -469,7 +469,7 @@
 	#define	USBD_FS_INITIALIZE() do { \
 		arm_hardware_pioa_altfn50((1U << 11) | (1U << 12), AF_OTGFS);			/* PA11, PA12 - USB_OTG_FS	*/ \
 		arm_hardware_pioa_inputs(1U << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
-		arm_hardware_pioa_updownoff((1U << 9) | (1U << 11) | (1U << 12)); \
+		arm_hardware_pioa_updown((1U << 9) | (1U << 11) | (1U << 12), 0, 0); \
 		} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    
@@ -480,7 +480,7 @@
 	#define	USBD_HS_FS_INITIALIZE() do { \
 		arm_hardware_piob_altfn50((1U << 14) | (1U << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
 		arm_hardware_piob_inputs(1U << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
-		arm_hardware_piob_updownoff((1U << 13) | (1U << 14) | (1U << 15)); \
+		arm_hardware_piob_updown((1U << 13) | (1U << 14) | (1U << 15), 0, 0); \
 		} while (0)
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
