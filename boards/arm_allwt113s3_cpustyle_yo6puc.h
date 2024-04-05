@@ -97,8 +97,8 @@
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
-	#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
+	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 
 	#if WITHINTEGRATEDDSP
 
@@ -109,13 +109,13 @@
 		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
-		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
-		#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+//		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+//		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+//		#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+//		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+//		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+//		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+//		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 	#endif /* WITHINTEGRATEDDSP */
 
 	#if ! LCDMODE_DUMMY
@@ -974,9 +974,6 @@
 		const portholder_t VSmask = (UINT32_C(1) << 21); 	/* PD21 LCD_VSYNC */ \
 		const portholder_t HSmask = (UINT32_C(1) << 20); 	/* PD20 LCD_HSYNC */ \
 		const portholder_t DEmask = (UINT32_C(1) << 19); 	/* PD19 LCD_DE */ \
-		const portholder_t MODEmask = 0*(UINT32_C(1) << 0); 	/* PD0 mode */ \
-		/* set LCD DE/SYNC mode */ \
-		arm_hardware_piod_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PD0 = state */ \
 		/* synchro signals - sync mode */ \
 		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
 		arm_hardware_piod_altfn20(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
@@ -986,6 +983,10 @@
 		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
 		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
 		arm_hardware_pioe_outputs(DITHmask, 0 * DITHmask); /* PE4 LCD_DITH */ \
+		/* force all sync */ \
+		arm_hardware_piod_altfn20(1 * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		arm_hardware_piod_altfn20(1 * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn20(1 * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn20(UINT32_C(1) << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
