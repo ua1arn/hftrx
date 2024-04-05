@@ -231,6 +231,8 @@
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
+	#define HARDWARE_IGNORENONVRAM 1
+
 #else /* WITHISBOOTLOADER */
 
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
