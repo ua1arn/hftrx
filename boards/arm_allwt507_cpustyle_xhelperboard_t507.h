@@ -314,11 +314,11 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define ENCODER_INITIALIZE() do { \
 			arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENCODER_BITS, 0); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			/*arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENCODER2_BITS); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENCODER2_BITS, 0); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(0 * BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -739,7 +739,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART1HW
@@ -752,7 +752,7 @@ void user_uart5_ontxchar(void * ctx);
 		/*arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); *//* PG12 BT_WAKE */ \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_piog_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART2HW
@@ -762,7 +762,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 6; /* PI6 UART2-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART3HW
@@ -772,7 +772,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 10; /* PI10 UART3-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 // WITHUART4HW
 // Используется периферийный контроллер последовательного порта UART4 */
@@ -781,7 +781,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 14; /* PI14 UART4-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART5HW
@@ -791,7 +791,7 @@ void user_uart5_ontxchar(void * ctx);
 		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 
@@ -815,7 +815,7 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENC2BTN_BIT); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENC2BTN_BIT, BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
 			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)

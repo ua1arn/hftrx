@@ -279,12 +279,12 @@
 			static einthandler_t h1; \
 			static einthandler_t h2; \
 			arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENCODER_BITS, 0); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, 0); \
 			einthandler_initialize(& h1, BOARD_GPIOA_ENCODER_BITS, spool_encinterrupt); \
 			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, BOARD_GPIOA_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/*arm_hardware_pioa_altfn20(BOARD_GPIOA_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENCODER2_BITS); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENCODER2_BITS, 0); \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, 0); \
 			einthandler_initialize(& h2, 0*BOARD_GPIOA_ENCODER2_BITS, spool_encinterrupt2); \
 			arm_hardware_pioa_onchangeinterrupt(0*BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, BOARD_GPIOA_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
@@ -726,7 +726,7 @@
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART1HW
@@ -739,7 +739,7 @@
 		/*arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); *//* PG12 BT_WAKE */ \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_piog_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART2HW
@@ -749,7 +749,7 @@
 		const portholder_t RXMASK = UINT32_C(1) << 6; /* PI6 UART2-RX - pull-up RX data */  \
 		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 
@@ -773,7 +773,7 @@
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(BOARD_GPIOA_ENC2BTN_BIT); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioa_updown(BOARD_GPIOA_ENC2BTN_BIT, BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
 			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
