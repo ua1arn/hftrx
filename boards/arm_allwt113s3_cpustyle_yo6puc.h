@@ -423,10 +423,10 @@
 
 	// +++
 	// TXDISABLE input - PF5
-	#define TXDISABLE_TARGET_PIN				gpioX_getinputs(GPIOF)
-	#define TXDISABLE_BIT_TXDISABLE				(UINT32_C(1) << 5)		// PF5 - TX INHIBIT
+	//#define TXDISABLE_TARGET_PIN				gpioX_getinputs(GPIOF)
+	//#define TXDISABLE_BIT_TXDISABLE				(UINT32_C(1) << 5)		// PF5 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
-	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
+	#define HARDWARE_GET_TXDISABLE() 0//((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() do { \
 			/* arm_hardware_piof_inputs(TXDISABLE_BIT_TXDISABLE); */ \
 			/* arm_hardware_piof_updown(TXDISABLE_BIT_TXDISABLE, 0, TXDISABLE_BIT_TXDISABLE); */ \
@@ -498,12 +498,12 @@
 
 	#define targetext1		(UINT32_C(1) << 0)		// PG0 ext1 on front panel CSEXT1
 	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B
+	#define targetfpga1		(UINT32_C(1) << 8)		// PG8 FPGA control registers CS1
 	#define targetctl1		(UINT32_C(1) << 11)		// PG11 board control registers chain
-	#define targetctl1OE	(UINT32_C(1) << 1)		// PG1 board control registers chain output enable
-	#define targetcodec1	(UINT32_C(1) << 6)		// PG6 on-board codec1 NAU8822L
-	#define targetfpga1		(UINT32_C(1) << 8)		// PG2 FPGA control registers CS1
+	//#define targetctl1OE	(UINT32_C(1) << 1)		// PG1 board control registers chain output enable
+	//#define targetcodec1	(UINT32_C(1) << 6)		// PG6 on-board codec1 NAU8822L
 
-	#define targetadc2		(UINT32_C(1) << 8)	// PG8 on-board ADC MCP3208-BI/SL chip select (potentiometers) ADCCS1
+	//#define targetadc2		(UINT32_C(1) << 8)	// PG8 on-board ADC MCP3208-BI/SL chip select (potentiometers) ADCCS1
 	#define targetadck		(UINT32_C(1) << 9)	// PG9 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADCCS2
 	#define targetxad2		(UINT32_C(1) << 3)	// PG3 external SPI device (PA BOARD ADC) CSEXT2
 
@@ -621,7 +621,7 @@
 	const portholder_t RXMASK = (UINT32_C(1) << 3); /* PE3 UART0-RX - pull-up RX data */  \
 	arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
 	arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
-	arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
+	arm_hardware_pioe_updown(RXMASK | TXMASK, RXMASK, 0); \
 } while (0)
 
 
@@ -839,6 +839,7 @@
 	#define	USBD_EHCI_INITIALIZE() do { \
 		} while (0)
 
+	// todo: add PE9 manipulation for XtremeDx board
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
 		} while (0)
 
@@ -859,10 +860,10 @@
 	#define HARDWARE_DCDC_PWMCH 3	/* PWM3 */
 
 	// PG10 - DC-DC synchro output
-	// PWM5 AF6
+	// PWM3 AF6
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_piog_altfn2((UINT32_C(1) << 10), GPIO_CFG_AF10); /* TODO ? GPIO_CFG_AF6 - PG10 - PWM3 */ \
+		arm_hardware_piog_altfn2((UINT32_C(1) << 10), GPIO_CFG_AF2); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
