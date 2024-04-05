@@ -539,7 +539,7 @@
 	#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 #endif /* WITHISBOOTLOADER */
