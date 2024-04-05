@@ -575,7 +575,7 @@ void user_uart5_ontxchar(void * ctx);
 			arm_hardware_pioe_inputs(PTT2_BIT_PTT); \
 			arm_hardware_pioe_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
 			arm_hardware_pioe_inputs(PTT3_BIT_PTT); \
-			arm_hardware_pioe_updown(_xMask, PTT3_BIT_PTT, 0); \
+			arm_hardware_pioe_updown(PTT3_BIT_PTT, PTT3_BIT_PTT, 0); \
 		} while (0)
 	// ---
 	// TUNE input - PD11
