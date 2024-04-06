@@ -109,13 +109,13 @@
 		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
-//		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
-//		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
-//		#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
-//		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-//		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-//		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-//		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
+		#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+		#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 	#endif /* WITHINTEGRATEDDSP */
 
 	#if ! LCDMODE_DUMMY
