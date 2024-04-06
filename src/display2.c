@@ -3076,34 +3076,22 @@ struct dzone
 #define REDRSUBSET_SLEEP	REDRSUBSET(PAGESLEEP)
 #define REDRSUBSET_INIT		REDRSUBSET(PAGEINIT)
 
-#if LINUX_SUBSYSTEM
-	enum
-	{
-		REDRM_ALL,
-		REDRM_FREQ = REDRM_ALL,
-		REDRM_KEYB = REDRM_ALL,
-		REDRM_MODE = REDRM_ALL,
-		REDRM_INIS,
-		REDRM_count
-	};
-#else
-	enum
-	{
-		REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
-		REDRM_FREQ,		// индикаторы частоты
-		REDRM_FRQB,	// индикаторы частоты
-		REDRM_BARS,		// S-meter, SWR-meter, voltmeter
-		REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
+enum
+{
+	REDRM_MODE,		// поля меняющиемя при изменении режимов работы, LOCK state
+	REDRM_FREQ,		// индикаторы частоты
+	REDRM_FRQB,	// индикаторы частоты
+	REDRM_BARS,		// S-meter, SWR-meter, voltmeter
+	REDRM_VOLT,		// вольтметр (редко меняющиеся параметры)
 
-		REDRM_MFXX,		// код редактируемого параметра
-		REDRM_MLBL,		// название редактируемого параметра
-		REDRM_MVAL,		// значение параметра меню
-		REDRM_BUTTONS,  // область отображения экранных кнопок
-		REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
-		REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
-		REDRM_count
-	};
-#endif /* LINUX_SUBSYSTEM */
+	REDRM_MFXX,		// код редактируемого параметра
+	REDRM_MLBL,		// название редактируемого параметра
+	REDRM_MVAL,		// значение параметра меню
+	REDRM_BUTTONS,  // область отображения экранных кнопок
+	REDRM_INIS,  	// инициализирующие процедцры экранных элементоы
+	REDRM_KEYB,		// обработчик клавиатуры для указанного display layout
+	REDRM_count
+};
 
 void
 //NOINLINEAT
@@ -4959,9 +4947,7 @@ static void display_wfputrow(uint_fast16_t x, uint_fast16_t y, const PACKEDCOLOR
 			p, ALLDX, 1, x, y);
 }
 
-#if ! LINUX_SUBSYSTEM
-	#include "dsp/window_functions.h"
-#endif /* ! LINUX_SUBSYSTEM */
+#include "dsp/window_functions.h"
 
 static void
 display2_wfl_init(
@@ -5971,11 +5957,6 @@ display_walktrough(
 	dctx_t * pctx
 	)
 {
-#if LINUX_SUBSYSTEM
-	if (key != REDRM_INIS)
-		return;
-#endif /* LINUX_SUBSYSTEM */
-
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	uint_fast8_t i;
 
@@ -6000,10 +5981,7 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
-#if LINUX_SUBSYSTEM
-		return;
-
-#elif STMD
+#if STMD
 	ASSERT(key < REDRM_count);
 
 	#if LCDMODE_MAIN_PAGES > 1
@@ -6051,18 +6029,7 @@ display_walktroughsteps(
 // выполнение шагов state machine отображения дисплея
 void display2_bgprocess(void)
 {
-#if LINUX_SUBSYSTEM
-	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
-	uint8_t dpage = REDRSUBSET(amenuset());
-
-	for (int i = 0; i < WALKCOUNT; i ++)
-	{
-		const struct dzone * const p = & dzones [i];
-		if (p->subset >= dpage && p->key == REDRM_ALL)
-			(* p->redraw)(p->x, p->y, display2_getcontext());
-	}
-
-#elif STMD
+#if STMD
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	const uint_fast8_t keyi0 = keyi;
 

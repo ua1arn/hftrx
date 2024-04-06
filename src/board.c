@@ -759,7 +759,7 @@ prog_gpioreg(void)
 	OPA2674_GPIO_SETSTATE(! glob_tx);
 #endif
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 	xcz_rxtx_state(glob_tx);
 #if defined (PREAMP_MIO)
 #if TARGET_RFADC_PGA_EMIO			// если есть управление PGA, LTC6401 всегда включено
@@ -786,7 +786,7 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_OPA2674_CTRL_EMIO);
 	xc7z_writepin(TARGET_OPA2674_CTRL_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
-#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+#endif /* CPUSTYLE_XC7Z */
 }
 
 /* 
@@ -7432,7 +7432,7 @@ restart:
 
 #if WITHDSPEXTFIR
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 
 static adapter_t plfircoefsout;
 
@@ -7485,7 +7485,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	}
 }
 
-#elif ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#elif FPGA_ARTIX7
 
 static adapter_t * plfircoefsout = NULL;
 
@@ -7544,8 +7544,6 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	spi_unselect(targetfpga1);
 	spi_operate_unlock(irql);
 }
-
-#elif ! LINUX_SUBSYSTEM
 
 static adapter_t plfircoefsout;
 
@@ -8010,7 +8008,7 @@ static void adcfilters_initialize(void);
 */
 void board_initialize(void)
 {
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
 #if WITHFPGALOAD_DCFG
@@ -10354,9 +10352,7 @@ mcp3208_read_low(
 #if defined(RTC1_TYPE)
 
 #include <time.h>
-	#if ! LINUX_SUBSYSTEM
 #include <sys/_timeval.h>
-#endif /* ! LINUX_SUBSYSTEM */
 
 /* поддержка получения времени */
 int _gettimeofday(struct timeval *p, void *tz)
@@ -10434,24 +10430,6 @@ int _gettimeofday(struct timeval *p, void *tz)
 	return 0;
 }
 
-#elif ! LINUX_SUBSYSTEM
-
-#include <time.h>
-#include <sys/_timeval.h>
-
-
-int _gettimeofday(struct timeval *p, void *tz)
-{
-	if (p != NULL)
-	{
-		const ldiv_t v = ldiv(sys_now(), 1000);
-		//memset(p, 0, sizeof * p);
-		p->tv_usec = v.rem * 1000;
-		p->tv_sec = v.quot;
-	}
-	return 0;
-}
-
 #endif
 #endif /* ! CPUSTYLE_ATMEGA */
 
@@ -10495,7 +10473,7 @@ void board_get_serialnr(uint_fast32_t * sn)
 #endif
 }
 
-#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
+#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER
 
 #define FPGA_DECODE_CIC_SHIFT	(10u)
 #define FPGA_DECODE_FIR_SHIFT	(11u)
@@ -10563,4 +10541,4 @@ void iq_cic_test(uint32_t val)
 	hamradio_set_gdactest(val);
 }
 
-#endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
+#endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER */

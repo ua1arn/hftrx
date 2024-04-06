@@ -1737,7 +1737,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
@@ -1841,7 +1841,7 @@ void LowerIrql(IRQL_t newIRQL)
 }
 
 #elif CPUSTYLE_ATXMEGA
-#elif (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#elif (CPUSTYLE_ARM || CPUSTYLE_RISCV)
 
 /* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
 /* Работа с текущим ядром */

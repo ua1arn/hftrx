@@ -1578,32 +1578,6 @@ static void set_state_record(gui_element_t * val)
 	}
 }
 
-// 10 ms non-blocking delay
-uint8_t lp_delay_10ms(uint8_t init)
-{
-#if LINUX_SUBSYSTEM
-	static uint32_t oldt = 0;
-
-	if (init)
-	{
-		oldt = sys_now();
-		return 0;
-	}
-	else
-	{
-		uint32_t t = sys_now();
-		if (t - oldt > 10)
-		{
-			oldt = t;
-			return 1;
-		}
-		return 0;
-	}
-#else
-	return 1;
-#endif /* LINUX_SUBSYSTEM */
-}
-
 /* GUI state mashine */
 static void process_gui(void)
 {
@@ -1708,7 +1682,7 @@ static void process_gui(void)
 
 				if (p->is_long_press)
 				{
-					if(gui.state != LONG_PRESSED && ! is_long_press && lp_delay_10ms(0))
+					if(gui.state != LONG_PRESSED && ! is_long_press)
 						long_press_counter ++;
 
 					if(long_press_counter > long_press_limit)
@@ -1760,7 +1734,6 @@ static void process_gui(void)
 	{
 		p->state = LONG_PRESSED;		// для запуска обработчика нажатия
 		set_state_record(p);
-		lp_delay_10ms(1);				// инициализация задержки
 		p->state = PRESSED;
 		gui.state = PRESSED;
 		is_long_press = 1;				// долгое нажатие обработано

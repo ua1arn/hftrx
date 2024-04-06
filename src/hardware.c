@@ -23,7 +23,7 @@
 //#include "task.h"
 #endif /* WITHRTOS */
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 
 extern uint8_t bd_space[];
 
@@ -213,7 +213,7 @@ void xc7z_gpio_output(uint8_t pin)
 			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
 }
 
-#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+#endif /* CPUSTYLE_XC7Z */
 
 
 static RAMDTCM LCLSPINLOCK_t tickerslock = LCLSPINLOCK_INIT;
@@ -1381,9 +1381,6 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // TODO: перекалибровать для FLASH контроллеров.
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
-#if LINUX_SUBSYSTEM
-	usleep(timeUS);
-#else
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000uL);
 	//
@@ -1391,15 +1388,11 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	for (t = 0; t < top; ++ t)
 	{
 	}
-#endif /* LINUX_SUBSYSTEM */
 }
 // exactly as required
 //
 void local_delay_ms(int timeMS)
 {
-#if LINUX_SUBSYSTEM
-	usleep(timeMS * 1000);
-#else
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000uL);
 	int n;
@@ -1410,7 +1403,6 @@ void local_delay_ms(int timeMS)
 		{
 		}
 	}
-#endif /* LINUX_SUBSYSTEM */
 }
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_TMS320F2833X */
@@ -2812,7 +2804,7 @@ sysintt_sdram_initialize(void)
 static void
 sysinit_debug_initialize(void)
 {
-#if WITHDEBUG && ! LINUX_SUBSYSTEM
+#if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
@@ -2928,14 +2920,14 @@ sysinit_perfmeter_initialize(void)
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 }
 
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if defined(__aarch64__)
 //uint32_t __Vectors [32];
 void __attribute__((used)) Reset_Handler(void)
 {
 	SystemInit();
 	main();
 }
-#endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+#endif /* defined(__aarch64__) */
 
 static void
 sysinit_vbar_initialize(void)
@@ -3395,7 +3387,6 @@ SystemInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
-#if ! LINUX_SUBSYSTEM
 	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
 #if ! WITHISBOOTLOADER_DDR
@@ -3417,7 +3408,6 @@ SystemInit(void)
 	sysinit_cache_core0_initialize();	// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
-#endif /* ! LINUX_SUBSYSTEM */
 }
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
@@ -4694,7 +4684,7 @@ void _stack_init(void)
 
 }
 
-#if (CPUSTYLE_RISCV || defined(__aarch64__)) && ! LINUX_SUBSYSTEM
+#if (CPUSTYLE_RISCV || defined(__aarch64__))
 
 /**
   \brief   Initializes data and bss sections
@@ -4739,7 +4729,7 @@ __NO_RETURN void __riscv_start(void)
 }
 #endif /* CPUSTYLE_RISCV || defined(__aarch64__) */
 
-#if ! LINUX_SUBSYSTEM && 1//! defined (__CORTEX_M) && 0
+#if 1//! defined (__CORTEX_M) && 0
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
@@ -4778,7 +4768,7 @@ void _fini(void)
 }
 #endif /* __cplusplus */
 
-#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA) && 1
+#if ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA) && 1
 
 /*
  *

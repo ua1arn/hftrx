@@ -57,10 +57,7 @@ typedef struct
     kiss_fftr_cfg fft_cfg; ///< Kiss FFT housekeeping object
 } monitor_t;
 
-#if ! LINUX_SUBSYSTEM
-	ft8_t ft8;
-#endif /* ! LINUX_SUBSYSTEM */
-
+ft8_t ft8;
 static timestamp_t ts1, ts2;
 uint32_t bufind1 = 0, bufind2 = 0;
 uint8_t fill_ft8_buf1 = 0, fill_ft8_buf2 = 0, ft8_enable = 0;
@@ -358,9 +355,7 @@ void ft8_decode_buf(float * signal, timestamp_t ts)
 	PRINTF("decoded %d messages\n", num_decoded);
 	ft8.decoded_messages = num_decoded;
 	monitor_free(&mon);
-#if ! LINUX_SUBSYSTEM
 	xcz_ipi_sendmsg_c0(FT8_MSG_DECODE_DONE);
-#endif /* ! LINUX_SUBSYSTEM */
 }
 
 // *** Encode *********************************************************************
@@ -452,7 +447,6 @@ void ft8_encode_buf(float * signal, char * message, float frequency)
 
 // ********************************************************************************
 
-#if ! LINUX_SUBSYSTEM
 void ft8_irqhandler_core0(void)
 {
 	uint8_t msg = ft8.int_core0;
@@ -649,5 +643,4 @@ void ft8_initialize(void)
 	subscribefloat(& speexoutfloat, & ft8_outregister, NULL, ft8fill);
 }
 
-#endif /* ! LINUX_SUBSYSTEM */
 #endif /* WITHFT8 */

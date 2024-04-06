@@ -453,28 +453,8 @@ elif CPUSTYLE_STM32F0XX
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-#if ! LINUX_SUBSYSTEM
 	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
-#endif /* ! LINUX_SUBSYSTEM */
-
-	#define DCACHEROWSIZE 32
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
-	#define ALIGNX_END /* nothing */
-
-#elif CPUSTYLE_XCZU
-	// Zynq UltraScale+ Device
-	// r0p4-50rel0
-	// XCZU2..XCZU9, XCZU11
-
-	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-
-#if ! LINUX_SUBSYSTEM
-	#include "arch/zynqmp/zynquscale.h"
-	#include "irq_ctrl.h"
-#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -716,9 +696,7 @@ void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обраб
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
 /* TWI (I2C) interface */
-#if ! LINUX_SUBSYSTEM
-	#define I2C_RETRIES 3	/* количество повторов */
-#endif /* ! LINUX_SUBSYSTEM */
+#define I2C_RETRIES 3	/* количество повторов */
 
 /* target device speed */
 typedef struct i2c_parameters
@@ -1039,7 +1017,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if CPUSTYLE_XC7Z
 
 #define AX_PWM_AXI_SLV_REG0_OFFSET 0
 #define AX_PWM_AXI_SLV_REG1_OFFSET 4
@@ -1122,10 +1100,6 @@ void applowinitialize(void);
 void initialize2(void);
 void application_mainloop(void);
 void application_initialize(void);
-
-#if LINUX_SUBSYSTEM
-	#include <src/linux/linux_subsystem.h>
-#endif /* LINUX_SUBSYSTEM */
 
 #if (__CORTEX_A == 53U) && 1
 

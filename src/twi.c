@@ -62,7 +62,7 @@ static void i2c_delay(const i2cp_t * p)
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
 
 	#if WITHTWISW && ! defined (TWISOFT_INITIALIZE)
 
@@ -1442,8 +1442,6 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
-#elif LINUX_SUBSYSTEM
-
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
 #include "xc7z_inc.h"
@@ -1466,7 +1464,7 @@ void hardware_iicps_configure(void)
 }
 
 /* return non-zero then error */
- i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
@@ -2428,8 +2426,6 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
-#elif LINUX_SUBSYSTEM
-
 #elif CPUSTYLE_XC7Z
 
 	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
@@ -2480,7 +2476,7 @@ void hardware_twi_master_configure(void)
 
 #endif /* WITHTWIHW */
 
-#if (WITHTWISW) && ! LINUX_SUBSYSTEM
+#if (WITHTWISW)
 
 /* скорость обмена */
 void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq)
@@ -2675,4 +2671,4 @@ void i2c2_stop(void)
 
 #endif
 
-#endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
+#endif /* (WITHTWISW) */

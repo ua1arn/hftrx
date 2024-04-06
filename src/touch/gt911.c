@@ -251,9 +251,9 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 
 uint_fast8_t gt911_initialize(void)
 {
-#if (WITHTWISW) && ! LINUX_SUBSYSTEM
+#if WITHTWISW
 	i2cp_intiialize(& tp_i2cp, I2CP_I2C1, 400000);
-#endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
+#endif /* WITHTWISW */
 
 	gt911_io_initialize();
 
