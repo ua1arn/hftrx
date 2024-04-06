@@ -18947,8 +18947,8 @@ applowinitialize(void)
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */
 #if WITHENCODER
-	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
-	encoder_initialize();
+	hardware_encoders_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
+	encoders_initialize();
 #endif /* WITHENCODER */
 #if WITHELKEY
 	elkey_initialize();

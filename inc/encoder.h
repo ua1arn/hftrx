@@ -18,12 +18,33 @@ extern "C" {
 #define ENCODER_SLOW_STEPS 48	/* шагов на один оборот валкодера на минимальной скорости вращения  */
 #define ENCODER_MENU_STEPS 24	/* количество изменений настраиваемого параметра на один оборот валкодера */
 
+typedef struct encoder_tag
+{
+	int position;	// обновляется по прерыванию
+	int rotate;		// поддержка состояний
+	int backup_rotate;	// поддержка деления щагов
+	uint8_t old_val;
+	uint_fast8_t (* getpins)(void);
+	IRQLSPINLOCK_t enclock;
+} encoder_t;
+
+void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
 int_least16_t getRotateHiRes(uint_fast8_t * jumpsize, uint_fast8_t hiresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
 int_least16_t getRotateHiRes2(uint_fast8_t * jumpsize, uint_fast8_t loresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes3(uint_fast8_t * jumpsize, uint_fast8_t loresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes4(uint_fast8_t * jumpsize, uint_fast8_t loresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+int_least16_t getRotateHiRes5(uint_fast8_t * jumpsize, uint_fast8_t loresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
+
 void encoder_clear(void);	/* накопитель сбрасывается */
-int getRotateLoRes(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера. */
-void encoder_initialize(void);
+
+int getRotateLoRes(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера #1. */
+int getRotateLoRes2(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера #2. */
+int getRotateLoRes3(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера #3. */
+int getRotateLoRes4(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера #4. */
+int getRotateLoRes5(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера #15. */
+
+void encoders_initialize(void);
 void encoder_pushback(int outsteps, uint_fast8_t hiresdiv);
 void encoder_kbdctl(
 	uint_fast8_t code, 		// код клавиши
@@ -38,11 +59,17 @@ void encoder_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// �
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 //#define ENCODER_NORMALIZED_RESOLUTION (144)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 
-#define ENCRESSCALE 4UL
+#define ENCRESSCALE 4U
 
 
 #define ENC_DYNA_MAX 4
 
+extern encoder_t encoder1;
+extern encoder_t encoder2;
+extern encoder_t encoder3;
+extern encoder_t encoder4;
+extern encoder_t encoder5;
+extern encoder_t encoder6;
 
 #ifdef __cplusplus
 }

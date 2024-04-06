@@ -58,6 +58,13 @@ static RAMDTCM int8_t graydecoder [4][4] =
 	},
 };
 
+encoder_t encoder1;
+encoder_t encoder2;
+encoder_t encoder3;
+encoder_t encoder4;
+encoder_t encoder5;
+encoder_t encoder6;
+
 static IRQLSPINLOCK_t enc1lock;
 static IRQLSPINLOCK_t enc2lock;
 
@@ -80,6 +87,17 @@ void spool_encinterrupt(void)
 	IRQLSPIN_UNLOCK(& enc1lock, oldIrql);
 }
 
+void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
+{
+	e->old_val = agetpins();
+	e->getpins = agetpins;
+	e->position = 0;
+
+	e->backup_rotate = 0;
+	e->rotate = 0;
+	IRQLSPINLOCK_INITIALIZE(& e->enclock, ENCODER_IRQL);
+}
+
 static RAMDTCM uint_fast8_t old_val2;
 
 void spool_encinterrupt2(void)
@@ -98,6 +116,26 @@ void spool_encinterrupt2(void)
 #endif
 	old_val2 = new_val;
 	IRQLSPIN_UNLOCK(& enc2lock, oldIrql);
+}
+
+void spool_encinterrupts(void * ctx)
+{
+	encoder_t * e = (encoder_t *) ctx;
+
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql);
+
+#if ENCODER2_REVERSE
+	position2 -= graydecoder [e->old_val][new_val];
+
+#else
+	position2 += graydecoder [e->old_val][new_val];
+
+#endif
+	e->old_val = new_val;
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 // вызывается в контексте обработчика прерываний
@@ -434,15 +472,21 @@ static void spool_encinterrupt2_local(void * ctx)
 }
 
 /* вызывается при запрещённых прерываниях */
-void encoder_initialize(void)
+void encoders_initialize(void)
 {
 	//rotate = backup_rotate = 0;
 	//enchistindex = 0;
 	//tichist [enchistindex] = 0;
 	//enchist [enchistindex] = 0;
+	encoder_initialize(& encoder1, hardware_get_encoder_bits);
+	encoder_initialize(& encoder2, hardware_get_encoder2_bits);
+	encoder_initialize(& encoder3, hardware_get_encoder3_bits);
+	encoder_initialize(& encoder4, hardware_get_encoder4_bits);
+	encoder_initialize(& encoder5, hardware_get_encoder5_bits);
+	encoder_initialize(& encoder6, hardware_get_encoder6_bits);
 
-	IRQLSPINLOCK_INITIALIZE(& enc1lock, IRQL_OVERREALTIME);
-	IRQLSPINLOCK_INITIALIZE(& enc2lock, IRQL_OVERREALTIME);
+	IRQLSPINLOCK_INITIALIZE(& enc1lock, ENCODER_IRQL);
+	IRQLSPINLOCK_INITIALIZE(& enc2lock, ENCODER_IRQL);
 
 	old_val = hardware_get_encoder_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	old_val2 = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

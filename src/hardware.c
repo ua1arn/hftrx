@@ -460,7 +460,7 @@ hardware_getshutdown(void)
 }
 
 void 
-hardware_encoder_initialize(void)
+hardware_encoders_initialize(void)
 {
 #if WITHENCODER
 	ENCODER_INITIALIZE();
@@ -488,7 +488,7 @@ hardware_get_encoder_bits(void)
 /* Чтение состояния выходов валкодера #2 - в два младших бита */
 /* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
-uint_fast8_t 
+uint_fast8_t
 hardware_get_encoder2_bits(void)
 {
 #if WITHENCODER2 && defined (ENCODER2_BITS_GET)
@@ -503,6 +503,86 @@ hardware_get_encoder2_bits(void)
 #else /* WITHENCODER2 */
 	return 0;
 #endif /* WITHENCODER2 */
+}
+
+/* Чтение состояния выходов валкодера #3 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder3_bits(void)
+{
+#if WITHENCODER3 && defined (ENCODER3_BITS_GET)
+	return ENCODER3_BITS_GET();
+#elif WITHENCODER3 && ENCODER3_BITS && defined (ENCODER3_SHIFT)
+	return (ENCODER3_INPUT_PORT & ENCODER3_BITS) >> ENCODER3_SHIFT;	// Биты валкодера #2
+#elif WITHENCODER3 && ENCODER3_BITS
+	const portholder_t v = ENCODER3_INPUT_PORT;
+	return ((v & ENCODER3_BITA) != 0) * 2 + ((v & ENCODER3_BITB) != 0);	// Биты идут не подряд
+#elif WITHENCODER3 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+	return ((gpio_readpin(ENCODER3_BITA) != 0) * 2 + (gpio_readpin(ENCODER3_BITB) != 0));
+#else /* WITHENCODER3 */
+	return 0;
+#endif /* WITHENCODER3 */
+}
+
+/* Чтение состояния выходов валкодера #4 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t 
+hardware_get_encoder4_bits(void)
+{
+#if WITHENCODER4 && defined (ENCODER4_BITS_GET)
+	return ENCODER4_BITS_GET();
+#elif WITHENCODER4 && ENCODER4_BITS && defined (ENCODER4_SHIFT)
+	return (ENCODER4_INPUT_PORT & ENCODER4_BITS) >> ENCODER4_SHIFT;	// Биты валкодера #2
+#elif WITHENCODER4 && ENCODER4_BITS
+	const portholder_t v = ENCODER4_INPUT_PORT;
+	return ((v & ENCODER4_BITA) != 0) * 2 + ((v & ENCODER4_BITB) != 0);	// Биты идут не подряд
+#elif WITHENCODER4 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+	return ((gpio_readpin(ENCODER4_BITA) != 0) * 2 + (gpio_readpin(ENCODER4_BITB) != 0));
+#else /* WITHENCODER4 */
+	return 0;
+#endif /* WITHENCODER4 */
+}
+
+/* Чтение состояния выходов валкодера #5 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder5_bits(void)
+{
+#if WITHENCODER5 && defined (ENCODER5_BITS_GET)
+	return ENCODER5_BITS_GET();
+#elif WITHENCODER5 && ENCODER5_BITS && defined (ENCODER5_SHIFT)
+	return (ENCODER5_INPUT_PORT & ENCODER5_BITS) >> ENCODER5_SHIFT;	// Биты валкодера #2
+#elif WITHENCODER5 && ENCODER5_BITS
+	const portholder_t v = ENCODER5_INPUT_PORT;
+	return ((v & ENCODER5_BITA) != 0) * 2 + ((v & ENCODER5_BITB) != 0);	// Биты идут не подряд
+#elif WITHENCODER5 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+	return ((gpio_readpin(ENCODER5_BITA) != 0) * 2 + (gpio_readpin(ENCODER5_BITB) != 0));
+#else /* WITHENCODER5 */
+	return 0;
+#endif /* WITHENCODER5 */
+}
+
+/* Чтение состояния выходов валкодера #6 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder6_bits(void)
+{
+#if WITHENCODER5 && defined (ENCODER5_BITS_GET)
+	return ENCODER5_BITS_GET();
+#elif WITHENCODER5 && ENCODER5_BITS && defined (ENCODER5_SHIFT)
+	return (ENCODER5_INPUT_PORT & ENCODER5_BITS) >> ENCODER5_SHIFT;	// Биты валкодера #2
+#elif WITHENCODER5 && ENCODER5_BITS
+	const portholder_t v = ENCODER5_INPUT_PORT;
+	return ((v & ENCODER5_BITA) != 0) * 2 + ((v & ENCODER5_BITB) != 0);	// Биты идут не подряд
+#elif WITHENCODER5 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+	return ((gpio_readpin(ENCODER5_BITA) != 0) * 2 + (gpio_readpin(ENCODER5_BITB) != 0));
+#else /* WITHENCODER5 */
+	return 0;
+#endif /* WITHENCODER5 */
 }
 
 // ADC intgerface functions
