@@ -17172,7 +17172,7 @@ modifysettings(
 	PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 	display2_redrawbarstimed(1, 1, mp);
-	encoder_clear();
+	encoders_clear();
 
 	for (;;)
 	{
@@ -17217,7 +17217,7 @@ modifysettings(
 				/* выход из меню */
 				if (posnvram != MENUNONVRAM)
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-				encoder_clear();	// сбросить информацию о повороте
+				encoders_clear();	// сбросить информацию о повороте
 				return;
 
 #if ! WITHFLATMENU
@@ -19619,7 +19619,7 @@ static void hamradio_main_initialize(void)
 	}
 #endif /* FQMODEL_GEN500 */
 
-	encoder_clear();
+	encoders_clear();
 
 	/* начальное отображение */
 	display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
@@ -19826,7 +19826,7 @@ hamradio_main_step(void)
 			if (kbready != 0 && processkeyboard(kbch))
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
-				encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
+				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
 				display_redrawmodestimed(1);
