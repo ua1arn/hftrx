@@ -30,36 +30,6 @@ static volatile int position2;		/* накопитель от валкодера 
 static int position_kbd;	/* накопитель от клавиатуры - знаковое число */
 #endif /* WITHKBDENCODER */
 
-// dimensions are:
-// old_bits new_bits
-static RAMDTCM int8_t graydecoder [4][4] =
-{
-	{
-		+0,		/* 00 -> 00 stopped				*/
-		-1,		/* 00 -> 01 rotate left			*/
-		+1,		/* 00 -> 10 rotate right		*/
-		+0,		/* 00 -> 11 invalid combination */		
-	},
-	{
-		+1,		/* 01 -> 00 rotate right		*/
-		+0,		/* 01 -> 01 stopped				*/
-		+0,		/* 01 -> 10 invalid combination */
-		-1,		/* 01 -> 11 rotate left			*/
-	},
-	{
-		-1,		/* 10 -> 00 rotate left			*/
-		+0,		/* 10 -> 01 invalid combination */
-		+0,		/* 10 -> 10 stopped				*/
-		+1,		/* 10 -> 11 rotate right		*/
-	},
-	{
-		+0,		/* 11 -> 00 invalid combination */
-		+1,		/* 11 -> 01 rotate right		*/
-		-1,		/* 11 -> 10 rotate left			*/
-		+0,		/* 11 -> 11 stopped				*/
-	},
-};
-
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 {
 	e->old_val = agetpins();
@@ -72,8 +42,36 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 
 void spool_encinterrupts(void * ctx)
 {
-	encoder_t * e = (encoder_t *) ctx;
-
+	encoder_t * const e = (encoder_t *) ctx;
+	// dimensions are:
+	// old_bits new_bits
+	static int8_t graydecoder [4][4] =
+	{
+		{
+			+0,		/* 00 -> 00 stopped				*/
+			-1,		/* 00 -> 01 rotate left			*/
+			+1,		/* 00 -> 10 rotate right		*/
+			+0,		/* 00 -> 11 invalid combination */
+		},
+		{
+			+1,		/* 01 -> 00 rotate right		*/
+			+0,		/* 01 -> 01 stopped				*/
+			+0,		/* 01 -> 10 invalid combination */
+			-1,		/* 01 -> 11 rotate left			*/
+		},
+		{
+			-1,		/* 10 -> 00 rotate left			*/
+			+0,		/* 10 -> 01 invalid combination */
+			+0,		/* 10 -> 10 stopped				*/
+			+1,		/* 10 -> 11 rotate right		*/
+		},
+		{
+			+0,		/* 11 -> 00 invalid combination */
+			+1,		/* 11 -> 01 rotate right		*/
+			-1,		/* 11 -> 10 rotate left			*/
+			+0,		/* 11 -> 11 stopped				*/
+		},
+	};
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	IRQL_t oldIrql;
 
@@ -105,6 +103,7 @@ static void encoder_clear(encoder_t * e)
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql);
+	e->old_val = e->getpins();
 	e->position = 0;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
