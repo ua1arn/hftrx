@@ -18943,10 +18943,8 @@ applowinitialize(void)
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */
-#if WITHENCODER
 	hardware_encoders_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
 	encoders_initialize();
-#endif /* WITHENCODER */
 #if WITHELKEY
 	elkey_initialize();
 #endif /* WITHELKEY */
@@ -18959,9 +18957,7 @@ applowinitialize(void)
 #if WITHCAT
 	processcat_initialize();
 #endif
-#if WITHKEYBOARD
 	kbd_initialize();
-#endif /* WITHKEYBOARD */
 
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));
