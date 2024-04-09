@@ -502,6 +502,10 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
+#if TSC1_TYPE == TSC_TYPE_EVDEV
+	evdev_initialize();
+#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
+
 	/* Тест - печать ненормализованных значений */
 #if WITHDEBUG && 0
 	for (;;)
@@ -518,6 +522,8 @@ void board_tsc_initialize(void)
 
 }
 
+#if ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV
+
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
@@ -532,6 +538,8 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	* yr = 0;	/* зачем ? */
 	return 0;
 }
+
+#endif /* ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV */
 
 #if WITHLVGL
 

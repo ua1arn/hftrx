@@ -1307,6 +1307,7 @@ extern "C" {
 #define TSC_TYPE_XPT2046 	65	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
 #define TSC_TYPE_ILI2102	66	// Capacitive touch screen controller Ilitek ILI2102
 #define TSC_TYPE_AWTPADC	67	// Allwinner F133/t113-s3 resistive touch screen controller
+#define TSC_TYPE_EVDEV		68	// Linux input device
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.

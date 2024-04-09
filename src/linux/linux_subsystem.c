@@ -27,6 +27,10 @@
 #include <linux/gpio.h>
 #include <sys/stat.h>
 #include <termios.h>
+#include <fcntl.h>
+#include <linux/input.h>
+#include "lvgl/lvgl.h"
+#include "lv_drivers/indev/evdev.h"
 
 void xcz_resetn_modem_state(uint8_t val);
 void ft8_thread(void);
@@ -375,7 +379,7 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 	if (fd_i2c)
 	{
 		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
-			perror("i2chw_read set slave");
+			perror("i2chw_write:");
 
 		rc = write(fd_i2c, buf, size);
 		if (rc < 0)
@@ -392,7 +396,7 @@ uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 	if (fd_i2c)
 	{
 		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
-			perror("i2chw_read set slave");
+			perror("i2chw_read:");
 
 		rc = read(fd_i2c, buf, size);
 		if (rc < 0)
@@ -923,6 +927,52 @@ uint_fast8_t dummy_getchar(char * cp)
 	* cp = 0;
 	return 1;
 }
+
+// ********************** EVDEV Touch ******************************
+
+#if (TSC1_TYPE == TSC_TYPE_EVDEV)
+
+int evdev_fd = -1;
+
+uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	struct input_event in;
+	static uint_fast16_t xx = 0, yy = 0, pr = 0;
+
+	while (read(evdev_fd, &in, sizeof(struct input_event)) > 0)
+	{
+		if(in.type == EV_ABS && in.code == ABS_X)
+			xx = in.value;
+		else if (in.type == EV_ABS && in.code == ABS_Y)
+			yy = in.value;
+		else if(in.type == EV_KEY && in.code == BTN_TOUCH)
+			pr = in.value;
+	}
+
+	* xr = xx;
+	* yr = yy;
+
+	return pr;
+}
+
+void evdev_initialize(void)
+{
+	const char * argv [3] = { "/sbin/modprobe", "gt911.ko", NULL, };
+	linux_run_shell_cmd(argv);
+	usleep(500000);
+
+    evdev_fd = open(EVDEV_NAME, O_RDWR | O_NOCTTY | O_NDELAY);
+    if(evdev_fd == -1) {
+        perror("unable open evdev interface:");
+        return;
+    }
+
+    fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
+}
+
+#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) */
+
+// *****************************************************************
 
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void)) 	{}
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void)) 		{}
