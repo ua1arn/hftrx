@@ -30,6 +30,9 @@ typedef struct encoder_tag
 	uint_fast8_t (* getpins)(void);
 	IRQLSPINLOCK_t enclock;
 	int reverse;
+	/* locked by encspeedlock */
+	int rotate;
+	int backup_rotate;
 } encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
@@ -55,7 +58,7 @@ void encoder_kbdctl(
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
-int encoder_get_snapshot(unsigned * speed, const uint_fast8_t derate);
+int encoder1_get_snapshot(unsigned * speed, const uint_fast8_t derate);
 int encoder2_get_snapshot(unsigned * speed, const uint_fast8_t derate);
 
 void encoder_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.

@@ -37,6 +37,9 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->position = 0;
 	e->reverse = 0;
 
+	e->backup_rotate = 0;
+	e->rotate = 0;
+
 	IRQLSPINLOCK_INITIALIZE(& e->enclock, ENCODER_IRQL);
 }
 
@@ -106,23 +109,8 @@ static void encoder_clear(encoder_t * e)
 	e->old_val = e->getpins();
 	e->position = 0;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
-}
-
-encoder_t encoder1;
-encoder_t encoder2;
-encoder_t encoder3;
-encoder_t encoder4;
-encoder_t encoder5;
-encoder_t encoder6;
-
-void spool_encinterrupt(void)
-{
-	spool_encinterrupts(& encoder1);
-}
-
-void spool_encinterrupt2(void)
-{
-	spool_encinterrupts(& encoder2);
+	e->rotate = 0;
+	e->backup_rotate = 0;
 }
 
 static int safegetposition_kbd(void)
@@ -153,13 +141,7 @@ static IRQLSPINLOCK_t encspeedlock;
 
 
 /* накопитель прерываний от валкодера - знаковое число */
-static int rotate1;
 static int rotate_kbd;
-static int backup_rotate;
-
-/* накопитель прерываний от валкодера #2 - знаковое число */
-static int rotate2;
-static int backup_rotate2;
 
 
 static unsigned enchist [HISTLEN];
@@ -169,8 +151,8 @@ static uint_fast8_t enchistindex;
 
 /* значение используется вне прерываний - модификация без запрета прерываний */
 
-static unsigned encoder_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
-static uint_fast8_t encoder_dynamic = 1;
+static unsigned encoder1_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
+static uint_fast8_t encoder1_dynamic = 1;
 
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
@@ -178,8 +160,8 @@ static uint_fast8_t encoder_dynamic = 1;
 void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 {
 	//encoder_resolution = v;	/* используется учетверение шагов */
-	encoder_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
-	encoder_dynamic = encdynamic;
+	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
+	encoder1_dynamic = encdynamic;
 }
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
@@ -189,7 +171,7 @@ encspeed_spool(void * ctx)
 {
 	const int p1 = safegetposition(& encoder1);	// Валкодер #1
 	const int p1kbd = safegetposition_kbd();
-	rotate1 += p1;		/* учёт количества импульсов (для прямого отсчёта) */
+	encoder1.rotate += p1;		/* учёт количества импульсов (для прямого отсчёта) */
 #if WITHKBDENCODER
 	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
 #endif
@@ -210,7 +192,7 @@ encspeed_spool(void * ctx)
 	// Валкодер #2
 
 	const int p2 = safegetposition(& encoder2);
-	rotate2 += p2;		/* учёт количества импульсов (для прямого отсчёта) */
+	encoder2.rotate += p2;		/* учёт количества импульсов (для прямого отсчёта) */
 }
 
 /* Обработка данных от валколдера */
@@ -227,10 +209,6 @@ void encoders_clear(void)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
 
-	backup_rotate = 0;
-	backup_rotate2 = 0;
-
-	rotate1 = 0;
 	rotate_kbd = 0;
 
 	// HISTLEN == 4
@@ -242,7 +220,7 @@ void encoders_clear(void)
 
 /* получение количества шагов и скорости вращения. */
 static int
-encoders_get_snapshotproportional(
+encoder_get_snapshotproportional(
 	encoder_t * e,
 	unsigned * speed, 
 	const uint_fast8_t derate)
@@ -263,19 +241,19 @@ encoders_get_snapshotproportional(
 	// 2. Время измерения
 	tdelta = tichist + TICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
 
-	hrotate = rotate1 + rotate_kbd * derate;	/* работа в меню от клавиш - реагируем сразу */
-	rotate1 = 0;
+	hrotate = e->rotate + rotate_kbd * derate;	/* работа в меню от клавиш - реагируем сразу */
+	e->rotate = 0;
 	rotate_kbd = 0;
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
 	// ((s * TICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
-	* speed = ((s * (unsigned long) TICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (unsigned long) encoder_actual_resolution));
+	* speed = ((s * (unsigned long) TICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (unsigned long) encoder1_actual_resolution));
 	
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-	const div_t h = div(hrotate + backup_rotate, derate);
+	const div_t h = div(hrotate + e->backup_rotate, derate);
 
-	backup_rotate = h.rem;
+	e->backup_rotate = h.rem;
 
 	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 
@@ -284,18 +262,8 @@ encoders_get_snapshotproportional(
 
 
 /* получение количества шагов и скорости вращения. */
-int
-encoder_get_snapshot(
-	unsigned * speed,
-	const uint_fast8_t derate
-	)
-{
-	return encoders_get_snapshotproportional(& encoder1, speed, derate);
-}
-
-/* получение количества шагов и скорости вращения. */
 static int
-encoders_get_snapshot(
+encoder_get_snapshot(
 	encoder_t * e,
 	unsigned * speed, 
 	const uint_fast8_t derate
@@ -305,16 +273,47 @@ encoders_get_snapshot(
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
-	hrotate = rotate2;
-	rotate2 = 0;
+	hrotate = e->rotate;
+	e->rotate = 0;
 	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-	const div_t h = div(hrotate + backup_rotate2, derate);
-	backup_rotate2 = h.rem;
+	const div_t h = div(hrotate + e->backup_rotate, derate);
+	e->backup_rotate = h.rem;
 	* speed = 0;
 	return h.quot;
 }
+
+
+
+encoder_t encoder1;
+encoder_t encoder2;
+encoder_t encoder3;
+encoder_t encoder4;
+encoder_t encoder5;
+encoder_t encoder6;
+
+
+/* получение количества шагов и скорости вращения. */
+int
+encoder1_get_snapshot(
+	unsigned * speed,
+	const uint_fast8_t derate
+	)
+{
+	return encoder_get_snapshotproportional(& encoder1, speed, derate);
+}
+
+void spool_encinterrupt(void)
+{
+	spool_encinterrupts(& encoder1);
+}
+
+void spool_encinterrupt2(void)
+{
+	spool_encinterrupts(& encoder2);
+}
+
 /* получение количества шагов и скорости вращения. */
 int
 encoder2_get_snapshot(
@@ -322,7 +321,8 @@ encoder2_get_snapshot(
 	const uint_fast8_t derate
 	)
 {
-	return encoders_get_snapshot(& encoder2, speed, derate);
+	encoder_t * const e = & encoder2;
+	return encoder_get_snapshot(e, speed, derate);
 }
 
 /* получение "редуцированного" количества прерываний от валкодера.
@@ -330,18 +330,20 @@ encoder2_get_snapshot(
  */
 int getRotateLoRes(uint_fast8_t hiresdiv)
 {
+	encoder_t * const e = & encoder1;
 	unsigned speed;
-	return encoder_get_snapshot(& speed, encoder_actual_resolution * hiresdiv / ENCODER_MENU_STEPS);
+	return encoder_get_snapshotproportional(e, & speed, encoder1_actual_resolution * hiresdiv / ENCODER_MENU_STEPS);
 }
 
 
 // Управление вращением валколера из CAT
 void encoder_pushback(int outsteps, uint_fast8_t hiresdiv)
 {
+	encoder_t * const e = & encoder1;
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
 
-	backup_rotate += (outsteps * (int) hiresdiv);
+	e->backup_rotate += (outsteps * (int) hiresdiv);
 
 	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 }
@@ -353,7 +355,7 @@ getRotateHiRes(
 	uint_fast8_t hiresdiv
 	)
 {
-
+	encoder_t * const e = & encoder1;
 	typedef struct accel_tag
 	{
 		unsigned speed;
@@ -385,9 +387,9 @@ getRotateHiRes(
 
 
 	unsigned speed;
-	int nrotate = encoder_get_snapshot(& speed, hiresdiv);
+	int nrotate = encoder1_get_snapshot(& speed, hiresdiv);
 
-	if (encoder_dynamic != 0)
+	if (encoder1_dynamic != 0)
 	{
 		uint_fast8_t i;
 
@@ -408,7 +410,7 @@ getRotateHiRes(
 #if REQUEST_BA
 
 	/* Уменьшение разрешения валкодера для скоростей меньших, чем в таблице делается равным 48 */
-	const div_t h = div(nrotate, encoder_actual_resolution / ENCODER_SLOW_STEPS);
+	const div_t h = div(nrotate, encoder1_actual_resolution / ENCODER_SLOW_STEPS);
 
 	backup_rotate += h.rem * hiresdiv;
 

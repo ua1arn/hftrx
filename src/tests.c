@@ -13947,7 +13947,7 @@ void hightests(void)
 		for (;;)
 		{
 			unsigned speed;
-			int nrotate = encoder_get_snapshot(& speed, 1);
+			int nrotate = encoder1_get_snapshot(& speed, 1);
 			uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 			do
 			{
