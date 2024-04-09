@@ -36,6 +36,18 @@ typedef struct encoder_tag
 } encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
+int
+encoder_get_snapshot(
+	encoder_t * e,
+	unsigned * speed,
+	const uint_fast8_t derate
+	);
+int
+encoder_get_snapshotproportional(
+	encoder_t * e,
+	unsigned * speed,
+	const uint_fast8_t derate
+	);
 
 int_least16_t getRotateHiRes(uint_fast8_t * jumpsize, uint_fast8_t hiresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
 int_least16_t getRotateHiRes2(uint_fast8_t * jumpsize, uint_fast8_t loresdiv);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
@@ -52,7 +64,7 @@ int getRotateLoRes4(uint_fast8_t hiresdiv); /* получение "редуци�
 int getRotateLoRes5(uint_fast8_t hiresdiv); /* получение "редуцированного" количества прерываний от валкодера #15. */
 
 void encoders_initialize(void);
-void encoder_pushback(int outsteps, uint_fast8_t hiresdiv);
+void encoder1_pushback(int outsteps, uint_fast8_t hiresdiv);
 void encoder_kbdctl(
 	uint_fast8_t code, 		// код клавиши
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор

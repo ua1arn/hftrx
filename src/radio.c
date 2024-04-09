@@ -15252,7 +15252,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(steps, genc1div);
+			encoder1_pushback(steps, genc1div);
 		}
 	}
 	else if (match2('D', 'N'))
@@ -15260,7 +15260,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(0 - steps, genc1div);
+			encoder1_pushback(0 - steps, genc1div);
 		}
 	}
 #if 0

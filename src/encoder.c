@@ -171,6 +171,12 @@ encspeed_spool(void * ctx)
 {
 	const int p1 = safegetposition(& encoder1);	// Валкодер #1
 	const int p1kbd = safegetposition_kbd();
+	const int p2 = safegetposition(& encoder2);
+
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
+
+	// Валкодер #1
 	encoder1.rotate += p1;		/* учёт количества импульсов (для прямого отсчёта) */
 #if WITHKBDENCODER
 	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
@@ -190,9 +196,9 @@ encspeed_spool(void * ctx)
 	}
 
 	// Валкодер #2
-
-	const int p2 = safegetposition(& encoder2);
 	encoder2.rotate += p2;		/* учёт количества импульсов (для прямого отсчёта) */
+
+	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 }
 
 /* Обработка данных от валколдера */
@@ -219,7 +225,7 @@ void encoders_clear(void)
 }
 
 /* получение количества шагов и скорости вращения. */
-static int
+int
 encoder_get_snapshotproportional(
 	encoder_t * e,
 	unsigned * speed, 
@@ -262,7 +268,7 @@ encoder_get_snapshotproportional(
 
 
 /* получение количества шагов и скорости вращения. */
-static int
+int
 encoder_get_snapshot(
 	encoder_t * e,
 	unsigned * speed, 
@@ -337,7 +343,7 @@ int getRotateLoRes(uint_fast8_t hiresdiv)
 
 
 // Управление вращением валколера из CAT
-void encoder_pushback(int outsteps, uint_fast8_t hiresdiv)
+void encoder1_pushback(int outsteps, uint_fast8_t hiresdiv)
 {
 	encoder_t * const e = & encoder1;
 	IRQL_t oldIrql;
