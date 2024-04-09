@@ -4866,7 +4866,7 @@ void hardware_spi_io_delay(void)
 #elif	CPUSTYLE_ARM_CM0
 	__NOP();
 #elif _WIN32
-#else
+#elif ! LINUX_SUBSYSTEM
 	// Cortex A7, Cortex A9
 	local_delay_us(5);
 #endif
@@ -4970,7 +4970,7 @@ void hardware_spi_io_delay(void)
 		spool_elkeybundle();
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM
 
 	// Используется только один из обработчиков
 
@@ -5354,7 +5354,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM
 
 	#if 1
 		const uint_fast32_t period = calcdivround2(CPU_FREQ, ticksfreq * 2);	// Global Timer runs with the system frequency / 2
@@ -5387,7 +5387,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		PTIM_SetControl(PTIM_GetControl() | 0x01);
 
 	#endif
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XCZU && LINUX_SUBSYSTEM
+#elif CPUSTYLE_XC7Z && LINUX_SUBSYSTEM
 
 #elif CPUSTYLE_T507
 	#warning Undefined CPUSTYLE_T507
@@ -8323,7 +8324,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #endif /* CPUSTYLE_STM32L0XX */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
 static void xc7z_arm_pll_initialize(void)
 {
@@ -8577,7 +8578,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 #endif
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM */
 
 uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 
@@ -8811,7 +8812,7 @@ sysinit_pll_initialize(int forced)
 	stm32mp1_usb_clocks_initialize();
 	stm32mp1_audio_clocks_initialize();
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	#if WITHISBOOTLOADER
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
@@ -9049,7 +9050,7 @@ void SystemCoreClockUpdate(void)
 }
 
 
-#if (WITHDCDCFREQCTL || WITHBLPWMCTL)
+#if (WITHDCDCFREQCTL || WITHBLPWMCTL) && ! LINUX_SUBSYSTEM
 
 //static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
 #if (CPUSTYLE_T507 || CPUSTYLE_H616)

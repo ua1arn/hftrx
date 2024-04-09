@@ -9,7 +9,7 @@
 
 #include "dspdefines.h"
 
-#if WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP && ! LINUX_SUBSYSTEM
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"

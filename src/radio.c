@@ -10464,11 +10464,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 }
 
 static void speex_update_rx(void)
@@ -10660,6 +10660,9 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 void
 audioproc_spool_user(void)
 {
+#if LINUX_SUBSYSTEM
+	linux_wait_iq();
+#endif /* LINUX_SUBSYSTEM */
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready(& p))
@@ -15742,9 +15745,9 @@ static void dpc_1stimer(void * arg)
 //	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHTOUCHGUI
 	gui_update();
@@ -15903,7 +15906,7 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
-#if (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
+#if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
 	audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
 #if WITHUSEAUDIOREC
@@ -19882,7 +19885,7 @@ hamradio_main_step(void)
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
-#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}
@@ -21288,6 +21291,9 @@ application_mainloop(void)
 	for (;;)
 	{
 		hamradio_main_step();
+#if LINUX_SUBSYSTEM
+		usleep(1000);
+#endif /* LINUX_SUBSYSTEM */
 	}
 }
 

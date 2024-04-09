@@ -5,7 +5,7 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && WITHINTEGRATEDDSP
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM && WITHINTEGRATEDDSP
 
 #include "xc7z_inc.h"
 
@@ -273,11 +273,11 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 
 #endif /* WITHRTS96 */
 
-#else  // заглушки для бутлоадера
+#elif ! LINUX_SUBSYSTEM // заглушки для бутлоадера
 
 void xcz_rxtx_state(uint8_t tx)
 {
 
 }
 
-#endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER */
+#endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */

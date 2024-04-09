@@ -13,6 +13,10 @@ extern "C" {
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
+#if LINUX_SUBSYSTEM
+	#include <src/linux/linux_subsystem.h>
+#endif /* LINUX_SUBSYSTEM */
+
 #define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
 
 typedef enum
@@ -112,6 +116,8 @@ typedef enum
 #define WITHBOTTOMDBDEFAULT 130
 #endif /* WITHBOTTOMDBVAL */
 
+#if ! LINUX_SUBSYSTEM
+
 typedef struct lclspinlock_tag {
 	USBALIGN_BEGIN volatile uint8_t lock USBALIGN_END;
 #if WITHDEBUG
@@ -137,6 +143,16 @@ typedef struct irqlspinlock_tag
 
 //#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
 #define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); (p)->irql = (oldIrqlv); } while (0)
+#else /* ! LINUX_SUBSYSTEM */
+
+/* Linux targets: No any hardware IRQ control */
+
+#define IRQLSPINLOCK_t lclspinlock_t
+
+//#define IRQLSPINLOCK_INIT(irqlv) { (irqlv), LCLSPINLOCK_INIT }
+#define IRQLSPINLOCK_INITIALIZE(p, oldIrqlv) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
+
+#endif /* ! LINUX_SUBSYSTEM */
 
 /* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
 /* Работа с текущим ядром */
@@ -175,9 +191,20 @@ void LowerIrql(IRQL_t newIRQL);
 
 #endif /* WITHSMPSYSTEM */
 
+#if ! LINUX_SUBSYSTEM
+
 	/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
 	#define IRQLSPIN_LOCK(p, oldIrql) do { RiseIrql((p)->irql, (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
+
+#else  /* ! LINUX_SUBSYSTEM */
+
+	/* Linux targets: No any hardware IRQ control */
+	#define IRQLSPIN_LOCK(p, oldIrql) do { LCLSPIN_LOCK(p); } while (0)
+	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
+
+#endif  /* ! LINUX_SUBSYSTEM */
+
 
 	#define DPC_IRQL	IRQL_REALTIME
 
@@ -197,7 +224,22 @@ void LowerIrql(IRQL_t newIRQL);
 
 	void board_dpc_initialize(void);	/* инициализация списка user-mode опросных функций */
 
-#if CPUSTYLE_R7S721
+#if LINUX_SUBSYSTEM
+	#define RAMFUNC_NONILINE //__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			//__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP 		//__attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
+	#define RAMNC //__attribute__((section(".ramnc")))
+
+#elif CPUSTYLE_R7S721
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* память доступная лоя DMA обмена */

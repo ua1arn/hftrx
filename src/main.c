@@ -55,9 +55,12 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV)
+#if LINUX_SUBSYSTEM
+	linux_subsystem_init();
+#endif /* LINUX_SUBSYSTEM */
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 	sysinit_gpio_initialize();
-#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV)  */
+#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
 #if WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
@@ -81,6 +84,10 @@ main(void)
 #endif /* WITHLWIP */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
+
+#if LINUX_SUBSYSTEM
+	linux_user_init();
+#endif /* LINUX_SUBSYSTEM */
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();

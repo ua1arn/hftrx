@@ -61,7 +61,7 @@ enum
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		0
 
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64
 
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
@@ -89,7 +89,7 @@ enum
 
 	/* Фильтрация квадратур осуществляется FPGA */
 
-	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_XC7Z
+	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(1023)
 		#define DUALRXFLT 1
@@ -143,7 +143,7 @@ enum
 #endif /* CODEC1_FRAMEBITS == 64 */
 
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	/* параметры входного/выходного адаптеров */
 	// IF RX
@@ -249,7 +249,7 @@ unsigned audiorec_getwidth(void);
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	#if CPUSTYLE_XC7Z  && DIRECT_122M88_X1
+	#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_122M88_X1
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -263,7 +263,7 @@ unsigned audiorec_getwidth(void);
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-	#elif CPUSTYLE_XC7Z && DIRECT_61M440_X1
+	#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_61M440_X1
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -277,7 +277,7 @@ unsigned audiorec_getwidth(void);
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-	#elif CPUSTYLE_XC7Z && DIRECT_96M_X1
+	#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && DIRECT_96M_X1
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -291,7 +291,7 @@ unsigned audiorec_getwidth(void);
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
-	#elif CPUSTYLE_XC7Z
+	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -649,7 +649,9 @@ void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 
 #define MAXFLOAT	3.40282347e+38F
 
-#define M_LN2		_M_LN2
+#if ! LINUX_SUBSYSTEM
+	#define M_LN2		_M_LN2
+#endif
 
 #define M_E		2.7182818284590452354
 #define M_LOG2E		1.4426950408889634074

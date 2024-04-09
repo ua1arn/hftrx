@@ -338,8 +338,12 @@ uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, co
 	int n;
 
 #if FORMATFROMLIBRARY
+#if LINUX_SUBSYSTEM
+	n = vsnprintf(buffer, count, format, ap);
+#else
 	struct _reent treent = { 0 };
 	n = _vsnprintf_r(& treent, buffer, count, format, ap);
+#endif /* LINUX_SUBSYSTEM */
 #else /* FORMATFROMLIBRARY */
 
 	struct fmt_param pr;
@@ -635,7 +639,7 @@ void dbg_flush(void)
 #endif /* WITHDEBUG */
 
 
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV)
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 
 void ATTRNORETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
 {

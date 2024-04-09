@@ -292,6 +292,8 @@ void nmeagnss_initialize(void)
 //	static uint8_t rxb [512];
 //	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
+#if ! LINUX_SUBSYSTEM
+
 	HARDWARE_NMEA_INITIALIZE(baudrate);
 	HARDWARE_NMEA_SET_SPEED(baudrate);
 	HARDWARE_NMEA_ENABLERX(1);
@@ -300,6 +302,8 @@ void nmeagnss_initialize(void)
 #if CPUSTYLE_XC7Z
 	nmea_parser0_init();
 #endif /* CPUSTYLE_XC7Z */
+
+#endif /*  ! LINUX_SUBSYSTEM */
 }
 
 //static timeholder_t th;

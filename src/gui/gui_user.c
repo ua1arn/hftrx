@@ -1347,9 +1347,9 @@ static void gui_main_process(void)
 		}
 #endif /* WITHTHERMOLEVEL */
 
-#if WITHFT8
+#if WITHFT8 && ! LINUX_SUBSYSTEM
 		ft8_walkthrough_core0(seconds);
-#endif /* WITHFT8 */
+#endif /* WITHFT8 && ! LINUX_SUBSYSTEM */
 
 #if WITHGUIDEBUG
 	if (tf_debug->visible)
@@ -1361,19 +1361,43 @@ static void gui_main_process(void)
 
 // *********************************************************************************************************************************************************************
 
+static uint32_t mems[memory_cells_count];
+
 static uint32_t load_mems(uint_fast8_t cell, uint_fast8_t set)
 {
+#if LINUX_SUBSYSTEM
+	if (cell == 0)
+		load_memory_cells(mems, memory_cells_count);
+
+	if (set)
+		hamradio_set_freq(mems[cell]);
+
+	return mems[cell];
+#else
 	return hamradio_load_memory_cells(cell, set);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 static void clean_mems(uint_fast8_t cell)
 {
+#if LINUX_SUBSYSTEM
+	ASSERT(cell < memory_cells_count);
+	mems[cell] = 0;
+	write_memory_cells(mems, memory_cells_count);
+#else
 	hamradio_clean_memory_cells(cell);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 static void write_mems(uint_fast8_t cell)
 {
+#if LINUX_SUBSYSTEM
+	ASSERT(cell < memory_cells_count);
+	mems[cell] = hamradio_get_freq_rx();
+	write_memory_cells(mems, memory_cells_count);
+#else
 	hamradio_save_memory_cells(cell);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 static void window_memory_process(void)
@@ -1663,9 +1687,12 @@ static void window_options_process(void)
 		add_element("btn_Display", 100, 44, 0, 0, "Display|settings");
 		add_element("btn_gui", 	   100, 44, 0, 0, "GUI|settings");
 		add_element("btn_Utils",   100, 44, 0, 0, "Utils");
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
-#endif /* defined (RTC1_TYPE) */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
+#if LINUX_SUBSYSTEM
+		add_element("btn_exit",		100, 44, 0, 0, "Terminate|program");
+#endif /* LINUX_SUBSYSTEM */
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -1705,7 +1732,7 @@ static void window_options_process(void)
 			button_t * btn_AUDsett = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Display");
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 			button_t * btn_Time = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Time");
 			if (bh == btn_Time)
 			{
@@ -1713,7 +1740,7 @@ static void window_options_process(void)
 				open_window(win);
 			}
 			else
-#endif /* defined (RTC1_TYPE) */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
@@ -1747,6 +1774,12 @@ static void window_options_process(void)
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
+#if LINUX_SUBSYSTEM
+			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_exit"))
+			{
+				linux_exit();		// Terminate all
+			}
+#endif /* LINUX_SUBSYSTEM */
 		}
 		break;
 
@@ -5359,7 +5392,7 @@ static void window_freq_process (void)
 
 static void window_time_process(void)
 {
-#if defined (RTC1_TYPE)
+#if defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM
 	window_t * const win = get_win(WINDOW_TIME);
 	static unsigned year, month, day, hour, minute, second, update;
 
@@ -5519,7 +5552,7 @@ static void window_time_process(void)
 		lh =  (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_second");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", second);
 	}
-#endif /* defined (RTC1_TYPE) */
+#endif /* defined (RTC1_TYPE) && ! LINUX_SUBSYSTEM */
 }
 
 static void window_kbd_process(void)

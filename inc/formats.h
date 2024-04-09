@@ -50,7 +50,11 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 #endif /* WITHDEBUG */
 
 #if WITHDEBUG
+#if LINUX_SUBSYSTEM
+	#define PRINTF printf
+#else
 	#define PRINTF	debug_printf_P
+#endif /* LINUX_SUBSYSTEM */
 #else /* WITHDEBUG */
 	#define PRINTF(...)	do {} while (0)
 #endif /* WITHDEBUG */

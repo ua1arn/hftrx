@@ -14,9 +14,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA)
+#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA)
 	#include <machine/endian.h>
-#endif /* ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA) */
+#endif /* ! LINUX_SUNSYSTEM */
 
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 
@@ -361,7 +361,7 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if CPUSTYLE_XC7Z
+		#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 			return SPI_TARGET_MISO_PIN != 0;
 		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
@@ -494,14 +494,18 @@ static LCLSPINLOCK_t spilock = LCLSPINLOCK_INIT;
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
+#if ! LINUX_SUBSYSTEM
 	RiseIrql(IRQL_SYSTEM, oldIrql);
+#endif /* ! LINUX_SUBSYSTEM */
 	LCLSPIN_LOCK(& spilock);
 }
 
 void spi_operate_unlock(IRQL_t irql)
 {
 	LCLSPIN_UNLOCK(& spilock);
+#if ! LINUX_SUBSYSTEM
 	LowerIrql(irql);
+#endif /* ! LINUX_SUBSYSTEM */
 }
 
 static void spi_operate_low(lowspiio_t * iospi)
@@ -6367,6 +6371,30 @@ void bootloader_chiperase(void)
 {
 	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 	fullEraseDATAFLASH();
+}
+
+#elif LINUX_SUBSYSTEM
+
+void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
+{
+}
+
+unsigned long sectorsizeDATAFLASH(void)
+{
+	return 0;
+}
+
+int testchipDATAFLASH(void)
+{
+	return 1;
+}
+
+void spidf_initialize(void)
+{
+}
+
+void hangoffDATAFLASH(void)
+{
 }
 
 #else /* WIHSPIDFHW || WIHSPIDFSW */
