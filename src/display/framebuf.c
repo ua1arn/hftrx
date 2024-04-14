@@ -294,7 +294,7 @@ static void aw_g2d_initialize(void)
 {
 }
 
-static unsigned awxx_get_ui_attr(unsigned srcFormat)
+static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
 {
 	unsigned ui_attr = 0;
 	ui_attr = UINT32_C(255) << 24;
@@ -308,7 +308,7 @@ static unsigned awxx_get_ui_attr(unsigned srcFormat)
 	return ui_attr;
 }
 
-static unsigned awxx_get_vi_attr(unsigned srcFormat)
+static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
 {
 	unsigned vi_attr = 0;
 	vi_attr = UINT32_C(255) << 24;
@@ -1363,14 +1363,6 @@ hwaccel_rect_u24(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
-#elif 0 //WITHMDMAHW && CPUSTYLE_ALLWINNER && ! (CPUSTYLE_T507 || CPUSTYLE_H616)
-	/* Использование G2D для формирования изображений */
-	#warinig Implement for (CPUSTYLE_T113 || CPUSTYLE_F133)
-	const unsigned stride = GXADJ(dx);
-	(void) G2D;
-
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
-
 #else
 
 	softfill(buffer, dx, w, h, color);	// программная реализация
@@ -1649,18 +1641,21 @@ void colpip_fillrect(
 	ASSERT((x + w) <= dx);
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
+	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(dst, dx, dy, x, y);
+	const uintptr_t dstinvalidateaddr = (uintptr_t) dst;	// параметры invalidate получателя
+	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof * dst;
 
 #if LCDMODE_MAIN_L8
-	hwaccel_rect_u8((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
+	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_RGB565
-	hwaccel_rect_u16((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
+	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
+	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_ARGB8888
-	hwaccel_rect_u32((uintptr_t) dst, GXSIZE(dx, dy) * sizeof * dst, colpip_mem_at(dst, dx, dy, x, y), dx, dy, w, h, color);
+	hwaccel_rect_u32((uintptr_t) dst, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
 #endif
 }
@@ -1934,17 +1929,19 @@ void colpip_fill(
 	COLORPIP_T color
 	)
 {
+	const uintptr_t dstinvalidateaddr = (uintptr_t) buffer;	// параметры invalidate получателя
+	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof * buffer;
 #if LCDMODE_MAIN_L8
-	hwaccel_rect_u8((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
+	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_RGB565
-	hwaccel_rect_u16((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
+	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
+	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_ARGB8888
-	hwaccel_rect_u32((uintptr_t) buffer, GXSIZE(dx, dy) * sizeof * buffer, buffer, dx, dy, dx, dy, color);
+	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
 #endif
 }
@@ -2178,7 +2175,7 @@ void hwaccel_bitblt(
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_get_ui_attr(srcFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
 		G2D_UI2->UI_PITCH = sstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2188,7 +2185,7 @@ void hwaccel_bitblt(
 		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr(VI_ImageFormat);
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
 		G2D_V0->V0_PITCH0 = tstride;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2218,7 +2215,7 @@ void hwaccel_bitblt(
 	{
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
-//		G2D_UI2->UI_ATTR = awxx_get_ui_attr();
+//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
 //		G2D_UI2->UI_PITCH = sstride;
 //		G2D_UI2->UI_FILLC = 0;
 //		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2227,7 +2224,7 @@ void hwaccel_bitblt(
 //		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 //		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 
-        G2D_V0->V0_ATTCTL = awxx_get_vi_attr(srcFormat);
+        G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
         G2D_V0->V0_PITCH0 = sstride;
         G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);    // unused
         G2D_V0->V0_COOR = 0;            // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2468,7 +2465,7 @@ void hwaccel_stretchblt(
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* Данные для замены совпавших с keycolor */
-		G2D_UI2->UI_ATTR = awxx_get_ui_attr(VI_ImageFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2478,7 +2475,7 @@ void hwaccel_stretchblt(
 		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
 
 		/* Подача данных на вход VSU */
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr(srcFormat);
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -2522,7 +2519,7 @@ void hwaccel_stretchblt(
 	}
 	else
 	{
-		G2D_V0->V0_ATTCTL = awxx_get_vi_attr(srcFormat);
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR

@@ -2223,10 +2223,6 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & tcon->frm_table[2], 0x57575555);
 		write32((uintptr_t) & tcon->frm_table[3], 0x7f7f7777);
 
-		// Sochip_VE_S3_Datasheet_V1.0.pdf
-		// TCON0_TRM_CTL_REG offset 0x0010
-		// User manual:
-		// LCD FRM Control Register (Default Value: 0x0000_0000)
 		// 31: TCON_FRM_EN: 0: disable, 1: enable
 		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
@@ -2242,17 +2238,14 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 // LVDS: mstep1, HV: step1: Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
-	uint32_t start_dly;
-
-	// ctrl
-	//start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
-	start_dly = 2;//0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
+	//uint32_t start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
+	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->LCD_CTL_REG =
 		//1 * (UINT32_C(1) << 31) |		// LCD_EN - done in t113_open_module_enable
 		0 * (UINT32_C(1) << 24) |		// LCD_IF 0x00: HV (Sync+DE), 01: 8080 I/F
 		0 * (UINT32_C(1) << 23) |		// LCD_RB_SWAP
 		1 * (UINT32_C(1) << 20) |		// LCD_INTERLACE_EN (has no effect)
-		((start_dly & 0x1fu) << 4) |	// LCD_START_DLY
+		(start_dly & 0x1F) * (UINT32_C(1) << 4) |	// LCD_START_DLY
 		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
 }
@@ -2690,10 +2683,6 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 	}
 	//t113_tconlcd_set_dither(pdat);
 	{
-		// Sochip_VE_S3_Datasheet_V1.0.pdf
-		// TCON0_TRM_CTL_REG offset 0x0010
-		// User manual:
-		// LCD FRM Control Register (Default Value: 0x0000_0000)
 		// 31: TCON_FRM_EN: 0: disable, 1: enable
 		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
@@ -3232,21 +3221,22 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(void)
 {
-	const int rtmixid = RTMIXID;
-	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-	if (glb == NULL)
-		return;
-	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
-	for (;;)
-	{
-		const uint_fast8_t state2 = (glb->GLB_STS >> 8) & 1;
-		if (state != state2)
-			break;
-		hardware_nonguiyield();
-	}
-//	TCON_LCD0->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
-//	while((TCON_LCD0->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
+//	const int rtmixid = RTMIXID;
+//	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+//	if (glb == NULL)
+//		return;
+//	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
+//	for (;;)
+//	{
+//		const uint_fast8_t state2 = (glb->GLB_STS >> 8) & 1;
+//		if (state != state2)
+//			break;
 //		hardware_nonguiyield();
+//	}
+
+	TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
+	while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
+		hardware_nonguiyield();
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
@@ -3257,7 +3247,6 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
-	//struct de_bld_t * const bld = (struct de_bld_t *) DE_BLD_BASE;
 
 	t113_de_set_address_vi(rtmixid, p1, 1);
 	// 5.10.9.1 BLD fill color control register
