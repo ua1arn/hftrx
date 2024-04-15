@@ -124,19 +124,6 @@ static int safegetposition_kbd(void)
 #endif
 }
 
-
-// вызывается из обработчика таймерного прерывания - клавиатура.
-void encoder_kbdctl(
-	uint_fast8_t code, 		// код клавиши
-	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
-	)
-{
-#if WITHKBDENCODER
-	int_fast8_t d = code == ENC_CODE_STEP_UP ? 1 : -1;
-	position_kbd += d * (accel ? 5 : 1);
-#endif
-}
-
 static IRQLSPINLOCK_t encspeedlock;
 
 
@@ -157,7 +144,7 @@ static uint_fast8_t encoder1_dynamic = 1;
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
 
-void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
+void encoderA_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 {
 	//encoder_resolution = v;	/* используется учетверение шагов */
 	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
@@ -225,7 +212,7 @@ void encoders_clear(void)
 }
 
 /* получение количества шагов и скорости вращения. */
-int
+int_least16_t
 encoder_get_snapshotproportional(
 	encoder_t * e,
 	unsigned * speed, 
@@ -268,10 +255,9 @@ encoder_get_snapshotproportional(
 
 
 /* получение количества шагов и скорости вращения. */
-int
+int_least16_t
 encoder_get_snapshot(
 	encoder_t * e,
-	unsigned * speed, 
 	const uint_fast8_t derate
 	)
 {
@@ -281,28 +267,50 @@ encoder_get_snapshot(
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
 	hrotate = e->rotate;
 	e->rotate = 0;
-	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
 	const div_t h = div(hrotate + e->backup_rotate, derate);
 	e->backup_rotate = h.rem;
-	* speed = 0;
+	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
+
 	return h.quot;
 }
 
+void encoder_pushback(encoder_t * const e, int outsteps, uint_fast8_t hiresdiv)
+{
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
 
+	e->backup_rotate += (outsteps * (int) hiresdiv);
 
-encoder_t encoder1;
-encoder_t encoder2;
+	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
+}
+
+encoder_t encoder1;	// Main RX tuning knob
+encoder_t encoder2;	// Sub RX tuning knob
 encoder_t encoder3;
 encoder_t encoder4;
 encoder_t encoder5;
 encoder_t encoder6;
+encoder_t encoder_kbd;
 
+// вызывается из обработчика таймерного прерывания - клавиатура.
+void encoder_kbdctl(
+	uint_fast8_t code, 		// код клавиши
+	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
+	)
+{
+#if WITHKBDENCODER
+	int_fast8_t d = code == ENC_CODE_STEP_UP ? 1 : -1;
+	int v = d * (accel ? 5 : 1);
+	position_kbd += v;
+	//encoder_pushback(& encoder_kbd, v, 1);
+#endif
+}
 
 /* получение количества шагов и скорости вращения. */
-int
-encoder1_get_snapshot(
+int_least16_t
+encoderA_get_snapshot(
 	unsigned * speed,
 	const uint_fast8_t derate
 	)
@@ -321,42 +329,33 @@ void spool_encinterrupt2(void)
 }
 
 /* получение количества шагов и скорости вращения. */
-int
-encoder2_get_snapshot(
-	unsigned * speed,
+int_least16_t
+encoderB_get_snapshot(
 	const uint_fast8_t derate
 	)
 {
-	encoder_t * const e = & encoder2;
-	return encoder_get_snapshot(e, speed, derate);
+	return encoder_get_snapshot(& encoder2, derate);
 }
 
 /* получение "редуцированного" количества прерываний от валкодера.
  * То что осталось после деления на scale, остается в накопителе
  */
-int getRotateLoRes(uint_fast8_t hiresdiv)
+int_least16_t getRotateLoRes_A(uint_fast8_t hiresdiv)
 {
 	encoder_t * const e = & encoder1;
 	unsigned speed;
 	return encoder_get_snapshotproportional(e, & speed, encoder1_actual_resolution * hiresdiv / ENCODER_MENU_STEPS);
 }
 
-
 // Управление вращением валколера из CAT
-void encoder1_pushback(int outsteps, uint_fast8_t hiresdiv)
+void encoderA_pushback(int outsteps, uint_fast8_t hiresdiv)
 {
-	encoder_t * const e = & encoder1;
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
-
-	e->backup_rotate += (outsteps * (int) hiresdiv);
-
-	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
+	encoder_pushback(& encoder1, outsteps, hiresdiv);
 }
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
 int_least16_t 
-getRotateHiRes(
+getRotateHiRes_A(
 	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	uint_fast8_t hiresdiv
 	)
@@ -393,7 +392,7 @@ getRotateHiRes(
 
 
 	unsigned speed;
-	int nrotate = encoder1_get_snapshot(& speed, hiresdiv);
+	int_least16_t nrotate = encoderA_get_snapshot(& speed, hiresdiv);
 
 	if (encoder1_dynamic != 0)
 	{
@@ -429,14 +428,13 @@ getRotateHiRes(
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
 int_least16_t 
-getRotateHiRes2(
+getRotateHiRes_B(
 	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	uint_fast8_t loresdiv
 	)
 {
 #if WITHENCODER2
-	unsigned speed;
-	int nrotate = encoder2_get_snapshot(& speed, loresdiv);
+	int_least16_t nrotate = encoderB_get_snapshot(loresdiv);
 
 	* jumpsize = 1;
 	return nrotate;
@@ -448,6 +446,12 @@ getRotateHiRes2(
 static void spool_encinterrupt2_local(void * ctx)
 {
 	spool_encinterrupts(& encoder2);
+}
+
+
+static uint_fast8_t hardware_get_encoderummy_bits(void)
+{
+	return 0;
 }
 
 /* вызывается при запрещённых прерываниях */
@@ -466,6 +470,7 @@ void encoders_initialize(void)
 	encoder_initialize(& encoder4, hardware_get_encoder4_bits);
 	encoder_initialize(& encoder5, hardware_get_encoder5_bits);
 	encoder_initialize(& encoder6, hardware_get_encoder6_bits);
+	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
 
 #if ENCODER_REVERSE
 	encoder1.reverse = 1;
@@ -501,9 +506,8 @@ void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 	static uint32_t last_key = 0;
 	static lv_indev_state_t encoder_state;
 	static int32_t encoder_diff;
-	unsigned speed;
 
-	int r2 = encoder2_get_snapshot(& speed, BOARD_ENCODER2_DIVIDE);
+	int r2 = encoderB_get_snapshot(BOARD_ENCODER2_DIVIDE);
 	uint32_t act_key = r2 > 0 ? 3 : r2 < 0 ? 2 : TARGET_ENC2BTN_GET ? 1 : 0;
 
 	if(act_key != 0) {

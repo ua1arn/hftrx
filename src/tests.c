@@ -13947,7 +13947,7 @@ void hightests(void)
 		for (;;)
 		{
 			unsigned speed;
-			int nrotate = encoder1_get_snapshot(& speed, 1);
+			int nrotate = encoderA_get_snapshot(& speed, 1);
 			uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 			do
 			{
@@ -13971,7 +13971,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
-			int_least16_t nrotate = getRotateHiRes(& jumpsize, 1);
+			int_least16_t nrotate = getRotateHiRes_A(& jumpsize, 1);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);

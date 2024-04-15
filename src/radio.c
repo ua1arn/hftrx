@@ -9387,7 +9387,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
@@ -10794,6 +10794,16 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 		return 1;
 	}
 	return 0;
+}
+
+/* Если изменяемый параметр отличается от старого значения - возврат 1 */
+static uint_fast8_t
+encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, encoder_t * e, uint_fast8_t derate)
+{
+	return 0;
+	int_least16_t v = encoder_get_snapshot(e, derate);
+	uint_fast16_t t = v < 0 ? 0 : 0;
+	return flagne_u16(& c->value, v);
 }
 
 #if WITHCAT
@@ -13400,6 +13410,13 @@ directctlupdate(
 			changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
 		}
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
+	#if 1
+		{
+			/* установка  */
+			changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & encoder3, 1);
+			changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & encoder4, 1);
+		}
+	#endif /* 0 */
 
 	#if CTLSTYLE_RA4YBO_V3
 		{
@@ -15255,7 +15272,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder1_pushback(steps, genc1div);
+			encoderA_pushback(steps, genc1div);
 		}
 	}
 	else if (match2('D', 'N'))
@@ -15263,7 +15280,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder1_pushback(0 - steps, genc1div);
+			encoderA_pushback(0 - steps, genc1div);
 		}
 	}
 #if 0
@@ -17188,7 +17205,7 @@ modifysettings(
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes2(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes_B(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -17343,7 +17360,7 @@ modifysettings(
 
 #if WITHENCODER
 		/* редактирование значения с помощью поворота валкодера. */
-		nrotate = getRotateLoRes(genc1div);
+		nrotate = getRotateLoRes_A(genc1div);
 		if (lockmode != 0)
 			nrotate = 0;	// ignore encoder
 
@@ -19743,8 +19760,8 @@ hamradio_main_step(void)
 				nrotate = 0;	// ignore encoder
 				nrotate2 = 0;	// ignore encoder
 			#else
-				nrotate = getRotateHiRes(& jumpsize, genc1div * gencderate);
-				nrotate2 = getRotateHiRes2(& jumpsize2, genc2div);
+				nrotate = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
+				nrotate2 = getRotateHiRes_B(& jumpsize2, genc2div);
 			#endif
 
 			if (uif_encoder2_rotate(nrotate2))
