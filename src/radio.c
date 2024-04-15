@@ -10797,12 +10797,35 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 }
 
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
+/* модификация параметра с учетом границ изменения значения */
 static uint_fast8_t
 encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, encoder_t * e, uint_fast8_t derate)
 {
 	return 0;
-	int_least16_t v = encoder_get_snapshot(e, derate);
-	uint_fast16_t t = v < 0 ? 0 : 0;
+	const int_least16_t d = encoder_get_snapshot(e, derate);
+	uint_fast16_t v = c->value;
+	if (d == 0)
+		return 0;
+	else if (d < 0)
+	{
+		if (- d >= v)
+			v = 0;
+		else
+			v += d;
+		if (v < lower)
+			v = lower;
+	}
+	else
+	{
+		if (d > upper)
+			v = upper;
+		else
+		{
+			v += d;
+			if (v > upper)
+				v = upper;
+		}
+	}
 	return flagne_u16(& c->value, v);
 }
 
