@@ -35,9 +35,9 @@
 //#define WITHSDHC1HW	1		/* SDIO */
 //#define WITHSDHC2HW	1		/* EMMC */
 
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#define FPGA_ARTIX7		1
+//#define FPGA_ARTIX7		1
 
 #if WITHDEBUG
     #define WITHDEBUG_UART0    1
@@ -798,32 +798,32 @@
 
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-	// PH2 - TWI2_SCL
-	// PH3 - TWI2_SDA
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 2)
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOH))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOH, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOH, (v), 1 * (v)); } while (0)
+	// PE20 - TWI2-SCK
+	// PE21 - TWI2_SDA
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 20)
+	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOE))
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 3)
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOH))
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOH, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOH, (v), 1 * (v)); } while (0)
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 21)
+	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOE))
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_pioh_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK);  /* SCL */ \
-			arm_hardware_pioh_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+			arm_hardware_pioe_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK);  /* SCL */ \
+			arm_hardware_pioe_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
 		} while (0) 
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_pioh_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_pioh_inputs(TARGET_TWI_TWD);	/* SDA */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+			arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_pioh_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF5);	/* PH2 - TWI2_SCL */ \
-		arm_hardware_pioh_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH3 - TWI2_SDA */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF5);	/* PH2 - TWI2_SCL */ \
+		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH3 - TWI2_SDA */ \
 		} while (0) 
 	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
@@ -832,86 +832,7 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
-
-	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
-	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 14)	/* PE14 bit connected to nCONFIG pin ALTERA FPGA */
-
-	/* inputs */
-	#define FPGA_CONF_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 16)	/* PE16 bit connected to CONF_DONE pin ALTERA FPGA */
-
-	#define FPGA_NSTATUS_INPUT		gpioX_getinputs(GPIOE)
-	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 15)	/* PE15 bit connected to NSTATUS pin ALTERA FPGA */
-
-	#define FPGA_INIT_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 17)	/* PE17 bit connected to INIT_DONE pin ALTERA FPGA */
-
-	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
-	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
-			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
-			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
-		} while (0)
-
-	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
-	/*
-		After the option bit to enable INIT_DONE is programmed into the device (during the first
-		frame of configuration data), the INIT_DONE pin goes low.
-		When initialization is complete, the INIT_DONE pin is released and pulled high. 
-		This low-to-high transition signals that the device has entered user mode.
-	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
-
-#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
-
-#if 0 //WITHDSPEXTFIR
-	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-
-	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 2)	/* PE2 - fir CS ~FPGA_FIR_CLK */
-
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 3)	/* PE3 - fir1 WE */
-
-	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 0)	/* PE0 - fir2 WE */
-
-	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
-		} while (0)
-#endif /* WITHDSPEXTFIR */
-
-#if 1
-	/* получение состояния переполнения АЦП */
-	#define TARGET_FPGA_OVF_INPUT		gpioX_getinputs(GPIOE)
-	#define TARGET_FPGA_OVF_BIT			(UINT32_C(1) << 3)	// PE3
-	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 1)	// 1 - overflow active
-	#define TARGET_FPGA_OVF_INITIALIZE() do { \
-				arm_hardware_pioe_inputs(TARGET_FPGA_OVF_BIT); \
-			} while (0)
-#endif
-
 #if WITHCPUDACHW
-	/* включить нужные каналы */
-	#define HARDWARE_DAC_INITIALIZE() do { \
-			DAC1->CR = DAC_CR_EN1; /* DAC1 enable */ \
-		} while (0)
-	#define HARDWARE_DAC_ALC(v) do { /* вывод 12-битного значения на ЦАП - канал 1 */ \
-			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
-		} while (0)
-
 #else /* WITHCPUDACHW */
 	#define HARDWARE_DAC_INITIALIZE() do { \
 		} while (0)
@@ -1014,17 +935,8 @@
 		const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
 		const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
 		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
-		const portholder_t MODEmask = (UINT32_C(1) << 9); 	/* PA9 mode */ \
-		/* set LCD DE/SYNC mode */ \
-		arm_hardware_pioa_outputs(MODEmask, ((demode) != 0) * MODEmask);	/* PA9 = state */ \
-		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
-		arm_hardware_piod_altfn50(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
-		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn50(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
-		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
+		/* const portholder_t MODEmask = (UINT32_C(1) << 9); */	/* PA9 mode */ \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 19, 0 * (UINT32_C(1) << 19)); /* PE19 - enable Toshiba power */ \
 		/* synchro signals - forced */ \
 		arm_hardware_piod_altfn50(DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
 		arm_hardware_piod_altfn50(VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
@@ -1165,96 +1077,7 @@
 			arm_hardware_piod_inputs(BOARD_GPIOD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
-	#define PREAMP_GPIO_BIT		(UINT32_C(1) << 0)	// PE0
-	#define ADC_PGA_GPIO_BIT	(UINT32_C(1) << 1)	// PE1
-	#define ADC_RAND_GPIO_BIT	(UINT32_C(1) << 2)	// PE2
-	#define DAC_SLEEP_GPIO_BIT	(UINT32_C(1) << 13)	// PI13
-	#define OPA2674_GPIO_BIT	(UINT32_C(1) << 23)	// PD23
-
-	#define PREAMP_GPIO_SETSTATE(state) do { \
-			gpioX_setstate(GPIOE, PREAMP_GPIO_BIT, !! (state) * PREAMP_GPIO_BIT); \
-	} while (0)
-
-	#define ADC_PGA_GPIO_SETSTATE(state) do { \
-			gpioX_setstate(GPIOE, ADC_PGA_GPIO_BIT, !! (state) * ADC_PGA_GPIO_BIT); \
-	} while (0)
-
-	#define ADC_RAND_GPIO_SETSTATE(state) do { \
-			gpioX_setstate(GPIOE, ADC_RAND_GPIO_BIT, !! (state) * ADC_RAND_GPIO_BIT); \
-	} while (0)
-
-	#define DAC_SLEEP_GPIO_SETSTATE(state) do { \
-			gpioX_setstate(GPIOI, DAC_SLEEP_GPIO_BIT, !! (state) * DAC_SLEEP_GPIO_BIT); \
-	} while (0)
-
-	#define OPA2674_GPIO_SETSTATE(state) do { \
-			gpioX_setstate(GPIOD, OPA2674_GPIO_BIT, !! (state) * OPA2674_GPIO_BIT); \
-	} while (0)
-
-	#define HARDWARE_GPIOREG_INITIALIZE() do { \
-		arm_hardware_pioe_outputs2m(PREAMP_GPIO_BIT, 1 * PREAMP_GPIO_BIT); \
-		arm_hardware_pioe_outputs2m(ADC_PGA_GPIO_BIT, 1 * ADC_PGA_GPIO_BIT); \
-		arm_hardware_pioe_outputs2m(ADC_RAND_GPIO_BIT, 1 * ADC_RAND_GPIO_BIT); \
-		arm_hardware_pioi_outputs2m(DAC_SLEEP_GPIO_BIT, 1 * DAC_SLEEP_GPIO_BIT); \
-		arm_hardware_piod_outputs2m(OPA2674_GPIO_BIT, 1 * OPA2674_GPIO_BIT); \
-	} while (0)
-
-#if WITHNMEA
-
-	#define WITHUART2HW    1	// PG15 PG16
-
-	// Модемные функции работают через USART2
-	// Вызывается из user-mode программы
-	#define HARDWARE_NMEA_INITIALIZE(baudrate) do { \
-			hardware_uart2_initialize(0, baudrate, 8, 0, 0); \
-		} while (0)
-	// Вызывается из user-mode программы
-	#define HARDWARE_NMEA_SET_SPEED(baudrate) do { \
-			hardware_uart2_set_speed(baudrate); \
-		} while (0)
-	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
-	// для управления разрешением последующих вызовов прерывания
-	#define HARDWARE_NMEA_ENABLETX(v) do { \
-			hardware_uart2_enabletx(v); \
-		} while (0)
-	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
-	// для управления разрешением последующих вызовов прерывания
-	#define HARDWARE_NMEA_ENABLERX(v) do { \
-			hardware_uart2_enablerx(v); \
-		} while (0)
-	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
-	// для передачи символа
-	#define HARDWARE_NMEA_TX(ctx, c) do { \
-			hardware_uart2_tx((ctx), (c)); \
-		} while (0)
-
-	// вызывается из обработчика прерываний UART2
-	// с принятым символом
-	#define HARDWARE_UART2_ONRXCHAR(c) do { \
-			nmeagnss_onrxchar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний UART2
-	#define HARDWARE_UART2_ONOVERFLOW() do { \
-			nmeagnss_rxoverflow(); \
-		} while (0)
-	// вызывается из обработчика прерываний UART2
-	// по готовности передатчика
-	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
-			nmeagnss_sendchar(ctx); \
-		} while (0)
-
-	#define BOARD_PPSIN_BIT	(UINT32_C(1) << 24)		// PD24
-	#define NMEA_INITIALIZE() do { \
-		static einthandler_t h; \
-		arm_hardware_piod_altfn20(BOARD_PPSIN_BIT, GPIO_CFG_EINT); \
-		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); /* pull-down */ \
-		einthandler_initialize(& h, BOARD_PPSIN_BIT, spool_nmeapps); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, BOARD_PPSIN_BIT, 0, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
-	} while (0)
-
-#endif /* WITHNMEA */
-
-#if WITHETHHW
+#if WITHETHHW && 0
 
 	//PA0 - PA9 EMAC RMII
 	#define ETHERNET_INITIALIZE() do { \
@@ -1278,7 +1101,6 @@
 	#define	HARDWARE_INITIALIZE() do { \
 		BOARD_BLINK_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
-		HARDWARE_GPIOREG_INITIALIZE(); \
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		HARDWARE_DCDC_INITIALIZE(); \
 		ETHERNET_INITIALIZE(); \
