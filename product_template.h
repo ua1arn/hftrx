@@ -284,6 +284,10 @@
 	#include "boards/arm_allwt507_ctlstyle_xhelperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_xhelperboard_t507.h"
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt507_ctlstyle_video2.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt507_cpustyle_video2.h"
 #elif CPUSTYLE_T113 && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwt113s3_ctlstyle_ra4asn.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
