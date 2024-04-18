@@ -13433,7 +13433,7 @@ directctlupdate(
 			changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
 		}
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-	#if 1
+	#if 0
 		{
 			/* установка  */
 			changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & encoder3, 1);
