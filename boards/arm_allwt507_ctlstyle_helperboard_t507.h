@@ -250,7 +250,9 @@
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_UA1CEI	1
 	//#define COLORSTYLE_RED	1
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
