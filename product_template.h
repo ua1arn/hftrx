@@ -35,7 +35,7 @@
 
 //#define WITHISBOOTLOADER	1	/* выполняем make bootloader */
 //#define WITHISBOOTLOADER0	(WITHISBOOTLOADER && CPUSTYLE_R7S721)	/* Renesas specific option - FSBL. Открыть эту строку и запустить make bootloader */
-//#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* T507, H616, A64 - инициализатор LPDDR4 памяти на плате */
+//#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* T507, H616, A64 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */
 
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
