@@ -3511,6 +3511,19 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif	/* LO1MODE_HYBRID */
 
+#if WITHDEBUG
+	{
+		QLABEL("FORCEXVR"), 7, 3, RJ_YES,	ISTEP1,	/* принудительно включить коммутацию трансвертора */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gforcexvrtr),
+		nvramoffs0,
+		NULL,
+		& gforcexvrtr,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif	/* WITHDEBUG */
+
 #if LO1FDIV_ADJ
 	{
 		QLABEL("LO1DV RX"), 7, 0, RJ_POW2,	ISTEP1,

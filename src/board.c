@@ -73,7 +73,7 @@ static uint_fast8_t 	glob_rxantenna;		//
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
-
+static uint_fast8_t 	glob_forcexvrtr;	// принудительно включить коммутацию трансвертора
 
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
@@ -3514,12 +3514,12 @@ prog_ctrlreg(uint_fast8_t plane)
 		const spitarget_t target = targetctl1;
 
 #if XVTR_NYQ1
-		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
 		enum { bandf_xvrtr = 6 };		// Номер ДПФ для ПЧ трансвертера
 		const uint_fast8_t txgated = glob_tx && (xvrtr ? 0 : glob_txgate);
 #else /* XVTR_NYQ1 */
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = 0;
+		const uint_fast8_t xvrtr = glob_forcexvrtr;
 #endif /* XVTR_NYQ1 */
 
 		rbtype_t rbbuff [9] = { 0 };
@@ -3656,7 +3656,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
@@ -3798,7 +3798,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITH_PALPF_ICM710
@@ -3989,7 +3989,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITH_PALPF_ICM710
@@ -4176,7 +4176,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
@@ -5632,6 +5632,18 @@ board_set_adcrand(uint_fast8_t v)
 	if (glob_adcrand != n)
 	{
 		glob_adcrand = n;
+		board_ctlreg1changed();
+	}
+}
+
+/* принудительно включить коммутацию трансвертора */
+void
+board_set_forcexvrtr(uint_fast8_t v)
+{
+	uint_fast8_t n = v != 0;
+	if (glob_forcexvrtr != n)
+	{
+		glob_forcexvrtr = n;
 		board_ctlreg1changed();
 	}
 }

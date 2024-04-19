@@ -3171,7 +3171,6 @@ struct nvmap
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 #endif /* WITHIF4DSP */
 
-
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
@@ -3337,7 +3336,6 @@ filter_t fi_2p0_455 =
 	uint8_t gtunerdelay;
 #endif /* WITHAUTOTUNER */
 
-
 #if WITHTX
 	#if WITHMUTEALL
 		uint8_t gmuteall;	/* Отключить микрофон всегда. */
@@ -3487,6 +3485,11 @@ filter_t fi_2p0_455 =
 		struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /*  WITHTOUCHGUI */
+
+#if WITHDEBUG
+	uint8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
+#endif /* WITHDEBUG */
+
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3761,6 +3764,10 @@ static uint_fast8_t bandset2m = 1;	/* используется ли диапаз
 #endif /* WITHCAT */
 
 static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
+
+#if WITHDEBUG
+static uint_fast8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
+#endif /* WITHDEBUG */
 
 #if WITHUSEAUDIOREC
 	#if defined (WITHBBOX) && defined (WITHBBOXREC)
