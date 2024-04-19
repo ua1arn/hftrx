@@ -308,9 +308,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9w.h"	// rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2.h"	// rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2.h"	// rmainunit_sv9x2.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt113s3_cpustyle_storch_v9x2.h"	// rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "boards/arm_allwt113s3_cpustyle_storch_v9x2.h"	// rmainunit_sv9x2.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
