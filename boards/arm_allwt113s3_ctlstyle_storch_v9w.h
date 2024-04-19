@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
 // rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
+#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_H_INCLUDED
+#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -709,4 +709,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_H_INCLUDED */
