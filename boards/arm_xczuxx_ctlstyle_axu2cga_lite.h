@@ -224,6 +224,7 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1
+//			#define WITHLVGL				1
 			#define WITHTOUCHGUI			1
 //			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -241,7 +242,7 @@
 //			#define WITHLFM					1
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
-			#define DEFAULTDIALFREQ			12289000uL
+//			#define DEFAULTDIALFREQ			12289000uL
 			#define WITHCPUFANPWM			1
 			#define WITHCPUTHERMOLEVEL		1
 #endif

@@ -1646,7 +1646,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	hardware_ltdc_main_set(layer0);
 }
 
-#elif LINUX_SUBSYSTEM
+#elif LINUX_SUBSYSTEM && ! WITHLVGL
 
 void hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
@@ -1680,7 +1680,7 @@ static void hardware_ltdc_vsync(void)
 {
 }
 
-#elif (CPUSTYLE_XC7Z) && 1
+#elif (CPUSTYLE_XC7Z) && ! LINUX_SUBSYSTEM && ! WITHLVGL
 
 #include "zynq_vdma.h"
 

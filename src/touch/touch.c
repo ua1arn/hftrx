@@ -541,7 +541,7 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV */
 
-#if WITHLVGL
+#if WITHLVGL && 0
 
 #include "lv_drivers/indev/evdev.h"
 
