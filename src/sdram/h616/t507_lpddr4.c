@@ -2143,16 +2143,17 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
 	}
 }
 
-static unsigned long mctl_calc_size(const struct dram_config *config)
+static uint64_t mctl_calc_size(const struct dram_config *config)
 {
 	uint8_t width = config->bus_full_width ? 4 : 2;
 
 	/* 8 banks */
-	return (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
+	return (UINT64_C(1) << (config->cols + config->rows + 3)) * width * config->ranks;
 }
 
 #if 1
 
+/* 1GB LPDDR4 @ HelperBoard507 */
 #define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
 #define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
 #define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
@@ -2223,12 +2224,12 @@ static struct dram_para para =
 
 #endif
 
-unsigned long sunxi_dram_init(void)
+uint64_t sunxi_dram_init(void)
 {
 	struct sunxi_prcm_reg *const prcm =
 		(struct sunxi_prcm_reg *)SUNXI_PRCM_BASE;
 	struct dram_config config;
-	unsigned long size;
+	uint64_t size;
 
 	setbits_le32(&prcm->res_cal_ctrl, BIT_U32(8));
 	clrbits_le32(&prcm->ohms240, 0x3f);
@@ -2375,13 +2376,13 @@ void arm_hardware_sdram_initialize(void)
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 
-	unsigned long memsizeB;
-	unsigned long memsizeMB;
+	uint64_t memsizeB;
+	unsigned memsizeMB;
 	memsizeB = sunxi_dram_init();
 	memsizeMB = memsizeB / 1024 / 1024;
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
-	PRINTF("arm_hardware_sdram_initialize: result=%08lx bytes, %lu MB\n", memsizeB, memsizeMB);
+	PRINTF("arm_hardware_sdram_initialize: result=%u MB\n", memsizeMB);
 
 #if 0
 	if (xdramc_simple_wr_test(memsizeMB, 64))
