@@ -212,7 +212,7 @@ si535x_setupMultisynth(uint_fast8_t synth, uint_fast32_t divider, uint_fast8_t o
 		(synth),
 		((P3 & 0x0000FF00) >> 8),				// MSx_P3[15:8]
 		((P3 & 0x000000FF)),					// MSx_P3[7:0]
-		(((P1 & 0x00030000) >> 16) | outRdiv | (divider == 4 ? 0x0c : 0x00)),;	// Rx_DIV[2:0], MSx_DIVBY4[1:0], MSx_P1[17:16]
+		(((P1 & 0x00030000) >> 16) | outRdiv | (divider == 4 ? 0x0c : 0x00)),	// Rx_DIV[2:0], MSx_DIVBY4[1:0], MSx_P1[17:16]
 		((P1 & 0x0000FF00) >> 8),				// MSx_P1[15:8]
 		((P1 & 0x000000FF)),					// MSx_P1[7:0]
 		(((P3 & 0x000F0000) >> 12) | ((P2 & 0x000F0000) >> 16)),	// MSx_P3[19:16], MSx_P2[19:16]
