@@ -391,15 +391,12 @@
 		arm_hardware_piof_updown(UINT32_C(1) << 4, 0, UINT32_C(1) << 4);	/* PF4 - SDC0_D3	*/ \
 	} while (0)
 
-	#define HARDWARE_SDIO_CD_BIT	(UINT32_C(1) << 6)	/* PF6 - SDC0_DET */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
-			arm_hardware_piof_inputs(HARDWARE_SDIO_CD_BIT); /* PF6 - SDC0_DET */ \
-			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 
-	#define HARDWARE_SDIOSENSE_CD() ((GPIOF->DATA & HARDWARE_SDIO_CD_BIT) == 0)	/* == 0: no disk. получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_CD() 1//((GPIOF->DATA & HARDWARE_SDIO_CD_BIT) == 0)	/* == 0: no disk. получить состояние датчика CARD PRESENT */
 	#define HARDWARE_SDIOSENSE_WP() 0//((GPIOG->DATA & HARDWARE_SDIO_WP_BIT) != 0)	/* != 0: write protected получить состояние датчика CARD WRITE PROTECT */
 
 	/* если питание SD CARD управляется прямо с процессора */
