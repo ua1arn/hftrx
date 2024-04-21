@@ -767,8 +767,8 @@ void hardware_twi_master_configure(void);
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-uint16_t i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
-uint16_t i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
 
 uint32_t hardware_get_random(void);
 

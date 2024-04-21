@@ -46,8 +46,7 @@ static int i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_by
 
 	uint8_t bufw = r_adr;
 	i2chw_write(d_adr, & bufw, 1);
-	i2chw_read(d_adr, r_buffer, r_byte);
-	return 0;
+	return i2chw_read(d_adr, r_buffer, r_byte);
 
 #endif
 }

@@ -1466,7 +1466,7 @@ void hardware_iicps_configure(void)
 }
 
 /* return non-zero then error */
- i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+int i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
@@ -1474,11 +1474,11 @@ void hardware_iicps_configure(void)
 	if (Status != XST_SUCCESS)
 		PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
 
-	return Status;
+	return Status != XST_SUCCESS;
 }
 
 /* return non-zero then error */
-uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
+int i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
@@ -1486,7 +1486,7 @@ uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
 	if (Status != XST_SUCCESS)
 		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
 
-	return Status;
+	return Status != XST_SUCCESS;
 }
 
 void i2c_initialize(void)
@@ -1850,7 +1850,7 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-uint16_t i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	struct i2c_t113_pdata_t * const pdat = & pdat_i2c;
 	int res;
@@ -1860,13 +1860,13 @@ uint16_t i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 	msgs.buf = (void *) buf;
 
 	res = t113_i2c_start(pdat);
-	if (res != I2C_STAT_TX_START){
+	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_read start error\n");
 		t113_i2c_stop(&pdat_i2c);
 		return 1;
 	}
 	res = t113_i2c_read(pdat, &msgs);
-	if (res!=0){
+	if (res!=0) {
 		//PRINTF("i2chw_read read err\n");
 		//I2C_ERROR = 0x04;
 //		pdat->io->TWI_CNTR &= ~ (1u << 4);
@@ -1881,7 +1881,7 @@ uint16_t i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-uint16_t i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
 	struct i2c_t113_pdata_t *const  pdat = & pdat_i2c;
 	int res;
@@ -1891,13 +1891,13 @@ uint16_t i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t siz
 	msgs.buf = (void *) buf;
 
 	res = t113_i2c_start(pdat);
-	if (res != I2C_STAT_TX_START){
+	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_write start error\n");
 		t113_i2c_stop(pdat);
 		return 1;
 	}
 	res = t113_i2c_write(pdat, &msgs);
-	if (res!=0){
+	if (res!=0) {
 		//PRINTF("i2chw_write write err\n");
 		//I2C_ERROR = 0x04;
 //		pdat->io->TWI_CNTR &= ~ (1u << 4);
