@@ -2371,13 +2371,13 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 
 void arm_hardware_sdram_initialize(void)
 {
+	uint64_t memsizeB;
+	unsigned memsizeMB;
 	// https://artmemtech.com/
 	// artmem atl4b0832
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	PRINTF("arm_hardware_sdram_initialize, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 
-	uint64_t memsizeB;
-	unsigned memsizeMB;
 	memsizeB = sunxi_dram_init();
 	memsizeMB = memsizeB / 1024 / 1024;
 	//memsize =  dram_power_up_process(& lpddr4);

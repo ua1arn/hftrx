@@ -20,6 +20,7 @@
 /******************************************************************************/
 /*                         Peripheral memory map                              */
 /******************************************************************************/
+#define DRAM_SPACE_BASE 		((uintptr_t) 0x40000000)			/*!< (DRAM        ) Base Address - 2GB */
 
 // CPUX related
 // Address (It is for Cluster CPU)

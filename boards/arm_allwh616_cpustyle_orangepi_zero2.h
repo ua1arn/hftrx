@@ -612,6 +612,7 @@
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define	SPIDFHARD_PTR SPIHARD_PTR
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
