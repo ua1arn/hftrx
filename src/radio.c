@@ -21136,8 +21136,6 @@ const char * hamradio_get_preamp_value(void)
 }
 
 
-#if WITHTOUCHGUI
-
 uint_fast8_t hamradio_get_att_db(void)
 {
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
@@ -21198,6 +21196,8 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 }
 
 #endif /* WITHTX */
+
+#if WITHTOUCHGUI
 
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
 {

@@ -15,7 +15,6 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/display/fbdev.h"
 #include "lv_drivers/indev/evdev.h"
-#include "font.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 
@@ -46,8 +45,15 @@ void * thread_lv_task_handler(void * p)
 	return NULL;
 }
 
+void evdev_read_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
+{
+	evdev_read(drv, data);
+}
+
 void lvgl_init(void)
 {
+	lv_deinit();
+
 	int ttyd = open("/dev/tty0", O_RDWR);
 	if (ttyd)
 		ioctl(ttyd, KDSETMODE, KD_GRAPHICS);
@@ -81,15 +87,15 @@ void lvgl_init(void)
 	disp_drv.ver_res    = DIM_Y;
 	lv_disp_drv_register(& disp_drv);
 
-//	/* Linux input device init */
-//	evdev_init();
-//
-//	/* Set up touchpad input device interface */
-//	lv_indev_drv_t touch_drv;
-//	lv_indev_drv_init(& touch_drv);
-//	touch_drv.type = LV_INDEV_TYPE_POINTER;
-//	touch_drv.read_cb = (void *) evdev_read;
-//	lv_indev_drv_register(& touch_drv);
+	/* Linux input device init */
+	evdev_init();
+
+	/* Set up touchpad input device interface */
+	static lv_indev_drv_t touch_drv;
+	lv_indev_drv_init(& touch_drv);
+	touch_drv.type = LV_INDEV_TYPE_POINTER;
+	touch_drv.read_cb = evdev_read_cb;
+	lv_indev_drv_register(& touch_drv);
 
 	static lv_style_t style;
 	lv_style_init(&style);
@@ -112,7 +118,7 @@ void lvgl_deinit(void)
 }
 
 lv_img_dsc_t wfl;
-lv_obj_t * lbl, * img1, * btn1;
+lv_obj_t * lbl, * img1, * btn1, * lbl_btn1;
 lv_style_t  freq_main_style;
 
 void split_freq(uint64_t freq, uint16_t * mhz, uint16_t * khz, uint16_t * hz)
@@ -132,15 +138,25 @@ void lvgl_task1_cb(lv_timer_t * tmr)
 	lv_img_set_src(img1, & wfl);
 }
 
+static void event_handler_btn1(lv_event_t * event)
+{
+//	lv_obj_t * btn = lv_event_get_target(event);
+//	lv_obj_t * label = lv_obj_get_child(btn, 0);
+	hamradio_change_preamp();
+}
+
 void lvgl_test(void)
 {
 	lv_obj_t * page = lv_obj_create(lv_scr_act());
 	lv_obj_set_size(page, DIM_X - 1, DIM_Y - 1);
+	lv_obj_set_content_width(page, DIM_X - 1);
+	lv_obj_set_content_height(page, DIM_Y - 1);
 	lv_obj_align(page, LV_ALIGN_CENTER, 0, 0);
+
 
     lv_style_init(&freq_main_style);
     lv_style_set_text_color(&freq_main_style, lv_color_black());
-    lv_style_set_text_font(&freq_main_style, &sony_38);
+    lv_style_set_text_font(&freq_main_style, &lv_font_montserrat_38);
     lv_style_set_pad_ver(&freq_main_style, 5);
 
 	wfl_init();
@@ -156,10 +172,21 @@ void lvgl_test(void)
 
 	lv_obj_set_size(img1, p.w, p.h);
 	lv_img_set_antialias(img1, true);
-	lv_img_set_zoom(img1, 240);
+	lv_img_set_zoom(img1, 255);
+
+	static lv_style_t style_btn;
+	lv_style_init(&style_btn);
+	lv_style_set_bg_color(&style_btn, lv_color_hex(COLORPIP_BLUE));
+	lv_style_set_border_width(&style_btn, 2);
+	lv_style_set_border_color(&style_btn, lv_color_black());
+	lv_style_set_radius(&style_btn, 5);
 
 	btn1 = lv_btn_create(page);
-	lv_obj_set_pos(btn1, 0, 440);
+	lv_obj_set_pos(btn1, 0, 420);
+	lv_obj_add_event_cb(btn1, event_handler_btn1, LV_EVENT_CLICKED, NULL);
+	lbl_btn1 = lv_label_create(btn1);
+	lv_label_set_text(lbl_btn1, "Preamp");
+	lv_obj_add_style(btn1, &style_btn, 0);
 
 	wfl.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
 	wfl.header.always_zero = 0;
@@ -168,8 +195,8 @@ void lvgl_test(void)
 	wfl.header.h = p.h;
 	wfl.data_size = wfl.header.w * wfl.header.h * 4;
 
-	lv_timer_t * lvgl_task1;
-	lvgl_task1 = lv_timer_create(lvgl_task1_cb, 10, NULL);
+	static lv_timer_t * lvgl_task1;
+	lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
 	lv_timer_set_repeat_count(lvgl_task1, -1);
 }
 
