@@ -257,7 +257,7 @@ struct tc358768_drv_data
 
 #define TC358768_I2C_ADDR (0x0E * 2)
 
-unsigned long
+unsigned
 tc358768_rd_reg_16or32bits(unsigned register_id)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
@@ -266,6 +266,21 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 
 	if (v16bit)
 	{
+#if WITHTWIHW
+		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
+		uint8_t bufr [2];
+
+		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+			return 1;
+		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+			return 1;
+
+		return
+				(((unsigned long) bufr [0]) << 8) |
+				(((unsigned long) bufr [1]) << 0) |
+				0;
+
+#elif WITHTWISW
 		uint8_t v1, v2;
 
 		i2c_start(i2caddr | 0x00);
@@ -279,9 +294,27 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 				(((unsigned long) v1) << 8) |
 				(((unsigned long) v2) << 0) |
 				0;
+#endif
 	}
 	else
 	{
+#if WITHTWIHW
+		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
+		uint8_t bufr [4];
+
+		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+			return 1;
+		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+			return 1;
+
+		return
+				(((unsigned long) bufr [0]) << 8) |
+				(((unsigned long) bufr [1]) << 0) |
+				(((unsigned long) bufr [2]) << 24) |
+				(((unsigned long) bufr [3]) << 16) |
+				0;
+
+#elif WITHTWISW
 		uint8_t v1, v2, v3, v4;
 
 		i2c_start(i2caddr | 0x00);
@@ -299,16 +332,27 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 				(((unsigned long) v3) << 24) |
 				(((unsigned long) v4) << 16) |
 				0;
+#endif
 	}
 }
 
-void
+int
 tc358768_wr_reg_16bits(unsigned long value)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
 	const unsigned register_id = value >> 16;
 	const int v16bit = (register_id < 0x100 || register_id >= 0x600);
 
+#if WITHTWIHW
+	const uint8_t bufw [] =
+	{
+		register_id >> 8, register_id >> 0,
+		value >> 8, value >> 0,
+	};
+
+	return i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
+
+#elif WITHTWISW
 	i2c_start(i2caddr | 0x00);
 	i2c_write(register_id >> 8);		// addres hi
 	i2c_write(register_id >> 0);		// addres lo
@@ -321,6 +365,9 @@ tc358768_wr_reg_16bits(unsigned long value)
 	}
 	i2c_waitsend();
     i2c_stop();
+
+    return 0;
+#endif
 }
 
 static int tc358768_write(
@@ -334,6 +381,16 @@ static int tc358768_write(
 	if (reg < 0x100 || reg >= 0x600)
 	{
 		// 16-bit register
+#if WITHTWIHW
+		const uint8_t bufw [] =
+		{
+			reg >> 8, reg >> 0,
+			val >> 8, val >> 0,
+		};
+
+		return i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
+
+#elif WITHTWISW
 		i2c_start(i2caddr | 0x00);
 		i2c_write(reg >> 8);		// addres hi
 		i2c_write(reg >> 0);		// addres lo
@@ -341,10 +398,22 @@ static int tc358768_write(
 		i2c_write(val >> 0);		// data 7..0
 		i2c_waitsend();
 	    i2c_stop();
+#endif
 	}
 	else
 	{
 		// 32-bit register
+#if WITHTWIHW
+		const uint8_t bufw [] =
+		{
+			reg >> 8, reg >> 0,
+			val >> 8, val >> 0,
+			val >> 24, val >> 16,
+		};
+
+		return i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
+
+#elif WITHTWISW
 		i2c_start(i2caddr | 0x00);
 		i2c_write(reg >> 8);		// addres hi
 		i2c_write(reg >> 0);		// addres lo
@@ -354,6 +423,7 @@ static int tc358768_write(
 		i2c_write(val >> 16);		// data 23..16
 		i2c_waitsend();
 	    i2c_stop();
+#endif
 	}
 	return 0;
 }
@@ -370,7 +440,21 @@ static int tc358768_read(
 	if (v16bit)
 	{
 		// 16-bit register
+#if WITHTWIHW
+		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
+		uint8_t bufr [2];
 
+		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+			return 1;
+		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+			return 1;
+
+		* val =
+				(((unsigned long) bufr [0]) << 8) |
+				(((unsigned long) bufr [1]) << 0) |
+				0;
+
+#elif WITHTWISW
 		uint8_t v1, v2;
 
 		i2c_start(i2caddr | 0x00);
@@ -384,11 +468,28 @@ static int tc358768_read(
 				(((unsigned long) v1) << 8) |
 				(((unsigned long) v2) << 0) |
 				0;
+#endif
 	}
 	else
 	{
 		// 32-bit register
+#if WITHTWIHW
+		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
+		uint8_t bufr [4];
 
+		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+			return 1;
+		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+			return 1;
+
+		* val =
+				(((unsigned long) bufr [0]) << 8) |
+				(((unsigned long) bufr [1]) << 0) |
+				(((unsigned long) bufr [2]) << 24) |
+				(((unsigned long) bufr [3]) << 16) |
+				0;
+
+#elif WITHTWISW
 		uint8_t v1, v2, v3, v4;
 
 		i2c_start(i2caddr | 0x00);
@@ -406,6 +507,7 @@ static int tc358768_read(
 				(((unsigned long) v3) << 24) |
 				(((unsigned long) v4) << 16) |
 				0;
+#endif
 	}
 
 	return 0;
@@ -2138,13 +2240,7 @@ void tc358768_deinitialize(void)
 
 	tc358768_power_off(ddata);
 	tc358768_sw_reset(ddata);
-
-	const portholder_t Video_RST = (1uL << 10);	// PA10
-	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
-
-	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
-	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);	// RESET active
-	local_delay_ms(5);
+	HARDWARE_VODEO_DEINIT();
 }
 
 void tc358768_initialize(const videomode_t * vdmode)
@@ -2163,31 +2259,13 @@ void tc358768_initialize(const videomode_t * vdmode)
 	// https://developer.toradex.com/knowledge-base/display-output-resolution-and-timings-linux
 	// https://code.woboq.org/linux/linux/Documentation/devicetree/bindings/display/panel/samsung,s6e8aa0.txt.html
 
-	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
-	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
-	arm_hardware_pioc_inputs(TE);
-	arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR);
-	// active low
-	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
-	arm_hardware_piod_outputs(RESET, 0 * RESET);
-	local_delay_ms(5);
-	arm_hardware_piod_outputs(RESET, 1 * RESET);
+	HARDWARE_TP_INIT();
 
-
-
-	// TC358778XBG conrol
-	//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
-	//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
-	const portholder_t Video_RST = (1uL << 10);	// PA10
-	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
-
-	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
-	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
-	local_delay_ms(5);
-	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+	HARDWARE_VIDEO_INIT();
 	//PRINTF("TC358778XBG reset off\n");
 
-	PRINTF("TC358778XBG: Chip and Revision ID=0x%04lX (expected 0x4401)\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
+
+	PRINTF("TC358778XBG: Chip and Revision ID=0x%04X (expected 0x4401)\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
 
 	local_delay_ms(30);
 
@@ -2263,28 +2341,10 @@ void tc358768_wakeup(const videomode_t * vdmode)
 	// https://developer.toradex.com/knowledge-base/display-output-resolution-and-timings-linux
 	// https://code.woboq.org/linux/linux/Documentation/devicetree/bindings/display/panel/samsung,s6e8aa0.txt.html
 
-	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
-	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
-	arm_hardware_pioc_inputs(TE);
-	arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR);
-	// active low
-//	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
-//	arm_hardware_piod_outputs(RESET, 0 * RESET);
-//	local_delay_ms(5);
-//	arm_hardware_piod_outputs(RESET, 1 * RESET);
+	HARDWARE_TP_INIT();
 
+	HARDWARE_VIDEO_INIT();
 
-
-	// TC358778XBG conrol
-	//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
-	//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
-	const portholder_t Video_RST = (1uL << 10);	// PA10
-	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
-
-	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
-	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
-	local_delay_ms(5);
-	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
 	//PRINTF("TC358778XBG reset off\n");
 
 	local_delay_ms(30);

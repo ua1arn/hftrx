@@ -2385,6 +2385,15 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
     local_delay_us(10);
 }
 
+
+// округление тактовой частоты дисплейного контроллера к возможностям системы синхронизации
+unsigned long hardware_get_dotclock(unsigned long dotfreq)
+{
+	return dotfreq;
+//	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
+//	return stm32mp1_get_pll4_freq() / pll4divq;
+}
+
 // LVDS step2 - Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {

@@ -347,6 +347,12 @@
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_UA1CEI	1
+	//#define COLORSTYLE_RED	1
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
+
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */

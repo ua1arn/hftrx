@@ -136,7 +136,7 @@
 		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
-		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
+		//#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
 		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
@@ -144,7 +144,7 @@
 		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
+		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	#endif /* WITHINTEGRATEDDSP */
@@ -918,6 +918,38 @@
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
+	} while (0)
+
+
+#define HARDWARE_TP_INIT() do { \
+		const portholder_t TE = (1uL << 7);	/* PC7 (TE) - panel pin 29 Sync signal from driver IC */ \
+		const portholder_t OTP_PWR = (1uL << 7);	/* PD7 (CTRL - OTP_PWR) - panel pin 30 */ \
+		arm_hardware_pioc_inputs(TE); \
+		arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR); \
+		const portholder_t RESET = (1uL << 1);	/* PD1 = RESX_18 - pin  28 */ \
+		arm_hardware_piod_outputs(RESET, 0 * RESET); \
+		local_delay_ms(5); \
+		arm_hardware_piod_outputs(RESET, 1 * RESET); \
+	} while (0)
+
+// TC358778XBG conrol
+//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
+//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
+#define HARDWARE_VIDEO_INIT() do { \
+		const portholder_t Video_RST = (1uL << 10);	/* PA10 */ \
+		const portholder_t Video_MODE = (1uL << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
+		arm_hardware_piof_outputs(Video_MODE, Video_MODE); \
+		arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST); \
+		local_delay_ms(5); \
+		arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST); \
+	} while (0)
+
+#define HARDWARE_VODEO_DEINIT() do { \
+		const portholder_t Video_RST = (1uL << 10);	/* PA10 */ \
+		const portholder_t Video_MODE = (1uL << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
+		arm_hardware_piof_outputs(Video_MODE, Video_MODE); \
+		arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);	/* RESET active */ \
+		local_delay_ms(5); \
 	} while (0)
 
 #if WITHLTDCHW
