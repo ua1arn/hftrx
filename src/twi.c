@@ -1675,7 +1675,8 @@ static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
 
 	if (t113_i2c_send_data(pdat, (uint8_t)((msg->addr << 1) | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
-
+	if (len == 0)	/* Handle zero count for probes */
+		return 0;
 	write32(pdat->virt + TWI_CNTR, pdat->io->TWI_CNTR | (1 << 2));
 	while (len > 0){
 		if (len == 1){
@@ -1701,6 +1702,8 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 	if (t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
+	if (len == 0)	/* Handle zero count for probes */
+		return 0;
 	while (len > 0)
 	{
 		if (t113_i2c_send_data(pdat, *p++) != I2C_STAT_TXD_ACK)

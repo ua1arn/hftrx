@@ -10565,7 +10565,7 @@ void hightests(void)
 	//hmain();
 #if 0
 	{
-		// I2C bus test
+		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;
 		for (;n --;)
 		{
