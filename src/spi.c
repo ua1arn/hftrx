@@ -1226,7 +1226,7 @@ static void DMA2_waitTC(
 	uint_fast8_t i		// 0..7 - номер Stream
 	)
 {
-	uint_fast8_t mask = 1UL << ((i & 0x01) * 6);
+	uint_fast8_t mask = UINT32_C(1) << ((i & 0x01) * 6);
 	if (i >= 4)
 	{
 		if (i >= 6)
@@ -1306,7 +1306,7 @@ void hardware_spi_master_initialize(void)
 	// инициализация контроллера SPI
 
 	// Get clock
-    PMC->PMC_PCER0 = (1UL << ID_PIOA) | (1UL << ID_SPI);	/* Need PIO too */
+    PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA) | (UINT32_C(1) << ID_SPI);	/* Need PIO too */
 
     // setup PIO pins for SPI bus, disconnect from peripherials
 	SPIIO_INITIALIZE();
@@ -1342,7 +1342,7 @@ void hardware_spi_master_initialize(void)
 	// инициализация контроллера SPI
 
    // Get clock
-    AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_PIOA) | (1UL << AT91C_ID_SPI);/* Need PIO too */
+    AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_PIOA) | (UINT32_C(1) << AT91C_ID_SPI);/* Need PIO too */
 
     // setup PIO pins for SPI bus, disconnect from peripherials
 	SPIIO_INITIALIZE();
@@ -1947,13 +1947,13 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
 
 	const portholder_t cr_val =
-			//(1uL << 17) |	// ModeFail Generation Enable
-			//(1uL << 16) |	// Manual Start Command
-			//(1uL << 15) |	// Manual Start Enable
-//			(1uL << 14) |	// Manual CS
-//			(0x0FuL << 10) |	// 1111 - No slave selected
+			//(UINT32_C(1) << 17) |	// ModeFail Generation Enable
+			//(UINT32_C(1) << 16) |	// Manual Start Command
+			//(UINT32_C(1) << 15) |	// Manual Start Enable
+//			(UINT32_C(1) << 14) |	// Manual CS
+//			(UINT32_C(0x0F) << 10) |	// 1111 - No slave selected
 			(brdiv << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
-			(1uL << 0) |	// 1: the SPI is in master mode
+			(UINT32_C(1) << 0) |	// 1: the SPI is in master mode
 			0;
 
 	spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
@@ -2364,14 +2364,14 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 
 #elif CPUSTYLE_XC7Z
 
-	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+	while ((SPI0->SR & (UINT32_C(1) << 4)) == 0)	// RX FIFO not empty
 		;
 	return SPI0->RXD & 0xFF;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPIHARD_PTR->SPI_TCR & (1u << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)
 		;
 
 	const portholder_t v = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
@@ -3677,7 +3677,7 @@ void hardware_spi_b8_p1(
 #elif CPUSTYLE_XC7Z
 
 	SPI0->TXD = v;
-	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
+	while ((SPI0->SR & (UINT32_C(1) << 2)) == 0)	// TX FIFO not full
 		;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
@@ -4933,7 +4933,7 @@ void spidf_initialize(void)
 
 	PRINTF("2 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
 
-	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+	XQSPIPS->CR |= (UINT32_C(1) << 19);		// Holdb_dr
 
 	ASSERT(XQSPIPS->MOD_ID == 0x01090101);
 	//PRINTF("spidf_initialize: MOD_ID=%08lX (expected 0x01090101)\n", XQSPIPS->MOD_ID);
@@ -5268,12 +5268,12 @@ static void spidf_iostart(
 		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
 		//(0 << QUADSPI_CCR_SIOO_Pos) |	// 0: Send instruction on every transaction
-		((direction ? 0u : 0x01uL) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
+		((direction ? 0u : UINT32_C(1)) << QUADSPI_CCR_FMODE_Pos) |	// 01: Indirect read mode, 00: Indirect write mode
 		(size != 0) * (bw << QUADSPI_CCR_DMODE_Pos) |	// 01: Data on a single line
 		((ml * ndummy) << QUADSPI_CCR_DCYC_Pos) |	// This field defines the duration of the dummy phase (1..31).
 		//0 * (bw << QUADSPI_CCR_ABSIZE_Pos) |	// 00: 8-bit alternate byte
 		(0 << QUADSPI_CCR_ABMODE_Pos) |	// 00: No alternate bytes
-		(0x02uL << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
+		(UINT32_C(0x02) << QUADSPI_CCR_ADSIZE_Pos) |	// 010: 24-bit address
 		(hasaddress != 0) * (bw << QUADSPI_CCR_ADMODE_Pos) |	// 01: Address on a single line
 		(UINT32_C(1) << QUADSPI_CCR_IMODE_Pos) |	// 01: Instruction on a single line
 		((uint_fast32_t) cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
@@ -5480,18 +5480,18 @@ void spidf_initialize(void)
 	// 17.4.1 Common Control Register (CMNCR)
 	SPIBSC0.CMNCR =
 		SPIBSC_CMNCR_MD |	// spi mode
-		(1uL << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
-		(1uL << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
-		(1uL << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
-		(1uL << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
-		(1uL << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
-		(1uL << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
-		(1uL << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
-		(1uL << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
-		0uL * SPIBSC_CMNCR_CPHAR |	// after reset: 0
-		0uL * SPIBSC_CMNCR_CPHAT |	// after reset: 0
-		0uL * SPIBSC_CMNCR_SSLP |	// after reset: 0
-		0uL * SPIBSC_CMNCR_BSZ |	// after reset: 0
+		(UINT32_C(1) << SPIBSC_CMNCR_SFDE_SHIFT) |	// after reset: 1
+		(UINT32_C(1) << SPIBSC_CMNCR_MOIIO3_SHIFT) |	// after reset: 2
+		(UINT32_C(1) << SPIBSC_CMNCR_MOIIO2_SHIFT) |	// after reset: 2
+		(UINT32_C(1) << SPIBSC_CMNCR_MOIIO1_SHIFT) |	// after reset: 2
+		(UINT32_C(1) << SPIBSC_CMNCR_MOIIO0_SHIFT) |	// after reset: 2
+		(UINT32_C(1) << SPIBSC_CMNCR_IO3FV_SHIFT) |	// after reset: 1
+		(UINT32_C(1) << SPIBSC_CMNCR_IO2FV_SHIFT) |	// after reset: 0
+		(UINT32_C(1) << SPIBSC_CMNCR_IO0FV_SHIFT) |	// after reset: 0
+		UINT32_C(0) * SPIBSC_CMNCR_CPHAR |	// after reset: 0
+		UINT32_C(0) * SPIBSC_CMNCR_CPHAT |	// after reset: 0
+		UINT32_C(0) * SPIBSC_CMNCR_SSLP |	// after reset: 0
+		UINT32_C(0) * SPIBSC_CMNCR_BSZ |	// after reset: 0
 		0;
 
 	// Baud rate
@@ -5979,7 +5979,7 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 }
 
 static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
-static uint_fast32_t sectorSize = (1uL << 16);		// default sectoir size 64kB
+static uint_fast32_t sectorSize = (UINT32_C(1) << 16);		// default sectoir size 64kB
 static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
 
 char nameDATAFLASH [64];
@@ -6068,19 +6068,19 @@ int testchipDATAFLASH(void)
 
 		///////////////////////////////////
 		/* Print density information. */
-		if ((dword2 & 0x80000000uL) == 0)
+		if ((dword2 & UINT32_C(0x80000000)) == 0)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
 			//PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
-			chipSize = (dword2 >> 3) + 1uL;
+			chipSize = (dword2 >> 3) + UINT32_C(1);
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
 			//PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
-			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
+			chipSize = UINT32_C(1) << ((dword2 & 0x7FFFFFFF) - 3);
 		}
 		///////////////////////////////////
 		// dword8, dword9 - 4KB Erase opcode, Sector size, Sector erase opcode
@@ -6105,7 +6105,7 @@ int testchipDATAFLASH(void)
 		if (sctRESULT != 0)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
-			sectorSize = 1uL << (sctRESULT & 0xFF);
+			sectorSize = UINT32_C(1) << (sctRESULT & 0xFF);
 			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%u\n", (unsigned) sectorEraseCmd, (unsigned) sectorSize);
 		}
 		///////////////////////////////////
