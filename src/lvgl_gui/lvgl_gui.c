@@ -15,6 +15,7 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/display/fbdev.h"
 #include "lv_drivers/indev/evdev.h"
+#include "lvgl_gui/styles.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 
@@ -97,16 +98,11 @@ void lvgl_init(void)
 	touch_drv.read_cb = evdev_read_cb;
 	lv_indev_drv_register(& touch_drv);
 
-	static lv_style_t style;
-	lv_style_init(&style);
-	lv_style_set_bg_color(&style, lv_color_black());
-	lv_style_set_text_color(&style, lv_color_white());
-	lv_style_set_border_width(&style, 0);
-	lv_style_set_pad_all(&style, 0);
-	lv_obj_add_style(lv_scr_act(), &style, 0);
-
 	linux_create_thread(& p_inc, thread_lv_tick_inc, 50, 0);
 	linux_create_thread(& p_h, thread_lv_task_handler, 50, 0);
+
+	lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
+	styles_init();
 }
 
 void lvgl_deinit(void)
@@ -117,9 +113,8 @@ void lvgl_deinit(void)
     lv_deinit();
 }
 
-lv_img_dsc_t wfl;
-lv_obj_t * lbl, * img1, * btn1, * lbl_btn1;
-lv_style_t  freq_main_style;
+static lv_img_dsc_t wfl;
+static lv_obj_t * page, * lbl, * img1, * btn1, * lbl_btn1, * win;
 
 void split_freq(uint64_t freq, uint16_t * mhz, uint16_t * khz, uint16_t * hz)
 {
@@ -145,19 +140,28 @@ static void event_handler_btn1(lv_event_t * event)
 	hamradio_change_preamp();
 }
 
+
+
+void footer_buttons_init(void)
+{
+	static lv_obj_t * fbtn[9];
+	uint16_t x = 1, y = DIM_Y - 45;
+
+	for (int i = 0; i < 9; i ++)
+	{
+		fbtn[i] = lv_btn_create(page);
+		lv_obj_add_style(fbtn[i], & style_footer_button, 0);
+		lv_obj_set_pos(fbtn[i], x, y);
+		x = x + 3 + 86;
+	}
+}
+
 void lvgl_test(void)
 {
-	lv_obj_t * page = lv_obj_create(lv_scr_act());
-	lv_obj_set_size(page, DIM_X - 1, DIM_Y - 1);
-	lv_obj_set_content_width(page, DIM_X - 1);
-	lv_obj_set_content_height(page, DIM_Y - 1);
-	lv_obj_align(page, LV_ALIGN_CENTER, 0, 0);
-
-
-    lv_style_init(&freq_main_style);
-    lv_style_set_text_color(&freq_main_style, lv_color_black());
-    lv_style_set_text_font(&freq_main_style, &lv_font_montserrat_38);
-    lv_style_set_pad_ver(&freq_main_style, 5);
+	page = lv_obj_create(lv_scr_act());
+	lv_obj_set_size(page, DIM_X, DIM_Y);
+	lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
+	lv_obj_add_style(page, & style_mainscreen, 0);
 
 	wfl_init();
 
@@ -165,28 +169,23 @@ void lvgl_test(void)
 	lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
 
 	lbl = lv_label_create(page);
-	lv_obj_add_style(lbl, &freq_main_style, 0);
+	lv_obj_add_style(lbl, & style_freq_main, 0);
 
 	pipparams_t p;
 	display2_getpipparams(& p);
 
 	lv_obj_set_size(img1, p.w, p.h);
-	lv_img_set_antialias(img1, true);
-	lv_img_set_zoom(img1, 255);
+//	lv_img_set_antialias(img1, true);
+//	lv_img_set_zoom(img1, 255);
 
-	static lv_style_t style_btn;
-	lv_style_init(&style_btn);
-	lv_style_set_bg_color(&style_btn, lv_color_hex(COLORPIP_BLUE));
-	lv_style_set_border_width(&style_btn, 2);
-	lv_style_set_border_color(&style_btn, lv_color_black());
-	lv_style_set_radius(&style_btn, 5);
+//	btn1 = lv_btn_create(page);
+//	lv_obj_set_pos(btn1, 0, 420);
+//	lv_obj_add_event_cb(btn1, event_handler_btn1, LV_EVENT_CLICKED, NULL);
+//	lbl_btn1 = lv_label_create(btn1);
+//	lv_label_set_text(lbl_btn1, "Preamp");
+//	lv_obj_add_style(btn1, &style_footer_button, 0);
 
-	btn1 = lv_btn_create(page);
-	lv_obj_set_pos(btn1, 0, 420);
-	lv_obj_add_event_cb(btn1, event_handler_btn1, LV_EVENT_CLICKED, NULL);
-	lbl_btn1 = lv_label_create(btn1);
-	lv_label_set_text(lbl_btn1, "Preamp");
-	lv_obj_add_style(btn1, &style_btn, 0);
+	footer_buttons_init();
 
 	wfl.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
 	wfl.header.always_zero = 0;
@@ -199,7 +198,5 @@ void lvgl_test(void)
 	lvgl_task1 = lv_timer_create(lvgl_task1_cb, 1, NULL);
 	lv_timer_set_repeat_count(lvgl_task1, -1);
 }
-
-
 
 #endif /* LINUX_SUBSYSTEM && WITHLVGL */
