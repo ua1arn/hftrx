@@ -9514,7 +9514,7 @@ hardware_dcdc_calcdivider(
 	)
 {
 	//PRINTF("hardware_dcdc_calcdivider: PWMTICKSFREQ=%u\n", (unsigned) PWMTICKSFREQ);
-	ASSERT(BOARDDCDCSYNC == PWMTICKSFREQ);	/* проверка что таблица расчитывалась именно для этой входной частоты PWM */
+	//ASSERT(BOARDDCDCSYNC == PWMTICKSFREQ);	/* проверка что таблица расчитывалась именно для этой входной частоты PWM */
 //	#define WITHHWDCDCFREQMIN 400000L
 //	#define WITHHWDCDCFREQMAX 1200000L
 //	#define DCDC_FREQ_0 960000

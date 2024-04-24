@@ -1466,25 +1466,55 @@ void hardware_iicps_configure(void)
 }
 
 /* return non-zero then error */
-int i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
-	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address >> 1);
+	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address8b >> 1);
 	if (Status != XST_SUCCESS)
-		PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
+	{
+		PRINTF("iicps receive error %d from address %x\n", Status, slave_address8b);
+		return 1;
+	}
 
 	return Status != XST_SUCCESS;
 }
 
 /* return non-zero then error */
-int i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
 	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
 
-	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) buf, size, slave_address >> 1);
+	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) buf, size, slave_address8b >> 1);
 	if (Status != XST_SUCCESS)
-		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
+	{
+		PRINTF("iicps write error %d to address %x\n", Status, slave_address8b);
+		return 1;
+	}
+	return Status != XST_SUCCESS;
+}
+/* return non-zero then error */
+// LSB of slave_address8b ignored */
+// TODO: Use restart for read - check XIICPS_REP_START_OPTION
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	int Status;
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+
+	Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) wbuf, wsize, slave_address8b >> 1);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("iicps write error %d to address %x\n", Status, slave_address8b);
+		return 1;
+	}
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+
+	Status = XIicPs_MasterRecvPolled(& xc7z_iicps, rbuf, rsize, slave_address8b >> 1);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("iicps receive error %d from address %x\n", Status, slave_address8b);
+		return 1;
+	}
 
 	return Status != XST_SUCCESS;
 }
@@ -1593,7 +1623,7 @@ static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
 static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 	const uint32_t timeout = sys_now()+5*10;	//sys_now()+5мс
 	do {
-		if ((pdat->io->TWI_CNTR & (1 << 3))){
+		if ((pdat->io->TWI_CNTR & (1 << 3))){	// INT_FLAG
 			unsigned int stat = pdat->io->TWI_STAT;
 			//PRINTF("t113_i2c_wait_status1 = 0x%02X\n", stat);
 			return stat;
@@ -1607,7 +1637,7 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 
 static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
 	//PRINTF("I2C start\n");
-	pdat->io->TWI_CNTR |= (1u << 5) | (1u << 3);
+	pdat->io->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
 	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
 	do {
 		if (!(pdat->io->TWI_CNTR & (1 << 5)))	// M_STA
@@ -1624,11 +1654,11 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	uint32_t val;
 
 	val = pdat->io->TWI_CNTR;
-	val |= (1 << 4) | (1 << 3);
+	val |= (1 << 4) | (1 << 3);	// M_STP INT_FLAG
 	pdat->io->TWI_CNTR = val;
 	const uint32_t timeout = sys_now()+5*10;
 	do {
-		if (!(pdat->io->TWI_CNTR & (1 << 4)))
+		if (!(pdat->io->TWI_CNTR & (1 << 4)))	// M_STP
 		{
 			return 0;
 		}
@@ -1636,10 +1666,25 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	return 1;
 }
 
+static int t113_i2c_restart(struct i2c_t113_pdata_t * pdat){
+	//PRINTF("I2C start\n");
+	pdat->io->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
+	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
+	do {
+		if (!(pdat->io->TWI_CNTR & (1 << 5)))	// M_STA
+		{
+			//PRINTF("I2C start ok\n");
+			return t113_i2c_wait_status(pdat);
+		}
+	} while (sys_now()<timeout);
+	//PRINTF("I2C start out\n");
+	return t113_i2c_wait_status(pdat);
+}
+
 static int t113_i2c_send_data(struct i2c_t113_pdata_t * pdat, uint8_t dat)
 {
 	pdat->io->TWI_DATA = dat;
-	pdat->io->TWI_CNTR |= (1 << 3);
+	pdat->io->TWI_CNTR |= (1 << 3);	// INT_FLAG
 
 	return t113_i2c_wait_status(pdat);
 }
@@ -1846,7 +1891,7 @@ int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 		return 1;
 	}
 	res = t113_i2c_read(pdat, &msgs);
-	if (res!=0) {
+	if (res != 0) {
 		//PRINTF("i2chw_read read err\n");
 		//I2C_ERROR = 0x04;
 //		pdat->io->TWI_CNTR &= ~ (1u << 4);
@@ -1877,8 +1922,60 @@ int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 		return 1;
 	}
 	res = t113_i2c_write(pdat, &msgs);
-	if (res!=0) {
+	if (res != 0) {
 		//PRINTF("i2chw_write write err\n");
+		//I2C_ERROR = 0x04;
+//		pdat->io->TWI_CNTR &= ~ (1u << 4);
+		pdat->io->TWI_SRST |= 1u << 0;
+		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
+			;
+		return 1;
+	}
+	t113_i2c_stop(pdat);
+	return 0;
+}
+
+/* return non-zero then error */
+// LSB of slave_address8b ignored */
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	struct i2c_t113_pdata_t *const  pdat = & pdat_i2c;
+	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr = slave_address8b >> 1;
+	msgs.len = wsize;
+	msgs.buf = (void *) wbuf;
+
+	res = t113_i2c_start(pdat);
+	if (res != I2C_STAT_TX_START) {
+		//PRINTF("i2chw_exchange 1 start error\n");
+		t113_i2c_stop(pdat);
+		return 1;
+	}
+	res = t113_i2c_write(pdat, &msgs);
+	if (res != 0) {
+		//PRINTF("i2chw_exchange write err\n");
+		//I2C_ERROR = 0x04;
+//		pdat->io->TWI_CNTR &= ~ (1u << 4);
+		pdat->io->TWI_SRST |= 1u << 0;
+		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
+			;
+		return 1;
+	}
+
+	// New start without stop
+	msgs.len = rsize;
+	msgs.buf = (void *) rbuf;
+
+	res = t113_i2c_start(pdat);
+	if (res != I2C_STAT_TX_RSTART) {
+		//PRINTF("i2chw_exchange 2 start error\n");
+		t113_i2c_stop(&pdat_i2c);
+		return 1;
+	}
+	res = t113_i2c_read(pdat, &msgs);
+	if (res != 0) {
+		//PRINTF("i2chw_exchange read err\n");
 		//I2C_ERROR = 0x04;
 //		pdat->io->TWI_CNTR &= ~ (1u << 4);
 		pdat->io->TWI_SRST |= 1u << 0;

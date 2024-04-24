@@ -379,36 +379,62 @@ void i2c_initialize(void)
 }
 
 /* return non-zero then error */
-int i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size)
+// LSB of slave_address8b ignored */
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
-	int rc;
+	int rc = - 1;
 
 	if (fd_i2c)
 	{
-		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
+		if (ioctl(fd_i2c, I2C_SLAVE, slave_address8b >> 1) < 0)
 			perror("i2chw_write:");
 
 		rc = write(fd_i2c, buf, size);
 		if (rc < 0)
-			PRINTF("Tried to write to address '0x%02x'\n", slave_address);
+			PRINTF("Tried to write to address '0x%02x'\n", slave_address8b);
 	}
 
 	return rc < 0;
 }
 
 /* return non-zero then error */
-int i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+// LSB of slave_address8b ignored */
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	int rc;
+	int rc = - 1;
 
 	if (fd_i2c)
 	{
-		if (ioctl(fd_i2c, I2C_SLAVE, slave_address >> 1) < 0)
+		if (ioctl(fd_i2c, I2C_SLAVE, slave_address8b >> 1) < 0)
 			perror("i2chw_read:");
 
 		rc = read(fd_i2c, buf, size);
 		if (rc < 0)
-			PRINTF("Tried to read from address '0x%02x'\n", slave_address);
+			PRINTF("Tried to read from address '0x%02x'\n", slave_address8b);
+	}
+
+	return rc < 0;
+}
+
+/* return non-zero then error */
+// LSB of slave_address8b ignored */
+// TODO: Use restart for read
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	int rc = - 1;
+
+	if (fd_i2c)
+	{
+		if (ioctl(fd_i2c, I2C_SLAVE, slave_address8b >> 1) < 0)
+			perror("i2chw_write:");
+
+		rc = write(fd_i2c, wbuf, wsize);
+		if (rc < 0)
+			PRINTF("Tried to write to address '0x%02x'\n", slave_address8b);
+
+		rc = read(fd_i2c, rbuf, rsize);
+		if (rc < 0)
+			PRINTF("Tried to read from address '0x%02x'\n", slave_address8b);
 	}
 
 	return rc < 0;
