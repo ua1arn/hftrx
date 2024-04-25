@@ -508,7 +508,7 @@ void spi_operate_unlock(IRQL_t irql)
 #endif /* ! LINUX_SUBSYSTEM */
 }
 
-static void spi_operate_low(lowspiio_t * iospi)
+static void spi_operate(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
 	unsigned i;
@@ -719,8 +719,6 @@ void prog_spi_io(
 	uint8_t * rxbuff, unsigned int rxsize
 	)
 {
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
 	unsigned i = 0;
 	lowspiio_t io;
 	io.target = target;
@@ -759,71 +757,7 @@ void prog_spi_io(
 
 	io.count = i;
 
-#if USESPILOCK
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	spi_operate_low(& io);
-	LowerIrql(oldIrql);
-
-#else /* USESPILOCK */
-	spi_operate_low(& io);
-#endif /* USESPILOCK */
-
-}
-
-// Работа совместно с фоновым обменом SPI по прерываниям
-// Assert CS, send and then read  bytes via SPI, and deassert CS
-void prog_spi_io_low(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
-	const uint8_t * txbuff1, unsigned int txsize1,
-	const uint8_t * txbuff2, unsigned int txsize2,
-	uint8_t * rxbuff, unsigned int rxsize
-	)
-{
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
-	unsigned i = 0;
-	lowspiio_t io;
-	io.target = target;
-	io.spispeedindex = spispeedindex;
-	io.spimode = spimode;
-	io.csdelayUS = csdelayUS;
-	io.spiiosize = SPIIOSIZE_U8;
-
-	if (txsize1 != 0)
-	{
-		io.chunks [i].spiiotype = SPIIO_TX;
-		io.chunks [i].bytecount = txsize1;
-		io.chunks [i].txbuff = txbuff1;
-		io.chunks [i].rxbuff = NULL;
-
-		++ i;
-	}
-	if (txsize2 != 0)
-	{
-		io.chunks [i].spiiotype = SPIIO_TX;
-		io.chunks [i].bytecount = txsize2;
-		io.chunks [i].txbuff = txbuff2;
-		io.chunks [i].rxbuff = NULL;
-
-		++ i;
-	}
-	if (rxsize != 0)
-	{
-		io.chunks [i].spiiotype = SPIIO_RX;
-		io.chunks [i].bytecount = rxsize;
-		io.chunks [i].txbuff = NULL;
-		io.chunks [i].rxbuff = rxbuff;
-
-		++ i;
-	}
-
-	io.count = i;
-
-	spi_operate_low(& io);
-
+	spi_operate(& io);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -837,8 +771,6 @@ void prog_spi_exchange(
 	unsigned int size
 	)
 {
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
 	lowspiio_t io;
 
 	io.target = target;
@@ -858,53 +790,7 @@ void prog_spi_exchange(
 
 	io.count = i;
 
-#if USESPILOCK
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	spi_operate_low(& io);
-	LowerIrql(oldIrql);
-
-#else /* USESPILOCK */
-
-	spi_operate_low(& io);
-
-#endif /* USESPILOCK */
-}
-
-// Работа совместно с фоновым обменом SPI по прерываниям
-// Assert CS, send and then read  bytes via SPI, and deassert CS
-// Выдача и прием ответных байтов
-void prog_spi_exchange_low(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
-	const uint8_t * txbuff,
-	uint8_t * rxbuff,
-	unsigned int size
-	)
-{
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
-	lowspiio_t io;
-
-	io.target = target;
-	io.spispeedindex = spispeedindex;
-	io.spimode = spimode;
-	io.csdelayUS = csdelayUS;
-	io.spiiosize = SPIIOSIZE_U8;
-
-	unsigned i = 0;
-	{
-		io.chunks [i].spiiotype = SPIIO_EXCHANGE;
-		io.chunks [i].bytecount = size;
-		io.chunks [i].txbuff = txbuff;
-		io.chunks [i].rxbuff = rxbuff;
-		++ i;
-	}
-
-	io.count = i;
-
-	spi_operate_low(& io);
+	spi_operate(& io);
 }
 
 #if WITHSPI32BIT
@@ -912,7 +798,7 @@ void prog_spi_exchange_low(
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Выдача и прием ответных байтов
-void prog_spi_exchange32_low(
+void prog_spi_exchange32(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint32_t * txbuff,
@@ -920,8 +806,6 @@ void prog_spi_exchange32_low(
 	unsigned int size
 	)
 {
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
 	lowspiio_t io;
 
 	io.target = target;
@@ -941,43 +825,12 @@ void prog_spi_exchange32_low(
 
 	io.count = i;
 
-	spi_operate_low(& io);
+	spi_operate(& io);
 }
 
 #endif /* WITHSPI32BIT */
 
 #if USESPILOCK
-
-typedef enum
-{
-	SPISTATE_IDLE,
-	//
-	SPISTATE_count
-} spistate_t;
-
-static spistate_t spistate = SPISTATE_IDLE;
-// вызывается с частотой TICKS_FREQUENCY герц
-static void
-spi_spool(void * ctx)
-{
-}
-
-static const uint8_t spiadcinputs [] =
-{
-		KI_LIST
-};
-
-void spi_perform_initialize(void)
-{
-	static ticker_t spiticker;
-
-	spistate = SPISTATE_IDLE;
-
-	ticker_initialize(& spiticker, 1, spi_spool, NULL);
-	ticker_add(& spiticker);
-
-	LCLSPINLOCK_INITIALIZE(& spilock);
-}
 
 #else /* USESPILOCK */
 
@@ -3780,11 +3633,6 @@ void spi_initialize(void)
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
 
 #endif /* WITHSPIHW */
-
-#if USESPILOCK
-	// Работа совместно с фоновым обменом SPI по прерываниям
-	spi_perform_initialize();
-#endif /* USESPILOCK */
 }
 
 #endif /* WITHSPIHW || WITHSPISW */

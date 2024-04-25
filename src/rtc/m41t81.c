@@ -31,7 +31,7 @@ static int m41t81_readbuff(
 
 	uint8_t bufw [] = { r };
 
-	//return i2chw_exchange(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
+	return i2chw_exchange(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
 	if (i2chw_write(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw)))
 		return 1;
 	return (i2chw_read(M41T81_ADDRESS_R, b, n));

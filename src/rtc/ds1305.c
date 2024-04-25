@@ -40,18 +40,6 @@ static void ds1305_readbuff(
 	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, NULL, 0, data, len);
 }
 
-static void ds1305_readbuff_low(
-	uint8_t * data,
-	uint_fast8_t len,
-	uint_fast8_t addr		// Addr
-	)
-{
-	const spitarget_t target = targetrtc1;		/* addressing to chip */
-	const uint8_t cmd = addr & 0x7F;	// D7=0: read mode
-
-	prog_spi_io_low(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, NULL, 0, data, len);
-}
-
 static void ds1305_writebuff(
 	const uint8_t * data,
 	uint_fast8_t len,
@@ -255,28 +243,6 @@ void board_rtc_getdatetime(
 	uint8_t b [7];
 
 	ds1305_readbuff(b, sizeof b / sizeof b[0], r);
-
-	* seconds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
-	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=1
-	* hour = ds1305_bcd2bin(b [2] & 0x3f, 0, 23);		// r=2
-	* dayofmonth = ds1305_bcd2bin(b [4] & 0x3f, 1, 31);		// r=4
-	* month = ds1305_bcd2bin(b [5] & 0x1f, 1, 12);		// r=5
-	* year = 2000 + ds1305_bcd2bin(b [6], 0, 99);		// r=6
-}
-
-void board_rtc_getdatetime_low(
-	volatile uint_fast16_t * year,
-	volatile uint_fast8_t * month,	// 01-12
-	volatile uint_fast8_t * dayofmonth,
-	volatile uint_fast8_t * hour,
-	volatile uint_fast8_t * minute,
-	volatile uint_fast8_t * seconds
-	)
-{
-	const uint_fast8_t r = DS1305REG_TIME;
-	uint8_t b [7];
-
-	ds1305_readbuff_low(b, sizeof b / sizeof b[0], r);
 
 	* seconds = ds1305_bcd2bin(b [0] & 0x7f, 0, 59);	// r=0
 	* minute = ds1305_bcd2bin(b [1] & 0x7f, 0, 59);	// r=1
