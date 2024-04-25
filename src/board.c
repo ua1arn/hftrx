@@ -9402,12 +9402,12 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
-	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
 	// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
 	// targetxad2 - external SPI device (PA BOARD ADC)
 	//BOARD_ADCX0BASE - индексы менше этого относятся ко встроенным АЦП процесосра
+	ASSERT(adci < HARDWARE_ADCINPUTS);
 	if (adci < BOARD_ADCX0BASE || adci >= BOARD_ADCMRRBASE)
 	{
 		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
@@ -9466,28 +9466,12 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue_low(uint_fast8_t adci)
 {
-	static const struct
-	{
-		uint8_t ch;
-		uint8_t diff;
-	} xad2xlt [8] =
-	{
-			{	0, 0, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
-			{	1, 0, },
-			{	2, 0, },
-			{	3, 0, },
-			{	4, 0, },
-			{	5, 0, },
-			{	6, 0, },
-			{	7, 0, },
-	};
-
-	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
 	// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
 	// targetxad2 - external SPI device (PA BOARD ADC)
 	//BOARD_ADCX0BASE - индексы менше этого относятся ко встроенным АЦП процесосра
+	ASSERT(adci < HARDWARE_ADCINPUTS);
 	if (adci < BOARD_ADCX0BASE || adci >= BOARD_ADCMRRBASE)
 	{
 		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
@@ -9511,7 +9495,7 @@ adcvalholder_t board_getadc_unfiltered_truevalue_low(uint_fast8_t adci)
 #if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
-		adcvalholder_t rv = mcp3208_read_low(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
+		adcvalholder_t rv = mcp3208_read_low(targetxad2, 0, ch, & valid);
 		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
 		return rv;
 #else /* defined (targetxad2) */
@@ -10225,70 +10209,18 @@ mcp3208_read(
 
 	enum { LSBPOS = 0 };
 
-#if WITHSPILOWSUPPORTT || 1
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	uint8_t txbuf [4];
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
-
 	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-
 	rv = USBD_peek_u32_BE(rxbuf);
-
-#elif WITHSPI32BIT
-
-	hardware_spi_connect_b32(MCP3208_SPISPEED, MCP3208_SPISMODE);
-	prog_select(target);
-	local_delay_us(MCP3208_usCsDelay);
-
-	hardware_spi_b32_p1((uint_fast32_t) cmd1 << (LSBPOS + 14));
-	rv = hardware_spi_complete_b32();
-
-	prog_unselect(target);
-	hardware_spi_disconnect();
-	local_delay_us(MCP3208_usCsDelay);
-
-
-#elif WITHSPI16BIT
-
-	uint_fast16_t v0, v1;
-
-	hardware_spi_connect_b16(MCP3208_SPISPEED, MCP3208_SPISMODE);
-	prog_select(target);
-	local_delay_us(MCP3208_usCsDelay);
-
-	hardware_spi_b16_p1((uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
-	v0 = hardware_spi_complete_b16();
-	hardware_spi_b16_p1(0);
-	v1 = hardware_spi_complete_b16();
-
-	prog_unselect(target);
-	hardware_spi_disconnect();
-	local_delay_us(MCP3208_usCsDelay);
-
-	rv = ((uint_fast32_t) v0 << 16) | v1;
-
-#else
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
-	uint8_t txbuf [4];
-	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
-
-	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
-
-	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-
-	rv = USBD_peek_u32_BE(rxbuf);
-
-#endif
-
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
 }
 
-#if WITHSPILOWSUPPORTT || 1
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read_low(
@@ -10331,8 +10263,6 @@ mcp3208_read_low(
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
 }
-
-#endif /* WITHSPILOWSUPPORTT */
 
 #else
 
