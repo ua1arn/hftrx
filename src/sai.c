@@ -3937,7 +3937,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		}
 		else
 		{
-			i2s->I2Sn_CLKD = 0;
+			i2s->I2Sn_CLKD = 0xFF;
 		}
 #endif
 		i2s->I2Sn_CHCFG =
@@ -4044,7 +4044,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	}
 	else
 	{
-		i2s->I2S_PCM_CLKD = 0;
+		i2s->I2S_PCM_CLKD = 0xFF;
 	}
 
 	const unsigned txrx_offset = 1;		// I2S format
@@ -4154,7 +4154,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	}
 	else
 	{
-		i2s->I2S_PCM_CLKD = 0;
+		i2s->I2S_PCM_CLKD = 0xFF;
 	}
 
 	const unsigned txrx_offset = 1;		// I2S format
