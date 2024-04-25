@@ -3915,23 +3915,30 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			0;
 		i2s->I2Sn_FMT1 = 0;
 #if 0
-		// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
-		// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
-		// (pin P2-6) lrck = 53 khz
-		// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
-		// BCLK = MCLK / BCLKDIV
-		/* PI0 H_I2S0_MCLK pin 32	*/
-		/* PI1 H_I2S0_BCLK pin 31 */
-		const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
-		const unsigned mclkdiv = clk / mclkf;
-		const unsigned bclkdiv = clk / bclkf;
-		PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
-		PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
-		i2s->I2Sn_CLKD =
-			!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
-			ratio2div(mclkdiv) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-			ratio2div(bclkdiv) * (UINT32_C(1) << 4) |		/* BCLKDIV */
-			0;
+		if (master)
+		{
+			// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
+			// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
+			// (pin P2-6) lrck = 53 khz
+			// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
+			// BCLK = MCLK / BCLKDIV
+			/* PI0 H_I2S0_MCLK pin 32	*/
+			/* PI1 H_I2S0_BCLK pin 31 */
+			const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
+			const unsigned mclkdiv = clk / mclkf;
+			const unsigned bclkdiv = clk / bclkf;
+			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
+			PRINTF("need mclkdiv=%u, bclkdiv=%u\n", mclkdiv, bclkdiv);
+			i2s->I2Sn_CLKD =
+				!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
+				ratio2div(mclkdiv) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+				ratio2div(bclkdiv) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+				0;
+		}
+		else
+		{
+			i2s->I2Sn_CLKD = 0;
+		}
 #endif
 		i2s->I2Sn_CHCFG =
 			(NSLOTS - 1) * (UINT32_C(1) << 4) |	// RX_CHAN_NUM
@@ -4023,15 +4030,22 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	const unsigned bclkdiv = clk / bclkf;
 
 
-	const unsigned mclkratio = 2; //1;
-	const unsigned bclkratio = 8; //256 / framebits;
-	i2s->I2S_PCM_CLKD =
-		!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
-		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
-		0;
+	if (master)
+	{
+		const unsigned mclkratio = 2; //1;
+		const unsigned bclkratio = 8; //256 / framebits;
+		i2s->I2S_PCM_CLKD =
+			!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
+			ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+			ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+			0;
 
-	PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
+		PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
+	}
+	else
+	{
+		i2s->I2S_PCM_CLKD = 0;
+	}
 
 	const unsigned txrx_offset = 1;		// I2S format
 
@@ -4126,15 +4140,22 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	const unsigned bclkdiv = clk / bclkf;
 
 
-	const unsigned mclkratio = 1;
-	const unsigned bclkratio = 256 / framebits;
-	i2s->I2S_PCM_CLKD =
-		!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
-		ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
-		ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
-		0;
+	if (master)
+	{
+		const unsigned mclkratio = 1;
+		const unsigned bclkratio = 256 / framebits;
+		i2s->I2S_PCM_CLKD =
+			!! master * (UINT32_C(1) << 8) |		// MCLKO_EN
+			ratio2div(mclkratio) * (UINT32_C(1) << 0) |		/* MCLKDIV */
+			ratio2div(bclkratio) * (UINT32_C(1) << 4) |		/* BCLKDIV */
+			0;
 
-	//PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
+		//PRINTF("I2S%u: MCLKDIV=%u, BCLKDIV=%u, framebits=%u\n", ix, mclkratio, bclkratio, framebits);
+	}
+	else
+	{
+		i2s->I2S_PCM_CLKD = 0;
+	}
 
 	const unsigned txrx_offset = 1;		// I2S format
 
