@@ -2298,7 +2298,8 @@ void hwaccel_bitblt(
 	else
 	{
 		// для случая когда горизонтальные пиксели в видеопямяти источника располагаются подряд
-		if (tdx == sdx && sw == GXADJ(sdx))
+		// и копируется полностью окно
+		if (tdx == sdx && sw == GXADJ(sdx) && tdy == sh)
 		{
 			const size_t len = (size_t) GXSIZE(sdx, sdy) * sizeof * src;
 			// ширина строки одинаковая в получателе и источнике
@@ -2306,8 +2307,9 @@ void hwaccel_bitblt(
 		}
 		else
 		{
+			// Копируем построчно
 			const size_t len = sw * sizeof * src;
-			while (sdy --)
+			while (sh --)
 			{
 				memcpy(dst, src, len);
 				src += GXADJ(sdx);
