@@ -618,17 +618,10 @@
 } while (0)
 
 
-#define TARGET_ENC2BTN_BIT (UINT32_C(1) << 6)	// PE6 - second encoder button with pull-up
-
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
 	//#define TARGET_POWERBTN_BIT 0//(UINT32_C(1) << 8)	// PAxx - ~CPU_POWER_SW signal
-
-#if WITHENCODER2
-	// P7_8
-	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
-#endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
@@ -636,8 +629,6 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-		arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
-		/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ /* PE6: pull-up second encoder button */ \
 		/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */\
 		/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 	} while (0)
@@ -1091,10 +1082,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (0) //(((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
-			/*arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); *//* set as input with pull-up */ \
-		} while (0)
+	#define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
@@ -1106,7 +1094,6 @@
 		HARDWARE_DCDC_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
-		BOARD_USERBOOT_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 
