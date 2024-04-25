@@ -155,8 +155,8 @@
 	#define WITHUSBHW_EHCI_IRQ	USBH_EHCI_IRQn
 	#define WITHUSBHW_EHCI_IX	0
 
-	#define WITHUSBHW_OHCI		USB1_OHCI
-	#define WITHUSBHW_OHCI_IRQ	USB1HSFSP2_BASE
+	#define WITHUSBHW_OHCI		USB1HSFSP2_BASE
+	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
 	#define WITHUSBHW_OHCI_IX	0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -297,11 +297,11 @@
 			static einthandler_t h1; \
 			static einthandler_t h2; \
 			arm_hardware_piog_inputs(ENCODER_BITS); \
-			arm_hardware_piog_updown(_xMask, ENCODER_BITS, 0); \
+			arm_hardware_piog_updown(ENCODER_BITS, ENCODER_BITS, 0); \
 			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupt); \
 			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
-			arm_hardware_piog_updown(_xMask, ENCODER2_BITS, 0); \
+			arm_hardware_piog_updown(ENCODER2_BITS, ENCODER2_BITS, 0); \
 			einthandler_initialize(& h2, 0*ENCODER2_BITS, spool_encinterrupt2); \
 			arm_hardware_piog_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
@@ -312,13 +312,13 @@
 	#define I2S2HW_SLAVE_INITIALIZE() do { \
 			SPI2->CFG2 |= SPI_CFG2_IOSWP; \
 			arm_hardware_piob_altfn2(1u << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-			arm_hardware_piob_updown(_xMask, 0, 1u << 12); \
+			arm_hardware_piob_updown(1u << 12, 0, 1u << 12); \
 			arm_hardware_piob_altfn2(1u << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
-			arm_hardware_piob_updown(_xMask, 0, 1u << 13); \
+			arm_hardware_piob_updown(1u << 13, 0, 1u << 13); \
 			arm_hardware_piob_altfn2(1u << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
-			arm_hardware_piob_updown(_xMask, 0, 1u << 15); \
+			arm_hardware_piob_updown(1u << 15, 0, 1u << 15); \
 			arm_hardware_piob_altfn2(1u << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
-			arm_hardware_piob_updown(_xMask, 0, 1u << 14); \
+			arm_hardware_piob_updown(1u << 14, 0, 1u << 14); \
 		} while (0)
 
 	#define I2S2HW_MASTER_INITIALIZE() do { \
@@ -333,13 +333,13 @@
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
 		arm_hardware_piob_inputs(1u << 12); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(_xMask, 0, 1u << 12); \
+		arm_hardware_piob_updown(1u << 12, 0, 1u << 12); \
 		arm_hardware_piob_inputs(1u << 13); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(_xMask, 0, 1u << 13); \
+		arm_hardware_piob_updown(1u << 13, 0, 1u << 13); \
 		arm_hardware_piob_inputs(1u << 15); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(_xMask, 0, 1u << 15); \
+		arm_hardware_piob_updown(1u << 15, 0, 1u << 15); \
 		arm_hardware_piob_inputs(1u << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(_xMask, 0, 1u << 14); \
+		arm_hardware_piob_updown(1u << 14, 0, 1u << 14); \
 	} while (0)
 
 #if WITHSAI1HW
@@ -352,7 +352,7 @@
 		arm_hardware_pioe_altfn20(1u << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
 		arm_hardware_pioe_altfn2(1u << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_pioe_altfn2(1u << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-		arm_hardware_pioe_updown(_xMask, 1u << 3, 0); \
+		arm_hardware_pioe_updown(1u << 3, 1u << 3, 0); \
 	} while (0)
 #endif /* WITHSAI1HW */
 
