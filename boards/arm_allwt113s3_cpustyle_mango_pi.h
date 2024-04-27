@@ -25,9 +25,6 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
 //#define WITHCAN0HW 1
 #define WITHCAN1HW 1
 
@@ -101,6 +98,9 @@
 
 #else /* WITHISBOOTLOADER */
 
+
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
 //	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
 //	#define WITHSDHC1HW	1		/* SDIO */
@@ -715,7 +715,46 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW || WITHTWIHW
+#if 1 && (WITHFLATLINK | WITHMIPIDSISHW)
+	// MangoPI mipi-dsi board diagnostics:
+	//	addr8bit=0x70, addr7bit=0x38
+	//	addr8bit=0x8A, addr7bit=0x45
+
+	// TWI2-SCK PD20 SCL
+	// TWI2-SDA PD21 SDA
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 20)		// TWI2-SCK PD20 SCL
+	#define TARGET_TWI_TWCK_PIN		(GPIOD->DATA)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOD, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOD, (v), 1 * (v)); } while (0)
+
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 21)		// TWI2-SDA PD21 SDA
+	#define TARGET_TWI_TWD_PIN		(GPIOD->DATA)
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOD, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOD, (v), 1 * (v)); } while (0)
+
+	// Инициализация битов портов ввода-вывода для программной реализации I2C
+	#define	TWISOFT_INITIALIZE() do { \
+			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+			arm_hardware_piod_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+		} while (0)
+	#define	TWISOFT_DEINITIALIZE() do { \
+			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* TWI2-SCK PD20 SCL */ \
+			arm_hardware_piod_inputs(TARGET_TWI_TWD);	/* TWI2-SDA PD21 SDA */ \
+		} while (0)
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	TWIHARD_INITIALIZE() do { \
+		arm_hardware_piod_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
+		arm_hardware_piod_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
+		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
+		arm_hardware_piod_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+		} while (0)
+	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+
+
+#elif WITHTWISW || WITHTWIHW
 	// TWI1-SCK PG8 SCL
 	// TWI1-SDA PG9 SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 8)		// TWI1-SCK PG8 SCL
