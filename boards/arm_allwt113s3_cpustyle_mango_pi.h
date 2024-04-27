@@ -715,8 +715,8 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1 && (WITHFLATLINK | WITHMIPIDSISHW)
-	// MangoPI mipi-dsi board diagnostics:
+#if (WITHTWISW || WITHTWIHW) && (WITHFLATLINK | WITHMIPIDSISHW)
+	// RaspberyPI mipi-dsi board diagnostics:
 	//	addr8bit=0x70, addr7bit=0x38
 	//	addr8bit=0x8A, addr7bit=0x45
 
