@@ -319,7 +319,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
 					(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
 					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-					(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
+					(((uint_fast32_t) (blue) << 0) &  0x00FF) \
 				) \
 			)
 		#define TFTALPHA(alpha, color24) \
