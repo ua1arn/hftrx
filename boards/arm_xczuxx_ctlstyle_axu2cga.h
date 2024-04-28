@@ -5,14 +5,14 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре ZYNQ 7000
+// Трансивер с DSP обработкой "Аист" на кастомной плате SV9 + Alinx AXU2CGA Petalinux, by RA4ASN
 
 #ifndef ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED
 #define ARM_XCZUXX_CTLSTYLE_AXU2CGA_H_INCLUDED 1
 
 	#if ! defined(XCZU2CG)
 		#error Wrong CPU selected. XCZU2CG expected
-	#endif /* ! defined(XCZU2) */
+	#endif /* ! defined(XCZU2CG) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -55,18 +55,16 @@
 
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 
-	//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-	#define DIRECT_61M440_X1	1
-	#define BANDSELSTYLERE_UPCONV32M	1	/* Up-conversion with working band .030..32 MHz */
+	#define DIRECT_122M88_X1			1	/* Тактовый генератор 122.880 МГц */
+	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 
 	// --- вариации прошивки, специфические для разных частот
 
-	//#define CTLREGMODE_NOCTLREG	1
-	#define CTLREGMODE_XCZU	1
-	#define WITHQRPBOARD_UA3REO	1
+//	#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_AXU2CGA_FULL	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -141,10 +139,10 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	#define WITHENCODER2	1		/* есть второй валкодер */
+	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
@@ -175,7 +173,7 @@
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
@@ -199,7 +197,7 @@
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
-	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
@@ -223,21 +221,28 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#define WITHRLEDECOMPRESS		1
 		#if 1
+//			#define WITHLVGL				1
 			#define WITHTOUCHGUI			1
 //			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		120
+			#define WITHAFGAINDEFAULT		150
 			#define WITHCPUTEMPERATURE		1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
-			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+//			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+//			#define WITHNMEA				1
+//			#define WITHLFM					1
+			#define DMABUFCLUSTER			32
+			#define WITHIQSHIFT				1
+//			#define DEFAULTDIALFREQ			12289000uL
+			#define WITHCPUFANPWM			1
+			#define WITHCPUTHERMOLEVEL		1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -327,9 +332,10 @@
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	#define TSC1_TYPE TSC_TYPE_GT911
-	#define TSC_RESET_BY_REG		1
+	//#define TSC1_TYPE TSC_TYPE_GT911
+	//#define TSC_RESET_BY_REG		1
 	//#define TSC1_TYPE TSC_TYPE_ILI2102
+	#define TSC1_TYPE TSC_TYPE_EVDEV
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
