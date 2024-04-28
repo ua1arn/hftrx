@@ -1105,8 +1105,8 @@
 #if WITHLTDCHW
 
 	// LCD FRM Control Register (Default Value: 0x0000_0000)
-	//#define TCON_FRM_MODE_VAL ((UINT32_C(1) << 31) | (UINT32_C(1) << 6) | (UINT32_C(0) << 5) | (UINT32_C(1) << 4))	// 16 bit panel connected
-	#define TCON_FRM_MODE_VAL ((UINT32_C(1) << 31) | (UINT32_C(0) << 6) | (UINT32_C(0) << 5)| (UINT32_C(0) << 4))	// 18 bit panel connected
+	//#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (UINT32_C(1) << 6) | (UINT32_C(0) << 5) | (UINT32_C(1) << 4))	// 16 bit panel connected
+	#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (UINT32_C(0) << 6) | (UINT32_C(0) << 5)| (UINT32_C(0) << 4))	// 18 bit panel connected
 	//#define TCON_FRM_MODE_VAL 0	// 24 bit panel
 
 	/* demode values: 0: static signal, 1: DE controlled */
