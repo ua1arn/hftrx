@@ -4981,6 +4981,79 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+#elif CTLREGMODE_AXU2CGA_FULL
+
+/* RMAINUMIT_SV9_AXU2CGA , дополнения для подключения трансвертора */
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	// registers chain control register
+	{
+		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
+		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
+		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
+
+		enum
+		{
+			HARDWARE_OPA2674I_FULLPOWER = 0x03,
+			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+			HARDWARE_OPA2674I_SHUTDOWN = 0x00
+		};
+		static const FLASHMEM uint_fast8_t powerxlat [] =
+		{
+			HARDWARE_OPA2674I_IDLEPOWER,
+			HARDWARE_OPA2674I_POWERCUTBACK,
+			HARDWARE_OPA2674I_FULLPOWER,
+		};
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [10] = { 0 };
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
+		const uint_fast8_t att_db = revbits8(glob_attvalue) >> 3;
+
+		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+
+		// DD42 SN74HC595PW
+		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
+		RBBIT(0036, xvrtr && glob_tx);		// D6 - XVR_TXMODE
+		RBBIT(0035, 0);			// D5: CTLSPARE2
+		RBBIT(0034, 0);			// D4: CTLSPARE1
+		RBBIT(0033, 0);			// D3: not used
+		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
+		RBBIT(0031, 0);			// D1: not used
+		RBBIT(0030, 0);			// D0: not used
+
+		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+		RBBIT(0020, ! (! xvrtr && glob_bandf != 0 && txgated));		// D0: включение подачи смещения на выходной каскад усилителя мощности
+
+		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
+		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBBIT(0013, glob_antenna);			/* D3: antenna 1-2 */
+		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
+		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
+
+		// DD28 SN74HC595PW рядом с DIN8
+
+		RBVAL(0003, 5, att_db);			// PE4302 attenuator
+		RBBIT(0002, ! glob_preamp);
+		RBBIT(0001, 1);					// not use
+		RBBIT(0000, 1);					//adc pga
+
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	}
+}
+
 #elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */

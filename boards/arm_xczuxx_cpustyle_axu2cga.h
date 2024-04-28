@@ -5,8 +5,7 @@
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
  *
- * Среда выполнения для ZYNQ Ultrascale+ - Linux
- * Alinx AXU2CGA, LTC2209, DAC904E
+ * Трансивер с DSP обработкой "Аист" на кастомной плате SV9 + Alinx AXU2CGA Petalinux, by RA4ASN
  *
  */
 
@@ -33,40 +32,45 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define USERFIRSTSBLOCK 0
-//#define WITHPS7BOARD_EBAZ4205 1
 
 enum {
-	XGPI0,	// G15 encoder2 bit A
-	XGPI1,	// H14 encoder2 bit B
-	XGPI2,	// F12 encoder2 button
-	XGPI3,	// B13 spi_miso
+	XGPI0,	// SPI0_MISO
+	XGPI1,	// ENC_PUULSES2_B
+	XGPI2,	// ENC_PUULSES2_A
+	XGPI3,	// ENC_PUULSES_B
+	XGPI4,	// ENC_PUULSES_A
+	XGPI5,	// ptt_input
+	XGPI6,	// adc_of
 };
 
 enum {
-	XGPO0,	// C14 cs_ctrl_int
-	XGPO1,	// A11 spi_mosi
-	XGPO2,	// A13 spi_sck
-	XGPO3,	// A12 cs_fram
-	XGPO4,	// B10 cs_adc
-	XGPO5,	// B10 cs_bands
+	XGPO0,	// SPI0_MOSI
+	XGPO1,	// SPI0_SCLK
+	XGPO2,	// ADC1CS
+	XGPO3,	// CSEXT1
+	XGPO4,	// CSCTL1
+	XGPO5,	// NVRAM_CS
+	XGPO6,	// ADC2CS
+	XGPO7,	// CSEXT2
+	XGPO8,	// CTL1OE
 };
 
-#define AXI_IQ_FTW_ADDR			0x8004a000
-#define AXI_IQ_FTW_SUB_ADDR		0x80045000
-#define AXI_IQ_RTS_ADDR			0x80042000
-#define AXI_MODEM_CTRL_ADDR		0x80049000
-#define AXI_IQ_FIFO_RX_ADDR		0x80041000
-#define AXI_IQ_FIFO_TX_ADDR		0x8004c000
-#define AXI_XGPI_ADDR			0x80046000
-#define AXI_XGPO_ADDR			0x80047000
-#define AXI_IQ_RX_COUNT_ADDR	0x80044000
-#define AXI_IQ_TX_COUNT_ADDR	0x8004d000
-#define AXI_ADI_ADDR			0x80040000
-#define AXI_FIFO_PHONES_ADDR	0x80043000
-#define AXI_FIR_RELOAD_ADDR		0x8004b000
-#define AXI_DCDC_PWM_ADDR		0x80048000
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR			0x8004a000
+#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR		0x80045000
+#define XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR			0x80042000
+#define XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR		0x80049000
+#define XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR			0x8004c000
+#define XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR			0x80060000
+#define XPAR_AUDIO_FIFO_PHONES_BASEADDR				0x80043000
+#define XPAR_AUDIO_FIFO_MIC_BASEADDR				0x8004e000
+#define XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR		0x80050000
+#define XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR			0x80044000
+#define XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR		0x8004b000
+#define XPAR_FAN_PWM_RX_BASEADDR					0x80048000
+#define AXI_XGPI_ADDR								0x80046000
+#define AXI_XGPO_ADDR								0x80047000
 
-#define CALIBRATION_IQ_FIR_RX_SHIFT		50
+#define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
 #define CALIBRATION_TX_SHIFT			25
 
@@ -78,6 +82,12 @@ enum {
 //#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
+#define LINUX_NMEA_FILE		"/dev/ttyPS1"
+#define LINUX_IQ_INT_FILE	"/dev/uio0"
+#define LINUX_PPS_INT_FILE	"/dev/uio1"
+#define LINUX_I2C_FILE		"/dev/i2c-0"
+#define LINUX_FB_FILE		"/dev/fb0"
+#define LINUX_TTY_FILE		"/dev/tty0"
 
 #if WITHISBOOTLOADER
 
@@ -286,10 +296,12 @@ enum {
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
+	#define ENCODER_BITA		XGPI2
+	#define ENCODER_BITB		XGPI1
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		XGPI0
-	#define ENCODER2_BITB		XGPI1
+	#define ENCODER2_BITA		XGPI4
+	#define ENCODER2_BITB		XGPI3
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -604,35 +616,35 @@ enum {
 
 #if WITHSPIHW || WITHSPISW
 
-	#define targetnvram		XGPO3	// nvram FM25L256
-	#define targetctl1		XGPO0
-	#define targetextctl	XGPO5
+	#define targetctl1		XGPO4
+	#define targetctl1OE	XGPO8
+	#define targetnvram		XGPO5
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		gpio_writepin((target), 0); \
+		switch (target) { \
+			case targetctl1: { gpio_writepin(targetctl1, 0); gpio_writepin(targetctl1OE, 0); } break; \
+			default: { gpio_writepin(target, 0); } break; \
+		} \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		gpio_writepin((target), 1); \
+		gpio_writepin(target, 1); \
 	} while (0)
-
-	#define SPI_ALLCS_DISABLE() \
-		do { \
-			gpio_writepin(targetnvram, 1);		\
-			gpio_writepin(targetextctl, 1);		\
-		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
+			gpio_writepin(targetctl1OE, 1); \
+			gpio_writepin(targetctl1, 1); \
+			gpio_writepin(targetnvram, 1); \
 		} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	XGPO2
-	#define	SPI_MOSI_MIO 	XGPO1
-	#define	SPI_MISO_MIO 	XGPI3
+	#define	SPI_SCLK_MIO 	XGPO1
+	#define	SPI_MOSI_MIO 	XGPO0
+	#define	SPI_MISO_MIO 	XGPI0
 
 	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)
 	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); } while (0)
@@ -1033,5 +1045,7 @@ enum {
 			BOARD_USERBOOT_INITIALIZE(); \
 			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
+
+#define HARDWARE_DEBUG_FLUSH()	do {} while(0)
 
 #endif /* ARM_XCZUXX_CPUSTYLE_AXU2CGA_H_INCLUDED */
