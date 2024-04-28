@@ -2847,6 +2847,9 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 
 #if WITHDSIHW
 
+//	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
+//	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
+
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {

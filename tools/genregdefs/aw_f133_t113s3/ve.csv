@@ -4,6 +4,7 @@
 #irqrv; VE 82
 
 # See also https://linux-sunxi.org/VE_Register_guide
+# (sunxi-cedar 1c0e000.ve)
 
 #regdef; VE_CTRL; 0x000;
 #regdef; VE_VERSION; 0x0f0;
