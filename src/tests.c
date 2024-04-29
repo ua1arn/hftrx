@@ -13644,7 +13644,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0
+#if 0 && LCDMODE_COLORED
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 	// тест интерфейса дисплея - цветов RGB565
