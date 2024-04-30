@@ -13660,7 +13660,7 @@ void hightests(void)
 			for (;;)
 			{
 				{
-					// Solid WHITE
+					// Solid BLACK
 					c = UINT8_C(0);
 					display_setbgcolor(TFTRGB(c, c, c));
 					display2_bgreset();
@@ -13668,7 +13668,8 @@ void hightests(void)
 					local_delay_ms(1000);
 				}
 				{
-					c = UINT8_C(0x03);
+					// Solid WHITE
+					c = UINT8_C(0xFF);
 					display_setbgcolor(TFTRGB(c, c, c));
 					display2_bgreset();
 					display_nextfb();
