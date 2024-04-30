@@ -13685,8 +13685,22 @@ void hightests(void)
 				display_nextfb();
 				local_delay_ms(50);
 			}
+			continue;
 		}
-		//continue;
+		if (0)
+		{
+			for (c = 0; c < 8; ++ c)
+			{
+				display_setbgcolor(TFTRGB(UINT8_C(1) << c, UINT8_C(1) << c, UINT8_C(1) << c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(2000);
+			}
+			continue;
+		}
 		for (c = 0; c < (8 - rSkip); ++ c)
 		{
 			display_setbgcolor(TFTRGB(UINT8_C(1) << (c + rSkip), 0, 0));
