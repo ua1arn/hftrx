@@ -13657,11 +13657,25 @@ void hightests(void)
 		int c;
 		if (0)
 		{
-			// Solid WHITE
-			display_setbgcolor(TFTRGB(UINT8_C(255), UINT8_C(255), UINT8_C(255)));
-			display2_bgreset();
-			display_nextfb();
-			local_delay_ms(5000);
+			for (;;)
+			{
+				{
+					// Solid WHITE
+					c = UINT8_C(0);
+					display_setbgcolor(TFTRGB(c, c, c));
+					display2_bgreset();
+					display_nextfb();
+					local_delay_ms(1000);
+				}
+				{
+					c = UINT8_C(0x03);
+					display_setbgcolor(TFTRGB(c, c, c));
+					display2_bgreset();
+					display_nextfb();
+					local_delay_ms(1000);
+				}
+
+			}
 		}
 		if (0)
 		{
