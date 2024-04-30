@@ -13655,22 +13655,38 @@ void hightests(void)
 		enum { rSkip = 0, gSkip = 0, bSkip = 0 };
 		char b [32];
 		int c;
-		// COLORPIP_T bg
-//		for (c = 0; c < 256; ++ c)
-//		{
-//			display_setbgcolor(TFTRGB(c, c, c));
-//			display2_bgreset();
-//			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-//			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-//			display_at(0, 0, b);
-//			display_nextfb();
-//			local_delay_ms(50);
-//		}
-		//for (; c -- > 0; )
-		//{
-		//	display_setbgcolor(TFTRGB(c, c, c));
-		//	display2_bgreset();
-		//}
+		if (0)
+		{
+			// Solid WHITE
+			display_setbgcolor(TFTRGB(UINT8_C(255), UINT8_C(255), UINT8_C(255)));
+			display2_bgreset();
+			display_nextfb();
+			local_delay_ms(5000);
+		}
+		if (0)
+		{
+			for (c = 0; c < 256; ++ c)
+			{
+				display_setbgcolor(TFTRGB(c, c, c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(50);
+			}
+			for (; -- c > 0; )
+			{
+				display_setbgcolor(TFTRGB(c, c, c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(50);
+			}
+		}
+		//continue;
 		for (c = 0; c < (8 - rSkip); ++ c)
 		{
 			display_setbgcolor(TFTRGB(UINT8_C(1) << (c + rSkip), 0, 0));
