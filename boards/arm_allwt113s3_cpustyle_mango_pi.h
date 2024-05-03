@@ -717,7 +717,7 @@
 
 #if (WITHTWISW || WITHTWIHW) && (WITHFLATLINK | WITHMIPIDSISHW)
 	// RaspberyPI mipi-dsi board diagnostics:
-	//	addr8bit=0x70, addr7bit=0x38
+	//	addr8bit=0x70, addr7bit=0x38 - looks like Capacitive Touch Panel Controller FT5406 www.focaltech-systems.com
 	//	addr8bit=0x8A, addr7bit=0x45
 
 	// TWI2-SCK PD20 SCL
