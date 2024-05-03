@@ -333,8 +333,8 @@
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	#define TSC1_TYPE TSC_TYPE_GT911
+	#define TSC1_TYPE TSC_TYPE_EVDEV
+	//#define TSC1_TYPE TSC_TYPE_GT911
 	//#define TSC1_TYPE TSC_TYPE_ILI2102
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */

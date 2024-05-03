@@ -656,6 +656,10 @@ void linux_subsystem_init(void)
 	linux_xgpio_init();
 	linux_iq_init();
 
+#if CPUSTYLE_XCZU
+	reg_write(0x80070000, (124 << 16 | 1535));
+#endif
+
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
