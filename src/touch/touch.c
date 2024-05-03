@@ -541,26 +541,4 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV */
 
-#if WITHLVGL && 0
-
-#include "lv_drivers/indev/evdev.h"
-
-void board_tsc_indev_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
-{
-	uint_fast16_t x, y;
-
-	if(drv->type == LV_INDEV_TYPE_POINTER)
-	{
-		if (board_tsc_getxy(& x, & y))
-			data->state = LV_INDEV_STATE_PR;
-		else
-			data->state = LV_INDEV_STATE_REL;
-
-		data->point.x = x;
-		data->point.y = y;
-	}
-}
-
-#endif /* WITHLVGL */
-
 #endif /* defined (TSC1_TYPE) */
