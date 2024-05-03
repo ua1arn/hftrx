@@ -911,8 +911,8 @@
 	// TCON0_TRM_CTL_REG offset 0x0010
 	// User manual:
 	// LCD FRM Control Register (Default Value: 0x0000_0000)
-	//#define TCON_FRM_MODE_VAL ((1u << 31) | (1u << 6) | (0u << 5) | (1u << 4))	// 16 bit panel connected
-	#define TCON_FRM_MODE_VAL ((1u << 31) | (0u << 6) | (0u << 5)| (0u << 4))	// 18 bit panel connected
+	//#define TCON_FRM_MODE_VAL 0//((1u << 31) | (1u << 6) | (0u << 5) | (1u << 4))	// 16 bit panel connected
+	#define TCON_FRM_MODE_VAL 0//((1u << 31) | (0u << 6) | (0u << 5)| (0u << 4))	// 18 bit panel connected
 	//#define TCON_FRM_MODE_VAL 0	// 24 bit panel
 
 	/* demode values: 0: static signal, 1: DE controlled */

@@ -4,10 +4,15 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// STM32xxx LCD-TFT Controller (LTDC)
+
+// STM32xxx
+//	LCD-TFT Controller (LTDC)
 // RENESAS Video Display Controller 5
 //	Video Display Controller 5 (5): Image Synthesizer
 //	Video Display Controller 5 (7): Output Controller
+// Allwinner
+//	DE (Display Engine)
+//	TCON (Timing Controller)
 
 #include "hardware.h"
 #include "formats.h"	// for debug prints
@@ -2357,9 +2362,11 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
 
 #if WITHLVDSHW || WITHDSIHW
+    CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
 #endif /* WITHLVDSHW || WITHDSIHW */
 
+    CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
 
@@ -2622,8 +2629,6 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
 
-//	PRINTF("TCONLCD_PTR:\n");
-//	printhex32(TCON_LCD0_BASE, (void* ) TCON_LCD0_BASE, sizeof * TCONLCD_PTR);
 	// timing0 (window)
 	TCONLCD_PTR->LCD_BASIC0_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
@@ -2643,9 +2648,6 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
-
-//	PRINTF("TCONLCD_PTR:\n");
-//	printhex32(TCON_LCD0_BASE, (void* ) TCON_LCD0_BASE, sizeof * TCONLCD_PTR);
 }
 
 // Step4 - Open IO output
@@ -2846,6 +2848,9 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 }
 
 #if WITHDSIHW
+
+//	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
+//	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
 
 // What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
@@ -3225,6 +3230,11 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 	ltdc_tfcon_cfg(vdmode);
 
 	hardware_de_initialize(vdmode);
+}
+
+void
+hardware_ltdc_deinitialize(void)
+{
 }
 
 /* ожидаем начало кадра */

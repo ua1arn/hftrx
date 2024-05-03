@@ -13644,35 +13644,83 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_MAIN_RGB565
+#if 0 && LCDMODE_COLORED
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 	// тест интерфейса дисплея - цветов RGB565
 	for (;;)
 	{
+		// Palette parameters
+		//enum { rSkip = 3, gSkip = 2, bSkip = 3 };
+		enum { rSkip = 0, gSkip = 0, bSkip = 0 };
 		char b [32];
 		int c;
-		// COLORPIP_T bg
-//		for (c = 0; c < 256; ++ c)
-//		{
-//			display_setbgcolor(TFTRGB(c, c, c));
-//			display2_bgreset();
-//			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-//			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-//			display_at(0, 0, b);
-//			display_nextfb();
-//			local_delay_ms(50);
-//		}
-		//for (; c -- > 0; )
-		//{
-		//	display_setbgcolor(TFTRGB(c, c, c));
-		//	display2_bgreset();
-		//}
-		for (c = 0; c < 5; ++ c)
+		if (0)
 		{
-			display_setbgcolor(TFTRGB(UINT32_C(1) << (c + 3), 0, 0));
+			for (;;)
+			{
+				{
+					// Solid BLACK
+					c = UINT8_C(0);
+					display_setbgcolor(TFTRGB(c, c, c));
+					display2_bgreset();
+					display_nextfb();
+					local_delay_ms(1000);
+				}
+				{
+					// Solid WHITE
+					c = UINT8_C(0xFF);
+					display_setbgcolor(TFTRGB(c, c, c));
+					display2_bgreset();
+					display_nextfb();
+					local_delay_ms(1000);
+				}
+
+			}
+		}
+		if (0)
+		{
+			for (c = 0; c < 256; ++ c)
+			{
+				display_setbgcolor(TFTRGB(c, c, c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(50);
+			}
+			for (; -- c > 0; )
+			{
+				display_setbgcolor(TFTRGB(c, c, c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(50);
+			}
+			continue;
+		}
+		if (0)
+		{
+			for (c = 0; c < 8; ++ c)
+			{
+				display_setbgcolor(TFTRGB(UINT8_C(1) << c, UINT8_C(1) << c, UINT8_C(1) << c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(2000);
+			}
+			continue;
+		}
+		for (c = 0; c < (8 - rSkip); ++ c)
+		{
+			display_setbgcolor(TFTRGB(UINT8_C(1) << (c + rSkip), 0, 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3u"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13683,11 +13731,11 @@ void hightests(void)
 		//	display_setbgcolor(TFTRGB(c, 0, 0));
 		//	display2_bgreset();
 		//}
-		for (c = 0; c < 6; ++ c)
+		for (c = 0; c < (8 - gSkip); ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, UINT32_C(1) << (c + 2), 0));
+			display_setbgcolor(TFTRGB(0, UINT8_C(1) << (c + gSkip), 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3u"), 1u << (c + 2));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13698,11 +13746,11 @@ void hightests(void)
 		//	display_setbgcolor(TFTRGB(0, c, 0));
 		//	display2_bgreset();
 		//}
-		for (c = 0; c < 5; ++ c)
+		for (c = 0; c < (8 - bSkip); ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, 0, UINT32_C(1) << (c + 3)));
+			display_setbgcolor(TFTRGB(0, 0, UINT8_C(1) << (c + bSkip)));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3u"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
