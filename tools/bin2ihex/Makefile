@@ -1,6 +1,15 @@
+CC=gcc
+CFLAGS=-I.
+
+OBJ = getopt.o bin2ihex.o
+
 all : bin2ihex
 
-bin2ihex : bin2ihex.o getopt.o
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+bin2ihex: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean :
-	rm bin2ihex.o getopt.o bin2ihex
+	rm -f *.o bin2ihex
