@@ -106,7 +106,6 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
-	//#define WITHLVGL			1
 #endif /* WITHISBOOTLOADER */
 
 #if WITHISBOOTLOADER
@@ -333,8 +332,8 @@
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	#define TSC1_TYPE TSC_TYPE_GT911
+	#define TSC1_TYPE TSC_TYPE_EVDEV
+	//#define TSC1_TYPE TSC_TYPE_GT911
 	//#define TSC1_TYPE TSC_TYPE_ILI2102
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */

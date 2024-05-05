@@ -1,6 +1,15 @@
+CC=gcc
+CFLAGS=-I.
+
+OBJ = getopt.o stm32image.o
+
 all : stm32image
 
-stm32image : getopt.o stm32image.o
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+stm32image: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean :
-	rm getopt.o stm32image.o stm32image
+	rm -f *.o stm32image

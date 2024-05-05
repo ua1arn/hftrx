@@ -3561,7 +3561,7 @@ typedef struct {
 
 #if WITHVIEW_3DSS
 enum {
-#if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 	MAX_3DSS_STEP = 70,
 #else
 	MAX_3DSS_STEP = 42,
@@ -5971,10 +5971,6 @@ display_walktrough(
 	dctx_t * pctx
 	)
 {
-#if WITHLVGL
-	return;
-#endif /* WITHLVGL */
-
 #if LINUX_SUBSYSTEM
 	if (key != REDRM_INIS)
 		return;
@@ -6004,7 +6000,7 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
-#if LINUX_SUBSYSTEM || WITHLVGL
+#if LINUX_SUBSYSTEM
 		return;
 
 #elif STMD
@@ -6055,10 +6051,6 @@ display_walktroughsteps(
 // выполнение шагов state machine отображения дисплея
 void display2_bgprocess(void)
 {
-#if WITHLVGL
-	return;
-#endif /* WITHLVGL */
-
 #if LINUX_SUBSYSTEM
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	uint8_t dpage = REDRSUBSET(amenuset());
@@ -6111,10 +6103,6 @@ void display2_bgprocess(void)
 // сброс state machine отображения дисплея и очистить дисплей
 void display2_bgreset(void)
 {
-#if WITHLVGL
-	return;
-#endif /* WITHLVGL */
-
 	uint_fast8_t i;
 
 	// очистить дисплей.
@@ -6662,20 +6650,3 @@ COLORPIP_T display2_get_spectrum(int x)
 }
 
 #endif /* WITHTOUCHGUI */
-
-#if LINUX_SUBSYSTEM && WITHLVGL
-
-void wfl_init(void)
-{
-	display2_wfl_init(0, 0, NULL);
-}
-
-uint32_t * wfl_proccess(void)
-{
-	display2_clearbg(0, 0, NULL);
-	display2_latchwaterfall(0, 0, NULL);
-	display2_spectrum(0, 0, NULL);
-	return getscratchwnd();
-}
-
-#endif /* LINUX_SUBSYSTEM && WITHLVGL */

@@ -787,6 +787,10 @@ prog_gpioreg(void)
 	xc7z_writepin(TARGET_OPA2674_CTRL_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+
+#if LINUX_SUBSYSTEM
+	xcz_rxtx_state(glob_tx);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 /* 
@@ -4983,7 +4987,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #elif CTLREGMODE_AXU2CGA_FULL
 
-/* RMAINUMIT_SV9_AXU2CGA , дополнения для подключения трансвертора */
+/* RMAINUNIT_SV9_AXU2CGA , дополнения для подключения трансвертора */
 
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
@@ -5015,7 +5019,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		rbtype_t rbbuff [10] = { 0 };
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
 		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
-		const uint_fast8_t att_db = revbits8(glob_attvalue) >> 3;
 
 		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
 		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
@@ -5045,10 +5048,10 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD28 SN74HC595PW рядом с DIN8
 
-		RBVAL(0003, 5, att_db);			// PE4302 attenuator
-		RBBIT(0002, ! glob_preamp);
-		RBBIT(0001, 1);					// not use
-		RBBIT(0000, 1);					//adc pga
+		RBVAL(0003, glob_attvalue, 5);	// PE4302 attenuator
+		RBBIT(0002, 0);
+		RBBIT(0001, 0);					// not use
+		RBBIT(0000, glob_preamp);		// adc pga
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}

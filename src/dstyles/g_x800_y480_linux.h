@@ -85,7 +85,6 @@ void wait_iq(
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
-#if ! WITHLVGL
 		{	0,	0,	display2_clearbg, 	REDRM_ALL, PG1, },
 		{	0,	0,	display2_keyboard_screen0,	REDRM_ALL, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	display2_rxbwval6alt,	REDRM_ALL, PG0, },	// RX BW value
@@ -141,7 +140,6 @@ void wait_iq(
 		{	0,	DLES,	gui_WM_walkthrough,	REDRM_ALL, PG1, },
 
 		{	0,	0,	display2_nextfb, 	REDRM_ALL, PG1, },
-#endif /* ! WITHLVGL */
 	};
 
 #if WITHMENU
