@@ -342,8 +342,7 @@
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 
 	// FPGA section
-	// FPGA section
-	#define FPGA_ARTIX7	1
+	//#define FPGA_ARTIX7	1
 	//#define WITHFPGAWAIT_ARTIX7	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 
 	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"	// для WITHFPGAPIPE_CODEC1
@@ -542,7 +541,7 @@
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	//#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define DDS1_TYPE DDS_TYPE_FPGA_NONE
 	//#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
@@ -566,7 +565,7 @@
 
 	//#define WITHWFM	1			/* используется WFM */
 
-	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+	//#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 
