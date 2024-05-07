@@ -173,6 +173,8 @@ void linux_pps_thread(void * args)
 
 /******************************************************************/
 
+#if ! WITHLVGL
+
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
 volatile uint32_t * fbp = 0;
@@ -250,6 +252,8 @@ void framebuffer_close(void)
     munmap((uint32_t *) fbp, screensize);
     close(ttyd);
 }
+
+#endif
 
 /********************** EMIO ************************/
 
@@ -652,6 +656,14 @@ void linux_subsystem_init(void)
 
 	linux_xgpio_init();
 	linux_iq_init();
+
+#if 0 //CPUSTYLE_XCZU
+	reg_write(0x80070000, (124 << 16 | 1535));
+#endif
+
+#if WITHLVGL
+	lvgl_init();
+#endif /* WITHLVGL */
 }
 
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
@@ -705,6 +717,10 @@ void linux_user_init(void)
 
 	ct_iq = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	linux_init_cond(ct_iq);
+
+#if WITHLVGL
+	lvgl_test();
+#endif /* WITHLVGL */
 }
 
 void linux_wait_iq(void)
@@ -964,7 +980,7 @@ uint_fast8_t dummy_getchar(char * cp)
 
 // ********************** EVDEV Touch ******************************
 
-#if (TSC1_TYPE == TSC_TYPE_EVDEV)
+#if (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL
 
 int evdev_fd = -1;
 
@@ -1004,7 +1020,7 @@ void evdev_initialize(void)
     fcntl(evdev_fd, F_SETFL, O_ASYNC | O_NONBLOCK);
 }
 
-#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) */
+#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
 
 // *****************************************************************
 
@@ -1014,7 +1030,9 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
+#if ! WITHLVGL
 	framebuffer_close();
+#endif /* WITHLVGL */
 
 #if 0
 	linux_cancel_thread(timer_spool_t);
