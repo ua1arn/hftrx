@@ -32,7 +32,7 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
 
-void xcz_resetn_modem_state(uint8_t val);
+void xcz_resetn_modem(uint8_t val);
 void ft8_thread(void);
 void lvgl_init(void);
 void lvgl_test(void);
@@ -441,7 +441,7 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
 static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 30;
+const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
 static struct cond_thread * ct_iq = NULL;
 
@@ -490,6 +490,15 @@ void linux_iq_thread(void)
 			* ph_fifo = b[i];
 
 		release_dmabuffer16tx(addr2);
+
+		const uintptr_t addr = getfilled_dmabuffer32tx();
+		uint32_t * t = (uint32_t *) addr;
+
+		for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
+			* iq_fifo_tx = t[i];
+
+		release_dmabuffer32tx(addr);
+
 		rx_stage -= CNT16TX;
 	}
 
@@ -505,14 +514,6 @@ void linux_iq_thread(void)
 
 		save_dmabuffer16rx(addr_mic);
 	}
-
-	const uintptr_t addr = getfilled_dmabuffer32tx();
-	uint32_t * t = (uint32_t *) addr;
-
-	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		* iq_fifo_tx = t[i];
-
-	release_dmabuffer32tx(addr);
 
 	if (ct_iq)
 		safe_cond_signal(ct_iq);
@@ -651,17 +652,13 @@ void linux_subsystem_init(void)
 
 	linux_xgpio_init();
 	linux_iq_init();
-
-#if CPUSTYLE_XCZU
-	reg_write(0x80070000, (124 << 16 | 1535));
-#endif
 }
 
 pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
 
 void linux_user_init(void)
 {
-	xcz_resetn_modem_state(0);
+	xcz_resetn_modem(0);
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
@@ -704,7 +701,7 @@ void linux_user_init(void)
 	linux_create_thread(& pps_t, linux_pps_thread, 90, 1);
 #endif /* WITHNMEA && WITHLFM */
 
-	xcz_resetn_modem_state(1);
+	xcz_resetn_modem(1);
 
 	ct_iq = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	linux_init_cond(ct_iq);
@@ -741,7 +738,7 @@ void update_modem_ctrl(void)
 	* modem_ctrl = v;
 }
 
-void xcz_resetn_modem_state(uint8_t val)
+void xcz_resetn_modem(uint8_t val)
 {
 	resetn_modem = val != 0;
 	update_modem_ctrl();

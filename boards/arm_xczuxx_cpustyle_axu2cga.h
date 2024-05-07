@@ -72,7 +72,7 @@ enum {
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
-#define CALIBRATION_TX_SHIFT			25
+#define CALIBRATION_TX_SHIFT			27
 
 //#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 //#define WITHUARTFIFO	1	/* испольование FIFO */
