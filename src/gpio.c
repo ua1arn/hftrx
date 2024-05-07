@@ -559,6 +559,7 @@ void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t
 #endif /* CPUSTYLE_R7S721001 */
 
 static void (* r7s721_IRQn_user [8])(void);
+static void * r7s721_IRQn_user_ctx [8];
 
 static void r7s721_IRQn_IRQHandler(void)
 {
@@ -568,35 +569,35 @@ static void r7s721_IRQn_IRQHandler(void)
 		enum { irq = 0 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]));
 	}
 	else if ((irqrr & (1U << 1)) != 0)
 	{
 		enum { irq = 1 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 2)) != 0)
 	{
 		enum { irq = 2 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 3)) != 0)
 	{
 		enum { irq = 3 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 4)) != 0)
 	{
 		enum { irq = 4 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 5)) != 0)
 	{
@@ -610,14 +611,14 @@ static void r7s721_IRQn_IRQHandler(void)
 		enum { irq = 6 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 7)) != 0)
 	{
 		enum { irq = 7 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else
 	{
@@ -634,9 +635,10 @@ static void r7s721_IRQn_IRQHandler(void)
 	11: Interrupt request is detected on both edges of IRQn input
 */
 
-void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void))
+void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void), void * ctx)
 {
 	r7s721_IRQn_user [irq] = vector;
+	r7s721_IRQn_user_ctx [irq] = ctx;
 
 	INTC.ICR1 = (INTC.ICR1 & ~ (0x03uL << (irq * 2))) |
 		(edge << (irq * 2)) |

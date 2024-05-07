@@ -620,7 +620,7 @@ void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t 
 void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);	// RZ/A1H
 void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);	// RZ/A1H
 
-void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void), void * ctx);
 
 #if (CPUSTYLE_ALLWINNER || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_VM14)
 	/*!< Atomic port state change */
