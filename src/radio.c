@@ -16070,7 +16070,7 @@ processmessages(
 	releasemsgbuffer(buff);
 }
 
-#if WITHTX
+#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
@@ -16090,6 +16090,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 }
 
 #else
+
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
 	return 0;

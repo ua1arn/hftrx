@@ -3950,6 +3950,89 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
+
+
+#elif CTLREGMODE_VELICI_V0
+
+/* T507-H portable trx */
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
+	//prog_rfadc_update();			// AD9246 vref divider update
+	// registers chain control register
+	{
+		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
+		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
+		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
+
+		enum
+		{
+			HARDWARE_OPA2674I_FULLPOWER = 0x03,
+			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+			HARDWARE_OPA2674I_SHUTDOWN = 0x00
+		};
+		static const FLASHMEM uint_fast8_t powerxlat [] =
+		{
+			HARDWARE_OPA2674I_IDLEPOWER,
+			HARDWARE_OPA2674I_POWERCUTBACK,
+			HARDWARE_OPA2674I_FULLPOWER,
+		};
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [8] = { 0 };
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
+
+		// TUNWER/PA
+		/* 7 indictors, 8 capacitors */
+		RBVAL8(0060, glob_tuner_C);
+
+		// TUNWER/PA
+		RBBIT(0057, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0050, glob_tuner_L, 7);
+
+		// TUNWER/PA
+		//RBBIT(0067, 0);	// UNUSED
+		RBBIT(0046, 0);	// undefined
+		RBBIT(0045, glob_classamode);	// class A
+		RBBIT(0044, glob_rxantenna);	// RX ANT
+		RBBIT(0043, ! glob_tuner_bypass);	// Energized - tuner on
+		RBBIT(0042, ! glob_classamode);	// hi power out
+		RBBIT(0041, txgated);	//
+		RBBIT(0040, glob_fanflag || txgated);	// fan
+
+		// TUNWER/PA
+		RBBIT(0037, glob_antenna);	// Ant A/B
+		RBVAL(0030, 1U << glob_bandf2, 7);	// LPF6..LPF0
+
+		// DD22 SN74HC595PW
+		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+		RBBIT(0020, glob_poweron);		// power_hold
+
+		// DD21 SN74HC595PW
+		RBVAL(0016, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBVAL(0014, glob_att, 2);			/* D5:D4: 12 dB and 6 dB attenuator control */
+		RBBIT(0013, 0);			/* D3: unused */
+		RBBIT(0012, (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0011, (glob_bandf == 0));		// D1: средневолновый ФНЧ - управление реле на входе фильтров
+
+		// DD20 SN74HC595PW
+		RBBIT(0005, glob_tx);		//PTT_OUT
+		RBBIT(0004, 0);				// DIN8_TUNCONTROL
+		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
+
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	}
+}
+
 #elif CTLREGMODE_YO6POC
 
 /* YO6POC board */
@@ -8889,6 +8972,7 @@ adcvalholder_t board_getswrmeter_unfiltered(
 	return board_getadc_unfiltered_truevalue(FWD);
 }
 
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 // возврат считанных с АЦП значений forward и reflected
 // коррекция неодинаковости детекторов
 adcvalholder_t board_getswrmeter(
@@ -8903,6 +8987,8 @@ adcvalholder_t board_getswrmeter(
 	* reflected = board_getadc_filtered_truevalue(REFMRRIX) * (unsigned long) swrcalibr / 100;		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
 	return board_getadc_filtered_truevalue(FWDMRRIX);
 }
+
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
