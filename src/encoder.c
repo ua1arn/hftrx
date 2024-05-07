@@ -318,16 +318,6 @@ encoderA_get_snapshot(
 	return encoder_get_snapshotproportional(& encoder1, speed, derate);
 }
 
-void spool_encinterrupt(void)
-{
-	spool_encinterrupts(& encoder1);
-}
-
-void spool_encinterrupt2(void)
-{
-	spool_encinterrupts(& encoder2);
-}
-
 /* получение количества шагов и скорости вращения. */
 int_least16_t
 encoderB_get_snapshot(

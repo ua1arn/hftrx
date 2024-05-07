@@ -536,9 +536,6 @@ void stm32mp1_pll1_slow(uint_fast8_t slow);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
-void spool_encinterrupt(void);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupt2(void);	/* прерывание по изменению сигнала на входах от валкодера #2 */
-
 void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
 void hardware_encoders_initialize(void);
 

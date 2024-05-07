@@ -10614,7 +10614,7 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
 		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+			spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
@@ -10653,7 +10653,7 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	#if WITHENCODER && defined (ENCODER_BITS)
 		if ((state & (ENCODER_BITS)) != 0) // re-enable interrupt from PIO
 		{
-			spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+			spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 		}
 	#endif /* WITHENCODER && defined (ENCODER_BITS) */
 	#if WITHELKEY && defined (ELKEY_BIT_LEFT) && defined (ELKEY_BIT_RIGHT)
@@ -10686,12 +10686,12 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 
 	ISR(INT0_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 	}
 
 	ISR(INT1_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 	}
 
 

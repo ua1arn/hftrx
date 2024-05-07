@@ -109,7 +109,7 @@ void * linux_encoder_spool(void * args)
 {
 	while(1)
 	{
-		spool_encinterrupt();
+		spool_encinterrupts(& encoder1);
 		usleep(500);
 	}
 }

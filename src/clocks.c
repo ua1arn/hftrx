@@ -5118,12 +5118,12 @@ void hardware_spi_io_delay(void)
 
 	ISR(PORTC_INT0_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 	}
 
 	ISR(PORTC_INT1_vect)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера */
+		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
 	}
 
 	ISR(TCC0_CCA_vect)
