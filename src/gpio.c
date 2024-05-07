@@ -422,143 +422,147 @@ void arm_hardware_pio11_alternative(portholder_t iopins, unsigned alt)
 }
 #endif /* CPUSTYLE_R7S721001 */
 
+
+#if 0
 // pin change interrupts
-void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT0_IRQn, 2, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT0_IRQn, 2, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT0_IRQn, 2, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT0_IRQn, 2, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT2_IRQn, 4, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT2_IRQn, 4, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT2_IRQn, 6, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT2_IRQn, 6, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT6_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT6_IRQn, 16, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT8_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT8_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT22_IRQn, 10, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT22_IRQn, 10, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT24_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT24_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT32_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT32_IRQn, 16, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT40_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT40_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT48_IRQn, 8, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT48_IRQn, 8, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT56_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT56_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT56_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT56_IRQn, 16, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT72_IRQn, 11, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT72_IRQn, 11, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT72_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT72_IRQn, 16, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT83_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT83_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT88_IRQn, 12, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT88_IRQn, 12, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT99_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT99_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT100_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT100_IRQn, 16, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT115_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT115_IRQn, 16, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
 
-void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
 #if CPUSTYLE_R7S721020		// RZ/A1L
-	r7s721_pio_onchangeinterrupt(TINT116_IRQn, 6, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT116_IRQn, 6, ipins, edge, priority, vector, ctx);
 #elif CPUSTYLE_R7S721001	// RZ/A1H
-	r7s721_pio_onchangeinterrupt(TINT131_IRQn, 8, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT131_IRQn, 8, ipins, edge, priority, vector, ctx);
 #else 
 	#error Wrong CPUSTYLE_R7S721xxx
 #endif
 }
+
+#endif
 
 #if CPUSTYLE_R7S721001	// RZ/A1H
 
-void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
-	r7s721_pio_onchangeinterrupt(TINT139_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT139_IRQn, 16, ipins, edge, priority, vector, ctx);
 }
 
-void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector)
+void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx)
 {
-	r7s721_pio_onchangeinterrupt(TINT155_IRQn, 16, ipins, edge, priority, vector);
+	r7s721_pio_onchangeinterrupt(TINT155_IRQn, 16, ipins, edge, priority, vector, ctx);
 }
 
 #endif /* CPUSTYLE_R7S721001 */
 
-static void (* r7s721_IRQn_user [8])(void);
+static void (* r7s721_IRQn_user [8])(void * ctx);
 static void * r7s721_IRQn_user_ctx [8];
 
 static void r7s721_IRQn_IRQHandler(void)
@@ -569,7 +573,7 @@ static void r7s721_IRQn_IRQHandler(void)
 		enum { irq = 0 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]));
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 1)) != 0)
 	{
@@ -604,7 +608,7 @@ static void r7s721_IRQn_IRQHandler(void)
 		enum { irq = 5 };
 		INTC.IRQRR = (uint16_t) ~ (UINT16_C(1) << irq);
 		ASSERT(r7s721_IRQn_user [irq] != NULL);
-		(* r7s721_IRQn_user [irq])();
+		(* r7s721_IRQn_user [irq])(r7s721_IRQn_user_ctx [irq]);
 	}
 	else if ((irqrr & (1U << 6)) != 0)
 	{
@@ -635,7 +639,7 @@ static void r7s721_IRQn_IRQHandler(void)
 	11: Interrupt request is detected on both edges of IRQn input
 */
 
-void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void), void * ctx)
+void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void * ctx), void * ctx)
 {
 	r7s721_IRQn_user [irq] = vector;
 	r7s721_IRQn_user_ctx [irq] = ctx;
