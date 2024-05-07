@@ -178,7 +178,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 	#define BOARD_GT911_INT_PIN 	64
 	#define BOARD_GT911_RESET_PIN 	65
 

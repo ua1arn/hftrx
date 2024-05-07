@@ -249,7 +249,7 @@ static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
 }
 
 void
-stmpe811_interrupt_handler(void)
+stmpe811_interrupt_handler(void * ctx)
 {
 	tsc_int = 1;
 }

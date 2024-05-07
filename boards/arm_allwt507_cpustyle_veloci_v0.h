@@ -271,13 +271,13 @@
 			static einthandler_t h2; \
 			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER_BITS, GPIO_CFG_EINT); \
 			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupt); \
+			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/* Second tining encoder */ \
 			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER2_BITS, GPIO_CFG_EINT); \
 			arm_hardware_piod_inputs(BOARD_GPIOD_ENCODER2_BITS); \
 			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupt2); \
+			einthandler_initialize(& h2, BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piod_onchangeinterrupt(0*BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
@@ -1116,7 +1116,7 @@
 		//	tsc SCL: XS26, pin 01
 		//	tsc SDA: XS26, pin 02
 
-		void stmpe811_interrupt_handler(void);
+		void stmpe811_interrupt_handler(void * ctx);
 
 		#define BOARD_GPIOA_STMPE811_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
 
@@ -1135,7 +1135,7 @@
 		//	tsc SCL: XS26, pin 01
 		//	tsc SDA: XS26, pin 02
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 
 		#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
 		#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 4)			/* PA10 : tsc/LCD reset, XS26, pin 22 */

@@ -257,10 +257,10 @@
 		static einthandler_t h2; \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, 0); \
-		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupt); \
+		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & h1); \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupt2); \
+		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, 0); \
 		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & h2); \
 	} while (0)
@@ -999,7 +999,7 @@
 	//	tsc SCL: XS26, pin 01
 	//	tsc SDA: XS26, pin 02
 
-	void stmpe811_interrupt_handler(void);
+	void stmpe811_interrupt_handler(void * ctx);
 
 	#define BOARD_GPIOE_STMPE811_INT_PIN (UINT32_C(1) << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
 
@@ -1016,7 +1016,7 @@
 	/* PE9 TS_INT */
 	/* PD22 FPLCD_RESET */
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 
 	#define BOARD_GPIOE_GT911_INT_PIN (UINT32_C(1) << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
 	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */

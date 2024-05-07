@@ -1059,7 +1059,7 @@ void user_uart5_ontxchar(void * ctx);
 		//	tsc SCL: XS26, pin 01
 		//	tsc SDA: XS26, pin 02
 
-		void stmpe811_interrupt_handler(void);
+		void stmpe811_interrupt_handler(void * ctx);
 
 		#define BOARD_GPIOA_STMPE811_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
 
@@ -1077,7 +1077,7 @@ void user_uart5_ontxchar(void * ctx);
 		//	tsc SCL: XS26, pin 01
 		//	tsc SDA: XS26, pin 02
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 
 		#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
 		#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 4)			/* PA10 : tsc/LCD reset, XS26, pin 22 */

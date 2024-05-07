@@ -265,7 +265,7 @@
 		static einthandler_t h2; \
 		arm_hardware_piog_altfn20(BOARD_GPIOG_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piog_updown(BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, 0); \
-		einthandler_initialize(& h2, BOARD_GPIOG_ENCODER2_BITS, spool_encinterrupt2); \
+		einthandler_initialize(& h2, BOARD_GPIOG_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_piog_onchangeinterrupt(0 * BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, BOARD_GPIOG_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 	} while (0)
 
@@ -1082,7 +1082,7 @@
 	//	tsc SCL: XS26, pin 01
 	//	tsc SDA: XS26, pin 02
 
-	void stmpe811_interrupt_handler(void);
+	void stmpe811_interrupt_handler(void * ctx);
 
 	#define BOARD_GPIOE_STMPE811_INT_PIN (UINT32_C(1) << 12)		// PE12
 
@@ -1098,7 +1098,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911 || TSC1_TYPE == TSC_TYPE_ILI2102)
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 
 
 	#define BOARD_GPIOE_GT911_INT_PIN (UINT32_C(1) << 12)		// PE12

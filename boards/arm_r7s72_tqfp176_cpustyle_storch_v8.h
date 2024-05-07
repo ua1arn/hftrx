@@ -915,7 +915,7 @@
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 		#define BOARD_GT911_RESET_PIN (1uL << 15)	/* P5_15 : reset */
 		#define BOARD_GT911_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
 
@@ -940,7 +940,7 @@
 	#endif
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-		void stmpe811_interrupt_handler(void);
+		void stmpe811_interrupt_handler(void * ctx);
 
 		#define BOARD_STMPE811_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
 

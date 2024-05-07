@@ -16,10 +16,12 @@
 
 static VLIST_ENTRY einthead [26];	// a..z lists
 
-void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler)
+void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler, void * ctx)
 {
 	eih->mask = mask;
 	eih->handler = handler;
+	eih->ctx = ctx;
+
 }
 
 /* Вызов обработчика для указанных битов порта */
@@ -35,7 +37,7 @@ gpioX_invokeinterrupt(
 		ASSERT(t != NULL);
 		einthandler_t * const p = CONTAINING_RECORD(t, einthandler_t, item);
 		if (p->mask & mask)
-			p->handler();
+			p->handler(p->ctx);
 	}
 }
 
@@ -708,7 +710,8 @@ void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 
 
 /* адреса функций - обработчиков на каждый GPIO/EMIO */
-static void (* gpio_vectors [ZYNQ_MIO_CNT + 2 * 32])(void);
+static void (* gpio_vectors [ZYNQ_MIO_CNT + 2 * 32])(void * ctx);
+static void * gpio_vectors_ctx [ZYNQ_MIO_CNT + 2 * 32];
 
 void GPIO_IRQHandler(void)
 {
@@ -725,12 +728,12 @@ void GPIO_IRQHandler(void)
 		{
 			ZYNQ_IORW32(int_stat) = mask;
 			ASSERT(gpio_vectors [pin] != NULL);
-			(* gpio_vectors [pin])();
+			(* gpio_vectors [pin])(gpio_vectors_ctx [pin]);
 		}
 	}
 }
 
-void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu)
+void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu)
 {
 	const portholder_t bank = GPIO_PIN2BANK(pin);
 	const portholder_t mask = GPIO_PIN2MASK(pin);
@@ -747,10 +750,11 @@ void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t prior
 	ZYNQ_IORW32(int_en) = mask;
 
 	gpio_vectors [pin] = handler;
+	gpio_vectors_ctx [pin] = ctx;
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
-void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu)
+void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu)
 {
 	const portholder_t bank = GPIO_PIN2BANK(pin);
 	const portholder_t mask = GPIO_PIN2MASK(pin);
@@ -769,10 +773,11 @@ void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void), uint32_t prior
 	ZYNQ_IORW32(int_en) = mask;
 
 	gpio_vectors [pin] = handler;
+	gpio_vectors_ctx [pin] = ctx;
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
-void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu)
+void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu)
 {
 	const portholder_t bank = GPIO_PIN2BANK(pin);
 	const portholder_t mask = GPIO_PIN2MASK(pin);
@@ -791,6 +796,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 	ZYNQ_IORW32(int_en) = mask;
 
 	gpio_vectors [pin] = handler;
+	gpio_vectors_ctx [pin] = ctx;
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
@@ -10224,31 +10230,31 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 #if WITHENCODER && defined (ENCODER_BITS)
 	if ((pr & ENCODER_BITS) != 0)
 	{
-		spool_encinterrupt();	/* прерывание по изменению сигнала на входах от валкодера #1*/
+		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера #1*/
 	}
 #endif /* WITHENCODER && defined (ENCODER_BITS) */
 #if WITHENCODER2 && defined (ENCODER2_BITS)
 	if ((pr & ENCODER2_BITS) != 0)
 	{
-		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
+		//spool_encinterrupts(& encoder2);	/* прерывание по изменению сигнала на входах от валкодера #2*/
 	}
 #endif /* WITHENCODER && ENCODER2_BITS */
 #if BOARD_GT911_INT_PIN
 	if ((pr & BOARD_GT911_INT_PIN) != 0)
 	{
-		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		gt911_interrupt_handler(NULL);	/* прерывание по изменению сигнала на входе от тач */
 	}
 #endif /* BOARD_GT911_INT_PIN */
 #if BOARD_STMPE811_INT_PIN
 	if ((pr & BOARD_STMPE811_INT_PIN) != 0)
 	{
-		stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		stmpe811_interrupt_handler(NULL);	/* прерывание по изменению сигнала на входе от тач */
 	}
 #endif /* BOARD_STMPE811_INT_PIN */
 #if WITHLFM && BOARD_PPSIN_BIT
 	if ((pr & BOARD_PPSIN_BIT) != 0)
 	{
-		spool_nmeapps();	/* прерывание по изменению сигнала на входе от PPS */
+		spool_nmeapps(NULL);	/* прерывание по изменению сигнала на входе от PPS */
 	}
 #endif /* WITHLFM && BOARD_PPSIN_BIT */
 }
@@ -10620,13 +10626,13 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	#if BOARD_GT911_INT_PIN
 		if ((state & BOARD_GT911_INT_PIN) != 0)
 		{
-			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+			gt911_interrupt_handler(NULL);	/* прерывание по изменению сигнала на входе от тач */
 		}
 	#endif /* BOARD_GT911_INT_PIN */
 	#if BOARD_STMPE811_INT_PIN
 		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
 		{
-			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+			stmpe811_interrupt_handler(NULL);	/* прерывание по изменению сигнала на входе от тач */
 		}
 	#endif /* BOARD_STMPE811_INT_PIN */
 	}
@@ -10659,13 +10665,13 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	#if BOARD_GT911_INT_PIN
 		if ((state & BOARD_GT911_INT_PIN) != 0)
 		{
-			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+			gt911_interrupt_handler(NULL);	/* прерывание по изменению сигнала на входе от тач */
 		}
 	#endif /* BOARD_GT911_INT_PIN */
 	#if BOARD_STMPE811_INT_PIN
 		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
 		{
-			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+			stmpe811_interrupt_handler(NULL);	/* прерывание по изменению сигнала на входе от тач */
 		}
 	#endif /* BOARD_STMPE811_INT_PIN */
 	}

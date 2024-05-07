@@ -92,7 +92,7 @@
 	#define NMEA_INITIALIZE() do { \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 1); \
 		gpio_input2(BOARD_PPSIN_BIT, pinmode_input); 													\
-		gpio_onrisinginterrupt(BOARD_PPSIN_BIT, spool_nmeapps, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);	\
+		gpio_onrisinginterrupt(BOARD_PPSIN_BIT, spool_nmeapps, NULL, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);	\
 	} while (0)
 
 #endif /* WITHNMEA */
@@ -257,7 +257,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 	#define BOARD_GT911_INT_PIN 	46
 	#define BOARD_GT911_RESET_PIN 	39
 

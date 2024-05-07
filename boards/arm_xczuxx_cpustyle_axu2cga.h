@@ -205,7 +205,7 @@ enum {
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 
 #if TSC_RESET_BY_REG
 	void board_tsc_reset_state(uint_fast8_t v);

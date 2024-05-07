@@ -259,7 +259,7 @@
 			/* arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ5, both edges */ \
 			/* arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ6, both edges */ \
 			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
-			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupt); \
+			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ3, both edges */ \
 			arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ4, both edges */ \
 		} while (0)

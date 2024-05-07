@@ -310,7 +310,7 @@ void nmeagnss_initialize(void)
 // Обработчик вызывается при приходе очередного импульса PPS
 void
 RAMFUNC_NONILINE
-spool_nmeapps(void)
+spool_nmeapps(void * ctx)
 {
 	//th = nmea_time;
 #if WITHLFM

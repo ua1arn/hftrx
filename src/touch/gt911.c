@@ -35,7 +35,7 @@ static void gt911_io_initialize(void)
 static volatile uint_fast8_t tsc_int = 0;
 
 void
-gt911_interrupt_handler(void)
+gt911_interrupt_handler(void * ctx)
 {
 	tsc_int = 1;
 }

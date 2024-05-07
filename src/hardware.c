@@ -16,6 +16,7 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
+#include "encoder.h"
 //#include "buffers.h"
 
 #if WITHRTOS

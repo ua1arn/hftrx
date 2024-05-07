@@ -222,7 +222,7 @@
 
 	//#define WITH_GT911_INTERRUPTS	1
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 	#define BOARD_GT911_INT_PIN 	TARGET_TS_INT_EMIO
 	#define BOARD_GT911_RESET_PIN 	TARGET_FPLCD_RESET_EMIO
 
@@ -236,7 +236,7 @@
 
 	#define BOARD_GT911_INT_CONNECT() do { \
 		xc7z_gpio_input(TARGET_TS_INT_EMIO); \
-		gpio_onrisinginterrupt(TARGET_TS_INT_EMIO, gt911_interrupt_handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		gpio_onrisinginterrupt(TARGET_TS_INT_EMIO, gt911_interrupt_handler, NULL, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 
 #endif
@@ -324,8 +324,8 @@
 		gpio_input2(TARGET_ENC2_A_EMIO, pinmode_emio); \
 		gpio_input2(TARGET_ENC2_B_EMIO, pinmode_emio); \
 		gpio_input2(TARGET_ENC2_BUTTON_EMIO, pinmode_emio); \
-		gpio_onchangeinterrupt(TARGET_ENCODER_A_EMIO, spool_encinterrupt, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-		gpio_onchangeinterrupt(TARGET_ENCODER_B_EMIO, spool_encinterrupt, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+		gpio_onchangeinterrupt(TARGET_ENCODER_A_EMIO, spool_encinterrupts, & encoder1, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+		gpio_onchangeinterrupt(TARGET_ENCODER_B_EMIO, spool_encinterrupts, & encoder1, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 	} while (0)
 
 //arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);

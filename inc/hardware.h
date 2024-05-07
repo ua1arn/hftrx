@@ -553,8 +553,8 @@ uint_fast8_t hardware_get_encoder6_bits(void);	/* Состояние фазы A 
 #define ENCODER_PRIORITY ARM_OVERREALTIME_PRIORITY
 #define ENCODER_TARGETCPU TARGETCPU_OVRT
 
-void gt911_interrupt_handler(void);
-void stmpe811_interrupt_handler(void);
+void gt911_interrupt_handler(void * ctx);
+void stmpe811_interrupt_handler(void * ctx);
 
 void hardware_adc_initialize(void);
 
@@ -679,7 +679,7 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
-void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
+void spool_nmeapps(void * ctx);	// Обработчик вызывается при приходе очередного импульса PPS
 
 // получить прескалер и значение для программирования таймера
 uint_fast8_t

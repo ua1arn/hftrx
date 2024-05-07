@@ -247,53 +247,6 @@
 
 #endif /* WITHISBOOTLOADER */
 
-#define LS020_RS				(0)
-#define LS020_RS_SET(v) 		do { } while (0)
-
-#define LS020_RS_INITIALIZE() do { \
-	} while (0)
-
-#define LS020_RESET				(0)
-#define LS020_RESET_SET(v) 		do { } while (0)
-
-#define LS020_RESET_INITIALIZE() do { \
-	} while (0)
-
-#if WITHENCODER
-
-	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER_BITA		(UINT32_C(1) << 10)		// PD10 not use
-	#define ENCODER_BITB		(UINT32_C(1) << 11)		// PD11 not use
-
-	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(gpioX_getinputs(GPIOD))
-	#define ENCODER2_BITA		(UINT32_C(1) << 20)		// PD20
-	#define ENCODER2_BITB		(UINT32_C(1) << 22)		// PD22
-
-	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
-	#define BOARD_GPIOD_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_GPIOD_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
-
-	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
-	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
-
-	#define ENCODER_INITIALIZE() do { \
-			static einthandler_t h1; \
-			static einthandler_t h2; \
-			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupt); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
-			/*arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER2_BITS, GPIO_CFG_EINT); */ \
-			arm_hardware_piod_inputs(BOARD_GPIOD_ENCODER2_BITS); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, 0*BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupt2); \
-			arm_hardware_piod_onchangeinterrupt(0*BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
-		} while (0)
-
-#endif
-
 	#define I2S0HW_INITIALIZE(master) do { \
 		/*arm_hardware_pioi_altfn50(UINT32_C(1) << 0,	GPIO_CFG_AF4); *//* PI0 H_I2S0_MCLK	*/ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 2,	GPIO_CFG_AF4); /* PI2 H_I2S0_LRCK	*/ \
@@ -880,15 +833,17 @@
 
 	// PD28 - DC-DC synchro output
 	// PWM0 AF2
-	#define	HARDWARE_DCDC_INITIALIZE() do { \
+	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
 		arm_hardware_piod_altfn2((UINT32_C(1) << 28), GPIO_CFG_AF2); /* PD28 - PWM0 */ \
+		arm_hardware_piod_outputs((UINT32_C(1) << 28), (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
-	#define	HARDWARE_DCDC_INITIALIZE() do { \
+	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
+		arm_hardware_piod_outputs((UINT32_C(1) << 28), (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		(void) (f); \
@@ -922,11 +877,11 @@
 
 
 #define HARDWARE_TP_INIT() do { \
-		const portholder_t TE = (1uL << 7);	/* PC7 (TE) - panel pin 29 Sync signal from driver IC */ \
-		const portholder_t OTP_PWR = (1uL << 7);	/* PD7 (CTRL - OTP_PWR) - panel pin 30 */ \
+		const portholder_t TE = (UINT32_C(1) << 7);	/* PC7 (TE) - panel pin 29 Sync signal from driver IC */ \
+		const portholder_t OTP_PWR = (UINT32_C(1) << 7);	/* PD7 (CTRL - OTP_PWR) - panel pin 30 */ \
 		arm_hardware_pioc_inputs(TE); \
 		arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR); \
-		const portholder_t RESET = (1uL << 1);	/* PD1 = RESX_18 - pin  28 */ \
+		const portholder_t RESET = (UINT32_C(1) << 1);	/* PD1 = RESX_18 - pin  28 */ \
 		arm_hardware_piod_outputs(RESET, 0 * RESET); \
 		local_delay_ms(5); \
 		arm_hardware_piod_outputs(RESET, 1 * RESET); \
@@ -936,8 +891,8 @@
 //	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
 //	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
 #define HARDWARE_VIDEO_INIT() do { \
-		const portholder_t Video_RST = (1uL << 10);	/* PA10 */ \
-		const portholder_t Video_MODE = (1uL << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
+		const portholder_t Video_RST = (UINT32_C(1) << 10);	/* PA10 */ \
+		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
 		arm_hardware_piof_outputs(Video_MODE, Video_MODE); \
 		arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST); \
 		local_delay_ms(5); \
@@ -945,8 +900,8 @@
 	} while (0)
 
 #define HARDWARE_VODEO_DEINIT() do { \
-		const portholder_t Video_RST = (1uL << 10);	/* PA10 */ \
-		const portholder_t Video_MODE = (1uL << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
+		const portholder_t Video_RST = (UINT32_C(1) << 10);	/* PA10 */ \
+		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
 		arm_hardware_piof_outputs(Video_MODE, Video_MODE); \
 		arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);	/* RESET active */ \
 		local_delay_ms(5); \
@@ -1056,7 +1011,7 @@
 		//	tsc interrupt PD27
 		//	tsc reset PD26
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 
 		#define BOARD_GT911_INT_PIN 	(UINT32_C(1) << 27)
 		#define BOARD_GT911_RESET_PIN 	(UINT32_C(1) << 26)
@@ -1078,7 +1033,7 @@
 			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_GT911_INT_PIN); \
 			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, BOARD_GT911_INT_PIN, 0); \
-			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler); \
+			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler, NULL); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GT911_INT_PIN, 1*BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 		} while (0)
 		//gt911_interrupt_handler
@@ -1131,7 +1086,7 @@
 		BOARD_BLINK_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		/*HARDWARE_DAC_INITIALIZE(); */\
-		HARDWARE_DCDC_INITIALIZE(); \
+		HARDWARE_BACKLIGHT_INITIALIZE(); \
 		ETHERNET_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)

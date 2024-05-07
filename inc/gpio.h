@@ -14,15 +14,18 @@ extern "C" {
 /* Хранение битов чувствтиельности и соответствующего обработчитка для
  * прерываний от изменения состояния битов GPIO
  */
-typedef void (* eintcb_t)(void);
+typedef void (* eintcb_t)(void * ctx);
 typedef struct einthandler
 {
 	VLIST_ENTRY item;
 	portholder_t mask;
 	eintcb_t handler;
+	void * ctx;
 } einthandler_t;
 
-void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler);
+void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler, void * ctx);
+
+typedef struct encoder_tag encoder_t;
 
 #if CPUSTYLE_STM32MP1
 
@@ -261,9 +264,9 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 		GPIO_BANK_SET_DIRM(bank, mask, 0); \
 	} while (0)
 
-	void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
-	void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
-	void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
+	void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
+	void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
+	void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
 
 	// Enable output drive for pin
 	#define MIO_SET_TRI_ENABLE(pin, tri_enable) do { \

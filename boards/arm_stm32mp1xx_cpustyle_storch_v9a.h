@@ -298,11 +298,11 @@
 			static einthandler_t h2; \
 			arm_hardware_piog_inputs(ENCODER_BITS); \
 			arm_hardware_piog_updown(ENCODER_BITS, ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupt); \
+			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, 0*ENCODER2_BITS, spool_encinterrupt2); \
+			einthandler_initialize(& h2, 0*ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piog_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
@@ -1082,7 +1082,7 @@
 		//	tsc SCL: XS26, pin 01
 		//	tsc SDA: XS26, pin 02
 
-		void stmpe811_interrupt_handler(void);
+		void stmpe811_interrupt_handler(void * ctx);
 
 		#define BOARD_STMPE811_INT_PIN (1u << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
 
@@ -1100,7 +1100,7 @@
 		//	tsc SCL: XS26, pin 01
 		//	tsc SDA: XS26, pin 02
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 
 		#define BOARD_GT911_INT_PIN (1u << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
 		#define BOARD_GT911_RESET_PIN (1u << 4)	/* PD4 : tsc/LCD reset, XS26, pin 22 */

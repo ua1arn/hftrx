@@ -283,12 +283,12 @@
 			static einthandler_t h2; \
 			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER_BITS, GPIO_CFG_EINT); \
 			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupt); \
+			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/*arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_piod_inputs(BOARD_GPIOD_ENCODER2_BITS); \
 			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, 0*BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupt2); \
+			einthandler_initialize(& h2, 0*BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piod_onchangeinterrupt(0*BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
@@ -1060,7 +1060,7 @@
 		//	tsc interrupt PD27
 		//	tsc reset PD26
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 
 		#define BOARD_GT911_INT_PIN 	(UINT32_C(1) << 27)
 		#define BOARD_GT911_RESET_PIN 	(UINT32_C(1) << 26)
@@ -1082,7 +1082,7 @@
 			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_GT911_INT_PIN); \
 			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, BOARD_GT911_INT_PIN, 0); \
-			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler); \
+			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler, NULL); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GT911_INT_PIN, 1*BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 		} while (0)
 		//gt911_interrupt_handler
@@ -1192,7 +1192,7 @@
 		static einthandler_t h; \
 		arm_hardware_piod_altfn20(BOARD_PPSIN_BIT, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); /* pull-down */ \
-		einthandler_initialize(& h, BOARD_PPSIN_BIT, spool_nmeapps); \
+		einthandler_initialize(& h, BOARD_PPSIN_BIT, spool_nmeapps, NULL); \
 		arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, BOARD_PPSIN_BIT, 0, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 	} while (0)
 

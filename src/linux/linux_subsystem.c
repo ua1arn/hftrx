@@ -165,7 +165,7 @@ void linux_pps_thread(void * args)
             return;
         }
 
-        spool_nmeapps();
+        spool_nmeapps(NULL);
     }
 }
 
