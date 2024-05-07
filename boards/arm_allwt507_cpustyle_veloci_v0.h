@@ -550,12 +550,12 @@
 		} while (0)
 	// ---
 	// TUNE input - PD11
-	#define TUNE_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define TUNE_BIT_TUNE				(UINT32_C(1) << 6)		// PE6
+	#define TUNE_TARGET_PIN				gpioX_getinputs(GPIOA)
+	#define TUNE_BIT_TUNE				(UINT32_C(1) << 4)		// PA4
 	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TUNE_BIT_TUNE); \
-			arm_hardware_pioe_updown(TUNE_BIT_TUNE, TUNE_BIT_TUNE, 0); \
+			arm_hardware_pioa_inputs(TUNE_BIT_TUNE); \
+			arm_hardware_pioa_updown(TUNE_BIT_TUNE, TUNE_BIT_TUNE, 0); \
 		} while (0)
 
 #else /* WITHTX */
@@ -570,18 +570,21 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				(UINT32_C(1) << 4)		// PE4
-	#define ELKEY_BIT_RIGHT				(UINT32_C(1) << 5)		// PE5
+	#define ELKEY_BIT_LEFT				(UINT32_C(1) << 2)		// PA2
+	#define ELKEY_BIT_RIGHT				(UINT32_C(1) << 3)		// PA3
 
-	#define ELKEY_TARGET_PIN			gpioX_getinputs(GPIOE)
+	#define ELKEY_LEFT_TARGET_PIN			gpioX_getinputs(GPIOA)
+	#define ELKEY_RIGHT_TARGET_PIN			gpioX_getinputs(GPIOA)
 
-	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_LEFT_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_RIGHT_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
 
 
 	#define ELKEY_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_pioe_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_pioa_inputs(ELKEY_BIT_LEFT); \
+			arm_hardware_pioa_inputs(ELKEY_BIT_RIGHT); \
+			arm_hardware_pioa_updown(ELKEY_BIT_LEFT, ELKEY_BIT_LEFT, 0); \
+			arm_hardware_pioa_updown(ELKEY_BIT_RIGHT, ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
