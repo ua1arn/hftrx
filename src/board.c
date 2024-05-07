@@ -4020,13 +4020,13 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD21 SN74HC595PW
 		RBVAL(0016, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
 		RBVAL(0014, glob_att, 2);			/* D5:D4: 12 dB and 6 dB attenuator control */
-		RBBIT(0013, 0);			/* D3: unused */
+		//RBBIT(0013, 0);			/* D3: unused */
 		RBBIT(0012, (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, (glob_bandf == 0));		// D1: средневолновый ФНЧ - управление реле на входе фильтров
 
 		// DD20 SN74HC595PW
-		RBBIT(0005, glob_tx);		//PTT_OUT
-		RBBIT(0004, 0);				// DIN8_TUNCONTROL
+		RBBIT(0005, glob_tx);		// PTT_OUT
+		RBBIT(0004, 0);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
 		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
