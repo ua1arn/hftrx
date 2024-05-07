@@ -1161,21 +1161,23 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 4)	// PE4
+	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 4)	// PE4 BOOT_LED
+	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 5)	// PE5 FRONTLED_RED
+	#define BOARD_BLINK_BIT2 (UINT32_C(1) << 6)	// PE6 FRONTLED_GREEN
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_pioe_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
+		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		gpioX_setstate(GPIOE, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
+		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
 	} while (0)
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_GPIOA_USERBOOT_BIT	0//(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */
-	#define BOARD_IS_USERBOOT() 0//(((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_USERBOOT_BIT) == 0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
-		arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); /* set as input with pull-up */ \
-	} while (0)
+	#define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
@@ -1186,7 +1188,6 @@
 		HARDWARE_DCDC_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
-		BOARD_USERBOOT_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
 	} while (0)
 
