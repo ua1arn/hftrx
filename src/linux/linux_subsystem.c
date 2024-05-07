@@ -118,7 +118,7 @@ void * linux_encoder_spool(void * args)
 
 void linux_nmea_spool(void * args)
 {
-	const char * argv [5] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
+	const char * argv [] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
 	linux_run_shell_cmd(argv);
 
 	int num_read;
@@ -651,7 +651,7 @@ void linux_subsystem_init(void)
 {
 	char spid[6];
 	local_snprintf_P(spid, ARRAY_SIZE(spid), "%d", getpid());
-	const char * argv [5] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
+	const char * argv [] = { "/usr/bin/taskset", "-p", "1", spid, NULL, };
 	linux_run_shell_cmd(argv);
 
 	linux_xgpio_init();
@@ -1007,7 +1007,7 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 void evdev_initialize(void)
 {
-	const char * argv [3] = { "/sbin/modprobe", "gt911.ko", NULL, };
+	const char * argv [] = { "/sbin/modprobe", "gt911.ko", NULL, };
 	linux_run_shell_cmd(argv);
 	usleep(500000);
 
