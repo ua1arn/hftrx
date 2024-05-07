@@ -6,11 +6,11 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner T507
-// v5km7_ddc_sv9k_a53_R3.0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// Rrfboard_v0.pcb Allwinner T507, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 // HelperBoard T507 Core Board
 
-#ifndef ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED
+#define ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -693,4 +693,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED */
