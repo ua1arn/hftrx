@@ -3511,7 +3511,7 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif	/* LO1MODE_HYBRID */
 
-#if WITHDEBUG
+#if 1//WITHDEBUG
 	{
 		QLABEL("FORCEXVR"), 7, 3, RJ_YES,	ISTEP1,	/* принудительно включить коммутацию трансвертора */
 		ITEM_VALUE,

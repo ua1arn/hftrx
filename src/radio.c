@@ -3486,7 +3486,7 @@ filter_t fi_2p0_455 =
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /*  WITHTOUCHGUI */
 
-#if WITHDEBUG
+#if 1//WITHDEBUG
 	uint8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
 #endif /* WITHDEBUG */
 
@@ -3765,8 +3765,10 @@ static uint_fast8_t bandset2m = 1;	/* используется ли диапаз
 
 static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
 
-#if WITHDEBUG
+#if 1//WITHDEBUG
 static uint_fast8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
+#else
+	enum { gforcexvrtr = 0 };
 #endif /* WITHDEBUG */
 
 #if WITHUSEAUDIOREC
@@ -11520,6 +11522,7 @@ updateboardZZZ(
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
 		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
 		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
+		board_set_forcexvrtr(gforcexvrtr);
 		#if WITHMIC1LEVEL
 			board_set_mik1level(gmik1level);
 		#endif /* WITHMIC1LEVEL */
