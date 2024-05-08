@@ -1382,6 +1382,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // TODO: перекалибровать для FLASH контроллеров.
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
+	if (timeUS == 0)
+		return;
 #if LINUX_SUBSYSTEM
 	usleep(timeUS);
 #else

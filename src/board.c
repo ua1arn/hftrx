@@ -160,7 +160,7 @@ static uint_fast8_t		glob_attvalue;	// значение аттенюатора �
 static uint_fast8_t		glob_tsc_reset = 1;
 static uint_fast8_t		glob_showovf = 1;	/* Показ индикатора переполнения АЦП */
 
-static void prog_rfadc_update(void);
+static void prog_update_noplanes(void);
 
 // Send a frame of bytes via SPI
 static void
@@ -2652,9 +2652,6 @@ static void
 //NOINLINEAT
 prog_rxctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -2735,10 +2732,6 @@ static void
 //NOINLINEAT
 prog_rxctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t txgated = glob_tx && glob_txgate;
@@ -2854,12 +2847,6 @@ static void
 //NOINLINEAT
 prog_rxctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-#if WITHAUTOTUNEROWNSPI && WITHAUTOTUNER
-	prog_atuctlreg(targetatu1);		// Tuner control regiser
-#endif /* WITHAUTOTUNEROWNSPI && WITHAUTOTUNER */
 
 	// registers chain control register
 	{
@@ -2956,10 +2943,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3043,10 +3026,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3137,10 +3116,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3223,10 +3198,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3313,10 +3284,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3399,10 +3366,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3489,12 +3452,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-	prog_rfadc_update();			// AD9246 vref divider update
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3630,12 +3587,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-	//prog_rfadc_update();			// AD9246 vref divider update
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -3769,11 +3720,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
-	//prog_rfadc_update();			// AD9246 vref divider update
 	#if WITHAUTOTUNER_N7DDCEXT
 		const int n7ddcext = 1;
 	#else /* WITHAUTOTUNER_N7DDCEXT */
@@ -3962,11 +3908,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
-	//prog_rfadc_update();			// AD9246 vref divider update
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -4043,11 +3984,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
-	//prog_rfadc_update();			// AD9246 vref divider update
 	#if WITHAUTOTUNER_N7DDCEXT
 		const int n7ddcext = 1;
 	#else /* WITHAUTOTUNER_N7DDCEXT */
@@ -4234,12 +4170,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
-	//prog_rfadc_update();			// AD9246 vref divider update
-
 	// registers chain control register
 	{
 		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
@@ -4372,10 +4302,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	{
 		const spitarget_t target = targetctl1;
 		rbtype_t rbbuff [1] = { 0 };
@@ -4397,13 +4323,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-#if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send(NULL);
-#endif /* WITHAUTOTUNER_UA1CEI */
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -4438,14 +4357,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
-#if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send(NULL);
-#endif /* WITHAUTOTUNER_UA1CEI */
-
 	// registers chain control register
 	{
 		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
@@ -4493,10 +4404,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		const uint_fast8_t xvrtr = glob_bandf >= 11;
@@ -4537,10 +4444,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	// registers chain control register
 	{
 		enum { STARTNUX = 14 };
@@ -4815,8 +4718,6 @@ prog_rxctrlreg(uint_fast8_t plane)
 static void 
 prog_ctrlreg(uint_fast8_t plane)
 {
-	//const spitarget_t target = targetctl1;
-	prog_fpga_update(targetfpga1);
 }
 
 #elif CTLREGSTYLE_WDKP
@@ -4877,10 +4778,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
-
 	enum
 	{
 		HARDWARE_OPA2674I_FULLPOWER = 0x03,
@@ -4977,10 +4874,6 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-#if defined(DDS1_TYPE)
-	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
-
 	enum
 	{
 		HARDWARE_OPA2674I_FULLPOWER = 0x03,
@@ -5172,6 +5065,7 @@ board_update_rxctrlreg(void)
 static void 
 board_update_ctrlreg(void)
 {
+
 	uint_fast8_t plane;
 	for (plane = 0; plane < BOARD_NPLANES; ++ plane)
 		prog_ctrlreg(plane); 	/* управление приемником */
@@ -5184,6 +5078,7 @@ board_update_ctrlreg(void)
 static void board_update_initial(void)
 {
 	prog_gpioreg();
+	prog_update_noplanes();
 #if CTLREGMODE_RAVENDSP_V3 || CTLREGMODE_RAVENDSP_V4 || CTLREGMODE_RAVENDSP_V5
 	prog_ctldacreg();	/* регистр выбора ГУН, сброс DDS и ЦАП подстройки опорника */
 	board_update_rxctrlreg();
@@ -5239,6 +5134,8 @@ board_update(void)
 	{
 		flag_ctrlreg = 0;
 		prog_gpioreg();
+		prog_update_noplanes();
+
 		uint_fast8_t plane;
 		for (plane = 0; plane < BOARD_NPLANES; ++ plane)
 			prog_rxctrlreg(plane); 	/* управление приемником */
@@ -5254,6 +5151,7 @@ board_update(void)
 	{
 		flag_rxctrlreg = 0;
 		prog_gpioreg();
+		prog_update_noplanes();
 		board_update_rxctrlreg();
 	}
 #else
@@ -5261,6 +5159,7 @@ board_update(void)
 	{
 		flag_ctrlreg = 0;
 		prog_gpioreg();
+		prog_update_noplanes();
 		board_update_ctrlreg();
 	}
 #endif
@@ -6168,7 +6067,7 @@ void
 board_tsc_reset_state(uint_fast8_t v)
 {
 	glob_tsc_reset = v;
-	prog_ctrlreg(0);
+	prog_ctrlreg(0);	// todo: other planes?
 }
 
 
@@ -8485,20 +8384,21 @@ void board_get_compile_datetime(
 
 }
 
-
-#if ADC1_TYPE == ADC_TYPE_AD9246
+#if defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246
 
 static void ad9246_write(uint_fast16_t addr, uint_fast8_t data)
 {
 	const spitarget_t target = targetadc1;	/* addressing to chip */
 	enum { DTL_1, DTL_2, DTL_3, DTL_1_STREAMING };	// 0: 1 byte of data can be transferred
 
-	spi_select(target, SPIC_MODE3);
-	spi_progval8_p1(target, (DTL_1 << 5) | ((addr >> 8) & 0x1F));		// Chip Aaddress, D7=0: write
-	spi_progval8_p2(target, addr);	// 2-nd byte of instruction header
-	spi_progval8_p2(target, data);	// register data
-	spi_complete(target);
-	spi_unselect(target);
+	const uint8_t buff [] =
+	{
+		(DTL_1 << 5) | ((addr >> 8) & 0x1F),		// Chip Aaddress, D7=0: write
+		addr,	// 2-nd byte of instruction header
+		data,	// register data
+	};
+
+	prog_spi_io(target, SPIC_SPEEDFAST, SPIC_MODE3, 0, buff, ARRAY_SIZE(buff), NULL, 0, NULL, 0);
 }
 
 static void ad9246_initialize(void)
@@ -8525,21 +8425,31 @@ static void ad9246_initialize(void)
 	ad9246_write(0xFF, 0x01);			// SW transfer
 	//ad9246_write(0xFF, 0x00);			// SW transfer
 }
-#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
+#endif /* defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246 */
 
 //#if defined(ADC1_TYPE)
 static void prog_rfadc_initialize(void)
 {
-	#if ADC1_TYPE == ADC_TYPE_AD9246
+	#if defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246
 		ad9246_initialize();
-	#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
-
+	#endif /* defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246 */
 
 }
 
-static void prog_rfadc_update(void)
+//#endif /* defined(ADC1_TYPE) */
+
+static void prog_update_noplanes(void)
 {
-	#if ADC1_TYPE == ADC_TYPE_AD9246
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
+
+#if WITHAUTOTUNER_UA1CEI
+	ua1ceituner_send(NULL);
+#endif /* WITHAUTOTUNER_UA1CEI */
+
+#if defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246
+	// AD9246 vref divider update
 	if (glob_preamp)
 		ad9246_write(0x18, 0x00);	// VREF: VREF = 1.25 V
 	else
@@ -8549,12 +8459,10 @@ static void prog_rfadc_update(void)
 		ad9246_write(0x18, 0xC0);	// VREF: VREF = 2.00 V
 	}
 	ad9246_write(0xFF, 0x01);			// SW transfer
-	#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
+#endif /* defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246 */
 
 }
-//#endif /* defined(ADC1_TYPE) */
-
 
 void board_reset(void)
 {
