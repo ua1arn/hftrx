@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"
 #include "gpio.h"
+#include "encoder.h"
 
 #include <string.h>
 #include <math.h>
