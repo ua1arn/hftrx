@@ -370,12 +370,21 @@ tc358768_wr_reg_16bits(unsigned long value)
 #endif
 }
 
+static void dumpunereg(unsigned reg, unsigned data)
+{
+	if (reg < 0x100 || reg >= 0x600)
+		PRINTF("tc358768_write(xx, 0x%04X, 0x%04X); /* addr=0x%04X, data=0x%04x */ \n", reg, data, reg, data);
+	else
+		PRINTF("tc358768_write(xx, 0x%04X, 0x%08X); /* addr=0x%04X, data=0x%08x */ \n", reg, data, reg, data);
+}
+
 static int tc358768_write(
 	struct tc358768_drv_data *ddata,
 	unsigned int reg,
 	unsigned long val
 	)
 {
+	//dumpunereg(reg, val);
 	const unsigned i2caddr = TC358768_I2C_ADDR;
 
 	if (reg < 0x100 || reg >= 0x600)
@@ -735,11 +744,123 @@ static void tc358768_setup_pll(struct tc358768_drv_data *ddata)
 		(frs << 10) | (0x2 << 8) | (1 << 4) | (1 << 1) | (1 << 0));
 }
 
+
+static int
+isnamed(unsigned addr)
+{
+	switch (addr)
+	{
+	case TC358768_CHIPID			: // 0x0000
+	case TC358768_SYSCTL			: // 0x0002
+	case TC358768_CONFCTL		: // 0x0004	// Input Control Register
+	case TC358768_VSDLY			: // 0x0006
+	case TC358768_DATAFMT		: // 0x0008
+	case TC358768_GPIOEN			: // 0x000E
+	case TC358768_GPIODIR		: // 0x0010
+	case TC358768_GPIOIN			: // 0x0012
+	case TC358768_GPIOOUT		: // 0x0014
+	case TC358768_PLLCTL0		: // 0x0016
+	case TC358768_PLLCTL1		: // 0x0018
+	case TC358768_CMDBYTE		: // 0x0022
+	case TC358768_PP_MISC		: // 0x0032
+	case TC358768_DSITX_DT		: // 0x0050
+	case TC358768_FIFOSTATUS		: // 0x00F8
+
+	// Debug (16-bit addressable) */
+	case TC358768_VBUFCTRL		: // 0x00E0
+	case TC358768_DBG_WIDTH		: // 0x00E2
+	case TC358768_DBG_VBLANK		: // 0x00E4
+	case TC358768_DBG_DATA		: // 0x00E8
+
+	// TX PHY (32-bit addressable) */
+	case TC358768_CLW_DPHYCONTTX		: // 0x0100
+	case TC358768_D0W_DPHYCONTTX		: // 0x0104
+	case TC358768_D1W_DPHYCONTTX		: // 0x0108
+	case TC358768_D2W_DPHYCONTTX		: // 0x010C
+	case TC358768_D3W_DPHYCONTTX		: // 0x0110
+	case TC358768_CLW_CNTRL		: // 0x0140
+	case TC358768_D0W_CNTRL		: // 0x0144
+	case TC358768_D1W_CNTRL		: // 0x0148
+	case TC358768_D2W_CNTRL		: // 0x014C
+	case TC358768_D3W_CNTRL		: // 0x0150
+
+	// TX PPI (32-bit addressable) */
+	case TC358768_STARTCNTRL		: // 0x0204
+	case TC358768_DSITXSTATUS		: // 0x0208
+	case TC358768_LINEINITCNT		: // 0x0210
+	case TC358768_LPTXTIMECNT		: // 0x0214
+	case TC358768_TCLK_HEADERCNT		: // 0x0218
+	case TC358768_TCLK_TRAILCNT		: // 0x021C
+	case TC358768_THS_HEADERCNT		: // 0x0220
+	case TC358768_TWAKEUP		: // 0x0224
+	case TC358768_TCLK_POSTCNT		: // 0x0228
+	case TC358768_THS_TRAILCNT		: // 0x022C
+	case TC358768_HSTXVREGCNT		: // 0x0230
+	case TC358768_HSTXVREGEN		: // 0x0234
+	case TC358768_TXOPTIONCNTRL		: // 0x0238
+	case TC358768_BTACNTRL1		: // 0x023C
+
+	// TX CTRL (32-bit addressable) */
+	case TC358768_DSI_STATUS		: // 0x0410
+	case TC358768_DSI_INT		: // 0x0414
+	case TC358768_DSICMD_RXFIFO		: // 0x0430
+	case TC358768_DSI_ACKERR		: // 0x0434
+	case TC358768_DSI_RXERR		: // 0x0440
+	case TC358768_DSI_ERR		: // 0x044C
+	case TC358768_DSI_CONFW		: // 0x0500
+	case TC358768_DSI_RESET		: // 0x0504
+	case TC358768_DSI_INT_CLR		: // 0x050C
+	case TC358768_DSI_START		: // 0x0518
+
+	// DSITX CTRL (16-bit addressable) */
+	//case TC358768_DSICMD_TX		: // 0x0600
+	//case TC358768_DSICMD_TYPE		: // 0x0602
+	//case TC358768_DSICMD_WC		: // 0x0604
+	//case TC358768_DSICMD_WD0		: // 0x0610
+	//case TC358768_DSICMD_WD1		: // 0x0612
+	//case TC358768_DSICMD_WD2		: // 0x0614
+	//case TC358768_DSICMD_WD3		: // 0x0616
+	case TC358768_DSI_EVENT		: // 0x0620
+	case TC358768_DSI_VSW		: // 0x0622
+	case TC358768_DSI_VBPR		: // 0x0624
+	case TC358768_DSI_VACT		: // 0x0626
+	case TC358768_DSI_HSW		: // 0x0628
+	case TC358768_DSI_HBPR		: // 0x062A
+	case TC358768_DSI_HACT		: // 0x062C
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+static void tc358768_dump(struct tc358768_drv_data *ddata)
+{
+	unsigned addr;
+	for (addr = 0; addr < 0x100; ++ addr)
+	{
+		unsigned long data;
+		if (!isnamed(addr))
+			continue;
+		tc358768_read(ddata, addr, & data);
+		PRINTF("tc358768_write(xx, 0x%04x, 0x%04lx); /* addr=0x%04X, data=0x%04lx */ \n", addr, data, addr, data);
+	}
+	for (addr = 0x100; addr < 0x700; ++ addr)
+	{
+		unsigned long data;
+		if (!isnamed(addr))
+			continue;
+		tc358768_read(ddata, addr, & data);
+		PRINTF("tc358768_write(xx, 0x%04x, 0x%08lx); /* addr=0x%04X, data=0x%08lx */ \n", addr, data, addr, data);
+	}
+}
+
 static void tc358768_power_on(struct tc358768_drv_data *ddata, const videomode_t * vdmode)
 {
 	//const struct omap_video_timings *t = & timings0;
 
 	tc358768_sw_reset(ddata);
+
+	PRINTF("TC358778XBG: Chip and Revision ID=%04X\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
 
 	tc358768_setup_pll(ddata);
 
@@ -2241,29 +2362,98 @@ void tc358768_deinitialize(void)
 	tc358768_power_off(ddata);
 	tc358768_sw_reset(ddata);
 	HARDWARE_VODEO_DEINIT();
+	local_delay_ms(5);
+}
+
+void tc358768_refclk(struct tc358768_drv_data * ddata, const videomode_t * vdmode)
+{
+	//dev0.refclk = hardware_get_dotclock(display_getdotclock(vdmode)) / 4;
+	dev0.refclk = 25000000uL;
+
+	//timings0.pixelclock = hardware_get_dotclock(LTDC_DOTCLK);
+
+}
+
+static void tpteinit(void)
+{
+	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
+	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
+
+//#if LCDMODE_H497TLB01P4
+//	arm_hardware_pioa_inputs(TSC_INT);
+//	arm_hardware_pioa_onchangeinterrupt(TSC_INT, TSC_INT, TSC_INT, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
+//	arm_hardware_pioc_inputs(TE);
+//	arm_hardware_piod_outputs(OTP_PWR, 1 * OTP_PWR);
+//#elif LCDMODE_TV101WXM && 0
+//
+//	tim3_initialize(1000);
+//
+//	// PC7: TIM3_CH2, AF2
+//	arm_hardware_pioc_altfn2(TE, 2);
+//	//arm_hardware_pioc_outputs(TE, 0 * TE);	// Brightness: 0 - full, 1: off
+//	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);	// 0: panel power ON
+//#elif LCDMODE_TV101WXM
+//	arm_hardware_pioc_outputs(TE, 0 * TE);	// Brightness: 0 - full, 1: off
+//	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);	// 0: panel power ON
+//#endif
+}
+
+static void tptepoweron(int state)
+{
+	const portholder_t TE = (1uL << 7);	// PC7 (TE) - panel pin 29 Sync signal from driver IC
+	const portholder_t OTP_PWR = (1uL << 7);	// PD7 (CTRL - OTP_PWR) - panel pin 30
+//#if LCDMODE_TV101WXM && 0
+//	if (state)
+//	{
+//		// PC7: TIM3_CH2, AF2
+//		arm_hardware_pioc_altfn2(TE, 2);
+//	}
+//	else
+//	{
+//		arm_hardware_pioc_outputs(TE, ! state * TE);	// Brightness: 0 - full, 1: off
+//	}
+//	arm_hardware_piod_outputs(OTP_PWR, ! state * OTP_PWR);	// 0: panel power ON
+//	local_delay_ms(50);
+//#elif LCDMODE_TV101WXM
+//	arm_hardware_pioc_outputs(TE, ! state * TE);	// Brightness: 0 - full, 1: off
+//	arm_hardware_piod_outputs(OTP_PWR, ! state * OTP_PWR);	// 0: panel power ON
+//	local_delay_ms(50);
+//#endif
 }
 
 void tc358768_initialize(const videomode_t * vdmode)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-//	if (toshiba_ddr_power_init())
-//	{
-//		PRINTF("TC358768 power init failure\n");
-//		return;
-//	}
+	HARDWARE_TC358768_POWERON(1);
+
+	tpteinit();
+	tptepoweron(1);
 	//stpmic1_dump_regulators();
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
 	// https://coral.googlesource.com/linux-imx/+/refs/heads/alpha/arch/arm64/boot/dts/freescale/fsl-imx8mq-evk-dcss-rm67191.dts
 	// https://developer.toradex.com/knowledge-base/display-output-resolution-and-timings-linux
 	// https://code.woboq.org/linux/linux/Documentation/devicetree/bindings/display/panel/samsung,s6e8aa0.txt.html
+	// active low
+	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
+	arm_hardware_piod_outputs(RESET, 0 * RESET);
+	local_delay_ms(5);
+	arm_hardware_piod_outputs(RESET, 1 * RESET);
 
-	HARDWARE_TP_INIT();
 
-	HARDWARE_VIDEO_INIT();
+
+	// TC358778XBG conrol
+	//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
+	//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
+
+	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
+	local_delay_ms(5);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
 	//PRINTF("TC358778XBG reset off\n");
-
 
 	PRINTF("TC358778XBG: Chip and Revision ID=0x%04X (expected 0x4401)\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
 
@@ -2299,10 +2489,7 @@ void tc358768_initialize(const videomode_t * vdmode)
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 #endif
 
-	dev0.refclk = hardware_get_dotclock(display_getdotclock(vdmode)) / 4;
-	//dev0.refclk = 25000000uL;
-	//timings0.pixelclock = hardware_get_dotclock(LTDC_DOTCLK);
-
+	tc358768_refclk(ddata, vdmode);
 	tc358768_calc_pll(ddata, vdmode);
 
 	tc358768_power_off(ddata);
@@ -2323,17 +2510,15 @@ void tc358768_initialize(const videomode_t * vdmode)
 //	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HBPR));
 //	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 
+//	tc358768_dump(ddata);
+
 }
 
 void tc358768_wakeup(const videomode_t * vdmode)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-//	if (toshiba_ddr_power_init())
-//	{
-//		PRINTF("TC358768 power init failure\n");
-//		return;
-//	}
+	HARDWARE_TC358768_POWERON(1);
 	//stpmic1_dump_regulators();
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
@@ -2379,10 +2564,7 @@ void tc358768_wakeup(const videomode_t * vdmode)
 	PRINTF("TC358778XBG: hact=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 #endif
 
-	dev0.refclk = hardware_get_dotclock(display_getdotclock(vdmode)) / 4;
-	//dev0.refclk = 25000000uL;
-	//timings0.pixelclock = hardware_get_dotclock(display_getdotclock(vdmode));
-
+	tc358768_refclk(ddata, vdmode);
 	tc358768_calc_pll(ddata, vdmode);
 
 	tc358768_power_off(ddata);
@@ -2404,6 +2586,9 @@ void tc358768_wakeup(const videomode_t * vdmode)
 //	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 
 }
+
+#if LCDMODE_H497TLB01P4
+
 /*
  *
  *
@@ -2488,6 +2673,13 @@ static uint8_t bigon [] =
 
 	0,
 };
+#endif
+
+	static uint8_t sleepout [] = { 0x11, 0x00, };
+	static uint8_t displon [] = { 0x29, 0x00, };
+	//static uint8_t readid [] = { 0x29, 0x00, };
+	static uint8_t sleep [] = { 0x10, 0x00, };
+	static uint8_t disploff [] = { 0x28, 0x00, };
 
 void panel_initialize(const videomode_t * vdmode)
 {
@@ -2495,12 +2687,10 @@ void panel_initialize(const videomode_t * vdmode)
 	// also:
 	// https://github.com/1667450061/bak/blob/d5c37db8a9254783755b7bfb6823f32474febff8/arch/arm/plat-lc/drivers/video/comipfb2/oled_auo_rm69052.c
 	// https://discuss.96boards.org/t/display-problem-on-dsi-panel/1855
-
-	static uint8_t sleepout [] = { 0x11, 0x00, };
-	static uint8_t displon [] = { 0x29, 0x00, };
-	//static uint8_t readid [] = { 0x29, 0x00, };
+	tptepoweron(1);
 
 	local_delay_ms(50);
+#if LCDMODE_H497TLB01P4
 	const uint8_t * pv = bigon;
 	for (;;)
 	{
@@ -2513,28 +2703,21 @@ void panel_initialize(const videomode_t * vdmode)
 		//PRINTF("e\n");
 	}
 
+#endif
 	local_delay_ms(5);
 	mipi_dsi_send_dcs_packet(sleepout, ARRAY_SIZE(sleepout));
 	local_delay_ms(200);
 	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
-
 	PRINTF("display on\n");
-
-//	s3402_init();
-//	s3402_get_id();
 }
 
 void panel_wakeup(void)
 {
+	tptepoweron(1);
 	// RM69052 chip
 	// also:
 	// https://github.com/1667450061/bak/blob/d5c37db8a9254783755b7bfb6823f32474febff8/arch/arm/plat-lc/drivers/video/comipfb2/oled_auo_rm69052.c
 	// https://discuss.96boards.org/t/display-problem-on-dsi-panel/1855
-
-	static uint8_t sleepout [] = { 0x11, 0x00, };
-	static uint8_t displon [] = { 0x29, 0x00, };
-	//static uint8_t readid [] = { 0x29, 0x00, };
-
 #if 0
 	local_delay_ms(50);
 	const uint8_t * pv = bigon;
@@ -2555,21 +2738,18 @@ void panel_wakeup(void)
 	mipi_dsi_send_dcs_packet(displon, ARRAY_SIZE(displon));
 
 	PRINTF("display on\n");
-
-//	s3402_init();
-//	s3402_get_id();
 }
 
 void panel_deinitialize(void)
 {
-	static uint8_t sleep [] = { 0x10, 0x00, };
-	static uint8_t disploff [] = { 0x28, 0x00, };
 
 	mipi_dsi_send_dcs_packet(disploff, ARRAY_SIZE(disploff));
 	local_delay_ms(10);
 	mipi_dsi_send_dcs_packet(sleep, ARRAY_SIZE(sleep));
 	local_delay_ms(20);
+	tptepoweron(0);
 }
+
 
 #endif /* LCDMODETX_TC358778XBG */
 

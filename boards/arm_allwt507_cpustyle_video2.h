@@ -836,14 +836,14 @@
 	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
 		arm_hardware_piod_altfn2((UINT32_C(1) << 28), GPIO_CFG_AF2); /* PD28 - PWM0 */ \
-		arm_hardware_piod_outputs((UINT32_C(1) << 28), (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
+		arm_hardware_piod_outputs((UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
-		arm_hardware_piod_outputs((UINT32_C(1) << 28), (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
+		arm_hardware_piod_outputs((UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		(void) (f); \
@@ -891,20 +891,37 @@
 //	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
 //	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
 #define HARDWARE_VIDEO_INIT() do { \
-		const portholder_t Video_RST = (UINT32_C(1) << 10);	/* PA10 */ \
-		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
-		arm_hardware_piof_outputs(Video_MODE, Video_MODE); \
-		arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST); \
+		const portholder_t Video_RST = (UINT32_C(1) << 13);	/* PE13 */ \
+		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PE14: Video_MODE: 0: test, 1: normal */ \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 19, 0 * (UINT32_C(1) << 19)); /* PE19 - V_3V_EN enable Toshiba power */ \
+		local_delay_ms(100); \
+		arm_hardware_pioe_outputs(Video_MODE, Video_MODE); /* Video_MODE: 0: test, 1: normal */ \
+		\
+		arm_hardware_piod_outputs((UINT32_C(1) << 28), 0 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 16, 0 * (UINT32_C(1) << 16)); /* PE16 CTRL TP_RESX_18 */ \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 17, 0 * (UINT32_C(1) << 17)); /* PE17 RESET_Disp - RESX_18 */ \
+		arm_hardware_pioe_outputs(Video_RST, 0 * Video_RST); \
 		local_delay_ms(5); \
-		arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST); \
+		arm_hardware_piod_outputs((UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 16, 1 * (UINT32_C(1) << 16)); /* PE16 CTRL TP_RESX_18 */ \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 17, 1 * (UINT32_C(1) << 17)); /* PE17 RESET_Disp - RESX_18 */ \
+		arm_hardware_pioe_outputs(Video_RST, 1 * Video_RST); \
+		local_delay_ms(5); \
 	} while (0)
 
 #define HARDWARE_VODEO_DEINIT() do { \
-		const portholder_t Video_RST = (UINT32_C(1) << 10);	/* PA10 */ \
-		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PF14: Video_MODE: 0: test, 1: normal */ \
-		arm_hardware_piof_outputs(Video_MODE, Video_MODE); \
-		arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);	/* RESET active */ \
+		const portholder_t Video_RST = (UINT32_C(1) << 13);	/* PE13 */ \
+		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PE14: Video_MODE: 0: test, 1: normal */ \
+		arm_hardware_pioe_outputs(Video_MODE, Video_MODE); \
+		arm_hardware_pioe_outputs(Video_RST, 0 * Video_RST);	/* RESET active */ \
 		local_delay_ms(5); \
+	} while (0)
+
+// PMIC control
+#define HARDWARE_TC358768_POWERON(state) do { \
+		if ((state) != 0) { \
+		} else { \
+		} \
 	} while (0)
 
 #if WITHLTDCHW
@@ -920,7 +937,6 @@
 		const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
 		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
 		/* const portholder_t MODEmask = (UINT32_C(1) << 9); */	/* PA9 mode */ \
-		arm_hardware_pioe_outputs(UINT32_C(1) << 19, 0 * (UINT32_C(1) << 19)); /* PE19 - enable Toshiba power */ \
 		/* synchro signals - forced */ \
 		arm_hardware_piod_altfn50(DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
 		arm_hardware_piod_altfn50(VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
@@ -1040,19 +1056,14 @@
 
 	#endif
 
-#if 1
 	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 10) // PH10
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 11) // PA11
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_pioh_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioa_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		gpioX_setstate(GPIOH, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-		gpioX_setstate(GPIOA, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
 	} while (0)
-#endif
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOD_USERBOOT_BIT	BOARD_GPIOD_ENC2BTN_BIT	/* PD21: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */

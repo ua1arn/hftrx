@@ -108,8 +108,8 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
-	//#define LCDMODE_V2A	1	/* только главный экран с тремя видеобуферами RGB565, без PIP */
-	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_V2A	1	/* только главный экран с тремя видеобуферами RGB565, без PIP */
+	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 	#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODE_TV101WXM 1	/* 768 * 1024 10.1" */
 	#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */

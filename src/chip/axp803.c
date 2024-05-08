@@ -1006,7 +1006,7 @@ static int axp858_set_cldo_4(int cldo_num, unsigned int mvolt)
 				AXP858_OUTPUT_CTRL3_CLDO4_EN);
 
 	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
-	ret = pmic_bus_write(AXP858_CLDO1_CTRL + cldo_num - 1, cfg);
+	ret = pmic_bus_write(AXP858_CLDO4_CTRL, cfg);
 	if (ret)
 		return ret;
 
@@ -1244,7 +1244,7 @@ int axp853_initialize(void)
 
 
 	VERIFY(0 == axp858_set_cldo3(0));			// CLDO3 connected as GPIO to EXTIRQ CPU pin
-	VERIFY(0 == axp858_set_cldo4(1200));		// 1.8V VCC-TV
+	VERIFY(0 == axp858_set_cldo4(1800));		// 1.8V VCC-TV
 
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control
