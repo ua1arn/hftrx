@@ -149,12 +149,14 @@
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 	#endif /* WITHINTEGRATEDDSP */
 
-	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* TCON + DE Наличие контроллера дисплея с framebuffer-ом */
-	//#define WITHGPUHW	1	/* Graphic processor unit */
+	#if ! LCDMODE_DUMMY
+		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+		//#define WITHGPUHW	1	/* Graphic processor unit */
+	#endif
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
@@ -835,15 +837,15 @@
 	// PWM0 AF2
 	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_piod_altfn2((UINT32_C(1) << 28), GPIO_CFG_AF2); /* PD28 - PWM0 */ \
-		arm_hardware_piod_outputs((UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
+		arm_hardware_piod_altfn2((0*UINT32_C(1) << 28), GPIO_CFG_AF2); /* PD28 - PWM0 */ \
+		arm_hardware_piod_outputs(0*(UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
-		arm_hardware_piod_outputs((UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
+		arm_hardware_piod_outputs(0*(UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		(void) (f); \
@@ -894,19 +896,18 @@
 		const portholder_t Video_RST = (UINT32_C(1) << 13);	/* PE13 */ \
 		const portholder_t Video_MODE = (UINT32_C(1) << 14);	/* PE14: Video_MODE: 0: test, 1: normal */ \
 		arm_hardware_pioe_outputs(UINT32_C(1) << 19, 0 * (UINT32_C(1) << 19)); /* PE19 - V_3V_EN enable Toshiba power */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 28, 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
 		local_delay_ms(100); \
 		arm_hardware_pioe_outputs(Video_MODE, Video_MODE); /* Video_MODE: 0: test, 1: normal */ \
 		\
-		arm_hardware_piod_outputs((UINT32_C(1) << 28), 0 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
 		arm_hardware_pioe_outputs(UINT32_C(1) << 16, 0 * (UINT32_C(1) << 16)); /* PE16 CTRL TP_RESX_18 */ \
 		arm_hardware_pioe_outputs(UINT32_C(1) << 17, 0 * (UINT32_C(1) << 17)); /* PE17 RESET_Disp - RESX_18 */ \
 		arm_hardware_pioe_outputs(Video_RST, 0 * Video_RST); \
 		local_delay_ms(5); \
-		arm_hardware_piod_outputs((UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
 		arm_hardware_pioe_outputs(UINT32_C(1) << 16, 1 * (UINT32_C(1) << 16)); /* PE16 CTRL TP_RESX_18 */ \
 		arm_hardware_pioe_outputs(UINT32_C(1) << 17, 1 * (UINT32_C(1) << 17)); /* PE17 RESET_Disp - RESX_18 */ \
 		arm_hardware_pioe_outputs(Video_RST, 1 * Video_RST); \
-		local_delay_ms(5); \
+		local_delay_ms(200); \
 	} while (0)
 
 #define HARDWARE_VODEO_DEINIT() do { \
@@ -1057,12 +1058,15 @@
 	#endif
 
 	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 10) // PH10
+	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 10)	// PA10 - VD24 - active "1"
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_pioh_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_pioa_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		gpioX_setstate(GPIOH, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		gpioX_setstate(GPIOA, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
 	} while (0)
 
 	/* запрос на вход в режим загрузчика */

@@ -841,7 +841,8 @@ static void tc358768_dump(struct tc358768_drv_data *ddata)
 		unsigned long data;
 		if (!isnamed(addr))
 			continue;
-		tc358768_read(ddata, addr, & data);
+		if (tc358768_read(ddata, addr, & data))
+			continue;
 		PRINTF("tc358768_write(xx, 0x%04x, 0x%04lx); /* addr=0x%04X, data=0x%04lx */ \n", addr, data, addr, data);
 	}
 	for (addr = 0x100; addr < 0x700; ++ addr)
@@ -849,7 +850,8 @@ static void tc358768_dump(struct tc358768_drv_data *ddata)
 		unsigned long data;
 		if (!isnamed(addr))
 			continue;
-		tc358768_read(ddata, addr, & data);
+		if (tc358768_read(ddata, addr, & data))
+			continue;
 		PRINTF("tc358768_write(xx, 0x%04x, 0x%08lx); /* addr=0x%04X, data=0x%08lx */ \n", addr, data, addr, data);
 	}
 }
@@ -2367,8 +2369,8 @@ void tc358768_deinitialize(void)
 
 void tc358768_refclk(struct tc358768_drv_data * ddata, const videomode_t * vdmode)
 {
-	//dev0.refclk = hardware_get_dotclock(display_getdotclock(vdmode)) / 4;
-	dev0.refclk = 25000000uL;
+	dev0.refclk = hardware_get_dotclock(display_getdotclock(vdmode)) / 4;
+	//dev0.refclk = 25000000uL;
 
 	//timings0.pixelclock = hardware_get_dotclock(LTDC_DOTCLK);
 
@@ -2436,24 +2438,24 @@ void tc358768_initialize(const videomode_t * vdmode)
 	// https://developer.toradex.com/knowledge-base/display-output-resolution-and-timings-linux
 	// https://code.woboq.org/linux/linux/Documentation/devicetree/bindings/display/panel/samsung,s6e8aa0.txt.html
 	// active low
-	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
-	arm_hardware_piod_outputs(RESET, 0 * RESET);
-	local_delay_ms(5);
-	arm_hardware_piod_outputs(RESET, 1 * RESET);
+//	const portholder_t RESET = (1uL << 1);	// PD1 = RESX_18 - pin  28
+//	arm_hardware_piod_outputs(RESET, 0 * RESET);
+//	local_delay_ms(5);
+//	arm_hardware_piod_outputs(RESET, 1 * RESET);
 
 
 
 	// TC358778XBG conrol
 	//	x-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>; /* Video_RST */
 	//	x-gpios = <&gpiof 14 GPIO_ACTIVE_HIGH>; /* Video_MODE: 0: test, 1: normal */
-	const portholder_t Video_RST = (1uL << 10);	// PA10
-	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
-
-	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
-	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
-	local_delay_ms(5);
-	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
-	//PRINTF("TC358778XBG reset off\n");
+//	const portholder_t Video_RST = (1uL << 10);	// PA10
+//	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
+//
+//	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
+//	arm_hardware_pioa_outputs(Video_RST, 0 * Video_RST);
+//	local_delay_ms(5);
+//	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+//	//PRINTF("TC358778XBG reset off\n");
 
 	PRINTF("TC358778XBG: Chip and Revision ID=0x%04X (expected 0x4401)\n", tc358768_rd_reg_16or32bits(TC358768_CHIPID));
 
@@ -2510,7 +2512,7 @@ void tc358768_initialize(const videomode_t * vdmode)
 //	PRINTF("TC358778XBG: TC358768_DSI_HBPR=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HBPR));
 //	PRINTF("TC358778XBG: TC358768_DSI_HACT=%ld\n", tc358768_rd_reg_16or32bits(TC358768_DSI_HACT));
 
-//	tc358768_dump(ddata);
+	tc358768_dump(ddata);
 
 }
 
