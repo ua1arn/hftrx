@@ -1,6 +1,17 @@
+/* $Id$ */
+//
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
+#ifndef DSTYLES_H_INCLUDED
+#define DSTYLES_H_INCLUDED 1
 
 #if defined (BOARD_DSTYLE)
     #include BOARD_DSTYLE
+
 #elif DSTYLE_T_X20_Y4
 
 	enum
@@ -496,5 +507,7 @@
 #elif DSTYLE_G_DUMMY
 	#include "g_dummy.h"
 #else
-	#error TODO: to be implemented
+	#error BOARD_DSTYLE not defined
 #endif /* LCDMODE_LS020 */
+
+#endif /* DSTYLES_H_INCLUDED */
