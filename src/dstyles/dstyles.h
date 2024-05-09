@@ -1,5 +1,7 @@
 
-#if DSTYLE_T_X20_Y4
+#if defined (BOARD_DSTYLE)
+    #include BOARD_DSTYLE
+#elif DSTYLE_T_X20_Y4
 
 	enum
 	{
