@@ -564,6 +564,13 @@
 		gpio_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 0 : 1); \
 	} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 	#define SPI_ALLCS_DISABLE() do { \
 		gpio_writepin(TARGET_CTL1_CS_EMIO, 1);		\
 		gpio_writepin(TARGET_RTC_CS_EMIO, 0);	/* high = activate */	\
@@ -574,6 +581,13 @@
 		gpio_writepin(TARGET_EXT1_CS_EMIO, 1);		\
 		gpio_writepin(TARGET_EXT2_CS_EMIO, 1);		\
 	} while(0)
+
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \

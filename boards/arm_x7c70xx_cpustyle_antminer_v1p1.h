@@ -608,6 +608,13 @@
 			xc7z_gpio_output(TARGET_NVRAM_MIO); \
 		} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 	// MOSI & SCK port
 	#define	SPI_SCLK_MIO 	59
 	#define	SPI_MOSI_MIO 	60

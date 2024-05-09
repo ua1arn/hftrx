@@ -335,6 +335,13 @@
 
 #endif
 
+/* Perform delay after assert or de-assert specific CS line */
+#define SPI_CS_DELAY(target) do { \
+	switch (target) { \
+	default: break; \
+	} \
+} while (0)
+
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \

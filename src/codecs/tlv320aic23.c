@@ -48,7 +48,7 @@ static void tlv320aic23_setreg(
 		uint8_t txbuf [2];
 
 		USBD_poke_u16_BE(txbuf, fulldata);
-		prog_spi_io(target, TLV320AIC23_SPISPEED, TLV320AIC23_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+		prog_spi_io(target, TLV320AIC23_SPISPEED, TLV320AIC23_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 	#elif WITHSPIEXT16
 

@@ -606,6 +606,16 @@
 		gpio_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 0 : 1); \
 	} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
+		case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
+		case targetrtc1: local_delay_us(4); break; /* RTC DS1305 RTC_CS */ \
+		default: break; \
+		} \
+	} while (0)
+
 	#define SPI_ALLCS_DISABLE() do { \
 		gpio_writepin(TARGET_CTL1_CS_EMIO, 1);		\
 		gpio_writepin(TARGET_RTC_CS_EMIO, 0);	/* high = activate */	\

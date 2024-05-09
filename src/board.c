@@ -23,7 +23,6 @@
 
 #define CTLREG_SPISPEED	SPIC_SPEED1M
 #define CTLREG_SPIMODE	SPIC_MODE3
-#define CTLREG_SPIDELAY	50
 
 //#include "chip/cmx992.c"
 /********************************/
@@ -171,7 +170,7 @@ board_ctlregs_spi_send_frame(
 	)
 {
 #if WITHSPIHW || WITHSPISW
-	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, CTLREG_SPIDELAY, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, buff, size, NULL, 0, NULL, 0);
 #endif /* WITHSPIHW || WITHSPISW */
 }
 
@@ -8398,7 +8397,7 @@ static void ad9246_write(uint_fast16_t addr, uint_fast8_t data)
 		data,	// register data
 	};
 
-	prog_spi_io(target, SPIC_SPEEDFAST, SPIC_MODE3, 0, buff, ARRAY_SIZE(buff), NULL, 0, NULL, 0);
+	prog_spi_io(target, SPIC_SPEEDFAST, SPIC_MODE3, buff, ARRAY_SIZE(buff), NULL, 0, NULL, 0);
 }
 
 static void ad9246_initialize(void)
@@ -10195,7 +10194,6 @@ void hardware_cw_diagnostics(
 
 static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
 static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
-static const unsigned MCP3208_usCsDelay = 0;
 
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
@@ -10222,7 +10220,7 @@ mcp3208_read(
 
 	txbuf [0] = (uint_fast32_t) cmd1 << (LSBPOS + 14);
 
-	prog_spi_exchange32(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange32(target, MCP3208_SPISPEED, MCP3208_SPISMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = rxbuf [0];
 #else
@@ -10231,7 +10229,7 @@ mcp3208_read(
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
 #endif /* WITHSPI32BIT */
@@ -10461,7 +10459,7 @@ uint8_t iq_shift_tx(uint8_t val)
 uint32_t iq_cic_test_process(void)
 {
 	uint8_t data [5] = { 0 }, dummy [5] = { 0 };
-	prog_spi_exchange(targetfpga1, SPIC_SPEEDFAST, SPIC_MODE3, 50, dummy, data, ARRAY_SIZE(data));
+	prog_spi_exchange(targetfpga1, SPIC_SPEEDFAST, SPIC_MODE3, dummy, data, ARRAY_SIZE(data));
 	return (data[1] << 24) | (data[2] << 16) | (data[3] << 8) | data[4];
 }
 

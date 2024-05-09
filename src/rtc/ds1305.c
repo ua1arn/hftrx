@@ -17,7 +17,6 @@
 
 #define DS1305_SPIMODE SPIC_MODE3
 #define DS1305_SPISPEED	SPIC_SPEED400k
-#define DS1305_SPICSDELAYUS 4	// uS, CE to CLK Setup and CE Inactive Time
 
 /* Адреса регистров */
 enum
@@ -37,7 +36,7 @@ static void ds1305_readbuff(
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 	const uint8_t cmd = addr & 0x7F;	// D7=0: read mode
 
-	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, NULL, 0, data, len);
+	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, & cmd, 1, NULL, 0, data, len);
 }
 
 static void ds1305_writebuff(
@@ -49,7 +48,7 @@ static void ds1305_writebuff(
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 	const uint8_t cmd = addr | 0x80;	// D7=1: write mode;
 
-	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, data, len, NULL, 0);
+	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, & cmd, 1, data, len, NULL, 0);
 }
 
 #if 0

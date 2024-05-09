@@ -81,7 +81,7 @@ xpt2046_read(
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd << CMDPOS);
 
-	prog_spi_exchange(target, tscspeed, tscmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
 

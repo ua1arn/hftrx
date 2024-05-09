@@ -484,7 +484,6 @@ typedef struct lowspiio_tag
 	spi_speeds_t spispeedindex;
 	spi_modes_t spimode;
 	lowspiiosize_t spiiosize;
-	unsigned csdelayUS;
 
 	unsigned count;
 	lowspiexchange_t chunks [3];
@@ -537,7 +536,8 @@ static void spi_operate(lowspiio_t * iospi)
 		ASSERT(0);
 		break;
 	}
-	local_delay_us(iospi->csdelayUS);
+
+	SPI_CS_DELAY(target);	/* Perform delay after assert or de-assert specific CS line */
 
 	ASSERT(iospi->count <= ARRAY_SIZE(iospi->chunks));
 
@@ -705,7 +705,8 @@ static void spi_operate(lowspiio_t * iospi)
 		ASSERT(0);
 		break;
 	}
-	local_delay_us(iospi->csdelayUS);
+	SPI_CS_DELAY(target);	/* Perform delay after assert or de-assert specific CS line */
+
 	spi_operate_unlock(oldIrql);
 }
 
@@ -713,7 +714,6 @@ static void spi_operate(lowspiio_t * iospi)
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 void prog_spi_io(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
 	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
@@ -724,7 +724,6 @@ void prog_spi_io(
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
-	io.csdelayUS = csdelayUS;
 	io.spiiosize = SPIIOSIZE_U8;
 
 	if (txsize1 != 0)
@@ -765,7 +764,6 @@ void prog_spi_io(
 // Выдача и прием ответных байтов
 void prog_spi_exchange(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
 	uint8_t * rxbuff,
 	unsigned int size
@@ -776,7 +774,6 @@ void prog_spi_exchange(
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
-	io.csdelayUS = csdelayUS;
 	io.spiiosize = SPIIOSIZE_U8;
 
 	unsigned i = 0;
@@ -800,7 +797,6 @@ void prog_spi_exchange(
 // Выдача и прием ответных байтов
 void prog_spi_exchange32(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint32_t * txbuff,
 	uint32_t * rxbuff,
 	unsigned int size
@@ -811,7 +807,6 @@ void prog_spi_exchange32(
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
-	io.csdelayUS = csdelayUS;
 	io.spiiosize = SPIIOSIZE_U32;
 
 	unsigned i = 0;

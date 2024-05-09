@@ -14862,7 +14862,7 @@ void midtests(void)
 			(uint_fast8_t) (0 >> 0),
 		};
 		uint8_t data [32];
-		prog_spi_io(targetext1, SPIC_SPEEDFAST, SPIC_MODE3, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, ARRAY_SIZE(data));
+		prog_spi_io(targetext1, SPIC_SPEEDFAST, SPIC_MODE3, cmd, ARRAY_SIZE(cmd), NULL, 0, data, ARRAY_SIZE(data));
 		printhex(0, data, ARRAY_SIZE(data));
 
 	}

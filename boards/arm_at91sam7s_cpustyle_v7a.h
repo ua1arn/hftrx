@@ -264,6 +264,13 @@
 #define SPI_A2 (AT91C_PIO_PA6)
 
 
+/* Perform delay after assert or de-assert specific CS line */
+#define SPI_CS_DELAY(target) do { \
+	switch (target) { \
+	default: break; \
+	} \
+} while (0)
+
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \

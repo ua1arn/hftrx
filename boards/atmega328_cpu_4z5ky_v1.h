@@ -250,6 +250,13 @@
 			SPI2_TARGET_MOSI_DDR |= (SPI2_MOSI_BIT);	/* порт программируется на вывод по всем выводам */ \
 			} while (0)
 
+		/* Perform delay after assert or de-assert specific CS line */
+		#define SPI_CS_DELAY(target) do { \
+			switch (target) { \
+			default: break; \
+			} \
+		} while (0)
+
 		#define SPI_ALLCS_INITIALIZE() do { \
 				/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */ \
 				SPI0_TARGET_CS_PORT |= (SPI0_CS_BIT);	/* порт программируется на вывод по всем выводам */ \
@@ -276,6 +283,13 @@
 			SPI1_TARGET_MOSI_PORT |= (SPI1_MOSI_BIT);	/* порт программируется на вывод по всем выводам */ \
 			SPI1_TARGET_MOSI_DDR |= (SPI1_MOSI_BIT);	/* порт программируется на вывод по всем выводам */ \
 			} while (0)
+
+		/* Perform delay after assert or de-assert specific CS line */
+		#define SPI_CS_DELAY(target) do { \
+			switch (target) { \
+			default: break; \
+			} \
+		} while (0)
 
 		#define SPI_ALLCS_INITIALIZE() do { \
 				/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */ \

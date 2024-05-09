@@ -83,7 +83,7 @@ static void cs4272_setreg(
 			datav,
 		};
 
-		prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+		prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 	#else /* WITHSPILOWSUPPORTT */
 

@@ -336,6 +336,13 @@ Free:
 	#define SPI_ALLCS_BITS (SPI_CSEL0 | SPI_CSEL1 | SPI_CSEL2 | SPI_CSEL3 | SPI_CSEL4 | SPI_CSEL5)
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \

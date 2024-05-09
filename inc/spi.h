@@ -302,7 +302,6 @@ void prog_spi_read_frame(
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void prog_spi_io(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
 	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
@@ -313,7 +312,6 @@ void prog_spi_io(
 // Выдача и прием ответных байтов
 void prog_spi_exchange(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
 	uint8_t * rxbuff,
 	unsigned int size
@@ -324,7 +322,6 @@ void prog_spi_exchange(
 // Выдача и прием ответных байтов
 void prog_spi_exchange32(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint32_t * txbuff,
 	uint32_t * rxbuff,
 	unsigned int size

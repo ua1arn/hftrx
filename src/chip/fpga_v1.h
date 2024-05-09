@@ -25,7 +25,7 @@ board_fpga1_spi_send_frame(
 	unsigned int size
 	)
 {
-	prog_spi_io(target, FPGAREG_V1_SPISPEED, FPGAREG_V1_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, FPGAREG_V1_SPISPEED, FPGAREG_V1_SPIMODE, buff, size, NULL, 0, NULL, 0);
 }
 
 // Read a frame of bytes via SPI
@@ -37,7 +37,7 @@ board_fpga1_spi_exchange_frame(
 	unsigned int size
 	)
 {
-	prog_spi_exchange(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0, tbuff, rbuff, size);
+	prog_spi_exchange(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, tbuff, rbuff, size);
 }
 
 /* programming FPGA SPI registers */

@@ -576,6 +576,16 @@
 #define SPI_ALLCS_PORT_S(v) do {	R7S721_TARGET_PORT_S(2, v); } while (0)
 #define SPI_ALLCS_PORT_C(v) do {	R7S721_TARGET_PORT_C(2, v); } while (0)
 
+/* Perform delay after assert or de-assert specific CS line */
+#define SPI_CS_DELAY(target) do { \
+	switch (target) { \
+	case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
+	case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
+	case targetrtc1: local_delay_us(4); break; /* RTC DS1305 RTC_CS */ \
+	default: break; \
+	} \
+} while (0)
+
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
 	do { \

@@ -632,6 +632,13 @@
 			gpio_writepin(targetnvram, 1);		\
 		} while(0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
