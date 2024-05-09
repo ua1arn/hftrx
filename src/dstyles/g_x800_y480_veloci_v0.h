@@ -82,7 +82,7 @@ static const FLASHMEM struct dzone dzones [] =
 	{	0,	0, 	display_siglevel7, 	REDRM_BARS, PGALL, },	// signal level dBm
 	//{	0,	0, 	display2_smeors5, 	REDRM_BARS, PGALL, },	// уровень сигнала в баллах S или dBm
 	{	10,	0,	display2_rxbwval4,	REDRM_MODE, PGALL, },	// RX BW value
-	{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+	//{	15,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
 	{	18, 0,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 	{	22, 0,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 	{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
@@ -145,10 +145,10 @@ static const FLASHMEM struct dzone dzones [] =
 #endif /* WITHSPECTRUMWF */
 
 	{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
-	{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+	//{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 	{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 	{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PG0, },	// USB host status
-	{	32, DLE1,	display2_classa7,		REDRM_BARS, PGALL, },	// Class-A power amplifier
+	//{	32, DLE1,	display2_classa7,		REDRM_BARS, PGALL, },	// Class-A power amplifier
 	//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
