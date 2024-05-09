@@ -127,7 +127,8 @@
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
-	#define BOARD_DSTYLE "g_x800_y480.h"
+	//#define BOARD_DSTYLE "g_x800_y480.h"
+	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
 #elif 1
 
