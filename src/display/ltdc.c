@@ -1759,7 +1759,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define UI_LASTIX 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
-	#define VI_LASTIX 1
+	#define VI_LASTIX 2
 	#define UI_LASTIX 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
