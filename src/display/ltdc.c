@@ -2093,29 +2093,32 @@ static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 #endif
 }
 
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+static const uintptr_t t507cha [] =
+{
+	0x01101000,	// DE_VI1_BASE
+	0x01121000,	// DE_VI2_BASE
+	0x01141000,	// DE_VI3_BASE
+	0x01161000,
+	0x01181000,
+	0x011A1000,
+	0x011C1000,	// DE_UI1_BASE 6
+	0x011E1000,	// DE_UI2_BASE
+	0x01201000,	// DE_UI3_BASE
+	0x01221000,
+	0x01241000,
+	0x01261000,
+	0x01281000,
+	0x012A1000,
+	0x012C1000,
+	0x012E1000, // 15
+};
+#endif
+
 static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	static const uintptr_t a [] =
-	{
-		0x01101000,
-		0x01121000,
-		0x01141000,
-		0x01161000,
-		0x01181000,
-		0x011A1000,
-		0x011C1000,
-		0x011E1000,
-		0x01201000,
-		0x01221000,
-		0x01241000,
-		0x01261000,
-		0x01281000,
-		0x012A1000,
-		0x012C1000,
-		0x012E1000, // 15
-	};
-	return (DE_VI_TypeDef *) a [(ix - 1) + 0 + (rtmixid - 1) * 3];
+	return (DE_VI_TypeDef *) t507cha [(ix - 1) + 0 + (rtmixid - 1) * 3];
 #endif
 	switch (ix)
 	{
@@ -2136,26 +2139,7 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	static const uintptr_t a [] =
-	{
-			0x01101000,
-			0x01121000,
-			0x01141000,
-			0x01161000,
-			0x01181000,
-			0x011A1000,
-			0x011C1000,	// 6
-			0x011E1000,
-			0x01201000,
-			0x01221000,
-			0x01241000,
-			0x01261000,
-			0x01281000,
-			0x012A1000,
-			0x012C1000,
-			0x012E1000, // 15
-		};
-	return (DE_UI_TypeDef *) a [(ix - 1) + 6 + (rtmixid - 1) * 3];
+	return (DE_UI_TypeDef *) t507cha [(ix - 1) + 6 + (rtmixid - 1) * 3];
 #endif
 	switch (ix)
 	{
