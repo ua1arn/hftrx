@@ -1768,8 +1768,8 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define UI_LASTIX 1
 #endif
 
-#define VI_POS_BIT(vi) (UINT32_C(1) << ((vi) + 8 - 1))
-#define UI_POS_BIT(ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
+#define VI_POS_BIT(rtmixid, vi) (UINT32_C(1) << ((vi) + 8 - 1))
+#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -3540,7 +3540,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
 	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
+		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		0;
 
 	t113_de_update(rtmixid);
@@ -3563,10 +3563,10 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
 
 	bld->BLD_EN_COLOR_CTL =
-		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
-		((de3_getui(rtmixid, 2) != NULL) * (layer2 != 0) * UI_POS_BIT(2))	| // pipe1 enable - from UI2
-		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(3))	| // pipe1 enable - from UI3
+		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
+		((de3_getui(rtmixid, 2) != NULL) * (layer2 != 0) * UI_POS_BIT(rtmixid, 2))	| // pipe1 enable - from UI2
+		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(rtmixid, 3))	| // pipe1 enable - from UI3
 		0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
@@ -3584,8 +3584,8 @@ void hardware_ltdc_main_set(uintptr_t p1)
 	//t113_de_set_address_ui(rtmixid, p1, 1);
 
 	bld->BLD_EN_COLOR_CTL =
-			((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
-			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1
+			((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
+			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 			0;
 
 	hardware_ltdc_vsync();	/* ожидаем начало кадра */
