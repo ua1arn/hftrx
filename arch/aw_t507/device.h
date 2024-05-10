@@ -149,6 +149,7 @@ typedef enum IRQn
 #define DE_XX3_BASE ((uintptr_t) 0x01003000)          /*!< DE_XX  Base */
 #define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DEb_GLB_BASE ((uintptr_t) 0x01008140)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
@@ -821,7 +822,8 @@ typedef struct DE_GLB_Type
     volatile uint32_t GLB_SIZE;                       /*!< Offset 0x008 Global size register */
     volatile uint32_t GLB_CLK;                        /*!< Offset 0x00C Global clock register */
     volatile uint32_t GLB_DBUFFER;                    /*!< Offset 0x010 Global double buffer control register */
-} DE_GLB_TypeDef; /* size of structure = 0x014 */
+             uint32_t reserved_0x014 [0x000B];
+} DE_GLB_TypeDef; /* size of structure = 0x040 */
 /*
  * @brief DE_TOP
  */
@@ -2303,6 +2305,7 @@ typedef struct VE_Type
 #define DE_XX3 ((DE_XX_TypeDef *) DE_XX3_BASE)        /*!< DE_XX3  register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
 #define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */

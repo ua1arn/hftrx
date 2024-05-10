@@ -3306,6 +3306,10 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_GLB">
+  <name>DEb_GLB</name>
+  <baseAddress>0x01008140</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_TOP</name>
   <description>Display Engine (DE) TOP (APB)</description>

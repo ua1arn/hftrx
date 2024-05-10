@@ -33,6 +33,7 @@
 #type; DE_GLB; Display Engine (DE) - Global Control
 
 #base; DE_GLB 0x01008100
+#base; DEb_GLB 0x01008140
 ##base; DE0_GLB 0x01100000; RT-Mixer0
 ##base; DE1_GLB 0x01200000; RT-Mixer1
 
@@ -50,6 +51,7 @@
 #regdef; GLB_SIZE;		0x008;	Global size register
 #regdef; GLB_CLK;		0x00C;	Global clock register
 #regdef; GLB_DBUFFER;	0x010;	Global double buffer control register
+#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
 
 # define DE2_BLD_BASE 0x1000
 # define DE2_CH_BASE 0x2000
