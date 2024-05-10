@@ -1751,59 +1751,115 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
-//// RT-MIXER base
-//#define T113_DE_BASE		DE_BASE
-////
-////#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
-////#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)	/* 5.10.3.4 Blender */
-//#define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
-//#define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
-//#define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
-//#define T113_DE_MUX_GSU2	(0x00100000 + 0x40000)
-//#define T113_DE_MUX_GSU3	(0x00100000 + 0x50000)
-//#define T113_DE_MUX_FCE		(0x00100000 + 0xa0000)
-//#define T113_DE_MUX_BWS		(0x00100000 + 0xa2000)
-//#define T113_DE_MUX_LTI		(0x00100000 + 0xa4000)
-//#define T113_DE_MUX_PEAK	(0x00100000 + 0xa6000)
-//#define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
-//#define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
-//#define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
 #elif (CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	// https://github.com/RMerl/asuswrt-merlin.ng/blob/master/release/src-rt-5.04axhnd.675x/bootloaders/u-boot-2019.07/arch/arm/include/asm/arch-sunxi/display2.h#L16
 	// struct de_clk
 	//
-	//#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
-	//#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)	/* 5.10.3.4 Blender */
-//	#define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
-//	#define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
-//	#define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
-//	#define T113_DE_MUX_GSU2	(0x00100000 + 0x40000)
-//	#define T113_DE_MUX_GSU3	(0x00100000 + 0x50000)
-//	#define T113_DE_MUX_FCE		(0x00100000 + 0xa0000)
-//	#define T113_DE_MUX_BWS		(0x00100000 + 0xa2000)
-//	#define T113_DE_MUX_LTI		(0x00100000 + 0xa4000)
-//	#define T113_DE_MUX_PEAK	(0x00100000 + 0xa6000)
-//	#define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
-//	#define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
-//	#define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
 
-//	# define SUNXI_DE2_MUX_GLB_REGS			0x00000
-//	# define SUNXI_DE2_MUX_BLD_REGS			0x01000
-//	# define SUNXI_DE2_MUX_CHAN_REGS		0x02000
-//	//# define SUNXI_DE2_MUX_CHAN_SZ			0x1000
-//	# define SUNXI_DE2_MUX_VSU_REGS			0x20000
-//	# define SUNXI_DE2_MUX_GSU1_REGS		0x30000
-//	# define SUNXI_DE2_MUX_GSU2_REGS		0x40000
-//	# define SUNXI_DE2_MUX_GSU3_REGS		0x50000
-//	# define SUNXI_DE2_MUX_FCE_REGS			0xa0000
-//	# define SUNXI_DE2_MUX_BWS_REGS			0xa2000
-//	# define SUNXI_DE2_MUX_LTI_REGS			0xa4000
-//	# define SUNXI_DE2_MUX_PEAK_REGS		0xa6000
-//	# define SUNXI_DE2_MUX_ASE_REGS			0xa8000
-//	# define SUNXI_DE2_MUX_FCC_REGS			0xaa000
-//	# define SUNXI_DE2_MUX_DCSC_REGS		0xb0000
+#define DE_MBUS_CLOCK_ADDR           (0x8008)
+#define DE2TCON_MUX_OFFSET           (0x8010)
+#define DE_VER_CTL_OFFSET            (0x8014)
+#define DE_RTWB_MUX_OFFSET           (0x8020)
+#define DE_CHN2CORE_MUX_OFFSET       (0x8024)
+#define DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
+#define DE_DEBUG_CTL_OFFSET          (0x80E0)
+#define RTMX_GLB_CTL_OFFSET(disp)    (0x8100 + (disp) * 0x40)
+#define RTMX_GLB_STS_OFFSET(disp)    (0x8104 + (disp) * 0x40)
+#define RTMX_OUT_SIZE_OFFSET(disp)   (0x8108 + (disp) * 0x40)
+#define RTMX_AUTO_CLK_OFFSET(disp)   (0x810C + (disp) * 0x40)
+#define RTMX_RCQ_CTL_OFFSET(disp)    (0x8110 + (disp) * 0x40)
+
+#define RTWB_RCQ_IRQ_OFFSET          (0x8200)
+#define RTWB_RCQ_STS_OFFSET          (0x8204)
+#define RTWB_RCQ_CTL_OFFSET          (0x8210)
+
+
+#ifndef SETMASK
+#define SETMASK(width, shift)   ((width?((-1U) >> (32-width)):0)  << (shift))
+#endif
+
+#ifndef CLRMASK
+#define CLRMASK(width, shift)   (~(SETMASK(width, shift)))
+#endif
+
+#ifndef GET_BITS
+#define GET_BITS(shift, width, reg) (((reg)&SETMASK(width, shift)) >> (shift))
+#endif
+
+#ifndef SET_BITS
+#define SET_BITS(shift, width, reg, val)                                       \
+	(((reg)&CLRMASK(width, shift)) | (val << (shift)))
+#endif
+
+static uint32_t readl(uintptr_t addr)
+{
+	return * (volatile uint32_t *) addr;
+}
+
+static void writel(uint32_t value, uintptr_t addr)
+{
+	* (volatile uint32_t *) addr = value;
+}
+
+static int32_t de_top_set_vchn2core_mux(
+	uint32_t phy_chn, uint32_t phy_disp)
+{
+	uintptr_t reg_base;
+	uint32_t reg_val;
+	uint32_t width = 2;
+	uint32_t shift = phy_chn << 1;
+
+	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
+	reg_val = readl(reg_base);
+	reg_val = SET_BITS(shift, width, reg_val, phy_disp);
+	writel(reg_val, reg_base);
+	return 0;
+}
+
+static int32_t de_top_set_uchn2core_mux(
+	uint32_t phy_chn, uint32_t phy_disp)
+{
+	uintptr_t reg_base;
+	uint32_t reg_val;
+	uint32_t width = 2;
+	uint32_t shift = ((phy_chn - 6) << 1) + 16;
+
+	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
+	reg_val = readl(reg_base);
+	reg_val = SET_BITS(shift, width, reg_val, phy_disp);
+	writel(reg_val, reg_base);
+	return 0;
+}
+
+static int32_t de_top_set_port2vchn_mux(uint32_t phy_disp,
+	uint32_t port, uint32_t phy_chn)
+{
+	uintptr_t reg_base = DE_BASE
+		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
+	uint32_t width = 4;
+	uint32_t shift = port << 2;
+	uint32_t reg_val = readl(reg_base);
+
+	reg_val = SET_BITS(shift, width, reg_val, phy_chn);
+	writel(reg_val, reg_base);
+	return 0;
+}
+
+static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
+	uint32_t port, uint32_t phy_chn)
+{
+	uintptr_t reg_base = DE_BASE
+		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
+	uint32_t width = 4;
+	uint32_t shift = port << 2;
+	uint32_t reg_val = readl(reg_base);
+
+	reg_val = SET_BITS(shift, width, reg_val, (phy_chn + 2));
+	writel(reg_val, reg_base);
+	return 0;
+}
 
 #else
 	//#error Undefined CPUSTYLE_xxx

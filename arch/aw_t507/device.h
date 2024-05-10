@@ -150,6 +150,7 @@ typedef enum IRQn
 #define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DEb_GLB_BASE ((uintptr_t) 0x01008140)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define RTWB_RCQ_BASE ((uintptr_t) 0x01008200)        /*!< RTWB_RCQ  Base */
 #define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
@@ -832,15 +833,17 @@ typedef struct DE_TOP_Type
 {
     volatile uint32_t DE_SCLK_GATE;                   /*!< Offset 0x000 DE SCLK Gating Register */
     volatile uint32_t DE_HCLK_GATE;                   /*!< Offset 0x004 DE HCLK Gating Register */
-    volatile uint32_t DE_AHB_RESET;                   /*!< Offset 0x008 DE AHB Reset Register */
-    volatile uint32_t DE_SCLK_DIV;                    /*!< Offset 0x00C DE SCLK Division Register */
-    volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 DE MUX Register */
-    volatile uint32_t DE_CMD;                         /*!< Offset 0x014 DE CMD Register */
-             uint32_t reserved_0x018;
-    volatile uint32_t DE_BIST_CTL;                    /*!< Offset 0x01C DE Bist Control Register */
-             uint32_t reserved_0x020;
-    volatile uint32_t DE_IP_CFG;                      /*!< Offset 0x024 DE IP Configure Register */
-} DE_TOP_TypeDef; /* size of structure = 0x028 */
+    volatile uint32_t DE_AHB_RESET;                   /*!< Offset 0x008 DE AHB Reset Register DE_MBUS_CLOCK_ADDR */
+    volatile uint32_t DE_SCLK_DIV;                    /*!< Offset 0x00C DE SCLK Division Register  */
+    volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 DE MUX Register DE2TCON_MUX_OFFSET */
+    volatile uint32_t DE_VER_CTL;                     /*!< Offset 0x014 DE_VER_CTL_OFFSET */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t DE_RTWB_MUX;                    /*!< Offset 0x020 DE_RTWB_MUX_OFFSET */
+    volatile uint32_t DE_CHN2CORE_MUX;                /*!< Offset 0x024 DE_CHN2CORE_MUX_OFFSET */
+    volatile uint32_t DE_PORT2CHN_MUX [0x002];        /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
+             uint32_t reserved_0x030 [0x002C];
+    volatile uint32_t DE_DEBUG_CTL;                   /*!< Offset 0x0E0 DE_DEBUG_CTL_OFFSET */
+} DE_TOP_TypeDef; /* size of structure = 0x0E4 */
 /*
  * @brief DE_UI
  */
@@ -1538,6 +1541,17 @@ typedef struct RTC_Type
     volatile uint32_t CRY_EN_REG;                     /*!< Offset 0x218 Crypt Enable Register */
              uint32_t reserved_0x21C [0x0079];
 } RTC_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief RTWB_RCQ
+ */
+/*!< RTWB_RCQ  */
+typedef struct RTWB_RCQ_Type
+{
+    volatile uint32_t RTWB_RCQ_IRQ;                   /*!< Offset 0x000 RTWB_RCQ_IRQ_OFFSET          (0x8200) */
+    volatile uint32_t RTWB_RCQ_STS;                   /*!< Offset 0x004 RTWB_RCQ_STS_OFFSET          (0x8204) */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t RTWB_RCQ_CTL;                   /*!< Offset 0x010 RTWB_RCQ_CTL_OFFSET          (0x8210) */
+} RTWB_RCQ_TypeDef; /* size of structure = 0x014 */
 /*
  * @brief R_CAN
  */
@@ -2306,6 +2320,7 @@ typedef struct VE_Type
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
+#define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
 #define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */

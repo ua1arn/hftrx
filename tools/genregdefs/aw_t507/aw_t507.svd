@@ -3341,7 +3341,7 @@
    <register>
     <name>DE_AHB_RESET</name>
     <displayName>DE_AHB_RESET</displayName>
-    <description>DE AHB Reset Register</description>
+    <description>DE AHB Reset Register DE_MBUS_CLOCK_ADDR</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3350,7 +3350,7 @@
    <register>
     <name>DE_SCLK_DIV</name>
     <displayName>DE_SCLK_DIV</displayName>
-    <description>DE SCLK Division Register</description>
+    <description>DE SCLK Division Register </description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3359,35 +3359,58 @@
    <register>
     <name>DE2TCON_MUX</name>
     <displayName>DE2TCON_MUX</displayName>
-    <description>DE MUX Register</description>
+    <description>DE MUX Register DE2TCON_MUX_OFFSET</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_CMD</name>
-    <displayName>DE_CMD</displayName>
-    <description>DE CMD Register</description>
+    <name>DE_VER_CTL</name>
+    <displayName>DE_VER_CTL</displayName>
+    <description>DE_VER_CTL_OFFSET</description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_BIST_CTL</name>
-    <displayName>DE_BIST_CTL</displayName>
-    <description>DE Bist Control Register</description>
-    <addressOffset>0x01C</addressOffset>
+    <name>DE_RTWB_MUX</name>
+    <displayName>DE_RTWB_MUX</displayName>
+    <description>DE_RTWB_MUX_OFFSET</description>
+    <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_IP_CFG</name>
-    <displayName>DE_IP_CFG</displayName>
-    <description>DE IP Configure Register</description>
+    <name>DE_CHN2CORE_MUX</name>
+    <displayName>DE_CHN2CORE_MUX</displayName>
+    <description>DE_CHN2CORE_MUX_OFFSET</description>
     <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000028</addressOffset>
+    <register>
+     <name>DE_PORT2CHN_MUX</name>
+     <displayName>DE_PORT2CHN_MUX</displayName>
+     <description>DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <register>
+    <name>DE_DEBUG_CTL</name>
+    <displayName>DE_DEBUG_CTL</displayName>
+    <description>DE_DEBUG_CTL_OFFSET</description>
+    <addressOffset>0x0E0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -7810,6 +7833,40 @@
     <displayName>CRY_EN_REG</displayName>
     <description>Crypt Enable Register</description>
     <addressOffset>0x218</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>RTWB_RCQ</name>
+  <description></description>
+  <baseAddress>0x01008200</baseAddress>
+  <registers>
+   <register>
+    <name>RTWB_RCQ_IRQ</name>
+    <displayName>RTWB_RCQ_IRQ</displayName>
+    <description>RTWB_RCQ_IRQ_OFFSET          (0x8200)</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTWB_RCQ_STS</name>
+    <displayName>RTWB_RCQ_STS</displayName>
+    <description>RTWB_RCQ_STS_OFFSET          (0x8204)</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTWB_RCQ_CTL</name>
+    <displayName>RTWB_RCQ_CTL</displayName>
+    <description>RTWB_RCQ_CTL_OFFSET          (0x8210)</description>
+    <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
