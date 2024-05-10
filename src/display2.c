@@ -4232,6 +4232,7 @@ void arm_cmplx_mult_real_f64(
 
 }
 
+#if 0
 /**
   @brief Instance structure for floating-point FIR decimator.
  */
@@ -4609,7 +4610,7 @@ typedef struct
     }
 
   }
-
+#endif
 #endif
 
 static void fftzoom_filer_decimate_ifspectrum(
