@@ -1861,6 +1861,27 @@ static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 	return 0;
 }
 
+
+static int32_t de_rtmx_set_chn_mux(uint32_t disp)
+{
+	uint32_t chn, phy_chn, chn_num, v_chn_num;
+
+	chn_num = 2;//de_feat_get_num_chns(disp);
+	v_chn_num = 2;//de_feat_get_num_vi_chns(disp);
+	for (chn = 0; chn < chn_num; ++chn) {
+		phy_chn = 0;//de_feat_get_phy_chn_id(disp, chn);
+		if (chn < v_chn_num) {
+			de_top_set_vchn2core_mux(phy_chn, disp);
+			de_top_set_port2vchn_mux(disp, chn, phy_chn);
+		} else {
+			de_top_set_uchn2core_mux(phy_chn, disp);
+			de_top_set_port2uchn_mux(disp, chn, phy_chn);
+		}
+	}
+
+	return 0;
+}
+
 #else
 	//#error Undefined CPUSTYLE_xxx
 #endif
@@ -3174,6 +3195,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			//glb->GLB_STS = 0;
 		}
 	}
+
+	de_rtmx_set_chn_mux(0);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
