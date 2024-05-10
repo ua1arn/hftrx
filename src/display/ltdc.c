@@ -3058,7 +3058,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
     }
 
-    if (0)
+	if (RTMIXID == 2)
     {
      	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 1;	// CORE1_SCLK_GATE
      	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 1;	// CORE1_HCLK_GATE
@@ -3070,6 +3070,35 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	{
 		const int rtmixid = RTMIXID;
+
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb != NULL)
+		{
+			glb->GLB_CTL =
+					(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
+					(UINT32_C(1) << 0) |		// EN RT enable/disable
+					0;
+
+			glb->GLB_CLK |= (UINT32_C(1) << 0);
+
+			//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
+			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
+			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
+
+			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
+			//glb->GLB_STS = 0;
+		}
+	}
+
+	if (RTMIXID == 2)
+	{
+		const int rtmixid = 2;
+
+//		printhex32(DE_TOP_BASE, DE_TOP, 64);
+    	/* перенаправление выхода DE */
+//		PRINTF("DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+    	DE_TOP->DE2TCON_MUX |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
+//		PRINTF("DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
