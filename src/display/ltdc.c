@@ -1919,15 +1919,52 @@ static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 	return 0;
 }
 
+////
+
+
+static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
+{
+#ifdef SUPPORT_FEAT_INIT_CONFIG
+
+	int32_t phy_chn = -1;
+	if ((disp < de_feat_get_num_screens())
+		&& (chn < de_feat_get_num_chns(disp))) {
+		uint32_t index = 0;
+		uint32_t i;
+		for (i = 0; i < disp; ++i)
+			index += de_feat_get_num_chns(i);
+		index += chn;
+		phy_chn = de_cur_features->chn_id_lut[index];
+	}
+	return phy_chn;
+
+#else
+
+	return chn;
+
+#endif /* #if SUPPORT_FEAT_INIT_CONFIG */
+}
+
+static int32_t de_feat_get_num_vi_chns(uint32_t disp)
+{
+	return 3;
+}
+
+static int32_t de_feat_get_num_chns(uint32_t disp)
+{
+	return 6;
+}
+
+///
 
 static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 {
 	uint32_t chn, phy_chn, chn_num, v_chn_num;
 
-	chn_num = 2;//de_feat_get_num_chns(disp);
-	v_chn_num = 2;//de_feat_get_num_vi_chns(disp);
+	chn_num = de_feat_get_num_chns(disp);
+	v_chn_num = de_feat_get_num_vi_chns(disp);
 	for (chn = 0; chn < chn_num; ++chn) {
-		phy_chn = 0;//de_feat_get_phy_chn_id(disp, chn);
+		phy_chn = de_feat_get_phy_chn_id(disp, chn);
 		if (chn < v_chn_num) {
 			de_top_set_vchn2core_mux(phy_chn, disp);
 			de_top_set_port2vchn_mux(disp, chn, phy_chn);
@@ -2078,7 +2115,7 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 		0x012C1000,
 		0x012E1000, // 15
 	};
-	return (DE_VI_TypeDef *) a [ix - 1 + 0 + (rtmixid - 1) * 3];
+	return (DE_VI_TypeDef *) a [(ix - 1) + 0 + (rtmixid - 1) * 3];
 #endif
 	switch (ix)
 	{
@@ -2118,7 +2155,7 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 			0x012C1000,
 			0x012E1000, // 15
 		};
-	return (DE_UI_TypeDef *) a [ix - 1 + 6 + (rtmixid - 1) * 3];
+	return (DE_UI_TypeDef *) a [(ix - 1) + 6 + (rtmixid - 1) * 3];
 #endif
 	switch (ix)
 	{
@@ -3307,7 +3344,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
 	}
 
-	//de_rtmx_set_chn_mux(0);
+	de_rtmx_set_chn_mux(RTMIXID - 1);
 
 	if (0)
 	{
@@ -3546,11 +3583,11 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 void hardware_ltdc_main_set(uintptr_t p1)
 {
 	const int rtmixid = RTMIXID;
-	t113_de_set_address_vi(rtmixid, p1, 1);
-	//t113_de_set_address_ui(p1, 1);
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
+	t113_de_set_address_vi(rtmixid, p1, 1);
+	//t113_de_set_address_ui(rtmixid, p1, 1);
 
 	bld->BLD_EN_COLOR_CTL =
 			((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
