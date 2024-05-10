@@ -1889,7 +1889,7 @@ static int32_t de_top_set_vchn2core_mux(
 	uintptr_t reg_base;
 	uint32_t reg_val;
 	uint32_t width = 2;
-	uint32_t shift = phy_chn << 1;
+	uint32_t shift = phy_chn * 2;
 
 	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
 	reg_val = readl(reg_base);
@@ -1905,7 +1905,7 @@ static int32_t de_top_set_uchn2core_mux(
 	uintptr_t reg_base;
 	uint32_t reg_val;
 	uint32_t width = 2;
-	uint32_t shift = ((phy_chn) << 1) + 16;
+	uint32_t shift = ((phy_chn) * 2) + 16;
 
 	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
 	reg_val = readl(reg_base);
@@ -1920,7 +1920,7 @@ static int32_t de_top_set_port2vchn_mux(uint32_t phy_disp,
 	uintptr_t reg_base = DE_BASE
 		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
 	uint32_t width = 4;
-	uint32_t shift = port << 2;
+	uint32_t shift = port * 4;
 	uint32_t reg_val = readl(reg_base);
 
 	reg_val = SET_BITS(shift, width, reg_val, phy_chn);
@@ -1934,7 +1934,7 @@ static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 	uintptr_t reg_base = DE_BASE
 		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
 	uint32_t width = 4;
-	uint32_t shift = port << 2;
+	uint32_t shift = port * 4;
 	uint32_t reg_val = readl(reg_base);
 
 	reg_val = SET_BITS(shift, width, reg_val, (phy_chn + (8 - VI_LASTIX)));
@@ -3330,9 +3330,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
 //	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
 	de_rtmx_set_chn_mux(RTMIXID - 1);
-//	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
-//	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
-//	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
+	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
+	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
+	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
 
 	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
 	// bits 3:0 - BLD_EN_COLOR_CTL bit 8
