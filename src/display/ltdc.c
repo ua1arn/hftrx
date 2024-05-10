@@ -1758,6 +1758,64 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	// struct de_clk
 	//
 
+#define DE_TOP_REG_OFFSET (0x8000)
+#define DE_TOP_REG_SIZE   (0x0220)
+
+#define DE_TOP_RTWB_OFFSET (0x010000)
+
+#define DE_TOP_RTMX_OFFSET (0x100000)
+
+#define DE_CHN_SIZE            (0x20000) /* 128K */
+#define DE_CHN_OFFSET(phy_chn) (0x100000 + DE_CHN_SIZE * (phy_chn))
+
+//	#define DE_BLD_BASE ((uintptr_t) 0x01281000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
+//	#define DEb_BLD_BASE ((uintptr_t) 0x012A1000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_DISP_SIZE           (0x20000) /* 128K */
+#define DE_DISP_OFFSET(disp)   (0x280000 + DE_DISP_SIZE * (disp))
+
+#define CHN_CCSC_OFFSET    (0x00800)
+
+// #define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define CHN_OVL_OFFSET     (0x01000)
+
+#define CHN_DBV_OFFSET     (0x02000)
+
+// #define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define CHN_SCALER_OFFSET  (0x04000)
+
+#define CHN_FBD_ATW_OFFSET (0x05000)
+#define CHN_CDC_OFFSET     (0x08000)
+
+// #define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define CHN_FCE_OFFSET     (0x10000)
+
+#define CHN_PEAK_OFFSET    (0x10800)
+#define CHN_LTI_OFFSET     (0x10C00)
+
+// #define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define CHN_BLS_OFFSET     (0x11000)
+
+// #define DE_FCC_BASE ((uintptr_t) 0x01111400)          /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define CHN_FCC_OFFSET     (0x11400)
+
+// #define DE_DNS_BASE ((uintptr_t) 0x01114000)          /*!< DE_DNS Denoise (DNS) Base */
+#define CHN_DNS_OFFSET     (0x14000)
+
+#define CHN_DI300_OFFSET   (0x14400)
+#define CHN_SNR_OFFSET     (0x14000)
+
+// #define DE_BLD_BASE ((uintptr_t) 0x01281000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DISP_BLD_OFFSET    (0x01000)
+
+#define DISP_DEP_OFFSET    (0x02000)
+#define DISP_DB3_OFFSET    (0x03000)
+#define DISP_FMT_OFFSET    (0x05000)
+#define DISP_DSC_OFFSET    (0x06000)
+#define DISP_KSC_OFFSET    (0x08000)
+
+#define RTWB_WB_OFFSET     (0x01000)
+#define RTWB_CDC_OFFSET    (0x08000)
+
 #define DE_MBUS_CLOCK_ADDR           (0x8008)
 #define DE2TCON_MUX_OFFSET           (0x8010)
 #define DE_VER_CTL_OFFSET            (0x8014)
@@ -2000,6 +2058,28 @@ static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 
 static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 {
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	static const uintptr_t a [] =
+	{
+		0x01101000,
+		0x01121000,
+		0x01141000,
+		0x01161000,
+		0x01181000,
+		0x011A1000,
+		0x011C1000,
+		0x011E1000,
+		0x01201000,
+		0x01221000,
+		0x01241000,
+		0x01261000,
+		0x01281000,
+		0x012A1000,
+		0x012C1000,
+		0x012E1000, // 15
+	};
+	return (DE_VI_TypeDef *) a [ix - 1 + 0 + (rtmixid - 1) * 3];
+#endif
 	switch (ix)
 	{
 	default: return NULL;
@@ -2018,6 +2098,28 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 
 static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 {
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	static const uintptr_t a [] =
+	{
+			0x01101000,
+			0x01121000,
+			0x01141000,
+			0x01161000,
+			0x01181000,
+			0x011A1000,
+			0x011C1000,	// 6
+			0x011E1000,
+			0x01201000,
+			0x01221000,
+			0x01241000,
+			0x01261000,
+			0x01281000,
+			0x012A1000,
+			0x012C1000,
+			0x012E1000, // 15
+		};
+	return (DE_UI_TypeDef *) a [ix - 1 + 6 + (rtmixid - 1) * 3];
+#endif
 	switch (ix)
 	{
 	default: return NULL;
@@ -2222,19 +2324,19 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 	for (vich = 1; vich <= VI_LASTIX; vich ++)
 	{
 		DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
-		if (vi == NULL)
-			continue;
+		if (vi != NULL)
+		{
+			const uint32_t attr = 0;	// disabled
 
-		const uint32_t attr = 0;	// disabled
-
-		vi->CFG [VI_CFG_INDEX].ATTR = attr;
-		vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-		vi->CFG [VI_CFG_INDEX].COORD = 0;
-		vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
-		vi->OVL_SIZE [0] = ovl_ui_mbsize;
-		vi->HORI [0] = 0;
-		vi->VERT [0] = 0;
-		vi->FCOLOR [0] = 0xFFFF0000;	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+			vi->CFG [VI_CFG_INDEX].ATTR = attr;
+			vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+			vi->CFG [VI_CFG_INDEX].COORD = 0;
+			vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+			vi->OVL_SIZE [0] = ovl_ui_mbsize;
+			vi->HORI [0] = 0;
+			vi->VERT [0] = 0;
+			vi->FCOLOR [0] = 0xFFFF0000;	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+		}
 	}
 
 	int uich = 1;
@@ -2242,21 +2344,21 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 	{
 		//DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 		DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
-		if (ui == NULL)
-			continue;
+		if (ui != NULL)
+		{
+			const uint32_t attr = 0;	// disabled
 
-		const uint32_t attr = 0;	// disabled
+			ui->CFG [UI_CFG_INDEX].ATTR = attr;
+			ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
+			ui->CFG [UI_CFG_INDEX].COORD = 0;
+			ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
+			ui->OVL_SIZE = ovl_ui_mbsize;
 
-		ui->CFG [UI_CFG_INDEX].ATTR = attr;
-		ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
-		ui->CFG [UI_CFG_INDEX].COORD = 0;
-		ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-		ui->OVL_SIZE = ovl_ui_mbsize;
-
-		ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
-		ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
-		ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
-		ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
+			ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
+			ASSERT(ui->CFG [UI_CFG_INDEX].SIZE == ovl_ui_mbsize);
+			ASSERT(ui->CFG [UI_CFG_INDEX].COORD == 0);
+			ASSERT(ui->OVL_SIZE == ovl_ui_mbsize);
+		}
 	}
 
 	/* Не все блоки могут быть в t113-s3 */
@@ -3196,7 +3298,26 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
 	}
 
-	de_rtmx_set_chn_mux(0);
+	//de_rtmx_set_chn_mux(0);
+
+	if (0)
+	{
+		unsigned disp;
+
+		for (disp = 0; disp < 2; ++ disp)
+		{
+			uintptr_t v = DE_BASE + DE_DISP_OFFSET(disp);
+			PRINTF("disp_base%u = 0x%08X\n", disp, (unsigned) v);
+
+		}
+		unsigned phy_chn;
+		for (phy_chn = 0; phy_chn < 16; ++ phy_chn)
+		{
+			uintptr_t v = DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET;
+			PRINTF("chn_base%u = 0x%08X\n", phy_chn, (unsigned) v);
+		}
+
+	}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization

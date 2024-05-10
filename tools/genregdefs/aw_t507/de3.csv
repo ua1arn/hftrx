@@ -278,6 +278,25 @@
 #regdef; BLS_GAINLUT_REG; 0x30 4; 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3)
 #typeend;
 
+#type; DE_FCC; Fancy color curvature (FCC)
+#base; DE_FCC 0x01111400
+
+#regdef; FCC_CTL_REG; 0x000; FCC Control Register
+#regdef; FCC_INPUT_SIZE_REG; 0x004; FCC Input Size Register
+#regdef; FCC_OUTPUT_WIN0_REG; 0x008; FCC Output Window0 Register
+#regdef; FCC_OUTPUT_WIN1_REG; 0x00c; FCC Output Window1 Register
+
+#typeend;
+
+#type; DE_DNS; Denoise (DNS)
+#base; DE_DNS 0x01114000
+
+#regdef; DNS_CTL; 0x000; DNS module control register
+#regdef; DNS_SIZE; 0x004; DNS size register
+
+#typeend;
+
+
 #type; DE_XX
 
 #base; DE_XX0 0x01000000

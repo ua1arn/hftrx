@@ -155,6 +155,8 @@ typedef enum IRQn
 #define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC_BASE ((uintptr_t) 0x01111400)          /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS_BASE ((uintptr_t) 0x01114000)          /*!< DE_DNS Denoise (DNS) Base */
 #define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
@@ -773,6 +775,26 @@ typedef struct DE_BLS_Type
              uint32_t reserved_0x024 [0x0003];
     volatile uint32_t BLS_GAINLUT_REG [0x004];        /*!< Offset 0x030 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3) */
 } DE_BLS_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief DE_DNS
+ */
+/*!< DE_DNS Denoise (DNS) */
+typedef struct DE_DNS_Type
+{
+    volatile uint32_t DNS_CTL;                        /*!< Offset 0x000 DNS module control register */
+    volatile uint32_t DNS_SIZE;                       /*!< Offset 0x004 DNS size register */
+} DE_DNS_TypeDef; /* size of structure = 0x008 */
+/*
+ * @brief DE_FCC
+ */
+/*!< DE_FCC Fancy color curvature (FCC) */
+typedef struct DE_FCC_Type
+{
+    volatile uint32_t FCC_CTL_REG;                    /*!< Offset 0x000 FCC Control Register */
+    volatile uint32_t FCC_INPUT_SIZE_REG;             /*!< Offset 0x004 FCC Input Size Register */
+    volatile uint32_t FCC_OUTPUT_WIN0_REG;            /*!< Offset 0x008 FCC Output Window0 Register */
+    volatile uint32_t FCC_OUTPUT_WIN1_REG;            /*!< Offset 0x00C FCC Output Window1 Register */
+} DE_FCC_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief DE_FCE
  */
@@ -2325,6 +2347,8 @@ typedef struct VE_Type
 #define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
 #define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS ((DE_BLS_TypeDef *) DE_BLS_BASE)       /*!< DE_BLS Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC ((DE_FCC_TypeDef *) DE_FCC_BASE)       /*!< DE_FCC Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS ((DE_DNS_TypeDef *) DE_DNS_BASE)       /*!< DE_DNS Denoise (DNS) register set access pointer */
 #define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
 #define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
