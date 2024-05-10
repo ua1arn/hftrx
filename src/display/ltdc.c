@@ -1842,8 +1842,8 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define DE2TCON_MUX_OFFSET           (0x8010)
 #define DE_VER_CTL_OFFSET            (0x8014)
 #define DE_RTWB_MUX_OFFSET           (0x8020)
-#define DE_CHN2CORE_MUX_OFFSET       (0x8024)
-#define DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
+//#define DE_CHN2CORE_MUX_OFFSET       (0x8024)
+//#define DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
 #define DE_DEBUG_CTL_OFFSET          (0x80E0)
 #define RTMX_GLB_CTL_OFFSET(disp)    (0x8100 + (disp) * 0x40)
 #define RTMX_GLB_STS_OFFSET(disp)    (0x8104 + (disp) * 0x40)
@@ -1886,15 +1886,19 @@ static void writel(uint32_t value, uintptr_t addr)
 static int32_t de_top_set_vchn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
-	uintptr_t reg_base;
+	//uintptr_t reg_base;
 	uint32_t reg_val;
 	uint32_t width = 2;
 	uint32_t shift = phy_chn * 2;
 
-	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
-	reg_val = readl(reg_base);
+	//reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
+	//reg_val = readl(reg_base);
+	reg_val = DE_TOP->DE_CHN2CORE_MUX;
+
 	reg_val = SET_BITS(shift, width, reg_val, phy_disp);
-	writel(reg_val, reg_base);
+
+	//writel(reg_val, reg_base);
+	DE_TOP->DE_CHN2CORE_MUX = reg_val;
 	return 0;
 }
 
@@ -1902,43 +1906,52 @@ static int32_t de_top_set_uchn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
 	//ASSERT(phy_chn >= 6);
-	uintptr_t reg_base;
+	//uintptr_t reg_base;
 	uint32_t reg_val;
 	uint32_t width = 2;
 	uint32_t shift = ((phy_chn) * 2) + 16;
 
-	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
-	reg_val = readl(reg_base);
+	//reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
+	//reg_val = readl(reg_base);
+	reg_val = DE_TOP->DE_CHN2CORE_MUX;
+
 	reg_val = SET_BITS(shift, width, reg_val, phy_disp);
-	writel(reg_val, reg_base);
+
+	//writel(reg_val, reg_base);
+	DE_TOP->DE_CHN2CORE_MUX = reg_val;
 	return 0;
 }
 
 static int32_t de_top_set_port2vchn_mux(uint32_t phy_disp,
 	uint32_t port, uint32_t phy_chn)
 {
-	uintptr_t reg_base = DE_BASE
-		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
+//	uintptr_t reg_base = DE_BASE
+//		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
 	uint32_t width = 4;
 	uint32_t shift = port * 4;
-	uint32_t reg_val = readl(reg_base);
+	//uint32_t reg_val = readl(reg_base);
+	uint32_t reg_val = DE_TOP->DE_PORT2CHN_MUX [phy_disp];
 
 	reg_val = SET_BITS(shift, width, reg_val, phy_chn);
-	writel(reg_val, reg_base);
+	//writel(reg_val, reg_base);
+	DE_TOP->DE_PORT2CHN_MUX [phy_disp] = reg_val;
 	return 0;
 }
 
 static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 	uint32_t port, uint32_t phy_chn)
 {
-	uintptr_t reg_base = DE_BASE
-		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
+//	uintptr_t reg_base = DE_BASE
+//		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
 	uint32_t width = 4;
 	uint32_t shift = port * 4;
-	uint32_t reg_val = readl(reg_base);
+	//uint32_t reg_val = readl(reg_base);
+	uint32_t reg_val = DE_TOP->DE_PORT2CHN_MUX [phy_disp];
 
 	reg_val = SET_BITS(shift, width, reg_val, (phy_chn + (8 - VI_LASTIX)));
-	writel(reg_val, reg_base);
+
+	//writel(reg_val, reg_base);
+	DE_TOP->DE_PORT2CHN_MUX [phy_disp] = reg_val;
 	return 0;
 }
 
@@ -2123,7 +2136,7 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 #ifdef DEb_VI1
 	case 1: return rtmixid == 1 ? DE_VI1 : DEb_VI1;
 #else
-	case 1: return rtmixid == 1 ? DE_VI1 : NULL;
+	case 1: return DE_VI1;
 #endif
 #if VI_LASTIX > 1
 	case 2: return DE_VI2;
@@ -2141,7 +2154,11 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 	switch (ix)
 	{
 	default: return NULL;
-	case 1: return rtmixid == 1 ? DE_UI1 : NULL;
+#ifdef DEb_UI1
+	case 1: return rtmixid == 1 ? DE_UI1 : DEb_UI1;
+#else
+	case 1: return DE_UI1;
+#endif
 #if UI_LASTIX > 1
 	case 2: return DE_UI2;
 	case 3: return DE_UI3;
@@ -3326,9 +3343,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
 	}
 
-//	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
-//	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
-//	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
+	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
+	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
+	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
 	de_rtmx_set_chn_mux(RTMIXID - 1);
 	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
 	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
