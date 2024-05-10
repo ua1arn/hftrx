@@ -862,8 +862,8 @@ typedef struct DE_TOP_Type
              uint32_t reserved_0x018 [0x0002];
     volatile uint32_t DE_RTWB_MUX;                    /*!< Offset 0x020 DE_RTWB_MUX_OFFSET */
     volatile uint32_t DE_CHN2CORE_MUX;                /*!< Offset 0x024 DE_CHN2CORE_MUX_OFFSET */
-    volatile uint32_t DE_PORT2CHN_MUX [0x002];        /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
-             uint32_t reserved_0x030 [0x002C];
+    volatile uint32_t DE_PORT2CHN_MUX [0x004];        /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
+             uint32_t reserved_0x038 [0x002A];
     volatile uint32_t DE_DEBUG_CTL;                   /*!< Offset 0x0E0 DE_DEBUG_CTL_OFFSET */
 } DE_TOP_TypeDef; /* size of structure = 0x0E4 */
 /*

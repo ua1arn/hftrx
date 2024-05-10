@@ -8,7 +8,7 @@ SET FILELIST= ^
 	emac.csv gpu.csv ^
 	smc.csv spc.csv ^
 	uart.csv r_can.csv spi.csv twi.csv smhc.csv scr.csv timer.csv pwm.csv ^
-	de3.csv g2d.csv tconlcd.csv dmac.csv syscfg.csv iommu.csv ^
+	de33.csv g2d.csv tconlcd.csv dmac.csv syscfg.csv iommu.csv ^
 	ve.csv ce.csv hdmi_tx.csv tcon_tv.csv ^
 	audio_codec.csv ahub.csv tsc.csv dmic.csv gpadc.csv lradc.csv owa.csv ths.csv ^
 	c0_cpux_cfg.csv cpusubsysctrl.csv r_xxx.csv rtc.csv
