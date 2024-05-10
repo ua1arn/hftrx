@@ -649,7 +649,6 @@
 		case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
 		default: break; \
 		} \
-		} \
 	} while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
