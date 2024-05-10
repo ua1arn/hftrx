@@ -1749,6 +1749,28 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #elif CPUSTYLE_ALLWINNER
 
 
+#define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
+#define VI_CFG_INDEX 0
+
+#define RTMIXID 1	/* 1 or 2 */
+
+#if CPUSTYLE_T113 || CPUSTYLE_F133
+	#define VI_LASTIX 1
+	#define UI_LASTIX 1	// В RT-Mixer 1 отсутствуют UI
+	/* BLD_EN_COLOR_CTL positions 8..11 */
+#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
+	#define VI_LASTIX 1
+	#define UI_LASTIX 3
+	/* BLD_EN_COLOR_CTL positions 8..13 */
+#else
+	#error Unexpected CPUSTYLE_xxx
+	#define VI_LASTIX 1
+	#define UI_LASTIX 1
+#endif
+
+#define VI_POS_BIT(vi) (UINT32_C(1) << ((vi) + 8 - 1))
+#define UI_POS_BIT(ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
+
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
 
@@ -1879,10 +1901,11 @@ static int32_t de_top_set_vchn2core_mux(
 static int32_t de_top_set_uchn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
+	//ASSERT(phy_chn >= 6);
 	uintptr_t reg_base;
 	uint32_t reg_val;
 	uint32_t width = 2;
-	uint32_t shift = ((phy_chn - 6) << 1) + 16;
+	uint32_t shift = ((phy_chn) << 1) + 16;
 
 	reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
 	reg_val = readl(reg_base);
@@ -1914,7 +1937,7 @@ static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 	uint32_t shift = port << 2;
 	uint32_t reg_val = readl(reg_base);
 
-	reg_val = SET_BITS(shift, width, reg_val, (phy_chn + 2));
+	reg_val = SET_BITS(shift, width, reg_val, (phy_chn + (8 - VI_LASTIX)));
 	writel(reg_val, reg_base);
 	return 0;
 }
@@ -1947,12 +1970,12 @@ static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
 
 static int32_t de_feat_get_num_vi_chns(uint32_t disp)
 {
-	return 3;
+	return (VI_LASTIX - 1) + 1;
 }
 
 static int32_t de_feat_get_num_chns(uint32_t disp)
 {
-	return 6;
+	return (VI_LASTIX - 1) + 1 + (UI_LASTIX - 1) + 1;
 }
 
 ///
@@ -2062,28 +2085,6 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 //	uint32_t ovl_size;
 //};
 
-#define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
-#define VI_CFG_INDEX 0
-
-#define RTMIXID 1	/* 1 or 2 */
-
-#if CPUSTYLE_T113 || CPUSTYLE_F133
-	#define VI_LASTIX 1
-	#define UI_LASTIX 1	// В RT-Mixer 1 отсутствуют UI
-	/* BLD_EN_COLOR_CTL positions 8..11 */
-#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
-	#define VI_LASTIX 3
-	#define UI_LASTIX 3
-	/* BLD_EN_COLOR_CTL positions 8..13 */
-#else
-	#error Unexpected CPUSTYLE_xxx
-	#define VI_LASTIX 1
-	#define UI_LASTIX 1
-#endif
-
-#define VI_POS_BIT(vi) (UINT32_C(1) << ((vi) + 8 - 1))
-#define UI_POS_BIT(ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
-
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
 #ifdef DEb_GLB
@@ -2093,33 +2094,29 @@ static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 #endif
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-static const uintptr_t t507cha [] =
-{
-	0x01101000,	// DE_VI1_BASE
-	0x01121000,	// DE_VI2_BASE
-	0x01141000,	// DE_VI3_BASE
-	0x01161000,
-	0x01181000,
-	0x011A1000,
-	0x011C1000,	// DE_UI1_BASE 6
-	0x011E1000,	// DE_UI2_BASE
-	0x01201000,	// DE_UI3_BASE
-	0x01221000,
-	0x01241000,
-	0x01261000,
-	0x01281000,
-	0x012A1000,
-	0x012C1000,
-	0x012E1000, // 15
-};
-#endif
+//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//static const uintptr_t t507cha [] =
+//{
+//	DE_VI1_BASE,	// DE_VI1_BASE
+//	DE_VI2_BASE,	// DE_VI2_BASE
+//	DE_VI3_BASE,	// DE_VI3_BASE
+//	0*0x01161000,
+//	0*0x01181000,
+//	0*0x011A1000,
+//	DE_UI1_BASE,	// DE_UI1_BASE 6
+//	DE_UI2_BASE,	// DE_UI2_BASE
+//	DE_UI3_BASE,	// DE_UI3_BASE
+//	0*0x01221000,
+//	0*0x01241000,
+//	0*0x01261000,
+//};
+//#endif
 
 static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	return (DE_VI_TypeDef *) t507cha [(ix - 1) + 0 + (rtmixid - 1) * 3];
-#endif
+//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//	return (DE_VI_TypeDef *) t507cha [(ix - 1) + 0 + (rtmixid - 1) * 3];
+//#endif
 	switch (ix)
 	{
 	default: return NULL;
@@ -2138,9 +2135,9 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 
 static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	return (DE_UI_TypeDef *) t507cha [(ix - 1) + 6 + (rtmixid - 1) * 3];
-#endif
+//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//	return (DE_UI_TypeDef *) t507cha [(ix - 1) + 6 + (rtmixid - 1) * 3];
+//#endif
 	switch (ix)
 	{
 	default: return NULL;
@@ -2271,7 +2268,7 @@ static inline void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ui->CFG [UI_CFG_INDEX].TOP_LADDR = ptr_lo32(vram);
 	ui->TOP_HADDR = (0xFF & ptr_hi32(vram)) << (8 * UI_CFG_INDEX);
 	ui->CFG [UI_CFG_INDEX].ATTR = attr;
-
+	ui->CFG [UI_CFG_INDEX].FCOLOR = 0x0FFFF0000;
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
@@ -2382,6 +2379,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 			ui->CFG [UI_CFG_INDEX].COORD = 0;
 			ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
+			ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;
 			ui->OVL_SIZE = ovl_ui_mbsize;
 
 			ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
@@ -3328,7 +3326,19 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
 	}
 
+//	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
+//	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
+//	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
 	de_rtmx_set_chn_mux(RTMIXID - 1);
+//	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
+//	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
+//	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
+
+	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
+	// bits 3:0 - BLD_EN_COLOR_CTL bit 8
+	// bits 7:4 - BLD_EN_COLOR_CTL bit 9
+	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
+	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
 
 	if (0)
 	{
@@ -3550,8 +3560,8 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	t113_de_set_address_ui(rtmixid, layer2, 2);	// UI2
 	t113_de_set_address_ui(rtmixid, layer3, 3);	// UI3
 
-	// 5.10.9.1 BLD fill color control register
-	// BLD_EN_COLOR_CTL
+	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
+
 	bld->BLD_EN_COLOR_CTL =
 		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(1))	| // pipe0 enable - from VI1
 		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(1))	| // pipe1 enable - from UI1

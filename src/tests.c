@@ -11154,7 +11154,7 @@ void hightests(void)
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer2, DIM_X, DIM_Y,
-				30, 30,
+				30, 330,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic2, picx, picy,
 				0, 0,	// координаты окна источника
