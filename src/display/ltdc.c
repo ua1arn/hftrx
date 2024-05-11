@@ -1968,7 +1968,7 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	chn_num = de_feat_get_num_chns(disp);
 	for (chn = 0; chn < chn_num; ++chn) {
 		uint32_t phy_chn, phymap_chn;
-		phy_chn = de_feat_get_phy_chn_id(disp, chn);
+		//phy_chn = de_feat_get_phy_chn_id(disp, chn);
 		phymap_chn = de_feat_get_phymap_chn_id(disp, chn);
 		de_top_set_chn2core_mux(phymap_chn, disp);
 		de_top_set_port2chn_mux(disp, chn, phymap_chn);
