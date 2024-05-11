@@ -2064,7 +2064,9 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
-#ifdef DEb_GLB
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	return & DE_GLB [rtmixid - 1];
+#elif defined DEb_GLB
 	return rtmixid == 1 ? DE_GLB : DEb_GLB;
 #else
 	return rtmixid == 1 ? DE_GLB : NULL;
@@ -2133,7 +2135,10 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 
 static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 {
-#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+	return (DE_BLD_TypeDef *) (DE_BASE + DE_DISP_OFFSET(rtmixid - 1) + DISP_BLD_OFFSET);
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
 
 	switch (rtmixid)
 	{
@@ -3227,10 +3232,10 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
     }
 
-	if (RTMIXID == 2)
+	if (RTMIXID != 1)
     {
-     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 1;	// CORE1_SCLK_GATE
-     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 1;	// CORE1_HCLK_GATE
+     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
 
     }
  	// Only one bit writable
@@ -3279,9 +3284,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
 	}
 
-	if (RTMIXID == 2)
+	if (RTMIXID != 1)
 	{
-		const int rtmixid = 2;
+		const int rtmixid = RTMIXID;
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
@@ -3333,6 +3338,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			0x03 * (UINT32_C(1) << (3 * 2)) |	// CORE3 output
 			0x02 * (UINT32_C(1) << (2 * 2)) |	// CORE2 output
 			0x00 * (UINT32_C(1) << (1 * 2)) |	// CORE1 output - TCON0
+			0x01 * (UINT32_C(1) << (0 * 2)) |	// CORE0 output - TCON1
+			0;
+	case 2:
+		DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(0xFF) << 0)) |
+			0x03 * (UINT32_C(1) << (3 * 2)) |	// CORE3 output
+			0x00 * (UINT32_C(1) << (2 * 2)) |	// CORE2 output
+			0x02 * (UINT32_C(1) << (1 * 2)) |	// CORE1 output - TCON0
 			0x01 * (UINT32_C(1) << (0 * 2)) |	// CORE0 output - TCON1
 			0;
 		break;
