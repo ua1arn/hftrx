@@ -3709,6 +3709,25 @@ void gpu_dump(void)
 void GPU_IRQHandler(void)
 {
 	PRINTF("GPU_IRQHandler\n");
+	ASSERT(0);
+}
+
+void GPU_JOB_IRQHandler(void)
+{
+	PRINTF("GPU_JOB_IRQHandler\n");
+	ASSERT(0);
+}
+
+void GPU_MMU_IRQHandler(void)
+{
+	PRINTF("GPU_MMU_IRQHandler\n");
+	ASSERT(0);
+}
+
+void GPU_EVENT_IRQHandler(void)
+{
+	PRINTF("GPU_EVENT_IRQHandler\n");
+	ASSERT(0);
 }
 
 // Graphic processor unit
@@ -3729,6 +3748,12 @@ void board_gpu_initialize(void)
 
 //
 	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
+	arm_hardware_set_handler_system(GPU_EVENT_IRQn, GPU_EVENT_IRQHandler);
+	arm_hardware_set_handler_system(GPU_JOB_IRQn, GPU_JOB_IRQHandler);
+	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
+
+	memset((void *) (GPU_CTRLBASE), 0xFF, 512);
+	printhex32(GPU_CTRLBASE, (void *) (GPU_CTRLBASE), 512);
 
 	PRINTF("board_gpu_initialize done.\n");
 }
