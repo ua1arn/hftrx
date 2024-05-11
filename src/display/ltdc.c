@@ -1883,7 +1883,7 @@ static void writel(uint32_t value, uintptr_t addr)
 	* (volatile uint32_t *) addr = value;
 }
 
-static int32_t de_top_set_vchn2core_mux(
+static int32_t de_top_set_chn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
 	//uintptr_t reg_base;
@@ -1902,26 +1902,7 @@ static int32_t de_top_set_vchn2core_mux(
 	return 0;
 }
 
-static int32_t de_top_set_uchn2core_mux(
-	uint32_t phy_chn, uint32_t phy_disp)
-{
-	//uintptr_t reg_base;
-	uint32_t reg_val;
-	uint32_t width = 2;
-	uint32_t shift = phy_chn * 2;	// bits 31:16
-
-	//reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
-	//reg_val = readl(reg_base);
-	reg_val = DE_TOP->DE_CHN2CORE_MUX;
-
-	reg_val = SET_BITS(shift, width, reg_val, phy_disp);
-
-	//writel(reg_val, reg_base);
-	DE_TOP->DE_CHN2CORE_MUX = reg_val;
-	return 0;
-}
-
-static int32_t de_top_set_port2vchn_mux(uint32_t phy_disp,
+static int32_t de_top_set_port2chn_mux(uint32_t phy_disp,
 	uint32_t port, uint32_t phy_chn)
 {
 //	uintptr_t reg_base = DE_BASE
@@ -1932,23 +1913,6 @@ static int32_t de_top_set_port2vchn_mux(uint32_t phy_disp,
 	uint32_t reg_val = DE_TOP->DE_PORT2CHN_MUX [phy_disp];
 
 	reg_val = SET_BITS(shift, width, reg_val, phy_chn);
-	//writel(reg_val, reg_base);
-	DE_TOP->DE_PORT2CHN_MUX [phy_disp] = reg_val;
-	return 0;
-}
-
-static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
-	uint32_t port, uint32_t phy_chn)
-{
-//	uintptr_t reg_base = DE_BASE
-//		+ DE_PORT2CHN_MUX_OFFSET(phy_disp);
-	uint32_t width = 4;
-	uint32_t shift = port * 4;
-	//uint32_t reg_val = readl(reg_base);
-	uint32_t reg_val = DE_TOP->DE_PORT2CHN_MUX [phy_disp];
-
-	reg_val = SET_BITS(shift, width, reg_val, phy_chn);
-
 	//writel(reg_val, reg_base);
 	DE_TOP->DE_PORT2CHN_MUX [phy_disp] = reg_val;
 	return 0;
@@ -1999,20 +1963,15 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 
 static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 {
-	uint32_t chn, phy_chn, chn_num, v_chn_num, phymap_chn;
+	uint32_t chn, chn_num, v_chn_num;
 
 	chn_num = de_feat_get_num_chns(disp);
-	v_chn_num = de_feat_get_num_vi_chns(disp);
 	for (chn = 0; chn < chn_num; ++chn) {
+		uint32_t phy_chn, phymap_chn;
 		phy_chn = de_feat_get_phy_chn_id(disp, chn);
 		phymap_chn = de_feat_get_phymap_chn_id(disp, chn);
-		if (chn < v_chn_num) {
-			de_top_set_vchn2core_mux(phymap_chn, disp);
-			de_top_set_port2vchn_mux(disp, chn, phymap_chn);
-		} else {
-			de_top_set_uchn2core_mux(phymap_chn, disp);		// use specific conversion
-			de_top_set_port2uchn_mux(disp, chn, phymap_chn);	// use specific conversion
-		}
+		de_top_set_chn2core_mux(phymap_chn, disp);
+		de_top_set_port2chn_mux(disp, chn, phymap_chn);
 	}
 
 	return 0;
