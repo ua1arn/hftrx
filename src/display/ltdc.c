@@ -1905,11 +1905,10 @@ static int32_t de_top_set_vchn2core_mux(
 static int32_t de_top_set_uchn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
-	//ASSERT(phy_chn >= 6);
 	//uintptr_t reg_base;
 	uint32_t reg_val;
 	uint32_t width = 2;
-	uint32_t shift = ((phy_chn) * 2) + 16;
+	uint32_t shift = phy_chn * 2;	// bits 31:16
 
 	//reg_base = DE_BASE + DE_CHN2CORE_MUX_OFFSET;
 	//reg_val = readl(reg_base);
@@ -1948,7 +1947,7 @@ static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 	//uint32_t reg_val = readl(reg_base);
 	uint32_t reg_val = DE_TOP->DE_PORT2CHN_MUX [phy_disp];
 
-	reg_val = SET_BITS(shift, width, reg_val, (phy_chn + (8 - VI_LASTIX)));
+	reg_val = SET_BITS(shift, width, reg_val, phy_chn);
 
 	//writel(reg_val, reg_base);
 	DE_TOP->DE_PORT2CHN_MUX [phy_disp] = reg_val;
@@ -1957,6 +1956,11 @@ static int32_t de_top_set_port2uchn_mux(uint32_t phy_disp,
 
 ////
 
+
+static int32_t de_feat_get_phymap_chn_id(uint32_t disp, uint32_t chn)
+{
+	return chn < 3 ? chn : (chn - 3) | 0x08;
+}
 
 static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
 {
@@ -1976,7 +1980,7 @@ static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
 
 #else
 
-	return chn;
+	return chn < 3 ? chn : chn + 6;	// T507/H616 specific
 
 #endif /* #if SUPPORT_FEAT_INIT_CONFIG */
 }
@@ -1995,18 +1999,19 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 
 static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 {
-	uint32_t chn, phy_chn, chn_num, v_chn_num;
+	uint32_t chn, phy_chn, chn_num, v_chn_num, phymap_chn;
 
 	chn_num = de_feat_get_num_chns(disp);
 	v_chn_num = de_feat_get_num_vi_chns(disp);
 	for (chn = 0; chn < chn_num; ++chn) {
 		phy_chn = de_feat_get_phy_chn_id(disp, chn);
+		phymap_chn = de_feat_get_phymap_chn_id(disp, chn);
 		if (chn < v_chn_num) {
-			de_top_set_vchn2core_mux(phy_chn, disp);
-			de_top_set_port2vchn_mux(disp, chn, phy_chn);
+			de_top_set_vchn2core_mux(phymap_chn, disp);
+			de_top_set_port2vchn_mux(disp, chn, phymap_chn);
 		} else {
-			de_top_set_uchn2core_mux(phy_chn, disp);
-			de_top_set_port2uchn_mux(disp, chn, phy_chn);
+			de_top_set_uchn2core_mux(phymap_chn, disp);		// use specific conversion
+			de_top_set_port2uchn_mux(disp, chn, phymap_chn);	// use specific conversion
 		}
 	}
 
@@ -2418,28 +2423,6 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 //	write32(DE_BASE + T113_DE_MUX_ASE, 0);
 //	write32(DE_BASE + T113_DE_MUX_FCC, 0);
 //	write32(DE_BASE + T113_DE_MUX_DCSC, 0);
-
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
-
-//	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
-//	bld->CSC_CTL = 0;
-	unsigned phy_chn;
-	for (phy_chn = 0; phy_chn < 3; ++ phy_chn)
-	{
-		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET)) = 0;	// VSU
-		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET)) = 0;
-		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
-	}
-	for (phy_chn = 6; phy_chn < 9; ++ phy_chn)
-	{
-		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET)) = 0;	// VSU
-		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET)) = 0;
-		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
-	}
-
-	// Allwinner_DE2.0_Spec_V1.0.pdf
-
-#endif
 }
 
 #if 0
@@ -3295,7 +3278,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
-	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
+	// DE_PORT2CHN_MUX [0]=9x00A98210
 	// bits 3:0 - BLD_EN_COLOR_CTL bit 8 (pipe0)
 	// bits 7:4 - BLD_EN_COLOR_CTL bit 9 (pipe1)
 	// ...
@@ -3358,6 +3341,18 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 			//glb->GLB_STS = 0;
 		}
+	}
+
+
+//	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
+//	bld->CSC_CTL = 0;
+	unsigned chn;
+	for (chn = 0; chn < de_feat_get_num_chns(disp); ++ chn)
+	{
+		unsigned phy_chn = de_feat_get_phy_chn_id(disp, chn);
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET)) = 0;	// VSU
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET)) = 0;
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
 	}
 
 	/* перенаправление выхода DE */
