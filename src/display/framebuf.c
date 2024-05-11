@@ -3758,7 +3758,18 @@ void gpu_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
+	if (w == 0 || h == 0)
+		return;
+	if (w == 1 && h == 1)
+	{
+		* buffer = TFTALPHA(alpha, color24);
+		return;
+	}
+	//t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
+	int32_t triangle0 [3] [2] = { { 0, 0 }, { 0, h - 1}, { w - 1, 0 } };
+	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }
+
 // Graphic processor unit
 void board_gpu_initialize(void)
 {
