@@ -1088,6 +1088,20 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
+
+void gpu_fillrect(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	COLOR24_T color24,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	);
+
 uint_fast8_t smallfont_decode(char cc);
 uint_fast8_t bigfont_decode(char cc);
 uint_fast8_t halffont_decode(char cc);

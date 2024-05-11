@@ -1486,6 +1486,15 @@ hwaccel_rect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
+#elif WITHGPUHW && 0
+
+	const uintptr_t taddr = (uintptr_t) buffer;
+	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	gpu_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
+
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
@@ -3736,6 +3745,20 @@ void GPU_EVENT_IRQHandler(void)
 	ASSERT(0);
 }
 
+void gpu_fillrect(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	COLOR24_T color24,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	)
+{
+}
 // Graphic processor unit
 void board_gpu_initialize(void)
 {
@@ -3760,6 +3783,7 @@ void board_gpu_initialize(void)
 
 	memset((void *) (GPU_CTRLBASE), 0xFF, 512);
 	printhex32(GPU_CTRLBASE, (void *) (GPU_CTRLBASE), 512);
+
 
 	PRINTF("board_gpu_initialize done.\n");
 }
