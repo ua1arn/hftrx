@@ -3316,11 +3316,29 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	/* перенаправление выхода DE */
 	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-
-	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(0x01) << 0)) |
-		disp * (UINT32_C(1) << 0) |	/* MIXER0->TCON1; MIXER1->TCON0 */
-		0;
+	switch (disp)
+	{
+	case 0:
+		// 0xE4 initial value
+		DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(0xFF) << 0)) |
+			0x03 * (UINT32_C(1) << (3 * 2)) |	// CORE3 output
+			0x02 * (UINT32_C(1) << (2 * 2)) |	// CORE2 output
+			0x01 * (UINT32_C(1) << (1 * 2)) |	// CORE1 output - TCON1
+			0x00 * (UINT32_C(1) << (0 * 2)) |	// CORE0 output - TCON0
+			0;
+		//DE_TOP->DE2TCON_MUX = 0x000000E4;
+		break;
+	case 1:
+		DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(0xFF) << 0)) |
+			0x03 * (UINT32_C(1) << (3 * 2)) |	// CORE3 output
+			0x02 * (UINT32_C(1) << (2 * 2)) |	// CORE2 output
+			0x00 * (UINT32_C(1) << (1 * 2)) |	// CORE1 output - TCON0
+			0x01 * (UINT32_C(1) << (0 * 2)) |	// CORE0 output - TCON1
+			0;
+		break;
+	}
 	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+
 
 	if (0)
 	{
