@@ -3262,18 +3262,12 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
  	/* Global DE settings */
 
-#if 0
-	//PRINTF("DE_TOP after:\n");
-	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
-	// Offset 0x24: 0x01020905
-	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
-	PRINTF("DE_IP_CFG.RTD1_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
-	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_UI_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%08X\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
-#endif
-
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
+	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
+
+	const unsigned disp = RTMIXID - 1;
+
+	// CORE0..CORE3 bits valid
 
     if (1)
     {
@@ -3292,16 +3286,28 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
+	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
+	// bits 3:0 - BLD_EN_COLOR_CTL bit 8 (pipe0)
+	// bits 7:4 - BLD_EN_COLOR_CTL bit 9 (pipe1)
+	// ...
+	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
+	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
+
 	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
 	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
 	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
-	de_rtmx_set_chn_mux(RTMIXID - 1);
+	PRINTF("1 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
+	PRINTF("1 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
+	de_rtmx_set_chn_mux(disp);
 	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
 	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
 	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
+	PRINTF("2 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
+	PRINTF("2 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
 
+	if (1)
 	{
-		const int rtmixid = RTMIXID;
+		const int rtmixid = 1;
 
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
@@ -3326,12 +3332,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	{
 		const int rtmixid = 2;
 
-//		printhex32(DE_TOP_BASE, DE_TOP, 64);
-    	/* перенаправление выхода DE */
-//		PRINTF("DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-    	DE_TOP->DE2TCON_MUX |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
-//		PRINTF("DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
 		{
@@ -3351,11 +3351,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		}
 	}
 
-	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
-	// bits 3:0 - BLD_EN_COLOR_CTL bit 8
-	// bits 7:4 - BLD_EN_COLOR_CTL bit 9
-	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
-	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
+	/* перенаправление выхода DE */
+	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+
+	DE_TOP->DE2TCON_MUX = (DE_TOP->DE2TCON_MUX & ~ (UINT32_C(0x01) << 0)) |
+		disp * (UINT32_C(1) << 0) |	/* MIXER0->TCON1; MIXER1->TCON0 */
+		0;
+	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 	if (0)
 	{
