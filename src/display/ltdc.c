@@ -3249,17 +3249,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
 
-	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
-	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
-	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
-	PRINTF("1 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
-	PRINTF("1 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
+//	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
+//	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
+//	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
+//	PRINTF("1 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
+//	PRINTF("1 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
 	de_rtmx_set_chn_mux(disp);
-	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
-	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
-	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
-	PRINTF("2 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
-	PRINTF("2 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
+//	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
+//	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
+//	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
+//	PRINTF("2 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
+//	PRINTF("2 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
 
 	if (1)
 	{
@@ -3320,7 +3320,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	}
 
 	/* перенаправление выхода DE */
-	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	//PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 	switch (disp)
 	{
 	case 0:
@@ -3349,7 +3349,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			0;
 		break;
 	}
-	PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 
 	if (0)
