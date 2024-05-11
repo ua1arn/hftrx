@@ -10565,6 +10565,30 @@ void hightests(void)
 	//hmain();
 #if 0
 	{
+		// "Squash" test
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		unsigned w = DIM_X / 4;
+		unsigned posmax = DIM_X * 2 - w * 2;
+		unsigned pos = 0;
+		for (;;)
+		{
+			unsigned delta = pos > (posmax / 2) ? posmax - 1 - pos : pos;
+			// Erase background
+			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+			// Draw rextangle
+			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0 + delta, DIM_Y / 4, w, DIM_Y / 4, TFTRGB(0, 0, 0));
+
+			display_nextfb();
+			pos = (pos + 1) % posmax;
+		}
+
+	}
+#endif
+#if 0
+	{
 		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;
 		for (;n --;)
