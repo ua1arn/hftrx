@@ -295,19 +295,3 @@
 #regdef; DNS_SIZE; 0x004; DNS size register
 
 #typeend;
-
-
-#type; DE_XX
-
-#base; DE_XX0 0x01000000
-#base; DE_XX1 0x01001000
-#base; DE_XX2 0x01002000
-#base; DE_XX3 0x01003000
-
-#regdef; ADDR; 0x00E4 3; какое-то поле 32 бит
-#regdef; FLAGS; 0x00F0; какое-то поле с работающими битами 0x00030010 (17, 16, 4)
-#regdef; VALUE1; 0x00F4; какое-то поле 32 бит
-#regdef; FLAGS2; 0x00F8; какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2)
-#regdef; VALUE2; 0x00FC; какое-то поле 32 бит
-#typeend;
-

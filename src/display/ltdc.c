@@ -2423,10 +2423,13 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 
 //	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
 //	bld->CSC_CTL = 0;
-
-	* ((volatile uint32_t *) DE_VSU_BASE) = 0;
-	* ((volatile uint32_t *) DE_FCE_BASE) = 0;
-	* ((volatile uint32_t *) DE_BLS_BASE) = 0;
+	unsigned phy_chn;
+	for (phy_chn = 0; phy_chn < 6; ++ phy_chn)
+	{
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET)) = 0;	// VSU
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET)) = 0;
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
+	}
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 
@@ -3362,18 +3365,19 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	if (0)
 	{
 		unsigned disp;
-
 		for (disp = 0; disp < 2; ++ disp)
 		{
-			uintptr_t v = DE_BASE + DE_DISP_OFFSET(disp);
-			PRINTF("disp_base%u = 0x%08X\n", disp, (unsigned) v);
-
+			PRINTF("disp%u_base = 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
+			PRINTF("disp%u_bld_base = 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
+			PRINTF("disp%u_fmt_base = 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
 		}
 		unsigned phy_chn;
-		for (phy_chn = 0; phy_chn < 16; ++ phy_chn)
+		for (phy_chn = 0; phy_chn < 6; ++ phy_chn)
 		{
-			uintptr_t v = DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET;
-			PRINTF("chn_base%u = 0x%08X\n", phy_chn, (unsigned) v);
+			PRINTF("chn%u_ovl_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
+			PRINTF("chn%u_vsu_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
+			PRINTF("chn%u_fce_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
+			PRINTF("chn%u_bls_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
 		}
 
 	}

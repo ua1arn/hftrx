@@ -143,10 +143,6 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
-#define DE_XX0_BASE ((uintptr_t) 0x01000000)          /*!< DE_XX  Base */
-#define DE_XX1_BASE ((uintptr_t) 0x01001000)          /*!< DE_XX  Base */
-#define DE_XX2_BASE ((uintptr_t) 0x01002000)          /*!< DE_XX  Base */
-#define DE_XX3_BASE ((uintptr_t) 0x01003000)          /*!< DE_XX  Base */
 #define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define DEb_GLB_BASE ((uintptr_t) 0x01008140)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
@@ -966,19 +962,6 @@ typedef struct DE_VSU_Type
              uint32_t reserved_0x780 [0x0020];
     volatile uint32_t VSU_C_VCOEF_REGN [0x020];       /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
 } DE_VSU_TypeDef; /* size of structure = 0x880 */
-/*
- * @brief DE_XX
- */
-/*!< DE_XX  */
-typedef struct DE_XX_Type
-{
-             uint32_t reserved_0x000 [0x0039];
-    volatile uint32_t ADDR [0x003];                   /*!< Offset 0x0E4 какое-то поле 32 бит */
-    volatile uint32_t FLAGS;                          /*!< Offset 0x0F0 какое-то поле с работающими битами 0x00030010 (17, 16, 4) */
-    volatile uint32_t VALUE1;                         /*!< Offset 0x0F4 какое-то поле 32 бит */
-    volatile uint32_t FLAGS2;                         /*!< Offset 0x0F8 какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2) */
-    volatile uint32_t VALUE2;                         /*!< Offset 0x0FC какое-то поле 32 бит */
-} DE_XX_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DISP_IF_TOP
  */
@@ -2335,10 +2318,6 @@ typedef struct VE_Type
 
 /* Access pointers */
 
-#define DE_XX0 ((DE_XX_TypeDef *) DE_XX0_BASE)        /*!< DE_XX0  register set access pointer */
-#define DE_XX1 ((DE_XX_TypeDef *) DE_XX1_BASE)        /*!< DE_XX1  register set access pointer */
-#define DE_XX2 ((DE_XX_TypeDef *) DE_XX2_BASE)        /*!< DE_XX2  register set access pointer */
-#define DE_XX3 ((DE_XX_TypeDef *) DE_XX3_BASE)        /*!< DE_XX3  register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
