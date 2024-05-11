@@ -2424,7 +2424,13 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 //	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
 //	bld->CSC_CTL = 0;
 	unsigned phy_chn;
-	for (phy_chn = 0; phy_chn < 6; ++ phy_chn)
+	for (phy_chn = 0; phy_chn < 3; ++ phy_chn)
+	{
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET)) = 0;	// VSU
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET)) = 0;
+		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
+	}
+	for (phy_chn = 6; phy_chn < 9; ++ phy_chn)
 	{
 		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET)) = 0;	// VSU
 		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET)) = 0;
@@ -3367,17 +3373,17 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		unsigned disp;
 		for (disp = 0; disp < 2; ++ disp)
 		{
-			PRINTF("disp%u_base = 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
-			PRINTF("disp%u_bld_base = 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
-			PRINTF("disp%u_fmt_base = 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
+			PRINTF("#define disp%u_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
+			PRINTF("#define disp%u_bld_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
+			PRINTF("#define disp%u_fmt_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
 		}
 		unsigned phy_chn;
-		for (phy_chn = 0; phy_chn < 6; ++ phy_chn)
+		for (phy_chn = 0; phy_chn < 12; ++ phy_chn)
 		{
-			PRINTF("chn%u_ovl_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
-			PRINTF("chn%u_vsu_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
-			PRINTF("chn%u_fce_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
-			PRINTF("chn%u_bls_base = 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
+			PRINTF("#define chn%u_ovl_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
+			PRINTF("#define chn%u_vsu_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
+			PRINTF("#define chn%u_fce_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
+			PRINTF("#define chn%u_bls_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
 		}
 
 	}
