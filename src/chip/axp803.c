@@ -1225,26 +1225,24 @@ int axp853_initialize(void)
 	// F1 ball VDD1: 1.8
 	// A4 ball VDD2: vcc_dram 1.1
 
-	VERIFY(0 == axp858_set_dcdc1(3300));
+	VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
 	VERIFY(0 == axp858_set_dcdc2(970));		// CPU
 	VERIFY(0 == axp858_set_dcdc3(970));
-//#if WITHGPUHW
-	VERIFY(0 == axp858_set_dcdc4(970));	// VDD-GPU
-//#endif /* WITHGPUHW */
-	VERIFY(0 == axp858_set_dcdc5(1100));		// VCC-DRAM - 1.1V for LPDDR4
+	VERIFY(0 == axp858_set_dcdc4(970));		// VDD-GPU
+	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1V for LPDDR4
 
-	VERIFY(0 == axp858_set_aldo1(1800));		// VCC_PG, SDIO
-	VERIFY(0 == axp858_set_aldo2(1800));
-	VERIFY(0 == axp858_set_aldo3(2500));		// VPP DRAM
-	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
-	VERIFY(0 == axp858_set_aldo5(3300));		// VCC-PE
+	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG, SDIO
+	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
+	VERIFY(0 == axp858_set_aldo3(2500));	// VPP DRAM
+	VERIFY(0 == axp858_set_aldo4(1800));	// 1.8V for LPDDR4 VDD18-DRAM/VDD18-LPDDR
+	VERIFY(0 == axp858_set_aldo5(3300));	// VCC-PE 2.8/3.3V
 
-	VERIFY(0 == axp858_set_bldo1(1800));		// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
-	VERIFY(0 == axp858_set_bldo5(1200));		// External pin IOVDD_1V8 or Toshiba TC358778XBG
+	VERIFY(0 == axp858_set_bldo1(1800));	// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
+	VERIFY(0 == axp858_set_bldo5(1200));	// External pin IOVDD_1V8 or Toshiba TC358778XBG
 
 
-	VERIFY(0 == axp858_set_cldo3(0));			// CLDO3 connected as GPIO to EXTIRQ CPU pin
-	VERIFY(0 == axp858_set_cldo4(1800));		// 1.8V VCC-TV
+	VERIFY(0 == axp858_set_cldo3(0));		// CLDO3 connected as GPIO to EXTIRQ CPU pin
+	VERIFY(0 == axp858_set_cldo4(1800));	// 1.8V VCC-TV
 
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control
