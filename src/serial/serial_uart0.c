@@ -276,9 +276,9 @@ void hardware_uart0_enabletx(uint_fast8_t state)
 #elif CPUSTYLE_XC7Z
 
 	if (state)
-		 UART0->IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART0->IER |= (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 	else
-		 UART0->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		 UART0->IER &= ~ (1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
@@ -376,10 +376,15 @@ void hardware_uart0_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	uint32_t mask = state ? 1 : 0; 			/* RX FIFO trigger interrupt */
 	UART0->RXWM = 1; 						/* set RX FIFO Trigger Level */
-	UART0->IER = mask;
-	UART0->IDR = ~ mask;
+	if (state)
+	{
+		 UART0->IER |= (1u << 0);	/* RX FIFO trigger interrupt */
+	}
+	else
+	{
+		 UART0->IER &= ~ (1u << 0);	/* RX FIFO trigger interrupt */
+	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
