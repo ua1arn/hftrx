@@ -3707,6 +3707,20 @@ void arm_hardware_dma2d_initialize(void)
 #define GPU_STATUS_PRFCNT_ACTIVE            (1 << 2)    /* Set if the performance counters are active. */
 #define GPU_STATUS_PROTECTED_MODE_ACTIVE    (1 << 7)    /* Set if protected mode is active */
 
+
+/* IRQ flags */
+#define GPU_FAULT               (1 << 0)    /* A GPU Fault has occurred */
+#define MULTIPLE_GPU_FAULTS     (1 << 7)    /* More than one GPU Fault occurred. */
+#define RESET_COMPLETED         (1 << 8)    /* Set when a reset has completed. */
+#define POWER_CHANGED_SINGLE    (1 << 9)    /* Set when a single core has finished powering up or down. */
+#define POWER_CHANGED_ALL       (1 << 10)   /* Set when all cores have finished powering up or down. */
+
+#define PRFCNT_SAMPLE_COMPLETED (1 << 16)   /* Set when a performance count sample has completed. */
+#define CLEAN_CACHES_COMPLETED  (1 << 17)   /* Set when a cache clean operation has completed. */
+
+#define GPU_IRQ_REG_ALL (GPU_FAULT | MULTIPLE_GPU_FAULTS | RESET_COMPLETED \
+		| POWER_CHANGED_ALL | PRFCNT_SAMPLE_COMPLETED)
+
 static void gpu_command(unsigned cmd)
 {
 	GPU->GPU_COMMAND = cmd;
@@ -3717,50 +3731,6 @@ static void gpu_command(unsigned cmd)
 	while ((GPU->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
 		;
 }
-
-#if WITHDEBUG
-
-//	01800000: 70930000 07100206 00000000 00000209 00000001 00002821 000000FF 00000007
-//	01800020: 00000100 00000000 00000000 00000000 00000000 00000100 00FFFFE0 00000000
-//	01800040: 00000000 00000000 00000000 00010001 00000000 00000000 00000000 00000000
-//	01800060: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	01800080: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	018000A0: 00000200 00000100 00000100 0A044000 F7FFFFFE C3FFF7FF BFE1FF9F 000010F6
-//	018000C0: 0000020E 000004FE 0000007E 00000000 00000000 00000000 00000000 00000000
-//	018000E0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	01800100: 00000001 00000000 00000000 00000000 00000001 00000000 00000000 00000000
-//	01800120: 00000001 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	01800140: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	01800160: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	01800180: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	018001A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	018001C0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-//	018001E0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-
-void gpu_dump(void)
-{
-	int skip = 0;
-	static uint8_t pattern [512];
-	unsigned offs;
-	for (offs = 0; offs < 1024 * 1024; offs += sizeof pattern)
-	{
-		//* (volatile uint32_t *) (GPU_BASE + offs) |= 1;
-		if (memcmp(pattern, (void *) (GPU_BASE + offs), sizeof pattern) == 0)
-		{
-			++ skip;
-			PRINTF(".");
-			continue;
-		}
-		if (skip)
-		{
-			skip = 0;
-			PRINTF("\n");
-		}
-		printhex32(GPU_BASE + offs, (void *) (GPU_BASE + offs), sizeof pattern);
-		PRINTF("---\n");
-	}
-}
-#endif /* WITHDEBUG */
 
 void GPU_IRQHandler(void)
 {
@@ -3837,15 +3807,19 @@ void board_gpu_initialize(void)
 	arm_hardware_set_handler_system(GPU_JOB_IRQn, GPU_JOB_IRQHandler);
 	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
 
-//	memset((void *) GPU_BASE, 0xFF, 1024 * 1024);
-//	GPU->WSIZE = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);
-//	gpu_dump();
-//	memset((void *) (GPU_CTRLBASE), 0xFF, 512);
-//	printhex32(GPU_CTRLBASE, (void *) (GPU_CTRLBASE), 512);
+	GPU->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
+	GPU->GPU_IRQ_MASK = 0*GPU_IRQ_REG_ALL;
+
+	GPU_JOB_CONTROL->JOB_IRQ_CLEAR = 0xFFFFFFFF;
+	GPU_JOB_CONTROL->JOB_IRQ_MASK = 0*0xFFFFFFFF;
+
+	GPU_MMU->MMU_IRQ_CLEAR = 0xFFFFFFFF;
+	GPU_MMU->MMU_IRQ_MASK = 0*0xFFFFFFFF;
 
 	gpu_command(GPU_COMMAND_HARD_RESET);
 	gpu_command(GPU_COMMAND_SOFT_RESET);
 	gpu_command(GPU_COMMAND_NOP);
+
 	PRINTF("board_gpu_initialize done.\n");
 }
 
