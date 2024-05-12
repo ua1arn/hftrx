@@ -8967,6 +8967,9 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 	allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
+#if WITHGPUHW
+	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG);
+#endif /* WITHGPUHW */
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 

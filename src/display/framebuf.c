@@ -3783,8 +3783,6 @@ void board_gpu_initialize(void)
 	CCU->GPU_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset
 
 	PRINTF("allwnr_t507_get_gpu_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_gpu_freq() / 1000 / 1000);
-	//memset((void *) GPU_CTRLBASE, 0xFF, 4);
-	//gpu_dump();
 
 //
 	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
@@ -3792,6 +3790,8 @@ void board_gpu_initialize(void)
 	arm_hardware_set_handler_system(GPU_JOB_IRQn, GPU_JOB_IRQHandler);
 	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
 
+//	memset((void *) GPU_CTRLBASE, 0xFF, 4);
+//	gpu_dump();
 //	memset((void *) (GPU_CTRLBASE), 0xFF, 512);
 //	printhex32(GPU_CTRLBASE, (void *) (GPU_CTRLBASE), 512);
 
