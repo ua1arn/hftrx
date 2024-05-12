@@ -3718,23 +3718,31 @@ void arm_hardware_dma2d_initialize(void)
 #define PRFCNT_SAMPLE_COMPLETED (1 << 16)   /* Set when a performance count sample has completed. */
 #define CLEAN_CACHES_COMPLETED  (1 << 17)   /* Set when a cache clean operation has completed. */
 
-#define GPU_IRQ_REG_ALL (GPU_FAULT | MULTIPLE_GPU_FAULTS | RESET_COMPLETED \
+#define GPU_IRQ_REG_ALL (GPU_FAULT | MULTIPLE_GPU_FAULTS | 0*RESET_COMPLETED \
 		| POWER_CHANGED_ALL | PRFCNT_SAMPLE_COMPLETED)
 
 static void gpu_command(unsigned cmd)
 {
+	while ((GPU_CONTROL->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
+		;
 	GPU_CONTROL->GPU_COMMAND = cmd;
 //	unsigned v1 = GPU->GPU_STATUS;
 //	unsigned v2 = GPU->GPU_STATUS;
 //	unsigned v3 = GPU->GPU_STATUS;
 //	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
-	while ((GPU_CONTROL->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
+}
+
+static void gpu_wait(unsigned mask)
+{
+	while ((GPU_CONTROL->GPU_IRQ_RAWSTAT & mask) != mask)
 		;
+	GPU_CONTROL->GPU_IRQ_CLEAR = mask;
 }
 
 void GPU_IRQHandler(void)
 {
 	PRINTF("GPU_IRQHandler\n");
+	PRINTF("GPU_CONTROL->GPU_IRQ_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_IRQ_STATUS);
 	ASSERT(0);
 }
 
@@ -3829,16 +3837,18 @@ void board_gpu_initialize(void)
 	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
 
 	GPU_CONTROL->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
-	GPU_CONTROL->GPU_IRQ_MASK = 0*GPU_IRQ_REG_ALL;
+	GPU_CONTROL->GPU_IRQ_MASK = GPU_IRQ_REG_ALL;
 
 	GPU_JOB_CONTROL->JOB_IRQ_CLEAR = 0xFFFFFFFF;
-	GPU_JOB_CONTROL->JOB_IRQ_MASK = 0*0xFFFFFFFF;
+	GPU_JOB_CONTROL->JOB_IRQ_MASK = 0xFFFFFFFF;
 
 	GPU_MMU->MMU_IRQ_CLEAR = 0xFFFFFFFF;
-	GPU_MMU->MMU_IRQ_MASK = 0*0xFFFFFFFF;
+	GPU_MMU->MMU_IRQ_MASK = 0xFFFFFFFF;
 
 	gpu_command(GPU_COMMAND_HARD_RESET);
+	gpu_wait(RESET_COMPLETED);
 	gpu_command(GPU_COMMAND_SOFT_RESET);
+	gpu_wait(RESET_COMPLETED);
 	gpu_command(GPU_COMMAND_NOP);
 
 	PRINTF("board_gpu_initialize done.\n");
