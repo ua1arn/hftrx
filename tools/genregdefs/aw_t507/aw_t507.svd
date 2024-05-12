@@ -6700,6 +6700,191 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>GPU_MMU</name>
+  <description></description>
+  <baseAddress>0x01802000</baseAddress>
+  <registers>
+   <register>
+    <name>MMU_IRQ_RAWSTAT</name>
+    <displayName>MMU_IRQ_RAWSTAT</displayName>
+    <description>(RW) Raw interrupt status register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_IRQ_CLEAR</name>
+    <displayName>MMU_IRQ_CLEAR</displayName>
+    <description>(WO) Interrupt clear register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_IRQ_MASK</name>
+    <displayName>MMU_IRQ_MASK</displayName>
+    <description>(RW) Interrupt mask register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_IRQ_STATUS</name>
+    <displayName>MMU_IRQ_STATUS</displayName>
+    <description>(RO) Interrupt status register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <registers>
+     <register>
+      <name>AS_TRANSTAB_LO</name>
+      <displayName>AS_TRANSTAB_LO</displayName>
+      <description>(RW) Translation Table Base Address for address space n, low word</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_TRANSTAB_HI</name>
+      <displayName>AS_TRANSTAB_HI</displayName>
+      <description>(RW) Translation Table Base Address for address space n, high word</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_MEMATTR_LO</name>
+      <displayName>AS_MEMATTR_LO</displayName>
+      <description>(RW) Memory attributes for address space n, low word.</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_MEMATTR_HI</name>
+      <displayName>AS_MEMATTR_HI</displayName>
+      <description>(RW) Memory attributes for address space n, high word.</description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_LOCKADDR_LO</name>
+      <displayName>AS_LOCKADDR_LO</displayName>
+      <description>(RW) Lock region address for address space n, low word</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_LOCKADDR_HI</name>
+      <displayName>AS_LOCKADDR_HI</displayName>
+      <description>(RW) Lock region address for address space n, high word</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_COMMAND</name>
+      <displayName>AS_COMMAND</displayName>
+      <description>(WO) MMU command register for address space n</description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTSTATUS</name>
+      <displayName>AS_FAULTSTATUS</displayName>
+      <description>(RO) MMU fault status register for address space n</description>
+      <addressOffset>0x01C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTADDRESS_LO</name>
+      <displayName>AS_FAULTADDRESS_LO</displayName>
+      <description>(RO) Fault Address for address space n, low word</description>
+      <addressOffset>0x020</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTADDRESS_HI</name>
+      <displayName>AS_FAULTADDRESS_HI</displayName>
+      <description>(RO) Fault Address for address space n, high word</description>
+      <addressOffset>0x024</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_STATUS</name>
+      <displayName>AS_STATUS</displayName>
+      <description>(RO) Status flags for address space n</description>
+      <addressOffset>0x028</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_TRANSCFG_LO</name>
+      <displayName>AS_TRANSCFG_LO</displayName>
+      <description>(RW) Translation table configuration for address space n, low word</description>
+      <addressOffset>0x030</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_TRANSCFG_HI</name>
+      <displayName>AS_TRANSCFG_HI</displayName>
+      <description>(RW) Translation table configuration for address space n, high word</description>
+      <addressOffset>0x034</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTEXTRA_LO</name>
+      <displayName>AS_FAULTEXTRA_LO</displayName>
+      <description>(RO) Secondary fault address for address space n, low word</description>
+      <addressOffset>0x038</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTEXTRA_HI</name>
+      <displayName>AS_FAULTEXTRA_HI</displayName>
+      <description>(RO) Secondary fault address for address space n, high word</description>
+      <addressOffset>0x03C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>I2S0</name>
   <description></description>
   <baseAddress>0x05097200</baseAddress>

@@ -136,4 +136,32 @@
 #type; GPU_MMU
 #base; GPU_MMU 0x01802000
 
+#regdef; MMU_IRQ_RAWSTAT         ; 0x000   ; (RW) Raw interrupt status register
+#regdef; MMU_IRQ_CLEAR           ; 0x004   ; (WO) Interrupt clear register
+#regdef; MMU_IRQ_MASK            ; 0x008   ; (RW) Interrupt mask register
+#regdef; MMU_IRQ_STATUS          ; 0x00C   ; (RO) Interrupt status register
+
+#aggreg; MMU_AS; 0x100 16; Configuration registers for address space 0..15
+
+#regdef; AS_TRANSTAB_LO         ; 0x00	; (RW) Translation Table Base Address for address space n, low word
+#regdef; AS_TRANSTAB_HI         ; 0x04	; (RW) Translation Table Base Address for address space n, high word
+#regdef; AS_MEMATTR_LO          ; 0x08	; (RW) Memory attributes for address space n, low word.
+#regdef; AS_MEMATTR_HI          ; 0x0C	; (RW) Memory attributes for address space n, high word.
+#regdef; AS_LOCKADDR_LO         ; 0x10	; (RW) Lock region address for address space n, low word
+#regdef; AS_LOCKADDR_HI         ; 0x14	; (RW) Lock region address for address space n, high word
+#regdef; AS_COMMAND             ; 0x18	; (WO) MMU command register for address space n
+#regdef; AS_FAULTSTATUS         ; 0x1C	; (RO) MMU fault status register for address space n
+#regdef; AS_FAULTADDRESS_LO     ; 0x20	; (RO) Fault Address for address space n, low word
+#regdef; AS_FAULTADDRESS_HI     ; 0x24	; (RO) Fault Address for address space n, high word
+#regdef; AS_STATUS              ; 0x28	; (RO) Status flags for address space n
+#regdef; AS_TRANSCFG_LO         ; 0x30	; (RW) Translation table configuration for address space n, low word
+#regdef; AS_TRANSCFG_HI         ; 0x34	; (RW) Translation table configuration for address space n, high word
+#regdef; AS_FAULTEXTRA_LO       ; 0x38	; (RO) Secondary fault address for address space n, low word
+#regdef; AS_FAULTEXTRA_HI       ; 0x3C	; (RO) Secondary fault address for address space n, high word
+
+#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+#aggregend;
+
+
+
 #typeend;

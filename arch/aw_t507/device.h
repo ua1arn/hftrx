@@ -1360,6 +1360,37 @@ typedef struct GPU_JOB_CONTROL_Type
     volatile uint32_t JOB_IRQ_STATUS;                 /*!< Offset 0x00C Interrupt status register */
 } GPU_JOB_CONTROL_TypeDef; /* size of structure = 0x010 */
 /*
+ * @brief GPU_MMU
+ */
+/*!< GPU_MMU  */
+typedef struct GPU_MMU_Type
+{
+    volatile uint32_t MMU_IRQ_RAWSTAT;                /*!< Offset 0x000 (RW) Raw interrupt status register */
+    volatile uint32_t MMU_IRQ_CLEAR;                  /*!< Offset 0x004 (WO) Interrupt clear register */
+    volatile uint32_t MMU_IRQ_MASK;                   /*!< Offset 0x008 (RW) Interrupt mask register */
+    volatile uint32_t MMU_IRQ_STATUS;                 /*!< Offset 0x00C (RO) Interrupt status register */
+             uint32_t reserved_0x010 [0x003C];
+    struct
+    {
+        volatile uint32_t AS_TRANSTAB_LO;             /*!< Offset 0x100 (RW) Translation Table Base Address for address space n, low word */
+        volatile uint32_t AS_TRANSTAB_HI;             /*!< Offset 0x104 (RW) Translation Table Base Address for address space n, high word */
+        volatile uint32_t AS_MEMATTR_LO;              /*!< Offset 0x108 (RW) Memory attributes for address space n, low word. */
+        volatile uint32_t AS_MEMATTR_HI;              /*!< Offset 0x10C (RW) Memory attributes for address space n, high word. */
+        volatile uint32_t AS_LOCKADDR_LO;             /*!< Offset 0x110 (RW) Lock region address for address space n, low word */
+        volatile uint32_t AS_LOCKADDR_HI;             /*!< Offset 0x114 (RW) Lock region address for address space n, high word */
+        volatile uint32_t AS_COMMAND;                 /*!< Offset 0x118 (WO) MMU command register for address space n */
+        volatile uint32_t AS_FAULTSTATUS;             /*!< Offset 0x11C (RO) MMU fault status register for address space n */
+        volatile uint32_t AS_FAULTADDRESS_LO;         /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
+        volatile uint32_t AS_FAULTADDRESS_HI;         /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
+        volatile uint32_t AS_STATUS;                  /*!< Offset 0x128 (RO) Status flags for address space n */
+                 uint32_t reserved_0x02C;
+        volatile uint32_t AS_TRANSCFG_LO;             /*!< Offset 0x130 (RW) Translation table configuration for address space n, low word */
+        volatile uint32_t AS_TRANSCFG_HI;             /*!< Offset 0x134 (RW) Translation table configuration for address space n, high word */
+        volatile uint32_t AS_FAULTEXTRA_LO;           /*!< Offset 0x138 (RO) Secondary fault address for address space n, low word */
+        volatile uint32_t AS_FAULTEXTRA_HI;           /*!< Offset 0x13C (RO) Secondary fault address for address space n, high word */
+    } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
+} GPU_MMU_TypeDef; /* size of structure = 0x500 */
+/*
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
@@ -2474,6 +2505,7 @@ typedef struct VE_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU Mali G31 MP2 (Panfrost) register set access pointer */
 #define GPU_JOB_CONTROL ((GPU_JOB_CONTROL_TypeDef *) GPU_JOB_CONTROL_BASE)/*!< GPU_JOB_CONTROL  register set access pointer */
+#define GPU_MMU ((GPU_MMU_TypeDef *) GPU_MMU_BASE)    /*!< GPU_MMU  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S The Crypto Engine (CE) module register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
