@@ -2340,7 +2340,9 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 			vi->CFG [VI_CFG_INDEX].COORD = 0;
 			vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
-			vi->OVL_SIZE [0] = ovl_ui_mbsize;
+			vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+			vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+			vi->OVL_SIZE = ovl_ui_mbsize;
 			vi->HORI [0] = 0;
 			vi->VERT [0] = 0;
 			vi->FCOLOR [0] = 0xFFFF0000;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
@@ -2349,7 +2351,9 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			ASSERT(vi->CFG [VI_CFG_INDEX].SIZE == ovl_ui_mbsize);
 			ASSERT(vi->CFG [VI_CFG_INDEX].COORD == 0);
 			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [0] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
-			ASSERT(vi->OVL_SIZE [0] == ovl_ui_mbsize);
+			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [1] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
+			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [2] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
+			ASSERT(vi->OVL_SIZE == ovl_ui_mbsize);
 			ASSERT(vi->HORI [0] == 0);
 			ASSERT(vi->VERT [0] == 0);
 			ASSERT(vi->FCOLOR [0] == 0xFFFF0000);	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA

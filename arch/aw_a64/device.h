@@ -826,7 +826,8 @@ typedef struct DE_VI_Type
     volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
     volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
     volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x0E8 OVL_V overlay window size register */
+             uint32_t reserved_0x0EC;
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
