@@ -2064,6 +2064,7 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
+	ASSERT(rtmixid >= 1);
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	return & DE_GLB [rtmixid - 1];
 #elif defined DEb_GLB
@@ -2258,7 +2259,7 @@ static inline void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
-static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned color)
+static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, unsigned color24)
 {
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
@@ -2273,13 +2274,16 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 	int i;
 
 	/* DE submodules */
+	{
+		// Зачем ставится тут размер?
 
-	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-	if (glb == NULL)
-		return;
+		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+		if (glb == NULL)
+			return;
 
-	glb->GLB_SIZE = ovl_ui_mbsize;
-	ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
+		glb->GLB_SIZE = ovl_ui_mbsize;
+		ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
+	}
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
@@ -2296,7 +2300,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 //			(UINT32_C(3) << 12) |		// pipe 3 from ch 3
 //			0;
 	bld->PREMULTIPLY = 0;
-	bld->BKCOLOR = color; /* 24 bit. Отображается, когда нет данных от входного pipe */
+	bld->BKCOLOR = color24; /* 24 bit. Отображается, когда нет данных от входного pipe */
 
 //	PRINTF("2 bld->ROUTE=%08" PRIX32 "\n", bld->ROUTE);
 //	PRINTF("2 bld->BKCOLOR=%08" PRIX32 "\n", bld->BKCOLOR);
@@ -2339,7 +2343,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			vi->OVL_SIZE [0] = ovl_ui_mbsize;
 			vi->HORI [0] = 0;
 			vi->VERT [0] = 0;
-			vi->FCOLOR [0] = 0xFFFF0000;	// при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
+			vi->FCOLOR [0] = 0xFFFF0000;	// Opaque RED. при LAY_FILLCOLOR_EN - ALPGA + R + G + B - при LAY_FILLCOLOR_EN - замещает данные, идущие по DMA
 
 			ASSERT(vi->CFG [VI_CFG_INDEX].ATTR == attr);
 			ASSERT(vi->CFG [VI_CFG_INDEX].SIZE == ovl_ui_mbsize);
@@ -2365,7 +2369,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 			ui->CFG [UI_CFG_INDEX].COORD = 0;
 			ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-			ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;
+			ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
 			ui->OVL_SIZE = ovl_ui_mbsize;
 
 			ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
@@ -3076,7 +3080,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 #endif /* WITHDSIHW */
 
-static void hardware_de_initialize(const videomode_t * vdmode)
+static void hardware_de_initialize(const videomode_t * vdmode, unsigned tconix)
 {
 #if CPUSTYLE_A64
 
@@ -3225,21 +3229,11 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	// CORE0..CORE3 bits valid
 
-    if (1)
-    {
-     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// CORE0_SCLK_GATE
-     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+ 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+ 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
 
-    }
-
-	if (RTMIXID != 1)
-    {
-     	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
-     	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
-
-    }
  	// Only one bit writable
- 	DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+ 	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
 	// DE_PORT2CHN_MUX [0]=9x00A98210
@@ -3261,30 +3255,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //	PRINTF("2 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
 //	PRINTF("2 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
 
-	if (1)
-	{
-		const int rtmixid = 1;
 
-		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-		if (glb != NULL)
-		{
-			glb->GLB_CTL =
-					(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
-					(UINT32_C(1) << 0) |		// EN RT enable/disable
-					0;
-
-			glb->GLB_CLK |= (UINT32_C(1) << 0);
-
-			//* (volatile uint32_t *) (DE_TOP_BASE + 0x00C) = 1;	// это не делитель
-			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFFu;	// вешает. После сброса 0x000000E4
-			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
-
-			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
-			//glb->GLB_STS = 0;
-		}
-	}
-
-	if (RTMIXID != 1)
 	{
 		const int rtmixid = RTMIXID;
 
@@ -3322,6 +3293,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	/* перенаправление выхода DE */
 	// 0x000000E4 initial value
 	//PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	// На один TCON может быть направлен только один DE даже если второй выключен)
+//	DE_TOP->DE2TCON_MUX = SET_BITS(0 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+//	DE_TOP->DE2TCON_MUX = SET_BITS(1 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+//	DE_TOP->DE2TCON_MUX = SET_BITS(2 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+//	DE_TOP->DE2TCON_MUX = SET_BITS(3 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+
+	DE_TOP->DE2TCON_MUX = SET_BITS(disp * 2, 2, DE_TOP->DE2TCON_MUX, tconix);
 	switch (disp)
 	{
 	case 0:
@@ -3503,7 +3481,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
 
-	hardware_de_initialize(vdmode);
+	hardware_de_initialize(vdmode, TCONLCD_IX);
 }
 
 void
