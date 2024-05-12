@@ -136,7 +136,8 @@ static void dpc_parsehandler(void * arg)
 	timeholder_t th;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	th = nmea_time;
+	//th = nmea_time;
+	memcpy(& th, (void *) & nmea_time, sizeof(th));
 	LowerIrql(oldIrql);
 
 	if (nmea_time.valid)

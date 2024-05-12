@@ -230,21 +230,19 @@
 			#define WITHALPHA				24
 			#define FORMATFROMLIBRARY 		1
 			#define WITHUSEMALLOC			1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT		180
-			#define WITHTHERMOLEVEL		1
+			#define WITHAFGAINDEFAULT		0 //180
+			#define WITHTHERMOLEVEL			1
 			#define WITHALTERNATIVEFONTS	1
 //			#define WITHAFEQUALIZER			1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-//			#define WITHLFM					1
-//			#define WITHNMEA				1
+			#define WITHLFM					1
+			#define WITHNMEA				1
+			#define WITHGNSS				1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
 //			#define WITHEXTRFBOARDTEST		1
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
-			#define WITHBUFFERSSMALLDEBUG	1
-//			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
-//			#define WITHGNSS_1PPS	1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
