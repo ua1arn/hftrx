@@ -3701,7 +3701,7 @@ void gpu_dump(void)
 	int skip = 0;
 	static uint8_t pattern [512];
 	unsigned offs;
-	for (offs = 0x8000 * 2; offs < 4 * 256 * 1024; offs += 512)
+	for (offs = 0; offs < 1024 * 1024; offs += sizeof pattern)
 	{
 		* (volatile uint32_t *) (GPU_BASE + offs) |= 1;
 		if (memcmp(pattern, (void *) (GPU_BASE + offs), 512) == 0)
@@ -3777,6 +3777,8 @@ void board_gpu_initialize(void)
 
 	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
 	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+	PRCM->GPU_PWROFF_GATING = 0;
 
 	CCU->GPU_BGR_REG |= (UINT32_C(1) << 0);	// Clock Gating
 	CCU->GPU_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert Reset
