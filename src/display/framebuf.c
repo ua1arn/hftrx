@@ -3792,8 +3792,8 @@ void board_gpu_initialize(void)
 	arm_hardware_set_handler_system(GPU_JOB_IRQn, GPU_JOB_IRQHandler);
 	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
 
-	memset((void *) (GPU_CTRLBASE), 0xFF, 512);
-	printhex32(GPU_CTRLBASE, (void *) (GPU_CTRLBASE), 512);
+//	memset((void *) (GPU_CTRLBASE), 0xFF, 512);
+//	printhex32(GPU_CTRLBASE, (void *) (GPU_CTRLBASE), 512);
 
 
 	PRINTF("board_gpu_initialize done.\n");

@@ -11985,7 +11985,7 @@ void hightests(void)
 		PRINTF("zynq pin & bank calculations test passed.\n");
 	}
 #endif
-#if 1 && WITHOPENVG
+#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
