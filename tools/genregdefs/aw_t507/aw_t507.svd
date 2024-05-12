@@ -5883,6 +5883,60 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>GPU</name>
+  <description>Mali G31 MP2 (Panfrost)</description>
+  <baseAddress>0x01800000</baseAddress>
+  <interrupt>
+   <name>GPU_EVENT</name>
+   <value>126</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPU_JOB</name>
+   <value>127</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPU_MMU</name>
+   <value>128</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GPU</name>
+   <value>129</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>VERSION0</name>
+    <displayName>VERSION0</displayName>
+    <description>HW version g31  = 0x13b5 0x70930000</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VERSION1</name>
+    <displayName>VERSION1</displayName>
+    <description>HW version ? 07100206</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WSIZE</name>
+    <displayName>WSIZE</displayName>
+    <description>Window size? C3FFF7FF default value</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>I2S0</name>
   <description></description>
   <baseAddress>0x05097200</baseAddress>

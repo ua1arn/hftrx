@@ -163,7 +163,7 @@ typedef enum IRQn
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
-#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
+#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Panfrost) Base */
 #define CE_NS_BASE ((uintptr_t) 0x01904000)           /*!< CE The Crypto Engine (CE) module Base */
 #define CE_S_BASE ((uintptr_t) 0x01904800)            /*!< CE The Crypto Engine (CE) module Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
@@ -1225,6 +1225,17 @@ typedef struct GPIOINT_Type
     volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief GPU
+ */
+/*!< GPU Mali G31 MP2 (Panfrost) */
+typedef struct GPU_Type
+{
+    volatile uint32_t VERSION0;                       /*!< Offset 0x000 HW version g31  = 0x13b5 0x70930000 */
+    volatile uint32_t VERSION1;                       /*!< Offset 0x004 HW version ? 07100206 */
+             uint32_t reserved_0x008 [0x002B];
+    volatile uint32_t WSIZE;                          /*!< Offset 0x0B4 Window size? C3FFF7FF default value */
+} GPU_TypeDef; /* size of structure = 0x0B8 */
 /*
  * @brief I2S_PCM
  */
@@ -2338,6 +2349,7 @@ typedef struct VE_Type
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
+#define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU Mali G31 MP2 (Panfrost) register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S The Crypto Engine (CE) module register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */

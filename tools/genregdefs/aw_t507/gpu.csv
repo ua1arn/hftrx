@@ -1,7 +1,13 @@
-#type; GPU; Mali G31 MP2
+#type; GPU; Mali G31 MP2 (Panfrost)
 #base; GPU 0x01800000
 
 #irq; GPU_EVENT 126; GPU_EVENT interrupt
 #irq; GPU_JOB 127; GPU_JOB interrupt
 #irq; GPU_MMU 128; GPU_MMU interrupt
 #irq; GPU 129; GPU interrupt
+
+#regdef; VERSION0; 0x0000; HW version g31  = 0x13b5 0x70930000
+#regdef; VERSION1; 0x0004; HW version ? 07100206
+#regdef; WSIZE; 0x00B4; Window size? C3FFF7FF default value
+
+#typeend;
