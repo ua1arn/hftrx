@@ -3724,10 +3724,10 @@ void arm_hardware_dma2d_initialize(void)
 static void gpu_command(unsigned cmd)
 {
 	GPU->GPU_COMMAND = cmd;
-	unsigned v1 = GPU->GPU_STATUS;
-	unsigned v2 = GPU->GPU_STATUS;
-	unsigned v3 = GPU->GPU_STATUS;
-	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
+//	unsigned v1 = GPU->GPU_STATUS;
+//	unsigned v2 = GPU->GPU_STATUS;
+//	unsigned v3 = GPU->GPU_STATUS;
+//	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
 	while ((GPU->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
 		;
 }
