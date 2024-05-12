@@ -225,7 +225,9 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#define WITHAA				1		/* Поддержка сглаживания изображений */
 		#if 1
+			#define WITHLVGL				1
 			#define REALREFERENCE_FREQ 		61439600L
+			#define WITHDEFAULTDIALFREQ		7100000uL
 			#define WITHTOUCHGUI			1
 			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHALPHA				24
@@ -242,7 +244,6 @@
 //			#define WITHNMEA				1
 //			#define WITHEXTRFBOARDTEST		1
 //			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
-//			#define WITHGNSS_1PPS	1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
 		#endif

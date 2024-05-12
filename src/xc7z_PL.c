@@ -235,7 +235,7 @@ void xcz_dma_if_tx_inthandler(void)
 	uint32_t * r = (uint32_t *) addr;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		Xil_Out32(XPAR_IQ_MODEM_FIFO_IQ_TX_BASEADDR, r[i]);
+		Xil_Out32(XPAR_IQ_MODEM_MODULATOR_FIFO_IQ_TX_BASEADDR, r[i]);
 
 	release_dmabuffer32tx(addr);
 #endif /* WITHTX */
