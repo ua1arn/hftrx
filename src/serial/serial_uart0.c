@@ -127,6 +127,12 @@
 	{
 		char c;
 
+		if (UART0->ISR & (1u << 5))	// RXOVR
+		{
+			UART0->ISR = (1u << 5);	// RXOVR
+			HARDWARE_UART0_ONOVERFLOW();
+		}
+
 		while (hardware_uart0_getchar(& c))
 		{
 			HARDWARE_UART0_ONRXCHAR(c);
