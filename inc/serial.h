@@ -37,7 +37,6 @@ void modem_sendchar(void * ctx);							/* вызывается из обрабо
 
 void nmea_format(const char * format, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int nmea_putc(int c);
-void nmea_parser0_init(void);
 
 void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
 void hardware_uart0_set_speed(uint_fast32_t baudrate);

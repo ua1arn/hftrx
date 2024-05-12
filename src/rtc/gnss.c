@@ -300,9 +300,6 @@ void nmeagnss_initialize(void)
 	HARDWARE_NMEA_ENABLERX(1);
 	HARDWARE_NMEA_ENABLETX(0);
 	NMEA_INITIALIZE();
-#if CPUSTYLE_XC7Z
-	nmea_parser0_init();
-#endif /* CPUSTYLE_XC7Z */
 
 #endif /*  ! LINUX_SUBSYSTEM */
 }

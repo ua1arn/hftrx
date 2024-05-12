@@ -126,17 +126,11 @@
 	static void UART0_IRQHandler(void)
 	{
 		char c;
-		UART0->ISR = UART0->IMR;	// clear interrupt status
 
 		while (hardware_uart0_getchar(& c))
 		{
 			HARDWARE_UART0_ONRXCHAR(c);
 		}
-	}
-
-	void nmea_parser0_init(void)
-	{
-		serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
@@ -381,8 +375,8 @@ void hardware_uart0_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	UART0->RXWM = 1; 							/* set RX FIFO Trigger Level */
-	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
+	UART0->RXWM = 63; 							/* set RX FIFO Trigger Level */
+	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
 	if (state)
 	{
 		 UART0->IER = mask;

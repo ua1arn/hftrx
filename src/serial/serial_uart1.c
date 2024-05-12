@@ -132,7 +132,6 @@
 	static void UART1_IRQHandler(void)
 	{
 		char c;
-		UART1->ISR = UART1->IMR;	// clear interrupt status
 
 		while (hardware_uart1_getchar(& c))
 		{
@@ -396,8 +395,8 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	UART1->RXWM = 1; 							/* set RX FIFO Trigger Level */
-	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
+	UART1->RXWM = 63; 							/* set RX FIFO Trigger Level */
+	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
 	if (state)
 	{
 		 UART1->IER = mask;
