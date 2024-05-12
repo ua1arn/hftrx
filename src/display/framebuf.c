@@ -3785,6 +3785,27 @@ void gpu_fillrect(
 void board_gpu_initialize(void)
 {
 	PRINTF("board_gpu_initialize start.\n");
+	{
+		//PRINTF("1 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
+
+		const unsigned N = 432 * 2 / 24;
+		const unsigned M1 = 1;
+		const unsigned M0 = 2;
+		// PLL_GPU0 = 24 MHz*N/M0/M1
+		CCU->PLL_GPU0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 27);
+		CCU->PLL_GPU0_CTRL_REG =
+			(N - 1) * (UINT32_C(1) << 8) |
+			(M1 - 1) * (UINT32_C(1) << 1) |
+			(M0 - 1) * (UINT32_C(1) << 0) |
+			0;
+		CCU->PLL_GPU0_CTRL_REG |= (UINT32_C(1) << 31); // PLL_ENABLE
+		CCU->PLL_GPU0_CTRL_REG |= (UINT32_C(1) << 29); // LOCK_ENABLE
+		while ((CCU->PLL_GPU0_CTRL_REG  & (UINT32_C(1) << 28)) == 0)	// LOCK
+			;
+		CCU->PLL_GPU0_CTRL_REG |= (UINT32_C(1) << 27); // PLL_OUTPUT_ENABLE
+		//PRINTF("2 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
+
+	}
 
 	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
 	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
