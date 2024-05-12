@@ -3798,8 +3798,10 @@ void board_gpu_initialize(void)
 
 	PRINTF("allwnr_t507_get_gpu_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_gpu_freq() / 1000 / 1000);
 
+	// https://github.com/bakhi/GPUReplay/blob/accce5d2bcbe5794b895156997f50a6fda86a87c/replayer/include/midgard/mali_kbase_gpu_id.h#L26
+
 	// Mali G31 MP2 (Panfrost)
-	PRINTF("board_gpu_initialize: VERSION=0x%08X (expected 0x%08X)\n", (unsigned) GPU->VERSION0, 0x70930000);
+	PRINTF("board_gpu_initialize: GPU_ID=0x%08X (expected 0x%08X)\n", (unsigned) GPU->GPU_ID, 0x70930000);
 
 	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
 	arm_hardware_set_handler_system(GPU_EVENT_IRQn, GPU_EVENT_IRQHandler);
