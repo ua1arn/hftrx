@@ -164,6 +164,7 @@ typedef enum IRQn
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Panfrost) Base */
+#define GPU_CONTROL_BASE ((uintptr_t) 0x01800000)     /*!< GPU_CONTROL  Base */
 #define GPU_JOB_CONTROL_BASE ((uintptr_t) 0x01801000) /*!< GPU_JOB_CONTROL  Base */
 #define GPU_MMU_BASE ((uintptr_t) 0x01802000)         /*!< GPU_MMU  Base */
 #define CE_NS_BASE ((uintptr_t) 0x01904000)           /*!< CE The Crypto Engine (CE) module Base */
@@ -1228,10 +1229,10 @@ typedef struct GPIOINT_Type
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
- * @brief GPU
+ * @brief GPU_CONTROL
  */
-/*!< GPU Mali G31 MP2 (Panfrost) */
-typedef struct GPU_Type
+/*!< GPU_CONTROL  */
+typedef struct GPU_CONTROL_Type
 {
     volatile uint32_t GPU_ID;                         /*!< Offset 0x000 (RO) GPU and revision identifier */
     volatile uint32_t L2_FEATURES;                    /*!< Offset 0x004 (RO) Level 2 cache features */
@@ -1347,7 +1348,7 @@ typedef struct GPU_Type
     volatile uint32_t SHADER_CONFIG;                  /*!< Offset 0xF04 (RW) Shader core configuration (implementation-specific) */
     volatile uint32_t TILER_CONFIG;                   /*!< Offset 0xF08 (RW) Tiler core configuration (implementation-specific) */
     volatile uint32_t L2_MMU_CONFIG;                  /*!< Offset 0xF0C (RW) L2 cache and MMU configuration (implementation-specific) */
-} GPU_TypeDef; /* size of structure = 0xF10 */
+} GPU_CONTROL_TypeDef; /* size of structure = 0xF10 */
 /*
  * @brief GPU_JOB_CONTROL
  */
@@ -2503,7 +2504,7 @@ typedef struct VE_Type
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
-#define GPU ((GPU_TypeDef *) GPU_BASE)                /*!< GPU Mali G31 MP2 (Panfrost) register set access pointer */
+#define GPU_CONTROL ((GPU_CONTROL_TypeDef *) GPU_CONTROL_BASE)/*!< GPU_CONTROL  register set access pointer */
 #define GPU_JOB_CONTROL ((GPU_JOB_CONTROL_TypeDef *) GPU_JOB_CONTROL_BASE)/*!< GPU_JOB_CONTROL  register set access pointer */
 #define GPU_MMU ((GPU_MMU_TypeDef *) GPU_MMU_BASE)    /*!< GPU_MMU  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */

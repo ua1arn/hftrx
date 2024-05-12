@@ -5883,29 +5883,9 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>GPU</name>
-  <description>Mali G31 MP2 (Panfrost)</description>
+  <name>GPU_CONTROL</name>
+  <description></description>
   <baseAddress>0x01800000</baseAddress>
-  <interrupt>
-   <name>GPU_EVENT</name>
-   <value>126</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPU_JOB</name>
-   <value>127</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPU_MMU</name>
-   <value>128</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>GPU</name>
-   <value>129</value>
-   <description></description>
-  </interrupt>
   <registers>
    <register>
     <name>GPU_ID</name>

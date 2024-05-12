@@ -3723,12 +3723,12 @@ void arm_hardware_dma2d_initialize(void)
 
 static void gpu_command(unsigned cmd)
 {
-	GPU->GPU_COMMAND = cmd;
+	GPU_CONTROL->GPU_COMMAND = cmd;
 //	unsigned v1 = GPU->GPU_STATUS;
 //	unsigned v2 = GPU->GPU_STATUS;
 //	unsigned v3 = GPU->GPU_STATUS;
 //	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
-	while ((GPU->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
+	while ((GPU_CONTROL->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
 		;
 }
 
@@ -3800,15 +3800,15 @@ void board_gpu_initialize(void)
 	// https://github.com/bakhi/GPUReplay/blob/accce5d2bcbe5794b895156997f50a6fda86a87c/replayer/include/midgard/mali_kbase_gpu_id.h#L26
 
 	// Mali G31 MP2 (Panfrost)
-	PRINTF("board_gpu_initialize: GPU_ID=0x%08X (expected 0x%08X)\n", (unsigned) GPU->GPU_ID, 0x70930000);
+	PRINTF("board_gpu_initialize: GPU_ID=0x%08X (expected 0x%08X)\n", (unsigned) GPU_CONTROL->GPU_ID, 0x70930000);
 
 	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
 	arm_hardware_set_handler_system(GPU_EVENT_IRQn, GPU_EVENT_IRQHandler);
 	arm_hardware_set_handler_system(GPU_JOB_IRQn, GPU_JOB_IRQHandler);
 	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
 
-	GPU->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
-	GPU->GPU_IRQ_MASK = 0*GPU_IRQ_REG_ALL;
+	GPU_CONTROL->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
+	GPU_CONTROL->GPU_IRQ_MASK = 0*GPU_IRQ_REG_ALL;
 
 	GPU_JOB_CONTROL->JOB_IRQ_CLEAR = 0xFFFFFFFF;
 	GPU_JOB_CONTROL->JOB_IRQ_MASK = 0*0xFFFFFFFF;

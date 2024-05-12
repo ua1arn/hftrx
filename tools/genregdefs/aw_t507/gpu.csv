@@ -8,6 +8,10 @@
 
 # https://github.com/bakhi/GPUReplay/blob/master/Bifrost-kdriver/driver/product/kernel/drivers/gpu/arm/midgard/gpu/mali_kbase_gpu_regmap.h
 
+#type; GPU_CONTROL
+#base; GPU_CONTROL 0x01800000
+
+
 #regdef; GPU_ID                  ; 0x000   ; (RO) GPU and revision identifier
 #regdef; L2_FEATURES             ; 0x004   ; (RO) Level 2 cache features
 #regdef; TILER_FEATURES          ; 0x00C   ; (RO) Tiler Features
