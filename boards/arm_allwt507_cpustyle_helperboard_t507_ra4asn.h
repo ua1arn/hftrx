@@ -1046,11 +1046,16 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
-	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
-	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
-	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+
+	//	#define	TCONTV_IX 0	/* 0: TCON_TV0, 2: TCON_TV1 */
+	//	#define TCONTV_PTR TCON_TV0
+	//	#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+	//	#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tvd0_freq())
 
 #endif /* WITHLTDCHW */
 
