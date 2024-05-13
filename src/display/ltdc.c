@@ -2203,6 +2203,17 @@ static void t113_de_update(int rtmixid)
 		;
 }
 
+static void t113_de_update_nosync(int rtmixid)
+{
+	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+	if (glb == NULL)
+		return;
+	glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
+//	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
+//		;
+}
+
+
 /* VI (VI0) */
 static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 {
@@ -3529,7 +3540,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		0;
 
-	t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
+	t113_de_update_nosync(rtmixid);	/* Update registers, no wait VSYNC */
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
