@@ -52,7 +52,7 @@ enum {
 	XGPO5,	// NVRAM_CS
 	XGPO6,	// ADC2CS
 	XGPO7,	// CSEXT2
-	XGPO8,	// CTL1OE
+	XGPO8,	// GPS reset
 };
 
 #define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR			0x8004a000
@@ -88,6 +88,16 @@ enum {
 #define LINUX_I2C_FILE		"/dev/i2c-0"
 #define LINUX_FB_FILE		"/dev/fb0"
 #define LINUX_TTY_FILE		"/dev/tty0"
+
+#if WITHNMEA
+
+#define GPS_RESET() do { \
+		gpio_writepin(XGPO8, 0); \
+		usleep(10000);  \
+		gpio_writepin(XGPO8, 1); \
+	} while (0)
+
+#endif /* WITHNMEA */
 
 #if WITHISBOOTLOADER
 
@@ -296,12 +306,12 @@ enum {
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_BITA		XGPI2
-	#define ENCODER_BITB		XGPI1
+	#define ENCODER_BITA		XGPI3
+	#define ENCODER_BITB		XGPI4
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		XGPI4
-	#define ENCODER2_BITB		XGPI3
+	#define ENCODER2_BITA		XGPI1
+	#define ENCODER2_BITB		XGPI2
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -617,29 +627,30 @@ enum {
 #if WITHSPIHW || WITHSPISW
 
 	#define targetctl1		XGPO4
-	#define targetctl1OE	XGPO8
 	#define targetnvram		XGPO5
+	#define targetadc2		XGPO2	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetadck		XGPO6	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	#define targetext1		XGPO3
+	#define targetext2		XGPO7
 
 	/* Select specified chip. */
-	#define SPI_CS_ASSERT(target)	do { \
-		switch (target) { \
-			case targetctl1: { gpio_writepin(targetctl1, 0); gpio_writepin(targetctl1OE, 0); } break; \
-			default: { gpio_writepin(target, 0); } break; \
-		} \
-	} while (0)
+	#define SPI_CS_ASSERT(target)	do { gpio_writepin(target, 0); } while (0)
 
 	/* Unelect specified chip. */
-	#define SPI_CS_DEASSERT(target)	do { \
-		gpio_writepin(target, 1); \
-	} while (0)
+	#define SPI_CS_DEASSERT(target)	do { gpio_writepin(target, 1); } while (0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			gpio_writepin(targetctl1OE, 1); \
 			gpio_writepin(targetctl1, 1); \
 			gpio_writepin(targetnvram, 1); \
+			gpio_writepin(targetadck, 1); \
+			gpio_writepin(targetadc2, 1); \
+			gpio_writepin(targetext1, 1); \
+			gpio_writepin(targetext2, 1); \
 		} while (0)
+
+	#define SPI_ALLCS_DISABLE()	SPI_ALLCS_INITIALIZE()
 
 	// MOSI & SCK port
 	#define	SPI_SCLK_MIO 	XGPO1
@@ -669,6 +680,13 @@ enum {
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART2HW
@@ -686,7 +704,7 @@ enum {
 #if WITHKEYBOARD
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (gpio_readpin(XGPI2) == 0)
+	//#define TARGET_ENC2BTN_GET (gpio_readpin(XGPI2) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON

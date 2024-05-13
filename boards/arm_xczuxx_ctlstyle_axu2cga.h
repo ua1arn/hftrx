@@ -139,10 +139,10 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
-	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	//#define WITHENCODER2	1		/* есть второй валкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
@@ -236,8 +236,9 @@
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 //			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-//			#define WITHNMEA				1
-//			#define WITHLFM					1
+			#define WITHGNSS				1
+			#define WITHNMEA				1
+			#define WITHLFM					1
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
 //			#define DEFAULTDIALFREQ			12289000uL
@@ -430,7 +431,7 @@
 		// толькло основная плата - 5W усилитель
 
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL

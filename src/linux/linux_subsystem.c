@@ -4,6 +4,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "radio.h"
+#include "encoder.h"
 
 #if LINUX_SUBSYSTEM
 
@@ -105,21 +106,28 @@ void * process_linux_timer_spool(void * args)
 	}
 }
 
+
 void * linux_encoder_spool(void * args)
 {
+	extern encoder_t encoder2;
+
 	while(1)
 	{
-		spool_encinterrupts(& encoder1);
+		spool_encinterrupts(& encoder2);
 		usleep(500);
 	}
 }
 
-#if WITHNMEA && WITHLFM
+#if WITHNMEA //&& WITHLFM
 
-void linux_nmea_spool(void * args)
+void * linux_nmea_spool(void * args)
 {
 	const char * argv [] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
 	linux_run_shell_cmd(argv);
+
+#if defined (GPS_RESET)
+	GPS_RESET();
+#endif
 
 	int num_read;
 	int fid = open(LINUX_NMEA_FILE, O_RDONLY);
@@ -135,12 +143,12 @@ void linux_nmea_spool(void * args)
 		if (num_read > 1)
 		{
 			for (int i = 0; i < num_read; i ++)
-				nmeagnss_parechar(buf[i]);		/* USER MODE или SYSTEM-MODE обработчик надо вызывать ? */
+				nmeagnss_parsechar(buf[i]);		/* USER MODE или SYSTEM-MODE обработчик надо вызывать ? */
 		}
 	}
 }
 
-void linux_pps_thread(void * args)
+void * linux_pps_thread(void * args)
 {
 	uint32_t uio_key = 1;
 	uint32_t uio_value = 0;
@@ -148,7 +156,7 @@ void linux_pps_thread(void * args)
 	int fd_pps = open(LINUX_PPS_INT_FILE, O_RDWR);
     if (fd_pps < 0) {
         PRINTF("%s open failed\n", LINUX_PPS_INT_FILE);
-        return;
+        return 0;
     }
 
     while(1)
@@ -156,13 +164,13 @@ void linux_pps_thread(void * args)
         //Acknowledge IRQ
         if (write(fd_pps, &uio_key, sizeof(uio_key)) < 0) {
             PRINTF("Failed to acknowledge IRQ: %s\n", strerror(errno));
-            return;
+            return 0;
         }
 
         //Wait for next IRQ
         if (read(fd_pps, &uio_value, sizeof(uio_value)) < 0) {
             PRINTF("Failed to wait for IRQ: %s\n", strerror(errno));
-            return;
+            return 0;
         }
 
         spool_nmeapps(NULL);
@@ -673,7 +681,7 @@ void linux_user_init(void)
 	xcz_resetn_modem(0);
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
-	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
+//	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
 
 #if defined AXI_DCDC_PWM_ADDR
