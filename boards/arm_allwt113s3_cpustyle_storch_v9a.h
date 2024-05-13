@@ -33,6 +33,13 @@
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
+#elif WITHMGLOOP
+	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта UART0 */
+	void user_uart0_onrxchar(uint_fast8_t c);
+	void user_uart0_ontxchar(void * ctx);
+	#define HARDWARE_UART0_ONRXCHAR(c) do { user_uart0_onrxchar((c)); } while (0)
+	#define HARDWARE_UART0_ONTXCHAR(ctx) do { user_uart0_ontxchar((ctx)); } while (0)
+
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
