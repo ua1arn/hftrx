@@ -2195,6 +2195,19 @@ static uint32_t ptr_lo32(uintptr_t v)
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(void)
 {
+	// Ожилание смены кадра через номер поля в RTMIX
+//	const int rtmixid = RTMIXID;
+//	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
+//	if (glb == NULL)
+//		return;
+//	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
+//	for (;;)
+//	{
+//		const uint_fast8_t state2 = (glb->GLB_STS >> 8) & 1;
+//		if (state != state2)
+//			break;
+//		hardware_nonguiyield();
+//	}
 #if defined (TCONLCD_PTR)
     TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
     while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
