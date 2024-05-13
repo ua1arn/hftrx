@@ -2192,28 +2192,22 @@ static uint32_t ptr_lo32(uintptr_t v)
 	static const uint32_t ui_format = 0x0A;
 #endif
 
-/* Update registers & wait VSYNC */
+/* ожидаем начало кадра */
+static void hardware_ltdc_vsync(void)
+{
+    TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
+    while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
+        hardware_nonguiyield();
+}
+
+/* Update registers */
 static void t113_de_update(int rtmixid)
 {
 	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 	if (glb == NULL)
 		return;
 
-    TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
-    while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
-        hardware_nonguiyield();
-
     glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
-	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
-		;
-}
-
-static void t113_de_update_nosync(int rtmixid)
-{
-	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-	if (glb == NULL)
-		return;
-	glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
 	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
 		;
 }
@@ -3520,7 +3514,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
     {
 
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-		t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
+		t113_de_update(rtmixid);	/* Update registers */
     }
 }
 
@@ -3545,7 +3539,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		0;
 
-	t113_de_update_nosync(rtmixid);	/* Update registers, no wait VSYNC */
+	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
@@ -3571,7 +3565,8 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(rtmixid, 3))	| // pipe1 enable - from UI3
 		0;
 
-	t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
+	hardware_ltdc_vsync();		/* ожидаем начало кадра */
+	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* set visible buffer start. Wait VSYNC. */
@@ -3589,7 +3584,8 @@ void hardware_ltdc_main_set(uintptr_t p1)
 			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 			0;
 
-	t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
+	hardware_ltdc_vsync();		/* ожидаем начало кадра */
+	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* Palette reload */
