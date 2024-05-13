@@ -2198,7 +2198,12 @@ static void t113_de_update(int rtmixid)
 	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 	if (glb == NULL)
 		return;
-	glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
+
+    TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
+    while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
+        hardware_nonguiyield();
+
+    glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
 	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
 		;
 }
@@ -2209,8 +2214,8 @@ static void t113_de_update_nosync(int rtmixid)
 	if (glb == NULL)
 		return;
 	glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
-//	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
-//		;
+	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
+		;
 }
 
 
