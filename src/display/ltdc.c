@@ -2195,9 +2195,16 @@ static uint32_t ptr_lo32(uintptr_t v)
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(void)
 {
+#if defined (TCONLCD_PTR)
     TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
     while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
         hardware_nonguiyield();
+#endif /* defined (TCONLCD_PTR) */
+#if defined (TCONTV_PTR)
+    TCONTV_PTR->TV_GINT0_REG &= ~ (UINT32_C(1) << 14);         //clear TV_VB_INT_FLAG
+    while ((TCONTV_PTR->TV_GINT0_REG & (UINT32_C(1) << 14)) == 0) //wait  TV_VB_INT_FLAG
+        hardware_nonguiyield();
+#endif /* defined (TCONLCD_PTR) */
 }
 
 /* Update registers */

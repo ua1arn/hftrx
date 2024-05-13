@@ -235,6 +235,8 @@ uint_fast32_t allwnr_t507_get_avs_freq(void);
 uint_fast32_t allwnr_t507_get_dram_freq(void);
 uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void);
 uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void);
+uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void);
+uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void);
 uint_fast32_t allwnr_t507_get_ahub_freq(void);
 uint_fast32_t allwnr_t507_get_gpu_freq(void);
 uint_fast32_t t507_get_pll_audio_1x_freq(void);
