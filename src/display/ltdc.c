@@ -1755,21 +1755,52 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define RTMIXID 1	/* 1 or 2 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
-	#define VI_LASTIX 1
-	#define UI_LASTIX 1	// В RT-Mixer 1 отсутствуют UI
+	#define VI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
-	#define VI_LASTIX 3
-	#define UI_LASTIX 3
+	#define VI_LASTIX(rtmixid) 3
+	#define UI_LASTIX(rtmixid) 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
 	#error Unexpected CPUSTYLE_xxx
-	#define VI_LASTIX 1
-	#define UI_LASTIX 1
+	#define VI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 1
 #endif
 
 #define VI_POS_BIT(rtmixid, vi) (UINT32_C(1) << ((vi) + 8 - 1))
-#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX) - 1))
+#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX(rtmixid)) - 1))
+
+
+#ifndef SETMASK
+#define SETMASK(width, shift)   (((width)?((-INT32_C(1)) >> (32-(width))):0)  << (shift))
+#endif
+
+#ifndef CLRMASK
+#define CLRMASK(width, shift)   (~(SETMASK((width), (shift))))
+#endif
+
+#ifndef GET_BITS
+#define GET_BITS(shift, width, reg) (((reg)&SETMASK((width), (shift))) >> (shift))
+#endif
+
+#ifndef SET_BITS
+#define SET_BITS(shift, width, reg, val)                                       \
+	(((reg)&CLRMASK((width), (shift))) | ((val) << (shift)))
+#endif
+
+
+static int32_t de_feat_get_num_vi_chns(uint32_t disp)
+{
+	const unsigned rtmixid = disp + 1;
+	return (VI_LASTIX(rtmixid) - 1) + 1;
+}
+
+static int32_t de_feat_get_num_chns(uint32_t disp)
+{
+	const unsigned rtmixid = disp + 1;
+	return (VI_LASTIX(rtmixid) - 1) + 1 + (UI_LASTIX(rtmixid) - 1) + 1;
+}
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -1856,23 +1887,6 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define RTWB_RCQ_CTL_OFFSET          (0x8210)
 
 
-#ifndef SETMASK
-#define SETMASK(width, shift)   ((width?((-INT32_C(1)) >> (32-width)):0)  << (shift))
-#endif
-
-#ifndef CLRMASK
-#define CLRMASK(width, shift)   (~(SETMASK(width, shift)))
-#endif
-
-#ifndef GET_BITS
-#define GET_BITS(shift, width, reg) (((reg)&SETMASK(width, shift)) >> (shift))
-#endif
-
-#ifndef SET_BITS
-#define SET_BITS(shift, width, reg, val)                                       \
-	(((reg)&CLRMASK(width, shift)) | (val << (shift)))
-#endif
-
 static uint32_t readl(uintptr_t addr)
 {
 	return * (volatile uint32_t *) addr;
@@ -1947,16 +1961,6 @@ static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
 	return chn < 3 ? chn : chn + 6;	// T507/H616 specific
 
 #endif /* #if SUPPORT_FEAT_INIT_CONFIG */
-}
-
-static int32_t de_feat_get_num_vi_chns(uint32_t disp)
-{
-	return (VI_LASTIX - 1) + 1;
-}
-
-static int32_t de_feat_get_num_chns(uint32_t disp)
-{
-	return (VI_LASTIX - 1) + 1 + (UI_LASTIX - 1) + 1;
 }
 
 ///
@@ -2105,7 +2109,7 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
 #else
 	case 1: return DE_VI1;
 #endif
-#if VI_LASTIX > 1
+#if VI_LASTIX(rtmixid) > 1
 	case 2: return DE_VI2;
 	case 3: return DE_VI3;
 #endif
@@ -2126,7 +2130,7 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
 #else
 	case 1: return DE_UI1;
 #endif
-#if UI_LASTIX > 1
+#if UI_LASTIX(rtmixid) > 1
 	case 2: return DE_UI2;
 	case 3: return DE_UI3;
 #endif
@@ -2188,6 +2192,7 @@ static uint32_t ptr_lo32(uintptr_t v)
 	static const uint32_t ui_format = 0x0A;
 #endif
 
+/* Update registers & wait VSYNC */
 static void t113_de_update(int rtmixid)
 {
 	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
@@ -2329,7 +2334,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 	}
 
 	int vich = 1;
-	for (vich = 1; vich <= VI_LASTIX; vich ++)
+	for (vich = 1; vich <= VI_LASTIX(rtmixid); vich ++)
 	{
 		DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
 		if (vi != NULL)
@@ -2340,8 +2345,8 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			vi->CFG [VI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 			vi->CFG [VI_CFG_INDEX].COORD = 0;
 			vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
-			vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
-			vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
+			vi->CFG [VI_CFG_INDEX].PITCH [1] = uipitch;	// PLANE 0 - The setting of this register is U/UV channel.
+			vi->CFG [VI_CFG_INDEX].PITCH [2] = uipitch;	// PLANE 0 - The setting of this register is V channel.
 			vi->OVL_SIZE = ovl_ui_mbsize;
 			vi->HORI [0] = 0;
 			vi->VERT [0] = 0;
@@ -2351,8 +2356,8 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 			ASSERT(vi->CFG [VI_CFG_INDEX].SIZE == ovl_ui_mbsize);
 			ASSERT(vi->CFG [VI_CFG_INDEX].COORD == 0);
 			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [0] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [1] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
-			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [2] == uipitch);	// PLANE 0 - The setting of this register is Y channel.
+			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [1] == uipitch);	// PLANE 0 - The setting of this register is U/UV channel.
+			ASSERT(vi->CFG [VI_CFG_INDEX].PITCH [2] == uipitch);	// PLANE 0 - The setting of this register is V channel.
 			ASSERT(vi->OVL_SIZE == ovl_ui_mbsize);
 			ASSERT(vi->HORI [0] == 0);
 			ASSERT(vi->VERT [0] == 0);
@@ -2361,7 +2366,7 @@ static inline void t113_de_set_mode(const videomode_t * vdmode, int rtmixid, uns
 	}
 
 	int uich = 1;
-	for (uich = 1; uich <= UI_LASTIX; ++ uich)
+	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
 	{
 		//DE_UI_TypeDef * const ui = (DE_UI_TypeDef *) (DE_BASE + T113_DE_MUX_CHAN + 0x1000 * uich);
 		DE_UI_TypeDef * const ui = de3_getui(rtmixid, uich);
@@ -3084,7 +3089,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 #endif /* WITHDSIHW */
 
-static void hardware_de_initialize(const videomode_t * vdmode, unsigned tconix)
+static void hardware_de_initialize(const videomode_t * vdmode)
 {
 #if CPUSTYLE_A64
 
@@ -3294,37 +3299,6 @@ static void hardware_de_initialize(const videomode_t * vdmode, unsigned tconix)
 		* ((volatile uint32_t *) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET)) = 0;
 	}
 
-	/* перенаправление выхода DE */
-	// 0x000000E4 initial value
-	//PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-	// На один TCON может быть направлен только один DE даже если второй выключен)
-//	DE_TOP->DE2TCON_MUX = SET_BITS(0 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
-//	DE_TOP->DE2TCON_MUX = SET_BITS(1 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
-//	DE_TOP->DE2TCON_MUX = SET_BITS(2 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
-//	DE_TOP->DE2TCON_MUX = SET_BITS(3 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
-
-	DE_TOP->DE2TCON_MUX = SET_BITS(disp * 2, 2, DE_TOP->DE2TCON_MUX, tconix);
-	switch (disp)
-	{
-	case 0:
-		DE_TOP->DE2TCON_MUX =
-			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
-			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCON_TV0 (?) */
-			0x01 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD1 */
-			0x00 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD0 */
-			0;
-		break;
-	case 1:
-		DE_TOP->DE2TCON_MUX =
-			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
-			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCON_TV0 (?) */
-			0x00 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD0 */
-			0x01 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD1 */
-			0;
-		break;
-	}
-	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-
 
 	if (0)
 	{
@@ -3438,9 +3412,6 @@ static void hardware_de_initialize(const videomode_t * vdmode, unsigned tconix)
     	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
     	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
 
-    	/* перенаправление выхода DE */
-    	DE_TOP->SEL_CFG |= (UINT32_C(1) << 0);	/* MIXER0->TCON1; MIXER1->TCON0 */
-
 		DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
 		if (glb != NULL)
 		{
@@ -3456,14 +3427,6 @@ static void hardware_de_initialize(const videomode_t * vdmode, unsigned tconix)
 #else
 	#error Undefined CPUSTYLE_xxx
 #endif
-
-    /* эта инициализация требуется только на рабочем RT-Mixer */
-    {
-    	const int rtmixid = RTMIXID;
-
-		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-		t113_de_update(rtmixid);
-    }
 }
 
 static void hardware_tcon_initialize(const videomode_t * vdmode)
@@ -3478,40 +3441,76 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 
 }
 
+static void awxx_deoutmapping(unsigned disp)
+{
+#if CPUSTYLE_A64
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	/* перенаправление выхода DE */
+	// 0x000000E4 initial value
+	//PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	// На один TCON может быть направлен только один DE даже если второй выключен)
+//	DE_TOP->DE2TCON_MUX = SET_BITS(0 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+//	DE_TOP->DE2TCON_MUX = SET_BITS(1 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+//	DE_TOP->DE2TCON_MUX = SET_BITS(2 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+//	DE_TOP->DE2TCON_MUX = SET_BITS(3 * 2, 2, DE_TOP->DE2TCON_MUX, 3);
+
+//	DE_TOP->DE2TCON_MUX = SET_BITS(disp * 2, 2, DE_TOP->DE2TCON_MUX, targetix);
+	switch (disp)
+	{
+	case 0:
+		DE_TOP->DE2TCON_MUX =
+			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
+			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCON_TV0 (?) */
+			0x01 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD1 */
+			0x00 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD0 */
+			0;
+		break;
+	case 1:
+		DE_TOP->DE2TCON_MUX =
+			0x03 * (UINT32_C(1) << (3 * 2)) |	/* CORE3 output - TCON_TV1 (?) */
+			0x02 * (UINT32_C(1) << (2 * 2)) |	/* CORE2 output - TCON_TV0 (?) */
+			0x00 * (UINT32_C(1) << (1 * 2)) |	/* CORE1 output - TCON_LCD0 */
+			0x01 * (UINT32_C(1) << (0 * 2)) |	/* CORE0 output - TCON_LCD1 */
+			0;
+		break;
+	}
+	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	/* перенаправление выхода DE */
+	DE_TOP->SEL_CFG = SET_BITS(0, 1, DE_TOP->SEL_CFG, !! disp);	/* MIXER0->TCON1; MIXER1->TCON0 */
+#else
+	#error Undefined CPUSTYLE_xxx
+#endif
+}
+
 void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
 {
+	const unsigned disp = RTMIXID - 1;
+	const int rtmixid = RTMIXID;
+
 	hardware_tcon_initialize(vdmode);
 
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
 
-	hardware_de_initialize(vdmode, TCONLCD_IX);
+	hardware_de_initialize(vdmode);
+	awxx_deoutmapping(disp);
+
+    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+    {
+
+		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+		t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
+    }
 }
 
 void
 hardware_ltdc_deinitialize(void)
 {
-}
-
-/* ожидаем начало кадра */
-static void hardware_ltdc_vsync(void)
-{
-//	const int rtmixid = RTMIXID;
-//	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);
-//	if (glb == NULL)
-//		return;
-//	const uint_fast8_t state = (glb->GLB_STS >> 8) & 1;
-//	for (;;)
-//	{
-//		const uint_fast8_t state2 = (glb->GLB_STS >> 8) & 1;
-//		if (state != state2)
-//			break;
-//		hardware_nonguiyield();
-//	}
-
-	TCONLCD_PTR->LCD_GINT0_REG &= ~ (UINT32_C(1) << 15);         //clear LCD_VB_INT_FLAG
-	while ((TCONLCD_PTR->LCD_GINT0_REG & (UINT32_C(1) << 15)) == 0) //wait  LCD_VB_INT_FLAG
-		hardware_nonguiyield();
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
@@ -3530,7 +3529,7 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		0;
 
-	t113_de_update(rtmixid);
+	t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
@@ -3556,8 +3555,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(rtmixid, 3))	| // pipe1 enable - from UI3
 		0;
 
-	hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	t113_de_update(rtmixid);
+	t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
 }
 
 /* set visible buffer start. Wait VSYNC. */
@@ -3575,8 +3573,7 @@ void hardware_ltdc_main_set(uintptr_t p1)
 			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 			0;
 
-	hardware_ltdc_vsync();	/* ожидаем начало кадра */
-	t113_de_update(rtmixid);
+	t113_de_update(rtmixid);	/* Update registers & wait VSYNC */
 }
 
 /* Palette reload */
