@@ -10936,6 +10936,9 @@ updateboardZZZ(
 #if WITHDCDCFREQCTL
 	static uint_fast32_t bldividerout = UINT32_MAX;
 #endif /* WITHDCDCFREQCTL */
+#if WITHMGLOOP
+	static uint_fast16_t bandf1khint = UINT16_MAX;
+#endif /* WITHMGLOOP */
 #if CTLSTYLE_IGOR
 	static uint_fast16_t bandf100khint = UINT16_MAX;
 #else /* CTLSTYLE_IGOR */
@@ -10970,8 +10973,11 @@ updateboardZZZ(
 #else /* WITHLFM */
 		const int_fast32_t freq = gfreqs [bi];
 #endif /*  WITHLFM */
+	#if WITHMGLOOP
+		full2 |= flagne_u16(& bandf1khint, freq / 1000);
+	#endif /* WITHMGLOOP */
 	#if CTLSTYLE_IGOR
-		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
+		full2 |= flagne_u16(& bandf100khint, freq / 100000);
 	#else /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& bandfhint, bandf_calc(nyquistadj(freq)));
 		full2 |= flagne_u8(& bandf2hint, bandf2_calc(nyquistadj2(freq)));
@@ -11528,7 +11534,9 @@ updateboardZZZ(
 		#endif /* WITHMIC1LEVEL */
 		board_set_autotune(reqautotune);
 	#endif /* WITHTX */
-
+	#if WITHMGLOOP
+		board_set_bcdfreq1k(bandf1khint);
+	#endif /* WITHMGLOOP */
 	#if CTLSTYLE_IGOR
 		board_set_bcdfreq100k(bandf100khint);
 	#else /* CTLSTYLE_IGOR */

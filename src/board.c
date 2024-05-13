@@ -20,6 +20,7 @@
 #include <string.h>
 #include <math.h>
 
+static void ua1cei_magloop_initialize(void);
 
 #define CTLREG_SPISPEED	SPIC_SPEED1M
 #define CTLREG_SPIMODE	SPIC_MODE3
@@ -139,7 +140,8 @@ static uint_fast8_t 	glob_bandf3;	/* управление через разъе�
 static uint_fast8_t		glob_pabias;	/* ток покоя выходного каскада передатчика */
 static uint_fast8_t 	glob_bandfonhpf = 5;	/* код диапазонного фильтра передатчика, начиная с которого включается ФВЧ перед УВЧ а SW20xx */
 static uint_fast8_t 	glob_bandfonuhf;
-static uint_fast16_t 	glob_bcdfreq;	/* отображаемая частота с точностью сотен килогерц */
+static uint_fast16_t 	glob_bcdfreq100k;	/* отображаемая частота с точностью сотен килогерц */
+static uint_fast16_t 	glob_bcdfreq1k;	/* отображаемая частота с точностью единиц килогерц */
 
 /* Управление согласующим устройством */
 static uint_fast8_t 	glob_tuner_C, glob_tuner_L, glob_tuner_type, glob_tuner_bypass;
@@ -592,7 +594,6 @@ void nmeatuner_initialize(void)
 }
 
 #endif /* WITHAUTOTUNER_UA1CEI */
-
 
 #if WITHCPUDACHW
 
@@ -2173,7 +2174,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	// 15 uS полупериод меандра на выходе регистра (ATMega644 @ 10 MHz)
 	// 28 uS в случае программного SPI.
 	rbtype_t rbbuff [3] = { 0 };
-	const div_t a = div(glob_bcdfreq, 10);
+	const div_t a = div(glob_bcdfreq100k, 10);
 	const div_t b = div(a.quot, 10);
 	
 	RBVAL(22, b.quot, 2);			// D7,D6: x10 MHz
@@ -5969,9 +5970,20 @@ board_set_nb_enable(
 void
 board_set_bcdfreq100k(uint_fast16_t bcdfreq)
 {
-	if (glob_bcdfreq != bcdfreq)
+	if (glob_bcdfreq100k != bcdfreq)
 	{
-		glob_bcdfreq = bcdfreq;
+		glob_bcdfreq100k = bcdfreq;
+		board_ctlreg1changed();
+	}
+}
+
+/* Для настройки антенны - частота с дискретностью 100 кГц */
+void
+board_set_bcdfreq1k(uint_fast16_t bcdfreq)
+{
+	if (glob_bcdfreq1k != bcdfreq)
+	{
+		glob_bcdfreq1k = bcdfreq;
 		board_ctlreg1changed();
 	}
 }
@@ -8150,6 +8162,10 @@ void board_initialize(void)
 	ticker_add(& ticker_blinks);
 	}
 #endif /* defined (BOARD_BLINK_SETSTATE) */
+
+#if WITHMGLOOP
+	ua1cei_magloop_initialize();
+#endif /* WITHMGLOOP */
 }
 
 #if defined (RTC1_TYPE)
@@ -8437,6 +8453,170 @@ static void prog_rfadc_initialize(void)
 
 //#endif /* defined(ADC1_TYPE) */
 
+#if WITHMGLOOP
+
+// Очереди символов для обмена
+
+// Очередь символов для передачи в канал обмена
+static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
+static u8queue_t rxq;
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart0_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+static void uartX_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmeaX_putc(b [i]);
+
+	va_end(ap);
+}
+
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putchar(int c)
+{
+	if (c == '\n')
+		nmeaX_putchar('\r');
+
+	nmeaX_putc(c);
+	return c;
+}
+
+void nmeaX_puts_impl(const char * s, size_t len)
+{
+	while (len --)
+	{
+		const char c = * s ++;
+		nmeaX_putchar(c);
+	}
+}
+
+static uint_fast8_t calcxorv(
+	const char * s,
+	size_t len
+	)
+{
+	uint_fast8_t r = '*';
+	while (len --)
+		r ^= (unsigned char) * s ++;
+	return r & 0xff;
+}
+
+/* Передача строки без '$' в начале и с завершающим  '*'
+ * Ведущий символ '$' и контрольный код формируются тут.
+ */
+static void nmea_send(const char * body, size_t len)
+{
+	static const char hex [] = "0123456789ABCDEF";
+	unsigned xorv = calcxorv(body, len);
+
+	nmeaX_putchar('$');
+	nmeaX_puts_impl(body, len);
+	nmeaX_putchar(hex [(xorv >> 4) & 0x0F]);
+	nmeaX_putchar(hex [(xorv >> 0) & 0x0F]);
+	nmeaX_putchar('\n');
+}
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart0_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart0_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart0_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart0_enabletx(0);
+	}
+	else
+	{
+		hardware_uart0_enabletx(0);
+	}
+}
+
+static void ua1cei_magloop_initialize(void)
+{
+	const uint_fast32_t baudrate = UINT32_C(9600);
+	static uint8_t txb [2048];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	static uint8_t rxb [512];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	hardware_uart0_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart0_set_speed(baudrate);
+	hardware_uart0_enablerx(1);
+	hardware_uart0_enabletx(0);
+
+//	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
+//	ticker_initialize(& uart0_ticker, NTICKS(PERIODSPOOL), uart0_timer_event, NULL);
+//	ticker_add(& uart0_ticker);
+
+//	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);
+//	board_dpc_addentry(& uart0_dpc_entry);
+}
+//запрос $TRX,bnd_num,trx_freq,trx_state,,,*CS <CR><LF>
+                //trx_state = 0 RX
+                //trx_state = 1 TX
+                //trx_state = 2 TUNE
+  //ответ  $LNA,bnd_num,trx_freq,trxstate,,,*CS <CR><LF>
+
+static void ua1cei_magloop_send(void)
+{
+	// Буфер для формирования ответа в канал управления
+	static char state [1024];
+	unsigned len = local_snprintf_P(state, ARRAY_SIZE(state),
+			"TRX,%u,%u,%u,,,"
+			"*",
+			(unsigned) glob_bandf3,
+			(unsigned) glob_bcdfreq1k,
+			(unsigned) glob_autotune ? 3 : glob_tx
+		);
+	nmea_send(state, len);
+
+}
+
+#endif /* WITHMGLOOP */
+
 static void prog_update_noplanes(void)
 {
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
@@ -8446,6 +8626,10 @@ static void prog_update_noplanes(void)
 #if WITHAUTOTUNER_UA1CEI
 	ua1ceituner_send(NULL);
 #endif /* WITHAUTOTUNER_UA1CEI */
+
+#if WITHMGLOOP
+	ua1cei_magloop_send();
+#endif
 
 #if defined(ADC1_TYPE) && ADC1_TYPE == ADC_TYPE_AD9246
 	// AD9246 vref divider update
