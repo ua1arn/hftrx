@@ -132,19 +132,28 @@
 	static void UART1_IRQHandler(void)
 	{
 		char c;
-
-		if (UART1->ISR & (1u << 5))	// RXOVR
+		const uint_fast32_t sts = UART1->ISR & UART1->IMR;
+		if (sts & (1u << 5))	// RXOVR
 		{
 			UART1->ISR = (1u << 5);	// RXOVR
 			HARDWARE_UART1_ONOVERFLOW();
 		}
-
+		if (sts & (1u << 7))	// PARE
+		{
+			UART1->ISR = (1u << 7);	// PARE
+		}
+		if (sts & (1u << 6))	// FRAME
+		{
+			UART1->ISR = (1u << 6);	// FRAME
+		}
+		if (sts & (1u << 3))	// TEMPTY
+		{
+			HARDWARE_UART1_ONTXCHAR(UART1);
+		}
 		while (hardware_uart1_getchar(& c))
 		{
 			HARDWARE_UART1_ONRXCHAR(c);
 		}
-
-		UART1->ISR = UART1->ISR;
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
@@ -290,7 +299,7 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	const uint32_t mask = (UINT32_C(1) << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	const uint32_t mask = (UINT32_C(1) << 3);	// TEMPTY Enable Transmit Holding Register Empty Interrupt
 	if (state)
 	{
 		 UART1->IER = mask;
@@ -403,7 +412,7 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	UART1->RXWM = 63; 							/* set RX FIFO Trigger Level */
+	UART1->RXWM = 16; 							/* set RX FIFO Trigger Level */
 	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
 	if (state)
 	{
