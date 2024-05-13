@@ -8574,26 +8574,7 @@ void user_uart0_ontxchar(void * ctx)
 	}
 }
 
-static void ua1cei_magloop_initialize(void)
-{
-	const uint_fast32_t baudrate = UINT32_C(9600);
-	static uint8_t txb [2048];
-	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
-	static uint8_t rxb [512];
-	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
-	hardware_uart0_initialize(0, baudrate, 8, 0, 0);
-	hardware_uart0_set_speed(baudrate);
-	hardware_uart0_enablerx(1);
-	hardware_uart0_enabletx(0);
-
-//	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
-//	ticker_initialize(& uart0_ticker, NTICKS(PERIODSPOOL), uart0_timer_event, NULL);
-//	ticker_add(& uart0_ticker);
-
-//	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);
-//	board_dpc_addentry(& uart0_dpc_entry);
-}
 //запрос $TRX,bnd_num,trx_freq,trx_state,,,*CS <CR><LF>
                 //trx_state = 0 RX
                 //trx_state = 1 TX
@@ -8613,6 +8594,42 @@ static void ua1cei_magloop_send(void)
 		);
 	nmea_send(state, len);
 
+}
+
+/* Функционирование USER MODE обработчиков */
+static void uart0_dpc_spool(void * ctx)
+{
+	ua1cei_magloop_send();
+}
+
+static dpcobj_t uart0_dpc_timed;
+static ticker_t uart0_ticker;
+
+/* system-mode function */
+static void uart0_timer_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	board_dpc_call(& uart0_dpc_timed);	// Запрос отложенногог выполнения USER-MODE функции
+}
+
+static void ua1cei_magloop_initialize(void)
+{
+	static uint8_t txb [2048];
+	static uint8_t rxb [512];
+	const uint_fast32_t baudrate = UINT32_C(9600);
+
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	hardware_uart0_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart0_set_speed(baudrate);
+	hardware_uart0_enablerx(1);
+	hardware_uart0_enabletx(0);
+
+	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
+	ticker_initialize(& uart0_ticker, NTICKS(1000), uart0_timer_event, NULL);
+	ticker_add(& uart0_ticker);
 }
 
 #endif /* WITHMGLOOP */
