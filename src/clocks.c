@@ -3164,6 +3164,56 @@ uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
 	}
 }
 
+uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON_TV0_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t pgdiv = M * N;
+	// SCLK = Clock Source/M/N
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq() / pgdiv;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnr_t507_get_pll_video1_x1_freq() / pgdiv;
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	}
+}
+
+uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCON_TV1_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
+	const uint_fast32_t pgdiv = M * N;
+	// SCLK = Clock Source/M/N
+	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnr_t507_get_pll_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnr_t507_get_pll_video0_x4_freq() / pgdiv;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnr_t507_get_pll_video1_x1_freq() / pgdiv;
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnr_t507_get_pll_video1_x4_freq() / pgdiv;
+	}
+}
+
 uint_fast32_t allwnr_t507_get_pll_peri_bak_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->GPU_CLK1_REG;
@@ -4282,6 +4332,32 @@ uint_fast32_t allwnrt113_get_tconlcd_freq(void)
 	case 0x05:
 		// 101: PLL_AUDIO1(DIV2)
 		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
+	}
+}
+
+uint_fast32_t allwnrt113_get_tcontv_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TCONTV_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
+	const uint_fast32_t pgdiv = M * N;
+
+	// TCONTV_CLK = Clock Source/M/N.
+	switch ((clkreg >> 24) & 0x07)	// CLK_SRC_SEL
+	{
+	default:
+	case 0x00:
+		// 000: PLL_VIDEO0(1X)
+		return allwnrt113_get_video0_x1_freq() / pgdiv;
+	case 0x01:
+		// 001: PLL_VIDEO0(4X)
+		return allwnrt113_get_video0pllx4_freq() / pgdiv;
+	case 0x02:
+		// 010: PLL_VIDEO1(1X)
+		return allwnrt113_get_video1_x1_freq() / pgdiv;
+	case 0x03:
+		// 011: PLL_VIDEO1(4X)
+		return allwnrt113_get_video1pllx4_freq() / pgdiv;
 	}
 }
 

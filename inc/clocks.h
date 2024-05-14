@@ -191,6 +191,7 @@ uint_fast32_t allwnrt113_get_ce_freq(void);
 uint_fast32_t allwnrt113_get_ve_freq(void);
 uint_fast32_t allwnrt113_get_dsp_freq(void);
 uint_fast32_t allwnrt113_get_tconlcd_freq(void);
+uint_fast32_t allwnrt113_get_tcontv_freq(void);
 uint_fast32_t allwnrt113_get_dsi_freq(void);
 uint_fast32_t allwnrt113_get_hdmi_freq(void);
 uint_fast32_t allwnrt113_get_tcon0_freq(void);
