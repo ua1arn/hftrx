@@ -845,7 +845,7 @@
 	#define	HARDWARE_BACKLIGHT_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
 		arm_hardware_piod_altfn2((0*UINT32_C(1) << 28), GPIO_CFG_AF2); /* PD28 - PWM0 */ \
-		arm_hardware_piod_outputs(0*(UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
+		arm_hardware_piod_outputs(1*(UINT32_C(1) << 28), 1 * (UINT32_C(1) << 28)); /* PD28 - PWM0 - TE - TE_18 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
