@@ -13166,6 +13166,7 @@ void hightests(void)
 		// 800x480, Allwinner t113-s3, @1200 MHz, RGB565, software 0.6s
 		// 800x480, Allwinner F133-A, @1200 MHz, RGB565, hardware G2D 0.7s
 		// 800x480, Allwinner F133-A, @1200 MHz, XRGB8888, hardware G2D 0.9s
+		// 800x480, Allwinner t507, @1200 MHz, RGB565, software 0.4s
 	}
 #endif
 #if 0

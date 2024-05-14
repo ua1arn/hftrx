@@ -3558,8 +3558,6 @@ void hardware_ltdc_main_set_no_vsync(uintptr_t p1)
 	bld->BLD_EN_COLOR_CTL =
 		((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		0;
-
-	t113_de_update(rtmixid);	/* Update registers */
 }
 
 /* Set MAIN frame buffer address. Waiting for VSYNC. */
