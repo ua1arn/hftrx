@@ -399,16 +399,16 @@
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHVIEW_3DSS		1
-		#define WITHDEFAULTVIEW		VIEW_3DSS
-		#define WITHVIEW_3DSS_MARK	1
+		//#define WITHVIEW_3DSS		1
+		//#define WITHDEFAULTVIEW		VIEW_3DSS
+		//#define WITHVIEW_3DSS_MARK	1
 		#define WITHDISPLAY_FPS		30
 		#define WITHDISPLAYSWR_FPS	30
 		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#define WITHAFGAINDEFAULT	120
-		#define WITHIQSHIFT			1
+		//#define WITHIQSHIFT			1
 		#if 0
 			#define WITHTOUCHGUI			1
 			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
