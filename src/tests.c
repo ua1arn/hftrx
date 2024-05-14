@@ -10569,20 +10569,26 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		unsigned w = DIM_X / 4;
-		unsigned posmax = DIM_X * 2 - w * 2;
-		unsigned pos = 0;
-		for (;;)
+		unsigned count = 2;
+		while (count --)
 		{
-			unsigned delta = pos > (posmax / 2) ? posmax - 1 - pos : pos;
-			// Erase background
-			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
-			// Draw rextangle
-			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
-			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0 + delta, DIM_Y / 4, w, DIM_Y / 4, TFTRGB(0, 0, 0));
+			unsigned w = DIM_X / 4;
+			unsigned posmax = DIM_X * 2 - w * 2;
+			unsigned pos = 0;
+			for (;;)
+			{
+				unsigned delta = pos > (posmax / 2) ? posmax - 1 - pos : pos;
+				// Erase background
+				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+				// Draw rextangle
+				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0 + delta, DIM_Y / 4, w, DIM_Y / 4, TFTRGB(0, 0, 0));
 
-			display_nextfb();
-			pos = (pos + 1) % posmax;
+				display_nextfb();
+				pos = (pos + 1) % posmax;
+				if (pos == 0)
+					break;
+			}
 		}
 
 	}
