@@ -239,6 +239,7 @@
 			#define WITHGNSS				1
 			#define WITHNMEA				1
 			#define WITHLFM					1
+			#define WITHLFMTOFFSET			15
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
 //			#define DEFAULTDIALFREQ			12289000uL

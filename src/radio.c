@@ -266,7 +266,11 @@ display_redrawmodestimed(
 
 	#define LFMFREQBIAS 20000
 
+#if defined WITHLFMTOFFSET
+	static uint_fast16_t lfmtoffset = WITHLFMTOFFSET;
+#else
 	static uint_fast16_t lfmtoffset = 0;
+#endif /* WITHLFMTOFFSET */
 	static uint_fast16_t lfmtinterval = 5 * 60;
 	static uint_fast8_t lfmmode = 1;
 	static uint_fast16_t lfmstart100k = 80;
