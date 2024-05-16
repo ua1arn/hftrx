@@ -52,7 +52,6 @@ enum {
 	XGPO5,	// NVRAM_CS
 	XGPO6,	// ADC2CS
 	XGPO7,	// CSEXT2
-	XGPO8,	// GPS reset
 };
 
 #define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR			0x8004a000
@@ -88,16 +87,6 @@ enum {
 #define LINUX_I2C_FILE		"/dev/i2c-0"
 #define LINUX_FB_FILE		"/dev/fb0"
 #define LINUX_TTY_FILE		"/dev/tty0"
-
-#if WITHNMEA
-
-#define GPS_RESET() do { \
-		gpio_writepin(XGPO8, 0); \
-		usleep(10000);  \
-		gpio_writepin(XGPO8, 1); \
-	} while (0)
-
-#endif /* WITHNMEA */
 
 #if WITHISBOOTLOADER
 

@@ -125,10 +125,6 @@ void * linux_nmea_spool(void * args)
 	const char * argv [] = { "/bin/stty", "-F", LINUX_NMEA_FILE, "115200", NULL, };
 	linux_run_shell_cmd(argv);
 
-#if defined (GPS_RESET)
-	GPS_RESET();
-#endif
-
 	int num_read;
 	int fid = open(LINUX_NMEA_FILE, O_RDONLY);
 	tcflush(fid, TCIFLUSH);
