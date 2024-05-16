@@ -5593,6 +5593,9 @@ static void BarTest(void)
 
 		display_flush();
 		//local_delay_ms(5);
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -10585,6 +10588,9 @@ void hightests(void)
 				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0 + delta, DIM_Y / 4, w, DIM_Y / 4, TFTRGB(0, 0, 0));
 
 				display_nextfb();
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 				pos = (pos + 1) % posmax;
 				if (pos == 0)
 					break;

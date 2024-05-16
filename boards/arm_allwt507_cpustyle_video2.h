@@ -129,7 +129,7 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+		//#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
 		#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме иут квадратуры RTS96 */
 		#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме иут квадратуры RTS192 */
 		#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
@@ -140,7 +140,7 @@
 		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
-		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
@@ -944,11 +944,14 @@
 		const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
 		const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
 		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
-		/* const portholder_t MODEmask = (UINT32_C(1) << 9); */	/* PA9 mode */ \
-		/* synchro signals - forced */ \
-		arm_hardware_piod_altfn50(DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
-		arm_hardware_piod_altfn50(VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50(HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
+		/* synchro signals - sync mode */ \
+		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
+		arm_hardware_piod_altfn50(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
+		arm_hardware_piod_altfn50(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
+		/* synchro signals - DE mode */ \
+		arm_hardware_piod_altfn50(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
+		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
+		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
 		/* RED */ \
