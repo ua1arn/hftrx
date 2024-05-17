@@ -92,9 +92,10 @@ typedef enum IRQn
     DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) TOP */
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) */
     G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top */
-    TVE_IRQn = 123,                                   /*!< TVE_TOP TV Output (TV_Encoder) */
+    TCON_LCD0_IRQn = 122,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
+    TCON_TV0_IRQn = 123,                              /*!< TCON_TV  */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface */
-    TV_Encoder_IRQn = 126,                            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) */
+    TV_Encoder_IRQn = 126,                            /*!< TVE_TOP TV Output (TV_Encoder) */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  */
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  */
     CSIC_PARSER0_IRQn = 132,                          /*!< CSIC_PARSER  */

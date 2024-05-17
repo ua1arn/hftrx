@@ -12649,6 +12649,11 @@
   <name>TCON_LCD0</name>
   <description>Timing Controller_LCD (TCON_LCD)</description>
   <baseAddress>0x05461000</baseAddress>
+  <interrupt>
+   <name>TCON_LCD0</name>
+   <value>106</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>LCD_GCTL_REG</name>
@@ -13051,6 +13056,11 @@
   <name>TCON_TV0</name>
   <description></description>
   <baseAddress>0x05470000</baseAddress>
+  <interrupt>
+   <name>TCON_TV0</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TV_GCTL_REG</name>
@@ -14129,8 +14139,8 @@
   <description>TV Output (TV_Encoder)</description>
   <baseAddress>0x05600000</baseAddress>
   <interrupt>
-   <name>TVE</name>
-   <value>107</value>
+   <name>TV_Encoder</name>
+   <value>110</value>
    <description></description>
   </interrupt>
   <registers>
@@ -14203,11 +14213,6 @@
   <name>TV_Encoder</name>
   <description>TV Encoder (display out interface = CVBS OUT)</description>
   <baseAddress>0x05604000</baseAddress>
-  <interrupt>
-   <name>TV_Encoder</name>
-   <value>110</value>
-   <description></description>
-  </interrupt>
   <registers>
    <register>
     <name>TVE_000_REG</name>

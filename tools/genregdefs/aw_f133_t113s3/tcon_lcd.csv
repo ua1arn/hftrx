@@ -1,5 +1,7 @@
 #type; TCON_LCD; Timing Controller_LCD (TCON_LCD)
 #base; TCON_LCD0 0x05461000
+#irq; TCON_LCD0 122
+#irqrv; TCON_LCD0 106
 
 #regdef; LCD_GCTL_REG; 0x0000; LCD Global Control Register
 #regdef; LCD_GINT0_REG; 0x0004; LCD Global Interrupt Register0
