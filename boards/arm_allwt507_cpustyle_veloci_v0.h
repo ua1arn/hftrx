@@ -37,6 +37,8 @@
 #endif /* WITHDEBUG */
 
 #define WITHUART5HW	1
+//#define WITHCAT_USART5 1
+
 
 
 // OHCI at USB1HSFSP2_BASE
