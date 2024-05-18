@@ -288,7 +288,7 @@
 		arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA8 H_I2S0_LRCK	*/ \
 		arm_hardware_pioa_altfn50(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PA7 H_I2S0_BCLK	*/ \
 		arm_hardware_pioa_altfn50(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PA5 H_I2S0_DOUT0 to FPGA */ \
-		arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA9 H_I2S0_DIN0 from FPGA */ \
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 9,	GPIO_CFG_AF3); /* PA9 H_I2S0_DIN0 from FPGA */ \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
