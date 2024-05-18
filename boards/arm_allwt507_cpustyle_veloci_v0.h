@@ -284,11 +284,11 @@
 #endif
 
 	#define I2S0HW_INITIALIZE(master) do { \
-		/*arm_hardware_pioi_altfn50(UINT32_C(1) << 0,	GPIO_CFG_AF4); *//* PI0 H_I2S0_MCLK	*/ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 2,	GPIO_CFG_AF4); /* PI2 H_I2S0_LRCK	*/ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 1,	GPIO_CFG_AF4); /* PI1 H_I2S0_BCLK	*/ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 3,	GPIO_CFG_AF4); /* PI3 H_I2S0_DOUT0 to FPGA */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 4,	GPIO_CFG_AF4); /* PI4 H_I2S0_DIN0 from FPGA */ \
+		/*arm_hardware_pioi_altfn50(UINT32_C(1) << 6,	GPIO_CFG_AF3); *//* PA6 H_I2S0_MCLK	*/ \
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA8 H_I2S0_LRCK	*/ \
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PA7 H_I2S0_BCLK	*/ \
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PA5 H_I2S0_DOUT0 to FPGA */ \
+		arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA9 H_I2S0_DIN0 from FPGA */ \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
@@ -962,20 +962,19 @@
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
 	#define WITHHWDCDCFREQMIN 400000L
 	#define WITHHWDCDCFREQMAX 1200000L
-	#define HARDWARE_DCDC_PWMCH 4	/* PWM4 */
+	#define HARDWARE_DCDC_PWMCH 5	/* PWM5 */
 
-	// PI14 - DC-DC synchro output
-	// PWM5 AF6
+	// PA12 - DC-DC synchro output
+	// PWM5 AF2
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_pioi_altfn2((UINT32_C(1) << 14), GPIO_CFG_AF5); /* PI14 - PWM4 */ \
+		arm_hardware_pioa_altfn2((UINT32_C(1) << 12), GPIO_CFG_AF2); /* PA12 - PWM5 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
 	} while (0)
 #else /* WITHDCDCFREQCTL */
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_pioi_outputs((UINT32_C(1) << 14), 0 * (UINT32_C(1) << 14)); /* PI14 - PWM4 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		(void) (f); \
