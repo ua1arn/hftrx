@@ -10232,18 +10232,20 @@ board_get_pressed_key(void)
 			return ki * NK + v;
 		}
 	}
-	enum { AKBDEND = KI_COUNT * NK };
+	unsigned addcodes = KI_COUNT * NK;
 #else	/* KEYBOARD_USE_ADC */
-	enum { AKBDEND = 0 };
+	unsigned addcodes = 0;
 #endif	/* KEYBOARD_USE_ADC */
 
 #if defined (TARGET_ENC2BTN_GET)
 	if (TARGET_ENC2BTN_GET != 0)
-		return AKBDEND + 0;
+		return addcodes;
+	++ addcodes;
 #endif /* defined (TARGET_ENC2BTN_GET) */
 #if defined (TARGET_POWERBTN_GET)
 	if (TARGET_POWERBTN_GET != 0)
-		return AKBDEND + 1;
+		return addcodes;
+	++ addcodes;
 #endif /* defined (TARGET_POWERBTN_GET) */
 
 #if KBD_MASK
@@ -10253,9 +10255,9 @@ board_get_pressed_key(void)
 	const portholder_t v = ~ KBD_TARGET_PIN;
 	portholder_t srcmask = KBD_MASK;
 	
-	for (bitpos = 0, i = AKBDEND; srcmask != 0; ++ bitpos, srcmask >>= 1)
+	for (bitpos = 0, i = addcodes; srcmask != 0; ++ bitpos, srcmask >>= 1)
 	{
-		const portholder_t mask = (portholder_t)1 << bitpos;
+		const portholder_t mask = (portholder_t) 1 << bitpos;
 		if ((srcmask & 0x01) == 0)
 			continue;	// нет интересующего бита в этой позиции
 		if ((mask & v) != 0)
