@@ -16915,8 +16915,8 @@ void display2_menu_valxx(
 			static const FLASHMEM char msg [] [6] =
 			{
  				"MIKE ",	// BOARD_TXAUDIO_MIKE
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
- 				"LINE ",	// BOARD_TXAUDIO_LINE
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа (rear panel mini-din 6 pin input) */
+ 				"LINE ",	// BOARD_TXAUDIO_LINE (rear panel mini-din 6 pin input)
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 #if WITHUSBHW && WITHUSBUACOUT
 				"USB  ",	// BOARD_TXAUDIO_USB

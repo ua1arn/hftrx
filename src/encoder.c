@@ -276,6 +276,28 @@ encoder_get_snapshot(
 	return h.quot;
 }
 
+/* получение количества шагов */
+int_least16_t
+encoder_get_position(
+	encoder_t * e,
+	const uint_fast8_t derate
+	)
+{
+	int position;
+
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql);
+	position = e->position;
+	e->position = 0;
+
+	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
+	const div_t h = div(position + e->backup_position, derate);
+	e->backup_position = h.rem;
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+
+	return h.quot;
+}
+
 void encoder_pushback(encoder_t * const e, int outsteps, uint_fast8_t hiresdiv)
 {
 	IRQL_t oldIrql;
@@ -475,7 +497,7 @@ void encoders_initialize(void)
 	ticker_initialize(& encticker, 1, encspeed_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker);
 #endif /* WITHENCODER */
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3 && ! WITHENCODER4	// хак чтобы на velociraptor не вызывалось по таймеру
 	// второй енкодер всегда по опросу
 	ticker_initialize(& encticker2, 1, spool_encinterrupt2_local, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker2);

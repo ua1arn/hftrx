@@ -26,6 +26,7 @@ extern "C" {
 typedef struct encoder_tag
 {
 	int_least16_t position;	// обновляется по прерыванию
+	int_least16_t backup_position;	// остаток после деления разрашения
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 	IRQLSPINLOCK_t enclock;
@@ -40,6 +41,11 @@ int_least16_t
 encoder_get_snapshot(
 	encoder_t * e,
 	uint_fast8_t derate
+	);
+int_least16_t
+encoder_get_position(
+	encoder_t * e,
+	const uint_fast8_t derate
 	);
 int_least16_t
 encoder_get_snapshotproportional(

@@ -412,7 +412,7 @@ void board_set_nfmdeviation100(uint_fast8_t v);	/* Девиация в NFM (со
 void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
 void board_set_dspmode(uint_fast8_t v);	// Параметр для установки режима работы приёмника A/передатчика A
-void board_set_lineinput(uint_fast8_t n);	// Включение line input вместо микрофона
+void board_set_lineinput(uint_fast8_t n);	// Включение line input (rear panel mini-din 6 pin input) вместо микрофона
 void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
 void board_set_txaudio(uint_fast8_t v);	// Альтернативные источники сигнала при передаче
 void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном

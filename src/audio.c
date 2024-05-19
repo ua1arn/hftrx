@@ -6096,7 +6096,7 @@ board_set_lineamp(uint_fast16_t v)
 }
 
 
-// Включение line input вместо микрофона
+// Включение line input (rear panel mini-din 6 pin input) вместо микрофона
 void
 board_set_lineinput(uint_fast8_t n)
 {

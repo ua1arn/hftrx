@@ -229,7 +229,7 @@
 
 	#define WITHENCODER3	1
 	#define WITHENCODER4	1
-	#define WITHENCODER4	1
+	#define WITHENCODER5	1
 	#define WITHENCODER6	1
 
 	/* Board hardware configuration */
@@ -245,7 +245,7 @@
 	#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
-
+	#define WITHAFCODEC1HAVELINEINLEVEL 1	// (rear panel mini-din 6 pin input)
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
 
