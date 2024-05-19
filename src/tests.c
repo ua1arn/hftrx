@@ -14128,7 +14128,7 @@ void hightests(void)
 
 			if (scancode != KEYBOARD_NOKEY)
 			{
-				PRINTF(PSTR("keycode = %02x, %d\n"), (unsigned) scancode, v);
+				PRINTF(PSTR("keycode = 0x%02X (%u), %d\n"), (unsigned) scancode, (unsigned) scancode, v);
 				v = (v + 1) % 1000;
 			}
 			continue;
