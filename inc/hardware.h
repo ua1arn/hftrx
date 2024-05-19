@@ -537,6 +537,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow);
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
 void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
 void hardware_encoders_initialize(void);
 
 uint_fast8_t hardware_get_encoder_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

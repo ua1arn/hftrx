@@ -5339,10 +5339,10 @@ void looptests(void)
 	{
 		// Encoder tests
 		PRINTF("e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d\n",
-				(int) encoder_get_position(& encoder3, 4),
-				(int) encoder_get_position(& encoder4, 4),
-				(int) encoder_get_position(& encoder5, 4),
-				(int) encoder_get_position(& encoder6, 4)
+				(int) encoder_get_position(& encoder3, 1),
+				(int) encoder_get_position(& encoder4, 1),
+				(int) encoder_get_position(& encoder5, 1),
+				(int) encoder_get_position(& encoder6, 1)
 				);
 	}
 #endif

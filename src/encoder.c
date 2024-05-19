@@ -43,6 +43,24 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	IRQLSPINLOCK_INITIALIZE(& e->enclock, ENCODER_IRQL);
 }
 
+/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts4(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const int_fast8_t step = (e->getpins() & 0x01) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	IRQL_t oldIrql;
+
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql);
+
+	if (e->reverse)
+		e->position -= step;
+	else
+		e->position += step;
+
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+}
+
+/* прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
