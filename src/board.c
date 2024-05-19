@@ -3898,7 +3898,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 
 
-#elif CTLREGMODE_VELICI_V0
+#elif CTLREGMODE_VELOCI_V0
 
 /* T507-H portable trx */
 
@@ -3967,7 +3967,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD20 SN74HC595PW
 		RBBIT(0005, glob_tx);		// PTT_OUT
-		RBBIT(0004, 0);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
+		RBBIT(0004, 1);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
 		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);

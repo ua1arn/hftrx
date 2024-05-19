@@ -62,7 +62,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_VELICI_V0	1	/* T507-H portable trx */
+	#define CTLREGMODE_VELOCI_V0	1	/* T507-H portable trx */
 	//#define CTLREGMODE_NOCTLREG 1
 
 	
