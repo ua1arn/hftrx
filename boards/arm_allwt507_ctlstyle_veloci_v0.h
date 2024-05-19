@@ -227,6 +227,11 @@
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
+	#define WITHENCODER3	1
+	#define WITHENCODER4	1
+	#define WITHENCODER4	1
+	#define WITHENCODER6	1
+
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1

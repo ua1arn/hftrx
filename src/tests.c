@@ -5335,6 +5335,19 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0
+	{
+		// Encoder tests
+		PRINTF("e1=%+3d, e2=%+3d, e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d\n",
+				(int) encoder_get_snapshot(& encoder1, 1),
+				(int) encoder_get_snapshot(& encoder2, 1),
+				(int) encoder_get_snapshot(& encoder3, 1),
+				(int) encoder_get_snapshot(& encoder4, 1),
+				(int) encoder_get_snapshot(& encoder5, 1),
+				(int) encoder_get_snapshot(& encoder6, 1)
+				);
+	}
+#endif
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
 	if ((THS->THS_DATA_INTS & 0x01) != 0)
 	{

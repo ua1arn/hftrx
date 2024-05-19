@@ -260,27 +260,83 @@
 	#define ENCODER2_BITA		(UINT32_C(1) << 19)		// PD19
 	#define ENCODER2_BITB		(UINT32_C(1) << 20)		// PD20
 
+	// Выводы подключения енкодера ENC1F
+	#define ENCODER3_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER3_BITA		(UINT32_C(1) << 17)		// PD17
+	#define ENCODER3_BITB		(UINT32_C(1) << 16)		// PD16
+
+	// Выводы подключения енкодера ENC2F
+	#define ENCODER4_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER4_BITA		(UINT32_C(1) << 15)		// PD15
+	#define ENCODER4_BITB		(UINT32_C(1) << 14)		// PD14
+
+	// Выводы подключения енкодера ENC3F
+	#define ENCODER5_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER5_BITA		(UINT32_C(1) << 13)		// PD13
+	#define ENCODER5_BITB		(UINT32_C(1) << 12)		// PD12
+
+	// Выводы подключения енкодера ENC4F
+	#define ENCODER6_INPUT_PORT	(gpioX_getinputs(GPIOD))
+	#define ENCODER6_BITA		(UINT32_C(1) << 11)		// PD11
+	#define ENCODER6_BITB		(UINT32_C(1) << 10)		// PD10
+
 	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
-	#define BOARD_GPIOD_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_GPIOD_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define BOARD_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
+	#define BOARD_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define BOARD_ENCODER3_BITS		(ENCODER3_BITA | ENCODER3_BITB)
+	#define BOARD_ENCODER4_BITS		(ENCODER4_BITA | ENCODER4_BITB)
+	#define BOARD_ENCODER5_BITS		(ENCODER5_BITA | ENCODER5_BITB)
+	#define BOARD_ENCODER6_BITS		(ENCODER6_BITA | ENCODER6_BITB)
 
 	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
+	#define ENCODER3_BITS_GET() (((ENCODER3_INPUT_PORT & ENCODER3_BITA) != 0) * 2 + ((ENCODER3_INPUT_PORT & ENCODER3_BITB) != 0))	// ENC1F
+	#define ENCODER4_BITS_GET() (((ENCODER4_INPUT_PORT & ENCODER4_BITA) != 0) * 2 + ((ENCODER4_INPUT_PORT & ENCODER4_BITB) != 0))	// ENC2F
+	#define ENCODER5_BITS_GET() (((ENCODER5_INPUT_PORT & ENCODER5_BITA) != 0) * 2 + ((ENCODER5_INPUT_PORT & ENCODER5_BITB) != 0))	// ENC3F
+	#define ENCODER6_BITS_GET() (((ENCODER6_INPUT_PORT & ENCODER6_BITA) != 0) * 2 + ((ENCODER6_INPUT_PORT & ENCODER6_BITB) != 0))	// ENC4F
 
 	#define ENCODER_INITIALIZE() do { \
 			/* First tuning encoder */ \
 			static einthandler_t h1; \
 			static einthandler_t h2; \
-			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
+			static einthandler_t h3; \
+			static einthandler_t h4; \
+			static einthandler_t h5; \
+			static einthandler_t h6; \
+			arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
+			arm_hardware_piod_updown(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, 0); \
+			einthandler_initialize(& h1, BOARD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/* Second tining encoder */ \
-			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER2_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(BOARD_GPIOD_ENCODER2_BITS); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_piod_onchangeinterrupt(0*BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+			arm_hardware_piod_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
+			arm_hardware_piod_inputs(BOARD_ENCODER2_BITS); \
+			arm_hardware_piod_updown(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, 0); \
+			einthandler_initialize(& h2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+			/* ENC1F */ \
+			arm_hardware_piod_altfn20(BOARD_ENCODER3_BITS, GPIO_CFG_EINT); \
+			arm_hardware_piod_inputs(BOARD_ENCODER3_BITS); \
+			arm_hardware_piod_updown(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, 0); \
+			einthandler_initialize(& h3, BOARD_ENCODER3_BITS, spool_encinterrupts, & encoder3); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h3); \
+			/* ENC2F */ \
+			arm_hardware_piod_altfn20(BOARD_ENCODER4_BITS, GPIO_CFG_EINT); \
+			arm_hardware_piod_inputs(BOARD_ENCODER4_BITS); \
+			arm_hardware_piod_updown(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, 0); \
+			einthandler_initialize(& h4, BOARD_ENCODER4_BITS, spool_encinterrupts, & encoder4); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h4); \
+			/* ENC3F */ \
+			arm_hardware_piod_altfn20(BOARD_ENCODER5_BITS, GPIO_CFG_EINT); \
+			arm_hardware_piod_inputs(BOARD_ENCODER5_BITS); \
+			arm_hardware_piod_updown(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, 0); \
+			einthandler_initialize(& h5, BOARD_ENCODER5_BITS, spool_encinterrupts, & encoder5); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h5); \
+			/* ENC4F */ \
+			arm_hardware_piod_altfn20(BOARD_ENCODER6_BITS, GPIO_CFG_EINT); \
+			arm_hardware_piod_inputs(BOARD_ENCODER6_BITS); \
+			arm_hardware_piod_updown(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, 0); \
+			einthandler_initialize(& h6, BOARD_ENCODER6_BITS, spool_encinterrupts, & encoder6); \
+			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h6); \
 		} while (0)
 
 #endif

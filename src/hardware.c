@@ -514,13 +514,6 @@ hardware_get_encoder3_bits(void)
 {
 #if WITHENCODER3 && defined (ENCODER3_BITS_GET)
 	return ENCODER3_BITS_GET();
-#elif WITHENCODER3 && ENCODER3_BITS && defined (ENCODER3_SHIFT)
-	return (ENCODER3_INPUT_PORT & ENCODER3_BITS) >> ENCODER3_SHIFT;	// Биты валкодера #2
-#elif WITHENCODER3 && ENCODER3_BITS
-	const portholder_t v = ENCODER3_INPUT_PORT;
-	return ((v & ENCODER3_BITA) != 0) * 2 + ((v & ENCODER3_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER3 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-	return ((gpio_readpin(ENCODER3_BITA) != 0) * 2 + (gpio_readpin(ENCODER3_BITB) != 0));
 #else /* WITHENCODER3 */
 	return 0;
 #endif /* WITHENCODER3 */
@@ -534,13 +527,6 @@ hardware_get_encoder4_bits(void)
 {
 #if WITHENCODER4 && defined (ENCODER4_BITS_GET)
 	return ENCODER4_BITS_GET();
-#elif WITHENCODER4 && ENCODER4_BITS && defined (ENCODER4_SHIFT)
-	return (ENCODER4_INPUT_PORT & ENCODER4_BITS) >> ENCODER4_SHIFT;	// Биты валкодера #2
-#elif WITHENCODER4 && ENCODER4_BITS
-	const portholder_t v = ENCODER4_INPUT_PORT;
-	return ((v & ENCODER4_BITA) != 0) * 2 + ((v & ENCODER4_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER4 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-	return ((gpio_readpin(ENCODER4_BITA) != 0) * 2 + (gpio_readpin(ENCODER4_BITB) != 0));
 #else /* WITHENCODER4 */
 	return 0;
 #endif /* WITHENCODER4 */
@@ -554,13 +540,6 @@ hardware_get_encoder5_bits(void)
 {
 #if WITHENCODER5 && defined (ENCODER5_BITS_GET)
 	return ENCODER5_BITS_GET();
-#elif WITHENCODER5 && ENCODER5_BITS && defined (ENCODER5_SHIFT)
-	return (ENCODER5_INPUT_PORT & ENCODER5_BITS) >> ENCODER5_SHIFT;	// Биты валкодера #2
-#elif WITHENCODER5 && ENCODER5_BITS
-	const portholder_t v = ENCODER5_INPUT_PORT;
-	return ((v & ENCODER5_BITA) != 0) * 2 + ((v & ENCODER5_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER5 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-	return ((gpio_readpin(ENCODER5_BITA) != 0) * 2 + (gpio_readpin(ENCODER5_BITB) != 0));
 #else /* WITHENCODER5 */
 	return 0;
 #endif /* WITHENCODER5 */
@@ -572,18 +551,11 @@ hardware_get_encoder5_bits(void)
 uint_fast8_t
 hardware_get_encoder6_bits(void)
 {
-#if WITHENCODER5 && defined (ENCODER5_BITS_GET)
-	return ENCODER5_BITS_GET();
-#elif WITHENCODER5 && ENCODER5_BITS && defined (ENCODER5_SHIFT)
-	return (ENCODER5_INPUT_PORT & ENCODER5_BITS) >> ENCODER5_SHIFT;	// Биты валкодера #2
-#elif WITHENCODER5 && ENCODER5_BITS
-	const portholder_t v = ENCODER5_INPUT_PORT;
-	return ((v & ENCODER5_BITA) != 0) * 2 + ((v & ENCODER5_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER5 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-	return ((gpio_readpin(ENCODER5_BITA) != 0) * 2 + (gpio_readpin(ENCODER5_BITB) != 0));
-#else /* WITHENCODER5 */
+#if WITHENCODER6 && defined (ENCODER6_BITS_GET)
+	return ENCODER6_BITS_GET();
+#else /* WITHENCODER6 */
 	return 0;
-#endif /* WITHENCODER5 */
+#endif /* WITHENCODER6 */
 }
 
 // ADC intgerface functions
