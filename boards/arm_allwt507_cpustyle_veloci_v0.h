@@ -1103,24 +1103,12 @@
 	#endif
 	/* BL0: PA12. BL1: PA11, EN: PD28  */
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
-		const portholder_t BLPinMSB = UINT32_C(1) << 11; /* PA11 - MSB open drain */ \
-		const portholder_t BLPinLSB = UINT32_C(1) << 12; /* PA12 - LSB open drain */ \
-		arm_hardware_pioa_opendrain(BLPinMSB, BLPinMSB); /* минимальный ток */ \
-		arm_hardware_pioa_opendrain(BLPinLSB, BLPinLSB); /* минимальный ток */ \
-		arm_hardware_piod_outputs(ENmask, 0 * ENmask); \
 	} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
 	/* level: начиная от WITHLCDBACKLIGHTMIN */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t ENmask = UINT32_C(1) << 28; /* PD28 */ \
-		const portholder_t BLPinMSB = UINT32_C(1) << 11; /* PA11 - MSB open drain */ \
-		const portholder_t BLPinLSB = UINT32_C(1) << 12; /* PA12 - LSB open drain */ \
-		gpioX_setopendrain(GPIOA, BLPinMSB, BLPinMSB * ! ((level) & 0x02)); /* Больший ток - нулём */ \
-		gpioX_setopendrain(GPIOA, BLPinLSB, BLPinLSB * ! ((level) & 0x01)); /* Больший ток - нулём */ \
-		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
 	} while (0)
 
 #endif /* WITHBLPWMCTL */

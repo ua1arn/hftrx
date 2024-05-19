@@ -5338,13 +5338,21 @@ void looptests(void)
 #if 0
 	{
 		// Encoder tests
-		PRINTF("e1=%+3d, e2=%+3d, e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d\n",
+		PRINTF("e1=%+3d, e2=%+3d, e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d ",
 				(int) encoder_get_snapshot(& encoder1, 1),
 				(int) encoder_get_snapshot(& encoder2, 1),
 				(int) encoder_get_snapshot(& encoder3, 1),
 				(int) encoder_get_snapshot(& encoder4, 1),
 				(int) encoder_get_snapshot(& encoder5, 1),
 				(int) encoder_get_snapshot(& encoder6, 1)
+				);
+		PRINTF("s1=%d, s2=%d, s3=%d, s4=%d, s5=%d, s6=%d\n",
+				(int) hardware_get_encoder_bits(),
+				(int) hardware_get_encoder2_bits(),
+				(int) hardware_get_encoder3_bits(),
+				(int) hardware_get_encoder4_bits(),
+				(int) hardware_get_encoder5_bits(),
+				(int) hardware_get_encoder6_bits()
 				);
 	}
 #endif
