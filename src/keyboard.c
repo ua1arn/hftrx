@@ -185,10 +185,10 @@ kbd_scan_local(uint_fast8_t * key)
 		}
 		else if ((flags & KIF_POWER) != 0)
 		{
-			// клавиша реагирует после окончания длительного нажатия
+			// клавиша реагирует только после окончания длительного нажатия
 			if (kbd_press < KBD_MAX_PRESS_DELAY_LONG)
 				++ kbd_press;
-			return 0;	// код ьудет возвращен по отпусканию
+			return 0;	// код будет возвращен по отпусканию
 		}
 		else
 		{
@@ -251,7 +251,7 @@ kbd_scan_local(uint_fast8_t * key)
 			}
 			else if ((qmdefs [kbd_last].flags & KIF_POWER) != 0)
 			{
-				// клавиша реагирует после окончания длительного нажатия
+				// клавиша реагирует только после окончания длительного нажатия
 				* key = qmdefs [kbd_last].code;	
 				kbd_press = 0;
 				kbd_slowcount = 0;
