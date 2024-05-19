@@ -309,31 +309,26 @@
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/* Second tining encoder */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(BOARD_ENCODER2_BITS); \
 			arm_hardware_piod_updown(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, 0); \
 			einthandler_initialize(& h2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 			/* ENC1F */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER3_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(BOARD_ENCODER3_BITS); \
 			arm_hardware_piod_updown(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, 0); \
 			einthandler_initialize(& h3, BOARD_ENCODER3_BITS, spool_encinterrupts, & encoder3); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h3); \
 			/* ENC2F */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER4_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(BOARD_ENCODER4_BITS); \
 			arm_hardware_piod_updown(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, 0); \
 			einthandler_initialize(& h4, BOARD_ENCODER4_BITS, spool_encinterrupts, & encoder4); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h4); \
 			/* ENC3F */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER5_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(BOARD_ENCODER5_BITS); \
 			arm_hardware_piod_updown(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, 0); \
 			einthandler_initialize(& h5, BOARD_ENCODER5_BITS, spool_encinterrupts, & encoder5); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h5); \
 			/* ENC4F */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER6_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(BOARD_ENCODER6_BITS); \
 			arm_hardware_piod_updown(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, 0); \
 			einthandler_initialize(& h6, BOARD_ENCODER6_BITS, spool_encinterrupts, & encoder6); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h6); \
