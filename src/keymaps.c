@@ -1050,47 +1050,33 @@ uint_fast8_t getexitkey(void)
 /* 24 кнопки на 6 линий */
 const struct qmkey qmdefs [NQMKEYS] =
 {
-
-	/* вход кнопки валкодера - KI5 */
-	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },
-
-	/* ряд справа от индикатора - снизу вверх KI4 */
-	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
-	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
-	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
-	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
-
-	/* матрица слева от индикатора - ряд 1 по счету слева - снизу вверх KI3 */
-	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// DISPLAY/MENU
-	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
-	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
-	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
-
-	/* матрица слева от индикатора - ряд 4 по счету слева - снизу вверх KI2 */
-	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NR, 			' ', },		// NOTCH
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_12, 			' ', },		// BW/NR
-	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
-
-	/* матрица слева от индикатора - ряд 3 по счету слева - снизу вверх KI1 */
-	{ KIF_NONE,		KBD_CODE_BKIN,			KBD_CODE_BKIN_HOLDED, 	' ', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_15,			' ', },		// SPK
-	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// ATT/PRE
-	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_17, 			' ', },		// A/B
-    //{ KIF_NONE,     KBD_CODE_CWMSG2,        KBD_CODE_CWMSG4,         ' ', },        // A/B - CW MESSAGES
-
-	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх KI0 */
-	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	' ', },		// VOX/DATA
-	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// ANTENNA
-	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
-    //{ KIF_NONE,     KBD_CODE_CWMSG1,        KBD_CODE_CWMSG3,         ' ', },        // A=B - CW MESSAGES
+	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },		// 0
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1
+	{ KIF_SLOW,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 2
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 3
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 4  BAND DOWN
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 5
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MAX, 			' ', },		// 7
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
+	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_CWMSG4,		' ', },		// 9  F2
+	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_CWMSG3,		' ', },		// 10 F1
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 11
+	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// 12 DISPLAY/MENU
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 13 BAND UP
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 14 3rd small encoder (encoder5 object)
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 15
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 16
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 17
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 18
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 19
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 20
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 21
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 22
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 23
 
 	/* кнопка выключения питания (включение аппаратно) */
-	{ KIF_POWER, 	KBD_CODE_POWEROFF,	KBD_CODE_MAX, 		' ', },
+	{ KIF_POWER, 	KBD_CODE_POWEROFF,		KBD_CODE_MAX, 			' ', },		// 24 POWER
 };
 
 uint_fast8_t getexitkey(void)
