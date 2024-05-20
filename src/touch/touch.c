@@ -221,6 +221,7 @@ uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void
 #if BOARD_TSC1_XMIRROR
 	return tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
 #else /* BOARD_TSC1_XMIRROR */
+	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
 	if (x < xrawmid)
 		return tcsnormalize(x, xrawmin, xrawmid - 1, DIM_X / 2 - 1);
 	else
@@ -234,6 +235,7 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 #if BOARD_TSC1_YMIRROR
 	return tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
 #else /* BOARD_TSC1_YMIRROR */
+	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
 	if (y < yrawmid)
 		return tcsnormalize(y, yrawmin, yrawmid - 1, DIM_Y / 2 - 1);
 	else
