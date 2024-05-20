@@ -353,10 +353,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
-	// CAT data lites
-	// RXD at PA10, TXD at PA9
-
+#if (WITHCAT && WITHCAT_USART5)
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(gpioX_getinputs(GPIOA))
 	//#define FROMCAT_BIT_RTS				(UINT32_C(1) << 11)	/* PA11 сигнал RTS от FT232RL	*/
