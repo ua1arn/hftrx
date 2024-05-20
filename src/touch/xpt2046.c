@@ -46,7 +46,10 @@ enum XPTCoordinate
 	XPT2046_TEMP_2 = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик (The second mode)
 };
 
-#define XPT2046_Z1_THRESHOLD 400
+#define XPT2046_Z1_THRESHOLD 100	// чувствительность к силе нажатия
+#define XPT2046_Z2_THRESHOLD 4090
+#define XPT2046_X_THRESHOLD 3900
+#define XPT2046_Y_THRESHOLD 3900
 
 // See https://github.com/ikeji/Ender3Firmware/blob/ef1f9d25eb2cd084ce929e1ad4163ef0a3e88142/Marlin/src/feature/touch/xpt2046.cpp
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
@@ -136,17 +139,19 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	const spitarget_t target = targettsc1;
 
-	uint_fast16_t x0 = xpt2046_read(target, XPT2046_X);
+	//uint_fast16_t x0 = xpt2046_read(target, XPT2046_X);
 	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
-	uint_fast16_t y0 = xpt2046_read(target, XPT2046_Y);
+	//uint_fast16_t y0 = xpt2046_read(target, XPT2046_Y);
 	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
-	uint_fast16_t z10 = xpt2046_read(target, XPT2046_Z1);
+	//uint_fast16_t z10 = xpt2046_read(target, XPT2046_Z1);
 	uint_fast16_t z1 = xpt2046_read(target, XPT2046_Z1);
+	//uint_fast16_t z20 = xpt2046_read(target, XPT2046_Z2);
+	uint_fast16_t z2 = xpt2046_read(target, XPT2046_Z2);
 
 	* xr = x;
 	* yr = y;
 
-	return z1 > XPT2046_Z1_THRESHOLD;
+	return x < XPT2046_X_THRESHOLD && y < XPT2046_Y_THRESHOLD && z1 > XPT2046_Z1_THRESHOLD && z2 < XPT2046_Z2_THRESHOLD;
 }
 
 void xpt2046_initialize(void)
