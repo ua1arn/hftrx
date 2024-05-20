@@ -392,21 +392,9 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
-		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
-	#elif 0
-		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1
-		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
-		#define WITHANTSELECT	1	/* Управление переключением антенн */
-	#elif 0
-		/* TUNER by R3KBL */
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET7	1
-	#else
-		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
-	#endif
+	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	#define SHORTSET7	1
+	#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 
@@ -420,8 +408,8 @@
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#if WITHTX
 		#define WITHVOX			1	/* используется VOX */
-		//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		//#define WITHSWRMTR	1		/* Измеритель КСВ */
+		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#define WITHSWRMTR	1		/* Измеритель КСВ */
 	#endif /* WITHTX */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
@@ -446,7 +434,6 @@
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define LFMTICKSFREQ ARMI2SRATE
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
@@ -530,114 +517,39 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
+	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
 
+	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+	#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
+
+	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+	#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада с помощью двух каналов ацп (средняя точка) */
+	#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+
+	#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+	#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	// ST LM235Z
+	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
 	// Назначения входов АЦП процессора.
-	enum 
-	{ 
-		WPM_POTIX = BOARD_ADCX1IN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
-		IFGAIN_IXI = BOARD_ADCX1IN(0),			// MCP3208 CH0 IF GAIN
-		AFGAIN_IXI = BOARD_ADCX1IN(1),			// MCP3208 CH1 AF GAIN
-
-	#if WITHPOTIFGAIN
-		POTIFGAIN = IFGAIN_IXI,
-	#endif /* WITHPOTIFGAIN */
-	#if WITHPOTAFGAIN
-		POTAFGAIN = AFGAIN_IXI,
-	#endif /* WITHPOTAFGAIN */
-	#if WITHPOTNFMSQL
-		POTNFMSQL = IFGAIN_IXI,
-	#endif /* WITHPOTNFMSQL */
-
-	#if WITHREFSENSOR
-		VREFIX = 17,		// Reference voltage
-	#endif /* WITHREFSENSOR */
-	#if WITHTEMPSENSOR
-		TEMPIX = BOARD_ADCX1IN(6),
-	#endif /* WITHTEMPSENSOR */
-
-	#if WITHPOTWPM
-		POTWPM = WPM_POTIX,			// PA6 потенциометр управления скоростью передачи в телеграфе
-	#endif /* WITHPOTWPM */
-	#if WITHPOTPOWER
-		POTPOWER = WPM_POTIX,			// регулировка мощности
-	#endif /* WITHPOTPOWER */
-
-	//#define WITHALTERNATIVEFONTS    1
-
-	#if WITHAUTOTUNER_UA1CEI_V2
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-		#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
-		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
-		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
-
-		#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
-		//#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
-
-		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
-
+	enum
+	{
 		FWD = BOARD_ADCX2IN(0),
 		REF = BOARD_ADCX2IN(1),
 		PWRI = FWD,
 
-		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
+		TEMPIX = BOARD_ADCX2IN(4),
+		XTHERMOIX = BOARD_ADCX2IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		VOLTSOURCE = BOARD_ADCX2IN(7),		// Средняя точка делителя напряжения питания
 
-		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-		#endif /* WITHTHERMOLEVEL */
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// main board Средняя точка делителя напряжения, для АКБ
-		#endif /* WITHVOLTLEVEL */
-
-		// ST LM235Z
-		#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
-		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-
-	#elif WITHAUTOTUNER_AVBELNN
-
-		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-
-		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-
-		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
-		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
-		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
-		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
-
-		#if WITHSWRMTR
-			FWD = BOARD_ADCX1IN(3), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
-			PWRI = FWD,
-		#endif /* WITHSWRMTR */
-
-		VOLTSOURCE = BOARD_ADCX1IN(7),		// main board MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-
-	#elif 0
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		VOLTSOURCE = BOARD_ADCX2INxx(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-
-		FWD = BOARD_ADCX2INxx(3),
-		REF = BOARD_ADCX2INxx(2),
-		PWRI = FWD,
-
-		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
-		PASENSEIX2 = BOARD_ADCX2INxx(0),	// DRAIN
-		PAREFERIX2 = BOARD_ADCX2INxx(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
-	#else
-		// толькло основная плата - 5W усилитель
-
-	#endif
+		/* кеширование днных */
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
@@ -648,7 +560,8 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = BOARD_ADCXKIN(0), 	// клавиатура на АЦП MCP3208
+		// клавиатура на АЦП MCP3208
+		KI0 = BOARD_ADCXKIN(0),
 		KI1 = BOARD_ADCXKIN(1),
 		KI2 = BOARD_ADCXKIN(2),
 		KI3 = BOARD_ADCXKIN(3),

@@ -4416,14 +4416,12 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		uint_fast8_t s9_60_delta = 45;
 	#endif
 
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
-		#if WITHSWRCALI
-			uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
-		#else /* WITHSWRCALI */
-			uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
-		#endif /* WITHSWRCALI */
-	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
+	#if WITHSWRCALI
+		uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
+	#else /* WITHSWRCALI */
+		uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+	#endif /* WITHSWRCALI */
 
 	#if WITHPWRMTR || WITHSWRMTR
 		#if WITHMAXPWRCALI

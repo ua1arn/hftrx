@@ -3362,7 +3362,6 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, 
 	},
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
 		QLABEL("SWR CALI"), 7, 2, 0,	ISTEP1,		/* калибровка SWR-метра */
 		ITEM_VALUE,
@@ -3373,6 +3372,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& swrcalibr,
 		getzerobase, 
 	},
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
 		QLABEL("FWD LOWR"), 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
 		ITEM_VALUE,
