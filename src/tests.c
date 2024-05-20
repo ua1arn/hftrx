@@ -13281,39 +13281,37 @@ void hightests(void)
 #include "touch\touch.h"
 
 	{
-		uint_fast16_t gridx = 16;
-		uint_fast16_t gridy = 16;
-		uint_fast16_t markerx = 0;
-		uint_fast16_t markery = 0;
+		uint_fast16_t gridx = DIM_X / 10;
+		uint_fast16_t gridy = DIM_Y / 10;
 
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
 		display2_bgreset();
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
+		char msg [64] = "";
 
 		// touch screen test
 		PRINTF(PSTR("touch screen test:\n"));
 		for (;;)
 		{
 			PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
-			char msg [64];
 			uint_fast16_t x, y;
+			colpip_fillrect(fr, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_BLACK);
 			if (board_tsc_getxy(& x, & y))
 			{
-				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
-				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_BLACK);
+				uint_fast16_t markerx;
+				uint_fast16_t markery;
+				//PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
+				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("X=%5d, Y=%5d"), (int) x, (int) y);
 				markerx = x / gridx * gridx;
 				markery = y / gridy * gridy;
 				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_WHITE);
-			} else {
-				memset(msg, ' ', 63);
-				msg [63] = '\0';
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_BLACK);
 			}
-			display_at(22, 26, msg);
-			local_delay_ms(10);
+			colpip_string_tbg(fr, DIM_X, DIM_Y, 0, 0, msg, COLORPIP_RED);
 
 			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 			hardware_ltdc_main_set((uintptr_t) fr);
+			colmain_fb_next();
 		}
 	}
 #endif
