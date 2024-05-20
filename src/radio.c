@@ -15155,8 +15155,9 @@ processcatmsg(
 			if (catpcount == 4)
 			{
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
-				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX);
-				if (flagne_u16(& afgain1.value, p2))
+				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, 255, 255);
+				const unsigned p2board = p2 * (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) / 255 + BOARD_AFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазоны
+				if (flagne_u16(& afgain1.value, p2board))
 				{
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 					rc = 1;
@@ -15184,8 +15185,9 @@ processcatmsg(
 		// RF gain level set/report
 		if (cathasparam != 0)
 		{
-			const uint_fast32_t p2 = vfy32up(catparam, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX);
-			if (flagne_u16(& rfgain1.value, p2))
+			const uint_fast32_t p2 = vfy32up(catparam, 0, 255, 255);
+			const unsigned p2board = p2 * (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN) / 255 + BOARD_IFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазон
+			if (flagne_u16(& rfgain1.value, p2board))
 			{
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;

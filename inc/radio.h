@@ -59,7 +59,7 @@ typedef uint_least64_t phase_t;
 #define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
 
 #define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
-#define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
+#define	BOARD_AFGAIN_MAX	24		/* код управления усилением НЧ тракта */
 
 #define WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
 #define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
