@@ -10810,10 +10810,9 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
 /* модификация параметра с учетом границ изменения значения */
 static uint_fast8_t
-encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, encoder_t * e, uint_fast8_t derate)
+encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, encoder_t * e, uint_fast8_t derate, nvramaddress_t addr)
 {
-	return 0;
-	const int_least16_t d = encoder_get_snapshot(e, derate);
+	const int_least16_t d = encoder_get_delta(e, derate);
 	uint_fast16_t v = c->value;
 	if (d == 0)
 		return 0;
@@ -10837,7 +10836,12 @@ encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, en
 				v = upper;
 		}
 	}
-	return flagne_u16(& c->value, v);
+	if (flagne_u16(& c->value, v))
+	{
+		save_i16(addr, c->value);
+		return 1;
+	}
+	return 0;
 }
 
 #if WITHCAT
@@ -13453,11 +13457,11 @@ directctlupdate(
 			changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
 		}
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
-	#if 0
+	#if WITHENCODER3
 		{
 			/* установка  */
-			changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & encoder3, 1);
-			changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & encoder4, 1);
+			changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & encoder3, 1, OFFSETOF(struct nvmap, afgain1));
+			//changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & encoder4, 1, OFFSETOF(struct nvmap, rfgain1));
 		}
 	#endif /* 0 */
 

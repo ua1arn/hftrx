@@ -296,7 +296,7 @@ encoder_get_snapshot(
 
 /* получение количества шагов */
 int_least16_t
-encoder_get_position(
+encoder_get_delta(
 	encoder_t * e,
 	const uint_fast8_t derate
 	)
