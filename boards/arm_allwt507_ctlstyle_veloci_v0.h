@@ -279,6 +279,7 @@
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v0.h"	// для WITHFPGAPIPE_CODEC1
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v2.h"	// для WITHFPGAPIPE_CODEC1, 2x RF ADC, 122.8 * 1.5 DAC clock
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX

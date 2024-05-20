@@ -33,5 +33,6 @@ bin2c.exe %SRCPATHLONG%\t1_v9m_velo.zip ..\rbf\rbfimage_v9m_velo_zip.h
 @rem Allwinner T507-H
 
 rbf2c.exe %SRCPATHLONG%\t1_veloci_v0.rbf ..\rbf\rbfimage_veloci_v0.h
+rbf2c.exe %SRCPATHLONG%\t1_veloci_v2.rbf ..\rbf\rbfimage_veloci_v2.h
 
 pause
