@@ -142,13 +142,20 @@ xpt2046_read4(
 	uint_fast16_t * z
 	)
 {
-	static const uint8_t txbuf [] = { 0x90, 0x00, 0x00, 0xD0, 0x00, 0x00, 0xD0, 0x00, 0x00, };
+	static const uint8_t txbuf [] =
+	{
+		XPT2046_CONTROL | XPT2046_Y, 0x00, 0x00,
+		XPT2046_CONTROL | XPT2046_X, 0x00, 0x00,
+		XPT2046_CONTROL | XPT2046_Z1, 0x00, 0x00,
+	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
 	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-	* y = USBD_peek_u16_BE(rxbuf + 1);
-	* x = USBD_peek_u16_BE(rxbuf + 4);
-	* z = USBD_peek_u16_BE(rxbuf + 7);
+	//printhex((uintptr_t) rxbuf, rxbuf, sizeof rxbuf);
+
+	* y = USBD_peek_u16_BE(rxbuf + 0);
+	* x = USBD_peek_u16_BE(rxbuf + 3);
+	* z = USBD_peek_u16_BE(rxbuf + 6);
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -182,13 +189,16 @@ void xpt2046_initialize(void)
 #if 0
 	for (;;)
 	{
-		const unsigned t = xpt2046_read(target, XPT2046_TEMP);
-		const unsigned x = xpt2046_read(target, XPT2046_X);
-		const unsigned y = xpt2046_read(target, XPT2046_Y);
-		const unsigned z1 = xpt2046_read(target, XPT2046_Z1);
+//		const unsigned t = xpt2046_read(target, XPT2046_TEMP);
+//		const unsigned x = xpt2046_read(target, XPT2046_X);
+//		const unsigned y = xpt2046_read(target, XPT2046_Y);
+//		const unsigned z1 = xpt2046_read(target, XPT2046_Z1);
+
+		unsigned x, y, z1;
+		xpt2046_read4( & x, & y, & z1);
 		//unsigned z2 = xpt2046_read(target, XPT2046_Z2);
 		const int st = z1 > XPT2046_Z1_THRESHOLD;
-		PRINTF("xpt2046_initialize: t=%-5u, x=%-5u, y=%-5u z1=%-5u, st=%d\n", t, x, y, z1, st);
+		PRINTF("xpt2046_initialize: t=%-5u, x=%-5u, y=%-5u z1=%-5u, st=%d (int=%d)\n", t, x, y, z1, st, BOARD_XPT2046_INT_GET());
 	}
 #endif
 	//PRINTF("xpt2046_initialize done.\n");
