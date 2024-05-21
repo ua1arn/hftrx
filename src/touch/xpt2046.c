@@ -132,6 +132,25 @@ xpt2046_read(
 
 	return (rv >> DATAPOS) & 0x0FFF;	// 12 bit ADC
 }
+
+// Read XPT2046 ADC
+static void
+xpt2046_read4(
+	spitarget_t target,
+	uint_fast16_t * x,
+	uint_fast16_t * y,
+	uint_fast16_t * z
+	)
+{
+	static const uint8_t txbuf [] = { 0x90, 0x00, 0x00, 0xD0, 0x00, 0x00, 0xD0, 0x00, 0x00, };
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	* y = USBD_peek_u16_BE(rxbuf + 1);
+	* x = USBD_peek_u16_BE(rxbuf + 4);
+	* z = USBD_peek_u16_BE(rxbuf + 7);
+}
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 /* получение ненормальзованных координат нажатия */
@@ -156,6 +175,7 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 void xpt2046_initialize(void)
 {
+	BOARD_XPT2046_INT_CONNECT();
 	const spitarget_t target = targettsc1;
 	const unsigned t = xpt2046_read(target, XPT2046_TEMP);
 	PRINTF("xpt2046_initialize: t=%u\n", t);
