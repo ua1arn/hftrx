@@ -4548,7 +4548,7 @@ uint_fast8_t habradio_get_blinkphase(void)
 
 uint_fast8_t habradio_get_classa(void)
 {
-#if WITHPACLASSA
+#if WITHPACLASSA && WITHTX
 	return gclassamode;
 #else /* WITHPACLASSA */
 	return 0;
