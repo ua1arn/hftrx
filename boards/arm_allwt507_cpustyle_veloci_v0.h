@@ -370,7 +370,7 @@
 	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_USART5) */
 
 #if (WITHCAT && WITHCAT_CDC)
 
