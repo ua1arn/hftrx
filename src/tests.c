@@ -13281,8 +13281,8 @@ void hightests(void)
 #include "touch\touch.h"
 
 	{
-		uint_fast16_t gridx = DIM_X / 10;
-		uint_fast16_t gridy = DIM_Y / 10;
+		uint_fast16_t gridx = DIM_X / 20;
+		uint_fast16_t gridy = DIM_Y / 20;
 
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();

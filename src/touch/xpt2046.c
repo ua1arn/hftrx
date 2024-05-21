@@ -46,10 +46,9 @@ enum XPTCoordinate
 	XPT2046_TEMP_2 = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик (The second mode)
 };
 
-#define XPT2046_Z1_THRESHOLD 100	// чувствительность к силе нажатия
-#define XPT2046_Z2_THRESHOLD 4090
-#define XPT2046_X_THRESHOLD 3900
-#define XPT2046_Y_THRESHOLD 3900
+#define XPT2046_Z1_THRESHOLD 200	// чувствительность к силе нажатия
+#define XPT2046_Z1_THRESHOLD2 1000	// чувствительность к силе нажатия
+#define XPT2046_Z2_THRESHOLD 200	// чувствительность к силе нажатия
 
 // See https://github.com/ikeji/Ender3Firmware/blob/ef1f9d25eb2cd084ce929e1ad4163ef0a3e88142/Marlin/src/feature/touch/xpt2046.cpp
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
@@ -59,103 +58,46 @@ enum XPTCoordinate
 #if WITHSPIHW || WITHSPISW
 
 // Read XPT2046 ADC
-static uint_fast16_t
-xpt2046_read(
-	spitarget_t target,
-	uint_fast8_t cmd
-	)
-{
-	uint_fast16_t v0, v1, v2, v3;
-	// сдвинуто, чтобы позиция временной диаграммы,
-	// где формируется время выборки, не попадала на паузу между байтами.
-	uint_fast32_t rv;
-
-	enum { CMDPOS = 13 };
-	enum { DATAPOS = 0 };
-
-	cmd |= XPT2046_CONTROL;
-	cmd |= XPT2046_PD0 | XPT2046_PD1;	// PD0=1 & PD1=1: Device is always powered. Reference is on and ADC is on.
-
-#if WITHSPILOWSUPPORTT || 1
-	// Работа совместно с фоновым обменом SPI по прерываниям
-
-	uint8_t txbuf [4];
-	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
-
-	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd << CMDPOS);
-
-	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-
-	rv = USBD_peek_u32_BE(rxbuf);
-
-#elif WITHSPI32BIT
-
-	hardware_spi_connect_b32(tscspeed, tscmode);
-	prog_select(target);
-
-	hardware_spi_b32_p1((uint_fast32_t) cmd << CMDPOS);
-	rv = hardware_spi_complete_b32();
-
-	prog_unselect(target);
-	hardware_spi_disconnect();
-
-
-#elif WITHSPI16BIT
-
-	hardware_spi_connect_b16(tscspeed, tscmode);
-	prog_select(target);
-
-	hardware_spi_b16_p1((uint_fast32_t) cmd << CMDPOS >> 16);
-	v0 = hardware_spi_complete_b16();
-	hardware_spi_b16_p1((uint_fast32_t) cmd << CMDPOS >> 0);
-	v1 = hardware_spi_complete_b16();
-
-	prog_unselect(target);
-	hardware_spi_disconnect();
-
-	rv = ((uint_fast32_t) v0 << 16) | v1;
-
-#else
-
-	spi_select2(target, tscmode, tscspeed);	// for 50 kS/S and 24 bit words
-
-	v0 = spi_read_byte(target, (uint_fast32_t) cmd << CMDPOS >> 24);
-	v1 = spi_read_byte(target, (uint_fast32_t) cmd << CMDPOS >> 16);
-	v2 = spi_read_byte(target, (uint_fast32_t) cmd << CMDPOS >> 8);
-	v3 = spi_read_byte(target, 0x00);
-
-	spi_unselect(target);
-
-	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
-
-#endif
-
-	return (rv >> DATAPOS) & 0x0FFF;	// 12 bit ADC
-}
-
-// Read XPT2046 ADC
 static void
 xpt2046_read4(
 	spitarget_t target,
 	uint_fast16_t * x,
 	uint_fast16_t * y,
-	uint_fast16_t * z
+	uint_fast16_t * z1,
+	uint_fast16_t * z2
 	)
 {
+	enum { PDx = XPT2046_PD0 };	// Reference is off and ADC is on.
 	static const uint8_t txbuf [] =
 	{
-		XPT2046_CONTROL | XPT2046_Y, 0x00, 0x00,
-		XPT2046_CONTROL | XPT2046_X, 0x00, 0x00,
-		XPT2046_CONTROL | XPT2046_Z1, 0x00, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+
+		0x00,
 	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
 	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 	//printhex((uintptr_t) rxbuf, rxbuf, sizeof rxbuf);
-
-	* y = USBD_peek_u16_BE(rxbuf + 0);
-	* x = USBD_peek_u16_BE(rxbuf + 3);
-	* z = USBD_peek_u16_BE(rxbuf + 6);
+	unsigned i;
+	unsigned yv = 0;
+	unsigned xv = 0;
+	unsigned z1v = 0;
+	unsigned z2v = 0;
+	for (i = 0; i < 1; ++ i)
+	{
+		yv += USBD_peek_u16_BE(rxbuf + (i * 8) + 3) / 8;
+		xv += USBD_peek_u16_BE(rxbuf + (i * 8) + 5) / 8;
+		z1v += USBD_peek_u16_BE(rxbuf + (i * 8) + 7) / 8;
+		z2v += USBD_peek_u16_BE(rxbuf + (i * 8) + 9) / 8;
+	}
+	* y = yv / i;
+	* x = xv / i;
+	* z1 = z1v / i;
+	* z2 = 4095 - z2v / i;
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -164,41 +106,26 @@ xpt2046_read4(
 uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	const spitarget_t target = targettsc1;
-
-	//uint_fast16_t x0 = xpt2046_read(target, XPT2046_X);
-	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
-	//uint_fast16_t y0 = xpt2046_read(target, XPT2046_Y);
-	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
-	//uint_fast16_t z10 = xpt2046_read(target, XPT2046_Z1);
-	uint_fast16_t z1 = xpt2046_read(target, XPT2046_Z1);
-	//uint_fast16_t z20 = xpt2046_read(target, XPT2046_Z2);
-	uint_fast16_t z2 = xpt2046_read(target, XPT2046_Z2);
+	uint_fast16_t x, y, z1, z2;
+	xpt2046_read4(target, & x, & y, & z1, & z2);
 
 	* xr = x;
 	* yr = y;
 
-	return x < XPT2046_X_THRESHOLD && y < XPT2046_Y_THRESHOLD && z1 > XPT2046_Z1_THRESHOLD && z2 < XPT2046_Z2_THRESHOLD;
+	return (z1 > XPT2046_Z1_THRESHOLD2) || (z1 > XPT2046_Z1_THRESHOLD && z2 > XPT2046_Z2_THRESHOLD);
 }
 
 void xpt2046_initialize(void)
 {
-	BOARD_XPT2046_INT_CONNECT();
+	//BOARD_XPT2046_INT_CONNECT();
 	const spitarget_t target = targettsc1;
-	const unsigned t = xpt2046_read(target, XPT2046_TEMP);
-	PRINTF("xpt2046_initialize: t=%u\n", t);
+	PRINTF("xpt2046_initialize:n");
 #if 0
 	for (;;)
 	{
-//		const unsigned t = xpt2046_read(target, XPT2046_TEMP);
-//		const unsigned x = xpt2046_read(target, XPT2046_X);
-//		const unsigned y = xpt2046_read(target, XPT2046_Y);
-//		const unsigned z1 = xpt2046_read(target, XPT2046_Z1);
-
-		unsigned x, y, z1;
-		xpt2046_read4( & x, & y, & z1);
-		//unsigned z2 = xpt2046_read(target, XPT2046_Z2);
-		const int st = z1 > XPT2046_Z1_THRESHOLD;
-		PRINTF("xpt2046_initialize: t=%-5u, x=%-5u, y=%-5u z1=%-5u, st=%d (int=%d)\n", t, x, y, z1, st, BOARD_XPT2046_INT_GET());
+		unsigned x, y, z1, z2;
+		xpt2046_read4(target, & x, & y, & z1, & z2);
+		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
 	//PRINTF("xpt2046_initialize done.\n");
