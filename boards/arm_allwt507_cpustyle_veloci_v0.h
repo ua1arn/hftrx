@@ -1165,92 +1165,102 @@
 #endif /* WITHLTDCHW */
 
 
-	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
-		//	tsc interrupt XS26, pin 08
-		//	tsc/LCD reset, XS26, pin 22
-		//	tsc SCL: XS26, pin 01
-		//	tsc SDA: XS26, pin 02
+	//	tsc interrupt XS26, pin 08
+	//	tsc/LCD reset, XS26, pin 22
+	//	tsc SCL: XS26, pin 01
+	//	tsc SDA: XS26, pin 02
 
-		void stmpe811_interrupt_handler(void * ctx);
+	void stmpe811_interrupt_handler(void * ctx);
 
-		#define BOARD_GPIOA_STMPE811_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
+	#define BOARD_GPIOA_STMPE811_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
 
-		#define BOARD_STMPE811_INT_CONNECT() do { \
-			static einthandler_t h; \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_STMPE811_INT_PIN); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_STMPE811_INT_PIN, BOARD_GPIOA_STMPE811_INT_PIN, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_STMPE811_INT_PIN, 1 * BOARD_GPIOA_STMPE811_INT_PIN, 0 * BOARD_GPIOA_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, stmpe811_interrupt_handler); \
-		} while (0)
+	#define BOARD_STMPE811_INT_CONNECT() do { \
+		static einthandler_t h; \
+		arm_hardware_pioa_inputs(BOARD_GPIOA_STMPE811_INT_PIN); \
+		arm_hardware_pioa_updown(BOARD_GPIOA_STMPE811_INT_PIN, BOARD_GPIOA_STMPE811_INT_PIN, 0); \
+		arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_STMPE811_INT_PIN, 1 * BOARD_GPIOA_STMPE811_INT_PIN, 0 * BOARD_GPIOA_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, stmpe811_interrupt_handler); \
+	} while (0)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
-	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-		//	tsc interrupt XS26, pin 08
-		//	tsc/LCD reset, XS26, pin 22
-		//	tsc SCL: XS26, pin 01
-		//	tsc SDA: XS26, pin 02
+	//	tsc interrupt XS26, pin 08
+	//	tsc/LCD reset, XS26, pin 22
+	//	tsc SCL: XS26, pin 01
+	//	tsc SDA: XS26, pin 02
 
-		void gt911_interrupt_handler(void * ctx);
+	void gt911_interrupt_handler(void * ctx);
 
-		#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
-		#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 4)			/* PA10 : tsc/LCD reset, XS26, pin 22 */
+	#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
+	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 4)			/* PA10 : tsc/LCD reset, XS26, pin 22 */
 
-		#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOA, BOARD_GT911_RESET_PIN, !! (v)); } while (0)
-		#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOA, BOARD_GPIOA_GT911_INT_PIN, !! (v)); } while (0)
+	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOA, BOARD_GT911_RESET_PIN, !! (v)); } while (0)
+	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOA, BOARD_GPIOA_GT911_INT_PIN, !! (v)); } while (0)
 
-		#define BOARD_GT911_RESET_INITIO_1() do { \
-			arm_hardware_pioa_outputs2m(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN); \
-			arm_hardware_pioa_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
-			 local_delay_ms(200);  \
-		} while (0)
-
-		#define BOARD_GT911_RESET_INITIO_2() do { \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
-		} while (0)
-
-		#define BOARD_GT911_INT_CONNECT() do { \
-			static einthandler_t h; \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-			arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN, 0 * BOARD_GPIOA_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, gt911_interrupt_handler); \
-		} while (0)
-		//gt911_interrupt_handler
-
-	#endif
-
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 4)	// PE4 BOOT_LED
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 5)	// PE5 FRONTLED_RED
-	#define BOARD_BLINK_BIT2 (UINT32_C(1) << 6)	// PE6 FRONTLED_GREEN
-
-	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
-		arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
-	} while (0)
-	#define BOARD_BLINK_SETSTATE(state) do { \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
-		gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
+	#define BOARD_GT911_RESET_INITIO_1() do { \
+		arm_hardware_pioa_outputs2m(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN); \
+		arm_hardware_pioa_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
+		 local_delay_ms(200);  \
 	} while (0)
 
-	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
-
-	/* макроопределение, которое должно включить в себя все инициализации */
-	#define	HARDWARE_INITIALIZE() do { \
-		BOARD_BLINK_INITIALIZE(); \
-		HARDWARE_KBD_INITIALIZE(); \
-		/*HARDWARE_DAC_INITIALIZE(); */\
-		HARDWARE_BL_INITIALIZE(); \
-		HARDWARE_DCDC_INITIALIZE(); \
-		TXDISABLE_INITIALIZE(); \
-		TUNE_INITIALIZE(); \
-		USBD_EHCI_INITIALIZE(); \
+	#define BOARD_GT911_RESET_INITIO_2() do { \
+		arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
+		arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
 	} while (0)
 
-	// TUSB parameters
-	#define TUP_DCD_ENDPOINT_MAX    6
+	#define BOARD_GT911_INT_CONNECT() do { \
+		static einthandler_t h; \
+		arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
+		arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
+		arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN, 0 * BOARD_GPIOA_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, gt911_interrupt_handler); \
+	} while (0)
+	//gt911_interrupt_handler
+
+#endif
+
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046)
+
+	#define BOARD_XPT2046_INT_PIN (UINT32_C(1) << 7)		/* PE7 : tsc interrupt */
+	#define BOARD_XPT2046_INT_GET() (!! (gpioX_getinputs(GPIOE) & BOARD_XPT2046_INT_PIN))
+	#define BOARD_XPT2046_INT_CONNECT() do { \
+		arm_hardware_pioe_inputs(BOARD_XPT2046_INT_PIN); \
+	} while (0)
+
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */
+
+#define BOARD_BLINK_BIT0 (UINT32_C(1) << 4)	// PE4 BOOT_LED
+#define BOARD_BLINK_BIT1 (UINT32_C(1) << 5)	// PE5 FRONTLED_RED
+#define BOARD_BLINK_BIT2 (UINT32_C(1) << 6)	// PE6 FRONTLED_GREEN
+
+#define BOARD_BLINK_INITIALIZE() do { \
+	arm_hardware_pioe_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+	arm_hardware_pioe_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
+	arm_hardware_pioe_outputs(BOARD_BLINK_BIT2, 1 * BOARD_BLINK_BIT2); \
+} while (0)
+#define BOARD_BLINK_SETSTATE(state) do { \
+	gpioX_setstate(GPIOE, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+	gpioX_setstate(GPIOE, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
+	gpioX_setstate(GPIOE, BOARD_BLINK_BIT2, !! (state) * BOARD_BLINK_BIT2); \
+} while (0)
+
+/* запрос на вход в режим загрузчика */
+#define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
+
+/* макроопределение, которое должно включить в себя все инициализации */
+#define	HARDWARE_INITIALIZE() do { \
+	BOARD_BLINK_INITIALIZE(); \
+	HARDWARE_KBD_INITIALIZE(); \
+	/*HARDWARE_DAC_INITIALIZE(); */\
+	HARDWARE_BL_INITIALIZE(); \
+	HARDWARE_DCDC_INITIALIZE(); \
+	TXDISABLE_INITIALIZE(); \
+	TUNE_INITIALIZE(); \
+	USBD_EHCI_INITIALIZE(); \
+} while (0)
+
+// TUSB parameters
+#define TUP_DCD_ENDPOINT_MAX    6
 
 #endif /* ARM_ALW_T507_CPU_VELOCI_V0_H_INCLUDED */

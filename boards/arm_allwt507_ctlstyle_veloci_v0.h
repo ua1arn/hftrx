@@ -190,10 +190,6 @@
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
-//	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-//	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"
-//	#define BOARD_BITIMAGE_NAME_ZIP "rbf/rbfimage_v9m_velo_zip.h"
-//	#define BOARD_BITIMAGE_NAME_COMPRESSED "t1_v9m_velo.rbf"	/* требуемый файл в архиве */
 //	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 //	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
@@ -282,9 +278,8 @@
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9m_velo.h"	// для WITHFPGAPIPE_CODEC1
-	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch.h"
-	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch_pattern256.h"
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v0.h"	// для WITHFPGAPIPE_CODEC1
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v2.h"	// для WITHFPGAPIPE_CODEC1, 2x RF ADC, 122.8 * 1.5 DAC clock
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
