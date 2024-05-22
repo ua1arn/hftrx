@@ -13458,7 +13458,7 @@ directctlupdate(
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHENCODER3
 		{
-			const int_least16_t delta = encoder_get_delta(& encoder3, 4);
+			const int_least16_t delta = encoder_get_delta(& encoder3, BOARD_ENCODER3_DIVIDE);
 			switch (0)
 			{
 			case 0:

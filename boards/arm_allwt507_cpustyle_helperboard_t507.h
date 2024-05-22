@@ -43,9 +43,9 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHC0HW	1		/* TF CARD */
+	#define WITHSDHC0HW	1		/* TF CARD */
 	//#define WITHSDHC1HW	1		/* SDIO */
-	#define WITHSDHC2HW	1		/* EMMC */
+	//#define WITHSDHC2HW	1		/* EMMC */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4

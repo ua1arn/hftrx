@@ -227,6 +227,10 @@
 	#define WITHENCODER4	1
 	#define WITHENCODER5	1
 	#define WITHENCODER6	1
+	#define BOARD_ENCODER3_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENCODER4_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENCODER5_DIVIDE 4		/* значение для валкодера с "трещёткой" */
+	#define BOARD_ENCODER6_DIVIDE 4		/* значение для валкодера с "трещёткой" */
 
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
