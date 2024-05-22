@@ -97,10 +97,21 @@ xpt2046_read4(
 	* y = yv / i;
 	* x = xv / i;
 	* z1 = z1v / i;
-	* z2 = 4095 - z2v / i;
+	* z2 = z2v / i;
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
+
+static unsigned
+xpt2046_pressure(
+	uint_fast16_t x,
+	uint_fast16_t y,
+	uint_fast16_t z1,
+	uint_fast16_t z2
+	)
+{
+	return z1;
+}
 
 /* получение ненормальзованных координат нажатия */
 uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -111,8 +122,8 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 	* xr = x;
 	* yr = y;
-
-	return (z1 > XPT2046_Z1_THRESHOLD2) || (z1 > XPT2046_Z1_THRESHOLD && z2 > XPT2046_Z2_THRESHOLD);
+	xpt2046_pressure(x, y, z1, z2);
+	return (z1 > XPT2046_Z1_THRESHOLD2) || (z1 > XPT2046_Z1_THRESHOLD && (4095 - z2) > XPT2046_Z2_THRESHOLD);
 }
 
 void xpt2046_initialize(void)
