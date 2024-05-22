@@ -194,7 +194,7 @@ kbd_scan_local(uint_fast8_t * key)
 				if (++ kbd_press == KBD_MAX_PRESS_DELAY_POWER)
 				{
 					* key = qmdefs [kbd_last].holded; // lond_press symbol
-					kbd_release = 0;
+					//
 					return 1;
 				}
 			}
