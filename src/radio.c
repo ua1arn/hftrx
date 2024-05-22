@@ -17268,7 +17268,7 @@ modifysettings(
 
 #if WITHKEYBOARD
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
@@ -17285,7 +17285,7 @@ modifysettings(
 				kbready = 1;
 			}
 		}
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 		if (kbready != 0)
 		{
@@ -17376,13 +17376,13 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
@@ -17397,13 +17397,13 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
@@ -18315,7 +18315,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			gui_put_keyb_code(KBD_ENC2_PRESS);
@@ -18335,7 +18335,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 			uif_encoder2_hold();
 			return 1;
 	#endif /* WITHTOUCHGUI */
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 #if WITHTX
 
@@ -19466,9 +19466,9 @@ application_initialize(void)
 #if WITHTOUCHGUI
 	gui_initialize();
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 	hamradio_gui_enc2_update();
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 #endif /* WITHTOUCHGUI */
 #if WITHUSEUSBBT
 	bt_initialize();
@@ -19832,12 +19832,12 @@ hamradio_main_step(void)
 			if (uif_encoder2_rotate(nrotate2))
 			{
 				nrotate2 = 0;
-#if WITHTOUCHGUI && WITHENCODER2
+#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3
 				hamradio_gui_enc2_update();
 				display2_mode_subset(0);
 #else
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
+#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3 */
 			}
 	#if WITHDEBUG && ! defined (HAVE_BTSTACK_STDIN)
 			{
@@ -19963,9 +19963,9 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-#if WITHTOUCHGUI && WITHENCODER2
+#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3
 			gui_set_encoder2_rotate(nrotate2);
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
+#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3 */
 
 #if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
@@ -21290,7 +21290,7 @@ void hamradio_save_gui_settings(const void * ptrv)
 	}
 }
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 void hamradio_gui_enc2_update(void)
 {
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
@@ -21300,11 +21300,11 @@ void hamradio_gui_enc2_update(void)
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
 }
-#else /* WITHENCODER2 */
+#else /* WITHENCODER2 && ! WITHENCODER3 */
 void hamradio_gui_enc2_update(void)
 {
 }
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 #if WITHTX
 
