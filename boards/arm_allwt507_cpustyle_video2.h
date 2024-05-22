@@ -939,49 +939,95 @@
 	#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (UINT32_C(0) << 6) | (UINT32_C(0) << 5)| (UINT32_C(0) << 4))	// 18 bit panel connected
 	//#define TCON_FRM_MODE_VAL 0	// 24 bit panel
 
-	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
-		const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
-		const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
-		/* synchro signals - sync mode */ \
-		arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
-		arm_hardware_piod_altfn50(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
-		/* synchro signals - DE mode */ \
-		arm_hardware_piod_altfn50(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
-		arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
-		arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
-		/* pixel clock */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
-		/* RED */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF2); /* R0 PD16 LCD_D16 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF2); /* R1 PD17 LCD_D17 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF2); /* R2 PD18 LCD_D18 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF2); /* R3 PD19 LCD_D19 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 20, GPIO_CFG_AF2); /* R4 PD20 LCD_D20 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 21, GPIO_CFG_AF2); /* R5 PD21 LCD_D21 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 22, GPIO_CFG_AF2); /* R6 PD22 LCD_D22 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 23, GPIO_CFG_AF2); /* R7 PD23 LCD_D23 */ \
-		/* GREEN */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* G0 PD8 LCD_D8 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* G1 PD9 LCD_D9 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* G2 PD10 LCD_D10 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* G3 PD11 LCD_D11 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* G4 PD12 LCD_D12 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* G5 PD13 LCD_D13 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* G6 PD14 LCD_D14 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* G7 PD15 LCD_D15 */ \
-		/* BLUE  */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* B0 PD3 LCD_D0 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* B1 PD3 LCD_D1 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* B2 PD3 LCD_D2 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* B3 PD3 LCD_D3 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* B4 PD4 LCD_D4 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* B5 PD5 LCD_D5 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF2); 	/* B6 PD6 LCD_D6 */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* B7 PD7 LCD_D7 */ \
-	} while (0)
+	#if LCDMODETX_TC358778XBG
+
+		/* demode values: 0: static signal, 1: DE controlled */
+		#define HARDWARE_LTDC_INITIALIZE(demode) do { \
+			const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
+			const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
+			const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
+			/* synchro signals */ \
+			arm_hardware_piod_altfn50(DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
+			arm_hardware_piod_altfn50(VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
+			arm_hardware_piod_altfn50(HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
+			/* pixel clock */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
+			/* RED */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF2); /* R0 PD16 LCD_D16 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF2); /* R1 PD17 LCD_D17 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF2); /* R2 PD18 LCD_D18 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF2); /* R3 PD19 LCD_D19 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 20, GPIO_CFG_AF2); /* R4 PD20 LCD_D20 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 21, GPIO_CFG_AF2); /* R5 PD21 LCD_D21 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 22, GPIO_CFG_AF2); /* R6 PD22 LCD_D22 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 23, GPIO_CFG_AF2); /* R7 PD23 LCD_D23 */ \
+			/* GREEN */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* G0 PD8 LCD_D8 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* G1 PD9 LCD_D9 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* G2 PD10 LCD_D10 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* G3 PD11 LCD_D11 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* G4 PD12 LCD_D12 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* G5 PD13 LCD_D13 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* G6 PD14 LCD_D14 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* G7 PD15 LCD_D15 */ \
+			/* BLUE  */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* B0 PD3 LCD_D0 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* B1 PD3 LCD_D1 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* B2 PD3 LCD_D2 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* B3 PD3 LCD_D3 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* B4 PD4 LCD_D4 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* B5 PD5 LCD_D5 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF2); 	/* B6 PD6 LCD_D6 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* B7 PD7 LCD_D7 */ \
+		} while (0)
+
+	#else /* LCDMODETX_TC358778XBG */
+
+		/* demode values: 0: static signal, 1: DE controlled */
+		#define HARDWARE_LTDC_INITIALIZE(demode) do { \
+			const portholder_t VSmask = (UINT32_C(1) << 27); 	/* PD27 LCD_VSYNC */ \
+			const portholder_t HSmask = (UINT32_C(1) << 26); 	/* PD26 LCD_HSYNC */ \
+			const portholder_t DEmask = (UINT32_C(1) << 25); 	/* PD25 LCD_DE */ \
+			/* synchro signals - sync mode */ \
+			arm_hardware_piod_outputs(((demode) == 0) * DEmask, 0 * DEmask); /* PD25 LCD_DE */ \
+			arm_hardware_piod_altfn50(((demode) == 0) * VSmask, GPIO_CFG_AF2); /* PD27 LCD_VSYNC */ \
+			arm_hardware_piod_altfn50(((demode) == 0) * HSmask, GPIO_CFG_AF2); /* PD26 LCD_HSYNC */ \
+			/* synchro signals - DE mode */ \
+			arm_hardware_piod_altfn50(((demode) != 0) * DEmask, GPIO_CFG_AF2); /* PD25 LCD_DE */ \
+			arm_hardware_piod_outputs(((demode) != 0) * VSmask, 1 * VSmask); /* PD27 LCD_VSYNC */ \
+			arm_hardware_piod_outputs(((demode) != 0) * HSmask, 1 * HSmask); /* PD25 LCD_HSYNC */ \
+			/* pixel clock */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 24, GPIO_CFG_AF2); /* PD24 LCD_CLK */ \
+			/* RED */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF2); /* R0 PD16 LCD_D16 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF2); /* R1 PD17 LCD_D17 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF2); /* R2 PD18 LCD_D18 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF2); /* R3 PD19 LCD_D19 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 20, GPIO_CFG_AF2); /* R4 PD20 LCD_D20 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 21, GPIO_CFG_AF2); /* R5 PD21 LCD_D21 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 22, GPIO_CFG_AF2); /* R6 PD22 LCD_D22 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 23, GPIO_CFG_AF2); /* R7 PD23 LCD_D23 */ \
+			/* GREEN */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* G0 PD8 LCD_D8 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* G1 PD9 LCD_D9 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* G2 PD10 LCD_D10 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* G3 PD11 LCD_D11 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* G4 PD12 LCD_D12 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* G5 PD13 LCD_D13 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* G6 PD14 LCD_D14 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* G7 PD15 LCD_D15 */ \
+			/* BLUE  */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* B0 PD3 LCD_D0 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* B1 PD3 LCD_D1 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* B2 PD3 LCD_D2 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* B3 PD3 LCD_D3 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* B4 PD4 LCD_D4 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* B5 PD5 LCD_D5 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF2); 	/* B6 PD6 LCD_D6 */ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* B7 PD7 LCD_D7 */ \
+		} while (0)
+
+	#endif /* LCDMODETX_TC358778XBG */
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
