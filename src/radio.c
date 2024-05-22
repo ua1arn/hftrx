@@ -6484,6 +6484,15 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 }
 #endif /* WITHAMHIGHKBDADJ */
 
+#if WITHPWBUTTON
+static void
+uif_pwbutton_press(void)
+{
+	gpoweronhold = 0;
+	updateboard(1, 0);
+}
+#endif /* WITHPWBUTTON */
+
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
 static uint_fast8_t
@@ -17328,6 +17337,13 @@ modifysettings(
 				continue;	// требуется обновление индикатора
 		#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
+		#if WITHPWBUTTON
+			case KBD_CODE_POWEROFF:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				uif_pwbutton_press();
+				return;
+		#endif /* WITHPWBUTTON */
+
 #if WITHTX
 			case KBD_CODE_MOX:
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -18211,15 +18227,6 @@ freqvalid(
 	return (freq >= TUNE_BOTTOM && freq < TUNE_TOP);	/* частота внутри допустимого диапазона */
 }
 
-#if WITHPWBUTTON
-static void
-uif_pwbutton_press(void)
-{
-	gpoweronhold = 0;
-	updateboard(1, 0);
-}
-#endif /* WITHPWBUTTON */
-
 #if WITHKEYBOARD
 
 /* возврат ненуля - было какое-либо нажатие, клавиша уже обработана
@@ -18307,12 +18314,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 		sdcardformat();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
-
-#if WITHPWBUTTON
-	case KBD_CODE_POWEROFF:
-		uif_pwbutton_press();
-		return 1;
-#endif /* WITHPWBUTTON */
 
 #if WITHENCODER2
 	#if WITHTOUCHGUI
@@ -18552,6 +18553,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 			 - не вызывает сохранение состояния диапазона */
 		uif_key_lockencoder();
 		return 1;	/* клавиша уже обработана */
+
+#if WITHPWBUTTON
+	case KBD_CODE_POWEROFF:
+		uif_pwbutton_press();
+		return 1;
+#endif /* WITHPWBUTTON */
 
 	case KBD_CODE_LOCK_HOLDED:
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
