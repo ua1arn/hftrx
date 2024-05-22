@@ -296,50 +296,65 @@
 	#define ENCODER6_BITS_GET() (((ENCODER6_INPUT_PORT & ENCODER6_BITA) != 0) * 2 + ((ENCODER6_INPUT_PORT & ENCODER6_BITB) != 0))	// ENC4F
 
 	#define ENCODER_INITIALIZE() do { \
-			/* First tuning encoder */ \
-			static einthandler_t h1; \
-			static einthandler_t h2; \
-			static ticker_t h3; \
-			static ticker_t h4; \
-			static ticker_t h5; \
-			static ticker_t h6; \
-			/* Main tuning knob */ \
-			arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
-			einthandler_initialize(& h1, BOARD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
-			/* Second tuning knob */ \
-			arm_hardware_piod_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
-			einthandler_initialize(& h2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
-			/* ENC1F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-			arm_hardware_piod_inputs(BOARD_ENCODER3_BITS); \
-			ticker_initialize(& h3, 1, spool_encinterrupts, & encoder3); \
-			ticker_add(& h3); \
-			/* ENC2F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-			arm_hardware_piod_inputs(BOARD_ENCODER4_BITS); \
-			ticker_initialize(& h4, 1, spool_encinterrupts, & encoder4); \
-			ticker_add(& h4); \
-			/* ENC3F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-			arm_hardware_piod_inputs(BOARD_ENCODER5_BITS); \
-			ticker_initialize(& h5, 1, spool_encinterrupts, & encoder5); \
-			ticker_add(& h5); \
-			/* ENC4F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
-			arm_hardware_piod_inputs(BOARD_ENCODER6_BITS); \
-			ticker_initialize(& h6, 1, spool_encinterrupts, & encoder6); \
-			ticker_add(& h6); \
-		} while (0)
+		static einthandler_t eh1; \
+		static einthandler_t eh2; \
+		static einthandler_t eh3; \
+		static einthandler_t eh4; \
+		static einthandler_t eh5; \
+		static einthandler_t eh6; \
+		static ticker_t th3; \
+		static ticker_t th4; \
+		static ticker_t th5; \
+		static ticker_t th6; \
+		/* Main tuning knob */ \
+		arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh1, BOARD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh1); \
+		/* Second tuning knob */ \
+		arm_hardware_piod_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
+		/* ENC1F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		arm_hardware_piod_inputs(BOARD_ENCODER3_BITS); \
+		ticker_initialize(& th3, 1, spool_encinterrupts, & encoder3); \
+		ticker_add(& th3); \
+		arm_hardware_piod_altfn20(BOARD_ENCODER3_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh3, BOARD_ENCODER3_BITS, spool_encinterrupts, & encoder3); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh3); \
+		/* ENC2F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		arm_hardware_piod_inputs(BOARD_ENCODER4_BITS); \
+		ticker_initialize(& th4, 1, spool_encinterrupts, & encoder4); \
+		ticker_add(& th4); \
+		arm_hardware_piod_altfn20(BOARD_ENCODER4_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh4, BOARD_ENCODER4_BITS, spool_encinterrupts, & encoder4); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh4); \
+		/* ENC3F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		arm_hardware_piod_inputs(BOARD_ENCODER5_BITS); \
+		ticker_initialize(& th5, 1, spool_encinterrupts, & encoder5); \
+		ticker_add(& th5); \
+		arm_hardware_piod_altfn20(BOARD_ENCODER5_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh5, BOARD_ENCODER5_BITS, spool_encinterrupts, & encoder5); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh5); \
+		/* ENC4F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+		arm_hardware_piod_inputs(BOARD_ENCODER6_BITS); \
+		ticker_initialize(& th6, 1, spool_encinterrupts, & encoder6); \
+		ticker_add(& th6); \
+		arm_hardware_piod_altfn20(BOARD_ENCODER6_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh6, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder6); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh6); \
+	} while (0)
 
 #endif
 
-	#define I2S0HW_INITIALIZE(master) do { \
-		/*arm_hardware_pioi_altfn50(UINT32_C(1) << 6,	GPIO_CFG_AF3); *//* PA6 H_I2S0_MCLK	*/ \
-		arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA8 H_I2S0_LRCK	*/ \
-		arm_hardware_pioa_altfn50(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PA7 H_I2S0_BCLK	*/ \
-		arm_hardware_pioa_altfn50(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PA5 H_I2S0_DOUT0 to FPGA */ \
-		arm_hardware_pioa_altfn50(UINT32_C(1) << 9,	GPIO_CFG_AF3); /* PA9 H_I2S0_DIN0 from FPGA */ \
-	} while (0)
-	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
-	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
+#define I2S0HW_INITIALIZE(master) do { \
+	/*arm_hardware_pioi_altfn50(UINT32_C(1) << 6,	GPIO_CFG_AF3); *//* PA6 H_I2S0_MCLK	*/ \
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PA8 H_I2S0_LRCK	*/ \
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PA7 H_I2S0_BCLK	*/ \
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PA5 H_I2S0_DOUT0 to FPGA */ \
+	arm_hardware_pioa_altfn50(UINT32_C(1) << 9,	GPIO_CFG_AF3); /* PA9 H_I2S0_DIN0 from FPGA */ \
+} while (0)
+#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
+#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
 
 /* Распределение битов в ARM контроллерах */
 
