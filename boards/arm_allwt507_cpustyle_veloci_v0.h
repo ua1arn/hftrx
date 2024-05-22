@@ -299,44 +299,34 @@
 			/* First tuning encoder */ \
 			static einthandler_t h1; \
 			static einthandler_t h2; \
-			static einthandler_t h3; \
-			static einthandler_t h4; \
-			static einthandler_t h5; \
-			static einthandler_t h6; \
-			/* Main tuning encoder */ \
+			static ticker_t h3; \
+			static ticker_t h4; \
+			static ticker_t h5; \
+			static ticker_t h6; \
+			/* Main tuning knob */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_updown(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, 0); \
 			einthandler_initialize(& h1, BOARD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
-			/* Second tuning encoder */ \
+			/* Second tuning knob */ \
 			arm_hardware_piod_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_updown(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, 0); \
 			einthandler_initialize(& h2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
-			/* ENC1F - прерывание по фазе A, напроавление по фазе B */ \
-			arm_hardware_piod_altfn20(ENCODER3_BITA, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(ENCODER3_BITB); \
-			arm_hardware_piod_updown(BOARD_ENCODER3_BITS, BOARD_ENCODER3_BITS, 0); \
-			einthandler_initialize(& h3, ENCODER3_BITA, spool_encinterrupts4, & encoder3); \
-			arm_hardware_piod_onchangeinterrupt(ENCODER3_BITA, 1*ENCODER3_BITA, 0*ENCODER3_BITA, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h3); \
-			/* ENC2F - прерывание по фазе A, напроавление по фазе B */ \
-			arm_hardware_piod_altfn20(ENCODER4_BITA, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(ENCODER4_BITB); \
-			arm_hardware_piod_updown(BOARD_ENCODER4_BITS, BOARD_ENCODER4_BITS, 0); \
-			einthandler_initialize(& h4, ENCODER4_BITA, spool_encinterrupts4, & encoder4); \
-			arm_hardware_piod_onchangeinterrupt(ENCODER4_BITA, 1*ENCODER4_BITA, 0*ENCODER4_BITA, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h4); \
-			/* ENC3F - прерывание по фазе A, напроавление по фазе B */ \
-			arm_hardware_piod_altfn20(ENCODER5_BITA, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(ENCODER5_BITB); \
-			arm_hardware_piod_updown(BOARD_ENCODER5_BITS, BOARD_ENCODER5_BITS, 0); \
-			einthandler_initialize(& h5, ENCODER5_BITA, spool_encinterrupts4, & encoder5); \
-			arm_hardware_piod_onchangeinterrupt(ENCODER5_BITA, 1*ENCODER5_BITA, 0*ENCODER5_BITA, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h5); \
-			/* ENC4F - прерывание по фазе A, напроавление по фазе B */ \
-			arm_hardware_piod_altfn20(ENCODER6_BITA, GPIO_CFG_EINT); \
-			arm_hardware_piod_inputs(ENCODER6_BITB); \
-			arm_hardware_piod_updown(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, 0); \
-			einthandler_initialize(& h6, ENCODER6_BITA, spool_encinterrupts4, & encoder6); \
-			arm_hardware_piod_onchangeinterrupt(ENCODER6_BITA, 1*ENCODER6_BITA, 0*ENCODER6_BITA, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h6); \
+			/* ENC1F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+			arm_hardware_piod_inputs(BOARD_ENCODER3_BITS); \
+			ticker_initialize(& h3, 1, spool_encinterrupts, & encoder3); \
+			ticker_add(& h3); \
+			/* ENC2F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+			arm_hardware_piod_inputs(BOARD_ENCODER4_BITS); \
+			ticker_initialize(& h4, 1, spool_encinterrupts, & encoder4); \
+			ticker_add(& h4); \
+			/* ENC3F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+			arm_hardware_piod_inputs(BOARD_ENCODER5_BITS); \
+			ticker_initialize(& h5, 1, spool_encinterrupts, & encoder5); \
+			ticker_add(& h5); \
+			/* ENC4F - без прерываний (было: прерывание по фазе A, напроавление по фазе B) */ \
+			arm_hardware_piod_inputs(BOARD_ENCODER6_BITS); \
+			ticker_initialize(& h6, 1, spool_encinterrupts, & encoder6); \
+			ticker_add(& h6); \
 		} while (0)
 
 #endif
