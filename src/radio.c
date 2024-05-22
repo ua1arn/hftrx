@@ -10810,9 +10810,8 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
 /* модификация параметра с учетом границ изменения значения */
 static uint_fast8_t
-encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, encoder_t * e, uint_fast8_t derate, nvramaddress_t addr)
+encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr)
 {
-	const int_least16_t d = encoder_get_delta(e, derate);
 	uint_fast16_t v = c->value;
 	if (d == 0)
 		return 0;
@@ -13459,9 +13458,18 @@ directctlupdate(
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	#if WITHENCODER3
 		{
-			/* установка  */
-			changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & encoder3, 1, OFFSETOF(struct nvmap, afgain1));
-			//changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, & encoder4, 1, OFFSETOF(struct nvmap, rfgain1));
+			const int_least16_t delta = encoder_get_delta(& encoder3, 4);
+			switch (0)
+			{
+			case 0:
+				/* установка громкости */
+				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1));
+				break;
+			case 1:
+				/* установка IF GAIN */
+				changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1));
+				break;
+			}
 		}
 	#endif /* 0 */
 

@@ -35,6 +35,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->old_val = agetpins();
 	e->getpins = agetpins;
 	e->position = 0;
+	e->backup_position = 0;
 	e->reverse = 0;
 
 	e->backup_rotate = 0;
@@ -126,6 +127,7 @@ static void encoder_clear(encoder_t * e)
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql);
 	e->old_val = e->getpins();
 	e->position = 0;
+	e->backup_position = 0;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 	e->rotate = 0;
 	e->backup_rotate = 0;
