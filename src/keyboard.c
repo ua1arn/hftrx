@@ -18,7 +18,8 @@ enum
 	KBD_STABIL_PRESS =			NTICKS(15),	// время для регистраци нажатия
 	KBD_STABIL_RELEASE =		NTICKS(15),	// время для регистраци отпускания
 
-	KBD_MAX_PRESS_DELAY_LONG =	NTICKS(600), // RK4CI:1600 время для регистрации удержания кнопки с медленным автоповтором
+	KBD_MAX_PRESS_DELAY_LONG =	NTICKS(600), // время для регистрации удержания кнопки с медленным автоповтором
+	KBD_MAX_PRESS_DELAY_POWER =	NTICKS(2000), // время для регистрации удержания кнопки выключения питания
 	KBD_PRESS_REPEAT_SLOW =		NTICKS(400),	// время между символами по медленному автоповтору
 
 	KBD_MAX_PRESS_DELAY_LONG4 =	NTICKS(200), // RK4CI:1600 время для регистрации удержания кнопки с медленным автоповтором
@@ -185,10 +186,19 @@ kbd_scan_local(uint_fast8_t * key)
 		}
 		else if ((flags & KIF_POWER) != 0)
 		{
-			// клавиша реагирует только после окончания длительного нажатия
-			if (kbd_press < KBD_MAX_PRESS_DELAY_LONG)
-				++ kbd_press;
-			return 0;	// код будет возвращен по отпусканию
+			// клавиша может работать с длинным нажатием
+			if (kbd_press == KBD_MAX_PRESS_DELAY_POWER)
+				return 0;	// lond_press symbol already returned
+			if (kbd_press < KBD_MAX_PRESS_DELAY_POWER)
+			{
+				if (++ kbd_press == KBD_MAX_PRESS_DELAY_POWER)
+				{
+					* key = qmdefs [kbd_last].holded; // lond_press symbol
+					kbd_release = 0;
+					return 1;
+				}
+			}
+			return 0;
 		}
 		else
 		{
@@ -221,8 +231,9 @@ kbd_scan_local(uint_fast8_t * key)
 		// keyboard keys released, time is not expire.
 		if (-- kbd_release == 0)
 		{
+			const uint_fast8_t flags = qmdefs [kbd_last].flags;
 			// time is expire
-			if ((qmdefs [kbd_last].flags & KIF_FAST) != 0)
+			if ((flags & KIF_FAST) != 0)
 			{
 #if WITHKBDENCODER
 				// Перестройка клавишами вместо валкодера
@@ -248,15 +259,6 @@ kbd_scan_local(uint_fast8_t * key)
 				kbd_slowcount = 0;
 
 				return 1;		// срабатывание по кратковременному нажатию на клавишу.
-			}
-			else if ((qmdefs [kbd_last].flags & KIF_POWER) != 0)
-			{
-				// клавиша реагирует только после окончания длительного нажатия
-				* key = qmdefs [kbd_last].code;	
-				kbd_press = 0;
-				kbd_slowcount = 0;
-
-				return 1;		// срабатывание по длинному нажатию на клавишу.
 			}
 			else
 			{
