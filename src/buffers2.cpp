@@ -109,12 +109,15 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - mono
 				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
 				break;
 			case 3:
+				// 24 bit values - mono
 				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
 				break;
 			case 4:
+				// 32 bit values - mono
 				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
 				break;
 			}
@@ -124,14 +127,17 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - stereo
 				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
 				USBD_poke_u16(buff + 2, adpt_output(& adp, ch1));
 				break;
 			case 3:
+				// 24 bit values - stereo
 				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
 				USBD_poke_u24(buff + 3, adpt_output(& adp, ch1));
 				break;
 			case 4:
+				// 32 bit values - stereo
 				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
 				USBD_poke_u32(buff + 4, adpt_output(& adp, ch1));
 				break;
@@ -151,12 +157,15 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - mono
 				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
 				break;
 			case 3:
+				// 24 bit values - mono
 				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
 				break;
 			case 4:
+				// 32 bit values - mono
 				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
 				break;
 			}
@@ -166,14 +175,17 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - stereo
 				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
 				USBD_poke_u16(buff + 2, transform_do32(tfm, ch1));
 				break;
 			case 3:
+				// 24 bit values - stereo
 				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
 				USBD_poke_u24(buff + 3, transform_do32(tfm, ch1));
 				break;
 			case 4:
+				// 32 bit values - stereo
 				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
 				USBD_poke_u32(buff + 4, transform_do32(tfm, ch1));
 				break;
@@ -192,12 +204,15 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - mono
 				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
 				break;
 			case 3:
+				// 24 bit values - mono
 				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
 				break;
 			case 4:
+				// 32 bit values - mono
 				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
 				break;
 			}
@@ -207,14 +222,17 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - stereo
 				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
 				dest [1] = adpt_input(& adp, USBD_peek_u16(buff + 2));
 				break;
 			case 3:
+				// 24 bit values - stereo
 				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
 				dest [1] = adpt_input(& adp, USBD_peek_u24(buff + 3));
 				break;
 			case 4:
+				// 32 bit values - stereo
 				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
 				dest [1] = adpt_input(& adp, USBD_peek_u32(buff + 4));
 				break;
