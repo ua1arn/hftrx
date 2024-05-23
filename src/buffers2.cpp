@@ -109,12 +109,15 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - mono
 				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
 				break;
 			case 3:
+				// 24 bit values - mono
 				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
 				break;
 			case 4:
+				// 32 bit values - mono
 				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
 				break;
 			}
@@ -124,14 +127,17 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - stereo
 				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
 				USBD_poke_u16(buff + 2, adpt_output(& adp, ch1));
 				break;
 			case 3:
+				// 24 bit values - stereo
 				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
 				USBD_poke_u24(buff + 3, adpt_output(& adp, ch1));
 				break;
 			case 4:
+				// 32 bit values - stereo
 				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
 				USBD_poke_u32(buff + 4, adpt_output(& adp, ch1));
 				break;
@@ -151,12 +157,15 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - mono
 				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
 				break;
 			case 3:
+				// 24 bit values - mono
 				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
 				break;
 			case 4:
+				// 32 bit values - mono
 				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
 				break;
 			}
@@ -166,14 +175,17 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - stereo
 				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
 				USBD_poke_u16(buff + 2, transform_do32(tfm, ch1));
 				break;
 			case 3:
+				// 24 bit values - stereo
 				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
 				USBD_poke_u24(buff + 3, transform_do32(tfm, ch1));
 				break;
 			case 4:
+				// 32 bit values - stereo
 				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
 				USBD_poke_u32(buff + 4, transform_do32(tfm, ch1));
 				break;
@@ -192,12 +204,15 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - mono
 				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
 				break;
 			case 3:
+				// 24 bit values - mono
 				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
 				break;
 			case 4:
+				// 32 bit values - mono
 				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
 				break;
 			}
@@ -207,14 +222,17 @@ public:
 			switch (ss)
 			{
 			case 2:
+				// 16 bit values - stereo
 				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
 				dest [1] = adpt_input(& adp, USBD_peek_u16(buff + 2));
 				break;
 			case 3:
+				// 24 bit values - stereo
 				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
 				dest [1] = adpt_input(& adp, USBD_peek_u24(buff + 3));
 				break;
 			case 4:
+				// 32 bit values - stereo
 				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
 				dest [1] = adpt_input(& adp, USBD_peek_u32(buff + 4));
 				break;
@@ -305,6 +323,11 @@ public:
 	bool outready;
 
 public:
+	blists() :
+		name("uninited")
+	{
+
+	}
 	blists(IRQL_t airql, const char * aname, buffitem_t * storage, unsigned capacity) :
 #if WITHBUFFERSDEBUG
 		errallocate(0),
@@ -1122,7 +1145,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
 
-#if CPUSTYLE_XC7Z && WITHLFM
+#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && WITHLFM
 	if (iflfmactive())
 	{
 		ftw_t v = dspfpga_get_nco1();
@@ -3333,7 +3356,9 @@ static void buffers_spool(void * ctx)
 	uacinrts96.spool10ms();
 #endif
 #endif
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE)
 	uacin48.spool10ms();
+#endif /* WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) */
 	//message8.spool10ms();
 #endif /* WITHINTEGRATEDDSP */
 }

@@ -161,7 +161,7 @@
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(ENCODER_BITS); \
-			arm_hardware_pioa_updown(ENCODER_BITS, 0); \
+			arm_hardware_pioa_updown(_xMask, ENCODER_BITS, 0); \
 			arm_hardware_pioa_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -184,14 +184,14 @@
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
 	/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
@@ -264,7 +264,7 @@
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(PTT_BIT_PTT); \
-			arm_hardware_pioa_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_pioa_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
 		} while (0)
 
 #endif /* WITHTX */
@@ -283,7 +283,7 @@
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_pioa_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_pioa_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif
@@ -413,7 +413,7 @@
 #if WITHSPIHW
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioa_updown(SPI_MISO_BIT, 0); /* похоже, не имеет смысла */ \
+			arm_hardware_pioa_updown(_xMask, SPI_MISO_BIT, 0); /* похоже, не имеет смысла */ \
 			arm_hardware_pioa_altfn2(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, 0 /* AF_0 */); /* PA5, PA6, PA7. В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \

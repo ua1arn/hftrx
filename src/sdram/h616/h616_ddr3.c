@@ -1727,21 +1727,21 @@ static void mctl_auto_detect_dram_size(struct h616_dram_para *para)
 	}
 }
 
-static unsigned long mctl_calc_size(struct h616_dram_para *para)
+static uint64_t mctl_calc_size(struct h616_dram_para *para)
 {
 	uint8_t width = para->bus_full_width ? 4 : 2;
 
 	/* 8 banks */
-	return (1ULL << (para->cols + para->rows + 3)) * width * para->ranks;
+	return (UINT64_C(1) << (para->cols + para->rows + 3)) * width * para->ranks;
 }
 
-unsigned long sunxi_dram_init(void)
+uint64_t sunxi_dram_init(void)
 {
 	 struct h616_dram_para para = {
 		.clk = BOARD_CONFIG_DRAM_CLK,
 		.type = BOARD_CONFIG_DRAM_TYPE,
 	};
-	unsigned long size;
+	uint64_t size;
 
 	setbits_le32(0x7010310, BIT_U32(8));
 	clrbits_le32(0x7010318, 0x3f);
@@ -1760,8 +1760,8 @@ unsigned long sunxi_dram_init(void)
 void arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-	unsigned long v = sunxi_dram_init();
-	PRINTF("arm_hardware_sdram_initialize: v=%lu, %lu MB\n", v, v / 1024 / 1024);
+	uint64_t v = sunxi_dram_init();
+	PRINTF("arm_hardware_sdram_initialize: %u MB\n", (unsigned) (v / 1024 / 1024));
 
 //	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 //	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);

@@ -5335,6 +5335,17 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0
+	{
+		// Encoder tests
+		PRINTF("e3=%+3d, e4=%+3d, e5=%+3d, e6=%+3d\n",
+				(int) encoder_get_delta(& encoder3, 1),
+				(int) encoder_get_delta(& encoder4, 1),
+				(int) encoder_get_delta(& encoder5, 1),
+				(int) encoder_get_delta(& encoder6, 1)
+				);
+	}
+#endif
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
 	if ((THS->THS_DATA_INTS & 0x01) != 0)
 	{
@@ -5593,6 +5604,9 @@ static void BarTest(void)
 
 		display_flush();
 		//local_delay_ms(5);
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -10563,6 +10577,60 @@ void hightests(void)
 	hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 	//hmain();
+#if 0
+	{
+		// "Squash" test
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+		unsigned count = 2;
+		while (count --)
+		{
+			unsigned w = DIM_X / 4;
+			unsigned posmax = DIM_X * 2 - w * 2;
+			unsigned pos = 0;
+			for (;;)
+			{
+				unsigned delta = pos > (posmax / 2) ? posmax - 1 - pos : pos;
+				// Erase background
+				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+				// Draw rextangle
+				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0 + delta, DIM_Y / 4, w, DIM_Y / 4, TFTRGB(0, 0, 0));
+
+				display_nextfb();
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
+				pos = (pos + 1) % posmax;
+				if (pos == 0)
+					break;
+			}
+		}
+
+	}
+#endif
+#if 0
+	{
+		// i2c bus test i2c test twi bus test twi test
+		unsigned n = 3;
+		for (;n --;)
+		{
+			unsigned addr;
+			PRINTF("I2C bus scan:\n");
+			for (addr = 2; addr < 254; addr += 2)
+			{
+				uint8_t v = 0xFF;
+				int err = i2chw_read(addr | 0x01, & v, 1);
+				if (err == 0)
+				{
+					PRINTF("addr8bit=0x%02X, addr7bit=0x%02X\n", addr, addr / 2);
+				}
+			}
+		}
+		PRINTF("I2C bus scan done\n");
+	}
+#endif
 #if CPUSTYLE_T507 && 0		// Allwinner T507 Thermal sensor test
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
@@ -10607,6 +10675,23 @@ void hightests(void)
 
 		PRINTF("__ttb_base=0x%08X\n", (unsigned) __ttb_base);
 		PRINTF("__ramnc_base=0x%08X, __ramnc_top=0x%08X (%u MB)\n", (unsigned) __ramnc_base, (unsigned) __ramnc_top, (unsigned) ((__ramnc_top - __ramnc_base) / 1024 / 1024));
+	}
+#endif
+#if 0
+	{
+		const spitarget_t target = targetadc2;	// PH5
+		for (;;)
+		{
+			uint_fast8_t valid;
+			PRINTF("ADC0..4: 0x%03X 0x%03X 0x%03X 0x%03X 0x%03X\n",
+					(unsigned) mcp3208_read(target, 0, 0, & valid),
+					(unsigned) mcp3208_read(target, 0, 1, & valid),
+					(unsigned) mcp3208_read(target, 0, 2, & valid),
+					(unsigned) mcp3208_read(target, 0, 3, & valid),
+					(unsigned) mcp3208_read(target, 0, 4, & valid)
+					);
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 	}
 #endif
 #if 0
@@ -11116,7 +11201,7 @@ void hightests(void)
 		colpip_bitblt(
 				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
 				layer2, DIM_X, DIM_Y,
-				30, 30,
+				30, 330,
 				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
 				fbpic2, picx, picy,
 				0, 0,	// координаты окна источника
@@ -11923,7 +12008,7 @@ void hightests(void)
 		PRINTF("zynq pin & bank calculations test passed.\n");
 	}
 #endif
-#if 1 && WITHOPENVG
+#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -13104,6 +13189,7 @@ void hightests(void)
 		// 800x480, Allwinner t113-s3, @1200 MHz, RGB565, software 0.6s
 		// 800x480, Allwinner F133-A, @1200 MHz, RGB565, hardware G2D 0.7s
 		// 800x480, Allwinner F133-A, @1200 MHz, XRGB8888, hardware G2D 0.9s
+		// 800x480, Allwinner t507, @1200 MHz, RGB565, software 0.4s
 	}
 #endif
 #if 0
@@ -13195,39 +13281,37 @@ void hightests(void)
 #include "touch\touch.h"
 
 	{
-		uint_fast16_t gridx = 16;
-		uint_fast16_t gridy = 16;
-		uint_fast16_t markerx = 0;
-		uint_fast16_t markery = 0;
+		uint_fast16_t gridx = DIM_X / 20;
+		uint_fast16_t gridy = DIM_Y / 20;
 
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
 		display2_bgreset();
 		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
+		char msg [64] = "";
 
 		// touch screen test
 		PRINTF(PSTR("touch screen test:\n"));
 		for (;;)
 		{
 			PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
-			char msg [64];
 			uint_fast16_t x, y;
+			colpip_fillrect(fr, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_BLACK);
 			if (board_tsc_getxy(& x, & y))
 			{
-				PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
-				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("x=%5d, y=%5d"), (int) x, (int) y);
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_BLACK);
+				uint_fast16_t markerx;
+				uint_fast16_t markery;
+				//PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
+				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("X=%5d, Y=%5d"), (int) x, (int) y);
 				markerx = x / gridx * gridx;
 				markery = y / gridy * gridy;
 				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_WHITE);
-			} else {
-				memset(msg, ' ', 63);
-				msg [63] = '\0';
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_BLACK);
 			}
-			display_at(22, 26, msg);
-			local_delay_ms(10);
+			colpip_string_tbg(fr, DIM_X, DIM_Y, 0, 0, msg, COLORPIP_RED);
 
 			dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
 			hardware_ltdc_main_set((uintptr_t) fr);
+			colmain_fb_next();
 		}
 	}
 #endif
@@ -13606,35 +13690,83 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && LCDMODE_MAIN_RGB565
+#if 0 && LCDMODE_COLORED
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 	// тест интерфейса дисплея - цветов RGB565
 	for (;;)
 	{
+		// Palette parameters
+		//enum { rSkip = 3, gSkip = 2, bSkip = 3 };
+		enum { rSkip = 0, gSkip = 0, bSkip = 0 };
 		char b [32];
 		int c;
-		// COLORPIP_T bg
-//		for (c = 0; c < 256; ++ c)
-//		{
-//			display_setbgcolor(TFTRGB(c, c, c));
-//			display2_bgreset();
-//			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-//			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-//			display_at(0, 0, b);
-//			display_nextfb();
-//			local_delay_ms(50);
-//		}
-		//for (; c -- > 0; )
-		//{
-		//	display_setbgcolor(TFTRGB(c, c, c));
-		//	display2_bgreset();
-		//}
-		for (c = 0; c < 5; ++ c)
+		if (0)
 		{
-			display_setbgcolor(TFTRGB(UINT32_C(1) << (c + 3), 0, 0));
+			for (;;)
+			{
+				{
+					// Solid BLACK
+					c = UINT8_C(0);
+					display_setbgcolor(TFTRGB(c, c, c));
+					display2_bgreset();
+					display_nextfb();
+					local_delay_ms(1000);
+				}
+				{
+					// Solid WHITE
+					c = UINT8_C(0xFF);
+					display_setbgcolor(TFTRGB(c, c, c));
+					display2_bgreset();
+					display_nextfb();
+					local_delay_ms(1000);
+				}
+
+			}
+		}
+		if (0)
+		{
+			for (c = 0; c < 256; ++ c)
+			{
+				display_setbgcolor(TFTRGB(c, c, c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(50);
+			}
+			for (; -- c > 0; )
+			{
+				display_setbgcolor(TFTRGB(c, c, c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(50);
+			}
+			continue;
+		}
+		if (0)
+		{
+			for (c = 0; c < 8; ++ c)
+			{
+				display_setbgcolor(TFTRGB(UINT8_C(1) << c, UINT8_C(1) << c, UINT8_C(1) << c));
+				display2_bgreset();
+				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
+				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_at(0, 0, b);
+				display_nextfb();
+				local_delay_ms(2000);
+			}
+			continue;
+		}
+		for (c = 0; c < (8 - rSkip); ++ c)
+		{
+			display_setbgcolor(TFTRGB(UINT8_C(1) << (c + rSkip), 0, 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3u"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13645,11 +13777,11 @@ void hightests(void)
 		//	display_setbgcolor(TFTRGB(c, 0, 0));
 		//	display2_bgreset();
 		//}
-		for (c = 0; c < 6; ++ c)
+		for (c = 0; c < (8 - gSkip); ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, UINT32_C(1) << (c + 2), 0));
+			display_setbgcolor(TFTRGB(0, UINT8_C(1) << (c + gSkip), 0));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3u"), 1u << (c + 2));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13660,11 +13792,11 @@ void hightests(void)
 		//	display_setbgcolor(TFTRGB(0, c, 0));
 		//	display2_bgreset();
 		//}
-		for (c = 0; c < 5; ++ c)
+		for (c = 0; c < (8 - bSkip); ++ c)
 		{
-			display_setbgcolor(TFTRGB(0, 0, UINT32_C(1) << (c + 3)));
+			display_setbgcolor(TFTRGB(0, 0, UINT8_C(1) << (c + bSkip)));
 			display2_bgreset();
-			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3u"), 1u << (c + 3));
+			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
 			display_nextfb();
@@ -13909,7 +14041,7 @@ void hightests(void)
 		for (;;)
 		{
 			unsigned speed;
-			int nrotate = encoder_get_snapshot(& speed, 1);
+			int nrotate = encoderA_get_snapshot(& speed, 1);
 			uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 			do
 			{
@@ -13933,7 +14065,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
-			int_least16_t nrotate = getRotateHiRes(& jumpsize, 1);
+			int_least16_t nrotate = getRotateHiRes_A(& jumpsize, 1);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
@@ -14005,7 +14137,7 @@ void hightests(void)
 
 			if (scancode != KEYBOARD_NOKEY)
 			{
-				PRINTF(PSTR("keycode = %02x, %d\n"), (unsigned) scancode, v);
+				PRINTF(PSTR("keycode = 0x%02X (%u), %d\n"), (unsigned) scancode, (unsigned) scancode, v);
 				v = (v + 1) % 1000;
 			}
 			continue;
@@ -14776,7 +14908,7 @@ void midtests(void)
 			(uint_fast8_t) (0 >> 0),
 		};
 		uint8_t data [32];
-		prog_spi_io(targetext1, SPIC_SPEEDFAST, SPIC_MODE3, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, ARRAY_SIZE(data));
+		prog_spi_io(targetext1, SPIC_SPEEDFAST, SPIC_MODE3, cmd, ARRAY_SIZE(cmd), NULL, 0, data, ARRAY_SIZE(data));
 		printhex(0, data, ARRAY_SIZE(data));
 
 	}
@@ -15416,7 +15548,7 @@ void lowtests(void)
 //		gpio_output2(TARGET_UART1_TX_MIO, 0, pinmode);
 //		local_delay_ms(200);
 //	}
-#if 0 && CPUSTYLE_XC7Z && defined (ZYNQBOARD_LED_RED)
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)
 	{
 		// калибровка программной задержки
 		for (;;)

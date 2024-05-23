@@ -126,17 +126,23 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
 {
-	static uint_fast16_t x = 0, y = 0;
+#if LINUX_SUBSYSTEM
+	static uint32_t oldt = sys_now();
+	static uint_fast16_t x = 0, y = 0, p = 0;
 
-	if (gt911_getXY(& x, & y))
+	uint32_t t = sys_now();
+	if (t - oldt > 20)		// перед чтениями координат нужна задержка минимум на 15 + 5 ms
 	{
-		* xr = x;
-		* yr = y;
-		return 1;
+		oldt = t;
+		p = gt911_getXY(& x, & y);
 	}
+
 	* xr = x;
 	* yr = y;
-	return 0;
+	return p;
+#else
+	return gt911_getXY(xr, yr);
+#endif /* LINUX_SUBSYSTEM */
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */
@@ -215,6 +221,7 @@ uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void
 #if BOARD_TSC1_XMIRROR
 	return tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
 #else /* BOARD_TSC1_XMIRROR */
+	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
 	if (x < xrawmid)
 		return tcsnormalize(x, xrawmin, xrawmid - 1, DIM_X / 2 - 1);
 	else
@@ -228,6 +235,7 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 #if BOARD_TSC1_YMIRROR
 	return tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
 #else /* BOARD_TSC1_YMIRROR */
+	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
 	if (y < yrawmid)
 		return tcsnormalize(y, yrawmin, yrawmid - 1, DIM_Y / 2 - 1);
 	else
@@ -496,6 +504,10 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
+#if TSC1_TYPE == TSC_TYPE_EVDEV
+	evdev_initialize();
+#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
+
 	/* Тест - печать ненормализованных значений */
 #if WITHDEBUG && 0
 	for (;;)
@@ -512,6 +524,8 @@ void board_tsc_initialize(void)
 
 }
 
+#if ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV
+
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
@@ -527,7 +541,9 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
-#if WITHLVGL
+#endif /* ! LINUX_SUBSYSTEM && TSC1_TYPE != TSC_TYPE_EVDEV */
+
+#if WITHLVGL && 0
 
 #include "lv_drivers/indev/evdev.h"
 

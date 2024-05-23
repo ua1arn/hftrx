@@ -464,6 +464,24 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
+#elif CPUSTYLE_XCZU
+	// Zynq UltraScale+ Device
+	// r0p4-50rel0
+	// XCZU2..XCZU9, XCZU11
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+#if ! LINUX_SUBSYSTEM
+	#include "arch/zynqmp/zynquscale.h"
+	#include "irq_ctrl.h"
+#endif /* ! LINUX_SUBSYSTEM */
+
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
 #elif \
 	defined (CPUSTYLE_UBLAZE) || \
 	0
@@ -518,14 +536,23 @@ void stm32mp1_pll1_slow(uint_fast8_t slow);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
-void spool_encinterrupt(void);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupt2(void);	/* прерывание по изменению сигнала на входах от валкодера #2 */
-void hardware_encoder_initialize(void);
-uint_fast8_t hardware_get_encoder_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-uint_fast8_t hardware_get_encoder2_bits(void);/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4(void * ctx);	/* прерывание по изменению сигнала на входе A от валкодера - направление по B */
+void hardware_encoders_initialize(void);
 
-void gt911_interrupt_handler(void);
-void stmpe811_interrupt_handler(void);
+uint_fast8_t hardware_get_encoder_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+uint_fast8_t hardware_get_encoder2_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+uint_fast8_t hardware_get_encoder3_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+uint_fast8_t hardware_get_encoder4_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+uint_fast8_t hardware_get_encoder5_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+uint_fast8_t hardware_get_encoder6_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+#define ENCODER_IRQL IRQL_OVERREALTIME
+#define ENCODER_PRIORITY ARM_OVERREALTIME_PRIORITY
+#define ENCODER_TARGETCPU TARGETCPU_OVRT
+
+void gt911_interrupt_handler(void * ctx);
+void stmpe811_interrupt_handler(void * ctx);
 
 void hardware_adc_initialize(void);
 
@@ -650,7 +677,7 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
-void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
+void spool_nmeapps(void * ctx);	// Обработчик вызывается при приходе очередного импульса PPS
 
 // получить прескалер и значение для программирования таймера
 uint_fast8_t
@@ -737,8 +764,10 @@ void i2cp_stop(const i2cp_t * p);
 void hardware_twi_master_configure(void);
 
 /* return non-zero then error */
-uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
-uint16_t i2chw_write(uint16_t slave_address, const uint8_t * buf, uint32_t size);
+// LSB of slave_address8b ignored */
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
 
 uint32_t hardware_get_random(void);
 
@@ -1009,7 +1038,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #define AX_PWM_AXI_SLV_REG0_OFFSET 0
 #define AX_PWM_AXI_SLV_REG1_OFFSET 4

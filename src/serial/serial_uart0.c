@@ -121,22 +121,33 @@
 		HARDWARE_UART0_ONTXCHAR(& SCIF0);
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	static void UART0_IRQHandler(void)
 	{
 		char c;
-		UART0->ISR = UART0->IMR;	// clear interrupt status
-
+		const uint_fast32_t sts = UART0->ISR & UART0->IMR;
+		if (sts & (1u << 5))	// RXOVR
+		{
+			UART0->ISR = (1u << 5);	// RXOVR
+			HARDWARE_UART0_ONOVERFLOW();
+		}
+		if (sts & (1u << 7))	// PARE
+		{
+			UART0->ISR = (1u << 7);	// PARE
+		}
+		if (sts & (1u << 6))	// FRAME
+		{
+			UART0->ISR = (1u << 6);	// FRAME
+		}
+		if (sts & (1u << 3))	// TEMPTY
+		{
+			HARDWARE_UART0_ONTXCHAR(UART0);
+		}
 		while (hardware_uart0_getchar(& c))
 		{
 			HARDWARE_UART0_ONRXCHAR(c);
 		}
-	}
-
-	void nmea_parser0_init(void)
-	{
-		serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
@@ -275,10 +286,15 @@ void hardware_uart0_enabletx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
+	const uint32_t mask = (UINT32_C(1) << 3);	// TEMPTY Enable Transmit Holding Register Empty Interrupt
 	if (state)
-		 UART0->IER |= 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		 UART0->IER = mask;
+	}
 	else
-		 UART0->IER &= ~ 0*(1u << 1);	// ETBEI Enable Transmit Holding Register Empty Interrupt
+	{
+		 UART0->IDR = mask;
+	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
@@ -376,10 +392,16 @@ void hardware_uart0_enablerx(uint_fast8_t state)
 
 #elif CPUSTYLE_XC7Z
 
-	uint32_t mask = state ? 1 : 0; 			/* RX FIFO trigger interrupt */
-	UART0->RXWM = 1; 						/* set RX FIFO Trigger Level */
-	UART0->IER = mask;
-	UART0->IDR = ~ mask;
+	UART0->RXWM = 16; 							/* set RX FIFO Trigger Level */
+	const uint32_t mask = (UINT32_C(1) << 8) | (UINT32_C(1) << 5) | (UINT32_C(1) << 0);	/* TIMEOUT, RX FIFO trigger interrupt */
+	if (state)
+	{
+		 UART0->IER = mask;
+	}
+	else
+	{
+		 UART0->IDR = mask;
+	}
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
 

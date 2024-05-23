@@ -61,7 +61,7 @@ static void wm8994_setreg(
 			datav >> 0,
 		};
 
-		prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+		prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 	#elif WITHSPIEXT16
 

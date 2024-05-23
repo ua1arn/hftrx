@@ -38,8 +38,8 @@
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
-	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
@@ -80,8 +80,8 @@
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
-	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -255,11 +255,11 @@
 		do { \
 			/* arm_hardware_pio5_alternative(ENCODER2_BITS, R7S721_PIOALT_4); */ \
 			arm_hardware_pio5_inputs(ENCODER2_BITS); \
-			/* arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ5, both edges */ \
-			/* arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt2); */ /* IRQ6, both edges */ \
+			/* arm_hardware_irqn_interrupt(5, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupts, & encoder2); */ /* IRQ5, both edges */ \
+			/* arm_hardware_irqn_interrupt(6, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupts, & encoder2); */ /* IRQ6, both edges */ \
 			arm_hardware_pio5_alternative(ENCODER_BITS, R7S721_PIOALT_4); \
-			arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ3, both edges */ \
-			arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupt); /* IRQ4, both edges */ \
+			arm_hardware_irqn_interrupt(3, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupts, & encoder1); /* IRQ3, both edges */ \
+			arm_hardware_irqn_interrupt(4, 3, ARM_OVERREALTIME_PRIORITY, spool_encinterrupts, & encoder1); /* IRQ4, both edges */ \
 		} while (0)
 
 #endif /* WITHENCODER */
@@ -575,6 +575,16 @@
 // Набор определений для работы без внешнего дешифратора
 #define SPI_ALLCS_PORT_S(v) do {	R7S721_TARGET_PORT_S(2, v); } while (0)
 #define SPI_ALLCS_PORT_C(v) do {	R7S721_TARGET_PORT_C(2, v); } while (0)
+
+/* Perform delay after assert or de-assert specific CS line */
+#define SPI_CS_DELAY(target) do { \
+	switch (target) { \
+	case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
+	case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
+	case targetrtc1: local_delay_us(4); break; /* RTC DS1305 RTC_CS */ \
+	default: break; \
+	} \
+} while (0)
 
 /* инициализация лиий выбора периферийных микросхем */
 #define SPI_ALLCS_INITIALIZE() \
@@ -915,7 +925,7 @@
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 		#define BOARD_GT911_RESET_PIN (1uL << 15)	/* P5_15 : reset */
 		#define BOARD_GT911_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
 
@@ -940,7 +950,7 @@
 	#endif
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-		void stmpe811_interrupt_handler(void);
+		void stmpe811_interrupt_handler(void * ctx);
 
 		#define BOARD_STMPE811_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
 

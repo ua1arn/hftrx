@@ -955,6 +955,37 @@ extern "C" {
 	} GPIOMode_TypeDef;
 	#define WITHCPUNAME "Allw F133-A"
 
+#elif CPUSTYLE_XCZU
+	// Zynq UltraScale+ Device
+	// XCZU2..XCZU9, XCZU11
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
+	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+
+	//#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define HARDWARE_NCORES 4
+	#define WITHCPUNAME "Zynq XCZU"
+
 #elif defined(_WIN32)
 
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -1276,6 +1307,7 @@ extern "C" {
 #define TSC_TYPE_XPT2046 	65	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
 #define TSC_TYPE_ILI2102	66	// Capacitive touch screen controller Ilitek ILI2102
 #define TSC_TYPE_AWTPADC	67	// Allwinner F133/t113-s3 resistive touch screen controller
+#define TSC_TYPE_EVDEV		68	// Linux input device
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
@@ -2627,6 +2659,11 @@ extern "C" {
 #if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA
 	#error RTC_TYPE_GPS and WITHNMEA must be used in same time
 #endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA */
+
+#if LINUX_SUBSYSTEM && WITHLVGL
+	#undef WITHTOUCHGUI
+	#undef TSC1_TYPE
+#endif /* LINUX_SUBSYSTEM && WITHLVGL */
 
 #ifdef __cplusplus
 }

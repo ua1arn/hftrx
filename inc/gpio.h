@@ -14,15 +14,18 @@ extern "C" {
 /* Хранение битов чувствтиельности и соответствующего обработчитка для
  * прерываний от изменения состояния битов GPIO
  */
-typedef void (* eintcb_t)(void);
+typedef void (* eintcb_t)(void * ctx);
 typedef struct einthandler
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	portholder_t mask;
 	eintcb_t handler;
+	void * ctx;
 } einthandler_t;
 
-void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler);
+void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler, void * ctx);
+
+typedef struct encoder_tag encoder_t;
 
 #if CPUSTYLE_STM32MP1
 
@@ -150,7 +153,7 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 	#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
 	#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
 
-#elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! LINUX_SUBSYSTEM
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
 	void gpiobank_lock(unsigned bank, IRQL_t * oldIrql);
@@ -261,9 +264,9 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 		GPIO_BANK_SET_DIRM(bank, mask, 0); \
 	} while (0)
 
-	void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
-	void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
-	void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
+	void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
+	void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
+	void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx, uint32_t priority, uint32_t tgcpu);
 
 	// Enable output drive for pin
 	#define MIO_SET_TRI_ENABLE(pin, tri_enable) do { \
@@ -497,35 +500,35 @@ void arm_hardware_piok_altfn50(portholder_t opins, unsigned af);
 void arm_hardware_piol_altfn50(portholder_t opins, unsigned af);
 void arm_hardware_pioz_altfn50(portholder_t opins, unsigned af);
 
-// включить подтяжку вверх или вниз
-void arm_hardware_pioa_updown(portholder_t up, portholder_t down);
-void arm_hardware_piob_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioc_updown(portholder_t up, portholder_t down);
-void arm_hardware_piod_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioe_updown(portholder_t up, portholder_t down);
-void arm_hardware_piof_updown(portholder_t up, portholder_t down);
-void arm_hardware_piog_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioh_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioi_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioj_updown(portholder_t up, portholder_t down);
-void arm_hardware_piok_updown(portholder_t up, portholder_t down);
-void arm_hardware_piol_updown(portholder_t up, portholder_t down);
-void arm_hardware_pioz_updown(portholder_t up, portholder_t down);
+// установить режим подтяжки вверх или вниз
+void arm_hardware_pioa_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piob_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioc_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piod_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioe_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piof_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piog_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioh_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioi_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioj_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piok_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_piol_updown(portholder_t ipins, portholder_t up, portholder_t down);
+void arm_hardware_pioz_updown(portholder_t ipins, portholder_t up, portholder_t down);
 
-// отключить подтяжку вверх или вниз
-void arm_hardware_pioa_updownoff(portholder_t ipins);
-void arm_hardware_piob_updownoff(portholder_t ipins);
-void arm_hardware_pioc_updownoff(portholder_t ipins);
-void arm_hardware_piod_updownoff(portholder_t ipins);
-void arm_hardware_pioe_updownoff(portholder_t ipins);
-void arm_hardware_piof_updownoff(portholder_t ipins);
-void arm_hardware_piog_updownoff(portholder_t ipins);
-void arm_hardware_pioh_updownoff(portholder_t ipins);
-void arm_hardware_pioi_updownoff(portholder_t ipins);
-void arm_hardware_pioj_updownoff(portholder_t ipins);
-void arm_hardware_piok_updownoff(portholder_t ipins);
-void arm_hardware_piol_updownoff(portholder_t ipins);
-void arm_hardware_pioz_updownoff(portholder_t ipins);
+/* установить режим подавления дребезга */
+void arm_hardware_pioa_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piob_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioc_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piod_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioe_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piof_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piog_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioh_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioi_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioj_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piok_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_piol_debounce(portholder_t ipins, portholder_t mask);
+void arm_hardware_pioz_debounce(portholder_t ipins, portholder_t mask);
 
 void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af);
@@ -540,6 +543,21 @@ void arm_hardware_pioj_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piok_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_piol_periphopendrain_altfn2(portholder_t opins, unsigned af);
 void arm_hardware_pioz_periphopendrain_altfn2(portholder_t opins, unsigned af);
+
+/* Вернуть выводы в начальное состояние - как после reset процессора */
+void arm_hardware_pioa_deinitialize(portholder_t iopins);
+void arm_hardware_piob_deinitialize(portholder_t iopins);
+void arm_hardware_pioc_deinitialize(portholder_t iopins);
+void arm_hardware_piod_deinitialize(portholder_t iopins);
+void arm_hardware_pioe_deinitialize(portholder_t iopins);
+void arm_hardware_piof_deinitialize(portholder_t iopins);
+void arm_hardware_piog_deinitialize(portholder_t iopins);
+void arm_hardware_pioh_deinitialize(portholder_t iopins);
+void arm_hardware_pioi_deinitialize(portholder_t iopins);
+void arm_hardware_pioj_deinitialize(portholder_t iopins);
+void arm_hardware_piok_deinitialize(portholder_t iopins);
+void arm_hardware_piol_deinitialize(portholder_t iopins);
+void arm_hardware_pioz_deinitialize(portholder_t iopins);
 
 void arm_hardware_pioa_analoginput(portholder_t ipins);
 void arm_hardware_piob_analoginput(portholder_t ipins);
@@ -588,21 +606,21 @@ void arm_hardware_pio10_alternative(portholder_t iopins, unsigned alt);
 void arm_hardware_pio11_alternative(portholder_t iopins, unsigned alt);
 
 // R7S721 pin change interrupts
-void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);
-void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);	// RZ/A1H
-void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector);	// RZ/A1H
+//void arm_hardware_piojp0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio0_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio1_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio2_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio3_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio4_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio5_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio6_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio7_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio8_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio9_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);
+//void arm_hardware_pio10_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);	// RZ/A1H
+//void arm_hardware_pio11_onchangeinterrupt(portholder_t ipins, int edge, uint32_t priority, einthandler_t * h, eintcb_t vector, void * ctx);	// RZ/A1H
 
-void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void));
+void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, void (* vector)(void * ctx), void * ctx);
 
 #if (CPUSTYLE_ALLWINNER || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_VM14)
 	/*!< Atomic port state change */

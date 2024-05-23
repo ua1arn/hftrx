@@ -262,6 +262,13 @@
 
 	#endif
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 	// Variations of SPI_ALLCS_INITIALIZE
 	#if SPI_ALLCS_BITS != 0
 		#define SPI_ALLCS_INITIALIZE() do { \

@@ -166,11 +166,6 @@ typedef struct {
 	uint8_t max_len;		// максимальная длина редактируемой строки
 } keyb_t ;
 
-#define GET_FROM_WM_QUEUE	uint_fast8_t type;	\
-							int_fast8_t action;	\
-							uintptr_t ptr;		\
-							switch (get_from_wm_queue(win, & type, & ptr, & action))
-
 enum {
 	enc2step_default = 1,
 	freq_swipe_step_default = 2,

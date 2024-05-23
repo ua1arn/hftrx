@@ -807,8 +807,8 @@ int sys_dram_init(void)
 
 //	dsz[0] = (1UL << (para.row_bits + para.bank_bits)) * para.page_size * (para.dual_rank ? 2 : 1);
 //	return dsz[0];
-	unsigned size = (1UL << (para.row_bits + para.bank_bits)) * para.page_size * (para.dual_rank ? 2 : 1);
-	PRINTF("dram size = %uM\n", (size / 1024 / 1024));
+	uint64_t size = (UINT64_C(1) << (para.row_bits + para.bank_bits)) * para.page_size * (para.dual_rank ? 2 : 1);
+	PRINTF("dram size = %uM\n", (unsigned) (size / 1024 / 1024));
 	return 1;
 }
 

@@ -136,7 +136,8 @@ static void dpc_parsehandler(void * arg)
 	timeholder_t th;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	th = nmea_time;
+	//th = nmea_time;
+	memcpy(& th, (void *) & nmea_time, sizeof(th));
 	LowerIrql(oldIrql);
 
 	if (nmea_time.valid)
@@ -299,9 +300,6 @@ void nmeagnss_initialize(void)
 	HARDWARE_NMEA_ENABLERX(1);
 	HARDWARE_NMEA_ENABLETX(0);
 	NMEA_INITIALIZE();
-#if CPUSTYLE_XC7Z
-	nmea_parser0_init();
-#endif /* CPUSTYLE_XC7Z */
 
 #endif /*  ! LINUX_SUBSYSTEM */
 }
@@ -310,7 +308,7 @@ void nmeagnss_initialize(void)
 // Обработчик вызывается при приходе очередного импульса PPS
 void
 RAMFUNC_NONILINE
-spool_nmeapps(void)
+spool_nmeapps(void * ctx)
 {
 	//th = nmea_time;
 #if WITHLFM

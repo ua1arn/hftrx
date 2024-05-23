@@ -15,7 +15,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("TUNER   ", "Tuner"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrptuner),
+		OFFSETOF(struct nvmap, ggrptuner),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -28,7 +28,7 @@ static const FLASHMEM struct menudef menutable [] =
 			QLABEL("ATU PWR "), 7, 0, 0,	ISTEP5,		/* мощность при работе автоматического согласующего устройства */
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-			offsetof(struct nvmap, gtunepower),
+			OFFSETOF(struct nvmap, gtunepower),
 			nvramoffs0,
 			NULL,
 			& gtunepower,
@@ -41,7 +41,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gtunepower),
+		OFFSETOF(struct nvmap, gtunepower),
 		nvramoffs0,
 		NULL,
 		& gtunepower,
@@ -54,7 +54,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER L "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		LMIN, LMAX,
-		offsetof(struct nvmap, bandgroups [0].oants [0].tunerind),
+		OFFSETOF(struct nvmap, bandgroups [0].oants [0].tunerind),
 		nvramoffs_bandgroupant,
 		& tunerind,
 		NULL,
@@ -64,7 +64,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER C "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CMIN, CMAX,
-		offsetof(struct nvmap, bandgroups [0].oants [0].tunercap),
+		OFFSETOF(struct nvmap, bandgroups [0].oants [0].tunercap),
 		nvramoffs_bandgroupant,
 		& tunercap,
 		NULL,
@@ -74,7 +74,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER TY"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, KSCH_COUNT - 1,
-		offsetof(struct nvmap, bandgroups [0].oants [0].tunertype),
+		OFFSETOF(struct nvmap, bandgroups [0].oants [0].tunertype),
 		nvramoffs_bandgroupant,
 		NULL,
 		& tunertype,
@@ -84,7 +84,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TUNER WT"), 7, 0, 0,	ISTEP5,	// задержка перед измерением после переключения реле
 		ITEM_VALUE, 
 		10, 250,
-		offsetof(struct nvmap, gtunerdelay),
+		OFFSETOF(struct nvmap, gtunerdelay),
 		nvramoffs0,
 		NULL,
 		& gtunerdelay,
@@ -97,7 +97,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("DISPLAY ", "Display"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpdisplay),
+		OFFSETOF(struct nvmap, ggrpdisplay),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -119,7 +119,7 @@ static const FLASHMEM struct menudef menutable [] =
 #elif LCDMODE_UC1608
 		0, 63, 					// UC1608 - 0..63
 #endif /* LCDMODE_UC1601 */
-		offsetof(struct nvmap, gcontrast),
+		OFFSETOF(struct nvmap, gcontrast),
 		nvramoffs0,
 		NULL,
 		& gcontrast,
@@ -131,7 +131,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DCDC DIV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, UINT16_MAX, 
-		offsetof(struct nvmap, dcdcrefdiv),
+		OFFSETOF(struct nvmap, dcdcrefdiv),
 		nvramoffs0,
 		& dcdcrefdiv,
 		NULL,
@@ -143,7 +143,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
-		offsetof(struct nvmap, gbglight),
+		OFFSETOF(struct nvmap, gbglight),
 		nvramoffs0,
 		NULL,
 		& gbglight,
@@ -155,7 +155,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, gkblight),
+		OFFSETOF(struct nvmap, gkblight),
 		nvramoffs0,
 		NULL,
 		& gkblight,
@@ -167,7 +167,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
-		offsetof(struct nvmap, gdimmtime),
+		OFFSETOF(struct nvmap, gdimmtime),
 		nvramoffs0,
 		NULL,
 		& gdimmtime,
@@ -179,7 +179,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 240, 
-		offsetof(struct nvmap, gsleeptime),
+		OFFSETOF(struct nvmap, gsleeptime),
 		nvramoffs0,
 		NULL,
 		& gsleeptime,
@@ -192,7 +192,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		QLABEL("BLUE BG "), 8, 3, RJ_ON,	ISTEP1,
 //		ITEM_VALUE,
 //		0, 1,
-//		offsetof(struct nvmap, gbluebgnd),
+//		OFFSETOF(struct nvmap, gbluebgnd),
 //		nvramoffs0,
 //		NULL,
 //		& gbluebgnd,
@@ -203,7 +203,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gshowdbm),
+		OFFSETOF(struct nvmap, gshowdbm),
 		nvramoffs0,
 		NULL,
 		& gshowdbm,
@@ -213,7 +213,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("FREQ FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
-		offsetof(struct nvmap, gdisplayfreqsfps),
+		OFFSETOF(struct nvmap, gdisplayfreqsfps),
 		nvramoffs0,
 		NULL,
 		& gdisplayfreqsfps,
@@ -224,7 +224,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BARS FPS"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-		offsetof(struct nvmap, gdisplaybarsfps),
+		OFFSETOF(struct nvmap, gdisplaybarsfps),
 		nvramoffs0,
 		NULL,
 		& gdisplaybarsfps,
@@ -236,7 +236,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("VIEW STL", "View style"), 7, 5, RJ_VIEW, ISTEP1,
 		ITEM_VALUE,
 		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
-		offsetof(struct nvmap, gviewstyle),
+		OFFSETOF(struct nvmap, gviewstyle),
 		nvramoffs0,
 		NULL,
 		& gviewstyle,
@@ -247,7 +247,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
 		ITEM_VALUE,
 		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
-		offsetof(struct nvmap, gview3dss_mark),
+		OFFSETOF(struct nvmap, gview3dss_mark),
 		nvramoffs0,
 		NULL,
 		& gview3dss_mark,
@@ -258,7 +258,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bandgroups [0].gtopdbspe),
+		OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
 		nvramoffs_bandgroup,
 		NULL,
 		& gtopdbspe,
@@ -268,7 +268,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bandgroups [0].gbottomdbspe),
+		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
 		nvramoffs_bandgroup,
 		NULL,
 		& gbottomdbspe,
@@ -278,7 +278,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("WFPARAMS"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* водопад отдельными папаметрами */
-		offsetof(struct nvmap, gwflevelsep),
+		OFFSETOF(struct nvmap, gwflevelsep),
 		nvramoffs0,
 		NULL,
 		& gwflevelsep,
@@ -288,7 +288,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bandgroups [0].gtopdbwfl),
+		OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
 		nvramoffs_bandgroup,
 		NULL,
 		& gtopdbwfl,
@@ -298,7 +298,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bandgroups [0].gbottomdbwfl),
+		OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),
 		nvramoffs_bandgroup,
 		NULL,
 		& gbottomdbwfl,
@@ -308,7 +308,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
-		offsetof(struct nvmap, glvlgridstep),
+		OFFSETOF(struct nvmap, glvlgridstep),
 		nvramoffs0,
 		NULL,
 		& glvlgridstep,
@@ -318,7 +318,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-		offsetof(struct nvmap, grxbwsatu),
+		OFFSETOF(struct nvmap, grxbwsatu),
 		nvramoffs0,
 		NULL,
 		& grxbwsatu,
@@ -329,7 +329,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		offsetof(struct nvmap, bandgroups [0].gzoomxpow2),
+		OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
 		nvramoffs_bandgroup,
 		NULL,
 		& gzoomxpow2,
@@ -340,7 +340,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SPEC TX ", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
-		offsetof(struct nvmap, gtxloopback),
+		OFFSETOF(struct nvmap, gtxloopback),
 		nvramoffs0,
 		NULL,
 		& gtxloopback,
@@ -350,7 +350,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BETA PAN"), 7, 2, 0,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра спектра */
-		offsetof(struct nvmap, gspecbeta100),
+		OFFSETOF(struct nvmap, gspecbeta100),
 		nvramoffs0,
 		NULL,
 		& gspecbeta100,
@@ -360,7 +360,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BETA WFL"), 7, 2, 0,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
-		offsetof(struct nvmap, gwflbeta100),
+		OFFSETOF(struct nvmap, gwflbeta100),
 		nvramoffs0,
 		NULL,
 		& gwflbeta100,
@@ -371,7 +371,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SMETER  ", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
-		offsetof(struct nvmap, gsmetertype),
+		OFFSETOF(struct nvmap, gsmetertype),
 		nvramoffs0,
 		NULL,
 		& gsmetertype,
@@ -384,7 +384,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("SHOW OVF", "ADC OVF Show"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
-		offsetof(struct nvmap, gshowovf),
+		OFFSETOF(struct nvmap, gshowovf),
 		nvramoffs0,
 		NULL,
 		& gshowovf,
@@ -397,7 +397,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CLOCK   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpclock),
+		OFFSETOF(struct nvmap, ggrpclock),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -408,7 +408,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TM YEAR "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		2015, 2099, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		nvramoffs0,
 		& grtcyear,
 		NULL,
@@ -418,7 +418,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TM MONTH"), 7, 3, RJ_MONTH,	ISTEP1,
 		ITEM_VALUE, 
 		1, 12, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		nvramoffs0,
 		NULL,
 		& grtcmonth,
@@ -428,7 +428,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TM DAY  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		1, 31, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		nvramoffs0,
 		NULL,
 		& grtcday,
@@ -438,7 +438,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TM HOUR "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		0, 23, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		nvramoffs0,
 		NULL,
 		& grtchour,
@@ -448,7 +448,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TM MIN  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE, 
 		0, 59, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		nvramoffs0,
 		NULL,
 		& grtcminute,
@@ -458,7 +458,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TM SET  "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE, 
 		0, 1, 
-		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		nvramoffs0,
 		NULL,
 		& grtcstrobe,
@@ -470,7 +470,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("FILTERS ", "Filters"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpfilters),
+		OFFSETOF(struct nvmap, ggrpfilters),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -482,7 +482,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NR LEVEL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, NRLEVELMAX, 
-		offsetof(struct nvmap, gnoisereductvl),
+		OFFSETOF(struct nvmap, gnoisereductvl),
 		nvramoffs0,
 		NULL,
 		& gnoisereductvl,
@@ -738,7 +738,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("IF SHIFT"), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
 		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
-		offsetof(struct nvmap, ifshifoffset),
+		OFFSETOF(struct nvmap, ifshifoffset),
 		nvramoffs0,
 		& ifshifoffset.value,
 		NULL,
@@ -751,7 +751,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offset),
+		OFFSETOF(struct nvmap, lo4offset),
 		nvramoffs0,
 		& lo4offset,
 		NULL,
@@ -762,7 +762,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO USB "), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offsets [0]),
+		OFFSETOF(struct nvmap, lo4offsets [0]),
 		nvramoffs0,
 		& lo4offsets [0],
 		NULL,
@@ -772,7 +772,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offsets [1]),
+		OFFSETOF(struct nvmap, lo4offsets [1]),
 		nvramoffs0,
 		& lo4offsets [1],
 		NULL,
@@ -783,7 +783,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO FREQ"), 7, 2, 1,	ISTEP10,
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lo4offset),
+		OFFSETOF(struct nvmap, lo4offset),
 		nvramoffs0,
 		& lo4offset,
 		NULL,
@@ -793,7 +793,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LAST LSB"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, glo4lsb),
+		OFFSETOF(struct nvmap, glo4lsb),
 		nvramoffs0,
 		NULL,
 		& glo4lsb,
@@ -809,7 +809,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DC TX CW"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, /* 0 - off, 1 - on */
-		offsetof(struct nvmap, dctxmodecw),
+		OFFSETOF(struct nvmap, dctxmodecw),
 		nvramoffs0,
 		NULL,
 		& dctxmodecw,
@@ -823,7 +823,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("2.4 USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe2p4),
+		OFFSETOF(struct nvmap, usbe2p4),
 		nvramoffs0,
 		& fi_2p4.high,
 		NULL,
@@ -833,7 +833,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("2.4 LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe2p4),
+		OFFSETOF(struct nvmap, lsbe2p4),
 		nvramoffs0,
 		& fi_2p4.low_or_center,
 		NULL,
@@ -845,7 +845,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO7 USB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe2p7),
+		OFFSETOF(struct nvmap, usbe2p7),
 		nvramoffs0,
 		& fi_2p7.high,
 		NULL,
@@ -855,7 +855,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO7 LSB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe2p7),
+		OFFSETOF(struct nvmap, lsbe2p7),
 		nvramoffs0,
 		& fi_2p7.low_or_center,
 		NULL,
@@ -866,7 +866,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAR7 USB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe2p7tx),
+		OFFSETOF(struct nvmap, usbe2p7tx),
 		nvramoffs0,
 		& fi_2p7_tx.high,
 		NULL,
@@ -876,7 +876,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAR7 LSB"), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe2p7tx),
+		OFFSETOF(struct nvmap, lsbe2p7tx),
 		nvramoffs0,
 		& fi_2p7_tx.low_or_center,
 		NULL,
@@ -890,7 +890,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1),
+		OFFSETOF(struct nvmap, usbe3p1),
 		nvramoffs0,
 		& fi_3p1.high,
 		NULL,
@@ -900,7 +900,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BFO LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1),
+		OFFSETOF(struct nvmap, lsbe3p1),
 		nvramoffs0,
 		& fi_3p1.low_or_center,
 		NULL,
@@ -911,7 +911,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAR USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe3p1tx),
+		OFFSETOF(struct nvmap, usbe3p1tx),
 		nvramoffs0,
 		& fi_3p1_tx.high,
 		NULL,
@@ -921,7 +921,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAR LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe3p1tx),
+		OFFSETOF(struct nvmap, lsbe3p1tx),
 		nvramoffs0,
 		& fi_3p1_tx.low_or_center,
 		NULL,
@@ -935,7 +935,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE 0.3"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw0p3),
+		OFFSETOF(struct nvmap, hascw0p3),
 		nvramoffs0,
 		NULL,
 		& fi_0p3.present,
@@ -945,7 +945,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CNTR 0.3"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p3),
+		OFFSETOF(struct nvmap, carr0p3),
 		nvramoffs0,
 		& fi_0p3.low_or_center,
 		NULL,
@@ -958,7 +958,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE 0.5"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw0p5),
+		OFFSETOF(struct nvmap, hascw0p5),
 		nvramoffs0,
 		NULL,
 		& fi_0p5.present,
@@ -968,7 +968,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, carr0p5),
+		OFFSETOF(struct nvmap, carr0p5),
 		nvramoffs0,
 		& fi_0p5.low_or_center,
 		NULL,
@@ -981,7 +981,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE 1.8"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw1p8),
+		OFFSETOF(struct nvmap, hascw1p8),
 		nvramoffs0,
 		NULL,
 		& fi_1p8.present,
@@ -991,7 +991,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("1.8 USB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
-		offsetof(struct nvmap, usbe1p8),
+		OFFSETOF(struct nvmap, usbe1p8),
 		nvramoffs0,
 		& fi_1p8.high,
 		NULL,
@@ -1001,7 +1001,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("1.8 LSB "), 7, 2, 1,	ISTEP10,
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
-		offsetof(struct nvmap, lsbe1p8),
+		OFFSETOF(struct nvmap, lsbe1p8),
 		nvramoffs0,
 		& fi_1p8.low_or_center,
 		NULL,
@@ -1014,7 +1014,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE 2.4"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw2p4),
+		OFFSETOF(struct nvmap, hascw2p4),
 		nvramoffs0,
 		NULL,
 		& fi_2p4.present,
@@ -1027,7 +1027,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE T24"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw2p4_tx),
+		OFFSETOF(struct nvmap, hascw2p4_tx),
 		nvramoffs0,
 		NULL,
 		& fi_2p4_tx.present,
@@ -1040,7 +1040,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE T27"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw2p7_tx),
+		OFFSETOF(struct nvmap, hascw2p7_tx),
 		nvramoffs0,
 		NULL,
 		& fi_2p7_tx.present,
@@ -1053,7 +1053,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE T31"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw3p1_tx),
+		OFFSETOF(struct nvmap, hascw3p1_tx),
 		nvramoffs0,
 		NULL,
 		& fi_3p1_tx.present,
@@ -1066,7 +1066,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HAVE 6.0"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, hascw6p0),
+		OFFSETOF(struct nvmap, hascw6p0),
 		nvramoffs0,
 		NULL,
 		& fi_6p0.present,
@@ -1077,7 +1077,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("6K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq6k),
+		OFFSETOF(struct nvmap, cfreq6k),
 		nvramoffs0,
 		& fi_6p0.ceoffset,
 		NULL,
@@ -1091,7 +1091,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("7K8 OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq7p8k),
+		OFFSETOF(struct nvmap, cfreq7p8k),
 		nvramoffs0,
 		& fi_7p8.ceoffset,
 		NULL,
@@ -1105,7 +1105,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("8K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq8k),
+		OFFSETOF(struct nvmap, cfreq8k),
 		nvramoffs0,
 		& fi_8p0.ceoffset,
 		NULL,
@@ -1118,7 +1118,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("9K OFFS "), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq9k),
+		OFFSETOF(struct nvmap, cfreq9k),
 		nvramoffs0,
 		& fi_9p0.ceoffset,
 		NULL,
@@ -1132,7 +1132,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NFM OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq15k_nfm),
+		OFFSETOF(struct nvmap, cfreq15k_nfm),
 		nvramoffs0,
 		& fi_15p0_tx_nfm.ceoffset,
 		NULL,
@@ -1144,7 +1144,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("15K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq15k),
+		OFFSETOF(struct nvmap, cfreq15k),
 		nvramoffs0,
 		& fi_15p0.ceoffset,
 		NULL,
@@ -1158,7 +1158,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("17K OFFS"), 4 + WSIGNFLAG, 2, 1, 	ISTEP10,
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
-		offsetof(struct nvmap, cfreq17k),
+		OFFSETOF(struct nvmap, cfreq17k),
 		nvramoffs0,
 		& fi_17p0.ceoffset,
 		NULL,
@@ -1174,7 +1174,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpnotch),
+		OFFSETOF(struct nvmap, ggrpnotch),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1196,7 +1196,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
 		nvramoffs0,
 		& gnotchfreq.value,
 		NULL,
@@ -1206,7 +1206,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
-		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
+		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
 		nvramoffs0,
 		& gnotchwidth.value,
 		NULL,
@@ -1219,7 +1219,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NOTCH   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpnotch),
+		OFFSETOF(struct nvmap, ggrpnotch),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1245,7 +1245,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PBTS   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrppbts),
+		OFFSETOF(struct nvmap, ggrppbts),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1256,7 +1256,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PBT     "), 4 + WSIGNFLAG, 2, 1, 	ISTEP50,
 		ITEM_VALUE,
 		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
-		offsetof(struct nvmap, pbtoffset),
+		OFFSETOF(struct nvmap, pbtoffset),
 		nvramoffs0,
 		& gpbtoffset,
 		NULL,
@@ -1271,7 +1271,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ELKEY   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpelkey),
+		OFFSETOF(struct nvmap, ggrpelkey),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1283,7 +1283,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
 		ITEM_VALUE,
 		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
-		offsetof(struct nvmap, gcwpitch10),
+		OFFSETOF(struct nvmap, gcwpitch10),
 		nvramoffs0,
 		NULL,
 		& gcwpitch10,
@@ -1294,7 +1294,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CW SPEED"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
-		offsetof(struct nvmap, elkeywpm),
+		OFFSETOF(struct nvmap, elkeywpm),
 		nvramoffs0,
 		NULL,
 		& elkeywpm.value,
@@ -1306,7 +1306,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("VIBROPLX"), 7, 0, 0,	ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		ITEM_VALUE,
 		0, 5,		// minimal 0 - без эффекта Виброплекса
-		offsetof(struct nvmap, elkeyslope),
+		OFFSETOF(struct nvmap, elkeyslope),
 		nvramoffs0,
 		NULL,
 		& elkeyslope,
@@ -1317,7 +1317,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("KEYER   "), 6, 0, RJ_ELKEYMODE,	ISTEP1,
 		ITEM_VALUE,
 		0, 3,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-		offsetof(struct nvmap, elkeymode),
+		OFFSETOF(struct nvmap, elkeymode),
 		nvramoffs0,
 		NULL,
 		& elkeymode,
@@ -1327,7 +1327,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("KEY REV "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
-		offsetof(struct nvmap, elkeyreverse),
+		OFFSETOF(struct nvmap, elkeyreverse),
 		nvramoffs0,
 		NULL,
 		& elkeyreverse,
@@ -1337,7 +1337,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DASH LEN"), 7, 1, 0,	ISTEP1,
 		ITEM_VALUE,
 		23, 45, 
-		offsetof(struct nvmap, dashratio),
+		OFFSETOF(struct nvmap, dashratio),
 		nvramoffs0,
 		NULL,
 		& dashratio,
@@ -1347,7 +1347,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DOT LEN "), 7, 1, 0,	ISTEP1,
 		ITEM_VALUE,
 		7, 13, 
-		offsetof(struct nvmap, spaceratio),
+		OFFSETOF(struct nvmap, spaceratio),
 		nvramoffs0,
 		NULL,
 		& spaceratio,
@@ -1358,7 +1358,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bkinenable),
+		OFFSETOF(struct nvmap, bkinenable),
 		nvramoffs0,
 		NULL,
 		& bkinenable,
@@ -1368,7 +1368,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CW DELAY"), 7, 2, 0,	ISTEP1,	/* задержка в десятках ms */
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
-		offsetof(struct nvmap, bkindelay),
+		OFFSETOF(struct nvmap, bkindelay),
 		nvramoffs0,
 		NULL,
 		& bkindelay,
@@ -1380,7 +1380,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("EDGE TIM"), 7, 0, 0,	ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
 		ITEM_VALUE,
 		2, 16, 
-		offsetof(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+		OFFSETOF(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 		nvramoffs0,
 		NULL,
 		& gcwedgetime,
@@ -1392,7 +1392,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SSB TXCW"), 8, 3, RJ_ON,	ISTEP1,		/*  */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
+		OFFSETOF(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
 		nvramoffs0,
 		NULL,
 		& gcwssbtx,
@@ -1406,7 +1406,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("RF ADC  "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrprfadc),
+		OFFSETOF(struct nvmap, ggrprfadc),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1418,7 +1418,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gadcrand),
+		OFFSETOF(struct nvmap, gadcrand),
 		nvramoffs0,
 		NULL,
 		& gadcrand,
@@ -1429,7 +1429,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gdither),
+		OFFSETOF(struct nvmap, gdither),
 		nvramoffs0,
 		NULL,
 		& gdither,
@@ -1439,7 +1439,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 //		ITEM_VALUE,
 //		0, 1,
-//		offsetof(struct nvmap, gadcfifo),
+//		OFFSETOF(struct nvmap, gadcfifo),
 //		nvramoffs0,
 //		NULL,
 //		& gadcfifo,
@@ -1449,7 +1449,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		QLABEL("ADC OFFS"), 5 + WSIGNFLAG, 0, 0,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
 //		ITEM_VALUE,
 //		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
-//		offsetof(struct nvmap, gadcoffset),
+//		OFFSETOF(struct nvmap, gadcoffset),
 //		nvramoffs0,
 //		& gadcoffset,
 //		NULL,
@@ -1463,7 +1463,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("VOX     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpvox),
+		OFFSETOF(struct nvmap, ggrpvox),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1474,7 +1474,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("VOX EN  "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, gvoxenable),
+		OFFSETOF(struct nvmap, gvoxenable),
 		nvramoffs0,
 		NULL,
 		& gvoxenable,
@@ -1484,7 +1484,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("VOXDELAY"), 7, 2, 0,	ISTEP5,	/* 50 mS step of changing value */
 		ITEM_VALUE,
 		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
-		offsetof(struct nvmap, voxdelay),
+		OFFSETOF(struct nvmap, voxdelay),
 		nvramoffs0,
 		NULL,
 		& voxdelay,
@@ -1494,7 +1494,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("VOX LEVL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHVOXLEVELMIN, WITHVOXLEVELMAX,
-		offsetof(struct nvmap, gvoxlevel),
+		OFFSETOF(struct nvmap, gvoxlevel),
 		nvramoffs0,
 		NULL,
 		& gvoxlevel,
@@ -1504,7 +1504,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AVOX LEV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
-		offsetof(struct nvmap, gavoxlevel),
+		OFFSETOF(struct nvmap, gavoxlevel),
 		nvramoffs0,
 		NULL,
 		& gavoxlevel,
@@ -1518,7 +1518,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAT     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpcat),
+		OFFSETOF(struct nvmap, ggrpcat),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1529,7 +1529,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, catenable),
+		OFFSETOF(struct nvmap, catenable),
 		nvramoffs0,
 		NULL,
 		& catenable,
@@ -1540,7 +1540,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1,
-		offsetof(struct nvmap, catbaudrate),
+		OFFSETOF(struct nvmap, catbaudrate),
 		nvramoffs0,
 		NULL,
 		& catbaudrate,
@@ -1552,7 +1552,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAT PTT "), 8, 8, RJ_CATSIG,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_CATSIG_count - 1,
-		offsetof(struct nvmap, catsigptt),
+		OFFSETOF(struct nvmap, catsigptt),
 		nvramoffs0,
 		NULL,
 		& catsigptt,
@@ -1563,7 +1563,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CAT KEY "), 8, 8, RJ_CATSIG,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_CATSIG_count - 1,
-		offsetof(struct nvmap, catsigkey),
+		OFFSETOF(struct nvmap, catsigkey),
 		nvramoffs0,
 		NULL,
 		& catsigkey,
@@ -1577,7 +1577,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CTCSS   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpctcss),
+		OFFSETOF(struct nvmap, ggrpctcss),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1588,7 +1588,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, gctssenable),
+		OFFSETOF(struct nvmap, gctssenable),
 		nvramoffs0,
 		NULL,
 		& gctssenable,
@@ -1598,7 +1598,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 		ITEM_VALUE,
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
-		offsetof(struct nvmap, gsubtonei),
+		OFFSETOF(struct nvmap, gsubtonei),
 		nvramoffs0,
 		NULL,
 		& gsubtonei,
@@ -1609,7 +1609,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CTCSSLVL"), 7, 0, 0,	ISTEP1,		/* Select the CTCSS transmit level. */
 		ITEM_VALUE,
 		0, 100, 
-		offsetof(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		nvramoffs0,
 		NULL,
 		& gsubtonelevel,
@@ -1622,7 +1622,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AUDIO   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpaudio),
+		OFFSETOF(struct nvmap, ggrpaudio),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -1635,7 +1635,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AF GAIN "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
-		offsetof(struct nvmap, afgain1),
+		OFFSETOF(struct nvmap, afgain1),
 		nvramoffs0,
 		& afgain1.value,
 		NULL,
@@ -1647,7 +1647,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("RF GAIN "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
-		offsetof(struct nvmap, rfgain1),
+		OFFSETOF(struct nvmap, rfgain1),
 		nvramoffs0,
 		& rfgain1.value,
 		NULL,
@@ -1660,7 +1660,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("KEY BEEP"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
-		offsetof(struct nvmap, gkeybeep10),
+		OFFSETOF(struct nvmap, gkeybeep10),
 		nvramoffs0,
 		NULL,
 		& gkeybeep10,
@@ -1672,7 +1672,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, gmuteall),
+		OFFSETOF(struct nvmap, gmuteall),
 		nvramoffs0,
 		NULL,
 		& gmuteall,
@@ -1684,7 +1684,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SQUELCH "), 7, 0, 0,	ISTEP1,		/* squelch level */
 		ITEM_VALUE,
 		0, SQUELCHMAX, 
-		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
 		NULL,
 		& gsquelch.value,
@@ -1695,7 +1695,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
 		ITEM_VALUE,
 		0, SQUELCHMAX,
-		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+		OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
 		NULL,
 		& gsquelchNFM,
@@ -1706,7 +1706,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
 		0, 100, 
-		offsetof(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		nvramoffs0,
 		NULL,
 		& gsidetonelevel,
@@ -1716,7 +1716,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MONI EN "), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
+		OFFSETOF(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
 		nvramoffs0,
 		NULL,
 		& gmoniflag,
@@ -1729,7 +1729,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LOOP MSG"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
 		0, (sizeof loopnames / sizeof loopnames [0]) - 1,
-		offsetof(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		OFFSETOF(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 		nvramoffs0,
 		NULL,
 		& gloopmsg,
@@ -1739,7 +1739,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LOOP SEC"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
 		15, 240,
-		offsetof(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		OFFSETOF(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 		nvramoffs0,
 		NULL,
 		& gloopsec,
@@ -1751,7 +1751,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
+		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
 		& gmik1level,
 		NULL,
@@ -1763,7 +1763,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX, 
-		offsetof(struct nvmap, glineamp),	/* усиление с линейного входа */
+		OFFSETOF(struct nvmap, glineamp),	/* усиление с линейного входа */
 		nvramoffs0,
 		& glineamp,
 		NULL,
@@ -1814,7 +1814,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MIC AGC "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
-		offsetof(struct nvmap, gmikeagc),
+		OFFSETOF(struct nvmap, gmikeagc),
 		nvramoffs0,
 		NULL,
 		& gmikeagc,
@@ -1824,7 +1824,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MICAGCGN"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
-		offsetof(struct nvmap, gmikeagcgain),
+		OFFSETOF(struct nvmap, gmikeagcgain),
 		nvramoffs0,
 		NULL,
 		& gmikeagcgain,
@@ -1834,7 +1834,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MIC CLIP"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
-		offsetof(struct nvmap, gmikehclip),
+		OFFSETOF(struct nvmap, gmikehclip),
 		nvramoffs0,
 		NULL,
 		& gmikehclip,
@@ -1845,7 +1845,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("COMP ATK"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,	
 		WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
-		offsetof(struct nvmap, gcompressor_attack),
+		OFFSETOF(struct nvmap, gcompressor_attack),
 		nvramoffs0,
 		NULL,
 		& gcompressor_attack,
@@ -1855,7 +1855,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("COMP RLS"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,	
 		WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
-		offsetof(struct nvmap, gcompressor_release),
+		OFFSETOF(struct nvmap, gcompressor_release),
 		nvramoffs0,
 		NULL,
 		& gcompressor_release,
@@ -1865,7 +1865,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("COMP HLD"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,	
 		WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
-		offsetof(struct nvmap, gcompressor_hold),
+		OFFSETOF(struct nvmap, gcompressor_hold),
 		nvramoffs0,
 		NULL,
 		& gcompressor_hold,
@@ -1875,7 +1875,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("COMP GN "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		WITHCOMPGAINMIN, WITHCOMPGAINMAX,
-		offsetof(struct nvmap, gcompressor_gain),
+		OFFSETOF(struct nvmap, gcompressor_gain),
 		nvramoffs0,
 		NULL,
 		& gcompressor_gain,
@@ -1885,7 +1885,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("COMP TH "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,	
 		WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
-		offsetof(struct nvmap, gcompressor_threshold),
+		OFFSETOF(struct nvmap, gcompressor_threshold),
 		nvramoffs0,
 		NULL,
 		& gcompressor_threshold,
@@ -1897,7 +1897,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("REVERB  ", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* ревербератор */
-		offsetof(struct nvmap, greverb),
+		OFFSETOF(struct nvmap, greverb),
 		nvramoffs0,
 		NULL,
 		& greverb,
@@ -1907,7 +1907,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
-		offsetof(struct nvmap, greverbdelay),
+		OFFSETOF(struct nvmap, greverbdelay),
 		nvramoffs0,
 		NULL,
 		& greverbdelay,
@@ -1917,7 +1917,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
-		offsetof(struct nvmap, greverbloss),
+		OFFSETOF(struct nvmap, greverbloss),
 		nvramoffs0,
 		NULL,
 		& greverbloss,
@@ -1928,7 +1928,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("MICBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
-		offsetof(struct nvmap, gmikeboost20db),
+		OFFSETOF(struct nvmap, gmikeboost20db),
 		nvramoffs0,
 		NULL,
 		& gmikeboost20db,
@@ -1939,7 +1939,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MIC EQUA"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gmikeequalizer),
+		OFFSETOF(struct nvmap, gmikeequalizer),
 		nvramoffs0,
 		NULL,
 		& gmikeequalizer,
@@ -1950,7 +1950,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [0]),
+		OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
 		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [0],
@@ -1960,7 +1960,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("EQUA .23"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [1]),
+		OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
 		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [1],
@@ -1970,7 +1970,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("EQUA .65"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [2]),
+		OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
 		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [2],
@@ -1980,7 +1980,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("EQUA 1.8"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [3]),
+		OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
 		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [3],
@@ -1990,7 +1990,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("EQUA 5.3"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
-		offsetof(struct nvmap, gmikeequalizerparams [4]),
+		OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
 		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [4],
@@ -2002,7 +2002,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RX EQ   ", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, geqrx),
+		OFFSETOF(struct nvmap, geqrx),
 		nvramoffs0,
 		NULL,
 		& geqrx,
@@ -2012,7 +2012,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RX 0.4k ", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [0]),
+		OFFSETOF(struct nvmap, geqrxparams [0]),
 		nvramoffs0,
 		NULL,
 		& geqrxparams [0],
@@ -2022,7 +2022,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RX 1.5k ", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [1]),
+		OFFSETOF(struct nvmap, geqrxparams [1]),
 		nvramoffs0,
 		NULL,
 		& geqrxparams [1],
@@ -2032,7 +2032,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RX 2.7k ", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [2]),
+		OFFSETOF(struct nvmap, geqrxparams [2]),
 		nvramoffs0,
 		NULL,
 		& geqrxparams [2],
@@ -2042,7 +2042,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("TX EQ   ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, geqtx),
+		OFFSETOF(struct nvmap, geqtx),
 		nvramoffs0,
 		NULL,
 		& geqtx,
@@ -2052,7 +2052,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("TX 0.4k ", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [0]),
+		OFFSETOF(struct nvmap, geqtxparams [0]),
 		nvramoffs0,
 		NULL,
 		& geqtxparams [0],
@@ -2062,7 +2062,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("TX 1.5k ", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [1]),
+		OFFSETOF(struct nvmap, geqtxparams [1]),
 		nvramoffs0,
 		NULL,
 		& geqtxparams [1],
@@ -2072,7 +2072,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("TX 2.7k ", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [2]),
+		OFFSETOF(struct nvmap, geqtxparams [2]),
 		nvramoffs0,
 		NULL,
 		& geqtxparams [2],
@@ -2090,7 +2090,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ALC NCEN"), 7, 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
+		OFFSETOF(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
 		nvramoffs0,
 		NULL,
 		& ALCNEN,
@@ -2100,7 +2100,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ALCNTH  "), 7, 0, 0,	ISTEP1,		/* ALC noise gate threshold level. */
 		ITEM_VALUE,
 		0, 7,
-		offsetof(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
+		OFFSETOF(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
 		nvramoffs0,
 		NULL,
 		& ALCNTH,
@@ -2110,7 +2110,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ALC EN  "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
+		OFFSETOF(struct nvmap, ALCEN),	/* ALC enabled */
 		nvramoffs0,
 		NULL,
 		& ALCEN,
@@ -2120,7 +2120,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ALCMXGAN"), 7, 0, 0,	ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
 		ITEM_VALUE,
 		0, 7,
-		offsetof(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
+		OFFSETOF(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
 		nvramoffs0,
 		NULL,
 		& ALCMXGAIN,
@@ -2130,7 +2130,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ALCMNGAN"), 7, 0, 0,	ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
 		ITEM_VALUE,
 		0, 7,
-		offsetof(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
+		OFFSETOF(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
 		nvramoffs0,
 		NULL,
 		& ALCMNGAIN,
@@ -2142,7 +2142,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, recmode),
+		OFFSETOF(struct nvmap, recmode),
 		nvramoffs0,
 		NULL,
 		& recmode,
@@ -2155,7 +2155,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("USB     "), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
-		offsetof(struct nvmap, ggrpusb),
+		OFFSETOF(struct nvmap, ggrpusb),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2168,7 +2168,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BT CONN "), 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		offsetof(struct nvmap, gusbbt),
+		OFFSETOF(struct nvmap, gusbbt),
 		nvramoffs0,
 		NULL,
 		& gusbbt,
@@ -2181,7 +2181,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gdatatx),
+		OFFSETOF(struct nvmap, gdatatx),
 		nvramoffs0,
 		NULL,
 		& gdatatx,
@@ -2192,7 +2192,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-		offsetof(struct nvmap, guacplayer),
+		OFFSETOF(struct nvmap, guacplayer),
 		nvramoffs0,
 		NULL,
 		& guacplayer,
@@ -2203,7 +2203,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
-		offsetof(struct nvmap, gswapiq),
+		OFFSETOF(struct nvmap, gswapiq),
 		nvramoffs0,
 		NULL,
 		& gswapiq,
@@ -2213,7 +2213,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("FT8CN   "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
-		offsetof(struct nvmap, gusb_ft8cn),
+		OFFSETOF(struct nvmap, gusb_ft8cn),
 		nvramoffs0,
 		NULL,
 		& gusb_ft8cn,
@@ -2225,7 +2225,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
-		offsetof(struct nvmap, ggaindigitx),
+		OFFSETOF(struct nvmap, ggaindigitx),
 		nvramoffs0,
 		& ggaindigitx,
 		NULL,
@@ -2241,7 +2241,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpagc),
+		OFFSETOF(struct nvmap, ggrpagc),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2252,7 +2252,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ADC FS  "), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-		offsetof(struct nvmap, gfsadcpower10 [0]),
+		OFFSETOF(struct nvmap, gfsadcpower10 [0]),
 		nvramoffs0,
 		& gfsadcpower10 [0],	// 16 bit
 		NULL,
@@ -2262,7 +2262,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, 0,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-		offsetof(struct nvmap, gfsadcpower10 [1]),
+		OFFSETOF(struct nvmap, gfsadcpower10 [1]),
 		nvramoffs0,
 		& gfsadcpower10 [1],	// 16 bit
 		NULL,
@@ -2272,7 +2272,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC OFF "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
-		offsetof(struct nvmap, gagcoff),
+		OFFSETOF(struct nvmap, gagcoff),
 		nvramoffs0,
 		NULL,
 		& gagcoff,
@@ -2282,7 +2282,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("IFGN MAX"), 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
 		ITEM_VALUE,
 		40, 120, 		// 40..120 dB
-		offsetof(struct nvmap, gdigigainmax),
+		OFFSETOF(struct nvmap, gdigigainmax),
 		nvramoffs0,
 		NULL,
 		& gdigigainmax,	// 8 bit
@@ -2293,7 +2293,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC SSB "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpagcssb),
+		OFFSETOF(struct nvmap, ggrpagcssb),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2304,7 +2304,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].rate,
@@ -2314,7 +2314,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].thung10,
@@ -2324,7 +2324,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].t1,
@@ -2334,7 +2334,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].release10,
@@ -2344,7 +2344,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].t4,
@@ -2355,7 +2355,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC CW  "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpagccw),
+		OFFSETOF(struct nvmap, ggrpagccw),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2366,7 +2366,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
-		offsetof(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].rate,
@@ -2376,7 +2376,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].thung10,
@@ -2386,7 +2386,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].t1,
@@ -2396,7 +2396,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].release10,
@@ -2406,7 +2406,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].t4,
@@ -2417,7 +2417,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC DIGI"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpagcdigi),
+		OFFSETOF(struct nvmap, ggrpagcdigi),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2428,7 +2428,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].rate,
@@ -2438,7 +2438,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].thung10,
@@ -2448,7 +2448,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T1  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].t1,
@@ -2458,7 +2458,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T2  "), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].release10,
@@ -2468,7 +2468,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AGC T4  "), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
-		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
+		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
 		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].t4,
@@ -2481,7 +2481,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("MODEM   "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrpmodem),
+		OFFSETOF(struct nvmap, ggrpmodem),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2492,7 +2492,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* 0: BPSK, 1: QPSK */
-		offsetof(struct nvmap, gmodemmode),
+		OFFSETOF(struct nvmap, gmodemmode),
 		nvramoffs0,
 		NULL,
 		& gmodemmode,
@@ -2502,7 +2502,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof modembr2int100 / sizeof modembr2int100 [0]) - 1, 
-		offsetof(struct nvmap, gmodemspeed),
+		OFFSETOF(struct nvmap, gmodemspeed),
 		nvramoffs0,
 		NULL,
 		& gmodemspeed,
@@ -2515,7 +2515,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM     "), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
-		offsetof(struct nvmap, ggrplfm),
+		OFFSETOF(struct nvmap, ggrplfm),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2526,7 +2526,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
-		offsetof(struct nvmap, lfmmode),
+		OFFSETOF(struct nvmap, lfmmode),
 		nvramoffs0,
 		NULL,
 		& lfmmode,
@@ -2536,7 +2536,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
 		ITEM_VALUE,
 		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
-		offsetof(struct nvmap, lfmstart100k),
+		OFFSETOF(struct nvmap, lfmstart100k),
 		nvramoffs0,
 		& lfmstart100k,
 		NULL,
@@ -2546,7 +2546,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
 		ITEM_VALUE,
 		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
-		offsetof(struct nvmap, lfmstop100k),
+		OFFSETOF(struct nvmap, lfmstop100k),
 		nvramoffs0,
 		& lfmstop100k,
 		NULL,
@@ -2556,7 +2556,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM SPD "), 5, 0, 0, 	ISTEP1,
 		ITEM_VALUE,
 		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
-		offsetof(struct nvmap, lfmspeed1k),
+		OFFSETOF(struct nvmap, lfmspeed1k),
 		nvramoffs0,
 		& lfmspeed1k,
 		NULL,
@@ -2567,7 +2567,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
 		ITEM_VALUE,
 		0, 60 * 60 - 1,			/* 0..59:59 */
-		offsetof(struct nvmap, lfmtoffset),
+		OFFSETOF(struct nvmap, lfmtoffset),
 		nvramoffs0,
 		& lfmtoffset,
 		NULL,
@@ -2578,7 +2578,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
 		ITEM_VALUE,
 		1, 60 * 60 - 1,			/* 00:01..59:59 */
-		offsetof(struct nvmap, lfmtinterval),
+		OFFSETOF(struct nvmap, lfmtinterval),
 		nvramoffs0,
 		& lfmtinterval,
 		NULL,
@@ -2588,7 +2588,7 @@ static const FLASHMEM struct menudef menutable [] =
         QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, 0,     ISTEP1,
         ITEM_VALUE,
         0, 2 * LFMFREQBIAS,            /*  */
-        offsetof(struct nvmap, lfmfreqbias),
+        OFFSETOF(struct nvmap, lfmfreqbias),
         nvramoffs0,
         & lfmfreqbias,
         NULL,
@@ -2603,7 +2603,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TX ADJ  "), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
-		offsetof(struct nvmap, ggrptxadj),
+		OFFSETOF(struct nvmap, ggrptxadj),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -2617,7 +2617,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gdacscale,
@@ -2629,7 +2629,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [0].adj_b,
@@ -2640,7 +2640,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [1].adj_b,
@@ -2651,7 +2651,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [2].adj_b,
@@ -2662,7 +2662,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [3].adj_b,
@@ -2673,7 +2673,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [4].adj_b,
@@ -2684,7 +2684,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [5].adj_b,
@@ -2695,7 +2695,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [6].adj_b,
@@ -2706,7 +2706,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [7].adj_b,
@@ -2717,7 +2717,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [8].adj_b,
@@ -2728,7 +2728,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [9].adj_b,
@@ -2739,7 +2739,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [10].adj_b,
@@ -2750,7 +2750,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [11].adj_b,
@@ -2761,7 +2761,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [12].adj_b,
@@ -2772,7 +2772,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [13].adj_b,
@@ -2783,7 +2783,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [14].adj_b,
@@ -2794,7 +2794,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HP ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_b [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_b [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [15].adj_b,
@@ -2806,7 +2806,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [0].adj_a,
@@ -2817,7 +2817,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [1].adj_a,
@@ -2828,7 +2828,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [2].adj_a,
@@ -2839,7 +2839,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [3].adj_a,
@@ -2850,7 +2850,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [4].adj_a,
@@ -2861,7 +2861,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [5].adj_a,
@@ -2872,7 +2872,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [6].adj_a,
@@ -2883,7 +2883,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [7].adj_a,
@@ -2894,7 +2894,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [8].adj_a,
@@ -2905,7 +2905,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [9].adj_a,
@@ -2916,7 +2916,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [10].adj_a,
@@ -2927,7 +2927,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [11].adj_a,
@@ -2938,7 +2938,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [12].adj_a,
@@ -2949,7 +2949,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [13].adj_a,
@@ -2960,7 +2960,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [14].adj_a,
@@ -2971,7 +2971,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LP ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gbandf2adj_a [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		OFFSETOF(struct nvmap, gbandf2adj_a [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [15].adj_a,
@@ -2982,7 +2982,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
 		0, 100,
-		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
+		OFFSETOF(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gamdepth,
@@ -2992,7 +2992,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
 		ITEM_VALUE,
 		0, 120,
-		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
+		OFFSETOF(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
 		nvramoffs0,
 		NULL,
 		& gnfmdeviation,
@@ -3002,7 +3002,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		30, 100,
-		offsetof(struct nvmap, ggaincwtx),
+		OFFSETOF(struct nvmap, ggaincwtx),
 		nvramoffs0,
 		& ggaincwtx,
 		NULL,
@@ -3015,7 +3015,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
-		offsetof(struct nvmap, gfanpatime),
+		OFFSETOF(struct nvmap, gfanpatime),
 		nvramoffs0,
 		NULL,
 		& gfanpatime,
@@ -3026,7 +3026,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, 255,
-		offsetof(struct nvmap, gfanpapwm),
+		OFFSETOF(struct nvmap, gfanpapwm),
 		nvramoffs0,
 		& gfanpapwm,
 		NULL,
@@ -3041,7 +3041,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TX POWER"), 7, 0, 0,	ISTEP5,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gnormalpower),
+		OFFSETOF(struct nvmap, gnormalpower),
 		nvramoffs0,
 		NULL,
 		& gnormalpower.value,
@@ -3053,7 +3053,7 @@ static const FLASHMEM struct menudef menutable [] =
 			QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
 			ITEM_VALUE,
 			0, 1,
-			offsetof(struct nvmap, gclassamode),
+			OFFSETOF(struct nvmap, gclassamode),
 			nvramoffs0,
 			NULL,
 			& gclassamode,
@@ -3063,7 +3063,7 @@ static const FLASHMEM struct menudef menutable [] =
 			QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-			offsetof(struct nvmap, gclassapower),
+			OFFSETOF(struct nvmap, gclassapower),
 			nvramoffs0,
 			NULL,
 			& gclassapower,
@@ -3077,7 +3077,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gpwri),
+		OFFSETOF(struct nvmap, gpwri),
 		nvramoffs0,
 		NULL,
 		& gpwri,
@@ -3091,7 +3091,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gtxgate),
+		OFFSETOF(struct nvmap, gtxgate),
 		nvramoffs0,
 		NULL,
 		& gtxgate,
@@ -3104,7 +3104,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* регулировка тока покоя оконечного каскада передатчика */
 		ITEM_VALUE,
 		WITHPABIASMIN, WITHPABIASMAX,
-		offsetof(struct nvmap, gpabias),
+		OFFSETOF(struct nvmap, gpabias),
 		nvramoffs0,
 		NULL,
 		& gpabias,
@@ -3116,7 +3116,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gdactest),
+		OFFSETOF(struct nvmap, gdactest),
 		nvramoffs0,
 		NULL,
 		& gdactest,
@@ -3132,7 +3132,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SPECIAL "), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
-		offsetof(struct nvmap, ggrpsecial),
+		OFFSETOF(struct nvmap, ggrpsecial),
 		nvramoffs0,
 		NULL,
 		NULL,
@@ -3146,7 +3146,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, userfsg),
+		OFFSETOF(struct nvmap, userfsg),
 		nvramoffs0,
 		NULL,
 		& userfsg,
@@ -3158,7 +3158,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ENC1 RES"), 7, 0, RJ_ENCRES,	ISTEP1,
 		ITEM_VALUE,
 		0, (sizeof encresols / sizeof encresols [0]) - 1,
-		offsetof(struct nvmap, genc1pulses),
+		OFFSETOF(struct nvmap, genc1pulses),
 		nvramoffs0,
 		NULL,
 		& genc1pulses,
@@ -3168,7 +3168,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ENC1 DYN"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, genc1dynamic),
+		OFFSETOF(struct nvmap, genc1dynamic),
 		nvramoffs0,
 		NULL,
 		& genc1dynamic,
@@ -3178,7 +3178,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ENC1 DIV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
-		offsetof(struct nvmap, genc1div),
+		OFFSETOF(struct nvmap, genc1div),
 		nvramoffs0,
 		NULL,
 		& genc1div,
@@ -3188,7 +3188,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BIG STEP"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gbigstep),
+		OFFSETOF(struct nvmap, gbigstep),
 		nvramoffs0,
 		NULL,
 		& gbigstep,
@@ -3199,7 +3199,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ENC2 DIV"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, 8, 	/* /1 ... /8 */
-		offsetof(struct nvmap, genc2div),
+		OFFSETOF(struct nvmap, genc2div),
 		nvramoffs0,
 		NULL,
 		& genc2div,
@@ -3214,7 +3214,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 		ITEM_VALUE,
 		10, 100,
-		offsetof(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+		OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 		nvramoffs0,
 		NULL,
 		& ggainnfmrx10,
@@ -3226,7 +3226,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("RGR BERP", "Roger Beep"), 7, 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 		ITEM_VALUE,
 		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		offsetof(struct nvmap, grgbeep),
+		OFFSETOF(struct nvmap, grgbeep),
 		nvramoffs0,
 		NULL,
 		& grgbeep,
@@ -3237,7 +3237,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		QLABEL("REPT HF "), 5 + WSIGNFLAG, 0, 0, 	ISTEP1,
 //		ITEM_VALUE,
 //		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
-//		offsetof(struct nvmap, rptroffshf1k),
+//		OFFSETOF(struct nvmap, rptroffshf1k),
 //		nvramoffs0,
 //		& rptroffshf1k,
 //		NULL,
@@ -3247,7 +3247,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		QLABEL("REPT UHF"), 5 + WSIGNFLAG, 0, 0, 	ISTEP1,
 //		ITEM_VALUE,
 //		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
-//		offsetof(struct nvmap, rptroffsuhf1k),
+//		OFFSETOF(struct nvmap, rptroffsuhf1k),
 //		nvramoffs0,
 //		& rptroffsuhf1k,
 //		NULL,
@@ -3261,7 +3261,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("REF ADJ "), 7, 0, 0,	ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
 		ITEM_VALUE,
 		WITHDAC1VALMIN, WITHDAC1VALMAX, 
-		offsetof(struct nvmap, dac1level),
+		OFFSETOF(struct nvmap, dac1level),
 		nvramoffs0,
 		NULL,	/* подстройка опорника */
 		& dac1level,
@@ -3272,7 +3272,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("REF FREQ"), 9, 3, 0,	ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
-		offsetof(struct nvmap, refbias),
+		OFFSETOF(struct nvmap, refbias),
 		nvramoffs0,
 		& refbias,	/* подстройка частоты опорника */
 		NULL,
@@ -3284,7 +3284,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LO3 FRQ "), 9, 3, 0,	ISTEP1,
 		ITEM_VALUE,
 		LO2AMIN, LO2AMAX, 
-		offsetof(struct nvmap, lo3offset),
+		OFFSETOF(struct nvmap, lo3offset),
 		nvramoffs0,
 		& lo3offset,	/* подстройка частоты гетеродина */
 		NULL,
@@ -3296,7 +3296,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("REFSI570"), 9, 3, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
-		offsetof(struct nvmap, si570_xtall_offset),
+		OFFSETOF(struct nvmap, si570_xtall_offset),
 		nvramoffs0,
 		& si570_xtall_offset,	/* подстройка опорника */
 		NULL,
@@ -3308,7 +3308,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BANDONLY"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, withonlybands),
+		OFFSETOF(struct nvmap, withonlybands),
 		nvramoffs0,
 		NULL,
 		& withonlybands,
@@ -3319,7 +3319,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("STAYFREQ"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, stayfreq),
+		OFFSETOF(struct nvmap, stayfreq),
 		nvramoffs0,
 		NULL,
 		& stayfreq,
@@ -3330,7 +3330,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BAT CALI"), 7, 1, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
 		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
-		offsetof(struct nvmap, voltcalibr100mV),
+		OFFSETOF(struct nvmap, voltcalibr100mV),
 		nvramoffs0,
 		NULL,
 		& voltcalibr100mV,
@@ -3342,7 +3342,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("IPA CALI"), 5 + WSIGNFLAG, 2, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
 		0, IPACALI_RANGE,
-		offsetof(struct nvmap, gipacali),
+		OFFSETOF(struct nvmap, gipacali),
 		nvramoffs0,
 		& gipacali,
 		NULL,
@@ -3355,29 +3355,29 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SWR SHOW"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, swrmode),
+		OFFSETOF(struct nvmap, swrmode),
 		nvramoffs0,
 		NULL,
 		& swrmode,
 		getzerobase, 
 	},
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
 		QLABEL("SWR CALI"), 7, 2, 0,	ISTEP1,		/* калибровка SWR-метра */
 		ITEM_VALUE,
 		50, 200, //80, 120, 
-		offsetof(struct nvmap, swrcalibr),
+		OFFSETOF(struct nvmap, swrcalibr),
 		nvramoffs0,
 		NULL,
 		& swrcalibr,
 		getzerobase, 
 	},
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	{
 		QLABEL("FWD LOWR"), 7, 0, 0,	ISTEP1,		/* нечувствительность SWR-метра */
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1, 
-		offsetof(struct nvmap, minforward),
+		OFFSETOF(struct nvmap, minforward),
 		nvramoffs0,
 		& minforward,
 		NULL,
@@ -3387,7 +3387,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
 		1, 255,
-		offsetof(struct nvmap, maxpwrcali),
+		OFFSETOF(struct nvmap, maxpwrcali),
 		nvramoffs0,
 		NULL,
 		& maxpwrcali,
@@ -3397,7 +3397,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,						/* защита от превышения КСВ */
-		offsetof(struct nvmap, gswrprot),
+		OFFSETOF(struct nvmap, gswrprot),
 		nvramoffs0,
 		NULL,
 		& gswrprot,
@@ -3409,7 +3409,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
 		10, 255,
-		offsetof(struct nvmap, maxpwrcali),
+		OFFSETOF(struct nvmap, maxpwrcali),
 		nvramoffs0,
 		NULL,
 		& maxpwrcali,
@@ -3421,7 +3421,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HEAT LIM"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		20, 85,						/* порог срабатывания защиты по температуре */
-		offsetof(struct nvmap, gtempvmax),
+		OFFSETOF(struct nvmap, gtempvmax),
 		nvramoffs0,
 		NULL,
 		& gtempvmax,
@@ -3431,7 +3431,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,						/* защита от перегрева */
-		offsetof(struct nvmap, gheatprot),
+		OFFSETOF(struct nvmap, gheatprot),
 		nvramoffs0,
 		NULL,
 		& gheatprot,
@@ -3443,7 +3443,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
-		offsetof(struct nvmap, rxtxdelay),
+		OFFSETOF(struct nvmap, rxtxdelay),
 		nvramoffs0,
 		NULL,
 		& rxtxdelay,
@@ -3453,7 +3453,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
-		offsetof(struct nvmap, txrxdelay),
+		OFFSETOF(struct nvmap, txrxdelay),
 		nvramoffs0,
 		NULL,
 		& txrxdelay,
@@ -3466,7 +3466,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LO1 LEVL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 100, 		/* уровень (амплитуда) LO1 в процентах */
-		offsetof(struct nvmap, lo1level),
+		OFFSETOF(struct nvmap, lo1level),
 		nvramoffs0,
 		NULL,
 		& lo1level,
@@ -3478,7 +3478,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PHASE RX"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
-		offsetof(struct nvmap, phaserx),
+		OFFSETOF(struct nvmap, phaserx),
 		nvramoffs0,
 		& phasesmap [0],
 		NULL,
@@ -3489,7 +3489,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("PHASE TX"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
-		offsetof(struct nvmap, phasetx),
+		OFFSETOF(struct nvmap, phasetx),
 		nvramoffs0,
 		& phasesmap [1],
 		NULL,
@@ -3503,7 +3503,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ALIGN MD"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, alignmode),
+		OFFSETOF(struct nvmap, alignmode),
 		nvramoffs0,
 		NULL,
 		& alignmode,
@@ -3511,12 +3511,25 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 #endif	/* LO1MODE_HYBRID */
 
+#if 1//WITHDEBUG
+	{
+		QLABEL("FORCEXVR"), 7, 3, RJ_YES,	ISTEP1,	/* принудительно включить коммутацию трансвертора */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gforcexvrtr),
+		nvramoffs0,
+		NULL,
+		& gforcexvrtr,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif	/* WITHDEBUG */
+
 #if LO1FDIV_ADJ
 	{
 		QLABEL("LO1DV RX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo1powrx),
+		OFFSETOF(struct nvmap, lo1powrx),
 		nvramoffs0,
 		NULL,
 		& lo1powmap [0],
@@ -3526,7 +3539,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LO1DV TX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo1powtx),
+		OFFSETOF(struct nvmap, lo1powtx),
 		nvramoffs0,
 		NULL,
 		& lo1powmap [1],
@@ -3538,7 +3551,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LO4DV RX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo4powrx),
+		OFFSETOF(struct nvmap, lo4powrx),
 		nvramoffs0,
 		NULL,
 		& lo4powmap [0],
@@ -3548,7 +3561,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("LO4DV TX"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
-		offsetof(struct nvmap, lo4powtx),
+		OFFSETOF(struct nvmap, lo4powtx),
 		nvramoffs0,
 		NULL,
 		& lo4powmap [1],
@@ -3561,7 +3574,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("S9 LEVEL"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
-		offsetof(struct nvmap, s9level),
+		OFFSETOF(struct nvmap, s9level),
 		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9level,
@@ -3571,7 +3584,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("S9 DELTA"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
-		offsetof(struct nvmap, s9delta),
+		OFFSETOF(struct nvmap, s9delta),
 		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9delta,
@@ -3581,7 +3594,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("+60DELTA"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
-		offsetof(struct nvmap, s9_60_delta),
+		OFFSETOF(struct nvmap, s9_60_delta),
 		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9_60_delta,
@@ -3591,7 +3604,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ATTPRESH"), 7, 0, RJ_ON,	ISTEP1,	/* attenuator-preamplifier shift */
 		ITEM_VALUE,
 		0, 1,
-		offsetof(struct nvmap, gattpresh),	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
+		OFFSETOF(struct nvmap, gattpresh),	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
 		nvramoffs0,
 		NULL,
 		& gattpresh,
@@ -3603,7 +3616,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BAND 27 "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bandset11m),
+		OFFSETOF(struct nvmap, bandset11m),
 		nvramoffs0,
 		NULL,
 		& bandset11m,
@@ -3614,7 +3627,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("HF ANT F", "HF Ant freq"), 3, 0, 0, ISTEP1,
 		ITEM_VALUE,
 		TUNE_BOTTOM / 1000000, (TUNE_TOP - 1) / 1000000,
-		offsetof(struct nvmap, hffreqswitch),
+		OFFSETOF(struct nvmap, hffreqswitch),
 		nvramoffs0,
 		NULL,
 		& hffreqswitch,
@@ -3626,7 +3639,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, gbandsetbcast),
+		OFFSETOF(struct nvmap, gbandsetbcast),
 		nvramoffs0,
 		NULL,
 		& gbandsetbcast,
@@ -3640,7 +3653,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BAND 50 "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bandset6m),
+		OFFSETOF(struct nvmap, bandset6m),
 		nvramoffs0,
 		NULL,
 		& bandset6m,
@@ -3652,7 +3665,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BAND 70 "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bandset4m),
+		OFFSETOF(struct nvmap, bandset4m),
 		nvramoffs0,
 		NULL,
 		& bandset4m,
@@ -3664,7 +3677,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, bandset2m),
+		OFFSETOF(struct nvmap, bandset2m),
 		nvramoffs0,
 		NULL,
 		& bandset2m,
@@ -3678,7 +3691,7 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL2("ABOUT   ", "About"), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
-		offsetof(struct nvmap, ggrpabout),
+		OFFSETOF(struct nvmap, ggrpabout),
 		nvramoffs0,
 		NULL,
 		NULL,

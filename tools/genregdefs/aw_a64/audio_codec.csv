@@ -5,11 +5,11 @@
 #regdef; DA_FAT0; 0x004; Digital Audio Format Register 0
 #regdef; DA_FAT1; 0x008; Digital Audio Format Register 1
 #regdef; DA_ISTA; 0x00C; Digital Audio Interrupt Status Register
-#regdef; DA_RXFIFO; 0x010; Digital Audio RX FIFO Register
+#regdef; AC_ADC_RXDATA; 0x010; Digital Audio RX FIFO Register (was: DA_RXFIFO)
 #regdef; DA_FCTL; 0x014; Digital Audio FIFO Control Register
 #regdef; DA_FSTA; 0x018; Digital Audio FIFO Status Register
 #regdef; DA_INT; 0x01C; Digital Audio Interrupt Control Register
-#regdef; DA_TXFIFO; 0x020; Digital Audio TX FIFO Register
+#regdef; AC_DAC_TXDATA; 0x020; Digital Audio TX FIFO Register (was: DA_TXFIFO)
 #regdef; DA_CLKD; 0x024; Digital Audio Clock Divide Register
 #regdef; DA_TXCNT; 0x028; Digital Audio RX Sample Counter Register
 #regdef; DA_RXCNT; 0x02C; Digital Audio TX Sample Counter Register

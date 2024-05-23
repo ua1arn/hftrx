@@ -35,7 +35,7 @@ static void gt911_io_initialize(void)
 static volatile uint_fast8_t tsc_int = 0;
 
 void
-gt911_interrupt_handler(void)
+gt911_interrupt_handler(void * ctx)
 {
 	tsc_int = 1;
 }
@@ -73,29 +73,36 @@ static void gt911_intconnect(void)
 
 #endif
 
-void gt911_set_reg(uint_fast16_t reg)
+/* return non-zero then error */
+int gt911_set_reg(uint_fast16_t reg)
 {
 #if WITHTWIHW
 	uint8_t buf[2] = { (reg >> 8), (reg & 0xFF), };
-	i2chw_write(gt911_addr, buf, 2);
+	return i2chw_write(gt911_addr, buf, 2);
 #elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
 	i2c_write(reg & 0xFF);
 	i2c_waitsend();
 	i2c_stop();
+	return 0;
+#else
+	return 1;
 #endif
 }
 
-void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
+/* return non-zero then error */
+int gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 {
 #if WITHTWIHW
-	gt911_set_reg(reg);
-	i2chw_read(gt911_addr, buf, len);
+	if (gt911_set_reg(reg))
+		return 1;
+	return i2chw_read(gt911_addr, buf, len);
 #elif WITHTWISW
 	uint_fast8_t k = 0;
 
-	gt911_set_reg(reg);
+	if (gt911_set_reg(reg))
+		return 1;
 
 	i2c_start(gt911_addr | 1);
 
@@ -116,14 +123,18 @@ void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 		i2c_read(buf ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 	}
 	i2c_stop();
+	return 0;
+#else
+	return 1;
 #endif
 }
 
-void gt911_write_reg(uint_fast16_t reg, uint8_t val)
+/* return non-zero then error */
+int gt911_write_reg(uint_fast16_t reg, uint8_t val)
 {
 #if WITHTWIHW
 	uint8_t buf[3] = { (reg >> 8), (reg & 0xFF), val, };
-	i2chw_write(gt911_addr, buf, 3);
+	return i2chw_write(gt911_addr, buf, 3);
 #elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
@@ -131,6 +142,9 @@ void gt911_write_reg(uint_fast16_t reg, uint8_t val)
 	i2c_write(val);
 	i2c_waitsend();
 	i2c_stop();
+	return 0;
+#else
+	return 1;
 #endif
 }
 
@@ -139,7 +153,8 @@ uint16_t gt911_readInput(GTPoint * point)
 	uint_fast8_t touch_num, buf_state;
 	uint8_t buf [6];
 
-	gt911_read(GOODIX_READ_COORD_ADDR, buf, 6);
+	if (gt911_read(GOODIX_READ_COORD_ADDR, buf, 6))
+		return 0;
 	buf_state = buf [0] >> 7;
 
 	if (! buf_state)
@@ -152,7 +167,8 @@ uint16_t gt911_readInput(GTPoint * point)
 		point->x = (buf [2] << 0) | (buf [3] << 8);
 		point->y = (buf [4] << 0) | (buf [5] << 8);
 	}
-	gt911_write_reg(GOODIX_READ_COORD_ADDR, 0);
+	if (gt911_write_reg(GOODIX_READ_COORD_ADDR, 0))
+		return 0;
 
 	return touch_num;
 }
@@ -175,7 +191,8 @@ uint_fast8_t gt911_readChecksum(void)
 	const uint_fast8_t len = aStop - aStart + 1;
 	uint8_t buf [len];
 
-	gt911_read(aStart, buf, len);
+	if (gt911_read(aStart, buf, len))
+		return 0;
 	return gt911_calcChecksum(buf, len);
 }
 
@@ -184,18 +201,21 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 	uint_fast8_t len = GOODIX_CONFIG_911_LENGTH;
 	uint16_t pos = 0;
 	uint8_t cfg [len];
-	gt911_read(GT_REG_CFG, cfg, GOODIX_CONFIG_911_LENGTH);
+	if (gt911_read(GT_REG_CFG, cfg, GOODIX_CONFIG_911_LENGTH))
+		return;
 
 	cfg [1] = (maxX & 0xff);
 	cfg [2] = (maxX >> 8);
 	cfg [3] = (maxY & 0xff);
 	cfg [4] = (maxY >> 8);
+	cfg [5] = 1;			// одно касание
 	cfg [15] = 0xf;			// период опроса 15 + 5 мс
 	cfg [len - 2] = gt911_calcChecksum(cfg, len - 2);
 	cfg [len - 1] = 1;
 
 	while (pos < len) {
-		gt911_write_reg(GT_REG_CFG + pos, cfg [pos]);
+		if (gt911_write_reg(GT_REG_CFG + pos, cfg [pos]))
+			break;
 		pos ++;
 	}
 }
@@ -204,7 +224,8 @@ uint32_t gt911_productID(void) {
 	uint32_t res;
 	uint8_t buf [4];
 
-	gt911_read(GOODIX_REG_ID, buf, 4);
+	if (gt911_read(GOODIX_REG_ID, buf, 4))
+		return 0;
 	res = buf [3] | (buf [2] << 8) | (buf [1] << 16) | (buf [0] << 24);
 	return res;
 }
@@ -243,8 +264,14 @@ uint_fast8_t gt911_initialize(void)
 		return 0;
 
 	gt911_fwResolution(DIM_X, DIM_Y);
-	gt911_write_reg(GOODIX_READ_COORD_ADDR, 0);
+	if (gt911_write_reg(GOODIX_READ_COORD_ADDR, 0))
+		return 0;
 	tscpresetnt = 1;
+
+	uint8_t ver[2];
+	if (gt911_read(GOODIX_REG_FW_VER, ver, 2))
+		return 0;
+	PRINTF("gt9xx FW ver.: %02x%02x\n", ver[1], ver[0]);
 
 	gt911_intconnect();
 

@@ -93,6 +93,7 @@ void board_set_bandf(uint_fast8_t n);	/*  диапазонный фильтр п
 void board_set_bandf2(uint_fast8_t n);	/* диапазонный фильтр передатчика */
 void board_set_bandf3(uint_fast8_t n);	/* управление через разъем ACC */
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
+void board_set_bcdfreq1k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 1 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
 void board_set_bandfonhpf(uint_fast8_t n);	/* установить код выбора диапазонного фильтра, с которого включается ФВЧ перед УВЧ в SW20xx */
 void board_set_bandfonuhf(uint_fast8_t n);	/* Установить код диапазонного фильтра, на котором включать UHF */
@@ -131,6 +132,7 @@ void board_set_tuner_type(uint_fast8_t v);	/* вариант повышающе�
 void board_set_tuner_bypass(uint_fast8_t v);	/* обход согласующего устройства */
 void board_set_autotune(uint_fast8_t v);	/* Находимся в режиме настройки согласующего устройства */
 void board_set_showovf(uint_fast8_t v);		/* Показ индикатора переполнения АЦП */
+void board_set_forcexvrtr(uint_fast8_t v);	/* принудительно включить коммутацию трансвертора */
 
 void board_set_user1(uint_fast8_t v);
 void board_set_user2(uint_fast8_t v);
@@ -159,6 +161,7 @@ void board_set_fsadcpower10(int_fast16_t v);		/*	Мощность, соотве�
 uint_fast32_t board_get_fqmeter(void);			/* получить значение измеренной частоты */
 void board_set_lo1vco(uint_fast8_t n);	// 0..3, 0..5 - code of VCO
 void board_set_lo2xtal(uint_fast8_t n);	// номер кварца для интерполяционного приемника
+void board_codec1_nreset(uint_fast8_t v);	/* формирование сигнала "RESET" для codec1. 0 - снять ресет. */
 void board_codec2_nreset(uint_fast8_t v);	/* формирование сигнала "RESET" для codec2. 0 - снять ресет. */
 void board_set_modem_speed100(uint_fast32_t v);	// скорость передачи с точностью 1/100 бод
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
@@ -210,14 +213,6 @@ void board_rtc_getdatetime(
 	uint_fast8_t * hour,
 	uint_fast8_t * minute,
 	uint_fast8_t * seconds
-	);
-void board_rtc_getdatetime_low(
-	volatile uint_fast16_t * year,
-	volatile uint_fast8_t * month,	// 01-12
-	volatile uint_fast8_t * dayofmonth,
-	volatile uint_fast8_t * hour,
-	volatile uint_fast8_t * minute,
-	volatile uint_fast8_t * seconds
 	);
 
 // функции без задержек на чтение из аппаратного RTC
@@ -318,14 +313,6 @@ uint_fast8_t board_getpwrmeter(
 
 uint_fast16_t
 mcp3208_read(
-	spitarget_t target,
-	uint_fast8_t diff,
-	uint_fast8_t adci,
-	uint_fast8_t * valid
-	);
-
-uint_fast16_t
-mcp3208_read_low(
 	spitarget_t target,
 	uint_fast8_t diff,
 	uint_fast8_t adci,
@@ -434,7 +421,7 @@ void nmeatuner_onrxchar(uint_fast8_t c);				/* вызывается из обр�
 void nmeatuner_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmeatuner_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
 
-void nmeagnss_parechar(uint_fast8_t c);				/* USER-MODE обработчик */
+void nmeagnss_parsechar(uint_fast8_t c);				/* USER-MODE обработчик */
 
 void nmeagnss_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
 void nmeagnss_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */

@@ -15,19 +15,27 @@
 #include "board.h"
 #include <string.h>
 
-#define M41T81_ADDRESS_W	0xD0	
+#define M41T81_ADDRESS7 0x68
+
+#define M41T81_ADDRESS_W	(M41T81_ADDRESS7 * 2)
 #define M41T81_ADDRESS_R	(M41T81_ADDRESS_W | 0x01)
 
-static void m41t81_readbuff(
+/* return non-zero then error */
+static int m41t81_readbuff(
 	uint8_t * b,
 	uint_fast8_t n,
 	uint_fast8_t r
 	)
 {
 #if WITHTWIHW
-	uint8_t bufw = r;
-	i2chw_write(M41T81_ADDRESS_W, & bufw, 1);
-	i2chw_read(M41T81_ADDRESS_R, b, n);
+
+	uint8_t bufw [] = { r };
+
+	return i2chw_exchange(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
+	if (i2chw_write(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw)))
+		return 1;
+	return (i2chw_read(M41T81_ADDRESS_R, b, n));
+
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
 	i2c_write_withrestart(r);	// register address
@@ -44,10 +52,13 @@ static void m41t81_readbuff(
 			i2c_read(b ++, I2C_READ_ACK);
 		i2c_read(b ++, I2C_READ_NACK);
 	}
+	return 0;
+
 #endif
 }
 
-static void m41t81_writebuff(
+/* return non-zero then error */
+static int m41t81_writebuff(
 	const uint8_t * b,
 	uint_fast8_t n,
 	uint_fast8_t r		// Addr
@@ -57,7 +68,8 @@ static void m41t81_writebuff(
 	uint8_t buff [n + 1];
 	buff [0] = r;
 	memcpy(buff + 1, b, n);
-	i2chw_write(M41T81_ADDRESS_W, buff, n + 1);
+	return i2chw_write(M41T81_ADDRESS_W, buff, n + 1);
+
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
 	i2c_write(r);	// register address
@@ -65,22 +77,24 @@ static void m41t81_writebuff(
 		i2c_write(* b ++);
 	i2c_waitsend();
 	i2c_stop();
+	return 0;
 #endif
 }
 
 
-static void m41t81_setclearbit(
+static int m41t81_setclearbit(
 	uint_fast8_t r,		// Addr
 	uint_fast8_t mask,	// биты, которые требуется модифицировать
 	uint_fast8_t value)	// состояние битов, которое требуется установить.
 {
 	uint8_t b [1];
 
-	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
+	if (m41t81_readbuff(b, sizeof b / sizeof b[0], r))
+		return 1;
 
 	b [0] = (b [0] & ~ mask) | (mask & value);
 
-	m41t81_writebuff(b, sizeof b / sizeof b[0], r);
+	return m41t81_writebuff(b, sizeof b / sizeof b[0], r);
 }
 
 /*
@@ -135,7 +149,8 @@ void board_rtc_settime(
 	const uint_fast8_t rt = 0x01;	// Addr
 	uint8_t bt [3];
 
-	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
+	if (m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt))
+		return;
 
 	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(seconds, 0, 59));	// r=1
 	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes, 0, 59));	// r=2
@@ -167,7 +182,8 @@ void board_rtc_setdatetime(
 	const uint_fast8_t rt = 0x01;	// Addr
 	uint8_t bt [3];
 
-	m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt);
+	if (m41t81_readbuff(bt, sizeof bt / sizeof bt [0], rt))
+		return;
 
 	bt [0] = (bt [0] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(seconds, 0, 59));	// r=1
 	bt [1] = (bt [1] & ~ 0x7f) | (0x7f & m41t81_bin2bcd(minutes, 0, 59));	// r=2
@@ -187,7 +203,8 @@ void board_rtc_setdate(
 	const uint_fast8_t r = 0x05;	// Addr
 	uint8_t b [3];
 
-	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
+	if (m41t81_readbuff(b, sizeof b / sizeof b[0], r))
+		return;
 
 	b [2] = m41t81_bin2bcd(year % 100, 0, 99);							// r=7
 	b [1] = (b [1] & ~ 0x01f) | (0x01f & m41t81_bin2bcd(month, 1, 12));	// r=6 01-12
@@ -205,11 +222,16 @@ void board_rtc_getdate(
 	const uint_fast8_t r = 0x05;	// Addr
 	uint8_t b [3];
 
-	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
+	if (m41t81_readbuff(b, sizeof b / sizeof b[0], r) == 0)
+	{
+		* year = 2000 + m41t81_bcd2bin(b [2], 0, 99);		// r=7
+		* month = m41t81_bcd2bin(b [1] & 0x1f, 1, 12);	// r=6 01-12
+		* dayofmonth = m41t81_bcd2bin(b [0] & 0x3f, 1, 31);		// r=5
+	}
+	else
+	{
 
-	* year = 2000 + m41t81_bcd2bin(b [2], 0, 99);		// r=7
-	* month = m41t81_bcd2bin(b [1] & 0x1f, 1, 12);	// r=6 01-12
-	* dayofmonth = m41t81_bcd2bin(b [0] & 0x3f, 1, 31);		// r=5
+	}
 }
 
 void board_rtc_gettime(
@@ -221,11 +243,16 @@ void board_rtc_gettime(
 	const uint_fast8_t r = 0x01;	// Addr
 	uint8_t b [3];
 
-	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
+	if (m41t81_readbuff(b, sizeof b / sizeof b[0], r) == 0)
+	{
+		* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
+		* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
+		* seconds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	}
+	else
+	{
 
-	* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
-	* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
-	* seconds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	}
 }
 
 void board_rtc_getdatetime(
@@ -240,14 +267,19 @@ void board_rtc_getdatetime(
 	const uint_fast8_t r = 0x01;
 	uint8_t b [7];
 
-	m41t81_readbuff(b, sizeof b / sizeof b[0], r);
+	if (m41t81_readbuff(b, sizeof b / sizeof b[0], r) == 0)
+	{
+		* year = 2000 + m41t81_bcd2bin(b [6], 0, 99);		// r=7
+		* month = m41t81_bcd2bin(b [5] & 0x1f, 1, 12);		// r=6
+		* dayofmonth = m41t81_bcd2bin(b [4] & 0x3f, 1, 31);		// r=5
+		* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
+		* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
+		* seconds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	}
+	else
+	{
 
-	* year = 2000 + m41t81_bcd2bin(b [6], 0, 99);		// r=7
-	* month = m41t81_bcd2bin(b [5] & 0x1f, 1, 12);		// r=6
-	* dayofmonth = m41t81_bcd2bin(b [4] & 0x3f, 1, 31);		// r=5
-	* hour = m41t81_bcd2bin(b [2] & 0x3f, 0, 23);		// r=3
-	* minute = m41t81_bcd2bin(b [1] & 0x7f, 0, 59);	// r=2
-	* seconds = m41t81_bcd2bin(b [0] & 0x7f, 0, 59);	// r=1
+	}
 }
 
 /* возврат не-0 если требуется начальная загрузка значений */
@@ -256,10 +288,14 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	// Write RTC calibration value (0x00..0x1f)
 	uint8_t rtc_calibratioin = 0x10;
 
-	m41t81_setclearbit(0x08, 0x1f, rtc_calibratioin);
-	m41t81_setclearbit(0x0c, 0x40, 0x00);	// ht=0
-	m41t81_setclearbit(0x01, 0x80, 0x00);	// st=0
-	m41t81_setclearbit(0x03, 0xc0, 0xc0);	// CB=1, CEB=1
+	if (m41t81_setclearbit(0x08, 0x1f, rtc_calibratioin))
+		return 0;
+	if (m41t81_setclearbit(0x0c, 0x40, 0x00))	// ht=0
+		return 0;
+	if (m41t81_setclearbit(0x01, 0x80, 0x00))	// st=0
+		return 0;
+	if (m41t81_setclearbit(0x03, 0xc0, 0xc0))	// CB=1, CEB=1
+		return 0;
 
 	return 0;
 }

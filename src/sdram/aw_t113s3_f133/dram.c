@@ -76,7 +76,7 @@
  */
 #if CPUSTYLE_T113_S4
 
-static struct dram_para_t ddrp3 =
+static dram_para_t ddrp3 =
 {
 	.dram_clk = 936,	// s3: 792
 	.dram_type = 3,

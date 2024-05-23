@@ -2,6 +2,15 @@
 	// TFT панель AT070TN90
 	// 480/5 = 96, 800/16=50
 
+void wait_iq(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	linux_wait_iq();
+}
+
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123456789"
 		#define SWRPWRMAP	"1    2    3    4  0%   |  100%"
@@ -76,6 +85,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
+#if ! WITHLVGL
 		{	0,	0,	display2_clearbg, 	REDRM_ALL, PG1, },
 		{	0,	0,	display2_keyboard_screen0,	REDRM_ALL, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	display2_rxbwval6alt,	REDRM_ALL, PG0, },	// RX BW value
@@ -90,15 +100,7 @@
 		{	46, 5,	display2_datamode3,	REDRM_ALL, PG0, },	// DATA mode indicator
 		{	46, 15,	display2_usbsts3,	REDRM_ALL, PG0, },	// USB host status
 		{	46, 20,	display2_rec3,		REDRM_ALL, PG0, },	// Отображение режима записи аудио фрагмента
-#if WITHBARS
-		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  display2_smeter15, 	REDRM_ALL, PG0, },	// Изображение стрелочного прибора
-#endif /* WITHBARS */
-#if WITHAFSPECTRE
-		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
-		{	0,	4,	display2_af_spectre15_latch,	REDRM_ALL,	PG0, },
-		{	0,	4,	display2_af_spectre15,		REDRM_ALL, PG0, },
-#endif /* WITHAFSPECTRE */
+
 		{   0,  0,  layout_init,		REDRM_INIS, PGINI, },
 //		{   47, 20, display2_bkin3,		REDRM_ALL, PG0, },
 //		{	46, 20,	display2_agc3,		REDRM_ALL, PG0, },	// AGC mode
@@ -119,6 +121,17 @@
 		{	26,	20,	display2_freqX_b,	REDRM_ALL, PG0, },	// SUB FREQ
 		{	38, 20,	display2_mode3_b,	REDRM_ALL,	PG0, },	// SSB/CW/AM/FM/...
 
+		{	0,	0,	wait_iq, 			REDRM_ALL,	PG0, },
+#if WITHBARS
+		{    0, 4,  display2_smeter15_init,	REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{    0, 4,  display2_smeter15, 		REDRM_ALL, PG0, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
+#if WITHAFSPECTRE
+		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
+		{	0,	4,	display2_af_spectre15_latch,	REDRM_ALL,	PG0, },
+		{	0,	4,	display2_af_spectre15,		REDRM_ALL, PG0, },
+#endif /* WITHAFSPECTRE */
+
 		{	0,	0, display2_siglevel4, 	REDRM_ALL, PG0, },	// signal level dBm
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	display2_latchwaterfall,	REDRM_ALL,	PG0, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -128,6 +141,7 @@
 		{	0,	DLES,	gui_WM_walkthrough,	REDRM_ALL, PG1, },
 
 		{	0,	0,	display2_nextfb, 	REDRM_ALL, PG1, },
+#endif /* ! WITHLVGL */
 	};
 
 #if WITHMENU

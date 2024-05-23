@@ -14,7 +14,7 @@ Allwinner A64-H (Banana Pi BPI-M64)
 
 
 xfel:
-https://gitee.com/xboot/xfel/releases/v1.2.9
+https://gitee.com/xboot/xfel/releases/tag/v1.3.2
 
 Allwinner A64 (sun50iw1) SoC features a Quad-Core Cortex-A53 ARM CPU, and a Mali400 MP2 GPU from ARM.
 

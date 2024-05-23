@@ -299,7 +299,7 @@ bootloader: BOOT2
 	
 # Take from tc1_t507_boot.map
 SystemInitAddr_H616 = 0x00032594
-SystemInitAddr_T507 = 0x00032ed0
+SystemInitAddr_T507 = 0x000326c8
 
 # Invoke SystemInit 
 ddrinit_h616: h616_fsbl_frz.alw32
@@ -329,6 +329,7 @@ flash:
 
 erase:
 	$(XFEL) spinor erase 0x00000000 1024
+	$(XFEL) spinor erase 0x00040000 1024
 
 flash_old:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32

@@ -7,8 +7,6 @@
 //
 #include "hardware.h"
 
-#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
-
 #include "board.h"
 
 #include "formats.h"
@@ -25,9 +23,17 @@
 #define CS4272_SPIMODE		SPIC_MODE3
 #define CS4272_SPIC_SPEED	SPIC_SPEED4M	// No more then 6 MHz
 
-#define CS4272_ADDRESS_W(tg)	((tg) ? 0x22 : 0x20)	// I2C address: 0x20 or 0x22	- depend on adress pin state
-									// Also used as SPI prefix byte
-#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
+#if defined (CS4272_ADDRESS_7BITS)
+	#define CS4272_ADDRESS_W(tg)	((CS4272_ADDRESS_7BITS) << 2)	// I2C address: 0x20 or 0x22	- depend on adress pin state
+										// Also used as SPI prefix byte
+	#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
+
+#else
+	#define CS4272_ADDRESS_W(tg)	((tg) ? 0x22 : 0x20)	// I2C address: 0x20 or 0x22	- depend on adress pin state
+										// Also used as SPI prefix byte
+	#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
+
+#endif
 
 //memory address pointers
 #define MODE_CONTROL_1 0x1 //memory address pointer for modeControl1
@@ -72,17 +78,17 @@ static void cs4272_setreg(
 		// Работа совместно с фоновым обменом SPI по прерываниям
 		const uint8_t txbuf [3] =
 		{
-			CS4272_ADDRESS_W(0),
+			CS4272_ADDRESS_W(tg),
 			mapv,
 			datav,
 		};
 
-		prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+		prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 	#else /* WITHSPILOWSUPPORTT */
 
 		spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
-		spi_progval8_p1(target, CS4272_ADDRESS_W(0));		// Chip Aaddress, D0=0: write
+		spi_progval8_p1(target, CS4272_ADDRESS_W(tg));		// Chip Aaddress, D0=0: write
 		spi_progval8_p2(target, mapv);
 		spi_progval8_p2(target, datav);
 		spi_complete(target);
@@ -91,12 +97,19 @@ static void cs4272_setreg(
 	#endif /* WITHSPILOWSUPPORTT */
 
 #else
-	// кодек управляется по I2C
-	i2c_start(CS4272_ADDRESS_W(tg));
-	i2c_write(mapv);
-	i2c_write(datav);
-	i2c_waitsend();
-	i2c_stop();
+
+	#if WITHTWIHW
+		uint8_t buff [] = { mapv, datav, };
+		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+	#elif WITHTWISW
+		// кодек управляется по I2C
+		i2c_start(CS4272_ADDRESS_W(tg));
+		i2c_write(mapv);
+		i2c_write(datav);
+		i2c_waitsend();
+		i2c_stop();
+	#endif
+
 
 	// resd back for test
 	/*
@@ -117,19 +130,26 @@ static uint_fast8_t cs4272_getreg(
 	uint_fast8_t mapv	// Memory Address Pointer
 	)
 {
-	uint_fast8_t v = 0xFF;
+	uint8_t v = 0xFF;
 #if CODEC_TYPE_CS4272_STANDALONE
 	return v;
 #else
-	// кодек управляется по I2C
-	i2c_start(CS4272_ADDRESS_W(tg));
-	i2c_write(mapv);
-	i2c_waitsend();
-	i2c_stop();
 
-	i2c_start(CS4272_ADDRESS_R(tg));
-	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	#if WITHTWIHW
+		uint8_t buff [] = { mapv, };
+		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+		i2chw_read(CS4272_ADDRESS_R(tg), & v, 1);
+	#elif WITHTWISW
 
+		// кодек управляется по I2C
+		i2c_start(CS4272_ADDRESS_W(tg));
+		i2c_write(mapv);
+		i2c_waitsend();
+		i2c_stop();
+
+		i2c_start(CS4272_ADDRESS_R(tg));
+		i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+	#endif
 	// resd back for test
 	/*
 	uint_fast8_t v1;
@@ -146,7 +166,7 @@ static uint_fast8_t cs4272_getreg(
 #endif
 
 // MCLK должен уже подаваться в момент инициализации
-static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, , uint_fast8_t master)
+static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, uint_fast8_t master)
 {
 	board_codec2_nreset(1);	// Выставить сигнал сброса
 	board_update();
@@ -157,28 +177,14 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, , uint_fast8_t ma
 #if CODEC_TYPE_CS4272_STANDALONE
 	return;
 #endif /* CODEC_TYPE_CS4272_STANDALONE */
-
-#if ! CODEC_TYPE_CS4272_USE_SPI
-	{
-		const uint_fast8_t chip_id = cs4272_getreg(tg, CHIP_ID);
-		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, chip_id=0x%02X\n", (int) tg, (unsigned) chip_id);
-
-//	    cs4272_setreg(tg, DAC_VOLUME_A, 0x55);	// set attenuation
-//		const uint_fast8_t volume_a1 = cs4272_getreg(tg, DAC_VOLUME_A);
-//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a1=0x%02X\n", (int) tg, (unsigned) volume_a1);
-//
-//	    cs4272_setreg(tg, DAC_VOLUME_A, 0xAA);	// set attenuation
-//		const uint_fast8_t volume_a2 = cs4272_getreg(tg, DAC_VOLUME_A);
-//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a2=0x%02X\n", (int) tg, (unsigned) volume_a2);
-	}
-#endif /* ! CODEC_TYPE_CS4272_USE_SPI */
 	    //CODEC START SEQUENCE
     cs4272_setreg(tg, MODE_CONTROL_2,
     	MODE_CONTROL_2_PDN | MODE_CONTROL_2_CPEN	// write 0x03 to register 0x07 within 10ms of bringing RST_bar high
     	);
     cs4272_setreg(tg, MODE_CONTROL_1,
 		((USE_I2S ? 0x01 : 0x00) << 0) |		/* DAC_DIF2:DAC_DIF1:DAC_DIF0 format LJ/I2S */
-		(0U << 4) |		/* ratio select: Slave Mode, MCLK/LRCK=256, SCLK/LRCK=32, 64, 128 */
+		0x00 * (UINT32_C(1) << 4) |				/* ratio select: MCLK/LRCK=256, SCLK/LRCK=64 */
+		!! master * (UINT32_C(1) << 3) |		/* master/slave mode */
 		0x00
 		);
 
@@ -219,6 +225,21 @@ static void cs4272_initialize_fullduplex_addr(uint_fast8_t tg, , uint_fast8_t ma
 		//0x08 |	// MUTE A
 		0);
 #endif
+
+#if ! CODEC_TYPE_CS4272_USE_SPI
+	{
+		const uint_fast8_t chip_id = cs4272_getreg(tg, CHIP_ID);
+		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, chip_id=0x%02X\n", (int) tg, (unsigned) chip_id);
+
+//	    cs4272_setreg(tg, DAC_VOLUME_A, 0x55);	// set attenuation
+//		const uint_fast8_t volume_a1 = cs4272_getreg(tg, DAC_VOLUME_A);
+//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a1=0x%02X\n", (int) tg, (unsigned) volume_a1);
+//
+//	    cs4272_setreg(tg, DAC_VOLUME_A, 0xAA);	// set attenuation
+//		const uint_fast8_t volume_a2 = cs4272_getreg(tg, DAC_VOLUME_A);
+//		PRINTF("cs4272_initialize_fullduplex_addr: tg=%d, volume_a2=0x%02X\n", (int) tg, (unsigned) volume_a2);
+	}
+#endif /* ! CODEC_TYPE_CS4272_USE_SPI */
 }
 
 
@@ -234,6 +255,8 @@ static uint_fast8_t cs4272_clocksneed(void)
 	return 1;
 }
 
+#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)
+
 const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
@@ -244,6 +267,62 @@ const codec2if_t * board_getfpgacodecif(void)
 		cs4272_clocksneed
 		cs4272_initialize_fullduplex,
 		codecname
+	};
+
+	return & ifc;
+}
+
+#endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272) */
+
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)
+
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t nau8822_clocksneed(void)
+{
+	return 1;
+}
+
+static void cs4272_stop(void)
+{
+}
+
+
+/* Установка громкости на наушники */
+static void cs4272_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
+{
+}
+
+
+/* Выбор LINE IN как источника для АЦП вместо микрофона */
+static void cs4272_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+{
+}
+
+
+/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+static void cs4272_setprocparams(
+	uint_fast8_t procenable,		/* включение обработки */
+	const uint_fast8_t * gains		/* массив с параметрами */
+	)
+{
+}
+
+const codec1if_t *
+board_getaudiocodecif(void)
+{
+
+	static const char codecname [] = "CS4272";
+
+	/* Интерфейс управления кодеком */
+	static const codec1if_t ifc =
+	{
+		cs4272_clocksneed,
+		cs4272_stop,
+		cs4272_initialize_fullduplex,
+		cs4272_setvolume,		/* Установка громкости на наушники */
+		cs4272_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
+		cs4272_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+		codecname				/* Название кодека (всегда последний элемент в структуре) */
 	};
 
 	return & ifc;

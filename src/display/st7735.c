@@ -466,16 +466,6 @@ st7735_pix8smooth(
 	return prev;
 }
 
-/*
-static void 
-ZZZst7735_pix8(
-	uint_fast8_t v
-	)
-{
-	prog_spi_send_frame(targetlcd, (* byte2run) [v], sizeof (* byte2run) [v]);
-}
-*/
-
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
 static xholder_t
 st7735_put_char_small(xholder_t xpix, char cc)

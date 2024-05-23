@@ -36,7 +36,7 @@ void cs42l51_setreg(
 		uint8_t txbuf [2];
 
 		USBD_poke_u16_BE(txbuf, fulldata);
-		prog_spi_io(target, SPIC_SPEEDFAST, CS42L51_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0);
+		prog_spi_io(target, SPIC_SPEEDFAST, CS42L51_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0);
 
 	#elif WITHSPIEXT16
 

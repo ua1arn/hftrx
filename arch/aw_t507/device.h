@@ -143,16 +143,16 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
-#define DE_XX0_BASE ((uintptr_t) 0x01000000)          /*!< DE_XX  Base */
-#define DE_XX1_BASE ((uintptr_t) 0x01001000)          /*!< DE_XX  Base */
-#define DE_XX2_BASE ((uintptr_t) 0x01002000)          /*!< DE_XX  Base */
-#define DE_XX3_BASE ((uintptr_t) 0x01003000)          /*!< DE_XX  Base */
 #define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
 #define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DEb_GLB_BASE ((uintptr_t) 0x01008140)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define RTWB_RCQ_BASE ((uintptr_t) 0x01008200)        /*!< RTWB_RCQ  Base */
 #define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC_BASE ((uintptr_t) 0x01111400)          /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS_BASE ((uintptr_t) 0x01114000)          /*!< DE_DNS Denoise (DNS) Base */
 #define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
@@ -163,7 +163,10 @@ typedef enum IRQn
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
-#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 Base */
+#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Panfrost) Base */
+#define GPU_CONTROL_BASE ((uintptr_t) 0x01800000)     /*!< GPU_CONTROL  Base */
+#define GPU_JOB_CONTROL_BASE ((uintptr_t) 0x01801000) /*!< GPU_JOB_CONTROL  Base */
+#define GPU_MMU_BASE ((uintptr_t) 0x01802000)         /*!< GPU_MMU  Base */
 #define CE_NS_BASE ((uintptr_t) 0x01904000)           /*!< CE The Crypto Engine (CE) module Base */
 #define CE_S_BASE ((uintptr_t) 0x01904800)            /*!< CE The Crypto Engine (CE) module Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
@@ -772,6 +775,26 @@ typedef struct DE_BLS_Type
     volatile uint32_t BLS_GAINLUT_REG [0x004];        /*!< Offset 0x030 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3) */
 } DE_BLS_TypeDef; /* size of structure = 0x040 */
 /*
+ * @brief DE_DNS
+ */
+/*!< DE_DNS Denoise (DNS) */
+typedef struct DE_DNS_Type
+{
+    volatile uint32_t DNS_CTL;                        /*!< Offset 0x000 DNS module control register */
+    volatile uint32_t DNS_SIZE;                       /*!< Offset 0x004 DNS size register */
+} DE_DNS_TypeDef; /* size of structure = 0x008 */
+/*
+ * @brief DE_FCC
+ */
+/*!< DE_FCC Fancy color curvature (FCC) */
+typedef struct DE_FCC_Type
+{
+    volatile uint32_t FCC_CTL_REG;                    /*!< Offset 0x000 FCC Control Register */
+    volatile uint32_t FCC_INPUT_SIZE_REG;             /*!< Offset 0x004 FCC Input Size Register */
+    volatile uint32_t FCC_OUTPUT_WIN0_REG;            /*!< Offset 0x008 FCC Output Window0 Register */
+    volatile uint32_t FCC_OUTPUT_WIN1_REG;            /*!< Offset 0x00C FCC Output Window1 Register */
+} DE_FCC_TypeDef; /* size of structure = 0x010 */
+/*
  * @brief DE_FCE
  */
 /*!< DE_FCE Fresh and Contrast Enhancement (FCE) */
@@ -821,7 +844,8 @@ typedef struct DE_GLB_Type
     volatile uint32_t GLB_SIZE;                       /*!< Offset 0x008 Global size register */
     volatile uint32_t GLB_CLK;                        /*!< Offset 0x00C Global clock register */
     volatile uint32_t GLB_DBUFFER;                    /*!< Offset 0x010 Global double buffer control register */
-} DE_GLB_TypeDef; /* size of structure = 0x014 */
+             uint32_t reserved_0x014 [0x000B];
+} DE_GLB_TypeDef; /* size of structure = 0x040 */
 /*
  * @brief DE_TOP
  */
@@ -830,15 +854,17 @@ typedef struct DE_TOP_Type
 {
     volatile uint32_t DE_SCLK_GATE;                   /*!< Offset 0x000 DE SCLK Gating Register */
     volatile uint32_t DE_HCLK_GATE;                   /*!< Offset 0x004 DE HCLK Gating Register */
-    volatile uint32_t DE_AHB_RESET;                   /*!< Offset 0x008 DE AHB Reset Register */
-    volatile uint32_t DE_SCLK_DIV;                    /*!< Offset 0x00C DE SCLK Division Register */
-    volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 DE MUX Register */
-    volatile uint32_t DE_CMD;                         /*!< Offset 0x014 DE CMD Register */
-             uint32_t reserved_0x018;
-    volatile uint32_t DE_BIST_CTL;                    /*!< Offset 0x01C DE Bist Control Register */
-             uint32_t reserved_0x020;
-    volatile uint32_t DE_IP_CFG;                      /*!< Offset 0x024 DE IP Configure Register */
-} DE_TOP_TypeDef; /* size of structure = 0x028 */
+    volatile uint32_t DE_AHB_RESET;                   /*!< Offset 0x008 DE AHB Reset Register DE_MBUS_CLOCK_ADDR */
+    volatile uint32_t DE_SCLK_DIV;                    /*!< Offset 0x00C DE SCLK Division Register  */
+    volatile uint32_t DE2TCON_MUX;                    /*!< Offset 0x010 DE MUX Register DE2TCON_MUX_OFFSET */
+    volatile uint32_t DE_VER_CTL;                     /*!< Offset 0x014 DE_VER_CTL_OFFSET */
+             uint32_t reserved_0x018 [0x0002];
+    volatile uint32_t DE_RTWB_MUX;                    /*!< Offset 0x020 DE_RTWB_MUX_OFFSET */
+    volatile uint32_t DE_CHN2CORE_MUX;                /*!< Offset 0x024 DE_CHN2CORE_MUX_OFFSET */
+    volatile uint32_t DE_PORT2CHN_MUX [0x004];        /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
+             uint32_t reserved_0x038 [0x002A];
+    volatile uint32_t DE_DEBUG_CTL;                   /*!< Offset 0x0E0 DE_DEBUG_CTL_OFFSET */
+} DE_TOP_TypeDef; /* size of structure = 0x0E4 */
 /*
  * @brief DE_UI
  */
@@ -879,7 +905,8 @@ typedef struct DE_VI_Type
     volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
     volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
     volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x0E8 OVL_V overlay window size register */
+             uint32_t reserved_0x0EC;
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
              uint32_t reserved_0x100 [0x0080];
@@ -939,19 +966,6 @@ typedef struct DE_VSU_Type
              uint32_t reserved_0x780 [0x0020];
     volatile uint32_t VSU_C_VCOEF_REGN [0x020];       /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
 } DE_VSU_TypeDef; /* size of structure = 0x880 */
-/*
- * @brief DE_XX
- */
-/*!< DE_XX  */
-typedef struct DE_XX_Type
-{
-             uint32_t reserved_0x000 [0x0039];
-    volatile uint32_t ADDR [0x003];                   /*!< Offset 0x0E4 какое-то поле 32 бит */
-    volatile uint32_t FLAGS;                          /*!< Offset 0x0F0 какое-то поле с работающими битами 0x00030010 (17, 16, 4) */
-    volatile uint32_t VALUE1;                         /*!< Offset 0x0F4 какое-то поле 32 бит */
-    volatile uint32_t FLAGS2;                         /*!< Offset 0x0F8 какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2) */
-    volatile uint32_t VALUE2;                         /*!< Offset 0x0FC какое-то поле 32 бит */
-} DE_XX_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DISP_IF_TOP
  */
@@ -1215,6 +1229,169 @@ typedef struct GPIOINT_Type
     volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief GPU_CONTROL
+ */
+/*!< GPU_CONTROL  */
+typedef struct GPU_CONTROL_Type
+{
+    volatile uint32_t GPU_ID;                         /*!< Offset 0x000 (RO) GPU and revision identifier */
+    volatile uint32_t L2_FEATURES;                    /*!< Offset 0x004 (RO) Level 2 cache features */
+             uint32_t reserved_0x008;
+    volatile uint32_t TILER_FEATURES;                 /*!< Offset 0x00C (RO) Tiler Features */
+    volatile uint32_t MEM_FEATURES;                   /*!< Offset 0x010 (RO) Memory system features */
+    volatile uint32_t MMU_FEATURES;                   /*!< Offset 0x014 (RO) MMU features */
+    volatile uint32_t AS_PRESENT;                     /*!< Offset 0x018 (RO) Address space slots present */
+             uint32_t reserved_0x01C;
+    volatile uint32_t GPU_IRQ_RAWSTAT;                /*!< Offset 0x020 (RW) */
+    volatile uint32_t GPU_IRQ_CLEAR;                  /*!< Offset 0x024 (WO) */
+    volatile uint32_t GPU_IRQ_MASK;                   /*!< Offset 0x028 (RW) */
+    volatile uint32_t GPU_IRQ_STATUS;                 /*!< Offset 0x02C (RO) */
+    volatile uint32_t GPU_COMMAND;                    /*!< Offset 0x030 (WO) */
+    volatile uint32_t GPU_STATUS;                     /*!< Offset 0x034 (RO) */
+             uint32_t reserved_0x038;
+    volatile uint32_t GPU_FAULTSTATUS;                /*!< Offset 0x03C (RO) GPU exception type and fault status */
+    volatile uint32_t GPU_FAULTADDRESS_LO;            /*!< Offset 0x040 (RO) GPU exception fault address, low word */
+    volatile uint32_t GPU_FAULTADDRESS_HI;            /*!< Offset 0x044 (RO) GPU exception fault address, high word */
+    volatile uint32_t L2_CONFIG;                      /*!< Offset 0x048 (RW) Level 2 cache configuration */
+             uint32_t reserved_0x04C;
+    volatile uint32_t PWR_KEY;                        /*!< Offset 0x050 (WO) Power manager key register */
+    volatile uint32_t PWR_OVERRIDE0;                  /*!< Offset 0x054 (RW) Power manager override settings */
+    volatile uint32_t PWR_OVERRIDE1;                  /*!< Offset 0x058 (RW) Power manager override settings */
+             uint32_t reserved_0x05C [0x000D];
+    volatile uint32_t CYCLE_COUNT_LO;                 /*!< Offset 0x090 (RO) Cycle counter, low word */
+    volatile uint32_t CYCLE_COUNT_HI;                 /*!< Offset 0x094 (RO) Cycle counter, high word */
+    volatile uint32_t TIMESTAMP_LO;                   /*!< Offset 0x098 (RO) Global time stamp counter, low word */
+    volatile uint32_t TIMESTAMP_HI;                   /*!< Offset 0x09C (RO) Global time stamp counter, high word */
+    volatile uint32_t THREAD_MAX_THREADS;             /*!< Offset 0x0A0 (RO) Maximum number of threads per core */
+    volatile uint32_t THREAD_MAX_WORKGROUP_SIZE;      /*!< Offset 0x0A4 (RO) Maximum workgroup size */
+    volatile uint32_t THREAD_MAX_BARRIER_SIZE;        /*!< Offset 0x0A8 (RO) Maximum threads waiting at a barrier */
+    volatile uint32_t THREAD_FEATURES;                /*!< Offset 0x0AC (RO) Thread features */
+    volatile uint32_t TEXTURE_FEATURES_0;             /*!< Offset 0x0B0 (RO) Support flags for indexed texture formats 0..31 */
+    volatile uint32_t TEXTURE_FEATURES_1;             /*!< Offset 0x0B4 (RO) Support flags for indexed texture formats 32..63 */
+    volatile uint32_t TEXTURE_FEATURES_2;             /*!< Offset 0x0B8 (RO) Support flags for indexed texture formats 64..95 */
+    volatile uint32_t TEXTURE_FEATURES_3;             /*!< Offset 0x0BC (RO) Support flags for texture order */
+             uint32_t reserved_0x0C0 [0x0010];
+    volatile uint32_t SHADER_PRESENT_LO;              /*!< Offset 0x100 (RO) Shader core present bitmap, low word */
+    volatile uint32_t SHADER_PRESENT_HI;              /*!< Offset 0x104 (RO) Shader core present bitmap, high word */
+             uint32_t reserved_0x108 [0x0002];
+    volatile uint32_t TILER_PRESENT_LO;               /*!< Offset 0x110 (RO) Tiler core present bitmap, low word */
+    volatile uint32_t TILER_PRESENT_HI;               /*!< Offset 0x114 (RO) Tiler core present bitmap, high word */
+             uint32_t reserved_0x118 [0x0002];
+    volatile uint32_t L2_PRESENT_LO;                  /*!< Offset 0x120 (RO) Level 2 cache present bitmap, low word */
+    volatile uint32_t L2_PRESENT_HI;                  /*!< Offset 0x124 (RO) Level 2 cache present bitmap, high word */
+             uint32_t reserved_0x128 [0x0006];
+    volatile uint32_t SHADER_READY_LO;                /*!< Offset 0x140 (RO) Shader core ready bitmap, low word */
+    volatile uint32_t SHADER_READY_HI;                /*!< Offset 0x144 (RO) Shader core ready bitmap, high word */
+             uint32_t reserved_0x148 [0x0002];
+    volatile uint32_t TILER_READY_LO;                 /*!< Offset 0x150 (RO) Tiler core ready bitmap, low word */
+    volatile uint32_t TILER_READY_HI;                 /*!< Offset 0x154 (RO) Tiler core ready bitmap, high word */
+             uint32_t reserved_0x158 [0x0002];
+    volatile uint32_t L2_READY_LO;                    /*!< Offset 0x160 (RO) Level 2 cache ready bitmap, low word */
+    volatile uint32_t L2_READY_HI;                    /*!< Offset 0x164 (RO) Level 2 cache ready bitmap, high word */
+             uint32_t reserved_0x168 [0x0006];
+    volatile uint32_t SHADER_PWRON_LO;                /*!< Offset 0x180 (WO) Shader core power on bitmap, low word */
+    volatile uint32_t SHADER_PWRON_HI;                /*!< Offset 0x184 (WO) Shader core power on bitmap, high word */
+             uint32_t reserved_0x188 [0x0002];
+    volatile uint32_t TILER_PWRON_LO;                 /*!< Offset 0x190 (WO) Tiler core power on bitmap, low word */
+    volatile uint32_t TILER_PWRON_HI;                 /*!< Offset 0x194 (WO) Tiler core power on bitmap, high word */
+             uint32_t reserved_0x198 [0x0002];
+    volatile uint32_t L2_PWRON_LO;                    /*!< Offset 0x1A0 (WO) Level 2 cache power on bitmap, low word */
+    volatile uint32_t L2_PWRON_HI;                    /*!< Offset 0x1A4 (WO) Level 2 cache power on bitmap, high word */
+             uint32_t reserved_0x1A8 [0x0006];
+    volatile uint32_t SHADER_PWROFF_LO;               /*!< Offset 0x1C0 (WO) Shader core power off bitmap, low word */
+    volatile uint32_t SHADER_PWROFF_HI;               /*!< Offset 0x1C4 (WO) Shader core power off bitmap, high word */
+             uint32_t reserved_0x1C8 [0x0002];
+    volatile uint32_t TILER_PWROFF_LO;                /*!< Offset 0x1D0 (WO) Tiler core power off bitmap, low word */
+    volatile uint32_t TILER_PWROFF_HI;                /*!< Offset 0x1D4 (WO) Tiler core power off bitmap, high word */
+             uint32_t reserved_0x1D8 [0x0002];
+    volatile uint32_t L2_PWROFF_LO;                   /*!< Offset 0x1E0 (WO) Level 2 cache power off bitmap, low word */
+    volatile uint32_t L2_PWROFF_HI;                   /*!< Offset 0x1E4 (WO) Level 2 cache power off bitmap, high word */
+             uint32_t reserved_0x1E8 [0x0006];
+    volatile uint32_t SHADER_PWRTRANS_LO;             /*!< Offset 0x200 (RO) Shader core power transition bitmap, low word */
+    volatile uint32_t SHADER_PWRTRANS_HI;             /*!< Offset 0x204 (RO) Shader core power transition bitmap, high word */
+             uint32_t reserved_0x208 [0x0002];
+    volatile uint32_t TILER_PWRTRANS_LO;              /*!< Offset 0x210 (RO) Tiler core power transition bitmap, low word */
+    volatile uint32_t TILER_PWRTRANS_HI;              /*!< Offset 0x214 (RO) Tiler core power transition bitmap, high word */
+             uint32_t reserved_0x218 [0x0002];
+    volatile uint32_t L2_PWRTRANS_LO;                 /*!< Offset 0x220 (RO) Level 2 cache power transition bitmap, low word */
+    volatile uint32_t L2_PWRTRANS_HI;                 /*!< Offset 0x224 (RO) Level 2 cache power transition bitmap, high word */
+             uint32_t reserved_0x228 [0x0006];
+    volatile uint32_t SHADER_PWRACTIVE_LO;            /*!< Offset 0x240 (RO) Shader core active bitmap, low word */
+    volatile uint32_t SHADER_PWRACTIVE_HI;            /*!< Offset 0x244 (RO) Shader core active bitmap, high word */
+             uint32_t reserved_0x248 [0x0002];
+    volatile uint32_t TILER_PWRACTIVE_LO;             /*!< Offset 0x250 (RO) Tiler core active bitmap, low word */
+    volatile uint32_t TILER_PWRACTIVE_HI;             /*!< Offset 0x254 (RO) Tiler core active bitmap, high word */
+             uint32_t reserved_0x258 [0x0002];
+    volatile uint32_t L2_PWRACTIVE_LO;                /*!< Offset 0x260 (RO) Level 2 cache active bitmap, low word */
+    volatile uint32_t L2_PWRACTIVE_HI;                /*!< Offset 0x264 (RO) Level 2 cache active bitmap, high word */
+             uint32_t reserved_0x268 [0x0026];
+    volatile uint32_t COHERENCY_FEATURES;             /*!< Offset 0x300 (RO) Coherency features present */
+    volatile uint32_t COHERENCY_ENABLE;               /*!< Offset 0x304 (RW) Coherency enable */
+             uint32_t reserved_0x308 [0x0002];
+    volatile uint32_t THREAD_TLS_ALLOC;               /*!< Offset 0x310 (RO) Number of threads per core that TLS must be allocated for */
+             uint32_t reserved_0x314 [0x02BB];
+    volatile uint32_t STACK_PRESENT_LO;               /*!< Offset 0xE00 (RO) Core stack present bitmap, low word */
+    volatile uint32_t STACK_PRESENT_HI;               /*!< Offset 0xE04 (RO) Core stack present bitmap, high word */
+             uint32_t reserved_0xE08 [0x0002];
+    volatile uint32_t STACK_READY_LO;                 /*!< Offset 0xE10 (RO) Core stack ready bitmap, low word */
+    volatile uint32_t STACK_READY_HI;                 /*!< Offset 0xE14 (RO) Core stack ready bitmap, high word */
+             uint32_t reserved_0xE18 [0x0002];
+    volatile uint32_t STACK_PWRON_LO;                 /*!< Offset 0xE20 (RO) Core stack power on bitmap, low word */
+    volatile uint32_t STACK_PWRON_HI;                 /*!< Offset 0xE24 (RO) Core stack power on bitmap, high word */
+             uint32_t reserved_0xE28 [0x0002];
+    volatile uint32_t STACK_PWROFF_LO;                /*!< Offset 0xE30 (RO) Core stack power off bitmap, low word */
+    volatile uint32_t STACK_PWROFF_HI;                /*!< Offset 0xE34 (RO) Core stack power off bitmap, high word */
+             uint32_t reserved_0xE38 [0x0002];
+    volatile uint32_t STACK_PWRTRANS_LO;              /*!< Offset 0xE40 (RO) Core stack power transition bitmap, low word */
+    volatile uint32_t STACK_PWRTRANS_HI;              /*!< Offset 0xE44 (RO) Core stack power transition bitmap, high word */
+             uint32_t reserved_0xE48 [0x002F];
+    volatile uint32_t SHADER_CONFIG;                  /*!< Offset 0xF04 (RW) Shader core configuration (implementation-specific) */
+    volatile uint32_t TILER_CONFIG;                   /*!< Offset 0xF08 (RW) Tiler core configuration (implementation-specific) */
+    volatile uint32_t L2_MMU_CONFIG;                  /*!< Offset 0xF0C (RW) L2 cache and MMU configuration (implementation-specific) */
+} GPU_CONTROL_TypeDef; /* size of structure = 0xF10 */
+/*
+ * @brief GPU_JOB_CONTROL
+ */
+/*!< GPU_JOB_CONTROL  */
+typedef struct GPU_JOB_CONTROL_Type
+{
+    volatile uint32_t JOB_IRQ_RAWSTAT;                /*!< Offset 0x000 Raw interrupt status register */
+    volatile uint32_t JOB_IRQ_CLEAR;                  /*!< Offset 0x004 Interrupt clear register */
+    volatile uint32_t JOB_IRQ_MASK;                   /*!< Offset 0x008 Interrupt mask register */
+    volatile uint32_t JOB_IRQ_STATUS;                 /*!< Offset 0x00C Interrupt status register */
+} GPU_JOB_CONTROL_TypeDef; /* size of structure = 0x010 */
+/*
+ * @brief GPU_MMU
+ */
+/*!< GPU_MMU  */
+typedef struct GPU_MMU_Type
+{
+    volatile uint32_t MMU_IRQ_RAWSTAT;                /*!< Offset 0x000 (RW) Raw interrupt status register */
+    volatile uint32_t MMU_IRQ_CLEAR;                  /*!< Offset 0x004 (WO) Interrupt clear register */
+    volatile uint32_t MMU_IRQ_MASK;                   /*!< Offset 0x008 (RW) Interrupt mask register */
+    volatile uint32_t MMU_IRQ_STATUS;                 /*!< Offset 0x00C (RO) Interrupt status register */
+             uint32_t reserved_0x010 [0x003C];
+    struct
+    {
+        volatile uint32_t AS_TRANSTAB_LO;             /*!< Offset 0x100 (RW) Translation Table Base Address for address space n, low word */
+        volatile uint32_t AS_TRANSTAB_HI;             /*!< Offset 0x104 (RW) Translation Table Base Address for address space n, high word */
+        volatile uint32_t AS_MEMATTR_LO;              /*!< Offset 0x108 (RW) Memory attributes for address space n, low word. */
+        volatile uint32_t AS_MEMATTR_HI;              /*!< Offset 0x10C (RW) Memory attributes for address space n, high word. */
+        volatile uint32_t AS_LOCKADDR_LO;             /*!< Offset 0x110 (RW) Lock region address for address space n, low word */
+        volatile uint32_t AS_LOCKADDR_HI;             /*!< Offset 0x114 (RW) Lock region address for address space n, high word */
+        volatile uint32_t AS_COMMAND;                 /*!< Offset 0x118 (WO) MMU command register for address space n */
+        volatile uint32_t AS_FAULTSTATUS;             /*!< Offset 0x11C (RO) MMU fault status register for address space n */
+        volatile uint32_t AS_FAULTADDRESS_LO;         /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
+        volatile uint32_t AS_FAULTADDRESS_HI;         /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
+        volatile uint32_t AS_STATUS;                  /*!< Offset 0x128 (RO) Status flags for address space n */
+                 uint32_t reserved_0x02C;
+        volatile uint32_t AS_TRANSCFG_LO;             /*!< Offset 0x130 (RW) Translation table configuration for address space n, low word */
+        volatile uint32_t AS_TRANSCFG_HI;             /*!< Offset 0x134 (RW) Translation table configuration for address space n, high word */
+        volatile uint32_t AS_FAULTEXTRA_LO;           /*!< Offset 0x138 (RO) Secondary fault address for address space n, low word */
+        volatile uint32_t AS_FAULTEXTRA_HI;           /*!< Offset 0x13C (RO) Secondary fault address for address space n, high word */
+    } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
+} GPU_MMU_TypeDef; /* size of structure = 0x500 */
 /*
  * @brief I2S_PCM
  */
@@ -1536,6 +1713,17 @@ typedef struct RTC_Type
     volatile uint32_t CRY_EN_REG;                     /*!< Offset 0x218 Crypt Enable Register */
              uint32_t reserved_0x21C [0x0079];
 } RTC_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief RTWB_RCQ
+ */
+/*!< RTWB_RCQ  */
+typedef struct RTWB_RCQ_Type
+{
+    volatile uint32_t RTWB_RCQ_IRQ;                   /*!< Offset 0x000 RTWB_RCQ_IRQ_OFFSET          (0x8200) */
+    volatile uint32_t RTWB_RCQ_STS;                   /*!< Offset 0x004 RTWB_RCQ_STS_OFFSET          (0x8204) */
+             uint32_t reserved_0x008 [0x0002];
+    volatile uint32_t RTWB_RCQ_CTL;                   /*!< Offset 0x010 RTWB_RCQ_CTL_OFFSET          (0x8210) */
+} RTWB_RCQ_TypeDef; /* size of structure = 0x014 */
 /*
  * @brief R_CAN
  */
@@ -2297,16 +2485,16 @@ typedef struct VE_Type
 
 /* Access pointers */
 
-#define DE_XX0 ((DE_XX_TypeDef *) DE_XX0_BASE)        /*!< DE_XX0  register set access pointer */
-#define DE_XX1 ((DE_XX_TypeDef *) DE_XX1_BASE)        /*!< DE_XX1  register set access pointer */
-#define DE_XX2 ((DE_XX_TypeDef *) DE_XX2_BASE)        /*!< DE_XX2  register set access pointer */
-#define DE_XX3 ((DE_XX_TypeDef *) DE_XX3_BASE)        /*!< DE_XX3  register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
 #define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
+#define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
 #define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS ((DE_BLS_TypeDef *) DE_BLS_BASE)       /*!< DE_BLS Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC ((DE_FCC_TypeDef *) DE_FCC_BASE)       /*!< DE_FCC Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS ((DE_DNS_TypeDef *) DE_DNS_BASE)       /*!< DE_DNS Denoise (DNS) register set access pointer */
 #define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
 #define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
@@ -2317,6 +2505,9 @@ typedef struct VE_Type
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
+#define GPU_CONTROL ((GPU_CONTROL_TypeDef *) GPU_CONTROL_BASE)/*!< GPU_CONTROL  register set access pointer */
+#define GPU_JOB_CONTROL ((GPU_JOB_CONTROL_TypeDef *) GPU_JOB_CONTROL_BASE)/*!< GPU_JOB_CONTROL  register set access pointer */
+#define GPU_MMU ((GPU_MMU_TypeDef *) GPU_MMU_BASE)    /*!< GPU_MMU  register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS The Crypto Engine (CE) module register set access pointer */
 #define CE_S ((CE_TypeDef *) CE_S_BASE)               /*!< CE_S The Crypto Engine (CE) module register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */

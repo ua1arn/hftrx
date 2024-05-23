@@ -373,9 +373,7 @@
 			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 			#define WITHLFM					1
 			#define WITHNMEA				1
-			#define WITHBUFFERSSMALLDEBUG	1
 			#define WITHGNSS				1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
-			#define WITHGNSS_1PPS			1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/
 		#endif
 	#endif
 

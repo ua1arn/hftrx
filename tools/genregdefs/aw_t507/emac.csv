@@ -1,7 +1,7 @@
 #type; EMAC; The Ethernet Medium Access Controller (EMAC) enables a host to transmi
 
 #base; EMAC0 0x05020000
-#base; EMAC1 0x05030000
+#base; EMAC1 0x05030000; H616: connected to the internal Ethernet PHY
 
 #irq; EMAC0 46
 #irq; EMAC1 47
@@ -35,5 +35,3 @@
 #regdef; EMAC_RGMII_STA; 0x00D0; EMAC RGMII Status Register
 #regdef; padding 0; 0x10000; set size
 #typeend;
-
-

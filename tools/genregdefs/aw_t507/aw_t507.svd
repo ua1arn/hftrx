@@ -2968,6 +2968,74 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>DE_DNS</name>
+  <description>Denoise (DNS)</description>
+  <baseAddress>0x01114000</baseAddress>
+  <registers>
+   <register>
+    <name>DNS_CTL</name>
+    <displayName>DNS_CTL</displayName>
+    <description>DNS module control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DNS_SIZE</name>
+    <displayName>DNS_SIZE</displayName>
+    <description>DNS size register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DE_FCC</name>
+  <description>Fancy color curvature (FCC)</description>
+  <baseAddress>0x01111400</baseAddress>
+  <registers>
+   <register>
+    <name>FCC_CTL_REG</name>
+    <displayName>FCC_CTL_REG</displayName>
+    <description>FCC Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCC_INPUT_SIZE_REG</name>
+    <displayName>FCC_INPUT_SIZE_REG</displayName>
+    <description>FCC Input Size Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCC_OUTPUT_WIN0_REG</name>
+    <displayName>FCC_OUTPUT_WIN0_REG</displayName>
+    <description>FCC Output Window0 Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCC_OUTPUT_WIN1_REG</name>
+    <displayName>FCC_OUTPUT_WIN1_REG</displayName>
+    <description>FCC Output Window1 Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DE_FCE</name>
   <description>Fresh and Contrast Enhancement (FCE)</description>
   <baseAddress>0x01110000</baseAddress>
@@ -3306,6 +3374,10 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_GLB">
+  <name>DEb_GLB</name>
+  <baseAddress>0x01008140</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_TOP</name>
   <description>Display Engine (DE) TOP (APB)</description>
@@ -3337,7 +3409,7 @@
    <register>
     <name>DE_AHB_RESET</name>
     <displayName>DE_AHB_RESET</displayName>
-    <description>DE AHB Reset Register</description>
+    <description>DE AHB Reset Register DE_MBUS_CLOCK_ADDR</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3346,7 +3418,7 @@
    <register>
     <name>DE_SCLK_DIV</name>
     <displayName>DE_SCLK_DIV</displayName>
-    <description>DE SCLK Division Register</description>
+    <description>DE SCLK Division Register </description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3355,35 +3427,58 @@
    <register>
     <name>DE2TCON_MUX</name>
     <displayName>DE2TCON_MUX</displayName>
-    <description>DE MUX Register</description>
+    <description>DE MUX Register DE2TCON_MUX_OFFSET</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_CMD</name>
-    <displayName>DE_CMD</displayName>
-    <description>DE CMD Register</description>
+    <name>DE_VER_CTL</name>
+    <displayName>DE_VER_CTL</displayName>
+    <description>DE_VER_CTL_OFFSET</description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_BIST_CTL</name>
-    <displayName>DE_BIST_CTL</displayName>
-    <description>DE Bist Control Register</description>
-    <addressOffset>0x01C</addressOffset>
+    <name>DE_RTWB_MUX</name>
+    <displayName>DE_RTWB_MUX</displayName>
+    <description>DE_RTWB_MUX_OFFSET</description>
+    <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_IP_CFG</name>
-    <displayName>DE_IP_CFG</displayName>
-    <description>DE IP Configure Register</description>
+    <name>DE_CHN2CORE_MUX</name>
+    <displayName>DE_CHN2CORE_MUX</displayName>
+    <description>DE_CHN2CORE_MUX_OFFSET</description>
     <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000028</addressOffset>
+    <register>
+     <name>DE_PORT2CHN_MUX</name>
+     <displayName>DE_PORT2CHN_MUX</displayName>
+     <description>DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>DE_DEBUG_CTL</name>
+    <displayName>DE_DEBUG_CTL</displayName>
+    <description>DE_DEBUG_CTL_OFFSET</description>
+    <addressOffset>0x0E0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -3625,20 +3720,15 @@
     </register>
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
-   <cluster>
-    <dim>2</dim>
-    <addressOffset>0x000000E8</addressOffset>
-    <register>
-     <name>OVL_SIZE</name>
-     <displayName>OVL_SIZE</displayName>
-     <description>OVL_V overlay window size register</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x008</dimIncrement>
-   </cluster>
+   <register>
+    <name>OVL_SIZE</name>
+    <displayName>OVL_SIZE</displayName>
+    <description>OVL_V overlay window size register</description>
+    <addressOffset>0x0E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <cluster>
     <dim>2</dim>
     <addressOffset>0x000000F0</addressOffset>
@@ -4010,75 +4100,6 @@
     <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
-  </peripheral>
-  <peripheral>
-  <name>DE_XX0</name>
-  <description></description>
-  <baseAddress>0x01000000</baseAddress>
-  <registers>
-   <cluster>
-    <dim>3</dim>
-    <addressOffset>0x000000E4</addressOffset>
-    <register>
-     <name>ADDR</name>
-     <displayName>ADDR</displayName>
-     <description>какое-то поле 32 бит</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x00C</dimIncrement>
-   </cluster>
-   <register>
-    <name>FLAGS</name>
-    <displayName>FLAGS</displayName>
-    <description>какое-то поле с работающими битами 0x00030010 (17, 16, 4)</description>
-    <addressOffset>0x0F0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>VALUE1</name>
-    <displayName>VALUE1</displayName>
-    <description>какое-то поле 32 бит</description>
-    <addressOffset>0x0F4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>FLAGS2</name>
-    <displayName>FLAGS2</displayName>
-    <description>какое-то поле с работающими битами 0x000083FC (15, 9,8, 7..2)</description>
-    <addressOffset>0x0F8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>VALUE2</name>
-    <displayName>VALUE2</displayName>
-    <description>какое-то поле 32 бит</description>
-    <addressOffset>0x0FC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral derivedFrom="DE_XX0">
-  <name>DE_XX1</name>
-  <baseAddress>0x01001000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="DE_XX0">
-  <name>DE_XX2</name>
-  <baseAddress>0x01002000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="DE_XX0">
-  <name>DE_XX3</name>
-  <baseAddress>0x01003000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DISP_IF_TOP</name>
@@ -5855,6 +5876,988 @@
    <value>89</value>
    <description></description>
   </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>GPU_CONTROL</name>
+  <description></description>
+  <baseAddress>0x01800000</baseAddress>
+  <registers>
+   <register>
+    <name>GPU_ID</name>
+    <displayName>GPU_ID</displayName>
+    <description>(RO) GPU and revision identifier</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_FEATURES</name>
+    <displayName>L2_FEATURES</displayName>
+    <description>(RO) Level 2 cache features</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_FEATURES</name>
+    <displayName>TILER_FEATURES</displayName>
+    <description>(RO) Tiler Features</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MEM_FEATURES</name>
+    <displayName>MEM_FEATURES</displayName>
+    <description>(RO) Memory system features</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_FEATURES</name>
+    <displayName>MMU_FEATURES</displayName>
+    <description>(RO) MMU features</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AS_PRESENT</name>
+    <displayName>AS_PRESENT</displayName>
+    <description>(RO) Address space slots present</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_IRQ_RAWSTAT</name>
+    <displayName>GPU_IRQ_RAWSTAT</displayName>
+    <description>(RW)</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_IRQ_CLEAR</name>
+    <displayName>GPU_IRQ_CLEAR</displayName>
+    <description>(WO)</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_IRQ_MASK</name>
+    <displayName>GPU_IRQ_MASK</displayName>
+    <description>(RW)</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_IRQ_STATUS</name>
+    <displayName>GPU_IRQ_STATUS</displayName>
+    <description>(RO)</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_COMMAND</name>
+    <displayName>GPU_COMMAND</displayName>
+    <description>(WO)</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_STATUS</name>
+    <displayName>GPU_STATUS</displayName>
+    <description>(RO)</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_FAULTSTATUS</name>
+    <displayName>GPU_FAULTSTATUS</displayName>
+    <description>(RO) GPU exception type and fault status</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_FAULTADDRESS_LO</name>
+    <displayName>GPU_FAULTADDRESS_LO</displayName>
+    <description>(RO) GPU exception fault address, low word</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU_FAULTADDRESS_HI</name>
+    <displayName>GPU_FAULTADDRESS_HI</displayName>
+    <description>(RO) GPU exception fault address, high word</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_CONFIG</name>
+    <displayName>L2_CONFIG</displayName>
+    <description>(RW) Level 2 cache configuration</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PWR_KEY</name>
+    <displayName>PWR_KEY</displayName>
+    <description>(WO) Power manager key register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PWR_OVERRIDE0</name>
+    <displayName>PWR_OVERRIDE0</displayName>
+    <description>(RW) Power manager override settings</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PWR_OVERRIDE1</name>
+    <displayName>PWR_OVERRIDE1</displayName>
+    <description>(RW) Power manager override settings</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CYCLE_COUNT_LO</name>
+    <displayName>CYCLE_COUNT_LO</displayName>
+    <description>(RO) Cycle counter, low word</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CYCLE_COUNT_HI</name>
+    <displayName>CYCLE_COUNT_HI</displayName>
+    <description>(RO) Cycle counter, high word</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMESTAMP_LO</name>
+    <displayName>TIMESTAMP_LO</displayName>
+    <description>(RO) Global time stamp counter, low word</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMESTAMP_HI</name>
+    <displayName>TIMESTAMP_HI</displayName>
+    <description>(RO) Global time stamp counter, high word</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>THREAD_MAX_THREADS</name>
+    <displayName>THREAD_MAX_THREADS</displayName>
+    <description>(RO) Maximum number of threads per core</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>THREAD_MAX_WORKGROUP_SIZE</name>
+    <displayName>THREAD_MAX_WORKGROUP_SIZE</displayName>
+    <description>(RO) Maximum workgroup size</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>THREAD_MAX_BARRIER_SIZE</name>
+    <displayName>THREAD_MAX_BARRIER_SIZE</displayName>
+    <description>(RO) Maximum threads waiting at a barrier</description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>THREAD_FEATURES</name>
+    <displayName>THREAD_FEATURES</displayName>
+    <description>(RO) Thread features</description>
+    <addressOffset>0x0AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TEXTURE_FEATURES_0</name>
+    <displayName>TEXTURE_FEATURES_0</displayName>
+    <description>(RO) Support flags for indexed texture formats 0..31</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TEXTURE_FEATURES_1</name>
+    <displayName>TEXTURE_FEATURES_1</displayName>
+    <description>(RO) Support flags for indexed texture formats 32..63</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TEXTURE_FEATURES_2</name>
+    <displayName>TEXTURE_FEATURES_2</displayName>
+    <description>(RO) Support flags for indexed texture formats 64..95</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TEXTURE_FEATURES_3</name>
+    <displayName>TEXTURE_FEATURES_3</displayName>
+    <description>(RO) Support flags for texture order</description>
+    <addressOffset>0x0BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PRESENT_LO</name>
+    <displayName>SHADER_PRESENT_LO</displayName>
+    <description>(RO) Shader core present bitmap, low word</description>
+    <addressOffset>0x100</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PRESENT_HI</name>
+    <displayName>SHADER_PRESENT_HI</displayName>
+    <description>(RO) Shader core present bitmap, high word</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PRESENT_LO</name>
+    <displayName>TILER_PRESENT_LO</displayName>
+    <description>(RO) Tiler core present bitmap, low word</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PRESENT_HI</name>
+    <displayName>TILER_PRESENT_HI</displayName>
+    <description>(RO) Tiler core present bitmap, high word</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PRESENT_LO</name>
+    <displayName>L2_PRESENT_LO</displayName>
+    <description>(RO) Level 2 cache present bitmap, low word</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PRESENT_HI</name>
+    <displayName>L2_PRESENT_HI</displayName>
+    <description>(RO) Level 2 cache present bitmap, high word</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_READY_LO</name>
+    <displayName>SHADER_READY_LO</displayName>
+    <description>(RO) Shader core ready bitmap, low word</description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_READY_HI</name>
+    <displayName>SHADER_READY_HI</displayName>
+    <description>(RO) Shader core ready bitmap, high word</description>
+    <addressOffset>0x144</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_READY_LO</name>
+    <displayName>TILER_READY_LO</displayName>
+    <description>(RO) Tiler core ready bitmap, low word</description>
+    <addressOffset>0x150</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_READY_HI</name>
+    <displayName>TILER_READY_HI</displayName>
+    <description>(RO) Tiler core ready bitmap, high word</description>
+    <addressOffset>0x154</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_READY_LO</name>
+    <displayName>L2_READY_LO</displayName>
+    <description>(RO) Level 2 cache ready bitmap, low word</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_READY_HI</name>
+    <displayName>L2_READY_HI</displayName>
+    <description>(RO) Level 2 cache ready bitmap, high word</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWRON_LO</name>
+    <displayName>SHADER_PWRON_LO</displayName>
+    <description>(WO) Shader core power on bitmap, low word</description>
+    <addressOffset>0x180</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWRON_HI</name>
+    <displayName>SHADER_PWRON_HI</displayName>
+    <description>(WO) Shader core power on bitmap, high word</description>
+    <addressOffset>0x184</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWRON_LO</name>
+    <displayName>TILER_PWRON_LO</displayName>
+    <description>(WO) Tiler core power on bitmap, low word</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWRON_HI</name>
+    <displayName>TILER_PWRON_HI</displayName>
+    <description>(WO) Tiler core power on bitmap, high word</description>
+    <addressOffset>0x194</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWRON_LO</name>
+    <displayName>L2_PWRON_LO</displayName>
+    <description>(WO) Level 2 cache power on bitmap, low word</description>
+    <addressOffset>0x1A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWRON_HI</name>
+    <displayName>L2_PWRON_HI</displayName>
+    <description>(WO) Level 2 cache power on bitmap, high word</description>
+    <addressOffset>0x1A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWROFF_LO</name>
+    <displayName>SHADER_PWROFF_LO</displayName>
+    <description>(WO) Shader core power off bitmap, low word</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWROFF_HI</name>
+    <displayName>SHADER_PWROFF_HI</displayName>
+    <description>(WO) Shader core power off bitmap, high word</description>
+    <addressOffset>0x1C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWROFF_LO</name>
+    <displayName>TILER_PWROFF_LO</displayName>
+    <description>(WO) Tiler core power off bitmap, low word</description>
+    <addressOffset>0x1D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWROFF_HI</name>
+    <displayName>TILER_PWROFF_HI</displayName>
+    <description>(WO) Tiler core power off bitmap, high word</description>
+    <addressOffset>0x1D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWROFF_LO</name>
+    <displayName>L2_PWROFF_LO</displayName>
+    <description>(WO) Level 2 cache power off bitmap, low word</description>
+    <addressOffset>0x1E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWROFF_HI</name>
+    <displayName>L2_PWROFF_HI</displayName>
+    <description>(WO) Level 2 cache power off bitmap, high word</description>
+    <addressOffset>0x1E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWRTRANS_LO</name>
+    <displayName>SHADER_PWRTRANS_LO</displayName>
+    <description>(RO) Shader core power transition bitmap, low word</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWRTRANS_HI</name>
+    <displayName>SHADER_PWRTRANS_HI</displayName>
+    <description>(RO) Shader core power transition bitmap, high word</description>
+    <addressOffset>0x204</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWRTRANS_LO</name>
+    <displayName>TILER_PWRTRANS_LO</displayName>
+    <description>(RO) Tiler core power transition bitmap, low word</description>
+    <addressOffset>0x210</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWRTRANS_HI</name>
+    <displayName>TILER_PWRTRANS_HI</displayName>
+    <description>(RO) Tiler core power transition bitmap, high word</description>
+    <addressOffset>0x214</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWRTRANS_LO</name>
+    <displayName>L2_PWRTRANS_LO</displayName>
+    <description>(RO) Level 2 cache power transition bitmap, low word</description>
+    <addressOffset>0x220</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWRTRANS_HI</name>
+    <displayName>L2_PWRTRANS_HI</displayName>
+    <description>(RO) Level 2 cache power transition bitmap, high word</description>
+    <addressOffset>0x224</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWRACTIVE_LO</name>
+    <displayName>SHADER_PWRACTIVE_LO</displayName>
+    <description>(RO) Shader core active bitmap, low word</description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_PWRACTIVE_HI</name>
+    <displayName>SHADER_PWRACTIVE_HI</displayName>
+    <description>(RO) Shader core active bitmap, high word</description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWRACTIVE_LO</name>
+    <displayName>TILER_PWRACTIVE_LO</displayName>
+    <description>(RO) Tiler core active bitmap, low word</description>
+    <addressOffset>0x250</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_PWRACTIVE_HI</name>
+    <displayName>TILER_PWRACTIVE_HI</displayName>
+    <description>(RO) Tiler core active bitmap, high word</description>
+    <addressOffset>0x254</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWRACTIVE_LO</name>
+    <displayName>L2_PWRACTIVE_LO</displayName>
+    <description>(RO) Level 2 cache active bitmap, low word</description>
+    <addressOffset>0x260</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_PWRACTIVE_HI</name>
+    <displayName>L2_PWRACTIVE_HI</displayName>
+    <description>(RO) Level 2 cache active bitmap, high word</description>
+    <addressOffset>0x264</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COHERENCY_FEATURES</name>
+    <displayName>COHERENCY_FEATURES</displayName>
+    <description>(RO) Coherency features present</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COHERENCY_ENABLE</name>
+    <displayName>COHERENCY_ENABLE</displayName>
+    <description>(RW) Coherency enable</description>
+    <addressOffset>0x304</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>THREAD_TLS_ALLOC</name>
+    <displayName>THREAD_TLS_ALLOC</displayName>
+    <description>(RO) Number of threads per core that TLS must be allocated for</description>
+    <addressOffset>0x310</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PRESENT_LO</name>
+    <displayName>STACK_PRESENT_LO</displayName>
+    <description>(RO) Core stack present bitmap, low word</description>
+    <addressOffset>0xE00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PRESENT_HI</name>
+    <displayName>STACK_PRESENT_HI</displayName>
+    <description>(RO) Core stack present bitmap, high word</description>
+    <addressOffset>0xE04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_READY_LO</name>
+    <displayName>STACK_READY_LO</displayName>
+    <description>(RO) Core stack ready bitmap, low word</description>
+    <addressOffset>0xE10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_READY_HI</name>
+    <displayName>STACK_READY_HI</displayName>
+    <description>(RO) Core stack ready bitmap, high word</description>
+    <addressOffset>0xE14</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PWRON_LO</name>
+    <displayName>STACK_PWRON_LO</displayName>
+    <description>(RO) Core stack power on bitmap, low word</description>
+    <addressOffset>0xE20</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PWRON_HI</name>
+    <displayName>STACK_PWRON_HI</displayName>
+    <description>(RO) Core stack power on bitmap, high word</description>
+    <addressOffset>0xE24</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PWROFF_LO</name>
+    <displayName>STACK_PWROFF_LO</displayName>
+    <description>(RO) Core stack power off bitmap, low word</description>
+    <addressOffset>0xE30</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PWROFF_HI</name>
+    <displayName>STACK_PWROFF_HI</displayName>
+    <description>(RO) Core stack power off bitmap, high word</description>
+    <addressOffset>0xE34</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PWRTRANS_LO</name>
+    <displayName>STACK_PWRTRANS_LO</displayName>
+    <description>(RO) Core stack power transition bitmap, low word</description>
+    <addressOffset>0xE40</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>STACK_PWRTRANS_HI</name>
+    <displayName>STACK_PWRTRANS_HI</displayName>
+    <description>(RO) Core stack power transition bitmap, high word</description>
+    <addressOffset>0xE44</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SHADER_CONFIG</name>
+    <displayName>SHADER_CONFIG</displayName>
+    <description>(RW) Shader core configuration (implementation-specific)</description>
+    <addressOffset>0xF04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TILER_CONFIG</name>
+    <displayName>TILER_CONFIG</displayName>
+    <description>(RW) Tiler core configuration (implementation-specific)</description>
+    <addressOffset>0xF08</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>L2_MMU_CONFIG</name>
+    <displayName>L2_MMU_CONFIG</displayName>
+    <description>(RW) L2 cache and MMU configuration (implementation-specific)</description>
+    <addressOffset>0xF0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>GPU_JOB_CONTROL</name>
+  <description></description>
+  <baseAddress>0x01801000</baseAddress>
+  <registers>
+   <register>
+    <name>JOB_IRQ_RAWSTAT</name>
+    <displayName>JOB_IRQ_RAWSTAT</displayName>
+    <description>Raw interrupt status register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>JOB_IRQ_CLEAR</name>
+    <displayName>JOB_IRQ_CLEAR</displayName>
+    <description>Interrupt clear register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>JOB_IRQ_MASK</name>
+    <displayName>JOB_IRQ_MASK</displayName>
+    <description>Interrupt mask register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>JOB_IRQ_STATUS</name>
+    <displayName>JOB_IRQ_STATUS</displayName>
+    <description>Interrupt status register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>GPU_MMU</name>
+  <description></description>
+  <baseAddress>0x01802000</baseAddress>
+  <registers>
+   <register>
+    <name>MMU_IRQ_RAWSTAT</name>
+    <displayName>MMU_IRQ_RAWSTAT</displayName>
+    <description>(RW) Raw interrupt status register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_IRQ_CLEAR</name>
+    <displayName>MMU_IRQ_CLEAR</displayName>
+    <description>(WO) Interrupt clear register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_IRQ_MASK</name>
+    <displayName>MMU_IRQ_MASK</displayName>
+    <description>(RW) Interrupt mask register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MMU_IRQ_STATUS</name>
+    <displayName>MMU_IRQ_STATUS</displayName>
+    <description>(RO) Interrupt status register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <registers>
+     <register>
+      <name>AS_TRANSTAB_LO</name>
+      <displayName>AS_TRANSTAB_LO</displayName>
+      <description>(RW) Translation Table Base Address for address space n, low word</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_TRANSTAB_HI</name>
+      <displayName>AS_TRANSTAB_HI</displayName>
+      <description>(RW) Translation Table Base Address for address space n, high word</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_MEMATTR_LO</name>
+      <displayName>AS_MEMATTR_LO</displayName>
+      <description>(RW) Memory attributes for address space n, low word.</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_MEMATTR_HI</name>
+      <displayName>AS_MEMATTR_HI</displayName>
+      <description>(RW) Memory attributes for address space n, high word.</description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_LOCKADDR_LO</name>
+      <displayName>AS_LOCKADDR_LO</displayName>
+      <description>(RW) Lock region address for address space n, low word</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_LOCKADDR_HI</name>
+      <displayName>AS_LOCKADDR_HI</displayName>
+      <description>(RW) Lock region address for address space n, high word</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_COMMAND</name>
+      <displayName>AS_COMMAND</displayName>
+      <description>(WO) MMU command register for address space n</description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTSTATUS</name>
+      <displayName>AS_FAULTSTATUS</displayName>
+      <description>(RO) MMU fault status register for address space n</description>
+      <addressOffset>0x01C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTADDRESS_LO</name>
+      <displayName>AS_FAULTADDRESS_LO</displayName>
+      <description>(RO) Fault Address for address space n, low word</description>
+      <addressOffset>0x020</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTADDRESS_HI</name>
+      <displayName>AS_FAULTADDRESS_HI</displayName>
+      <description>(RO) Fault Address for address space n, high word</description>
+      <addressOffset>0x024</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_STATUS</name>
+      <displayName>AS_STATUS</displayName>
+      <description>(RO) Status flags for address space n</description>
+      <addressOffset>0x028</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_TRANSCFG_LO</name>
+      <displayName>AS_TRANSCFG_LO</displayName>
+      <description>(RW) Translation table configuration for address space n, low word</description>
+      <addressOffset>0x030</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_TRANSCFG_HI</name>
+      <displayName>AS_TRANSCFG_HI</displayName>
+      <description>(RW) Translation table configuration for address space n, high word</description>
+      <addressOffset>0x034</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTEXTRA_LO</name>
+      <displayName>AS_FAULTEXTRA_LO</displayName>
+      <description>(RO) Secondary fault address for address space n, low word</description>
+      <addressOffset>0x038</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>AS_FAULTEXTRA_HI</name>
+      <displayName>AS_FAULTEXTRA_HI</displayName>
+      <description>(RO) Secondary fault address for address space n, high word</description>
+      <addressOffset>0x03C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
+  </registers>
   </peripheral>
   <peripheral>
   <name>I2S0</name>
@@ -7806,6 +8809,40 @@
     <displayName>CRY_EN_REG</displayName>
     <description>Crypt Enable Register</description>
     <addressOffset>0x218</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>RTWB_RCQ</name>
+  <description></description>
+  <baseAddress>0x01008200</baseAddress>
+  <registers>
+   <register>
+    <name>RTWB_RCQ_IRQ</name>
+    <displayName>RTWB_RCQ_IRQ</displayName>
+    <description>RTWB_RCQ_IRQ_OFFSET          (0x8200)</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTWB_RCQ_STS</name>
+    <displayName>RTWB_RCQ_STS</displayName>
+    <description>RTWB_RCQ_STS_OFFSET          (0x8204)</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTWB_RCQ_CTL</name>
+    <displayName>RTWB_RCQ_CTL</displayName>
+    <description>RTWB_RCQ_CTL_OFFSET          (0x8210)</description>
+    <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

@@ -38,7 +38,7 @@ typedef enum
 } spi_modes_t;
 
 #if WITHSPISW
-	#if CPUSTYLE_XC7Z
+	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define SCLK_NPULSE() do { 							\
 			SPI_SCLK_C(); hardware_spi_io_delay(); 			\
 			SPI_SCLK_S(); hardware_spi_io_delay(); 			\
@@ -302,18 +302,6 @@ void prog_spi_read_frame(
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void prog_spi_io(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
-	const uint8_t * txbuff1, unsigned int txsize1,
-	const uint8_t * txbuff2, unsigned int txsize2,
-	uint8_t * rxbuff, unsigned int rxsize
-	);
-
-// Работа совместно с фоновым обменом SPI по прерываниям
-// Assert CS, send and then read  bytes via SPI, and deassert CS
-// При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
-void prog_spi_io_low(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
 	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
@@ -324,27 +312,16 @@ void prog_spi_io_low(
 // Выдача и прием ответных байтов
 void prog_spi_exchange(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
 	uint8_t * rxbuff,
 	unsigned int size
 	);
+
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Выдача и прием ответных байтов
-void prog_spi_exchange_low(
+void prog_spi_exchange32(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
-	const uint8_t * txbuff,
-	uint8_t * rxbuff,
-	unsigned int size
-	);
-// Работа совместно с фоновым обменом SPI по прерываниям
-// Assert CS, send and then read  bytes via SPI, and deassert CS
-// Выдача и прием ответных байтов
-void prog_spi_exchange32_low(
-	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
-	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint32_t * txbuff,
 	uint32_t * rxbuff,
 	unsigned int size

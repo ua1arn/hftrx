@@ -305,8 +305,12 @@
 		} while (0)
 
 
-
-
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
 
 #if KEYBOARD_USE_ADC == 0
 	#define KBD_TARGET_PORT PORTC

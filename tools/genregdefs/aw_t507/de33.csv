@@ -1,0 +1,297 @@
+#type; DE; Display Engine (DE)
+#base; DE 0x01000000
+
+# Allwinner_DE3.0_Spec_V1.0.pdf
+
+# https://linux-sunxi.org/images/d/dd/Allwinner_DE3.0_Spec_V1.0.pdf
+# https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
+
+#type; DE_TOP; Display Engine (DE) TOP (APB)
+#base; DE_TOP 0x01008000
+
+#irq; DE 120; DE interrupt
+
+##regdef; GATE_CFG;	 	0x000;	SCLK_GATE DE SCLK Gating Register
+##regdef; BUS_CFG;		0x004;	? HCLK_GATE ? DE HCLK Gating Register
+##regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
+##regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
+##regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
+
+## define DE_MBUS_CLOCK_ADDR           (0x8008)
+## define DE2TCON_MUX_OFFSET           (0x8010)
+## define DE_VER_CTL_OFFSET            (0x8014)
+## define DE_RTWB_MUX_OFFSET           (0x8020)
+## define DE_CHN2CORE_MUX_OFFSET       (0x8024)
+## define DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
+## define DE_DEBUG_CTL_OFFSET          (0x80E0)
+## define RTMX_GLB_CTL_OFFSET(disp)    (0x8100 + (disp) * 0x40)
+## define RTMX_GLB_STS_OFFSET(disp)    (0x8104 + (disp) * 0x40)
+## define RTMX_OUT_SIZE_OFFSET(disp)   (0x8108 + (disp) * 0x40)
+## define RTMX_AUTO_CLK_OFFSET(disp)   (0x810C + (disp) * 0x40)
+## define RTMX_RCQ_CTL_OFFSET(disp)    (0x8110 + (disp) * 0x40)
+
+#regdef; DE_SCLK_GATE; 0x000; DE SCLK Gating Register
+#regdef; DE_HCLK_GATE; 0x004; DE HCLK Gating Register
+#regdef; DE_AHB_RESET; 0x008; DE AHB Reset Register DE_MBUS_CLOCK_ADDR
+#regdef; DE_SCLK_DIV; 0x00C; DE SCLK Division Register 
+#regdef; DE2TCON_MUX; 0x010; DE MUX Register DE2TCON_MUX_OFFSET
+#regdef; DE_VER_CTL; 0x014; DE_VER_CTL_OFFSET
+#regdef; DE_RTWB_MUX; 0x020; DE_RTWB_MUX_OFFSET
+#regdef; DE_CHN2CORE_MUX; 0x024; DE_CHN2CORE_MUX_OFFSET
+#regdef; DE_PORT2CHN_MUX; 0x028 4; DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
+#regdef; DE_DEBUG_CTL; 0x0E0; DE_DEBUG_CTL_OFFSET
+
+# DE0 dedicated for TCON_LCD0/TCON_TV0, 
+# DE1 dedicated for TCON_LCD1/TCON_TV1 tv output blocks
+# 7.1.2. Block Diagram - Allwinner_T5_Series_User_Manual-v1.3.pdf
+
+#type; RTWB_RCQ
+#base; RTWB_RCQ 0x01008200
+
+#regdef; RTWB_RCQ_IRQ; 0x00; RTWB_RCQ_IRQ_OFFSET          (0x8200)
+#regdef; RTWB_RCQ_STS; 0x04; RTWB_RCQ_STS_OFFSET          (0x8204)
+#regdef; RTWB_RCQ_CTL; 0x10; RTWB_RCQ_CTL_OFFSET          (0x8210)
+
+#type; DE_GLB; Display Engine (DE) - Global Control
+
+#base; DE_GLB 0x01008100
+#base; DEb_GLB 0x01008140
+##base; DE0_GLB 0x01100000; RT-Mixer0
+##base; DE1_GLB 0x01200000; RT-Mixer1
+
+# https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
+# https://github.com/dumtux/Allwinner-H616.git
+
+# define SUN50I_MIXER_GLOBAL_CTL 0x0
+# define SUN50I_MIXER_GLOBAL_STATUS 0x4
+# define SUN50I_MIXER_GLOBAL_SIZE 0x8
+# define SUN50I_MIXER_GLOBAL_CLK 0xc
+# define SUN50I_MIXER_GLOBAL_DBUFF 0x10
+
+#regdef; GLB_CTL;	 	0x000;	Global control register
+#regdef; GLB_STS;		0x004;	Global status register
+#regdef; GLB_SIZE;		0x008;	Global size register
+#regdef; GLB_CLK;		0x00C;	Global clock register
+#regdef; GLB_DBUFFER;	0x010;	Global double buffer control register
+#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+
+# define DE2_BLD_BASE 0x1000
+# define DE2_CH_BASE 0x2000
+# define DE2_CH_SIZE 0x1000
+# define DE3_BLD_BASE 0x0800
+# define DE3_CH_BASE 0x1000
+# define DE3_CH_SIZE 0x0800
+#
+# channel base for de33 calculated as:
+# mixer->cfg->map[channel] * 0x20000 + DE2_CH_SIZE;
+
+
+#type; DE_BLD; Display Engine (DE) - Blender
+
+#base; DE_BLD 0x01281000
+#base; DEb_BLD 0x012A1000
+
+# Blender with six inputs
+
+#regdef; BLD_EN_COLOR_CTL;	0x0000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; CH; 0x0004 6; Pipe [0..5]
+#regdef; BLD_FILL_COLOR;	0x0000; BLD fill color register
+#regdef; BLD_CH_ISIZE;	0x0004; BLD input memory size register
+#regdef; BLD_CH_OFFSET;	0x0008; BLD input memory offset register
+#regdef; padding 0; 0x0010; Need for address arithmetics
+#aggregend;
+#regdef; ROUTE;			0x0080; BLD_CH_RTCTL BLD routing control register (default value 0x00543210)
+#regdef; PREMULTIPLY; 	0x0084; BLD pre-multiply control register
+#regdef; BKCOLOR; 0x0088;
+#regdef; OUTPUT_SIZE; 0x008C;
+#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more)
+#regdef; CK_CTL; 0x00B0;
+#regdef; CK_CFG; 0x00B4;
+#regdef; CK_MAX; 0x00C0 4;
+#regdef; CK_MIN; 0x00E0 4;
+#regdef; OUT_CTL; 0x00FC;
+#regdef; CSC_CTL; 0x0100; SUN50I_MIXER_BLEND_CSC_CTL 
+#regdef; CSC_COEFF; 0x0110 12; SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4)
+#typeend;
+
+#type; DE_VI; Display Engine (DE) - VI surface
+
+#base; DE_VI1 0x01101000
+#base; DE_VI2 0x01121000
+#base; DE_VI3 0x01141000
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000;
+#regdef;  SIZE; 0x004;
+#regdef;  COORD; 0x008;
+#regdef;  PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
+#regdef;  TOP_LADDR; 0x018 3;
+#regdef;  BOT_LADDR; 0x024 3;
+#aggregend;
+#regdef; FCOLOR; 0x0C0 4;
+#regdef; TOP_HADDR; 0x0D0 3;
+#regdef; BOT_HADDR; 0x0DC 3;
+#regdef; OVL_SIZE; 0x0E8; OVL_V overlay window size register
+#regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
+#regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
+
+#regdef; FBD_V_CTL; 0x300; OVL_V FBD control register
+
+#regdef; padding 0; 0x800; set size
+#typeend;
+
+#type; DE_UI; Display Engine (DE) - UI surface
+
+#base; DE_UI1   0x011C1000
+#base; DE_UI2   0x011E1000
+#base; DE_UI3   0x01201000  
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000; 
+#regdef;  SIZE; 0x004; 
+#regdef;  COORD; 0x008; 
+#regdef;  PITCH; 0x00C; 
+#regdef;  TOP_LADDR; 0x010; 
+#regdef;  BOT_LADDR; 0x014; 
+#regdef;  FCOLOR; 0x018; 
+#regdef;  padding 0; 0x020; Need for address arithmetics
+#aggregend;
+#regdef; TOP_HADDR; 0x080; 
+#regdef; BOT_HADDR; 0x084; 
+#regdef; OVL_SIZE; 0x088; 
+
+##regdef; FBD_UI_CTL; 0x300; OVL_UI FBD control register
+##regdef; FBD_UI_STA; 0x304; OVL_UI FBD status register
+##regdef; FBD_UI_SIZE; 0x308; OVL_UI FBD image size register
+##regdef; FBD_UI_BLOCK_SIZE; 0x30C; OVL_UI FBD block size register
+##regdef; FBD_UI_SRC_CROP; 0x310; OVL_UI FBD source crop register
+##regdef; FBD_UI_OVL_CROP; 0x314; OVL_UI FBD overlay crop register
+##regdef; FBD_UI_FMT; 0x318; OVL_UI FBD input format register
+##regdef; FBD_UI_HD_LADDR; 0x320; OVL_UI FBD header low address register
+##regdef; FBD_UI_HD_HADDR; 0x324; OVL_UI FBD header high address register
+##regdef; FBD_UI_PL_LADDR; 0x328; OVL_UI FBD payload low address register
+##regdef; FBD_UI_PL_HADDR; 0x32C; OVL_UI FBD payload high address register
+##regdef; FBD_UI_OVL_SIZE; 0x330; OVL_UI FBD overlay window size register
+##regdef; FBD_UI_COOR; 0x334; OVL_UI FBD memory block coordinate register
+##regdef; FBD_UI_BGC; 0x338; OVL_UI FBD memory block coordinate register
+##regdef; FBD_UI_FC; 0x33C; OVL_UI FBD overlay window size register
+
+##regdef; OVL_UI_FBD_DBG0; 0x340; OVL_UI FBD dbg0 register
+##regdef; OVL_UI_FBD_DBG1; 0x344; OVL_UI FBD dbg1 register
+##regdef; OVL_UI_FBD_DBG2; 0x348; OVL_UI FBD dbg2 register
+##regdef; OVL_UI_FBD_DBG3; 0x34C; OVL_UI FBD dbg3 register
+
+##regdef; OVL_UI_FBD_BIST_STATUS; 0x380; OVL_UI FBD bist register
+##regdef; OVL_UI_FBD_BIST_START_ADDR; 0x384; OVL_UI FBD bist start address register
+##regdef; OVL_UI_FBD_BIST_END_ADDR; 0x388; OVL_UI FBD bist end address register
+##regdef; OVL_UI_FBD_BIST_MARK; 0x38C; OVL_UI FBD bist data mark register
+
+#regdef; padding 0; 0x800; set size
+#typeend;
+
+
+# RT-Mixer0 blocks
+
+#type; DE_VSU; Video Scaler Unit (VSU)
+#base; DE_VSU 0x01104000
+
+#regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
+#regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
+#regdef; VSU_FIELD_CTRL_REG; 0x000C; VSU Field Control Register
+#regdef; VSU_SCALE_MODE_REG; 0x0010; VSU Scale Mode Setting Register
+#regdef; VSU_DIRECTION_THR_REG; 0x0020; VSU Direction Detection Threshold Register
+#regdef; VSU_EDGE_THR_REG; 0x0024; VSU Edge Detection Setting Register
+#regdef; VSU_EDSCALER_CTRL_REG; 0x0028; VSU Edge-Direction Scaler Control Register
+#regdef; VSU_ANGLE_THR_REG; 0x002C; VSU Angle Reliability Setting Register
+#regdef; VSU_SHARP_EN_REG; 0x0030; VSU Sharpness Control Enable Register
+#regdef; VSU_SHARP_CORING_REG; 0x0034; VSU Sharpness Control Coring Setting Register
+#regdef; VSU_SHARP_GAIN0_REG; 0x0038; VSU Sharpness Control Gain Setting 0 Register
+#regdef; VSU_SHARP_GAIN1_REG; 0x003C; VSU Sharpness Control Gain Setting 1 Register
+#regdef; VSU_OUT_SIZE_REG; 0x0040; VSU Output Size Register
+#regdef; VSU_GLOBAL_ALPHA_REG; 0x0044 VSU Output Global Alpha Register
+#regdef; VSU_Y_SIZE_REG; 0x0080; VSU Y Channel Size Register
+#regdef; VSU_Y_HSTEP_REG; 0x0088; VSU Y Channel Horizontal Step Register
+#regdef; VSU_Y_VSTEP_REG; 0x008C; VSU Y Channel Vertical Step Register
+#regdef; VSU_Y_HPHASE_REG; 0x0090; VSU Y Channel Horizontal Initial Phase Register
+#regdef; VSU_Y_VPHASE0_REG; 0x0098; VSU Y Channel Vertical Initial Phase 0 Register
+#regdef; VSU_Y_VPHASE1_REG; 0x009C; VSU Y Channel Vertical Initial Phase 1 Register
+#regdef; VSU_C_SIZE_REG; 0x00C0; VSU C Channel Size Register
+#regdef; VSU_C_HSTEP_REG; 0x00C8; VSU C Channel Horizontal Step Register
+#regdef; VSU_C_VSTEP_REG; 0x00CC; VSU C Channel Vertical Step Register
+#regdef; VSU_C_HPHASE_REG; 0x00D0; VSU C Channel Horizontal Initial Phase Register
+#regdef; VSU_C_VPHASE0_REG; 0x00D8; VSU C Channel Vertical Initial Phase 0 Register
+#regdef; VSU_C_VPHASE1_REG; 0x00DC; VSU C Channel Vertical Initial Phase 1 Register
+#regdef; VSU_Y_HCOEF0_REGN; 0x200 32; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_Y_HCOEF1_REGN; 0x300 32; 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1
+#regdef; VSU_Y_VCOEF_REGN; 0x400 32; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; VSU_C_HCOEF0_REGN; 0x600 32; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
+#regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
+#typeend;
+
+# define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
+#type; DE_FCE; Fresh and Contrast Enhancement (FCE)
+#base; DE_FCE 0x01110000
+
+#regdef; GCTRL_REG; 0x000; Control register
+#regdef; FCE_SIZE_REG; 0x004; Size setting register
+#regdef; FCE_WIN0_REG; 0x008; Window setting 0 register
+#regdef; FCE_WIN1_REG; 0x00C; Window setting 1 register
+#regdef; HIST_SUM_REG; 0x020; Histogram sum register
+#regdef; HIST_STATUS_REG; 0x024; Histogram status register
+#regdef; CE_STATUS_REG; 0x028; CE LUT status register
+#regdef; CE_CC_REG; 0x02C; CE chroma compensation function setting register
+#regdef; FTC_GAIN_REG; 0x030; FTC gain setting register
+#regdef; FTD_HUE_THR_REG; 0x034; FTD hue threshold setting register
+#regdef; FTD_CHROMA_THR_REG; 0x038; FTD chroma threshold setting register; 
+#regdef; FTD_SLP_REG; 0x03C; FTD slop setting register
+#regdef; CSC_ENABLE_REG; 0x040; CSC enable setting register
+#regdef; CSC_D0_REG; 0x044; CSC Constant D0 Register
+#regdef; CSC_D1_REG; 0x048; CSC Constant D1 Register
+#regdef; CSC_D2_REG; 0x04C; CSC Constant D2 Register
+#regdef; CSC_C00_REG; 0x050; CSC Coefficient 00 Register
+#regdef; CSC_C01_REG; 0x054; CSC Coefficient 01 Register
+#regdef; CSC_C02_REG; 0x058; CSC Coefficient 02 Register
+#regdef; CSC_C03_REG; 0x05C; CSC Constant 03 Register
+#regdef; CSC_C10_REG; 0x060; CSC Coefficient 10 Register
+#regdef; CSC_C11_REG; 0x064; CSC Coefficient 11 Register
+#regdef; CSC_C12_REG; 0x068; CSC Coefficient 12 Register
+#regdef; CSC_C13_REG; 0x06C; CSC Constant 13 Register
+#regdef; CSC_C20_REG; 0x070; CSC Coefficient 20 Register
+#regdef; CSC_C21_REG; 0x074; CSC Coefficient 21 Register
+#regdef; CSC_C22_REG; 0x078; CSC Coefficient 22 Register
+#regdef; CSC_C23_REG; 0x07C; CSC Constant 23 Register
+#regdef; CE_LUT_REGN; 0x200 128; 0x200+N*4 CE LUT register N (N=0:127)
+#regdef; HIST_CNT_REGN; 0x400 256; 0x400+N*4 Histogram count register N (N=0:255)
+#typeend;
+
+# define SUN50I_MIXER_BLS_EN			0x71800
+#type; DE_BLS; Blue Level Stretch (BLS)
+#base; DE_BLS 0x01111000
+
+#regdef; BLS_CTRL_REG; 0x00; BLS module control register
+#regdef; BLS_SIZE_REG; 0x04; BLS size register
+#regdef; BLS_WIN0_REG; 0x08; BLS window setting register0
+#regdef; BLS_WIN1_REG; 0x0C; BLS window setting register1
+#regdef; BLS_ATTLUT_REG; 0x10 4; 0x10+N*0x4 BLS attenuation LUT register, +N*0x4 (N = 0,1,2,3)
+#regdef; BLS_POS_REG; 0x20; BLS blue zone position register
+#regdef; BLS_GAINLUT_REG; 0x30 4; 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3)
+#typeend;
+
+#type; DE_FCC; Fancy color curvature (FCC)
+#base; DE_FCC 0x01111400
+
+#regdef; FCC_CTL_REG; 0x000; FCC Control Register
+#regdef; FCC_INPUT_SIZE_REG; 0x004; FCC Input Size Register
+#regdef; FCC_OUTPUT_WIN0_REG; 0x008; FCC Output Window0 Register
+#regdef; FCC_OUTPUT_WIN1_REG; 0x00c; FCC Output Window1 Register
+
+#typeend;
+
+#type; DE_DNS; Denoise (DNS)
+#base; DE_DNS 0x01114000
+
+#regdef; DNS_CTL; 0x000; DNS module control register
+#regdef; DNS_SIZE; 0x004; DNS size register
+
+#typeend;

@@ -266,7 +266,11 @@ display_redrawmodestimed(
 
 	#define LFMFREQBIAS 20000
 
+#if defined WITHLFMTOFFSET
+	static uint_fast16_t lfmtoffset = WITHLFMTOFFSET;
+#else
 	static uint_fast16_t lfmtoffset = 0;
+#endif /* WITHLFMTOFFSET */
 	static uint_fast16_t lfmtinterval = 5 * 60;
 	static uint_fast8_t lfmmode = 1;
 	static uint_fast16_t lfmstart100k = 80;
@@ -3171,7 +3175,6 @@ struct nvmap
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 #endif /* WITHIF4DSP */
 
-
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint8_t	ggrprfadc; // последний посещённый пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
@@ -3337,7 +3340,6 @@ filter_t fi_2p0_455 =
 	uint8_t gtunerdelay;
 #endif /* WITHAUTOTUNER */
 
-
 #if WITHTX
 	#if WITHMUTEALL
 		uint8_t gmuteall;	/* Отключить микрофон всегда. */
@@ -3487,6 +3489,11 @@ filter_t fi_2p0_455 =
 		struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /*  WITHTOUCHGUI */
+
+#if 1//WITHDEBUG
+	uint8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
+#endif /* WITHDEBUG */
+
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3761,6 +3768,12 @@ static uint_fast8_t bandset2m = 1;	/* используется ли диапаз
 #endif /* WITHCAT */
 
 static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
+
+#if 1//WITHDEBUG
+static uint_fast8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
+#else
+	enum { gforcexvrtr = 0 };
+#endif /* WITHDEBUG */
 
 #if WITHUSEAUDIOREC
 	#if defined (WITHBBOX) && defined (WITHBBOXREC)
@@ -4403,14 +4416,12 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		uint_fast8_t s9_60_delta = 45;
 	#endif
 
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
-		#if WITHSWRCALI
-			uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
-		#else /* WITHSWRCALI */
-			uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
-		#endif /* WITHSWRCALI */
-	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
+	#if WITHSWRCALI
+		uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
+	#else /* WITHSWRCALI */
+		uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+	#endif /* WITHSWRCALI */
 
 	#if WITHPWRMTR || WITHSWRMTR
 		#if WITHMAXPWRCALI
@@ -4537,7 +4548,7 @@ uint_fast8_t habradio_get_blinkphase(void)
 
 uint_fast8_t habradio_get_classa(void)
 {
-#if WITHPACLASSA
+#if WITHPACLASSA && WITHTX
 	return gclassamode;
 #else /* WITHPACLASSA */
 	return 0;
@@ -6472,6 +6483,15 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 	}
 }
 #endif /* WITHAMHIGHKBDADJ */
+
+#if WITHPWBUTTON
+static void
+uif_pwbutton_press(void)
+{
+	gpoweronhold = 0;
+	updateboard(1, 0);
+}
+#endif /* WITHPWBUTTON */
 
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
@@ -9387,7 +9407,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
@@ -10464,11 +10484,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_ALLWINNER */
 }
 
 static void speex_update_rx(void)
@@ -10660,6 +10680,9 @@ static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 void
 audioproc_spool_user(void)
 {
+#if LINUX_SUBSYSTEM
+	linux_wait_iq();
+#endif /* LINUX_SUBSYSTEM */
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready(& p))
@@ -10793,6 +10816,42 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 	return 0;
 }
 
+/* Если изменяемый параметр отличается от старого значения - возврат 1 */
+/* модификация параметра с учетом границ изменения значения */
+static uint_fast8_t
+encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr)
+{
+	uint_fast16_t v = c->value;
+	if (d == 0)
+		return 0;
+	else if (d < 0)
+	{
+		if (- d >= v)
+			v = 0;
+		else
+			v += d;
+		if (v < lower)
+			v = lower;
+	}
+	else
+	{
+		if (d > upper)
+			v = upper;
+		else
+		{
+			v += d;
+			if (v > upper)
+				v = upper;
+		}
+	}
+	if (flagne_u16(& c->value, v))
+	{
+		save_i16(addr, c->value);
+		return 1;
+	}
+	return 0;
+}
+
 #if WITHCAT
 
 /* формирование запроса на информирование управляющего компьютера при изменении параметра. */
@@ -10891,6 +10950,9 @@ updateboardZZZ(
 #if WITHDCDCFREQCTL
 	static uint_fast32_t bldividerout = UINT32_MAX;
 #endif /* WITHDCDCFREQCTL */
+#if WITHMGLOOP
+	static uint_fast16_t bandf1khint = UINT16_MAX;
+#endif /* WITHMGLOOP */
 #if CTLSTYLE_IGOR
 	static uint_fast16_t bandf100khint = UINT16_MAX;
 #else /* CTLSTYLE_IGOR */
@@ -10925,8 +10987,11 @@ updateboardZZZ(
 #else /* WITHLFM */
 		const int_fast32_t freq = gfreqs [bi];
 #endif /*  WITHLFM */
+	#if WITHMGLOOP
+		full2 |= flagne_u16(& bandf1khint, freq / 1000);
+	#endif /* WITHMGLOOP */
 	#if CTLSTYLE_IGOR
-		full2 |= flagne_u16(& bandf100khint, freq / 100000uL);
+		full2 |= flagne_u16(& bandf100khint, freq / 100000);
 	#else /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& bandfhint, bandf_calc(nyquistadj(freq)));
 		full2 |= flagne_u8(& bandf2hint, bandf2_calc(nyquistadj2(freq)));
@@ -11477,12 +11542,15 @@ updateboardZZZ(
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
 		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
 		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
+		board_set_forcexvrtr(gforcexvrtr);
 		#if WITHMIC1LEVEL
 			board_set_mik1level(gmik1level);
 		#endif /* WITHMIC1LEVEL */
 		board_set_autotune(reqautotune);
 	#endif /* WITHTX */
-
+	#if WITHMGLOOP
+		board_set_bcdfreq1k(bandf1khint);
+	#endif /* WITHMGLOOP */
 	#if CTLSTYLE_IGOR
 		board_set_bcdfreq100k(bandf100khint);
 	#else /* CTLSTYLE_IGOR */
@@ -13397,6 +13465,22 @@ directctlupdate(
 			changed |= flagne_u16(& gnotchfreq.value, board_getpot_filtered_u16(POTNOTCH, WITHNOTCHFREQMIN, WITHNOTCHFREQMAX, & notchstate) / 50 * 50);	// регулировка частоты NOTCH фильтра
 		}
 	#endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
+	#if WITHENCODER3
+		{
+			const int_least16_t delta = encoder_get_delta(& encoder3, BOARD_ENCODER3_DIVIDE);
+			switch (0)
+			{
+			case 0:
+				/* установка громкости */
+				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1));
+				break;
+			case 1:
+				/* установка IF GAIN */
+				changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1));
+				break;
+			}
+		}
+	#endif /* 0 */
 
 	#if CTLSTYLE_RA4YBO_V3
 		{
@@ -15088,8 +15172,9 @@ processcatmsg(
 			if (catpcount == 4)
 			{
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
-				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX);
-				if (flagne_u16(& afgain1.value, p2))
+				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, 255, 255);
+				const unsigned p2board = p2 * (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) / 255 + BOARD_AFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазоны
+				if (flagne_u16(& afgain1.value, p2board))
 				{
 					updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 					rc = 1;
@@ -15117,8 +15202,9 @@ processcatmsg(
 		// RF gain level set/report
 		if (cathasparam != 0)
 		{
-			const uint_fast32_t p2 = vfy32up(catparam, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX);
-			if (flagne_u16(& rfgain1.value, p2))
+			const uint_fast32_t p2 = vfy32up(catparam, 0, 255, 255);
+			const unsigned p2board = p2 * (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN) / 255 + BOARD_IFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазон
+			if (flagne_u16(& rfgain1.value, p2board))
 			{
 				updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
 				rc = 1;
@@ -15252,7 +15338,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(steps, genc1div);
+			encoderA_pushback(steps, genc1div);
 		}
 	}
 	else if (match2('D', 'N'))
@@ -15260,7 +15346,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(0 - steps, genc1div);
+			encoderA_pushback(0 - steps, genc1div);
 		}
 	}
 #if 0
@@ -15742,9 +15828,9 @@ static void dpc_1stimer(void * arg)
 //	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHTOUCHGUI
 	gui_update();
@@ -15903,7 +15989,7 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
-#if WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM)
+#if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
 	audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
 #if WITHUSEAUDIOREC
@@ -16020,7 +16106,7 @@ processmessages(
 	releasemsgbuffer(buff);
 }
 
-#if WITHTX
+#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
@@ -16040,6 +16126,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 }
 
 #else
+
 uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 {
 	return 0;
@@ -16849,8 +16936,8 @@ void display2_menu_valxx(
 			static const FLASHMEM char msg [] [6] =
 			{
  				"MIKE ",	// BOARD_TXAUDIO_MIKE
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
- 				"LINE ",	// BOARD_TXAUDIO_LINE
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа (rear panel mini-din 6 pin input) */
+ 				"LINE ",	// BOARD_TXAUDIO_LINE (rear panel mini-din 6 pin input)
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 #if WITHUSBHW && WITHUSBUACOUT
 				"USB  ",	// BOARD_TXAUDIO_USB
@@ -17041,6 +17128,8 @@ void display2_menu_valxx(
 			}
 #elif CPUSTYLE_XC7Z
 			msg = PSTR("ZYNQ 7020");
+#elif CPUSTYLE_XCZU
+			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
 #else
@@ -17167,7 +17256,7 @@ modifysettings(
 	PRINTF(PSTR("menu: ")); PRINTF(mp->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 	display2_redrawbarstimed(1, 1, mp);
-	encoder_clear();
+	encoders_clear();
 
 	for (;;)
 	{
@@ -17179,11 +17268,11 @@ modifysettings(
 
 #if WITHKEYBOARD
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes2(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes_B(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -17196,7 +17285,7 @@ modifysettings(
 				kbready = 1;
 			}
 		}
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 		if (kbready != 0)
 		{
@@ -17212,7 +17301,7 @@ modifysettings(
 				/* выход из меню */
 				if (posnvram != MENUNONVRAM)
 					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-				encoder_clear();	// сбросить информацию о повороте
+				encoders_clear();	// сбросить информацию о повороте
 				return;
 
 #if ! WITHFLATMENU
@@ -17248,6 +17337,13 @@ modifysettings(
 				continue;	// требуется обновление индикатора
 		#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
+		#if WITHPWBUTTON
+			case KBD_CODE_POWEROFF:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				uif_pwbutton_press();
+				return;
+		#endif /* WITHPWBUTTON */
+
 #if WITHTX
 			case KBD_CODE_MOX:
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -17280,13 +17376,13 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_banddown();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
@@ -17301,13 +17397,13 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 				uif_key_click_bandup();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
@@ -17338,7 +17434,7 @@ modifysettings(
 
 #if WITHENCODER
 		/* редактирование значения с помощью поворота валкодера. */
-		nrotate = getRotateLoRes(genc1div);
+		nrotate = getRotateLoRes_A(genc1div);
 		if (lockmode != 0)
 			nrotate = 0;	// ignore encoder
 
@@ -17752,6 +17848,8 @@ static void menu_print(void)
         			}
 			#elif CPUSTYLE_XC7Z
         			msg = PSTR("ZYNQ 7020");
+        	#elif CPUSTYLE_XCZU
+        			msg = PSTR("ZYNQ USCALE");
         	#elif CPUSTYLE_R7S721
         			msg = PSTR("RENESAS");
 			#elif CPUSTYLE_T113
@@ -18129,15 +18227,6 @@ freqvalid(
 	return (freq >= TUNE_BOTTOM && freq < TUNE_TOP);	/* частота внутри допустимого диапазона */
 }
 
-#if WITHPWBUTTON
-static void
-uif_pwbutton_press(void)
-{
-	gpoweronhold = 0;
-	updateboard(1, 0);
-}
-#endif /* WITHPWBUTTON */
-
 #if WITHKEYBOARD
 
 /* возврат ненуля - было какое-либо нажатие, клавиша уже обработана
@@ -18226,13 +18315,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHUSEAUDIOREC */
 
-#if WITHPWBUTTON
-	case KBD_CODE_POWEROFF:
-		uif_pwbutton_press();
-		return 1;
-#endif /* WITHPWBUTTON */
-
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 	#if WITHTOUCHGUI
 		case KBD_ENC2_PRESS:
 			gui_put_keyb_code(KBD_ENC2_PRESS);
@@ -18252,7 +18335,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 			uif_encoder2_hold();
 			return 1;
 	#endif /* WITHTOUCHGUI */
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 #if WITHTX
 
@@ -18470,6 +18553,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 			 - не вызывает сохранение состояния диапазона */
 		uif_key_lockencoder();
 		return 1;	/* клавиша уже обработана */
+
+#if WITHPWBUTTON
+	case KBD_CODE_POWEROFF:
+		uif_pwbutton_press();
+		return 1;
+#endif /* WITHPWBUTTON */
 
 	case KBD_CODE_LOCK_HOLDED:
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
@@ -18939,10 +19028,8 @@ applowinitialize(void)
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */
-#if WITHENCODER
-	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
-	encoder_initialize();
-#endif /* WITHENCODER */
+	hardware_encoders_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
+	encoders_initialize();
 #if WITHELKEY
 	elkey_initialize();
 #endif /* WITHELKEY */
@@ -18955,9 +19042,7 @@ applowinitialize(void)
 #if WITHCAT
 	processcat_initialize();
 #endif
-#if WITHKEYBOARD
 	kbd_initialize();
-#endif /* WITHKEYBOARD */
 
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));
@@ -19381,9 +19466,9 @@ application_initialize(void)
 #if WITHTOUCHGUI
 	gui_initialize();
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 	hamradio_gui_enc2_update();
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 #endif /* WITHTOUCHGUI */
 #if WITHUSEUSBBT
 	bt_initialize();
@@ -19612,7 +19697,7 @@ static void hamradio_main_initialize(void)
 	}
 #endif /* FQMODEL_GEN500 */
 
-	encoder_clear();
+	encoders_clear();
 
 	/* начальное отображение */
 	display_redrawfreqmodesbarsnow(0, NULL);	// Обновление дисплея - всё, включая частоту
@@ -19740,19 +19825,19 @@ hamradio_main_step(void)
 				nrotate = 0;	// ignore encoder
 				nrotate2 = 0;	// ignore encoder
 			#else
-				nrotate = getRotateHiRes(& jumpsize, genc1div * gencderate);
-				nrotate2 = getRotateHiRes2(& jumpsize2, genc2div);
+				nrotate = getRotateHiRes_A(& jumpsize, genc1div * gencderate);
+				nrotate2 = getRotateHiRes_B(& jumpsize2, genc2div);
 			#endif
 
 			if (uif_encoder2_rotate(nrotate2))
 			{
 				nrotate2 = 0;
-#if WITHTOUCHGUI && WITHENCODER2
+#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3
 				hamradio_gui_enc2_update();
 				display2_mode_subset(0);
 #else
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
+#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3 */
 			}
 	#if WITHDEBUG && ! defined (HAVE_BTSTACK_STDIN)
 			{
@@ -19819,7 +19904,7 @@ hamradio_main_step(void)
 			if (kbready != 0 && processkeyboard(kbch))
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
-				encoder_clear();				/* при возможном уменьшении шага исключение случайного накопления */
+				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
 				display_redrawmodestimed(1);
@@ -19878,11 +19963,11 @@ hamradio_main_step(void)
 					updateboard(0, 0);	/* частичная перенастройка - без смены режима работы */
 				}
 			}
-#if WITHTOUCHGUI && WITHENCODER2
+#if WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3
 			gui_set_encoder2_rotate(nrotate2);
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
+#endif /* WITHTOUCHGUI && WITHENCODER2 && ! WITHENCODER3 */
 
-#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}
@@ -21086,8 +21171,6 @@ const char * hamradio_get_preamp_value(void)
 }
 
 
-#if WITHTOUCHGUI
-
 uint_fast8_t hamradio_get_att_db(void)
 {
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
@@ -21149,6 +21232,8 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 
 #endif /* WITHTX */
 
+#if WITHTOUCHGUI
+
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
@@ -21205,7 +21290,7 @@ void hamradio_save_gui_settings(const void * ptrv)
 	}
 }
 
-#if WITHENCODER2
+#if WITHENCODER2 && ! WITHENCODER3
 void hamradio_gui_enc2_update(void)
 {
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
@@ -21215,11 +21300,11 @@ void hamradio_gui_enc2_update(void)
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
 }
-#else /* WITHENCODER2 */
+#else /* WITHENCODER2 && ! WITHENCODER3 */
 void hamradio_gui_enc2_update(void)
 {
 }
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 && ! WITHENCODER3 */
 
 #if WITHTX
 
@@ -21272,9 +21357,6 @@ void hamradio_split_mode_toggle(void)
 void hamradio_split_vfo_swap(void)
 {
 	uif_key_click_a_ex_b();
-#if WITHHWDUALVFO
-	hamradio_set_hw_vfo(gvfoab);
-#endif /* WITHHWDUALVFO */
 }
 
 uint_fast8_t hamradio_get_gvfoab(void)

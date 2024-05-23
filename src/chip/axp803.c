@@ -71,8 +71,9 @@ static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 #if WITHTWIHW
 	uint8_t bufw = reg;
-	i2chw_write(PMIC_I2C_W, & bufw, 1);
-	i2chw_read(PMIC_I2C_R, data, 1);
+	if (i2chw_write(PMIC_I2C_W, & bufw, 1))
+		return 1;
+	return i2chw_read(PMIC_I2C_R, data, 1);
 #elif WITHTWISW
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
@@ -81,15 +82,15 @@ static int pmic_bus_read(uint8_t reg, uint8_t * data)
 	i2cp_write_withrestart(& pmic_i2cp, reg);
 	i2cp_start(& pmic_i2cp, addrr);
 	i2cp_read(& pmic_i2cp, data, I2C_READ_ACK_NACK);
-#endif
 	return 0;
+#endif
 }
 
 static int pmic_bus_write(uint8_t reg, uint8_t data)
 {
 #if WITHTWIHW
 	uint8_t bufw [] = { reg, data };
-	i2chw_write(PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
+	return i2chw_write(PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
 #elif WITHTWISW
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
@@ -99,8 +100,8 @@ static int pmic_bus_write(uint8_t reg, uint8_t data)
 	i2cp_write(& pmic_i2cp, data);
 	i2cp_waitsend(& pmic_i2cp);
 	i2cp_stop(& pmic_i2cp);
-#endif
 	return 0;
+#endif
 }
 
 static int pmic_bus_setbits(uint8_t reg, uint8_t bits)
@@ -727,11 +728,11 @@ int axp305_initialize(void)
 #define AXP858_BLDO4_CTRL	    0x27
 #define AXP858_BLDO5_CTRL	    0x28
 
-#define AXP858_CLDO1_CTRL	    0x24
-#define AXP858_CLDO2_CTRL	    0x25
-#define AXP858_CLDO3_CTRL	    0x26
-#define AXP858_CLDO4_GPIO1_CTRL	0x27
-#define AXP858_CLDO4_GPIO2_CTRL	0x28
+#define AXP858_CLDO1_CTRL	    0x29	// Check defines in Linux PMIC driver
+#define AXP858_CLDO2_CTRL	    0x2A
+#define AXP858_CLDO3_GPIO1_CTRL 0x2B	// CLDO3 voltage control & CLDO3/GPIO1/Wakeup control
+#define AXP858_CLDO4_GPIO2_CTRL	0x2C	// CLDO4/GPIO2 contro
+#define AXP858_CLDO4_CTRL		0x2D	// CLDO4 Voltage control
 
 #define AXP858_SHUTDOWN		0x32
 #define AXP858_SHUTDOWN_POWEROFF	(1 << 7)
@@ -934,9 +935,10 @@ static int axp858_set_bldo_4_5(int bldo_num, unsigned int mvolt)
 	if (bldo_num < 4 || bldo_num > 5)
 		return -1;
 
+	// AXP858_OUTPUT_CTRL3: bits 1:0 - BLOD5-BLDO4 control
 	if (mvolt == 0)
 		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL3,
-				AXP858_OUTPUT_CTRL3_BLDO4_EN << (bldo_num - 4 - 1));
+				AXP858_OUTPUT_CTRL3_BLDO4_EN << (bldo_num - 4));
 
 	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
 	ret = pmic_bus_write(AXP858_BLDO1_CTRL + bldo_num - 1, cfg);
@@ -944,9 +946,73 @@ static int axp858_set_bldo_4_5(int bldo_num, unsigned int mvolt)
 		return ret;
 
 	return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
-			AXP858_OUTPUT_CTRL3_BLDO4_EN << (bldo_num - 4 - 1));
+			AXP858_OUTPUT_CTRL3_BLDO4_EN << (bldo_num - 4));
 }
 
+static int axp858_set_cldo_1_2(int cldo_num, unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (cldo_num < 1 || cldo_num > 2)
+		return -1;
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL3,
+				AXP858_OUTPUT_CTRL3_CLDO1_EN << (cldo_num - 4));
+
+	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
+	ret = pmic_bus_write(AXP858_CLDO1_CTRL + cldo_num - 1, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
+			AXP858_OUTPUT_CTRL3_CLDO1_EN << (cldo_num - 4));
+}
+
+// CLDO3 & CLDO4 - dual-function pins
+static int axp858_set_cldo_3(int cldo_num, unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (cldo_num < 3 || cldo_num > 3)
+		return -1;
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL3,
+				AXP858_OUTPUT_CTRL3_CLDO3_EN);
+
+	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
+	ret = pmic_bus_write(AXP858_CLDO2_CTRL, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
+			AXP858_OUTPUT_CTRL3_CLDO3_EN);
+}
+
+// CLDO3 & CLDO4 - dual-function pins
+static int axp858_set_cldo_4(int cldo_num, unsigned int mvolt)
+{
+	int ret;
+	uint8_t cfg;
+
+	if (cldo_num < 4 || cldo_num > 4)
+		return -1;
+
+	if (mvolt == 0)
+		return pmic_bus_clrbits(AXP858_OUTPUT_CTRL3,
+				AXP858_OUTPUT_CTRL3_CLDO4_EN);
+
+	cfg = axp858_mvolt_to_cfg(mvolt, 700, 3300, 100);
+	ret = pmic_bus_write(AXP858_CLDO4_CTRL, cfg);
+	if (ret)
+		return ret;
+
+	return pmic_bus_setbits(AXP858_OUTPUT_CTRL3,
+			AXP858_OUTPUT_CTRL3_CLDO4_EN);
+}
 
 /* TODO: re-work other AXP drivers to consolidate ALDO functions. */
 static int axp858_set_aldo1(unsigned int mvolt)
@@ -977,6 +1043,46 @@ static int axp858_set_aldo5(unsigned int mvolt)
 static int axp858_set_bldo1(unsigned int mvolt)
 {
 	return axp858_set_bldo_1_3(1, mvolt);
+}
+
+static int axp858_set_bldo2(unsigned int mvolt)
+{
+	return axp858_set_bldo_1_3(2, mvolt);
+}
+
+static int axp858_set_bldo3(unsigned int mvolt)
+{
+	return axp858_set_bldo_1_3(3, mvolt);
+}
+
+static int axp858_set_bldo4(unsigned int mvolt)
+{
+	return axp858_set_bldo_4_5(4, mvolt);
+}
+
+static int axp858_set_bldo5(unsigned int mvolt)
+{
+	return axp858_set_bldo_4_5(5, mvolt);
+}
+
+static int axp858_set_cldo1(unsigned int mvolt)
+{
+	return axp858_set_cldo_1_2(1, mvolt);
+}
+
+static int axp858_set_cldo2(unsigned int mvolt)
+{
+	return axp858_set_cldo_1_2(2, mvolt);
+}
+
+static int axp858_set_cldo3(unsigned int mvolt)
+{
+	return axp858_set_cldo_3(3, mvolt);
+}
+
+static int axp858_set_cldo4(unsigned int mvolt)
+{
+	return axp858_set_cldo_4(4, mvolt);
 }
 
 
@@ -1119,19 +1225,24 @@ int axp853_initialize(void)
 	// F1 ball VDD1: 1.8
 	// A4 ball VDD2: vcc_dram 1.1
 
-	VERIFY(0 == axp858_set_dcdc1(3300));
+	VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
 	VERIFY(0 == axp858_set_dcdc2(970));		// CPU
 	VERIFY(0 == axp858_set_dcdc3(970));
-//#if WITHGPUHW
-	VERIFY(0 == axp858_set_dcdc4(970));	// VDD-GPU
-//#endif /* WITHGPUHW */
-	VERIFY(0 == axp858_set_dcdc5(1100));		// VCC-DRAM - 1.1V for LPDDR4
-	VERIFY(0 == axp858_set_aldo1(1800));		// VCC_PG, SDIO
-	VERIFY(0 == axp858_set_aldo2(1800));
-	VERIFY(0 == axp858_set_aldo3(2500));		// VPP DRAM
-	VERIFY(0 == axp858_set_aldo4(1800));		// 1.8V for LPDDR4
-	VERIFY(0 == axp858_set_aldo5(3300));		// VCC-PE
-	VERIFY(0 == axp858_set_bldo1(1800));		// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
+	VERIFY(0 == axp858_set_dcdc4(970));		// VDD-GPU
+	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1V for LPDDR4
+
+	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG, SDIO
+	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
+	VERIFY(0 == axp858_set_aldo3(2500));	// VPP DRAM
+	VERIFY(0 == axp858_set_aldo4(1800));	// 1.8V for LPDDR4 VDD18-DRAM/VDD18-LPDDR
+	VERIFY(0 == axp858_set_aldo5(3300));	// VCC-PE 2.8/3.3V
+
+	VERIFY(0 == axp858_set_bldo1(1800));	// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
+	VERIFY(0 == axp858_set_bldo5(1200));	// External pin IOVDD_1V8 or Toshiba TC358778XBG
+
+
+	VERIFY(0 == axp858_set_cldo3(0));		// CLDO3 connected as GPIO to EXTIRQ CPU pin
+	VERIFY(0 == axp858_set_cldo4(1800));	// 1.8V VCC-TV
 
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control

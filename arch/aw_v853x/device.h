@@ -90,9 +90,10 @@ typedef enum IRQn
     DE_IRQn = 119,                                    /*!< DE_TOP Display Engine (DE) TOP */
     DI_IRQn = 120,                                    /*!< DI De-interlacer (DI) */
     G2D_IRQn = 121,                                   /*!< G2D_TOP Graphic 2D top */
-    TVE_IRQn = 123,                                   /*!< TVE_TOP TV Output (TV_Encoder) */
+    TCON_LCD0_IRQn = 122,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
+    TCON_TV0_IRQn = 123,                              /*!< TCON_TV  */
     DSI0_IRQn = 124,                                  /*!< DSI MIPI DSI Display Interface */
-    TV_Encoder_IRQn = 126,                            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) */
+    TV_Encoder_IRQn = 126,                            /*!< TVE_TOP TV Output (TV_Encoder) */
     CSIC_DMA0_IRQn = 127,                             /*!< CSIC_DMA  */
     CSIC_DMA1_IRQn = 128,                             /*!< CSIC_DMA  */
     CSIC_DMA2_IRQn = 129,                             /*!< CSIC_DMA  */
@@ -1228,7 +1229,8 @@ typedef struct DE_VI_Type
     volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
     volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
     volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x0E8 OVL_V overlay window size register */
+             uint32_t reserved_0x0EC;
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
              uint32_t reserved_0x100 [0x01C0];

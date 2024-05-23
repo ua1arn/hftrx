@@ -24,8 +24,8 @@
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 //#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -282,13 +282,13 @@
 			static einthandler_t h1; \
 			static einthandler_t h2; \
 			arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER_BITS, GPIO_CFG_EINT); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, 0); \
-			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupt); \
+			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, 0); \
+			einthandler_initialize(& h1, BOARD_GPIOD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, BOARD_GPIOD_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			/*arm_hardware_piod_altfn20(BOARD_GPIOD_ENCODER2_BITS, GPIO_CFG_EINT); */ \
 			arm_hardware_piod_inputs(BOARD_GPIOD_ENCODER2_BITS); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, 0*BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupt2); \
+			arm_hardware_piod_updown(BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, 0); \
+			einthandler_initialize(& h2, 0*BOARD_GPIOD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_piod_onchangeinterrupt(0*BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, BOARD_GPIOD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 		} while (0)
 
@@ -383,19 +383,19 @@
 		arm_hardware_piof_inputs(UINT32_C(1) << 0);	/* PF0 - SDC0_D1	*/ \
 		arm_hardware_piof_inputs(UINT32_C(1) << 5);	/* PF5 - SDC0_D2	*/ \
 		arm_hardware_piof_inputs(UINT32_C(1) << 4);	/* PF4 - SDC0_D3	*/ \
-		arm_hardware_piof_updown(0, UINT32_C(1) << 3);	/* PF3 - SDC0_CMD	*/ \
-		arm_hardware_piof_updown(0, UINT32_C(1) << 2);	/* PF2 - SDC0_CK	*/ \
-		arm_hardware_piof_updown(0, UINT32_C(1) << 1);	/* PF1 - SDC0_D0	*/ \
-		arm_hardware_piof_updown(0, UINT32_C(1) << 0);	/* PF0 - SDC0_D1	*/ \
-		arm_hardware_piof_updown(0, UINT32_C(1) << 5);	/* PF5 - SDC0_D2	*/ \
-		arm_hardware_piof_updown(0, UINT32_C(1) << 4);	/* PF4 - SDC0_D3	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 3, 0, UINT32_C(1) << 3);	/* PF3 - SDC0_CMD	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 2, 0, UINT32_C(1) << 2);	/* PF2 - SDC0_CK	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 1, 0, UINT32_C(1) << 1);	/* PF1 - SDC0_D0	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 0, 0, UINT32_C(1) << 0);	/* PF0 - SDC0_D1	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 5, 0, UINT32_C(1) << 5);	/* PF5 - SDC0_D2	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 4, 0, UINT32_C(1) << 4);	/* PF4 - SDC0_D3	*/ \
 	} while (0)
 
 	#define HARDWARE_SDIO_CD_BIT	(UINT32_C(1) << 6)	/* PF6 - SDC0_DET */
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piof_inputs(HARDWARE_SDIO_CD_BIT); /* PF6 - SDC0_DET */ \
-			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, 0); \
+			arm_hardware_piof_updown(HARDWARE_SDIO_CD_BIT, HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 
@@ -699,7 +699,7 @@
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, 0); \
+		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART1HW
@@ -712,7 +712,7 @@
 		/*arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); *//* PG12 BT_WAKE */ \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_updown(RXMASK, 0); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART2HW
@@ -722,7 +722,7 @@
 		const portholder_t RXMASK = UINT32_C(1) << 16; /* PG16 UART2-RX - pull-up RX data */  \
 		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_updown(RXMASK, 1); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 1); \
 	} while (0)
 
 
@@ -742,9 +742,9 @@
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_piod_inputs(BOARD_GPIOD_ENC2BTN_BIT); \
-			arm_hardware_piod_updown(BOARD_GPIOD_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_piod_updown(BOARD_GPIOD_ENC2BTN_BIT, BOARD_GPIOD_ENC2BTN_BIT, 0); /* PD21: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
-			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
+			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -757,8 +757,8 @@
 #if WITHISBOOTLOADER
 	// I2C/TWI
 	// BOOTLOASER version
-	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
 	// PL1 S-TWI0-SDA - На плате нет pull-up резисторов
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
@@ -775,8 +775,8 @@
 	#define	TWISOFT_INITIALIZE() do { \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
 		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
-		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
 		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
@@ -787,8 +787,8 @@
 	#define	TWIHARD_INITIALIZE() do { \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
-		arm_hardware_piol_updown(TARGET_TWI_TWCK, 0); \
-		arm_hardware_piol_updown(TARGET_TWI_TWD, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
@@ -1008,8 +1008,8 @@
 	// TCON0_TRM_CTL_REG offset 0x0010
 	// User manual:
 	// LCD FRM Control Register (Default Value: 0x0000_0000)
-	//#define TCON_FRM_MODE_VAL ((UINT32_C(1) << 31) | (UINT32_C(1) << 6) | (UINT32_C(0) << 5) | (UINT32_C(1) << 4))	// 16 bit panel connected
-	#define TCON_FRM_MODE_VAL ((UINT32_C(1) << 31) | (UINT32_C(0) << 6) | (UINT32_C(0) << 5)| (UINT32_C(0) << 4))	// 18 bit panel connected
+	//#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (UINT32_C(1) << 6) | (UINT32_C(0) << 5) | (UINT32_C(1) << 4))	// 16 bit panel connected
+	#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (UINT32_C(0) << 6) | (UINT32_C(0) << 5)| (UINT32_C(0) << 4))	// 18 bit panel connected
 	//#define TCON_FRM_MODE_VAL 0	// 24 bit panel
 
 	/* demode values: 0: static signal, 1: DE controlled */
@@ -1052,6 +1052,11 @@
 	#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
 	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 
+	//	#define	TCONTV_IX 0	/* 0: TCON_TV0, 2: TCON_TV1 */
+	//	#define TCONTV_PTR TCON_TV0
+	//	#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+	//	#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tvd0_freq())
+
 #endif /* WITHLTDCHW */
 
 
@@ -1060,7 +1065,7 @@
 		//	tsc interrupt PD27
 		//	tsc reset PD26
 
-		void gt911_interrupt_handler(void);
+		void gt911_interrupt_handler(void * ctx);
 
 		#define BOARD_GT911_INT_PIN 	(UINT32_C(1) << 27)
 		#define BOARD_GT911_RESET_PIN 	(UINT32_C(1) << 26)
@@ -1075,14 +1080,14 @@
 
 		#define BOARD_GT911_RESET_INITIO_2() do { \
 			arm_hardware_piod_inputs(BOARD_GT911_INT_PIN); \
-			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, 1); \
+			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, BOARD_GT911_INT_PIN, 0); \
 		} while (0)
 
 		#define BOARD_GT911_INT_CONNECT() do { \
 			static einthandler_t h; \
 			arm_hardware_piod_inputs(BOARD_GT911_INT_PIN); \
-			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, 1); \
-			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler); \
+			arm_hardware_piod_updown(BOARD_GT911_INT_PIN, BOARD_GT911_INT_PIN, 0); \
+			einthandler_initialize(& h, 1*BOARD_PPSIN_BIT, gt911_interrupt_handler, NULL); \
 			arm_hardware_piod_onchangeinterrupt(BOARD_GT911_INT_PIN, 1*BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 		} while (0)
 		//gt911_interrupt_handler
@@ -1191,8 +1196,8 @@
 	#define NMEA_INITIALIZE() do { \
 		static einthandler_t h; \
 		arm_hardware_piod_altfn20(BOARD_PPSIN_BIT, GPIO_CFG_EINT); \
-		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0); \
-		einthandler_initialize(& h, BOARD_PPSIN_BIT, spool_nmeapps); \
+		arm_hardware_piod_updown(BOARD_PPSIN_BIT, 0, BOARD_PPSIN_BIT); /* pull-down */ \
+		einthandler_initialize(& h, BOARD_PPSIN_BIT, spool_nmeapps, NULL); \
 		arm_hardware_piod_onchangeinterrupt(BOARD_PPSIN_BIT, BOARD_PPSIN_BIT, 0, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); \
 	} while (0)
 

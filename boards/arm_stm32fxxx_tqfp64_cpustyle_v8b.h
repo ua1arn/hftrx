@@ -56,7 +56,7 @@
 	#if 0
 		#define HARDWARE_UART1_INITIALIZE() do { \
 				arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-				arm_hardware_pioa_updown((1U << 10), 0);	/* PA10: pull-up RX data */ \
+				arm_hardware_pioa_updown(_xMask, (1U << 10), 0);	/* PA10: pull-up RX data */ \
 			} while (0)
 
 	#endif
@@ -102,7 +102,7 @@
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ENCODER_BITS); \
-			arm_hardware_piob_updown(ENCODER_BITS, 0); \
+			arm_hardware_piob_updown(_xMask, ENCODER_BITS, 0); \
 			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -123,14 +123,14 @@
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
 		/* сигнал PPS от GPS/GLONASS/GALILEO модуля */
@@ -198,7 +198,7 @@
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(PTT_BIT_PTT); \
-			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_piod_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
 		} while (0)
 
 #endif /* WITHTX */
@@ -217,7 +217,7 @@
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -353,7 +353,7 @@
 	#define	USBD_FS_INITIALIZE() do { \
 		arm_hardware_pioa_altfn50((1U << 11) | (1U << 12), AF_OTGFS);			/* PA11, PA12 - USB_OTG_FS	*/ \
 		arm_hardware_pioa_inputs(1U << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
-		arm_hardware_pioa_updownoff((1U << 9) | (1U << 11) | (1U << 12)); \
+		arm_hardware_pioa_updown((1U << 9) | (1U << 11) | (1U << 12), 0, 0); \
 		} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    
@@ -364,7 +364,7 @@
 	#define	USBD_HS_FS_INITIALIZE() do { \
 		arm_hardware_piob_altfn50((1U << 14) | (1U << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
 		arm_hardware_piob_inputs(1U << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
-		arm_hardware_piob_updownoff((1U << 13) | (1U << 14) | (1U << 15)); \
+		arm_hardware_piob_updown((1U << 13) | (1U << 14) | (1U << 15), 0, 0); \
 		} while (0)
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
@@ -389,7 +389,7 @@
 	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9), 255);	/* TX DATA line (2 MHz) */ \
 			arm_hardware_pioa_inputs((1U << 10));		/* RX data line */ \
-			arm_hardware_pioa_updown((1U << 10), 0);	/* pull-up RX data */ \
+			arm_hardware_pioa_updown(_xMask, (1U << 10), 0);	/* pull-up RX data */ \
 		} while (0)
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 			arm_hardware_piob_altfn2(SIDETONE_TARGET_BIT, 255);	/* output TIM4_CH3 (PB8, base mapping) */ \
@@ -421,7 +421,7 @@
 		} while (0)
 	#define HARDWARE_UART1_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2((1U << 9) | (1U << 10), 7 /* AF_USART1 */); /* TX DATA line (2 MHz), RX data line */ \
-			arm_hardware_pioa_updown((1U << 10), 0);	/* pull-up RX data */ \
+			arm_hardware_pioa_updown(_xMask, (1U << 10), 0);	/* pull-up RX data */ \
 		} while (0)
 	#define HARDWARE_SIDETONE_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(SIDETONE_TARGET_BIT, 2 /*AF_TIM4 */);/* output TIM4_CH3 (PB8, base mapping) */ \

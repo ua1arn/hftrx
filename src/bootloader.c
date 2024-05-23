@@ -112,10 +112,17 @@ static uint_fast8_t bootloader_copyapp(
 		printhex(appoffset, tmpbuff, HEADERSIZE);
 		return 1;
 	}
-	* ip = hdr->image_entry_point;
-	PRINTF("bootloader_copyapp: ip=%08X (addr=%08X, len=%08X)\n", (unsigned) * ip, (unsigned) hdr->load_address, (unsigned) hdr->image_length);
+	PRINTF("bootloader_copyapp: addr=%08X, len=%08X\n", (unsigned) hdr->load_address, (unsigned) hdr->image_length);
 	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
-	PRINTF("bootloader_copyapp done.\n");
+	if (bootloader_get_start((uintptr_t) hdr, ip))	// verify
+	{
+		PRINTF("bootloader_copyapp done - checksum bad.\n");
+		printhex((uintptr_t) hdr->load_address, (void *) (uintptr_t) hdr->load_address, 256);
+		//printhex((uintptr_t) hdr->load_address, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
+		return 1;
+	}
+	PRINTF("bootloader_copyapp done - checksum okay.\n");
+	//printhex((uintptr_t) hdr->load_address, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
 	return 0;
 }
 
@@ -388,7 +395,7 @@ void bootloader_mainloop(void)
 		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
 		do
 		{
-			uintptr_t ip;
+			uintptr_t ip = 0xDEADBEEF;
 			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
 			{
 				PRINTF("bootloader_mainloop: No application image at offset 0x%08X\n", (unsigned) BOOTLOADER_SELFSIZE);
@@ -400,7 +407,7 @@ void bootloader_mainloop(void)
 			if (bootloader_withusb())
 				board_usb_deinitialize();
 #endif /* WITHUSBHW */
-			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
+			PRINTF("bootloader_mainloop: ip=%08X\n", (unsigned) ip);
 			bootloader_launch_app(ip);
 
 		} while (0);

@@ -21,6 +21,10 @@
 	#include "display/fonts/ub_fonts.h"
 #endif /* WITHALTERNATIVEFONTS */
 
+#if WITHRLEDECOMPRESS
+	#include "display/pictures_RLE.h"
+#endif /* WITHRLEDECOMPRESS */
+
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
 #if LCDMODE_LTDC
@@ -590,10 +594,6 @@ typedef struct {
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
-#if WITHRLEDECOMPRESS
-extern const picRLE_t smeter_bg_new;
-#endif /* WITHRLEDECOMPRESS */
-
 static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
@@ -644,7 +644,7 @@ display2_smeter15_layout(
 		break;
 	}
 
-	const int markersTX_pwr [] =
+	const uint_fast16_t markersTX_pwr [] =
 	{
 		smpr->gs,
 		smpr->gs + 2 * smpr->step1,
@@ -658,14 +658,14 @@ display2_smeter15_layout(
 		smpr->gs + 18 * smpr->step1,
 		smpr->gs + 20 * smpr->step1,
 	};
-	const int markersTX_swr [] =
+	const uint_fast16_t markersTX_swr [] =
 	{
 		smpr->gs,
 		smpr->gs + smpr->step3,
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
-	const int markers [] =
+	const uint_fast16_t markers [] =
 	{
 		//smpr->gs + 0 * smpr->step1,
 		smpr->gs + 2 * smpr->step1,		// S1
@@ -674,13 +674,13 @@ display2_smeter15_layout(
 		smpr->gs + 8 * smpr->step1,		// S7
 		smpr->gs + 10 * smpr->step1,	// S9
 	};
-	const int markersR [] =
+	const uint_fast16_t markersR [] =
 	{
 		smpr->gm + 2 * smpr->step2,	//
 		smpr->gm + 4 * smpr->step2,
 		smpr->gm + 6 * smpr->step2,
 	};
-	const int markers2 [] =
+	const uint_fast16_t markers2 [] =
 	{
 		//smpr->gs + 1 * smpr->step1,
 		smpr->gs + 3 * smpr->step1,		// S2
@@ -688,7 +688,7 @@ display2_smeter15_layout(
 		smpr->gs + 7 * smpr->step1,		// S6
 		smpr->gs + 9 * smpr->step1,		// S8
 	};
-	const int markers2R [] =
+	const uint_fast16_t markers2R [] =
 	{
 		smpr->gm + 1 * smpr->step2,
 		smpr->gm + 3 * smpr->step2,
@@ -3561,7 +3561,7 @@ typedef struct {
 
 #if WITHVIEW_3DSS
 enum {
-#if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_STM32MP1 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 	MAX_3DSS_STEP = 70,
 #else
 	MAX_3DSS_STEP = 42,
@@ -4232,6 +4232,7 @@ void arm_cmplx_mult_real_f64(
 
 }
 
+#if 0
 /**
   @brief Instance structure for floating-point FIR decimator.
  */
@@ -4609,7 +4610,7 @@ typedef struct
     }
 
   }
-
+#endif
 #endif
 
 static void fftzoom_filer_decimate_ifspectrum(
@@ -5971,6 +5972,10 @@ display_walktrough(
 	dctx_t * pctx
 	)
 {
+#if WITHLVGL
+	return;
+#endif /* WITHLVGL */
+
 #if LINUX_SUBSYSTEM
 	if (key != REDRM_INIS)
 		return;
@@ -6000,7 +6005,7 @@ display_walktroughsteps(
 	uint_fast8_t subset
 	)
 {
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM || WITHLVGL
 		return;
 
 #elif STMD
@@ -6051,6 +6056,10 @@ display_walktroughsteps(
 // выполнение шагов state machine отображения дисплея
 void display2_bgprocess(void)
 {
+#if WITHLVGL
+	return;
+#endif /* WITHLVGL */
+
 #if LINUX_SUBSYSTEM
 	enum { WALKCOUNT = sizeof dzones / sizeof dzones [0] };
 	uint8_t dpage = REDRSUBSET(amenuset());
@@ -6103,6 +6112,10 @@ void display2_bgprocess(void)
 // сброс state machine отображения дисплея и очистить дисплей
 void display2_bgreset(void)
 {
+#if WITHLVGL
+	return;
+#endif /* WITHLVGL */
+
 	uint_fast8_t i;
 
 	// очистить дисплей.
@@ -6651,3 +6664,19 @@ COLORPIP_T display2_get_spectrum(int x)
 
 #endif /* WITHTOUCHGUI */
 
+#if LINUX_SUBSYSTEM && WITHLVGL
+
+void wfl_init(void)
+{
+	display2_wfl_init(0, 0, NULL);
+}
+
+uint32_t * wfl_proccess(void)
+{
+	display2_clearbg(0, 0, NULL);
+	display2_latchwaterfall(0, 0, NULL);
+	display2_spectrum(0, 0, NULL);
+	return getscratchwnd();
+}
+
+#endif /* LINUX_SUBSYSTEM && WITHLVGL */

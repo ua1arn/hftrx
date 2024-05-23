@@ -3,7 +3,7 @@ https://github.com/YuzukiHD/Yuzukilizard
 
 
 xfel:
-https://gitee.com/xboot/xfel/releases/v1.2.9
+https://gitee.com/xboot/xfel/releases/tag/v1.3.2
 
 
 Dual-core ARM CortexTM-A7

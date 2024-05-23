@@ -242,7 +242,6 @@
 			#define WITHLFM					1
 			#define WITHNMEA				1
 			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
-			#define WITHGNSS_1PPS	1 	/* обрабатываются прерывания от аппаратного входа 1PPS	*/
 
 		#endif
 	#elif LCDMODE_LQ043T3DX02K

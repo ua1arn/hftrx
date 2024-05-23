@@ -1,7 +1,7 @@
 ﻿Каталог для сборки версии программы под процессор Allwinner F133
-xfel:
-https://gitee.com/xboot/xfel/releases/v1.2.9
 
+xfel:
+https://gitee.com/xboot/xfel/releases/tag/v1.3.2
 
 The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 

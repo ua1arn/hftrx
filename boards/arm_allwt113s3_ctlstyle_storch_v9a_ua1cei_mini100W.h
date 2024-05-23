@@ -11,6 +11,7 @@
 #ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED
 #define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED 1
 
+	//#define WITHMGLOOP 1
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -324,7 +325,12 @@
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+
 	#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
+	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_UA1CEI	1
+	//#define COLORSTYLE_RED	1
+	#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -415,7 +421,7 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+	#if 1
 		#define WITHAUTOTUNER_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */

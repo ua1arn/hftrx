@@ -313,13 +313,13 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef uint_fast32_t COLORPIP_T;
 		typedef uint32_t PACKEDCOLORPIP_T;
 
-		// RRRR.RGGG.GGGB.BBBB
+		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTRGB(red, green, blue) \
 			(  (uint_fast32_t) ( \
 					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
-					(((uint_fast32_t) (red) << 16) &   0xFF0000)  | \
+					(((uint_fast32_t) (red) << 16) & 0xFF0000)  | \
 					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-					(((uint_fast32_t) (blue) >> 0) &  0x00FF) \
+					(((uint_fast32_t) (blue) << 0) &  0x00FF) \
 				) \
 			)
 		#define TFTALPHA(alpha, color24) \
@@ -1083,6 +1083,20 @@ void colpip_fillrect(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	);
+
+
+void gpu_fillrect(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	COLOR24_T color24,
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет

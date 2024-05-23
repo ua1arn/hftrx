@@ -20,7 +20,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 #XFEL = ../../tools/xfel-windows-v1.3.2/xfel
-XFEL = xfel_fixed_t113-s3
+XFEL = ./xfel_fixed_t113-s3
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -289,7 +289,7 @@ app_run: $(PROJECT)_app.alw32
 # bootloader debug - check allwnr_t113s3_boot.ld
 _app_run: fsbl.alw32
 	$(XFEL) write 0x00028000 fsbl.alw32
-	$(XFEL) exec 0x00028100 
+	$(XFEL) exec 0x00028000 
 
 app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) ddr t113-s3
@@ -302,6 +302,7 @@ flash:
 
 erase:
 	$(XFEL) spinor erase 0x00000000 1024
+	$(XFEL) spinor erase 0x00040000 1024
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 

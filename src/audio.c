@@ -744,15 +744,18 @@ void adpt_initialize(
 	const char * name
 	)
 {
-	int signpos = leftbit - 1;
+	const int signpos = leftbit - 1;
+	const FLOAT_t outfence = db2ratio(- (FLOAT_t) 0.03);
 	/* Форматы с павающей точкой обеспечивают точное представление степеней двойки */
 	adp->inputK = LDEXPF(1, - signpos);
-	adp->outputK = LDEXPF(1, signpos) * db2ratio(- (FLOAT_t) 0.03);
+	adp->outputK = LDEXPF(1, signpos) * outfence;
 	adp->outputKexact = LDEXPF(1, signpos);
 	adp->rightspace = rightspace;
 	adp->leftbit = leftbit;
 	adp->lshift32 = 32 - leftbit - rightspace;
 	adp->rshift32 = 32 - leftbit;
+	adp->outmax = outfence;
+	adp->outmin = - outfence;
 	//PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
 	adp->name = name;
 }
@@ -772,6 +775,8 @@ int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 //	}
 //	ASSERT(v <= 1);
 //	ASSERT(v >= - 1);
+	v = FMINF(v, adp->outmax);	// ограничить сверху
+	v = FMAXF(v, adp->outmin);	// ограничить снизу
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
@@ -784,6 +789,8 @@ int32_t adpt_outputL(const adapter_t * adp, double v)
 //	}
 //	ASSERT(v <= 1);
 //	ASSERT(v >= - 1);
+	v = fmin(v, adp->outmax);	// ограничить сверху
+	v = fmax(v, adp->outmin);	// ограничить снизу
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
@@ -2815,7 +2822,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		#endif
 	#endif /* WITHDSPEXTFIR */
 		const int cutfreq = fullbw6 / 2;
-		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
+//		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
 	#if WITHDSPLOCALFIR
 		if (isdspmoderx(dspmode))
@@ -6089,7 +6096,7 @@ board_set_lineamp(uint_fast16_t v)
 }
 
 
-// Включение line input вместо микрофона
+// Включение line input (rear panel mini-din 6 pin input) вместо микрофона
 void
 board_set_lineinput(uint_fast8_t n)
 {

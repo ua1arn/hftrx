@@ -35,7 +35,7 @@
 
 //#define WITHISBOOTLOADER	1	/* выполняем make bootloader */
 //#define WITHISBOOTLOADER0	(WITHISBOOTLOADER && CPUSTYLE_R7S721)	/* Renesas specific option - FSBL. Открыть эту строку и запустить make bootloader */
-//#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* T507, H616, A64 - инициализатор LPDDR4 памяти на плате */
+//#define WITHISBOOTLOADER_DDR	(WITHISBOOTLOADER && 1)	/* T507, H616, A64 - инициализатор LPDDR4 памяти на плате - set RAM base in allwnr_t507_boot.ld */
 
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
@@ -272,9 +272,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt507_ctlstyle_helperboard_t507.h"
+	#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt507_cpustyle_helperboard_t507.h"
+	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt507_ctlstyle_helperboard_t507_ra4asn.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -284,6 +284,10 @@
 	#include "boards/arm_allwt507_ctlstyle_xhelperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_xhelperboard_t507.h"
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt507_ctlstyle_video2.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt507_cpustyle_video2.h"
 #elif CPUSTYLE_T113 && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwt113s3_ctlstyle_ra4asn.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -304,13 +308,33 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9w.h"	// rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2.h"	// rmainunit_sv9x2.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_storch_v9x2.h"	// rmainunit_sv9x2.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_mango_pi.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_mango_pi_dctrx.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_mango_pi_dctrx.h"
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_tboard_v0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_tboard_v0.h"
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_yo6puc.h"	// sabi project
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_yo6puc.h"	// sabi project
+#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_xczuxx_ctlstyle_axu2cga_ad9640.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_xczuxx_cpustyle_axu2cga_ad9640.h"
+#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
+	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_xczu2_cpustyle_alinx_axu2cga.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
 	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020

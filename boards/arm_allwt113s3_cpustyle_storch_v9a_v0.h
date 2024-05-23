@@ -21,13 +21,10 @@
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 #define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
 	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
@@ -99,6 +96,9 @@
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	#if WITHINTEGRATEDDSP
 
@@ -256,13 +256,13 @@
 		static einthandler_t h1; \
 		static einthandler_t h2; \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, 0); \
-		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupt); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, 0); \
+		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupts, & encoder1); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & h1); \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
-		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupt2); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, 0); \
-		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
+		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, 0); \
+		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & h2); \
 	} while (0)
 
 #endif
@@ -353,12 +353,12 @@
 			arm_hardware_pioc_inputs(UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_inputs(UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_inputs(UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(_xMask, 0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
@@ -371,9 +371,9 @@
 			arm_hardware_piod_inputs(UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_inputs(UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_inputs(UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_piod_updown(0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_updown(_xMask, 0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
@@ -382,9 +382,9 @@
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_WP_BIT); /* PD1 - SDIO_WP */ \
-			arm_hardware_piog_updown(HARDWARE_SDIO_WP_BIT, 0); \
+			arm_hardware_piog_updown(HARDWARE_SDIO_WP_BIT, HARDWARE_SDIO_WP_BIT, 0); \
 			arm_hardware_piog_inputs(HARDWARE_SDIO_CD_BIT); /* PD0 - SDIO_SENSE */ \
-			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, 0); \
+			arm_hardware_piog_updown(HARDWARE_SDIO_CD_BIT, HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 	#define HARDWARE_SDIOSENSE_CD() ((GPIOG->DATA & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
@@ -432,7 +432,7 @@
 	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() do { \
 			arm_hardware_piof_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_piof_updown(0, TXDISABLE_BIT_TXDISABLE); \
+			arm_hardware_piof_updown(TXDISABLE_BIT_TXDISABLE, 0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
 	// ---
 
@@ -447,9 +447,9 @@
 	#define HARDWARE_GET_PTT() 			((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
-			arm_hardware_piof_updown(PTT_BIT_PTT, 0); \
+			arm_hardware_piof_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
 			arm_hardware_piof_inputs(PTT2_BIT_PTT); \
-			arm_hardware_piof_updown(PTT2_BIT_PTT, 0); \
+			arm_hardware_piof_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
 		} while (0)
 	// ---
 	// TUNE input - PF2
@@ -458,7 +458,7 @@
 	#define HARDWARE_GET_TUNE() 		((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
 			arm_hardware_piof_inputs(TUNE_BIT_TUNE); \
-			arm_hardware_piof_updown(TUNE_BIT_TUNE, 0); \
+			arm_hardware_piof_updown(TUNE_BIT_TUNE, TUNE_BIT_TUNE, 0); \
 		} while (0)
 
 #else /* WITHTX */
@@ -484,7 +484,7 @@
 
 	#define ELKEY_INITIALIZE() do { \
 			arm_hardware_piof_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piof_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piof_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -535,6 +535,16 @@
 		} \
 	} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
+		case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
+		case targetrtc1: local_delay_us(4); break; /* RTC DS1305 RTC_CS */ \
+		default: break; \
+		} \
+	} while (0)
+
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
 		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
@@ -574,6 +584,7 @@
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
+	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
@@ -609,7 +620,7 @@
 		const portholder_t RXMASK = (UINT32_C(1) << 3); /* PE3 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_updown(RXMASK, 0); \
+		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 
@@ -632,9 +643,9 @@
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
-			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, 0); /* PE6: pull-up second encoder button */ \
+			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, TARGET_ENC2BTN_BIT, 0); /* PE6: pull-up second encoder button */ \
 			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */\
-			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
+			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -648,30 +659,32 @@
 	// TWI1-SCK PE0
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)		// TWI1-SCK PE0
-	#define TARGET_TWI_TWCK_PIN		(GPIOE->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOE))
+	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)		// TWI1-SDA PE1
-	#define TARGET_TWI_TWD_PIN		(GPIOE->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { arm_hardware_pioe_outputs((v), 0); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { arm_hardware_pioe_inputs(v); } while (0)
+	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOE))
+	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
+		arm_hardware_pioe_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
+		arm_hardware_pioe_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
+	} while (0)
 	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* SDA */ \
-		} while (0)
+		arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
+		arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* SDA */ \
+	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI1-SCK PE0 */ \
 		arm_hardware_pioe_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI1-SDA PE1 */ \
-		} while (0) 
+		arm_hardware_pioe_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
+		arm_hardware_pioe_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+	} while (0)
 	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnrt113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
@@ -896,8 +909,8 @@
 	// TCON0_TRM_CTL_REG offset 0x0010
 	// User manual:
 	// LCD FRM Control Register (Default Value: 0x0000_0000)
-	#define TCON_FRM_MODE_VAL ((UINT32_C(1) << 31) | (UINT32_C(1) << 6) | (0u << 5) | (UINT32_C(1) << 4))	// 16 bit panel connected
-	//#define TCON_FRM_MODE_VAL ((UINT32_C(1) << 31) | (0u << 6) | (0u << 5)| (0u << 4))	// 18 bit panel connected
+	#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (UINT32_C(1) << 6) | (0u << 5) | (UINT32_C(1) << 4))	// 16 bit panel connected
+	//#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (0u << 6) | (0u << 5)| (0u << 4))	// 18 bit panel connected
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
@@ -981,9 +994,9 @@
 	} while (0)
 
 
-	//#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-	#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+	#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
+	#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
+	#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 	#define BOARD_TCONLCDFREQ (allwnrt113_get_tconlcd_freq())
 	#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
 
@@ -996,13 +1009,13 @@
 	//	tsc SCL: XS26, pin 01
 	//	tsc SDA: XS26, pin 02
 
-	void stmpe811_interrupt_handler(void);
+	void stmpe811_interrupt_handler(void * ctx);
 
 	#define BOARD_GPIOE_STMPE811_INT_PIN (UINT32_C(1) << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_STMPE811_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_STMPE811_INT_PIN, 0); \
+		arm_hardware_pioe_updown(_xMask, BOARD_GPIOE_STMPE811_INT_PIN, 0); \
 		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_STMPE811_INT_PIN, 1 * BOARD_GPIOE_STMPE811_INT_PIN, 0 * BOARD_GPIOE_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 
@@ -1013,7 +1026,7 @@
 	/* PE9 TS_INT */
 	/* PD22 FPLCD_RESET */
 
-	void gt911_interrupt_handler(void);
+	void gt911_interrupt_handler(void * ctx);
 
 	#define BOARD_GPIOE_GT911_INT_PIN (UINT32_C(1) << 9)		/* PE9 : tsc interrupt XS26, pin 08 */
 	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 22)	/* PD22 : tsc/LCD reset, XS26, pin 22 */
@@ -1029,12 +1042,12 @@
 
 	#define BOARD_GT911_RESET_INITIO_2() do { \
 		arm_hardware_pioe_inputs(BOARD_GPIOE_GT911_INT_PIN); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_GT911_INT_PIN, 0); \
+		arm_hardware_pioe_updown(_xMask, BOARD_GPIOE_GT911_INT_PIN, 0); \
 	} while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
 		arm_hardware_pioe_altfn2(BOARD_GPIOE_GT911_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_GT911_INT_PIN, 0); \
+		arm_hardware_pioe_updown(_xMask, BOARD_GPIOE_GT911_INT_PIN, 0); \
 		arm_hardware_pioe_onchangeinterrupt0 * BOARD_GPIOE_GT911_INT_PIN, 1 * BOARD_GPIOE_GT911_INT_PIN, 0 * BOARD_GPIOE_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 	//gt911_interrupt_handler

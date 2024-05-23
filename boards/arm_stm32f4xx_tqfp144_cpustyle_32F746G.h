@@ -24,8 +24,8 @@
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHI2S2HW	1	/* Использование I2S - аудиокодек	*/
 
@@ -216,10 +216,10 @@
 	#define ENCODER_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ENCODER_BITS); \
-			arm_hardware_piob_updown(ENCODER_BITS, 0); \
+			arm_hardware_piob_updown(_xMask, ENCODER_BITS, 0); \
 			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piob_inputs(ENCODER2_BITS); \
-			arm_hardware_piob_updown(ENCODER2_BITS, 0); \
+			arm_hardware_piob_updown(_xMask, ENCODER2_BITS, 0); \
 			arm_hardware_piob_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
@@ -287,14 +287,14 @@
 	#define FROMCAT_DTR_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_DTR); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_DTR, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_DTR, 0); \
 		} while (0)
 
 	/* переход на передачу от порта RS-232 */
 	#define FROMCAT_RTS_INITIALIZE() \
 		do { \
 			arm_hardware_pioa_inputs(FROMCAT_BIT_RTS); \
-			arm_hardware_pioa_updown(FROMCAT_BIT_RTS, 0); \
+			arm_hardware_pioa_updown(_xMask, FROMCAT_BIT_RTS, 0); \
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_USART1) */
@@ -387,7 +387,7 @@
 
 	#define HARDWARE_SDIOSENSE_INITIALIZE()	do { \
 			arm_hardware_pioc_inputs(HARDWARE_SDIO_CD_BIT); /* PD0 - SDIO_SENSE */ \
-			arm_hardware_pioc_updown(HARDWARE_SDIO_CD_BIT, 0); \
+			arm_hardware_pioc_updown(HARDWARE_SDIO_CD_BIT, HARDWARE_SDIO_CD_BIT, 0); \
 	} while (0)
 
 	#define HARDWARE_SDIOSENSE_CD() ((GPIOC->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
@@ -442,7 +442,7 @@
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */
@@ -540,7 +540,7 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2((1U << 9), AF_USART1); /* PA9: TX DATA line (2 MHz) */ \
 		arm_hardware_piob_altfn2((1U << 7), AF_USART1); /* PB7: RX DATA line (2 MHz) */ \
-		arm_hardware_piob_updown((1U << 7), 0);	/* PB7: pull-up RX data */ \
+		arm_hardware_piob_updown(_xMask, (1U << 7), 0);	/* PB7: pull-up RX data */ \
 	} while (0)
 
 #define HARDWARE_UART2_INITIALIZE() do { \
@@ -556,7 +556,7 @@
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		/*arm_hardware_pioa_inputs(KBD_MASK); */\
 		arm_hardware_pioa_inputs(TARGET_ENC2BTN_BIT); \
-		arm_hardware_pioa_updown(TARGET_ENC2BTN_BIT, 0); /* PA8: pull-up second encoder button */ \
+		arm_hardware_pioa_updown(TARGET_ENC2BTN_BIT, TARGET_ENC2BTN_BIT, 0); /* PA8: pull-up second encoder button */ \
 		} while (0)
 #endif
 
@@ -666,7 +666,7 @@
 	*/
 	#define	USBD_FS_INITIALIZE() do { \
 		arm_hardware_pioa_altfn50((1U << 11) | (1U << 12), AF_OTGFS);			/* PA11, PA12 - USB_OTG_FS	*/ \
-		arm_hardware_pioa_updownoff((1U << 11) | (1U << 12)); \
+		arm_hardware_pioa_updown((1U << 11) | (1U << 12), 0, 0); \
 		} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    

@@ -16,6 +16,7 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
+#include "encoder.h"
 //#include "buffers.h"
 
 #if WITHRTOS
@@ -460,7 +461,7 @@ hardware_getshutdown(void)
 }
 
 void 
-hardware_encoder_initialize(void)
+hardware_encoders_initialize(void)
 {
 #if WITHENCODER
 	ENCODER_INITIALIZE();
@@ -488,7 +489,7 @@ hardware_get_encoder_bits(void)
 /* Чтение состояния выходов валкодера #2 - в два младших бита */
 /* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
-uint_fast8_t 
+uint_fast8_t
 hardware_get_encoder2_bits(void)
 {
 #if WITHENCODER2 && defined (ENCODER2_BITS_GET)
@@ -498,11 +499,63 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER2 && CPUSTYLE_XC7Z
+#elif WITHENCODER2 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	return ((gpio_readpin(ENCODER2_BITA) != 0) * 2 + (gpio_readpin(ENCODER2_BITB) != 0));
 #else /* WITHENCODER2 */
 	return 0;
 #endif /* WITHENCODER2 */
+}
+
+/* Чтение состояния выходов валкодера #3 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder3_bits(void)
+{
+#if WITHENCODER3 && defined (ENCODER3_BITS_GET)
+	return ENCODER3_BITS_GET();
+#else /* WITHENCODER3 */
+	return 0;
+#endif /* WITHENCODER3 */
+}
+
+/* Чтение состояния выходов валкодера #4 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t 
+hardware_get_encoder4_bits(void)
+{
+#if WITHENCODER4 && defined (ENCODER4_BITS_GET)
+	return ENCODER4_BITS_GET();
+#else /* WITHENCODER4 */
+	return 0;
+#endif /* WITHENCODER4 */
+}
+
+/* Чтение состояния выходов валкодера #5 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder5_bits(void)
+{
+#if WITHENCODER5 && defined (ENCODER5_BITS_GET)
+	return ENCODER5_BITS_GET();
+#else /* WITHENCODER5 */
+	return 0;
+#endif /* WITHENCODER5 */
+}
+
+/* Чтение состояния выходов валкодера #6 - в два младших бита */
+/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+
+uint_fast8_t
+hardware_get_encoder6_bits(void)
+{
+#if WITHENCODER6 && defined (ENCODER6_BITS_GET)
+	return ENCODER6_BITS_GET();
+#else /* WITHENCODER6 */
+	return 0;
+#endif /* WITHENCODER6 */
 }
 
 // ADC intgerface functions
@@ -1263,6 +1316,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_XCZU
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -1299,6 +1354,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // TODO: перекалибровать для FLASH контроллеров.
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
+	if (timeUS == 0)
+		return;
 #if LINUX_SUBSYSTEM
 	usleep(timeUS);
 #else
@@ -1536,12 +1593,14 @@ __STATIC_FORCEINLINE uint32_t __get_DFAR(void)
 void Undef_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl_P(PSTR("UndefHandler trapped.\n"));
-	dbg_puts_impl_P((__get_MPIDR() & 0x03) ? PSTR("CPUID=1\n") : PSTR("CPUID=0\n"));
+
+	dbg_puts_impl_P(PSTR("Undef_Handler trapped.\n"));
+	PRINTF("UndefHandler trapped[%p]\n", Undef_Handler);
+	PRINTF("CPUID=%d\n", (int) (__get_MPIDR() & 0x03));
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
-		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+		PRINTF("marker[%2d]=%08lX\n", i, (& marker) [i]);
 	}
 	for (;;)
 		;
@@ -2368,6 +2427,30 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
 		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
+
+	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
+#elif CPUSTYLE_XCZU
+
+	// Все сравнения должны быть не точнее 1 MB
+
+	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
+		return addrbase | TTB_PARA_DEVICE;
+
+	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_CACHED(ro || 1, 0);
 
 	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
 		return addrbase | TTB_PARA_CACHED(ro, 0);
@@ -3247,12 +3330,46 @@ void sysinit_pmic_initialize(void)
 #endif /* BOARD_PMIC_INITIALIZE */
 }
 
+
+#if CPUSTYLE_VM14
+
+/* Сбросить второе ядро чтобы не мешало процессу загрузки */
+static void resetCPU(unsigned targetcore)
+{
+	ASSERT(targetcore != 0);
+
+    const uint32_t psmask = UINT32_C(0x03) << (targetcore * 8);	/* SCU_PWR mask */
+    ((volatile uint32_t *) SCU_CONTROL_BASE) [2] |= psmask;	/* reset target CPU */
+}
+
+//Закометарить следующую строку при сборке проекта для старта из флешки :
+//#define USE_ALT_START_FROR_SECOND_CORE 1
+//
+#ifdef USE_ALT_START_FROR_SECOND_CORE
+typedef void (*cpu_startup_remap)(void);
+static cpu_startup_remap startup_remap __attribute__ ((section (".CPU_Internal"))) = {0};
+#endif
+
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
 void
+SystemInit_BOOT0(void)
+{
+	resetCPU(1);
+	sysinit_fpu_initialize();
+	sysinit_gpio_initialize();
+}
+
+#endif /* CPUSTYLE_VM14 */
+
+// watchdog disable, clock initialize, cache enable
+void
 SystemInit(void)
 {
+#if CPUSTYLE_VM14
+	resetCPU(1);
+#endif /* CPUSTYLE_VM14 */
 #if ! LINUX_SUBSYSTEM
 	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
@@ -3397,6 +3514,42 @@ static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
 	__SEV();
+}
+
+#elif CPUSTYLE_XCZU
+
+/* RST_FPD_APU Address and mask definations */
+#define xXRESETPS_CRF_APB_BASE         (0XFD1A0000U)
+#define xXRESETPS_CRF_APB_RST_FPD_APU \
+				  ((xXRESETPS_CRF_APB_BASE) + ((uint32_t)0X00000104U))
+
+#define xACPU3_PWRON_RESET_MASK    ((uint32_t)0X00002000U)
+#define xACPU2_PWRON_RESET_MASK    ((uint32_t)0X00001000U)
+#define xACPU1_PWRON_RESET_MASK    ((uint32_t)0X00000800U)
+#define xACPU0_PWRON_RESET_MASK    ((uint32_t)0X00000400U)
+#define xAPU_L2_RESET_MASK         ((uint32_t)0X00000100U)
+#define xACPU3_RESET_MASK          ((uint32_t)0X00000008U)
+#define xACPU2_RESET_MASK          ((uint32_t)0X00000004U)
+#define xACPU1_RESET_MASK          ((uint32_t)0X00000002U)
+#define xACPU0_RESET_MASK          ((uint32_t)0X00000001U)
+
+#define xXPAR_PSU_APU_S_AXI_BASEADDR 0xFD5C0000u
+
+//#define HARDWARE_NCORES 2
+
+// Invoke at SVC context
+static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	ASSERT(startfunc != 0);
+	ASSERT(targetcore != 0);
+
+	* (volatile uint32_t *) (xXPAR_PSU_APU_S_AXI_BASEADDR + 0x048) = startfunc;	// apu.rvbaraddr1l
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+
+	* (volatile uint32_t *) 0xFFD80220 = 1u << targetcore;
+	* (volatile uint32_t *) 0xFD5C0020 = 0;	//apu.config0
+
+	* (volatile uint32_t *) xXRESETPS_CRF_APB_RST_FPD_APU &= ~ ((xACPU0_RESET_MASK << targetcore) | (xACPU0_PWRON_RESET_MASK << targetcore));
 }
 
 #elif CPUSTYLE_A64

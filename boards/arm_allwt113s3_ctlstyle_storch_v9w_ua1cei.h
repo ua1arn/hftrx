@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
 // rmainunit_sv9w.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
+#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_UA1CEI_H_INCLUDED
+#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_UA1CEI_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -121,8 +121,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_V2 1	/* только главный экран 8 бит (две страницы), L8, без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -706,4 +706,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9W_UA1CEI_H_INCLUDED */

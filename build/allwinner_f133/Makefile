@@ -20,7 +20,8 @@ TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+XFEL = ./xfel_fixed_t113-s3
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -297,7 +298,7 @@ app_run: $(PROJECT)_app.f133
 # bootloader debug - check aw_f133_boot.ld
 _app_run: fsbl.f133
 	$(XFEL) write 0x00028000 fsbl.f133
-	$(XFEL) exec 0x00028100 
+	$(XFEL) exec 0x00028000 
 
 flash:
 	-$(XFEL) spinor write 0x00000000 fsbl.f133

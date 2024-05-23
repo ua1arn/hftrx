@@ -1,7 +1,171 @@
-#type; GPU; Mali G31 MP2
+#type; GPU; Mali G31 MP2 (Panfrost)
 #base; GPU 0x01800000
 
 #irq; GPU_EVENT 126; GPU_EVENT interrupt
 #irq; GPU_JOB 127; GPU_JOB interrupt
 #irq; GPU_MMU 128; GPU_MMU interrupt
 #irq; GPU 129; GPU interrupt
+
+# https://github.com/bakhi/GPUReplay/blob/master/Bifrost-kdriver/driver/product/kernel/drivers/gpu/arm/midgard/gpu/mali_kbase_gpu_regmap.h
+
+#type; GPU_CONTROL
+#base; GPU_CONTROL 0x01800000
+
+
+#regdef; GPU_ID                  ; 0x000   ; (RO) GPU and revision identifier
+#regdef; L2_FEATURES             ; 0x004   ; (RO) Level 2 cache features
+#regdef; TILER_FEATURES          ; 0x00C   ; (RO) Tiler Features
+#regdef; MEM_FEATURES            ; 0x010   ; (RO) Memory system features
+#regdef; MMU_FEATURES            ; 0x014   ; (RO) MMU features
+#regdef; AS_PRESENT              ; 0x018   ; (RO) Address space slots present
+#regdef; GPU_IRQ_RAWSTAT         ; 0x020   ; (RW)
+#regdef; GPU_IRQ_CLEAR           ; 0x024   ; (WO)
+#regdef; GPU_IRQ_MASK            ; 0x028   ; (RW)
+#regdef; GPU_IRQ_STATUS          ; 0x02C   ; (RO)
+
+#regdef; GPU_COMMAND             ; 0x030   ; (WO)
+#regdef; GPU_STATUS              ; 0x034   ; (RO)
+#regdef; GPU_FAULTSTATUS         ; 0x03C   ; (RO) GPU exception type and fault status
+#regdef; GPU_FAULTADDRESS_LO     ; 0x040   ; (RO) GPU exception fault address, low word
+#regdef; GPU_FAULTADDRESS_HI     ; 0x044   ; (RO) GPU exception fault address, high word
+
+#regdef; L2_CONFIG               ; 0x048   ; (RW) Level 2 cache configuration
+#regdef; PWR_KEY                 ; 0x050   ; (WO) Power manager key register
+#regdef; PWR_OVERRIDE0           ; 0x054   ; (RW) Power manager override settings
+#regdef; PWR_OVERRIDE1           ; 0x058   ; (RW) Power manager override settings
+#regdef; CYCLE_COUNT_LO          ; 0x090   ; (RO) Cycle counter, low word
+#regdef; CYCLE_COUNT_HI          ; 0x094   ; (RO) Cycle counter, high word
+#regdef; TIMESTAMP_LO            ; 0x098   ; (RO) Global time stamp counter, low word
+#regdef; TIMESTAMP_HI            ; 0x09C   ; (RO) Global time stamp counter, high word
+#regdef; THREAD_MAX_THREADS      ; 0x0A0   ; (RO) Maximum number of threads per core
+#regdef; THREAD_MAX_WORKGROUP_SIZE ; 0x0A4 ; (RO) Maximum workgroup size
+#regdef; THREAD_MAX_BARRIER_SIZE ; 0x0A8   ; (RO) Maximum threads waiting at a barrier
+#regdef; THREAD_FEATURES         ; 0x0AC   ; (RO) Thread features
+
+#regdef; TEXTURE_FEATURES_0      ; 0x0B0   ; (RO) Support flags for indexed texture formats 0..31
+#regdef; TEXTURE_FEATURES_1      ; 0x0B4   ; (RO) Support flags for indexed texture formats 32..63
+#regdef; TEXTURE_FEATURES_2      ; 0x0B8   ; (RO) Support flags for indexed texture formats 64..95
+#regdef; TEXTURE_FEATURES_3      ; 0x0BC   ; (RO) Support flags for texture order
+
+#regdef; SHADER_PRESENT_LO       ; 0x100   ; (RO) Shader core present bitmap, low word
+#regdef; SHADER_PRESENT_HI       ; 0x104   ; (RO) Shader core present bitmap, high word
+
+#regdef; TILER_PRESENT_LO        ; 0x110   ; (RO) Tiler core present bitmap, low word
+#regdef; TILER_PRESENT_HI        ; 0x114   ; (RO) Tiler core present bitmap, high word
+
+#regdef; L2_PRESENT_LO           ; 0x120   ; (RO) Level 2 cache present bitmap, low word
+#regdef; L2_PRESENT_HI           ; 0x124   ; (RO) Level 2 cache present bitmap, high word
+
+#regdef; SHADER_READY_LO         ; 0x140   ; (RO) Shader core ready bitmap, low word
+#regdef; SHADER_READY_HI         ; 0x144   ; (RO) Shader core ready bitmap, high word
+
+#regdef; TILER_READY_LO          ; 0x150   ; (RO) Tiler core ready bitmap, low word
+#regdef; TILER_READY_HI          ; 0x154   ; (RO) Tiler core ready bitmap, high word
+
+#regdef; L2_READY_LO             ; 0x160   ; (RO) Level 2 cache ready bitmap, low word
+#regdef; L2_READY_HI             ; 0x164   ; (RO) Level 2 cache ready bitmap, high word
+
+#regdef; SHADER_PWRON_LO         ; 0x180   ; (WO) Shader core power on bitmap, low word
+#regdef; SHADER_PWRON_HI         ; 0x184   ; (WO) Shader core power on bitmap, high word
+
+#regdef; TILER_PWRON_LO          ; 0x190   ; (WO) Tiler core power on bitmap, low word
+#regdef; TILER_PWRON_HI          ; 0x194   ; (WO) Tiler core power on bitmap, high word
+
+#regdef; L2_PWRON_LO             ; 0x1A0   ; (WO) Level 2 cache power on bitmap, low word
+#regdef; L2_PWRON_HI             ; 0x1A4   ; (WO) Level 2 cache power on bitmap, high word
+
+#regdef; SHADER_PWROFF_LO        ; 0x1C0   ; (WO) Shader core power off bitmap, low word
+#regdef; SHADER_PWROFF_HI        ; 0x1C4   ; (WO) Shader core power off bitmap, high word
+
+#regdef; TILER_PWROFF_LO         ; 0x1D0   ; (WO) Tiler core power off bitmap, low word
+#regdef; TILER_PWROFF_HI         ; 0x1D4   ; (WO) Tiler core power off bitmap, high word
+
+#regdef; L2_PWROFF_LO            ; 0x1E0   ; (WO) Level 2 cache power off bitmap, low word
+#regdef; L2_PWROFF_HI            ; 0x1E4   ; (WO) Level 2 cache power off bitmap, high word
+
+#regdef; SHADER_PWRTRANS_LO      ; 0x200   ; (RO) Shader core power transition bitmap, low word
+#regdef; SHADER_PWRTRANS_HI      ; 0x204   ; (RO) Shader core power transition bitmap, high word
+
+#regdef; TILER_PWRTRANS_LO       ; 0x210   ; (RO) Tiler core power transition bitmap, low word
+#regdef; TILER_PWRTRANS_HI       ; 0x214   ; (RO) Tiler core power transition bitmap, high word
+
+#regdef; L2_PWRTRANS_LO          ; 0x220   ; (RO) Level 2 cache power transition bitmap, low word
+#regdef; L2_PWRTRANS_HI          ; 0x224   ; (RO) Level 2 cache power transition bitmap, high word
+
+#regdef; SHADER_PWRACTIVE_LO     ; 0x240   ; (RO) Shader core active bitmap, low word
+#regdef; SHADER_PWRACTIVE_HI     ; 0x244   ; (RO) Shader core active bitmap, high word
+
+#regdef; TILER_PWRACTIVE_LO      ; 0x250   ; (RO) Tiler core active bitmap, low word
+#regdef; TILER_PWRACTIVE_HI      ; 0x254   ; (RO) Tiler core active bitmap, high word
+
+#regdef; L2_PWRACTIVE_LO         ; 0x260   ; (RO) Level 2 cache active bitmap, low word
+#regdef; L2_PWRACTIVE_HI         ; 0x264   ; (RO) Level 2 cache active bitmap, high word
+
+#regdef; COHERENCY_FEATURES      ; 0x300   ; (RO) Coherency features present
+#regdef; COHERENCY_ENABLE        ; 0x304   ; (RW) Coherency enable
+
+#regdef; THREAD_TLS_ALLOC        ; 0x310   ; (RO) Number of threads per core that TLS must be allocated for
+
+#regdef; STACK_PRESENT_LO        ; 0xE00   ; (RO) Core stack present bitmap, low word
+#regdef; STACK_PRESENT_HI        ; 0xE04   ; (RO) Core stack present bitmap, high word
+
+#regdef; STACK_READY_LO          ; 0xE10   ; (RO) Core stack ready bitmap, low word
+#regdef; STACK_READY_HI          ; 0xE14   ; (RO) Core stack ready bitmap, high word
+
+#regdef; STACK_PWRON_LO          ; 0xE20   ; (RO) Core stack power on bitmap, low word
+#regdef; STACK_PWRON_HI          ; 0xE24   ; (RO) Core stack power on bitmap, high word
+
+#regdef; STACK_PWROFF_LO         ; 0xE30   ; (RO) Core stack power off bitmap, low word
+#regdef; STACK_PWROFF_HI         ; 0xE34   ; (RO) Core stack power off bitmap, high word
+
+#regdef; STACK_PWRTRANS_LO       ; 0xE40   ; (RO) Core stack power transition bitmap, low word
+#regdef; STACK_PWRTRANS_HI       ; 0xE44   ; (RO) Core stack power transition bitmap, high word
+
+#regdef; SHADER_CONFIG           ; 0xF04   ; (RW) Shader core configuration (implementation-specific)
+#regdef; TILER_CONFIG            ; 0xF08   ; (RW) Tiler core configuration (implementation-specific)
+#regdef; L2_MMU_CONFIG           ; 0xF0C   ; (RW) L2 cache and MMU configuration (implementation-specific)
+
+#typeend;
+
+#type; GPU_JOB_CONTROL
+#base; GPU_JOB_CONTROL 0x01801000
+
+#regdef; JOB_IRQ_RAWSTAT         ; 0x000   ; Raw interrupt status register
+#regdef; JOB_IRQ_CLEAR           ; 0x004   ; Interrupt clear register
+#regdef; JOB_IRQ_MASK            ; 0x008   ; Interrupt mask register
+#regdef; JOB_IRQ_STATUS          ; 0x00C   ; Interrupt status register
+
+#typeend;
+
+#type; GPU_MMU
+#base; GPU_MMU 0x01802000
+
+#regdef; MMU_IRQ_RAWSTAT         ; 0x000   ; (RW) Raw interrupt status register
+#regdef; MMU_IRQ_CLEAR           ; 0x004   ; (WO) Interrupt clear register
+#regdef; MMU_IRQ_MASK            ; 0x008   ; (RW) Interrupt mask register
+#regdef; MMU_IRQ_STATUS          ; 0x00C   ; (RO) Interrupt status register
+
+#aggreg; MMU_AS; 0x100 16; Configuration registers for address space 0..15
+
+#regdef; AS_TRANSTAB_LO         ; 0x00	; (RW) Translation Table Base Address for address space n, low word
+#regdef; AS_TRANSTAB_HI         ; 0x04	; (RW) Translation Table Base Address for address space n, high word
+#regdef; AS_MEMATTR_LO          ; 0x08	; (RW) Memory attributes for address space n, low word.
+#regdef; AS_MEMATTR_HI          ; 0x0C	; (RW) Memory attributes for address space n, high word.
+#regdef; AS_LOCKADDR_LO         ; 0x10	; (RW) Lock region address for address space n, low word
+#regdef; AS_LOCKADDR_HI         ; 0x14	; (RW) Lock region address for address space n, high word
+#regdef; AS_COMMAND             ; 0x18	; (WO) MMU command register for address space n
+#regdef; AS_FAULTSTATUS         ; 0x1C	; (RO) MMU fault status register for address space n
+#regdef; AS_FAULTADDRESS_LO     ; 0x20	; (RO) Fault Address for address space n, low word
+#regdef; AS_FAULTADDRESS_HI     ; 0x24	; (RO) Fault Address for address space n, high word
+#regdef; AS_STATUS              ; 0x28	; (RO) Status flags for address space n
+#regdef; AS_TRANSCFG_LO         ; 0x30	; (RW) Translation table configuration for address space n, low word
+#regdef; AS_TRANSCFG_HI         ; 0x34	; (RW) Translation table configuration for address space n, high word
+#regdef; AS_FAULTEXTRA_LO       ; 0x38	; (RO) Secondary fault address for address space n, low word
+#regdef; AS_FAULTEXTRA_HI       ; 0x3C	; (RO) Secondary fault address for address space n, high word
+
+#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+#aggregend;
+
+
+
+#typeend;

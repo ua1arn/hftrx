@@ -10,7 +10,7 @@
 
 
 #if LCDMODEX_SII9022A
-/* siiI9022A Lattice Semiconductor Corp. HDMI Transmitter */
+/* sii9022AA Lattice Semiconductor Corp. HDMI Transmitter */
 
 #include "board.h"
 #include "display.h"

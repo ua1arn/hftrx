@@ -209,11 +209,11 @@ typedef struct AUDIO_CODEC_Type
     volatile uint32_t DA_FAT0;                        /*!< Offset 0x004 Digital Audio Format Register 0 */
     volatile uint32_t DA_FAT1;                        /*!< Offset 0x008 Digital Audio Format Register 1 */
     volatile uint32_t DA_ISTA;                        /*!< Offset 0x00C Digital Audio Interrupt Status Register */
-    volatile uint32_t DA_RXFIFO;                      /*!< Offset 0x010 Digital Audio RX FIFO Register */
+    volatile uint32_t AC_ADC_RXDATA;                  /*!< Offset 0x010 Digital Audio RX FIFO Register (was: DA_RXFIFO) */
     volatile uint32_t DA_FCTL;                        /*!< Offset 0x014 Digital Audio FIFO Control Register */
     volatile uint32_t DA_FSTA;                        /*!< Offset 0x018 Digital Audio FIFO Status Register */
     volatile uint32_t DA_INT;                         /*!< Offset 0x01C Digital Audio Interrupt Control Register */
-    volatile uint32_t DA_TXFIFO;                      /*!< Offset 0x020 Digital Audio TX FIFO Register */
+    volatile uint32_t AC_DAC_TXDATA;                  /*!< Offset 0x020 Digital Audio TX FIFO Register (was: DA_TXFIFO) */
     volatile uint32_t DA_CLKD;                        /*!< Offset 0x024 Digital Audio Clock Divide Register */
     volatile uint32_t DA_TXCNT;                       /*!< Offset 0x028 Digital Audio RX Sample Counter Register */
     volatile uint32_t DA_RXCNT;                       /*!< Offset 0x02C Digital Audio TX Sample Counter Register */
@@ -826,7 +826,8 @@ typedef struct DE_VI_Type
     volatile uint32_t FCOLOR [0x004];                 /*!< Offset 0x0C0  */
     volatile uint32_t TOP_HADDR [0x003];              /*!< Offset 0x0D0  */
     volatile uint32_t BOT_HADDR [0x003];              /*!< Offset 0x0DC  */
-    volatile uint32_t OVL_SIZE [0x002];               /*!< Offset 0x0E8 OVL_V overlay window size register */
+    volatile uint32_t OVL_SIZE;                       /*!< Offset 0x0E8 OVL_V overlay window size register */
+             uint32_t reserved_0x0EC;
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
