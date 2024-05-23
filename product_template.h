@@ -272,10 +272,6 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt507_ctlstyle_helperboard_t507.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt507_cpustyle_helperboard_t507.h"
-#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"
