@@ -1055,25 +1055,25 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 2
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 3
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 4  BAND DOWN
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 5
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6
-	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MAX, 			' ', },		// 7
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
-	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_CWMSG4,		' ', },		// 9  F2
-	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_CWMSG3,		' ', },		// 10 F1
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 11
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 5  LOCK
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
+	{ KIF_NONE,		KBD_CODE_CWMSG4,		KBD_CODE_MAX, 			' ', },		// 7  F4
+	{ KIF_NONE,		KBD_CODE_CWMSG3,		KBD_CODE_MAX, 			' ', },		// 8  F3
+	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_MAX,			' ', },		// 9  F2
+	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_MAX,			' ', },		// 10 F1
+	{ KIF_NONE,		KBD_ENC4_PRESS,			KBD_ENC4_HOLD,			' ', },		// 11 2nd small encoder (encoder4 object) ENCF3
 	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU, 			' ', },		// 12 DISPLAY/MENU
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 13 BAND UP
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 14 3rd small encoder (encoder5 object)
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 15
+	{ KIF_NONE,		KBD_ENC5_PRESS,			KBD_ENC5_HOLD,			' ', },		// 14 3rd small encoder (encoder5 object) ENCF3
+	{ KIF_NONE,		KBD_ENC6_PRESS,			KBD_ENC6_HOLD,			' ', },		// 15 4th small encoder (encoder6 object) ENCF4
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 16
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 17
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 18
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 19
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 20
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 21
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 22
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 23
+	{ KIF_NONE,		KBD_ENC3_PRESS,			KBD_ENC3_HOLD,			' ', },		// 19 1st small encoder (encoder3 object) ENCF1
+	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/PRE
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// 21 ANT1/ANT2
+	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 22 MOX/TUNE
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 23 MOX
 
 	/* кнопка выключения питания (включение аппаратно) */
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },		// 24 POWER
