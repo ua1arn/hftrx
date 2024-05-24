@@ -13995,6 +13995,7 @@ void hightests(void)
 	{
 		unsigned phase = 0;
 		// тестирование входов манипуляции, ptt, ключа и CAT
+		PRINTF("ptt, elkey, cat dtr/rts testing.\n");
 		for (;;)
 		{
 			uint_fast8_t kbch, repeat;
@@ -14007,29 +14008,20 @@ void hightests(void)
 			unsigned tune1 = hardware_get_tune();
 			unsigned ptt1 = hardware_get_ptt();
 			unsigned ptt2 = HARDWARE_CAT_GET_RTS();
-			IRQL_t oldIrql;
-			RiseIrql(IRQL_SYSTEM, & oldIrql);
 			unsigned elkey = hardware_elkey_getpaddle(0);
 			unsigned ckey = HARDWARE_CAT_GET_DTR();
-			LowerIrql(oldIrql);
 
 
-			PRINTF(PSTR("tune=%u, ptt=%u, elkey=%u\n"), tune1, ptt1, elkey);
+			PRINTF("tune=%u, ptt=%u, ptt2=%u, elkey=%u\n", tune1, ptt1, ptt2, elkey);
 			continue;
 
-			display_gotoxy(0, 0);		// курсор в начало первой строки
+			display_at(0, 0, ptt1 != 0 ? "ptt " : "    ");
+			display_at(0, 2, ptt2 != 0 ? "cptt " : "     ");
+			display_at(0, 4, ckey != 0 ? "ckey " : "     ");
 
-
-			display_at(ptt1 != 0 ? "ptt " : "    ", 0);
-			display_at(ptt2 != 0 ? "cptt " : "     ", 0);
-			display_at(ckey != 0 ? "ckey " : "     ", 0);
-
-			display_gotoxy(0, 2);		// курсор в начало второй строки
-			display_at((elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", 0);
-			display_gotoxy(0, 4);		// курсор в начало второй строки
-			display_at((elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", 0);
-			display_gotoxy(0, 6);		// курсор в начало второй строки
-			display_at((phase = ! phase) ? " test1" : " test2", 0);
+			display_at(0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ");
+			display_at(0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ");
+			display_at(0, 10, (phase = ! phase) ? " test1" : " test2");
 
 		}
 	}
