@@ -4498,7 +4498,11 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if WITHTX
 #if WITHTHERMOLEVEL
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+#if defined (WITHHEATPROT)
+	static uint_fast8_t gheatprot = WITHHEATPROT;	/* защита от перегрева */
+#else /* defined (WITHHEATPROT) */
 	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
+#endif /* defined (WITHHEATPROT) */
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if defined (WITHSWRPROT)
