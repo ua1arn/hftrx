@@ -32,11 +32,11 @@
 
 #if WITHDEBUG
 	#define WITHDEBUG_UART0	1
-	#define WITHUART0HW	1
-	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-#define WITHUART5HW	1
+#define WITHUART0HW	1		/* отлдочный порт */
+//#define WITHUARTFIFO	1	/* испольование FIFO */
+#define WITHUART5HW	1		/* mini dinn8	*/
 //#define WITHCAT_USART5 1
 
 
