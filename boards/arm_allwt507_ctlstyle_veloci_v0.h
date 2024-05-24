@@ -65,9 +65,11 @@
 	#define CTLREGMODE_VELOCI_V0	1	/* T507-H portable trx */
 	//#define CTLREGMODE_NOCTLREG 1
 
-	
-	
-	
+	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
+	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+
+	// +++ Особые варианты расположения кнопок на клавиатуре
+	#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -88,12 +90,6 @@
 
 	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
-
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
-
-	// +++ Особые варианты расположения кнопок на клавиатуре
-	#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
 
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
@@ -520,8 +516,8 @@
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
 
-	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-	#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
+//	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+//	#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
 
 	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада с помощью двух каналов ацп (средняя точка) */
