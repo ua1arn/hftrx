@@ -1072,8 +1072,8 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_ENC3_PRESS,			KBD_ENC3_HOLD,			' ', },		// 19 1st small encoder (encoder3 object) ENCF1
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/PRE
 	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// 21 ANT1/ANT2
-	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 22 MOX/TUNE
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 23 MOX
+	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// 22TUNER BYP/ATU START
+	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 23 MOX/TUNE
 
 	/* кнопка выключения питания (включение аппаратно) */
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },		// 24 POWER
