@@ -32,13 +32,18 @@
 
 #if WITHDEBUG
 	#define WITHDEBUG_UART0	1
+	#define WITHUART0HW	1		/* отлдочный порт */
 #endif /* WITHDEBUG */
 
-#define WITHUART0HW	1		/* отлдочный порт */
 //#define WITHUARTFIFO	1	/* испольование FIFO */
 #define WITHUART5HW	1		/* mini dinn8	*/
 //#define WITHCAT_USART5 1
 
+void user_uart5_onrxchar(uint_fast8_t c);
+void user_uart5_ontxchar(void * ctx);
+
+#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar((c)); } while (0)
+#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar((ctx)); } while (0)
 
 
 // OHCI at USB1HSFSP2_BASE
