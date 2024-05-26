@@ -4006,6 +4006,8 @@ void display_clocks_init(void) {
 //  HDMI_CLK         = (1<<31); // Enable HDMI clk (use PLL3)
 //  HDMI_SLOW_CLK    = (1<<31); // Enable HDMI slow clk
 //  TCON0_CLK        = (1<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
+	CCU->HDMI0_CLK_REG = (1<<31); // Enable HDMI clk (use PLL3)
+	CCU->HDMI0_SLOW_CLK_REG = (1<<31); // Enable HDMI slow clk
 }
 
 static struct lcd_timing timing;
