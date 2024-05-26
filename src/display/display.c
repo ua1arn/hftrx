@@ -1763,6 +1763,44 @@ const videomode_t vdmode0 =
 	.fps = 60	/* frames per second */
 };
 
+#elif LCDMODE_LQ123K3LG01
+
+/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
+const videomode_t vdmode0 =
+{
+	.width = 1280,			/* LCD PIXEL WIDTH            */
+	.height = 480,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  LQ123K3LG01 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 6,			/* Horizontal synchronization 1..40 */
+	.hbp = 39,				/* Horizontal back porch      */
+	.hfp = 368,				/* Horizontal front porch  16..354   */
+
+	.vsync = 1,				/* Vertical synchronization 1..20  */
+	.vbp = 24,			/* Vertical back porch      */
+	.vfp = 15,				/* Vertical front porch  7..147     */
+
+
+	/* Accumulated parameters for this display */
+	//LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
+	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	///.ltdc_dotclk = 54835000uL,	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60	/* frames per second */
+};
+
 #elif LCDMODE_TCG104XGLPAPNN
 
 /* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display */
