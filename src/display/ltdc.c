@@ -3652,7 +3652,7 @@ static void awxx_deoutmapping(unsigned disp)
 //#define VIDEO_RAM_BYTES 0x180000
 
 // The HDMI registers base address.
-#define HDMI_BASE     0x01EE0000
+#define HDMI_BASE     HDMI_TX0_BASE//0x01EE0000
 //#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
 
 #define HDMI_REG8(off)  *(volatile uint8_t *)(HDMI_BASE + (off))
@@ -3983,7 +3983,7 @@ void display_clocks_init(void)
 //  TCON0_CLK        = (1 << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 }
 
-static struct lcd_timing timing;
+static struct lcd_timing timing;	// out parameters
 
 static void hdmi_init(void)
 {
@@ -4038,6 +4038,7 @@ static void hdmi_init(void)
 
   // HDMI Config, based on the documentation at:
   // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+  // out parameters
   HDMI_FC_INVIDCONF = (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3); // Polarity etc
   HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
   HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
@@ -4072,6 +4073,7 @@ static void lcd_init(void) {
   LCD0_GCTL         = (1 << 31);
   LCD0_GINT0        = 0;
   LCD0_TCON1_CTL    = (1 << 31) | (30 << 4);
+  // out parameters
   LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
   LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
   LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
