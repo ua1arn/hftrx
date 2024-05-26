@@ -3547,33 +3547,7 @@ static void awxx_deoutmapping(unsigned disp)
 #endif
 }
 
-void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
-{
-	const unsigned disp = RTMIXID - 1;
-	const int rtmixid = RTMIXID;
-
-	hardware_tcon_initialize(vdmode);
-
-	// Set DE MODE if need, mapping GPIO pins
-	ltdc_tfcon_cfg(vdmode);
-
-	hardware_de_initialize(vdmode);
-	awxx_deoutmapping(disp);
-
-    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
-    {
-
-		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
-		t113_de_update(rtmixid);	/* Update registers */
-    }
-}
-
-void
-hardware_ltdc_deinitialize(void)
-{
-}
-
-#if 0
+#if 1
 ///----------------H3----------------------
 
 #define SYS_CPU_MULTIPLIER_MIN     1
@@ -4012,83 +3986,84 @@ void display_clocks_init(void) {
 
 static struct lcd_timing timing;
 
-void hdmi_init(void) {
+void hdmi_init(void)
+{
 
-  timing.hp=LCDX_OUT;///
-  timing.vp=LCDY_OUT;///
-  timing.hbp=300;///
-  timing.vbp=30;///
-  timing.hspw=20;///
-  timing.vspw=8;///
+	timing.hp=LCDX_OUT;///
+	timing.vp=LCDY_OUT;///
+	timing.hbp=300;///
+	timing.vbp=30;///
+	timing.hspw=20;///
+	timing.vspw=8;///
 
 
-  HDMI_PHY_CFG1 = 0;
-  HDMI_PHY_CFG1 = 1;
-  local_delay_ms(5);
-  HDMI_PHY_CFG1 |= (1<<16);
-  HDMI_PHY_CFG1 |= (1<<1);
-  local_delay_ms(10);
-  HDMI_PHY_CFG1 |= (1<<2);
-  local_delay_ms(5);
-  HDMI_PHY_CFG1 |= (1<<3);
-  local_delay_ms(40);
-  HDMI_PHY_CFG1 |= (1<<19);
-  local_delay_ms(100);
-  HDMI_PHY_CFG1 |= (1<<18);
-  HDMI_PHY_CFG1 |= (7<<4);
-  while((HDMI_PHY_STS & 0x80) == 0);
-  HDMI_PHY_CFG1 |= (0xf<<4);
-  HDMI_PHY_CFG1 |= (0xf<<8);
-  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
+	HDMI_PHY_CFG1 = 0;
+	HDMI_PHY_CFG1 = 1;
+	local_delay_ms(5);
+	HDMI_PHY_CFG1 |= (1<<16);
+	HDMI_PHY_CFG1 |= (1<<1);
+	local_delay_ms(10);
+	HDMI_PHY_CFG1 |= (1<<2);
+	local_delay_ms(5);
+	HDMI_PHY_CFG1 |= (1<<3);
+	local_delay_ms(40);
+	HDMI_PHY_CFG1 |= (1<<19);
+	local_delay_ms(100);
+	HDMI_PHY_CFG1 |= (1<<18);
+	HDMI_PHY_CFG1 |= (7<<4);
+	while((HDMI_PHY_STS & 0x80) == 0);
+	HDMI_PHY_CFG1 |= (0xf<<4);
+	HDMI_PHY_CFG1 |= (0xf<<8);
+	HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
 
-  HDMI_PHY_PLL1 &= ~(1<<26);
-  HDMI_PHY_CEC = 0;
+	HDMI_PHY_PLL1 &= ~(1<<26);
+	HDMI_PHY_CEC = 0;
 
-  HDMI_PHY_PLL1 = 0x39dc5040;
-  HDMI_PHY_PLL2 = 0x80084381;
-  local_delay_ms(10000);
-  HDMI_PHY_PLL3 = 1;
-  HDMI_PHY_PLL1 |= (1<<25);
-  local_delay_ms(10000);
-  uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
-  HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
+	HDMI_PHY_PLL1 = 0x39dc5040;
+	HDMI_PHY_PLL2 = 0x80084381;
+	local_delay_ms(10000);
+	HDMI_PHY_PLL3 = 1;
+	HDMI_PHY_PLL1 |= (1<<25);
+	local_delay_ms(10000);
+	uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
+	HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
 
-  HDMI_PHY_CFG1 = 0x01FFFF7F;
-  HDMI_PHY_CFG2 = 0x8063A800;
-  HDMI_PHY_CFG3 = 0x0F81C485;
+	HDMI_PHY_CFG1 = 0x01FFFF7F;
+	HDMI_PHY_CFG2 = 0x8063A800;
+	HDMI_PHY_CFG3 = 0x0F81C485;
 
-  /* enable read access to HDMI controller */
-  HDMI_PHY_READ_EN = 0x54524545;
-  /* descramble register offsets */
-  HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	/* enable read access to HDMI controller */
+	HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 
-  // HDMI Config, based on the documentation at:
-  // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-  HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
-  HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
-  HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
-  HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
-  HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
+	// HDMI Config, based on the documentation at:
+	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+	HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+	HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
+	HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
+	HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
+	HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
 
-  HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
-  HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
-  HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
+	HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
+	HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
+	HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
 
-  HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
-  HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
-  HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-  HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
-  HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
-  HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
+	HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
+	HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
+	HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
+	HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
+	HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
+	HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
 
-  HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-  HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-  HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-  HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-  HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-  HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-  HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-  HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+	HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+	HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+	HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+	HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+	HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 
 }
@@ -4171,17 +4146,44 @@ void de2_init(const uintptr_t * frames)
   DE_MIXER0_GLB_DBUFFER = 1;
 }
 
-// This function initializes the HDMI port and TCON.
-// Almost everything here is resolution specific and
-// currently hardcoded to 1920x1080@60Hz.
-void display_init_ex(const uintptr_t * frames, const videomode_t * vdmode) {
-  display_clocks_init();
-  hdmi_init();
-  lcd_init();
-  de2_init(frames);
+#endif
+
+void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
+{
+	const unsigned disp = RTMIXID - 1;
+	const int rtmixid = RTMIXID;
+
+	hardware_tcon_initialize(vdmode);
+
+	// Set DE MODE if need, mapping GPIO pins
+	ltdc_tfcon_cfg(vdmode);
+
+	hardware_de_initialize(vdmode);
+	awxx_deoutmapping(disp);
+
+	if (0)
+	{
+		// This function initializes the HDMI port and TCON.
+		// Almost everything here is resolution specific and
+		// currently hardcoded to 1920x1080@60Hz.
+		  display_clocks_init();
+		  hdmi_init();
+		  lcd_init();
+		  de2_init(frames_unused);
+
+	}
+    /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
+    {
+
+		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
+		t113_de_update(rtmixid);	/* Update registers */
+    }
 }
 
-#endif
+void
+hardware_ltdc_deinitialize(void)
+{
+}
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
