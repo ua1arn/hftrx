@@ -119,8 +119,8 @@ static void vdc5_wait(
 	uint_fast32_t mask = 0; \
 	while (width --) \
 		mask = (mask << 1) | UINT32_C(1); \
-	mask <<= (pos); \
-	val <<= (pos); \
+	mask  << = (pos); \
+	val  << = (pos); \
 	ASSERT((val & mask) == val); \
 	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
 	(void) * (reg);	/* dummy read */ \
@@ -139,8 +139,8 @@ static void vdc5_wait(
 	uint_fast32_t mask = 0; \
 	while (width --) \
 		mask = (mask << 1) | UINT32_C(1); \
-	mask <<= (pos); \
-	val <<= (pos); \
+	mask  << = (pos); \
+	val  << = (pos); \
 	ASSERT((val & mask) == val); \
 	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
 	(void) * (reg);	/* dummy read */ \
@@ -3797,34 +3797,34 @@ static void awxx_deoutmapping(unsigned disp)
 
 #define DE_MIXER0_BLD                 (DE_MIXER0 + 0x1000)
 #define DE_MIXER0_BLD_FILL_COLOR_CTL  *(volatile uint32_t*)(DE_MIXER0_BLD + 0x000)
-#define DE_MIXER0_BLD_FILL_COLOR(x)   *(volatile uint32_t*)(DE_MIXER0_BLD + 0x004 + x * 0x10)
-#define DE_MIXER0_BLD_CH_ISIZE(x)     *(volatile uint32_t*)(DE_MIXER0_BLD + 0x008 + x * 0x10)
-#define DE_MIXER0_BLD_CH_OFFSET(x)    *(volatile uint32_t*)(DE_MIXER0_BLD + 0x00C + x * 0x10)
+#define DE_MIXER0_BLD_FILL_COLOR(x)   *(volatile uint32_t*)(DE_MIXER0_BLD + 0x004 + (x) * 0x10)
+#define DE_MIXER0_BLD_CH_ISIZE(x)     *(volatile uint32_t*)(DE_MIXER0_BLD + 0x008 + (x) * 0x10)
+#define DE_MIXER0_BLD_CH_OFFSET(x)    *(volatile uint32_t*)(DE_MIXER0_BLD + 0x00C + (x) * 0x10)
 #define DE_MIXER0_BLD_CH_RTCTL        *(volatile uint32_t*)(DE_MIXER0_BLD + 0x080)
 #define DE_MIXER0_BLD_PREMUL_CTL      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x084)
 #define DE_MIXER0_BLD_BK_COLOR        *(volatile uint32_t*)(DE_MIXER0_BLD + 0x088)
 #define DE_MIXER0_BLD_SIZE            *(volatile uint32_t*)(DE_MIXER0_BLD + 0x08C)
-#define DE_MIXER0_BLD_CTL(x)          *(volatile uint32_t*)(DE_MIXER0_BLD + 0x090 + x * 0x4)
+#define DE_MIXER0_BLD_CTL(x)          *(volatile uint32_t*)(DE_MIXER0_BLD + 0x090 + (x) * 0x4)
 #define DE_MIXER0_BLD_KEY_CTL         *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0B0)
 #define DE_MIXER0_BLD_KEY_CON         *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0B4)
-#define DE_MIXER0_BLD_KEY_MAX(x)      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0C0 + x * 0x4)
-#define DE_MIXER0_BLD_KEY_MIN(x)      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0E0 + x * 0x4)
+#define DE_MIXER0_BLD_KEY_MAX(x)      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0C0 + (x) * 0x4)
+#define DE_MIXER0_BLD_KEY_MIN(x)      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0E0 + (x) * 0x4)
 #define DE_MIXER0_BLD_OUT_COLOR       *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0FC)
 
 #define DE_MIXER0_OVL_V               (DE_MIXER0 + 0x2000)
-#define DE_MIXER0_OVL_V_ATTCTL(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x00 + x * 0x30)
-#define DE_MIXER0_OVL_V_MBSIZE(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x04 + x * 0x30)
-#define DE_MIXER0_OVL_V_COOR(x)       *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x08 + x * 0x30)
-#define DE_MIXER0_OVL_V_PITCH0(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x0C + x * 0x30)
-#define DE_MIXER0_OVL_V_PITCH1(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x10 + x * 0x30)
-#define DE_MIXER0_OVL_V_PITCH2(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x14 + x * 0x30)
-#define DE_MIXER0_OVL_V_TOP_LADD0(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x18 + x * 0x30)
-#define DE_MIXER0_OVL_V_TOP_LADD1(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x1C + x * 0x30)
-#define DE_MIXER0_OVL_V_TOP_LADD2(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x20 + x * 0x30)
-#define DE_MIXER0_OVL_V_BOT_LADD0(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x24 + x * 0x30)
-#define DE_MIXER0_OVL_V_BOT_LADD1(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x28 + x * 0x30)
-#define DE_MIXER0_OVL_V_BOT_LADD2(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x2C + x * 0x30)
-#define DE_MIXER0_OVL_V_FILL_COLOR(x) *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xC0 + x * 0x4)
+#define DE_MIXER0_OVL_V_ATTCTL(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x00 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_MBSIZE(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x04 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_COOR(x)       *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x08 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_PITCH0(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x0C + (x) * 0x30)
+#define DE_MIXER0_OVL_V_PITCH1(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x10 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_PITCH2(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x14 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_TOP_LADD0(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x18 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_TOP_LADD1(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x1C + (x) * 0x30)
+#define DE_MIXER0_OVL_V_TOP_LADD2(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x20 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_BOT_LADD0(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x24 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_BOT_LADD1(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x28 + (x) * 0x30)
+#define DE_MIXER0_OVL_V_BOT_LADD2(x)  *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x2C + (x) * 0x30)
+#define DE_MIXER0_OVL_V_FILL_COLOR(x) *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xC0 + (x) * 0x4)
 #define DE_MIXER0_OVL_V_TOP_HADD0     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xD0)
 #define DE_MIXER0_OVL_V_TOP_HADD1     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xD4)
 #define DE_MIXER0_OVL_V_TOP_HADD2     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xD8)
@@ -3850,12 +3850,12 @@ static void awxx_deoutmapping(unsigned disp)
 #define DE_MIXER0_VS_C_HPHASE         *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0xD0)
 #define DE_MIXER0_VS_C_VPHASE0        *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0xD8)
 #define DE_MIXER0_VS_C_VPHASE1        *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0xDC)
-#define DE_MIXER0_VS_Y_HCOEF0(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x200 + x * 4)
-#define DE_MIXER0_VS_Y_HCOEF1(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x300 + x * 4)
-#define DE_MIXER0_VS_Y_VCOEF(x)       *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x400 + x * 4)
-#define DE_MIXER0_VS_C_HCOEF0(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x600 + x * 4)
-#define DE_MIXER0_VS_C_HCOEF1(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x700 + x * 4)
-#define DE_MIXER0_VS_C_VCOEF(x)       *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x800 + x * 4)
+#define DE_MIXER0_VS_Y_HCOEF0(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x200 + (x) * 4)
+#define DE_MIXER0_VS_Y_HCOEF1(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x300 + (x) * 4)
+#define DE_MIXER0_VS_Y_VCOEF(x)       *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x400 + (x) * 4)
+#define DE_MIXER0_VS_C_HCOEF0(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x600 + (x) * 4)
+#define DE_MIXER0_VS_C_HCOEF1(x)      *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x700 + (x) * 4)
+#define DE_MIXER0_VS_C_VCOEF(x)       *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x800 + (x) * 4)
 
 // Mixer 1
 #define DE_MIXER1                     (DE_BASE + 0x200000)
@@ -3973,14 +3973,14 @@ struct lcd_timing
 void display_clocks_init(void)
 {
   // Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-//  PLL_DE_CTRL      = (1<<31) | (1<<24) | (17<<8) | (0<<0); // 432MHz
-//  PLL_VIDEO_CTRL   = (1<<31) | (1<<25) | (1<<24) | (98<<8) | (7<<0); // 297MHz
-//  BUS_CLK_GATING1 |= (1<<12) | (1<<11) | (1<<3); // Enable DE, HDMI, TCON0
-//  BUS_SOFT_RST1   |= (1<<12) | (3<<10) | (1<<3); // De-assert reset of DE, HDMI0/1, TCON0
-//  DE_CLK           = (1<<31) | (1<<24); // Enable DE clock, set source to PLL_DE
-//  HDMI_CLK         = (1<<31); // Enable HDMI clk (use PLL3)
-//  HDMI_SLOW_CLK    = (1<<31); // Enable HDMI slow clk
-//  TCON0_CLK        = (1<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
+//  PLL_DE_CTRL      = (1 << 31) | (1 << 24) | (17 << 8) | (0 << 0); // 432MHz
+//  PLL_VIDEO_CTRL   = (1 << 31) | (1 << 25) | (1 << 24) | (98 << 8) | (7 << 0); // 297MHz
+//  BUS_CLK_GATING1 |= (1 << 12) | (1 << 11) | (1 << 3); // Enable DE, HDMI, TCON0
+//  BUS_SOFT_RST1   |= (1 << 12) | (3 << 10) | (1 << 3); // De-assert reset of DE, HDMI0/1, TCON0
+//  DE_CLK           = (1 << 31) | (1 << 24); // Enable DE clock, set source to PLL_DE
+//  HDMI_CLK         = (1 << 31); // Enable HDMI clk (use PLL3)
+//  HDMI_SLOW_CLK    = (1 << 31); // Enable HDMI slow clk
+//  TCON0_CLK        = (1 << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
 }
 
 static struct lcd_timing timing;
@@ -3999,33 +3999,33 @@ static void hdmi_init(void)
   HDMI_PHY_CFG1 = 0;
   HDMI_PHY_CFG1 = 1;
   local_delay_ms(5);
-  HDMI_PHY_CFG1 |= (1<<16);
-  HDMI_PHY_CFG1 |= (1<<1);
+  HDMI_PHY_CFG1 |= (1 << 16);
+  HDMI_PHY_CFG1 |= (1 << 1);
   local_delay_ms(10);
-  HDMI_PHY_CFG1 |= (1<<2);
+  HDMI_PHY_CFG1 |= (1 << 2);
   local_delay_ms(5);
-  HDMI_PHY_CFG1 |= (1<<3);
+  HDMI_PHY_CFG1 |= (1 << 3);
   local_delay_ms(40);
-  HDMI_PHY_CFG1 |= (1<<19);
+  HDMI_PHY_CFG1 |= (1 << 19);
   local_delay_ms(100);
-  HDMI_PHY_CFG1 |= (1<<18);
-  HDMI_PHY_CFG1 |= (7<<4);
+  HDMI_PHY_CFG1 |= (1 << 18);
+  HDMI_PHY_CFG1 |= (7 << 4);
   while((HDMI_PHY_STS & 0x80) == 0);
-  HDMI_PHY_CFG1 |= (0xf<<4);
-  HDMI_PHY_CFG1 |= (0xf<<8);
-  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
+  HDMI_PHY_CFG1 |= (0xf << 4);
+  HDMI_PHY_CFG1 |= (0xf << 8);
+  HDMI_PHY_CFG3 |= (1 << 0) | (1 << 2);
 
-  HDMI_PHY_PLL1 &= ~(1<<26);
+  HDMI_PHY_PLL1 &= ~(1 << 26);
   HDMI_PHY_CEC = 0;
 
   HDMI_PHY_PLL1 = 0x39dc5040;
   HDMI_PHY_PLL2 = 0x80084381;
   local_delay_ms(10000);
   HDMI_PHY_PLL3 = 1;
-  HDMI_PHY_PLL1 |= (1<<25);
+  HDMI_PHY_PLL1 |= (1 << 25);
   local_delay_ms(10000);
   uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
-  HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
+  HDMI_PHY_PLL1 |= (1 << 31) | (1 << 30) | tmp;
 
   HDMI_PHY_CFG1 = 0x01FFFF7F;
   HDMI_PHY_CFG2 = 0x8063A800;
@@ -4038,7 +4038,7 @@ static void hdmi_init(void)
 
   // HDMI Config, based on the documentation at:
   // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-  HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+  HDMI_FC_INVIDCONF = (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3); // Polarity etc
   HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
   HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
   HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
@@ -4069,56 +4069,56 @@ static void hdmi_init(void)
 
 static void lcd_init(void) {
   // LCD0 feeds mixer0 to HDMI
-  LCD0_GCTL         = (1<<31);
+  LCD0_GCTL         = (1 << 31);
   LCD0_GINT0        = 0;
-  LCD0_TCON1_CTL    = (1<<31) | (30<<4);
-  LCD0_TCON1_BASIC0 = ((timing.hp-1)<<16) | (timing.vp-1);
-  LCD0_TCON1_BASIC1 = ((timing.hp-1)<<16) | (timing.vp-1);
-  LCD0_TCON1_BASIC2 = ((timing.hp-1)<<16) | (timing.vp-1);
-  LCD0_TCON1_BASIC3 = (2199<<16) | 191;
-  LCD0_TCON1_BASIC4 = (2250<<16) | 40;
-  LCD0_TCON1_BASIC5 = (43<<16) | 4;
+  LCD0_TCON1_CTL    = (1 << 31) | (30 << 4);
+  LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
+  LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
+  LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
+  LCD0_TCON1_BASIC3 = (2199 << 16) | 191;
+  LCD0_TCON1_BASIC4 = (2250 << 16) | 40;
+  LCD0_TCON1_BASIC5 = (43 << 16) | 4;
 
 
   LCD0_GINT1 = 1;
-  LCD0_GINT0 = (1<<30);//28
+  LCD0_GINT0 = (1 << 30);//28
   ///irq_enable(118);  // LCD0
 }
 // This function configured DE2 as follows:
 // MIXER0 -> WB -> MIXER1 -> HDMI
-static uint32_t xsize, ysize;
 
 void de2_init(const uintptr_t * frames)
- {
+{
+	uint32_t xsize, ysize;
   ///xsize=480-1;
   xsize=LCDX-1;
   ysize=LCDY-1;
 
-  DE_AHB_RESET |= (1<<0);
-  DE_SCLK_GATE |= (1<<0);
-  DE_HCLK_GATE |= (1<<0);
-  DE_DE2TCON_MUX &= ~(1<<0);
+  DE_AHB_RESET |= (1 << 0);
+  DE_SCLK_GATE |= (1 << 0);
+  DE_HCLK_GATE |= (1 << 0);
+  DE_DE2TCON_MUX &= ~(1 << 0);
 
   // Erase the whole of MIXER0. This contains uninitialized data.
   for(uint32_t addr = DE_MIXER0 + 0x0000; addr < DE_MIXER0 + 0xC000; addr += 4)
 	  * (volatile uint32_t*) (addr) = 0;
 
   DE_MIXER0_GLB_CTL = 1;
-  DE_MIXER0_GLB_SIZE = ((timing.vp-1)<<16) | (timing.hp-1);
+  DE_MIXER0_GLB_SIZE = ((timing.vp-1) << 16) | (timing.hp-1);
 
   DE_MIXER0_BLD_FILL_COLOR_CTL = 0x100;
   DE_MIXER0_BLD_CH_RTCTL = 0;
-  DE_MIXER0_BLD_SIZE = ((timing.vp-1)<<16) | (timing.hp-1);
-  DE_MIXER0_BLD_CH_ISIZE(0) = ((timing.vp-1)<<16) | (timing.hp-1);
+  DE_MIXER0_BLD_SIZE = ((timing.vp-1) << 16) | (timing.hp-1);
+  DE_MIXER0_BLD_CH_ISIZE(0) = ((timing.vp-1) << 16) | (timing.hp-1);
 
-  DE_MIXER0_OVL_V_ATTCTL(0) = (1<<15) | (1<<0);
-  DE_MIXER0_OVL_V_MBSIZE(0) = (ysize<<16) | xsize;
+  DE_MIXER0_OVL_V_ATTCTL(0) = (1 << 15) | (1 << 0);
+  DE_MIXER0_OVL_V_MBSIZE(0) = (ysize << 16) | xsize;
 
   DE_MIXER0_OVL_V_COOR(0) = 0;
   DE_MIXER0_OVL_V_PITCH0(0) = LCDX*4; // Scan line in bytes including overscan
  // DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(frames [0]+ LCDX*16+16);
   DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(frames [0]+ LCDX*16+16);
-  DE_MIXER0_OVL_V_SIZE = (ysize<<16) | xsize;
+  DE_MIXER0_OVL_V_SIZE = (ysize << 16) | xsize;
 
   DE_MIXER0_VS_CTRL     = 1;
   DE_MIXER0_VS_OUT_SIZE = ((LCDY_OUT - 1) << 16) | (LCDX_OUT - 1);
@@ -4141,7 +4141,7 @@ void de2_init(const uintptr_t * frames)
     DE_MIXER0_VS_C_HCOEF1(n) = 0;
     DE_MIXER0_VS_C_VCOEF(n)  = 0x00004000;
   }
-  DE_MIXER0_VS_CTRL = 1 | (1<<4);
+  DE_MIXER0_VS_CTRL = 1 | (1 << 4);
   DE_MIXER0_GLB_DBUFFER = 1;
 }
 //
