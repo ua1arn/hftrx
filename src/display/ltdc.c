@@ -3549,14 +3549,14 @@ static void awxx_deoutmapping(unsigned disp)
 
 #if 1
 ///----------------H3----------------------
-
-#define SYS_CPU_MULTIPLIER_MIN     1
-#define SYS_CPU_MULTIPLIER_DEFAULT 84
-#define SYS_CPU_MULTIPLIER_MAX     108
-
+//
+//#define SYS_CPU_MULTIPLIER_MIN     1
+//#define SYS_CPU_MULTIPLIER_DEFAULT 84
+//#define SYS_CPU_MULTIPLIER_MAX     108
+//
 //#define CCU_BASE			0x01C20000
-
-// Structure of CCU registers.
+//
+//// Structure of CCU registers.
 //#define PLL_CPUX_CTRL         *(volatile uint32_t *)(CCU_BASE + 0X000)
 //#define PLL_AUDIO_CTRL        *(volatile uint32_t *)(CCU_BASE + 0X008)
 //#define PLL_VIDEO_CTRL        *(volatile uint32_t *)(CCU_BASE + 0X010)
@@ -3633,23 +3633,23 @@ static void awxx_deoutmapping(unsigned disp)
 //#define CCU_SEC_SWITCH        *(volatile uint32_t *)(CCU_BASE + 0X2F0)
 //#define PS_CTRL               *(volatile uint32_t *)(CCU_BASE + 0X300)
 //#define PS_CNT                *(volatile uint32_t *)(CCU_BASE + 0X304)
-
+//
 //#define R_PRCM_BASE 0x01F01400
 //#define APB0_CLK_GATING       *(volatile uint32_t *)(R_PRCM_BASE + 0x28)
 
-#define PLL_CPUX_FACTOR_K_SHIFT 4
-#define PLL_CPUX_FACTOR_N_SHIFT 8
-
-#define PLL_CPUX_FACTOR_K_MASK	0x00000030UL
-#define PLL_CPUX_FACTOR_N_MASK  0x00001f00UL
+//#define PLL_CPUX_FACTOR_K_SHIFT 4
+//#define PLL_CPUX_FACTOR_N_SHIFT 8
+//
+//#define PLL_CPUX_FACTOR_K_MASK	0x00000030UL
+//#define PLL_CPUX_FACTOR_N_MASK  0x00001f00UL
 
 // HDMI controller output resolution
 // NB: Any change in resolution requires additional changes in the HDMI
 // controller register settings below.
-#define DISPLAY_PHYS_RES_X	DIM_X //(display_is_digital ? default_timing.hactive.typ : 720)
-#define DISPLAY_PHYS_RES_Y	DIM_Y//(display_is_digital ? default_timing.vactive.typ : (display_is_pal ? 576 : 480))
+//#define DISPLAY_PHYS_RES_X	(display_is_digital ? default_timing.hactive.typ : 720)
+//#define DISPLAY_PHYS_RES_Y	(display_is_digital ? default_timing.vactive.typ : (display_is_pal ? 576 : 480))
 
-#define VIDEO_RAM_BYTES 0x180000
+//#define VIDEO_RAM_BYTES 0x180000
 
 // The HDMI registers base address.
 #define HDMI_BASE     0x01EE0000
@@ -3952,26 +3952,27 @@ static void awxx_deoutmapping(unsigned disp)
 #define DE_MIXER1_UIS_VPHASE1(n)      *(volatile uint32_t*)(DE_MIXER1_UIS_BASE(n) + 0x9C)
 #define DE_MIXER1_UIS_HCOEF(n, x)     *(volatile uint32_t*)(DE_MIXER1_UIS_BASE(n) + 0x200 + x * 4)
 
-#define DE_SIZE(x, y) ((((y)-1) << 16) | ((x)-1))
-#define DE_SIZE_PHYS  DE_SIZE(DISPLAY_PHYS_RES_X, DISPLAY_PHYS_RES_Y)
-#define LCDX DIM_X
-#define LCDY DIM_Y
-#define LCD_FRAME_OFFSET (LCDX*LCDY)
+//#define DE_SIZE(x, y) ((((y)-1) << 16) | ((x)-1))
+//#define DE_SIZE_PHYS  DE_SIZE(DISPLAY_PHYS_RES_X, DISPLAY_PHYS_RES_Y)
+#define LCDX DIM_X//800
+#define LCDY DIM_Y//480
+//#define LCD_FRAME_OFFSET (LCDX*LCDY)
 #define LCDX_OUT 1920
 #define LCDY_OUT 1080
 
 struct lcd_timing
 {
- uint16_t hp;
- uint16_t vp;
- uint16_t hbp;
- uint16_t vbp;
- uint16_t hspw;
- uint16_t vspw;
+	uint16_t hp;
+	uint16_t vp;
+	uint16_t hbp;
+	uint16_t vbp;
+	uint16_t hspw;
+	uint16_t vspw;
 };
 
-void display_clocks_init(void) {
-//  // Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+void display_clocks_init(void)
+{
+  // Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 //  PLL_DE_CTRL      = (1<<31) | (1<<24) | (17<<8) | (0<<0); // 432MHz
 //  PLL_VIDEO_CTRL   = (1<<31) | (1<<25) | (1<<24) | (98<<8) | (7<<0); // 297MHz
 //  BUS_CLK_GATING1 |= (1<<12) | (1<<11) | (1<<3); // Enable DE, HDMI, TCON0
@@ -3980,94 +3981,93 @@ void display_clocks_init(void) {
 //  HDMI_CLK         = (1<<31); // Enable HDMI clk (use PLL3)
 //  HDMI_SLOW_CLK    = (1<<31); // Enable HDMI slow clk
 //  TCON0_CLK        = (1<<31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
-	CCU->HDMI0_CLK_REG = (1<<31); // Enable HDMI clk (use PLL3)
-	CCU->HDMI0_SLOW_CLK_REG = (1<<31); // Enable HDMI slow clk
 }
 
 static struct lcd_timing timing;
 
-void hdmi_init(void)
+static void hdmi_init(void)
 {
 
-	timing.hp=LCDX_OUT;///
-	timing.vp=LCDY_OUT;///
-	timing.hbp=300;///
-	timing.vbp=30;///
-	timing.hspw=20;///
-	timing.vspw=8;///
+  timing.hp=LCDX_OUT;///
+  timing.vp=LCDY_OUT;///
+  timing.hbp=300;///
+  timing.vbp=30;///
+  timing.hspw=20;///
+  timing.vspw=8;///
 
 
-	HDMI_PHY_CFG1 = 0;
-	HDMI_PHY_CFG1 = 1;
-	local_delay_ms(5);
-	HDMI_PHY_CFG1 |= (1<<16);
-	HDMI_PHY_CFG1 |= (1<<1);
-	local_delay_ms(10);
-	HDMI_PHY_CFG1 |= (1<<2);
-	local_delay_ms(5);
-	HDMI_PHY_CFG1 |= (1<<3);
-	local_delay_ms(40);
-	HDMI_PHY_CFG1 |= (1<<19);
-	local_delay_ms(100);
-	HDMI_PHY_CFG1 |= (1<<18);
-	HDMI_PHY_CFG1 |= (7<<4);
-	while((HDMI_PHY_STS & 0x80) == 0);
-	HDMI_PHY_CFG1 |= (0xf<<4);
-	HDMI_PHY_CFG1 |= (0xf<<8);
-	HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
+  HDMI_PHY_CFG1 = 0;
+  HDMI_PHY_CFG1 = 1;
+  local_delay_ms(5);
+  HDMI_PHY_CFG1 |= (1<<16);
+  HDMI_PHY_CFG1 |= (1<<1);
+  local_delay_ms(10);
+  HDMI_PHY_CFG1 |= (1<<2);
+  local_delay_ms(5);
+  HDMI_PHY_CFG1 |= (1<<3);
+  local_delay_ms(40);
+  HDMI_PHY_CFG1 |= (1<<19);
+  local_delay_ms(100);
+  HDMI_PHY_CFG1 |= (1<<18);
+  HDMI_PHY_CFG1 |= (7<<4);
+  while((HDMI_PHY_STS & 0x80) == 0);
+  HDMI_PHY_CFG1 |= (0xf<<4);
+  HDMI_PHY_CFG1 |= (0xf<<8);
+  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
 
-	HDMI_PHY_PLL1 &= ~(1<<26);
-	HDMI_PHY_CEC = 0;
+  HDMI_PHY_PLL1 &= ~(1<<26);
+  HDMI_PHY_CEC = 0;
 
-	HDMI_PHY_PLL1 = 0x39dc5040;
-	HDMI_PHY_PLL2 = 0x80084381;
-	local_delay_ms(10000);
-	HDMI_PHY_PLL3 = 1;
-	HDMI_PHY_PLL1 |= (1<<25);
-	local_delay_ms(10000);
-	uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
-	HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
+  HDMI_PHY_PLL1 = 0x39dc5040;
+  HDMI_PHY_PLL2 = 0x80084381;
+  local_delay_ms(10000);
+  HDMI_PHY_PLL3 = 1;
+  HDMI_PHY_PLL1 |= (1<<25);
+  local_delay_ms(10000);
+  uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
+  HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
 
-	HDMI_PHY_CFG1 = 0x01FFFF7F;
-	HDMI_PHY_CFG2 = 0x8063A800;
-	HDMI_PHY_CFG3 = 0x0F81C485;
+  HDMI_PHY_CFG1 = 0x01FFFF7F;
+  HDMI_PHY_CFG2 = 0x8063A800;
+  HDMI_PHY_CFG3 = 0x0F81C485;
 
-	/* enable read access to HDMI controller */
-	HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-	HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+  /* enable read access to HDMI controller */
+  HDMI_PHY_READ_EN = 0x54524545;
+  /* descramble register offsets */
+  HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 
-	// HDMI Config, based on the documentation at:
-	// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-	HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
-	HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
-	HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
-	HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
-	HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
+  // HDMI Config, based on the documentation at:
+  // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+  HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+  HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
+  HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
+  HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
+  HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
 
-	HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
-	HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
-	HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
+  HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
+  HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
+  HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
 
-	HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
-	HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
-	HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-	HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
-	HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
-	HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
+  HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
+  HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
+  HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
+  HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
+  HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
+  HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
 
-	HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-	HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-	HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-	HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-	HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-	HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-	HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-	HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+  HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+  HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+  HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+  HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+  HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+  HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+  HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+  HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 
 }
-void lcd_init(void) {
+
+static void lcd_init(void) {
   // LCD0 feeds mixer0 to HDMI
   LCD0_GCTL         = (1<<31);
   LCD0_GINT0        = 0;
@@ -4086,7 +4086,7 @@ void lcd_init(void) {
 }
 // This function configured DE2 as follows:
 // MIXER0 -> WB -> MIXER1 -> HDMI
-static uint32_t xsize,ysize;
+static uint32_t xsize, ysize;
 
 void de2_init(const uintptr_t * frames)
  {
@@ -4101,11 +4101,10 @@ void de2_init(const uintptr_t * frames)
 
   // Erase the whole of MIXER0. This contains uninitialized data.
   for(uint32_t addr = DE_MIXER0 + 0x0000; addr < DE_MIXER0 + 0xC000; addr += 4)
-   *(volatile uint32_t*)(addr) = 0;
+	  * (volatile uint32_t*) (addr) = 0;
 
   DE_MIXER0_GLB_CTL = 1;
   DE_MIXER0_GLB_SIZE = ((timing.vp-1)<<16) | (timing.hp-1);
-;
 
   DE_MIXER0_BLD_FILL_COLOR_CTL = 0x100;
   DE_MIXER0_BLD_CH_RTCTL = 0;
@@ -4145,6 +4144,16 @@ void de2_init(const uintptr_t * frames)
   DE_MIXER0_VS_CTRL = 1 | (1<<4);
   DE_MIXER0_GLB_DBUFFER = 1;
 }
+//
+//// This function initializes the HDMI port and TCON.
+//// Almost everything here is resolution specific and
+//// currently hardcoded to 1920x1080@60Hz.
+//void display_init_ex(const uintptr_t * frames, const videomode_t * vdmode) {
+//  display_clocks_init();
+//  hdmi_init();
+//  lcd_init();
+//  de2_init(frames);
+//}
 
 #endif
 
