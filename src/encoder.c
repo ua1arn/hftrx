@@ -524,7 +524,7 @@ void encoders_initialize(void)
 #endif /* WITHENCODER2 */
 }
 
-#if WITHLVGL
+#if WITHLVGL && WITHENCODER
 
 #include "lv_drivers/indev/evdev.h"
 

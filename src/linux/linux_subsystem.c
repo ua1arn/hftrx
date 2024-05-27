@@ -33,6 +33,11 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+
 void xcz_resetn_modem(uint8_t val);
 void ft8_thread(void);
 void lvgl_init(void);
@@ -115,6 +120,58 @@ void * linux_encoder_spool(void * args)
 	{
 		spool_encinterrupts(& encoder2);
 		usleep(500);
+	}
+}
+
+void * lan_thread(void * args)
+{
+	int sock_ep2;
+	struct ifreq hwaddr;
+	struct sockaddr_in addr_ep2, addr_from;
+	socklen_t size_from;
+	int yes = 1;
+	const char * ifname = "eth0";
+	uint8_t buffer[1032];
+
+	if((sock_ep2 = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	{
+		perror("socket");
+		return NULL;
+	}
+
+	memset(& hwaddr, 0, sizeof(hwaddr));
+	strncpy(hwaddr.ifr_name, ifname, IFNAMSIZ - 1);
+
+	setsockopt(sock_ep2, SOL_SOCKET, SO_REUSEADDR, (void *) & yes , sizeof(yes));
+
+	if(setsockopt(sock_ep2, SOL_SOCKET, SO_BINDTODEVICE, ifname, strlen(ifname) + 1) < 0)
+	{
+		perror("SO_BINDTODEVICE");
+		return NULL;
+	}
+
+	memset(& addr_ep2, 0, sizeof(addr_ep2));
+	addr_ep2.sin_family = AF_INET;
+	addr_ep2.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr_ep2.sin_port = htons(1024);
+
+	if(bind(sock_ep2, (struct sockaddr *) & addr_ep2, sizeof(addr_ep2)) < 0)
+	{
+		perror("bind");
+		return NULL;
+	}
+
+	while(1)
+	{
+		size_from = sizeof(addr_from);
+		ssize_t size = recvfrom(sock_ep2, buffer, 1032, 0, (struct sockaddr *) & addr_from, & size_from);
+		if(size < 0)
+		{
+		  perror("recvfrom");
+		  return NULL;
+		}
+
+		PRINTF("%s\n", buffer);
 	}
 }
 
@@ -267,12 +324,14 @@ void framebuffer_close(void)
 	uint32_t * gpiops_ptr;
 #elif CPUSTYLE_XCZU
 	uint32_t * xgpo, * xgpi;
+	pthread_mutex_t gpiolock;
 #endif
 void linux_xgpio_init(void)
 {
 #if CPUSTYLE_XCZU
 	xgpo = (uint32_t *) get_highmem_ptr(AXI_XGPO_ADDR);
 	xgpi = (uint32_t *) get_highmem_ptr(AXI_XGPI_ADDR);
+	pthread_mutex_init(& gpiolock, NULL);
 #elif CPUSTYLE_XC7Z
 	int ff = open("/sys/class/gpio/export", O_WRONLY);
 	if (! ff)
@@ -290,7 +349,9 @@ void linux_xgpio_init(void)
 uint8_t linux_xgpi_read_pin(uint8_t pin)
 {
 #if CPUSTYLE_XCZU
+	pthread_mutex_lock(& gpiolock);
 	uint32_t v = * xgpi;
+	pthread_mutex_unlock(& gpiolock);
 	return (v >> pin) & 1;
 #elif CPUSTYLE_XC7Z
 	return XGpioPs_ReadPin(& xc7z_gpio, pin);
@@ -300,6 +361,8 @@ uint8_t linux_xgpi_read_pin(uint8_t pin)
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 {
 #if CPUSTYLE_XCZU
+	pthread_mutex_lock(& gpiolock);
+
 	uint32_t mask = 1 << pin;
 	uint32_t rw = * xgpo;
 
@@ -309,6 +372,8 @@ void linux_xgpo_write_pin(uint8_t pin, uint8_t val)
 		rw &= ~mask;
 
 	* xgpo = rw;
+
+	pthread_mutex_unlock(& gpiolock);
 #elif CPUSTYLE_XC7Z
 	XGpioPs_WritePin(& xc7z_gpio, pin, val);
 #endif
@@ -670,7 +735,7 @@ void linux_subsystem_init(void)
 #endif /* WITHLVGL */
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, lan_t;
 
 void linux_user_init(void)
 {
@@ -725,6 +790,10 @@ void linux_user_init(void)
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
+
+#if 1
+	linux_create_thread(& lan_t, lan_thread, 50, 0);
+#endif
 }
 
 void linux_wait_iq(void)

@@ -1356,7 +1356,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
 	if (timeUS == 0)
 		return;
-#if LINUX_SUBSYSTEM
+#if 0 //LINUX_SUBSYSTEM
 	usleep(timeUS);
 #else
 	// Частота процессора приволится к мегагерцам.
@@ -1372,7 +1372,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 //
 void local_delay_ms(int timeMS)
 {
-#if LINUX_SUBSYSTEM
+#if 0 //LINUX_SUBSYSTEM
 	usleep(timeMS * 1000);
 #else
 	// Частота процессора приволится к мегагерцам.
