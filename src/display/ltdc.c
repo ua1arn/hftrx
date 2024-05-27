@@ -2547,6 +2547,30 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 #endif /* WITHLVDSHW */
 
+
+#if WITHHDMITVHW
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
+//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
+//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+
+    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
+    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
+
+//    CCU->HDMI_HDCP_CLK_REG;
+//    CCU->HDMI_HDCP_BGR_REG;
+
+#endif /* WITHHDMITVHW */
+
     local_delay_us(10);
 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
@@ -3651,25 +3675,29 @@ static void awxx_deoutmapping(unsigned disp)
 
 //#define VIDEO_RAM_BYTES 0x180000
 
+// T507-H:
+//	#define HDMI_TX0_BASE ((uintptr_t) 0x06000000)        /*!< HDMI_TX  Base */
+//	#define HDMI_PHY_BASE ((uintptr_t) 0x06010000)        /*!< HDMI_PHY  Base */
+
 // The HDMI registers base address.
-#define HDMI_BASE     HDMI_TX0_BASE//0x01EE0000
+#define HDMI_BASE     (HDMI_TX0_BASE - 0)//0x01EE0000
 //#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
 
 #define HDMI_REG8(off)  *(volatile uint8_t *)(HDMI_BASE + (off))
 #define HDMI_REG32(off) *(volatile uint32_t *)(HDMI_BASE + (off))
 
 // HDMI register helpers.
-#define HDMI_PHY_POL          *(volatile uint32_t*)(HDMI_BASE + 0x10000)
-#define HDMI_PHY_READ_EN      *(volatile uint32_t*)(HDMI_BASE + 0x10010)
-#define HDMI_PHY_UNSCRAMBLE   *(volatile uint32_t*)(HDMI_BASE + 0x10014)
-#define HDMI_PHY_CFG1         *(volatile uint32_t*)(HDMI_BASE + 0x10020)
-#define HDMI_PHY_CFG2         *(volatile uint32_t*)(HDMI_BASE + 0x10024)
-#define HDMI_PHY_CFG3         *(volatile uint32_t*)(HDMI_BASE + 0x10028)
-#define HDMI_PHY_PLL1         *(volatile uint32_t*)(HDMI_BASE + 0x1002C)
-#define HDMI_PHY_PLL2         *(volatile uint32_t*)(HDMI_BASE + 0x10030)
-#define HDMI_PHY_PLL3         *(volatile uint32_t*)(HDMI_BASE + 0x10034)
-#define HDMI_PHY_STS          *(volatile uint32_t*)(HDMI_BASE + 0x10038)
-#define HDMI_PHY_CEC          *(volatile uint32_t*)(HDMI_BASE + 0x1003C)
+#define HDMI_PHY_POL          *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0000)
+#define HDMI_PHY_READ_EN      *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0010)
+#define HDMI_PHY_UNSCRAMBLE   *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0014)
+#define HDMI_PHY_CFG1         *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0020)
+#define HDMI_PHY_CFG2         *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0024)
+#define HDMI_PHY_CFG3         *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0028)
+#define HDMI_PHY_PLL1         *(volatile uint32_t*)(HDMI_PHY_BASE + 0x002C)
+#define HDMI_PHY_PLL2         *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0030)
+#define HDMI_PHY_PLL3         *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0034)
+#define HDMI_PHY_STS          *(volatile uint32_t*)(HDMI_PHY_BASE + 0x0038)
+#define HDMI_PHY_CEC          *(volatile uint32_t*)(HDMI_PHY_BASE + 0x003C)
 
 #define HDMI_FC_INVIDCONF     *(volatile uint8_t*)(HDMI_BASE + 0x1000)
 
@@ -3695,6 +3723,7 @@ static void awxx_deoutmapping(unsigned disp)
 #define HDMI_FC_CH0PREAM      *(volatile uint8_t*)(HDMI_BASE + 0x1014)
 #define HDMI_FC_CH1PREAM      *(volatile uint8_t*)(HDMI_BASE + 0x1015)
 #define HDMI_FC_CH2PREAM      *(volatile uint8_t*)(HDMI_BASE + 0x1016)
+
 #define HDMI_MC_FLOWCTRL      *(volatile uint8_t*)(HDMI_BASE + 0x4004)
 #define HDMI_MC_CLKDIS        *(volatile uint8_t*)(HDMI_BASE + 0x4001)
 #define HDMI_MC_SWRSTZREQ     HDMI_REG8(0x4002)
@@ -3957,8 +3986,8 @@ static void awxx_deoutmapping(unsigned disp)
 #define LCDX DIM_X//800
 #define LCDY DIM_Y//480
 //#define LCD_FRAME_OFFSET (LCDX*LCDY)
-#define LCDX_OUT 1920
-#define LCDY_OUT 1080
+#define LCDX_OUT 1024//1920
+#define LCDY_OUT 600//1080
 
 struct lcd_timing
 {
@@ -3995,7 +4024,12 @@ static void hdmi_init(void)
   timing.hspw=20;///
   timing.vspw=8;///
 
-
+  memset((void *) HDMI_BASE, 0xFF, 1024);
+  memset((void *) HDMI_PHY_BASE, 0xFF, 1024);
+  TP();
+  printhex32(HDMI_BASE, (void *) HDMI_BASE, 512);
+  TP();
+  printhex32(HDMI_PHY_BASE, (void *) HDMI_PHY_BASE, 512);
   HDMI_PHY_CFG1 = 0;
   HDMI_PHY_CFG1 = 1;
   local_delay_ms(5);
@@ -4010,7 +4044,11 @@ static void hdmi_init(void)
   local_delay_ms(100);
   HDMI_PHY_CFG1 |= (1 << 18);
   HDMI_PHY_CFG1 |= (7 << 4);
-  while((HDMI_PHY_STS & 0x80) == 0);
+  TP();
+  while((HDMI_PHY_STS & 0x80) == 0)
+	  ;
+  TP();
+
   HDMI_PHY_CFG1 |= (0xf << 4);
   HDMI_PHY_CFG1 |= (0xf << 8);
   HDMI_PHY_CFG3 |= (1 << 0) | (1 << 2);
@@ -4020,10 +4058,10 @@ static void hdmi_init(void)
 
   HDMI_PHY_PLL1 = 0x39dc5040;
   HDMI_PHY_PLL2 = 0x80084381;
-  local_delay_ms(10000);
+  local_delay_ms(1000);
   HDMI_PHY_PLL3 = 1;
   HDMI_PHY_PLL1 |= (1 << 25);
-  local_delay_ms(10000);
+  local_delay_ms(1000);
   uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
   HDMI_PHY_PLL1 |= (1 << 31) | (1 << 30) | tmp;
 
@@ -4172,17 +4210,22 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 	hardware_de_initialize(vdmode);
 	awxx_deoutmapping(disp);
 
-	if (0)
+#if WITHHDMITVHW
+	if (1)
 	{
 		// This function initializes the HDMI port and TCON.
 		// Almost everything here is resolution specific and
 		// currently hardcoded to 1920x1080@60Hz.
-		  display_clocks_init();
+		  //display_clocks_init();
+		  TP();
 		  hdmi_init();
+		  TP();
 		  lcd_init();
-		  de2_init(frames_unused);
+		  //de2_init(frames_unused);
+		  TP();
 
 	}
+#endif /* WITHHDMITVHW */
     /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
     {
 
