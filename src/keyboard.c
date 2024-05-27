@@ -376,6 +376,14 @@ void kbd_initialize(void)
 
 	IRQLSPINLOCK_INITIALIZE(& irqllock, IRQL_SYSTEM);
 
+	kbd_last = board_get_pressed_key();
+	if (kbd_last != KEYBOARD_NOKEY)
+	{
+		// самое первое нажатие
+		kbd_press = 1;
+		kbd_release = 0;
+		kbd_slowcount = 0;
+	}
 
 	static uint8_t kbdfifo [16];
 
