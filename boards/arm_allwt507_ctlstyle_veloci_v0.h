@@ -417,12 +417,15 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
+
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
+	#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
+
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
