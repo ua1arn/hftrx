@@ -310,7 +310,7 @@
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	150
+			#define WITHAFGAINDEFAULT	(150 * BOARD_AFGAIN_MAX / 255)
 			#define WITHVIEW_3DSS		1
 			#define WITHDEFAULTVIEW		VIEW_3DSS
 			#define WITHVIEW_3DSS_MARK	1
