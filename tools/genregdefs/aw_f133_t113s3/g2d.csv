@@ -15,6 +15,7 @@
 #regdef; RCQ_HEADER_LOW_ADDR;	0x02C; Register Configuration Queue Header bits 31..0
 #regdef; RCQ_HEADER_HIGH_ADDR;	0x030; Register Configuration Queue Header bits 39..32
 #regdef; RCQ_HEADER_LEN;	0x034; Register Configuration Queue length bits 15..0
+#typeend;
 
 #type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
 #base; G2D_MIXER 0x05410100
@@ -22,6 +23,7 @@
 #regdef; G2D_MIXER_CTRL; 0x00; G2D mixer control
 #regdef; G2D_MIXER_INTERRUPT; 0x04; G2D mixer interrupt
 #regdef; G2D_MIXER_CLK; 0x08; G2D mixer clock
+#typeend;
 
 #type; G2D_BLD; Graphic 2D (G2D) Engine Blender
 #base; G2D_BLD 0x05410400
@@ -78,6 +80,7 @@
 #regdef; BLD_CSC2_COEF21   ; 0x194 ; BLD_CSC2_COEF21    
 #regdef; BLD_CSC2_COEF22   ; 0x198 ; BLD_CSC2_COEF22    
 #regdef; BLD_CSC2_CONST2   ; 0x19C ; BLD_CSC2_CONST2    
+#typeend;
 
 #type; G2D_VI; Graphic 2D VI surface
 #base; G2D_V0 0x05410800
