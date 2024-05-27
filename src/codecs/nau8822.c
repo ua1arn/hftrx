@@ -418,7 +418,13 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
 	nau8822_setreg(NAU8822_DAC_CONTROL, 0x008);	// was: 0x00c - removed automute
-	nau8822_setreg(NAU8822_RIGHT_SPK_SUBMIXER, 0x10);	// use RMIX as BTL channel
+
+	#if CODEC_TYPE_NAU8822_NO_BTL
+		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
+		nau8822_setreg(NAU8822_RIGHT_SPK_SUBMIXER, 0x00);
+	#else /* CODEC_TYPE_NAU8822_NO_BTL */
+		nau8822_setreg(NAU8822_RIGHT_SPK_SUBMIXER, 0x10);	// RSUBBYP: use RMIX as BTL channel
+	#endif /* CODEC_TYPE_NAU8822_NO_BTL */
 
 //{0xb , 0x1ff},
 //{0xc , 0x1ff},

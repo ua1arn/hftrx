@@ -245,6 +245,7 @@
 	#define WITHAFCODEC1HAVELINEINLEVEL 1	// (rear panel mini-din 6 pin input)
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
+	#define CODEC_TYPE_NAU8822_NO_BTL 1		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
 
 	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
