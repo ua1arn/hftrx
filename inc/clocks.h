@@ -193,7 +193,6 @@ uint_fast32_t allwnrt113_get_dsp_freq(void);
 uint_fast32_t allwnrt113_get_tconlcd_freq(void);
 uint_fast32_t allwnrt113_get_tcontv_freq(void);
 uint_fast32_t allwnrt113_get_dsi_freq(void);
-uint_fast32_t allwnrt113_get_hdmi_freq(void);
 uint_fast32_t allwnrt113_get_tcon0_freq(void);
 uint_fast32_t allwnrt113_get_tcon1_freq(void);
 uint_fast32_t allwnrt113_get_ths_freq(void);
@@ -216,6 +215,7 @@ uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
 uint_fast32_t allwnr_a64_get_mbus_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr1_freq(void);
+uint_fast32_t allwnr_a64_get_hdmi_freq(void);
 
 // Allwinner T507/T507-H/H616
 uint_fast32_t allwnr_t507_get_cpux_freq(void);

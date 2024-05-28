@@ -2321,7 +2321,7 @@ uint_fast32_t allwnrt113_get_s_twi_freq(void)
 	return allwnr_a64_get_apbs2_freq();
 }
 
-uint_fast32_t allwnrt113_get_hdmi_freq(void)
+uint_fast32_t allwnr_a64_get_hdmi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI_CLK_REG;
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);
