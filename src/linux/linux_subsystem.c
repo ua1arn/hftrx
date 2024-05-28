@@ -471,14 +471,16 @@ static struct cond_thread * ct_iq = NULL;
 #include <net/if.h>
 
 #if IQLOOPBACKTEST
-	const uint32_t inaddr =  INADDR_LOOPBACK;
+	const uint32_t toaddr =  INADDR_LOOPBACK;
 #else
-	const uint32_t inaddr =  INADDR_ANY;
+	const uint32_t toaddr =  INADDR_ANY;
 #endif /* IQLOOPBACKTEST */
 
 int socket_send, socket_rcv;
 socklen_t s;
 struct sockaddr_in addr_sendto, addr_rcv, addr_client;
+
+const char ipaddr_axu2cga[] = "192.168.0.110\0";
 
 void eth_init(void)
 {
@@ -491,7 +493,11 @@ void eth_init(void)
 
 	addr_sendto.sin_family = AF_INET;
 	addr_sendto.sin_port = htons(1024);
-	addr_sendto.sin_addr.s_addr = htonl(inaddr);
+#if  IQLANRECEIVER
+	addr_sendto.sin_addr.s_addr = htonl(toaddr);
+#elif IQLANTRANSMITTER
+	inet_aton(ipaddr_axu2cga, & addr_sendto.sin_addr);
+#endif
 
     s = sizeof(addr_client);
 
@@ -626,14 +632,14 @@ void linux_iq_init(void)
 
 void linux_iq_thread(void)
 {
-#if WITHIQLANEXCHANGE && IQLOOPBACKTEST
-	uint8_t rxbuf[DMABUFFSIZE32RX * 4];
-
-	uint32_t pos = * iq_count_rx;
-	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
-	memcpy(rxbuf, (uint8_t *) iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
-	sendto(socket_send, rxbuf, sizeof(rxbuf), 0, (struct sockaddr *) & addr_sendto, sizeof(addr_sendto));
-#else
+//#if WITHIQLANEXCHANGE && (IQLOOPBACKTEST || IQLANTRANSMITTER)
+//	uint8_t rxbuf[DMABUFFSIZE32RX * 4];
+//
+//	uint32_t pos = * iq_count_rx;
+//	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
+//	memcpy(rxbuf, (uint8_t *) iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
+//	sendto(socket_send, rxbuf, sizeof(rxbuf), 0, (struct sockaddr *) & addr_sendto, sizeof(addr_sendto));
+//#endif /* WITHIQLANEXCHANGE && IQLOOPBACKTEST */
 	enum { CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX };
 	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX };
 	static int rx_stage = 0;
@@ -642,6 +648,10 @@ void linux_iq_thread(void)
 	uintptr_t addr32rx = allocate_dmabuffer32rx();
 	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : (DMABUFFSIZE32RX * 4);
 	memcpy((uint8_t *) addr32rx, (uint8_t *) iq_rx_blkmem + offset, DMABUFFSIZE32RX * 4);
+
+#if WITHIQLANEXCHANGE && IQLANTRANSMITTER
+	sendto(socket_send, (uint8_t *) addr32rx, DMABUFFSIZE32RX * 4, 0, (struct sockaddr *) & addr_sendto, sizeof(addr_sendto));
+#endif
 
 	save_dmabuffer32rx(addr32rx);
 
@@ -683,7 +693,6 @@ void linux_iq_thread(void)
 
 	if (ct_iq)
 		safe_cond_signal(ct_iq);
-#endif /* WITHIQLANEXCHANGE && IQLOOPBACKTEST */
 }
 
 void * linux_iq_interrupt_thread(void * args)
@@ -837,12 +846,16 @@ void linux_user_init(void)
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 //	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+//	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
 
 #if WITHIQLANEXCHANGE
 	eth_init();
 	//linux_create_thread(& lan_send_t, lan_send_thread, 50, 0);
-	linux_create_thread(& lan_rcv_t, lan_rcv_thread, 90, 1);
+#if IQLOOPBACKTEST || IQLANRECEIVER
+	linux_create_thread(& lan_rcv_t, lan_rcv_thread, 95, 1);
+#else
+	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+#endif
 #endif /* WITHIQLANEXCHANGE */
 
 #if defined AXI_DCDC_PWM_ADDR

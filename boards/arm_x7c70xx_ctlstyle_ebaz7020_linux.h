@@ -225,7 +225,7 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#define WITHAA				1		/* Поддержка сглаживания изображений */
 		#if 1
-			#define WITHLVGL				1
+//			#define WITHLVGL				1
 			#define REALREFERENCE_FREQ 		61439600L
 			#define WITHDEFAULTDIALFREQ		7100000uL
 			#define WITHTOUCHGUI			1
@@ -246,6 +246,8 @@
 //			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
+			#define WITHIQLANEXCHANGE		1
+			#define IQLANTRANSMITTER		1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

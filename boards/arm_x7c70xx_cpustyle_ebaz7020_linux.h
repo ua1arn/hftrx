@@ -731,6 +731,13 @@
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { \
+		switch (target) { \
+		default: break; \
+		} \
+	} while (0)
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART1HW
