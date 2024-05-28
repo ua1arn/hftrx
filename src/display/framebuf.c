@@ -120,6 +120,20 @@ static void awxx_g2d_reset(void)
 	G2D_BLD->BLD_FILL_COLOR_CTL = 0;
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
+
+// Register Configuration Queue setup
+static void awxx_rcq(uintptr_t buff, unsigned len)
+{
+	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
+	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
+	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
+	G2D_TOP->RCQ_HEADER_LEN = len;
+
+	ASSERT(G2D_TOP->RCQ_HEADER_LOW_ADDR == ptr_lo32(buff));
+	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
+	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
+}
+
 #endif
 
 /* Запуск и ожидание завершения работы G2D */
@@ -174,19 +188,6 @@ static void awxx_g2d_rot_startandwait(void)
 		ASSERT(0);
 	}
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
-}
-
-// Register Configuration Queue setup
-static void awxx_rcq(uintptr_t buff, unsigned len)
-{
-	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
-	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
-	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
-	G2D_TOP->RCQ_HEADER_LEN = len;
-
-	ASSERT(G2D_TOP->RCQ_HEADER_LOW_ADDR == ptr_lo32(buff));
-	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
-	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
 
 // 0x01: ABGR_8888
