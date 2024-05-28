@@ -1258,6 +1258,10 @@ void user_uart5_ontxchar(void * ctx);
 /* запрос на вход в режим загрузчика */
 #define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
+#define ETH_INITIALIZE() do { \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
+} while (0)
+
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE() do { \
 	BOARD_BLINK_INITIALIZE(); \
@@ -1268,6 +1272,7 @@ void user_uart5_ontxchar(void * ctx);
 	TXDISABLE_INITIALIZE(); \
 	TUNE_INITIALIZE(); \
 	USBD_EHCI_INITIALIZE(); \
+	ETH_INITIALIZE(); \
 } while (0)
 
 // TUSB parameters
