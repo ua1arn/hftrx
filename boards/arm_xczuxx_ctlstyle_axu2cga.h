@@ -245,9 +245,8 @@
 //			#define DEFAULTDIALFREQ			12289000uL
 			#define WITHCPUFANPWM			1
 			#define WITHCPUTHERMOLEVEL		1
-			#define WITHIQLANEXCHANGE		1
-//			#define IQLOOPBACKTEST			1
-			#define IQLANRECEIVER			1
+//			#define WITHIQLANEXCHANGE		1
+//			#define IQLANRECEIVER			1
 #endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
