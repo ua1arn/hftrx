@@ -2057,6 +2057,37 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 		NULL,
 };
 
+
+#elif CPUSTYLE_A64
+
+static DE_VI_TypeDef * const rtmix0_vimap [] =
+{
+		DE_MIXER0_VI1,
+		DE_MIXER0_VI2,
+		DE_MIXER0_VI3,
+};
+
+static DE_VI_TypeDef * const rtmix1_vimap [] =
+{
+		DE_MIXER1_VI1,
+		DE_MIXER1_VI2,
+		DE_MIXER1_VI3,
+};
+
+static DE_UI_TypeDef * const rtmix0_uimap [] =
+{
+		DE_MIXER0_UI1,
+		DE_MIXER0_UI2,
+		DE_MIXER0_UI3,
+};
+
+static DE_UI_TypeDef * const rtmix1_uimap [] =
+{
+		DE_MIXER1_UI1,
+		DE_MIXER1_UI2,
+		DE_MIXER1_UI3,
+};
+
 #else
 	#error Unsupported CPUSTYLE_xxx
 #endif
@@ -2883,21 +2914,24 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 #define LCD_VB_INT_FLAG  (UINT32_C(1) << 15)	// Asserted during vertical no-display period every frame
 #define FSYNC_INT_FLAG (UINT32_C(1) << 0)	// Asserted at the fsync signal in every frame
 
+#if 0
+
 static void TCON_LCD_VerticalBlanking_IRQHandler(void)
 {
 	//PRINTF("TCON_LCD_VB_IRQHandler:\n");
-	uint_fast32_t  reg = TCON_LCD0->LCD_GINT0_REG;
+	uint_fast32_t  reg = TCONLCD_PTR->LCD_GINT0_REG;
 
 	if (reg & LCD_VB_INT_FLAG)
 	{
-		TCON_LCD0->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;
-		PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCON_LCD0->LCD_GINT0_REG);
+		TCONLCD_PTR->LCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;
+		PRINTF("TCON_LCD_VB_IRQHandler:LCD_GINT0_REG 0x%x\n", (unsigned) TCONLCD_PTR->LCD_GINT0_REG);
 	}
 //  if (reg & FSYNC_INT_FLAG){
 //		TCON_LCD0->LCD_GINT0_REG &= ~FSYNC_INT_FLAG;
 //		PRINTF("TCON_LCD_VB_IRQHandler:FSYNC_INT_FLAG 0x%x\n", (unsigned) TCON_LCD0->LCD_GINT0_REG);
 //	}
 }
+#endif
 
 // Set and open interrupt function
 static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
@@ -2907,6 +2941,7 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 	// enabling the irq after io settings
 	TCON_LCD0->LCD_GINT0_REG |= LCD_VB_INT_EN; // LCD_LINE_INT_EN |
 	// add irq handler
+	// #define TCONLCD_IRQ TCON_LCD0_IRQn
 	arm_hardware_set_handler_system(TCON_LCD0_IRQn, TCON_LCD_VerticalBlanking_IRQHandler);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif
@@ -3121,7 +3156,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 		//PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
 
 	}
-#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
+//#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
 	/* Set ahb gating to pass */
 //	setbits_le32(&ccm->ahb_reset1_cfg, 1 << AHB_RESET_OFFSET_DE);
 //	setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_DE);
@@ -3138,13 +3173,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12);	// DE_GATING
     CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
 
-//	PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
-//	PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
-
-//    CCU->DE_BGR_REG = (UINT32_C(1) << 0);		// Open the clock gate
-//    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+//	PRINTF("allwnr_a64_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
+//	PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
     local_delay_us(10);
-
  	/* Global DE settings */
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
@@ -3164,15 +3195,24 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 //		7 * (UINT32_C(1) << 0) |	// mixer0-div
 //		0;
 
- 	DE_TOP->SCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_SCLK_GATE
- 	DE_TOP->HCLK_GATE |= 0x1F;	//UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+ 	DE_TOP->SCLK_GATE |= UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+ 	DE_TOP->SCLK_GATE |= UINT32_C(1) << 1;	// CORE1_SCLK_GATE
+ 	DE_TOP->HCLK_GATE |= UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+ 	DE_TOP->HCLK_GATE |= UINT32_C(1) << 1;	// CORE1_HCLK_GATE
 
- 	// Only one bit writable
- 	DE_TOP->AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
-	DE_TOP->AHB_RESET |=(UINT32_C(1) << 0);		// CORE0_AHB_RESET
+ 	//DE_TOP->AHB_RESET = 0;	// All cores reset
+	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
+	DE_TOP->AHB_RESET |= (UINT32_C(1) << 1);		// CORE1_AHB_RESET
 
 //	PRINTF("DE_TOP AHB reset:\n");
 //	printhex32(DE_TOP_BASE, DE_TOP, 256);
+
+//	PRINTF("DE_MIXER0_GLB:\n");
+//	//memset(DE_MIXER0_GLB, 0xFF, 256);
+//	printhex32(DE_MIXER0_GLB_BASE, DE_MIXER0_GLB, 256);
+//	PRINTF("DE_MIXER1_GLB:\n");
+//	//memset(DE_MIXER1_GLB, 0xFF, 256);
+//	printhex32(DE_MIXER1_GLB_BASE, DE_MIXER1_GLB, 256);
 
 	{
 		const int rtmixid = RTMIXID;
@@ -4124,6 +4164,7 @@ void de2_init(const uintptr_t * frames)
 
 void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
 {
+    //PRINTF("hardware_ltdc_initialize\n");
 	const unsigned disp = RTMIXID - 1;
 	const int rtmixid = RTMIXID;
 
@@ -4153,10 +4194,10 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 #endif /* WITHHDMITVHW */
     /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
     {
-
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);	/* Update registers */
     }
+    //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
 void

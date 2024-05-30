@@ -101,11 +101,19 @@ typedef enum IRQn
 #define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01100000)   /*!< DE_GLB  Base */
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01101000)   /*!< DE_BLD  Base */
 #define DE_MIXER0_VI1_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
-#define DE_MIXER0_VI2_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
-#define DE_MIXER0_VI3_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
 #define DE_MIXER0_UI1_BASE ((uintptr_t) 0x01103000)   /*!< DE_UI  Base */
+#define DE_MIXER0_VI2_BASE ((uintptr_t) 0x01103000)   /*!< DE_VI  Base */
 #define DE_MIXER0_UI2_BASE ((uintptr_t) 0x01104000)   /*!< DE_UI  Base */
+#define DE_MIXER0_VI3_BASE ((uintptr_t) 0x01104000)   /*!< DE_VI  Base */
 #define DE_MIXER0_UI3_BASE ((uintptr_t) 0x01105000)   /*!< DE_UI  Base */
+#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x01200000)   /*!< DE_GLB  Base */
+#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x01201000)   /*!< DE_BLD  Base */
+#define DE_MIXER1_VI1_BASE ((uintptr_t) 0x01202000)   /*!< DE_VI  Base */
+#define DE_MIXER1_UI1_BASE ((uintptr_t) 0x01203000)   /*!< DE_UI  Base */
+#define DE_MIXER1_VI2_BASE ((uintptr_t) 0x01203000)   /*!< DE_VI  Base */
+#define DE_MIXER1_UI2_BASE ((uintptr_t) 0x01204000)   /*!< DE_UI  Base */
+#define DE_MIXER1_VI3_BASE ((uintptr_t) 0x01204000)   /*!< DE_VI  Base */
+#define DE_MIXER1_UI3_BASE ((uintptr_t) 0x01205000)   /*!< DE_UI  Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG  Base */
 #define SRAMC_BASE ((uintptr_t) 0x01C00000)           /*!< SRAMC  Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
@@ -2187,11 +2195,19 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB  register set access pointer */
 #define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD  register set access pointer */
 #define DE_MIXER0_VI1 ((DE_VI_TypeDef *) DE_MIXER0_VI1_BASE)/*!< DE_MIXER0_VI1  register set access pointer */
-#define DE_MIXER0_VI2 ((DE_VI_TypeDef *) DE_MIXER0_VI2_BASE)/*!< DE_MIXER0_VI2  register set access pointer */
-#define DE_MIXER0_VI3 ((DE_VI_TypeDef *) DE_MIXER0_VI3_BASE)/*!< DE_MIXER0_VI3  register set access pointer */
 #define DE_MIXER0_UI1 ((DE_UI_TypeDef *) DE_MIXER0_UI1_BASE)/*!< DE_MIXER0_UI1  register set access pointer */
+#define DE_MIXER0_VI2 ((DE_VI_TypeDef *) DE_MIXER0_VI2_BASE)/*!< DE_MIXER0_VI2  register set access pointer */
 #define DE_MIXER0_UI2 ((DE_UI_TypeDef *) DE_MIXER0_UI2_BASE)/*!< DE_MIXER0_UI2  register set access pointer */
+#define DE_MIXER0_VI3 ((DE_VI_TypeDef *) DE_MIXER0_VI3_BASE)/*!< DE_MIXER0_VI3  register set access pointer */
 #define DE_MIXER0_UI3 ((DE_UI_TypeDef *) DE_MIXER0_UI3_BASE)/*!< DE_MIXER0_UI3  register set access pointer */
+#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB  register set access pointer */
+#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD  register set access pointer */
+#define DE_MIXER1_VI1 ((DE_VI_TypeDef *) DE_MIXER1_VI1_BASE)/*!< DE_MIXER1_VI1  register set access pointer */
+#define DE_MIXER1_UI1 ((DE_UI_TypeDef *) DE_MIXER1_UI1_BASE)/*!< DE_MIXER1_UI1  register set access pointer */
+#define DE_MIXER1_VI2 ((DE_VI_TypeDef *) DE_MIXER1_VI2_BASE)/*!< DE_MIXER1_VI2  register set access pointer */
+#define DE_MIXER1_UI2 ((DE_UI_TypeDef *) DE_MIXER1_UI2_BASE)/*!< DE_MIXER1_UI2  register set access pointer */
+#define DE_MIXER1_VI3 ((DE_VI_TypeDef *) DE_MIXER1_VI3_BASE)/*!< DE_MIXER1_VI3  register set access pointer */
+#define DE_MIXER1_UI3 ((DE_UI_TypeDef *) DE_MIXER1_UI3_BASE)/*!< DE_MIXER1_UI3  register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */

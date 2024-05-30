@@ -3525,6 +3525,10 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_BLD">
+  <name>DE_MIXER1_BLD</name>
+  <baseAddress>0x01201000</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_MIXER0_CSR</name>
   <description></description>
@@ -3782,6 +3786,10 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_GLB">
+  <name>DE_MIXER1_GLB</name>
+  <baseAddress>0x01200000</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_TOP</name>
   <description>Display Engine Top</description>
@@ -3960,6 +3968,18 @@
   <name>DE_MIXER0_UI3</name>
   <baseAddress>0x01105000</baseAddress>
   </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_UI1">
+  <name>DE_MIXER1_UI1</name>
+  <baseAddress>0x01203000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_UI1">
+  <name>DE_MIXER1_UI2</name>
+  <baseAddress>0x01204000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_UI1">
+  <name>DE_MIXER1_UI3</name>
+  <baseAddress>0x01205000</baseAddress>
+  </peripheral>
   <peripheral>
   <name>DE_MIXER0_VI1</name>
   <description></description>
@@ -4124,11 +4144,23 @@
   </peripheral>
   <peripheral derivedFrom="DE_MIXER0_VI1">
   <name>DE_MIXER0_VI2</name>
-  <baseAddress>0x01102000</baseAddress>
+  <baseAddress>0x01103000</baseAddress>
   </peripheral>
   <peripheral derivedFrom="DE_MIXER0_VI1">
   <name>DE_MIXER0_VI3</name>
-  <baseAddress>0x01102000</baseAddress>
+  <baseAddress>0x01104000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_VI1">
+  <name>DE_MIXER1_VI1</name>
+  <baseAddress>0x01202000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_VI1">
+  <name>DE_MIXER1_VI2</name>
+  <baseAddress>0x01203000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_MIXER0_VI1">
+  <name>DE_MIXER1_VI3</name>
+  <baseAddress>0x01204000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DMAC</name>
