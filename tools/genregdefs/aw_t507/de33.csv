@@ -54,10 +54,8 @@
 
 #type; DE_GLB; Display Engine (DE) - Global Control
 
-#base; DE_GLB 0x01008100
-#base; DEb_GLB 0x01008140
-##base; DE0_GLB 0x01100000; RT-Mixer0
-##base; DE1_GLB 0x01200000; RT-Mixer1
+#base; DE_MIXER0_GLB 0x01008100; RT-Mixer0
+#base; DE_MIXER1_GLB 0x01008140; RT-Mixer1
 
 # https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
 # https://github.com/dumtux/Allwinner-H616.git
@@ -88,8 +86,8 @@
 
 #type; DE_BLD; Display Engine (DE) - Blender
 
-#base; DE_BLD 0x01281000
-#base; DEb_BLD 0x012A1000
+#base; DE_MIXER0_BLD 0x01281000
+#base; DE_MIXER1_BLD 0x012A1000
 
 # Blender with six inputs
 
@@ -193,7 +191,7 @@
 # RT-Mixer0 blocks
 
 #type; DE_VSU; Video Scaler Unit (VSU)
-#base; DE_VSU 0x01104000
+#base; DE_MIXER0_VSU 0x01104000
 
 #regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
 #regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
@@ -231,7 +229,7 @@
 
 # define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)
-#base; DE_FCE 0x01110000
+#base; DE_MIXER0_FCE 0x01110000
 
 #regdef; GCTRL_REG; 0x000; Control register
 #regdef; FCE_SIZE_REG; 0x004; Size setting register
@@ -267,7 +265,7 @@
 
 # define SUN50I_MIXER_BLS_EN			0x71800
 #type; DE_BLS; Blue Level Stretch (BLS)
-#base; DE_BLS 0x01111000
+#base; DE_MIXER0_BLS 0x01111000
 
 #regdef; BLS_CTRL_REG; 0x00; BLS module control register
 #regdef; BLS_SIZE_REG; 0x04; BLS size register
@@ -279,7 +277,7 @@
 #typeend;
 
 #type; DE_FCC; Fancy color curvature (FCC)
-#base; DE_FCC 0x01111400
+#base; DE_MIXER0_FCC 0x01111400
 
 #regdef; FCC_CTL_REG; 0x000; FCC Control Register
 #regdef; FCC_INPUT_SIZE_REG; 0x004; FCC Input Size Register
@@ -289,7 +287,7 @@
 #typeend;
 
 #type; DE_DNS; Denoise (DNS)
-#base; DE_DNS 0x01114000
+#base; DE_MIXER0_DNS 0x01114000
 
 #regdef; DNS_CTL; 0x000; DNS module control register
 #regdef; DNS_SIZE; 0x004; DNS size register

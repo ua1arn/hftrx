@@ -4472,7 +4472,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_BLD</name>
+  <name>DE_MIXER0_BLD</name>
   <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x05101000</baseAddress>
   <registers>
@@ -4626,12 +4626,12 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_BLD">
-  <name>DEb_BLD</name>
+  <peripheral derivedFrom="DE_MIXER0_BLD">
+  <name>DE_MIXER1_BLD</name>
   <baseAddress>0x05201000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_DEP</name>
+  <name>DE_MIXER0_DEP</name>
   <description>DRC (dynamic range controller)</description>
   <baseAddress>0x051A0000</baseAddress>
   <registers>
@@ -4654,7 +4654,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_GLB</name>
+  <name>DE_MIXER0_GLB</name>
   <description>Display Engine (DE) - Global Control</description>
   <baseAddress>0x05100000</baseAddress>
   <registers>
@@ -4696,8 +4696,8 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_GLB">
-  <name>DEb_GLB</name>
+  <peripheral derivedFrom="DE_MIXER0_GLB">
+  <name>DE_MIXER1_GLB</name>
   <baseAddress>0x05200000</baseAddress>
   </peripheral>
   <peripheral>
@@ -4767,7 +4767,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_UI1</name>
+  <name>DE_MIXER0_UI1</name>
   <description>Display Engine (DE) - UI surface</description>
   <baseAddress>0x05103000</baseAddress>
   <registers>
@@ -4871,7 +4871,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_VEP0</name>
+  <name>DE_MIXER0_VEP0</name>
   <description>Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks</description>
   <baseAddress>0x05120000</baseAddress>
   <registers>
@@ -4973,16 +4973,16 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_VEP0">
-  <name>DE_VEP1</name>
+  <peripheral derivedFrom="DE_MIXER0_VEP0">
+  <name>DE_MIXER0_VEP1</name>
   <baseAddress>0x05140000</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="DE_VEP0">
-  <name>DEb_VEP0</name>
+  <peripheral derivedFrom="DE_MIXER0_VEP0">
+  <name>DE_MIXER1_VEP0</name>
   <baseAddress>0x05220000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_VI1</name>
+  <name>DE_MIXER0_VI1</name>
   <description>Display Engine (DE) - VI surface</description>
   <baseAddress>0x05102000</baseAddress>
   <registers>
@@ -5143,8 +5143,8 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_VI1">
-  <name>DEb_VI1</name>
+  <peripheral derivedFrom="DE_MIXER0_VI1">
+  <name>DE_MIXER1_VI1</name>
   <baseAddress>0x05202000</baseAddress>
   </peripheral>
   <peripheral>

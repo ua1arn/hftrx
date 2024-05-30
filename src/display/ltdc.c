@@ -1805,7 +1805,7 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
 
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// https://github.com/RMerl/asuswrt-merlin.ng/blob/master/release/src-rt-5.04axhnd.675x/bootloaders/u-boot-2019.07/arch/arm/include/asm/arch-sunxi/display2.h#L16
 	// struct de_clk
@@ -1984,182 +1984,115 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 #else
 	//#error Undefined CPUSTYLE_xxx
 #endif
-// 1.5 Register Description
-//struct de_clk_t {
-//	uint32_t gate_cfg;		// SCLK_GATE DE SCLK Gating Register
-//	uint32_t bus_cfg;		// ? HCLK_GATE ? DE HCLK Gating Register
-//	uint32_t rst_cfg;		// AHB_RESET DE AHB Reset register
-//	uint32_t div_cfg;		// SCLK_DIV DE SCLK Division register
-//	uint32_t sel_cfg;		// ? DE2TCON ? MUX register
-//};
-
-// Allwinner_DE2.0_Spec_V1.0
-// 5.10.3.4 Blender
-// GLB
-//struct de_glb_t {
-//	uint32_t ctl;		/** Offset 0x000 Global control register */
-//	uint32_t status;	/** Offset 0x004 Global status register */
-//	uint32_t dbuff;		/** Offset 0x008 Global double buffer control register */
-//	uint32_t size;		/** Offset 0x00C Global size register */
-//};
-
-// Allwinner_DE2.0_Spec_V1.0
-// 5.10.3.4 Blender
-// BLD
-//struct de_bld_t {
-//	uint32_t fcolor_ctl;	/** BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
-//	struct {
-//		uint32_t fcolor;	/**  BLD fill color register */
-//		uint32_t insize;	/**  BLD input memory size register */
-//		uint32_t offset;	/**  BLD input memory offset register */
-//		uint32_t dum;		/**  filler */
-//	} attr[4];
-//	uint32_t dum0[15];
-//	uint32_t route;			/** BLD_CH_RTCTL Offset 0x080 BLD routing control register */
-//	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
-//	uint32_t bkcolor;
-//	uint32_t output_size;
-//	uint32_t bld_mode[4];	/* BLD_CTL */
-//	uint32_t dum1[4];
-//	uint32_t ck_ctl;
-//	uint32_t ck_cfg;
-//	uint32_t dum2[2];
-//	uint32_t ck_max[4];
-//	uint32_t dum3[4];
-//	uint32_t ck_min[4];
-//	uint32_t dum4[3];
-//	uint32_t out_ctl;
-//};
-
-//struct de_vi_t {
-//	struct {
-//		uint32_t attr;
-//		uint32_t size;
-//		uint32_t coord;
-//		uint32_t pitch[3];
-//		uint32_t top_laddr[3];
-//		uint32_t bot_laddr[3];
-//	} cfg [4];
-//	uint32_t fcolor[4];
-//	uint32_t top_haddr[3];
-//	uint32_t bot_haddr[3];
-//	uint32_t ovl_size[2];
-//	uint32_t hori[2];
-//	uint32_t vert[2];
-//};
-
-// 5.10.3.4 Blender
-// part
-//struct de_ui_t {
-//	struct {
-//		uint32_t attr;
-//		uint32_t size;
-//		uint32_t coord;
-//		uint32_t pitch;
-//		uint32_t top_laddr;
-//		uint32_t bot_laddr;
-//		uint32_t fcolor;
-//		uint32_t dum;
-//	} cfg [4];
-//	uint32_t top_haddr;
-//	uint32_t bot_haddr;
-//	uint32_t ovl_size;
-//};
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
-	ASSERT(rtmixid >= 1);
+	switch (rtmixid)
+	{
+	default: return 0;
+	case 1: return DE_MIXER0_GLB;
+	case 2: return DE_MIXER1_GLB;
+	}
+}
+
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	return & DE_GLB [rtmixid - 1];
-#elif defined DEb_GLB
-	return rtmixid == 1 ? DE_GLB : DEb_GLB;
+
+// Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
+
+static DE_VI_TypeDef * rtmix0_vimap [] =
+{
+		DE_VI1,
+		DE_VI2,
+		DE_VI3,
+};
+
+static DE_VI_TypeDef * rtmix1_vimap [] =
+{
+		DE_VI1,
+		DE_VI2,
+		DE_VI3,
+};
+
+static DE_UI_TypeDef * rtmix0_uimap [] =
+{
+		DE_UI1,
+		DE_UI2,
+		DE_UI3,
+};
+
+static DE_UI_TypeDef * rtmix1_uimap [] =
+{
+		DE_UI1,
+		DE_UI2,
+		DE_UI3,
+};
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+static DE_VI_TypeDef * const rtmix0_vimap [] =
+{
+		DE_MIXER0_VI1,
+		NULL,
+		NULL,
+};
+
+static DE_VI_TypeDef * const rtmix1_vimap [] =
+{
+		DE_MIXER1_VI1,
+		NULL,
+		NULL,
+};
+
+static DE_UI_TypeDef * const rtmix0_uimap [] =
+{
+		DE_MIXER0_UI1,
+		NULL,
+		NULL,
+};
+
+static DE_UI_TypeDef * const rtmix1_uimap [] =
+{
+		NULL,
+		NULL,
+		NULL,
+};
+
 #else
-	return rtmixid == 1 ? DE_GLB : NULL;
+	#error Unsupported CPUSTYLE_xxx
 #endif
+
+static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	ASSERT(id >= 1);
+	switch (rtmixid)
+	{
+	default: return 0;
+	case 1: return id <= ARRAY_SIZE(rtmix0_vimap) ? rtmix0_vimap [id - 1] : NULL;
+	case 2: return id <= ARRAY_SIZE(rtmix1_vimap) ? rtmix1_vimap [id - 1] : NULL;
+	}
 }
 
-//#if CPUSTYLE_T507 || CPUSTYLE_H616
-//static const uintptr_t t507cha [] =
-//{
-//	DE_VI1_BASE,	// DE_VI1_BASE
-//	DE_VI2_BASE,	// DE_VI2_BASE
-//	DE_VI3_BASE,	// DE_VI3_BASE
-//	0*0x01161000,
-//	0*0x01181000,
-//	0*0x011A1000,
-//	DE_UI1_BASE,	// DE_UI1_BASE 6
-//	DE_UI2_BASE,	// DE_UI2_BASE
-//	DE_UI3_BASE,	// DE_UI3_BASE
-//	0*0x01221000,
-//	0*0x01241000,
-//	0*0x01261000,
-//};
-//#endif
-
-static DE_VI_TypeDef * de3_getvi(int rtmixid, int ix)
+static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 {
-//#if CPUSTYLE_T507 || CPUSTYLE_H616
-//	return (DE_VI_TypeDef *) t507cha [(ix - 1) + 0 + (rtmixid - 1) * 3];
-//#endif
-	switch (ix)
+	ASSERT(rtmixid >= 1);
+	ASSERT(id >= 1);
+	switch (rtmixid)
 	{
-	default: return NULL;
-#ifdef DEb_VI1
-	case 1: return rtmixid == 1 ? DE_VI1 : DEb_VI1;
-#else
-	case 1: return DE_VI1;
-#endif
-#if VI_LASTIX(rtmixid) > 1
-	case 2: return DE_VI2;
-	case 3: return DE_VI3;
-#endif
+	default: return 0;
+	case 1: return id <= ARRAY_SIZE(rtmix0_uimap) ? rtmix0_uimap [id - 1] : NULL;
+	case 2: return id <= ARRAY_SIZE(rtmix1_uimap) ? rtmix1_uimap [id - 1] : NULL;
 	}
-
-}
-
-static DE_UI_TypeDef * de3_getui(int rtmixid, int ix)
-{
-//#if CPUSTYLE_T507 || CPUSTYLE_H616
-//	return (DE_UI_TypeDef *) t507cha [(ix - 1) + 6 + (rtmixid - 1) * 3];
-//#endif
-	switch (ix)
-	{
-	default: return NULL;
-#ifdef DEb_UI1
-	case 1: return rtmixid == 1 ? DE_UI1 : DEb_UI1;
-#else
-	case 1: return DE_UI1;
-#endif
-#if UI_LASTIX(rtmixid) > 1
-	case 2: return DE_UI2;
-	case 3: return DE_UI3;
-#endif
-	}
-
 }
 
 static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-	return (DE_BLD_TypeDef *) (DE_BASE + DE_DISP_OFFSET(rtmixid - 1) + DISP_BLD_OFFSET);
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64
-
 	switch (rtmixid)
 	{
 	default: return NULL;
-	case 1: return DE_BLD;
-	case 2: return DEb_BLD;
+	case 1: return DE_MIXER0_BLD;
+	case 2: return DE_MIXER1_BLD;
 	}
-
-#else
-	switch (rtmixid)
-	{
-	default: return NULL;
-	case 1: return DE_BLD;
-	case 2: return DEb_BLD;
-	}
-#endif
 }
 
 //static void write32(uintptr_t a, uint32_t v)
@@ -2481,7 +2414,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
     divider = ulmax16(1, ulmin16(16, divider));	// Make range in 1..16
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
@@ -2575,7 +2508,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* Configure TCONLCD clock */
     if (needfreq != 0)
@@ -2754,7 +2687,7 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 
 static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
@@ -2793,15 +2726,15 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 		DSI_DPHY->DPHY_ANA1 = 0x0;
 
 	}
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#endif /* */
 }
 
 // https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/u-boot/arch/arm/include/asm/arch-sunxi/lcdc.h#L105
 // step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsigned lvds_num)
 {
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
 	// Step 5 LVDS digital logic configuration
@@ -2830,7 +2763,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 //	local_delay_ms(1);
 	//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
 	// Step 5 LVDS digital logic configuration
@@ -2917,15 +2850,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		clk_active = 0;
 
 		uint32_t val;
-#if 1//(CPUSTYLE_T507 || CPUSTYLE_H616)
-		// вызывает сдвиг на пиксель
 		val = 0;
-#else
-		val =
-			(UINT32_C(1) << 31) | 	// IO_Output_Sel: 0: normal, 1: sync to dclk
-			(UINT32_C(1) << 28) |	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
-			0;
-#endif
 
 		if (! h_sync_active)
 			val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
@@ -3152,10 +3077,10 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step5 - set LVDS digital logic configuration
 	t113_set_LVDS_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	// These CPUs not support DSI at all
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
 	(void) DSI0->DSI_CTL;
@@ -3571,7 +3496,7 @@ static void awxx_deoutmapping(unsigned disp)
 #endif
 }
 
-#if 1
+#if 0
 ///----------------H3----------------------
 //
 //#define SYS_CPU_MULTIPLIER_MIN     1

@@ -97,15 +97,15 @@ typedef enum IRQn
 
 #define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
 #define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Display Engine Top Base */
-#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR  Base */
-#define DE_GLB_BASE ((uintptr_t) 0x01100000)          /*!< DE_GLB  Base */
-#define DE_BLD_BASE ((uintptr_t) 0x01101000)          /*!< DE_BLD  Base */
-#define DE_VI1_BASE ((uintptr_t) 0x01102000)          /*!< DE_VI  Base */
-#define DE_VI2_BASE ((uintptr_t) 0x01102000)          /*!< DE_VI  Base */
-#define DE_VI3_BASE ((uintptr_t) 0x01102000)          /*!< DE_VI  Base */
-#define DE_UI1_BASE ((uintptr_t) 0x01103000)          /*!< DE_UI  Base */
-#define DE_UI2_BASE ((uintptr_t) 0x01104000)          /*!< DE_UI  Base */
-#define DE_UI3_BASE ((uintptr_t) 0x01105000)          /*!< DE_UI  Base */
+#define DE_MIXER0_CSR_BASE ((uintptr_t) 0x01020000)   /*!< DE_CSR  Base */
+#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01100000)   /*!< DE_GLB  Base */
+#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01101000)   /*!< DE_BLD  Base */
+#define DE_MIXER0_VI1_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
+#define DE_MIXER0_VI2_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
+#define DE_MIXER0_VI3_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
+#define DE_MIXER0_UI1_BASE ((uintptr_t) 0x01103000)   /*!< DE_UI  Base */
+#define DE_MIXER0_UI2_BASE ((uintptr_t) 0x01104000)   /*!< DE_UI  Base */
+#define DE_MIXER0_UI3_BASE ((uintptr_t) 0x01105000)   /*!< DE_UI  Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x01700000)     /*!< C0_CPUX_CFG  Base */
 #define SRAMC_BASE ((uintptr_t) 0x01C00000)           /*!< SRAMC  Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
@@ -2183,15 +2183,15 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine Top register set access pointer */
-#define DE_CSR ((DE_CSR_TypeDef *) DE_CSR_BASE)       /*!< DE_CSR  register set access pointer */
-#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB  register set access pointer */
-#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD  register set access pointer */
-#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1  register set access pointer */
-#define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2  register set access pointer */
-#define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3  register set access pointer */
-#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1  register set access pointer */
-#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2  register set access pointer */
-#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3  register set access pointer */
+#define DE_MIXER0_CSR ((DE_CSR_TypeDef *) DE_MIXER0_CSR_BASE)/*!< DE_MIXER0_CSR  register set access pointer */
+#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB  register set access pointer */
+#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD  register set access pointer */
+#define DE_MIXER0_VI1 ((DE_VI_TypeDef *) DE_MIXER0_VI1_BASE)/*!< DE_MIXER0_VI1  register set access pointer */
+#define DE_MIXER0_VI2 ((DE_VI_TypeDef *) DE_MIXER0_VI2_BASE)/*!< DE_MIXER0_VI2  register set access pointer */
+#define DE_MIXER0_VI3 ((DE_VI_TypeDef *) DE_MIXER0_VI3_BASE)/*!< DE_MIXER0_VI3  register set access pointer */
+#define DE_MIXER0_UI1 ((DE_UI_TypeDef *) DE_MIXER0_UI1_BASE)/*!< DE_MIXER0_UI1  register set access pointer */
+#define DE_MIXER0_UI2 ((DE_UI_TypeDef *) DE_MIXER0_UI2_BASE)/*!< DE_MIXER0_UI2  register set access pointer */
+#define DE_MIXER0_UI3 ((DE_UI_TypeDef *) DE_MIXER0_UI3_BASE)/*!< DE_MIXER0_UI3  register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DRAMC ((DRAMC_TypeDef *) DRAMC_BASE)          /*!< DRAMC  register set access pointer */

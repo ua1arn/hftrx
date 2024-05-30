@@ -2706,7 +2706,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_BLD</name>
+  <name>DE_MIXER0_BLD</name>
   <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x01281000</baseAddress>
   <registers>
@@ -2883,12 +2883,12 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_BLD">
-  <name>DEb_BLD</name>
+  <peripheral derivedFrom="DE_MIXER0_BLD">
+  <name>DE_MIXER1_BLD</name>
   <baseAddress>0x012A1000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_BLS</name>
+  <name>DE_MIXER0_BLS</name>
   <description>Blue Level Stretch (BLS)</description>
   <baseAddress>0x01111000</baseAddress>
   <registers>
@@ -2968,7 +2968,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_DNS</name>
+  <name>DE_MIXER0_DNS</name>
   <description>Denoise (DNS)</description>
   <baseAddress>0x01114000</baseAddress>
   <registers>
@@ -2993,7 +2993,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_FCC</name>
+  <name>DE_MIXER0_FCC</name>
   <description>Fancy color curvature (FCC)</description>
   <baseAddress>0x01111400</baseAddress>
   <registers>
@@ -3036,7 +3036,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_FCE</name>
+  <name>DE_MIXER0_FCE</name>
   <description>Fresh and Contrast Enhancement (FCE)</description>
   <baseAddress>0x01110000</baseAddress>
   <registers>
@@ -3323,7 +3323,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DE_GLB</name>
+  <name>DE_MIXER0_GLB</name>
   <description>Display Engine (DE) - Global Control</description>
   <baseAddress>0x01008100</baseAddress>
   <registers>
@@ -3374,8 +3374,8 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DE_GLB">
-  <name>DEb_GLB</name>
+  <peripheral derivedFrom="DE_MIXER0_GLB">
+  <name>DE_MIXER1_GLB</name>
   <baseAddress>0x01008140</baseAddress>
   </peripheral>
   <peripheral>
@@ -3777,7 +3777,7 @@
   <baseAddress>0x01141000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_VSU</name>
+  <name>DE_MIXER0_VSU</name>
   <description>Video Scaler Unit (VSU)</description>
   <baseAddress>0x01104000</baseAddress>
   <registers>

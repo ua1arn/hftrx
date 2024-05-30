@@ -144,22 +144,22 @@ typedef enum IRQn
 
 #define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
 #define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
-#define DE_GLB_BASE ((uintptr_t) 0x01008100)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define DEb_GLB_BASE ((uintptr_t) 0x01008140)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01008100)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x01008140)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define RTWB_RCQ_BASE ((uintptr_t) 0x01008200)        /*!< RTWB_RCQ  Base */
 #define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_VSU_BASE ((uintptr_t) 0x01104000)          /*!< DE_VSU Video Scaler Unit (VSU) Base */
-#define DE_FCE_BASE ((uintptr_t) 0x01110000)          /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS_BASE ((uintptr_t) 0x01111000)          /*!< DE_BLS Blue Level Stretch (BLS) Base */
-#define DE_FCC_BASE ((uintptr_t) 0x01111400)          /*!< DE_FCC Fancy color curvature (FCC) Base */
-#define DE_DNS_BASE ((uintptr_t) 0x01114000)          /*!< DE_DNS Denoise (DNS) Base */
+#define DE_MIXER0_VSU_BASE ((uintptr_t) 0x01104000)   /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_MIXER0_FCE_BASE ((uintptr_t) 0x01110000)   /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_MIXER0_BLS_BASE ((uintptr_t) 0x01111000)   /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_MIXER0_FCC_BASE ((uintptr_t) 0x01111400)   /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_MIXER0_DNS_BASE ((uintptr_t) 0x01114000)   /*!< DE_DNS Denoise (DNS) Base */
 #define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
 #define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_BLD_BASE ((uintptr_t) 0x01281000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DEb_BLD_BASE ((uintptr_t) 0x012A1000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x012A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
@@ -2479,22 +2479,22 @@ typedef struct VE_Type
 /* Access pointers */
 
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
-#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
-#define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */
 #define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
-#define DE_VSU ((DE_VSU_TypeDef *) DE_VSU_BASE)       /*!< DE_VSU Video Scaler Unit (VSU) register set access pointer */
-#define DE_FCE ((DE_FCE_TypeDef *) DE_FCE_BASE)       /*!< DE_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS ((DE_BLS_TypeDef *) DE_BLS_BASE)       /*!< DE_BLS Blue Level Stretch (BLS) register set access pointer */
-#define DE_FCC ((DE_FCC_TypeDef *) DE_FCC_BASE)       /*!< DE_FCC Fancy color curvature (FCC) register set access pointer */
-#define DE_DNS ((DE_DNS_TypeDef *) DE_DNS_BASE)       /*!< DE_DNS Denoise (DNS) register set access pointer */
+#define DE_MIXER0_VSU ((DE_VSU_TypeDef *) DE_MIXER0_VSU_BASE)/*!< DE_MIXER0_VSU Video Scaler Unit (VSU) register set access pointer */
+#define DE_MIXER0_FCE ((DE_FCE_TypeDef *) DE_MIXER0_FCE_BASE)/*!< DE_MIXER0_FCE Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_MIXER0_BLS ((DE_BLS_TypeDef *) DE_MIXER0_BLS_BASE)/*!< DE_MIXER0_BLS Blue Level Stretch (BLS) register set access pointer */
+#define DE_MIXER0_FCC ((DE_FCC_TypeDef *) DE_MIXER0_FCC_BASE)/*!< DE_MIXER0_FCC Fancy color curvature (FCC) register set access pointer */
+#define DE_MIXER0_DNS ((DE_DNS_TypeDef *) DE_MIXER0_DNS_BASE)/*!< DE_MIXER0_DNS Denoise (DNS) register set access pointer */
 #define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
 #define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
 #define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
 #define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
-#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
-#define DEb_BLD ((DE_BLD_TypeDef *) DEb_BLD_BASE)     /*!< DEb_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */

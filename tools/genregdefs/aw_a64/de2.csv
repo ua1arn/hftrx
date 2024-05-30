@@ -13,14 +13,14 @@
 #regdef; CMD_CTL;		0x014;	
 
 #type; DE_GLB
-#base; DE_GLB 0x1100000
+#base; DE_MIXER0_GLB 0x1100000
 #regdef; GLB_CTL;	 	0x000;	Global control register
 #regdef; GLB_STS;		0x004;	Global status register
 #regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
 #regdef; GLB_SIZE;		0x00C;	Global size register
 
 #type; DE_BLD
-#base; DE_BLD 0x1101000
+#base; DE_MIXER0_BLD 0x1101000
 
 #regdef; BLD_EN_COLOR_CTL;	0x0000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
 #aggreg; CH; 0x0004 6; Pipe [0..5]
@@ -42,7 +42,8 @@
 #typeend;
 
 #type; DE_CSR
-#base; DE_CSR 0x01020000
+#base; DE_MIXER0_CSR 0x01020000
+
 #regdef; CSR_CTL; 0x000 Global control register
 #regdef; INT; 0x004; Interrupt register
 #regdef; IFMT; 0x020; Input data attribute register
@@ -69,9 +70,9 @@
 #typeend;
 
 #type; DE_VI
-#base; DE_VI1 0x01102000
-#base; DE_VI2 0x01102000
-#base; DE_VI3 0x01102000
+#base; DE_MIXER0_VI1 0x01102000
+#base; DE_MIXER0_VI2 0x01102000
+#base; DE_MIXER0_VI3 0x01102000
 
 #aggreg; CFG; 0x000 4;
 #regdef;  ATTR; 0x000;
@@ -90,9 +91,9 @@
 #typeend;
 
 #type; DE_UI
-#base; DE_UI1 0x01103000
-#base; DE_UI2 0x01104000
-#base; DE_UI3 0x01105000
+#base; DE_MIXER0_UI1 0x01103000
+#base; DE_MIXER0_UI2 0x01104000
+#base; DE_MIXER0_UI3 0x01105000
 
 #aggreg; CFG; 0x000 4;
 #regdef;  ATTR; 0x000; 

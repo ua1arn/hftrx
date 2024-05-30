@@ -202,17 +202,17 @@ typedef enum IRQn
 #define EMAC_BASE ((uintptr_t) 0x04500000)            /*!< EMAC  Base */
 #define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Display Engine (DE) Base */
 #define DE_TOP_BASE ((uintptr_t) 0x05000000)          /*!< DE_TOP Display Engine (DE) TOP Base */
-#define DE_GLB_BASE ((uintptr_t) 0x05100000)          /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define DE_BLD_BASE ((uintptr_t) 0x05101000)          /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DE_VI1_BASE ((uintptr_t) 0x05102000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_UI1_BASE ((uintptr_t) 0x05103000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_VEP0_BASE ((uintptr_t) 0x05120000)         /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
-#define DE_VEP1_BASE ((uintptr_t) 0x05140000)         /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
-#define DE_DEP_BASE ((uintptr_t) 0x051A0000)          /*!< DE_DEP DRC (dynamic range controller) Base */
-#define DEb_GLB_BASE ((uintptr_t) 0x05200000)         /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define DEb_BLD_BASE ((uintptr_t) 0x05201000)         /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DEb_VI1_BASE ((uintptr_t) 0x05202000)         /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DEb_VEP0_BASE ((uintptr_t) 0x05220000)        /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x05100000)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x05101000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_MIXER0_VI1_BASE ((uintptr_t) 0x05102000)   /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_MIXER0_UI1_BASE ((uintptr_t) 0x05103000)   /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_MIXER0_VEP0_BASE ((uintptr_t) 0x05120000)  /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_MIXER0_VEP1_BASE ((uintptr_t) 0x05140000)  /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
+#define DE_MIXER0_DEP_BASE ((uintptr_t) 0x051A0000)   /*!< DE_DEP DRC (dynamic range controller) Base */
+#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x05200000)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x05201000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_MIXER1_VI1_BASE ((uintptr_t) 0x05202000)   /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_MIXER1_VEP0_BASE ((uintptr_t) 0x05220000)  /*!< DE_VEP Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
@@ -3079,17 +3079,17 @@ typedef struct VE_Type
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
 #define EMAC ((EMAC_TypeDef *) EMAC_BASE)             /*!< EMAC  register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP register set access pointer */
-#define DE_GLB ((DE_GLB_TypeDef *) DE_GLB_BASE)       /*!< DE_GLB Display Engine (DE) - Global Control register set access pointer */
-#define DE_BLD ((DE_BLD_TypeDef *) DE_BLD_BASE)       /*!< DE_BLD Display Engine (DE) - Blender register set access pointer */
-#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
-#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
-#define DE_VEP0 ((DE_VEP_TypeDef *) DE_VEP0_BASE)     /*!< DE_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
-#define DE_VEP1 ((DE_VEP_TypeDef *) DE_VEP1_BASE)     /*!< DE_VEP1 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
-#define DE_DEP ((DE_DEP_TypeDef *) DE_DEP_BASE)       /*!< DE_DEP DRC (dynamic range controller) register set access pointer */
-#define DEb_GLB ((DE_GLB_TypeDef *) DEb_GLB_BASE)     /*!< DEb_GLB Display Engine (DE) - Global Control register set access pointer */
-#define DEb_BLD ((DE_BLD_TypeDef *) DEb_BLD_BASE)     /*!< DEb_BLD Display Engine (DE) - Blender register set access pointer */
-#define DEb_VI1 ((DE_VI_TypeDef *) DEb_VI1_BASE)      /*!< DEb_VI1 Display Engine (DE) - VI surface register set access pointer */
-#define DEb_VEP0 ((DE_VEP_TypeDef *) DEb_VEP0_BASE)   /*!< DEb_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
+#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_MIXER0_VI1 ((DE_VI_TypeDef *) DE_MIXER0_VI1_BASE)/*!< DE_MIXER0_VI1 Display Engine (DE) - VI surface register set access pointer */
+#define DE_MIXER0_UI1 ((DE_UI_TypeDef *) DE_MIXER0_UI1_BASE)/*!< DE_MIXER0_UI1 Display Engine (DE) - UI surface register set access pointer */
+#define DE_MIXER0_VEP0 ((DE_VEP_TypeDef *) DE_MIXER0_VEP0_BASE)/*!< DE_MIXER0_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
+#define DE_MIXER0_VEP1 ((DE_VEP_TypeDef *) DE_MIXER0_VEP1_BASE)/*!< DE_MIXER0_VEP1 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
+#define DE_MIXER0_DEP ((DE_DEP_TypeDef *) DE_MIXER0_DEP_BASE)/*!< DE_MIXER0_DEP DRC (dynamic range controller) register set access pointer */
+#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_MIXER1_VI1 ((DE_VI_TypeDef *) DE_MIXER1_VI1_BASE)/*!< DE_MIXER1_VI1 Display Engine (DE) - VI surface register set access pointer */
+#define DE_MIXER1_VEP0 ((DE_VEP_TypeDef *) DE_MIXER1_VEP0_BASE)/*!< DE_MIXER1_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */

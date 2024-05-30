@@ -19,8 +19,8 @@
 #regdef; DE_IP_CFG; 	0x024;	DE IP Configure Register
 
 #type; DE_GLB; Display Engine (DE) - Global Control
-#base; DE_GLB 0x05100000; RT-Mixer 0
-#base; DEb_GLB 0x05200000; RT-Mixer 1
+#base; DE_MIXER0_GLB 0x05100000; RT-Mixer 0
+#base; DE_MIXER1_GLB 0x05200000; RT-Mixer 1
 
 #regdef; GLB_CTL;	 	0x000;	Global control register
 #regdef; GLB_STS;		0x004;	Global status register
@@ -28,8 +28,8 @@
 #regdef; GLB_SIZE;		0x00C;	Global size register
 
 #type; DE_BLD; Display Engine (DE) - Blender
-#base; DE_BLD 0x05101000; RT-Mixer 0
-#base; DEb_BLD 0x05201000; RT-Mixer 1
+#base; DE_MIXER0_BLD 0x05101000; RT-Mixer 0
+#base; DE_MIXER1_BLD 0x05201000; RT-Mixer 1
 
 #regdef; BLD_EN_COLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
 #aggreg; CH; 0x004 6; Pipe [0..3] - but six elements
@@ -52,8 +52,8 @@
 
 #type; DE_VI; Display Engine (DE) - VI surface
 
-#base; DE_VI1 0x05102000; RT-Mixer 0 VI surface
-#base; DEb_VI1 0x05202000; RT-Mixer 1 VI surface
+#base; DE_MIXER0_VI1 0x05102000; RT-Mixer 0 VI surface
+#base; DE_MIXER1_VI1 0x05202000; RT-Mixer 1 VI surface
 
 #aggreg; CFG; 0x000 4;
 #regdef; ATTR; 0x000;
@@ -75,7 +75,7 @@
 
 #type; DE_UI; Display Engine (DE) - UI surface
 
-#base; DE_UI1 0x05103000; RT-Mixer 0 UI surface
+#base; DE_MIXER0_UI1 0x05103000; RT-Mixer 0 UI surface
 ##base; DE_UI2 0x05104000; RT-Mixer 0 UI surface
 ##base; DE_UI3 0x05105000; RT-Mixer 0 UI surface
 
@@ -100,9 +100,9 @@
 
 #type; DE_VEP; Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks
 
-#base; DE_VEP0 0x05120000
-#base; DE_VEP1 0x05140000
-#base; DEb_VEP0 0x05220000
+#base; DE_MIXER0_VEP0 0x05120000
+#base; DE_MIXER0_VEP1 0x05140000
+#base; DE_MIXER1_VEP0 0x05220000
 
 #aggreg; FCE; 0x0000 1;
 #regdef;  CFG; 0x000; 
@@ -134,7 +134,7 @@
 
 #type; DE_DEP; DRC (dynamic range controller)
 
-#base; DE_DEP 0x051A0000
+#base; DE_MIXER0_DEP 0x051A0000
 
 #aggreg; DRC; 0x0000 1;
 #regdef;  CFG; 0x000; 
