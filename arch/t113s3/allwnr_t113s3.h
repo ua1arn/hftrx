@@ -13,7 +13,7 @@
 
 
 /**
- * sun8i
+ * sun8iw20
  */
 
 // DRAM Space (SYS domain)
