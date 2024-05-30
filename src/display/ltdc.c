@@ -2509,22 +2509,22 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 
 #if WITHHDMITVHW
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
-//    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
-//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
-
-    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+//    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
+////    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
+////    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
+//
+//    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
 
-    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI_CLK_REG |= (UINT32_C(1) << 31);
+    CCU->HDMI_SLOW_CLK_REG |= (UINT32_C(1) << 31);
 
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11);	// HDMI_GATING
+    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 11);	// HDMI_RST
+    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 11);	// HDMI_RST
 
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
+//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
+//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
 
 //    CCU->HDMI_HDCP_CLK_REG;
 //    CCU->HDMI_HDCP_BGR_REG;
@@ -3626,7 +3626,7 @@ static void awxx_deoutmapping(unsigned disp)
 #endif
 }
 
-#if 0
+#if CPUSTYLE_A64
 ///----------------H3----------------------
 //
 //#define SYS_CPU_MULTIPLIER_MIN     1
@@ -3735,8 +3735,8 @@ static void awxx_deoutmapping(unsigned disp)
 //	#define HDMI_PHY_BASE ((uintptr_t) 0x06010000)        /*!< HDMI_PHY  Base */
 
 // The HDMI registers base address.
-#define HDMI_BASE     (HDMI_TX0_BASE - 0)//0x01EE0000
-//#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
+//#define HDMI_BASE     (HDMI_TX0_BASE - 0)//0x01EE0000
+#define HDMI_PHY_BASE (HDMI_BASE + 0x10000)
 
 #define HDMI_REG8(off)  *(volatile uint8_t *)(HDMI_BASE + (off))
 #define HDMI_REG32(off) *(volatile uint32_t *)(HDMI_BASE + (off))
@@ -3872,30 +3872,30 @@ static void awxx_deoutmapping(unsigned disp)
 #define DE_CMD_CTL                    *(volatile uint32_t*)(DE_BASE + 0x014)
 
 // Mixer 0
-#define DE_MIXER0                     (DE_BASE + 0x100000)
-#define DE_MIXER0_GLB                 (DE_MIXER0 + 0x0)
-#define DE_MIXER0_GLB_CTL             *(volatile uint32_t*)(DE_MIXER0_GLB + 0x000)
-#define DE_MIXER0_GLB_STS             *(volatile uint32_t*)(DE_MIXER0_GLB + 0x004)
-#define DE_MIXER0_GLB_DBUFFER         *(volatile uint32_t*)(DE_MIXER0_GLB + 0x008)
-#define DE_MIXER0_GLB_SIZE            *(volatile uint32_t*)(DE_MIXER0_GLB + 0x00C)
+#define DE_MIXER0_BASE                     (DE_BASE + 0x100000)
+//#define DE_MIXER0_GLB_BASE                 (DE_MIXER0 + 0x0)
+#define DE_MIXER0_GLB_CTL             *(volatile uint32_t*)(DE_MIXER0_GLB_BASE + 0x000)
+#define DE_MIXER0_GLB_STS             *(volatile uint32_t*)(DE_MIXER0_GLB_BASE + 0x004)
+#define DE_MIXER0_GLB_DBUFFER         *(volatile uint32_t*)(DE_MIXER0_GLB_BASE + 0x008)
+#define DE_MIXER0_GLB_SIZE            *(volatile uint32_t*)(DE_MIXER0_GLB_BASE + 0x00C)
 
-#define DE_MIXER0_BLD                 (DE_MIXER0 + 0x1000)
-#define DE_MIXER0_BLD_FILL_COLOR_CTL  *(volatile uint32_t*)(DE_MIXER0_BLD + 0x000)
-#define DE_MIXER0_BLD_FILL_COLOR(x)   *(volatile uint32_t*)(DE_MIXER0_BLD + 0x004 + (x) * 0x10)
-#define DE_MIXER0_BLD_CH_ISIZE(x)     *(volatile uint32_t*)(DE_MIXER0_BLD + 0x008 + (x) * 0x10)
-#define DE_MIXER0_BLD_CH_OFFSET(x)    *(volatile uint32_t*)(DE_MIXER0_BLD + 0x00C + (x) * 0x10)
-#define DE_MIXER0_BLD_CH_RTCTL        *(volatile uint32_t*)(DE_MIXER0_BLD + 0x080)
-#define DE_MIXER0_BLD_PREMUL_CTL      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x084)
-#define DE_MIXER0_BLD_BK_COLOR        *(volatile uint32_t*)(DE_MIXER0_BLD + 0x088)
-#define DE_MIXER0_BLD_SIZE            *(volatile uint32_t*)(DE_MIXER0_BLD + 0x08C)
-#define DE_MIXER0_BLD_CTL(x)          *(volatile uint32_t*)(DE_MIXER0_BLD + 0x090 + (x) * 0x4)
-#define DE_MIXER0_BLD_KEY_CTL         *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0B0)
-#define DE_MIXER0_BLD_KEY_CON         *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0B4)
-#define DE_MIXER0_BLD_KEY_MAX(x)      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0C0 + (x) * 0x4)
-#define DE_MIXER0_BLD_KEY_MIN(x)      *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0E0 + (x) * 0x4)
-#define DE_MIXER0_BLD_OUT_COLOR       *(volatile uint32_t*)(DE_MIXER0_BLD + 0x0FC)
+//#define DE_MIXER0_BLD_BASE                 (DE_MIXER0_BASE + 0x1000)
+#define DE_MIXER0_BLD_FILL_COLOR_CTL  *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x000)
+#define DE_MIXER0_BLD_FILL_COLOR(x)   *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x004 + (x) * 0x10)
+#define DE_MIXER0_BLD_CH_ISIZE(x)     *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x008 + (x) * 0x10)
+#define DE_MIXER0_BLD_CH_OFFSET(x)    *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x00C + (x) * 0x10)
+#define DE_MIXER0_BLD_CH_RTCTL        *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x080)
+#define DE_MIXER0_BLD_PREMUL_CTL      *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x084)
+#define DE_MIXER0_BLD_BK_COLOR        *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x088)
+#define DE_MIXER0_BLD_SIZE            *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x08C)
+#define DE_MIXER0_BLD_CTL(x)          *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x090 + (x) * 0x4)
+#define DE_MIXER0_BLD_KEY_CTL         *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x0B0)
+#define DE_MIXER0_BLD_KEY_CON         *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x0B4)
+#define DE_MIXER0_BLD_KEY_MAX(x)      *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x0C0 + (x) * 0x4)
+#define DE_MIXER0_BLD_KEY_MIN(x)      *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x0E0 + (x) * 0x4)
+#define DE_MIXER0_BLD_OUT_COLOR       *(volatile uint32_t*)(DE_MIXER0_BLD_BASE + 0x0FC)
 
-#define DE_MIXER0_OVL_V               (DE_MIXER0 + 0x2000)
+#define DE_MIXER0_OVL_V               (DE_MIXER0_BASE + 0x2000)
 #define DE_MIXER0_OVL_V_ATTCTL(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x00 + (x) * 0x30)
 #define DE_MIXER0_OVL_V_MBSIZE(x)     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x04 + (x) * 0x30)
 #define DE_MIXER0_OVL_V_COOR(x)       *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0x08 + (x) * 0x30)
@@ -3917,7 +3917,7 @@ static void awxx_deoutmapping(unsigned disp)
 #define DE_MIXER0_OVL_V_BOT_HADD2     *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xE4)
 #define DE_MIXER0_OVL_V_SIZE          *(volatile uint32_t*)(DE_MIXER0_OVL_V + 0xE8)
 
-#define DE_MIXER0_VS_BASE             (DE_MIXER0 + 0x20000)
+#define DE_MIXER0_VS_BASE             (DE_MIXER0_BASE + 0x20000)
 #define DE_MIXER0_VS_CTRL             *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x00)
 #define DE_MIXER0_VS_STATUS           *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x08)
 #define DE_MIXER0_VS_FIELD_CTRL       *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x0C)
@@ -3942,30 +3942,30 @@ static void awxx_deoutmapping(unsigned disp)
 #define DE_MIXER0_VS_C_VCOEF(x)       *(volatile uint32_t*)(DE_MIXER0_VS_BASE + 0x800 + (x) * 4)
 
 // Mixer 1
-#define DE_MIXER1                     (DE_BASE + 0x200000)
-#define DE_MIXER1_GLB                 (DE_MIXER1 + 0x0)
-#define DE_MIXER1_GLB_CTL             *(volatile uint32_t*)(DE_MIXER1_GLB + 0x000)
-#define DE_MIXER1_GLB_STS             *(volatile uint32_t*)(DE_MIXER1_GLB + 0x004)
-#define DE_MIXER1_GLB_DBUFFER         *(volatile uint32_t*)(DE_MIXER1_GLB + 0x008)
-#define DE_MIXER1_GLB_SIZE            *(volatile uint32_t*)(DE_MIXER1_GLB + 0x00C)
+#define DE_MIXER1_BASE                     (DE_BASE + 0x200000)
+//#define DE_MIXER1_GLB_BASE                 (DE_MIXER1_BASE + 0x0)
+#define DE_MIXER1_GLB_CTL             *(volatile uint32_t*)(DE_MIXER1_GLB_BASE + 0x000)
+#define DE_MIXER1_GLB_STS             *(volatile uint32_t*)(DE_MIXER1_GLB_BASE + 0x004)
+#define DE_MIXER1_GLB_DBUFFER         *(volatile uint32_t*)(DE_MIXER1_GLB_BASE + 0x008)
+#define DE_MIXER1_GLB_SIZE            *(volatile uint32_t*)(DE_MIXER1_GLB_BASE + 0x00C)
 
-#define DE_MIXER1_BLD                 (DE_MIXER1 + 0x1000)
-#define DE_MIXER1_BLD_FILL_COLOR_CTL  *(volatile uint32_t*)(DE_MIXER1_BLD + 0x000)
-#define DE_MIXER1_BLD_FILL_COLOR(x)   *(volatile uint32_t*)(DE_MIXER1_BLD + 0x004 + x * 0x10)
-#define DE_MIXER1_BLD_CH_ISIZE(x)     *(volatile uint32_t*)(DE_MIXER1_BLD + 0x008 + x * 0x10)
-#define DE_MIXER1_BLD_CH_OFFSET(x)    *(volatile uint32_t*)(DE_MIXER1_BLD + 0x00C + x * 0x10)
-#define DE_MIXER1_BLD_CH_RTCTL        *(volatile uint32_t*)(DE_MIXER1_BLD + 0x080)
-#define DE_MIXER1_BLD_PREMUL_CTL      *(volatile uint32_t*)(DE_MIXER1_BLD + 0x084)
-#define DE_MIXER1_BLD_BK_COLOR        *(volatile uint32_t*)(DE_MIXER1_BLD + 0x088)
-#define DE_MIXER1_BLD_SIZE            *(volatile uint32_t*)(DE_MIXER1_BLD + 0x08C)
-#define DE_MIXER1_BLD_CTL(x)          *(volatile uint32_t*)(DE_MIXER1_BLD + 0x090 + x * 0x4)
-#define DE_MIXER1_BLD_KEY_CTL         *(volatile uint32_t*)(DE_MIXER1_BLD + 0x0B0)
-#define DE_MIXER1_BLD_KEY_CON         *(volatile uint32_t*)(DE_MIXER1_BLD + 0x0B4)
-#define DE_MIXER1_BLD_KEY_MAX(x)      *(volatile uint32_t*)(DE_MIXER1_BLD + 0x0C0 + x * 0x4)
-#define DE_MIXER1_BLD_KEY_MIN(x)      *(volatile uint32_t*)(DE_MIXER1_BLD + 0x0E0 + x * 0x4)
-#define DE_MIXER1_BLD_OUT_COLOR       *(volatile uint32_t*)(DE_MIXER1_BLD + 0x0FC)
+//#define DE_MIXER1_BLD_BASE                 (DE_MIXER1_BASE + 0x1000)
+#define DE_MIXER1_BLD_FILL_COLOR_CTL  *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x000)
+#define DE_MIXER1_BLD_FILL_COLOR(x)   *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x004 + x * 0x10)
+#define DE_MIXER1_BLD_CH_ISIZE(x)     *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x008 + x * 0x10)
+#define DE_MIXER1_BLD_CH_OFFSET(x)    *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x00C + x * 0x10)
+#define DE_MIXER1_BLD_CH_RTCTL        *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x080)
+#define DE_MIXER1_BLD_PREMUL_CTL      *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x084)
+#define DE_MIXER1_BLD_BK_COLOR        *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x088)
+#define DE_MIXER1_BLD_SIZE            *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x08C)
+#define DE_MIXER1_BLD_CTL(x)          *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x090 + x * 0x4)
+#define DE_MIXER1_BLD_KEY_CTL         *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x0B0)
+#define DE_MIXER1_BLD_KEY_CON         *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x0B4)
+#define DE_MIXER1_BLD_KEY_MAX(x)      *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x0C0 + x * 0x4)
+#define DE_MIXER1_BLD_KEY_MIN(x)      *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x0E0 + x * 0x4)
+#define DE_MIXER1_BLD_OUT_COLOR       *(volatile uint32_t*)(DE_MIXER1_BLD_BASE + 0x0FC)
 
-#define DE_MIXER1_OVL_V               (DE_MIXER1 + 0x2000)
+#define DE_MIXER1_OVL_V               (DE_MIXER1_BASE + 0x2000)
 #define DE_MIXER1_OVL_V_ATTCTL(x)     *(volatile uint32_t*)(DE_MIXER1_OVL_V + 0x00 + x * 0x30)
 #define DE_MIXER1_OVL_V_MBSIZE(x)     *(volatile uint32_t*)(DE_MIXER1_OVL_V + 0x04 + x * 0x30)
 #define DE_MIXER1_OVL_V_COOR(x)       *(volatile uint32_t*)(DE_MIXER1_OVL_V + 0x08 + x * 0x30)
@@ -4071,93 +4071,82 @@ static struct lcd_timing timing;	// out parameters
 
 static void hdmi_init(void)
 {
+	  timing.hp=LCDX_OUT;///
+	  timing.vp=LCDY_OUT;///
+	  timing.hbp=300;///
+	  timing.vbp=30;///
+	  timing.hspw=20;///
+	  timing.vspw=8;///
 
-  timing.hp=LCDX_OUT;///
-  timing.vp=LCDY_OUT;///
-  timing.hbp=300;///
-  timing.vbp=30;///
-  timing.hspw=20;///
-  timing.vspw=8;///
 
-  memset((void *) HDMI_BASE, 0xFF, 1024);
-  memset((void *) HDMI_PHY_BASE, 0xFF, 1024);
-  TP();
-  printhex32(HDMI_BASE, (void *) HDMI_BASE, 512);
-  TP();
-  printhex32(HDMI_PHY_BASE, (void *) HDMI_PHY_BASE, 512);
-  HDMI_PHY_CFG1 = 0;
-  HDMI_PHY_CFG1 = 1;
-  local_delay_ms(5);
-  HDMI_PHY_CFG1 |= (1 << 16);
-  HDMI_PHY_CFG1 |= (1 << 1);
-  local_delay_ms(10);
-  HDMI_PHY_CFG1 |= (1 << 2);
-  local_delay_ms(5);
-  HDMI_PHY_CFG1 |= (1 << 3);
-  local_delay_ms(40);
-  HDMI_PHY_CFG1 |= (1 << 19);
-  local_delay_ms(100);
-  HDMI_PHY_CFG1 |= (1 << 18);
-  HDMI_PHY_CFG1 |= (7 << 4);
-  TP();
-  while((HDMI_PHY_STS & 0x80) == 0)
-	  ;
-  TP();
+	  HDMI_PHY_CFG1 = 0;
+	  HDMI_PHY_CFG1 = 1;
+	  local_delay_ms(5);
+	  HDMI_PHY_CFG1 |= (1<<16);
+	  HDMI_PHY_CFG1 |= (1<<1);
+	  local_delay_ms(10);
+	  HDMI_PHY_CFG1 |= (1<<2);
+	  local_delay_ms(5);
+	  HDMI_PHY_CFG1 |= (1<<3);
+	  local_delay_ms(40);
+	  HDMI_PHY_CFG1 |= (1<<19);
+	  local_delay_ms(100);
+	  HDMI_PHY_CFG1 |= (1<<18);
+	  HDMI_PHY_CFG1 |= (7<<4);
+	  while((HDMI_PHY_STS & 0x80) == 0)
+		  ;
+	  HDMI_PHY_CFG1 |= (0xf<<4);
+	  HDMI_PHY_CFG1 |= (0xf<<8);
+	  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
 
-  HDMI_PHY_CFG1 |= (0xf << 4);
-  HDMI_PHY_CFG1 |= (0xf << 8);
-  HDMI_PHY_CFG3 |= (1 << 0) | (1 << 2);
+	  HDMI_PHY_PLL1 &= ~(1<<26);
+	  HDMI_PHY_CEC = 0;
 
-  HDMI_PHY_PLL1 &= ~(1 << 26);
-  HDMI_PHY_CEC = 0;
+	  HDMI_PHY_PLL1 = 0x39dc5040;
+	  HDMI_PHY_PLL2 = 0x80084381;
+	  local_delay_ms(100);
+	  HDMI_PHY_PLL3 = 1;
+	  HDMI_PHY_PLL1 |= (1<<25);
+	  local_delay_ms(100);
+	  uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
+	  HDMI_PHY_PLL1 |= (1<<31) | (1<<30) | tmp;
 
-  HDMI_PHY_PLL1 = 0x39dc5040;
-  HDMI_PHY_PLL2 = 0x80084381;
-  local_delay_ms(1000);
-  HDMI_PHY_PLL3 = 1;
-  HDMI_PHY_PLL1 |= (1 << 25);
-  local_delay_ms(1000);
-  uint32_t tmp = (HDMI_PHY_STS & 0x1f800) >> 11;
-  HDMI_PHY_PLL1 |= (1 << 31) | (1 << 30) | tmp;
+	  HDMI_PHY_CFG1 = 0x01FFFF7F;
+	  HDMI_PHY_CFG2 = 0x8063A800;
+	  HDMI_PHY_CFG3 = 0x0F81C485;
 
-  HDMI_PHY_CFG1 = 0x01FFFF7F;
-  HDMI_PHY_CFG2 = 0x8063A800;
-  HDMI_PHY_CFG3 = 0x0F81C485;
+	  /* enable read access to HDMI controller */
+	  HDMI_PHY_READ_EN = 0x54524545;
+	  /* descramble register offsets */
+	  HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 
-  /* enable read access to HDMI controller */
-  HDMI_PHY_READ_EN = 0x54524545;
-  /* descramble register offsets */
-  HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+	  // HDMI Config, based on the documentation at:
+	  // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+	  HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+	  HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
+	  HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
+	  HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
+	  HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
 
-  // HDMI Config, based on the documentation at:
-  // https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-  // out parameters
-  HDMI_FC_INVIDCONF = (1 << 6) | (1 << 5) | (1 << 4) | (1 << 3); // Polarity etc
-  HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
-  HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
-  HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
-  HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
+	  HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
+	  HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
+	  HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
 
-  HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
-  HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
-  HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
+	  HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
+	  HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
+	  HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
+	  HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
+	  HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
+	  HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
 
-  HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
-  HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
-  HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-  HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
-  HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
-  HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
-
-  HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-  HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-  HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-  HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-  HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-  HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-  HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-  HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
-
+	  HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+	  HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+	  HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+	  HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+	  HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+	  HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+	  HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+	  HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
 
 }
 
@@ -4195,7 +4184,7 @@ void de2_init(const uintptr_t * frames)
   DE_DE2TCON_MUX &= ~(1 << 0);
 
   // Erase the whole of MIXER0. This contains uninitialized data.
-  for(uint32_t addr = DE_MIXER0 + 0x0000; addr < DE_MIXER0 + 0xC000; addr += 4)
+  for(uint32_t addr = DE_MIXER0_BASE + 0x0000; addr < DE_MIXER0_BASE + 0xC000; addr += 4)
 	  * (volatile uint32_t*) (addr) = 0;
 
   DE_MIXER0_GLB_CTL = 1;
@@ -4250,11 +4239,11 @@ void de2_init(const uintptr_t * frames)
 //  de2_init(frames);
 //}
 
-#endif
+#endif /* CPUSTYLE_A64 */
 
 void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t * vdmode)
 {
-    PRINTF("hardware_ltdc_initialize\n");
+    //PRINTF("hardware_ltdc_initialize\n");
 	const unsigned disp = RTMIXID - 1;
 	const int rtmixid = RTMIXID;
 
@@ -4287,7 +4276,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);	/* Update registers */
     }
-    PRINTF("hardware_ltdc_initialize done.\n");
+    //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
 void
