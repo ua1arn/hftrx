@@ -97,7 +97,8 @@ typedef enum IRQn
 
 #define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
 #define DE_TOP_BASE ((uintptr_t) 0x01000000)          /*!< DE_TOP Display Engine Top Base */
-#define DE_MIXER0_CSR_BASE ((uintptr_t) 0x01020000)   /*!< DE_CSR  Base */
+#define DE_WB_BASE ((uintptr_t) 0x01010000)           /*!< DE_WB Real-time write-back controller (RT-WB) Base */
+#define DE_CSR_BASE ((uintptr_t) 0x01020000)          /*!< DE_CSR Copy & Rotation Base */
 #define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01100000)   /*!< DE_GLB  Base */
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01101000)   /*!< DE_BLD  Base */
 #define DE_MIXER0_VI1_BASE ((uintptr_t) 0x01102000)   /*!< DE_VI  Base */
@@ -738,7 +739,7 @@ typedef struct DE_BLD_Type
 /*
  * @brief DE_CSR
  */
-/*!< DE_CSR  */
+/*!< DE_CSR Copy & Rotation */
 typedef struct DE_CSR_Type
 {
     volatile uint32_t CSR_CTL;                        /*!< Offset 0x000 (null) */
@@ -839,6 +840,48 @@ typedef struct DE_VI_Type
     volatile uint32_t HORI [0x002];                   /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
     volatile uint32_t VERT [0x002];                   /*!< Offset 0x0F8 OVL_V vertical down sample control register */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
+/*
+ * @brief DE_WB
+ */
+/*!< DE_WB Real-time write-back controller (RT-WB) */
+typedef struct DE_WB_Type
+{
+    volatile uint32_t WB_GCTRL_REG;                   /*!< Offset 0x000 Module general control register */
+    volatile uint32_t WB_SIZE_REG;                    /*!< Offset 0x004 Input size register */
+    volatile uint32_t WB_CROP_COORD_REG;              /*!< Offset 0x008 Cropping coordinate register */
+    volatile uint32_t WB_CROP_SIZE_REG;               /*!< Offset 0x00C Cropping size register */
+    volatile uint32_t WB_A_CH0_ADDR_REG;              /*!< Offset 0x010 Write-back Group A channel 0 address register */
+    volatile uint32_t WB_A_CH1_ADDR_REG;              /*!< Offset 0x014 Write-back Group A channel 1 address register */
+    volatile uint32_t WB_A_CH2_ADDR_REG;              /*!< Offset 0x018 Write-back Group A channel 2 address register */
+    volatile uint32_t WB_A_HIGH_ADDR_REG;             /*!< Offset 0x01C Write-back Group A address high bit register */
+    volatile uint32_t WB_B_CH0_ADDR_REG;              /*!< Offset 0x020 Write-back Group B channel 0 address register */
+    volatile uint32_t WB_B_CH1_ADDR_REG;              /*!< Offset 0x024 Write-back Group B channel 1 address register */
+    volatile uint32_t WB_B_CH2_ADDR_REG;              /*!< Offset 0x028 Write-back Group B channel 2 address register */
+    volatile uint32_t WB_B_HIGH_ADDR_REG;             /*!< Offset 0x02C Write-back Group B address high bit register */
+    volatile uint32_t WB_CH0_PITCH_REG;               /*!< Offset 0x030 Write-back channel 0 pitch register */
+    volatile uint32_t WB_CH12_PITCH_REG;              /*!< Offset 0x034 Write-back channel 1/2 pitch register */
+             uint32_t reserved_0x038 [0x0002];
+    volatile uint32_t WB_ADDR_SWITCH_REG;             /*!< Offset 0x040 Write-back address switch setting register */
+    volatile uint32_t WB_FORMAT_REG;                  /*!< Offset 0x044 Output format register */
+    volatile uint32_t WB_INT_REG;                     /*!< Offset 0x048 Interrupt control register */
+    volatile uint32_t WB_STATUS_REG;                  /*!< Offset 0x04C Module status register */
+             uint32_t reserved_0x050;
+    volatile uint32_t WB_BYPASS_REG;                  /*!< Offset 0x054 Bypass control register */
+             uint32_t reserved_0x058 [0x0006];
+    volatile uint32_t WB_CS_HORZ_REG;                 /*!< Offset 0x070 Coarse scaling horizontal setting register */
+    volatile uint32_t WB_CS_VERT_REG;                 /*!< Offset 0x074 Coarse scaling vertical setting register */
+             uint32_t reserved_0x078 [0x0002];
+    volatile uint32_t WB_FS_INSIZE_REG;               /*!< Offset 0x080 Fine scaling input size register */
+    volatile uint32_t WB_FS_OUTSIZE_REG;              /*!< Offset 0x084 Fine scaling output size register */
+    volatile uint32_t WB_FS_HSTEP_REG;                /*!< Offset 0x088 Fine scaling horizontal step registe */
+    volatile uint32_t WB_FS_VSTEP_REG;                /*!< Offset 0x08C Fine scaling vertical step register */
+             uint32_t reserved_0x090 [0x001B];
+    volatile uint32_t WB_DEBUG_REG;                   /*!< Offset 0x0FC Debug register */
+             uint32_t reserved_0x100 [0x0040];
+    volatile uint32_t WB_CH0_HCOEF_REGN [0x010];      /*!< Offset 0x200 0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15) */
+             uint32_t reserved_0x240 [0x0010];
+    volatile uint32_t WB_CH1_HCOEF_REGN [0x010];      /*!< Offset 0x280 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15) */
+} DE_WB_TypeDef; /* size of structure = 0x2C0 */
 /*
  * @brief DMAC
  */
@@ -2191,7 +2234,8 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine Top register set access pointer */
-#define DE_MIXER0_CSR ((DE_CSR_TypeDef *) DE_MIXER0_CSR_BASE)/*!< DE_MIXER0_CSR  register set access pointer */
+#define DE_WB ((DE_WB_TypeDef *) DE_WB_BASE)          /*!< DE_WB Real-time write-back controller (RT-WB) register set access pointer */
+#define DE_CSR ((DE_CSR_TypeDef *) DE_CSR_BASE)       /*!< DE_CSR Copy & Rotation register set access pointer */
 #define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB  register set access pointer */
 #define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD  register set access pointer */
 #define DE_MIXER0_VI1 ((DE_VI_TypeDef *) DE_MIXER0_VI1_BASE)/*!< DE_MIXER0_VI1  register set access pointer */

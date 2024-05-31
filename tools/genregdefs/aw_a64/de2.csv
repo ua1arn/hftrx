@@ -43,8 +43,42 @@
 #regdef; OUT_CTL; 0x00FC;
 #typeend;
 
-#type; DE_CSR
-#base; DE_MIXER0_CSR 0x01020000
+#type; DE_WB;  Real-time write-back controller (RT-WB)
+#base; DE_WB 0x01010000
+
+#regdef; WB_GCTRL_REG; 0x000; Module general control register
+#regdef; WB_SIZE_REG; 0x004; Input size register
+#regdef; WB_CROP_COORD_REG; 0x008; Cropping coordinate register
+#regdef; WB_CROP_SIZE_REG; 0x00c; Cropping size register
+#regdef; WB_A_CH0_ADDR_REG; 0x010; Write-back Group A channel 0 address register
+#regdef; WB_A_CH1_ADDR_REG; 0x014; Write-back Group A channel 1 address register
+#regdef; WB_A_CH2_ADDR_REG; 0x018; Write-back Group A channel 2 address register
+#regdef; WB_A_HIGH_ADDR_REG; 0x01c; Write-back Group A address high bit register
+#regdef; WB_B_CH0_ADDR_REG; 0x020; Write-back Group B channel 0 address register
+#regdef; WB_B_CH1_ADDR_REG; 0x024; Write-back Group B channel 1 address register
+#regdef; WB_B_CH2_ADDR_REG; 0x028; Write-back Group B channel 2 address register
+#regdef; WB_B_HIGH_ADDR_REG; 0x02c; Write-back Group B address high bit register
+#regdef; WB_CH0_PITCH_REG; 0x030; Write-back channel 0 pitch register
+#regdef; WB_CH12_PITCH_REG; 0x034; Write-back channel 1/2 pitch register
+#regdef; WB_ADDR_SWITCH_REG; 0x040; Write-back address switch setting register
+#regdef; WB_FORMAT_REG; 0x044; Output format register
+#regdef; WB_INT_REG; 0x048; Interrupt control register
+#regdef; WB_STATUS_REG; 0x04c; Module status register
+#regdef; WB_BYPASS_REG; 0x054; Bypass control register
+#regdef; WB_CS_HORZ_REG; 0x070; Coarse scaling horizontal setting register
+#regdef; WB_CS_VERT_REG; 0x074; Coarse scaling vertical setting register
+#regdef; WB_FS_INSIZE_REG; 0x080; Fine scaling input size register
+#regdef; WB_FS_OUTSIZE_REG; 0x084; Fine scaling output size register
+#regdef; WB_FS_HSTEP_REG; 0x088; Fine scaling horizontal step registe
+#regdef; WB_FS_VSTEP_REG; 0x08C; Fine scaling vertical step register
+#regdef; WB_DEBUG_REG; 0x0FC; Debug register
+#regdef; WB_CH0_HCOEF_REGN; 0x200 16; 0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15)
+#regdef; WB_CH1_HCOEF_REGN; 0x280 16; 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15)
+
+#typeend;
+
+#type; DE_CSR; Copy & Rotation
+#base; DE_CSR 0x01020000
 
 #regdef; CSR_CTL; 0x000 Global control register
 #regdef; INT; 0x004; Interrupt register

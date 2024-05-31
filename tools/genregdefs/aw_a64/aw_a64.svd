@@ -3530,8 +3530,8 @@
   <baseAddress>0x01201000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_MIXER0_CSR</name>
-  <description></description>
+  <name>DE_CSR</name>
+  <description>Copy &amp; Rotation</description>
   <baseAddress>0x01020000</baseAddress>
   <registers>
    <register>
@@ -4161,6 +4161,275 @@
   <peripheral derivedFrom="DE_MIXER0_VI1">
   <name>DE_MIXER1_VI3</name>
   <baseAddress>0x01204000</baseAddress>
+  </peripheral>
+  <peripheral>
+  <name>DE_WB</name>
+  <description>Real-time write-back controller (RT-WB)</description>
+  <baseAddress>0x01010000</baseAddress>
+  <registers>
+   <register>
+    <name>WB_GCTRL_REG</name>
+    <displayName>WB_GCTRL_REG</displayName>
+    <description>Module general control register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_SIZE_REG</name>
+    <displayName>WB_SIZE_REG</displayName>
+    <description>Input size register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_CROP_COORD_REG</name>
+    <displayName>WB_CROP_COORD_REG</displayName>
+    <description>Cropping coordinate register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_CROP_SIZE_REG</name>
+    <displayName>WB_CROP_SIZE_REG</displayName>
+    <description>Cropping size register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_A_CH0_ADDR_REG</name>
+    <displayName>WB_A_CH0_ADDR_REG</displayName>
+    <description>Write-back Group A channel 0 address register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_A_CH1_ADDR_REG</name>
+    <displayName>WB_A_CH1_ADDR_REG</displayName>
+    <description>Write-back Group A channel 1 address register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_A_CH2_ADDR_REG</name>
+    <displayName>WB_A_CH2_ADDR_REG</displayName>
+    <description>Write-back Group A channel 2 address register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_A_HIGH_ADDR_REG</name>
+    <displayName>WB_A_HIGH_ADDR_REG</displayName>
+    <description>Write-back Group A address high bit register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_B_CH0_ADDR_REG</name>
+    <displayName>WB_B_CH0_ADDR_REG</displayName>
+    <description>Write-back Group B channel 0 address register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_B_CH1_ADDR_REG</name>
+    <displayName>WB_B_CH1_ADDR_REG</displayName>
+    <description>Write-back Group B channel 1 address register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_B_CH2_ADDR_REG</name>
+    <displayName>WB_B_CH2_ADDR_REG</displayName>
+    <description>Write-back Group B channel 2 address register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_B_HIGH_ADDR_REG</name>
+    <displayName>WB_B_HIGH_ADDR_REG</displayName>
+    <description>Write-back Group B address high bit register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_CH0_PITCH_REG</name>
+    <displayName>WB_CH0_PITCH_REG</displayName>
+    <description>Write-back channel 0 pitch register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_CH12_PITCH_REG</name>
+    <displayName>WB_CH12_PITCH_REG</displayName>
+    <description>Write-back channel 1/2 pitch register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_ADDR_SWITCH_REG</name>
+    <displayName>WB_ADDR_SWITCH_REG</displayName>
+    <description>Write-back address switch setting register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_FORMAT_REG</name>
+    <displayName>WB_FORMAT_REG</displayName>
+    <description>Output format register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_INT_REG</name>
+    <displayName>WB_INT_REG</displayName>
+    <description>Interrupt control register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_STATUS_REG</name>
+    <displayName>WB_STATUS_REG</displayName>
+    <description>Module status register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_BYPASS_REG</name>
+    <displayName>WB_BYPASS_REG</displayName>
+    <description>Bypass control register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_CS_HORZ_REG</name>
+    <displayName>WB_CS_HORZ_REG</displayName>
+    <description>Coarse scaling horizontal setting register</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_CS_VERT_REG</name>
+    <displayName>WB_CS_VERT_REG</displayName>
+    <description>Coarse scaling vertical setting register</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_FS_INSIZE_REG</name>
+    <displayName>WB_FS_INSIZE_REG</displayName>
+    <description>Fine scaling input size register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_FS_OUTSIZE_REG</name>
+    <displayName>WB_FS_OUTSIZE_REG</displayName>
+    <description>Fine scaling output size register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_FS_HSTEP_REG</name>
+    <displayName>WB_FS_HSTEP_REG</displayName>
+    <description>Fine scaling horizontal step registe</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_FS_VSTEP_REG</name>
+    <displayName>WB_FS_VSTEP_REG</displayName>
+    <description>Fine scaling vertical step register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WB_DEBUG_REG</name>
+    <displayName>WB_DEBUG_REG</displayName>
+    <description>Debug register</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>WB_CH0_HCOEF_REGN</name>
+     <displayName>WB_CH0_HCOEF_REGN</displayName>
+     <description>0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000280</addressOffset>
+    <register>
+     <name>WB_CH1_HCOEF_REGN</name>
+     <displayName>WB_CH1_HCOEF_REGN</displayName>
+     <description>0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+  </registers>
   </peripheral>
   <peripheral>
   <name>DMAC</name>
