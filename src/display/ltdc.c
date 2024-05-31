@@ -2917,9 +2917,73 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 #endif
 }
 
+//#define TCONTV_PTR TCON_TV0
+
+static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
+{
+#if defined (TCONTV_PTR)
+
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	// out parameters
+	//	LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
+	//	LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
+	//	LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
+	//	LCD0_TCON1_BASIC3 = (2199 << 16) | 191;
+	//	LCD0_TCON1_BASIC4 = (2250 << 16) | 40;
+	//	LCD0_TCON1_BASIC5 = (43 << 16) | 4;
+
+	// XI YI
+	TCONTV_PTR->TV_BASIC0_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+	// LS_XO LS_YO NOTE: LS_YO = TV_YI
+	TCONTV_PTR->TV_BASIC1_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+//	TCONTV_PTR->TV_BASIC1_REG =
+//		((HTOTAL - 1) << 16) |		// TOTAL
+//		((LEFTMARGIN - 1) << 0) |	// HBP
+//		0;
+	// TV_XO TV_YO
+	TCONTV_PTR->TV_BASIC2_REG = (
+		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
+		);
+//	TCONTV_PTR->TV_BASIC2_REG =
+//		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+//		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+//		0;
+	// HT HBP
+	TCONTV_PTR->TV_BASIC3_REG =
+		((HTOTAL - 1) << 16) |		// TOTAL
+		((LEFTMARGIN - 1) << 0) |	// HBP
+		0;
+	// VT VBP
+	TCONTV_PTR->TV_BASIC4_REG =
+		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		0;
+	// HSPW VSPW
+	TCONTV_PTR->TV_BASIC5_REG =
+		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
+		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
+		0;
+
+#endif /* defined (TCONTV_PTR) */
+
+}
+
 // Set sequuence parameters
 static void t113_set_sequence_parameters(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
@@ -2949,11 +3013,13 @@ static void t113_set_sequence_parameters(const videomode_t * vdmode)
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
+#endif /* defined (TCONLCD_PTR) */
 }
 
 // Step4 - Open IO output
 static void t113_open_IO_output(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 	// io_tristate
 	//write32((uintptr_t) & tcon->io_tristate, 0);
 	TCONLCD_PTR->LCD_IO_TRI_REG = 0;
@@ -2995,6 +3061,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 		TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
 
 	}
+#endif /* defined (TCONLCD_PTR) */
 }
 
 //#define GRAPHIC_CPU TARGETCPU_CPU1
@@ -3057,6 +3124,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_HV_clock_configuration(vdmode);
 	// step3 - Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
+	t113_set_TV_sequence_parameters(vdmode);
 	// step4 - Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - Set and open interrupt function
@@ -3160,6 +3228,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_LVDS_clock_configuration(vdmode);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
+	t113_set_TV_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -3197,6 +3266,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
+	t113_set_TV_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -4165,7 +4235,7 @@ static void lcd_init(void) {
   LCD0_GINT0        = 0;
   LCD0_TCON1_CTL    = (1 << 31) | (30 << 4);
   // out parameters
-  LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
+  LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);	// Horizontal pixels, VErtical pixels
   LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
   LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
   LCD0_TCON1_BASIC3 = (2199 << 16) | 191;

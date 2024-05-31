@@ -1170,7 +1170,7 @@ void user_uart5_ontxchar(void * ctx);
 	//	#define	TCONTV_IX 0	/* 0: TCON_TV0, 2: TCON_TV1 */
 	//	#define TCONTV_PTR TCON_TV0
 	//	#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
-	//	#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tvd0_freq())
+	//	#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
 
 #endif /* WITHLTDCHW */
 
