@@ -1752,7 +1752,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
 
-#define RTMIXID 2	/* 1 or 2 */
+#define RTMIXID 1	/* 1 or 2 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
