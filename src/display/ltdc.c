@@ -3261,6 +3261,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     local_delay_us(10);
 
     CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12);	// DE_GATING
+    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 12);	// DE_RST
     CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
 
 //	PRINTF("allwnr_a64_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
@@ -3839,28 +3840,28 @@ static void awxx_deoutmapping(unsigned disp)
 #define LCD0_TCON1_BASIC4     *(volatile uint32_t*)(LCD0_BASE + 0x0A4)
 #define LCD0_TCON1_BASIC5     *(volatile uint32_t*)(LCD0_BASE + 0x0A8)
 
-#define LCD1_BASE 0x01C0D000
-#define LCD1_GCTL             *(volatile uint32_t*)(LCD1_BASE + 0x000)
-#define LCD1_GINT0            *(volatile uint32_t*)(LCD1_BASE + 0x004)
-#define LCD1_GINT1            *(volatile uint32_t*)(LCD1_BASE + 0x008)
-#define LCD1_TCON1_CTL        *(volatile uint32_t*)(LCD1_BASE + 0x090)
-#define LCD1_TCON1_BASIC0     *(volatile uint32_t*)(LCD1_BASE + 0x094)
-#define LCD1_TCON1_BASIC1     *(volatile uint32_t*)(LCD1_BASE + 0x098)
-#define LCD1_TCON1_BASIC2     *(volatile uint32_t*)(LCD1_BASE + 0x09C)
-#define LCD1_TCON1_BASIC3     *(volatile uint32_t*)(LCD1_BASE + 0x0A0)
-#define LCD1_TCON1_BASIC4     *(volatile uint32_t*)(LCD1_BASE + 0x0A4)
-#define LCD1_TCON1_BASIC5     *(volatile uint32_t*)(LCD1_BASE + 0x0A8)
-
-#define LCD1_TCON1_PS_SYNC    *(volatile uint32_t*)(LCD1_BASE + 0x0B0)
-
-#define LCD1_TCON1_IO_POL     *(volatile uint32_t*)(LCD1_BASE + 0x0F0)
-#define LCD1_TCON1_IO_TRI     *(volatile uint32_t*)(LCD1_BASE + 0x0F4)
-
-#define LCD1_TCON_CEU_CTL          *(volatile uint32_t*)(LCD1_BASE + 0x100)
-#define LCD1_TCON_CEU_COEF_MUL(n)  *(volatile uint32_t*)(LCD1_BASE + 0x110 + (n) * 4)
-#define LCD1_TCON_CEU_COEF_RANG(n) *(volatile uint32_t*)(LCD1_BASE + 0x140 + (n) * 4)
-
-#define LCD1_TCON1_GAMMA_TABLE(n)  *(volatile uint32_t*)(LCD1_BASE + 0x400 + (n) * 4)
+//#define LCD1_BASE 0x01C0D000
+//#define LCD1_GCTL             *(volatile uint32_t*)(LCD1_BASE + 0x000)
+//#define LCD1_GINT0            *(volatile uint32_t*)(LCD1_BASE + 0x004)
+//#define LCD1_GINT1            *(volatile uint32_t*)(LCD1_BASE + 0x008)
+//#define LCD1_TCON1_CTL        *(volatile uint32_t*)(LCD1_BASE + 0x090)
+//#define LCD1_TCON1_BASIC0     *(volatile uint32_t*)(LCD1_BASE + 0x094)
+//#define LCD1_TCON1_BASIC1     *(volatile uint32_t*)(LCD1_BASE + 0x098)
+//#define LCD1_TCON1_BASIC2     *(volatile uint32_t*)(LCD1_BASE + 0x09C)
+//#define LCD1_TCON1_BASIC3     *(volatile uint32_t*)(LCD1_BASE + 0x0A0)
+//#define LCD1_TCON1_BASIC4     *(volatile uint32_t*)(LCD1_BASE + 0x0A4)
+//#define LCD1_TCON1_BASIC5     *(volatile uint32_t*)(LCD1_BASE + 0x0A8)
+//
+//#define LCD1_TCON1_PS_SYNC    *(volatile uint32_t*)(LCD1_BASE + 0x0B0)
+//
+//#define LCD1_TCON1_IO_POL     *(volatile uint32_t*)(LCD1_BASE + 0x0F0)
+//#define LCD1_TCON1_IO_TRI     *(volatile uint32_t*)(LCD1_BASE + 0x0F4)
+//
+//#define LCD1_TCON_CEU_CTL          *(volatile uint32_t*)(LCD1_BASE + 0x100)
+//#define LCD1_TCON_CEU_COEF_MUL(n)  *(volatile uint32_t*)(LCD1_BASE + 0x110 + (n) * 4)
+//#define LCD1_TCON_CEU_COEF_RANG(n) *(volatile uint32_t*)(LCD1_BASE + 0x140 + (n) * 4)
+//
+//#define LCD1_TCON1_GAMMA_TABLE(n)  *(volatile uint32_t*)(LCD1_BASE + 0x400 + (n) * 4)
 
 // DE2
 //#define DE_BASE 0x01000000
@@ -4057,14 +4058,16 @@ struct lcd_timing
 void display_clocks_init(void)
 {
   // Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-//  PLL_DE_CTRL      = (1 << 31) | (1 << 24) | (17 << 8) | (0 << 0); // 432MHz
-//  PLL_VIDEO_CTRL   = (1 << 31) | (1 << 25) | (1 << 24) | (98 << 8) | (7 << 0); // 297MHz
-//  BUS_CLK_GATING1 |= (1 << 12) | (1 << 11) | (1 << 3); // Enable DE, HDMI, TCON0
-//  BUS_SOFT_RST1   |= (1 << 12) | (3 << 10) | (1 << 3); // De-assert reset of DE, HDMI0/1, TCON0
-//  DE_CLK           = (1 << 31) | (1 << 24); // Enable DE clock, set source to PLL_DE
-//  HDMI_CLK         = (1 << 31); // Enable HDMI clk (use PLL3)
-//  HDMI_SLOW_CLK    = (1 << 31); // Enable HDMI slow clk
-//  TCON0_CLK        = (1 << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
+  CCU->PLL_DE_CTRL_REG      = (1 << 31) | (1 << 24) | (17 << 8) | (0 << 0); // 432MHz
+  CCU->PLL_VIDEO0_CTRL_REG  = (1 << 31) | (1 << 25) | (1 << 24) | (98 << 8) | (7 << 0); // 297MHz
+  CCU->PLL_VIDEO1_CTRL_REG  = (1 << 31) | (1 << 25) | (1 << 24) | (98 << 8) | (7 << 0); // 297MHz
+  CCU->BUS_CLK_GATING_REG1 |= (1 << 12) | (1 << 11) | (1 << 3); // Enable DE, HDMI, TCON0
+  CCU->BUS_SOFT_RST_REG1   |= (1 << 12) | (3 << 10) | (1 << 3); // De-assert reset of DE, HDMI0/1, TCON0
+  CCU->DE_CLK_REG           = (1 << 31) | (1 << 24); // Enable DE clock, set source to PLL_DE
+  CCU->HDMI_CLK_REG         = (1 << 31); // Enable HDMI clk (use PLL3)
+  CCU->HDMI_SLOW_CLK_REG    = (1 << 31); // Enable HDMI slow clk
+  CCU->TCON0_CLK_REG        = (1 << 31) | 1; // 1-1980,2-2080 3-3080,3 Enable TCON0 clk, divide by 4
+  local_delay_ms(100);
 }
 
 static struct lcd_timing timing;	// out parameters
@@ -4093,8 +4096,11 @@ static void hdmi_init(void)
 	  local_delay_ms(100);
 	  HDMI_PHY_CFG1 |= (1<<18);
 	  HDMI_PHY_CFG1 |= (7<<4);
+	  TP();
 	  while((HDMI_PHY_STS & 0x80) == 0)
 		  ;
+	  local_delay_ms(100);
+	  TP();
 	  HDMI_PHY_CFG1 |= (0xf<<4);
 	  HDMI_PHY_CFG1 |= (0xf<<8);
 	  HDMI_PHY_CFG3 |= (1<<0) | (1<<2);
@@ -4247,6 +4253,26 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 	const unsigned disp = RTMIXID - 1;
 	const int rtmixid = RTMIXID;
 
+#if WITHHDMITVHW
+	if (1)
+	{
+		// See https://github.com/catphish/allwinner-bare-metal/blob/master/display.h#L1
+
+		// This function initializes the HDMI port and TCON.
+		// Almost everything here is resolution specific and
+		// currently hardcoded to 1920x1080@60Hz.
+		  display_clocks_init();
+		  TP();
+		  hdmi_init();
+		  TP();
+		  lcd_init();
+		  TP();
+		  de2_init(frames_unused);
+		  TP();
+
+	}
+#endif /* WITHHDMITVHW */
+
 	hardware_tcon_initialize(vdmode);
 
 	// Set DE MODE if need, mapping GPIO pins
@@ -4254,23 +4280,6 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 
 	hardware_de_initialize(vdmode);
 	awxx_deoutmapping(disp);
-
-#if WITHHDMITVHW
-	if (1)
-	{
-		// This function initializes the HDMI port and TCON.
-		// Almost everything here is resolution specific and
-		// currently hardcoded to 1920x1080@60Hz.
-		  //display_clocks_init();
-		  TP();
-		  hdmi_init();
-		  TP();
-		  lcd_init();
-		  //de2_init(frames_unused);
-		  TP();
-
-	}
-#endif /* WITHHDMITVHW */
     /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
     {
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow

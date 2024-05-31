@@ -991,6 +991,7 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
+	// PD0..PD21 (RGB666)
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
 	} while (0)
 
@@ -1006,6 +1007,7 @@
 		0 * 0x0F * (1u << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
 		0)
 
+	// PD12..PD21
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 	} while (0)
 
