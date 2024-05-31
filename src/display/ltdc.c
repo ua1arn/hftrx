@@ -2903,6 +2903,23 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 
     CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
 
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
+	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+
+    {
+
+    	 (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x00))&=~1;      //selected 0 - CCU clock, 1 - TVE clock
+    	 (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x20))|=(1<<20); //enable clk for TCON_TV0
+
+    	 uint32_t v=(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C));
+    	 v&=0xFFFFFFF0;
+    	 v|=0x00000002;
+    	 (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C))=v;        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
+
+    }
+
 #if WITHLVDSHW || WITHDSIHW
     CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
@@ -4634,6 +4651,9 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);	/* Update registers */
     }
+//    memset((void *) DISPLAY_TOP_BASE, 0xFF, 256);
+//	printhex32(DISPLAY_TOP_BASE, (void *) DISPLAY_TOP_BASE, 256);
+//	printhex32(TCON_TV0_BASE, TCON_TV0, 256);
     //PRINTF("hardware_ltdc_initialize done.\n");
 }
 
