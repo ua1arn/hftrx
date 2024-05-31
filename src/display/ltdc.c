@@ -3468,8 +3468,11 @@ static void t113_TVE_initialize(const videomode_t * vdmode)
 	printhex32(TVE_TOP_BASE, TVE_TOP, 256);
 
 	TV_Encoder->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
+	TV_Encoder->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
 
 	printhex32(TV_Encoder_BASE, TV_Encoder, 256);
+	PRINTF("TV_Encoder->TVE_038_REG=%08" PRIX32 "\n", TV_Encoder->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
+
 }
 
 #if 0
