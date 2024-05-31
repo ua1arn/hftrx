@@ -794,6 +794,7 @@
 	#endif
 
 	#if 0
+		// MEMS addr8bit=0xD0, addr7bit=0x68
 		#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 		//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 		// PG15 - TWI4-SCK
