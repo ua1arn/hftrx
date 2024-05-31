@@ -1752,7 +1752,7 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
 
-#define RTMIXID 1	/* 1 or 2 */
+#define RTMIXID 2	/* 1 or 2 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 	#define VI_LASTIX(rtmixid) 1
@@ -2879,18 +2879,18 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	/* Configure TCONLCD clock */
+	/* Configure TCONTV clock */
     if (needfreq != 0)
     {
-    	prei = 0;
-    	divider = calcdivround2(allwnrt113_get_video0pllx4_freq(), needfreq);
-		//PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-    	ASSERT(divider >= 1 && divider <= 16);
+		unsigned divider;
+		unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+		PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+    	ASSERT(divider < 16);
     	// LVDS
         TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
-    		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
+    		0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
-    		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+    		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
         TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
     }
@@ -2905,7 +2905,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
     		0;
     	TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
     }
-	//PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
+	PRINTF("t113_tcontv_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000 / 1000));
     local_delay_us(10);
 
     CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
@@ -2920,12 +2920,12 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 	PRINTF("4 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
     {
-		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ 1;      //selected 0 - CCU clock, 1 - TVE clock
-		DISPLAY_TOP->MODULE_GATING |= (1<<20); //enable clk for TCON_TV0
+		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1) << 0);      //selected 0 - CCU clock, 1 - TVE clock
+		DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); //enable clk for TCON_TV0
 
     	 uint32_t v = DISPLAY_TOP-> DE_PORT_PERH_SEL;
-//    	 v&=0xFFFFFFF0;
-//    	 v|=0x00000002;
+    	 v &= UINT32_C(0xFFFFFFF0);
+    	 v |= UINT32_C(0x00000002);
     	 DISPLAY_TOP->DE_PORT_PERH_SEL = v;       //0 - DE to TCON_LCD, 2 - DE to TCON_TV
 
     }
@@ -3415,7 +3415,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	unsigned divider = 1;
 	// step0 - CCU configuration
 	t113_tconlcd_CCU_configuration(vdmode, prei, divider, 0);
-	t113_tcontv_CCU_configuration(vdmode, prei, divider, 0);
+	t113_tcontv_CCU_configuration(vdmode, prei, divider, display_getdotclock(vdmode));
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
