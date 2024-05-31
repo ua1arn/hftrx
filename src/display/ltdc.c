@@ -3454,7 +3454,10 @@ static void t113_TVE_initialize(const videomode_t * vdmode)
 	CCU->TVE_BGR_REG |= (UINT32_C(1) << 16);	// TVE_TOP_RST
 	PRINTF("1 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
 
-	TVE_TOP->TVE_DAC_MAP = (UINT32_C(0x01) << 0);	// DAC_SEL 01: TVE0
+	TVE_TOP->TVE_DAC_MAP =
+		(UINT32_C(0x00) << 4) |	// DAC_MAP 000: OUT0
+		(UINT32_C(0x01) << 0) |	// DAC_SEL 01: TVE0
+		0;
 	TVE_TOP->TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
 
 	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
