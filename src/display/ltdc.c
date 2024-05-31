@@ -2880,23 +2880,23 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 		//PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
     	ASSERT(divider >= 1 && divider <= 16);
     	// LVDS
-        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+        TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
     		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
-        TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+        TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
     }
     else
     {
     	ASSERT(prei >= 0 && prei <= 3);
     	ASSERT(divider >= 1 && divider <= 16);
-        TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
+    	TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ ((UINT32_C(0x07) << 24) | (UINT32_C(0x03) << 8) | (UINT32_C(0x0F) << 0))) |
     		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 000: PLL_VIDEO0(1X)
     		(prei << 8) |	// FACTOR_N 0..3: 1..8
     		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
     		0;
-        TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+    	TCONTV_CCU_CLK_REG |= (UINT32_C(1) << 31);
     }
 	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
     local_delay_us(10);
