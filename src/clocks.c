@@ -4386,6 +4386,12 @@ uint_fast32_t allwnrt113_get_tcontv_freq(void)
 	case 0x03:
 		// 011: PLL_VIDEO1(4X)
 		return allwnrt113_get_video1pllx4_freq() / pgdiv;
+	case 0x04:
+		// 100: PLL_PERI(2X)
+		return allwnrt113_get_peripll2x_freq() / pgdiv;
+	case 0x05:
+		// 101: PLL_AUDIO1(DIV2)
+		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
 	}
 }
 
