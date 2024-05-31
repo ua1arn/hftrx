@@ -3584,6 +3584,9 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 static void awxx_deoutmapping(unsigned disp)
 {
 #if CPUSTYLE_A64
+	PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	//DE_TOP->DE2TCON_MUX |= 1;
+	//PRINTF("2 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
