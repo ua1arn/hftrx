@@ -2674,6 +2674,13 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
+	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG = ~ 0;
+	local_delay_us(10);
+	PRINTF("CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
 #else
 
@@ -2907,6 +2914,9 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
 	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG = ~ 0;
+	local_delay_us(10);
+	PRINTF("CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
     {
 
@@ -2914,8 +2924,8 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
     	 (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x20))|=(1<<20); //enable clk for TCON_TV0
 
     	 uint32_t v=(*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C));
-    	 v&=0xFFFFFFF0;
-    	 v|=0x00000002;
+//    	 v&=0xFFFFFFF0;
+//    	 v|=0x00000002;
     	 (*(volatile uint32_t*)(DISPLAY_TOP_BASE+0x1C))=v;        //0 - DE to TCON_LCD, 2 - DE to TCON_TV
 
     }
@@ -3569,8 +3579,13 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// These CPUs not support DSI at all
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
+    // DISPLAY_TOP access
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
+	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
 	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG = ~ 0;
+	local_delay_us(10);
+	PRINTF("CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 	(void) DSI0->DSI_CTL;
 #else
 
@@ -3838,6 +3853,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 1;	// DPSS_TOP_GATING
+	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
+	CCU->DPSS_TOP_BGR_REG = ~ 0;
+	local_delay_us(10);
+	PRINTF("CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
 	/* Global DE settings */
 //	PRINTF("DE_TOP before:\n");
@@ -4638,20 +4660,19 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 
 	}
 #endif /* WITHHDMITVHW */
+	hardware_de_initialize(vdmode);
+	awxx_deoutmapping(disp);
 
 	hardware_tcon_initialize(vdmode);
 
 	// Set DE MODE if need, mapping GPIO pins
 	ltdc_tfcon_cfg(vdmode);
 
-	hardware_de_initialize(vdmode);
-	awxx_deoutmapping(disp);
     /* эта инициализация требуется только на рабочем RT-Mixer И после корректного соединния с работающим TCON */
     {
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);	/* Update registers */
     }
-//    memset((void *) DISPLAY_TOP_BASE, 0xFF, 256);
 //	printhex32(DISPLAY_TOP_BASE, (void *) DISPLAY_TOP_BASE, 256);
 //	printhex32(TCON_TV0_BASE, TCON_TV0, 256);
     //PRINTF("hardware_ltdc_initialize done.\n");
