@@ -2901,15 +2901,16 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
     local_delay_us(10);
 
-    CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+    CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
 
 #if WITHLVDSHW || WITHDSIHW
     CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
 #endif /* WITHLVDSHW || WITHDSIHW */
 
-    CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
-    CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+    CCU->TCONTV_BGR_REG &= ~ (UINT32_C(1) << 16);	// TCONTV_RST
+    CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV_RST
+
     local_delay_us(10);
 
 #else
@@ -2945,7 +2946,7 @@ static void t113_TV_clock_configuration(const videomode_t * vdmode)
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = BOARD_TCONTVFREQ / display_getdotclock(vdmode);
-	//PRINTF("ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
+	//PRINTF(t113_TV_clock_configuration: "ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
 	ASSERT(val >= 1 && val <= 127);
 	TCONTV_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
@@ -3202,6 +3203,7 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
 	// out parameters
 	//	LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
 	//	LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
@@ -3218,18 +3220,10 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 	TCONTV_PTR->TV_BASIC1_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
 		);
-//	TCONTV_PTR->TV_BASIC1_REG =
-//		((HTOTAL - 1) << 16) |		// TOTAL
-//		((LEFTMARGIN - 1) << 0) |	// HBP
-//		0;
 	// TV_XO TV_YO
 	TCONTV_PTR->TV_BASIC2_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
 		);
-//	TCONTV_PTR->TV_BASIC2_REG =
-//		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
-//		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
-//		0;
 	// HT HBP
 	TCONTV_PTR->TV_BASIC3_REG =
 		((HTOTAL - 1) << 16) |		// TOTAL
@@ -3237,8 +3231,8 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 		0;
 	// VT VBP
 	TCONTV_PTR->TV_BASIC4_REG =
-		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
-		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
+		((VTOTAL * 2) << 16) | 		// VT Tvt = (VT)/2 * Thsync
+		((TOPMARGIN - 1) << 0) |	// VBP Tvbp = (VBP+1) * Thsync
 		0;
 	// HSPW VSPW
 	TCONTV_PTR->TV_BASIC5_REG =
