@@ -5139,6 +5139,40 @@
   <baseAddress>0x05202000</baseAddress>
   </peripheral>
   <peripheral>
+  <name>DISPLAY_TOP</name>
+  <description>display interface top (DISPLAY_TOP)</description>
+  <baseAddress>0x05460000</baseAddress>
+  <registers>
+   <register>
+    <name>TV_CLK_SRC_RGB_SRC</name>
+    <displayName>TV_CLK_SRC_RGB_SRC</displayName>
+    <description>TCON_TV Clock Select and RGB Source Select Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_PORT_PERH_SEL</name>
+    <displayName>DE_PORT_PERH_SEL</displayName>
+    <description>DE Source Select TCON R Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MODULE_GATING</name>
+    <displayName>MODULE_GATING</displayName>
+    <description>TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DMAC</name>
   <description></description>
   <baseAddress>0x03002000</baseAddress>

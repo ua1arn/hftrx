@@ -1110,6 +1110,17 @@ typedef struct DE_VI_Type
              uint32_t reserved_0x100 [0x01C0];
 } DE_VI_TypeDef; /* size of structure = 0x800 */
 /*
+ * @brief DISPLAY_TOP
+ */
+/*!< DISPLAY_TOP display interface top (DISPLAY_TOP) */
+typedef struct DISPLAY_TOP_Type
+{
+    volatile uint32_t TV_CLK_SRC_RGB_SRC;             /*!< Offset 0x000 TCON_TV Clock Select and RGB Source Select Register */
+             uint32_t reserved_0x004 [0x0006];
+    volatile uint32_t DE_PORT_PERH_SEL;               /*!< Offset 0x01C DE Source Select TCON R Register */
+    volatile uint32_t MODULE_GATING;                  /*!< Offset 0x020 TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister */
+} DISPLAY_TOP_TypeDef; /* size of structure = 0x024 */
+/*
  * @brief DMAC
  */
 /*!< DMAC  */
@@ -3102,6 +3113,7 @@ typedef struct VE_Type
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define DSI0 ((DSI_TypeDef *) DSI0_BASE)              /*!< DSI0 MIPI DSI Display Interface register set access pointer */
 #define DSI_DPHY ((DSI_DPHY_TypeDef *) DSI_DPHY_BASE) /*!< DSI_DPHY MIPI DSI Physical Interface register set access pointer */
+#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)/*!< DISPLAY_TOP display interface top (DISPLAY_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0  register set access pointer */
 #define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Output (TV_Encoder) register set access pointer */

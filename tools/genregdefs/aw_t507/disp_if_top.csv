@@ -1,0 +1,8 @@
+#type; DISP_IF_TOP; display interface top (DISP_IF_TOP)
+
+#base; DISP_IF_TOP 0x06510000
+
+#regdef; TV_CLK_SRC_RGB_SRC; 0x0000; TCON_TV CClock SSelect and RGB Source S Select Register
+#regdef; DE_PORT_PERH_SEL; 0x001C; DE Source Select TCON R Register
+#regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating RRegister
+#typeend;
