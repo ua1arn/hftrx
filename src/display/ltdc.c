@@ -2430,6 +2430,7 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 // LVDS: mstep1, HV: step1: Select HV interface type
 static void t113_select_HV_interface_type(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 	//uint32_t start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
 	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->LCD_CTL_REG =
@@ -2440,6 +2441,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		(start_dly & 0x1F) * (UINT32_C(1) << 4) |	// LCD_START_DLY
 		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
+#endif /* defined (TCONLCD_PTR) */
 }
 
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
@@ -2806,14 +2808,14 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 			;
 		CCU->PLL_VIDEO1_CTRL_REG |= UINT32_C(1) << 27;	// PLL_OUTPUT_ENABLE
 
-		PRINTF("t113_tconlcd_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
-    	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+		PRINTF("t113_tcontv_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
+    	TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
     }
     else
     {
-    	TCONTV_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+    	TCONTV_CCU_CLK_REG = (TCONTV_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
     		0;
     }
@@ -2919,6 +2921,7 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
 // HV step2 - Clock configuration
 static void t113_HV_clock_configuration(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 	unsigned val;
 	// dclk
 	// 31..28: TCON0_Dclk_En
@@ -2931,6 +2934,25 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 		val * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
+#endif /* defined (TCONLCD_PTR) */
+}
+
+static void t113_TV_clock_configuration(const videomode_t * vdmode)
+{
+#if defined (TCONTV_PTR) && 0
+	unsigned val;
+	// dclk
+	// 31..28: TCON0_Dclk_En
+	// 6..0: TCON0_Dclk_Div
+	val = BOARD_TCONTVFREQ / display_getdotclock(vdmode);
+	//PRINTF("ltdc_divider=%u, dclk=%u kHz\n", val, (unsigned) (display_getdotclock(vdmode) / 1000));
+	ASSERT(val >= 1 && val <= 127);
+	TCONTV_PTR->LCD_DCLK_REG =
+		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
+		val * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
+		0;
+    local_delay_us(10);
+#endif /* defined (TCONTV_PTR) */
 }
 
 
@@ -2945,11 +2967,13 @@ unsigned long hardware_get_dotclock(unsigned long dotfreq)
 // LVDS step2 - Clock configuration
 static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
     TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
 		7 * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
+#endif /* defined (TCONLCD_PTR) */
 }
 
 // LVDS step2 - Clock configuration
@@ -2957,16 +2981,19 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 
 static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigned onepixelcloks)
 {
+#if defined (TCONLCD_PTR)
     TCONLCD_PTR->LCD_DCLK_REG =
 		(UINT32_C(0x0F) << 28) |	// LCD_DCLK_EN
 		onepixelcloks * (UINT32_C(1) << 0) |	// LCD_DCLK_DIV
 		0;
     local_delay_us(10);
+#endif /* defined (TCONLCD_PTR) */
 }
 
 // step5 - set LVDS digital logic configuration
 static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 #if defined (LCD_LVDS_IF_REG_VALUE)
 
 	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
@@ -2986,6 +3013,7 @@ static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
 	0;
 
 #endif /* defined (LCD_LVDS_IF_REG_VALUE) */
+#endif /* defined (TCONLCD_PTR) */
 }
 
 #if 0
@@ -3095,6 +3123,7 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 // step6 - LVDS controller configuration
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsigned lvds_num)
 {
+#if defined (TCONLCD_PTR)
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
@@ -3155,6 +3184,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 
 #else
 #endif
+#endif /* defined (TCONLCD_PTR) */
 }
 
 //#define TCONTV_PTR TCON_TV0
@@ -3347,8 +3377,14 @@ static void t113_set_and_open_interrupt_function(const videomode_t * vdmode)
 // Open module enable
 static void t113_open_module_enable(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
 	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+#endif /* defined (TCONLCD_PTR) */
+#if defined (TCONTV_PTR)
+	TCONTV_PTR->TV_CTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 31);	// TV_EN
+#endif /* defined (TCONTV_PTR) */
 }
 
 // Paraleal RGB mode
@@ -3363,6 +3399,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
 	t113_HV_clock_configuration(vdmode);
+	t113_TV_clock_configuration(vdmode);
 	// step3 - Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
 	t113_set_TV_sequence_parameters(vdmode);
@@ -3458,6 +3495,7 @@ performdump(const char * name, unsigned long base, unsigned long size)
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
+#if defined (TCONLCD_PTR)
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
 	unsigned prei = 0;
 	unsigned divider = calcdivround2(BOARD_TCONLCDFREQ, lvdsfreq);
@@ -3483,6 +3521,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 
+#endif /* defined (TCONLCD_PTR) */
 }
 
 #if WITHDSIHW
@@ -4569,7 +4608,7 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 	const unsigned disp = RTMIXID - 1;
 	const int rtmixid = RTMIXID;
 
-#if WITHHDMITVHW
+#if WITHHDMITVHW && 0
 	if (1)
 	{
 		// See https://github.com/catphish/allwinner-bare-metal/blob/master/display.h#L1
