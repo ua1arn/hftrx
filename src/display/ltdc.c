@@ -3431,6 +3431,44 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
 }
+
+
+static void t113_TVE_initialize(const videomode_t * vdmode)
+{
+	const uint_fast32_t needfreq = display_getdotclock(vdmode);
+	unsigned divider;
+	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
+	PRINTF("t113_TVE_initialize: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
+	ASSERT(divider < 16);
+	// LVDS
+	CCU->TVE_CLK_REG =
+		0x00 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(1X)
+		(prei << 8) |	// FACTOR_N 0..3: 1..8
+		((divider) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		0;
+	CCU->TVE_CLK_REG |= (UINT32_C(1) << 31);
+
+
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 0);	// TVE_TOP_GATING
+	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 16);	// TVE_TOP_RST
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 16);	// TVE_TOP_RST
+	PRINTF("1 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
+
+	TVE_TOP->TVE_DAC_MAP = (UINT32_C(0x01) << 0);	// DAC_SEL 01: TVE0
+	TVE_TOP->TVE_DAC_CFG0 |= (UINT32_C(1) << 0);	// DAC_EN
+
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 1);	// TVE_GATING
+	CCU->TVE_BGR_REG &= ~ (UINT32_C(1) << 17);	// TVE_RST
+	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17);	// TVE_RST
+	PRINTF("2 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
+
+	printhex32(TVE_TOP_BASE, TVE_TOP, 256);
+
+	TV_Encoder->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
+
+	printhex32(TV_Encoder_BASE, TV_Encoder, 256);
+}
+
 #if 0
 
 static void lvds_t507_corrections(void)
@@ -3963,6 +4001,7 @@ static void hardware_tcon_initialize(const videomode_t * vdmode)
 	t113_tcon_dsi_initsteps(vdmode);
 #else /* WITHLVDSHW */
 	t113_tcon_hw_initsteps(vdmode);
+	t113_TVE_initialize(vdmode);
 #endif /* WITHLVDSHW */
 
 }
