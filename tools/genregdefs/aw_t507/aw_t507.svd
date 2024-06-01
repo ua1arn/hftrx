@@ -2888,7 +2888,7 @@
   <baseAddress>0x012A1000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_MIXER0_BLS</name>
+  <name>DE_BLS1</name>
   <description>Blue Level Stretch (BLS)</description>
   <baseAddress>0x01111000</baseAddress>
   <registers>
@@ -2967,8 +2967,28 @@
    </cluster>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_BLS1">
+  <name>DE_BLS2</name>
+  <baseAddress>0x01131000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_BLS1">
+  <name>DE_BLS3</name>
+  <baseAddress>0x01151000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_BLS1">
+  <name>DE_BLS4</name>
+  <baseAddress>0x011D1000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_BLS1">
+  <name>DE_BLS5</name>
+  <baseAddress>0x011F1000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_BLS1">
+  <name>DE_BLS6</name>
+  <baseAddress>0x01211000</baseAddress>
+  </peripheral>
   <peripheral>
-  <name>DE_MIXER0_DNS</name>
+  <name>DE_DNS1</name>
   <description>Denoise (DNS)</description>
   <baseAddress>0x01114000</baseAddress>
   <registers>
@@ -2992,8 +3012,28 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_DNS1">
+  <name>DE_DNS2</name>
+  <baseAddress>0x01134000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_DNS1">
+  <name>DE_DNS3</name>
+  <baseAddress>0x01151400</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_DNS1">
+  <name>DE_DNS4</name>
+  <baseAddress>0x011D4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_DNS1">
+  <name>DE_DNS5</name>
+  <baseAddress>0x011F4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_DNS1">
+  <name>DE_DNS6</name>
+  <baseAddress>0x01214000</baseAddress>
+  </peripheral>
   <peripheral>
-  <name>DE_MIXER0_FCC</name>
+  <name>DE_FCC1</name>
   <description>Fancy color curvature (FCC)</description>
   <baseAddress>0x01111400</baseAddress>
   <registers>
@@ -3035,8 +3075,28 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="DE_FCC1">
+  <name>DE_FCC2</name>
+  <baseAddress>0x01131400</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCC1">
+  <name>DE_FCC3</name>
+  <baseAddress>0x01151400</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCC1">
+  <name>DE_FCC4</name>
+  <baseAddress>0x011D1400</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCC1">
+  <name>DE_FCC5</name>
+  <baseAddress>0x011F1400</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCC1">
+  <name>DE_FCC6</name>
+  <baseAddress>0x01211400</baseAddress>
+  </peripheral>
   <peripheral>
-  <name>DE_MIXER0_FCE</name>
+  <name>DE_FCE1</name>
   <description>Fresh and Contrast Enhancement (FCE)</description>
   <baseAddress>0x01110000</baseAddress>
   <registers>
@@ -3321,6 +3381,26 @@
     <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCE1">
+  <name>DE_FCE2</name>
+  <baseAddress>0x01130000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCE1">
+  <name>DE_FCE3</name>
+  <baseAddress>0x01150000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCE1">
+  <name>DE_FCE4</name>
+  <baseAddress>0x011D0000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCE1">
+  <name>DE_FCE5</name>
+  <baseAddress>0x011F0000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_FCE1">
+  <name>DE_FCE6</name>
+  <baseAddress>0x01210000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DE_MIXER0_GLB</name>
@@ -3777,7 +3857,7 @@
   <baseAddress>0x01141000</baseAddress>
   </peripheral>
   <peripheral>
-  <name>DE_MIXER0_VSU</name>
+  <name>DE_VSU1</name>
   <description>Video Scaler Unit (VSU)</description>
   <baseAddress>0x01104000</baseAddress>
   <registers>
@@ -4100,6 +4180,26 @@
     <dimIncrement>0x080</dimIncrement>
    </cluster>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU2</name>
+  <baseAddress>0x01124000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU3</name>
+  <baseAddress>0x01144000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU4</name>
+  <baseAddress>0x011C4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU5</name>
+  <baseAddress>0x011E1000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU6</name>
+  <baseAddress>0x01204000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DISP_IF_TOP</name>

@@ -191,7 +191,13 @@
 # RT-Mixer0 blocks
 
 #type; DE_VSU; Video Scaler Unit (VSU)
-#base; DE_MIXER0_VSU 0x01104000
+
+#base; DE_VSU1 0x01104000; VI1 Scaler
+#base; DE_VSU2 0x01124000; VI2 Scaler
+#base; DE_VSU3 0x01144000; VI3 Scaler
+#base; DE_VSU4 0x011C4000; UI1 Scaler
+#base; DE_VSU5 0x011E1000; UI2 Scaler
+#base; DE_VSU6 0x01204000; UI3 Scaler
 
 #regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
 #regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
@@ -229,7 +235,13 @@
 
 # define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)
-#base; DE_MIXER0_FCE 0x01110000
+
+#base; DE_FCE1 0x01110000; VI1 FCE
+#base; DE_FCE2 0x01130000; VI2 FCE
+#base; DE_FCE3 0x01150000; VI3 FCE
+#base; DE_FCE4 0x011D0000; UI1 FCE
+#base; DE_FCE5 0x011F0000; UI2 FCE
+#base; DE_FCE6 0x01210000; UI3 FCE
 
 #regdef; GCTRL_REG; 0x000; Control register
 #regdef; FCE_SIZE_REG; 0x004; Size setting register
@@ -265,7 +277,13 @@
 
 # define SUN50I_MIXER_BLS_EN			0x71800
 #type; DE_BLS; Blue Level Stretch (BLS)
-#base; DE_MIXER0_BLS 0x01111000
+
+#base; DE_BLS1 0x01111000; VI1 BLS
+#base; DE_BLS2 0x01131000; VI2 BLS
+#base; DE_BLS3 0x01151000; VI3 BLS
+#base; DE_BLS4 0x011D1000; UI1 BLS
+#base; DE_BLS5 0x011F1000; UI2 BLS
+#base; DE_BLS6 0x01211000; UI3 BLS
 
 #regdef; BLS_CTRL_REG; 0x00; BLS module control register
 #regdef; BLS_SIZE_REG; 0x04; BLS size register
@@ -277,7 +295,13 @@
 #typeend;
 
 #type; DE_FCC; Fancy color curvature (FCC)
-#base; DE_MIXER0_FCC 0x01111400
+
+#base; DE_FCC1 0x01111400; VI1 FCC
+#base; DE_FCC2 0x01131400; VI2 FCC
+#base; DE_FCC3 0x01151400; VI3 FCC
+#base; DE_FCC4 0x011D1400; UI1 FCC
+#base; DE_FCC5 0x011F1400; UI2 FCC
+#base; DE_FCC6 0x01211400; UI3 FCC
 
 #regdef; FCC_CTL_REG; 0x000; FCC Control Register
 #regdef; FCC_INPUT_SIZE_REG; 0x004; FCC Input Size Register
@@ -287,7 +311,13 @@
 #typeend;
 
 #type; DE_DNS; Denoise (DNS)
-#base; DE_MIXER0_DNS 0x01114000
+
+#base; DE_DNS1 0x01114000; VI1 DNS
+#base; DE_DNS2 0x01134000; VI2 DNS
+#base; DE_DNS3 0x01151400; VI3 DNS
+#base; DE_DNS4 0x011D4000; UI1 DNS
+#base; DE_DNS5 0x011F4000; UI2 DNS
+#base; DE_DNS6 0x01214000; UI3 DNS
 
 #regdef; DNS_CTL; 0x000; DNS module control register
 #regdef; DNS_SIZE; 0x004; DNS size register

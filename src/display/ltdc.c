@@ -1892,12 +1892,14 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 
 static int32_t de_feat_get_num_vi_chns(uint32_t disp)
 {
+	return 3;
 	const unsigned rtmixid = disp + 1;
 	return (VI_LASTIX(rtmixid) - 1) + 1;
 }
 
 static int32_t de_feat_get_num_chns(uint32_t disp)
 {
+	return 6;
 	const unsigned rtmixid = disp + 1;
 	return (VI_LASTIX(rtmixid) - 1) + 1 + (UI_LASTIX(rtmixid) - 1) + 1;
 }
@@ -2048,7 +2050,7 @@ static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
 
 #else
 
-	return chn < 3 ? chn : chn + 6;	// T507/H616 specific
+	return chn < 3 ? chn : chn + 3;	// T507/H616 specific
 
 #endif /* #if SUPPORT_FEAT_INIT_CONFIG */
 }
@@ -3856,25 +3858,34 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	}
 
 
-//	if (0)
-//	{
-//		unsigned disp;
-//		for (disp = 0; disp < 2; ++ disp)
-//		{
-//			PRINTF("#define disp%u_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
-//			PRINTF("#define disp%u_bld_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
-//			PRINTF("#define disp%u_fmt_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
-//		}
-//		unsigned phy_chn;
-//		for (phy_chn = 0; phy_chn < 12; ++ phy_chn)
-//		{
-//			PRINTF("#define chn%u_ovl_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
-//			PRINTF("#define chn%u_vsu_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
-//			PRINTF("#define chn%u_fce_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
-//			PRINTF("#define chn%u_bls_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
-//		}
-//
-//	}
+	if (0)
+	{
+
+		{
+			unsigned disp;
+			for (disp = 0; disp < 2; ++ disp)
+			{
+				PRINTF("#define disp%u_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
+				PRINTF("#define disp%u_bld_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
+				PRINTF("#define disp%u_fmt_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
+			}
+		}
+		{
+			unsigned chn;
+			unsigned chn_num = de_feat_get_num_chns(disp);
+			for (chn = 0; chn < chn_num; ++ chn)
+			{
+				unsigned phy_chn = de_feat_get_phy_chn_id(disp, chn);
+
+				PRINTF("#define chn%u_ovl_base 0x%08X\n", chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
+				PRINTF("#define chn%u_vsu_base 0x%08X\n", chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
+				PRINTF("#define chn%u_fce_base 0x%08X\n", chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
+				PRINTF("#define chn%u_bls_base 0x%08X\n", chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
+				PRINTF("#define chn%u_fcc_base 0x%08X\n", chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCC_OFFSET));
+				PRINTF("#define chn%u_dns_base 0x%08X\n", chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_DNS_OFFSET));
+			}
+		}
+	}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
