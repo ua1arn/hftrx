@@ -3664,15 +3664,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	/* Global DE settings */
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
-
-//	PRINTF("DE_TOP before:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 256);
-//	memset(DE_TOP, 255, 256);
-//	PRINTF("DE_TOP fill 0xFF:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 256);
-//	memset(DE_TOP, 0, 256);
-//	PRINTF("DE_TOP fill 0x00:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 256);
 //
 // 	DE_TOP->DE_SCLK_DIV =
 //		7 * (UINT32_C(1) << 8) |	// wb-div
@@ -3688,16 +3679,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
  	//DE_TOP->AHB_RESET = 0;	// All cores reset
 	DE_TOP->AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 	DE_TOP->AHB_RESET |= (UINT32_C(1) << 1);		// CORE1_AHB_RESET
-
-//	PRINTF("DE_TOP AHB reset:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 256);
-
-//	PRINTF("DE_MIXER0_GLB:\n");
-//	//memset(DE_MIXER0_GLB, 0xFF, 256);
-//	printhex32(DE_MIXER0_GLB_BASE, DE_MIXER0_GLB, 256);
-//	PRINTF("DE_MIXER1_GLB:\n");
-//	//memset(DE_MIXER1_GLB, 0xFF, 256);
-//	printhex32(DE_MIXER1_GLB_BASE, DE_MIXER1_GLB, 256);
 
 	{
 		const int rtmixid = RTMIXID;
@@ -3721,9 +3702,6 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			//glb->GLB_STS = 0;
 		}
 	}
-
-	//	PRINTF("DE_TOP AHB final:\n");
-	//	printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -3773,18 +3751,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
 
-//	PRINTF("1 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
-//	PRINTF("1 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
-//	PRINTF("1 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
-//	PRINTF("1 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
-//	PRINTF("1 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
 	de_rtmx_set_chn_mux(disp);
-//	PRINTF("2 DE_CHN2CORE_MUX=%08X\n", (unsigned) DE_TOP->DE_CHN2CORE_MUX);
-//	PRINTF("2 DE_PORT2CHN_MUX[0]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [0]);
-//	PRINTF("2 DE_PORT2CHN_MUX[1]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [1]);
-//	PRINTF("2 DE_PORT2CHN_MUX[2]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [2]);
-//	PRINTF("2 DE_PORT2CHN_MUX[3]=%08X\n", (unsigned) DE_TOP->DE_PORT2CHN_MUX [3]);
-
 
 	{
 		const int rtmixid = RTMIXID;
@@ -3804,13 +3771,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 			//* (volatile uint32_t *) (DE_TOP_BASE + 0x010) |= 0xFF000000u;
 
 			ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
-			//glb->GLB_STS = 0;
 		}
 	}
 
-
-//	PRINTF("bld->CSC_CTL=%08X @%p\n", bld->CSC_CTL, & bld->CSC_CTL);
-//	bld->CSC_CTL = 0;
 	unsigned chn;
 	for (chn = 0; chn < de_feat_get_num_chns(disp); ++ chn)
 	{
@@ -3821,25 +3784,25 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	}
 
 
-	if (0)
-	{
-		unsigned disp;
-		for (disp = 0; disp < 2; ++ disp)
-		{
-			PRINTF("#define disp%u_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
-			PRINTF("#define disp%u_bld_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
-			PRINTF("#define disp%u_fmt_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
-		}
-		unsigned phy_chn;
-		for (phy_chn = 0; phy_chn < 12; ++ phy_chn)
-		{
-			PRINTF("#define chn%u_ovl_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
-			PRINTF("#define chn%u_vsu_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
-			PRINTF("#define chn%u_fce_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
-			PRINTF("#define chn%u_bls_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
-		}
-
-	}
+//	if (0)
+//	{
+//		unsigned disp;
+//		for (disp = 0; disp < 2; ++ disp)
+//		{
+//			PRINTF("#define disp%u_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp)));
+//			PRINTF("#define disp%u_bld_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_BLD_OFFSET));
+//			PRINTF("#define disp%u_fmt_base 0x%08X\n", disp, (unsigned) (DE_BASE + DE_DISP_OFFSET(disp) + DISP_FMT_OFFSET));
+//		}
+//		unsigned phy_chn;
+//		for (phy_chn = 0; phy_chn < 12; ++ phy_chn)
+//		{
+//			PRINTF("#define chn%u_ovl_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_OVL_OFFSET));
+//			PRINTF("#define chn%u_vsu_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_SCALER_OFFSET));
+//			PRINTF("#define chn%u_fce_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_FCE_OFFSET));
+//			PRINTF("#define chn%u_bls_base 0x%08X\n", phy_chn, (unsigned) (DE_BASE + DE_CHN_OFFSET(phy_chn) + CHN_BLS_OFFSET));
+//		}
+//
+//	}
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// PLL_VIDEO1 may be used for LVDS synchronization
