@@ -73,7 +73,6 @@
 	//#define WITHUSBDEV_DMAENABLE 1
 
 	//#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	//#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
 	//#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
@@ -622,6 +621,9 @@
 		} \
 	} while (0)
 
+	/* Perform delay after assert or de-assert specific CS line */
+	#define SPI_CS_DELAY(target) do { } while (0)
+
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
 		/*arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
@@ -1060,7 +1062,7 @@
 #endif /* WITHLTDCHW */
 
 
-	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911 || TSC1_TYPE == TSC_TYPE_ILI2102)
 
 		//	tsc interrupt PD27
 		//	tsc reset PD26
