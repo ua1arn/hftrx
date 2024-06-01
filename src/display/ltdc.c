@@ -3867,6 +3867,7 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on this CPU) */
 	unsigned divider = 4;
+	ASSERT(divider >= 1 && divider <= 31);
 	CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
 		1 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: PLL_VIDEO0(4X)
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
@@ -3881,8 +3882,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
     // DISPLAY_TOP access
 	//PRINTF("1 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST De-assert reset
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
 	//local_delay_us(10);
 	//PRINTF("2 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
