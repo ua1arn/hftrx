@@ -2120,6 +2120,8 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
+#if CPUSTYLE_T507
+
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 {
 	switch (rtmixid)
@@ -2129,6 +2131,8 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 	case 2: return DE_VSU2;	// VI2
 	}
 }
+
+#endif
 
 //static void write32(uintptr_t a, uint32_t v)
 //{
@@ -2200,6 +2204,8 @@ static void t113_de_update(int rtmixid)
 		;
 }
 
+#if CPUSTYLE_T507
+
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
 	const uint_fast32_t scale_x = (uint_fast64_t) vdmodein->width * 0x100000 / vdmodeout->width;
@@ -2210,7 +2216,12 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	if (vsu == NULL)
 		return;
 
-	vsu->VSU_CTRL_REG     = 1;
+	//memset(vsu, 0, sizeof * vsu);
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	vsu->VSU_SCALE_MODE_REG = 0x00;	// 0x0:UI mode (for ARGB/YUV444 format)
+
 	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
 	vsu->VSU_Y_SIZE_REG   = ssize;
 	vsu->VSU_Y_HSTEP_REG  = scale_x;
@@ -2219,18 +2230,21 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 	vsu->VSU_C_HSTEP_REG  = scale_x;
 	vsu->VSU_C_VSTEP_REG  = scale_y;
 
-	for(int n=0; n<32; n++)
+	for (int n=0; n<32; n++)
 	{
 
 		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
 		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
 		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
+
 		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
 		vsu->VSU_C_HCOEF1_REGN [n] = 0;
 		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
 	}
-	vsu->VSU_CTRL_REG = 1 | (1 << 4);
+
+	//vsu->VSU_CTRL_REG = (UINT32_C(1) << 4) | (UINT32_C(1) << 0);	// COEF_SWITCH_EN EN
 }
+#endif
 
 /* VI (VI0) */
 static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
@@ -4770,9 +4784,11 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);	/* Update registers */
     }
+#if CPUSTYLE_T507
     {
-    	//t113_vsu_setup(rtmixid, vdmode, vdmode);
+    	t113_vsu_setup(rtmixid, vdmode, vdmode);
     }
+#endif
 //	printhex32(DISPLAY_TOP_BASE, (void *) DISPLAY_TOP_BASE, 256);
 //	printhex32(TCON_TV0_BASE, TCON_TV0, 256);
     //PRINTF("hardware_ltdc_initialize done.\n");
