@@ -1993,13 +1993,13 @@ const videomode_t vdmode_PAL0 =
 {
 	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 576,			/* LCD PIXEL HEIGHT           */
-	.hsync = 65,				/* Horizontal synchronization */
-	.hbp = 6,				/* Horizontal back porch      */
-	.hfp = 210,				/* Horizontal front porch  */
+	.hsync = 65,			/* Horizontal synchronization */
+	.hbp = 68,				/* Horizontal back porch      */
+	.hfp = 11,				/* Horizontal front porch  */
 
 	.vsync = 6,				/* Vertical synchronization */
-	.vbp = 3,				/* Vertical back porch      */
-	.vfp = 22,				/* Vertical front porch  7..147     */
+	.vbp = 39,				/* Vertical back porch      */
+	.vfp = 4,				/* Vertical front porch */
 
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */

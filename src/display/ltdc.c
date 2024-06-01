@@ -3255,52 +3255,51 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
 
-	TCONTV_PTR->TV_CTL_REG = 0x80000000 | ((VTOTAL - HEIGHT ) << 4);   //VT-V
+	TCONTV_PTR->TV_CTL_REG = (VTOTAL - HEIGHT) << 4;   //VT-V
 
-	PRINTF("1 sync: %08X %08X %08X %08X %08X %08X %08X\n",
-			(unsigned) TCONTV_PTR->TV_CTL_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC5_REG
-			);
-
-	 if(1)
-	 {
-		 //NTSC
-		 TCONTV_PTR->TV_CTL_REG =
-				 0x80000000 |
-				 ((525 - 480 ) << 4
-				);   //VT-V
-		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (480 - 1); //H,V
-		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (480 - 1);
-		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (480 - 1);
-		 TCONTV_PTR->TV_BASIC3_REG = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
-		 TCONTV_PTR->TV_BASIC4_REG = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
-		 TCONTV_PTR->TV_BASIC5_REG = (62 << 16) | 6;                //HS, VS - 63, 7
-	 }
-	 else
-	 {
-		 //PAL
-		 TCONTV_PTR->TV_CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
-		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (576 - 1); //H,V
-		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (576 - 1);
-		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (576 - 1);
-		 TCONTV_PTR->TV_BASIC3_REG = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
-		 TCONTV_PTR->TV_BASIC4_REG = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
-		 TCONTV_PTR->TV_BASIC5_REG = (64 << 16) | 5;                //HS, VS - 65, 6
-	 }
-	PRINTF("2 sync: %08X %08X %08X %08X %08X %08X %08X\n",
-			(unsigned) TCONTV_PTR->TV_CTL_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
-			(unsigned) TCONTV_PTR->TV_BASIC5_REG
-			);
+//	PRINTF("1 sync: %08X %08X %08X %08X %08X %08X %08X\n",
+//			(unsigned) TCONTV_PTR->TV_CTL_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC5_REG
+//			);
+//	 if(1)
+//	 {
+//		 //NTSC
+//		 TCONTV_PTR->TV_CTL_REG =
+//				 0x80000000 |
+//				 ((525 - 480 ) << 4
+//				);   //VT-V
+//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (480 - 1); //H,V
+//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (480 - 1);
+//		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (480 - 1);
+//		 TCONTV_PTR->TV_BASIC3_REG = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
+//		 TCONTV_PTR->TV_BASIC4_REG = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
+//		 TCONTV_PTR->TV_BASIC5_REG = (62 << 16) | 6;                //HS, VS - 63, 7
+//	 }
+//	 else
+//	 {
+//		 //PAL
+//		 TCONTV_PTR->TV_CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
+//		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (576 - 1); //H,V
+//		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (576 - 1);
+//		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (576 - 1);
+//		 TCONTV_PTR->TV_BASIC3_REG = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
+//		 TCONTV_PTR->TV_BASIC4_REG = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
+//		 TCONTV_PTR->TV_BASIC5_REG = (64 << 16) | 5;                //HS, VS - 65, 6
+//	 }
+//	PRINTF("2 sync: %08X %08X %08X %08X %08X %08X %08X\n",
+//			(unsigned) TCONTV_PTR->TV_CTL_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
+//			(unsigned) TCONTV_PTR->TV_BASIC5_REG
+//			);
 
 #endif /* defined (TCONTV_PTR) */
 
@@ -3446,6 +3445,9 @@ static void t113_open_module_enable(const videomode_t * vdmode)
 // Paraleal RGB mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
+	//const videomode_t * vdmodeCRT = & vdmode_NTSC0;
+	const videomode_t * vdmodeCRT = & vdmode_PAL0;
+
 	unsigned prei = 0;
 	unsigned divider = 1;
 	// step0 - CCU configuration
@@ -3458,7 +3460,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_TV_clock_configuration(vdmode);
 	// step3 - Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
-	t113_set_TV_sequence_parameters(& vdmode_NTSC0);
+	t113_set_TV_sequence_parameters(vdmodeCRT);
 	// step4 - Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - Set and open interrupt function
