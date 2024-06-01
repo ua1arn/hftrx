@@ -1748,9 +1748,109 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 
 #elif CPUSTYLE_ALLWINNER
 
-
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
+
+
+#if CPUSTYLE_T507 || CPUSTYLE_H616
+
+// Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
+
+//	RTMIX0: VI1, UI1
+//	RTMIX1: VI2, UI2
+
+static DE_VI_TypeDef * rtmix0_vimap [] =
+{
+		DE_VI1,
+		NULL,
+		NULL,
+};
+
+static DE_VI_TypeDef * rtmix1_vimap [] =
+{
+		DE_VI2,
+		NULL,
+		NULL,
+};
+
+static DE_UI_TypeDef * rtmix0_uimap [] =
+{
+		DE_UI1,
+		NULL,
+		NULL,
+};
+
+static DE_UI_TypeDef * rtmix1_uimap [] =
+{
+		DE_UI2,
+		NULL,
+		NULL,
+};
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+static DE_VI_TypeDef * const rtmix0_vimap [] =
+{
+		DE_MIXER0_VI1,
+		NULL,
+		NULL,
+};
+
+static DE_VI_TypeDef * const rtmix1_vimap [] =
+{
+		DE_MIXER1_VI1,
+		NULL,
+		NULL,
+};
+
+static DE_UI_TypeDef * const rtmix0_uimap [] =
+{
+		DE_MIXER0_UI1,
+		NULL,
+		NULL,
+};
+
+static DE_UI_TypeDef * const rtmix1_uimap [] =
+{
+		NULL,
+		NULL,
+		NULL,
+};
+
+
+#elif CPUSTYLE_A64
+
+static DE_VI_TypeDef * const rtmix0_vimap [] =
+{
+		DE_MIXER0_VI1,
+		DE_MIXER0_VI2,
+		DE_MIXER0_VI3,
+};
+
+static DE_VI_TypeDef * const rtmix1_vimap [] =
+{
+		DE_MIXER1_VI1,
+		DE_MIXER1_VI2,
+		DE_MIXER1_VI3,
+};
+
+static DE_UI_TypeDef * const rtmix0_uimap [] =
+{
+		DE_MIXER0_UI1,
+		DE_MIXER0_UI2,
+		DE_MIXER0_UI3,
+};
+
+static DE_UI_TypeDef * const rtmix1_uimap [] =
+{
+		DE_MIXER1_UI1,
+		DE_MIXER1_UI2,
+		DE_MIXER1_UI3,
+};
+
+#else
+	#error Unsupported CPUSTYLE_xxx
+#endif
 
 #define RTMIXID 1	/* 1 or 2 */
 
@@ -1759,8 +1859,8 @@ void hardware_ltdc_main_set4(uintptr_t layer0, uintptr_t layer1, uintptr_t layer
 	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
 #elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
-	#define VI_LASTIX(rtmixid) 3
-	#define UI_LASTIX(rtmixid) 3
+	#define VI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
 	#error Unexpected CPUSTYLE_xxx
@@ -1887,16 +1987,6 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 #define RTWB_RCQ_CTL_OFFSET          (0x8210)
 
 
-static uint32_t readl(uintptr_t addr)
-{
-	return * (volatile uint32_t *) addr;
-}
-
-static void writel(uint32_t value, uintptr_t addr)
-{
-	* (volatile uint32_t *) addr = value;
-}
-
 static int32_t de_top_set_chn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
 {
@@ -1963,8 +2053,6 @@ static int32_t de_feat_get_phy_chn_id(uint32_t disp, uint32_t chn)
 #endif /* #if SUPPORT_FEAT_INIT_CONFIG */
 }
 
-///
-
 static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 {
 	uint32_t chn, chn_num, v_chn_num;
@@ -1981,6 +2069,7 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	return 0;
 }
 
+
 #else
 	//#error Undefined CPUSTYLE_xxx
 #endif
@@ -1994,103 +2083,6 @@ static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 	case 2: return DE_MIXER1_GLB;
 	}
 }
-
-#if CPUSTYLE_T507 || CPUSTYLE_H616
-
-// Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
-
-static DE_VI_TypeDef * rtmix0_vimap [] =
-{
-		DE_VI1,
-		DE_VI2,
-		DE_VI3,
-};
-
-static DE_VI_TypeDef * rtmix1_vimap [] =
-{
-		DE_VI1,
-		DE_VI2,
-		DE_VI3,
-};
-
-static DE_UI_TypeDef * rtmix0_uimap [] =
-{
-		DE_UI1,
-		DE_UI2,
-		DE_UI3,
-};
-
-static DE_UI_TypeDef * rtmix1_uimap [] =
-{
-		DE_UI1,
-		DE_UI2,
-		DE_UI3,
-};
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-static DE_VI_TypeDef * const rtmix0_vimap [] =
-{
-		DE_MIXER0_VI1,
-		NULL,
-		NULL,
-};
-
-static DE_VI_TypeDef * const rtmix1_vimap [] =
-{
-		DE_MIXER1_VI1,
-		NULL,
-		NULL,
-};
-
-static DE_UI_TypeDef * const rtmix0_uimap [] =
-{
-		DE_MIXER0_UI1,
-		NULL,
-		NULL,
-};
-
-static DE_UI_TypeDef * const rtmix1_uimap [] =
-{
-		NULL,
-		NULL,
-		NULL,
-};
-
-
-#elif CPUSTYLE_A64
-
-static DE_VI_TypeDef * const rtmix0_vimap [] =
-{
-		DE_MIXER0_VI1,
-		DE_MIXER0_VI2,
-		DE_MIXER0_VI3,
-};
-
-static DE_VI_TypeDef * const rtmix1_vimap [] =
-{
-		DE_MIXER1_VI1,
-		DE_MIXER1_VI2,
-		DE_MIXER1_VI3,
-};
-
-static DE_UI_TypeDef * const rtmix0_uimap [] =
-{
-		DE_MIXER0_UI1,
-		DE_MIXER0_UI2,
-		DE_MIXER0_UI3,
-};
-
-static DE_UI_TypeDef * const rtmix1_uimap [] =
-{
-		DE_MIXER1_UI1,
-		DE_MIXER1_UI2,
-		DE_MIXER1_UI3,
-};
-
-#else
-	#error Unsupported CPUSTYLE_xxx
-#endif
 
 static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
 {
@@ -3227,6 +3219,8 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 	//	LCD0_TCON1_BASIC4 = (2250 << 16) | 40;
 	//	LCD0_TCON1_BASIC5 = (43 << 16) | 4;
 
+	TCONTV_PTR->TV_CTL_REG = (VTOTAL - HEIGHT) << 4;   //VT-V
+
 	// XI YI
 	TCONTV_PTR->TV_BASIC0_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
@@ -3254,8 +3248,6 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
-
-	TCONTV_PTR->TV_CTL_REG = (VTOTAL - HEIGHT) << 4;   //VT-V
 
 //	PRINTF("1 sync: %08X %08X %08X %08X %08X %08X %08X\n",
 //			(unsigned) TCONTV_PTR->TV_CTL_REG,
@@ -3804,7 +3796,34 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
 
-	de_rtmx_set_chn_mux(disp);
+	//de_rtmx_set_chn_mux(disp);
+
+	// T507, H616
+	//	RTMIX0: VI1, UI1
+	//	RTMIX1: VI2, UI2
+	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
+	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
+	{
+		DE_TOP->DE_PORT2CHN_MUX [0] =
+			0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
+			0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
+			0;
+		DE_TOP->DE_PORT2CHN_MUX [1] =
+			0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
+			0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
+			0;
+
+		DE_TOP->DE_CHN2CORE_MUX =
+				0x00 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CIRE0
+				0x00 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CIRE0
+				0x01 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CIRE1
+				0x01 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CIRE1
+				0;
+
+		PRINTF("DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
+		PRINTF("DE_PORT2CHN_MUX[1]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [1]);
+		PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
+	}
 
 	{
 		const int rtmixid = RTMIXID;
@@ -4565,83 +4584,88 @@ static void hdmi_init(void)
 
 }
 
-static void lcd_init(void) {
-  // LCD0 feeds mixer0 to HDMI
-  LCD0_GCTL         = (1 << 31);
-  LCD0_GINT0        = 0;
-  LCD0_TCON1_CTL    = (1 << 31) | (30 << 4);
-  // out parameters
-  LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);	// Horizontal pixels, VErtical pixels
-  LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
-  LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
-  LCD0_TCON1_BASIC3 = ((2200-1) << 16) | (192-1); //HT, HBP
-  LCD0_TCON1_BASIC4 = ((1125*2) << 16) | (41-1);	//VT*2, VBP
-  LCD0_TCON1_BASIC5 = (43 << 16) | 4;	// HS, VS
+static void lcd_init(void)
+{
+	// LCD0 feeds mixer0 to HDMI
+	LCD0_GCTL         = (1 << 31);
+	LCD0_GINT0        = 0;
+
+	TCONTV_PTR->TV_CTL_REG = (1 << 31) | (30 << 4);   //VT-V
+	// out parameters
+	TCONTV_PTR->TV_BASIC0_REG = ((timing.hp-1) << 16) | (timing.vp-1);	// Horizontal pixels, VErtical pixels
+	TCONTV_PTR->TV_BASIC1_REG = ((timing.hp-1) << 16) | (timing.vp-1);
+	TCONTV_PTR->TV_BASIC2_REG = ((timing.hp-1) << 16) | (timing.vp-1);
+	TCONTV_PTR->TV_BASIC3_REG = ((2200-1) << 16) | (192-1); //HT, HBP
+	TCONTV_PTR->TV_BASIC4_REG = ((1125*2) << 16) | (41-1);	//VT*2, VBP
+	TCONTV_PTR->TV_BASIC5_REG = (43 << 16) | 4;	// HS, VS
 
 
-  LCD0_GINT1 = 1;
-  LCD0_GINT0 = (1 << 30);//28
-  ///irq_enable(118);  // LCD0
+	LCD0_GINT1 = 1;
+	LCD0_GINT0 = (1 << 30);//28
 }
 // This function configured DE2 as follows:
 // MIXER0 -> WB -> MIXER1 -> HDMI
 
 void de2_init(const uintptr_t * frames)
 {
-	uint32_t xsize, ysize;
-  ///xsize=480-1;
-  xsize=LCDX-1;
-  ysize=LCDY-1;
+	const uint32_t scale_x        = (uint_fast64_t) LCDX * 0x100000 / LCDX_OUT;
+	const uint32_t scale_y        = (uint_fast64_t) LCDY * 0x100000 / LCDY_OUT;
 
-  DE_AHB_RESET |= (1 << 0);
-  DE_SCLK_GATE |= (1 << 0);
-  DE_HCLK_GATE |= (1 << 0);
-  DE_DE2TCON_MUX &= ~(1 << 0);
+	uint32_t ssize = ((LCDY-1) << 16) | (LCDX-1);	// Source size
+	uint32_t tsize = ((timing.vp-1) << 16) | (timing.hp-1);	// Target size
+	DE_AHB_RESET |= (1 << 0);
+	DE_SCLK_GATE |= (1 << 0);
+	DE_HCLK_GATE |= (1 << 0);
+	DE_DE2TCON_MUX &= ~(1 << 0);
 
-  // Erase the whole of MIXER0. This contains uninitialized data.
-  for(uint32_t addr = DE_MIXER0_BASE + 0x0000; addr < DE_MIXER0_BASE + 0xC000; addr += 4)
-	  * (volatile uint32_t*) (addr) = 0;
+	// Erase the whole of MIXER0. This contains uninitialized data.
+	for (uintptr_t addr = DE_MIXER0_BASE + 0x0000; addr < DE_MIXER0_BASE + 0xC000; addr += 4)
+	  * (volatile uint32_t *) (addr) = 0;
 
-  DE_MIXER0_GLB_CTL = 1;
-  DE_MIXER0_GLB_SIZE = ((timing.vp-1) << 16) | (timing.hp-1);
+	DE_MIXER0_GLB_CTL = 1;
+	DE_MIXER0_GLB_SIZE = tsize;
 
-  DE_MIXER0_BLD_FILL_COLOR_CTL = 0x100;
-  DE_MIXER0_BLD_CH_RTCTL = 0;
-  DE_MIXER0_BLD_SIZE = ((timing.vp-1) << 16) | (timing.hp-1);
-  DE_MIXER0_BLD_CH_ISIZE(0) = ((timing.vp-1) << 16) | (timing.hp-1);
+	DE_MIXER0_BLD_FILL_COLOR_CTL = 0x100;
+	DE_MIXER0_BLD_CH_RTCTL = 0;
+	// output parameters
+	DE_MIXER0_BLD_SIZE = tsize;
+	DE_MIXER0_BLD_CH_ISIZE(0) = tsize;
+	// input parameters
+	DE_MIXER0_OVL_V_ATTCTL(0) = (1 << 15) | (1 << 0);
+	DE_MIXER0_OVL_V_MBSIZE(0) = ssize;
 
-  DE_MIXER0_OVL_V_ATTCTL(0) = (1 << 15) | (1 << 0);
-  DE_MIXER0_OVL_V_MBSIZE(0) = (ysize << 16) | xsize;
+	DE_MIXER0_OVL_V_COOR(0) = 0;
+	DE_MIXER0_OVL_V_PITCH0(0) = LCDX * LCDMODE_PIXELSIZE; // Input Scan line in bytes including overscan
+	// DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(frames [0]+ LCDX*16+16);
+	DE_MIXER0_OVL_V_TOP_LADD0(0) = frames [0]; //(uint32_t)(frames [0]+ LCDX*16+16);
+	DE_MIXER0_OVL_V_SIZE = ssize;
 
-  DE_MIXER0_OVL_V_COOR(0) = 0;
-  DE_MIXER0_OVL_V_PITCH0(0) = LCDX*4; // Scan line in bytes including overscan
- // DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(frames [0]+ LCDX*16+16);
-  DE_MIXER0_OVL_V_TOP_LADD0(0) = (uint32_t)(frames [0]+ LCDX*16+16);
-  DE_MIXER0_OVL_V_SIZE = (ysize << 16) | xsize;
-
-  DE_MIXER0_VS_CTRL     = 1;
-  DE_MIXER0_VS_OUT_SIZE = ((LCDY_OUT - 1) << 16) | (LCDX_OUT - 1);
-  DE_MIXER0_VS_Y_SIZE   = ((LCDY - 1) << 16) | (LCDX - 1);
-  double scale_x        = (double)LCDX * (double)0x100000 / (double)LCDX_OUT;
-  DE_MIXER0_VS_Y_HSTEP  = (uint32_t)scale_x;
-  double scale_y        = (double)LCDY * (double)0x100000 / (double)LCDY_OUT;
-  DE_MIXER0_VS_Y_VSTEP  = (uint32_t)scale_y;
-  DE_MIXER0_VS_C_SIZE   = ((LCDY - 1) << 16) | (LCDX - 1);
-  DE_MIXER0_VS_C_HSTEP  = (uint32_t)scale_x;
-  DE_MIXER0_VS_C_VSTEP  = (uint32_t)scale_y;
+	DE_MIXER0_VS_CTRL     = 1;
+	DE_MIXER0_VS_OUT_SIZE = tsize;	// Output size
+	DE_MIXER0_VS_Y_SIZE   = ssize;
+	DE_MIXER0_VS_Y_HSTEP  = scale_x;
+	DE_MIXER0_VS_Y_VSTEP  = scale_y;
+	DE_MIXER0_VS_C_SIZE   = ssize;	// input size
+	DE_MIXER0_VS_C_HSTEP  = scale_x;
+	DE_MIXER0_VS_C_VSTEP  = scale_y;
 
 
-  for(int n=0;n<32;n++) {
+	for(int n=0;n<32;n++)
+	{
 
-    DE_MIXER0_VS_Y_HCOEF0(n) = 0x40000000;
-    DE_MIXER0_VS_Y_HCOEF1(n) = 0;
-    DE_MIXER0_VS_Y_VCOEF(n)  = 0x00004000;
-    DE_MIXER0_VS_C_HCOEF0(n) = 0x40000000;
-    DE_MIXER0_VS_C_HCOEF1(n) = 0;
-    DE_MIXER0_VS_C_VCOEF(n)  = 0x00004000;
-  }
-  DE_MIXER0_VS_CTRL = 1 | (1 << 4);
-  DE_MIXER0_GLB_DBUFFER = 1;
+		DE_MIXER0_VS_Y_HCOEF0(n) = 0x40000000;
+		DE_MIXER0_VS_Y_HCOEF1(n) = 0;
+		DE_MIXER0_VS_Y_VCOEF(n)  = 0x00004000;
+		DE_MIXER0_VS_C_HCOEF0(n) = 0x40000000;
+		DE_MIXER0_VS_C_HCOEF1(n) = 0;
+		DE_MIXER0_VS_C_VCOEF(n)  = 0x00004000;
+	}
+	DE_MIXER0_VS_CTRL = 1 | (1 << 4);
+
+	// Apply parameters
+	DE_MIXER0_GLB_DBUFFER = 1;
+	while ((DE_MIXER0_GLB_DBUFFER & 0x01) != 0)
+		;
 }
 //
 //// This function initializes the HDMI port and TCON.
