@@ -3636,20 +3636,11 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
 	//#define SUNXI_SRAMC_BASE 0x03000000
     // Under CONFIG_MACH_SUN50I
- 	{
-		uint32_t reg_value;
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
-		/* set SRAM for video use */
-		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
-		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
-		//PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-		reg_value &= ~ (UINT32_C(1) << 24);
-		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
-		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
-		//PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-
-	}
-//#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
+	//#warning TODO: Enable ahb_reset1_cfg and ahb_gate1
 	/* Set ahb gating to pass */
 //	setbits_le32(&ccm->ahb_reset1_cfg, 1 << AHB_RESET_OFFSET_DE);
 //	setbits_le32(&ccm->ahb_gate1, 1 << AHB_GATE_OFFSET_DE);
@@ -3740,21 +3731,8 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 
 	/* переключить память к DE & VI */
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
-	//#define SUNXI_SRAMC_BASE 0x03000000
-    // Under CONFIG_MACH_SUN50I
- 	{
-		uint32_t reg_value;
+	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
-		/* set SRAM for video use */
-		//reg_value = readl(SUNXI_SRAMC_BASE + 0x04);
-		reg_value = * (volatile uint32_t *) (SYS_CFG_BASE + 0x04);
-		////PRINTF("1 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-		reg_value &= ~ (UINT32_C(1) << 24);
-		//writel(reg_value, SUNXI_SRAMC_BASE + 0x04);
-		* (volatile uint32_t *) (SYS_CFG_BASE + 0x04) = reg_value;
-		////PRINTF("2 switch memory: reg_value=%08X\n", (unsigned) reg_value);
-
-	}
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	unsigned divider = 1;

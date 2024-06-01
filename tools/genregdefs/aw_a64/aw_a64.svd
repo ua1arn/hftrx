@@ -9730,6 +9730,15 @@
   <baseAddress>0x01C00000</baseAddress>
   <registers>
    <register>
+    <name>MEMMAP_REG</name>
+    <displayName>MEMMAP_REG</displayName>
+    <description>DE memory control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>VER_REG</name>
     <displayName>VER_REG</displayName>
     <description>Version Register</description>
