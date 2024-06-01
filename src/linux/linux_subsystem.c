@@ -33,6 +33,8 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/indev/evdev.h"
 
+void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
+void linux_cancel_thread(pthread_t tid);
 void xcz_resetn_modem(uint8_t val);
 void ft8_thread(void);
 void lvgl_init(void);
@@ -467,7 +469,10 @@ enum {
 	CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX,
 	CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX,
 	SIZERX8 = DMABUFFSIZE32RX * 4,
+	SIZERTS96 = 1024,
 };
+
+uint8_t rxbuf[SIZERX8] = { 0 };
 
 static void iq_proccessing(uint8_t * buf, uint32_t len)
 {
@@ -517,86 +522,93 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 		safe_cond_signal(ct_iq);
 }
 
-#if WITHIQLANEXCHANGE
+#if WITHEXTIO_LAN
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 
-int socket_send, socket_rcv;
-socklen_t s;
-struct sockaddr_in addr_sendto, addr_rcv, addr_client;
+void eth_restart(void);
 
-const char ipaddr_client[] = "192.168.0.110\0";
+#define TCP_PORT 1001
 
-void eth_init(void)
+struct cond_thread * ct_rts = NULL;
+pthread_t eth_main_t, eth_send_t;
+uint32_t streambuf[SIZERTS96] = { 0 };
+
+void * eth_main_thread(void * args)
 {
-	socket_send = socket(AF_INET, SOCK_DGRAM, 0);
-	if(socket_send < 0)
+	int sockServer, sockClient;
+	struct sockaddr_in addr, addrClient;
+	int yes = 1;
+	uint32_t command;
+	socklen_t size = sizeof(addrClient);
+
+	ct_rts = (struct cond_thread *) malloc(sizeof(struct cond_thread));
+	linux_init_cond(ct_rts);
+
+	if((sockServer = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		perror("socket");
-		exit(1);
+		return NULL;
 	}
 
-	addr_sendto.sin_family = AF_INET;
-	addr_sendto.sin_port = htons(1024);
-#if  IQLANRECEIVER
-	addr_sendto.sin_addr.s_addr = htonl(INADDR_ANY);
-#elif IQLANTRANSMITTER
-	inet_aton(ipaddr_client, & addr_sendto.sin_addr);
-#endif
+	setsockopt(sockServer, SOL_SOCKET, SO_REUSEADDR, (void *) & yes , sizeof(yes));
 
-    s = sizeof(addr_client);
+	/* setup listening address */
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(TCP_PORT);
 
-    socket_rcv = socket(AF_INET, SOCK_DGRAM, 0);
-    if(socket_rcv < 0)
+	if(bind(sockServer, (struct sockaddr *) & addr, sizeof(addr)) < 0)
+	{
+		perror("bind");
+		return NULL;
+	}
+
+	listen(sockServer, 1024);
+
+    if((sockClient = accept(sockServer, (struct sockaddr *) & addrClient, & size)) < 0)
     {
-        perror("socket");
-        exit(1);
+      perror("accept");
+      return NULL;
     }
 
-    addr_rcv.sin_family = AF_INET;
-    addr_rcv.sin_port = htons(1024);
-    addr_rcv.sin_addr.s_addr = htonl(INADDR_ANY);
-    if(bind(socket_rcv, (struct sockaddr *) & addr_rcv, sizeof(addr_rcv)) < 0)
-    {
-        perror("bind");
-        exit(2);
-    }
-}
-
-void * lan_send_thread(void * args)
-{
-	char msg1[] = "qwerty123456";
+    PRINTF("Accepted TCP connection from %s:%d\n", inet_ntoa(addrClient.sin_addr), TCP_PORT);
 
 	while(1)
 	{
-		int n = sendto(socket_send, msg1, sizeof(msg1), 0, (struct sockaddr *)  &addr_sendto, sizeof(addr_sendto));
-		if (n < 0)
-			perror("sendto");
-		sleep(1);
-	}
-}
-
-void * lan_rcv_thread(void * args)
-{
-	uint8_t buf[SIZERX8];
-
-	while(1)
-	{
-		int bytes_read = recvfrom(socket_rcv, buf, SIZERX8, 0, (struct sockaddr *) & addr_client, & s);
-		if (bytes_read < 0)
+		if(ioctl(sockClient, FIONREAD, & size) < 0) perror("FIONREAD");
+		if(size >= 4)
 		{
-			perror ("recvfrom");
-			exit(3);
+			if(recv(sockClient, (char *) & command, 4, MSG_WAITALL) < 0) perror("recv");
+			if (command >> 31 == 0)		// Frequency set
+				hamradio_set_freq(command);
 		}
 
-		iq_proccessing(buf, SIZERX8);
+		safe_cond_wait(ct_rts);
+		if (send(sockClient, (uint8_t *) streambuf, SIZERTS96 * 4, MSG_NOSIGNAL) < 0)
+		{
+			PRINTF("TCP connection from %s is closed\n", inet_ntoa(addrClient.sin_addr));
+			close(sockClient);
+			close(sockServer);
+			eth_restart();
+			return NULL;
+		}
 	}
+
+	return NULL;
 }
 
-#endif /* WITHIQLANEXCHANGE */
+void eth_restart(void)
+{
+	linux_cancel_thread(eth_main_t);
+	linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
+}
+
+#endif /* WITHEXTIO_LAN */
 
 void linux_iq_init(void)
 {
@@ -608,7 +620,7 @@ void linux_iq_init(void)
 	mic_fifo = 		(uint32_t *) get_highmem_ptr(XPAR_AUDIO_FIFO_MIC_BASEADDR);
 	modem_ctrl = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR);
 	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
-	iq_rx_blkmem = (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
+	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
@@ -621,17 +633,29 @@ void linux_iq_init(void)
 
 void linux_iq_thread(void)
 {
-	uint8_t rxbuf[SIZERX8] = { 0 };
 	uint32_t pos = * iq_count_rx;
 	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : SIZERX8;
 	memcpy(rxbuf, (uint8_t *) iq_rx_blkmem + offset, SIZERX8);
+
 	iq_proccessing(rxbuf, SIZERX8);
 
-#if WITHIQLANEXCHANGE && IQLANTRANSMITTER
-	sendto(socket_send, (rxbuf, SIZERX8, 0, (struct sockaddr *) & addr_sendto, sizeof(addr_sendto));
-#endif
+#if WITHEXTIO_LAN
+	static int rtscnt = 0;
+	uint32_t * r = (uint32_t *) rxbuf;
+	for (int i = 0; i < DMABUFFSIZE32RX; i+= DMABUFFSTEP32RX)
+	{
+		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0I];
+		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0Q];
+		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1I];
+		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1Q];
+	}
 
-
+	if (rtscnt >= SIZERTS96)
+	{
+		rtscnt = 0;
+		safe_cond_signal(ct_rts);
+	}
+#endif /* WITHEXTIO_LAN */
 }
 
 void * linux_iq_interrupt_thread(void * args)
@@ -777,7 +801,7 @@ void linux_subsystem_init(void)
 #endif /* WITHLVGL */
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, lan_send_t, lan_rcv_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
 
 void linux_user_init(void)
 {
@@ -785,17 +809,7 @@ void linux_user_init(void)
 
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 //	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
-
-#if WITHIQLANEXCHANGE
-	eth_init();
-#if IQLANRECEIVER
-	linux_create_thread(& lan_rcv_t, lan_rcv_thread, 95, 1);
-#else
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
-#endif /* IQLANRECEIVER */
-#else
-	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
-#endif /* WITHIQLANEXCHANGE */
 
 #if defined AXI_DCDC_PWM_ADDR
 	const float FS = powf(2, 32);
@@ -842,6 +856,10 @@ void linux_user_init(void)
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
+
+#if WITHEXTIO_LAN
+	linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
+#endif /* WITHEXTIO_LAN */
 }
 
 void linux_wait_iq(void)
