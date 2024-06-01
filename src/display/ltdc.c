@@ -2120,6 +2120,16 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
+static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
+{
+	switch (rtmixid)
+	{
+	default: return NULL;
+	case 1: return DE_VSU1;	// VI1
+	case 2: return DE_VSU2;	// VI2
+	}
+}
+
 //static void write32(uintptr_t a, uint32_t v)
 //{
 //	* (volatile uint32_t *) a = v;
@@ -2190,6 +2200,37 @@ static void t113_de_update(int rtmixid)
 		;
 }
 
+static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
+{
+	const uint_fast32_t scale_x = (uint_fast64_t) vdmodein->width * 0x100000 / vdmodeout->width;
+	const uint_fast32_t scale_y = (uint_fast64_t) vdmodein->height * 0x100000 / vdmodeout->height;
+	const uint_fast32_t ssize = ((vdmodein->height - 1) << 16) | (vdmodein->width - 1);	// Source size
+	const uint_fast32_t tsize = ((vdmodeout->height - 1) << 16) | (vdmodeout->width - 1);	// Target size
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid);
+	if (vsu == NULL)
+		return;
+
+	vsu->VSU_CTRL_REG     = 1;
+	vsu->VSU_OUT_SIZE_REG = tsize;	// Output size
+	vsu->VSU_Y_SIZE_REG   = ssize;
+	vsu->VSU_Y_HSTEP_REG  = scale_x;
+	vsu->VSU_Y_VSTEP_REG  = scale_y;
+	vsu->VSU_C_SIZE_REG   = ssize;	// input size
+	vsu->VSU_C_HSTEP_REG  = scale_x;
+	vsu->VSU_C_VSTEP_REG  = scale_y;
+
+	for(int n=0; n<32; n++)
+	{
+
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;
+		vsu->VSU_Y_HCOEF1_REGN [n] = 0;
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;
+		vsu->VSU_C_HCOEF1_REGN [n] = 0;
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;
+	}
+	vsu->VSU_CTRL_REG = 1 | (1 << 4);
+}
 
 /* VI (VI0) */
 static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
@@ -4728,6 +4769,9 @@ void hardware_ltdc_initialize(const uintptr_t * frames_unused, const videomode_t
     {
 		t113_de_set_mode(vdmode, rtmixid, COLOR24(255, 255, 0));	// yellow
 		t113_de_update(rtmixid);	/* Update registers */
+    }
+    {
+    	//t113_vsu_setup(rtmixid, vdmode, vdmode);
     }
 //	printhex32(DISPLAY_TOP_BASE, (void *) DISPLAY_TOP_BASE, 256);
 //	printhex32(TCON_TV0_BASE, TCON_TV0, 256);
