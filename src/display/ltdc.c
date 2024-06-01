@@ -3214,6 +3214,10 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
 	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
 	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+	const unsigned HFP = vdmode->hfp;	/* horizontal front porch */
+	const unsigned VFP = vdmode->vfp;	/* vertical front porch */
+	const unsigned HBP = vdmode->hbp;	/* horizontal back porch */
+	const unsigned VBP = vdmode->vbp;	/* vertical back porch */
 
 	// out parameters
 	//	LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);
@@ -3238,18 +3242,65 @@ static void t113_set_TV_sequence_parameters(const videomode_t * vdmode)
 	// HT HBP
 	TCONTV_PTR->TV_BASIC3_REG =
 		((HTOTAL - 1) << 16) |		// TOTAL
-		((LEFTMARGIN - 1) << 0) |	// HBP
+		((HBP - 1) << 0) |			// HBP
 		0;
 	// VT VBP
 	TCONTV_PTR->TV_BASIC4_REG =
 		((VTOTAL * 2) << 16) | 		// VT Tvt = (VT)/2 * Thsync
-		((TOPMARGIN - 1) << 0) |	// VBP Tvbp = (VBP+1) * Thsync
+		((VBP - 1) << 0) |			// VBP Tvbp = (VBP+1) * Thsync
 		0;
 	// HSPW VSPW
 	TCONTV_PTR->TV_BASIC5_REG =
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
+
+	TCONTV_PTR->TV_CTL_REG = 0x80000000 | ((VTOTAL - HEIGHT ) << 4);   //VT-V
+
+	PRINTF("1 sync: %08X %08X %08X %08X %08X %08X %08X\n",
+			(unsigned) TCONTV_PTR->TV_CTL_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC5_REG
+			);
+
+	 if(1)
+	 {
+		 //NTSC
+		 TCONTV_PTR->TV_CTL_REG =
+				 0x80000000 |
+				 ((525 - 480 ) << 4
+				);   //VT-V
+		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (480 - 1); //H,V
+		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (480 - 1);
+		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (480 - 1);
+		 TCONTV_PTR->TV_BASIC3_REG = ((858 - 1) << 16) | ( 60 - 1); //HT, HBP
+		 TCONTV_PTR->TV_BASIC4_REG = ((525 * 2) << 16) | ( 30 - 1); //VT*2, VBP
+		 TCONTV_PTR->TV_BASIC5_REG = (62 << 16) | 6;                //HS, VS - 63, 7
+	 }
+	 else
+	 {
+		 //PAL
+		 TCONTV_PTR->TV_CTL_REG = 0x80000000 | ((625 - 576 ) << 4);   //VT-V
+		 TCONTV_PTR->TV_BASIC0_REG = ((720 - 1) << 16) | (576 - 1); //H,V
+		 TCONTV_PTR->TV_BASIC1_REG = ((720 - 1) << 16) | (576 - 1);
+		 TCONTV_PTR->TV_BASIC2_REG = ((720 - 1) << 16) | (576 - 1);
+		 TCONTV_PTR->TV_BASIC3_REG = ((864 - 1) << 16) | ( 68 - 1); //HT, HBP
+		 TCONTV_PTR->TV_BASIC4_REG = ((625 * 2) << 16) | ( 39 - 1); //VT*2, VBP
+		 TCONTV_PTR->TV_BASIC5_REG = (64 << 16) | 5;                //HS, VS - 65, 6
+	 }
+	PRINTF("2 sync: %08X %08X %08X %08X %08X %08X %08X\n",
+			(unsigned) TCONTV_PTR->TV_CTL_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC0_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC1_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC2_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC3_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC4_REG,
+			(unsigned) TCONTV_PTR->TV_BASIC5_REG
+			);
 
 #endif /* defined (TCONTV_PTR) */
 
@@ -3407,7 +3458,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_TV_clock_configuration(vdmode);
 	// step3 - Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
-	t113_set_TV_sequence_parameters(vdmode);
+	t113_set_TV_sequence_parameters(& vdmode_NTSC0);
 	// step4 - Open IO output
 	t113_open_IO_output(vdmode);
 	// step5 - Set and open interrupt function
@@ -3450,12 +3501,12 @@ static void t113_TVE_initialize(const videomode_t * vdmode)
 	CCU->TVE_BGR_REG |= (UINT32_C(1) << 17);	// TVE_RST
 	PRINTF("2 CCU->TVE_BGR_REG=%08" PRIX32 "\n", CCU->TVE_BGR_REG);
 
-	printhex32(TVE_TOP_BASE, TVE_TOP, 256);
+	//printhex32(TVE_TOP_BASE, TVE_TOP, 256);
 
 	TV_Encoder->TVE_000_REG &= ~ (UINT32_C(1) << 31); // CLOCK_GATE_DIS
 	TV_Encoder->TVE_000_REG |= (UINT32_C(1) << 0);	// TVE_EN
 
-	printhex32(TV_Encoder_BASE, TV_Encoder, 256);
+	//printhex32(TV_Encoder_BASE, TV_Encoder, 256);
 	PRINTF("TV_Encoder->TVE_038_REG=%08" PRIX32 "\n", TV_Encoder->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
 
 #endif /* defined (TCONTV_PTR) */

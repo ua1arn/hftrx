@@ -1968,29 +1968,43 @@ const videomode_t vdmode0 =
 
 #endif
 
-
-/* TV out parameters */
-const videomode_t vdmode_crt0 =
+/* NTSC TV out parameters */
+const videomode_t vdmode_NTSC0 =
 {
-	.width = 800,			/* LCD PIXEL WIDTH            */
+	.width = 720,			/* LCD PIXEL WIDTH            */
 	.height = 480,			/* LCD PIXEL HEIGHT           */
-	.hsync = 40,				/* Horizontal synchronization 1..40 */
-	.hbp = 6,				/* Horizontal back porch      */
-	.hfp = 210,				/* Horizontal front porch  16..354   */
+	.hsync = 63,				/* Horizontal synchronization */
+	.hbp = 60,				/* Horizontal back porch      */
+	.hfp = 15,				/* Horizontal front porch */
 
-	.vsync = 20,				/* Vertical synchronization 1..20  */
-	.vbp = 3,				/* Vertical back porch      */
-	.vfp = 22,				/* Vertical front porch  7..147     */
-
-	/* Accumulated parameters for this display */
-	//LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
-	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+	.vsync = 7,			/* Vertical synchronization */
+	.vbp = 30,				/* Vertical back porch      */
+	.vfp = 8,				/* Vertical front porch */
 
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
+
+	.fps = 60	/* frames per second */
+};
+
+/* PAL TV out parameters */
+const videomode_t vdmode_PAL0 =
+{
+	.width = 720,			/* LCD PIXEL WIDTH            */
+	.height = 576,			/* LCD PIXEL HEIGHT           */
+	.hsync = 65,				/* Horizontal synchronization */
+	.hbp = 6,				/* Horizontal back porch      */
+	.hfp = 210,				/* Horizontal front porch  */
+
+	.vsync = 6,				/* Vertical synchronization */
+	.vbp = 3,				/* Vertical back porch      */
+	.vfp = 22,				/* Vertical front porch  7..147     */
+
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+
 	.fps = 60	/* frames per second */
 };
 
