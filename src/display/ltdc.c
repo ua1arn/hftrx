@@ -3435,6 +3435,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 static void t113_TVE_initialize(const videomode_t * vdmode)
 {
+#if defined (TCONTV_PTR)
 	const uint_fast32_t needfreq = display_getdotclock(vdmode);
 	unsigned divider;
 	unsigned prei = calcdivider(calcdivround2(allwnrt113_get_video0_x1_freq(), needfreq), 4, (8 | 4 | 2 | 1), & divider, 1);
@@ -3473,6 +3474,7 @@ static void t113_TVE_initialize(const videomode_t * vdmode)
 	printhex32(TV_Encoder_BASE, TV_Encoder, 256);
 	PRINTF("TV_Encoder->TVE_038_REG=%08" PRIX32 "\n", TV_Encoder->TVE_038_REG & 0x03);	// 00: Unconnected, 01: Connected, 11: Short to ground
 
+#endif /* defined (TCONTV_PTR) */
 }
 
 #if 0
