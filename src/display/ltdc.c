@@ -4574,9 +4574,9 @@ static void lcd_init(void) {
   LCD0_TCON1_BASIC0 = ((timing.hp-1) << 16) | (timing.vp-1);	// Horizontal pixels, VErtical pixels
   LCD0_TCON1_BASIC1 = ((timing.hp-1) << 16) | (timing.vp-1);
   LCD0_TCON1_BASIC2 = ((timing.hp-1) << 16) | (timing.vp-1);
-  LCD0_TCON1_BASIC3 = (2199 << 16) | 191;
-  LCD0_TCON1_BASIC4 = (2250 << 16) | 40;
-  LCD0_TCON1_BASIC5 = (43 << 16) | 4;
+  LCD0_TCON1_BASIC3 = ((2200-1) << 16) | (192-1); //HT, HBP
+  LCD0_TCON1_BASIC4 = ((1125*2) << 16) | (41-1);	//VT*2, VBP
+  LCD0_TCON1_BASIC5 = (43 << 16) | 4;	// HS, VS
 
 
   LCD0_GINT1 = 1;
