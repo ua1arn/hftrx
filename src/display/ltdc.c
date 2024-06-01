@@ -2674,13 +2674,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	local_delay_us(10);
-	PRINTF("CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
 #else
 
@@ -2909,15 +2902,6 @@ static void t113_tcontv_CCU_configuration(const videomode_t * vdmode, unsigned p
     local_delay_us(10);
 
     CCU->TCONTV_BGR_REG |= (UINT32_C(1) << 0);	// TCONTV_GATING
-
-    // DISPLAY_TOP access
-	PRINTF("3 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	local_delay_us(10);
-	PRINTF("4 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
     {
 		DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1) << 0);      //selected 0 - CCU clock, 1 - TVE clock
@@ -3625,14 +3609,9 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// These CPUs not support DSI at all
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	local_delay_us(10);
-	PRINTF("CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
+
 	(void) DSI0->DSI_CTL;
+
 #else
 
 #endif
@@ -3899,14 +3878,13 @@ static void hardware_de_initialize(const videomode_t * vdmode)
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
+
     // DISPLAY_TOP access
-	PRINTF("1 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	CCU->DPSS_TOP_BGR_REG &= ~ UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST
-	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING
-	local_delay_us(10);
-	PRINTF("2 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
+	//PRINTF("1 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 0;	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG |= UINT32_C(1) << 16;	// DPSS_TOP_RST De-assert reset
+	//local_delay_us(10);
+	//PRINTF("2 CCU->DPSS_TOP_BGR_REG=%08" PRIX32 "\n", CCU->DPSS_TOP_BGR_REG);
 
 	/* Global DE settings */
 //	PRINTF("DE_TOP before:\n");
