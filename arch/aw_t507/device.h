@@ -1411,6 +1411,25 @@ typedef struct GPU_MMU_Type
     } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
 } GPU_MMU_TypeDef; /* size of structure = 0x500 */
 /*
+ * @brief HDMI_PHY
+ */
+/*!< HDMI_PHY  */
+typedef struct HDMI_PHY_Type
+{
+             uint32_t reserved_0x000 [0x0008];
+    volatile uint32_t ANA_CFG1;                       /*!< Offset 0x020 ANA_CFG1 */
+    volatile uint32_t ANA_CFG2;                       /*!< Offset 0x024 ANA_CFG2 */
+    volatile uint32_t ANA_CFG3;                       /*!< Offset 0x028 ANA_CFG3 */
+    volatile uint32_t PLL_CFG1;                       /*!< Offset 0x02C ANA_CFG1 */
+    volatile uint32_t PLL_CFG2;                       /*!< Offset 0x030 PLL_CFG2 */
+    volatile uint32_t PLL_CFG3;                       /*!< Offset 0x034 PLL_CFG3 */
+    volatile uint32_t ANA_STS;                        /*!< Offset 0x038 ANA_STS */
+    volatile uint32_t CEC;                            /*!< Offset 0x03C CEC */
+             uint32_t reserved_0x040 [0x03EE];
+    volatile uint32_t CEC_VERSION;                    /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
+    volatile uint32_t PHY_VERSION;                    /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
+} HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
@@ -2630,6 +2649,7 @@ typedef struct VE_Type
 #define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define USBPHYC3 ((USBPHYC_TypeDef *) USBPHYC3_BASE)  /*!< USBPHYC3 HCI Contgroller and PHY Interface Description register set access pointer */
+#define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define DISP_IF_TOP ((DISP_IF_TOP_TypeDef *) DISP_IF_TOP_BASE)/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */

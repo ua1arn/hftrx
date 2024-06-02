@@ -2646,12 +2646,6 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
 
-//    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-//    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-//
-//    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16) | (UINT32_C(1) << 0); // writble bits mask: 0x000F0005
-//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
 #endif /* WITHLVDSHW */
 
 
@@ -2675,6 +2669,12 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
 //    CCU->HDMI_HDCP_CLK_REG;
 //    CCU->HDMI_HDCP_BGR_REG;
+
+    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+
+    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+    PRINTF("HDMI_PHY->PHY_VERSION=%08X\n", (unsigned) HDMI_PHY->PHY_VERSION);
+
 
 #endif /* WITHHDMITVHW */
 
