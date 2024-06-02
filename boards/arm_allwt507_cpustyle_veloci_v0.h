@@ -677,9 +677,9 @@ void user_uart5_ontxchar(void * ctx);
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
 		switch (target) { \
-		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; *//* PC3 SPI0_CS */ \
-		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); local_delay_us(1); } break; */\
-		default: { gpioX_setstate(GPIOE, (target), 0 * (target)); local_delay_us(1); } break; \
+		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
+		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); } break; */\
+		default: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		case targetnone: break; \
 		} \
 	} while (0)
@@ -687,10 +687,10 @@ void user_uart5_ontxchar(void * ctx);
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); local_delay_us(1); } break; *//* PC3 SPI0_CS */ \
-		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); local_delay_us(1); } break; */\
-		case targetctl1: { gpioX_setstate(GPIOE, (target), 1 * (target)); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); local_delay_us(1); } break; \
-		default: { gpioX_setstate(GPIOE, (target), 1 * (target)); local_delay_us(1); } break; \
+		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
+		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
+		case targetctl1: { gpioX_setstate(GPIOE, (target), 1 * (target)); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
+		default: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
 		case targetnone: break; \
 		} \
 	} while (0)
