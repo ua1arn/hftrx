@@ -138,7 +138,8 @@
 #else /* WITH_LPFBOARD_UA1CEI */
 		//{	0,	51,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	display_time5,		REDRM_BARS, PG0,	},	// TIME
-		{	6, 	51,	display2_atu3,		REDRM_MODE, PG0, },	// TUNER state (optional)
+		{	6, 	51,	display2_classa3,		REDRM_MODE, PG0, },	// ClassA indication
+		//{	6, 	51,	display2_atu3,		REDRM_MODE, PG0, },	// TUNER state (optional)
 		{	10, 51,	display2_byp3,		REDRM_MODE, PG0, },	// TUNER BYPASS state (optional)
 #endif /* WITH_LPFBOARD_UA1CEI */
 		{	14, 51,	display2_thermo5,	REDRM_VOLT, PG0, },	// thermo sensor 20.7C

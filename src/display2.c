@@ -2684,6 +2684,27 @@ static void display2_classa7(
 #endif /* WITHPACLASSA */
 }
 
+// Class-A power amplifier
+static void display2_classa3(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHPACLASSA
+	const uint_fast8_t active = habradio_get_classa();
+	#if LCDMODE_COLORED
+		static const char classa_text [] = "CLA";
+		static const char classb_text [] = "CLB";
+		static const char classa_null [] = "   ";
+		//display_2states_P(x, y, active, classa_text, classb_text);
+		display_2states_P(x, y, 1, active ? classa_text : classb_text, classa_null);
+	#else /* LCDMODE_COLORED */
+		display_at_P(x, y, active ? classa_text : classa_null);
+	#endif /* LCDMODE_COLORED */
+#endif /* WITHPACLASSA */
+}
+
 // Отображение уровня сигнала в dBm
 static void display_siglevel7(
 	uint_fast8_t x,
