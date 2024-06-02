@@ -166,6 +166,8 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соотв
 //	RBVAL(1, bit123val, 3);
 //	RBVAL(4, bit12val, 2);
 //
+//	IRQL_t irql
+//	spi_operate_lock(& irql);
 //	spi_select(target, CTLREG_SPIMODE);
 //	spi_progval8_p1(target, rbbuff [0]);
 //	spi_progval8_p2(target, rbbuff [1]);
@@ -173,6 +175,7 @@ extern const uint_fast8_t rbvalues [8];	// битовые маски, соотв
 //	spi_progval8_p2(target, rbbuff [3]);
 // 	spi_complete(target);
 //	spi_unselect(target);
+//	spi_operate_unlock(irql);
 
 /* Таблица разворота младших восьми бит */
 //extern const FLASHMEM unsigned char revbittable [256];

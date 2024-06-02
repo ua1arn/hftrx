@@ -19069,6 +19069,8 @@ applowinitialize(void)
 		{
 			static uint_fast8_t v = 0x00;
 			v = ~ v;
+			IRQL_t irql
+			spi_operate_lock(& irql);
 			spi_select(cs, SPIC_MODE3);
 			spi_progval8_p1(cs, v);
 			spi_progval8_p2(cs, v);
@@ -19084,6 +19086,7 @@ applowinitialize(void)
 			spi_progval8_p2(cs, v);
 			spi_complete(cs);
 			spi_unselect(cs);
+			spi_operate_unlock(irql);
 		}
 	}
 #endif

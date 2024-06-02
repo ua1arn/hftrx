@@ -4031,21 +4031,23 @@ void hangoffDATAFLASH(void)
 #define SPIMODE_AT26DF081A	SPIC_MODE3
 
 // Connrect I/O pins
-static void spidf_select(void)
+static void spidf_select(IRQL_t * oldirql)
 {
 #if WIHSPIDFOVERSPI
 	spitarget_t target = targetdataflash;	/* addressing to chip */
+	spi_operate_lock(oldirql);
 	spi_select(target, SPIMODE_AT26DF081A);
 #else /* WIHSPIDFOVERSPI */
 	SPIDF_SELECT();
 #endif /* WIHSPIDFOVERSPI */
 }
 
-static void spidf_unselect(void)
+static void spidf_unselect(IRQL_t irql)
 {
 #if WIHSPIDFOVERSPI
 	spitarget_t target = targetdataflash;	/* addressing to chip */
 	spi_unselect(target);
+	spi_operate_unlock(irql);
 #else /* WIHSPIDFOVERSPI */
 	SPIDF_UNSELECT();
 #endif /* WIHSPIDFOVERSPI */

@@ -2718,10 +2718,13 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V3
 	const spitarget_t target = targetdac1;
 	// Выдача кода на цифровой потенциометр AD5260BRUZ50 в управлении частотой опорного генератора
 
+	IRQL_t irql
+	spi_operate_lock(& irql);
 	spi_select(target, CTLREG_SPIMODE);
 	spi_progval8_p1(target, glob_dac1);
 	spi_complete(target);
 	spi_unselect(target);
+	spi_operate_unlock(irql);
 }
 
 #elif CTLREGMODE_RAVENDSP_V4	// "Воронёнок" с DSP и FPGA, SD-CARD
@@ -2812,10 +2815,13 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V4
 	const spitarget_t target = targetdac1;
 	// Выдача кода на цифровой потенциометр AD5260BRUZ50 в управлении частотой опорного генератора
 
+	IRQL_t irql
+	spi_operate_lock(& irql);
 	spi_select(target, CTLREG_SPIMODE);
 	spi_progval8_p1(target, glob_dac1);
 	spi_complete(target);
 	spi_unselect(target);
+	spi_operate_unlock(irql);
 }
 
 #elif CTLREGMODE_RAVENDSP_V5	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
@@ -2929,10 +2935,13 @@ prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V5
 	const spitarget_t target = targetdac1;
 	// Выдача кода на цифровой потенциометр AD5260BRUZ20 в управлении частотой опорного генератора
 
+	IRQL_t irql
+	spi_operate_lock(& irql);
 	spi_select(target, CTLREG_SPIMODE);
 	spi_progval8_p1(target, glob_dac1);
 	spi_complete(target);
 	spi_unselect(target);
+	spi_operate_unlock(irql);
 }
 
 #elif CTLREGMODE_RAVENDSP_V6	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
@@ -4825,9 +4834,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(001, 0);	// not use
 		RBBIT(000, glob_tx);	// tx & ant 1-2
 
-		spi_select(target, CTLREG_SPIMODE);
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
 	}
 }
 
@@ -6104,6 +6111,8 @@ static void prog_softdds_freq(
 #if 1
 	const uint_fast32_t v32 = * value;
 
+	IRQL_t irql
+	spi_operate_lock(& irql);
 	spi_select(target, SPIC_MODE3);	/* start sending data to target chip */
 	spi_progval8_p1(target, v32 >> 24);
 	spi_progval8_p2(target, v32 >> 16);
@@ -6111,6 +6120,7 @@ static void prog_softdds_freq(
 	spi_progval8_p2(target, v32 >> 0);
 	spi_complete(target);
 	spi_unselect(target);	/* done sending data to target chip */
+	spi_operate_unlock(irql);
 
 #else
 	i2c_start(targetdds1 == targetdds1 ? 0xf8 : 0xf0);	// addr+wr
@@ -7727,9 +7737,7 @@ board_fpga_fir_complete(void)
 static void
 board_fpga_fir_connect(IRQL_t * oldIrql)
 {
-#if WITHSPILOWSUPPORTT
 	spi_operate_lock(oldIrql);
-#endif /* WITHSPILOWSUPPORTT */
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
 
@@ -7779,9 +7787,7 @@ board_fpga_fir_disconnect(IRQL_t irql)
 	hardware_spi_disconnect();
 #else /* WITHSPIHW */
 #endif
-#if WITHSPILOWSUPPORTT
 	spi_operate_unlock(irql);
-#endif /* WITHSPILOWSUPPORTT */
 }
 
 /*
@@ -10629,9 +10635,7 @@ static void fpga_prog_shift(uint8_t addr, uint8_t val)
 	RBVAL8(040, addr);
 	RBVAL8(000, val);
 
-	spi_select(targetfpga1, CTLREG_SPIMODE);
 	board_fpga1_spi_send_frame(targetfpga1, rbbuff, ARRAY_SIZE(rbbuff));
-	spi_unselect(targetfpga1);
 }
 
 uint8_t iq_shift_cic_rx(uint8_t val)
