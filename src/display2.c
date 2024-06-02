@@ -6343,7 +6343,7 @@ display2_bars_tx(
 		uint_fast8_t pwrtrace;
 		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
 		adcvalholder_t reflected;
-		const adcvalholder_t forward = board_getswrmeter(& reflected, swrcalibr);
+		const adcvalholder_t forward = board_getswrmeter_cached(& reflected, swrcalibr);
 		#if WITHSHOWSWRPWR
 			display_swrmeter(x, y, forward, reflected, minforward);
 			display_pwrmeter(x, y, pwr, pwrtrace, maxpwrcali);

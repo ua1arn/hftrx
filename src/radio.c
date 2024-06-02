@@ -5409,30 +5409,12 @@ static void tuner_waitadc(void)
 
 static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
-	adcvalholder_t r0;
-	const adcvalholder_t f0 = board_getswrmeter_unfiltered(& r0, swrcalibr);
-	adcvalholder_t r1;
-	const adcvalholder_t f1 = board_getswrmeter_unfiltered(& r1, swrcalibr);
-	adcvalholder_t r2;
-	const adcvalholder_t f2 = board_getswrmeter_unfiltered(& r2, swrcalibr);
-	adcvalholder_t r3;
-	const adcvalholder_t f3 = board_getswrmeter_unfiltered(& r3, swrcalibr);
-	adcvalholder_t r4;
-	const adcvalholder_t f4 = board_getswrmeter_unfiltered(& r4, swrcalibr);
-	adcvalholder_t r5;
-	const adcvalholder_t f5 = board_getswrmeter_unfiltered(& r5, swrcalibr);
-	adcvalholder_t r6;
-	const adcvalholder_t f6 = board_getswrmeter_unfiltered(& r6, swrcalibr);
-	adcvalholder_t r7;
-	const adcvalholder_t f7 = board_getswrmeter_unfiltered(& r7, swrcalibr);
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
-
-	const adcvalholder_t r = r0 + r1 + r2 + r3 + r4 + r5 + r6 + r7;
-	const adcvalholder_t f = f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7;
+	adcvalholder_t r;
+	const adcvalholder_t f = board_getswrpair_filtered(& r, swrcalibr);
 	* pr = r;
 	* pf = f;
 
-	//PRINTF("f:%d,%d,%d,%d,%d,%d,%d,%d r:%d,%d,%d,%d,%d,%d,%d,%d\n", f0, f1, f2, f3, f4, f5, f6, f7, r0, r1, r2, r3, r4, r5, r6, r7);
 	if (f < minforward)
 		return 0;	// SWR=1
 	else if (f <= r)
@@ -14338,7 +14320,7 @@ static uint_fast8_t kenwoodswrmeter(void)
 
 	//enum { FS = SWRMIN * 15 / 10 };	// swr=1.0..4.0
 	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrmeter(& r, swrcalibr);
+	const adcvalholder_t f = board_getswrmeter_cached(& r, swrcalibr);
 	//const uint_fast16_t fullscale = FS - SWRMIN;
 	uint_fast16_t swr10;		// рассчитанное  значение
 	if (f < minforward)
@@ -16142,7 +16124,7 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
 	adcvalholder_t forward, reflected;
 
-	forward = board_getswrmeter_unfiltered(& reflected, swrcalibr);
+	forward = board_getswrpair_filtered(& reflected, swrcalibr);
 
 								// рассчитанное  значение
 	if (forward < minforward)
@@ -16178,7 +16160,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
 	//PRINTF("gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower() == 0, get_swr(40));
-	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
+	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= (40 - SWRMIN))	// SWR >= 4.0
 		return 1;
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	//PRINTF("tx ok\n");

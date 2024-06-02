@@ -298,13 +298,13 @@ void nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len);
 unsigned nvram_tlv_getparam(unsigned * base);
 
 /* получить значение forward & reflected ADC */
-adcvalholder_t board_getswrmeter(
-	adcvalholder_t * reflected, 	// в знаяениях АЦП
+adcvalholder_t board_getswrmeter_cached(
+	adcvalholder_t * reflected, 	// в значениях АЦП
 	uint_fast8_t swrcalibr	// 90..110 - коррекция
 	);
 /* получить значение forward & reflected ADC - для работы автотюнера */
-adcvalholder_t board_getswrmeter_unfiltered(
-	adcvalholder_t * reflected, 	// в знаяениях АЦП
+adcvalholder_t board_getswrpair_filtered(
+	adcvalholder_t * reflected, 	// в значениях АЦП
 	uint_fast8_t swrcalibr	// 90..110 - коррекция
 	);	
 uint_fast8_t board_getpwrmeter(
