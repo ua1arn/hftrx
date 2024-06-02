@@ -1416,7 +1416,11 @@ typedef struct GPU_MMU_Type
 /*!< HDMI_PHY  */
 typedef struct HDMI_PHY_Type
 {
-             uint32_t reserved_0x000 [0x0008];
+    volatile uint32_t POL;                            /*!< Offset 0x000 Polarity control */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t READ_EN;                        /*!< Offset 0x010 READ_EN */
+    volatile uint32_t UNSCRAMBLE;                     /*!< Offset 0x014 UNSCRAMBLE */
+             uint32_t reserved_0x018 [0x0002];
     volatile uint32_t ANA_CFG1;                       /*!< Offset 0x020 ANA_CFG1 */
     volatile uint32_t ANA_CFG2;                       /*!< Offset 0x024 ANA_CFG2 */
     volatile uint32_t ANA_CFG3;                       /*!< Offset 0x028 ANA_CFG3 */
@@ -1427,7 +1431,7 @@ typedef struct HDMI_PHY_Type
     volatile uint32_t CEC;                            /*!< Offset 0x03C CEC */
              uint32_t reserved_0x040 [0x03EE];
     volatile uint32_t CEC_VERSION;                    /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
-    volatile uint32_t PHY_VERSION;                    /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
+    volatile uint32_t VERSION;                        /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
 } HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief I2S_PCM

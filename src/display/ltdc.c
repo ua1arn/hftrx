@@ -2673,7 +2673,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
     PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    PRINTF("HDMI_PHY->PHY_VERSION=%08X\n", (unsigned) HDMI_PHY->PHY_VERSION);
+    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
 
 
 #endif /* WITHHDMITVHW */

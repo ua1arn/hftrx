@@ -6911,6 +6911,33 @@
   <baseAddress>0x06010000</baseAddress>
   <registers>
    <register>
+    <name>POL</name>
+    <displayName>POL</displayName>
+    <description>Polarity control</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>READ_EN</name>
+    <displayName>READ_EN</displayName>
+    <description>READ_EN</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UNSCRAMBLE</name>
+    <displayName>UNSCRAMBLE</displayName>
+    <description>UNSCRAMBLE</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>ANA_CFG1</name>
     <displayName>ANA_CFG1</displayName>
     <description>ANA_CFG1</description>
@@ -6992,8 +7019,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PHY_VERSION</name>
-    <displayName>PHY_VERSION</displayName>
+    <name>VERSION</name>
+    <displayName>VERSION</displayName>
     <description>PHY Version Register(Default Value: 0x0101_0000)</description>
     <addressOffset>0xFFC</addressOffset>
     <size>0x20</size>
