@@ -1434,6 +1434,79 @@ typedef struct HDMI_PHY_Type
     volatile uint32_t VERSION;                        /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
 } HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
 /*
+ * @brief HDMI_TX
+ */
+/*!< HDMI_TX  */
+typedef struct HDMI_TX_Type
+{
+             uint32_t reserved_0x000 [0x0080];
+    volatile uint8_t  HDMI_TX_INVID0;                 /*!< Offset 0x200 TBD */
+    volatile uint8_t  HDMI_TX_INSTUFFING;             /*!< Offset 0x201 TBD */
+             uint32_t reserved_0x202 [0x0180];
+    volatile uint8_t  HDMI_VP_STUFF;                  /*!< Offset 0x802 TBD */
+             uint8_t reserved_0x803 [0x0001];
+    volatile uint8_t  HDMI_VP_CONF;                   /*!< Offset 0x804 TBD */
+             uint8_t reserved_0x805 [0x07FB];
+    volatile uint8_t  HDMI_FC_INVIDCONF;              /*!< Offset 0x1000 TBD */
+    volatile uint8_t  HDMI_FC_INHACTIV0;              /*!< Offset 0x1001 TBD */
+    volatile uint8_t  HDMI_FC_INHACTIV1;              /*!< Offset 0x1002 TBD */
+    volatile uint8_t  HDMI_FC_INHBLANK0;              /*!< Offset 0x1003 TBD */
+    volatile uint8_t  HDMI_FC_INHBLANK1;              /*!< Offset 0x1004 TBD */
+    volatile uint8_t  HDMI_FC_INVACTIV0;              /*!< Offset 0x1005 TBD */
+    volatile uint8_t  HDMI_FC_INVACTIV1;              /*!< Offset 0x1006 TBD */
+    volatile uint8_t  HDMI_FC_INVBLANK;               /*!< Offset 0x1007 TBD */
+    volatile uint8_t  HDMI_FC_HSYNCINDELAY0;          /*!< Offset 0x1008 TBD */
+    volatile uint8_t  HDMI_FC_HSYNCINDELAY1;          /*!< Offset 0x1009 TBD */
+    volatile uint8_t  HDMI_FC_HSYNCINWIDTH0;          /*!< Offset 0x100A TBD */
+    volatile uint8_t  HDMI_FC_HSYNCINWIDTH1;          /*!< Offset 0x100B TBD */
+    volatile uint8_t  HDMI_FC_VSYNCINDELAY;           /*!< Offset 0x100C TBD */
+    volatile uint8_t  HDMI_FC_VSYNCINWIDTH;           /*!< Offset 0x100D TBD */
+             uint8_t reserved_0x100E [0x0003];
+    volatile uint8_t  HDMI_FC_CTRLDUR;                /*!< Offset 0x1011 TBD */
+    volatile uint8_t  HDMI_FC_EXCTRLDUR;              /*!< Offset 0x1012 TBD */
+    volatile uint8_t  HDMI_FC_EXCTRLSPAC;             /*!< Offset 0x1013 TBD */
+    volatile uint8_t  HDMI_FC_CH0PREAM;               /*!< Offset 0x1014 TBD */
+    volatile uint8_t  HDMI_FC_CH1PREAM;               /*!< Offset 0x1015 TBD */
+    volatile uint8_t  HDMI_FC_CH2PREAM;               /*!< Offset 0x1016 TBD */
+             uint8_t reserved_0x1017 [0x000E];
+    volatile uint8_t  HDMI_FC_AUDIOCONF0;             /*!< Offset 0x1025 TBD */
+    volatile uint8_t  HDMI_FC_AUDIOCONF1;             /*!< Offset 0x1026 TBD */
+    volatile uint8_t  HDMI_FC_AUDIOCONF2;             /*!< Offset 0x1027 TBD */
+    volatile uint8_t  HDMI_FC_AUDIOCONF3;             /*!< Offset 0x1028 TBD */
+             uint8_t reserved_0x1029 [0x003A];
+    volatile uint8_t  HDMI_FC_AUDSCONF;               /*!< Offset 0x1063 TBD */
+             uint8_t reserved_0x1064 [0x0001];
+    volatile uint8_t  HDMI_FC_AUDSV;                  /*!< Offset 0x1065 TBD */
+    volatile uint8_t  HDMI_FC_AUDSU;                  /*!< Offset 0x1066 TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL0;              /*!< Offset 0x1067 TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL1;              /*!< Offset 0x1068 TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL2;              /*!< Offset 0x1069 TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL3;              /*!< Offset 0x106A TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL4;              /*!< Offset 0x106B TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL5;              /*!< Offset 0x106C TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL6;              /*!< Offset 0x106D TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL7;              /*!< Offset 0x106E TBD */
+    volatile uint8_t  HDMI_FC_AUDSCHNL8;              /*!< Offset 0x106F TBD */
+             uint32_t reserved_0x1070 [0x0824];
+    volatile uint8_t  HDMI_AUD_CONF0;                 /*!< Offset 0x3100 TBD */
+    volatile uint8_t  HDMI_AUD_CONF1;                 /*!< Offset 0x3101 TBD */
+    volatile uint8_t  HDMI_AUD_INT;                   /*!< Offset 0x3102 TBD */
+    volatile uint8_t  HDMI_AUD_CONF2;                 /*!< Offset 0x3103 TBD */
+             uint32_t reserved_0x3104 [0x003F];
+    volatile uint8_t  HDMI_AUD_N1;                    /*!< Offset 0x3200 TBD */
+    volatile uint8_t  HDMI_AUD_N2;                    /*!< Offset 0x3201 TBD */
+    volatile uint8_t  HDMI_AUD_N3;                    /*!< Offset 0x3202 TBD */
+    volatile uint8_t  HDMI_AUD_CTS1;                  /*!< Offset 0x3203 TBD */
+    volatile uint8_t  HDMI_AUD_CTS2;                  /*!< Offset 0x3204 TBD */
+    volatile uint8_t  HDMI_AUD_CTS3;                  /*!< Offset 0x3205 TBD */
+    volatile uint8_t  HDMI_AUD_INPUTCLKFS;            /*!< Offset 0x3206 TBD */
+             uint8_t reserved_0x3207 [0x0DFA];
+    volatile uint8_t  HDMI_MC_CLKDIS;                 /*!< Offset 0x4001 TBD */
+    volatile uint8_t  HDMI_MC_SWRSTZREQ;              /*!< Offset 0x4002 TBD */
+             uint8_t reserved_0x4003 [0x0001];
+    volatile uint8_t  HDMI_MC_FLOWCTRL;               /*!< Offset 0x4004 TBD */
+} HDMI_TX_TypeDef; /* size of structure = 0x4005 */
+/*
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
@@ -2653,6 +2726,7 @@ typedef struct VE_Type
 #define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
 #define USBPHYC3 ((USBPHYC_TypeDef *) USBPHYC3_BASE)  /*!< USBPHYC3 HCI Contgroller and PHY Interface Description register set access pointer */
+#define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define HDMI_PHY ((HDMI_PHY_TypeDef *) HDMI_PHY_BASE) /*!< HDMI_PHY  register set access pointer */
 #define DISP_IF_TOP ((DISP_IF_TOP_TypeDef *) DISP_IF_TOP_BASE)/*!< DISP_IF_TOP display interface top (DISP_IF_TOP) register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
