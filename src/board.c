@@ -8624,7 +8624,7 @@ static void ua1cei_magloop_initialize(void)
 {
 	static uint8_t txb [2048];
 	static uint8_t rxb [512];
-	const uint_fast32_t baudrate = UINT32_C(9600);
+	const uint_fast32_t baudrate = WITHMGLOOP_BAUDRATE;
 
 	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
