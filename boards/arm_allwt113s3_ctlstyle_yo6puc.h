@@ -599,7 +599,7 @@
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-		#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
+		
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 

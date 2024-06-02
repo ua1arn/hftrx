@@ -524,7 +524,7 @@
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
 
 //	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-//	#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
+//	
 
 	#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 	#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада с помощью двух каналов ацп (средняя точка) */

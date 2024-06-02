@@ -2977,6 +2977,185 @@ static const FLASHMEM struct menudef menutable [] =
 		& gbandf2adj [15].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHPACLASSA
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [0].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [1].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [2].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [3].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [4].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [5].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [6].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [7].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [8].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [9].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [10].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [11].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [12].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [13].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [14].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("CA ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gbandf2adj_classa [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [15].adj_classa,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+#endif /* WITHPACLASSA */
 
 	{
 		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
@@ -3057,16 +3236,6 @@ static const FLASHMEM struct menudef menutable [] =
 			nvramoffs0,
 			NULL,
 			& gclassamode,
-			getzerobase,
-		},
-		{
-			QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-			ITEM_VALUE,
-			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-			OFFSETOF(struct nvmap, gclassapower),
-			nvramoffs0,
-			NULL,
-			& gclassapower,
 			getzerobase,
 		},
 	#endif /* WITHPACLASSA */

@@ -129,10 +129,6 @@
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	
-	
-	
-	#define WITHPOWERTRIMCLASSA 20	// Значение для работы в классе A
-	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
 

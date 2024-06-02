@@ -128,11 +128,6 @@
 	#define CTLREGMODE_STORCH_V6	1	/* TFT 4.3" "Воронёнок" с DSP и FPGA, SD-CARD, dual watch - mini RX */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	
-	
-	
-	#define WITHPOWERTRIMCLASSA 20	// Значение для работы в классе A
-	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
 

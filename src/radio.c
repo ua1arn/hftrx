@@ -3013,12 +3013,14 @@ struct nvmap
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
 	uint8_t gbandf2adj_a [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	uint8_t gbandf2adj_b [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
+#if WITHPACLASSA
+	uint8_t gbandf2adj_classa [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика в режиме CLASSA*/
+#endif /* WITHPACLASSA */
 	#if WITHPOWERLPHP
 		uint8_t gpwri;		// индекс в pwrmodes - мощность при обычной работе
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
 	#elif WITHPOWERTRIM
 		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
-		uint8_t gclassapower;/* мощность при работе в классе А WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 		uint8_t gclassamode;	/* использование режима клвсс А при передаче */
 		uint8_t gtunepower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	#endif /* WITHPOWERLPHP, WITHPOWERTRIM */
@@ -4231,28 +4233,32 @@ enum
 		{
 			uint_fast8_t adj_a;	/* 10%	*/
 			uint_fast8_t adj_b;	/* 100% */
+#if WITHPACLASSA
+			uint_fast8_t adj_classa;	/* 100% */
+#endif /* WITHPACLASSA */
 		};
 		static struct pwradj gbandf2adj [NUMLPFADJ]; /* коррекция мощности по ФНЧ передачика */
 
-	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
-	static void
-	bandf2adjust_initialize(void)
-	{
-		uint_fast8_t i;
-
-		for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
+		/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+		static void
+		bandf2adjust_initialize(void)
 		{
-			gbandf2adj [i].adj_a = 20;
-			gbandf2adj [i].adj_b = 100;
+			uint_fast8_t i;
+
+			for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
+			{
+				gbandf2adj [i].adj_a = 20;
+				gbandf2adj [i].adj_b = 100;
+#if WITHPACLASSA
+				gbandf2adj [i].adj_classa = 100;
+#endif /* WITHPACLASSA */
+			}
 		}
-	}
 
 	#if WITHPOWERTRIM
 		#if WITHPACLASSA
-			static uint_fast8_t gclassapower = WITHPOWERTRIMCLASSA;
 			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#else /* WITHPACLASSA */
-			static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
 		#endif /* WITHPACLASSA */
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		#if WITHLOWPOWEREXTTUNE
@@ -4272,11 +4278,9 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 		#endif /* WITHLOWPOWEREXTTUNE */
-		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 	#else
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
-		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
 		enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
@@ -9318,11 +9322,16 @@ getactualdownpower(void)
 static uint_fast8_t
 makebandf2adjust(
 	uint_fast8_t lpfno, 	// 0..15 - код диапазона
-	int amplitude	// 0..100 - относительная мощность
+	int amplitude	// 0..WITHPOWERTRIMMAX 0..100 - относительная мощность
 	)
 {
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
 		return amplitude;
+
+#if WITHPACLASSA
+	if (gclassamode)
+		return gbandf2adj [lpfno].adj_classa * amplitude / WITHPOWERTRIMMAX;
+#endif /* WITHPACLASSA */
 
 	// расчет наклона графика
 	const int a_ref = 31;	// значение множителя для точки а - sqrt(10000)
@@ -9346,7 +9355,7 @@ makebandf2adjust(
 static uint_fast8_t
 getactualtxpwr(void)
 {
-	return getactualdownpower() ? gtunepower : ((gclassamode ? gclassapower : WITHPOWERTRIMMAX) * gnormalpower.value / WITHPOWERTRIMMAX);
+	return getactualdownpower() ? gtunepower : gnormalpower.value;
 }
 
 /* Возвращает 0..WITHPOWERTRIMMAX */
@@ -9356,6 +9365,22 @@ getactualtxampl(void)
 #if WITHPOWERTRIM
 	unsigned v = getactualtxpwr();
 	return sqrtf((float) v / WITHPOWERTRIMMAX) * WITHPOWERTRIMMAX;
+
+#elif WITHPOWERLPHP
+	return WITHPOWERTRIMMAX;
+
+#else
+	return WITHPOWERTRIMMAX;
+
+#endif /* WITHPOWERLPHP */
+}
+
+/* Возвращает  BOARDPOWERMIN..BOARDPOWERMAX */
+static uint_fast8_t
+getactualtxboard(void)
+{
+#if WITHPOWERTRIM
+	return BOARDPOWERMAX;
 
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика BOARDPOWERMIN..BOARDPOWERMAX */
@@ -11284,7 +11309,7 @@ updateboardZZZ(
 			#endif /* WITHVOX */
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate_P(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
-			board_set_txlevel(getactualtxampl());	/* BOARDPOWERMIN..BOARDPOWERMAX */
+			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 		#if WITHPABIASTRIM
 			board_set_pabias(gpabias);	/* регулировка тока покоя оконечного каскада передатчика */
@@ -11532,7 +11557,7 @@ updateboardZZZ(
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * (int) gdacscale);
+			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * (int) gdacscale);	// BOARDDACSCALEMAX
 
 			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
