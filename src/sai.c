@@ -3773,7 +3773,8 @@ void T507_iq_fifo_handler(void)
 	    			addr = allocate_dmabuffer32rx();
 	    			n = 0;
 	    		}
-            	unsigned chunk = ulmin16(DMABUFFSIZE32RX - n, 8);
+	    		const unsigned cnt = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;
+	            const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32RX - n, 8));
             	switch (chunk)
             	{
             	case 8:
