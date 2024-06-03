@@ -3747,11 +3747,7 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
 	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
 
-#if 0 && CTLSTYLE_V3D
-	subscribefloat(& afdemodoutfloat, & afspectreregister, NULL, afsp_save_sample);
-#else
 	subscribefloat(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
-#endif /* CTLSTYLE_V3D */
 }
 
 
