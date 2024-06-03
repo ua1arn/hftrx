@@ -3739,77 +3739,120 @@ static unsigned getAPBIFtx(unsigned ix)
 	return 2;
 }
 
-void T507_iq_fifo_handler(void)
+void T507_AHUB_handler(void)
 {
-	unsigned ix = 0;	// I2S0
+	unsigned ix = 0;	// 0: I2S0
+	if (1)
 	{
 		// TX (to AHUB) stream
 		const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
-		const uint_fast32_t sts = AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS;
-	    if (sts & (UINT32_C(1) << 0))	// TXnE_INT
-	    {
-	    	 AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS = (UINT32_C(1) << 0);	// Clear TXnE_INT interrupt
+		volatile uint32_t * const fifo = & AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO;
 
-	    	 // TBD
-	    }
+		while (AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & (UINT32_C(1) << 8))	// TXnE
+		{
+			static unsigned n;
+			static uintptr_t addr;
+
+			if (addr == 0)
+			{
+				addr = getfilled_dmabuffer32tx();
+				n = 0;
+			}
+
+			const unsigned cnt = AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & 0x7F;	// TXnE_CNT TXFIFO Empty Space Word Counte
+			const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32TX - n, 8));
+			switch (chunk)
+			{
+			case 8:
+				* fifo = ((IFDACvalue_t *) addr) [n + 0];
+				* fifo = ((IFDACvalue_t *) addr) [n + 1];
+				* fifo = ((IFDACvalue_t *) addr) [n + 2];
+				* fifo = ((IFDACvalue_t *) addr) [n + 3];
+				* fifo = ((IFDACvalue_t *) addr) [n + 4];
+				* fifo = ((IFDACvalue_t *) addr) [n + 5];
+				* fifo = ((IFDACvalue_t *) addr) [n + 6];
+				* fifo = ((IFDACvalue_t *) addr) [n + 7];
+				n += 8;
+				break;
+			case 7:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+			case 6:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+			case 5:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+			case 4:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+			case 3:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+			case 2:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+			case 1:
+				* fifo = ((IFDACvalue_t *) addr) [n ++];
+				break;
+			}
+
+			if (n >= DMABUFFSIZE32TX)
+			{
+				release_dmabuffer32tx(addr);
+				addr = 0;
+			}
+		}
 	}
+	if (1)
 	{
 		// RX (from AHUB) stream
 		const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
-		const uint_fast32_t sts = AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS;
 		volatile uint32_t * const fifo = & AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
 
-	    if (sts & (UINT32_C(1) << 0))	// RXnA_INT
-	    {
-            AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = (UINT32_C(1) << 0);    // Clear RXnA_INT interrupt
+		while (AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & (UINT32_C(1) << 8))	// RXnA
+		{
+			static unsigned n;
+			static uintptr_t addr;
 
-            while (AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & (UINT32_C(1) << 8))	// RXnA
-	    	{
-	    		static unsigned n;
-	    		static uintptr_t addr;
+			if (addr == 0)
+			{
+				addr = allocate_dmabuffer32rx();
+				n = 0;
+			}
 
-	    		if (addr == 0)
-	    		{
-	    			addr = allocate_dmabuffer32rx();
-	    			n = 0;
-	    		}
-	    		const unsigned cnt = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;
-	            const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32RX - n, 8));
-            	switch (chunk)
-            	{
-            	case 8:
-    	    		((uint32_t *) addr) [n + 0] = * fifo;
-       	    		((uint32_t *) addr) [n + 1] = * fifo;
-       	    		((uint32_t *) addr) [n + 2] = * fifo;
-       	    		((uint32_t *) addr) [n + 3] = * fifo;
-       	    		((uint32_t *) addr) [n + 4] = * fifo;
-       	    		((uint32_t *) addr) [n + 5] = * fifo;
-       	    		((uint32_t *) addr) [n + 6] = * fifo;
-       	    		((uint32_t *) addr) [n + 7] = * fifo;
-    	    		n += 8;
-    	    		break;
-            	case 7:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	case 6:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	case 5:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	case 4:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	case 3:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	case 2:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	case 1:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
-            	}
-	    		if (n >= DMABUFFSIZE32RX)
-	    		{
-	    			save_dmabuffer32rx(addr);
-	    			addr = 0;
-	    		}
-	    	}
-	    }
+			const unsigned cnt = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;	// RXnA_CNT
+			const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32RX - n, 8));
+			switch (chunk)
+			{
+			case 8:
+				((IFADCvalue_t *) addr) [n + 0] = * fifo;
+				((IFADCvalue_t *) addr) [n + 1] = * fifo;
+				((IFADCvalue_t *) addr) [n + 2] = * fifo;
+				((IFADCvalue_t *) addr) [n + 3] = * fifo;
+				((IFADCvalue_t *) addr) [n + 4] = * fifo;
+				((IFADCvalue_t *) addr) [n + 5] = * fifo;
+				((IFADCvalue_t *) addr) [n + 6] = * fifo;
+				((IFADCvalue_t *) addr) [n + 7] = * fifo;
+				n += 8;
+				break;
+			case 7:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 6:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 5:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 4:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 3:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 2:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 1:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+				break;
+			}
+
+			if (n >= DMABUFFSIZE32RX)
+			{
+				save_dmabuffer32rx(addr);
+				addr = 0;
+			}
+		}
 	}
 }
 
@@ -3991,7 +4034,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	if (! useDMA)
 	{
-	    arm_hardware_set_handler_realtime(AHUB_IRQn, T507_iq_fifo_handler);
+	    arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
 	}
 
 	if (1)
