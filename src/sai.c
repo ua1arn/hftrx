@@ -3759,7 +3759,7 @@ void T507_AHUB_handler(void)
 				n = 0;
 			}
 
-			const unsigned cnt = AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & 0x7F;	// TXnE_CNT TXFIFO Empty Space Word Counte
+			const unsigned cnt = AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & 0x7F;	// TXnE_CNT TXFIFO Empty Space Word Counter
 			const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32TX - n, 8));
 			switch (chunk)
 			{
