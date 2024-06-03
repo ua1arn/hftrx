@@ -2214,6 +2214,18 @@ void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(vo
 }
 
 // Set interrupt vector wrapper
+void arm_hardware_set_handler_realtime2(uint_fast16_t int_id, void (* handler)(void))
+{
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU_RT2);
+}
+
+// Set interrupt vector wrapper
+void arm_hardware_set_handler_realtime3(uint_fast16_t int_id, void (* handler)(void))
+{
+	arm_hardware_set_handler(int_id, handler, ARM_REALTIME_PRIORITY, TARGETCPU_RT3);
+}
+
+// Set interrupt vector wrapper
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void))
 {
 	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);

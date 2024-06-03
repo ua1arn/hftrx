@@ -166,6 +166,8 @@ void LowerIrql(IRQL_t newIRQL);
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT 	(1u << 1)		// CPU #1
+	#define TARGETCPU_RT2	(1u << 2)		// CPU #2
+	#define TARGETCPU_RT3 	(1u << 3)		// CPU #3
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
 	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
 	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
