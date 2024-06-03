@@ -21,8 +21,8 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-_XFEL = ../../tools/xfel-windows-v1.3.2/xfel
-XFEL = ./xfel_lpddr4
+XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+_XFEL = ./xfel_lpddr4
 
 #UADEFS += -D"WITHSMPSYSTEM"
 

@@ -3864,7 +3864,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 {
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
-	const int useDMA = 1;
+	const int useDMA = 0;
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 
 	/* Установка формата обмна */
@@ -3892,6 +3892,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// Каналы AHUB[0..1] - RX
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = useDMA * (UINT32_C(1) << 3);	// RXn_DRQ
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = (UINT32_C(1) << 0);	// RXnAI_EN
 
 	// Каналы AHUB[0..1] - TX
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
@@ -4260,8 +4261,11 @@ static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t
 
 #if defined(I2S0) && WITHI2S0HW
 
+void t507_iq_fifo_handler(void);
+
 static void hardware_i2s0_enable(uint_fast8_t state)
 {
+	arm_hardware_set_handler_realtime(AHUB_IRQn, t507_iq_fifo_handler);
 	hardware_i2s_enable(0, I2S0, state);
 }
 
@@ -5207,6 +5211,27 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 #endif
+
+void t507_iq_fifo_handler(void)
+{
+	if (AHUB->APBIF_RX [getAPBIFrx(0)].APBIF_RXnIRQ_STS & 1)
+	{
+		uint32_t cnt = AHUB->APBIF_RX [getAPBIFrx(0)].APBIF_RXnFIFO_STS & 0xFF;
+		if (cnt >= DMABUFFSIZE32RX)
+		{
+			AHUB->APBIF_RX [getAPBIFrx(0)].APBIF_RXnIRQ_STS &= ~1;
+
+			const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, 0);
+			const uintptr_t addr = allocate_dmabuffer32rx();
+			uint32_t * a = (uint32_t *) addr;
+
+			for (int i = 0; i < DMABUFFSIZE32RX; i ++)
+				a[i] = * (uint32_t *) portaddr;
+
+			save_dmabuffer32rx(addr);
+		}
+	}
+}
 
 #if defined(I2S0) && WITHI2S0HW
 static const codechw_t audiocodechw_i2s0_duplex_master =

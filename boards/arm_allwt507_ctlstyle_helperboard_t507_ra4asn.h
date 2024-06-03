@@ -374,6 +374,7 @@
 //			#define WITHLFM					1
 //			#define WITHNMEA				1
 //			#define WITHGNSS				1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
+			#define DMABUFCLUSTER			7
 		#endif
 	#endif
 
