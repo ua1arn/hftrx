@@ -3725,11 +3725,48 @@ static unsigned getAPBIFtx(unsigned ix)
 	return 2;
 }
 
+void T507_iq_fifo_handler(void)
+{
+	unsigned ix = 0;	// I2S0
+	{
+		// TX (to AHUB) stream
+		const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+		const uint_fast32_t sts = AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS;
+	    if (sts & (UINT32_C(1) << 0))	// TXnE_INT
+	    {
+	    	 AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS = (UINT32_C(1) << 0);	// Clear TXnE_INT interrupt
+
+	    	 // TBD
+	    }
+	}
+	{
+		// RX (from AHUB) stream
+		const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
+		const uint_fast32_t sts = AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS;
+
+	    if (sts & (UINT32_C(1) << 0))	// RXnA_INT
+	    {
+	    	uint_fast32_t cnt = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;
+	        if (cnt >= DMABUFFSIZE32RX)
+	        {
+				AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = (UINT32_C(1) << 0);	// Clear RXnA_INT interrupt
+
+				const uintptr_t addr = allocate_dmabuffer32rx();
+				uint32_t * a = (uint32_t *) addr;
+
+				for (int i = 0; i < DMABUFFSIZE32RX; i ++)
+					a[i] = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
+
+				save_dmabuffer32rx(addr);
+	        }
+	    }
+	}
+}
 
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 
-static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
+static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits)
 {
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
@@ -3860,11 +3897,10 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 #endif
 }
 
-static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout)
+static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits, unsigned din, unsigned dout, int useDMA)
 {
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
-	const int useDMA = 1;
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 
 	/* Установка формата обмна */
@@ -3896,6 +3932,11 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	// Каналы AHUB[0..1] - TX
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL = useDMA * (UINT32_C(1) << 3);	// TXn_DRQ
+
+	if (! useDMA)
+	{
+	    arm_hardware_set_handler_realtime(AHUB_IRQn, T507_iq_fifo_handler);
+	}
 
 	if (1)
 	{
@@ -4170,6 +4211,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		1 * (UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
 		0;
 
+	if (! useDMA)
+	{
+		ASSERT(ix >= 1);
+	    //arm_hardware_set_handler_realtime(I2S_PCM1_IRQn + ix - 1, t113_iq_fifo_handler);
+	}
+
 #if WITHFPGAIF_FRAMEBITS == 64 && WITHFPGAIF_USE_I2S_DIN12 == 1
 	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (UINT32_C(1) << 20) |	// RX_OFFSET (need for I2S mode)
@@ -4269,16 +4316,16 @@ static void hardware_i2s0_enable(uint_fast8_t state)
 static void hardware_i2s0_master_duplex_initialize_codec1(void)
 {
 	const int master = 1;
-	hardware_i2s_clock(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	hardware_i2s_initialize(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	hardware_i2s_clock(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS);
+	hardware_i2s_initialize(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT, HARDWARE_I2S0HW_USEDMA);
 	I2S0HW_INITIALIZE(master);
 }
 
 static void hardware_i2s0_slave_duplex_initialize_codec1(void)
 {
 	const int master = 0;
-	hardware_i2s_clock(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	hardware_i2s_initialize(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	hardware_i2s_clock(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS);
+	hardware_i2s_initialize(0, I2S0, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT, HARDWARE_I2S0HW_USEDMA);
 	I2S0HW_INITIALIZE(master);
 }
 
@@ -4286,16 +4333,16 @@ static void hardware_i2s0_slave_duplex_initialize_codec1(void)
 static void hardware_i2s0_master_duplex_initialize_fpga(void)
 {
 	const int master = 1;
-	hardware_i2s_clock(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	hardware_i2s_initialize(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	hardware_i2s_clock(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS);
+	hardware_i2s_initialize(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT, HARDWARE_I2S0HW_USEDMA);
 	I2S0HW_INITIALIZE(master);
 }
 
 static void hardware_i2s0_slave_duplex_initialize_fpga(void)
 {
 	const int master = 0;
-	hardware_i2s_clock(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
-	hardware_i2s_initialize(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT);
+	hardware_i2s_clock(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS);
+	hardware_i2s_initialize(0, I2S0, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S0HW_DIN, HARDWARE_I2S0HW_DOUT, HARDWARE_I2S0HW_USEDMA);
 	I2S0HW_INITIALIZE(master);
 }
 
@@ -4312,24 +4359,24 @@ static void hardware_i2s1_enable(uint_fast8_t state)
 static void hardware_i2s1_master_duplex_initialize_codec1(void)
 {
 	const int master = 1;
-	hardware_i2s_clock(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	hardware_i2s_initialize(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_clock(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS);
+	hardware_i2s_initialize(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT, HARDWARE_I2S1HW_USEDMA);
 	I2S1HW_INITIALIZE(master);
 }
 
 static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
 	const int master = 0;
-	hardware_i2s_clock(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	hardware_i2s_initialize(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_clock(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS);
+	hardware_i2s_initialize(1, I2S1, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT, HARDWARE_I2S1HW_USEDMA);
 	I2S1HW_INITIALIZE(master);
 }
 
 static void hardware_i2s1_slave_duplex_initialize_fpga(void)
 {
 	const int master = 0;
-	hardware_i2s_clock(1, I2S1, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
-	hardware_i2s_initialize(1, I2S1, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT);
+	hardware_i2s_clock(1, I2S1, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS);
+	hardware_i2s_initialize(1, I2S1, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S1HW_DIN, HARDWARE_I2S1HW_DOUT, HARDWARE_I2S1HW_USEDMA);
 	I2S1HW_INITIALIZE(master);
 }
 
@@ -4345,24 +4392,24 @@ static void hardware_i2s2_enable(uint_fast8_t state)
 static void hardware_i2s2_slave_duplex_initialize_codec1(void)
 {
 	const int master = 0;
-	hardware_i2s_clock(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_clock(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS);
+	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S1HW_DOUT, HARDWARE_I2S2HW_USEDMA);
 	I2S2HW_INITIALIZE(master);
 }
 
 static void hardware_i2s2_master_duplex_initialize_codec1(void)
 {
 	const int master = 1;
-	hardware_i2s_clock(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_clock(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS);
+	hardware_i2s_initialize(2, I2S2, master, CODEC1_NCH, ARMI2SRATE, CODEC1_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT, HARDWARE_I2S2HW_USEDMA);
 	I2S2HW_INITIALIZE(master);
 }
 
 static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 {
 	const int master = 0;
-	hardware_i2s_clock(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	hardware_i2s_initialize(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_clock(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS);
+	hardware_i2s_initialize(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT, HARDWARE_I2S2HW_USEDMA);
 	I2S2HW_INITIALIZE(master);
 }
 
@@ -4370,8 +4417,8 @@ static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 static void hardware_i2s2_master_duplex_initialize_fpga(void)
 {
 	const int master = 1;
-	hardware_i2s_clock(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
-	hardware_i2s_initialize(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT);
+	hardware_i2s_clock(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS);
+	hardware_i2s_initialize(2, I2S2, master, WITHFPGAIF_FRAMEBITS / 32, ARMSAIRATE, WITHFPGAIF_FRAMEBITS, HARDWARE_I2S2HW_DIN, HARDWARE_I2S2HW_DOUT, HARDWARE_I2S2HW_USEDMA);
 	I2S2HW_INITIALIZE(master);
 }
 
