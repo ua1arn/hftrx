@@ -143,7 +143,7 @@ void user_uart5_ontxchar(void * ctx);
 		//#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
-		//#defie HARDWARE_I2S0HW_USEDMA 0	// test
+		//#define HARDWARE_I2S0HW_USEDMA 0	// test
 
 		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
