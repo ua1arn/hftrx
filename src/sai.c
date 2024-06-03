@@ -3927,11 +3927,17 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	// Каналы AHUB[0..1] - RX
 	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL = useDMA * (UINT32_C(1) << 3);	// RXn_DRQ
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL =
+		!! useDMA * (UINT32_C(1) << 3) |	// RXn_DRQ
+		! useDMA * (UINT32_C(1) << 0) |    // RXnAI_EN
+		0;
 
 	// Каналы AHUB[0..1] - TX
 	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL = useDMA * (UINT32_C(1) << 3);	// TXn_DRQ
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL =
+		!! useDMA * (UINT32_C(1) << 3) |	// TXn_DRQ
+		! useDMA * (UINT32_C(1) << 0) |	// TXnE_INT
+		0;
 
 	if (! useDMA)
 	{
@@ -5602,7 +5608,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	#warning Implement for CPUSTYLE_A64
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
-	#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Default CCU settings:
 	//	AudioCodec: allwnrt113_get_audio0pllhs_freq()=1032000 kHz
