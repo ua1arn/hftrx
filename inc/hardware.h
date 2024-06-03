@@ -1010,8 +1010,6 @@ uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
 uint_fast8_t arm_hardware_clustersize(void);
 void arm_hardware_populte_second_initialize(void);
 
-void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
-
 void hardware_set_dotclock(unsigned long dotfreq);
 unsigned long hardware_get_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
