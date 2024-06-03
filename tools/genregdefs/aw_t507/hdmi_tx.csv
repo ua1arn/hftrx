@@ -1,4 +1,4 @@
-# https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
+## https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
 
 #type; HDMI_TX 
 #base; HDMI_TX0 0x06000000
@@ -73,6 +73,8 @@
 
 #typeend;
 
+## D:\user\Allwinner-H616-develop\kernel\drivers\gpu\drm\sun4i\sun8i_dw_hdmi.h
+
 ##	06010000: 00000000 FFFF0000 00184210 00000002 00000000 000F990B 00000004 00000000
 ##	06010020: 00000F80 0C0040D8 02700203 000C6023 00000000 00000000 00000000 00000000
 ##	06010040: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
@@ -85,10 +87,10 @@
 #type; HDMI_PHY 
 #base; HDMI_PHY 0x06010000
 
-#regdef; POL; 		0x0000; Polarity control
+#regdef; DBG_CTRL; 0x0000; DBG_CTRL
+#regdef; REXT_CTRL; 0x0004; REXT_CTRL
 #regdef; READ_EN; 	0x0010; READ_EN
 #regdef; UNSCRAMBLE; 0x0014; UNSCRAMBLE
-
 #regdef; ANA_CFG1;  0x0020; ANA_CFG1
 #regdef; ANA_CFG2; 0x0024; ANA_CFG2
 #regdef; ANA_CFG3; 0x0028; ANA_CFG3

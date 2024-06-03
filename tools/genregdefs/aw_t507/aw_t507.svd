@@ -6911,10 +6911,19 @@
   <baseAddress>0x06010000</baseAddress>
   <registers>
    <register>
-    <name>POL</name>
-    <displayName>POL</displayName>
-    <description>Polarity control</description>
+    <name>DBG_CTRL</name>
+    <displayName>DBG_CTRL</displayName>
+    <description>DBG_CTRL</description>
     <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>REXT_CTRL</name>
+    <displayName>REXT_CTRL</displayName>
+    <description>REXT_CTRL</description>
+    <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

@@ -1988,6 +1988,141 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 #define RTWB_RCQ_STS_OFFSET          (0x8204)
 #define RTWB_RCQ_CTL_OFFSET          (0x8210)
 
+//
+// D:\user\Allwinner-H616-develop\kernel\drivers\gpu\drm\sun4i\sun8i_dw_hdmi.h
+
+#define SUN8I_HDMI_PHY_DBG_CTRL_REG 0x0000
+#define SUN8I_HDMI_PHY_DBG_CTRL_PX_LOCK BIT(0)
+#define SUN8I_HDMI_PHY_DBG_CTRL_POL_MASK GENMASK(15, 8)
+#define SUN8I_HDMI_PHY_DBG_CTRL_POL_NHSYNC BIT(8)
+#define SUN8I_HDMI_PHY_DBG_CTRL_POL_NVSYNC BIT(9)
+#define SUN8I_HDMI_PHY_DBG_CTRL_ADDR_MASK GENMASK(23, 16)
+#define SUN8I_HDMI_PHY_DBG_CTRL_ADDR(addr) (addr << 16)
+
+#define SUN8I_HDMI_PHY_REXT_CTRL_REG 0x0004
+#define SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN BIT(31)
+
+#define SUN8I_HDMI_PHY_READ_EN_REG 0x0010
+#define SUN8I_HDMI_PHY_READ_EN_MAGIC 0x54524545
+
+#define SUN8I_HDMI_PHY_UNSCRAMBLE_REG 0x0014
+#define SUN8I_HDMI_PHY_UNSCRAMBLE_MAGIC 0x42494E47
+
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG 0x0020
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_SWI BIT(31)
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_PWEND BIT(30)
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_PWENC BIT(29)
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_CALSW BIT(28)
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_SVRCAL(x) ((x) << 26)
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_SVBH(x) ((x) << 24)
+#define SUN8I_HDMI_PHY_ANA_CFG1_AMP_OPT BIT(23)
+#define SUN8I_HDMI_PHY_ANA_CFG1_EMP_OPT BIT(22)
+#define SUN8I_HDMI_PHY_ANA_CFG1_AMPCK_OPT BIT(21)
+#define SUN8I_HDMI_PHY_ANA_CFG1_EMPCK_OPT BIT(20)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENRCAL BIT(19)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENCALOG BIT(18)
+#define SUN8I_HDMI_PHY_ANA_CFG1_REG_SCKTMDS BIT(17)
+#define SUN8I_HDMI_PHY_ANA_CFG1_TMDSCLK_EN BIT(16)
+#define SUN8I_HDMI_PHY_ANA_CFG1_TXEN_MASK GENMASK(15, 12)
+#define SUN8I_HDMI_PHY_ANA_CFG1_TXEN_ALL (0xf << 12)
+#define SUN8I_HDMI_PHY_ANA_CFG1_BIASEN_TMDSCLK BIT(11)
+#define SUN8I_HDMI_PHY_ANA_CFG1_BIASEN_TMDS2 BIT(10)
+#define SUN8I_HDMI_PHY_ANA_CFG1_BIASEN_TMDS1 BIT(9)
+#define SUN8I_HDMI_PHY_ANA_CFG1_BIASEN_TMDS0 BIT(8)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENP2S_TMDSCLK BIT(7)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENP2S_TMDS2 BIT(6)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENP2S_TMDS1 BIT(5)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENP2S_TMDS0 BIT(4)
+#define SUN8I_HDMI_PHY_ANA_CFG1_CKEN BIT(3)
+#define SUN8I_HDMI_PHY_ANA_CFG1_LDOEN BIT(2)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENVBS BIT(1)
+#define SUN8I_HDMI_PHY_ANA_CFG1_ENBI BIT(0)
+
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG 0x0024
+#define SUN8I_HDMI_PHY_ANA_CFG2_M_EN BIT(31)
+#define SUN8I_HDMI_PHY_ANA_CFG2_PLLDBEN BIT(30)
+#define SUN8I_HDMI_PHY_ANA_CFG2_SEN BIT(29)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_HPDPD BIT(28)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_HPDEN BIT(27)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_PLRCK BIT(26)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_PLR(x) ((x) << 23)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_DENCK BIT(22)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_DEN BIT(21)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_CD(x) ((x) << 19)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_CKSS(x) ((x) << 17)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_BIGSWCK BIT(16)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_BIGSW BIT(15)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_CSMPS(x) ((x) << 13)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_SLV(x) ((x) << 10)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_BOOSTCK(x) ((x) << 8)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_BOOST(x) ((x) << 6)
+#define SUN8I_HDMI_PHY_ANA_CFG2_REG_RESDI(x) ((x) << 0)
+
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG 0x0028
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_SLOWCK(x) ((x) << 30)
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_SLOW(x) ((x) << 28)
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_WIRE(x) ((x) << 18)
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_AMPCK(x) ((x) << 14)
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_EMPCK(x) ((x) << 11)
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_AMP(x) ((x) << 7)
+#define SUN8I_HDMI_PHY_ANA_CFG3_REG_EMP(x) ((x) << 4)
+#define SUN8I_HDMI_PHY_ANA_CFG3_SDAPD BIT(3)
+#define SUN8I_HDMI_PHY_ANA_CFG3_SDAEN BIT(2)
+#define SUN8I_HDMI_PHY_ANA_CFG3_SCLPD BIT(1)
+#define SUN8I_HDMI_PHY_ANA_CFG3_SCLEN BIT(0)
+
+#define SUN8I_HDMI_PHY_PLL_CFG1_REG 0x002c
+#define SUN8I_HDMI_PHY_PLL_CFG1_REG_OD1 BIT(31)
+#define SUN8I_HDMI_PHY_PLL_CFG1_REG_OD BIT(30)
+#define SUN8I_HDMI_PHY_PLL_CFG1_LDO2_EN BIT(29)
+#define SUN8I_HDMI_PHY_PLL_CFG1_LDO1_EN BIT(28)
+#define SUN8I_HDMI_PHY_PLL_CFG1_HV_IS_33 BIT(27)
+#define SUN8I_HDMI_PHY_PLL_CFG1_CKIN_SEL_MSK BIT(26)
+#define SUN8I_HDMI_PHY_PLL_CFG1_CKIN_SEL_SHIFT 26
+#define SUN8I_HDMI_PHY_PLL_CFG1_PLLEN BIT(25)
+#define SUN8I_HDMI_PHY_PLL_CFG1_LDO_VSET(x) ((x) << 22)
+#define SUN8I_HDMI_PHY_PLL_CFG1_UNKNOWN(x) ((x) << 20)
+#define SUN8I_HDMI_PHY_PLL_CFG1_PLLDBEN BIT(19)
+#define SUN8I_HDMI_PHY_PLL_CFG1_CS BIT(18)
+#define SUN8I_HDMI_PHY_PLL_CFG1_CP_S(x) ((x) << 13)
+#define SUN8I_HDMI_PHY_PLL_CFG1_CNT_INT(x) ((x) << 7)
+#define SUN8I_HDMI_PHY_PLL_CFG1_BWS BIT(6)
+#define SUN8I_HDMI_PHY_PLL_CFG1_B_IN_MSK GENMASK(5, 0)
+#define SUN8I_HDMI_PHY_PLL_CFG1_B_IN_SHIFT 0
+
+#define SUN8I_HDMI_PHY_PLL_CFG2_REG 0x0030
+#define SUN8I_HDMI_PHY_PLL_CFG2_SV_H BIT(31)
+#define SUN8I_HDMI_PHY_PLL_CFG2_PDCLKSEL(x) ((x) << 29)
+#define SUN8I_HDMI_PHY_PLL_CFG2_CLKSTEP(x) ((x) << 27)
+#define SUN8I_HDMI_PHY_PLL_CFG2_PSET(x) ((x) << 24)
+#define SUN8I_HDMI_PHY_PLL_CFG2_PCLK_SEL BIT(23)
+#define SUN8I_HDMI_PHY_PLL_CFG2_AUTOSYNC_DIS BIT(22)
+#define SUN8I_HDMI_PHY_PLL_CFG2_VREG2_OUT_EN BIT(21)
+#define SUN8I_HDMI_PHY_PLL_CFG2_VREG1_OUT_EN BIT(20)
+#define SUN8I_HDMI_PHY_PLL_CFG2_VCOGAIN_EN BIT(19)
+#define SUN8I_HDMI_PHY_PLL_CFG2_VCOGAIN(x) ((x) << 16)
+#define SUN8I_HDMI_PHY_PLL_CFG2_VCO_S(x) ((x) << 12)
+#define SUN8I_HDMI_PHY_PLL_CFG2_VCO_RST_IN BIT(11)
+#define SUN8I_HDMI_PHY_PLL_CFG2_SINT_FRAC BIT(10)
+#define SUN8I_HDMI_PHY_PLL_CFG2_SDIV2 BIT(9)
+#define SUN8I_HDMI_PHY_PLL_CFG2_S(x) ((x) << 6)
+#define SUN8I_HDMI_PHY_PLL_CFG2_S6P25_7P5 BIT(5)
+#define SUN8I_HDMI_PHY_PLL_CFG2_S5_7 BIT(4)
+#define SUN8I_HDMI_PHY_PLL_CFG2_PREDIV_MSK GENMASK(3, 0)
+#define SUN8I_HDMI_PHY_PLL_CFG2_PREDIV_SHIFT 0
+#define SUN8I_HDMI_PHY_PLL_CFG2_PREDIV(x) (((x)-1) << 0)
+
+#define SUN8I_HDMI_PHY_PLL_CFG3_REG 0x0034
+#define SUN8I_HDMI_PHY_PLL_CFG3_SOUT_DIV2 BIT(0)
+
+#define SUN8I_HDMI_PHY_ANA_STS_REG 0x0038
+#define SUN8I_HDMI_PHY_ANA_STS_B_OUT_SHIFT 11
+#define SUN8I_HDMI_PHY_ANA_STS_B_OUT_MSK GENMASK(16, 11)
+#define SUN8I_HDMI_PHY_ANA_STS_RCALEND2D BIT(7)
+#define SUN8I_HDMI_PHY_ANA_STS_RCAL_MASK GENMASK(5, 0)
+
+#define SUN8I_HDMI_PHY_CEC_REG 0x003c
+
 
 static int32_t de_top_set_chn2core_mux(
 	uint32_t phy_chn, uint32_t phy_disp)
@@ -2071,6 +2206,103 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	return 0;
 }
 
+struct lcd_timing
+{
+	uint16_t hp;
+	uint16_t vp;
+	uint16_t hbp;
+	uint16_t vbp;
+	uint16_t hspw;
+	uint16_t vspw;
+};
+
+static void t507_hdmi_initialize(void)
+{
+
+    	HDMI_PHY->ANA_CFG1 = 0;
+		HDMI_PHY->ANA_CFG1 = 1;
+		local_delay_ms(5);
+		HDMI_PHY->ANA_CFG1 |= (1<<16);
+		HDMI_PHY->ANA_CFG1 |= (1<<1);
+		local_delay_ms(10);
+		HDMI_PHY->ANA_CFG1 |= (1<<2);
+		local_delay_ms(5);
+		HDMI_PHY->ANA_CFG1 |= (1<<3);
+		local_delay_ms(40);
+		HDMI_PHY->ANA_CFG1 |= (1<<19);
+		local_delay_ms(100);
+		HDMI_PHY->ANA_CFG1 |= (1<<18);
+		HDMI_PHY->ANA_CFG1 |= (7<<4);
+	    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
+		TP();
+		while((HDMI_PHY->ANA_STS & 0x80) == 0)
+		  ;
+		local_delay_ms(100);
+		TP();
+		HDMI_PHY->ANA_CFG1 |= (0xf<<4);
+		HDMI_PHY->ANA_CFG1 |= (0xf<<8);
+		HDMI_PHY->ANA_CFG3 |= (1<<0) | (1<<2);
+
+		HDMI_PHY->PLL_CFG1 &= ~(1<<26);
+		HDMI_PHY->CEC = 0;
+
+		HDMI_PHY->PLL_CFG1 = 0x39dc5040;
+		HDMI_PHY->PLL_CFG2 = 0x80084381;
+		local_delay_ms(100);
+		HDMI_PHY->PLL_CFG3 = 1;
+		HDMI_PHY->PLL_CFG1 |= (1<<25);
+		local_delay_ms(100);
+		uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
+		HDMI_PHY->PLL_CFG1 |= (1<<31) | (1<<30) | tmp;
+
+		HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
+		HDMI_PHY->ANA_CFG2 = 0x8063A800;
+		HDMI_PHY->ANA_CFG3 = 0x0F81C485;
+
+		/* enable read access to HDMI controller */
+		HDMI_PHY->READ_EN = 0x54524545;
+		/* descramble register offsets */
+		HDMI_PHY->UNSCRAMBLE = 0x42494E47;
+
+
+		struct lcd_timing timing;	// out parameters
+
+		timing.hp=1024;//LCDX_OUT;///
+		timing.vp=600;//LCDY_OUT;///
+		timing.hbp=300;///
+		timing.vbp=30;///
+		timing.hspw=20;///
+		timing.vspw=8;///
+
+		// HDMI Config, based on the documentation at:
+		// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
+		HDMI_TX0->HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
+		HDMI_TX0->HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
+		HDMI_TX0->HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
+		HDMI_TX0->HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
+		HDMI_TX0->HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
+
+		HDMI_TX0->HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
+		HDMI_TX0->HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
+		HDMI_TX0->HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
+
+		HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
+		HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
+		HDMI_TX0->HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
+		HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
+		HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
+		HDMI_TX0->HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
+
+		HDMI_TX0->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
+		HDMI_TX0->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
+		HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
+		HDMI_TX0->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
+		HDMI_TX0->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
+		HDMI_TX0->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
+		HDMI_TX0->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
+		HDMI_TX0->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+
+}
 
 #else
 	//#error Undefined CPUSTYLE_xxx
@@ -2494,16 +2726,6 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 }
 
 
-struct lcd_timing
-{
-	uint16_t hp;
-	uint16_t vp;
-	uint16_t hbp;
-	uint16_t vbp;
-	uint16_t hspw;
-	uint16_t vspw;
-};
-
 static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned prei, unsigned divider, uint_fast32_t needfreq)
 {
 #if defined (TCONLCD_PTR)
@@ -2660,7 +2882,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 #endif /* WITHLVDSHW */
 
 
-#if WITHHDMITVHW || 0
+#if WITHHDMITVHW || 1
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (оба LVDS набора выходов разрешаются только одним битом)
 //    PRINTF("CCU->LVDS_BGR_REG=%08X\n", (unsigned) CCU->LVDS_BGR_REG);
 //    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset (bits 19..16 writable)
@@ -2687,88 +2909,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
     PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
     if (0)
     {
-		HDMI_PHY->ANA_CFG1 = 0;
-		HDMI_PHY->ANA_CFG1 = 1;
-		local_delay_ms(5);
-		HDMI_PHY->ANA_CFG1 |= (1<<16);
-		HDMI_PHY->ANA_CFG1 |= (1<<1);
-		local_delay_ms(10);
-		HDMI_PHY->ANA_CFG1 |= (1<<2);
-		local_delay_ms(5);
-		HDMI_PHY->ANA_CFG1 |= (1<<3);
-		local_delay_ms(40);
-		HDMI_PHY->ANA_CFG1 |= (1<<19);
-		local_delay_ms(100);
-		HDMI_PHY->ANA_CFG1 |= (1<<18);
-		HDMI_PHY->ANA_CFG1 |= (7<<4);
-	    //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
-		TP();
-		while((HDMI_PHY->ANA_STS & 0x80) == 0)
-		  ;
-		local_delay_ms(100);
-		TP();
-		HDMI_PHY->ANA_CFG1 |= (0xf<<4);
-		HDMI_PHY->ANA_CFG1 |= (0xf<<8);
-		HDMI_PHY->ANA_CFG3 |= (1<<0) | (1<<2);
-
-		HDMI_PHY->PLL_CFG1 &= ~(1<<26);
-		HDMI_PHY->CEC = 0;
-
-		HDMI_PHY->PLL_CFG1 = 0x39dc5040;
-		HDMI_PHY->PLL_CFG2 = 0x80084381;
-		local_delay_ms(100);
-		HDMI_PHY->PLL_CFG3 = 1;
-		HDMI_PHY->PLL_CFG1 |= (1<<25);
-		local_delay_ms(100);
-		uint32_t tmp = (HDMI_PHY->ANA_STS & 0x1f800) >> 11;
-		HDMI_PHY->PLL_CFG1 |= (1<<31) | (1<<30) | tmp;
-
-		HDMI_PHY->ANA_CFG1 = 0x01FFFF7F;
-		HDMI_PHY->ANA_CFG2 = 0x8063A800;
-		HDMI_PHY->ANA_CFG3 = 0x0F81C485;
-
-		/* enable read access to HDMI controller */
-		HDMI_PHY->READ_EN = 0x54524545;
-		/* descramble register offsets */
-		HDMI_PHY->UNSCRAMBLE = 0x42494E47;
-
-
-		struct lcd_timing timing;	// out parameters
-
-		timing.hp=1024;//LCDX_OUT;///
-		timing.vp=600;//LCDY_OUT;///
-		timing.hbp=300;///
-		timing.vbp=30;///
-		timing.hspw=20;///
-		timing.vspw=8;///
-
-		// HDMI Config, based on the documentation at:
-		// https://people.freebsd.org/~gonzo/arm/iMX6-HDMI.pdf
-		HDMI_TX0->HDMI_FC_INVIDCONF = (1<<6) | (1<<5) | (1<<4) | (1<<3); // Polarity etc
-		HDMI_TX0->HDMI_FC_INHACTIV0 = (timing.hp & 0xff);    // Horizontal pixels
-		HDMI_TX0->HDMI_FC_INHACTIV1 = (timing.hp >> 8);      // Horizontal pixels
-		HDMI_TX0->HDMI_FC_INHBLANK0 = (timing.hbp & 0xff);     // Horizontal blanking
-		HDMI_TX0->HDMI_FC_INHBLANK1 = (timing.hbp >> 8);       // Horizontal blanking
-
-		HDMI_TX0->HDMI_FC_INVACTIV0 = (timing.vp & 0xff);    // Vertical pixels
-		HDMI_TX0->HDMI_FC_INVACTIV1 = (timing.vp >> 8);      // Vertical pixels
-		HDMI_TX0->HDMI_FC_INVBLANK  = timing.vbp;               // Vertical blanking
-
-		HDMI_TX0->HDMI_FC_HSYNCINDELAY0 = (timing.hspw & 0xff);  // Horizontal Front porch
-		HDMI_TX0->HDMI_FC_HSYNCINDELAY1 = (timing.hspw >> 8);    // Horizontal Front porch
-		HDMI_TX0->HDMI_FC_VSYNCINDELAY  = 4;            // Vertical front porch
-		HDMI_TX0->HDMI_FC_HSYNCINWIDTH0 = (timing.vspw & 0xff);  // Horizontal sync pulse
-		HDMI_TX0->HDMI_FC_HSYNCINWIDTH1 = (timing.vspw >> 8);    // Horizontal sync pulse
-		HDMI_TX0->HDMI_FC_VSYNCINWIDTH  = 5;            // Vertical sync pulse
-
-		HDMI_TX0->HDMI_FC_CTRLDUR    = 12;   // Frame Composer Control Period Duration
-		HDMI_TX0->HDMI_FC_EXCTRLDUR  = 32;   // Frame Composer Extended Control Period Duration
-		HDMI_TX0->HDMI_FC_EXCTRLSPAC = 1;    // Frame Composer Extended Control Period Maximum Spacing
-		HDMI_TX0->HDMI_FC_CH0PREAM   = 0x0b; // Frame Composer Channel 0 Non-Preamble Data
-		HDMI_TX0->HDMI_FC_CH1PREAM   = 0x16; // Frame Composer Channel 1 Non-Preamble Data
-		HDMI_TX0->HDMI_FC_CH2PREAM   = 0x21; // Frame Composer Channel 2 Non-Preamble Data
-		HDMI_TX0->HDMI_MC_FLOWCTRL   = 0;    // Main Controller Feed Through Control
-		HDMI_TX0->HDMI_MC_CLKDIS     = 0x74; // Main Controller Synchronous Clock Domain Disable
+    	t507_hdmi_initialize();
     }
 
 #endif /* WITHHDMITVHW */

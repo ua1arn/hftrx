@@ -1416,8 +1416,9 @@ typedef struct GPU_MMU_Type
 /*!< HDMI_PHY  */
 typedef struct HDMI_PHY_Type
 {
-    volatile uint32_t POL;                            /*!< Offset 0x000 Polarity control */
-             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t DBG_CTRL;                       /*!< Offset 0x000 DBG_CTRL */
+    volatile uint32_t REXT_CTRL;                      /*!< Offset 0x004 REXT_CTRL */
+             uint32_t reserved_0x008 [0x0002];
     volatile uint32_t READ_EN;                        /*!< Offset 0x010 READ_EN */
     volatile uint32_t UNSCRAMBLE;                     /*!< Offset 0x014 UNSCRAMBLE */
              uint32_t reserved_0x018 [0x0002];
