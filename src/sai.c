@@ -3994,51 +3994,54 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 {
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
-#if CPUSTYLE_T507 || CPUSTYLE_H616
 
-	/* Установка формата обмна */
-	// AHUB = top level
-	const unsigned damix = 0;
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
-	const uint32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
-	const uint32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+	const uint_fast32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
 
-	const uint32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
-	const uint32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
-	const uint32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
-	const uint32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
-
-	AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
-	(void) AHUB->AHUB_RST;
-	AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
-
-	const unsigned txrx_offset = 1;	// Каналы I2S
-	const uint32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
-
-	// Каналы AHUB[0..1] - RX
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL =
-		!! useDMA * (UINT32_C(1) << 3) |	// RXn_DRQ
-		! useDMA * (UINT32_C(1) << 0) |    // RXnAI_EN
-		0;
-
-	// Каналы AHUB[0..1] - TX
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL =
-		!! useDMA * (UINT32_C(1) << 3) |	// TXn_DRQ
-		! useDMA * (UINT32_C(1) << 0) |	// TXnE_INT
-		0;
-
-	if (! useDMA)
 	{
-	    arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
+		// AHUB = top level
+		/* Установка формата обмна */
+		const unsigned damix = 0;
+		const uint_fast32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+		const uint_fast32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
+		const uint_fast32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
+		const uint_fast32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+
+		const uint_fast32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
+		const uint_fast32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
+		const uint_fast32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
+		const uint_fast32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+
+		AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
+		(void) AHUB->AHUB_RST;
+		AHUB->AHUB_RST |= APBIF_TXDIFn_RST | APBIF_RXDIFn_RST | I2Sx_RST | DAMx_RST;
+		(void) AHUB->AHUB_RST;
+
+
+		// Каналы AHUB[0..2] - RX
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL =
+			!! useDMA * (UINT32_C(1) << 3) |	// RXn_DRQ
+			! useDMA * (UINT32_C(1) << 0) |    // RXnAI_EN
+			0;
+
+		// Каналы AHUB[0..2] - TX
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL =
+			!! useDMA * (UINT32_C(1) << 3) |	// TXn_DRQ
+			! useDMA * (UINT32_C(1) << 0) |	// TXnE_INT
+			0;
+
+		if (! useDMA)
+		{
+		    arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
+		}
 	}
 
-	if (1)
 	{
+		const unsigned txrx_offset = 1;	// Каналы I2S
 		/* I2S part */
 		i2s->I2Sn_CTL =
 			!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
