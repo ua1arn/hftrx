@@ -3747,8 +3747,9 @@ void T507_AHUB_handler(void)
 		// TX (to AHUB) stream
 		const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 		volatile uint32_t * const fifo = & AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO;
+		unsigned cc = AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & 0x7F;
 
-		while (AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & (UINT32_C(1) << 8))	// TXnE
+		while (cc)	// TXnE
 		{
 			static unsigned n;
 			static uintptr_t addr;
@@ -3759,8 +3760,7 @@ void T507_AHUB_handler(void)
 				n = 0;
 			}
 
-			const unsigned cnt = AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & 0x7F;	// TXnE_CNT TXFIFO Empty Space Word Counter
-			const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32TX - n, 8));
+			const unsigned chunk = ulmin16(cc, ulmin16(DMABUFFSIZE32TX - n, 8));
 			switch (chunk)
 			{
 			case 8:
@@ -3791,6 +3791,7 @@ void T507_AHUB_handler(void)
 				break;
 			}
 
+			cc -= chunk;
 			if (n >= DMABUFFSIZE32TX)
 			{
 				release_dmabuffer32tx(addr);
@@ -3803,8 +3804,9 @@ void T507_AHUB_handler(void)
 		// RX (from AHUB) stream
 		const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 		volatile uint32_t * const fifo = & AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
+		unsigned cc = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;	// RXnA_CNT
 
-		while (AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & (UINT32_C(1) << 8))	// RXnA
+		while (cc)	// RXnA
 		{
 			static unsigned n;
 			static uintptr_t addr;
@@ -3815,8 +3817,7 @@ void T507_AHUB_handler(void)
 				n = 0;
 			}
 
-			const unsigned cnt = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;	// RXnA_CNT
-			const unsigned chunk = ulmin16(cnt, ulmin16(DMABUFFSIZE32RX - n, 8));
+			const unsigned chunk = ulmin16(cc, ulmin16(DMABUFFSIZE32RX - n, 8));
 			switch (chunk)
 			{
 			case 8:
@@ -3846,6 +3847,7 @@ void T507_AHUB_handler(void)
 				((IFADCvalue_t *) addr) [n ++] = * fifo;
 				break;
 			}
+			cc -= chunk;
 
 			if (n >= DMABUFFSIZE32RX)
 			{
