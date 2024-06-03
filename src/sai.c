@@ -3773,11 +3773,20 @@ void T507_iq_fifo_handler(void)
 	    			addr = allocate_dmabuffer32rx();
 	    			n = 0;
 	    		}
-            	unsigned chunk = ulmin(DMABUFFSIZE32RX - n, 8);
+            	unsigned chunk = ulmin16(DMABUFFSIZE32RX - n, 8);
             	switch (chunk)
             	{
             	case 8:
-    	    		((uint32_t *) addr) [n ++] = * fifo;
+    	    		((uint32_t *) addr) [n + 0] = * fifo;
+       	    		((uint32_t *) addr) [n + 1] = * fifo;
+       	    		((uint32_t *) addr) [n + 2] = * fifo;
+       	    		((uint32_t *) addr) [n + 3] = * fifo;
+       	    		((uint32_t *) addr) [n + 4] = * fifo;
+       	    		((uint32_t *) addr) [n + 5] = * fifo;
+       	    		((uint32_t *) addr) [n + 6] = * fifo;
+       	    		((uint32_t *) addr) [n + 7] = * fifo;
+    	    		n += 8;
+    	    		break;
             	case 7:
     	    		((uint32_t *) addr) [n ++] = * fifo;
             	case 6:
