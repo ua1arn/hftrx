@@ -35,6 +35,20 @@ static void hardware_dummy_enable(uint_fast8_t state)
 
 }
 
+#ifndef HARDWARE_I2S0HW_USEDMA
+	#define HARDWARE_I2S0HW_USEDMA 1
+#endif /* HARDWARE_I2S0HW_USEDMA */
+#ifndef HARDWARE_I2S1HW_USEDMA
+	#define HARDWARE_I2S1HW_USEDMA 1
+#endif /* HARDWARE_I2S1HW_USEDMA */
+#ifndef HARDWARE_I2S2HW_USEDMA
+	#define HARDWARE_I2S2HW_USEDMA 1
+#endif /* HARDWARE_I2S2HW_USEDMA */
+#ifndef HARDWARE_I2S3HW_USEDMA
+	#define HARDWARE_I2S3HW_USEDMA 1
+#endif /* HARDWARE_I2S3HW_USEDMA */
+
+
 #if WITHINTEGRATEDDSP
 
 // Сейчас в эту память будем читать по DMA
