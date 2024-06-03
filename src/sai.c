@@ -3757,22 +3757,48 @@ void T507_iq_fifo_handler(void)
 		// RX (from AHUB) stream
 		const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 		const uint_fast32_t sts = AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS;
+		volatile uint32_t * const fifo = & AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
 
 	    if (sts & (UINT32_C(1) << 0))	// RXnA_INT
 	    {
-	    	uint_fast32_t cnt = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;
-	        if (cnt >= DMABUFFSIZE32RX)
-	        {
-				AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = (UINT32_C(1) << 0);	// Clear RXnA_INT interrupt
+            AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = (UINT32_C(1) << 0);    // Clear RXnA_INT interrupt
 
-				const uintptr_t addr = allocate_dmabuffer32rx();
-				uint32_t * a = (uint32_t *) addr;
+            while (AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & (UINT32_C(1) << 8))	// RXnA
+	    	{
+	    		static unsigned n;
+	    		static uintptr_t addr;
 
-				for (int i = 0; i < DMABUFFSIZE32RX; i ++)
-					a[i] = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
-
-				save_dmabuffer32rx(addr);
-	        }
+	    		if (addr == 0)
+	    		{
+	    			addr = allocate_dmabuffer32rx();
+	    			n = 0;
+	    		}
+            	unsigned chunk = ulmin(DMABUFFSIZE32RX - n, 8);
+            	switch (chunk)
+            	{
+            	case 8:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 7:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 6:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 5:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 4:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 3:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 2:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	case 1:
+    	    		((uint32_t *) addr) [n ++] = * fifo;
+            	}
+	    		if (n >= DMABUFFSIZE32RX)
+	    		{
+	    			save_dmabuffer32rx(addr);
+	    			addr = 0;
+	    		}
+	    	}
 	    }
 	}
 }
