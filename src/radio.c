@@ -10696,7 +10696,7 @@ audioproc_spool_user(void)
 #endif /* LINUX_SUBSYSTEM */
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
-	while (takespeexready(& p))
+	if (takespeexready(& p))
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;

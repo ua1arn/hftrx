@@ -1306,7 +1306,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 void dsphftrxproc_spool_user(void)
 {
 	voice32rx_t * dest;
-	while (voice32rx.get_readybuffer(& dest))
+	if (voice32rx.get_readybuffer(& dest))
 	{
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
