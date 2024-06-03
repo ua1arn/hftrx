@@ -1303,18 +1303,25 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
+void dsphftrxproc_spool_user(void)
+{
+	voice32rx_t * dest;
+	while (voice32rx.get_readybuffer(& dest))
+	{
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	}
+}
+
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	voice32rx.save_buffer(p);
-
-	voice32rx_t * dest;
-	if (voice32rx.get_readybuffer(& dest))
-	{
-		process_dmabuffer32rx(dest->buff);
-		voice32rx.release_buffer(dest);
-	}
-	dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	// dsphftrxproc_spool_user on other CPUs
+#if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
+	dsphftrxproc_spool_user();
+#endif /* WITHINTEGRATEDDSP */
 }
 
 ///////////////////////////////////////

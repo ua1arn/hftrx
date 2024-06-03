@@ -4213,21 +4213,24 @@ void Reset_CPUn_Handler(void)
 		{
 #if WITHINTEGRATEDDSP
 			audioproc_spool_user();
+			__DMB();
+#else /* WITHINTEGRATEDDSP */
+			__WFI();
 #endif /* WITHINTEGRATEDDSP */
 		}
 	}
-//	if (arm_hardware_cpuid() == 3)
-//	{
-//		for (;;)
-//		{
-//			const uintptr_t addr = getfilled_dmabuffer32rx();
-//			if (addr == 0)
-//				continue;
-//			process_dmabuffer32rx((IFADCvalue_t *) addr);
-//			release_dmabuffer32rx(addr);
-//
-//		}
-//	}
+	if (arm_hardware_cpuid() == 3)
+	{
+		for (;;)
+		{
+#if WITHINTEGRATEDDSP
+			dsphftrxproc_spool_user();
+			__DMB();
+#else /* WITHINTEGRATEDDSP */
+			__WFI();
+#endif /* WITHINTEGRATEDDSP */
+		}
+	}
 #endif /* HARDWARE_NCORES > 2 */
 	// Idle loop
 	for (;;)

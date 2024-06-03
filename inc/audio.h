@@ -691,6 +691,8 @@ extern volatile phase_t mirror_nco3;
 extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
 
+void dsphftrxproc_spool_user(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
