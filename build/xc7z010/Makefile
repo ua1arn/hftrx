@@ -222,10 +222,10 @@ ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
 ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
 ASRC_APP += $(ASRC_BOOT)
 
-OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
-OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
-OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
-OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
+OBJSC 	+= $(patsubst $(PRJROOT)/%.c,$(OBJDIR)/%.o, $(CSRC))
+OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp,$(OBJDIR)/%.o, $(CPPSRC))
+OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S,$(OBJDIR)/%.o, $(ASRC_APP))
+OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S,$(OBJDIR)/%.o, $(ASRC_BOOT))
 
 SRCS = $(CSRC) $(CPPSRC) $(ASRC)
 OBJS = $(OBJSC) $(OBJSCPP)
@@ -237,9 +237,9 @@ ZCSRC += $(call rwildcard, $(ZYNQLIBSRC), *.c)
 ZCPPSRC += $(call rwildcard, $(ZYNQLIBSRC), *.cpp)
 ZASRC += $(call rwildcard, $(ZYNQLIBSRC), *.S)
 
-ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))
-ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(ZCPPSRC))
-ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ZASRC))
+ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c,$(OBJDIR)/%.o, $(ZCSRC))
+ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp,$(OBJDIR)/%.o, $(ZCPPSRC))
+ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S,$(OBJDIR)/%.o, $(ZASRC))
 
 ZSRCS = $(ZCSRC) $(ZCPPSRC) $(ZASRC)
 ZOBJS = $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
