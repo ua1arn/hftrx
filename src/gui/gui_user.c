@@ -289,6 +289,9 @@ static window_t windows [] = {
 	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X,  "LFM",			 		 1, window_lfm_process, },
 	{ WINDOW_LFM_SPECTRE, 	 WINDOW_LFM,			ALIGN_CENTER_X, "LFM spectre draw",	 	 1, window_lfm_spectre_process, },
 #endif /* WITHLFM  */
+#if WITHEXTIO_LAN
+	{ WINDOW_EXTIOLAN, 		 WINDOW_UTILS,			ALIGN_CENTER_X,  "LAN IQ Stream server", 1, window_stream_process, },
+#endif /* WITHEXTIO_LAN */
 };
 
 /* Возврат ссылки на окно */
@@ -2053,21 +2056,24 @@ static void window_utilites_process(void)
 		unsigned x = 0, y = 0, interval = 6, row_count = 4;
 		win->first_call = 0;
 #if WITHGUIDEBUG
-		add_element("btn_debug",  100, 44, 0, 0, "Debug|view");
+		add_element("btn_debug", 100, 44, 0, 0, "Debug|view");
 #endif /* WITHGUIDEBUG */
 #if WITHSWRSCAN
-		add_element("btn_SWRscan",  100, 44, 0, 0, "SWR|scanner");
+		add_element("btn_SWRscan", 100, 44, 0, 0, "SWR|scanner");
 #endif /* WITHSWRSCAN */
-		add_element("btn_3d",       100, 44, 0, 0, "Donut|3d");
+		add_element("btn_3d", 100, 44, 0, 0, "Donut|3d");
 #if WITHLWIP
 		add_element("btn_pingtest", 100, 44, 0, 0, "IP ping|test");
 #endif /* WITHLWIP */
 #if WITHLFM
-		add_element("btn_lfm",      100, 44, 0, 0, "LFM|receive");
+		add_element("btn_lfm", 100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
 #if WITHIQSHIFT
-		add_element("btn_shift",    100, 44, 0, 0, "IQ shift");
+		add_element("btn_shift", 100, 44, 0, 0, "IQ shift");
 #endif /* WITHIQSHIFT */
+#if WITHEXTIO_LAN
+		add_element("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
+#endif /* WITHEXTIO_LAN */
 
 		x = 0;
 		y = 0;
@@ -2139,6 +2145,12 @@ static void window_utilites_process(void)
 				open_window(get_win(WINDOW_SHIFT));
 			}
 #endif /* WITHIQSHIFT */
+#if WITHEXTIO_LAN
+			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_stream"))
+			{
+				open_window(get_win(WINDOW_EXTIOLAN));
+			}
+#endif /* WITHEXTIO_LAN */
 		}
 		break;
 
@@ -6439,5 +6451,88 @@ static void window_lfm_spectre_process(void)
 	}
 #endif /* WITHLFM  */
 }
+
+#if WITHEXTIO_LAN
+
+static text_field_t * tf_log = NULL;
+
+void stream_log(char * str)
+{
+	if (tf_log)
+		textfield_add_string(tf_log, str, COLORPIP_WHITE);
+
+	put_to_wm_queue(get_win(WINDOW_EXTIOLAN), WM_MESSAGE_UPDATE);
+}
+
+static void window_stream_process(void)
+{
+	window_t * const win = get_win(WINDOW_EXTIOLAN);
+	static uint8_t update = 0;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		add_element("tf_log", 50, 15, DOWN, & gothic_11x13);
+		add_element("btn_state", 130, 40, 0, 0, "");
+
+		tf_log = (text_field_t *) find_gui_element(TYPE_TEXT_FIELD, win, "tf_log");
+		textfield_update_size(tf_log);
+		tf_log->x1 = 0;
+		tf_log->y1 = 0;
+		tf_log->visible = VISIBLE;
+
+		button_t * btn_state = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_state");
+		btn_state->x1 = tf_log->w / 2 - btn_state->w / 2;
+		btn_state->y1 = tf_log->h + 10;
+		btn_state->visible = VISIBLE;
+
+		update = 1;
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		return;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+
+			if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_state"))
+			{
+				uint8_t state = stream_get_state();
+
+				if (state == 0)
+					server_start();
+				else
+					server_stop();
+			}
+			update = 1;
+		}
+
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
+		break;
+
+	default:
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		button_t * btn_state = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_state");
+		const char * states[] = { "Start server", "Stop listening", "Disconnect &|stop server", };
+		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[stream_get_state()]);
+	}
+}
+
+#endif /* # WITHEXTIO_LAN */
 
 #endif /* WITHTOUCHGUI */

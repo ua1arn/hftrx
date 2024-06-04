@@ -57,6 +57,22 @@
 #define BCLK_DIV_MASK 		 		0x000000FF
 #define LRCLK_DIV_MASK 		 		0x00FF0000
 
+#if WITHEXTIO_LAN
+
+enum {
+	STREAM_IDLE,
+	STREAM_LISTEN,
+	STREAM_CONNECTED,
+	STREAM_DISCONNECTED,
+};
+
+void server_restart(void);
+void server_stop(void);
+void server_start(void);
+uint8_t stream_get_state(void);
+
+#endif /* WITHEXTIO_LAN */
+
 extern pthread_mutex_t md;
 
 #define LCLSPINLOCK_t		pthread_mutex_t

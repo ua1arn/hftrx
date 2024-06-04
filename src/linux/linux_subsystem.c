@@ -529,21 +529,31 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 #include <arpa/inet.h>
 #include <net/if.h>
 
-void eth_restart(void);
+void stream_log(char * str);
 
 #define TCP_PORT 1001
 
 struct cond_thread * ct_rts = NULL;
 pthread_t eth_main_t, eth_send_t;
+int sockServer, sockClient;
 uint32_t streambuf[SIZERTS96] = { 0 };
+char strbuf[128];
+static uint8_t stream_state = STREAM_IDLE, auto_restart = 1;
+struct sockaddr_in local_addr;
+
+void server_kill(void)
+{
+	close(sockClient);
+	close(sockServer);
+}
 
 void * eth_main_thread(void * args)
 {
-	int sockServer, sockClient;
 	struct sockaddr_in addr, addrClient;
 	int yes = 1;
 	uint32_t command;
 	socklen_t size = sizeof(addrClient);
+	stream_state = STREAM_IDLE;
 
 	ct_rts = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	linux_init_cond(ct_rts);
@@ -557,17 +567,15 @@ void * eth_main_thread(void * args)
 	setsockopt(sockServer, SOL_SOCKET, SO_REUSEADDR, (void *) & yes , sizeof(yes));
 
 	/* setup listening address */
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(TCP_PORT);
+	memset(& local_addr, 0, sizeof(local_addr));
+	local_addr.sin_family = AF_INET;
+	local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	local_addr.sin_port = htons(TCP_PORT);
+	bind(sockServer, (struct sockaddr *) & local_addr, sizeof(local_addr));
 
-	if(bind(sockServer, (struct sockaddr *) & addr, sizeof(addr)) < 0)
-	{
-		perror("bind");
-		return NULL;
-	}
-
+	local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "Start listening on port %d", TCP_PORT);
+	stream_log(strbuf);
+	stream_state = STREAM_LISTEN;
 	listen(sockServer, 1024);
 
     if((sockClient = accept(sockServer, (struct sockaddr *) & addrClient, & size)) < 0)
@@ -576,7 +584,9 @@ void * eth_main_thread(void * args)
       return NULL;
     }
 
-    PRINTF("Accepted TCP connection from %s:%d\n", inet_ntoa(addrClient.sin_addr), TCP_PORT);
+    stream_state = STREAM_CONNECTED;
+	local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "Accepted TCP connection from %s:%d", inet_ntoa(addrClient.sin_addr), TCP_PORT);
+	stream_log(strbuf);
 
 	while(1)
 	{
@@ -591,10 +601,11 @@ void * eth_main_thread(void * args)
 		safe_cond_wait(ct_rts);
 		if (send(sockClient, (uint8_t *) streambuf, SIZERTS96 * 4, MSG_NOSIGNAL) < 0)
 		{
-			PRINTF("TCP connection from %s is closed\n", inet_ntoa(addrClient.sin_addr));
-			close(sockClient);
-			close(sockServer);
-			eth_restart();
+			local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "TCP connection from %s is closed", inet_ntoa(addrClient.sin_addr));
+			stream_log(strbuf);
+			server_kill();
+			stream_state = STREAM_IDLE;
+			if (auto_restart) server_restart();
 			return NULL;
 		}
 	}
@@ -602,10 +613,32 @@ void * eth_main_thread(void * args)
 	return NULL;
 }
 
-void eth_restart(void)
+void server_restart(void)
 {
 	linux_cancel_thread(eth_main_t);
 	linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
+}
+
+uint8_t stream_get_state(void)
+{
+	return stream_state;
+}
+
+void server_stop(void)
+{
+	if (stream_state != STREAM_IDLE)
+	{
+		local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "Stream server stopped");
+		stream_log(strbuf);
+		server_kill();
+		stream_state = STREAM_IDLE;
+	}
+}
+
+void server_start(void)
+{
+	if (stream_state == STREAM_IDLE)
+		linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
 }
 
 #endif /* WITHEXTIO_LAN */
@@ -642,18 +675,21 @@ void linux_iq_thread(void)
 #if WITHEXTIO_LAN
 	static int rtscnt = 0;
 	uint32_t * r = (uint32_t *) rxbuf;
-	for (int i = 0; i < DMABUFFSIZE32RX; i+= DMABUFFSTEP32RX)
+	if (stream_state == STREAM_CONNECTED)
 	{
-		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0I];
-		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0Q];
-		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1I];
-		streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1Q];
-	}
+		for (int i = 0; i < DMABUFFSIZE32RX; i+= DMABUFFSTEP32RX)
+		{
+			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0I];
+			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0Q];
+			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1I];
+			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1Q];
+		}
 
-	if (rtscnt >= SIZERTS96)
-	{
-		rtscnt = 0;
-		safe_cond_signal(ct_rts);
+		if (rtscnt >= SIZERTS96)
+		{
+			rtscnt = 0;
+			safe_cond_signal(ct_rts);
+		}
 	}
 #endif /* WITHEXTIO_LAN */
 }
@@ -856,10 +892,6 @@ void linux_user_init(void)
 #if WITHLVGL
 	lvgl_test();
 #endif /* WITHLVGL */
-
-#if WITHEXTIO_LAN
-	linux_create_thread(& eth_main_t, eth_main_thread, 50, 0);
-#endif /* WITHEXTIO_LAN */
 }
 
 void linux_wait_iq(void)
