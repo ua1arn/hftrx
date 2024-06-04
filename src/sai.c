@@ -3727,16 +3727,21 @@ static void I2S_fill_TXxCHMAP(
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 
-// 0..2
+//	#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
+//	#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
+
+// Return 0..2
 static unsigned getAPBIFrx(unsigned ix)
 {
-	return 2;
+	static const uint_fast8_t map [] = { WITHAPBIFMAP_RX };
+	return map [ix];
 }
 
-// 0..2
+// Return 0..2
 static unsigned getAPBIFtx(unsigned ix)
 {
-	return 2;
+	static const uint_fast8_t map [] = { WITHAPBIFMAP_TX };
+	return map [ix];
 }
 
 void T507_AHUB_handler(void)
