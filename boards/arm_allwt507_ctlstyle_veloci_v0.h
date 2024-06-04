@@ -527,7 +527,7 @@
 	#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
 	#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
-	#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
@@ -543,9 +543,8 @@
 
 		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
-		TEMPIX = BOARD_ADCX2IN(4),
-		XTHERMOIX = BOARD_ADCX2IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-		VOLTSOURCE = BOARD_ADCX2IN(7),		// Средняя точка делителя напряжения питания
+		XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 C4 Exernal thermo sensor ST LM235Z
+		VOLTSOURCE = BOARD_ADCX2IN(5),		// Средняя точка делителя напряжения питания
 
 		/* кеширование днных */
 
