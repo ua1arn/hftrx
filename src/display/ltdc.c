@@ -1904,6 +1904,16 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 	return (VI_LASTIX(rtmixid) - 1) + 1 + (UI_LASTIX(rtmixid) - 1) + 1;
 }
 
+struct lcd_timing
+{
+	uint16_t hp;
+	uint16_t vp;
+	uint16_t hbp;
+	uint16_t vbp;
+	uint16_t hspw;
+	uint16_t vspw;
+};
+
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
 
@@ -2206,16 +2216,6 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	return 0;
 }
 
-struct lcd_timing
-{
-	uint16_t hp;
-	uint16_t vp;
-	uint16_t hbp;
-	uint16_t vbp;
-	uint16_t hspw;
-	uint16_t vspw;
-};
-
 static void t507_hdmi_initialize(void)
 {
 
@@ -2352,7 +2352,7 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
+#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64*0
 
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 {
@@ -2436,7 +2436,7 @@ static void t113_de_update(int rtmixid)
 		;
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
+#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64*0
 
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
@@ -4870,6 +4870,7 @@ static void hdmi_init(void)
 
 static void lcd_init(void)
 {
+#if defined (TCONTV_PTR)
 	// LCD0 feeds mixer0 to HDMI
 	LCD0_GCTL         = (1 << 31);
 	LCD0_GINT0        = 0;
@@ -4886,6 +4887,8 @@ static void lcd_init(void)
 
 	LCD0_GINT1 = 1;
 	LCD0_GINT0 = (1 << 30);//28
+
+#endif /* defined (TCONTV_PTR) */
 }
 // This function configured DE2 as follows:
 // MIXER0 -> WB -> MIXER1 -> HDMI
