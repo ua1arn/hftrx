@@ -2352,7 +2352,7 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
 
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 {
@@ -2364,7 +2364,7 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid)
 	}
 }
 
-#endif
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 
 //static void write32(uintptr_t a, uint32_t v)
 //{
@@ -2436,7 +2436,7 @@ static void t113_de_update(int rtmixid)
 		;
 }
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64
 
 static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const videomode_t * vdmodeout)
 {
@@ -2476,7 +2476,8 @@ static void t113_vsu_setup(int rtmixid, const videomode_t * vdmodein, const vide
 
 	//vsu->VSU_CTRL_REG = (UINT32_C(1) << 4) | (UINT32_C(1) << 0);	// COEF_SWITCH_EN EN
 }
-#endif
+
+#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 
 /* VI (VI0) */
 static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
@@ -3871,15 +3872,6 @@ zprinthex32(uintptr_t voffs, const void * vbuff, unsigned length)
 	}
 }
 
-static void
-performdump(const char * name, unsigned long base, unsigned long size)
-{
-#if CPUSTYLE_T507
-	PRINTF("%s\n", name);
-	zprinthex32(base, (void *) base, size);
-	PRINTF("---\n");
-#endif /* CPUSTYLE_T507 */
-}
 #endif
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
