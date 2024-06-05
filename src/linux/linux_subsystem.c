@@ -469,7 +469,6 @@ enum {
 	CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX,
 	CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX,
 	SIZERX8 = DMABUFFSIZE32RX * 4,
-	SIZERTS96 = 1024,
 };
 
 uint8_t rxbuf[SIZERX8] = { 0 };
@@ -534,17 +533,60 @@ void stream_log(char * str);
 #define TCP_PORT 1001
 
 struct cond_thread * ct_rts = NULL;
-pthread_t eth_main_t, eth_send_t;
+pthread_t eth_main_t, eth_send_t, eth_int_t;
 int sockServer, sockClient;
-uint32_t streambuf[SIZERTS96] = { 0 };
+uint8_t streambuf[4096] = { 0 };
 char strbuf[128];
 static uint8_t stream_state = STREAM_IDLE, auto_restart = 1;
 struct sockaddr_in local_addr;
+volatile uint32_t * stream_rate, * stream_data, * stream_count;
 
 void server_kill(void)
 {
 	close(sockClient);
 	close(sockServer);
+}
+
+void * eth_stream_interrupt_thread(void * args)
+{
+	int fd = open(LINUX_STREAM_INT_FILE, O_RDWR);
+    if (fd < 0) {
+        PRINTF("%s open failed\n", LINUX_STREAM_INT_FILE);
+        return NULL;
+    }
+
+    while(1)
+    {
+    	uint32_t intr = 1; /* unmask */
+
+		ssize_t nb = write(fd, & intr, sizeof(intr));
+		if (nb != (ssize_t) sizeof(intr)) {
+			perror("write");
+			close(fd);
+			exit(EXIT_FAILURE);
+		}
+
+		struct pollfd fds = {
+			.fd = fd,
+			.events = POLLIN,
+		};
+
+		int ret = poll(& fds, 1, -1);
+		if (ret >= 1) {
+			nb = read(fd, & intr, sizeof(intr));
+			if (nb == (ssize_t) sizeof(intr) && stream_state == STREAM_CONNECTED)
+			{
+				uint32_t pos = * stream_count;
+				uint16_t offset = pos >= 512 ? 0 : 4096;
+				memcpy(streambuf, (uint8_t *) stream_data + offset, 4096);
+				safe_cond_signal(ct_rts);
+			}
+		} else {
+			perror("poll()");
+			close(fd);
+			exit(EXIT_FAILURE);
+		}
+    }
 }
 
 void * eth_main_thread(void * args)
@@ -554,9 +596,6 @@ void * eth_main_thread(void * args)
 	uint32_t command;
 	socklen_t size = sizeof(addrClient);
 	stream_state = STREAM_IDLE;
-
-	ct_rts = (struct cond_thread *) malloc(sizeof(struct cond_thread));
-	linux_init_cond(ct_rts);
 
 	if((sockServer = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
@@ -594,12 +633,31 @@ void * eth_main_thread(void * args)
 		if(size >= 4)
 		{
 			if(recv(sockClient, (char *) & command, 4, MSG_WAITALL) < 0) perror("recv");
-			if (command >> 31 == 0)		// Frequency set
+
+			switch (command >> 31) {
+			case 0:
+				// Set frequency
 				hamradio_set_freq(command);
+				break;
+			case 1:
+				// Set sample rate
+				switch (command & 3) {
+				case 0:
+					* stream_rate = 320;	// 192k
+					break;
+				case 1:
+					* stream_rate = 160;	// 384k
+					break;
+				case 2:
+					* stream_rate = 80;		// 768k
+					break;
+				}
+				break;
+			}
 		}
 
 		safe_cond_wait(ct_rts);
-		if (send(sockClient, (uint8_t *) streambuf, SIZERTS96 * 4, MSG_NOSIGNAL) < 0)
+		if (send(sockClient, streambuf, 4096, MSG_NOSIGNAL) < 0)
 		{
 			local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "TCP connection from %s is closed", inet_ntoa(addrClient.sin_addr));
 			stream_log(strbuf);
@@ -608,6 +666,7 @@ void * eth_main_thread(void * args)
 			if (auto_restart) server_restart();
 			return NULL;
 		}
+
 	}
 
 	return NULL;
@@ -655,6 +714,17 @@ void linux_iq_init(void)
 	iq_count_rx = 	(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_BLKMEM_CNT_BASEADDR);
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 
+#if WITHEXTIO_LAN
+	stream_rate = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_RATE);
+	stream_count = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_COUNT);
+	stream_data = (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_STREAM_DATA, 2);
+
+	* stream_rate = 160;
+
+	linux_init_cond(ct_rts);
+	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, 1);
+#endif /* WITHEXTIO_LAN */
+
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
@@ -671,27 +741,6 @@ void linux_iq_thread(void)
 	memcpy(rxbuf, (uint8_t *) iq_rx_blkmem + offset, SIZERX8);
 
 	iq_proccessing(rxbuf, SIZERX8);
-
-#if WITHEXTIO_LAN
-	static int rtscnt = 0;
-	uint32_t * r = (uint32_t *) rxbuf;
-	if (stream_state == STREAM_CONNECTED)
-	{
-		for (int i = 0; i < DMABUFFSIZE32RX; i+= DMABUFFSTEP32RX)
-		{
-			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0I];
-			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS0Q];
-			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1I];
-			streambuf[rtscnt ++] = r [i + DMABUF32RXRTS1Q];
-		}
-
-		if (rtscnt >= SIZERTS96)
-		{
-			rtscnt = 0;
-			safe_cond_signal(ct_rts);
-		}
-	}
-#endif /* WITHEXTIO_LAN */
 }
 
 void * linux_iq_interrupt_thread(void * args)
@@ -759,6 +808,7 @@ void linux_run_shell_cmd(const char * argv [])
 
 void linux_init_cond(struct cond_thread * ct)
 {
+	ct = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	ASSERT(ct != NULL);
 	pthread_cond_init(& ct->ready_cond, NULL);
 	pthread_mutex_init(& ct->ready_mutex, NULL);
@@ -769,6 +819,7 @@ void linux_destroy_cond(struct cond_thread * ct)
 	ASSERT(ct != NULL);
 	pthread_cond_destroy(& ct->ready_cond);
 	pthread_mutex_destroy(& ct->ready_mutex);
+	free(ct);
 }
 
 void safe_cond_signal(struct cond_thread * ct)
@@ -886,7 +937,6 @@ void linux_user_init(void)
 
 	xcz_resetn_modem(1);
 
-	ct_iq = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	linux_init_cond(ct_iq);
 
 #if WITHLVGL

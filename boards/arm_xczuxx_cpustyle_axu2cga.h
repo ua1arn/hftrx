@@ -69,6 +69,10 @@ enum {
 #define AXI_XGPI_ADDR								0x80046000
 #define AXI_XGPO_ADDR								0x80047000
 
+#define XPAR_IQ_MODEM_STREAM_RATE					0x8010B000
+#define XPAR_IQ_MODEM_STREAM_DATA					0x80100000
+#define XPAR_IQ_MODEM_STREAM_COUNT					0x8010A000
+
 #define CALIBRATION_IQ_FIR_RX_SHIFT		50	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		62
 #define CALIBRATION_TX_SHIFT			27
@@ -87,6 +91,7 @@ enum {
 #define LINUX_I2C_FILE		"/dev/i2c-0"
 #define LINUX_FB_FILE		"/dev/fb0"
 #define LINUX_TTY_FILE		"/dev/tty0"
+#define LINUX_STREAM_INT_FILE	"/dev/uio2"
 
 #if WITHISBOOTLOADER
 
