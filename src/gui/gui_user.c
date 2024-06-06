@@ -6284,7 +6284,7 @@ static void window_lfm_process(void)
 		btn_state->y1 = y;
 		btn_state->visible = VISIBLE;
 
-		button_t * btn_draw = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_draw");
+		button_t * btn_draw = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_draw");
 		btn_draw->x1 = btn_state->x1 + btn_state->w + interval;
 		btn_draw->y1 = y;
 		btn_draw->visible = VISIBLE;
@@ -6314,7 +6314,7 @@ static void window_lfm_process(void)
 
 				update = 1;
 			}
-			else if (bh == (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_draw"))
+			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_draw"))
 			{
 				open_window(get_win(WINDOW_LFM_SPECTRE));
 			}
@@ -6381,22 +6381,22 @@ static void window_lfm_process(void)
 	{
 		update = 0;
 
-		button_t * btn_state = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_state");
+		button_t * btn_state = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_state");
 		btn_state->is_locked = iflfmactive() != 0;
 		const char states[3][9] = { "Disabled", "Standby", "Scan..." };
 		uint_fast16_t s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
 		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
 
-		label_t * lbl_nmeatime_val = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_nmeatime_val");
+		label_t * lbl_nmeatime_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_nmeatime_val");
 		hamradio_get_nmea_time(lbl_nmeatime_val->text, ARRAY_SIZE(lbl_nmeatime_val->text));
 
-		label_t * lbl_timeoffset_val = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_timeoffset_val");
+		label_t * lbl_timeoffset_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_timeoffset_val");
 		local_snprintf_P(lbl_timeoffset_val->text, ARRAY_SIZE(lbl_timeoffset_val->text), "%02d sec", hamradio_get_lfmtoffset());
 
-		label_t * lbl_stopfreq_val = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_stopfreq_val");
+		label_t * lbl_stopfreq_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_stopfreq_val");
 		local_snprintf_P(lbl_stopfreq_val->text, ARRAY_SIZE(lbl_stopfreq_val->text), "%02d MHz", hamradio_get_lfmstop100k() / 10);
 
-		label_t * lbl_interval_val = (label_t*) find_gui_element(TYPE_LABEL, win, "lbl_interval_val");
+		label_t * lbl_interval_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_interval_val");
 		local_snprintf_P(lbl_interval_val->text, ARRAY_SIZE(lbl_interval_val->text), "%02d sec", hamradio_get_lfmtinterval());
 	}
 #endif /* WITHLFM  */
