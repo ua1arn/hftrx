@@ -1897,7 +1897,7 @@ void gui_WM_walkthrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 							int_fast8_t j = tf->index - 1;
 							for (uint8_t i = 0; i < tf->h_str; i ++)
 							{
-								uint_fast8_t pos = tf->direction ? (tf->h_str - i - 1) : i;
+								uint_fast8_t pos = tf->direction ? i : (tf->h_str - i - 1);
 								j = j < 0 ? (tf->h_str - 1) : j;
 
 								if (tf->font)
