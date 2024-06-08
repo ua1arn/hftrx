@@ -14,7 +14,7 @@
 #regdef; LCD_GINT1_REG; 0x0008; LCD Global Interrupt Register1
 #regdef; LCD_FRM_CTL_REG; 0x0010; LCD FRM Control Register
 #regdef; LCD_FRM_SEED_REG; 0x0014 6; LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04
-#regdef; LCD_FRM_TAB_REG; 0x002C; 4 LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04
+#regdef; LCD_FRM_TAB_REG; 0x002C; 4 LCD FRM Table Register (N=0,1,2,3) 0x002C+N*0x04
 #regdef; LCD_3D_FIFO_REG; 0x003C; LCD 3D FIFO Register
 #regdef; LCD_CTL_REG; 0x0040; LCD Control Register
 #regdef; LCD_DCLK_REG; 0x0044; LCD Data Clock Register
