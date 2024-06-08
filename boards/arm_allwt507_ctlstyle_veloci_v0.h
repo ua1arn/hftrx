@@ -527,7 +527,7 @@
 	#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
 	#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор

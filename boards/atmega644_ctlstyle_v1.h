@@ -341,7 +341,7 @@
 	//#define WITHLO1LEVELADJINITIAL	60	/* Начальное положение регулировки уровня LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define LFMTICKSFREQ 1000
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	
 	//#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	//#define WITHIF4DSP	1	// "Дятел"
 	//#define DEFAULT_DSP_IF	12000

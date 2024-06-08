@@ -5454,13 +5454,13 @@ void looptests(void)
 #endif
 #if 0 && WITHTEMPSENSOR
 	{
-		// Тестирование датчика температуры
+		// Тестирование датчика температуры CPU STM32
 		// TODO: пока не показывает температуру!
 		const uint_fast8_t tempi = TEMPIX;
-		const adcvalholder_t v = board_getadc_unfiltered_1 /* true */value(tempi);
+		const adcvalholder_t v = board_getadc_unfiltered_truevalue(tempi);
 		// Измерение опрного напряжения
 		const uint_fast8_t vrefi = VREFIX;
-		const adcvalholder_t ref = board_getadc_unfiltered_1 /* true */value(vrefi);	// текущее значение данного АЦП
+		const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
 		if (ref != 0)
 		{
 			const long Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;

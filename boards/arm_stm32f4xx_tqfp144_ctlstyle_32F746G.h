@@ -336,7 +336,7 @@
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	
 	//#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */

@@ -471,7 +471,7 @@
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define LFMTICKSFREQ ARMI2SRATE
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
@@ -576,9 +576,6 @@
 	#if WITHREFSENSOR
 		VREFIX = 17,		// Reference voltage
 	#endif /* WITHREFSENSOR */
-	#if WITHTEMPSENSOR
-		TEMPIX = WPM_POTIX,
-	#endif /* WITHTEMPSENSOR */
 
 	#if WITHPOTWPM
 		POTWPM = WPM_POTIX,			// PA6 потенциометр управления скоростью передачи в телеграфе

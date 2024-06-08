@@ -316,7 +316,7 @@
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	
 	//#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1
 	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX

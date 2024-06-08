@@ -9531,7 +9531,7 @@ static const uint8_t adcinputs [] =
 #endif /* WITHTX && WITHVOX && ! WITHINTEGRATEDDSP */
 
 #if WITHTEMPSENSOR
-	TEMPIX,
+	TEMPIX,	/* отображение данных с датчика температуры CPU */
 #endif /* WITHTEMPSENSOR */
 
 #if WITHREFSENSOR

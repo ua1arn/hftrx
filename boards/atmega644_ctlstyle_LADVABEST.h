@@ -238,7 +238,7 @@
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
 	//#define WITHLFM		1	/* LFM MODE */
-	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
+	
 	//#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по наэатиям на клавиатуре */
 	//#define WITHIF4DSP	1	// "Дятел"
 	//#define DEFAULT_DSP_IF	12000
