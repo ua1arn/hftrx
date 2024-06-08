@@ -7,6 +7,7 @@
 #irq; TCON_LCD1 97; TCON_LCD1 interrupt
 
 # https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L610
+# https://github.com/crmoratelli/linux-orangepi/blob/e260986ae6208e586c28fea65b56b2b405866861/drivers/gpu/drm/sun4i/sun4i_tcon.h#L22
 
 #regdef; LCD_GCTL_REG; 0x0000; LCD Global Control Register
 #regdef; LCD_GINT0_REG; 0x0004; LCD Global Interrupt Register0
