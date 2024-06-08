@@ -27,7 +27,7 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
+#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 
 #if WITHDEBUG
@@ -1263,8 +1263,10 @@ void user_uart5_ontxchar(void * ctx);
 /* запрос на вход в режим загрузчика */
 #define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
-#define ETH_INITIALIZE() do { \
+#if WITHETHHW
+	#define ETHERNET_INITIALIZE() do { \
 		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
+		\
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII_RXD3 */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII_RXD2 */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* PI2 RGMII_RXD1 */ \
@@ -1280,8 +1282,17 @@ void user_uart5_ontxchar(void * ctx);
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* PI13 RGMII_CLKIN */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* PI14 MDC */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* PI15 MDIO */ \
+		\
 		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
-} while (0)
+	} while (0)
+
+#else /* WITHETHHW */
+
+	#define ETHERNET_INITIALIZE() do { \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 6, 0 * UINT32_C(1) << 6); /* PI6 PHYRSTB */ \
+	} while (0)
+
+#endif /* WITHETHHW */
 
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE() do { \
@@ -1293,7 +1304,7 @@ void user_uart5_ontxchar(void * ctx);
 	TXDISABLE_INITIALIZE(); \
 	TUNE_INITIALIZE(); \
 	USBD_EHCI_INITIALIZE(); \
-	ETH_INITIALIZE(); \
+	ETHERNET_INITIALIZE(); \
 } while (0)
 
 // TUSB parameters
