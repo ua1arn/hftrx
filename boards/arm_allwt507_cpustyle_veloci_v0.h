@@ -705,7 +705,7 @@ void user_uart5_ontxchar(void * ctx);
 		switch (target) { \
 		case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
-		default: break; \
+		default: local_delay_us(1); break; \
 		} \
 	} while (0)
 
@@ -720,6 +720,7 @@ void user_uart5_ontxchar(void * ctx);
 		arm_hardware_pioe_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
 		arm_hardware_pioe_outputs(targetadck, 1 * targetadck); /*  */ \
 		arm_hardware_pioe_outputs(targetxad2, 1 * targetxad2); /*  */ \
+		local_delay_us(1); \
 	} while (0)
 
 	// MOSI & SCK port
@@ -753,6 +754,7 @@ void user_uart5_ontxchar(void * ctx);
 			arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
 			arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
 			arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+			local_delay_us(1); \
 		} while (0)
 
 	#elif WITHSPISW
@@ -761,6 +763,7 @@ void user_uart5_ontxchar(void * ctx);
 			arm_hardware_pioh_outputs(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); 	/* PH6 SPI1_CLK */ \
 			arm_hardware_pioh_outputs(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); 	/* PH7 SPI1_MOSI */ \
 			arm_hardware_pioh_inputs(SPI_MISO_BIT); 	/* PH8 SPI1_MISO */ \
+			local_delay_us(1); \
 		} while (0)
 	#endif
 	#define HARDWARE_SPI_CONNECT() do { \
@@ -906,8 +909,8 @@ void user_uart5_ontxchar(void * ctx);
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0)
 	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 12)	/* PE12 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -943,18 +946,18 @@ void user_uart5_ontxchar(void * ctx);
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
 	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
 	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 2)	/* PE2 - fir CS ~FPGA_FIR_CLK */
 
 	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 3)	/* PE3 - fir1 WE */
 
 	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 0)	/* PE0 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
@@ -996,7 +999,7 @@ void user_uart5_ontxchar(void * ctx);
 
 #if WITHUSBHW
 
-	#define TARGET_GPIOE_VBUSON_BIT (UINT32_C(1) << 18)	// PE18 - единицей включение питания для device
+	#define TARGET_GPIOE_VBUSON_BIT 0//(UINT32_C(1) << 18)	// PE18 - единицей включение питания для device
 	#define	USBD_EHCI_INITIALIZE() do { \
 		arm_hardware_pioe_outputs(TARGET_GPIOE_VBUSON_BIT, 0 * TARGET_GPIOE_VBUSON_BIT); \
 	} while (0)
@@ -1211,8 +1214,8 @@ void user_uart5_ontxchar(void * ctx);
 	#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
 	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 4)			/* PA10 : tsc/LCD reset, XS26, pin 22 */
 
-	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOA, BOARD_GT911_RESET_PIN, !! (v)); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOA, BOARD_GPIOA_GT911_INT_PIN, !! (v)); } while (0)
+	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOA, BOARD_GT911_RESET_PIN, !! (v)); local_delay_us(1); } while (0)
+	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOA, BOARD_GPIOA_GT911_INT_PIN, !! (v)); local_delay_us(1); } while (0)
 
 	#define BOARD_GT911_RESET_INITIO_1() do { \
 		arm_hardware_pioa_outputs2m(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN); \
