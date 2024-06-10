@@ -1360,7 +1360,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	usleep(timeUS);
 #else
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000uL);
+	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000);
 	//
 	volatile unsigned long t;
 	for (t = 0; t < top; ++ t)
@@ -1375,8 +1375,10 @@ void local_delay_ms(int timeMS)
 #if 0 //LINUX_SUBSYSTEM
 	usleep(timeMS * 1000);
 #else
+	if (timeMS == 0)
+		return;
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000uL);
+	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{
