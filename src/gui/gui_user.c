@@ -292,6 +292,9 @@ static window_t windows [] = {
 #if WITHEXTIO_LAN
 	{ WINDOW_EXTIOLAN, 		 WINDOW_UTILS,			ALIGN_CENTER_X,  "LAN IQ Stream server", 1, window_stream_process, },
 #endif /* WITHEXTIO_LAN */
+#if WITHWNB
+	{ WINDOW_WNBCONFIG, 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
+#endif /* WITHWNB */
 };
 
 /* Возврат ссылки на окно */
@@ -691,7 +694,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8",  	 	"", 				},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_wnb", 		"WNB", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -704,6 +707,11 @@ static void gui_main_process(void)
 		button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 		local_snprintf_P(btn_ft8->text, ARRAY_SIZE(btn_ft8->text), PSTR("FT8"));
 #endif /* WITHFT8 */
+
+#if ! WITHWNB
+		button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
+		local_snprintf_P(btn_wnb->text, ARRAY_SIZE(btn_wnb->text), "");
+#endif /* ! WITHWNB */
 
 #if GUI_SHOW_INFOBAR
 
@@ -822,19 +830,19 @@ static void gui_main_process(void)
 			button_t * btn_speaker = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_Receive");
 			button_t * btn_ft8 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_ft8");
-			button_t * btn_2 = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_2");
+			button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
 
 			if (bh == btn_notch)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
-			else if (bh == btn_2)
+#if WITHWNB
+			else if (bh == btn_wnb)
 			{
-#if WITHGUIDEBUG
-				gui_open_debug_window();
-#endif /*WITHGUIDEBUG */
+				btn_wnb->is_locked = wnb_state_switch();
 			}
+#endif /* WITHWNB */
 
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -933,6 +941,7 @@ static void gui_main_process(void)
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_txrx = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_txrx");
 			button_t * btn_notch = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_notch");
+			button_t * btn_wnb = (button_t*) find_gui_element(TYPE_BUTTON, win, "btn_wnb");
 #if WITHTX
 			if (bh == btn_txrx)
 			{
@@ -956,6 +965,22 @@ static void gui_main_process(void)
 					footer_buttons_state(CANCELLED);
 				}
 			}
+#if WITHWNB
+			else if (bh == btn_wnb)
+			{
+				window_t * const win = get_win(WINDOW_WNBCONFIG);
+				if (win->state == NON_VISIBLE)
+				{
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_wnb);
+				}
+				else
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+			}
+#endif /* WITHWNB */
 		}
 		break;
 
@@ -6461,10 +6486,11 @@ static text_field_t * tf_log = NULL;
 
 void stream_log(char * str)
 {
-	if (tf_log)
+	if (tf_log && check_for_parent_window() == WINDOW_EXTIOLAN)
+	{
 		textfield_add_string(tf_log, str, COLORPIP_WHITE);
-
-	put_to_wm_queue(get_win(WINDOW_EXTIOLAN), WM_MESSAGE_UPDATE);
+		put_to_wm_queue(get_win(WINDOW_EXTIOLAN), WM_MESSAGE_UPDATE);
+	}
 }
 
 static void window_stream_process(void)
@@ -6537,5 +6563,122 @@ static void window_stream_process(void)
 }
 
 #endif /* # WITHEXTIO_LAN */
+
+#if WITHWNB
+
+static void window_wnbconfig_process(void)
+{
+	window_t * const win = get_win(WINDOW_WNBCONFIG);
+	static unsigned update = 0;
+	static enc_var_t enc;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		unsigned x = 0, y = 0, interval = 24;
+
+		static const label_t labels [] = {
+			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_name", "Threshold:  ", FONT_MEDIUM, COLORPIP_WHITE, 0, },
+			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_val",  "xxxxx", 		FONT_MEDIUM, COLORPIP_WHITE, 1, },
+			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbagwindow_name",  "AVG window: ",	FONT_MEDIUM, COLORPIP_WHITE, 2, },
+			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbagwindow_val",   "xxxxx",		FONT_MEDIUM, COLORPIP_WHITE, 3, },
+		};
+
+		win->lh_count = ARRAY_SIZE(labels);
+		unsigned labels_size = sizeof(labels);
+		win->lh_ptr = (label_t*) malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		for (unsigned i = 0; i < win->lh_count; i += 2)
+		{
+			label_t * lh1 = & win->lh_ptr [i];
+			label_t * lh2 = & win->lh_ptr [i + 1];
+
+			lh1->x = x;
+			lh1->y = y;
+			lh1->visible = VISIBLE;
+
+			lh2->x = x + 130;
+			lh2->y = y;
+			lh2->visible = VISIBLE;
+
+			y = y + get_label_height(lh1) + interval;
+		}
+
+		hamradio_enable_encoder2_redirect();
+		enable_window_move(win);
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		update = 1;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_LABEL_PRESS)
+		{
+			label_t * lh = (label_t *) ptr;
+			enc.select = lh->index;
+			enc.change = 0;
+			enc.updated = 1;
+		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		enc.change = action;
+		enc.updated = 1;
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
+		break;
+
+	default:
+		break;
+	}
+
+	if (enc.updated)
+	{
+		enc.updated = 0;
+
+		for(unsigned i = 0; i < win->lh_count; i ++)
+			win->lh_ptr [i].color = COLORPIP_WHITE;
+
+		ASSERT(enc.select < win->lh_count);
+
+		if (enc.select == 0 || enc.select == 1)
+		{
+			win->lh_ptr [0].color = COLORPIP_YELLOW;
+			win->lh_ptr [1].color = COLORPIP_YELLOW;
+			uint_fast16_t v = wnb_get_threshold();
+			wnb_set_threshold(v + enc.change);
+		}
+		else if (enc.select == 2 || enc.select == 3)
+		{
+			win->lh_ptr [2].color = COLORPIP_YELLOW;
+			win->lh_ptr [3].color = COLORPIP_YELLOW;
+			uint_fast16_t v = wnb_get_awg_window();
+			wnb_set_awg_window(v + enc.change);
+		}
+
+		update = 1;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		label_t * lbl_wnbthreshold_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_wnbthreshold_val");
+		local_snprintf_P(lbl_wnbthreshold_val->text, ARRAY_SIZE(lbl_wnbthreshold_val->text), "%d", wnb_get_threshold());
+
+		label_t * lbl_wnbagwindow_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_wnbagwindow_val");
+		local_snprintf_P(lbl_wnbagwindow_val->text, ARRAY_SIZE(lbl_wnbagwindow_val->text), "%d", wnb_get_awg_window());
+	}
+}
+
+#endif /* WITHWNB */
 
 #endif /* WITHTOUCHGUI */

@@ -49,6 +49,7 @@ enum {
 	hw_vfo_sel_pos		= 26,
 	adc_rand_pos 		= 27,
 	iq_test_pos			= 28,
+	wnb_pos				= 29,
 };
 
 #if WITHCPUTHERMOLEVEL && CPUSTYLE_XCZU
@@ -457,8 +458,8 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 /*************************************************************/
 
 void * iq_rx_blkmem;
-volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
-static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0;
+volatile static uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
+volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0, iq_test = 0, wnb_state = 0;
 const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
 static struct cond_thread * ct_iq = NULL;
@@ -521,6 +522,47 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 		safe_cond_signal(ct_iq);
 }
 
+#if WITHWNB		// Simple noise blanker в PL
+
+const uint16_t threshold_min = 0, threshold_max = 31, awg_window_min = 0, awg_window_max = 256;
+static uint32_t threshold = 30, awg_window = 8;
+
+static void wnb_update(void)
+{
+//	uint32_t v = (awg_window << 16) | (threshold);
+	reg_write(XPAR_IQ_MODEM_WNB_CONFIG, threshold);
+}
+
+void wnb_set_threshold(uint16_t v)
+{
+	if (v >= threshold_min && v <= threshold_max)
+	{
+		threshold = v;
+		wnb_update();
+	}
+}
+
+void wnb_set_awg_window(uint16_t v)
+{
+	if (v >= awg_window_min && v <= awg_window_max)
+	{
+		awg_window = v;
+		wnb_update();
+	}
+}
+
+uint16_t wnb_get_threshold(void)
+{
+	return threshold;
+}
+
+uint16_t wnb_get_awg_window(void)
+{
+	return awg_window;
+}
+
+#endif /* WITHWNB */
+
 #if WITHEXTIO_LAN
 
 #include <sys/socket.h>
@@ -532,12 +574,12 @@ void stream_log(char * str);
 
 #define TCP_PORT 1001
 
-struct cond_thread * ct_rts = NULL;
+struct cond_thread ct_rts;
 pthread_t eth_main_t, eth_send_t, eth_int_t;
 int sockServer, sockClient;
 uint8_t streambuf[4096] = { 0 };
 char strbuf[128];
-static uint8_t stream_state = STREAM_IDLE, auto_restart = 1;
+static uint8_t stream_state = STREAM_IDLE, auto_restart = 0;
 struct sockaddr_in local_addr;
 volatile uint32_t * stream_rate, * stream_data, * stream_count;
 
@@ -579,7 +621,7 @@ void * eth_stream_interrupt_thread(void * args)
 				uint32_t pos = * stream_count;
 				uint16_t offset = pos >= 512 ? 0 : 4096;
 				memcpy(streambuf, (uint8_t *) stream_data + offset, 4096);
-				safe_cond_signal(ct_rts);
+				safe_cond_signal(& ct_rts);
 			}
 		} else {
 			perror("poll()");
@@ -656,7 +698,38 @@ void * eth_main_thread(void * args)
 			}
 		}
 
-		safe_cond_wait(ct_rts);
+		safe_cond_wait(& ct_rts);
+
+#if 0				// Инжекция импульсных помех
+		{
+			uint32_t * b = (uint32_t *) streambuf;
+
+			for (int i = 0; i < 1024; i ++)
+			{
+				if (i % 20 == 0)
+					b[i] = 0x7FFFFFFF;
+				if (i % 50 == 0)
+					b[i] = 0x1FFFFFF;
+				if (i % 100 == 0)
+					b[i] = 0x2FFFFFF;
+			}
+		}
+#endif
+
+#if WITHWNB && 0		// Программный simple noise blanker
+		if (wnb_state)
+		{
+			int32_t * const b = (int32_t *) streambuf;
+
+			for (int i = 0; i < 1024; i ++)
+			{
+				uint32_t absv = b[i] >> 31 ? (~ b[i] + 1) : b[i];
+				if (absv > 1 << threshold)
+					b[i] = 0x0;
+			}
+		}
+#endif /* WITHWNB */
+
 		if (send(sockClient, streambuf, 4096, MSG_NOSIGNAL) < 0)
 		{
 			local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "TCP connection from %s is closed", inet_ntoa(addrClient.sin_addr));
@@ -690,6 +763,7 @@ void server_stop(void)
 		local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "Stream server stopped");
 		stream_log(strbuf);
 		server_kill();
+		linux_cancel_thread(eth_main_t);
 		stream_state = STREAM_IDLE;
 	}
 }
@@ -721,13 +795,17 @@ void linux_iq_init(void)
 
 	* stream_rate = 160;
 
-	linux_init_cond(ct_rts);
+	linux_init_cond(& ct_rts);
 	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, 1);
 #endif /* WITHEXTIO_LAN */
 
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
+
+#if WITHWNB
+	wnb_update();
+#endif /* WITHWNB */
 
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
@@ -739,6 +817,20 @@ void linux_iq_thread(void)
 	uint32_t pos = * iq_count_rx;
 	uint16_t offset = pos >= DMABUFFSIZE32RX ? 0 : SIZERX8;
 	memcpy(rxbuf, (uint8_t *) iq_rx_blkmem + offset, SIZERX8);
+
+#if WITHWNB && 0		// Программный simple noise blanker
+	if (wnb_state)
+	{
+		int32_t * const b = (int32_t *) rxbuf;
+
+		for (int i = 0; i < DMABUFFSIZE32RX; i ++)
+		{
+			uint32_t absv = b[i] >> 31 ? (~ b[i] + 1) : b[i];
+			if (absv > 1 << threshold)
+				b[i] = 0x0;
+		}
+	}
+#endif /* WITHWNB */
 
 	iq_proccessing(rxbuf, SIZERX8);
 }
@@ -808,7 +900,6 @@ void linux_run_shell_cmd(const char * argv [])
 
 void linux_init_cond(struct cond_thread * ct)
 {
-	ct = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	ASSERT(ct != NULL);
 	pthread_cond_init(& ct->ready_cond, NULL);
 	pthread_mutex_init(& ct->ready_mutex, NULL);
@@ -937,6 +1028,7 @@ void linux_user_init(void)
 
 	xcz_resetn_modem(1);
 
+	ct_iq = (struct cond_thread *) malloc(sizeof(struct cond_thread));
 	linux_init_cond(ct_iq);
 
 #if WITHLVGL
@@ -969,7 +1061,8 @@ void update_modem_ctrl(void)
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
 			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
-			| (hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
+			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
+			| (!! wnb_state << wnb_pos)
 			| 0;
 
 	* modem_ctrl = v;
@@ -1044,12 +1137,24 @@ uint8_t iq_shift_tx(uint8_t val)
 	return tx_shift;
 }
 
+uint8_t wnb_state_switch(void)
+{
+	wnb_state = wnb_state ? 0 : 1;
+	update_modem_ctrl();
+
+	return wnb_state;
+}
+
 uint32_t iq_cic_test_process(void)
 {
 	return 0;
 }
 
-void iq_cic_test(uint32_t val) {}
+void iq_cic_test(uint32_t val)
+{
+	iq_test = val != 0;
+	update_modem_ctrl();
+}
 
 #if WITHDSPEXTFIR
 volatile uint32_t * fir_reload = NULL;

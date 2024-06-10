@@ -46,6 +46,7 @@ static void window_3d_process(void);
 static void window_lfm_process(void);
 static void window_lfm_spectre_process(void);
 static void window_stream_process(void);
+static void window_wnbconfig_process(void);
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -100,6 +101,9 @@ enum {
 #if WITHEXTIO_LAN
 	WINDOW_EXTIOLAN,
 #endif /* WITHEXTIO_LAN */
+#if WITHWNB
+	WINDOW_WNBCONFIG,
+#endif /* WITHWNB */
 
 	WINDOWS_COUNT
 };
