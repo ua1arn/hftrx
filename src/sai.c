@@ -5988,9 +5988,13 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 
-	AUDIO_CODEC->SYSCLK_CTL = ~ 0;
-	AUDIO_CODEC->MOD_CLK_ENA = ~ 0;
-	AUDIO_CODEC->MOD_RST_CTL = ~ 0;
+	AUDIO_CODEC->SYSCLK_CTL =
+			(UINT32_C(1) << 11) |	// AIF1CLK_ENA
+			(UINT32_C(1) << 7) |	// AIF2CLK_ENA
+			(UINT32_C(1) << 3) |	// SYSCLK_ENA
+		0;
+	AUDIO_CODEC->MOD_CLK_ENA = 0xFFFF;
+	AUDIO_CODEC->MOD_RST_CTL = 0xFFFF;
 
 	PRINTF("SYSCLK_CTL=%08X\n", (unsigned) AUDIO_CODEC->SYSCLK_CTL);
 	PRINTF("MOD_CLK_ENA=%08X\n", (unsigned) AUDIO_CODEC->MOD_CLK_ENA);
@@ -6011,7 +6015,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 0);	// HUB_EN
 
 	////AUDIO_CODEC->AC_DAC_DAP_CTRL = 0;	// DAP off, HPF off
-
+	AUDIO_CODEC->ADC_DIG_CTRL |= (UINT32_C(1) << 15);	// ENAD ADC Digital part enable
+	AUDIO_CODEC->DAC_DIG_CTRL |= (UINT32_C(1) << 15);	// ENDA DAC Digital Part Enable
     ///-----LDO-----
 	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
 //	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 31);	// ALDO_EN
