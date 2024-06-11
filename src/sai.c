@@ -5800,11 +5800,12 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//CCU->AUDIO_CODEC_4X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
 
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 0);	// Gating Clock For AC Digital
-	CCU->BUS_SOFT_RST_REG2 |= (UINT32_C(1) << 0);	// AC Reset
+	CCU->BUS_SOFT_RST_REG3 |= (UINT32_C(1) << 0);	// AC Reset
 
 
 	CCU->AC_DIG_CLK_REG  |= (UINT32_C(1) << 31);	// SCLK_1X_GATING
 	CCU->AC_DIG_CLK_REG  |= (UINT32_C(1) << 30);	// SCLK_4X_GATING
+	//PRINTF("AC_DIG_CLK_REG=%08X\n", (unsigned) CCU->AC_DIG_CLK_REG);
 
 //	PRINTF("AudioCodec: t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
