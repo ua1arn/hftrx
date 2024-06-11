@@ -5979,6 +5979,80 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	// Настройка аналогового тракта
 #if CPUSTYLE_A64
+	#warning CPUSTYLE_A64 to be implemented
+
+	PRINTF("PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
+
+	ASSERT(DMABUFFSTEP16TX == 2);
+
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
+
+	AUDIO_CODEC->SYSCLK_CTL = ~ 0;
+	AUDIO_CODEC->MOD_CLK_ENA = ~ 0;
+
+	PRINTF("SYSCLK_CTL=%08X\n", (unsigned) AUDIO_CODEC->SYSCLK_CTL);
+	PRINTF("MOD_CLK_ENA=%08X\n", (unsigned) AUDIO_CODEC->MOD_CLK_ENA);
+
+	AUDIO_CODEC->DA_FCTL |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->DA_FCTL &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
+	AUDIO_CODEC->DA_FCTL &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+
+	AUDIO_CODEC->DA_INT |= (UINT32_C(1) << 7);	// TX_DRQ TX FIFO Empty DRQ Enable
+	AUDIO_CODEC->DA_INT |= (UINT32_C(1) << 3);	// RX_DRQ RX FIFO Data Available DRQ Enable
+
+	//AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 0);	// HUB_EN
+
+	////AUDIO_CODEC->AC_DAC_DAP_CTRL = 0;	// DAP off, HPF off
+
+    ///-----LDO-----
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+//	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 31);	// ALDO_EN
+//	AUDIO_CODEC->POWER_REG |= (UINT32_C(1) << 30);	// HPLDO_EN
+	//PRINTF("AUDIO_CODEC->POWER_REG=%08X\n", (unsigned) AUDIO_CODEC->POWER_REG);
+    ///-------------
+
+#if 0
+	// moved to audiocodechw_setvolume
+	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
+	// Offset 0x310 DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG =
+		1 * (UINT32_C(1) << 9) | 	// RSWITCH - use 1: VRA1
+		1 * (UINT32_C(1) << 20) |	// IOPVRS VRA2 Buffer OP Bias Current Select
+		1 * (UINT32_C(1) << 18) |	// ILINEOUTAMPS LINEOUTL/R AMP Bias Current Select
+		1 * (UINT32_C(1) << 16) |	// IOPDACS OPDAC Bias Current Select
+		(UINT32_C(1) << 15) | (UINT32_C(1) << 14) |	// DACLEN, DACREN
+		(UINT32_C(1) << 13) | (UINT32_C(1) << 11) |	// LINEOUTLEN, LINEOUTREN
+		//(UINT32_C(1) << 12) | (UINT32_C(1) << 10) |	// LMUTE, RMUTE: 1 - not mute
+		level * (UINT32_C(1) << 0) | // LINEOUT volume control
+		0;
+
+	// Offset 0x314 MIXER Analog Control Register
+	AUDIO_CODEC->MIXER_REG =
+		! mute * 0x02 * (UINT32_C(1) << 20) |	// LMIXMUTE - not mute  Left Channel DAC
+		! mute * 0x02 * (UINT32_C(1) << 16) |	// RMIXMUTE - not mute  Right Channel DAC
+		1 * (UINT32_C(1) << 11) |	// LMIXEN: 0 - на 6 dB меньше
+		1 * (UINT32_C(1) << 10) |	// RMIXEN: 0 - на 6 dB меньше
+		0;
+#endif
+
+	// not needed - switched by RSWITCH
+//	AUDIO_CODEC->RAMP_REG =
+////		0x00 * (UINT32_C(1) << 4) |	// RS Ramp Step
+////		1 * (UINT32_C(1) << 0) |	// RDEN Ramp Digital Enable
+//		0;
+
+	//PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
+	//0x0000000005096310: 0x00153d1f 0x00aa0d33 0x00000000 0x00000011
+	//AUDIO_CODEC->DAC_REG = 0x00153D1F;
+	//AUDIO_CODEC->MIXER_REG = 0x00AA0D33;
+	//AUDIO_CODEC->RAMP_REG = 0x00000011;
+	//PRINTF("AUDIO_CODEC->DAC_REG=%08X\n", (unsigned) AUDIO_CODEC->DAC_REG);
+
+
+//	AUDIO_CODEC->PHOUT_CTRL;
+//	AUDIO_CODEC->PHIN_CTRL;
+//
+//	AUDIO_CODEC->HP_CTRL;
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
