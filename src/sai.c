@@ -5990,13 +5990,20 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 	AUDIO_CODEC->SYSCLK_CTL = ~ 0;
 	AUDIO_CODEC->MOD_CLK_ENA = ~ 0;
+	AUDIO_CODEC->MOD_RST_CTL = ~ 0;
 
 	PRINTF("SYSCLK_CTL=%08X\n", (unsigned) AUDIO_CODEC->SYSCLK_CTL);
 	PRINTF("MOD_CLK_ENA=%08X\n", (unsigned) AUDIO_CODEC->MOD_CLK_ENA);
+	PRINTF("MOD_RST_CTL=%08X\n", (unsigned) AUDIO_CODEC->MOD_RST_CTL);
 
-	AUDIO_CODEC->DA_FCTL |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
-	AUDIO_CODEC->DA_FCTL &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
-	AUDIO_CODEC->DA_FCTL &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
+	//AUDIO_CODEC->DA_FCTL |= (UINT32_C(1) << 31);	// HUB_EN Audio Hub Enable
+	AUDIO_CODEC->DA_CTL |= (UINT32_C(1) << 2);	// TXEN
+	AUDIO_CODEC->DA_CTL |= (UINT32_C(1) << 1);	// RXEN
+
+
+//	AUDIO_CODEC->DA_FCTL |= (UINT32_C(1) << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+//	AUDIO_CODEC->DA_FCTL &= ~ (UINT32_C(0x07) << 29);	// DAC_FS 48 kHz Sample Rate of DAC
+//	AUDIO_CODEC->DA_FCTL &= ~ (UINT32_C(0x04) << 24);	// FIFO_MODE 00/10: FIFO_I[19:0] = {TXDATA[31:12]
 
 	AUDIO_CODEC->DA_INT |= (UINT32_C(1) << 7);	// TX_DRQ TX FIFO Empty DRQ Enable
 	AUDIO_CODEC->DA_INT |= (UINT32_C(1) << 3);	// RX_DRQ RX FIFO Data Available DRQ Enable
@@ -6228,6 +6235,14 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 {
 #if CPUSTYLE_A64
+	if (state)
+	{
+		AUDIO_CODEC->DA_CTL |= (UINT32_C(1) << 0);		// GEN Globe Enable
+	}
+	else
+	{
+		AUDIO_CODEC->DA_CTL &= ~ (UINT32_C(1) << 0);	// GEN Globe Enable
+	}
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 	if (state)
 	{
