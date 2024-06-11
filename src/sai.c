@@ -5714,6 +5714,102 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 #if CPUSTYLE_A64
 	#warning Implement for CPUSTYLE_A64
 
+	// Default CCU settings:
+	//	AudioCodec: allwnrt113_get_audio0pllhs_freq()=1032000 kHz
+	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
+	//	AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=1032000 kHz
+
+	if (1)
+	{
+		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29);
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
+
+		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
+			(N - 1) * (UINT32_C(1) << 8) |
+			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
+			0;
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
+
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+		while ((CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
+			;
+	}
+
+//	const unsigned long src = 0x03;
+//	//	Clock Source Select
+//	//	00: PLL_AUDIO(1X)
+//	//	01: PLL_AUDIO(2X)
+//	//	10: PLL_AUDIO(4X)
+//	//	11: PLL_AUDIO(hs)
+//	unsigned long clk;
+//	switch (src)
+//	{
+//	default:
+//	case 0x00:
+//		clk = t507_get_pll_audio_1x_freq();
+//		break;
+//	case 0x01:
+//		clk = t507_get_pll_audio_2x_freq();
+//		break;
+//	case 0x02:
+//		clk = t507_get_pll_audio_4x_freq();
+//		break;
+//	case 0x03:
+//		clk = t507_get_pll_audio_hs_freq();
+//		break;
+//	}
+////	//TP();
+//	unsigned divider = calcdivround2(clk, mclkf);	/* делитель */
+//	if (divider < 1)
+//		divider = 1;
+//	else if (divider > 15)
+//		divider = 15;
+
+///	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+	local_delay_ms(10);
+
+	unsigned divider = 1;
+	PRINTF("AudioCodec: divider=%u, mclkf=%u, lrckf=%u\n", divider, (unsigned) mclkf, (unsigned) lrckf);
+
+	// SCLK = Clock Source/M.
+	//	Clock Source Select
+	//	00: PLL_AUDIO(1X)
+	//	01: PLL_AUDIO(2X)
+	//	10: PLL_AUDIO(4X)
+	//	11: PLL_AUDIO(hs)
+
+	const unsigned long src_1x = 0x02;	// 10: PLL_AUDIO(4X)
+	const unsigned long src_4x = 0x02;	// 10: PLL_AUDIO(4X)
+
+	// AudioCodec тактируется от AUDIO_CODEC_1X_CLK_REG
+	const portholder_t codec_clk_1x_reg =
+		((uint_fast32_t) src_1x << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
+		0;
+	const portholder_t codec_clk_4x_reg =
+		((uint_fast32_t) src_4x << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) (divider - 1) << 0) |	// Factor M (1..16)
+		0;
+
+///	CCU->AUDIO_CODEC_1X_CLK_REG = codec_clk_1x_reg;
+///	CCU->AUDIO_CODEC_4X_CLK_REG = codec_clk_4x_reg;
+
+///	CCU->AUDIO_CODEC_1X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
+	//CCU->AUDIO_CODEC_4X_CLK_REG |= (UINT32_C(1) << 31);	// Gating Special Clock
+
+	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 0);	// Gating Clock For AC Digital
+	CCU->BUS_SOFT_RST_REG2 |= (UINT32_C(1) << 0);	// AC Reset
+
+
+	CCU->AC_DIG_CLK_REG  |= (UINT32_C(1) << 31);	// SCLK_1X_GATING
+	CCU->AC_DIG_CLK_REG  |= (UINT32_C(1) << 30);	// SCLK_4X_GATING
+
+//	PRINTF("AudioCodec: t507_get_pll_audio_hs_freq()=%u kHz\n", (unsigned) (t507_get_pll_audio_hs_freq() / 1000));
+//	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
+//	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_1x_freq() / 1000));
+
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Default CCU settings:
