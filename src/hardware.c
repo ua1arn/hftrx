@@ -3368,6 +3368,7 @@ SystemInit_BOOT0(void)
 	resetCPU(1);
 	sysinit_fpu_initialize();
 	sysinit_gpio_initialize();
+	local_delay_initialize();
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -3387,6 +3388,7 @@ SystemInit(void)
 #endif
 	sysinit_pll_initialize(0);	// PLL iniitialize - minimal freq
 	sysinit_gpio_initialize();
+	local_delay_initialize();
 	sysinit_debug_initialize();
 //	PRINTF("csr_read_mhint=0x%lx\n", (long unsigned) csr_read_mhint());
 //	PRINTF("csr_read_mxstatus=0x%lx\n", (long unsigned) csr_read_mxstatus());
