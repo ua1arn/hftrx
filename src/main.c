@@ -60,6 +60,7 @@ main(void)
 #endif /* LINUX_SUBSYSTEM */
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
 	sysinit_gpio_initialize();
+	local_delay_initialize();
 #endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
 #if WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) /* || WITHISBOOTLOADER */)
 

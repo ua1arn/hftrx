@@ -1349,6 +1349,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #endif
 	return top;
 }
+
+static unsigned cpufreqMHz = 10;
 // Атрибут RAMFUNC_NONILINE убран, так как функция
 // используется в инициализации SDRAM на процессорах STM32F746.
 // TODO: перекалибровать для FLASH контроллеров.
@@ -1360,7 +1362,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	usleep(timeUS);
 #else
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000);
+	const unsigned long top = local_delay_uscycles(timeUS, cpufreqMHz);
 	//
 	volatile unsigned long t;
 	for (t = 0; t < top; ++ t)
@@ -1378,7 +1380,7 @@ void local_delay_ms(int timeMS)
 	if (timeMS == 0)
 		return;
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000);
+	const unsigned long top = local_delay_uscycles(1000, cpufreqMHz);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{
@@ -1388,6 +1390,11 @@ void local_delay_ms(int timeMS)
 		}
 	}
 #endif /* LINUX_SUBSYSTEM */
+}
+
+void local_delay_initialize(void)
+{
+	cpufreqMHz = CPU_FREQ / 1000000;
 }
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_TMS320F2833X */
