@@ -124,14 +124,14 @@
 		//#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		//#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
 
-		#define WITHI2S0HW	1	/* Использование I2S0 */
+		//#define WITHI2S0HW	1	/* Использование I2S0 */
 		//#define WITHI2S1HW	1	/* Использование I2S1 */
 		//#define WITHI2S2HW	1	/* Использование I2S2 */
 
-		#define WITHCODEC1_I2S0_DUPLEX_MASTER	1		/* Используемые каналы AHUB_APBIFм через I2S0 */
+		//#define WITHCODEC1_I2S0_DUPLEX_MASTER	1		/* Используемые каналы AHUB_APBIFм через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аИспользуемые каналы AHUB_APBIF
 		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
 
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
