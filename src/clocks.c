@@ -3549,7 +3549,7 @@ void set_pll_cpux_axi(unsigned n)
 }
 //#endif /* CPUSTYLE_T113 */
 
-#if 0
+#if 1
 static void set_pll_periph0(void)
 {
 	uint32_t val;
@@ -3599,8 +3599,21 @@ static void set_pll_periph0(void)
 
 static void set_ahb(void)
 {
-	CCU->PSI_CLK_REG = (2 << 0) | (0 << 8);
-	CCU->PSI_CLK_REG |= (0x03 << 24);
+#if 0
+	// 300 MHz
+	CCU->PSI_CLK_REG =
+		(0x03 << 24) |
+		(1 << 8) |			// N = 1
+		((1 - 1) << 0) |	// M (1..4)
+		0;
+#else
+	// 200 MHz
+	CCU->PSI_CLK_REG =
+		(0x03 << 24) |
+		(0 << 8) |			// N = 1
+		((3 - 1) << 0) |	// M (1..4)
+		0;
+#endif
 	local_delay_ms(1);
 }
 
@@ -4565,7 +4578,7 @@ void allwnrt113_pll_initialize(void)
 	set_pll_riscv_axi(PLL_CPU_N);	// see sdram.c
 #endif
 	//set_pll_periph0();
-	//set_ahb();
+	set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
 	//set_dma();
 	//set_mbus();
