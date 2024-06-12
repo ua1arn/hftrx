@@ -3734,6 +3734,7 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
     return REFINFREQ;	// 24 MHz usually
 }
 
+// T113-s3
 uint_fast32_t allwnrt113_get_32k_freq(void)
 {
 	return allwnrt113_get_hosc_freq() / 750;	// Найдено на блок-схеме CCU
@@ -4177,10 +4178,10 @@ uint_fast32_t allwnrt113_get_apb1_freq(void)
 	}
 }
 
-// T113-s3
-// прямого указания откуда берется AHB0 в документации нет.
+// Прямого указания, откуда берётся AHB0, в документации нет.
 // DMAC, HSTIMER, MSGBOX тактируются этой частотой.
-// В документации Allwinner V853 соответствует PSI
+// В документации Allwinner V853 AHB соответствует PSI
+// T113-s3
 uint_fast32_t allwnrt113_get_ahb0_freq(void)
 {
 	return allwnrt113_get_psi_freq();
