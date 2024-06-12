@@ -4063,7 +4063,7 @@ enum
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
-		static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		#endif /* WITHRTS96 || WITHRTS192 */
