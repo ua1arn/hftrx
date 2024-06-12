@@ -3549,7 +3549,6 @@ void set_pll_cpux_axi(unsigned n)
 }
 //#endif /* CPUSTYLE_T113 */
 
-#if 1
 static void set_pll_periph0(void)
 {
 	uint32_t val;
@@ -3606,6 +3605,7 @@ static void set_ahb(void)
 		(1 << 8) |			// N = 1
 		((1 - 1) << 0) |	// M (1..4)
 		0;
+	(void) CCU->PSI_CLK_REG;
 #else
 	// 200 MHz
 	CCU->PSI_CLK_REG =
@@ -3613,21 +3613,21 @@ static void set_ahb(void)
 		(0 << 8) |			// N = 1
 		((3 - 1) << 0) |	// M (1..4)
 		0;
+	(void) CCU->PSI_CLK_REG;
 #endif
-	local_delay_ms(1);
 }
 
 static void set_apb(void)
 {
 	CCU->APB0_CLK_REG = (2 << 0) | (1 << 8);
 	CCU->APB0_CLK_REG |= (0x03 << 24);
-	local_delay_ms(1);
+	(void) CCU->APB0_CLK_REG;
 
 	// UARTx
 	CCU->APB1_CLK_REG = (2 << 0) | (1 << 8);
 	CCU->APB1_CLK_REG |= (0x03 << 24);	/* 11: PLL_PERI(1X) */
 	//CCU->APB1_CLK_REG |= (0x02 << 24);	/* 10: PSI_CLK */
-	local_delay_ms(1);
+	(void) CCU->APB1_CLK_REG;
 
 /*
 	sys_uart_puts("APB0_CLK_REG = ");
@@ -3641,18 +3641,14 @@ static void set_apb(void)
 
 static void set_dma(void)
 {
-	/* Dma reset */
-	CCU->DMA_BGR_REG |= (1 << 16);
-	local_delay_ms(20);
-	/* Enable gating clock for dma */
-	CCU->DMA_BGR_REG |= (1 << 0);
-	local_delay_ms(20);
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
+
+	CCU->DMA_BGR_REG &= ~ (UINT32_C(1) << 16);
+	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);
 }
 
 static void set_mbus(void)
 {
-	uint32_t val;
-
 	/* Reset mbus domain */
 	CCU->MBUS_CLK_REG &= ~ (UINT32_C(1) << 30);				// MBUS Reset 1: Assert reset
 	(void) CCU->MBUS_CLK_REG;
@@ -3661,7 +3657,6 @@ static void set_mbus(void)
 	/* Enable mbus master clock gating */
 	//CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
 }
-#endif
 
 static void allwnrt113_module_pll_enable(volatile uint32_t * reg)
 {
@@ -4582,8 +4577,9 @@ void allwnrt113_pll_initialize(void)
 	//set_pll_periph0();
 	set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
-	//set_dma();
 	set_mbus();
+	set_dma();
+
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
