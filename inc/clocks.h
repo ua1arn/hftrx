@@ -200,12 +200,19 @@ uint_fast32_t allwnrt113_get_nand_freq(void);
 uint_fast32_t allwnrt113_get_smhc0_freq(void);
 uint_fast32_t allwnrt113_get_smhc1_freq(void);
 uint_fast32_t allwnrt113_get_smhc2_freq(void);
-uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
 uint_fast32_t allwnrt113_get_peripll1x_freq(void);
 uint_fast32_t allwnrt113_get_audio_codec_dac_freq(void);
 uint_fast32_t allwnrt113_get_audio_codec_adc_freq(void);
+uint_fast32_t allwnrt113_get_psi_freq(void);
+uint_fast32_t allwnrt113_get_apb0_freq(void);
+uint_fast32_t allwnrt113_get_apb1_freq(void);
+uint_fast32_t allwnrt113_get_mbus_freq(void);
+uint_fast32_t allwnrt113_get_ahb0_freq(void);	// ???
+uint_fast32_t allwnrt113_get_axi_freq(void);	// ???
+
 uint_fast32_t allwnr_t507_get_audio_codec_1x_freq(void);
 uint_fast32_t allwnr_t507_get_audio_codec_4x_freq(void);
+uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
 
 // Allwinner A64
 uint_fast32_t allwnr_a64_get_cpux_freq(void);

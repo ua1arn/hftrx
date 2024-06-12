@@ -11027,13 +11027,23 @@ void hightests(void)
 #endif
 #if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616)
 	{
-		//PRINTF("PSI_AHB1_AHB2_CFG_REG=%08X\n", (unsigned) CCU->PSI_AHB1_AHB2_CFG_REG);
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t507_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_axi_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_mbus_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_psi_ahb1_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_psi_ahb1_ahb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
+	}
+#endif
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+	{
+		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
+		PRINTF("allwnrt113_get_axi_freq()=%u MHz\n", (unsigned) (allwnrt113_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_mbus_freq()=%u MHz\n", (unsigned) (allwnrt113_get_mbus_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_psi_freq()=%u MHz\n", (unsigned) (allwnrt113_get_psi_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnrt113_get_ahb0_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnrt113_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnrt113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnrt113_get_apb0_freq() / 1000 / 1000));
 	}
 #endif
 #if 0

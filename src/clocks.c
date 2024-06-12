@@ -3734,6 +3734,17 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
     return REFINFREQ;	// 24 MHz usually
 }
 
+uint_fast32_t allwnrt113_get_32k_freq(void)
+{
+	return allwnrt113_get_hosc_freq() / 750;	// Найдено на блок-схеме CCU
+    //return HARDWARE_CLK32K_FREQ;	// 32 kHz RC
+}
+
+uint_fast32_t allwnrt113_get_16M_freq(void)
+{
+    return HARDWARE_CLK16M_RC_FREQ;	// 16 MHz RC
+}
+
 uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 {
 	// PLL_CPU = InputFreq*N
@@ -4076,6 +4087,7 @@ uint_fast32_t allwnrt113_get_ce_freq(void)
 	}
 }
 
+// T113
 uint_fast32_t allwnrt113_get_ve_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->CE_CLK_REG;
@@ -4090,6 +4102,7 @@ uint_fast32_t allwnrt113_get_ve_freq(void)
 	}
 }
 
+// T113
 uint_fast32_t allwnrt113_get_psi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;
@@ -4104,16 +4117,17 @@ uint_fast32_t allwnrt113_get_psi_freq(void)
 		return allwnrt113_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 01: CLK32K */
-		return HARDWARE_CLK32K_FREQ / pgdiv;
+		return allwnrt113_get_32k_freq() / pgdiv;
 	case 0x02:
 		/* 010: CLK16M_RC */
-		return HARDWARE_CLK16M_RC_FREQ / pgdiv;
+		return allwnrt113_get_16M_freq() / pgdiv;
 	case 0x03:
 		/* 11: PLL_PERI(1X) */
 		return allwnrt113_get_peripll1x_freq() / pgdiv;
 	}
 }
 
+// T113
 uint_fast32_t allwnrt113_get_apb0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB0_CLK_REG;
@@ -4128,7 +4142,7 @@ uint_fast32_t allwnrt113_get_apb0_freq(void)
 		return allwnrt113_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 01: CLK32K */
-		return HARDWARE_CLK32K_FREQ / pgdiv;
+		return allwnrt113_get_32k_freq() / pgdiv;
 	case 0x02:
 		/* 10: PSI_CLK */
 		return allwnrt113_get_psi_freq() / pgdiv;
@@ -4138,6 +4152,7 @@ uint_fast32_t allwnrt113_get_apb0_freq(void)
 	}
 }
 
+// T113
 uint_fast32_t allwnrt113_get_apb1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB1_CLK_REG;
@@ -4152,7 +4167,7 @@ uint_fast32_t allwnrt113_get_apb1_freq(void)
 		return allwnrt113_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 01: CLK32K */
-		return HARDWARE_CLK32K_FREQ / pgdiv;
+		return allwnrt113_get_32k_freq() / pgdiv;
 	case 0x02:
 		/* 10: PSI_CLK */
 		return allwnrt113_get_psi_freq() / pgdiv;
@@ -4162,19 +4177,29 @@ uint_fast32_t allwnrt113_get_apb1_freq(void)
 	}
 }
 
-uint_fast32_t allwnrt113_get_ahb_freq(void)
+// T113-s3
+// прямого указания откуда берется AHB0 в документации нет.
+// DMAC, HSTIMER, MSGBOX тактируются этой частотой.
+// В документации Allwinner V853 соответствует PSI
+uint_fast32_t allwnrt113_get_ahb0_freq(void)
 {
-	return allwnrt113_get_hosc_freq();
+	return allwnrt113_get_psi_freq();
 }
 
-// T113
+// T113-s3
+uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
+{
+	return allwnrt113_get_ahb0_freq();
+}
+
+// T113-s3
 // The clock of the UART is from APB1.
 uint_fast32_t allwnrt113_get_uart_freq(void)
 {
 	return allwnrt113_get_apb1_freq();
 }
 
-// T113
+// T113-s3
 // The clock of the CAN is from APB1.
 uint_fast32_t allwnrt113_get_can_freq(void)
 {
@@ -4326,9 +4351,50 @@ uint_fast32_t allwnrt113_get_smhc2_freq(void)
 	}
 }
 
+// CPU Clock = Clock Source
+// CPU_AXI Clock = Clock Source/M
+
+// T113-s3
 uint_fast32_t allwnrt113_get_arm_freq(void)
 {
-	return allwnrt113_get_pll_cpu_freq();
+	const uint_fast32_t clkreg = CCU->CPU_AXI_CFG_REG;
+	const uint_fast32_t P = UINT32_C(1) << ((clkreg >> 16) & 0x03); // PLL Output External Divider P
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:	// 000: HOSC
+		return allwnrt113_get_hosc_freq();
+	case 0x01:	// 001: CLK32K
+		return allwnrt113_get_32k_freq();
+	case 0x02:	// 010: CLK16M_RC
+		return allwnrt113_get_16M_freq();
+	case 0x03:	// 011: PLL_CPU/P
+		return allwnrt113_get_pll_cpu_freq() / P;
+	case 0x04:	// 100: PLL_PERI(1X)
+		return allwnrt113_get_peripll1x_freq();
+	case 0x05:	//101: PLL_PERI(2X)
+		return allwnrt113_get_peripll2x_freq();
+	case 0x06:	// 110: PLL_PERI(800M)
+		return allwnrt113_get_pll_peri_800M_freq();
+	}
+}
+
+// CPU Clock = Clock Source
+// CPU_AXI Clock = Clock Source/M
+// T113-s3
+uint_fast32_t allwnrt113_get_axi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->CPU_AXI_CFG_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x03);
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x03);	// для чего?
+	return allwnrt113_get_arm_freq() / M;
+}
+
+// The MBUS clock is from the 4 frequency-division of PLL_DDR, and it has the same source with the DRAM clock
+// T113-s3
+uint_fast32_t allwnrt113_get_mbus_freq(void)
+{
+	return allwnrt113_get_pll_ddr_freq() / 4;
 }
 
 uint_fast32_t allwnrt113_get_tconlcd_freq(void)
@@ -4435,10 +4501,10 @@ uint_fast32_t allwnrf133_get_riscv_freq(void)
 		return allwnrt113_get_hosc_freq() / M;
 	case 0x01:
 		/* 001: CLK32K */
-		return HARDWARE_CLK32K_FREQ / M;
+		return allwnrt113_get_32k_freq() / M;
 	case 0x02:
 		/* 010: CLK16M_RC */
-		return HARDWARE_CLK16M_RC_FREQ / M;
+		return allwnrt113_get_16M_freq() / M;
 	case 0x03:
 		/* 011: PLL_PERI(800M) */
 		return allwnrt113_get_pll_peri_800M_freq() / M;
@@ -4476,10 +4542,10 @@ uint_fast32_t allwnrt113_get_dsp_freq(void)
 		return allwnrt113_get_hosc_freq() / M;
 	case 0x01:
 		/* 001: CLK32K */
-		return HARDWARE_CLK32K_FREQ / M;
+		return allwnrt113_get_32k_freq() / M;
 	case 0x02:
 		/* 010: CLK16M_RC */
-		return HARDWARE_CLK16M_RC_FREQ / M;
+		return allwnrt113_get_16M_freq() / M;
 	case 0x03:
 		/* 010: PLL_PERI(2X) */
 		return allwnrt113_get_peripll2x_freq() / M;
@@ -4487,11 +4553,6 @@ uint_fast32_t allwnrt113_get_dsp_freq(void)
 		/*110: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_audio1pll_div2_freq() / M;
 	}
-}
-
-uint_fast32_t allwnrt113_get_pl1_timer_freq(void)
-{
-	return allwnrt113_get_ahb_freq();
 }
 
 
