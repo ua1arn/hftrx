@@ -118,6 +118,9 @@ static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; 
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch;
 
+static uint_fast8_t 	glob_wnb;	// Noise blanker enable (NB)
+static int_fast16_t 	glob_wnbfence10;	// 0.1 dB step noise blanker fence (dbFS)
+
 // codec-related parameters
 static uint_fast16_t 	glob_afgain;
 static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
@@ -4336,6 +4339,17 @@ demodulator_SAM(
 	return audio;
 }
 
+
+static FLOAT_t wnb_maxv = 1;
+static FLOAT_t wnb_minv = - 1;
+
+static void setNBfence(int dB)
+{
+	const FLOAT_t fence = db2ratio(dB);
+	wnb_maxv = fence;
+	wnb_minv = - fence;
+}
+
 // ПРИЁМ
 // Обрабатывается floating point квадратура
 // При необходимости применяется АРУ
@@ -4348,6 +4362,20 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	)
 {
 	//enum { DUALRXFLT = 1 };
+
+	if (glob_wnb)
+	{
+		// TODO: complete implementation
+		// Noise blanker processing
+		if (vp0f.IV > wnb_maxv)
+			vp0f.IV = 0;
+		else if (vp0f.IV < wnb_minv)
+			vp0f.IV = 0;
+		if (vp0f.QV > wnb_maxv)
+			vp0f.QV = 0;
+		else if (vp0f.QV < wnb_minv)
+			vp0f.QV = 0;
+	}
 
 	FLOAT_t r;
 	switch (dspmode)
@@ -5473,7 +5501,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		create_amd(& amds [pathi], 0, - pll, + pll, zeta, omegaN, tauR, tauI);
 	}
 
-	// шумодав
+	// Пороговый шумодав (Squelch)
 	{
 		const volatile agcparams_t * const agcp = & rxsmeterparams;
 
@@ -5481,6 +5509,9 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const FLOAT_t lower = agccalcstrength_log(agcp, agcp->mininput);
 		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
 	}
+
+	// Noise Blanker (NB)
+	setNBfence(glob_wnbfence10);
 
 	// Уровень сигнала самоконтроля
 #if WITHWAVPLAYER
