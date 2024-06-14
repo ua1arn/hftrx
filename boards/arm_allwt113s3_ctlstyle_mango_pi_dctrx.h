@@ -24,9 +24,9 @@
 
 	#if CPUSTYLE_F133
 		//#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz */
-		#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
-		//#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
-		#define PLL_DDR_N	22	/* 24 MHz * 22 = 528 MHz DDR2 clock	*/
+		#define RV_PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+		//#define RV_PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
+		#define RV_PLL_DDR_N	22	/* 24 MHz * 22 = 528 MHz DDR2 clock	*/
 	#elif CPUSTYLE_T113
 		#define PLL_CPU_N 50	/* 24 MHz * 50 = 1200 MHz https://linux-sunxi.org/T113-s3 say about 1.2 GHz */
 		//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
