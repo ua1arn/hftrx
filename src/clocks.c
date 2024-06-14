@@ -3598,7 +3598,7 @@ static void set_pll_periph0(void)
 
 static void set_ahb(void)
 {
-#if 0
+#if 1
 	// 300 MHz
 	CCU->PSI_CLK_REG =
 		(0x03 << 24) |
@@ -3650,12 +3650,15 @@ static void set_dma(void)
 static void set_mbus(void)
 {
 	/* Reset mbus domain */
-	CCU->MBUS_CLK_REG &= ~ (UINT32_C(1) << 30);				// MBUS Reset 1: Assert reset
-	(void) CCU->MBUS_CLK_REG;
+//	CCU->MBUS_CLK_REG &= ~ (UINT32_C(1) << 30);				// MBUS Reset 1: Assert reset
+//	(void) CCU->MBUS_CLK_REG;
 	CCU->MBUS_CLK_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
 	(void) CCU->MBUS_CLK_REG;
 	/* Enable mbus master clock gating */
-	//CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
+//	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
+#if (CPUSTYLE_F133 || CPUSTYLE_T113_S4)
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
+#endif /* (CPUSTYLE_F133 || CPUSTYLE_T113_S4) */
 }
 
 static void allwnrt113_module_pll_enable(volatile uint32_t * reg)
@@ -4577,10 +4580,10 @@ void allwnrt113_pll_initialize(void)
 #endif
 
 	//set_pll_periph0();
-//	set_ahb();
-//	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
-//	set_mbus();
-//	set_dma();
+	set_ahb();
+	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
+	set_mbus();
+	set_dma();
 
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
