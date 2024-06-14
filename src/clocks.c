@@ -4577,10 +4577,10 @@ void allwnrt113_pll_initialize(void)
 #endif
 
 	//set_pll_periph0();
-	set_ahb();
-	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
-	set_mbus();
-	set_dma();
+//	set_ahb();
+//	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
+//	set_mbus();
+//	set_dma();
 
 	allwnrt113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 	allwnrt113_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
