@@ -3598,7 +3598,7 @@ static void set_pll_periph0(void)
 
 static void set_ahb(void)
 {
-#if 1
+#if 0
 	// 300 MHz
 	CCU->PSI_CLK_REG =
 		(0x03 << 24) |
