@@ -549,7 +549,7 @@
 		switch (target) { \
 		case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
-		default: break; \
+		default: local_delay_us(1); break; \
 		} \
 	} while (0)
 
@@ -565,6 +565,7 @@
 		arm_hardware_piog_outputs(targetadc2, 1 * targetadc2); /*  */ \
 		arm_hardware_piog_outputs(targetadck, 1 * targetadck); /*  */ \
 		arm_hardware_piog_outputs(targetxad2, 1 * targetxad2); /*  */ \
+		local_delay_us(1); \
 	} while (0)
 
 	// MOSI & SCK port
@@ -702,8 +703,8 @@
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0)
 	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 12)	/* PE12 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -722,6 +723,7 @@
 		arm_hardware_piob_inputs(FPGA_NSTATUS_BIT); \
 		arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
 		arm_hardware_piog_inputs(FPGA_INIT_DONE_BIT); \
+		local_delay_us(1); \
 	} while (0)
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
@@ -751,17 +753,17 @@
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
 	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); local_delay_us(1); } while (0)
 	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 12)	/* PD12 - fir CS ~FPGA_FIR_CLK */
 	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); local_delay_us(1); } while (0)
 	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 4)	/* PG4 - fir1 WE */
 
 	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOG, (v), !! (0) * (v)); local_delay_us(1); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOG, (v), !! (1) * (v)); local_delay_us(1); } while (0)
 	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 5)	/* PG5 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_CS_SET() do { TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); } while (0)
@@ -775,6 +777,7 @@
 			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			local_delay_us(1); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
