@@ -251,26 +251,31 @@
 	#define ENCODER2_BITB		(UINT32_C(1) << 4)		// PE4
 
 	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
-	#define BOARD_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define BOARD_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define BOARD_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
+	#define BOARD_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	#define ENCODER_INITIALIZE() do { \
-		static einthandler_t h1; \
-		static einthandler_t h2; \
-		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, 0); \
-		einthandler_initialize(& h1, BOARD_GPIOE_ENCODER_BITS, spool_encinterrupts, & encoder1); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, BOARD_GPIOE_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & h1); \
-		arm_hardware_pioe_altfn2(BOARD_GPIOE_ENCODER2_BITS, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, 0); \
-		einthandler_initialize(& h2, 0 * BOARD_GPIOE_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-		arm_hardware_pioe_onchangeinterrupt(0 * BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, BOARD_GPIOE_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & h2); \
+		static einthandler_t eh1; \
+		static einthandler_t eh2; \
+		static ticker_t th2; \
+		/* Main encoder */ \
+		arm_hardware_pioe_altfn2(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, 0); \
+		einthandler_initialize(& eh1, BOARD_ENCODER_BITS, spool_encinterrupts, & encoder1); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
+		/* FUNC encoder */ \
+		arm_hardware_pioe_inputs(BOARD_ENCODER2_BITS); \
+		ticker_initialize(& th2, 1, spool_encinterrupts, & encoder2); \
+		ticker_add(& th2); \
+		arm_hardware_pioe_altfn20(BOARD_ENCODER2_BITS, GPIO_CFG_EINT); \
+		einthandler_initialize(& eh2, BOARD_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, BOARD_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
 	} while (0)
 
 	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
 	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
-#endif
+#endif /* WITHENCODER */
 
 	// Инициализируются I2S1 в дуплексном режиме.
 	// аудиокодек

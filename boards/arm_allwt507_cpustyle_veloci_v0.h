@@ -354,7 +354,7 @@ void user_uart5_ontxchar(void * ctx);
 		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, BOARD_ENCODER6_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh6); \
 	} while (0)
 
-#endif
+#endif /* WITHENCODER */
 
 #define I2S0HW_INITIALIZE(master) do { \
 	/*arm_hardware_pioi_altfn50(UINT32_C(1) << 6,	GPIO_CFG_AF3); *//* PA6 H_I2S0_MCLK	*/ \
