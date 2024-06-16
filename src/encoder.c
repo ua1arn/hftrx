@@ -108,18 +108,6 @@ void spool_encinterrupts(void * ctx)
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
-static int safegetposition(encoder_t * e)
-{
-	int v;
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql);
-	v = e->position;
-	e->position = 0;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
-	return v;
-}
-
 static void encoder_clear(encoder_t * e)
 {
 	IRQL_t oldIrql;
@@ -176,9 +164,9 @@ void encoderA_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 static void
 encspeed_spool(void * ctx)
 {
-	const int p1 = safegetposition(& encoder1);	// Валкодер #1
+	const int p1 = encoder_get_delta(& encoder1, 1);	// Валкодер #1
 	const int p1kbd = safegetposition_kbd();
-	const int p2 = safegetposition(& encoder2);
+	const int p2 = encoder_get_delta(& encoder2, 1);
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
@@ -208,6 +196,15 @@ encspeed_spool(void * ctx)
 	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 }
 
+static void encoder1_clear2(encoder_t * e)
+{
+	rotate_kbd = 0;
+
+	// HISTLEN == 4
+	enchist [0] = enchist [1] = enchist [2] = enchist [3] = 0;
+	tichist = 0;
+
+}
 /* Обработка данных от валколдера */
 
 void encoders_clear(void)
@@ -222,11 +219,7 @@ void encoders_clear(void)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
 
-	rotate_kbd = 0;
-
-	// HISTLEN == 4
-	enchist [0] = enchist [1] = enchist [2] = enchist [3] = 0; 
-	tichist = 0;
+	encoder1_clear2(& encoder1);
 
 	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 }
@@ -281,22 +274,20 @@ encoder_get_snapshot(
 	const uint_fast8_t derate
 	)
 {
-	int hrotate;
-
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& encspeedlock, & oldIrql);
-	hrotate = e->rotate;
-	e->rotate = 0;
 
 	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-	const div_t h = div(hrotate + e->backup_rotate, derate);
+	const div_t h = div(e->rotate + e->backup_rotate, derate);
 	e->backup_rotate = h.rem;
+	e->rotate = 0;
+
 	IRQLSPIN_UNLOCK(& encspeedlock, oldIrql);
 
 	return h.quot;
 }
 
-/* получение количества шагов */
+/* получение количества шагов, накопленного с момента предыдущего опроса */
 int_least16_t
 encoder_get_delta(
 	encoder_t * e,
@@ -310,12 +301,21 @@ encoder_get_delta(
 	position = e->position;
 	e->position = 0;
 
-	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-	const div_t h = div(position + e->backup_position, derate);
-	e->backup_position = h.rem;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+	if (derate != 1)
+	{
+		/* Уменьшение разрешения валкодера в зависимости от установок в меню */
+		const div_t h = div(position + e->backup_position, derate);
+		e->backup_position = h.rem;
+		IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 
-	return h.quot;
+		return h.quot;
+	}
+	else
+	{
+		IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
+
+		return position;
+	}
 }
 
 void encoder_pushback(encoder_t * const e, int outsteps, uint_fast8_t hiresdiv)
