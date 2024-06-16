@@ -10585,7 +10585,7 @@
    <register>
     <name>LCD_FRM_TAB_REG</name>
     <displayName>LCD_FRM_TAB_REG</displayName>
-    <description>4 LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04</description>
+    <description>4 LCD FRM Table Register (N=0,1,2,3) 0x002C+N*0x04</description>
     <addressOffset>0x02C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

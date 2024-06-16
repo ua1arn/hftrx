@@ -158,6 +158,9 @@
 #regdef; AS_FAULTADDRESS_LO     ; 0x20	; (RO) Fault Address for address space n, low word
 #regdef; AS_FAULTADDRESS_HI     ; 0x24	; (RO) Fault Address for address space n, high word
 #regdef; AS_STATUS              ; 0x28	; (RO) Status flags for address space n
+
+# Additional Bifrost AS registers
+
 #regdef; AS_TRANSCFG_LO         ; 0x30	; (RW) Translation table configuration for address space n, low word
 #regdef; AS_TRANSCFG_HI         ; 0x34	; (RW) Translation table configuration for address space n, high word
 #regdef; AS_FAULTEXTRA_LO       ; 0x38	; (RO) Secondary fault address for address space n, low word

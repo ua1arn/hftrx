@@ -2026,7 +2026,7 @@ typedef struct TCON_LCD_Type
              uint32_t reserved_0x00C;
     volatile uint32_t LCD_FRM_CTL_REG;                /*!< Offset 0x010 LCD FRM Control Register */
     volatile uint32_t LCD_FRM_SEED_REG [0x006];       /*!< Offset 0x014 LCD FRM Seed Register (N=0,1,2,3,4,5) 0x0014+N*0x04 */
-    volatile uint32_t LCD_FRM_TAB_REG;                /*!< Offset 0x02C 4 LCD FRM Table Reg ister (N=0,1,2,3) 0x002C+N*0x04 */
+    volatile uint32_t LCD_FRM_TAB_REG;                /*!< Offset 0x02C 4 LCD FRM Table Register (N=0,1,2,3) 0x002C+N*0x04 */
              uint32_t reserved_0x030 [0x0003];
     volatile uint32_t LCD_3D_FIFO_REG;                /*!< Offset 0x03C LCD 3D FIFO Register */
     volatile uint32_t LCD_CTL_REG;                    /*!< Offset 0x040 LCD Control Register */

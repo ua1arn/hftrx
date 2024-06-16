@@ -3690,6 +3690,7 @@ void arm_hardware_dma2d_initialize(void)
 #if WITHGPUHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
 //#define GPU_CTRLBASE (GPU_BASE + 0x10000)
 
+// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_regs.h
 
 /* GPU_COMMAND values */
 #define GPU_COMMAND_NOP                0x00 /* No operation, nothing happens */
@@ -3738,6 +3739,23 @@ static void gpu_wait(unsigned mask)
 	while ((GPU_CONTROL->GPU_IRQ_RAWSTAT & mask) != mask)
 		;
 	GPU_CONTROL->GPU_IRQ_CLEAR = mask;
+}
+
+/* AS_COMMAND register commands */
+#define AS_COMMAND_NOP			0x00	/* NOP Operation */
+#define AS_COMMAND_UPDATE		0x01	/* Broadcasts the values in AS_TRANSTAB and ASn_MEMATTR to all MMUs */
+#define AS_COMMAND_LOCK			0x02	/* Issue a lock region command to all MMUs */
+#define AS_COMMAND_UNLOCK		0x03	/* Issue a flush region command to all MMUs */
+#define AS_COMMAND_FLUSH		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs
+						   (deprecated - only for use with T60x) */
+#define AS_COMMAND_FLUSH_PT		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs */
+#define AS_COMMAND_FLUSH_MEM		0x05	/* Wait for memory accesses to complete, flush all the L1s cache then
+						   flush all L2 caches then issue a flush region command to all MMUs */
+
+
+static void gpu_as_command(unsigned as, unsigned cmd)
+{
+
 }
 
 void GPU_IRQHandler(void)
@@ -3851,6 +3869,8 @@ void board_gpu_initialize(void)
 	gpu_command(GPU_COMMAND_SOFT_RESET);
 	gpu_wait(RESET_COMPLETED);
 	gpu_command(GPU_COMMAND_NOP);
+
+	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
 
 	PRINTF("board_gpu_initialize done.\n");
 }
