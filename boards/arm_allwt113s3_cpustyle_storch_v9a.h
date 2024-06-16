@@ -282,7 +282,7 @@
 		ticker_add(& th2); \
 		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		einthandler_initialize(& eh2, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
+		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh2); \
 	} while (0)
 
 #endif /* WITHENCODER */
