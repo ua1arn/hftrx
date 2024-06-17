@@ -190,6 +190,7 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t bottom);
 
 static dpcobj_t dpcobj_1stimer;
+static dpcobj_t dpcobj_01stimer;
 static void tuner_eventrestart(void);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
@@ -4795,28 +4796,51 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #endif /* WITHMODEM */
 
+static const uint_fast16_t actbring_time = 20;	// 2 secounds
+
+static uint_fast16_t actbring_afvolume;
 // Начать отображение текущего положения регулировки AF
 static void bring_afvolume(void)
 {
-
+	actbring_afvolume = actbring_time;
 }
+
+static uint_fast16_t actbring_rfvolume;
 
 // Начать отображение текущего положения регулировки RF
 static void bring_rfvolume(void)
 {
-
+	actbring_rfvolume = actbring_time;
 }
+
+static uint_fast16_t actbring_swr;
+
+// Начать отображение текущего положения регулировки RF
+static void bring_swr(void)
+{
+	actbring_swr = actbring_time;
+}
+
+static uint_fast16_t actbring_tuneA;
 
 // Начать отображение текущей частоты на водопаде
 static void bring_tuneA(void)
 {
-
+	actbring_tuneA = actbring_time;
 }
 
 // Разрешить отображение текущей частоты на водопаде
 uint_fast8_t hamradio_get_bringtuneA(void)
 {
-	return 0;
+	return actbring_tuneA;
+}
+
+static void bringtimers(void)
+{
+	actbring_afvolume = actbring_afvolume ? (actbring_afvolume - 1) : 0;
+	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
+	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
+	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
 }
 
 #if WITHAUTOTUNER
@@ -15883,6 +15907,11 @@ static void dpc_1stimer(void * arg)
 #endif
 }
 
+static void dpc_01stimer(void * ctx)
+{
+	bringtimers();
+}
+
 int board_islfmmode(void)
 {
 #if WITHLFM
@@ -15899,6 +15928,15 @@ static void second_event(void * ctx)
 
 	//VERIFY(board_dpc_call(& dpcobj_1stimer));
 	board_dpc_call(& dpcobj_1stimer);
+}
+
+/* Вызывается из обработчика прерываний десять раз в секунду */
+static void second01_event(void * ctx)
+{
+	(void) ctx;	// приходит NULL
+
+	//VERIFY(board_dpc_call(& dpcobj_1stimer));
+	board_dpc_call(& dpcobj_01stimer);
 }
 
 ////////////////////
@@ -19049,6 +19087,10 @@ applowinitialize(void)
 
 	dpcobj_initialize(& dpcobj_1stimer, dpc_1stimer, NULL);
 	ticker_initialize(& ticker_1S, NTICKS(1000), second_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& ticker_1S);
+
+	dpcobj_initialize(& dpcobj_01stimer, dpc_01stimer, NULL);
+	ticker_initialize(& ticker_1S, NTICKS(100), second01_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& ticker_1S);
 
 #if WITHAUTOTUNER
