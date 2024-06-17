@@ -257,7 +257,7 @@ struct tc358768_drv_data
 
 #define TC358768_I2C_ADDR (0x0E * 2)
 
-unsigned
+static uint_fast32_t
 tc358768_rd_reg_16or32bits(unsigned register_id)
 {
 	const unsigned i2caddr = TC358768_I2C_ADDR;
@@ -276,8 +276,8 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 			return 1;
 
 		return
-				(((unsigned long) bufr [0]) << 8) |
-				(((unsigned long) bufr [1]) << 0) |
+				(((uint_fast32_t) bufr [0]) << 8) |
+				(((uint_fast32_t) bufr [1]) << 0) |
 				0;
 
 #elif WITHTWISW
@@ -291,8 +291,8 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 		i2c_read(& v2, I2C_READ_NACK);	// ||
 
 		return
-				(((unsigned long) v1) << 8) |
-				(((unsigned long) v2) << 0) |
+				(((uint_fast32_t) v1) << 8) |
+				(((uint_fast32_t) v2) << 0) |
 				0;
 #endif
 	}
@@ -308,10 +308,10 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 			return 1;
 
 		return
-				(((unsigned long) bufr [0]) << 8) |
-				(((unsigned long) bufr [1]) << 0) |
-				(((unsigned long) bufr [2]) << 24) |
-				(((unsigned long) bufr [3]) << 16) |
+				(((uint_fast32_t) bufr [0]) << 8) |
+				(((uint_fast32_t) bufr [1]) << 0) |
+				(((uint_fast32_t) bufr [2]) << 24) |
+				(((uint_fast32_t) bufr [3]) << 16) |
 				0;
 
 #elif WITHTWISW
@@ -327,10 +327,10 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 		i2c_read(& v4, I2C_READ_NACK);	// ||
 
 		return
-				(((unsigned long) v1) << 8) |
-				(((unsigned long) v2) << 0) |
-				(((unsigned long) v3) << 24) |
-				(((unsigned long) v4) << 16) |
+				(((uint_fast32_t) v1) << 8) |
+				(((uint_fast32_t) v2) << 0) |
+				(((uint_fast32_t) v3) << 24) |
+				(((uint_fast32_t) v4) << 16) |
 				0;
 #endif
 	}
@@ -1328,11 +1328,11 @@ static uint8_t mipi_read_buff[30];
 
 #define ROW_LINE 64
 
-#define COMIPFB_HSYNC_HIGH_ACT		(0x03)
-#define COMIPFB_VSYNC_HIGH_ACT		(0x04)
-
-#define MIPI_VIDEO_MODE 		(0x05)
-#define MIPI_COMMAND_MODE 		(0x06)
+//#define COMIPFB_HSYNC_HIGH_ACT		(0x03)
+//#define COMIPFB_VSYNC_HIGH_ACT		(0x04)
+//
+//#define MIPI_VIDEO_MODE 		(0x05)
+//#define MIPI_COMMAND_MODE 		(0x06)
 
 #define ARRAY_AND_SIZE(x)		(uint8_t *)(x), ARRAY_SIZE(x)
 
