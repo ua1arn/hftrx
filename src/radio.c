@@ -4550,12 +4550,12 @@ uint_fast8_t amenuset(void)
 }
 
 /* состояние для мерцающих индикаторов на диспле */
-uint_fast8_t habradio_get_blinkphase(void)
+uint_fast8_t hamradio_get_blinkphase(void)
 {
 	return gblinkphase;
 }
 
-uint_fast8_t habradio_get_classa(void)
+uint_fast8_t hamradio_get_classa(void)
 {
 #if WITHPACLASSA && WITHTX
 	return gclassamode;

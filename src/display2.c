@@ -1536,7 +1536,7 @@ static void display2_rec3(
 	const FLASHMEM char * const labels [2] = { text_pau, text_rec };
 
 	/* формирование мигающей надписи REC */
-	display2_text_P(x, y, labels, habradio_get_blinkphase() ? colors_2state_rec : colors_2state, state);
+	display2_text_P(x, y, labels, hamradio_get_blinkphase() ? colors_2state_rec : colors_2state, state);
 
 #endif /* WITHUSEAUDIOREC */
 }
@@ -2673,7 +2673,7 @@ static void display2_classa7(
 	)
 {
 #if WITHPACLASSA
-	const uint_fast8_t active = habradio_get_classa();
+	const uint_fast8_t active = hamradio_get_classa();
 	#if LCDMODE_COLORED
 		static const char classa_text [] = "CLASS A";
 		static const char classa_null [] = "       ";
@@ -2692,7 +2692,7 @@ static void display2_classa3(
 	)
 {
 #if WITHPACLASSA
-	const uint_fast8_t active = habradio_get_classa();
+	const uint_fast8_t active = hamradio_get_classa();
 	#if LCDMODE_COLORED
 		static const char classa_text [] = "CLA";
 		static const char classb_text [] = "CLB";
@@ -5785,6 +5785,45 @@ static void display2_waterfall(
 					0, 0,	// координаты окна источника
 					ALLDX, p2h, 	// размеры окна источника
 					BITBLT_FLAG_NONE, 0);
+		}
+
+		if (0 && hamradio_get_bringtuneA())
+		{
+			/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+			const uint_fast8_t pathi = 0;	// RX A
+			const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
+			const int_fast32_t bw = display_zoomedbw();
+			uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
+			uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
+
+			if (xleft > xright)
+				xleft = 0;
+			if (xright == xleft)
+				xright = xleft + 1;
+			if (xright >= ALLDX)
+				xright = ALLDX - 1;
+
+			static PACKEDCOLORPIP_T bwpic [GXSIZE(ALLDX, ALLDY)];
+
+			unsigned picalpha = 128;	// Полупрозрачность
+			colpip_fillrect(
+				bwpic, ALLDX, ALLDY,
+				0, 0,
+				xright - xleft, WFDY,
+				TFTALPHA(picalpha, COLORPIP_SPECTRUMFG)
+				);
+
+			colpip_bitblt(
+					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
+					colorpip, BUFDIM_X, BUFDIM_Y,
+					xleft, WFY0,
+					(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
+					bwpic, ALLDX, WFDY,
+					0, 0,	// координаты окна источника
+					xright - xleft, WFDY, // размер окна источника
+					BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
+				);
+
 		}
 	}
 

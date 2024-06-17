@@ -3320,7 +3320,7 @@ int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить лев
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 uint_fast8_t hamradio_get_bkin_value(void);
 uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
-uint_fast8_t habradio_get_blinkphase(void);	/* состояние для мерцающих индикаторов на диспле */
+uint_fast8_t hamradio_get_blinkphase(void);	/* состояние для мерцающих индикаторов на диспле */
 uint_fast8_t hamradio_get_bringtuneA(void);	// Разрешить отображение текущей частоты на водопаде
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
@@ -3355,7 +3355,7 @@ const char * hamradio_change_view_style(uint_fast8_t v);
 uint_fast8_t hamradio_get_viewstyle(void);
 void hamradio_settemp_viewstyle(uint_fast8_t v);
 int_fast8_t hamradio_afresponce(int_fast8_t v);
-uint_fast8_t habradio_get_classa(void);
+uint_fast8_t hamradio_get_classa(void);
 
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
