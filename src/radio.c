@@ -10827,41 +10827,6 @@ flagne_u32(uint_fast32_t * oldval, uint_fast32_t v)
 	return 0;
 }
 
-/* Если изменяемый параметр отличается от старого значения - возврат 1 */
-/* модификация параметра с учетом границ изменения значения */
-static uint_fast8_t
-encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr)
-{
-	uint_fast16_t v = c->value;
-	if (d == 0)
-		return 0;
-	else if (d < 0)
-	{
-		if (- d >= v)
-			v = 0;
-		else
-			v += d;
-		if (v < lower)
-			v = lower;
-	}
-	else
-	{
-		if (d > upper)
-			v = upper;
-		else
-		{
-			v += d;
-			if (v > upper)
-				v = upper;
-		}
-	}
-	if (flagne_u16(& c->value, v))
-	{
-		save_i16(addr, c->value);
-		return 1;
-	}
-	return 0;
-}
 
 #if WITHCAT
 
@@ -10924,6 +10889,42 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 #define FLAGNE_U32_CAT(a,b,c) flagne_u32(& (a)->value, (b))
 
 #endif /* WITHCAT */
+
+/* Если изменяемый параметр отличается от старого значения - возврат 1 */
+/* модификация параметра с учетом границ изменения значения */
+static uint_fast8_t
+encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr, uint_fast8_t catindex)
+{
+	uint_fast16_t v = c->value;
+	if (d == 0)
+		return 0;
+	else if (d < 0)
+	{
+		if (- d >= v)
+			v = 0;
+		else
+			v += d;
+		if (v < lower)
+			v = lower;
+	}
+	else
+	{
+		if (d > upper)
+			v = upper;
+		else
+		{
+			v += d;
+			if (v > upper)
+				v = upper;
+		}
+	}
+	if (FLAGNE_U16_CAT(c, v, catindex))
+	{
+		save_i16(addr, c->value);
+		return 1;
+	}
+	return 0;
+}
 
 uint_fast8_t hamradio_get_ft8cn(void)
 {
@@ -13483,11 +13484,11 @@ directctlupdate(
 			{
 			case 0:
 				/* установка громкости */
-				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1));
+				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1), CAT_AG_INDEX);
 				break;
 			case 1:
 				/* установка IF GAIN */
-				changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1));
+				changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1), CAT_RG_INDEX);
 				break;
 			}
 		}
