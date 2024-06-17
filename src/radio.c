@@ -4796,7 +4796,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #endif /* WITHMODEM */
 
-static const uint_fast16_t actbring_time = 20;	// 2 secounds
+static const uint_fast16_t actbring_time = 10;	// 1 second
 
 static uint_fast16_t actbring_afvolume;
 // Начать отображение текущего положения регулировки AF

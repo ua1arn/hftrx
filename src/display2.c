@@ -5803,11 +5803,11 @@ static void display2_waterfall(
 			if (xright >= ALLDX)
 				xright = ALLDX - 1;
 
-			static PACKEDCOLORPIP_T bwpic [GXSIZE(ALLDX, ALLDY)];
+			static PACKEDCOLORPIP_T bwpic [GXSIZE(ALLDX, WFROWS)];
 
 			unsigned picalpha = 128;	// Полупрозрачность
 			colpip_fillrect(
-				bwpic, ALLDX, ALLDY,
+				bwpic, ALLDX, WFROWS,
 				0, 0,
 				xright - xleft, WFDY,
 				TFTALPHA(picalpha, COLORPIP_SPECTRUMFG)
@@ -5818,7 +5818,7 @@ static void display2_waterfall(
 					colorpip, BUFDIM_X, BUFDIM_Y,
 					xleft, WFY0,
 					(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
-					bwpic, ALLDX, WFDY,
+					bwpic, ALLDX, WFROWS,
 					0, 0,	// координаты окна источника
 					xright - xleft, WFDY, // размер окна источника
 					BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
