@@ -4795,6 +4795,30 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 #endif /* WITHMODEM */
 
+// Начать отображение текущего положения регулировки AF
+static void bring_afvolume(void)
+{
+
+}
+
+// Начать отображение текущего положения регулировки RF
+static void bring_rfvolume(void)
+{
+
+}
+
+// Начать отображение текущей частоты на водопаде
+static void bring_tuneA(void)
+{
+
+}
+
+// Разрешить отображение текущей частоты на водопаде
+uint_fast8_t hamradio_get_bringtuneA(void)
+{
+	return 0;
+}
+
 #if WITHAUTOTUNER
 
 #if WITHAUTOTUNER_N7DDCALGO
@@ -10893,11 +10917,15 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
 /* модификация параметра с учетом границ изменения значения */
 static uint_fast8_t
-encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr, uint_fast8_t catindex)
+encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, int_least16_t d, nvramaddress_t addr, uint_fast8_t catindex, void (* updcb)(void))
 {
 	uint_fast16_t v = c->value;
-	if (d == 0)
+
+	if (d != 0 && updcb != NULL)
+		(* updcb)();
+	else if (d == 0)
 		return 0;
+
 	else if (d < 0)
 	{
 		if (- d >= v)
@@ -13484,11 +13512,11 @@ directctlupdate(
 			{
 			case 0:
 				/* установка громкости */
-				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1), CAT_AG_INDEX);
+				changed |= encoder_flagne_u16(& afgain1, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, delta, OFFSETOF(struct nvmap, afgain1), CAT_AG_INDEX, bring_afvolume);
 				break;
 			case 1:
 				/* установка IF GAIN */
-				changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1), CAT_RG_INDEX);
+				changed |= encoder_flagne_u16(& rfgain1, BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, delta, OFFSETOF(struct nvmap, rfgain1), CAT_RG_INDEX, bring_rfvolume);
 				break;
 			}
 		}
@@ -19932,6 +19960,9 @@ hamradio_main_step(void)
 			} // end keyboard processing
 	#endif /* WITHKEYBOARD */
 
+			if (nrotate != 0)
+				bring_tuneA();	// Начать отображение текущей частоты на водопаде
+
 			if (lockmode == 0)
 			{
 				uint_fast8_t freqchanged = 0;
@@ -19954,6 +19985,9 @@ hamradio_main_step(void)
 					freqchanged = 1;
 				}
 #if ! WITHTOUCHGUI
+				if (nrotate2 != 0)
+					bring_tuneA();	// Начать отображение текущей частоты на водопаде
+
 				if (nrotate2 < 0)
 				{
 					/* Валкодер B: вращали "вниз" */
