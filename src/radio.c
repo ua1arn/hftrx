@@ -10947,9 +10947,9 @@ encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, in
 
 	if (d != 0 && updcb != NULL)
 		(* updcb)();
-	else if (d == 0)
-		return 0;
 
+	if (d == 0)
+		return 0;
 	else if (d < 0)
 	{
 		if (- d >= v)
