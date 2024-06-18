@@ -2009,14 +2009,18 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 	i2c_softbusrelease();
 
-	TWI_TypeDef * const twi = TWIHARD_PTR;
 	hardware_twi_master_configure();
+
+#if defined (TWIHARD_PTR)
 	TWIHARD_INITIALIZE();
+	t113_i2c_stop(TWIHARD_PTR);
+#endif /* defined (TWIHARD_PTR) */
+
 #if defined (TWIHARD2_PTR)
 	TWIHARD2_INITIALIZE();
+	t113_i2c_stop(TWIHARD2_PTR);
 #endif /* defined (TWIHARD2_PTR) */
 
-	t113_i2c_stop(twi);
 }
 
 #else
