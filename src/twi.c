@@ -1576,24 +1576,13 @@ enum {
 	I2C_STAT_IDLE		= 0xf8,
 };
 
-typedef struct i2c_t113_pdata_t {
-//	uintptr_t virt;
-	TWI_TypeDef * io;
-//	char * clk;
-//	int reset;
-//	int sda;
-//	int sdacfg;
-//	int scl;
-//	int sclcfg;
-}i2c_t113_pdata_t;
-
 struct i2c_msg_t {
 	int addr;
 	int len;
 	void * buf;
 };
 
-static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
+static void t113_i2c_set_rate(TWI_TypeDef * twi, uint64_t rate){
 	uint64_t pclk = TWIHARD_FREQ;	//clk_get_rate(pdat->clk);
 	uint_fast64_t freq, delta, best = 0x7fffffffffffffffLL;
 	int tm = 5, tn = 0;
@@ -1615,16 +1604,16 @@ static void t113_i2c_set_rate(struct i2c_t113_pdata_t * pdat, uint64_t rate){
 				break;
 		}
 	}
-	pdat->io->TWI_CCR = ((tm & 0xf) << 3) | ((tn & 0x7) << 0);
+	twi->TWI_CCR = ((tm & 0xf) << 3) | ((tn & 0x7) << 0);
 }
 
 //const uint32_t timeout1;
 
-static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
+static int t113_i2c_wait_status(TWI_TypeDef * twi){
 	const uint32_t timeout = sys_now()+5*10;	//sys_now()+5мс
 	do {
-		if ((pdat->io->TWI_CNTR & (1 << 3))){	// INT_FLAG
-			unsigned int stat = pdat->io->TWI_STAT;
+		if ((twi->TWI_CNTR & (1 << 3))){	// INT_FLAG
+			unsigned int stat = twi->TWI_STAT;
 			//PRINTF("t113_i2c_wait_status1 = 0x%02X\n", stat);
 			return stat;
 		}
@@ -1635,30 +1624,30 @@ static int t113_i2c_wait_status(struct i2c_t113_pdata_t * pdat){
 	return I2C_STAT_BUS_ERROR;
 }
 
-static int t113_i2c_start(struct i2c_t113_pdata_t * pdat){
+static int t113_i2c_start(TWI_TypeDef * twi){
 	//PRINTF("I2C start\n");
-	pdat->io->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
+	twi->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
 	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
 	do {
-		if (!(pdat->io->TWI_CNTR & (1 << 5)))	// M_STA
+		if (!(twi->TWI_CNTR & (1 << 5)))	// M_STA
 		{
 			//PRINTF("I2C start ok\n");
-			return t113_i2c_wait_status(pdat);
+			return t113_i2c_wait_status(twi);
 		}
 	} while (sys_now()<timeout);
 	//PRINTF("I2C start out\n");
-	return t113_i2c_wait_status(pdat);
+	return t113_i2c_wait_status(twi);
 }
 
-static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
+static int t113_i2c_stop(TWI_TypeDef * twi){
 	uint32_t val;
 
-	val = pdat->io->TWI_CNTR;
+	val = twi->TWI_CNTR;
 	val |= (1 << 4) | (1 << 3);	// M_STP INT_FLAG
-	pdat->io->TWI_CNTR = val;
+	twi->TWI_CNTR = val;
 	const uint32_t timeout = sys_now()+5*10;
 	do {
-		if (!(pdat->io->TWI_CNTR & (1 << 4)))	// M_STP
+		if (!(twi->TWI_CNTR & (1 << 4)))	// M_STP
 		{
 			return 0;
 		}
@@ -1666,67 +1655,67 @@ static int t113_i2c_stop(struct i2c_t113_pdata_t * pdat){
 	return 1;
 }
 
-static int t113_i2c_restart(struct i2c_t113_pdata_t * pdat){
+static int t113_i2c_restart(TWI_TypeDef * twi){
 	//PRINTF("I2C start\n");
-	pdat->io->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
+	twi->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
 	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
 	do {
-		if (!(pdat->io->TWI_CNTR & (1 << 5)))	// M_STA
+		if (!(twi->TWI_CNTR & (1 << 5)))	// M_STA
 		{
 			//PRINTF("I2C start ok\n");
-			return t113_i2c_wait_status(pdat);
+			return t113_i2c_wait_status(twi);
 		}
 	} while (sys_now()<timeout);
 	//PRINTF("I2C start out\n");
-	return t113_i2c_wait_status(pdat);
+	return t113_i2c_wait_status(twi);
 }
 
-static int t113_i2c_send_data(struct i2c_t113_pdata_t * pdat, uint8_t dat)
+static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat)
 {
-	pdat->io->TWI_DATA = dat;
-	pdat->io->TWI_CNTR |= (1 << 3);	// INT_FLAG
+	twi->TWI_DATA = dat;
+	twi->TWI_CNTR |= (1 << 3);	// INT_FLAG
 
-	return t113_i2c_wait_status(pdat);
+	return t113_i2c_wait_status(twi);
 }
 
-static int t113_i2c_read(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg){
+static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(pdat, (uint8_t)((msg->addr << 1) | 1)) != I2C_STAT_TX_AR_ACK)
+	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr << 1) | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
-	pdat->io->TWI_CNTR = pdat->io->TWI_CNTR | (1 << 2);
+	twi->TWI_CNTR = twi->TWI_CNTR | (1 << 2);
 	while (len > 0){
 		if (len == 1){
-			pdat->io->TWI_CNTR = (pdat->io->TWI_CNTR & ~(1 << 2)) | (1 << 3);
-			if (t113_i2c_wait_status(pdat) != I2C_STAT_RXD_NAK)
+			twi->TWI_CNTR = (twi->TWI_CNTR & ~(1 << 2)) | (1 << 3);
+			if (t113_i2c_wait_status(twi) != I2C_STAT_RXD_NAK)
 				return -1;
 		}else{
-			pdat->io->TWI_CNTR = pdat->io->TWI_CNTR | (1 << 3);
-			if (t113_i2c_wait_status(pdat) != I2C_STAT_RXD_ACK)
+			twi->TWI_CNTR = twi->TWI_CNTR | (1 << 3);
+			if (t113_i2c_wait_status(twi) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
-		*p++ = pdat->io->TWI_DATA;
+		*p++ = twi->TWI_DATA;
 		len--;
 	}
 	return 0;
 }
 
-static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg)
+static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 {
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(pdat, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
+	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
 	while (len > 0)
 	{
-		if (t113_i2c_send_data(pdat, *p++) != I2C_STAT_TXD_ACK)
+		if (t113_i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
 			return -1;
 		len--;
 	}
@@ -1871,36 +1860,34 @@ static int t113_i2c_write(struct i2c_t113_pdata_t * pdat, struct i2c_msg_t * msg
 //	return 1;
 //}
 
-static i2c_t113_pdata_t pdat_i2c;
-
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	struct i2c_t113_pdata_t * const pdat = & pdat_i2c;
+	TWI_TypeDef * const twi = TWIHARD_PTR;
 	int res;
 	struct i2c_msg_t  msgs;
 	msgs.addr = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
-	res = t113_i2c_start(pdat);
+	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_read start error\n");
-		t113_i2c_stop(&pdat_i2c);
+		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_read(pdat, &msgs);
+	res = t113_i2c_read(twi, &msgs);
 	if (res != 0) {
 		//PRINTF("i2chw_read read err\n");
 		//I2C_ERROR = 0x04;
-//		pdat->io->TWI_CNTR &= ~ (1u << 4);
-		pdat->io->TWI_SRST |= 1u << 0;
-		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
 			;
 		return 1;
 	}
-	t113_i2c_stop(pdat);
+	t113_i2c_stop(twi);
 	return 0;
 }
 
@@ -1908,30 +1895,30 @@ int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 // LSB of slave_address8b ignored */
 int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
-	struct i2c_t113_pdata_t *const  pdat = & pdat_i2c;
+	TWI_TypeDef * const twi = TWIHARD_PTR;
 	int res;
 	struct i2c_msg_t  msgs;
 	msgs.addr = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
-	res = t113_i2c_start(pdat);
+	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_write start error\n");
-		t113_i2c_stop(pdat);
+		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_write(pdat, &msgs);
+	res = t113_i2c_write(twi, &msgs);
 	if (res != 0) {
 		//PRINTF("i2chw_write write err\n");
 		//I2C_ERROR = 0x04;
-//		pdat->io->TWI_CNTR &= ~ (1u << 4);
-		pdat->io->TWI_SRST |= 1u << 0;
-		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
 			;
 		return 1;
 	}
-	t113_i2c_stop(pdat);
+	t113_i2c_stop(twi);
 	return 0;
 }
 
@@ -1939,26 +1926,26 @@ int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 // LSB of slave_address8b ignored */
 int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
-	struct i2c_t113_pdata_t *const  pdat = & pdat_i2c;
+	TWI_TypeDef * const twi = TWIHARD_PTR;
 	int res;
 	struct i2c_msg_t  msgs;
 	msgs.addr = slave_address8b >> 1;
 	msgs.len = wsize;
 	msgs.buf = (void *) wbuf;
 
-	res = t113_i2c_start(pdat);
+	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_exchange 1 start error\n");
-		t113_i2c_stop(pdat);
+		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_write(pdat, &msgs);
+	res = t113_i2c_write(twi, &msgs);
 	if (res != 0) {
 		//PRINTF("i2chw_exchange write err\n");
 		//I2C_ERROR = 0x04;
-//		pdat->io->TWI_CNTR &= ~ (1u << 4);
-		pdat->io->TWI_SRST |= 1u << 0;
-		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
 			;
 		return 1;
 	}
@@ -1967,23 +1954,23 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 	msgs.len = rsize;
 	msgs.buf = (void *) rbuf;
 
-	res = t113_i2c_start(pdat);
+	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_RSTART) {
 		//PRINTF("i2chw_exchange 2 start error\n");
-		t113_i2c_stop(&pdat_i2c);
+		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_read(pdat, &msgs);
+	res = t113_i2c_read(twi, &msgs);
 	if (res != 0) {
 		//PRINTF("i2chw_exchange read err\n");
 		//I2C_ERROR = 0x04;
-//		pdat->io->TWI_CNTR &= ~ (1u << 4);
-		pdat->io->TWI_SRST |= 1u << 0;
-		while ((pdat->io->TWI_SRST & (1u << 0)) != 0)
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
 			;
 		return 1;
 	}
-	t113_i2c_stop(pdat);
+	t113_i2c_stop(twi);
 	return 0;
 }
 
@@ -1992,10 +1979,11 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 	i2c_softbusrelease();
 
+	TWI_TypeDef * const twi = TWIHARD_PTR;
 	hardware_twi_master_configure();
 	TWIHARD_INITIALIZE();
 
-	t113_i2c_stop(&pdat_i2c);
+	t113_i2c_stop(twi);
 }
 
 #else
@@ -2519,12 +2507,13 @@ void hardware_twi_master_configure(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
+	TWI_TypeDef * const twi = TWIHARD_PTR;
 	if (0)
 	{
 
 	}
 #if defined (S_TWI0)
-	else if (TWIHARD_PTR == S_TWI0)
+	else if (twi == S_TWI0)
 	{
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
 		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
@@ -2539,15 +2528,12 @@ void hardware_twi_master_configure(void)
 		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
 	}
 
-	//pdat_i2c.virt = (uintptr_t) TWIHARD_PTR;
-	pdat_i2c.io = TWIHARD_PTR;
+	t113_i2c_set_rate(twi, 400000);
 
-	t113_i2c_set_rate(&pdat_i2c, 400000);
+	twi->TWI_CNTR =  1u << 6;	// BUS_EN
 
-	pdat_i2c.io->TWI_CNTR =  1u << 6;	// BUS_EN
-
-	pdat_i2c.io->TWI_SRST |= 1u << 0;
-	while ((pdat_i2c.io->TWI_SRST & (1u << 0)) != 0)
+	twi->TWI_SRST |= 1u << 0;
+	while ((twi->TWI_SRST & (1u << 0)) != 0)
 		;
 
 #else
