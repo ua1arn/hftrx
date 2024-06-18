@@ -4832,7 +4832,7 @@ static void bring_tuneA(void)
 // Разрешить отображение текущей частоты на водопаде
 uint_fast8_t hamradio_get_bringtuneA(void)
 {
-	return actbring_tuneA;
+	return actbring_tuneA != 0;
 }
 
 static void bringtimers(void)

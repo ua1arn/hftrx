@@ -3492,6 +3492,8 @@ static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old va
 	#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX + 1)	/* Количество перекрывающися буферов FFT спектра (2^param). */
 #endif
 
+static PACKEDCOLORPIP_T bwpic [GXSIZE(ALLDX, ALLDY)];
+
 enum
 {
 	FFTOVERLAP = 1,
@@ -5026,6 +5028,17 @@ display2_wfl_init(
 	wflclear();	// Очистка водопада
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
+
+	if (colpip_hasalpha())
+	{
+		unsigned picalpha = 128;	// Полупрозрачность
+		colpip_fillrect(
+			bwpic, ALLDX, ALLDY,
+			0, 0,
+			ALLDX, ALLDY,
+			TFTALPHA(picalpha, COLORPIP_SPECTRUMFG)
+			);
+	}
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -5551,10 +5564,14 @@ static void display2_spectrum(
 					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xrightv, SPY0, ALLDX - xrightv, SPDY, COLORPIP_SPECTRUMBG);
 				}
 			}
-			// Изображение "шторки".
-			if (xleft < xrightv)
+
+			if (! colpip_hasalpha())
 			{
-				colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
+				// Изображение "шторки".
+				if (xleft < xrightv)
+				{
+					colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, SPY0, xrightv - xleft, SPDY, rxbwcolor);
+				}
 			}
 
 			uint_fast16_t ylast = 0;
@@ -5584,6 +5601,22 @@ static void display2_spectrum(
 				}
 				ylast = ynew;
 			}
+
+			if (colpip_hasalpha())
+			{
+				// Изображение "шторки".
+				colpip_bitblt(
+						(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
+						colorpip, BUFDIM_X, BUFDIM_Y,
+						xleft, SPY0,
+						(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
+						bwpic, ALLDX, ALLDY,
+						0, 0,	// координаты окна источника
+						xright - xleft, SPDY, // размер окна источника
+						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
+					);
+			}
+
 		}
 	}
 
@@ -5787,7 +5820,7 @@ static void display2_waterfall(
 					BITBLT_FLAG_NONE, 0);
 		}
 
-		if (0 && hamradio_get_bringtuneA())
+		if (colpip_hasalpha() && hamradio_get_bringtuneA())
 		{
 			/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
 			const uint_fast8_t pathi = 0;	// RX A
@@ -5803,22 +5836,12 @@ static void display2_waterfall(
 			if (xright >= ALLDX)
 				xright = ALLDX - 1;
 
-			static PACKEDCOLORPIP_T bwpic [GXSIZE(ALLDX, WFROWS)];
-
-			unsigned picalpha = 128;	// Полупрозрачность
-			colpip_fillrect(
-				bwpic, ALLDX, WFROWS,
-				0, 0,
-				xright - xleft, WFDY,
-				TFTALPHA(picalpha, COLORPIP_SPECTRUMFG)
-				);
-
 			colpip_bitblt(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
 					colorpip, BUFDIM_X, BUFDIM_Y,
 					xleft, WFY0,
 					(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
-					bwpic, ALLDX, WFROWS,
+					bwpic, ALLDX, ALLDY,
 					0, 0,	// координаты окна источника
 					xright - xleft, WFDY, // размер окна источника
 					BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY

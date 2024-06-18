@@ -874,6 +874,7 @@ colpip_string3_at_xy(
 	const char * s
 	);
 
+uint_fast8_t colpip_hasalpha(void);
 
 /* Нарисовать прямоугольник со скругленными углами */
 void
@@ -1075,19 +1076,6 @@ void display_transparency(
 	uint_fast16_t x2, uint_fast16_t y2,
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	);
-
-// заполнение прямоугольной области в видеобуфере
-void colpip_fillrect(
-	PACKEDCOLORPIP_T * buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uint_fast16_t dy,	// высота буфера
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y,	// начальная координата
-	uint_fast16_t w,	// ширниа
-	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
-	);
-
 
 void gpu_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,

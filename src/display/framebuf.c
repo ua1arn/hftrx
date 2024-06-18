@@ -1635,6 +1635,15 @@ colpip_set_hline(
 		colpip_point(buffer, dx, dy, col0 ++, row0, color);
 }
 
+uint_fast8_t colpip_hasalpha(void)
+{
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && LCDMODE_MAIN_ARGB8888
+	return 1;
+#else
+	return 0;
+#endif
+}
+
 // заполнение прямоугольной области в видеобуфере
 void colpip_fillrect(
 	PACKEDCOLORPIP_T * dst,
