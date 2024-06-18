@@ -1582,8 +1582,7 @@ struct i2c_msg_t {
 	void * buf;
 };
 
-static void t113_i2c_set_rate(TWI_TypeDef * twi, uint64_t rate){
-	uint64_t pclk = TWIHARD_FREQ;	//clk_get_rate(pdat->clk);
+static void t113_i2c_set_rate(TWI_TypeDef * twi, uint64_t rate, uint64_t pclk){
 	uint_fast64_t freq, delta, best = 0x7fffffffffffffffLL;
 	int tm = 5, tn = 0;
 	int m, n;
@@ -1862,9 +1861,8 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+int i2chwx_read(TWI_TypeDef * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	TWI_TypeDef * const twi = TWIHARD_PTR;
 	int res;
 	struct i2c_msg_t  msgs;
 	msgs.addr = slave_address8b >> 1;
@@ -1893,9 +1891,8 @@ int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+int i2chwx_write(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
-	TWI_TypeDef * const twi = TWIHARD_PTR;
 	int res;
 	struct i2c_msg_t  msgs;
 	msgs.addr = slave_address8b >> 1;
@@ -1924,9 +1921,8 @@ int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+int i2chwx_exchange(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
-	TWI_TypeDef * const twi = TWIHARD_PTR;
 	int res;
 	struct i2c_msg_t  msgs;
 	msgs.addr = slave_address8b >> 1;
@@ -1974,6 +1970,40 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 	return 0;
 }
 
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
+}
+
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
+}
+
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	return i2chwx_exchange(TWIHARD_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
+}
+
+#if defined (TWIHARD2_PTR)
+
+int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD2_PTR, slave_address8b, buf, size);
+}
+
+int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD2_PTR, slave_address8b, buf, size);
+}
+
+int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	return i2chwx_exchange(TWIHARD2_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
+}
+
+#endif /* defined (TWIHARD2_PTR) */
+
 void i2c_initialize(void)
 {
 	TWISOFT_INITIALIZE();
@@ -1982,6 +2012,9 @@ void i2c_initialize(void)
 	TWI_TypeDef * const twi = TWIHARD_PTR;
 	hardware_twi_master_configure();
 	TWIHARD_INITIALIZE();
+#if defined (TWIHARD2_PTR)
+	TWIHARD2_INITIALIZE();
+#endif /* defined (TWIHARD2_PTR) */
 
 	t113_i2c_stop(twi);
 }
@@ -2507,34 +2540,71 @@ void hardware_twi_master_configure(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
-	TWI_TypeDef * const twi = TWIHARD_PTR;
-	if (0)
+#if defined (TWIHARD_PTR)
 	{
+		TWI_TypeDef * const twi = TWIHARD_PTR;
+		if (0)
+		{
 
+		}
+	#if defined (S_TWI0)
+		else if (twi == S_TWI0)
+		{
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		}
+	#endif /* defined (S_TWI0) */
+		else
+		{
+			const unsigned TWIx = TWIHARD_IX;
+			CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+			CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
+			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+		}
+
+		t113_i2c_set_rate(twi, 400000, TWIHARD_FREQ);
+
+		twi->TWI_CNTR =  1u << 6;	// BUS_EN
+
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 	}
-#if defined (S_TWI0)
-	else if (twi == S_TWI0)
+#endif /* defined (TWIHARD_PTR) */
+
+#if defined (TWIHARD2_PTR)
 	{
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		TWI_TypeDef * const twi = TWIHARD2_PTR;
+		if (0)
+		{
+
+		}
+	#if defined (S_TWI0)
+		else if (twi == S_TWI0)
+		{
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		}
+	#endif /* defined (S_TWI0) */
+		else
+		{
+			const unsigned TWIx = TWIHARD2_IX;
+			CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+			CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
+			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+		}
+
+		t113_i2c_set_rate(twi, 400000, TWIHARD2_FREQ);
+
+		twi->TWI_CNTR =  1u << 6;	// BUS_EN
+
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 	}
-#endif /* defined (S_TWI0) */
-	else
-	{
-		const unsigned TWIx = TWIHARD_IX;
-		CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
-		CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
-		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
-	}
-
-	t113_i2c_set_rate(twi, 400000);
-
-	twi->TWI_CNTR =  1u << 6;	// BUS_EN
-
-	twi->TWI_SRST |= 1u << 0;
-	while ((twi->TWI_SRST & (1u << 0)) != 0)
-		;
+#endif /* defined (TWIHARD_PTR) */
 
 #else
 	#warning Undefined CPUSTYLE_XXX
