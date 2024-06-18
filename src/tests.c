@@ -10631,7 +10631,7 @@ void hightests(void)
 		PRINTF("I2C bus scan done\n");
 	}
 #endif
-#if 0 && defined (TWIHARD2_PTR)
+#if 0
 	{
 		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;
