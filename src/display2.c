@@ -3002,7 +3002,7 @@ static void display2_freqsof9(
 {
 #if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 	char buf2 [13];
-	unsigned v = hamradio_get__getsoffreq();
+	unsigned v = hamradio_get_getsoffreq();
 	v = ulmin(v, 99999);
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("Sof:%5u"),
 			v

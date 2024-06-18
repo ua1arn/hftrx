@@ -3314,7 +3314,7 @@ uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_usbh_active(void);
-unsigned hamradio_get__getsoffreq(void);
+unsigned hamradio_get_getsoffreq(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */

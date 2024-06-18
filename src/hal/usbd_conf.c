@@ -769,7 +769,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 
 static volatile unsigned sofcount;
 static uint32_t softicks;
-unsigned hamradio_get__getsoffreq(void)
+unsigned hamradio_get_getsoffreq(void)
 {
 #if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
