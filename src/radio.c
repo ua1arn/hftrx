@@ -4064,6 +4064,7 @@ enum
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		#endif /* WITHTX */
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
+		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
 		static uint_fast8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192
 			static uint_fast8_t  gswapiq;		/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -4071,7 +4072,8 @@ enum
 	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
 		enum { guacplayer = 0 };
-		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
+		uint_fast8_t hamradio_get_datamode(void) { return 0; }
+		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
 	#if WITHAFCODEC1HAVEPROC
 		#define EQUALIZERBASE 12
@@ -4140,6 +4142,7 @@ enum
 #endif /* WITHUSEUSBBT */
 	static const uint_fast8_t gagcoff;
 	static const uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
+	uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 #endif /* WITHIF4DSP */
 
 #define NRLEVELMAX 60
@@ -10976,15 +10979,6 @@ encoder_flagne_u16(dualctl16_t * c, uint_fast16_t lower, uint_fast16_t upper, in
 		return 1;
 	}
 	return 0;
-}
-
-uint_fast8_t hamradio_get_ft8cn(void)
-{
-#if WITHUSBHW && WITHUSBUAC
-	return gusb_ft8cn;
-#else /* WITHUSBHW && WITHUSBUAC */
-	return  0;
-#endif /* WITHUSBHW && WITHUSBUAC */
 }
 
 /*
