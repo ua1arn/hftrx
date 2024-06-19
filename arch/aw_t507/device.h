@@ -188,7 +188,7 @@ typedef enum IRQn
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
-#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Panfrost) Base */
+#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost) Base */
 #define GPU_CONTROL_BASE ((uintptr_t) 0x01800000)     /*!< GPU_CONTROL  Base */
 #define GPU_JOB_CONTROL_BASE ((uintptr_t) 0x01801000) /*!< GPU_JOB_CONTROL  Base */
 #define GPU_MMU_BASE ((uintptr_t) 0x01802000)         /*!< GPU_MMU  Base */
@@ -1253,60 +1253,60 @@ typedef struct GPIOINT_Type
 /*!< GPU_CONTROL  */
 typedef struct GPU_CONTROL_Type
 {
-    volatile uint32_t GPU_ID;                         /*!< Offset 0x000 (RO) GPU and revision identifier */
-    volatile uint32_t L2_FEATURES;                    /*!< Offset 0x004 (RO) Level 2 cache features */
+    const volatile uint32_t GPU_ID;                   /*!< Offset 0x000 (RO) GPU and revision identifier */
+    const volatile uint32_t L2_FEATURES;              /*!< Offset 0x004 (RO) Level 2 cache features */
              uint32_t reserved_0x008;
-    volatile uint32_t TILER_FEATURES;                 /*!< Offset 0x00C (RO) Tiler Features */
-    volatile uint32_t MEM_FEATURES;                   /*!< Offset 0x010 (RO) Memory system features */
-    volatile uint32_t MMU_FEATURES;                   /*!< Offset 0x014 (RO) MMU features */
-    volatile uint32_t AS_PRESENT;                     /*!< Offset 0x018 (RO) Address space slots present */
+    const volatile uint32_t TILER_FEATURES;           /*!< Offset 0x00C (RO) Tiler Features */
+    const volatile uint32_t MEM_FEATURES;             /*!< Offset 0x010 (RO) Memory system features */
+    const volatile uint32_t MMU_FEATURES;             /*!< Offset 0x014 (RO) MMU features */
+    const volatile uint32_t AS_PRESENT;               /*!< Offset 0x018 (RO) Address space slots present */
              uint32_t reserved_0x01C;
     volatile uint32_t GPU_IRQ_RAWSTAT;                /*!< Offset 0x020 (RW) */
     volatile uint32_t GPU_IRQ_CLEAR;                  /*!< Offset 0x024 (WO) */
     volatile uint32_t GPU_IRQ_MASK;                   /*!< Offset 0x028 (RW) */
-    volatile uint32_t GPU_IRQ_STATUS;                 /*!< Offset 0x02C (RO) */
+    const volatile uint32_t GPU_IRQ_STATUS;           /*!< Offset 0x02C (RO) */
     volatile uint32_t GPU_COMMAND;                    /*!< Offset 0x030 (WO) */
-    volatile uint32_t GPU_STATUS;                     /*!< Offset 0x034 (RO) */
+    const volatile uint32_t GPU_STATUS;               /*!< Offset 0x034 (RO) */
              uint32_t reserved_0x038;
-    volatile uint32_t GPU_FAULTSTATUS;                /*!< Offset 0x03C (RO) GPU exception type and fault status */
-    volatile uint32_t GPU_FAULTADDRESS_LO;            /*!< Offset 0x040 (RO) GPU exception fault address, low word */
-    volatile uint32_t GPU_FAULTADDRESS_HI;            /*!< Offset 0x044 (RO) GPU exception fault address, high word */
+    const volatile uint32_t GPU_FAULTSTATUS;          /*!< Offset 0x03C (RO) GPU exception type and fault status */
+    const volatile uint32_t GPU_FAULTADDRESS_LO;      /*!< Offset 0x040 (RO) GPU exception fault address, low word */
+    const volatile uint32_t GPU_FAULTADDRESS_HI;      /*!< Offset 0x044 (RO) GPU exception fault address, high word */
     volatile uint32_t L2_CONFIG;                      /*!< Offset 0x048 (RW) Level 2 cache configuration */
              uint32_t reserved_0x04C;
     volatile uint32_t PWR_KEY;                        /*!< Offset 0x050 (WO) Power manager key register */
     volatile uint32_t PWR_OVERRIDE0;                  /*!< Offset 0x054 (RW) Power manager override settings */
     volatile uint32_t PWR_OVERRIDE1;                  /*!< Offset 0x058 (RW) Power manager override settings */
              uint32_t reserved_0x05C [0x000D];
-    volatile uint32_t CYCLE_COUNT_LO;                 /*!< Offset 0x090 (RO) Cycle counter, low word */
-    volatile uint32_t CYCLE_COUNT_HI;                 /*!< Offset 0x094 (RO) Cycle counter, high word */
-    volatile uint32_t TIMESTAMP_LO;                   /*!< Offset 0x098 (RO) Global time stamp counter, low word */
-    volatile uint32_t TIMESTAMP_HI;                   /*!< Offset 0x09C (RO) Global time stamp counter, high word */
-    volatile uint32_t THREAD_MAX_THREADS;             /*!< Offset 0x0A0 (RO) Maximum number of threads per core */
-    volatile uint32_t THREAD_MAX_WORKGROUP_SIZE;      /*!< Offset 0x0A4 (RO) Maximum workgroup size */
-    volatile uint32_t THREAD_MAX_BARRIER_SIZE;        /*!< Offset 0x0A8 (RO) Maximum threads waiting at a barrier */
-    volatile uint32_t THREAD_FEATURES;                /*!< Offset 0x0AC (RO) Thread features */
-    volatile uint32_t TEXTURE_FEATURES_0;             /*!< Offset 0x0B0 (RO) Support flags for indexed texture formats 0..31 */
-    volatile uint32_t TEXTURE_FEATURES_1;             /*!< Offset 0x0B4 (RO) Support flags for indexed texture formats 32..63 */
-    volatile uint32_t TEXTURE_FEATURES_2;             /*!< Offset 0x0B8 (RO) Support flags for indexed texture formats 64..95 */
-    volatile uint32_t TEXTURE_FEATURES_3;             /*!< Offset 0x0BC (RO) Support flags for texture order */
+    const volatile uint32_t CYCLE_COUNT_LO;           /*!< Offset 0x090 (RO) Cycle counter, low word */
+    const volatile uint32_t CYCLE_COUNT_HI;           /*!< Offset 0x094 (RO) Cycle counter, high word */
+    const volatile uint32_t TIMESTAMP_LO;             /*!< Offset 0x098 (RO) Global time stamp counter, low word */
+    const volatile uint32_t TIMESTAMP_HI;             /*!< Offset 0x09C (RO) Global time stamp counter, high word */
+    const volatile uint32_t THREAD_MAX_THREADS;       /*!< Offset 0x0A0 (RO) Maximum number of threads per core */
+    const volatile uint32_t THREAD_MAX_WORKGROUP_SIZE;/*!< Offset 0x0A4 (RO) Maximum workgroup size */
+    const volatile uint32_t THREAD_MAX_BARRIER_SIZE;  /*!< Offset 0x0A8 (RO) Maximum threads waiting at a barrier */
+    const volatile uint32_t THREAD_FEATURES;          /*!< Offset 0x0AC (RO) Thread features */
+    const volatile uint32_t TEXTURE_FEATURES_0;       /*!< Offset 0x0B0 (RO) Support flags for indexed texture formats 0..31 */
+    const volatile uint32_t TEXTURE_FEATURES_1;       /*!< Offset 0x0B4 (RO) Support flags for indexed texture formats 32..63 */
+    const volatile uint32_t TEXTURE_FEATURES_2;       /*!< Offset 0x0B8 (RO) Support flags for indexed texture formats 64..95 */
+    const volatile uint32_t TEXTURE_FEATURES_3;       /*!< Offset 0x0BC (RO) Support flags for texture order */
              uint32_t reserved_0x0C0 [0x0010];
-    volatile uint32_t SHADER_PRESENT_LO;              /*!< Offset 0x100 (RO) Shader core present bitmap, low word */
-    volatile uint32_t SHADER_PRESENT_HI;              /*!< Offset 0x104 (RO) Shader core present bitmap, high word */
+    const volatile uint32_t SHADER_PRESENT_LO;        /*!< Offset 0x100 (RO) Shader core present bitmap, low word */
+    const volatile uint32_t SHADER_PRESENT_HI;        /*!< Offset 0x104 (RO) Shader core present bitmap, high word */
              uint32_t reserved_0x108 [0x0002];
-    volatile uint32_t TILER_PRESENT_LO;               /*!< Offset 0x110 (RO) Tiler core present bitmap, low word */
-    volatile uint32_t TILER_PRESENT_HI;               /*!< Offset 0x114 (RO) Tiler core present bitmap, high word */
+    const volatile uint32_t TILER_PRESENT_LO;         /*!< Offset 0x110 (RO) Tiler core present bitmap, low word */
+    const volatile uint32_t TILER_PRESENT_HI;         /*!< Offset 0x114 (RO) Tiler core present bitmap, high word */
              uint32_t reserved_0x118 [0x0002];
-    volatile uint32_t L2_PRESENT_LO;                  /*!< Offset 0x120 (RO) Level 2 cache present bitmap, low word */
-    volatile uint32_t L2_PRESENT_HI;                  /*!< Offset 0x124 (RO) Level 2 cache present bitmap, high word */
+    const volatile uint32_t L2_PRESENT_LO;            /*!< Offset 0x120 (RO) Level 2 cache present bitmap, low word */
+    const volatile uint32_t L2_PRESENT_HI;            /*!< Offset 0x124 (RO) Level 2 cache present bitmap, high word */
              uint32_t reserved_0x128 [0x0006];
-    volatile uint32_t SHADER_READY_LO;                /*!< Offset 0x140 (RO) Shader core ready bitmap, low word */
-    volatile uint32_t SHADER_READY_HI;                /*!< Offset 0x144 (RO) Shader core ready bitmap, high word */
+    const volatile uint32_t SHADER_READY_LO;          /*!< Offset 0x140 (RO) Shader core ready bitmap, low word */
+    const volatile uint32_t SHADER_READY_HI;          /*!< Offset 0x144 (RO) Shader core ready bitmap, high word */
              uint32_t reserved_0x148 [0x0002];
-    volatile uint32_t TILER_READY_LO;                 /*!< Offset 0x150 (RO) Tiler core ready bitmap, low word */
-    volatile uint32_t TILER_READY_HI;                 /*!< Offset 0x154 (RO) Tiler core ready bitmap, high word */
+    const volatile uint32_t TILER_READY_LO;           /*!< Offset 0x150 (RO) Tiler core ready bitmap, low word */
+    const volatile uint32_t TILER_READY_HI;           /*!< Offset 0x154 (RO) Tiler core ready bitmap, high word */
              uint32_t reserved_0x158 [0x0002];
-    volatile uint32_t L2_READY_LO;                    /*!< Offset 0x160 (RO) Level 2 cache ready bitmap, low word */
-    volatile uint32_t L2_READY_HI;                    /*!< Offset 0x164 (RO) Level 2 cache ready bitmap, high word */
+    const volatile uint32_t L2_READY_LO;              /*!< Offset 0x160 (RO) Level 2 cache ready bitmap, low word */
+    const volatile uint32_t L2_READY_HI;              /*!< Offset 0x164 (RO) Level 2 cache ready bitmap, high word */
              uint32_t reserved_0x168 [0x0006];
     volatile uint32_t SHADER_PWRON_LO;                /*!< Offset 0x180 (WO) Shader core power on bitmap, low word */
     volatile uint32_t SHADER_PWRON_HI;                /*!< Offset 0x184 (WO) Shader core power on bitmap, high word */
@@ -1326,43 +1326,43 @@ typedef struct GPU_CONTROL_Type
     volatile uint32_t L2_PWROFF_LO;                   /*!< Offset 0x1E0 (WO) Level 2 cache power off bitmap, low word */
     volatile uint32_t L2_PWROFF_HI;                   /*!< Offset 0x1E4 (WO) Level 2 cache power off bitmap, high word */
              uint32_t reserved_0x1E8 [0x0006];
-    volatile uint32_t SHADER_PWRTRANS_LO;             /*!< Offset 0x200 (RO) Shader core power transition bitmap, low word */
-    volatile uint32_t SHADER_PWRTRANS_HI;             /*!< Offset 0x204 (RO) Shader core power transition bitmap, high word */
+    const volatile uint32_t SHADER_PWRTRANS_LO;       /*!< Offset 0x200 (RO) Shader core power transition bitmap, low word */
+    const volatile uint32_t SHADER_PWRTRANS_HI;       /*!< Offset 0x204 (RO) Shader core power transition bitmap, high word */
              uint32_t reserved_0x208 [0x0002];
-    volatile uint32_t TILER_PWRTRANS_LO;              /*!< Offset 0x210 (RO) Tiler core power transition bitmap, low word */
-    volatile uint32_t TILER_PWRTRANS_HI;              /*!< Offset 0x214 (RO) Tiler core power transition bitmap, high word */
+    const volatile uint32_t TILER_PWRTRANS_LO;        /*!< Offset 0x210 (RO) Tiler core power transition bitmap, low word */
+    const volatile uint32_t TILER_PWRTRANS_HI;        /*!< Offset 0x214 (RO) Tiler core power transition bitmap, high word */
              uint32_t reserved_0x218 [0x0002];
-    volatile uint32_t L2_PWRTRANS_LO;                 /*!< Offset 0x220 (RO) Level 2 cache power transition bitmap, low word */
-    volatile uint32_t L2_PWRTRANS_HI;                 /*!< Offset 0x224 (RO) Level 2 cache power transition bitmap, high word */
+    const volatile uint32_t L2_PWRTRANS_LO;           /*!< Offset 0x220 (RO) Level 2 cache power transition bitmap, low word */
+    const volatile uint32_t L2_PWRTRANS_HI;           /*!< Offset 0x224 (RO) Level 2 cache power transition bitmap, high word */
              uint32_t reserved_0x228 [0x0006];
-    volatile uint32_t SHADER_PWRACTIVE_LO;            /*!< Offset 0x240 (RO) Shader core active bitmap, low word */
-    volatile uint32_t SHADER_PWRACTIVE_HI;            /*!< Offset 0x244 (RO) Shader core active bitmap, high word */
+    const volatile uint32_t SHADER_PWRACTIVE_LO;      /*!< Offset 0x240 (RO) Shader core active bitmap, low word */
+    const volatile uint32_t SHADER_PWRACTIVE_HI;      /*!< Offset 0x244 (RO) Shader core active bitmap, high word */
              uint32_t reserved_0x248 [0x0002];
-    volatile uint32_t TILER_PWRACTIVE_LO;             /*!< Offset 0x250 (RO) Tiler core active bitmap, low word */
-    volatile uint32_t TILER_PWRACTIVE_HI;             /*!< Offset 0x254 (RO) Tiler core active bitmap, high word */
+    const volatile uint32_t TILER_PWRACTIVE_LO;       /*!< Offset 0x250 (RO) Tiler core active bitmap, low word */
+    const volatile uint32_t TILER_PWRACTIVE_HI;       /*!< Offset 0x254 (RO) Tiler core active bitmap, high word */
              uint32_t reserved_0x258 [0x0002];
-    volatile uint32_t L2_PWRACTIVE_LO;                /*!< Offset 0x260 (RO) Level 2 cache active bitmap, low word */
-    volatile uint32_t L2_PWRACTIVE_HI;                /*!< Offset 0x264 (RO) Level 2 cache active bitmap, high word */
+    const volatile uint32_t L2_PWRACTIVE_LO;          /*!< Offset 0x260 (RO) Level 2 cache active bitmap, low word */
+    const volatile uint32_t L2_PWRACTIVE_HI;          /*!< Offset 0x264 (RO) Level 2 cache active bitmap, high word */
              uint32_t reserved_0x268 [0x0026];
-    volatile uint32_t COHERENCY_FEATURES;             /*!< Offset 0x300 (RO) Coherency features present */
+    const volatile uint32_t COHERENCY_FEATURES;       /*!< Offset 0x300 (RO) Coherency features present */
     volatile uint32_t COHERENCY_ENABLE;               /*!< Offset 0x304 (RW) Coherency enable */
              uint32_t reserved_0x308 [0x0002];
-    volatile uint32_t THREAD_TLS_ALLOC;               /*!< Offset 0x310 (RO) Number of threads per core that TLS must be allocated for */
+    const volatile uint32_t THREAD_TLS_ALLOC;         /*!< Offset 0x310 (RO) Number of threads per core that TLS must be allocated for */
              uint32_t reserved_0x314 [0x02BB];
-    volatile uint32_t STACK_PRESENT_LO;               /*!< Offset 0xE00 (RO) Core stack present bitmap, low word */
-    volatile uint32_t STACK_PRESENT_HI;               /*!< Offset 0xE04 (RO) Core stack present bitmap, high word */
+    const volatile uint32_t STACK_PRESENT_LO;         /*!< Offset 0xE00 (RO) Core stack present bitmap, low word */
+    const volatile uint32_t STACK_PRESENT_HI;         /*!< Offset 0xE04 (RO) Core stack present bitmap, high word */
              uint32_t reserved_0xE08 [0x0002];
-    volatile uint32_t STACK_READY_LO;                 /*!< Offset 0xE10 (RO) Core stack ready bitmap, low word */
-    volatile uint32_t STACK_READY_HI;                 /*!< Offset 0xE14 (RO) Core stack ready bitmap, high word */
+    const volatile uint32_t STACK_READY_LO;           /*!< Offset 0xE10 (RO) Core stack ready bitmap, low word */
+    const volatile uint32_t STACK_READY_HI;           /*!< Offset 0xE14 (RO) Core stack ready bitmap, high word */
              uint32_t reserved_0xE18 [0x0002];
-    volatile uint32_t STACK_PWRON_LO;                 /*!< Offset 0xE20 (RO) Core stack power on bitmap, low word */
-    volatile uint32_t STACK_PWRON_HI;                 /*!< Offset 0xE24 (RO) Core stack power on bitmap, high word */
+    const volatile uint32_t STACK_PWRON_LO;           /*!< Offset 0xE20 (RO) Core stack power on bitmap, low word */
+    const volatile uint32_t STACK_PWRON_HI;           /*!< Offset 0xE24 (RO) Core stack power on bitmap, high word */
              uint32_t reserved_0xE28 [0x0002];
-    volatile uint32_t STACK_PWROFF_LO;                /*!< Offset 0xE30 (RO) Core stack power off bitmap, low word */
-    volatile uint32_t STACK_PWROFF_HI;                /*!< Offset 0xE34 (RO) Core stack power off bitmap, high word */
+    const volatile uint32_t STACK_PWROFF_LO;          /*!< Offset 0xE30 (RO) Core stack power off bitmap, low word */
+    const volatile uint32_t STACK_PWROFF_HI;          /*!< Offset 0xE34 (RO) Core stack power off bitmap, high word */
              uint32_t reserved_0xE38 [0x0002];
-    volatile uint32_t STACK_PWRTRANS_LO;              /*!< Offset 0xE40 (RO) Core stack power transition bitmap, low word */
-    volatile uint32_t STACK_PWRTRANS_HI;              /*!< Offset 0xE44 (RO) Core stack power transition bitmap, high word */
+    const volatile uint32_t STACK_PWRTRANS_LO;        /*!< Offset 0xE40 (RO) Core stack power transition bitmap, low word */
+    const volatile uint32_t STACK_PWRTRANS_HI;        /*!< Offset 0xE44 (RO) Core stack power transition bitmap, high word */
              uint32_t reserved_0xE48 [0x002F];
     volatile uint32_t SHADER_CONFIG;                  /*!< Offset 0xF04 (RW) Shader core configuration (implementation-specific) */
     volatile uint32_t TILER_CONFIG;                   /*!< Offset 0xF08 (RW) Tiler core configuration (implementation-specific) */
@@ -1388,7 +1388,7 @@ typedef struct GPU_MMU_Type
     volatile uint32_t MMU_IRQ_RAWSTAT;                /*!< Offset 0x000 (RW) Raw interrupt status register */
     volatile uint32_t MMU_IRQ_CLEAR;                  /*!< Offset 0x004 (WO) Interrupt clear register */
     volatile uint32_t MMU_IRQ_MASK;                   /*!< Offset 0x008 (RW) Interrupt mask register */
-    volatile uint32_t MMU_IRQ_STATUS;                 /*!< Offset 0x00C (RO) Interrupt status register */
+    const volatile uint32_t MMU_IRQ_STATUS;           /*!< Offset 0x00C (RO) Interrupt status register */
              uint32_t reserved_0x010 [0x003C];
     struct
     {
@@ -1399,15 +1399,15 @@ typedef struct GPU_MMU_Type
         volatile uint32_t AS_LOCKADDR_LO;             /*!< Offset 0x110 (RW) Lock region address for address space n, low word */
         volatile uint32_t AS_LOCKADDR_HI;             /*!< Offset 0x114 (RW) Lock region address for address space n, high word */
         volatile uint32_t AS_COMMAND;                 /*!< Offset 0x118 (WO) MMU command register for address space n */
-        volatile uint32_t AS_FAULTSTATUS;             /*!< Offset 0x11C (RO) MMU fault status register for address space n */
-        volatile uint32_t AS_FAULTADDRESS_LO;         /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
+        const volatile uint32_t AS_FAULTSTATUS;       /*!< Offset 0x11C (RO) MMU fault status register for address space n */
+        const volatile uint32_t AS_FAULTADDRESS_LO;   /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
         volatile uint32_t AS_FAULTADDRESS_HI;         /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
         volatile uint32_t AS_STATUS;                  /*!< Offset 0x128 (RO) Status flags for address space n */
                  uint32_t reserved_0x02C;
         volatile uint32_t AS_TRANSCFG_LO;             /*!< Offset 0x130 (RW) Translation table configuration for address space n, low word */
         volatile uint32_t AS_TRANSCFG_HI;             /*!< Offset 0x134 (RW) Translation table configuration for address space n, high word */
-        volatile uint32_t AS_FAULTEXTRA_LO;           /*!< Offset 0x138 (RO) Secondary fault address for address space n, low word */
-        volatile uint32_t AS_FAULTEXTRA_HI;           /*!< Offset 0x13C (RO) Secondary fault address for address space n, high word */
+        const volatile uint32_t AS_FAULTEXTRA_LO;     /*!< Offset 0x138 (RO) Secondary fault address for address space n, low word */
+        const volatile uint32_t AS_FAULTEXTRA_HI;     /*!< Offset 0x13C (RO) Secondary fault address for address space n, high word */
     } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
 } GPU_MMU_TypeDef; /* size of structure = 0x500 */
 /*

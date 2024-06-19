@@ -46,7 +46,7 @@ struct regdfn {
 	char *comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
 	unsigned resetvalue;
-
+	int roflag;
 	LIST_ENTRY bitfields; /* named bitfields in register */
 };
 
@@ -283,12 +283,12 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 			} else if (regp->fldsize != 0) {
 				if (regp->fldrept) {
 					// Array forming
-					emitline(indent + INDENT, "volatile %s %s [0x%03X];", fldtype, regp->fldname, regp->fldrept);
+					emitline(indent + INDENT, "%s %s %s [0x%03X];", regp->roflag ? "const volatile" : "volatile", fldtype, regp->fldname, regp->fldrept);
 
 					offs += regp->fldsize * regp->fldrept;
 				} else {
 					// Plain field
-					emitline(indent + INDENT, "volatile %s %s;", fldtype, regp->fldname);
+					emitline(indent + INDENT, "%s %s %s;", regp->roflag ? "const volatile" : "volatile", fldtype, regp->fldname);
 					offs += regp->fldsize;
 				}
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", regp->fldoffs + baseoffset, regp->comment);
@@ -452,7 +452,7 @@ static int nextline(FILE *fp) {
 }
 
 static struct regdfn*
-parseregdef(char *s0, char *fldname, unsigned fldsize, const char *file) {
+parseregdef(char *s0, char *fldname, unsigned fldsize, int ro, const char *file) {
 	unsigned fldoffset;
 	unsigned fldrept;
 	struct regdfn *regp = calloc(1, sizeof *regp);
@@ -478,7 +478,7 @@ parseregdef(char *s0, char *fldname, unsigned fldsize, const char *file) {
 	}
 
 	//fprintf(stderr, "parse: '%s' '%s'\n", s, s2);
-
+	regp->roflag = ro;
 	if (2 == sscanf(s, "%i %i", &fldoffset, &fldrept)) {
 		//fprintf(stderr, "fParsed 2 regdef='%s' offs=0x%08X rept=0x%08X\n", fldname, fldoffset, fldrept);
 		regp->fldname = strdup(fldname);
@@ -521,16 +521,34 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 	for (;;) {
 		//fprintf(stderr, "token0=%s\n", token0);
-		if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, file);
+		if (2 == sscanf(token0, "#regdefr; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, 1, file);
 			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
 			/* parsed */
 			InsertTailList(listhead, &regp->item);
 			if (nextline(fp) == 0)
 				break;
+
+		} else if (1 == sscanf(token0, "#regdefr; %[a-zA-Z_0-9/-] %n", fldname, &pos)) {
+
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, 1, file);
+			//	fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
+			/* parsed */
+			InsertTailList(listhead, &regp->item);
+			if (nextline(fp) == 0)
+				break;
+		}
+		else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, 0, file);
+			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
+			/* parsed */
+			InsertTailList(listhead, &regp->item);
+			if (nextline(fp) == 0)
+				break;
+
 		} else if (1 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %n", fldname, &pos)) {
 
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, file);
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, 0, file);
 			//	fprintf(stderr, "Parsed 1 regdef fldname='%s' \n", fldname);
 			/* parsed */
 			InsertTailList(listhead, &regp->item);
@@ -539,7 +557,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 
 		} else if (1 == sscanf(token0, "#aggreg; %[a-zA-Z_0-9/-] %n", fldname, &pos)) {
 
-			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, file);
+			struct regdfn *regp = parseregdef(token0 + pos, fldname, 4, 0, file);
 			//fprintf(stderr, "x Parsed 1 aggreg fldname='%s' \n", fldname);
 			/* parsed */
 			InsertTailList(listhead, &regp->item);
