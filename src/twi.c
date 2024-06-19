@@ -1972,7 +1972,7 @@ int i2chwx_exchange(TWI_TypeDef * const twi, uint16_t slave_address8b, const uin
 
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
+	return i2chwx_read(TWIHARD_PTR, slave_address8b, buf, size);
 }
 
 int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
@@ -1989,7 +1989,7 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 
 int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	return i2chwx_write(TWIHARD2_PTR, slave_address8b, buf, size);
+	return i2chwx_read(TWIHARD2_PTR, slave_address8b, buf, size);
 }
 
 int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
