@@ -8,7 +8,7 @@
 #regdef; G2D_HCLK_GATE  ; 0x04 ; g2d HCLK gate  
 #regdef; G2D_AHB_RST  ; 0x08 ; G2D AHB reset  
 #regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
-#regdef; G2D_VERSION;	0x010;
+#regdefr; G2D_VERSION;	0x010;
 #regdef; RCQ_IRQ_CTL;	0x020;
 #regdef; RCQ_STATUS;	0x024;
 #regdef; RCQ_CTRL;		0x028;

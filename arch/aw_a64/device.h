@@ -2186,9 +2186,9 @@ typedef struct USBPHYC_Type
 /*!< USB_EHCI_Capability  */
 typedef struct USB_EHCI_Capability_Type
 {
-    volatile uint32_t HCCAPBASE;                      /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
-    volatile uint32_t HCSPARAMS;                      /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
-    volatile uint32_t HCCPARAMS;                      /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
+    const volatile uint32_t HCCAPBASE;                /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
+    const volatile uint32_t HCSPARAMS;                /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
+    const volatile uint32_t HCCPARAMS;                /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
     volatile uint32_t HCSPPORTROUTE;                  /*!< Offset 0x00C EHCI Companion Port Route Description */
     volatile uint32_t USBCMD;                         /*!< Offset 0x010 EHCI USB Command Register */
     volatile uint32_t USBSTS;                         /*!< Offset 0x014 EHCI USB Status Register */

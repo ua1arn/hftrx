@@ -1496,7 +1496,7 @@ typedef struct G2D_TOP_Type
     volatile uint32_t G2D_HCLK_GATE;                  /*!< Offset 0x004 g2d HCLK gate   */
     volatile uint32_t G2D_AHB_RST;                    /*!< Offset 0x008 G2D AHB reset   */
     volatile uint32_t G2D_SCLK_DIV;                   /*!< Offset 0x00C G2D SCLK div    */
-    volatile uint32_t G2D_VERSION;                    /*!< Offset 0x010  */
+    const volatile uint32_t G2D_VERSION;              /*!< Offset 0x010  */
              uint32_t reserved_0x014 [0x0003];
     volatile uint32_t RCQ_IRQ_CTL;                    /*!< Offset 0x020  */
     volatile uint32_t RCQ_STATUS;                     /*!< Offset 0x024  */
@@ -2861,9 +2861,9 @@ typedef struct USBPHYC_Type
 /*!< USB_EHCI_Capability  */
 typedef struct USB_EHCI_Capability_Type
 {
-    volatile uint32_t HCCAPBASE;                      /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
-    volatile uint32_t HCSPARAMS;                      /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
-    volatile uint32_t HCCPARAMS;                      /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
+    const volatile uint32_t HCCAPBASE;                /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
+    const volatile uint32_t HCSPARAMS;                /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
+    const volatile uint32_t HCCPARAMS;                /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
     volatile uint32_t HCSPPORTROUTE;                  /*!< Offset 0x00C EHCI Companion Port Route Description */
     volatile uint32_t USBCMD;                         /*!< Offset 0x010 EHCI USB Command Register */
     volatile uint32_t USBSTS;                         /*!< Offset 0x014 EHCI USB Status Register */

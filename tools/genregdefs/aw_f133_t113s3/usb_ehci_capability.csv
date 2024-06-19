@@ -5,9 +5,9 @@
 #irq; USB1_EHCI 65
 #irqrv; USB0_EHCI 46
 #irqrv; USB1_EHCI 49
-#regdef; HCCAPBASE; 0x0000; EHCI Capability Register (HCIVERSION and CAPLENGTH) register
-#regdef; HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
-#regdef; HCCPARAMS; 0x0008; EHCI Host Control Capability Parameter Register
+#regdefr; HCCAPBASE; 0x0000; EHCI Capability Register (HCIVERSION and CAPLENGTH) register
+#regdefr; HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
+#regdefr; HCCPARAMS; 0x0008; EHCI Host Control Capability Parameter Register
 #regdef; HCSPPORTROUTE; 0x000C; EHCI Companion Port Route Description
 #regdef; USBCMD; 0x0010; EHCI USB Command Register
 #regdef; USBSTS; 0x0014; EHCI USB Status Register
