@@ -26,7 +26,8 @@
 #regdef; G2D_HCLK_GATE;	0x004;
 #regdef; G2D_AHB_RST;	0x008;
 #regdef; G2D_SCLK_DIV;	0x00C;
-#regdef; G2D_VERSION;	0x010;
+#regdefr; G2D_VERSION;	0x010;
+
 ##regdef; RCQ_IRQ_CTL;	0x020;
 ##regdef; RCQ_STATUS;	0x024;
 ##regdef; RCQ_CTRL;		0x028;

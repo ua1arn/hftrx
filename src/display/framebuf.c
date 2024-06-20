@@ -941,7 +941,7 @@ void arm_hardware_mdma_initialize(void)
 
 		// G2D version=01010100
 		// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/char/sunxi_g2d/g2d_rcq/g2d_top_type.h#L57
-		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
+		//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	}
 

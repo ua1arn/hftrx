@@ -1153,7 +1153,7 @@ typedef struct G2D_TOP_Type
     volatile uint32_t G2D_HCLK_GATE;                  /*!< Offset 0x004  */
     volatile uint32_t G2D_AHB_RST;                    /*!< Offset 0x008  */
     volatile uint32_t G2D_SCLK_DIV;                   /*!< Offset 0x00C  */
-    volatile uint32_t G2D_VERSION;                    /*!< Offset 0x010  */
+    const volatile uint32_t G2D_VERSION;              /*!< Offset 0x010  */
 } G2D_TOP_TypeDef; /* size of structure = 0x014 */
 /*
  * @brief GPADC
