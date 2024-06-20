@@ -186,7 +186,6 @@ typedef enum IRQn
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x012A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x01480100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost) Base */
 #define GPU_CONTROL_BASE ((uintptr_t) 0x01800000)     /*!< GPU_CONTROL  Base */
@@ -1103,15 +1102,6 @@ typedef struct EMAC_Type
     volatile uint32_t EMAC_RGMII_STA;                 /*!< Offset 0x0D0 EMAC RGMII Status Register */
              uint32_t reserved_0x0D4 [0x3FCB];
 } EMAC_TypeDef; /* size of structure = 0x10000 */
-/*
- * @brief G2D_MIXER
- */
-/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer */
-typedef struct G2D_MIXER_Type
-{
-    volatile uint32_t G2D_MIXER_CTRL;                 /*!< Offset 0x000  */
-    volatile uint32_t G2D_MIXER_INTERRUPT;            /*!< Offset 0x004  */
-} G2D_MIXER_TypeDef; /* size of structure = 0x008 */
 /*
  * @brief G2D_ROT
  */
@@ -2645,7 +2635,6 @@ typedef struct VE_Type
 #define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
-#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define GPU_CONTROL ((GPU_CONTROL_TypeDef *) GPU_CONTROL_BASE)/*!< GPU_CONTROL  register set access pointer */
 #define GPU_JOB_CONTROL ((GPU_JOB_CONTROL_TypeDef *) GPU_JOB_CONTROL_BASE)/*!< GPU_JOB_CONTROL  register set access pointer */

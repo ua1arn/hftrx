@@ -4836,31 +4836,6 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>G2D_MIXER</name>
-  <description>Graphic 2D (G2D) Engine Video Mixer</description>
-  <baseAddress>0x01480100</baseAddress>
-  <registers>
-   <register>
-    <name>G2D_MIXER_CTRL</name>
-    <displayName>G2D_MIXER_CTRL</displayName>
-    <description></description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>G2D_MIXER_INTERRUPT</name>
-    <displayName>G2D_MIXER_INTERRUPT</displayName>
-    <description></description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
   <name>G2D_ROT</name>
   <description>Graphic 2D Rotate</description>
   <baseAddress>0x014A8000</baseAddress>

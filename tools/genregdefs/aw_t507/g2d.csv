@@ -35,16 +35,17 @@
 ##regdef; RCQ_HEADER_LEN;	0x034; Register Configuration Queue length bits 15..0
 #typeend;
 
-#type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
-#base; G2D_MIXER 0x01480100
+##type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
+##base; G2D_MIXER 0x01480100
 
 # G2D_TOP + 0x0100
 
 # https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/char/sunxi_g2d/g2d_rcq/g2d_top_type.h#L153
 # struct g2d_mixer_glb_reg
 
-#regdef; G2D_MIXER_CTRL;	0x000;
-#regdef; G2D_MIXER_INTERRUPT;	0x004;
+##regdef; G2D_MIXER_CTRL;	0x000;
+##regdef; G2D_MIXER_INTERRUPT;	0x004;
+##typeend;
 
 ##type; G2D_VI; Graphic 2D VI surface
 ##base; G2D_V0 0x01480800

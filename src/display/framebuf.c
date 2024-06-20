@@ -95,6 +95,7 @@ static void softfill(
 
 #if (CPUSTYLE_T507 || CPUSTYLE_H616) && 1
 
+
 #else
 /* Отключаем все источники */
 static void awxx_g2d_reset(void)
@@ -134,33 +135,31 @@ static void awxx_rcq(uintptr_t buff, unsigned len)
 	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
 
-#endif
-
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
-static int hwacc_waitdone(void)
+static int hwacc_rtmx_waitdone(void)
 {
 	unsigned n = 0x2000000;
 	for (;;)
 	{
 		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
-		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
+		//const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
 		if (((mixer_int & MASK) != 0))
 		{
 			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
 			break;
 		}
-		if (((rot_int & MASK) != 0))
-		{
-			G2D_ROT->ROT_INT = MASK;
-			break;
-		}
+//		if (((rot_int & MASK) != 0))
+//		{
+//			G2D_ROT->ROT_INT = MASK;
+//			break;
+//		}
 		hardware_nonguiyield();
 		if (-- n == 0)
 		{
 			PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
-			PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
+			//PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
 			return 0;
 		}
 	}
@@ -171,7 +170,7 @@ static int hwacc_waitdone(void)
 static void awxx_g2d_rtmix_startandwait(void)
 {
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
-	if (hwacc_waitdone() == 0)
+	if (hwacc_rtmx_waitdone() == 0)
 	{
 		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
 		ASSERT(0);
@@ -179,12 +178,45 @@ static void awxx_g2d_rtmix_startandwait(void)
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
+#endif
+
+/* Запуск и ожидание завершения работы G2D  (ROT) */
+/* 0 - timeout. 1 - OK */
+static int hwacc_rot_waitdone(void)
+{
+	unsigned n = 0x2000000;
+	for (;;)
+	{
+		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+		//const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
+		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
+//		if (((mixer_int & MASK) != 0))
+//		{
+//			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
+//			break;
+//		}
+		if (((rot_int & MASK) != 0))
+		{
+			G2D_ROT->ROT_INT = MASK;
+			break;
+		}
+		hardware_nonguiyield();
+		if (-- n == 0)
+		{
+			//PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
+			PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
+			return 0;
+		}
+	}
+	return 1;
+}
+
 static void awxx_g2d_rot_startandwait(void)
 {
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
-	if (hwacc_waitdone() == 0)
+	if (hwacc_rot_waitdone() == 0)
 	{
-		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
 		ASSERT(0);
 	}
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
@@ -587,6 +619,7 @@ static void t113_fillrect(
 {
 
 	awxx_g2d_reset();	/* Отключаем все источники */
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 
 	G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 	G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -621,7 +654,8 @@ static void t113_fillrect(
 }
 #endif
 
-#endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+#elif (WITHMDMAHW || WITHDMA2DHW) && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
+
 
 /*
 	Dead time value in the AXI clock cycle inserted between two consecutive accesses on
@@ -681,6 +715,8 @@ static void t113_fillrect(
 //#define MDMA_CTCR_xSIZE_U16			0x01	// 2 byte
 //#define MDMA_CTCR_xSIZE_U8			0x00	// 1 byte
 //#define MDMA_CTCR_xSIZE_RGB565		0x01	// 2 byte
+
+#endif /* CPUSTYLE_ALLWINNER && WITHMDMAHW */
 
 #if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 
@@ -884,7 +920,7 @@ void arm_hardware_mdma_initialize(void)
 		(void) CCU->G2D_BGR_REG;
 		local_delay_us(10);
 
-		/* на Allwinner T113-S3 и F133 модифицируемы только младшие 8 бит */
+		/* на Allwinner T597 модифицируемы только младшие 8 бит */
 		G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
 			divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
 			divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
@@ -904,7 +940,8 @@ void arm_hardware_mdma_initialize(void)
 		local_delay_ms(10);
 
 		// G2D version=01010100
-		//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
+		// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/char/sunxi_g2d/g2d_rcq/g2d_top_type.h#L57
+		PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	}
 
@@ -1230,7 +1267,6 @@ hwaccel_rect_u16(
 		return;
 	}
 
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
