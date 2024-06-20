@@ -602,6 +602,7 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 
 	void local_delay_us(int timeUS);
 	void local_delay_ms(int timeMS);
+	void local_delay_initialize(void);
 
 #elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
 	// ATMega, ATXMega target

@@ -9212,7 +9212,7 @@ sysinit_pll_initialize(int forced)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
 	allwnrt113_pll_initialize();
 //
-	set_pll_riscv_axi(PLL_CPU_N);
+	set_pll_riscv_axi(RV_PLL_CPU_N);
 
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
 
