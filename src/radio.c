@@ -2249,8 +2249,9 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 #define ENCRES_100	4	/* значение по умолчанию для индекса при использовании енкодера на 100 позиций */
 #define ENCRES_128	5	/* значение по умолчанию для индекса при использовании енкодера на 128 позиций */
 #define ENCRES_256	7	/* значение по умолчанию для индекса при использовании енкодера на 256 позиций */
-#define ENCRES_400	9	/* значение по умолчанию для индекса при использовании енкодера на 128 позиций */
-#define ENCRES_600	10	/* значение по умолчанию для индекса при использовании енкодера на 128 позиций */
+#define ENCRES_360	9	/* значение по умолчанию для индекса при использовании енкодера на 360 позиций */
+#define ENCRES_400	10	/* значение по умолчанию для индекса при использовании енкодера на 400 позиций */
+#define ENCRES_600	11	/* значение по умолчанию для индекса при использовании енкодера на 600 позиций */
 
 /* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
    при частоте генератора 8 МГц
@@ -2266,8 +2267,9 @@ static const FLASHMEM uint_fast8_t encresols [] =
 	144 / ENCRESSCALE,	// 6
 	256 / ENCRESSCALE,	// 7
 	300 / ENCRESSCALE,	// 8
-	400 / ENCRESSCALE,	// 9
-	600 / ENCRESSCALE,	// 10
+	360 / ENCRESSCALE,	// 9
+	400 / ENCRESSCALE,	// 10
+	600 / ENCRESSCALE,	// 11
 };
 
 #if WITHTOUCHGUI
@@ -3689,11 +3691,17 @@ static uint_fast8_t gagcmode;
 	static uint_fast8_t genc1dynamic = 1;
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
 
+	#if defined (ENCRES2_DEFAULT)
+		static uint_fast8_t genc2pulses = ENCRES2_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
+	#else
+		static uint_fast8_t genc2pulses = ENCRES_24;		/* 5: 128 индекс в таблице разрешений валкодера */
+	#endif
 	#if defined (BOARD_ENCODER2_DIVIDE)
 		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
 	#else /* defined (BOARD_ENCODER2_DIVIDE) */
 		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
+	static uint_fast8_t genc2dynamic = 0;
 
 
 #else
@@ -9470,6 +9478,7 @@ updateboard2(void)
 {
 #if WITHENCODER
 	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoderB_set_resolution(encresols [genc2pulses], genc2dynamic);
 #endif /* WITHENCODER */
 	display_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }

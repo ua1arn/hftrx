@@ -149,6 +149,9 @@ static uint_fast8_t enchistindex;
 static unsigned encoder1_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 static uint_fast8_t encoder1_dynamic = 1;
 
+static unsigned encoder2_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
+static uint_fast8_t encoder2_dynamic = 1;
+
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
 
@@ -157,6 +160,13 @@ void encoderA_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 	//encoder_resolution = v;	/* используется учетверение шагов */
 	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
 	encoder1_dynamic = encdynamic;
+}
+
+void encoderB_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
+{
+	//encoder_resolution = v;	/* используется учетверение шагов */
+	encoder2_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
+	encoder2_dynamic = encdynamic;
 }
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.

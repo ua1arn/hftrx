@@ -211,14 +211,15 @@
 	//#define COLORSTYLE_RED	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
-	#define ENCRES_DEFAULT ENCRES_128
-	//#define ENCRES_DEFAULT ENCRES_24
+	#define ENCRES_DEFAULT ENCRES_360
+	#define ENCRES2_DEFAULT ENCRES_360
 	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER_DIVIDE 2
+	#define BOARD_ENCODER2_DIVIDE 2
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	#define WITHENCODER3	1

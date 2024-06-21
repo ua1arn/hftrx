@@ -73,6 +73,7 @@ int_least16_t encoderA_get_snapshot(unsigned * speed, const uint_fast8_t derate)
 int_least16_t encoderB_get_snapshot(const uint_fast8_t derate);
 
 void encoderA_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+void encoderB_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 //#define ENCODER_NORMALIZED_RESOLUTION (144)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
