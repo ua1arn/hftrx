@@ -2383,6 +2383,7 @@ void arm_hardware_sdram_initialize(void)
 	//memsize =  dram_power_up_process(& lpddr4);
 	//dbp();
 	PRINTF("arm_hardware_sdram_initialize: result=%u MB\n", memsizeMB);
+	(void) memsizeMB;
 
 #if 0
 	if (xdramc_simple_wr_test(memsizeMB, 64))
