@@ -2896,7 +2896,7 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST
-    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+//    PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);
     CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);
@@ -2906,8 +2906,8 @@ static void t113_tconlcd_CCU_configuration(const videomode_t * vdmode, unsigned 
 
     //printhex32(HDMI_PHY_BASE, HDMI_PHY, 256);
 
-    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
-    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
+//    PRINTF("HDMI_PHY->CEC_VERSION=%08X\n", (unsigned) HDMI_PHY->CEC_VERSION);
+//    PRINTF("HDMI_PHY->VERSION=%08X\n", (unsigned) HDMI_PHY->VERSION);
     if (0)
     {
     	t507_hdmi_initialize();
@@ -4105,9 +4105,9 @@ static void hardware_de_initialize(const videomode_t * vdmode)
 				0x01 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CIRE1
 				0;
 
-		PRINTF("DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
-		PRINTF("DE_PORT2CHN_MUX[1]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [1]);
-		PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
+//		PRINTF("DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
+//		PRINTF("DE_PORT2CHN_MUX[1]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [1]);
+//		PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
 	}
 
 	{

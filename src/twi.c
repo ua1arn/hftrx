@@ -1591,7 +1591,7 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 {
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(pclk, rate * 10), 4, (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1), & value, 1);
-	PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", value, prei);
+	//PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", value, prei);
 
 	twi->TWI_CCR =
 		0*(UINT32_C(1) << 7) | // CLK_DUTY : 50%
@@ -2538,6 +2538,8 @@ void hardware_twi_master_configure(void)
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
+	const uint_fast32_t sclfreq = 400000;
+
 #if defined (TWIHARD_PTR)
 	{
 		TWI_TypeDef * const twi = TWIHARD_PTR;
@@ -2561,7 +2563,7 @@ void hardware_twi_master_configure(void)
 			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
 		}
 
-		t113_i2c_set_rate(twi, 400000, TWIHARD_FREQ);
+		t113_i2c_set_rate(twi, sclfreq, TWIHARD_FREQ);
 
 		twi->TWI_CNTR =  1u << 6;	// BUS_EN
 
@@ -2594,7 +2596,7 @@ void hardware_twi_master_configure(void)
 			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
 		}
 
-		t113_i2c_set_rate(twi, 400000, TWIHARD2_FREQ);
+		t113_i2c_set_rate(twi, sclfreq, TWIHARD2_FREQ);
 
 		twi->TWI_CNTR =  1u << 6;	// BUS_EN
 
