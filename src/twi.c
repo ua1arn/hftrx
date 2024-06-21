@@ -1582,7 +1582,13 @@ struct i2c_msg_t {
 	void * buf;
 };
 
-static void t113_i2c_set_rate(TWI_TypeDef * twi, uint64_t rate, uint64_t pclk){
+// The TWI bus is sampled by the TWI at the frequency defined by F0:
+// Fsamp = F0 = Fin / 2^CLK_N
+// F1 = F0 / (CLK_M + 1)
+// Foscl = F1 / 10 = Fin / (2^CLK_N * (CLK_M + 1)*10)
+
+static void t113_i2c_set_rate(TWI_TypeDef * twi, uint64_t rate, uint64_t pclk)
+{
 	uint_fast64_t freq, delta, best = 0x7fffffffffffffffLL;
 	int tm = 5, tn = 0;
 	int m, n;
@@ -1603,7 +1609,12 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint64_t rate, uint64_t pclk){
 				break;
 		}
 	}
-	twi->TWI_CCR = ((tm & 0xf) << 3) | ((tn & 0x7) << 0);
+	//PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", tm, tn);
+	twi->TWI_CCR =
+		0*(UINT32_C(1) << 7) | // CLK_DUTY : 50%
+		((tm & 0xF) << 3) |	// CLK_M
+		((tn & 0x7) << 0) |	// CLK_N
+		0;
 }
 
 //const uint32_t timeout1;
