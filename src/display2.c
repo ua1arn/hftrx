@@ -5036,7 +5036,7 @@ display2_wfl_init(
 			bwpic, ALLDX, ALLDY,
 			0, 0,
 			ALLDX, ALLDY,
-			TFTALPHA(picalpha, COLORPIP_SPECTRUMFG)
+			TFTALPHA(picalpha, COLORPIP_SPECTRUMBG2)
 			);
 	}
 }
@@ -5612,7 +5612,7 @@ static void display2_spectrum(
 						(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
 						bwpic, ALLDX, ALLDY,
 						0, 0,	// координаты окна источника
-						xright - xleft, SPDY, // размер окна источника
+						xrightv - xleft, SPDY, // размер окна источника
 						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
 					);
 			}
@@ -5820,9 +5820,8 @@ static void display2_waterfall(
 					BITBLT_FLAG_NONE, 0);
 		}
 
-		if (colpip_hasalpha() && hamradio_get_bringtuneA())
+		if (hamradio_get_bringtuneA())
 		{
-			/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
 			const uint_fast8_t pathi = 0;	// RX A
 			const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 			const int_fast32_t bw = display_zoomedbw();
@@ -5836,17 +5835,32 @@ static void display2_waterfall(
 			if (xright >= ALLDX)
 				xright = ALLDX - 1;
 
-			colpip_bitblt(
-					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
-					colorpip, BUFDIM_X, BUFDIM_Y,
-					xleft, WFY0,
-					(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
-					bwpic, ALLDX, ALLDY,
-					0, 0,	// координаты окна источника
-					xright - xleft, WFDY, // размер окна источника
-					BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
-				);
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 
+			if (colpip_hasalpha())
+			{
+				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+
+				colpip_bitblt(
+						(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORPIP_T),
+						colorpip, BUFDIM_X, BUFDIM_Y,
+						xleft, WFY0,
+						(uintptr_t) bwpic, GXSIZE(ALLDX, ALLDY) * sizeof bwpic [0],
+						bwpic, ALLDX, ALLDY,
+						0, 0,	// координаты окна источника
+						xrightv - xleft, WFDY, // размер окна источника
+						BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, COLORPIP_KEY
+					);
+
+			}
+			else
+			{
+				const COLORPIP_T rxbwcolor = display2_rxbwcolor(COLORPIP_SPECTRUMBG2, COLORPIP_SPECTRUMBG);
+				// Изображение двух вертикальных линий по краям "шторки".
+				colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, WFDY, rxbwcolor);
+				colpip_set_vline(colorpip, BUFDIM_X, BUFDIM_Y, xright, WFY0, WFDY, rxbwcolor);
+				//colpip_fillrect(colorpip, BUFDIM_X, BUFDIM_Y, xleft, WFY0, xrightv - xleft, WFDY, COLORPIP_WHITE);
+			}
 		}
 	}
 
