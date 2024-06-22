@@ -62,9 +62,9 @@ typedef enum IRQn
     MCTL_IRQn = 75,                                   /*!< MCTL_COM  */
     SMC_IRQn = 76,                                    /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM */
     EMAC_IRQn = 78,                                   /*!< EMAC  */
-    TZMA_ERR_IRQn = 79,                               /*!< TZMA  */
+    TZMA_ERR_IRQn = 79,                               /*!< TZMA SRAM_A1 TZMA IRQ */
     CCU_FERR_IRQn = 80,                               /*!< CCU Clock Controller Unit (CCU) */
-    AHB_HREADY_TIME_OUT_IRQn = 81,                    /*!< CCU Clock Controller Unit (CCU) */
+    AHB_HREADY_TIME_OUT_IRQn = 81,                    /*!< CCU SYS_CTRL ahb_hready time out */
     DMAC_NS_IRQn = 82,                                /*!< DMAC  */
     DMAC_S_IRQn = 83,                                 /*!< DMAC  */
     CE_NS_IRQn = 84,                                  /*!< CE Crypto Engine (CE) */
@@ -2726,6 +2726,14 @@ typedef struct TWI_Type
              uint32_t reserved_0x308 [0x003E];
 } TWI_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief TZMA
+ */
+/*!< TZMA  */
+typedef struct TZMA_Type
+{
+             uint32_t reserved_0x000 [0x0100];
+} TZMA_TypeDef; /* size of structure = 0x400 */
+/*
  * @brief UART
  */
 /*!< UART  */
@@ -3077,6 +3085,7 @@ typedef struct VE_Type
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define CIR_TX ((CIR_TX_TypeDef *) CIR_TX_BASE)       /*!< CIR_TX  register set access pointer */
+#define TZMA ((TZMA_TypeDef *) TZMA_BASE)             /*!< TZMA  register set access pointer */
 #define LEDC ((LEDC_TypeDef *) LEDC_BASE)             /*!< LEDC LED Lamp Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */

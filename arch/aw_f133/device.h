@@ -38,7 +38,7 @@ typedef enum IRQn
     MCTL_IRQn = 59,                                   /*!< MCTL_COM  */
     EMAC_IRQn = 62,                                   /*!< EMAC  */
     CCU_FERR_IRQn = 64,                               /*!< CCU Clock Controller Unit (CCU) */
-    AHB_HREADY_TIME_OUT_IRQn = 65,                    /*!< CCU Clock Controller Unit (CCU) */
+    AHB_HREADY_TIME_OUT_IRQn = 65,                    /*!< CCU SYS_CTRL ahb_hready time out */
     DMAC_NS_IRQn = 66,                                /*!< DMAC  */
     CE_NS_IRQn = 68,                                  /*!< CE Crypto Engine (CE) */
     HSTIMER0_IRQn = 71,                               /*!< HSTIMER High Speed Timer (HSTimer) */

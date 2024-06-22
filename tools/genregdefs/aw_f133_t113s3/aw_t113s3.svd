@@ -15239,6 +15239,13 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>TZMA</name>
+  <description></description>
+  <baseAddress>0x02004000</baseAddress>
+  <registers>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>UART0</name>
   <description></description>
   <baseAddress>0x02500000</baseAddress>

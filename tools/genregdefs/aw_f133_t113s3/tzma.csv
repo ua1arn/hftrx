@@ -1,3 +1,10 @@
 #type; TZMA
 #base; TZMA 0x02004000
-#irq; TZMA_ERR 79
+
+#irq; TZMA_ERR 79; SRAM_A1 TZMA IRQ
+
+# in rv not appear
+##irqrv; TZMA_ERR 63; SRAM_A1 TZMA IRQ
+
+#regdef; padding 0; 1024; Need for address arithmetics
+#typeend;
