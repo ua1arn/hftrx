@@ -12864,6 +12864,13 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>SMC</name>
+  <description>Secure Memory Control (SMC) - Sets secure area of DRAM</description>
+  <baseAddress>0x03007000</baseAddress>
+  <registers>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SMHC0</name>
   <description>SD-MMC Host Controller</description>
   <baseAddress>0x04020000</baseAddress>
@@ -13282,6 +13289,13 @@
    <value>58</value>
    <description></description>
   </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>SPC</name>
+  <description>Secure Peripherals Control (SPC) - Sets secure property of peripherals</description>
+  <baseAddress>0x02000800</baseAddress>
+  <registers>
+  </registers>
   </peripheral>
   <peripheral>
   <name>SPI0</name>
@@ -13728,6 +13742,24 @@
     <displayName>RESCAL_STATUS_REG</displayName>
     <description>Resistor Calibration Status Register</description>
     <addressOffset>0x16C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_LDOB_SID</name>
+    <displayName>SYS_LDOB_SID</displayName>
+    <description></description>
+    <addressOffset>0x21C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_EFUSE_REG</name>
+    <displayName>SYS_EFUSE_REG</displayName>
+    <description></description>
+    <addressOffset>0x228</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

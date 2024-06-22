@@ -9,4 +9,5 @@
 #regdef; SID_DATA; 0x200 4;	SID data (xfel display as 'sid' replay)
 #regdef; BOOT_MODE; 0x210; [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select
 #regdef; SID_UNDOC; 0x214 507;
-#regdef; pad 0; 2560; Set i/o block size
+#regdef; pad 0; 4096; Set i/o block size
+#typeend;

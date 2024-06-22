@@ -19,3 +19,5 @@
 #regdef; HS_TMR1_INTV_HI_REG; 0x0048; HS Timer1 Interval Value High Register
 #regdef; HS_TMR1_CURNT_LO_REG; 0x004C; HS Timer1 Current Value Low Register
 #regdef; HS_TMR1_CURNT_HI_REG; 0x0050; HS Timer1 Current Value High Register
+#regdef; pad 0; 4096; Set i/o block size
+#typeend;

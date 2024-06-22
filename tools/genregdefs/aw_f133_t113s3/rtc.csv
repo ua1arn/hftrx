@@ -25,4 +25,5 @@
 #regdef; VDD_OFF_GATING_CTRL_REG; 0x01F4; VDD Off Gating Control Register
 #regdef; EFUSE_HV_PWRSWT_CTRL_REG; 0x0204; Efuse High Voltage Power Switch Control Register
 #regdef; RTC_SPI_CLK_CTRL_REG; 0x0310; RTC SPI Clock Control Register
+#regdef; pad 0; 4096; Set i/o block size
 #typeend;

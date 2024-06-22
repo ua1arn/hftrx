@@ -12702,6 +12702,24 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>SYS_LDOB_SID</name>
+    <displayName>SYS_LDOB_SID</displayName>
+    <description></description>
+    <addressOffset>0x21C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_EFUSE_REG</name>
+    <displayName>SYS_EFUSE_REG</displayName>
+    <description></description>
+    <addressOffset>0x228</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

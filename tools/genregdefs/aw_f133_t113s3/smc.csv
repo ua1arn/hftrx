@@ -3,3 +3,5 @@
 
 #irq; SMC 76
 
+#regdef; pad 0; 4096; Set i/o block size
+#typeend;

@@ -14,3 +14,4 @@
 #regdef; MCTL_COM_REMAP1; 0x504; REMAP1
 #regdef; MCTL_COM_REMAP2; 0x508; REMAP2
 #regdef; MCTL_COM_REMAP3; 0x50C; REMAP3
+#typeend;

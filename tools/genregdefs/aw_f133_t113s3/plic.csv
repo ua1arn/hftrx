@@ -9,3 +9,4 @@
 #regdef; PLIC_MCLAIM_REG; 0x200004; PLIC Machine Claim Register (EOI) - Interrupt Claim Process for context 0
 #regdef; PLIC_STH_REG; 0x201000; PLIC Superuser Threshold Register - Priority Threshold  for context 1
 #regdef; PLIC_SCLAIM_REG; 0x201004; PLIC Superuser Claim Register (EOI) - Interrupt Claim Process for context 1
+#typeend;

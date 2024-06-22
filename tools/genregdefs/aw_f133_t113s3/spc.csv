@@ -1,3 +1,5 @@
 #type; SPC; Secure Peripherals Control (SPC) - Sets secure property of peripherals
 #base; SPC 0x02000800
 
+#regdef; pad 0; 1024; Set i/o block size
+#typeend;

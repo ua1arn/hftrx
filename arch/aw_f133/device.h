@@ -1610,7 +1610,8 @@ typedef struct HSTIMER_Type
     volatile uint32_t HS_TMR1_INTV_HI_REG;            /*!< Offset 0x048 HS Timer1 Interval Value High Register */
     volatile uint32_t HS_TMR1_CURNT_LO_REG;           /*!< Offset 0x04C HS Timer1 Current Value Low Register */
     volatile uint32_t HS_TMR1_CURNT_HI_REG;           /*!< Offset 0x050 HS Timer1 Current Value High Register */
-} HSTIMER_TypeDef; /* size of structure = 0x054 */
+             uint32_t reserved_0x054 [0x03EB];
+} HSTIMER_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief I2S_PCM
  */
@@ -2073,7 +2074,8 @@ typedef struct RTC_Type
     volatile uint32_t EFUSE_HV_PWRSWT_CTRL_REG;       /*!< Offset 0x204 Efuse High Voltage Power Switch Control Register */
              uint32_t reserved_0x208 [0x0042];
     volatile uint32_t RTC_SPI_CLK_CTRL_REG;           /*!< Offset 0x310 RTC SPI Clock Control Register */
-} RTC_TypeDef; /* size of structure = 0x314 */
+             uint32_t reserved_0x314 [0x033B];
+} RTC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief R_CCU
  */
@@ -2125,7 +2127,8 @@ typedef struct SID_Type
     volatile uint32_t SID_DATA [0x004];               /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
     volatile uint32_t BOOT_MODE;                      /*!< Offset 0x210 [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select */
     volatile uint32_t SID_UNDOC [0x1FB];              /*!< Offset 0x214  */
-} SID_TypeDef; /* size of structure = 0xA00 */
+             uint32_t reserved_0xA00 [0x0180];
+} SID_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SMHC
  */
@@ -2242,7 +2245,12 @@ typedef struct SYS_CFG_Type
              uint32_t reserved_0x164;
     volatile uint32_t RES240_CTRL_REG;                /*!< Offset 0x168 240ohms Resistor Manual Control Register */
     volatile uint32_t RESCAL_STATUS_REG;              /*!< Offset 0x16C Resistor Calibration Status Register */
-} SYS_CFG_TypeDef; /* size of structure = 0x170 */
+             uint32_t reserved_0x170 [0x002B];
+    volatile uint32_t SYS_LDOB_SID;                   /*!< Offset 0x21C  */
+             uint32_t reserved_0x220 [0x0002];
+    volatile uint32_t SYS_EFUSE_REG;                  /*!< Offset 0x228  */
+             uint32_t reserved_0x22C [0x0375];
+} SYS_CFG_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief TCON_LCD
  */

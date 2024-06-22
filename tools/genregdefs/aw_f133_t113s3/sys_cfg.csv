@@ -7,3 +7,7 @@
 #regdef; RESCAL_CTRL_REG; 0x0160; Resistor Calibration Control Register
 #regdef; RES240_CTRL_REG; 0x0168; 240ohms Resistor Manual Control Register
 #regdef; RESCAL_STATUS_REG; 0x016C; Resistor Calibration Status Register
+#regdef; SYS_LDOB_SID; 0x21C;
+#regdef; SYS_EFUSE_REG; 0x228;
+#regdef; pad 0; 4096; Set i/o block size
+#typeend;

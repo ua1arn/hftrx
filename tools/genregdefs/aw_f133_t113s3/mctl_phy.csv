@@ -81,3 +81,4 @@
 ##regdef; MCTL_PHY_DATX1IOCR; 0x390 + 0x4 * x; 
 ##regdef; MCTL_PHY_DATX2IOCR; 0x410 + 0x4 * x; 
 ##regdef; MCTL_PHY_DATX3IOCR; 0x490 + 0x4 * x; 
+#typeend;
