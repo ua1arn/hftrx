@@ -116,7 +116,7 @@
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 	#define BOARD_DSTYLE "g_x800_y480.h"
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 

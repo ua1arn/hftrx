@@ -1,5 +1,0 @@
-#type; R_PRCM
-#base; R_PRCM 0x07010000
-
-#regdef; VDD_SYS_PWROFF_GATING_REG; 0x250;
-#regdef; ANALOG_PWROFF_GATING_REG; 0x254;
