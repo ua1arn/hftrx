@@ -1547,6 +1547,11 @@
    <value>64</value>
    <description></description>
   </interrupt>
+  <interrupt>
+   <name>AHB_HREADY_TIME_OUT</name>
+   <value>65</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>PLL_CPU_CTRL_REG</name>

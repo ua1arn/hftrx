@@ -2,6 +2,8 @@
 #base; CCU 0x02001000
 #irq; CCU_FERR 80
 #irqrv; CCU_FERR 64
+#irq; AHB_HREADY_TIME_OUT 81
+#irqrv; AHB_HREADY_TIME_OUT 65
 
 #regdef; PLL_CPU_CTRL_REG; 0x0000; PLL_CPU Control Register
 #regdef; PLL_DDR_CTRL_REG; 0x0010; PLL_DDR Control Register

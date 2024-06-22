@@ -64,6 +64,7 @@ typedef enum IRQn
     EMAC_IRQn = 78,                                   /*!< EMAC  */
     TZMA_ERR_IRQn = 79,                               /*!< TZMA  */
     CCU_FERR_IRQn = 80,                               /*!< CCU Clock Controller Unit (CCU) */
+    AHB_HREADY_TIME_OUT_IRQn = 81,                    /*!< CCU Clock Controller Unit (CCU) */
     DMAC_NS_IRQn = 82,                                /*!< DMAC  */
     DMAC_S_IRQn = 83,                                 /*!< DMAC  */
     CE_NS_IRQn = 84,                                  /*!< CE Crypto Engine (CE) */

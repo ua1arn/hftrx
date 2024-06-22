@@ -62,6 +62,7 @@ typedef enum IRQn
     SMC_IRQn = 76,                                    /*!< SMC Secure Memory Control (SMC) - Sets secure area of DRAM */
     EMAC_IRQn = 78,                                   /*!< EMAC  */
     CCU_FERR_IRQn = 80,                               /*!< CCU Clock Controller Unit (CCU) */
+    AHB_HREADY_TIME_OUT_IRQn = 81,                    /*!< CCU Clock Controller Unit (CCU) */
     DMAC_NS_IRQn = 82,                                /*!< DMAC  */
     DMAC_S_IRQn = 83,                                 /*!< DMAC  */
     CE_NS_IRQn = 84,                                  /*!< CE Crypto Engine (CE) */
