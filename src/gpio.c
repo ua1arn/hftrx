@@ -1708,7 +1708,8 @@ void gpioX_setstate(
 		stm32f30x_pioX_onchangeinterrupt(portholder_t ipins,
 			portholder_t raise, portholder_t fall,
 			portholder_t portcode,	/* 0x00: PAxx, 0x01: PBxx, .. 0x0a: PKxx */
-			uint32_t priority
+			uint32_t priority,
+			einthandler_t * h
 			)
 		{
 			#if CPUSTYLE_STM32H7XX

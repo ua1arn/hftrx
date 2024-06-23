@@ -164,11 +164,15 @@
 	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
 	#define ENCODER_INITIALIZE() do { \
+			static einthandler_t h1; \
+			static einthandler_t h2; \
+			einthandler_initialize(& h1, ENCODER_BITS, spool_encinterrupts, & encoder1); \
+			einthandler_initialize(& h2, ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 			arm_hardware_pioh_inputs(ENCODER_BITS); \
-			arm_hardware_pioh_updown(_xMask, ENCODER_BITS, 0); \
-			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_pioh_updown(ENCODER_BITS, ENCODER_BITS, 0); \
+			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
 			arm_hardware_pioh_inputs(ENCODER2_BITS); \
-			arm_hardware_pioh_updown(_xMask, ENCODER2_BITS, 0); \
+			arm_hardware_pioh_updown(ENCODER2_BITS, ENCODER2_BITS, 0); \
 			/* arm_hardware_pioh_onchangeinterrupt(ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); */ \
 		} while (0)
 
@@ -178,16 +182,16 @@
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(_xMask, 0, 1uL << 12); \
-		arm_hardware_piob_altfn2(1uL << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
-		arm_hardware_piob_updown(_xMask, 0, 1uL << 10); \
-		arm_hardware_pioc_altfn2(1uL << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
-		arm_hardware_pioa_altfn2(1uL << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
-		arm_hardware_pioa_updown(_xMask, 0, 1uL << 15); \
-		arm_hardware_piob_altfn2(1uL << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
-		arm_hardware_piob_updown(_xMask, 0, 1uL << 3); \
-		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+		arm_hardware_piob_altfn2(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_updown(UINT32_C(1) << 12, 0, UINT32_C(1) << 12); \
+		arm_hardware_piob_altfn2(UINT32_C(1) << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
+		arm_hardware_piob_updown(UINT32_C(1) << 10, 0, UINT32_C(1) << 10); \
+		arm_hardware_pioc_altfn2(UINT32_C(1) << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+		arm_hardware_pioa_altfn2(UINT32_C(1) << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
+		arm_hardware_pioa_updown(UINT32_C(1) << 15, 0, UINT32_C(1) << 15); \
+		arm_hardware_piob_altfn2(UINT32_C(1) << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
+		arm_hardware_piob_updown(UINT32_C(1) << 3, 0, UINT32_C(1) << 3); \
+		arm_hardware_piob_altfn2(UINT32_C(1) << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
 	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
 	} while (0)
@@ -201,11 +205,11 @@
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		/*arm_hardware_pioe_altfn20(UINT32_C(1) << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
+		arm_hardware_pioe_altfn2(UINT32_C(1) << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioe_altfn20(UINT32_C(1) << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
+		arm_hardware_pioe_altfn2(UINT32_C(1) << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_pioe_altfn2(UINT32_C(1) << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -215,11 +219,11 @@
 	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		/* arm_hardware_pioe_altfn20(1uL << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
-		/* arm_hardware_piod_altfn2(1uL << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
-		/* arm_hardware_piod_altfn20(1uL << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
-		/* arm_hardware_piod_altfn2(1uL << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
-		/* arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		/* arm_hardware_pioe_altfn20(UINT32_C(1) << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
+		/* arm_hardware_piod_altfn2(UINT32_C(1) << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
+		/* arm_hardware_piod_altfn20(UINT32_C(1) << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
+		/* arm_hardware_piod_altfn2(UINT32_C(1) << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
+		/* arm_hardware_pioe_altfn2(UINT32_C(1) << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #else /* WITHSAI1HW */
 	#define SAI2HW_INITIALIZE()	do { \
@@ -276,42 +280,42 @@
 #if WITHSDHCHW
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
-			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_altfn50(1uL << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_altfn50(1uL << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_altfn50(1uL << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_altfn50(1uL << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_altfn50(1uL << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(1uL << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_inputs(1uL << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_inputs(1uL << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_inputs(1uL << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(_xMask, 0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_inputs(UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(_xMask, 0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE() do { \
-			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_altfn50(1uL << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_altfn50(1uL << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_altfn50(UINT32_C(1) << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 12, AF_SDIO);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_altfn50(UINT32_C(1) << 8, AF_SDIO);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(1uL << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_piod_updown(_xMask, 0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_inputs(UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_inputs(UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_piod_updown(_xMask, 0, UINT32_C(1) << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(_xMask, 0, UINT32_C(1) << 8);	/* PC8 - SDIO_D0	*/ \
 		} while (0)
 	#endif /* WITHSDHCHW4BIT */
 
@@ -378,9 +382,9 @@
 	// PTT input - PD13
 	// PTT2 input - PD0
 	#define PTT_TARGET_PIN				(GPIOD->IDR)
-	#define PTT_BIT_PTT					(1uL << 13)		// PD13 - PTT
+	#define PTT_BIT_PTT					(UINT32_C(1) << 13)		// PD13 - PTT
 	#define PTT2_TARGET_PIN				(GPIOD->IDR)
-	#define PTT2_BIT_PTT				(1uL << 8)		// PD8 - PTT2
+	#define PTT2_BIT_PTT				(UINT32_C(1) << 8)		// PD8 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
@@ -412,8 +416,8 @@
 #if WITHELKEY
 	// Electronic key inputs
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
-	#define ELKEY_BIT_LEFT				(1uL << 11)		// PD11
-	#define ELKEY_BIT_RIGHT				(1uL << 12)		// PD12
+	#define ELKEY_BIT_LEFT				(UINT32_C(1) << 11)		// PD11
+	#define ELKEY_BIT_RIGHT				(UINT32_C(1) << 12)		// PD12
 
 	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
 	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
@@ -429,20 +433,20 @@
 // IOUPDATE = PA15
 //#define SPI_IOUPDATE_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-//#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
+//#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
 
-	#define targetext1	(1uL << 15)	// PG15 ext1 on front panel
-	#define targetxad2	(1uL << 14)	// PG14 ext2(not connected now)
-	#define targetnvram	(1uL << 4)	// PG4 nvmem FM25L16B
-	#define targetctl1	(1uL << 3)	// PG7 board control registers chain
-	#define targetcodec1	(1uL << 2)	// PG6 on-board codec1 NAU8822L
-	#define targetfpga1	(1uL << 1)	// PG1 FPGA control registers CS1
-	#define targetfpga2	(1uL << 0)	// PG0 FPGA control registers CS2
+	#define targetext1	(UINT32_C(1) << 15)	// PG15 ext1 on front panel
+	#define targetxad2	(UINT32_C(1) << 14)	// PG14 ext2(not connected now)
+	#define targetnvram	(UINT32_C(1) << 4)	// PG4 nvmem FM25L16B
+	#define targetctl1	(UINT32_C(1) << 3)	// PG7 board control registers chain
+	#define targetcodec1	(UINT32_C(1) << 2)	// PG6 on-board codec1 NAU8822L
+	#define targetfpga1	(UINT32_C(1) << 1)	// PG1 FPGA control registers CS1
+	#define targetfpga2	(UINT32_C(1) << 0)	// PG0 FPGA control registers CS2
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
@@ -483,14 +487,14 @@
 	// MOSI & SCK port
 	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define	SPI_SCLK_BIT			(1uL << 5)	// * PA5 бит, через который идет синхронизация SPI
+	#define	SPI_SCLK_BIT			(UINT32_C(1) << 5)	// * PA5 бит, через который идет синхронизация SPI
 
 	#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define	SPI_MOSI_BIT			(1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+	#define	SPI_MOSI_BIT			(UINT32_C(1) << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
-	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
+	#define	SPI_MISO_BIT			(UINT32_C(1) << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PA5 */ \
@@ -514,12 +518,12 @@
 		} while (0)
 
 	#define HARDWARE_UART1_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2((1uL << 9) | (1uL << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
-			arm_hardware_pioa_updown(_xMask, (1uL << 10), 0);	/* PA10: pull-up RX data */ \
+			arm_hardware_pioa_altfn2((UINT32_C(1) << 9) | (UINT32_C(1) << 10), AF_USART1); /* PA9: TX DATA line (2 MHz), PA10: RX data line */ \
+			arm_hardware_pioa_updown((UINT32_C(1) << 10), (UINT32_C(1) << 10), 0);	/* PA10: pull-up RX data */ \
 		} while (0)
 	#define HARDWARE_UART2_INITIALIZE() do { \
-			arm_hardware_piod_altfn2((1uL << 5) | (1uL << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
-			arm_hardware_piod_updown(_xMask, (1uL << 6), 0);	/* PD6: pull-up RX data */ \
+			arm_hardware_piod_altfn2((UINT32_C(1) << 5) | (UINT32_C(1) << 6), AF_USART2); /* PD5: TX DATA line (2 MHz), PD6: RX data line */ \
+			arm_hardware_piod_updown((UINT32_C(1) << 6), (UINT32_C(1) << 6), 0);	/* PD6: pull-up RX data */ \
 		} while (0)
 
 #endif
@@ -621,15 +625,15 @@
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1uL << 7)	/* PE7 - fir CS */
+	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 7)	/* PE7 - fir CS */
 
 	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1uL << 6)	/* PH6 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 6)	/* PH6 - fir1 WE */
 
 	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 7)	/* PH7 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 7)	/* PH7 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
 			arm_hardware_pioh_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
@@ -669,7 +673,7 @@
 #if WITHUSBHW
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_USBFS_VBUSON_BIT (1uL << 6)	// PC6 - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_BIT (UINT32_C(1) << 6)	// PC6 - нулём включение питания для device
 	/**USB_OTG_FS GPIO Configuration    
 	PA9     ------> USB_OTG_FS_VBUS
 	PA10     ------> USB_OTG_FS_ID
@@ -677,9 +681,9 @@
 	PA12     ------> USB_OTG_FS_DP 
 	*/
 	#define	USBD_FS_INITIALIZE() do { \
-		arm_hardware_pioa_altfn50(/*(1uL << 10) | */ (1uL << 11) | (1uL << 12), AF_OTGFS);			/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
-		arm_hardware_pioa_inputs(1uL << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
-		arm_hardware_pioa_updown((1uL << 9) | /*(1uL << 10) |  */ (1uL << 11) | (1uL << 12), 0, 0); \
+		arm_hardware_pioa_altfn50(/*(UINT32_C(1) << 10) | */ (UINT32_C(1) << 11) | (UINT32_C(1) << 12), AF_OTGFS);			/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
+		arm_hardware_pioa_inputs(UINT32_C(1) << 9);		/* PA9 - USB_OTG_FS_VBUS */ \
+		arm_hardware_pioa_updown((UINT32_C(1) << 9) | /*(UINT32_C(1) << 10) |  */ (UINT32_C(1) << 11) | (UINT32_C(1) << 12), 0, 0); \
 		arm_hardware_pioc_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); \
 		} while (0)
 
@@ -696,9 +700,9 @@
 	PB15     ------> USB_OTG_HS_DP 
 	*/
 	#define	USBD_HS_FS_INITIALIZE() do { \
-		arm_hardware_piob_altfn50((1uL << 14) | (1uL << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
-		arm_hardware_piob_inputs(1uL << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
-		arm_hardware_piob_updown((1uL << 13) | (1uL << 14) | (1uL << 15), 0, 0); \
+		arm_hardware_piob_altfn50((UINT32_C(1) << 14) | (UINT32_C(1) << 15), AF_OTGHS_FS);			/* PB14, PB15 - USB_OTG_HS	*/ \
+		arm_hardware_piob_inputs(UINT32_C(1) << 13);		/* PB13 - USB_OTG_HS_VBUS */ \
+		arm_hardware_piob_updown((UINT32_C(1) << 13) | (UINT32_C(1) << 14) | (UINT32_C(1) << 15), 0, 0); \
 		} while (0)
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
