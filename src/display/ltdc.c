@@ -119,8 +119,8 @@ static void vdc5_wait(
 	uint_fast32_t mask = 0; \
 	while (width --) \
 		mask = (mask << 1) | UINT32_C(1); \
-	mask  << = (pos); \
-	val  << = (pos); \
+	mask <<= (pos); \
+	val <<= (pos); \
 	ASSERT((val & mask) == val); \
 	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
 	(void) * (reg);	/* dummy read */ \
@@ -139,8 +139,8 @@ static void vdc5_wait(
 	uint_fast32_t mask = 0; \
 	while (width --) \
 		mask = (mask << 1) | UINT32_C(1); \
-	mask  << = (pos); \
-	val  << = (pos); \
+	mask <<= (pos); \
+	val <<= (pos); \
 	ASSERT((val & mask) == val); \
 	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
 	(void) * (reg);	/* dummy read */ \
