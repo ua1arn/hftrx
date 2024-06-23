@@ -64,6 +64,7 @@ typedef enum IRQn
     USB20_HOST2_OHCI_IRQn = 63,                       /*!< USB_OHCI_Capability  */
     USB20_HOST3_EHCI_IRQn = 64,                       /*!< USB_EHCI_Capability  */
     USB20_HOST3_OHCI_IRQn = 65,                       /*!< USB_OHCI_Capability  */
+    NAND0_IRQn = 66,                                  /*!< NDFC NAND0 interrupt */
     SMHC0_IRQn = 67,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC1_IRQn = 68,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
@@ -222,6 +223,7 @@ typedef enum IRQn
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 #define IOMMU_BASE ((uintptr_t) 0x030F0000)           /*!< IOMMU IOMMU (I/O Memory management unit) Base */
+#define NAND0_BASE ((uintptr_t) 0x04011000)           /*!< NDFC Nand Flash Controller Base */
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
@@ -241,6 +243,7 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define EMAC0_BASE ((uintptr_t) 0x05020000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
 #define EMAC1_BASE ((uintptr_t) 0x05030000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
+#define TS0_BASE ((uintptr_t) 0x05060000)             /*!< TS0  Base */
 #define TSC_BASE ((uintptr_t) 0x05060000)             /*!< TSC Transport Stream Controller Base */
 #define TSG_BASE ((uintptr_t) 0x05060040)             /*!< TSG Transport Stream Controller Base */
 #define TSF_BASE ((uintptr_t) 0x05060100)             /*!< TSF Transport Stream Controller Base */
@@ -1017,22 +1020,22 @@ typedef struct DMAC_Type
              uint32_t reserved_0x024;
     volatile uint32_t DMAC_AUTO_GATE_REG;             /*!< Offset 0x028 DMAC Auto Gating Register */
              uint32_t reserved_0x02C;
-    volatile uint32_t DMAC_STA_REG;                   /*!< Offset 0x030 DMAC Status Register */
+    const volatile uint32_t DMAC_STA_REG;             /*!< Offset 0x030 DMAC Status Register */
              uint32_t reserved_0x034 [0x0033];
     struct
     {
         volatile uint32_t DMAC_EN_REGN;               /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
         volatile uint32_t DMAC_PAU_REGN;              /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
         volatile uint32_t DMAC_DESC_ADDR_REGN;        /*!< Offset 0x108 DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040 */
-        volatile uint32_t DMAC_CFG_REGN;              /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
-        volatile uint32_t DMAC_CUR_SRC_REGN;          /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
-        volatile uint32_t DMAC_CUR_DEST_REGN;         /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
-        volatile uint32_t DMAC_BCNT_LEFT_REGN;        /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
-        volatile uint32_t DMAC_PARA_REGN;             /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
+        const volatile uint32_t DMAC_CFG_REGN;        /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
+        const volatile uint32_t DMAC_CUR_SRC_REGN;    /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
+        const volatile uint32_t DMAC_CUR_DEST_REGN;   /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
+        const volatile uint32_t DMAC_BCNT_LEFT_REGN;  /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
+        const volatile uint32_t DMAC_PARA_REGN;       /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
                  uint32_t reserved_0x020 [0x0002];
         volatile uint32_t DMAC_MODE_REGN;             /*!< Offset 0x128 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
-        volatile uint32_t DMAC_FDESC_ADDR_REGN;       /*!< Offset 0x12C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
-        volatile uint32_t DMAC_PKG_NUM_REGN;          /*!< Offset 0x130 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
+        const volatile uint32_t DMAC_FDESC_ADDR_REGN; /*!< Offset 0x12C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
+        const volatile uint32_t DMAC_PKG_NUM_REGN;    /*!< Offset 0x130 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
                  uint32_t reserved_0x034 [0x0003];
     } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
 } DMAC_TypeDef; /* size of structure = 0x500 */
@@ -1683,6 +1686,51 @@ typedef struct LRADC_Type
     volatile uint32_t LRADC_DATA0;                    /*!< Offset 0x00C LRADC Data Register0 */
 } LRADC_TypeDef; /* size of structure = 0x010 */
 /*
+ * @brief NDFC
+ */
+/*!< NDFC Nand Flash Controller */
+typedef struct NDFC_Type
+{
+    volatile uint32_t NDFC_CTL;                       /*!< Offset 0x000 NDFC Configure and Control Register */
+    volatile uint32_t NDFC_ST;                        /*!< Offset 0x004 NDFC Status Information Register */
+    volatile uint32_t NDFC_INT;                       /*!< Offset 0x008 NDFC Interrupt Control Register */
+    volatile uint32_t NDFC_TIMING_CTL;                /*!< Offset 0x00C NDFC Timing Control Register */
+    volatile uint32_t NDFC_TIMING_CFG;                /*!< Offset 0x010 NDFC Timing Configure Register */
+    volatile uint32_t NDFC_ADDR_LOW;                  /*!< Offset 0x014 NDFC Low Word Address Register */
+    volatile uint32_t NDFC_ADDR_HIGH;                 /*!< Offset 0x018 NDFC High Word Address Register */
+    volatile uint32_t NDFC_DATA_BLOCK_MASK;           /*!< Offset 0x01C NDFC Data Block Mask Register */
+    volatile uint32_t NDFC_CNT;                       /*!< Offset 0x020 NDFC Data Counter Register */
+    volatile uint32_t NDFC_CMD;                       /*!< Offset 0x024 NDFC Commands IO Register */
+    volatile uint32_t NDFC_RCMD_SET;                  /*!< Offset 0x028 Read Command Set Register for Vendor’s NAND Memory */
+    volatile uint32_t NDFC_WCMD_SET;                  /*!< Offset 0x02C Write Command Set Register for Vendor’s NAND Memory */
+             uint32_t reserved_0x030;
+    volatile uint32_t NDFC_ECC_CTL;                   /*!< Offset 0x034 NDFC ECC Control Register */
+    const volatile uint32_t NDFC_ECC_ST;              /*!< Offset 0x038 NDFC ECC Status Register */
+    const volatile uint32_t NDFC_DATA_PAT_STA;        /*!< Offset 0x03C NDFC Data Pattern Status Register */
+    volatile uint32_t NDFC_EFR;                       /*!< Offset 0x040 NDFC Enhanced Feature Register */
+    volatile uint32_t NDFC_RDATA_STA_CTL;             /*!< Offset 0x044 NDFC Read Data Status Control Register */
+    const volatile uint32_t NDFC_RDATA_STA_0;         /*!< Offset 0x048 NDFC Read Data Status Register 0 */
+    const volatile uint32_t NDFC_RDATA_STA_1;         /*!< Offset 0x04C NDFC Read Data Status Register 1 */
+    const volatile uint32_t NDFC_ERR_CNT [0x008];     /*!< Offset 0x050 NDFC Error Counter Register(N from 0 to 7) */
+    volatile uint32_t NDFC_USER_DATA_LEN [0x004];     /*!< Offset 0x070 NDFC User Data Length Register(N from 0 to 3) */
+    volatile uint32_t NDFC_USER_DATA [0x020];         /*!< Offset 0x080 NDFC User Data Field Register N (N from 0 to 31) */
+             uint32_t reserved_0x100 [0x0004];
+    const volatile uint32_t NDFC_EFNAND_STA;          /*!< Offset 0x110 NDFC EFNAND Status Register */
+    volatile uint32_t NDFC_SPARE_AREA;                /*!< Offset 0x114 NDFC Spare Area Register */
+    const volatile uint32_t NDFC_PAT_ID;              /*!< Offset 0x118 NDFC Pattern ID Register */
+    volatile uint32_t NDFC_DDR2_SPEC_CTL;             /*!< Offset 0x11C NDFC DDR2 Specific Control Register */
+    volatile uint32_t NDFC_NDMA_MODE_CTL;             /*!< Offset 0x120 NDFC Normal DMA Mode Control Register */
+             uint32_t reserved_0x124 [0x0037];
+    volatile uint32_t NDFC_MDMA_DLBA_REG;             /*!< Offset 0x200 NDFC MBUS DMA Descriptor List Base Address Register */
+    volatile uint32_t NDFC_MDMA_STA;                  /*!< Offset 0x204 NDFC MBUS DMA Interrupt Status Register */
+    volatile uint32_t NDFC_DMA_INT_MASK;              /*!< Offset 0x208 NDFC MBUS DMA Interrupt Enable Register */
+    const volatile uint32_t NDFC_MDMA_CUR_DESC_ADDR;  /*!< Offset 0x20C NDFC MBUS DMA Current Descriptor Address Register */
+    const volatile uint32_t NDFC_MDMA_CUR_BUF_ADDR;   /*!< Offset 0x210 NDFC MBUS DMA Current Buffer Address Register */
+    volatile uint32_t NDFC_DMA_CNT;                   /*!< Offset 0x214 NDFC DMA Byte Counter Register */
+             uint32_t reserved_0x218 [0x003A];
+    volatile uint32_t NDFC_IO_DATA;                   /*!< Offset 0x300 NDFC Input/Output Data Register */
+} NDFC_TypeDef; /* size of structure = 0x304 */
+/*
  * @brief OWA
  */
 /*!< OWA One Wire Audio */
@@ -2179,6 +2227,14 @@ typedef struct TIMER_Type
     volatile uint32_t AVS_CNT_DIV_REG;                /*!< Offset 0x0CC AVS Divisor Register */
 } TIMER_TypeDef; /* size of structure = 0x0D0 */
 /*
+ * @brief TS0
+ */
+/*!< TS0  */
+typedef struct TS0_Type
+{
+             uint32_t reserved_0x000 [0x0400];
+} TS0_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief TSC
  */
 /*!< TSC Transport Stream Controller */
@@ -2668,6 +2724,7 @@ typedef struct VE_Type
 #define GPIOINTH ((GPIOINT_TypeDef *) GPIOINTH_BASE)  /*!< GPIOINTH  register set access pointer */
 #define GPIOINTI ((GPIOINT_TypeDef *) GPIOINTI_BASE)  /*!< GPIOINTI  register set access pointer */
 #define IOMMU ((IOMMU_TypeDef *) IOMMU_BASE)          /*!< IOMMU IOMMU (I/O Memory management unit) register set access pointer */
+#define NAND0 ((NDFC_TypeDef *) NAND0_BASE)           /*!< NAND0 Nand Flash Controller register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
@@ -2687,6 +2744,7 @@ typedef struct VE_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define EMAC0 ((EMAC_TypeDef *) EMAC0_BASE)           /*!< EMAC0 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */
 #define EMAC1 ((EMAC_TypeDef *) EMAC1_BASE)           /*!< EMAC1 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */
+#define TS0 ((TS0_TypeDef *) TS0_BASE)                /*!< TS0  register set access pointer */
 #define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
 #define TSG ((TSG_TypeDef *) TSG_BASE)                /*!< TSG Transport Stream Controller register set access pointer */
 #define TSF ((TSF_TypeDef *) TSF_BASE)                /*!< TSF Transport Stream Controller register set access pointer */

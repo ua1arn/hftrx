@@ -8737,6 +8737,339 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>NAND0</name>
+  <description>Nand Flash Controller</description>
+  <baseAddress>0x04011000</baseAddress>
+  <interrupt>
+   <name>NAND0</name>
+   <value>66</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>NDFC_CTL</name>
+    <displayName>NDFC_CTL</displayName>
+    <description>NDFC Configure and Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_ST</name>
+    <displayName>NDFC_ST</displayName>
+    <description>NDFC Status Information Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_INT</name>
+    <displayName>NDFC_INT</displayName>
+    <description>NDFC Interrupt Control Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_TIMING_CTL</name>
+    <displayName>NDFC_TIMING_CTL</displayName>
+    <description>NDFC Timing Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_TIMING_CFG</name>
+    <displayName>NDFC_TIMING_CFG</displayName>
+    <description>NDFC Timing Configure Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_ADDR_LOW</name>
+    <displayName>NDFC_ADDR_LOW</displayName>
+    <description>NDFC Low Word Address Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_ADDR_HIGH</name>
+    <displayName>NDFC_ADDR_HIGH</displayName>
+    <description>NDFC High Word Address Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_DATA_BLOCK_MASK</name>
+    <displayName>NDFC_DATA_BLOCK_MASK</displayName>
+    <description>NDFC Data Block Mask Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_CNT</name>
+    <displayName>NDFC_CNT</displayName>
+    <description>NDFC Data Counter Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_CMD</name>
+    <displayName>NDFC_CMD</displayName>
+    <description>NDFC Commands IO Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_RCMD_SET</name>
+    <displayName>NDFC_RCMD_SET</displayName>
+    <description>Read Command Set Register for Vendor’s NAND Memory</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_WCMD_SET</name>
+    <displayName>NDFC_WCMD_SET</displayName>
+    <description>Write Command Set Register for Vendor’s NAND Memory</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_ECC_CTL</name>
+    <displayName>NDFC_ECC_CTL</displayName>
+    <description>NDFC ECC Control Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_ECC_ST</name>
+    <displayName>NDFC_ECC_ST</displayName>
+    <description>NDFC ECC Status Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_DATA_PAT_STA</name>
+    <displayName>NDFC_DATA_PAT_STA</displayName>
+    <description>NDFC Data Pattern Status Register</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_EFR</name>
+    <displayName>NDFC_EFR</displayName>
+    <description>NDFC Enhanced Feature Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_RDATA_STA_CTL</name>
+    <displayName>NDFC_RDATA_STA_CTL</displayName>
+    <description>NDFC Read Data Status Control Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_RDATA_STA_0</name>
+    <displayName>NDFC_RDATA_STA_0</displayName>
+    <description>NDFC Read Data Status Register 0</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_RDATA_STA_1</name>
+    <displayName>NDFC_RDATA_STA_1</displayName>
+    <description>NDFC Read Data Status Register 1</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000050</addressOffset>
+    <register>
+     <name>NDFC_ERR_CNT</name>
+     <displayName>NDFC_ERR_CNT</displayName>
+     <description>NDFC Error Counter Register(N from 0 to 7)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000070</addressOffset>
+    <register>
+     <name>NDFC_USER_DATA_LEN</name>
+     <displayName>NDFC_USER_DATA_LEN</displayName>
+     <description>NDFC User Data Length Register(N from 0 to 3)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000080</addressOffset>
+    <register>
+     <name>NDFC_USER_DATA</name>
+     <displayName>NDFC_USER_DATA</displayName>
+     <description>NDFC User Data Field Register N (N from 0 to 31)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+   <register>
+    <name>NDFC_EFNAND_STA</name>
+    <displayName>NDFC_EFNAND_STA</displayName>
+    <description>NDFC EFNAND Status Register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_SPARE_AREA</name>
+    <displayName>NDFC_SPARE_AREA</displayName>
+    <description>NDFC Spare Area Register</description>
+    <addressOffset>0x114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_PAT_ID</name>
+    <displayName>NDFC_PAT_ID</displayName>
+    <description>NDFC Pattern ID Register</description>
+    <addressOffset>0x118</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_DDR2_SPEC_CTL</name>
+    <displayName>NDFC_DDR2_SPEC_CTL</displayName>
+    <description>NDFC DDR2 Specific Control Register</description>
+    <addressOffset>0x11C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_NDMA_MODE_CTL</name>
+    <displayName>NDFC_NDMA_MODE_CTL</displayName>
+    <description>NDFC Normal DMA Mode Control Register</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_MDMA_DLBA_REG</name>
+    <displayName>NDFC_MDMA_DLBA_REG</displayName>
+    <description>NDFC MBUS DMA Descriptor List Base Address Register</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_MDMA_STA</name>
+    <displayName>NDFC_MDMA_STA</displayName>
+    <description>NDFC MBUS DMA Interrupt Status Register</description>
+    <addressOffset>0x204</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_DMA_INT_MASK</name>
+    <displayName>NDFC_DMA_INT_MASK</displayName>
+    <description>NDFC MBUS DMA Interrupt Enable Register</description>
+    <addressOffset>0x208</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_MDMA_CUR_DESC_ADDR</name>
+    <displayName>NDFC_MDMA_CUR_DESC_ADDR</displayName>
+    <description>NDFC MBUS DMA Current Descriptor Address Register</description>
+    <addressOffset>0x20C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_MDMA_CUR_BUF_ADDR</name>
+    <displayName>NDFC_MDMA_CUR_BUF_ADDR</displayName>
+    <description>NDFC MBUS DMA Current Buffer Address Register</description>
+    <addressOffset>0x210</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_DMA_CNT</name>
+    <displayName>NDFC_DMA_CNT</displayName>
+    <description>NDFC DMA Byte Counter Register</description>
+    <addressOffset>0x214</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NDFC_IO_DATA</name>
+    <displayName>NDFC_IO_DATA</displayName>
+    <description>NDFC Input/Output Data Register</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>OWA</name>
   <description>One Wire Audio</description>
   <baseAddress>0x05093000</baseAddress>
@@ -11598,6 +11931,13 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TS0</name>
+  <description></description>
+  <baseAddress>0x05060000</baseAddress>
+  <registers>
   </registers>
   </peripheral>
   <peripheral>

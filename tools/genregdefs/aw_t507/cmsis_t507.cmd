@@ -6,7 +6,7 @@ SET FILELIST= ^
 	ccu.csv sid.csv prcm.csv gic.csv gpio.csv ^
 	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
 	emac.csv gpu.csv ^
-	smc.csv spc.csv ^
+	smc.csv spc.csv ts0.csv nand.csv ^
 	uart.csv r_can.csv spi.csv twi.csv smhc.csv scr.csv timer.csv pwm.csv ^
 	de33.csv g2d.csv dmac.csv syscfg.csv iommu.csv ^
 	ve.csv ce.csv disp_if_top.csv tconlcd.csv hdmi_tx.csv tcon_tv.csv ^

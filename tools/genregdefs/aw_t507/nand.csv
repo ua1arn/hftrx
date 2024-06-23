@@ -1,0 +1,43 @@
+#type; NDFC; Nand Flash Controller
+
+#base; NAND0 0x04011000
+
+#irq; NAND0 66; NAND0 interrupt
+
+#regdef; NDFC_CTL; 0x0000; NDFC Configure and Control Register
+#regdef; NDFC_ST; 0x0004; NDFC Status Information Register
+#regdef; NDFC_INT; 0x0008; NDFC Interrupt Control Register
+#regdef; NDFC_TIMING_CTL; 0x000C; NDFC Timing Control Register
+#regdef; NDFC_TIMING_CFG; 0x0010; NDFC Timing Configure Register
+#regdef; NDFC_ADDR_LOW; 0x0014; NDFC Low Word Address Register
+#regdef; NDFC_ADDR_HIGH; 0x0018; NDFC High Word Address Register
+#regdef; NDFC_DATA_BLOCK_MASK; 0x001C; NDFC Data Block Mask Register
+#regdef; NDFC_CNT; 0x0020; NDFC Data Counter Register
+#regdef; NDFC_CMD; 0x0024; NDFC Commands IO Register
+#regdef; NDFC_RCMD_SET; 0x0028; Read Command Set Register for Vendor’s NAND Memory
+#regdef; NDFC_WCMD_SET; 0x002C; Write Command Set Register for Vendor’s NAND Memory
+#regdef; NDFC_ECC_CTL; 0x0034; NDFC ECC Control Register
+#regdefr; NDFC_ECC_ST; 0x0038; NDFC ECC Status Register
+#regdefr; NDFC_DATA_PAT_STA; 0x003C; NDFC Data Pattern Status Register
+#regdef; NDFC_EFR; 0x0040; NDFC Enhanced Feature Register
+#regdef; NDFC_RDATA_STA_CTL; 0x0044; NDFC Read Data Status Control Register
+#regdefr; NDFC_RDATA_STA_0; 0x0048; NDFC Read Data Status Register 0
+#regdefr; NDFC_RDATA_STA_1; 0x004C; NDFC Read Data Status Register 1
+#regdefr; NDFC_ERR_CNT; 0x0050 8; NDFC Error Counter Register(N from 0 to 7)
+#regdef; NDFC_USER_DATA_LEN; 0x0070 4; NDFC User Data Length Register(N from 0 to 3)
+#regdef; NDFC_USER_DATA; 0x0080 32; NDFC User Data Field Register N (N from 0 to 31)
+#regdefr; NDFC_EFNAND_STA; 0x0110; NDFC EFNAND Status Register
+#regdef; NDFC_SPARE_AREA; 0x0114; NDFC Spare Area Register
+#regdefr; NDFC_PAT_ID; 0x0118; NDFC Pattern ID Register
+#regdef; NDFC_DDR2_SPEC_CTL; 0x011C; NDFC DDR2 Specific Control Register
+#regdef; NDFC_NDMA_MODE_CTL; 0x0120; NDFC Normal DMA Mode Control Register
+#regdef; NDFC_MDMA_DLBA_REG; 0x0200; NDFC MBUS DMA Descriptor List Base Address Register
+#regdef; NDFC_MDMA_STA; 0x0204; NDFC MBUS DMA Interrupt Status Register
+#regdef; NDFC_DMA_INT_MASK; 0x0208; NDFC MBUS DMA Interrupt Enable Register
+#regdefr; NDFC_MDMA_CUR_DESC_ADDR; 0x020C; NDFC MBUS DMA Current Descriptor Address Register
+#regdefr; NDFC_MDMA_CUR_BUF_ADDR; 0x0210; NDFC MBUS DMA Current Buffer Address Register
+#regdef; NDFC_DMA_CNT; 0x0214; NDFC DMA Byte Counter Register
+#regdef; NDFC_IO_DATA; 0x0300; NDFC Input/Output Data Register
+; 
+#regdef; padding 0; 4096; Placeholder for 0x40 alignment
+#typeend;

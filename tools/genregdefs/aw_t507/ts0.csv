@@ -1,0 +1,6 @@
+#type; TS0
+#base; TS0 0x05060000
+
+##irq; TS0 xx
+#regdef; padding 0; 4096; Placeholder for 0x40 alignment
+#typeend;
