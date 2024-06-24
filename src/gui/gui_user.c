@@ -6578,10 +6578,8 @@ static void window_wnbconfig_process(void)
 		unsigned x = 0, y = 0, interval = 24;
 
 		static const label_t labels [] = {
-			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_name", "Threshold:  ", FONT_MEDIUM, COLORPIP_WHITE, 0, },
-			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_val",  "xxxxx", 		FONT_MEDIUM, COLORPIP_WHITE, 1, },
-			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbagwindow_name",  "AVG window: ",	FONT_MEDIUM, COLORPIP_WHITE, 2, },
-			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbagwindow_val",   "xxxxx",		FONT_MEDIUM, COLORPIP_WHITE, 3, },
+			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_name", "Threshold:  ", FONT_MEDIUM, COLORPIP_YELLOW, 0, },
+			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_val",  "xxxxx", 		FONT_MEDIUM, COLORPIP_YELLOW, 1, },
 		};
 
 		win->lh_count = ARRAY_SIZE(labels);
@@ -6614,17 +6612,6 @@ static void window_wnbconfig_process(void)
 
 	GET_FROM_WM_QUEUE
 	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_LABEL_PRESS)
-		{
-			label_t * lh = (label_t *) ptr;
-			enc.select = lh->index;
-			enc.change = 0;
-			enc.updated = 1;
-		}
-		break;
-
 	case WM_MESSAGE_ENC2_ROTATE:
 
 		enc.change = action;
@@ -6642,28 +6629,10 @@ static void window_wnbconfig_process(void)
 
 	if (enc.updated)
 	{
+		uint_fast16_t v = wnb_get_threshold();
+		wnb_set_threshold(v + enc.change);
+
 		enc.updated = 0;
-
-		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
-
-		ASSERT(enc.select < win->lh_count);
-
-		if (enc.select == 0 || enc.select == 1)
-		{
-			win->lh_ptr [0].color = COLORPIP_YELLOW;
-			win->lh_ptr [1].color = COLORPIP_YELLOW;
-			uint_fast16_t v = wnb_get_threshold();
-			wnb_set_threshold(v + enc.change);
-		}
-		else if (enc.select == 2 || enc.select == 3)
-		{
-			win->lh_ptr [2].color = COLORPIP_YELLOW;
-			win->lh_ptr [3].color = COLORPIP_YELLOW;
-			uint_fast16_t v = wnb_get_awg_window();
-			wnb_set_awg_window(v + enc.change);
-		}
-
 		update = 1;
 	}
 
@@ -6673,9 +6642,6 @@ static void window_wnbconfig_process(void)
 
 		label_t * lbl_wnbthreshold_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_wnbthreshold_val");
 		local_snprintf_P(lbl_wnbthreshold_val->text, ARRAY_SIZE(lbl_wnbthreshold_val->text), "%d", wnb_get_threshold());
-
-		label_t * lbl_wnbagwindow_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_wnbagwindow_val");
-		local_snprintf_P(lbl_wnbagwindow_val->text, ARRAY_SIZE(lbl_wnbagwindow_val->text), "%d", wnb_get_awg_window());
 	}
 }
 

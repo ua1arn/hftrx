@@ -241,6 +241,7 @@
 			#define WITHLFM					1
 			#define WITHLFMTOFFSET			15
 			#define DMABUFCLUSTER			32
+			#define DMABUFSCALE				1
 			#define WITHIQSHIFT				1
 //			#define DEFAULTDIALFREQ			12289000uL
 			#define WITHCPUFANPWM			1

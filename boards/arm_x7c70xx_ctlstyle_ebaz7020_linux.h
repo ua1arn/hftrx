@@ -245,6 +245,7 @@
 //			#define WITHEXTRFBOARDTEST		1
 //			#define WITHGNSS	1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
 			#define DMABUFCLUSTER			32
+			#define DMABUFSCALE				1
 			#define WITHIQSHIFT				1
 			#define WITHIQLANEXCHANGE		1
 			#define IQLANTRANSMITTER		1

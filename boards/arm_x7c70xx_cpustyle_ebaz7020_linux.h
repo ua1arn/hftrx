@@ -96,6 +96,7 @@
 #define LINUX_I2C_FILE		"/dev/i2c-0"
 #define LINUX_FB_FILE		"/dev/fb0"
 #define LINUX_TTY_FILE		"/dev/tty0"
+#define LINUX_AUDIO_INT_FILE "/dev/uio2"
 
 #define HARDWARE_DEBUG_FLUSH() do { \
 } while (0)

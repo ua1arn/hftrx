@@ -486,13 +486,15 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 
 	while (rx_stage >= CNT16TX)
 	{
-		const uintptr_t addr2 = getfilled_dmabuffer16tx();
-		uint32_t * b = (uint32_t *) addr2;
+#if DMABUFSCALE == 2
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
 
 		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 			* ph_fifo = b[i];
 
-		release_dmabuffer16tx(addr2);
+		release_dmabuffer16tx(addr_ph);
+#endif /* DMABUFSCALE == 2 */
 
 		const uintptr_t addr = getfilled_dmabuffer32tx();
 		uint32_t * t = (uint32_t *) addr;
@@ -509,11 +511,21 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 	if (! ft8_get_state())
 #endif /* WITHFT8 */
 	{
-		uintptr_t addr_mic = allocate_dmabuffer16rx();
-		uint32_t * m = (uint32_t *) addr_mic;
+#if DMABUFSCALE == 1
+		const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+		uint32_t * b = (uint32_t *) addr_ph;
 
-		for (uint16_t i = 0; i < DMABUFFSIZE16RX; i ++)
-			m[i] = * mic_fifo;
+		for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+			* ph_fifo = b[i];
+
+		release_dmabuffer16tx(addr_ph);
+#endif /* DMABUFSCALE == 1 */
+
+		uintptr_t addr_mic = allocate_dmabuffer16rx();
+		uint32_t * mic = (uint32_t *) addr_mic;
+
+		for (int i = 0; i < DMABUFFSIZE16RX; i ++)
+			mic[i] = * mic_fifo;
 
 		save_dmabuffer16rx(addr_mic);
 	}
@@ -524,12 +536,11 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 
 #if WITHWNB		// Simple noise blanker в PL
 
-const uint16_t threshold_min = 0, threshold_max = 31, awg_window_min = 0, awg_window_max = 256;
-static uint32_t threshold = 30, awg_window = 8;
+const uint16_t threshold_min = 16, threshold_max = 31;
+static uint32_t threshold = 30;
 
 static void wnb_update(void)
 {
-//	uint32_t v = (awg_window << 16) | (threshold);
 	reg_write(XPAR_IQ_MODEM_WNB_CONFIG, threshold);
 }
 
@@ -542,23 +553,9 @@ void wnb_set_threshold(uint16_t v)
 	}
 }
 
-void wnb_set_awg_window(uint16_t v)
-{
-	if (v >= awg_window_min && v <= awg_window_max)
-	{
-		awg_window = v;
-		wnb_update();
-	}
-}
-
 uint16_t wnb_get_threshold(void)
 {
 	return threshold;
-}
-
-uint16_t wnb_get_awg_window(void)
-{
-	return awg_window;
 }
 
 #endif /* WITHWNB */
@@ -801,7 +798,7 @@ void linux_iq_init(void)
 
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_PERIOD, DMABUFFSIZE16TX);
-	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK);
+	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CTRL, TX_ENABLE_MASK | RX_ENABLE_MASK);
 
 #if WITHWNB
 	wnb_update();
@@ -875,6 +872,63 @@ void * linux_iq_interrupt_thread(void * args)
         linux_iq_thread();
         usleep(100);
 #endif
+    }
+}
+
+void * audio_interrupt_thread(void * args)
+{
+	int fd = open(LINUX_AUDIO_INT_FILE, O_RDWR);
+    if (fd < 0) {
+        PRINTF("%s open failed\n", LINUX_AUDIO_INT_FILE);
+        return NULL;
+    }
+
+	// пнуть fifo
+	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+		* ph_fifo = 1;
+
+    while(1)
+    {
+    	uint32_t intr = 1; /* unmask */
+
+		ssize_t nb = write(fd, & intr, sizeof(intr));
+		if (nb != (ssize_t) sizeof(intr)) {
+			perror("write");
+			close(fd);
+			exit(EXIT_FAILURE);
+		}
+
+		struct pollfd fds = {
+			.fd = fd,
+			.events = POLLIN,
+		};
+
+		int ret = poll(& fds, 1, -1);
+		if (ret >= 1) {
+			nb = read(fd, & intr, sizeof(intr));
+			if (nb == (ssize_t) sizeof(intr))
+			{
+				const uintptr_t addr_ph = getfilled_dmabuffer16tx();
+				uint32_t * ph = (uint32_t *) addr_ph;
+
+				for (int i = 0; i < DMABUFFSIZE16TX; i ++)
+					* ph_fifo = ph[i];
+
+				release_dmabuffer16tx(addr_ph);
+
+				uintptr_t addr_mic = allocate_dmabuffer16rx();
+				uint32_t * mic = (uint32_t *) addr_mic;
+
+				for (int i = 0; i < DMABUFFSIZE16RX; i ++)
+					mic[i] = * mic_fifo;
+
+				save_dmabuffer16rx(addr_mic);
+			}
+		} else {
+			perror("poll()");
+			close(fd);
+			exit(EXIT_FAILURE);
+		}
     }
 }
 
@@ -970,16 +1024,12 @@ void linux_subsystem_init(void)
 	linux_xgpio_init();
 	linux_iq_init();
 
-#if 0 //CPUSTYLE_XCZU
-	reg_write(0x80070000, (124 << 16 | 1535));
-#endif
-
 #if WITHLVGL
 	lvgl_init();
 #endif /* WITHLVGL */
 }
 
-pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t;
+pthread_t timer_spool_t, encoder_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 
 void linux_user_init(void)
 {
@@ -988,6 +1038,7 @@ void linux_user_init(void)
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, 0);
 //	linux_create_thread(& encoder_spool_t, linux_encoder_spool, 50, 0);
 	linux_create_thread(& iq_interrupt_t, linux_iq_interrupt_thread, 95, 1);
+//	linux_create_thread(& audio_interrupt_t, audio_interrupt_thread, 50, 1);
 
 #if defined AXI_DCDC_PWM_ADDR
 	const float FS = powf(2, 32);
