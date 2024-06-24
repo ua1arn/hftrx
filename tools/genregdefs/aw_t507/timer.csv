@@ -3,6 +3,7 @@
 #irq; TIMER0 80
 #irq; TIMER1 81
 #irq; WATCHDOG 82
+
 #regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
 #regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register
 #regdef; TMR0_CTRL_REG; 0x0010; Timer 0 Control Register
@@ -20,3 +21,6 @@
 #regdef; AVS_CNT0_REG; 0x00C4; AVS Counter 0 Register
 #regdef; AVS_CNT1_REG; 0x00C8; AVS Counter 1 Register
 #regdef; AVS_CNT_DIV_REG; 0x00CC; AVS Divisor Register
+
+#regdef; padding 0; 1024; Placeholder for 0x40 alignment
+#typeend;

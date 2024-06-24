@@ -2225,7 +2225,8 @@ typedef struct TIMER_Type
     volatile uint32_t AVS_CNT0_REG;                   /*!< Offset 0x0C4 AVS Counter 0 Register */
     volatile uint32_t AVS_CNT1_REG;                   /*!< Offset 0x0C8 AVS Counter 1 Register */
     volatile uint32_t AVS_CNT_DIV_REG;                /*!< Offset 0x0CC AVS Divisor Register */
-} TIMER_TypeDef; /* size of structure = 0x0D0 */
+             uint32_t reserved_0x0D0 [0x00CC];
+} TIMER_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief TS0
  */

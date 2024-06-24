@@ -6,6 +6,7 @@
 #regdef; TSC_PPARR; 0x14; TSC Port Parameter Register
 #regdef; TSC_TSFMUXR; 0x20; TSC TSF Input Multiplex Control Register
 #regdef; TSC_OUTMUXR; 0x28; TSC Port Output Multiplex Control Register
+#typeend;
 
 #type; TSG; Transport Stream Controller
 #base; TSG 0x05060040
@@ -17,6 +18,7 @@
 #regdef; TSG_BBAR; 0x10; TSG Buffer Base Address Register
 #regdef; TSG_BSZR; 0x14; TSG Buffer Size Register
 #regdef; TSG_BPR; 0x18; TSG Buffer Pointer Register
+#typeend;
 
 #type; TSF; Transport Stream Controller
 #base; TSF 0x05060100
@@ -42,6 +44,7 @@
 #regdef; TSF_CBSZR; 0x54; TSF Channel Buffer Size Register
 #regdef; TSF_CBWPR; 0x58; TSF Channel Buffer Write Pointer Register
 #regdef; TSF_CBRPR; 0x5C; TSF Channel Buffer Read Pointer Register
+#typeend;
 
 #type; TSD; Transport Stream Controller
 #base; TSD 0x05060180
@@ -50,3 +53,4 @@
 #regdef; TSD_STAR; 0x04; TSD Status Register
 #regdef; TSD_CWIR; 0x1C; TSD Control Word Index Register
 #regdef; TSD_CWR; 0x20; TSD Control Word Register
+#typeend;
