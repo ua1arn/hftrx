@@ -5111,7 +5111,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -5519,26 +5519,27 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// timebase timer
-	TIMER->TMR1_CTRL_REG = 0;
+	const unsigned ix = 1;
+	TIMER->TMR [ix].CTRL_REG = 0;
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
-	TIMER->TMR1_INTV_VALUE_REG = value;
-	TIMER->TMR1_CTRL_REG =
+	TIMER->TMR [ix].INTV_VALUE_REG = value;
+	TIMER->TMR [ix].CTRL_REG =
 		0 * (UINT32_C(1) << 7) |	// TMR1_MODE 0: Periodic mode.
 		prei * (UINT32_C(1) << 4) |
 		0x01 * (UINT32_C(1) << 2) |	// TMR1_CLK_SRC 01: OSC24M
 		(UINT32_C(1) << 0) | // TMR1_EN
 		0;
 
-	while ((TIMER->TMR1_CTRL_REG & (UINT32_C(1) << 1)) != 0)
+	while ((TIMER->TMR [ix].CTRL_REG & (UINT32_C(1) << 1)) != 0)
 		;
-	TIMER->TMR1_CTRL_REG |= (UINT32_C(1) << 1);	// TMR1_RELOAD
+	TIMER->TMR [ix].CTRL_REG |= (UINT32_C(1) << 1);	// TMR1_RELOAD
 
-	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << 1);	// TMR1_IRQ_EN
+	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
 
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
 
@@ -11243,12 +11244,13 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 
 	// elkey timer
-	TIMER->TMR0_CTRL_REG = 0;
+	const unsigned ix = 0;
+	TIMER->TMR[ix].CTRL_REG = 0;
 
-	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << 0);	// TMR0_IRQ_EN
+	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR0_IRQ_EN
 
 	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
 
@@ -11348,22 +11350,23 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
 
+	const unsigned ix = 0;
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_hosc_freq(), ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
-	TIMER->TMR0_INTV_VALUE_REG = value;
-	TIMER->TMR0_CTRL_REG =
+	TIMER->TMR [ix].INTV_VALUE_REG = value;
+	TIMER->TMR [ix].CTRL_REG =
 		0 * (UINT32_C(1) << 7) |	// TMR0_MODE 0: Periodic mode.
 		prei * (UINT32_C(1) << 4) |
 		0x01 * (UINT32_C(1) << 2) |	// TMR1_CLK_SRC 01: OSC24M
 		(UINT32_C(1) << 0) | // TMR0_EN
 		0;
 
-	while ((TIMER->TMR0_CTRL_REG & (UINT32_C(1) << 1)) != 0)
+	while ((TIMER->TMR [ix].CTRL_REG & (UINT32_C(1) << 1)) != 0)
 		;
-	TIMER->TMR0_CTRL_REG |= UINT32_C(1) << 1;	// TMR0_RELOAD
+	TIMER->TMR [ix].CTRL_REG |= UINT32_C(1) << 1;	// TMR0_RELOAD
 
 #else
 	#warning Undefined CPUSTYLE_XXX

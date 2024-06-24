@@ -2206,14 +2206,14 @@ typedef struct TIMER_Type
     volatile uint32_t TMR_IRQ_EN_REG;                 /*!< Offset 0x000 Timer IRQ Enable Register */
     volatile uint32_t TMR_IRQ_STA_REG;                /*!< Offset 0x004 Timer Status Register */
              uint32_t reserved_0x008 [0x0002];
-    volatile uint32_t TMR0_CTRL_REG;                  /*!< Offset 0x010 Timer 0 Control Register */
-    volatile uint32_t TMR0_INTV_VALUE_REG;            /*!< Offset 0x014 Timer 0 Interval Value Register */
-    volatile uint32_t TMR0_CUR_VALUE_REG;             /*!< Offset 0x018 Timer 0 Current Value Register */
-             uint32_t reserved_0x01C;
-    volatile uint32_t TMR1_CTRL_REG;                  /*!< Offset 0x020 Timer 1 Control Register */
-    volatile uint32_t TMR1_INTV_VALUE_REG;            /*!< Offset 0x024 Timer 1 Interval Value Register */
-    volatile uint32_t TMR1_CUR_VALUE_REG;             /*!< Offset 0x028 Timer 1 Current Value Register */
-             uint32_t reserved_0x02C [0x001D];
+    struct
+    {
+        volatile uint32_t CTRL_REG;                   /*!< Offset 0x010 Timer n Control Register */
+        volatile uint32_t INTV_VALUE_REG;             /*!< Offset 0x014 Timer n Interval Value Register */
+        volatile uint32_t CUR_VALUE_REG;              /*!< Offset 0x018 Timer n Current Value Register */
+                 uint32_t reserved_0x00C;
+    } TMR [0x002];                                    /*!< Offset 0x010 Timer */
+             uint32_t reserved_0x030 [0x001C];
     volatile uint32_t WDOG_IRQ_EN_REG;                /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
     volatile uint32_t WDOG_IRQ_STA_REG;               /*!< Offset 0x0A4 Watchdog Status Register */
              uint32_t reserved_0x0A8 [0x0002];
