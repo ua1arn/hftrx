@@ -10583,31 +10583,56 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
-		unsigned count = 2;
-		while (count --)
+		const int rectX = DIM_X / 8;
+		const int rectY = DIM_Y / 4;
+		int stepX = 1;
+		int stepY = 1;
+		int posX = DIM_X / 2;
+		int posY = DIM_Y / 2;
+		unsigned count = 8;		// количество смен направления до оконяания теста
+
+		for (;;)
 		{
-			unsigned w = DIM_X / 4;
-			unsigned posmax = DIM_X * 2 - w * 2;
-			unsigned pos = 0;
-			for (;;)
-			{
-				unsigned delta = pos > (posmax / 2) ? posmax - 1 - pos : pos;
-				// Erase background
-				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
-				// Draw rextangle
-				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
-				colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0 + delta, DIM_Y / 4, w, DIM_Y / 4, TFTRGB(0, 0, 0));
+			// Erase background
+			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+			// Draw rextangle
+			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
 
-				display_nextfb();
+			display_nextfb();
 #if WITHUSBHW
-		board_usbh_polling();     // usb device polling
+	board_usbh_polling();     // usb device polling
 #endif /* WITHUSBHW */
-				pos = (pos + 1) % posmax;
-				if (pos == 0)
-					break;
+			int change = 0;
+			// X limits check
+			if (stepX > 0 && posX + rectX >= DIM_X)
+			{
+				stepX = - 1;
+				change = 1;
 			}
-		}
+			else if (stepX < 0 && posX == 0)
+			{
+				stepX = + 1;
+				change = 1;
+			}
+			// Y limits check
+			if (stepY > 0 && posY + rectY >= DIM_Y)
+			{
+				stepY = - 1;
+				change = 1;
+			}
+			else if (stepY < 0 && posY == 0)
+			{
+				stepY = + 1;
+				change = 1;
+			}
 
+			if (change && -- count == 0)
+				break;
+
+			posX += stepX;
+			posY += stepY;
+		}
 	}
 #endif
 #if 0
