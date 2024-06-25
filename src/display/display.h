@@ -386,8 +386,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 	typedef uint8_t GX_t;	/* тип элемента буфера для выдачи монохромного растра */
 #endif	/* */
 
-#define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
-#define GXSIZE(dx, dy)	((unsigned long) GXADJ(dx) * (dy))	// размер буфера для цветного растра
+#define MGSIZE(dx, dy)	((uint_fast32_t) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
+#define GXSIZE(dx, dy)	((uint_fast32_t) GXADJ(dx) * (dy))	// размер буфера для цветного растра
 
 // Хранение описания буфера для функций построения изображений
 typedef struct gtg_tag
