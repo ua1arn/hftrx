@@ -65,6 +65,7 @@ typedef enum IRQn
     MSGBOX_IRQn = 81,                                 /*!< MSGBOX  */
     DMAC_IRQn = 82,                                   /*!< DMAC  */
     GPADC_IRQn = 89,                                  /*!< GPADC  */
+    VE_IRQn = 90,                                     /*!< VE Video Encoding */
     SMHC0_IRQn = 92,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC1_IRQn = 93,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC2_IRQn = 94,                                  /*!< SMHC SD-MMC Host Controller */
@@ -124,6 +125,7 @@ typedef enum IRQn
 #define TSC_BASE ((uintptr_t) 0x01C06000)             /*!< TSC Transport Stream Controller Base */
 #define TCON0_BASE ((uintptr_t) 0x01C0C000)           /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface Base */
 #define TCON1_BASE ((uintptr_t) 0x01C0D000)           /*!< TCON1 TCON1 HDMI Interface Base */
+#define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define SMHC0_BASE ((uintptr_t) 0x01C0F000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC1_BASE ((uintptr_t) 0x01C10000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC2_BASE ((uintptr_t) 0x01C11000)           /*!< SMHC SD-MMC Host Controller Base */
@@ -2228,6 +2230,379 @@ typedef struct USB_OHCI_Capability_Type
     volatile uint32_t O_HcRhStatus;                   /*!< Offset 0x050 OHCI Root Hub Status Register */
     volatile uint32_t O_HcRhPortStatus [0x001];       /*!< Offset 0x054 OHCI Root Hub Port Status Register */
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
+/*
+ * @brief VE
+ */
+/*!< VE Video Encoding */
+typedef struct VE_Type
+{
+    volatile uint32_t VE_CTRL;                        /*!< Offset 0x000 Sub-Engine Select and RAM type select */
+    volatile uint32_t VE_RESET;                       /*!< Offset 0x004 Sub-Engines Reset */
+    volatile uint32_t VE_CYCLES_COUNTER;              /*!< Offset 0x008 Clock Cycles counter */
+    volatile uint32_t VE_TIMEOUT;                     /*!< Offset 0x00C VE Timeout value */
+    volatile uint32_t VE_MMCREQ_WNUM;                 /*!< Offset 0x010  */
+    volatile uint32_t VE_CACHEREG_WNUM;               /*!< Offset 0x014  */
+             uint32_t reserved_0x018;
+    volatile uint32_t VE_STATUS;                      /*!< Offset 0x01C Busy status */
+    volatile uint32_t VE_RDDATA_COUNTER;              /*!< Offset 0x020 DRAM Read counter */
+    volatile uint32_t VE_WRDATA_COUNTER;              /*!< Offset 0x024 DRAM Write counter */
+    volatile uint32_t VE_ANAGLYPH_CTRL;               /*!< Offset 0x028 Anaglyph mode control */
+             uint32_t reserved_0x02C;
+    volatile uint32_t VE_MAF_CTRL;                    /*!< Offset 0x030 Motion adaptive filter config */
+    volatile uint32_t VE_MAF_CLIP_TH;                 /*!< Offset 0x034  */
+    volatile uint32_t VE_MAFREF1_LUMA_BUF;            /*!< Offset 0x038 Reference luma buffer {unsure} */
+    volatile uint32_t VE_MAFREF1_CHROMA_BUF;          /*!< Offset 0x03C Reference chroma buffer {unsure} */
+    volatile uint32_t VE_MAFCUR_ADDR;                 /*!< Offset 0x040 current maf output address {unsure} */
+    volatile uint32_t VE_MAFREF1_ADDR;                /*!< Offset 0x044 reference maf input address {unsure} */
+    volatile uint32_t VE_MAFREF2_ADDR;                /*!< Offset 0x048 second reference maf input address {unsure} */
+    volatile uint32_t VE_MAFDIFF_GROUP_MAX;           /*!< Offset 0x04C  */
+    volatile uint32_t VE_IPD_DBLK_BUF_CTRL;           /*!< Offset 0x050 deblocking and intra prediction dram buffer config register (required for A13+ SoC for H264 decoding or on A10 for video with width >= 2048) */
+    volatile uint32_t VE_IPD_BUF;                     /*!< Offset 0x054 Intra prediction buffer (needed on A13+ or (width >= 2048)) */
+    volatile uint32_t VE_DBLK_BUF;                    /*!< Offset 0x058 Deblocking buffer (needed on A13+ or (width >= 2048)) */
+    volatile uint32_t VE_ARGB_QUEUE_START;            /*!< Offset 0x05C ARGB command queue */
+    volatile uint32_t VE_ARGB_BLK_SRC1_ADDR;          /*!< Offset 0x060 ARGB source 1 address */
+    volatile uint32_t VE_ARGB_BLK_SRC2_ADDR;          /*!< Offset 0x064 ARGB source 2 addres */
+    volatile uint32_t VE_ARGB_BLK_DST_ADDR;           /*!< Offset 0x068 ARGB destination address */
+    volatile uint32_t VE_ARGB_SRC_STRIDE;             /*!< Offset 0x06C ARGB source strides for src1 and src2 */
+    volatile uint32_t VE_ARGB_DST_STRIDE;             /*!< Offset 0x070 ARGB destination stride */
+    volatile uint32_t VE_ARGB_BLK_SIZE;               /*!< Offset 0x074 ARGB size */
+    volatile uint32_t VE_ARGB_BLK_FILL_VALUE;         /*!< Offset 0x078 ARGB fill value */
+    volatile uint32_t VE_ARGB_BLK_CTRL;               /*!< Offset 0x07C ARGB control */
+    volatile uint32_t VE_LUMA_HIST_THR [0x004];       /*!< Offset 0x080 Luma histogram thresholds [0-3] */
+    volatile uint32_t VE_LUMA_HIST_VAL [0x010];       /*!< Offset 0x090 Luma histogram output values [0-15] */
+    volatile uint32_t VE_ANGL_R_BUF;                  /*!< Offset 0x0D0 Anaglyph red output buffer */
+    volatile uint32_t VE_ANGL_G_BUF;                  /*!< Offset 0x0D4 Anaglyph green output buffer */
+    volatile uint32_t VE_ANGL_B_BUF;                  /*!< Offset 0x0D8 Anaglyph blue output buffer */
+             uint32_t reserved_0x0DC [0x0003];
+    volatile uint32_t VE_EXTRA_OUT_FMT_OFFSET;        /*!< Offset 0x0E8 Extra output format and chroma offset (not available on A10/A13/A20) */
+    volatile uint32_t VE_OUTPUT_FORMAT;               /*!< Offset 0x0EC Output formats (since H3?) */
+    volatile uint32_t VE_VERSION;                     /*!< Offset 0x0F0 IP Version register */
+             uint32_t reserved_0x0F4;
+    volatile uint32_t VE_DBG_CTRL;                    /*!< Offset 0x0F8 Debug control */
+    volatile uint32_t VE_DBG_OUTPUT;                  /*!< Offset 0x0FC Debug output */
+    volatile uint32_t MPEG_PHDR;                      /*!< Offset 0x100 MPEG12 Picture Header register */
+    volatile uint32_t MPEG_VOPHDR;                    /*!< Offset 0x104 MPEG Video Object Plane Header register (MPEG4 Header) */
+    volatile uint32_t MPEG_SIZE;                      /*!< Offset 0x108 Frame size in MPEG macroblocks (16x16) */
+    volatile uint32_t MPEG_FRAME_SIZE;                /*!< Offset 0x10C Frame size in pixels */
+    volatile uint32_t MPEG_MBA;                       /*!< Offset 0x110 MPEG Macro Block Address register */
+    volatile uint32_t MPEG_CTRL;                      /*!< Offset 0x114 MPEG Control Register */
+    volatile uint32_t MPEG_TRIG;                      /*!< Offset 0x118 MPEG Decoding Trigger */
+    volatile uint32_t MPEG_STATUS;                    /*!< Offset 0x11C MACC MPEG Status register */
+    volatile uint32_t MPEG_FRAME_DIST;                /*!< Offset 0x120 MPEG P and B Frame distance */
+    volatile uint32_t MPEG_TRBTRDFLD;                 /*!< Offset 0x124 Temporal References(TRB(B-VOP) and TRD) */
+    volatile uint32_t MPEG_VLD_ADDR;                  /*!< Offset 0x128 MPEG Variable Length Decoding Address */
+    volatile uint32_t MPEG_VLD_OFFSET;                /*!< Offset 0x12C MPEG Variable Length Decoding Offset */
+    volatile uint32_t MPEG_VLD_LEN;                   /*!< Offset 0x130 MPEG Variable Length Decoding Length */
+    volatile uint32_t MPEG_VBV_END;                   /*!< Offset 0x134 MPEG VBV end - video source buffer end */
+    volatile uint32_t MPEG_MBH_ADDR;                  /*!< Offset 0x138 MBH buffer address */
+    volatile uint32_t MPEG_DCAC_ADDR;                 /*!< Offset 0x13C DCAC Buffer address */
+    volatile uint32_t MPEG_BLK_OFFSET;                /*!< Offset 0x140 MPEG Block address??? */
+    volatile uint32_t MPEG_NCF_ADDR;                  /*!< Offset 0x144 NFC buffer address */
+    volatile uint32_t MPEG_REC_LUMA;                  /*!< Offset 0x148 MPEG Luma reconstruct buffer */
+    volatile uint32_t MPEG_REC_CHROMA;                /*!< Offset 0x14C MPEG Chroma reconstruct buffer */
+    volatile uint32_t MPEG_FWD_LUMA;                  /*!< Offset 0x150 MPEG Luma forward buffer */
+    volatile uint32_t MPEG_FWD_CHROMA;                /*!< Offset 0x154 MPEG forward buffer */
+    volatile uint32_t MPEG_BACK_LUMA;                 /*!< Offset 0x158 MPEG Luma Back buffer */
+    volatile uint32_t MPEG_BACK_CHROMA;               /*!< Offset 0x15C MPEG Chroma Back buffer */
+    volatile uint32_t MPEG_SOCX;                      /*!< Offset 0x160 MS-MPEG related */
+    volatile uint32_t MPEG_SOCY;                      /*!< Offset 0x164 MS-MPEG related */
+    volatile uint32_t MPEG_SOL;                       /*!< Offset 0x168 MS-MPEG related */
+    volatile uint32_t MPEG_SDLX;                      /*!< Offset 0x16C MS-MPEG related */
+    volatile uint32_t MPEG_SDLY;                      /*!< Offset 0x170 MS-MPEG related */
+    volatile uint32_t MPEG_SPRITESHFT;                /*!< Offset 0x174 MS-MPEG related */
+    volatile uint32_t MPEG_SDCX;                      /*!< Offset 0x178 MS-MPEG related */
+    volatile uint32_t MPEG_SDCY;                      /*!< Offset 0x17C MS-MPEG related */
+    volatile uint32_t MPEG_IQ_MIN_INPUT;              /*!< Offset 0x180 MPEG Inverse Quantization minimum input level */
+    volatile uint32_t MPEG_IQ_INPUT;                  /*!< Offset 0x184 MPEG Inverse Quantization input level */
+    volatile uint32_t MPEG_MSMPEG4_HDR;               /*!< Offset 0x188 MPEG MS-Mpeg-4 header */
+    volatile uint32_t MPEG_VP6_HDR;                   /*!< Offset 0x18C MPEG VP6 Header */
+    volatile uint32_t MPEG_IQ_IDCT_INPUT;             /*!< Offset 0x190 MPEG Inverse Quantization and Inverse Discrete Cosine Transform input */
+    volatile uint32_t MPEG_MB_HEIGHT;                 /*!< Offset 0x194 MPEG Macro Block Height */
+    volatile uint32_t MPEG_MB_V1;                     /*!< Offset 0x198 MPEG Macro Block Vector 1 */
+    volatile uint32_t MPEG_MB_V2;                     /*!< Offset 0x19C MPEG Macro Block Vector 2 */
+    volatile uint32_t MPEG_MB_V3;                     /*!< Offset 0x1A0 MPEG Macro Block Vector 3 */
+    volatile uint32_t MPEG_MB_V4;                     /*!< Offset 0x1A4 MPEG Macro Block Vector 4 */
+    volatile uint32_t MPEG_MB_V5;                     /*!< Offset 0x1A8 MPEG Macro Block Vector 5 */
+    volatile uint32_t MPEG_MB_V6;                     /*!< Offset 0x1AC MPEG Macro Block Vector 6 */
+    volatile uint32_t MPEG_MB_V7;                     /*!< Offset 0x1B0 MPEG Macro Block Vector 7 */
+    volatile uint32_t MPEG_MB_V8;                     /*!< Offset 0x1B4 MPEG Macro Block Vector 8 */
+    volatile uint32_t MPEG_JPEG_SIZE;                 /*!< Offset 0x1B8 JPEG Size */
+    volatile uint32_t MPEG_JPEG_MCU;                  /*!< Offset 0x1BC JPEG Minimum Coded Unit */
+    volatile uint32_t MPEG_JPEG_RES_INT;              /*!< Offset 0x1C0 JPEG Restart Interval */
+    volatile uint32_t MPEG_ERROR;                     /*!< Offset 0x1C4 MPEG Error flags */
+    volatile uint32_t MPEG_CTR_MB;                    /*!< Offset 0x1C8 (Macroblock Control??) */
+    volatile uint32_t MPEG_ROT_LUMA;                  /*!< Offset 0x1CC MPEG Rotate-Scale Luma buffer */
+    volatile uint32_t MPEG_ROT_CHROMA;                /*!< Offset 0x1D0 MPEG Rotate-Scale Chroma buffer */
+    volatile uint32_t MPEG_ROTSCALE_CTRL;             /*!< Offset 0x1D4 Control Rotate/Scale Buffer */
+    volatile uint32_t MPEG_JPEG_MCU_START;            /*!< Offset 0x1D8 JPEG Macro Cell Unit Start */
+    volatile uint32_t MPEG_JPEG_MCU_END;              /*!< Offset 0x1DC JPEG Macro Cell Unit End */
+    volatile uint32_t MPEG_SRAM_RW_OFFSET;            /*!< Offset 0x1E0 Auto incremental pointer for read/write VE SRAM */
+    volatile uint32_t MPEG_SRAM_RW_DATA;              /*!< Offset 0x1E4 FIFO Like Data register for write/read VE SRAM */
+             uint32_t reserved_0x1E8 [0x0002];
+    volatile uint32_t MPEG_START_CODE_BITOFFSET;      /*!< Offset 0x1F0 MPEG start code search result */
+             uint32_t reserved_0x1F4 [0x0003];
+    volatile uint32_t H264_SEQ_HDR;                   /*!< Offset 0x200 H264 Sequence header */
+    volatile uint32_t H264_PIC_HDR;                   /*!< Offset 0x204 H264 Picture header */
+    volatile uint32_t H264_SLICE_HDR;                 /*!< Offset 0x208 H264 Slice header */
+    volatile uint32_t H264_SLICE_HDR2;                /*!< Offset 0x20C H264 Slice header */
+    volatile uint32_t H264_PRED_WEIGHT;               /*!< Offset 0x210 H264 weighted prediction parameters */
+    volatile uint32_t H264_VP8_HDR;                   /*!< Offset 0x214 H264 VP8 Picture header */
+    volatile uint32_t H264_QINDEX;                    /*!< Offset 0x218 H264 Quantizer settings (VP8) */
+    volatile uint32_t H264_VP8_PART_OFFSET_H264_QP;   /*!< Offset 0x21C H264 QP parameters (VP8 partition offset) */
+    volatile uint32_t H264_CTRL;                      /*!< Offset 0x220 H264 Control Register */
+    volatile uint32_t H264_TRIG;                      /*!< Offset 0x224 H264 Trigger Register */
+    volatile uint32_t H264_STATUS;                    /*!< Offset 0x228 H264 Status Register */
+    volatile uint32_t H264_CUR_MBNUM;                 /*!< Offset 0x22C H264 current Macroblock */
+    volatile uint32_t H264_VLD_ADDR;                  /*!< Offset 0x230 H264 Variable Length Decoder Address */
+    volatile uint32_t H264_VLD_OFFSET;                /*!< Offset 0x234 H264 Variable Length Decoder Bit Offset */
+    volatile uint32_t H264_VLD_LEN;                   /*!< Offset 0x238 H264 Variable Length Decoder Bit Length */
+    volatile uint32_t H264_VLD_END;                   /*!< Offset 0x23C H264 Variable Length Decoder End Address */
+    volatile uint32_t H264_SDROT_CTRL;                /*!< Offset 0x240 H264 Scale Rotate buffer control */
+    volatile uint32_t H264_SDROT_LUMA;                /*!< Offset 0x244 H264 Scale Rotate buffer Luma color component */
+    volatile uint32_t H264_SDROT_CHROMA;              /*!< Offset 0x248 H264 Scale Rotate buffer Chroma color component */
+    volatile uint32_t H264_OUTPUT_FRAME_INDEX;        /*!< Offset 0x24C H264 output frame index in dpb */
+    volatile uint32_t H264_FIELD_INTRA_INFO_BUF_H264_VP8_ENTROPY_PROBS;/*!< Offset 0x250 H264 field intra info buffer address (VP8 entropy brobabilities table address) */
+    volatile uint32_t H264_NEIGHBOR_INFO_BUF_H264_VP8_FSTDATA_PARTLEN;/*!< Offset 0x254 H264 neighbor info buffer address (VP8 First partition length) */
+    volatile uint32_t H264_PIC_MBSIZE;                /*!< Offset 0x258 H264 Picture size in macroblocks */
+    volatile uint32_t H264_PIC_BOUNDARYSIZE;          /*!< Offset 0x25C H264 Picture size in pixels */
+    volatile uint32_t H264_MB_ADDR;                   /*!< Offset 0x260 H264 Current macroblock position */
+    volatile uint32_t H264_MB_NB1;                    /*!< Offset 0x264 H264 ??? MbNeightbour1 */
+    volatile uint32_t H264_MB_NB2;                    /*!< Offset 0x268 H264 MbNeightbour2 */
+    volatile uint32_t H264_MB_NB3;                    /*!< Offset 0x26C H264 ??? */
+    volatile uint32_t H264_MB_NB4;                    /*!< Offset 0x270 H264 ??? */
+    volatile uint32_t H264_MB_NB5;                    /*!< Offset 0x274 H264 ??? */
+    volatile uint32_t H264_MB_NB6;                    /*!< Offset 0x278 H264 ??? */
+    volatile uint32_t H264_MB_NB7;                    /*!< Offset 0x27C H264 ??? */
+    volatile uint32_t H264_MB_NB8;                    /*!< Offset 0x280 H264 ??? */
+    volatile uint32_t H264_0x0284;                    /*!< Offset 0x284 H264 ??? */
+    volatile uint32_t H264_0x0288;                    /*!< Offset 0x288 H264 ??? */
+    volatile uint32_t H264_0x028c;                    /*!< Offset 0x28C H264 ??? */
+    volatile uint32_t H264_MB_QP;                     /*!< Offset 0x290 H264 ??? */
+    volatile uint32_t H264_0x0294;                    /*!< Offset 0x294 H264 ??? */
+    volatile uint32_t H264_0x0298;                    /*!< Offset 0x298 H264 ??? */
+    volatile uint32_t H264_0x029c;                    /*!< Offset 0x29C H264 ??? */
+    volatile uint32_t H264_0x02a0;                    /*!< Offset 0x2A0 H264 ??? */
+    volatile uint32_t H264_0x02a4;                    /*!< Offset 0x2A4 H264 ??? */
+    volatile uint32_t H264_0x02a8;                    /*!< Offset 0x2A8 H264 ??? */
+    volatile uint32_t H264_REC_LUMA;                  /*!< Offset 0x2AC H264 Luma reconstruct buffer */
+    volatile uint32_t H264_FWD_LUMA;                  /*!< Offset 0x2B0 H264 Luma forward buffer */
+    volatile uint32_t H264_BACK_LUMA;                 /*!< Offset 0x2B4 H264 Luma back buffer */
+    volatile uint32_t H264_ERROR;                     /*!< Offset 0x2B8 H264 Error */
+    volatile uint32_t H264_0x02bc;                    /*!< Offset 0x2BC H264 ??? */
+    volatile uint32_t H264_0x02c0;                    /*!< Offset 0x2C0 H264 ??? */
+    volatile uint32_t H264_0x02c4;                    /*!< Offset 0x2C4 H264 ??? */
+    volatile uint32_t H264_0x02c8;                    /*!< Offset 0x2C8 H264 ??? */
+    volatile uint32_t H264_0x02cc;                    /*!< Offset 0x2CC H264 ??? */
+    volatile uint32_t H264_REC_CHROMA;                /*!< Offset 0x2D0 H264 Chroma reconstruct buffer */
+    volatile uint32_t H264_FWD_CHROMA;                /*!< Offset 0x2D4 H264 Chroma forward buffer */
+    volatile uint32_t H264_BACK_CHROMA;               /*!< Offset 0x2D8 H264 Chroma back buffer */
+    volatile uint32_t H264_BASIC_BITS_DATA;           /*!< Offset 0x2DC H264 Basic bits data */
+    volatile uint32_t H264_RAM_WRITE_PTR;             /*!< Offset 0x2E0 H264 ram write pointer */
+    volatile uint32_t H264_RAM_WRITE_DATA;            /*!< Offset 0x2E4 H264 ram write data */
+    volatile uint32_t H264_ALT_LUMA;                  /*!< Offset 0x2E8 H264 Alternate Luma buffer */
+    volatile uint32_t H264_ALT_CHROMA;                /*!< Offset 0x2EC H264 Alternate Chroma buffer */
+    volatile uint32_t H264_SEG_MB_LV0;                /*!< Offset 0x2F0 H264 ??? Segment Mb Level 0 */
+    volatile uint32_t H264_SEG_MB_LV1;                /*!< Offset 0x2F4 H264 ??? Segment Mb Level 1 */
+    volatile uint32_t H264_REF_LF_DELTA;              /*!< Offset 0x2F8 H264 ??? (VP8 ref lf deltas) */
+    volatile uint32_t H264_MODE_LF_DELTA;             /*!< Offset 0x2FC H264 ??? (VP8 mode lf deltas) */
+    volatile uint32_t VC1_EPHS;                       /*!< Offset 0x300 VC1 ??? */
+    volatile uint32_t VC1_PIC_CTRL;                   /*!< Offset 0x304 VC1 ??? */
+    volatile uint32_t VC1_PIC_QP;                     /*!< Offset 0x308 VC1 ??? */
+    volatile uint32_t VC1_PIC_MV;                     /*!< Offset 0x30C VC1 ??? */
+    volatile uint32_t VC1_PIC_INTEN_COMP;             /*!< Offset 0x310 VC1 ??? */
+    volatile uint32_t VC1_PIC_INTERLANCE;             /*!< Offset 0x314 VC1 ??? */
+    volatile uint32_t VC1_HDR_LEN;                    /*!< Offset 0x318 VC1 ??? */
+    volatile uint32_t VC1_FSIZE;                      /*!< Offset 0x31C VC1 ??? */
+    volatile uint32_t VC1_PIC_SIZE;                   /*!< Offset 0x320 VC1 ??? */
+    volatile uint32_t VC1_CTRL;                       /*!< Offset 0x324 VC1 Decoder Control */
+    volatile uint32_t VC1_START_TYPE;                 /*!< Offset 0x328 VC1 ??? */
+    volatile uint32_t VC1_STATUS;                     /*!< Offset 0x32C VC1 Status */
+    volatile uint32_t VC1_VBV_BASE_ADDR;              /*!< Offset 0x330 VC1 Source buffer address */
+    volatile uint32_t VC1_VLD_OFFSET;                 /*!< Offset 0x334 VC1 Variable Length Decoder Offset */
+    volatile uint32_t VC1_VBV_LEN;                    /*!< Offset 0x338 VC1 length of source video buffer */
+    volatile uint32_t VC1_VBV_END_ADDR;               /*!< Offset 0x33C VC1 last address of source video buffer */
+    volatile uint32_t VC1_REC_FRAME_CHROMA;           /*!< Offset 0x340 VC1 Chroma Reconstruct frame */
+    volatile uint32_t VC1_REC_FRAME_LUMA;             /*!< Offset 0x344 VC1 Luma Reconstruct frame */
+    volatile uint32_t VC1_FWD_FRAME_CHROMA;           /*!< Offset 0x348 VC1 Chroma Forward Frame */
+    volatile uint32_t VC1_FWD_FRAME_LUMA;             /*!< Offset 0x34C VC1 Luma Forward Frame */
+    volatile uint32_t VC1_BACK_CHROMA;                /*!< Offset 0x350 VC1 Chroma back buffer */
+    volatile uint32_t VC1_BACK_LUMA;                  /*!< Offset 0x354 VC1 Luma back buffer */
+    volatile uint32_t VC1_MBHADDR;                    /*!< Offset 0x358 VC1 ??? */
+    volatile uint32_t VC1_DCAPRED_ADDR;               /*!< Offset 0x35C VC1 ??? */
+    volatile uint32_t VC1_BITPLANE_ADDR;              /*!< Offset 0x360 VC1 ??? */
+    volatile uint32_t VC1_MBINFO_ADDR;                /*!< Offset 0x364 VC1 ???(or COLMVINFOADDR) */
+    volatile uint32_t VC1_0x0368;                     /*!< Offset 0x368 VC1 ??? */
+    volatile uint32_t VC1_0x036c;                     /*!< Offset 0x36C VC1 ??? */
+    volatile uint32_t VC1_MBA;                        /*!< Offset 0x370 VC1 ??? */
+    volatile uint32_t VC1_MBHDR;                      /*!< Offset 0x374 VC1 ??? */
+    volatile uint32_t VC1_LUMA_TRANSFORM;             /*!< Offset 0x378 VC1 ??? */
+    volatile uint32_t VC1_MBCBF;                      /*!< Offset 0x37C VC1 ??? */
+    volatile uint32_t VC1_MBM_V1;                     /*!< Offset 0x380 VC1 ??? */
+    volatile uint32_t VC1_MBM_V2;                     /*!< Offset 0x384 VC1 ??? */
+    volatile uint32_t VC1_MBM_V3;                     /*!< Offset 0x388 VC1 ??? */
+    volatile uint32_t VC1_MBM_V4;                     /*!< Offset 0x38C VC1 ??? */
+    volatile uint32_t VC1_MBM_V5;                     /*!< Offset 0x390 VC1 ??? */
+    volatile uint32_t VC1_MBM_V6;                     /*!< Offset 0x394 VC1 ??? */
+    volatile uint32_t VC1_MBM_V7;                     /*!< Offset 0x398 VC1 ??? */
+    volatile uint32_t VC1_MBM_V8;                     /*!< Offset 0x39C VC1 ??? */
+    volatile uint32_t VC1_0x03a0;                     /*!< Offset 0x3A0 VC1 ??? */
+    volatile uint32_t VC1_0x03a4;                     /*!< Offset 0x3A4 VC1 ??? */
+    volatile uint32_t VC1_0x03a8;                     /*!< Offset 0x3A8 VC1 ??? */
+    volatile uint32_t VC1_0x03ac;                     /*!< Offset 0x3AC VC1 ??? */
+    volatile uint32_t VC1_0x03b0;                     /*!< Offset 0x3B0 VC1 ??? */
+    volatile uint32_t VC1_0x03b4;                     /*!< Offset 0x3B4 VC1 ??? */
+    volatile uint32_t VC1_ERROR;                      /*!< Offset 0x3B8 VC1 Error result code */
+    volatile uint32_t VC1_CRT_MB_NUM;                 /*!< Offset 0x3BC VC1 ??? */
+    volatile uint32_t VC1_EXTRA_CTRL;                 /*!< Offset 0x3C0 VC1 ??? */
+    volatile uint32_t VC1_EXTRA_CBUF_ADDR;            /*!< Offset 0x3C4 VC1 EXTRA Chroma DRAM address */
+    volatile uint32_t VC1_EXTRA_YBUF_ADDR;            /*!< Offset 0x3C8 VC1 EXTRA Luma DRAM address */
+             uint32_t reserved_0x3CC;
+    volatile uint32_t VC1_OVERLAP_UP_ADDR;            /*!< Offset 0x3D0 VC1 ??? */
+    volatile uint32_t VC1_DBLK_ABOVE_ADDR;            /*!< Offset 0x3D4 VC1 ??? */
+    volatile uint32_t VC1_0x03d8;                     /*!< Offset 0x3D8 VC1 ??? */
+    volatile uint32_t VC1_BITS_RETDATA;               /*!< Offset 0x3DC VC1 ??? */
+             uint32_t reserved_0x3E0 [0x0007];
+    volatile uint32_t VC1_DEBUG_BUF_ADDR;             /*!< Offset 0x3FC VC1 ??? */
+    volatile uint32_t RMVB_SLC_HDR;                   /*!< Offset 0x400 Header */
+    volatile uint32_t RMVB_FRM_SIZE;                  /*!< Offset 0x404 Framesize (in macroblocks ?) */
+    volatile uint32_t RMVB_DIR_MODE_RATIO;            /*!< Offset 0x408  */
+    volatile uint32_t RMVB_DIR_MB_ADDR;               /*!< Offset 0x40C  */
+    volatile uint32_t RMVB_QC_INPUT;                  /*!< Offset 0x410  */
+    volatile uint32_t RMVB_CTRL;                      /*!< Offset 0x414 RMVB IRQ Control */
+    volatile uint32_t RMVB_TRIG;                      /*!< Offset 0x418 Trigger register */
+    volatile uint32_t RMVB_STATUS;                    /*!< Offset 0x41C RMVB Status */
+             uint32_t reserved_0x420 [0x0002];
+    volatile uint32_t RMVB_VBV_BASE;                  /*!< Offset 0x428 Video source buffer base */
+    volatile uint32_t RMVB_VLD_OFFSET;                /*!< Offset 0x42C Video source buffer DRAM address */
+    volatile uint32_t RMVB_VLD_LEN;                   /*!< Offset 0x430 Video source buffer length in bytes */
+    volatile uint32_t RMVB_VBV_END;                   /*!< Offset 0x434 Video source buffer last DRAM address */
+             uint32_t reserved_0x438;
+    volatile uint32_t RMVB_HUFF_TABLE_ADDR;           /*!< Offset 0x43C Huffman table DRAM address */
+    volatile uint32_t RMVB_CUR_Y_ADDR;                /*!< Offset 0x440 Luma Current buffer DRAM address */
+    volatile uint32_t RMVB_CUR_C_ADDR;                /*!< Offset 0x444 Chroma Current buffer DRAM address */
+    volatile uint32_t RMVB_FOR_Y_ADDR;                /*!< Offset 0x448 Luma Forward buffer DRAM address */
+    volatile uint32_t RMVB_FOR_C_ADDR;                /*!< Offset 0x44C Chroma Forward buffer DRAM address */
+    volatile uint32_t RMVB_BAC_Y_ADDR;                /*!< Offset 0x450 Luma Back buffer DRAM address */
+    volatile uint32_t RMVB_BAC_C_ADDR;                /*!< Offset 0x454 Chroma Back buffer DRAM address */
+    volatile uint32_t RMVB_ROT_Y_ADDR;                /*!< Offset 0x458 Luma Rot buffer DRAM address */
+    volatile uint32_t RMVB_ROT_C_ADDR;                /*!< Offset 0x45C Chroma Rot Buffer DRAM address */
+    volatile uint32_t RMVB_MBH_ADDR;                  /*!< Offset 0x460  */
+    volatile uint32_t RMVB_MV_ADDR;                   /*!< Offset 0x464  */
+             uint32_t reserved_0x468 [0x0002];
+    volatile uint32_t RMVB_MBH_INFO;                  /*!< Offset 0x470  */
+    volatile uint32_t RMVB_MV0;                       /*!< Offset 0x474 Mountion vector 0 */
+    volatile uint32_t RMVB_MV1;                       /*!< Offset 0x478 Mountion vector 1 */
+    volatile uint32_t RMVB_MV2;                       /*!< Offset 0x47C Mountion vector 2 */
+    volatile uint32_t RMVB_MV3;                       /*!< Offset 0x480 Mountion vector 3 */
+             uint32_t reserved_0x484 [0x0003];
+    volatile uint32_t RMVB_DBLK_COEF;                 /*!< Offset 0x490  */
+             uint32_t reserved_0x494 [0x0007];
+    volatile uint32_t RMVB_ERROR;                     /*!< Offset 0x4B0 Decode error result code */
+             uint32_t reserved_0x4B4;
+    volatile uint32_t RMVB_BITS_DATA;                 /*!< Offset 0x4B8  */
+             uint32_t reserved_0x4BC;
+    volatile uint32_t RMVB_SLC_QUEUE_ADDR;            /*!< Offset 0x4C0  */
+    volatile uint32_t RMVB_SLC_QUEUE_LEN;             /*!< Offset 0x4C4  */
+    volatile uint32_t RMVB_SLC_QUEUE_TRIG;            /*!< Offset 0x4C8  */
+    volatile uint32_t RMVB_SLC_QUEUE_STATUS;          /*!< Offset 0x4CC  */
+    volatile uint32_t RMVB_SCALE_ROT_CTRL;            /*!< Offset 0x4D0  */
+             uint32_t reserved_0x4D4 [0x0003];
+    volatile uint32_t RMVB_SRAM_RW_OFFSET;            /*!< Offset 0x4E0 SRAM Fifo like index register */
+    volatile uint32_t RMVB_SRAM_RW_DATA;              /*!< Offset 0x4E4 SRAM Fifo like data register */
+             uint32_t reserved_0x4E8 [0x0006];
+    volatile uint32_t HEVC_NAL_HDR;                   /*!< Offset 0x500 HEVC NAL header */
+    volatile uint32_t HEVC_SPS;                       /*!< Offset 0x504 HEVC sequence parameter set */
+    volatile uint32_t HEVC_PIC_SIZE;                  /*!< Offset 0x508 HEVC picture size */
+    volatile uint32_t HEVC_PCM_HDR;                   /*!< Offset 0x50C HEVC PCM header */
+    volatile uint32_t HEVC_PPS0;                      /*!< Offset 0x510 HEVC picture parameter set */
+    volatile uint32_t HEVC_PPS1;                      /*!< Offset 0x514 HEVC picture parameter set */
+    volatile uint32_t HEVC_SCALING_LIST_CTRL;         /*!< Offset 0x518 HEVC scaling list control register */
+             uint32_t reserved_0x51C;
+    volatile uint32_t HEVC_SLICE_HDR0;                /*!< Offset 0x520 HEVC slice header */
+    volatile uint32_t HEVC_SLICE_HDR1;                /*!< Offset 0x524 HEVC slice header */
+    volatile uint32_t HEVC_SLICE_HDR2;                /*!< Offset 0x528 HEVC slice header */
+    volatile uint32_t HEVC_CTB_ADDR;                  /*!< Offset 0x52C HEVC CTB address */
+    volatile uint32_t HEVC_CTRL;                      /*!< Offset 0x530 HEVC control register */
+    volatile uint32_t HEVC_TRIG;                      /*!< Offset 0x534 HEVC trigger register */
+    volatile uint32_t HEVC_STATUS;                    /*!< Offset 0x538 HEVC status register */
+    volatile uint32_t HEVC_CTU_NUM;                   /*!< Offset 0x53C HEVC current CTU number */
+    volatile uint32_t HEVC_BITS_ADDR;                 /*!< Offset 0x540 HEVC bitstream address */
+    volatile uint32_t HEVC_BITS_OFFSET;               /*!< Offset 0x544 HEVC bitstream offset */
+    volatile uint32_t HEVC_BITS_LEN;                  /*!< Offset 0x548 HEVC bitstream length */
+    volatile uint32_t HEVC_BITS_END_ADDR;             /*!< Offset 0x54C HEVC bitstream end address */
+    volatile uint32_t HEVC_EXTRA_OUT_CTRL;            /*!< Offset 0x550 HEVC extra output control register */
+    volatile uint32_t HEVC_EXTRA_OUT_LUMA_ADDR;       /*!< Offset 0x554 HEVC extra output luma address */
+    volatile uint32_t HEVC_EXTRA_OUT_CHROMA_ADDR;     /*!< Offset 0x558 HEVC extra output chroma address */
+    volatile uint32_t HEVC_REC_BUF_IDX;               /*!< Offset 0x55C HEVC reconstruct buffer index */
+    volatile uint32_t HEVC_NEIGHBOR_INFO_ADDR;        /*!< Offset 0x560 HEVC neighbor info buffer address */
+    volatile uint32_t HEVC_TILE_LIST_ADDR;            /*!< Offset 0x564 HEVC tile entry point list address */
+    volatile uint32_t HEVC_TILE_START_CTB;            /*!< Offset 0x568 HEVC tile start CTB */
+    volatile uint32_t HEVC_TILE_END_CTB;              /*!< Offset 0x56C HEVC tile end CTB */
+             uint32_t reserved_0x570 [0x0002];
+    volatile uint32_t HEVC_SCALING_LIST_DC_COEF0;     /*!< Offset 0x578 HEVC scaling list DC coefficients */
+    volatile uint32_t HEVC_SCALING_LIST_DC_COEF1;     /*!< Offset 0x57C HEVC scaling list DC coefficients */
+             uint32_t reserved_0x580 [0x0017];
+    volatile uint32_t HEVC_BITS_DATA;                 /*!< Offset 0x5DC HEVC bitstream data */
+    volatile uint32_t HEVC_SRAM_ADDR;                 /*!< Offset 0x5E0 HEVC SRAM address */
+    volatile uint32_t HEVC_SRAM_DATA;                 /*!< Offset 0x5E4 HEVC SRAM data */
+             uint32_t reserved_0x5E8 [0x0106];
+    volatile uint32_t ISP_PIC_SIZE;                   /*!< Offset 0xA00 ISP source picture size in macroblocks (16x16) */
+    volatile uint32_t ISP_PIC_STRIDE;                 /*!< Offset 0xA04 ISP source picture stride */
+    volatile uint32_t ISP_CTRL;                       /*!< Offset 0xA08 ISP IRQ Control */
+    volatile uint32_t ISP_TRIG;                       /*!< Offset 0xA0C ISP Trigger */
+             uint32_t reserved_0xA10 [0x0007];
+    volatile uint32_t ISP_SCALER_SIZE;                /*!< Offset 0xA2C ISP scaler frame size/16 */
+    volatile uint32_t ISP_SCALER_OFFSET_Y;            /*!< Offset 0xA30 ISP scaler picture offset for luma */
+    volatile uint32_t ISP_SCALER_OFFSET_C;            /*!< Offset 0xA34 ISP scaler picture offset for chroma */
+    volatile uint32_t ISP_SCALER_FACTOR;              /*!< Offset 0xA38 ISP scaler picture scale factor */
+             uint32_t reserved_0xA3C [0x0002];
+    volatile uint32_t ISP_BUF_0x0a44;                 /*!< Offset 0xA44 ISP PHY Buffer offset */
+    volatile uint32_t ISP_BUF_0x0a48;                 /*!< Offset 0xA48 ISP PHY Buffer offset */
+    volatile uint32_t ISP_BUF_0x0a4C;                 /*!< Offset 0xA4C ISP PHY Buffer offset */
+             uint32_t reserved_0xA50 [0x0008];
+    volatile uint32_t ISP_OUTPUT_LUMA;                /*!< Offset 0xA70 ISP Output LUMA Address */
+    volatile uint32_t ISP_OUTPUT_CHROMA;              /*!< Offset 0xA74 ISP Output CHROMA Address */
+    volatile uint32_t ISP_WB_THUMB_LUMA;              /*!< Offset 0xA78 ISP THUMB WriteBack PHY LUMA Address */
+    volatile uint32_t ISP_WB_THUMB_CHROMA;            /*!< Offset 0xA7C ISP THUMB WriteBack PHY CHROMA Adress */
+             uint32_t reserved_0xA80 [0x0018];
+    volatile uint32_t ISP_SRAM_INDEX;                 /*!< Offset 0xAE0 ISP VE SRAM Index */
+    volatile uint32_t ISP_SRAM_DATA;                  /*!< Offset 0xAE4 ISP VE SRAM Data */
+             uint32_t reserved_0xAE8 [0x0006];
+    volatile uint32_t AVC_PICINFO;                    /*!< Offset 0xB00 unk(not used in blob) */
+    volatile uint32_t AVC_JPEG_CTRL_MACC_AVC_H264_CTRL;/*!< Offset 0xB04 jpeg / h264 different settings */
+    volatile uint32_t AVC_H264_QP;                    /*!< Offset 0xB08 H264 quantization parameters */
+             uint32_t reserved_0xB0C;
+    volatile uint32_t AVC_H264_MOTION_EST;            /*!< Offset 0xB10 Motion estimation parameters */
+    volatile uint32_t AVC_CTRL;                       /*!< Offset 0xB14 AVC Encoder IRQ Control */
+    volatile uint32_t AVC_TRIG;                       /*!< Offset 0xB18 AVC Encoder trigger */
+    volatile uint32_t AVC_STATUS;                     /*!< Offset 0xB1C AVC Encoder Busy Status */
+    volatile uint32_t AVC_BITS_DATA;                  /*!< Offset 0xB20 AVC Encoder Bits Data */
+             uint32_t reserved_0xB24 [0x000B];
+    volatile uint32_t AVC_H264_MAD;                   /*!< Offset 0xB50 AVC H264 Encoder Mean Absolute Difference */
+    volatile uint32_t AVC_H264_RESIDUAL_BITS;         /*!< Offset 0xB54 AVC H264 Encoder Residual Bits */
+    volatile uint32_t AVC_H264_HEADER_BITS;           /*!< Offset 0xB58 AVC H264 Encoder Header Bits */
+    volatile uint32_t AVC_H264_0x0b5c;                /*!< Offset 0xB5C AVC H264 Encoder unknown statistical data, maybe motion vectors */
+    volatile uint32_t AVC_H264_0x0b60;                /*!< Offset 0xB60 AVC H264 Encoder unknown buffer */
+             uint32_t reserved_0xB64 [0x0007];
+    volatile uint32_t AVC_VLE_ADDR;                   /*!< Offset 0xB80 AVC Variable Length Encoder Start Address */
+    volatile uint32_t AVC_VLE_END;                    /*!< Offset 0xB84 AVC Variable Length Encoder End Address */
+    volatile uint32_t AVC_VLE_OFFSET;                 /*!< Offset 0xB88 AVC Variable Length Encoder Bit Offset */
+    volatile uint32_t AVC_VLE_MAX;                    /*!< Offset 0xB8C AVC Variable Length Encoder Maximum Bits */
+    volatile uint32_t AVC_VLE_LENGTH;                 /*!< Offset 0xB90 AVC Variable Length Encoder Bit Length */
+             uint32_t reserved_0xB94 [0x0003];
+    volatile uint32_t AVC_REF_LUMA;                   /*!< Offset 0xBA0 Luma reference buffer */
+    volatile uint32_t AVC_REF_CHROMA;                 /*!< Offset 0xBA4 Chroma reference buffer */
+             uint32_t reserved_0xBA8 [0x0002];
+    volatile uint32_t AVC_REC_LUMA;                   /*!< Offset 0xBB0 Luma reconstruct buffer */
+    volatile uint32_t AVC_REC_CHROMA;                 /*!< Offset 0xBB4 Chroma reconstruct buffer */
+    volatile uint32_t AVC_REF_SLUMA;                  /*!< Offset 0xBB8 Smaller luma reference buffer ? */
+    volatile uint32_t AVC_REC_SLUMA;                  /*!< Offset 0xBBC Smaller luma reconstruct buffer ? */
+    volatile uint32_t AVC_MB_INFO;                    /*!< Offset 0xBC0 Temporary buffer with macroblock information */
+             uint32_t reserved_0xBC4 [0x0007];
+    volatile uint32_t AVC_SRAM_INDEX;                 /*!< Offset 0xBE0 AVC VE SRAM Index */
+    volatile uint32_t AVC_SRAM_DATA;                  /*!< Offset 0xBE4 AVC VE SRAM Data */
+             uint32_t reserved_0xBE8 [0x0106];
+} VE_TypeDef; /* size of structure = 0x1000 */
 
 
 /* Defines */
@@ -2262,6 +2637,7 @@ typedef struct USB_OHCI_Capability_Type
 #define NDFC ((NDFC_TypeDef *) NDFC_BASE)             /*!< NDFC NAND Flash Controller Interface register set access pointer */
 #define TCON0 ((TCON0_TypeDef *) TCON0_BASE)          /*!< TCON0 TCON0 LVDS/RGB/MIPI-DSI Interface register set access pointer */
 #define TCON1 ((TCON1_TypeDef *) TCON1_BASE)          /*!< TCON1 TCON1 HDMI Interface register set access pointer */
+#define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */

@@ -1,6 +1,6 @@
 #type; VE; Video Encoding
 #base; VENCODER 0x01C0E000
-#irq; VE 125
+#irq; VE 90
 
 ## (sunxi-cedar 1c0e000.ve)
 ## See also https://linux-sunxi.org/VE_Register_guide
@@ -373,5 +373,5 @@
 #regdef; AVC_SRAM_INDEX	; 0x0be0 ; AVC VE SRAM Index
 #regdef; AVC_SRAM_DATA	; 0x0be4 ; AVC VE SRAM Data
 
-#regdef; padding 0; 0x2000; Need for address arithmetics
+#regdef; padding 0; 0x1000; Need for address arithmetics
 #typeend;

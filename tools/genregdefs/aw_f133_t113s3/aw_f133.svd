@@ -16200,8 +16200,342 @@
    <register>
     <name>VE_CTRL</name>
     <displayName>VE_CTRL</displayName>
-    <description></description>
+    <description>Sub-Engine Select and RAM type select</description>
     <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_RESET</name>
+    <displayName>VE_RESET</displayName>
+    <description>Sub-Engines Reset</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_CYCLES_COUNTER</name>
+    <displayName>VE_CYCLES_COUNTER</displayName>
+    <description>Clock Cycles counter</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_TIMEOUT</name>
+    <displayName>VE_TIMEOUT</displayName>
+    <description>VE Timeout value</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MMCREQ_WNUM</name>
+    <displayName>VE_MMCREQ_WNUM</displayName>
+    <description></description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_CACHEREG_WNUM</name>
+    <displayName>VE_CACHEREG_WNUM</displayName>
+    <description></description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_STATUS</name>
+    <displayName>VE_STATUS</displayName>
+    <description>Busy status</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_RDDATA_COUNTER</name>
+    <displayName>VE_RDDATA_COUNTER</displayName>
+    <description>DRAM Read counter</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_WRDATA_COUNTER</name>
+    <displayName>VE_WRDATA_COUNTER</displayName>
+    <description>DRAM Write counter</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ANAGLYPH_CTRL</name>
+    <displayName>VE_ANAGLYPH_CTRL</displayName>
+    <description>Anaglyph mode control</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAF_CTRL</name>
+    <displayName>VE_MAF_CTRL</displayName>
+    <description>Motion adaptive filter config</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAF_CLIP_TH</name>
+    <displayName>VE_MAF_CLIP_TH</displayName>
+    <description></description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAFREF1_LUMA_BUF</name>
+    <displayName>VE_MAFREF1_LUMA_BUF</displayName>
+    <description>Reference luma buffer {unsure}</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAFREF1_CHROMA_BUF</name>
+    <displayName>VE_MAFREF1_CHROMA_BUF</displayName>
+    <description>Reference chroma buffer {unsure}</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAFCUR_ADDR</name>
+    <displayName>VE_MAFCUR_ADDR</displayName>
+    <description>current maf output address {unsure}</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAFREF1_ADDR</name>
+    <displayName>VE_MAFREF1_ADDR</displayName>
+    <description>reference maf input address {unsure}</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAFREF2_ADDR</name>
+    <displayName>VE_MAFREF2_ADDR</displayName>
+    <description>second reference maf input address {unsure}</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_MAFDIFF_GROUP_MAX</name>
+    <displayName>VE_MAFDIFF_GROUP_MAX</displayName>
+    <description></description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_IPD_DBLK_BUF_CTRL</name>
+    <displayName>VE_IPD_DBLK_BUF_CTRL</displayName>
+    <description>deblocking and intra prediction dram buffer config register (required for A13+ SoC for H264 decoding or on A10 for video with width &gt;= 2048)</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_IPD_BUF</name>
+    <displayName>VE_IPD_BUF</displayName>
+    <description>Intra prediction buffer (needed on A13+ or (width &gt;= 2048))</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_DBLK_BUF</name>
+    <displayName>VE_DBLK_BUF</displayName>
+    <description>Deblocking buffer (needed on A13+ or (width &gt;= 2048))</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_QUEUE_START</name>
+    <displayName>VE_ARGB_QUEUE_START</displayName>
+    <description>ARGB command queue</description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_BLK_SRC1_ADDR</name>
+    <displayName>VE_ARGB_BLK_SRC1_ADDR</displayName>
+    <description>ARGB source 1 address</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_BLK_SRC2_ADDR</name>
+    <displayName>VE_ARGB_BLK_SRC2_ADDR</displayName>
+    <description>ARGB source 2 addres</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_BLK_DST_ADDR</name>
+    <displayName>VE_ARGB_BLK_DST_ADDR</displayName>
+    <description>ARGB destination address</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_SRC_STRIDE</name>
+    <displayName>VE_ARGB_SRC_STRIDE</displayName>
+    <description>ARGB source strides for src1 and src2</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_DST_STRIDE</name>
+    <displayName>VE_ARGB_DST_STRIDE</displayName>
+    <description>ARGB destination stride</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_BLK_SIZE</name>
+    <displayName>VE_ARGB_BLK_SIZE</displayName>
+    <description>ARGB size</description>
+    <addressOffset>0x074</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_BLK_FILL_VALUE</name>
+    <displayName>VE_ARGB_BLK_FILL_VALUE</displayName>
+    <description>ARGB fill value</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ARGB_BLK_CTRL</name>
+    <displayName>VE_ARGB_BLK_CTRL</displayName>
+    <description>ARGB control</description>
+    <addressOffset>0x07C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000080</addressOffset>
+    <register>
+     <name>VE_LUMA_HIST_THR</name>
+     <displayName>VE_LUMA_HIST_THR</displayName>
+     <description>Luma histogram thresholds [0-3]</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000090</addressOffset>
+    <register>
+     <name>VE_LUMA_HIST_VAL</name>
+     <displayName>VE_LUMA_HIST_VAL</displayName>
+     <description>Luma histogram output values [0-15]</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <register>
+    <name>VE_ANGL_R_BUF</name>
+    <displayName>VE_ANGL_R_BUF</displayName>
+    <description>Anaglyph red output buffer</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ANGL_G_BUF</name>
+    <displayName>VE_ANGL_G_BUF</displayName>
+    <description>Anaglyph green output buffer</description>
+    <addressOffset>0x0D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ANGL_B_BUF</name>
+    <displayName>VE_ANGL_B_BUF</displayName>
+    <description>Anaglyph blue output buffer</description>
+    <addressOffset>0x0D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_EXTRA_OUT_FMT_OFFSET</name>
+    <displayName>VE_EXTRA_OUT_FMT_OFFSET</displayName>
+    <description>Extra output format and chroma offset (not available on A10/A13/A20)</description>
+    <addressOffset>0x0E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_OUTPUT_FORMAT</name>
+    <displayName>VE_OUTPUT_FORMAT</displayName>
+    <description>Output formats (since H3?)</description>
+    <addressOffset>0x0EC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -16209,682 +16543,2662 @@
    <register>
     <name>VE_VERSION</name>
     <displayName>VE_VERSION</displayName>
-    <description></description>
+    <description>IP Version register</description>
     <addressOffset>0x0F0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_PIC_HDR</name>
-    <displayName>VE_MPEG_PIC_HDR</displayName>
-    <description></description>
+    <name>VE_DBG_CTRL</name>
+    <displayName>VE_DBG_CTRL</displayName>
+    <description>Debug control</description>
+    <addressOffset>0x0F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_DBG_OUTPUT</name>
+    <displayName>VE_DBG_OUTPUT</displayName>
+    <description>Debug output</description>
+    <addressOffset>0x0FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_PHDR</name>
+    <displayName>MPEG_PHDR</displayName>
+    <description>MPEG12 Picture Header register</description>
     <addressOffset>0x100</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_SIZE</name>
-    <displayName>VE_MPEG_SIZE</displayName>
-    <description></description>
+    <name>MPEG_VOPHDR</name>
+    <displayName>MPEG_VOPHDR</displayName>
+    <description>MPEG Video Object Plane Header register (MPEG4 Header)</description>
+    <addressOffset>0x104</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SIZE</name>
+    <displayName>MPEG_SIZE</displayName>
+    <description>Frame size in MPEG macroblocks (16x16)</description>
     <addressOffset>0x108</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_FRAME_SIZE</name>
-    <displayName>VE_MPEG_FRAME_SIZE</displayName>
-    <description></description>
+    <name>MPEG_FRAME_SIZE</name>
+    <displayName>MPEG_FRAME_SIZE</displayName>
+    <description>Frame size in pixels</description>
     <addressOffset>0x10C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_CTRL</name>
-    <displayName>VE_MPEG_CTRL</displayName>
-    <description></description>
+    <name>MPEG_MBA</name>
+    <displayName>MPEG_MBA</displayName>
+    <description>MPEG Macro Block Address register</description>
+    <addressOffset>0x110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_CTRL</name>
+    <displayName>MPEG_CTRL</displayName>
+    <description>MPEG Control Register</description>
     <addressOffset>0x114</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_TRIGGER</name>
-    <displayName>VE_MPEG_TRIGGER</displayName>
-    <description></description>
+    <name>MPEG_TRIG</name>
+    <displayName>MPEG_TRIG</displayName>
+    <description>MPEG Decoding Trigger</description>
     <addressOffset>0x118</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_STATUS</name>
-    <displayName>VE_MPEG_STATUS</displayName>
-    <description></description>
+    <name>MPEG_STATUS</name>
+    <displayName>MPEG_STATUS</displayName>
+    <description>MACC MPEG Status register</description>
     <addressOffset>0x11C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_VLD_ADDR</name>
-    <displayName>VE_MPEG_VLD_ADDR</displayName>
-    <description></description>
+    <name>MPEG_FRAME_DIST</name>
+    <displayName>MPEG_FRAME_DIST</displayName>
+    <description>MPEG P and B Frame distance</description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_TRBTRDFLD</name>
+    <displayName>MPEG_TRBTRDFLD</displayName>
+    <description>Temporal References(TRB(B-VOP) and TRD)</description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_VLD_ADDR</name>
+    <displayName>MPEG_VLD_ADDR</displayName>
+    <description>MPEG Variable Length Decoding Address</description>
     <addressOffset>0x128</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_VLD_OFFSET</name>
-    <displayName>VE_MPEG_VLD_OFFSET</displayName>
-    <description></description>
+    <name>MPEG_VLD_OFFSET</name>
+    <displayName>MPEG_VLD_OFFSET</displayName>
+    <description>MPEG Variable Length Decoding Offset</description>
     <addressOffset>0x12C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_VLD_LEN</name>
-    <displayName>VE_MPEG_VLD_LEN</displayName>
-    <description></description>
+    <name>MPEG_VLD_LEN</name>
+    <displayName>MPEG_VLD_LEN</displayName>
+    <description>MPEG Variable Length Decoding Length</description>
     <addressOffset>0x130</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_VLD_END</name>
-    <displayName>VE_MPEG_VLD_END</displayName>
-    <description></description>
+    <name>MPEG_VBV_END</name>
+    <displayName>MPEG_VBV_END</displayName>
+    <description>MPEG VBV end - video source buffer end</description>
     <addressOffset>0x134</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_REC_LUMA</name>
-    <displayName>VE_MPEG_REC_LUMA</displayName>
-    <description></description>
+    <name>MPEG_MBH_ADDR</name>
+    <displayName>MPEG_MBH_ADDR</displayName>
+    <description>MBH buffer address</description>
+    <addressOffset>0x138</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_DCAC_ADDR</name>
+    <displayName>MPEG_DCAC_ADDR</displayName>
+    <description>DCAC Buffer address</description>
+    <addressOffset>0x13C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_BLK_OFFSET</name>
+    <displayName>MPEG_BLK_OFFSET</displayName>
+    <description>MPEG Block address???</description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_NCF_ADDR</name>
+    <displayName>MPEG_NCF_ADDR</displayName>
+    <description>NFC buffer address</description>
+    <addressOffset>0x144</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_REC_LUMA</name>
+    <displayName>MPEG_REC_LUMA</displayName>
+    <description>MPEG Luma reconstruct buffer</description>
     <addressOffset>0x148</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_REC_CHROMA</name>
-    <displayName>VE_MPEG_REC_CHROMA</displayName>
-    <description></description>
+    <name>MPEG_REC_CHROMA</name>
+    <displayName>MPEG_REC_CHROMA</displayName>
+    <description>MPEG Chroma reconstruct buffer</description>
     <addressOffset>0x14C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_FWD_LUMA</name>
-    <displayName>VE_MPEG_FWD_LUMA</displayName>
-    <description></description>
+    <name>MPEG_FWD_LUMA</name>
+    <displayName>MPEG_FWD_LUMA</displayName>
+    <description>MPEG Luma forward buffer</description>
     <addressOffset>0x150</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_FWD_CHROMA</name>
-    <displayName>VE_MPEG_FWD_CHROMA</displayName>
-    <description></description>
+    <name>MPEG_FWD_CHROMA</name>
+    <displayName>MPEG_FWD_CHROMA</displayName>
+    <description>MPEG forward buffer</description>
     <addressOffset>0x154</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_BACK_LUMA</name>
-    <displayName>VE_MPEG_BACK_LUMA</displayName>
-    <description></description>
+    <name>MPEG_BACK_LUMA</name>
+    <displayName>MPEG_BACK_LUMA</displayName>
+    <description>MPEG Luma Back buffer</description>
     <addressOffset>0x158</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_BACK_CHROMA</name>
-    <displayName>VE_MPEG_BACK_CHROMA</displayName>
-    <description></description>
+    <name>MPEG_BACK_CHROMA</name>
+    <displayName>MPEG_BACK_CHROMA</displayName>
+    <description>MPEG Chroma Back buffer</description>
     <addressOffset>0x15C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_IQ_MIN_INPUT</name>
-    <displayName>VE_MPEG_IQ_MIN_INPUT</displayName>
-    <description></description>
+    <name>MPEG_SOCX</name>
+    <displayName>MPEG_SOCX</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SOCY</name>
+    <displayName>MPEG_SOCY</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SOL</name>
+    <displayName>MPEG_SOL</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x168</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SDLX</name>
+    <displayName>MPEG_SDLX</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x16C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SDLY</name>
+    <displayName>MPEG_SDLY</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x170</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SPRITESHFT</name>
+    <displayName>MPEG_SPRITESHFT</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x174</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SDCX</name>
+    <displayName>MPEG_SDCX</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x178</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SDCY</name>
+    <displayName>MPEG_SDCY</displayName>
+    <description>MS-MPEG related</description>
+    <addressOffset>0x17C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_IQ_MIN_INPUT</name>
+    <displayName>MPEG_IQ_MIN_INPUT</displayName>
+    <description>MPEG Inverse Quantization minimum input level</description>
     <addressOffset>0x180</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_JPEG_SIZE</name>
-    <displayName>VE_MPEG_JPEG_SIZE</displayName>
-    <description></description>
+    <name>MPEG_IQ_INPUT</name>
+    <displayName>MPEG_IQ_INPUT</displayName>
+    <description>MPEG Inverse Quantization input level</description>
+    <addressOffset>0x184</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MSMPEG4_HDR</name>
+    <displayName>MPEG_MSMPEG4_HDR</displayName>
+    <description>MPEG MS-Mpeg-4 header</description>
+    <addressOffset>0x188</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_VP6_HDR</name>
+    <displayName>MPEG_VP6_HDR</displayName>
+    <description>MPEG VP6 Header</description>
+    <addressOffset>0x18C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_IQ_IDCT_INPUT</name>
+    <displayName>MPEG_IQ_IDCT_INPUT</displayName>
+    <description>MPEG Inverse Quantization and Inverse Discrete Cosine Transform input</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_HEIGHT</name>
+    <displayName>MPEG_MB_HEIGHT</displayName>
+    <description>MPEG Macro Block Height</description>
+    <addressOffset>0x194</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V1</name>
+    <displayName>MPEG_MB_V1</displayName>
+    <description>MPEG Macro Block Vector 1</description>
+    <addressOffset>0x198</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V2</name>
+    <displayName>MPEG_MB_V2</displayName>
+    <description>MPEG Macro Block Vector 2</description>
+    <addressOffset>0x19C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V3</name>
+    <displayName>MPEG_MB_V3</displayName>
+    <description>MPEG Macro Block Vector 3</description>
+    <addressOffset>0x1A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V4</name>
+    <displayName>MPEG_MB_V4</displayName>
+    <description>MPEG Macro Block Vector 4</description>
+    <addressOffset>0x1A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V5</name>
+    <displayName>MPEG_MB_V5</displayName>
+    <description>MPEG Macro Block Vector 5</description>
+    <addressOffset>0x1A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V6</name>
+    <displayName>MPEG_MB_V6</displayName>
+    <description>MPEG Macro Block Vector 6</description>
+    <addressOffset>0x1AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V7</name>
+    <displayName>MPEG_MB_V7</displayName>
+    <description>MPEG Macro Block Vector 7</description>
+    <addressOffset>0x1B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_MB_V8</name>
+    <displayName>MPEG_MB_V8</displayName>
+    <description>MPEG Macro Block Vector 8</description>
+    <addressOffset>0x1B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_JPEG_SIZE</name>
+    <displayName>MPEG_JPEG_SIZE</displayName>
+    <description>JPEG Size</description>
     <addressOffset>0x1B8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_JPEG_RES_INT</name>
-    <displayName>VE_MPEG_JPEG_RES_INT</displayName>
-    <description></description>
+    <name>MPEG_JPEG_MCU</name>
+    <displayName>MPEG_JPEG_MCU</displayName>
+    <description>JPEG Minimum Coded Unit</description>
+    <addressOffset>0x1BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_JPEG_RES_INT</name>
+    <displayName>MPEG_JPEG_RES_INT</displayName>
+    <description>JPEG Restart Interval</description>
     <addressOffset>0x1C0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_ROT_LUMA</name>
-    <displayName>VE_MPEG_ROT_LUMA</displayName>
-    <description></description>
+    <name>MPEG_ERROR</name>
+    <displayName>MPEG_ERROR</displayName>
+    <description>MPEG Error flags</description>
+    <addressOffset>0x1C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_CTR_MB</name>
+    <displayName>MPEG_CTR_MB</displayName>
+    <description>(Macroblock Control??)</description>
+    <addressOffset>0x1C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_ROT_LUMA</name>
+    <displayName>MPEG_ROT_LUMA</displayName>
+    <description>MPEG Rotate-Scale Luma buffer</description>
     <addressOffset>0x1CC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_ROT_CHROMA</name>
-    <displayName>VE_MPEG_ROT_CHROMA</displayName>
-    <description></description>
+    <name>MPEG_ROT_CHROMA</name>
+    <displayName>MPEG_ROT_CHROMA</displayName>
+    <description>MPEG Rotate-Scale Chroma buffer</description>
     <addressOffset>0x1D0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_SDROT_CTRL</name>
-    <displayName>VE_MPEG_SDROT_CTRL</displayName>
-    <description></description>
+    <name>MPEG_ROTSCALE_CTRL</name>
+    <displayName>MPEG_ROTSCALE_CTRL</displayName>
+    <description>Control Rotate/Scale Buffer</description>
     <addressOffset>0x1D4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_RAM_WRITE_PTR</name>
-    <displayName>VE_MPEG_RAM_WRITE_PTR</displayName>
-    <description></description>
+    <name>MPEG_JPEG_MCU_START</name>
+    <displayName>MPEG_JPEG_MCU_START</displayName>
+    <description>JPEG Macro Cell Unit Start</description>
+    <addressOffset>0x1D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_JPEG_MCU_END</name>
+    <displayName>MPEG_JPEG_MCU_END</displayName>
+    <description>JPEG Macro Cell Unit End</description>
+    <addressOffset>0x1DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MPEG_SRAM_RW_OFFSET</name>
+    <displayName>MPEG_SRAM_RW_OFFSET</displayName>
+    <description>Auto incremental pointer for read/write VE SRAM</description>
     <addressOffset>0x1E0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_MPEG_RAM_WRITE_DATA</name>
-    <displayName>VE_MPEG_RAM_WRITE_DATA</displayName>
-    <description></description>
+    <name>MPEG_SRAM_RW_DATA</name>
+    <displayName>MPEG_SRAM_RW_DATA</displayName>
+    <description>FIFO Like Data register for write/read VE SRAM</description>
     <addressOffset>0x1E4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_FRAME_SIZE</name>
-    <displayName>VE_H264_FRAME_SIZE</displayName>
-    <description></description>
+    <name>MPEG_START_CODE_BITOFFSET</name>
+    <displayName>MPEG_START_CODE_BITOFFSET</displayName>
+    <description>MPEG start code search result</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_SEQ_HDR</name>
+    <displayName>H264_SEQ_HDR</displayName>
+    <description>H264 Sequence header</description>
     <addressOffset>0x200</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_PIC_HDR</name>
-    <displayName>VE_H264_PIC_HDR</displayName>
-    <description></description>
+    <name>H264_PIC_HDR</name>
+    <displayName>H264_PIC_HDR</displayName>
+    <description>H264 Picture header</description>
     <addressOffset>0x204</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_SLICE_HDR</name>
-    <displayName>VE_H264_SLICE_HDR</displayName>
-    <description></description>
+    <name>H264_SLICE_HDR</name>
+    <displayName>H264_SLICE_HDR</displayName>
+    <description>H264 Slice header</description>
     <addressOffset>0x208</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_SLICE_HDR2</name>
-    <displayName>VE_H264_SLICE_HDR2</displayName>
-    <description></description>
+    <name>H264_SLICE_HDR2</name>
+    <displayName>H264_SLICE_HDR2</displayName>
+    <description>H264 Slice header</description>
     <addressOffset>0x20C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_PRED_WEIGHT</name>
-    <displayName>VE_H264_PRED_WEIGHT</displayName>
-    <description></description>
+    <name>H264_PRED_WEIGHT</name>
+    <displayName>H264_PRED_WEIGHT</displayName>
+    <description>H264 weighted prediction parameters</description>
     <addressOffset>0x210</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_QP_PARAM</name>
-    <displayName>VE_H264_QP_PARAM</displayName>
-    <description></description>
+    <name>H264_VP8_HDR</name>
+    <displayName>H264_VP8_HDR</displayName>
+    <description>H264 VP8 Picture header</description>
+    <addressOffset>0x214</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_QINDEX</name>
+    <displayName>H264_QINDEX</displayName>
+    <description>H264 Quantizer settings (VP8)</description>
+    <addressOffset>0x218</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_VP8_PART_OFFSET_H264_QP</name>
+    <displayName>H264_VP8_PART_OFFSET_H264_QP</displayName>
+    <description>H264 QP parameters (VP8 partition offset)</description>
     <addressOffset>0x21C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_CTRL</name>
-    <displayName>VE_H264_CTRL</displayName>
-    <description></description>
+    <name>H264_CTRL</name>
+    <displayName>H264_CTRL</displayName>
+    <description>H264 Control Register</description>
     <addressOffset>0x220</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_TRIGGER</name>
-    <displayName>VE_H264_TRIGGER</displayName>
-    <description></description>
+    <name>H264_TRIG</name>
+    <displayName>H264_TRIG</displayName>
+    <description>H264 Trigger Register</description>
     <addressOffset>0x224</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_STATUS</name>
-    <displayName>VE_H264_STATUS</displayName>
-    <description></description>
+    <name>H264_STATUS</name>
+    <displayName>H264_STATUS</displayName>
+    <description>H264 Status Register</description>
     <addressOffset>0x228</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_CUR_MB_NUM</name>
-    <displayName>VE_H264_CUR_MB_NUM</displayName>
-    <description></description>
+    <name>H264_CUR_MBNUM</name>
+    <displayName>H264_CUR_MBNUM</displayName>
+    <description>H264 current Macroblock</description>
     <addressOffset>0x22C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_VLD_ADDR</name>
-    <displayName>VE_H264_VLD_ADDR</displayName>
-    <description></description>
+    <name>H264_VLD_ADDR</name>
+    <displayName>H264_VLD_ADDR</displayName>
+    <description>H264 Variable Length Decoder Address</description>
     <addressOffset>0x230</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_VLD_OFFSET</name>
-    <displayName>VE_H264_VLD_OFFSET</displayName>
-    <description></description>
+    <name>H264_VLD_OFFSET</name>
+    <displayName>H264_VLD_OFFSET</displayName>
+    <description>H264 Variable Length Decoder Bit Offset</description>
     <addressOffset>0x234</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_VLD_LEN</name>
-    <displayName>VE_H264_VLD_LEN</displayName>
-    <description></description>
+    <name>H264_VLD_LEN</name>
+    <displayName>H264_VLD_LEN</displayName>
+    <description>H264 Variable Length Decoder Bit Length</description>
     <addressOffset>0x238</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_VLD_END</name>
-    <displayName>VE_H264_VLD_END</displayName>
-    <description></description>
+    <name>H264_VLD_END</name>
+    <displayName>H264_VLD_END</displayName>
+    <description>H264 Variable Length Decoder End Address</description>
     <addressOffset>0x23C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_SDROT_CTRL</name>
-    <displayName>VE_H264_SDROT_CTRL</displayName>
-    <description></description>
+    <name>H264_SDROT_CTRL</name>
+    <displayName>H264_SDROT_CTRL</displayName>
+    <description>H264 Scale Rotate buffer control</description>
     <addressOffset>0x240</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_OUTPUT_FRAME_IDX</name>
-    <displayName>VE_H264_OUTPUT_FRAME_IDX</displayName>
-    <description></description>
+    <name>H264_SDROT_LUMA</name>
+    <displayName>H264_SDROT_LUMA</displayName>
+    <description>H264 Scale Rotate buffer Luma color component</description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_SDROT_CHROMA</name>
+    <displayName>H264_SDROT_CHROMA</displayName>
+    <description>H264 Scale Rotate buffer Chroma color component</description>
+    <addressOffset>0x248</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_OUTPUT_FRAME_INDEX</name>
+    <displayName>H264_OUTPUT_FRAME_INDEX</displayName>
+    <description>H264 output frame index in dpb</description>
     <addressOffset>0x24C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_EXTRA_BUFFER1</name>
-    <displayName>VE_H264_EXTRA_BUFFER1</displayName>
-    <description></description>
+    <name>H264_FIELD_INTRA_INFO_BUF_H264_VP8_ENTROPY_PROBS</name>
+    <displayName>H264_FIELD_INTRA_INFO_BUF_H264_VP8_ENTROPY_PROBS</displayName>
+    <description>H264 field intra info buffer address (VP8 entropy brobabilities table address)</description>
     <addressOffset>0x250</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_EXTRA_BUFFER2</name>
-    <displayName>VE_H264_EXTRA_BUFFER2</displayName>
-    <description></description>
+    <name>H264_NEIGHBOR_INFO_BUF_H264_VP8_FSTDATA_PARTLEN</name>
+    <displayName>H264_NEIGHBOR_INFO_BUF_H264_VP8_FSTDATA_PARTLEN</displayName>
+    <description>H264 neighbor info buffer address (VP8 First partition length)</description>
     <addressOffset>0x254</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_BASIC_BITS</name>
-    <displayName>VE_H264_BASIC_BITS</displayName>
-    <description></description>
+    <name>H264_PIC_MBSIZE</name>
+    <displayName>H264_PIC_MBSIZE</displayName>
+    <description>H264 Picture size in macroblocks</description>
+    <addressOffset>0x258</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_PIC_BOUNDARYSIZE</name>
+    <displayName>H264_PIC_BOUNDARYSIZE</displayName>
+    <description>H264 Picture size in pixels</description>
+    <addressOffset>0x25C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_ADDR</name>
+    <displayName>H264_MB_ADDR</displayName>
+    <description>H264 Current macroblock position</description>
+    <addressOffset>0x260</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB1</name>
+    <displayName>H264_MB_NB1</displayName>
+    <description>H264 ??? MbNeightbour1</description>
+    <addressOffset>0x264</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB2</name>
+    <displayName>H264_MB_NB2</displayName>
+    <description>H264 MbNeightbour2</description>
+    <addressOffset>0x268</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB3</name>
+    <displayName>H264_MB_NB3</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x26C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB4</name>
+    <displayName>H264_MB_NB4</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x270</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB5</name>
+    <displayName>H264_MB_NB5</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x274</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB6</name>
+    <displayName>H264_MB_NB6</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x278</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB7</name>
+    <displayName>H264_MB_NB7</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x27C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_NB8</name>
+    <displayName>H264_MB_NB8</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x280</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x0284</name>
+    <displayName>H264_0x0284</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x284</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x0288</name>
+    <displayName>H264_0x0288</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x288</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x028c</name>
+    <displayName>H264_0x028c</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x28C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MB_QP</name>
+    <displayName>H264_MB_QP</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x290</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x0294</name>
+    <displayName>H264_0x0294</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x294</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x0298</name>
+    <displayName>H264_0x0298</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x298</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x029c</name>
+    <displayName>H264_0x029c</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x29C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02a0</name>
+    <displayName>H264_0x02a0</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02a4</name>
+    <displayName>H264_0x02a4</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02a8</name>
+    <displayName>H264_0x02a8</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_REC_LUMA</name>
+    <displayName>H264_REC_LUMA</displayName>
+    <description>H264 Luma reconstruct buffer</description>
+    <addressOffset>0x2AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_FWD_LUMA</name>
+    <displayName>H264_FWD_LUMA</displayName>
+    <description>H264 Luma forward buffer</description>
+    <addressOffset>0x2B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_BACK_LUMA</name>
+    <displayName>H264_BACK_LUMA</displayName>
+    <description>H264 Luma back buffer</description>
+    <addressOffset>0x2B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_ERROR</name>
+    <displayName>H264_ERROR</displayName>
+    <description>H264 Error</description>
+    <addressOffset>0x2B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02bc</name>
+    <displayName>H264_0x02bc</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02c0</name>
+    <displayName>H264_0x02c0</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02c4</name>
+    <displayName>H264_0x02c4</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02c8</name>
+    <displayName>H264_0x02c8</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_0x02cc</name>
+    <displayName>H264_0x02cc</displayName>
+    <description>H264 ???</description>
+    <addressOffset>0x2CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_REC_CHROMA</name>
+    <displayName>H264_REC_CHROMA</displayName>
+    <description>H264 Chroma reconstruct buffer</description>
+    <addressOffset>0x2D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_FWD_CHROMA</name>
+    <displayName>H264_FWD_CHROMA</displayName>
+    <description>H264 Chroma forward buffer</description>
+    <addressOffset>0x2D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_BACK_CHROMA</name>
+    <displayName>H264_BACK_CHROMA</displayName>
+    <description>H264 Chroma back buffer</description>
+    <addressOffset>0x2D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_BASIC_BITS_DATA</name>
+    <displayName>H264_BASIC_BITS_DATA</displayName>
+    <description>H264 Basic bits data</description>
     <addressOffset>0x2DC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_RAM_WRITE_PTR</name>
-    <displayName>VE_H264_RAM_WRITE_PTR</displayName>
-    <description></description>
+    <name>H264_RAM_WRITE_PTR</name>
+    <displayName>H264_RAM_WRITE_PTR</displayName>
+    <description>H264 ram write pointer</description>
     <addressOffset>0x2E0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_H264_RAM_WRITE_DATA</name>
-    <displayName>VE_H264_RAM_WRITE_DATA</displayName>
-    <description></description>
+    <name>H264_RAM_WRITE_DATA</name>
+    <displayName>H264_RAM_WRITE_DATA</displayName>
+    <description>H264 ram write data</description>
     <addressOffset>0x2E4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_SRAM_H264_FRAMEBUFFER_LIST</name>
-    <displayName>VE_SRAM_H264_FRAMEBUFFER_LIST</displayName>
-    <description></description>
+    <name>H264_ALT_LUMA</name>
+    <displayName>H264_ALT_LUMA</displayName>
+    <description>H264 Alternate Luma buffer</description>
+    <addressOffset>0x2E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_ALT_CHROMA</name>
+    <displayName>H264_ALT_CHROMA</displayName>
+    <description>H264 Alternate Chroma buffer</description>
+    <addressOffset>0x2EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_SEG_MB_LV0</name>
+    <displayName>H264_SEG_MB_LV0</displayName>
+    <description>H264 ??? Segment Mb Level 0</description>
+    <addressOffset>0x2F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_SEG_MB_LV1</name>
+    <displayName>H264_SEG_MB_LV1</displayName>
+    <description>H264 ??? Segment Mb Level 1</description>
+    <addressOffset>0x2F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_REF_LF_DELTA</name>
+    <displayName>H264_REF_LF_DELTA</displayName>
+    <description>H264 ??? (VP8 ref lf deltas)</description>
+    <addressOffset>0x2F8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>H264_MODE_LF_DELTA</name>
+    <displayName>H264_MODE_LF_DELTA</displayName>
+    <description>H264 ??? (VP8 mode lf deltas)</description>
+    <addressOffset>0x2FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_EPHS</name>
+    <displayName>VC1_EPHS</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_PIC_CTRL</name>
+    <displayName>VC1_PIC_CTRL</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x304</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_PIC_QP</name>
+    <displayName>VC1_PIC_QP</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x308</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_PIC_MV</name>
+    <displayName>VC1_PIC_MV</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x30C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_PIC_INTEN_COMP</name>
+    <displayName>VC1_PIC_INTEN_COMP</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x310</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_PIC_INTERLANCE</name>
+    <displayName>VC1_PIC_INTERLANCE</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x314</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_HDR_LEN</name>
+    <displayName>VC1_HDR_LEN</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x318</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_FSIZE</name>
+    <displayName>VC1_FSIZE</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x31C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_PIC_SIZE</name>
+    <displayName>VC1_PIC_SIZE</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x320</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_CTRL</name>
+    <displayName>VC1_CTRL</displayName>
+    <description>VC1 Decoder Control</description>
+    <addressOffset>0x324</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_START_TYPE</name>
+    <displayName>VC1_START_TYPE</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x328</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_STATUS</name>
+    <displayName>VC1_STATUS</displayName>
+    <description>VC1 Status</description>
+    <addressOffset>0x32C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_VBV_BASE_ADDR</name>
+    <displayName>VC1_VBV_BASE_ADDR</displayName>
+    <description>VC1 Source buffer address</description>
+    <addressOffset>0x330</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_VLD_OFFSET</name>
+    <displayName>VC1_VLD_OFFSET</displayName>
+    <description>VC1 Variable Length Decoder Offset</description>
+    <addressOffset>0x334</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_VBV_LEN</name>
+    <displayName>VC1_VBV_LEN</displayName>
+    <description>VC1 length of source video buffer</description>
+    <addressOffset>0x338</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_VBV_END_ADDR</name>
+    <displayName>VC1_VBV_END_ADDR</displayName>
+    <description>VC1 last address of source video buffer</description>
+    <addressOffset>0x33C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_REC_FRAME_CHROMA</name>
+    <displayName>VC1_REC_FRAME_CHROMA</displayName>
+    <description>VC1 Chroma Reconstruct frame</description>
+    <addressOffset>0x340</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_REC_FRAME_LUMA</name>
+    <displayName>VC1_REC_FRAME_LUMA</displayName>
+    <description>VC1 Luma Reconstruct frame</description>
+    <addressOffset>0x344</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_FWD_FRAME_CHROMA</name>
+    <displayName>VC1_FWD_FRAME_CHROMA</displayName>
+    <description>VC1 Chroma Forward Frame</description>
+    <addressOffset>0x348</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_FWD_FRAME_LUMA</name>
+    <displayName>VC1_FWD_FRAME_LUMA</displayName>
+    <description>VC1 Luma Forward Frame</description>
+    <addressOffset>0x34C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_BACK_CHROMA</name>
+    <displayName>VC1_BACK_CHROMA</displayName>
+    <description>VC1 Chroma back buffer</description>
+    <addressOffset>0x350</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_BACK_LUMA</name>
+    <displayName>VC1_BACK_LUMA</displayName>
+    <description>VC1 Luma back buffer</description>
+    <addressOffset>0x354</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBHADDR</name>
+    <displayName>VC1_MBHADDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x358</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_DCAPRED_ADDR</name>
+    <displayName>VC1_DCAPRED_ADDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x35C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_BITPLANE_ADDR</name>
+    <displayName>VC1_BITPLANE_ADDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x360</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBINFO_ADDR</name>
+    <displayName>VC1_MBINFO_ADDR</displayName>
+    <description>VC1 ???(or COLMVINFOADDR)</description>
+    <addressOffset>0x364</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x0368</name>
+    <displayName>VC1_0x0368</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x368</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x036c</name>
+    <displayName>VC1_0x036c</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x36C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBA</name>
+    <displayName>VC1_MBA</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x370</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBHDR</name>
+    <displayName>VC1_MBHDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x374</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_LUMA_TRANSFORM</name>
+    <displayName>VC1_LUMA_TRANSFORM</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x378</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBCBF</name>
+    <displayName>VC1_MBCBF</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x37C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V1</name>
+    <displayName>VC1_MBM_V1</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x380</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V2</name>
+    <displayName>VC1_MBM_V2</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x384</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V3</name>
+    <displayName>VC1_MBM_V3</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x388</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V4</name>
+    <displayName>VC1_MBM_V4</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x38C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V5</name>
+    <displayName>VC1_MBM_V5</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x390</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V6</name>
+    <displayName>VC1_MBM_V6</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x394</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V7</name>
+    <displayName>VC1_MBM_V7</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x398</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_MBM_V8</name>
+    <displayName>VC1_MBM_V8</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x39C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03a0</name>
+    <displayName>VC1_0x03a0</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03a4</name>
+    <displayName>VC1_0x03a4</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03a8</name>
+    <displayName>VC1_0x03a8</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03ac</name>
+    <displayName>VC1_0x03ac</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03b0</name>
+    <displayName>VC1_0x03b0</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03b4</name>
+    <displayName>VC1_0x03b4</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_ERROR</name>
+    <displayName>VC1_ERROR</displayName>
+    <description>VC1 Error result code</description>
+    <addressOffset>0x3B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_CRT_MB_NUM</name>
+    <displayName>VC1_CRT_MB_NUM</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_EXTRA_CTRL</name>
+    <displayName>VC1_EXTRA_CTRL</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_EXTRA_CBUF_ADDR</name>
+    <displayName>VC1_EXTRA_CBUF_ADDR</displayName>
+    <description>VC1 EXTRA Chroma DRAM address</description>
+    <addressOffset>0x3C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_EXTRA_YBUF_ADDR</name>
+    <displayName>VC1_EXTRA_YBUF_ADDR</displayName>
+    <description>VC1 EXTRA Luma DRAM address</description>
+    <addressOffset>0x3C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_OVERLAP_UP_ADDR</name>
+    <displayName>VC1_OVERLAP_UP_ADDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_DBLK_ABOVE_ADDR</name>
+    <displayName>VC1_DBLK_ABOVE_ADDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_0x03d8</name>
+    <displayName>VC1_0x03d8</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_BITS_RETDATA</name>
+    <displayName>VC1_BITS_RETDATA</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VC1_DEBUG_BUF_ADDR</name>
+    <displayName>VC1_DEBUG_BUF_ADDR</displayName>
+    <description>VC1 ???</description>
+    <addressOffset>0x3FC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SLC_HDR</name>
+    <displayName>RMVB_SLC_HDR</displayName>
+    <description>Header</description>
     <addressOffset>0x400</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_SRAM_H264_REF_LIST0</name>
-    <displayName>VE_SRAM_H264_REF_LIST0</displayName>
-    <description></description>
-    <addressOffset>0x640</addressOffset>
+    <name>RMVB_FRM_SIZE</name>
+    <displayName>RMVB_FRM_SIZE</displayName>
+    <description>Framesize (in macroblocks ?)</description>
+    <addressOffset>0x404</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_SRAM_H264_REF_LIST1</name>
-    <displayName>VE_SRAM_H264_REF_LIST1</displayName>
+    <name>RMVB_DIR_MODE_RATIO</name>
+    <displayName>RMVB_DIR_MODE_RATIO</displayName>
     <description></description>
-    <addressOffset>0x664</addressOffset>
+    <addressOffset>0x408</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_SRAM_H264_SCALING_LISTS</name>
-    <displayName>VE_SRAM_H264_SCALING_LISTS</displayName>
+    <name>RMVB_DIR_MB_ADDR</name>
+    <displayName>RMVB_DIR_MB_ADDR</displayName>
     <description></description>
-    <addressOffset>0x800</addressOffset>
+    <addressOffset>0x40C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_ISP_PIC_SIZE</name>
-    <displayName>VE_ISP_PIC_SIZE</displayName>
+    <name>RMVB_QC_INPUT</name>
+    <displayName>RMVB_QC_INPUT</displayName>
     <description></description>
+    <addressOffset>0x410</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_CTRL</name>
+    <displayName>RMVB_CTRL</displayName>
+    <description>RMVB IRQ Control</description>
+    <addressOffset>0x414</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_TRIG</name>
+    <displayName>RMVB_TRIG</displayName>
+    <description>Trigger register</description>
+    <addressOffset>0x418</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_STATUS</name>
+    <displayName>RMVB_STATUS</displayName>
+    <description>RMVB Status</description>
+    <addressOffset>0x41C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_VBV_BASE</name>
+    <displayName>RMVB_VBV_BASE</displayName>
+    <description>Video source buffer base</description>
+    <addressOffset>0x428</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_VLD_OFFSET</name>
+    <displayName>RMVB_VLD_OFFSET</displayName>
+    <description>Video source buffer DRAM address</description>
+    <addressOffset>0x42C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_VLD_LEN</name>
+    <displayName>RMVB_VLD_LEN</displayName>
+    <description>Video source buffer length in bytes</description>
+    <addressOffset>0x430</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_VBV_END</name>
+    <displayName>RMVB_VBV_END</displayName>
+    <description>Video source buffer last DRAM address</description>
+    <addressOffset>0x434</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_HUFF_TABLE_ADDR</name>
+    <displayName>RMVB_HUFF_TABLE_ADDR</displayName>
+    <description>Huffman table DRAM address</description>
+    <addressOffset>0x43C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_CUR_Y_ADDR</name>
+    <displayName>RMVB_CUR_Y_ADDR</displayName>
+    <description>Luma Current buffer DRAM address</description>
+    <addressOffset>0x440</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_CUR_C_ADDR</name>
+    <displayName>RMVB_CUR_C_ADDR</displayName>
+    <description>Chroma Current buffer DRAM address</description>
+    <addressOffset>0x444</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_FOR_Y_ADDR</name>
+    <displayName>RMVB_FOR_Y_ADDR</displayName>
+    <description>Luma Forward buffer DRAM address</description>
+    <addressOffset>0x448</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_FOR_C_ADDR</name>
+    <displayName>RMVB_FOR_C_ADDR</displayName>
+    <description>Chroma Forward buffer DRAM address</description>
+    <addressOffset>0x44C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_BAC_Y_ADDR</name>
+    <displayName>RMVB_BAC_Y_ADDR</displayName>
+    <description>Luma Back buffer DRAM address</description>
+    <addressOffset>0x450</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_BAC_C_ADDR</name>
+    <displayName>RMVB_BAC_C_ADDR</displayName>
+    <description>Chroma Back buffer DRAM address</description>
+    <addressOffset>0x454</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_ROT_Y_ADDR</name>
+    <displayName>RMVB_ROT_Y_ADDR</displayName>
+    <description>Luma Rot buffer DRAM address</description>
+    <addressOffset>0x458</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_ROT_C_ADDR</name>
+    <displayName>RMVB_ROT_C_ADDR</displayName>
+    <description>Chroma Rot Buffer DRAM address</description>
+    <addressOffset>0x45C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MBH_ADDR</name>
+    <displayName>RMVB_MBH_ADDR</displayName>
+    <description></description>
+    <addressOffset>0x460</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MV_ADDR</name>
+    <displayName>RMVB_MV_ADDR</displayName>
+    <description></description>
+    <addressOffset>0x464</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MBH_INFO</name>
+    <displayName>RMVB_MBH_INFO</displayName>
+    <description></description>
+    <addressOffset>0x470</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MV0</name>
+    <displayName>RMVB_MV0</displayName>
+    <description>Mountion vector 0</description>
+    <addressOffset>0x474</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MV1</name>
+    <displayName>RMVB_MV1</displayName>
+    <description>Mountion vector 1</description>
+    <addressOffset>0x478</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MV2</name>
+    <displayName>RMVB_MV2</displayName>
+    <description>Mountion vector 2</description>
+    <addressOffset>0x47C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_MV3</name>
+    <displayName>RMVB_MV3</displayName>
+    <description>Mountion vector 3</description>
+    <addressOffset>0x480</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_DBLK_COEF</name>
+    <displayName>RMVB_DBLK_COEF</displayName>
+    <description></description>
+    <addressOffset>0x490</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_ERROR</name>
+    <displayName>RMVB_ERROR</displayName>
+    <description>Decode error result code</description>
+    <addressOffset>0x4B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_BITS_DATA</name>
+    <displayName>RMVB_BITS_DATA</displayName>
+    <description></description>
+    <addressOffset>0x4B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SLC_QUEUE_ADDR</name>
+    <displayName>RMVB_SLC_QUEUE_ADDR</displayName>
+    <description></description>
+    <addressOffset>0x4C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SLC_QUEUE_LEN</name>
+    <displayName>RMVB_SLC_QUEUE_LEN</displayName>
+    <description></description>
+    <addressOffset>0x4C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SLC_QUEUE_TRIG</name>
+    <displayName>RMVB_SLC_QUEUE_TRIG</displayName>
+    <description></description>
+    <addressOffset>0x4C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SLC_QUEUE_STATUS</name>
+    <displayName>RMVB_SLC_QUEUE_STATUS</displayName>
+    <description></description>
+    <addressOffset>0x4CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SCALE_ROT_CTRL</name>
+    <displayName>RMVB_SCALE_ROT_CTRL</displayName>
+    <description></description>
+    <addressOffset>0x4D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SRAM_RW_OFFSET</name>
+    <displayName>RMVB_SRAM_RW_OFFSET</displayName>
+    <description>SRAM Fifo like index register</description>
+    <addressOffset>0x4E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RMVB_SRAM_RW_DATA</name>
+    <displayName>RMVB_SRAM_RW_DATA</displayName>
+    <description>SRAM Fifo like data register</description>
+    <addressOffset>0x4E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_NAL_HDR</name>
+    <displayName>HEVC_NAL_HDR</displayName>
+    <description>HEVC NAL header</description>
+    <addressOffset>0x500</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SPS</name>
+    <displayName>HEVC_SPS</displayName>
+    <description>HEVC sequence parameter set</description>
+    <addressOffset>0x504</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_PIC_SIZE</name>
+    <displayName>HEVC_PIC_SIZE</displayName>
+    <description>HEVC picture size</description>
+    <addressOffset>0x508</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_PCM_HDR</name>
+    <displayName>HEVC_PCM_HDR</displayName>
+    <description>HEVC PCM header</description>
+    <addressOffset>0x50C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_PPS0</name>
+    <displayName>HEVC_PPS0</displayName>
+    <description>HEVC picture parameter set</description>
+    <addressOffset>0x510</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_PPS1</name>
+    <displayName>HEVC_PPS1</displayName>
+    <description>HEVC picture parameter set</description>
+    <addressOffset>0x514</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SCALING_LIST_CTRL</name>
+    <displayName>HEVC_SCALING_LIST_CTRL</displayName>
+    <description>HEVC scaling list control register</description>
+    <addressOffset>0x518</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SLICE_HDR0</name>
+    <displayName>HEVC_SLICE_HDR0</displayName>
+    <description>HEVC slice header</description>
+    <addressOffset>0x520</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SLICE_HDR1</name>
+    <displayName>HEVC_SLICE_HDR1</displayName>
+    <description>HEVC slice header</description>
+    <addressOffset>0x524</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SLICE_HDR2</name>
+    <displayName>HEVC_SLICE_HDR2</displayName>
+    <description>HEVC slice header</description>
+    <addressOffset>0x528</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_CTB_ADDR</name>
+    <displayName>HEVC_CTB_ADDR</displayName>
+    <description>HEVC CTB address</description>
+    <addressOffset>0x52C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_CTRL</name>
+    <displayName>HEVC_CTRL</displayName>
+    <description>HEVC control register</description>
+    <addressOffset>0x530</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_TRIG</name>
+    <displayName>HEVC_TRIG</displayName>
+    <description>HEVC trigger register</description>
+    <addressOffset>0x534</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_STATUS</name>
+    <displayName>HEVC_STATUS</displayName>
+    <description>HEVC status register</description>
+    <addressOffset>0x538</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_CTU_NUM</name>
+    <displayName>HEVC_CTU_NUM</displayName>
+    <description>HEVC current CTU number</description>
+    <addressOffset>0x53C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_BITS_ADDR</name>
+    <displayName>HEVC_BITS_ADDR</displayName>
+    <description>HEVC bitstream address</description>
+    <addressOffset>0x540</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_BITS_OFFSET</name>
+    <displayName>HEVC_BITS_OFFSET</displayName>
+    <description>HEVC bitstream offset</description>
+    <addressOffset>0x544</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_BITS_LEN</name>
+    <displayName>HEVC_BITS_LEN</displayName>
+    <description>HEVC bitstream length</description>
+    <addressOffset>0x548</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_BITS_END_ADDR</name>
+    <displayName>HEVC_BITS_END_ADDR</displayName>
+    <description>HEVC bitstream end address</description>
+    <addressOffset>0x54C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_EXTRA_OUT_CTRL</name>
+    <displayName>HEVC_EXTRA_OUT_CTRL</displayName>
+    <description>HEVC extra output control register</description>
+    <addressOffset>0x550</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_EXTRA_OUT_LUMA_ADDR</name>
+    <displayName>HEVC_EXTRA_OUT_LUMA_ADDR</displayName>
+    <description>HEVC extra output luma address</description>
+    <addressOffset>0x554</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_EXTRA_OUT_CHROMA_ADDR</name>
+    <displayName>HEVC_EXTRA_OUT_CHROMA_ADDR</displayName>
+    <description>HEVC extra output chroma address</description>
+    <addressOffset>0x558</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_REC_BUF_IDX</name>
+    <displayName>HEVC_REC_BUF_IDX</displayName>
+    <description>HEVC reconstruct buffer index</description>
+    <addressOffset>0x55C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_NEIGHBOR_INFO_ADDR</name>
+    <displayName>HEVC_NEIGHBOR_INFO_ADDR</displayName>
+    <description>HEVC neighbor info buffer address</description>
+    <addressOffset>0x560</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_TILE_LIST_ADDR</name>
+    <displayName>HEVC_TILE_LIST_ADDR</displayName>
+    <description>HEVC tile entry point list address</description>
+    <addressOffset>0x564</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_TILE_START_CTB</name>
+    <displayName>HEVC_TILE_START_CTB</displayName>
+    <description>HEVC tile start CTB</description>
+    <addressOffset>0x568</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_TILE_END_CTB</name>
+    <displayName>HEVC_TILE_END_CTB</displayName>
+    <description>HEVC tile end CTB</description>
+    <addressOffset>0x56C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SCALING_LIST_DC_COEF0</name>
+    <displayName>HEVC_SCALING_LIST_DC_COEF0</displayName>
+    <description>HEVC scaling list DC coefficients</description>
+    <addressOffset>0x578</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SCALING_LIST_DC_COEF1</name>
+    <displayName>HEVC_SCALING_LIST_DC_COEF1</displayName>
+    <description>HEVC scaling list DC coefficients</description>
+    <addressOffset>0x57C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_BITS_DATA</name>
+    <displayName>HEVC_BITS_DATA</displayName>
+    <description>HEVC bitstream data</description>
+    <addressOffset>0x5DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SRAM_ADDR</name>
+    <displayName>HEVC_SRAM_ADDR</displayName>
+    <description>HEVC SRAM address</description>
+    <addressOffset>0x5E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HEVC_SRAM_DATA</name>
+    <displayName>HEVC_SRAM_DATA</displayName>
+    <description>HEVC SRAM data</description>
+    <addressOffset>0x5E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_PIC_SIZE</name>
+    <displayName>ISP_PIC_SIZE</displayName>
+    <description>ISP source picture size in macroblocks (16x16)</description>
     <addressOffset>0xA00</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_ISP_PIC_STRIDE</name>
-    <displayName>VE_ISP_PIC_STRIDE</displayName>
-    <description></description>
+    <name>ISP_PIC_STRIDE</name>
+    <displayName>ISP_PIC_STRIDE</displayName>
+    <description>ISP source picture stride</description>
     <addressOffset>0xA04</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_ISP_CTRL</name>
-    <displayName>VE_ISP_CTRL</displayName>
-    <description></description>
+    <name>ISP_CTRL</name>
+    <displayName>ISP_CTRL</displayName>
+    <description>ISP IRQ Control</description>
     <addressOffset>0xA08</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_ISP_PIC_LUMA</name>
-    <displayName>VE_ISP_PIC_LUMA</displayName>
-    <description></description>
+    <name>ISP_TRIG</name>
+    <displayName>ISP_TRIG</displayName>
+    <description>ISP Trigger</description>
+    <addressOffset>0xA0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_SCALER_SIZE</name>
+    <displayName>ISP_SCALER_SIZE</displayName>
+    <description>ISP scaler frame size/16</description>
+    <addressOffset>0xA2C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_SCALER_OFFSET_Y</name>
+    <displayName>ISP_SCALER_OFFSET_Y</displayName>
+    <description>ISP scaler picture offset for luma</description>
+    <addressOffset>0xA30</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_SCALER_OFFSET_C</name>
+    <displayName>ISP_SCALER_OFFSET_C</displayName>
+    <description>ISP scaler picture offset for chroma</description>
+    <addressOffset>0xA34</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_SCALER_FACTOR</name>
+    <displayName>ISP_SCALER_FACTOR</displayName>
+    <description>ISP scaler picture scale factor</description>
+    <addressOffset>0xA38</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_BUF_0x0a44</name>
+    <displayName>ISP_BUF_0x0a44</displayName>
+    <description>ISP PHY Buffer offset</description>
+    <addressOffset>0xA44</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_BUF_0x0a48</name>
+    <displayName>ISP_BUF_0x0a48</displayName>
+    <description>ISP PHY Buffer offset</description>
+    <addressOffset>0xA48</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_BUF_0x0a4C</name>
+    <displayName>ISP_BUF_0x0a4C</displayName>
+    <description>ISP PHY Buffer offset</description>
+    <addressOffset>0xA4C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_OUTPUT_LUMA</name>
+    <displayName>ISP_OUTPUT_LUMA</displayName>
+    <description>ISP Output LUMA Address</description>
+    <addressOffset>0xA70</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_OUTPUT_CHROMA</name>
+    <displayName>ISP_OUTPUT_CHROMA</displayName>
+    <description>ISP Output CHROMA Address</description>
+    <addressOffset>0xA74</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_WB_THUMB_LUMA</name>
+    <displayName>ISP_WB_THUMB_LUMA</displayName>
+    <description>ISP THUMB WriteBack PHY LUMA Address</description>
     <addressOffset>0xA78</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_ISP_PIC_CHROMA</name>
-    <displayName>VE_ISP_PIC_CHROMA</displayName>
-    <description></description>
+    <name>ISP_WB_THUMB_CHROMA</name>
+    <displayName>ISP_WB_THUMB_CHROMA</displayName>
+    <description>ISP THUMB WriteBack PHY CHROMA Adress</description>
     <addressOffset>0xA7C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_PARAM</name>
-    <displayName>VE_AVC_PARAM</displayName>
-    <description></description>
+    <name>ISP_SRAM_INDEX</name>
+    <displayName>ISP_SRAM_INDEX</displayName>
+    <description>ISP VE SRAM Index</description>
+    <addressOffset>0xAE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ISP_SRAM_DATA</name>
+    <displayName>ISP_SRAM_DATA</displayName>
+    <description>ISP VE SRAM Data</description>
+    <addressOffset>0xAE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_PICINFO</name>
+    <displayName>AVC_PICINFO</displayName>
+    <description>unk(not used in blob)</description>
+    <addressOffset>0xB00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_JPEG_CTRL_MACC_AVC_H264_CTRL</name>
+    <displayName>AVC_JPEG_CTRL_MACC_AVC_H264_CTRL</displayName>
+    <description>jpeg / h264 different settings</description>
     <addressOffset>0xB04</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_QP</name>
-    <displayName>VE_AVC_QP</displayName>
-    <description></description>
+    <name>AVC_H264_QP</name>
+    <displayName>AVC_H264_QP</displayName>
+    <description>H264 quantization parameters</description>
     <addressOffset>0xB08</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_MOTION_EST</name>
-    <displayName>VE_AVC_MOTION_EST</displayName>
-    <description></description>
+    <name>AVC_H264_MOTION_EST</name>
+    <displayName>AVC_H264_MOTION_EST</displayName>
+    <description>Motion estimation parameters</description>
     <addressOffset>0xB10</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_CTRL</name>
-    <displayName>VE_AVC_CTRL</displayName>
-    <description></description>
+    <name>AVC_CTRL</name>
+    <displayName>AVC_CTRL</displayName>
+    <description>AVC Encoder IRQ Control</description>
     <addressOffset>0xB14</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_TRIGGER</name>
-    <displayName>VE_AVC_TRIGGER</displayName>
-    <description></description>
+    <name>AVC_TRIG</name>
+    <displayName>AVC_TRIG</displayName>
+    <description>AVC Encoder trigger</description>
     <addressOffset>0xB18</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_STATUS</name>
-    <displayName>VE_AVC_STATUS</displayName>
-    <description></description>
+    <name>AVC_STATUS</name>
+    <displayName>AVC_STATUS</displayName>
+    <description>AVC Encoder Busy Status</description>
     <addressOffset>0xB1C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_BASIC_BITS</name>
-    <displayName>VE_AVC_BASIC_BITS</displayName>
-    <description></description>
+    <name>AVC_BITS_DATA</name>
+    <displayName>AVC_BITS_DATA</displayName>
+    <description>AVC Encoder Bits Data</description>
     <addressOffset>0xB20</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_VLE_ADDR</name>
-    <displayName>VE_AVC_VLE_ADDR</displayName>
-    <description></description>
+    <name>AVC_H264_MAD</name>
+    <displayName>AVC_H264_MAD</displayName>
+    <description>AVC H264 Encoder Mean Absolute Difference</description>
+    <addressOffset>0xB50</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_H264_RESIDUAL_BITS</name>
+    <displayName>AVC_H264_RESIDUAL_BITS</displayName>
+    <description>AVC H264 Encoder Residual Bits</description>
+    <addressOffset>0xB54</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_H264_HEADER_BITS</name>
+    <displayName>AVC_H264_HEADER_BITS</displayName>
+    <description>AVC H264 Encoder Header Bits</description>
+    <addressOffset>0xB58</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_H264_0x0b5c</name>
+    <displayName>AVC_H264_0x0b5c</displayName>
+    <description>AVC H264 Encoder unknown statistical data, maybe motion vectors</description>
+    <addressOffset>0xB5C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_H264_0x0b60</name>
+    <displayName>AVC_H264_0x0b60</displayName>
+    <description>AVC H264 Encoder unknown buffer</description>
+    <addressOffset>0xB60</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVC_VLE_ADDR</name>
+    <displayName>AVC_VLE_ADDR</displayName>
+    <description>AVC Variable Length Encoder Start Address</description>
     <addressOffset>0xB80</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_VLE_END</name>
-    <displayName>VE_AVC_VLE_END</displayName>
-    <description></description>
+    <name>AVC_VLE_END</name>
+    <displayName>AVC_VLE_END</displayName>
+    <description>AVC Variable Length Encoder End Address</description>
     <addressOffset>0xB84</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_VLE_OFFSET</name>
-    <displayName>VE_AVC_VLE_OFFSET</displayName>
-    <description></description>
+    <name>AVC_VLE_OFFSET</name>
+    <displayName>AVC_VLE_OFFSET</displayName>
+    <description>AVC Variable Length Encoder Bit Offset</description>
     <addressOffset>0xB88</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_VLE_MAX</name>
-    <displayName>VE_AVC_VLE_MAX</displayName>
-    <description></description>
+    <name>AVC_VLE_MAX</name>
+    <displayName>AVC_VLE_MAX</displayName>
+    <description>AVC Variable Length Encoder Maximum Bits</description>
     <addressOffset>0xB8C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_VLE_LENGTH</name>
-    <displayName>VE_AVC_VLE_LENGTH</displayName>
-    <description></description>
+    <name>AVC_VLE_LENGTH</name>
+    <displayName>AVC_VLE_LENGTH</displayName>
+    <description>AVC Variable Length Encoder Bit Length</description>
     <addressOffset>0xB90</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_REF_LUMA</name>
-    <displayName>VE_AVC_REF_LUMA</displayName>
-    <description></description>
+    <name>AVC_REF_LUMA</name>
+    <displayName>AVC_REF_LUMA</displayName>
+    <description>Luma reference buffer</description>
     <addressOffset>0xBA0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_REF_CHROMA</name>
-    <displayName>VE_AVC_REF_CHROMA</displayName>
-    <description></description>
+    <name>AVC_REF_CHROMA</name>
+    <displayName>AVC_REF_CHROMA</displayName>
+    <description>Chroma reference buffer</description>
     <addressOffset>0xBA4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_REC_LUMA</name>
-    <displayName>VE_AVC_REC_LUMA</displayName>
-    <description></description>
+    <name>AVC_REC_LUMA</name>
+    <displayName>AVC_REC_LUMA</displayName>
+    <description>Luma reconstruct buffer</description>
     <addressOffset>0xBB0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_REC_CHROMA</name>
-    <displayName>VE_AVC_REC_CHROMA</displayName>
-    <description></description>
+    <name>AVC_REC_CHROMA</name>
+    <displayName>AVC_REC_CHROMA</displayName>
+    <description>Chroma reconstruct buffer</description>
     <addressOffset>0xBB4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_REF_SLUMA</name>
-    <displayName>VE_AVC_REF_SLUMA</displayName>
-    <description></description>
+    <name>AVC_REF_SLUMA</name>
+    <displayName>AVC_REF_SLUMA</displayName>
+    <description>Smaller luma reference buffer ?</description>
     <addressOffset>0xBB8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_REC_SLUMA</name>
-    <displayName>VE_AVC_REC_SLUMA</displayName>
-    <description></description>
+    <name>AVC_REC_SLUMA</name>
+    <displayName>AVC_REC_SLUMA</displayName>
+    <description>Smaller luma reconstruct buffer ?</description>
     <addressOffset>0xBBC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_MB_INFO</name>
-    <displayName>VE_AVC_MB_INFO</displayName>
-    <description></description>
+    <name>AVC_MB_INFO</name>
+    <displayName>AVC_MB_INFO</displayName>
+    <description>Temporary buffer with macroblock information</description>
     <addressOffset>0xBC0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_SDRAM_INDEX</name>
-    <displayName>VE_AVC_SDRAM_INDEX</displayName>
-    <description></description>
+    <name>AVC_SRAM_INDEX</name>
+    <displayName>AVC_SRAM_INDEX</displayName>
+    <description>AVC VE SRAM Index</description>
     <addressOffset>0xBE0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_AVC_SDRAM_DATA</name>
-    <displayName>VE_AVC_SDRAM_DATA</displayName>
-    <description></description>
+    <name>AVC_SRAM_DATA</name>
+    <displayName>AVC_SRAM_DATA</displayName>
+    <description>AVC VE SRAM Data</description>
     <addressOffset>0xBE4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

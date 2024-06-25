@@ -3,92 +3,376 @@
 #irq; VE 98
 #irqrv; VE 82
 
-# See also https://linux-sunxi.org/VE_Register_guide
-# (sunxi-cedar 1c0e000.ve)
+## (sunxi-cedar 1c0e000.ve)
+## See also https://linux-sunxi.org/VE_Register_guide
 
-#regdef; VE_CTRL; 0x000;
-#regdef; VE_VERSION; 0x0f0;
+## General Registers
 
-#regdef; VE_MPEG_PIC_HDR; 0x100;
-#regdef; VE_MPEG_SIZE; 0x108;
-#regdef; VE_MPEG_FRAME_SIZE; 0x10c;
-#regdef; VE_MPEG_CTRL; 0x114;
-#regdef; VE_MPEG_TRIGGER; 0x118;
-#regdef; VE_MPEG_STATUS; 0x11c;
-#regdef; VE_MPEG_VLD_ADDR; 0x128;
-#regdef; VE_MPEG_VLD_OFFSET; 0x12c;
-#regdef; VE_MPEG_VLD_LEN; 0x130;
-#regdef; VE_MPEG_VLD_END; 0x134;
-#regdef; VE_MPEG_REC_LUMA; 0x148;
-#regdef; VE_MPEG_REC_CHROMA; 0x14c;
-#regdef; VE_MPEG_FWD_LUMA; 0x150;
-#regdef; VE_MPEG_FWD_CHROMA; 0x154;
-#regdef; VE_MPEG_BACK_LUMA; 0x158;
-#regdef; VE_MPEG_BACK_CHROMA; 0x15c;
-#regdef; VE_MPEG_IQ_MIN_INPUT; 0x180;
-#regdef; VE_MPEG_JPEG_SIZE; 0x1b8;
-#regdef; VE_MPEG_JPEG_RES_INT; 0x1c0;
-#regdef; VE_MPEG_ROT_LUMA; 0x1cc;
-#regdef; VE_MPEG_ROT_CHROMA; 0x1d0;
-#regdef; VE_MPEG_SDROT_CTRL; 0x1d4;
-#regdef; VE_MPEG_RAM_WRITE_PTR; 0x1e0;
-#regdef; VE_MPEG_RAM_WRITE_DATA; 0x1e4;
+#regdef; VE_CTRL	; 0x0000 ; Sub-Engine Select and RAM type select
+#regdef; VE_RESET	; 0x0004 ; Sub-Engines Reset
+#regdef; VE_CYCLES_COUNTER	; 0x0008 ; Clock Cycles counter
+#regdef; VE_TIMEOUT	; 0x000c ; VE Timeout value
+#regdef; VE_MMCREQ_WNUM	; 0x0010 ; 
+#regdef; VE_CACHEREG_WNUM	; 0x0014 ; 
+#regdef; VE_STATUS	; 0x001c ; Busy status
+#regdef; VE_RDDATA_COUNTER	; 0x0020 ; DRAM Read counter
+#regdef; VE_WRDATA_COUNTER	; 0x0024 ; DRAM Write counter
+#regdef; VE_ANAGLYPH_CTRL	; 0x0028 ; Anaglyph mode control
+#regdef; VE_MAF_CTRL	; 0x0030 ; Motion adaptive filter config
+#regdef; VE_MAF_CLIP_TH	; 0x0034 ; 
+#regdef; VE_MAFREF1_LUMA_BUF	; 0x0038 ; Reference luma buffer {unsure}
+#regdef; VE_MAFREF1_CHROMA_BUF	; 0x003c ; Reference chroma buffer {unsure}
+#regdef; VE_MAFCUR_ADDR	; 0x0040 ; current maf output address {unsure}
+#regdef; VE_MAFREF1_ADDR	; 0x0044 ; reference maf input address {unsure}
+#regdef; VE_MAFREF2_ADDR	; 0x0048 ; second reference maf input address {unsure}
+#regdef; VE_MAFDIFF_GROUP_MAX	; 0x004c ; 
+#regdef; VE_IPD_DBLK_BUF_CTRL	; 0x0050 ; deblocking and intra prediction dram buffer config register (required for A13+ SoC for H264 decoding or on A10 for video with width >= 2048)
+#regdef; VE_IPD_BUF	; 0x0054 ; Intra prediction buffer (needed on A13+ or (width >= 2048))
+#regdef; VE_DBLK_BUF	; 0x0058 ; Deblocking buffer (needed on A13+ or (width >= 2048))
+#regdef; VE_ARGB_QUEUE_START	; 0x005c ; ARGB command queue
+#regdef; VE_ARGB_BLK_SRC1_ADDR	; 0x0060 ; ARGB source 1 address
+#regdef; VE_ARGB_BLK_SRC2_ADDR	; 0x0064 ; ARGB source 2 addres
+#regdef; VE_ARGB_BLK_DST_ADDR	; 0x0068 ; ARGB destination address
+#regdef; VE_ARGB_SRC_STRIDE	; 0x006c ; ARGB source strides for src1 and src2
+#regdef; VE_ARGB_DST_STRIDE	; 0x0070 ; ARGB destination stride
+#regdef; VE_ARGB_BLK_SIZE	; 0x0074 ; ARGB size
+#regdef; VE_ARGB_BLK_FILL_VALUE	; 0x0078 ; ARGB fill value
+#regdef; VE_ARGB_BLK_CTRL	; 0x007c ; ARGB control
+#regdef; VE_LUMA_HIST_THR	; 0x0080 4; Luma histogram thresholds [0-3]
+#regdef; VE_LUMA_HIST_VAL	; 0x0090 16; Luma histogram output values [0-15]
+##regdef; VE_OUTPUT_CHROMA_OFFSET	; 0x00c4 ; Offset of chroma second chroma plane (since H3?)
+##regdef; VE_OUTPUT_STRIDE	; 0x00c8 ; Output line stride length (since H3?)
+##regdef; VE_EXTRA_OUT_STRIDE	; 0x00cc ; Extra output line stride length (since H3?)
+#regdef; VE_ANGL_R_BUF	; 0x00d0 ; Anaglyph red output buffer
+#regdef; VE_ANGL_G_BUF	; 0x00d4 ; Anaglyph green output buffer
+#regdef; VE_ANGL_B_BUF	; 0x00d8 ; Anaglyph blue output buffer
+#regdef; VE_EXTRA_OUT_FMT_OFFSET	; 0x00e8 ; Extra output format and chroma offset (not available on A10/A13/A20)
+#regdef; VE_OUTPUT_FORMAT	; 0x00ec ; Output formats (since H3?)
+#regdef; VE_VERSION	; 0x00f0 ; IP Version register
+#regdef; VE_DBG_CTRL	; 0x00f8 ; Debug control
+#regdef; VE_DBG_OUTPUT	; 0x00fc ; Debug output
 
-#regdef; VE_H264_FRAME_SIZE; 0x200;
-#regdef; VE_H264_PIC_HDR; 0x204;
-#regdef; VE_H264_SLICE_HDR; 0x208;
-#regdef; VE_H264_SLICE_HDR2; 0x20c;
-#regdef; VE_H264_PRED_WEIGHT; 0x210;
-#regdef; VE_H264_QP_PARAM; 0x21c;
-#regdef; VE_H264_CTRL; 0x220;
-#regdef; VE_H264_TRIGGER; 0x224;
-#regdef; VE_H264_STATUS; 0x228;
-#regdef; VE_H264_CUR_MB_NUM; 0x22c;
-#regdef; VE_H264_VLD_ADDR; 0x230;
-#regdef; VE_H264_VLD_OFFSET; 0x234;
-#regdef; VE_H264_VLD_LEN; 0x238;
-#regdef; VE_H264_VLD_END; 0x23c;
-#regdef; VE_H264_SDROT_CTRL; 0x240;
-#regdef; VE_H264_OUTPUT_FRAME_IDX; 0x24c;
-#regdef; VE_H264_EXTRA_BUFFER1; 0x250;
-#regdef; VE_H264_EXTRA_BUFFER2; 0x254;
-#regdef; VE_H264_BASIC_BITS; 0x2dc;
-#regdef; VE_H264_RAM_WRITE_PTR; 0x2e0;
-#regdef; VE_H264_RAM_WRITE_DATA; 0x2e4;
+## MPEG Engine Registers
+## Used by engine ; 0x0 (MPEG)
 
-##regdef; VE_SRAM_H264_PRED_WEIGHT_TABLE; 0x000;
-#regdef; VE_SRAM_H264_FRAMEBUFFER_LIST; 0x400;
-#regdef; VE_SRAM_H264_REF_LIST0; 0x640;
-#regdef; VE_SRAM_H264_REF_LIST1; 0x664;
-#regdef; VE_SRAM_H264_SCALING_LISTS; 0x800;
+#regdef; MPEG_PHDR	; 0x0100 ; MPEG12 Picture Header register
+#regdef; MPEG_VOPHDR	; 0x0104 ; MPEG Video Object Plane Header register (MPEG4 Header)
+#regdef; MPEG_SIZE	; 0x0108 ; Frame size in MPEG macroblocks (16x16)
+#regdef; MPEG_FRAME_SIZE	; 0x010c ; Frame size in pixels
+#regdef; MPEG_MBA	; 0x0110 ; MPEG Macro Block Address register
+#regdef; MPEG_CTRL	; 0x0114 ; MPEG Control Register
+#regdef; MPEG_TRIG	; 0x0118 ; MPEG Decoding Trigger
+#regdef; MPEG_STATUS	; 0x011c ; MACC MPEG Status register
+#regdef; MPEG_FRAME_DIST	; 0x0120 ; MPEG P and B Frame distance
+#regdef; MPEG_TRBTRDFLD	; 0x0124 ; Temporal References(TRB(B-VOP) and TRD)
+#regdef; MPEG_VLD_ADDR	; 0x0128 ; MPEG Variable Length Decoding Address
+#regdef; MPEG_VLD_OFFSET	; 0x012c ; MPEG Variable Length Decoding Offset
+#regdef; MPEG_VLD_LEN	; 0x0130 ; MPEG Variable Length Decoding Length
+#regdef; MPEG_VBV_END	; 0x0134 ; MPEG VBV end - video source buffer end
+#regdef; MPEG_MBH_ADDR	; 0x0138 ; MBH buffer address
+#regdef; MPEG_DCAC_ADDR	; 0x013c ; DCAC Buffer address
+#regdef; MPEG_BLK_OFFSET	; 0x0140 ; MPEG Block address???
+#regdef; MPEG_NCF_ADDR	; 0x0144 ; NFC buffer address
+#regdef; MPEG_REC_LUMA	; 0x0148 ; MPEG Luma reconstruct buffer
+#regdef; MPEG_REC_CHROMA	; 0x014c ; MPEG Chroma reconstruct buffer
+#regdef; MPEG_FWD_LUMA	; 0x0150 ; MPEG Luma forward buffer
+#regdef; MPEG_FWD_CHROMA	; 0x0154 ; MPEG forward buffer
+#regdef; MPEG_BACK_LUMA	; 0x0158 ; MPEG Luma Back buffer
+#regdef; MPEG_BACK_CHROMA	; 0x015c ; MPEG Chroma Back buffer
+#regdef; MPEG_SOCX	; 0x0160 ; MS-MPEG related
+#regdef; MPEG_SOCY	; 0x0164 ; MS-MPEG related
+#regdef; MPEG_SOL	; 0x0168 ; MS-MPEG related
+#regdef; MPEG_SDLX	; 0x016c ; MS-MPEG related
+#regdef; MPEG_SDLY	; 0x0170 ; MS-MPEG related
+#regdef; MPEG_SPRITESHFT	; 0x0174 ; MS-MPEG related
+#regdef; MPEG_SDCX	; 0x0178 ; MS-MPEG related
+#regdef; MPEG_SDCY	; 0x017c ; MS-MPEG related
+#regdef; MPEG_IQ_MIN_INPUT	; 0x0180 ; MPEG Inverse Quantization minimum input level
+#regdef; MPEG_IQ_INPUT	; 0x0184 ; MPEG Inverse Quantization input level
+#regdef; MPEG_MSMPEG4_HDR	; 0x0188 ; MPEG MS-Mpeg-4 header
+#regdef; MPEG_VP6_HDR	; 0x018c ; MPEG VP6 Header
+#regdef; MPEG_IQ_IDCT_INPUT	; 0x0190 ; MPEG Inverse Quantization and Inverse Discrete Cosine Transform input
+#regdef; MPEG_MB_HEIGHT	; 0x0194 ; MPEG Macro Block Height
+#regdef; MPEG_MB_V1	; 0x0198 ; MPEG Macro Block Vector 1
+#regdef; MPEG_MB_V2	; 0x019c ; MPEG Macro Block Vector 2
+#regdef; MPEG_MB_V3	; 0x01a0 ; MPEG Macro Block Vector 3
+#regdef; MPEG_MB_V4	; 0x01a4 ; MPEG Macro Block Vector 4
+#regdef; MPEG_MB_V5	; 0x01a8 ; MPEG Macro Block Vector 5
+#regdef; MPEG_MB_V6	; 0x01ac ; MPEG Macro Block Vector 6
+#regdef; MPEG_MB_V7	; 0x01b0 ; MPEG Macro Block Vector 7
+#regdef; MPEG_MB_V8	; 0x01b4 ; MPEG Macro Block Vector 8
+#regdef; MPEG_JPEG_SIZE	; 0x01b8 ; JPEG Size
+#regdef; MPEG_JPEG_MCU	; 0x01bc ; JPEG Minimum Coded Unit
+#regdef; MPEG_JPEG_RES_INT	; 0x01c0 ; JPEG Restart Interval
+#regdef; MPEG_ERROR	; 0x01c4 ; MPEG Error flags
+#regdef; MPEG_CTR_MB	; 0x01c8 ; (Macroblock Control??)
+#regdef; MPEG_ROT_LUMA	; 0x01cc ; MPEG Rotate-Scale Luma buffer
+#regdef; MPEG_ROT_CHROMA	; 0x01d0 ; MPEG Rotate-Scale Chroma buffer
+#regdef; MPEG_ROTSCALE_CTRL	; 0x01d4 ; Control Rotate/Scale Buffer
+#regdef; MPEG_JPEG_MCU_START	; 0x01d8 ; JPEG Macro Cell Unit Start
+#regdef; MPEG_JPEG_MCU_END	; 0x01dc ; JPEG Macro Cell Unit End
+#regdef; MPEG_SRAM_RW_OFFSET	; 0x01e0 ; Auto incremental pointer for read/write VE SRAM
+#regdef; MPEG_SRAM_RW_DATA	; 0x01e4 ; FIFO Like Data register for write/read VE SRAM
+#regdef; MPEG_START_CODE_BITOFFSET	; 0x01f0 ; MPEG start code search result
 
-#regdef; VE_ISP_PIC_SIZE; 0xa00;
-#regdef; VE_ISP_PIC_STRIDE; 0xa04;
-#regdef; VE_ISP_CTRL; 0xa08;
-#regdef; VE_ISP_PIC_LUMA; 0xa78;
-#regdef; VE_ISP_PIC_CHROMA; 0xa7c;
+## H264 Engine Registers
+## Used by engine 0x1 (H264)
 
-#regdef; VE_AVC_PARAM; 0xb04;
-#regdef; VE_AVC_QP; 0xb08;
-#regdef; VE_AVC_MOTION_EST; 0xb10;
-#regdef; VE_AVC_CTRL; 0xb14;
-#regdef; VE_AVC_TRIGGER; 0xb18;
-#regdef; VE_AVC_STATUS; 0xb1c;
-#regdef; VE_AVC_BASIC_BITS; 0xb20;
-#regdef; VE_AVC_VLE_ADDR; 0xb80;
-#regdef; VE_AVC_VLE_END; 0xb84;
-#regdef; VE_AVC_VLE_OFFSET; 0xb88;
-#regdef; VE_AVC_VLE_MAX; 0xb8c;
-#regdef; VE_AVC_VLE_LENGTH; 0xb90;
-#regdef; VE_AVC_REF_LUMA; 0xba0;
-#regdef; VE_AVC_REF_CHROMA; 0xba4;
-#regdef; VE_AVC_REC_LUMA; 0xbb0;
-#regdef; VE_AVC_REC_CHROMA; 0xbb4;
-#regdef; VE_AVC_REF_SLUMA; 0xbb8;
-#regdef; VE_AVC_REC_SLUMA; 0xbbc;
-#regdef; VE_AVC_MB_INFO; 0xbc0;
-#regdef; VE_AVC_SDRAM_INDEX; 0xbe0;
-#regdef; VE_AVC_SDRAM_DATA; 0xbe4;
-;
+#regdef; H264_SEQ_HDR	; 0x0200 ; H264 Sequence header
+#regdef; H264_PIC_HDR	; 0x0204 ; H264 Picture header
+#regdef; H264_SLICE_HDR	; 0x0208 ; H264 Slice header
+#regdef; H264_SLICE_HDR2	; 0x020c ; H264 Slice header
+#regdef; H264_PRED_WEIGHT	; 0x0210 ; H264 weighted prediction parameters
+#regdef; H264_VP8_HDR	; 0x0214 ; H264 VP8 Picture header
+#regdef; H264_QINDEX	; 0x0218 ; H264 Quantizer settings (VP8)
+#regdef; H264_VP8_PART_OFFSET/H264_QP	; 0x021c ; H264 QP parameters (VP8 partition offset)
+#regdef; H264_CTRL	; 0x0220 ; H264 Control Register
+#regdef; H264_TRIG	; 0x0224 ; H264 Trigger Register
+#regdef; H264_STATUS	; 0x0228 ; H264 Status Register
+#regdef; H264_CUR_MBNUM	; 0x022c ; H264 current Macroblock
+#regdef; H264_VLD_ADDR	; 0x0230 ; H264 Variable Length Decoder Address
+#regdef; H264_VLD_OFFSET	; 0x0234 ; H264 Variable Length Decoder Bit Offset
+#regdef; H264_VLD_LEN	; 0x0238 ; H264 Variable Length Decoder Bit Length
+#regdef; H264_VLD_END	; 0x023c ; H264 Variable Length Decoder End Address
+#regdef; H264_SDROT_CTRL	; 0x0240 ; H264 Scale Rotate buffer control
+#regdef; H264_SDROT_LUMA	; 0x0244 ; H264 Scale Rotate buffer Luma color component
+#regdef; H264_SDROT_CHROMA	; 0x0248 ; H264 Scale Rotate buffer Chroma color component
+#regdef; H264_OUTPUT_FRAME_INDEX	; 0x024c ; H264 output frame index in dpb
+#regdef; H264_FIELD_INTRA_INFO_BUF/H264_VP8_ENTROPY_PROBS	; 0x0250 ; H264 field intra info buffer address (VP8 entropy brobabilities table address)
+#regdef; H264_NEIGHBOR_INFO_BUF/H264_VP8_FSTDATA_PARTLEN	; 0x0254 ; H264 neighbor info buffer address (VP8 First partition length)
+#regdef; H264_PIC_MBSIZE	; 0x0258 ; H264 Picture size in macroblocks
+#regdef; H264_PIC_BOUNDARYSIZE	; 0x025c ; H264 Picture size in pixels
+#regdef; H264_MB_ADDR	; 0x0260 ; H264 Current macroblock position
+#regdef; H264_MB_NB1	; 0x0264 ; H264 ??? MbNeightbour1
+#regdef; H264_MB_NB2	; 0x0268 ; H264 MbNeightbour2
+#regdef; H264_MB_NB3	; 0x026c ; H264 ???
+#regdef; H264_MB_NB4	; 0x0270 ; H264 ???
+#regdef; H264_MB_NB5	; 0x0274 ; H264 ???
+#regdef; H264_MB_NB6	; 0x0278 ; H264 ???
+#regdef; H264_MB_NB7	; 0x027c ; H264 ???
+#regdef; H264_MB_NB8	; 0x0280 ; H264 ???
+#regdef; H264_0x0284	; 0x0284 ; H264 ???
+#regdef; H264_0x0288	; 0x0288 ; H264 ???
+#regdef; H264_0x028c	; 0x028c ; H264 ???
+#regdef; H264_MB_QP	; 0x0290 ; H264 ???
+#regdef; H264_0x0294	; 0x0294 ; H264 ???
+#regdef; H264_0x0298	; 0x0298 ; H264 ???
+#regdef; H264_0x029c	; 0x029c ; H264 ???
+#regdef; H264_0x02a0	; 0x02a0 ; H264 ???
+#regdef; H264_0x02a4	; 0x02a4 ; H264 ???
+#regdef; H264_0x02a8	; 0x02a8 ; H264 ???
+#regdef; H264_REC_LUMA	; 0x02ac ; H264 Luma reconstruct buffer
+#regdef; H264_FWD_LUMA	; 0x02b0 ; H264 Luma forward buffer
+#regdef; H264_BACK_LUMA	; 0x02b4 ; H264 Luma back buffer
+#regdef; H264_ERROR	; 0x02b8 ; H264 Error
+#regdef; H264_0x02bc	; 0x02bc ; H264 ???
+#regdef; H264_0x02c0	; 0x02c0 ; H264 ???
+#regdef; H264_0x02c4	; 0x02c4 ; H264 ???
+#regdef; H264_0x02c8	; 0x02c8 ; H264 ???
+#regdef; H264_0x02cc	; 0x02cc ; H264 ???
+#regdef; H264_REC_CHROMA	; 0x02d0 ; H264 Chroma reconstruct buffer
+#regdef; H264_FWD_CHROMA	; 0x02d4 ; H264 Chroma forward buffer
+#regdef; H264_BACK_CHROMA	; 0x02d8 ; H264 Chroma back buffer
+#regdef; H264_BASIC_BITS_DATA	; 0x02dc ; H264 Basic bits data
+#regdef; H264_RAM_WRITE_PTR	; 0x02e0 ; H264 ram write pointer
+#regdef; H264_RAM_WRITE_DATA	; 0x02e4 ; H264 ram write data
+#regdef; H264_ALT_LUMA	; 0x02e8 ; H264 Alternate Luma buffer
+#regdef; H264_ALT_CHROMA	; 0x02ec ; H264 Alternate Chroma buffer
+#regdef; H264_SEG_MB_LV0	; 0x02f0 ; H264 ??? Segment Mb Level 0
+#regdef; H264_SEG_MB_LV1	; 0x02f4 ; H264 ??? Segment Mb Level 1
+#regdef; H264_REF_LF_DELTA	; 0x02f8 ; H264 ??? (VP8 ref lf deltas)
+#regdef; H264_MODE_LF_DELTA	; 0x02fc ; H264 ??? (VP8 mode lf deltas)
+
+## VC1 Engine Registers
+## Used by engine 0x2 (VC1)
+
+#regdef; VC1_EPHS	; 0x0300 ; VC1 ???
+#regdef; VC1_PIC_CTRL	; 0x0304 ; VC1 ???
+#regdef; VC1_PIC_QP	; 0x0308 ; VC1 ???
+#regdef; VC1_PIC_MV	; 0x030c ; VC1 ???
+#regdef; VC1_PIC_INTEN_COMP	; 0x0310 ; VC1 ???
+#regdef; VC1_PIC_INTERLANCE	; 0x0314 ; VC1 ???
+#regdef; VC1_HDR_LEN	; 0x0318 ; VC1 ???
+#regdef; VC1_FSIZE	; 0x031c ; VC1 ???
+#regdef; VC1_PIC_SIZE	; 0x0320 ; VC1 ???
+#regdef; VC1_CTRL	; 0x0324 ; VC1 Decoder Control
+#regdef; VC1_START_TYPE	; 0x0328 ; VC1 ???
+#regdef; VC1_STATUS	; 0x032c ; VC1 Status
+#regdef; VC1_VBV_BASE_ADDR	; 0x0330 ; VC1 Source buffer address
+#regdef; VC1_VLD_OFFSET	; 0x0334 ; VC1 Variable Length Decoder Offset
+#regdef; VC1_VBV_LEN	; 0x0338 ; VC1 length of source video buffer
+#regdef; VC1_VBV_END_ADDR	; 0x033c ; VC1 last address of source video buffer
+#regdef; VC1_REC_FRAME_CHROMA	; 0x0340 ; VC1 Chroma Reconstruct frame
+#regdef; VC1_REC_FRAME_LUMA	; 0x0344 ; VC1 Luma Reconstruct frame
+#regdef; VC1_FWD_FRAME_CHROMA	; 0x0348 ; VC1 Chroma Forward Frame
+#regdef; VC1_FWD_FRAME_LUMA	; 0x034c ; VC1 Luma Forward Frame
+#regdef; VC1_BACK_CHROMA	; 0x0350 ; VC1 Chroma back buffer
+#regdef; VC1_BACK_LUMA	; 0x0354 ; VC1 Luma back buffer
+#regdef; VC1_MBHADDR	; 0x0358 ; VC1 ???
+#regdef; VC1_DCAPRED_ADDR	; 0x035c ; VC1 ???
+#regdef; VC1_BITPLANE_ADDR	; 0x0360 ; VC1 ???
+#regdef; VC1_MBINFO_ADDR	; 0x0364 ; VC1 ???(or COLMVINFOADDR)
+#regdef; VC1_0x0368	; 0x0368 ; VC1 ???
+#regdef; VC1_0x036c	; 0x036c ; VC1 ???
+#regdef; VC1_MBA	; 0x0370 ; VC1 ???
+#regdef; VC1_MBHDR	; 0x0374 ; VC1 ???
+#regdef; VC1_LUMA_TRANSFORM	; 0x0378 ; VC1 ???
+#regdef; VC1_MBCBF	; 0x037c ; VC1 ???
+#regdef; VC1_MBM_V1	; 0x0380 ; VC1 ???
+#regdef; VC1_MBM_V2	; 0x0384 ; VC1 ???
+#regdef; VC1_MBM_V3	; 0x0388 ; VC1 ???
+#regdef; VC1_MBM_V4	; 0x038c ; VC1 ???
+#regdef; VC1_MBM_V5	; 0x0390 ; VC1 ???
+#regdef; VC1_MBM_V6	; 0x0394 ; VC1 ???
+#regdef; VC1_MBM_V7	; 0x0398 ; VC1 ???
+#regdef; VC1_MBM_V8	; 0x039c ; VC1 ???
+#regdef; VC1_0x03a0	; 0x03a0 ; VC1 ???
+#regdef; VC1_0x03a4	; 0x03a4 ; VC1 ???
+#regdef; VC1_0x03a8	; 0x03a8 ; VC1 ???
+#regdef; VC1_0x03ac	; 0x03ac ; VC1 ???
+#regdef; VC1_0x03b0	; 0x03b0 ; VC1 ???
+#regdef; VC1_0x03b4	; 0x03b4 ; VC1 ???
+#regdef; VC1_ERROR	; 0x03b8 ; VC1 Error result code
+#regdef; VC1_CRT_MB_NUM	; 0x03bc ; VC1 ???
+#regdef; VC1_EXTRA_CTRL	; 0x03c0 ; VC1 ???
+#regdef; VC1_EXTRA_CBUF_ADDR	; 0x03c4 ; VC1 EXTRA Chroma DRAM address
+#regdef; VC1_EXTRA_YBUF_ADDR	; 0x03c8 ; VC1 EXTRA Luma DRAM address
+#regdef; VC1_OVERLAP_UP_ADDR	; 0x03d0 ; VC1 ???
+#regdef; VC1_DBLK_ABOVE_ADDR	; 0x03d4 ; VC1 ???
+#regdef; VC1_0x03d8	; 0x03d8 ; VC1 ???
+#regdef; VC1_BITS_RETDATA	; 0x03dc ; VC1 ???
+#regdef; VC1_DEBUG_BUF_ADDR	; 0x03fc ; VC1 ???
+
+## RMVB Engine Registers
+## Used by engine 0x3 (RMVB)
+
+#regdef; RMVB_SLC_HDR	; 0x0400 ; Header
+#regdef; RMVB_FRM_SIZE	; 0x0404 ; Framesize (in macroblocks ?)
+#regdef; RMVB_DIR_MODE_RATIO	; 0x0408 ; 
+#regdef; RMVB_DIR_MB_ADDR	; 0x040c ; 
+#regdef; RMVB_QC_INPUT	; 0x0410 ; 
+#regdef; RMVB_CTRL	; 0x0414 ; RMVB IRQ Control
+#regdef; RMVB_TRIG	; 0x0418 ; Trigger register
+#regdef; RMVB_STATUS	; 0x041c ; RMVB Status
+#regdef; RMVB_VBV_BASE	; 0x0428 ; Video source buffer base
+#regdef; RMVB_VLD_OFFSET	; 0x042c ; Video source buffer DRAM address
+#regdef; RMVB_VLD_LEN	; 0x0430 ; Video source buffer length in bytes
+#regdef; RMVB_VBV_END	; 0x0434 ; Video source buffer last DRAM address
+#regdef; RMVB_HUFF_TABLE_ADDR	; 0x043c ; Huffman table DRAM address
+#regdef; RMVB_CUR_Y_ADDR	; 0x0440 ; Luma Current buffer DRAM address
+#regdef; RMVB_CUR_C_ADDR	; 0x0444 ; Chroma Current buffer DRAM address
+#regdef; RMVB_FOR_Y_ADDR	; 0x0448 ; Luma Forward buffer DRAM address
+#regdef; RMVB_FOR_C_ADDR	; 0x044c ; Chroma Forward buffer DRAM address
+#regdef; RMVB_BAC_Y_ADDR	; 0x0450 ; Luma Back buffer DRAM address
+#regdef; RMVB_BAC_C_ADDR	; 0x0454 ; Chroma Back buffer DRAM address
+#regdef; RMVB_ROT_Y_ADDR	; 0x0458 ; Luma Rot buffer DRAM address
+#regdef; RMVB_ROT_C_ADDR	; 0x045c ; Chroma Rot Buffer DRAM address
+#regdef; RMVB_MBH_ADDR	; 0x0460 ; 
+#regdef; RMVB_MV_ADDR	; 0x0464 ; 
+#regdef; RMVB_MBH_INFO	; 0x0470 ; 
+#regdef; RMVB_MV0	; 0x0474 ; Mountion vector 0
+#regdef; RMVB_MV1	; 0x0478 ; Mountion vector 1
+#regdef; RMVB_MV2	; 0x047c ; Mountion vector 2
+#regdef; RMVB_MV3	; 0x0480 ; Mountion vector 3
+#regdef; RMVB_DBLK_COEF	; 0x0490 ; 
+#regdef; RMVB_ERROR	; 0x04b0 ; Decode error result code
+#regdef; RMVB_BITS_DATA	; 0x04b8 ; 
+#regdef; RMVB_SLC_QUEUE_ADDR	; 0x04c0 ; 
+#regdef; RMVB_SLC_QUEUE_LEN	; 0x04c4 ; 
+#regdef; RMVB_SLC_QUEUE_TRIG	; 0x04c8 ; 
+#regdef; RMVB_SLC_QUEUE_STATUS	; 0x04cc ; 
+#regdef; RMVB_SCALE_ROT_CTRL	; 0x04d0 ; 
+#regdef; RMVB_SRAM_RW_OFFSET	; 0x04e0 ; SRAM Fifo like index register
+#regdef; RMVB_SRAM_RW_DATA	; 0x04e4 ; SRAM Fifo like data register
+
+## HEVC Engine Registers
+## Only on H3, used by engine 0x4 (HEVC)
+
+#regdef; HEVC_NAL_HDR	; 0x0500 ; HEVC NAL header
+#regdef; HEVC_SPS	; 0x0504 ; HEVC sequence parameter set
+#regdef; HEVC_PIC_SIZE	; 0x0508 ; HEVC picture size
+#regdef; HEVC_PCM_HDR	; 0x050c ; HEVC PCM header
+#regdef; HEVC_PPS0	; 0x0510 ; HEVC picture parameter set
+#regdef; HEVC_PPS1	; 0x0514 ; HEVC picture parameter set
+#regdef; HEVC_SCALING_LIST_CTRL	; 0x0518 ; HEVC scaling list control register
+#regdef; HEVC_SLICE_HDR0	; 0x0520 ; HEVC slice header
+#regdef; HEVC_SLICE_HDR1	; 0x0524 ; HEVC slice header
+#regdef; HEVC_SLICE_HDR2	; 0x0528 ; HEVC slice header
+#regdef; HEVC_CTB_ADDR	; 0x052c ; HEVC CTB address
+#regdef; HEVC_CTRL	; 0x0530 ; HEVC control register
+#regdef; HEVC_TRIG	; 0x0534 ; HEVC trigger register
+#regdef; HEVC_STATUS	; 0x0538 ; HEVC status register
+#regdef; HEVC_CTU_NUM	; 0x053c ; HEVC current CTU number
+#regdef; HEVC_BITS_ADDR	; 0x0540 ; HEVC bitstream address
+#regdef; HEVC_BITS_OFFSET	; 0x0544 ; HEVC bitstream offset
+#regdef; HEVC_BITS_LEN	; 0x0548 ; HEVC bitstream length
+#regdef; HEVC_BITS_END_ADDR	; 0x054c ; HEVC bitstream end address
+#regdef; HEVC_EXTRA_OUT_CTRL	; 0x0550 ; HEVC extra output control register
+#regdef; HEVC_EXTRA_OUT_LUMA_ADDR	; 0x0554 ; HEVC extra output luma address
+#regdef; HEVC_EXTRA_OUT_CHROMA_ADDR	; 0x0558 ; HEVC extra output chroma address
+#regdef; HEVC_REC_BUF_IDX	; 0x055c ; HEVC reconstruct buffer index
+#regdef; HEVC_NEIGHBOR_INFO_ADDR	; 0x0560 ; HEVC neighbor info buffer address
+#regdef; HEVC_TILE_LIST_ADDR	; 0x0564 ; HEVC tile entry point list address
+#regdef; HEVC_TILE_START_CTB	; 0x0568 ; HEVC tile start CTB
+#regdef; HEVC_TILE_END_CTB	; 0x056c ; HEVC tile end CTB
+#regdef; HEVC_SCALING_LIST_DC_COEF0	; 0x0578 ; HEVC scaling list DC coefficients
+#regdef; HEVC_SCALING_LIST_DC_COEF1	; 0x057c ; HEVC scaling list DC coefficients
+#regdef; HEVC_BITS_DATA	; 0x05dc ; HEVC bitstream data
+#regdef; HEVC_SRAM_ADDR	; 0x05e0 ; HEVC SRAM address
+#regdef; HEVC_SRAM_DATA	; 0x05e4 ; HEVC SRAM data
+
+## ISP Engine Registers
+## Used by engine 0x8 (MPEG enc), 0xa (ISP) and 0xb (AVC enc)
+
+#regdef; ISP_PIC_SIZE	; 0x0a00 ; ISP source picture size in macroblocks (16x16)
+#regdef; ISP_PIC_STRIDE	; 0x0a04 ; ISP source picture stride
+#regdef; ISP_CTRL	; 0x0a08 ; ISP IRQ Control
+#regdef; ISP_TRIG	; 0x0a0c ; ISP Trigger
+#regdef; ISP_SCALER_SIZE	; 0x0a2c ; ISP scaler frame size/16
+#regdef; ISP_SCALER_OFFSET_Y	; 0x0a30 ; ISP scaler picture offset for luma
+#regdef; ISP_SCALER_OFFSET_C	; 0x0a34 ; ISP scaler picture offset for chroma
+#regdef; ISP_SCALER_FACTOR	; 0x0a38 ; ISP scaler picture scale factor
+#regdef; ISP_BUF_0x0a44	; 0x0a44 ; ISP PHY Buffer offset
+#regdef; ISP_BUF_0x0a48	; 0x0a48 ; ISP PHY Buffer offset
+#regdef; ISP_BUF_0x0a4C	; 0x0a4C ; ISP PHY Buffer offset
+##regdef; ISP_0x0a74	; 0x0a74 ; ISP ??
+#regdef; ISP_OUTPUT_LUMA	; 0x0a70 ; ISP Output LUMA Address
+#regdef; ISP_OUTPUT_CHROMA	; 0x0a74 ; ISP Output CHROMA Address
+#regdef; ISP_WB_THUMB_LUMA	; 0x0a78 ; ISP THUMB WriteBack PHY LUMA Address
+#regdef; ISP_WB_THUMB_CHROMA	; 0x0a7c ; ISP THUMB WriteBack PHY CHROMA Adress
+#regdef; ISP_SRAM_INDEX	; 0x0ae0 ; ISP VE SRAM Index
+#regdef; ISP_SRAM_DATA	; 0x0ae4 ; ISP VE SRAM Data
+
+## AVC Encoder Engine Registers
+## Used by engine 0xb (AVC enc)
+
+#regdef; AVC_PICINFO	; 0x0b00 ; unk(not used in blob)
+#regdef; AVC_JPEG_CTRL/MACC_AVC_H264_CTRL	; 0x0b04 ; jpeg / h264 different settings
+#regdef; AVC_H264_QP	; 0x0b08 ; H264 quantization parameters
+#regdef; AVC_H264_MOTION_EST	; 0x0b10 ; Motion estimation parameters
+#regdef; AVC_CTRL	; 0x0b14 ; AVC Encoder IRQ Control
+#regdef; AVC_TRIG	; 0x0b18 ; AVC Encoder trigger
+#regdef; AVC_STATUS	; 0x0b1c ; AVC Encoder Busy Status
+#regdef; AVC_BITS_DATA	; 0x0b20 ; AVC Encoder Bits Data
+#regdef; AVC_H264_MAD	; 0x0b50 ; AVC H264 Encoder Mean Absolute Difference
+#regdef; AVC_H264_RESIDUAL_BITS	; 0x0b54 ; AVC H264 Encoder Residual Bits
+#regdef; AVC_H264_HEADER_BITS	; 0x0b58 ; AVC H264 Encoder Header Bits
+#regdef; AVC_H264_0x0b5c	; 0x0b5c ; AVC H264 Encoder unknown statistical data, maybe motion vectors
+#regdef; AVC_H264_0x0b60	; 0x0b60 ; AVC H264 Encoder unknown buffer
+#regdef; AVC_VLE_ADDR	; 0x0b80 ; AVC Variable Length Encoder Start Address
+#regdef; AVC_VLE_END	; 0x0b84 ; AVC Variable Length Encoder End Address
+#regdef; AVC_VLE_OFFSET	; 0x0b88 ; AVC Variable Length Encoder Bit Offset
+#regdef; AVC_VLE_MAX	; 0x0b8c ; AVC Variable Length Encoder Maximum Bits
+#regdef; AVC_VLE_LENGTH	; 0x0b90 ; AVC Variable Length Encoder Bit Length
+#regdef; AVC_REF_LUMA	; 0x0ba0 ; Luma reference buffer
+#regdef; AVC_REF_CHROMA	; 0x0ba4 ; Chroma reference buffer
+#regdef; AVC_REC_LUMA	; 0x0bb0 ; Luma reconstruct buffer
+#regdef; AVC_REC_CHROMA	; 0x0bb4 ; Chroma reconstruct buffer
+#regdef; AVC_REF_SLUMA	; 0x0bb8 ; Smaller luma reference buffer ?
+#regdef; AVC_REC_SLUMA	; 0x0bbc ; Smaller luma reconstruct buffer ?
+#regdef; AVC_MB_INFO	; 0x0bc0 ; Temporary buffer with macroblock information
+#regdef; AVC_SRAM_INDEX	; 0x0be0 ; AVC VE SRAM Index
+#regdef; AVC_SRAM_DATA	; 0x0be4 ; AVC VE SRAM Data
+
 #regdef; padding 0; 0x2000; Need for address arithmetics
 #typeend;
