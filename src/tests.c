@@ -10579,6 +10579,24 @@ void hightests(void)
 	//hmain();
 #if 0
 	{
+		// Video Encoding test
+		CCU->VE_CLK_REG |= UINT32_C(1) << 31;
+		(void) CCU->VE_CLK_REG;
+
+		CCU->VE_BGR_REG |= UINT32_C(1) << 0;	// VE_GATING
+		(void) CCU->VE_BGR_REG;
+		CCU->VE_BGR_REG &= ~ (UINT32_C(1) << 16);	// VE_RST
+		(void) CCU->VE_BGR_REG;
+		CCU->VE_BGR_REG |= (UINT32_C(1) << 16);	// VE_RST
+		(void) CCU->VE_BGR_REG;
+
+		PRINTF("VE_VERSION=%08X\n", (unsigned) VENCODER->VE_VERSION);
+		printhex32(VENCODER_BASE, VENCODER, sizeof * VENCODER);
+
+	}
+#endif
+#if 0
+	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
