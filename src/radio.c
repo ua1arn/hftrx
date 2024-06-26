@@ -13637,6 +13637,7 @@ void cat2_sendchar(void * ctx)
 	}
 }
 
+// user-mode function
 static uint_fast8_t
 cat_answer_ready(void)
 {
@@ -13651,6 +13652,7 @@ cat_answer_ready(void)
 	return 1;
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 }
+
 // Вызов из user-mode программы
 static void
 cat_answervariable(const char * p, uint_fast8_t len)
@@ -14746,16 +14748,6 @@ cat_answer_request(uint_fast8_t catindex)
 	cat_answer_map [catindex] = 1;
 }
 
-static void
-processcat_initialize(void)
-{
-	//catprocenable = catstatetxdata = catstatetx = 0;
-	//catstatein = CATSTATE_HALTED;
-	//catstateout = CATSTATEO_HALTED;
-	//morsefill = 0;	/* индекс буфера, заполняемого в данный момент. Противоположный передаётся. */
-	//sendmorsepos [0] = sendmorsepos [1] = inpmorselength [0] = inpmorselength [1] = 0;
-}
-
 /* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
 static void processcat_enable(uint_fast8_t enable)
 {
@@ -14857,6 +14849,7 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	badcommandanswer,
 };
 
+// user-mode function
 static void
 cat_answer_forming(void)
 {
@@ -15724,6 +15717,24 @@ processcatmsg(
 	#undef match2
 }
 
+// user-mode function
+static void cat_dpc_func(void * ctx)
+{
+	if (cat_getstateout() == CATSTATEO_SENDREADY)
+	{
+		cat_answer_forming();
+	}
+}
+
+static dpcobj_t cat_dpc;
+
+// High level cat initialize
+static void cat_initialize(void)
+{
+	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL);
+	board_dpc_addentry(& cat_dpc);
+}
+
 #endif	/* WITHCAT */
 
 
@@ -16120,13 +16131,6 @@ void app_processing(
 		updateboard(1, 0);
 	}
 #endif /* WITHSLEEPTIMER */
-#if WITHCAT
-	if (cat_getstateout() == CATSTATEO_SENDREADY)
-	{
-		cat_answer_forming();
-	}
-#endif /* WITHCAT */
-
 }
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
@@ -19125,9 +19129,6 @@ applowinitialize(void)
 	hardware_sdhost_initialize();	/* если есть аппаратный контрлллер SD CARD */
 #endif /* WITHSDHCHW */
 
-#if WITHCAT
-	processcat_initialize();
-#endif
 	kbd_initialize();
 
 #if WITHDEBUG
@@ -19484,6 +19485,9 @@ application_initialize(void)
 #if WITHUSESDCARD
 	sdcardhw_initialize();
 #endif /* WITHUSESDCARD */
+#if WITHCAT
+	cat_initialize();
+#endif /* WITHCAT */
 #if WITHUSERAMDISK
 	{
 		ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
