@@ -5602,6 +5602,13 @@ trxparam_update(void)
 	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
 }
 
+static void user_audioproc_dpc_func(void * ctx)
+{
+	audioproc_spool_user(); // // user-mode processing
+}
+
+static dpcobj_t user_audioproc_dpc;
+
 /* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
 {
@@ -5643,6 +5650,12 @@ void dsp_initialize(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 		audio_update(spf, pathi);
 	gwprof = spf;
+
+#if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
+	// See hardware.c - call audioproc_spool_user() */
+	dpcobj_initialize(& user_audioproc_dpc, user_audioproc_dpc_func, NULL);
+	board_dpc_addentry(& user_audioproc_dpc);
+#endif /* WITHINTEGRATEDDSP */
 
 	modem_update();
 

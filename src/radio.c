@@ -16084,9 +16084,6 @@ void app_processing(
 	const FLASHMEM struct menudef * mp
 )
 {
-#if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
-	audioproc_spool_user();
-#endif /* WITHINTEGRATEDDSP */
 #if WITHLWIP
 	/* LWIP */
 	//usb_polling();     // usb device polling
