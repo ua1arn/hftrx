@@ -10612,7 +10612,7 @@ void hightests(void)
 		for (;;)
 		{
 			// Erase background
-			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+			//colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
 			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
 			// Draw rextangle
 			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
