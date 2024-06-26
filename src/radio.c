@@ -15998,6 +15998,20 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp)
 	return 1;
 }
 
+/* Удалить функцию для периодического вызова */
+uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
+{
+	IRQL_t oldIrql;
+
+	dpcobj_exit(dp);
+
+	IRQLSPIN_LOCK(& dpclistlock, & oldIrql);
+	RemoveEntryList(& dp->item);
+	IRQLSPIN_UNLOCK(& dpclistlock, oldIrql);
+
+	return 1;
+}
+
 // Запрос отложенного вызова user-mode функций
 /* добавить функцию для однократного вызова */
 uint_fast8_t board_dpc_call(dpcobj_t * dp)

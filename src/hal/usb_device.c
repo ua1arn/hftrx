@@ -286,6 +286,36 @@ void MX_USB_DEVICE_Process(void)
 
 #endif /* WITHUSBHW */
 
+void board_usbh_polling(void)
+{
+}
+
+static void board_usb_dpc(void * ctx)
+{
+#if WITHUSBHW
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+#if WITHTINYUSB
+//#if WITHEHCIHWSOFTSPOLL
+//	hcd_int_handler(BOARD_TUH_RHPORT, 0);
+//#endif
+#if CFG_TUH_ENABLED
+    tuh_task();
+#endif
+#if CFG_TUD_ENABLED
+    tud_task();
+#endif
+ #else /* WITHTINYUSB */
+	MX_USB_HOST_Process();
+#endif
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#if defined (WITHUSBHW_DEVICE)
+	MX_USB_DEVICE_Process();
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#endif /* WITHUSBHW */
+}
+
+static dpcobj_t usb_dpc_entry;
+
 void board_usb_initialize(void)
 {
 #if WITHUSBHW
@@ -297,6 +327,8 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Init();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+	dpcobj_initialize(& usb_dpc_entry, board_usb_dpc, NULL);
+	board_dpc_addentry(& usb_dpc_entry);
 	//PRINTF("board_usb_initialize done\n");
 #endif /* WITHUSBHW */
 }
@@ -305,6 +337,7 @@ void board_usb_deinitialize(void)
 {
 #if WITHUSBHW
 	//PRINTF("board_usb_deinitialize [%p]\n", board_usb_deinitialize);
+	board_dpc_delentry(& usb_dpc_entry);
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_DeInit();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
@@ -368,30 +401,6 @@ void board_usb_deactivate(void)
 	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 #endif /* WITHUSBHW */
 #endif /* WITHTINYUSB */
-}
-
-void board_usbh_polling(void)
-{
-#if WITHUSBHW
-#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
-#if WITHTINYUSB
-//#if WITHEHCIHWSOFTSPOLL
-//	hcd_int_handler(BOARD_TUH_RHPORT, 0);
-//#endif
-#if CFG_TUH_ENABLED
-    tuh_task();
-#endif
-#if CFG_TUD_ENABLED
-    tud_task();
-#endif
- #else /* WITHTINYUSB */
-	MX_USB_HOST_Process();
-#endif
-#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-#if defined (WITHUSBHW_DEVICE)
-	MX_USB_DEVICE_Process();
-#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-#endif /* WITHUSBHW */
 }
 
 #if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
