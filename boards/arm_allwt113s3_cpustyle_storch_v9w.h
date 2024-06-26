@@ -1122,9 +1122,9 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (0) //(((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
+	#define BOARD_IS_USERBOOT() (((gpioX_getinputs(GPIOE)) & TARGET_ENC2BTN_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-			/*arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); *//* set as input with pull-up */ \
+		arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
