@@ -190,7 +190,7 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t bottom);
 
 static dpcobj_t dpcobj_1stimer;
-static dpcobj_t dpcobj_01stimer;
+static dpcobj_t dpcobj_01_s_timer;
 static void tuner_eventrestart(void);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
@@ -15830,6 +15830,8 @@ uint_fast8_t elkey_getnextcw(void)
 
 #endif /* WITHELKEY */
 
+// User-mode function.
+// Called every secound
 static void dpc_1stimer(void * arg)
 {
 #if WITHWAVPLAYER || WITHSENDWAV
@@ -15921,7 +15923,7 @@ static void dpc_1stimer(void * arg)
 #endif
 }
 
-static void dpc_01stimer(void * ctx)
+static void dpc_01_s_timer(void * ctx)
 {
 	bringtimers();
 }
@@ -15936,7 +15938,7 @@ int board_islfmmode(void)
 }
 
 /* Вызывается из обработчика прерываний раз в секунду */
-static void second_event(void * ctx)
+static void second_1_s_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
@@ -15945,12 +15947,12 @@ static void second_event(void * ctx)
 }
 
 /* Вызывается из обработчика прерываний десять раз в секунду */
-static void second01_event(void * ctx)
+static void second_01_s_event(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
 	//VERIFY(board_dpc_call(& dpcobj_1stimer));
-	board_dpc_call(& dpcobj_01stimer);
+	board_dpc_call(& dpcobj_01_s_timer);
 }
 
 ////////////////////
@@ -19089,17 +19091,18 @@ applowinitialize(void)
 #endif /* WITHWATCHDOG */
 	static ticker_t displayticker;
 	static ticker_t ticker_1S;
+	static ticker_t ticker_01_S;
 
 	ticker_initialize(& displayticker, 1, display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& displayticker);
 
 	dpcobj_initialize(& dpcobj_1stimer, dpc_1stimer, NULL);
-	ticker_initialize(& ticker_1S, NTICKS(1000), second_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& ticker_1S, NTICKS(1000), second_1_s_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& ticker_1S);
 
-	dpcobj_initialize(& dpcobj_01stimer, dpc_01stimer, NULL);
-	ticker_initialize(& ticker_1S, NTICKS(100), second01_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	ticker_add(& ticker_1S);
+	dpcobj_initialize(& dpcobj_01_s_timer, dpc_01_s_timer, NULL);
+	ticker_initialize(& ticker_01_S, NTICKS(100), second_01_s_event, NULL);	// вызывается с частотой 10 Гц с запрещенными прерываниями.
+	ticker_add(& ticker_01_S);
 
 #if WITHAUTOTUNER
 	dpcobj_initialize(& dpcobj_tunertimer, dpc_tunertimer, NULL);
