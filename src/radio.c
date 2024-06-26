@@ -13134,7 +13134,7 @@ static volatile uint_fast8_t counterupdatedmodes;
 static volatile uint_fast16_t counterupdatedvoltage; // счетчик для обновления вольтажа АКБ
 
 static volatile uint_fast8_t counterupdatebars;
-static volatile uint_fast8_t counterupdatewpm;
+static volatile uint_fast8_t counterupdatepot;
 
 /*
 	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
@@ -13146,23 +13146,6 @@ static volatile uint_fast8_t counterupdatewpm;
 static void
 display_event(void * ctx)
 {
-	#if 0 //WITHNMEA
-	// таймер обновления часов/минут/секунд
-	{
-		enum { n = NTICKS(1000) };
-		const uint_fast8_t t = secondticks + 1;
-		if (t >= n)
-		{
-			time_next(& th);
-			secondticks = 0;
-		}
-		else
-		{
-			secondticks = t;
-		}
-	}
-	#endif /* WITHNMEA */
-
 #if 0
 	// таймер обновления режимов работы
 	{
@@ -13178,6 +13161,7 @@ display_event(void * ctx)
 		if (t != 0)
 			counterupdatedfreqs = t - 1;
 	}
+
 	//отсчёт времени для обновления индикатора АКБ
 	{
 		const uint_fast16_t t = counterupdatedvoltage;
@@ -13195,30 +13179,30 @@ display_event(void * ctx)
 
 	// отсчёт времени для считывания потенциометров с панели управления
 	{
-		const uint_fast8_t t = counterupdatewpm;
+		const uint_fast8_t t = counterupdatepot;
 		if (t != 0)
-			counterupdatewpm = t - 1;
+			counterupdatepot = t - 1;
 	}
 }
 
 // Проверка разрешения обновления скорости передачи в телеграфе.
 // а так же других потенциометров - громкости, усиления ПЧ
 static uint_fast8_t
-display_refreshenabled_wpm(void)
+display_refreshenabled_pot(void)
 {
-	return getstablev8(& counterupdatewpm) == 0;		/* таймер дошёл до нуля - можно обновлять. */
+	return getstablev8(& counterupdatepot) == 0;		/* таймер дошёл до нуля - можно обновлять. */
 }
 
 // подтверждение выполненного обновления скорости передачи в телеграфе.
 // а так же других потенциометров - громкости, усиления ПЧ
 static void
-display_refreshperformed_wpm(void)
+display_refreshperformed_pot(void)
 {
 	const uint_fast8_t n = NTICKS(100);	// 100 ms - обновление с частотой 10 герц
 
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	counterupdatewpm = n;
+	counterupdatepot = n;
 	LowerIrql(oldIrql);
 }
 
@@ -13479,7 +13463,7 @@ directctlupdate(
 	changedtx |= flagne_u8(& gtx, seq_get_txstate());	// текущее состояние прием или передача
 #endif /* WITHTX */
 
-	if (display_refreshenabled_wpm())
+	if (display_refreshenabled_pot())
 	{
 		// +++ получение состояния органов управления */
 	#if WITHPOTPOWER
@@ -13558,7 +13542,7 @@ directctlupdate(
 		// --- конец получения состояния органов управления */
 
 		// подтверждаем, что обновление выполнено
-		display_refreshperformed_wpm();
+		display_refreshperformed_pot();
 	}
 	if (changedtx != 0)
 	{
