@@ -10601,21 +10601,24 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
+		unsigned count = 20;		// количество смен направления до оконяания теста
 		const int rectX = DIM_X / 8;
 		const int rectY = DIM_Y / 4;
 		int stepX = 1;
 		int stepY = 1;
 		int posX = DIM_X / 2;
 		int posY = DIM_Y / 2;
-		unsigned count = 8;		// количество смен направления до оконяания теста
-
+		unsigned steps = 0;
 		for (;;)
 		{
+			char s [32];
+			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background
 			//colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
 			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
 			// Draw rextangle
 			colpip_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
+			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
 			display_nextfb();
 #if WITHUSBHW
