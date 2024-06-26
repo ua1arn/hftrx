@@ -16087,9 +16087,6 @@ void app_processing(
 #if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
 	audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
-#if WITHWAVPLAYER || WITHSENDWAV
-	spoolplayfile();
-#endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLWIP
 	/* LWIP */
 	//usb_polling();     // usb device polling

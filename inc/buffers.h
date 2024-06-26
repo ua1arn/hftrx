@@ -857,7 +857,6 @@ unsigned savesamplesplay(
 	const void * buff,
 	unsigned length
 	);
-void spoolplayfile(void);
 void playwavfile(const char * filename);
 uint_fast8_t isplayfile(void);
 void playwavstop(void);

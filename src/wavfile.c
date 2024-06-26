@@ -42,6 +42,8 @@ static const unsigned int num_channels = 1;	/* 1: monoaural */
 	static const unsigned int DATACHUNKSTARTOFFSET = (AUDIORECBUFFSIZE16 * 2) - 8;	// 4-4-4-4-4-4-4
 #endif
 
+static void spoolplayfile(void);
+
 /* make_wav.c
  * Creates a WAV file from an array of ints.
  * Output is monophonic, signed 16-bit samples
@@ -628,6 +630,9 @@ static void sdcard_doc_process(void * ctx)
 		}
 		break;
 	}
+#if WITHWAVPLAYER || WITHSENDWAV
+	spoolplayfile();
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 }
 
 void sdcardformat(void)
@@ -977,7 +982,7 @@ void playwavfile(const char * filename)
 	playfile = 1;
 }
 
-void spoolplayfile(void)
+static void spoolplayfile(void)
 {
 	FRESULT rc;				/* Result code */
 	int endoffile = 0;
