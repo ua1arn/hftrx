@@ -16087,9 +16087,6 @@ void app_processing(
 #if LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES <= 2) || ! WITHSMPSYSTEM))
 	audioproc_spool_user();
 #endif /* WITHINTEGRATEDDSP */
-#if WITHUSEAUDIOREC
-	sdcardbgprocess();
-#endif /* WITHUSEAUDIOREC */
 #if WITHWAVPLAYER || WITHSENDWAV
 	spoolplayfile();
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
@@ -19747,9 +19744,6 @@ static void hamradio_main_initialize(void)
 	gfreqs [getbankindex_raw(1] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
-#if WITHUSEAUDIOREC
-	sdcardbgprocess();
-#endif /* WITHUSEAUDIOREC */
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */

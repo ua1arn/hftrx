@@ -12908,20 +12908,13 @@ void hightests(void)
 					break;
 			}
 			board_dpc_processing();		// обработка отложенного вызова user mode функций
-	#if WITHUSEAUDIOREC
-			sdcardbgprocess();
-	#endif /* WITHUSEAUDIOREC */
 			//local_delay_ms(5);
 		}
 		PRINTF("Storage device ready\n");
 		unsigned t;
 //		for (t = 0; t < 7000; t += 5)
 //		{
-//		board_dpc_processing();		// обработка отложенного вызова user mode функций
-//	#if WITHUSEAUDIOREC
-//			sdcardbgprocess();
-//	#endif /* WITHUSEAUDIOREC */
-//			//local_delay_ms(5);
+//			board_dpc_processing();		// обработка отложенного вызова user mode функций
 //		}
 		static ticker_t test_recordticker;
 		IRQL_t oldIrql;

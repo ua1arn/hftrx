@@ -481,12 +481,6 @@ enum
 // AUDIO recording state
 static uint_fast8_t	sdstate = SDSTATE_IDLE;
 
-// перевод state machine в начальное состояние
-void sdcardinitialize(void)
-{
-	sdstate = SDSTATE_IDLE;
-}
-
 
 // Возвращаем в display2.c состояние записи
 uint_fast8_t hamradio_get_rec_value(void)
@@ -533,16 +527,16 @@ void sdcardtoggle(void)
 
 // Функци вызывается из основного цикла для периодического "проталкивания"
 // записанных буферов на SD CARD
-void sdcardbgprocess(void)
+static void sdcard_doc_process(void * ctx)
 {
 	switch (sdstate)
 	{
 	case SDSTATE_IDLE:
-		//PRINTF(PSTR("sdcardbgprocess: SDSTATE_IDLE\n"));
+		//PRINTF(PSTR("sdcard_doc_process: SDSTATE_IDLE\n"));
 		break;
 
 	case SDSTATE_RECORDING:
-		//PRINTF(PSTR("sdcardbgprocess: SDSTATE_RECORDING\n"));
+		//PRINTF(PSTR("sdcard_doc_process: SDSTATE_RECORDING\n"));
 		switch (wave_nextblockrecording())
 		{
 		default:
@@ -568,7 +562,7 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_RESYNC:
-		PRINTF(PSTR("sdcardbgprocess: SDSTATE_RESYNC\n"));
+		PRINTF(PSTR("sdcard_doc_process: SDSTATE_RESYNC\n"));
 		// выполнить resync
 		if (wave_resync() == 0)
 			sdstate = SDSTATE_RECORDING;
@@ -577,7 +571,7 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_BREAKCHUNK:
-		PRINTF(PSTR("sdcardbgprocess: SDSTATE_BREAKCHUNK\n"));
+		PRINTF(PSTR("sdcard_doc_process: SDSTATE_BREAKCHUNK\n"));
 		// Заканчиваем запись и начинаем следующий фрагмент
 		if (wave_stoprecording() == 0)
 			sdstate = SDSTATE_CONTRECORDING;
@@ -586,10 +580,10 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_CONTRECORDING:
-		PRINTF(PSTR("sdcardbgprocess: SDSTATE_CONTRECORDING\n"));
+		PRINTF(PSTR("sdcard_doc_process: SDSTATE_CONTRECORDING\n"));
 		if (wave_startrecording() != 0)
 		{
-			PRINTF(PSTR("sdcardbgprocess: wave_startrecording failure\n"));
+			PRINTF(PSTR("sdcard_doc_process: wave_startrecording failure\n"));
 			sdstate = SDSTATE_UNMOUNT;
 		}
 		else
@@ -597,19 +591,19 @@ void sdcardbgprocess(void)
 		break;
 
 	case SDSTATE_STOPRECORDING:
-		PRINTF(PSTR("sdcardbgprocess: SDSTATE_STOPRECORDING\n"));
+		PRINTF(PSTR("sdcard_doc_process: SDSTATE_STOPRECORDING\n"));
 		wave_stoprecording();
 		sdstate = SDSTATE_UNMOUNT;
 		break;
 
 	case SDSTATE_UNMOUNT:
-		PRINTF(PSTR("sdcardbgprocess: SDSTATE_UNMOUNT\n"));
+		PRINTF(PSTR("sdcard_doc_process: SDSTATE_UNMOUNT\n"));
 		waveUnmount();		/* Unregister volume work area (never fails) */
 		sdstate = SDSTATE_IDLE;
 		break;
 
 	case SDSTATE_STARTREC:
-		PRINTF(PSTR("sdcardbgprocess: SDSTATE_STARTREC\n"));
+		PRINTF(PSTR("sdcard_doc_process: SDSTATE_STARTREC\n"));
 		if (wave_startrecording() == 0)
 		{
 			PRINTF(PSTR("sdcardrecord: wave_startrecording success\n"));
@@ -656,6 +650,21 @@ void sdcardformat(void)
 		}
 		break;
 	}
+}
+
+static dpcobj_t sdcard_dpc_entry;
+
+// перевод state machine в начальное состояние, назначение user mode обработчика
+void sdcardinitialize(void)
+{
+	sdstate = SDSTATE_IDLE;
+	dpcobj_initialize(& sdcard_dpc_entry, sdcard_doc_process, NULL);
+	board_dpc_addentry(& sdcard_dpc_entry);
+}
+
+void sdcarddeinitialize(void)
+{
+	board_dpc_delentry(& sdcard_dpc_entry);
 }
 
 #endif /* WITHUSEAUDIOREC */
