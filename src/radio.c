@@ -16090,10 +16090,6 @@ void app_processing(
 #if WITHUSEAUDIOREC
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
-#if WITHUSBHW
-	if (bootloader_withusb())
-		board_usbh_polling();     // usb host & device polling
-#endif /* WITHUSBHW */
 #if WITHWAVPLAYER || WITHSENDWAV
 	spoolplayfile();
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
@@ -19754,10 +19750,6 @@ static void hamradio_main_initialize(void)
 #if WITHUSEAUDIOREC
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
-#if WITHUSBHW
-	if (bootloader_withusb())
-		board_usbh_polling();     // usb host & device polling
-#endif /* WITHUSBHW */
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */

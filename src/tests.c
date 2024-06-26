@@ -3511,9 +3511,7 @@ static void printtextfile(const char * filename)
 	for (;;)
 	{
 		char kbch;
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
 
 		if (dbg_getchar(& kbch) != 0)
 		{
@@ -3602,9 +3600,7 @@ static void dosaveserialport(const char * fname)
 		char kbch;
 		char c;
 
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
 	if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
@@ -3751,9 +3747,7 @@ static int dosaveblocks(const char * fname)
 
 	for (;;)
 	{
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
 		char kbch;
 		char c;
 
@@ -4124,9 +4118,7 @@ static void diskio_test(BYTE drv)
 
 					for (pos = 0; pos < v; )
 					{
-						#if WITHUSBHW
-								board_usbh_polling();     // usb device polling
-						#endif /* WITHUSBHW */
+						board_dpc_processing();		// обработка отложенного вызова user mode функций
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
 						processmessages(& kbch, & kbready, 0, NULL);
@@ -5604,9 +5596,7 @@ static void BarTest(void)
 
 		display_flush();
 		//local_delay_ms(5);
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -10621,9 +10611,7 @@ void hightests(void)
 			colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
 			display_nextfb();
-#if WITHUSBHW
-	board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 			int change = 0;
 			// X limits check
 			if (stepX > 0 && posX + rectX >= DIM_X)
@@ -12919,9 +12907,7 @@ void hightests(void)
 				if (c == ' ')
 					break;
 			}
-	#if WITHUSBHW
-			board_usbh_polling();     // usb device polling
-	#endif /* WITHUSBHW */
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 	#if WITHUSEAUDIOREC
 			sdcardbgprocess();
 	#endif /* WITHUSEAUDIOREC */
@@ -12931,9 +12917,7 @@ void hightests(void)
 		unsigned t;
 //		for (t = 0; t < 7000; t += 5)
 //		{
-//	#if WITHUSBHW
-//			board_usbh_polling();     // usb device polling
-//	#endif /* WITHUSBHW */
+//		board_dpc_processing();		// обработка отложенного вызова user mode функций
 //	#if WITHUSEAUDIOREC
 //			sdcardbgprocess();
 //	#endif /* WITHUSEAUDIOREC */
@@ -12967,9 +12951,7 @@ void hightests(void)
 				break;
 			for (t = 0; t < 7000; t += 5)
 			{
-		#if WITHUSBHW
-				board_usbh_polling();     // usb device polling
-		#endif /* WITHUSBHW */
+				board_dpc_processing();		// обработка отложенного вызова user mode функций
 		#if WITHUSEAUDIOREC
 				sdcardbgprocess();
 		#endif /* WITHUSEAUDIOREC */

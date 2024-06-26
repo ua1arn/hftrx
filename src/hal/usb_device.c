@@ -286,10 +286,6 @@ void MX_USB_DEVICE_Process(void)
 
 #endif /* WITHUSBHW */
 
-void board_usbh_polling(void)
-{
-}
-
 static void board_usb_dpc(void * ctx)
 {
 #if WITHUSBHW
