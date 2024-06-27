@@ -1177,22 +1177,22 @@
 
 	#endif
 
-	#define BOARD_BLINK2_BIT (UINT32_C(1) << 2)	// PG2 - led to ground
-	#define BOARD_BLINK1_BIT (UINT32_C(1) << 1)	// PG1 - led to ground
-	#define BOARD_BLINK0_BIT (UINT32_C(1) << 0)	// PG0 - led to ground
+	#define BOARD_BLINK2_BIT (UINT32_C(1) << 2)	// PG2 - led to VCC3.3
+	#define BOARD_BLINK1_BIT (UINT32_C(1) << 1)	// PG1 - led to VCC3.3
+	#define BOARD_BLINK0_BIT (UINT32_C(1) << 0)	// PG0 - led to VCC3.3
 
 #if 1
 	// RGB_3528 LED
-	// PG2, PG1, PG0 to ground -
+	// PG2, PG1, PG0 to VCC3.3
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piog_outputs(BOARD_BLINK2_BIT, 1 * BOARD_BLINK2_BIT); \
-		arm_hardware_piog_outputs(BOARD_BLINK1_BIT, 1 * BOARD_BLINK1_BIT); \
-		arm_hardware_piog_outputs(BOARD_BLINK0_BIT, 1 * BOARD_BLINK0_BIT); \
+		arm_hardware_piog_outputs(BOARD_BLINK2_BIT, 0 * BOARD_BLINK2_BIT); \
+		arm_hardware_piog_outputs(BOARD_BLINK1_BIT, 0 * BOARD_BLINK1_BIT); \
+		arm_hardware_piog_outputs(BOARD_BLINK0_BIT, 0 * BOARD_BLINK0_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			gpioX_setstate(GPIOG, BOARD_BLINK2_BIT, !! (state) * BOARD_BLINK2_BIT); \
-			gpioX_setstate(GPIOG, BOARD_BLINK1_BIT, !! (state) * BOARD_BLINK1_BIT); \
-			gpioX_setstate(GPIOG, BOARD_BLINK0_BIT, !! (state) * BOARD_BLINK0_BIT); \
+			gpioX_setstate(GPIOG, BOARD_BLINK2_BIT, ! (state) * BOARD_BLINK2_BIT); \
+			gpioX_setstate(GPIOG, BOARD_BLINK1_BIT, ! (state) * BOARD_BLINK1_BIT); \
+			gpioX_setstate(GPIOG, BOARD_BLINK0_BIT, ! (state) * BOARD_BLINK0_BIT); \
 		} while (0)
 #endif
 
