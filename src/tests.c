@@ -10569,6 +10569,14 @@ void hightests(void)
 	//hmain();
 #if 0
 	{
+		uint_fast32_t allwnr_v3s_get_apb_freq(void);
+
+		PRINTF("CCU->APB2_CFG_REG=%08X\n", (unsigned) CCU->APB2_CFG_REG);
+		PRINTF("allwnr_v3s_get_apb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb_freq() / 1000 / 1000));
+	}
+#endif
+#if 0
+	{
 		// Video Encoding test
 		CCU->VE_CLK_REG |= UINT32_C(1) << 31;
 		(void) CCU->VE_CLK_REG;

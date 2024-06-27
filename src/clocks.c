@@ -1802,6 +1802,13 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
     return REFINFREQ;	// 24 MHz usually
 }
 
+
+uint_fast32_t allwnr_v3s_get_arm_freq(void)
+{
+	return 100000000;
+}
+
+
 //	The PLL Output = 24MHz*N*K/2.
 //	Note: The PLL Output should be fixed to 600MHz, it is not recommended to
 //	vary this value arbitrarily.
@@ -1809,7 +1816,7 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
 //	The PLL output clock must be in the range of 200MHz~1.8GHz.
 //	Its default is 600MHz.
 // V3s
-uint_fast32_t allwnrt113_get_pll_periph0_x2_freq(void)
+uint_fast32_t allwnr_v3s_get_pll_periph0_x2_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
 	//const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x0F);	// PLL_24M_POST_DIV
@@ -1821,13 +1828,13 @@ uint_fast32_t allwnrt113_get_pll_periph0_x2_freq(void)
 }
 
 // V3s
-uint_fast32_t allwnrt113_get_pll_periph0_freq(void)
+uint_fast32_t allwnr_v3s_get_pll_periph0_freq(void)
 {
-	return allwnrt113_get_pll_periph0_x2_freq() / 2;
+	return allwnr_v3s_get_pll_periph0_x2_freq() / 2;
 }
 
 // V3s
-uint_fast32_t allwnrt113_get_apb_freq(void)
+uint_fast32_t allwnr_v3s_get_apb_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
@@ -1850,28 +1857,39 @@ uint_fast32_t allwnrt113_get_apb_freq(void)
 	case 0x02:
 	case 0x03:
 		// 1X: PLL_PERIPH0
-		return allwnrt113_get_pll_periph0_freq() / (M * N);
+		return allwnr_v3s_get_pll_periph0_freq() / (M * N);
 	}
 }
 
 // V3s
-uint_fast32_t allwnrt113_get_apb1_freq(void)
-{
-    return REFINFREQ;	// 24 MHz usually
-}
+//uint_fast32_t allwnr_v3s_get_apb1_freq(void)
+//{
+//    return REFINFREQ;	// 24 MHz usually
+//}
 
 // V3s
 // apbclk
 uint_fast32_t allwnrt113_get_uart_freq(void)
 {
-    return allwnrt113_get_apb_freq();
+    return allwnr_v3s_get_apb_freq();
 }
 
 // V3s
 // apbclk
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
-    return allwnrt113_get_apb_freq();
+    return allwnr_v3s_get_apb_freq();
+}
+
+// V3s
+void allwnr_v3s_pll_initialize(void)
+{
+	CCU->APB2_CFG_REG =
+		0x01 * (UINT32_C(1) << 24) |
+		//0x02 * (UINT32_C(1) << 16) |	// N 0..3
+		//0x00 * (UINT32_C(1) << 0) |	// M 0..31
+		0;
+	(void) CCU->APB2_CFG_REG;
 }
 
 #elif CPUSTYLE_A64
@@ -9206,6 +9224,43 @@ sysinit_pll_initialize(int forced)
 	}
 	allwnrt113_pll_initialize();
 
+#elif CPUSTYLE_F133
+
+	/* Off bootloader USB */
+	if (1)
+	{
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (UINT32_C(1) << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 30);	// USBPHY0_RSTN
+	}
+
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
+	allwnrt113_pll_initialize();
+//
+	set_pll_riscv_axi(RV_PLL_CPU_N);
+
+	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
+
+	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
+
+#elif CPUSTYLE_V3S
+
+	/* Off bootloader USB */
+	if (1)
+	{
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
+//
+//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
+	}
+	allwnr_v3s_pll_initialize();
+
+
 #elif CPUSTYLE_T507 && ! WITHISBOOTLOADER_DDR
 
 	{
@@ -9282,28 +9337,6 @@ sysinit_pll_initialize(int forced)
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
 	C0_CPUX_CFG_T507->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
 #endif /* CPUSTYLE_H616 */
-
-#elif CPUSTYLE_F133
-
-	/* Off bootloader USB */
-	if (1)
-	{
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (UINT32_C(1) << 24);	// USBOTG0_RST
-
-		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 30);	// USBPHY0_RSTN
-	}
-
-	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
-	allwnrt113_pll_initialize();
-//
-	set_pll_riscv_axi(RV_PLL_CPU_N);
-
-	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
-
-	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
 
 #elif CPUSTYLE_VM14
 	/* 1892ВМ14Я */
