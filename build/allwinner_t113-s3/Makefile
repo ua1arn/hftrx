@@ -33,7 +33,7 @@ PROJECT = tc1_t113s3
 # Define linker script file here
 LDSCRIPT_BOOT = ./allwnr_t113s3_boot.ld
 LDSCRIPT_APP = ./allwnr_t113s3_app.ld
-ARCHDIR = $(PRJROOT)/arch/t113s3
+ARCHDIR = $(PRJROOT)/arch/aw_t113x
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_T113"=1

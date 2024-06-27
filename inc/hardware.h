@@ -420,7 +420,7 @@ elif CPUSTYLE_STM32F0XX
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
-	#include "allwnr_t113s3.h"
+	#include "allwnr_t113x.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64

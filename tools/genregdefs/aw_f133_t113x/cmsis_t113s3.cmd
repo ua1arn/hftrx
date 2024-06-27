@@ -1,7 +1,7 @@
 @rem CONFIG_MACH_SUN8xxxx
 
 SET CONVERTER=..\Debug\genregdefs.exe
-SET OUTFILE=..\..\..\arch\t113s3\device.h
+SET OUTFILE=..\..\..\arch\aw_t113x\device.h
 SET FILELIST=gic.csv r_cpucfg.csv r_ccu.csv cpusubsysctrl.csv risc_cfg.csv ccu.csv sys_cfg.csv ^
 	uart.csv gpio.csv smhc.csv i2s_pcm.csv dmic.csv owa.csv audio_codec.csv twi.csv spi.csv ^
 	cir_rx.csv cir_tx.csv ledc.csv tpadc.csv gpadc.csv ce.csv rtc.csv iommu.csv ths.csv timer.csv hstimer.csv can.csv ^
@@ -13,6 +13,6 @@ SET FILELIST=gic.csv r_cpucfg.csv r_ccu.csv cpusubsysctrl.csv risc_cfg.csv ccu.c
 
 %CONVERTER% %FILELIST% > %OUTFILE%
 
-%CONVERTER% --riscv --svd %FILELIST% > aw_t113s3.svd
+%CONVERTER% --riscv --svd %FILELIST% > aw_t113x.svd
 
 @pause

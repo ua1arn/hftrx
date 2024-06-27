@@ -8,8 +8,8 @@
  *       reference manual of DDI0464F_cortex_A7_mpcore_r0p5_trm.pdf.
  */
 
-#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T113X_H_
+#define ARCH_ALLWNR_T113S3_ALLWNR_T113X_H_
 
 
 /**
@@ -35,7 +35,7 @@
 #include "device.h"
 
 #include "core_ca.h"
-#include "system_allwnr_t113s3.h"
+#include "system_allwnr_t113x.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
@@ -128,4 +128,4 @@ __STATIC_FORCEINLINE uint32_t __UQSUB8(uint32_t op1, uint32_t op2)
   return(result);
 }
 
-#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T113X_H_ */
