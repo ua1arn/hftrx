@@ -742,7 +742,29 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 
 /* строки, выводимые на индикатор для обозначения режимов.
  */
-#if CTLREGMODE24_RK4CI	/* управляющий регистр 24 бита - "Воробей" RK4CI */
+#if CTLREGMODE_NOCTLREG
+	/* перечисление всех возможных режимов АРУ
+	 */
+	enum {
+		AGCMODE_LONG = 0,
+		AGCMODE_SLOW = 0,
+		AGCMODE_MED = 0,
+		AGCMODE_FAST = 0,
+		//
+		AGCMODE_OFF
+		//
+		};
+	static const FLASHMEM struct {
+		uint_fast8_t code;
+		char label4 [5];
+		char label3 [4];
+	}  agcmodes [] =
+	{
+		{ BOARD_AGCCODE_ON,  "AGC ", "AGC" },
+		{ BOARD_AGCCODE_OFF, "OFF ", "OFF" },
+	};
+
+#elif CTLREGMODE24_RK4CI	/* управляющий регистр 24 бита - "Воробей" RK4CI */
 	/* перечисление всех возможных режимов АРУ
 	 */
 	enum {

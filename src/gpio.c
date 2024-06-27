@@ -985,7 +985,7 @@ static void gpioX_progUnsafe(
 	unsigned pull
 	)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
@@ -1039,7 +1039,7 @@ static void gpioX_progUnsafeNoPull(
 	unsigned drv
 	)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
@@ -9720,6 +9720,8 @@ arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
+#elif CPUSTYLE_V3S
+
 #elif (CPUSTYLE_A64)
 
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, PB_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
@@ -9776,6 +9778,8 @@ arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h);	// PORT C
+
+#elif CPUSTYLE_V3S
 
 #elif (CPUSTYLE_A64)
 
@@ -9889,6 +9893,8 @@ arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
 
+#elif CPUSTYLE_V3S
+
 #elif (CPUSTYLE_A64)
 
 	//gpioX_onchangeinterrupt(GPIOE, GPIOINTE, PE_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
@@ -9943,6 +9949,8 @@ arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h);	// PORT F
 
+#elif CPUSTYLE_V3S
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -9979,6 +9987,8 @@ arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
+
+#elif CPUSTYLE_V3S
 
 #elif (CPUSTYLE_A64)
 
