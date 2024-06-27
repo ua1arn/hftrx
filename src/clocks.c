@@ -1805,7 +1805,7 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
 
 uint_fast32_t allwnr_v3s_get_arm_freq(void)
 {
-	return 100000000;
+	return 1008000000;
 }
 
 
@@ -1881,15 +1881,76 @@ uint_fast32_t allwnrt113_get_twi_freq(void)
     return allwnr_v3s_get_apb_freq();
 }
 
+/////////////////////
+
+static void clock_set_pll_cpu(uint32_t clk)
+{
+	int p = 0;
+	int k = 1;
+	int m = 1;
+	uint32_t val;
+
+	if(clk > 1152000000)
+	{
+		k = 2;
+	}
+	else if(clk > 768000000)
+	{
+		k = 3;
+		m = 2;
+	}
+
+	/* Switch to 24MHz clock while changing cpu pll */
+	val = (2 << 0) | (1 << 8) | (1 << 16);
+	CCU->CPU_AXI_CFG_REG = val;
+
+	CCU->PLL_CPU_CTRL_REG = 0;
+	/* cpu pll rate = ((24000000 * n * k) >> p) / m */
+	val = (0x1 << 31);
+	val |= ((p & 0x3) << 16);
+	val |= ((((clk / (24000000 * k / m)) - 1) & 0x1f) << 8);
+	val |= (((k - 1) & 0x3) << 4);
+	val |= (((m - 1) & 0x3) << 0);
+	CCU->PLL_CPU_CTRL_REG = val;
+	//sdelay(200);
+	while((CCU->PLL_CPU_CTRL_REG & (1 << 28)) == 0)
+		;
+
+	/* Switch clock source */
+	val = (2 << 0) | (1 << 8) | (2 << 16);
+	CCU->CPU_AXI_CFG_REG = val;
+}
+///
+
 // V3s
 void allwnr_v3s_pll_initialize(void)
 {
+	clock_set_pll_cpu(1008000000);
+
 	CCU->APB2_CFG_REG =
 		0x01 * (UINT32_C(1) << 24) |
 		//0x02 * (UINT32_C(1) << 16) |	// N 0..3
 		//0x00 * (UINT32_C(1) << 0) |	// M 0..31
 		0;
 	(void) CCU->APB2_CFG_REG;
+
+	/* pll video - 396MHZ */
+	CCU->PLL_VIDEO_CTRL_REG = 0x91004107;
+	while((CCU->PLL_VIDEO_CTRL_REG & (1 << 28)) == 0)
+		;
+
+	/* pll periph0 - 600MHZ */
+	CCU->PLL_PERIPH0_CTRL_REG = 0x90041811;
+	while((CCU->PLL_PERIPH0_CTRL_REG & (1 << 28)) == 0)
+		;
+
+	/* ahb1 = pll periph0 / 3, apb1 = ahb1 / 2 */
+	CCU->AHB_APB0_CFG_REG = 0x00003180;
+	(void) CCU->AHB_APB0_CFG_REG;
+
+	/* mbus  = pll periph0 / 4 */
+	CCU->MBUS_CLK_REG = 0x81000003;
+	(void) CCU->MBUS_CLK_REG;
 }
 
 #elif CPUSTYLE_A64
