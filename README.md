@@ -9,9 +9,7 @@
 
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
 1.1 **ARM:** ARM GNU Toolchain https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads (последняя проверенная сборка arm-none-eabi-gcc (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 13.2.1 20231009) <br>
-1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/avr-gcc-builds/<br>
-
-Прямая ссылка https://github.com/ZakKemble/avr-gcc-build/releases/download/v12.1.0-1/avr-gcc-12.1.0-x64-windows.zip (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
+1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/avr-gcc-builds/<br> Прямая ссылка https://github.com/ZakKemble/avr-gcc-build/releases/download/v12.1.0-1/avr-gcc-12.1.0-x64-windows.zip (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
 1.3 **RISC-V:** riscv-none-elf-gcc.exe (xPack GNU RISC-V Embedded GCC x86_64) 12.2.0 https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/
 https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v12.2.0-1/xpack-riscv-none-elf-gcc-12.2.0-1-win32-x64.zip
 
