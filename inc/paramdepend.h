@@ -873,6 +873,59 @@ extern "C" {
 	#define HARDWARE_NCORES 2
 	#define WITHCPUNAME "Allw T113-s3"
 
+
+#elif CPUSTYLE_V3S
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	//#define HARDWARE_CLK32K_FREQ 32000uL
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	24000000//(allwnrt113_get_arm_freq())
+	#define BOARD_USART_FREQ 24000000//(allwnrt113_get_uart_freq())
+	#define CPU_PL1_FREQ 24000000//(allwnrt113_get_hosc_freq())	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		12000000u	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	24000000u	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000u	/* 400 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000u	/* 100 kHz для низкоскоростных микросхем */
+
+
+	typedef enum {
+		GPIO_CFG_IN  = 0x00,
+		GPIO_CFG_OUT = 0x01,
+		GPIO_CFG_AF2 = 0x02,
+		GPIO_CFG_AF3 = 0x03,
+		GPIO_CFG_AF4 = 0x04,
+		GPIO_CFG_AF5 = 0x05,
+		GPIO_CFG_AF6 = 0x06,
+		GPIO_CFG_AF7 = 0x07,
+		GPIO_CFG_AF8 = 0x08,
+		GPIO_CFG_AF9 = 0x09,
+		GPIO_CFG_AF10 = 0x0A,
+		GPIO_CFG_AF11 = 0x0B,
+		GPIO_CFG_AF12 = 0x0C,
+		GPIO_CFG_AF13 = 0x0D,
+		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
+		GPIO_CFG_IODISABLE = 0x0F,
+	} GPIOMode_TypeDef;
+
+	#define HARDWARE_NCORES 1
+	#define WITHCPUNAME "Allw V3s"
+
 #elif CPUSTYLE_VM14
 
 	typedef uint_fast16_t adcvalholder_t;

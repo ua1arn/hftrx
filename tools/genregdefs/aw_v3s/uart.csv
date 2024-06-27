@@ -1,0 +1,44 @@
+#type; UART
+
+#base; UART0 0x01C28000
+#base; UART1 0x01C28400
+#base; UART2 0x01C28800
+
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+
+#regdef; UART_RBR_THR_DLL; 0x0000; UART Receive Buffer Register/Transmit Holding Register
+#regdef; UART_DLH_IER; 0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register
+#regdef; UART_IIR_FCR; 0x0008; UART Interrupt Identity Register/UART FIFO Control Register
+#regdef; UART_LCR; 0x000C; UART Line Control Register
+#regdef; UART_MCR; 0x0010; UART Modem Control Register
+#regdef; UART_LSR; 0x0014; UART Line Status Register
+#regdef; UART_MSR; 0x0018; UART Modem Status Register
+#regdef; UART_SCH; 0x001C; UART Scratch Register
+#regdef; UART_USR; 0x007C; UART Status Register
+#regdef; UART_TFL; 0x0080; UART Transmit FIFO Level Register
+#regdef; UART_RFL; 0x0084; UART Receive FIFO Level Register
+#regdef; UART_HSK; 0x0088; UART DMA Handshake Configuration Register
+#regdef; UART_DMA_REQ_EN; 0x008C; UART DMA Request Enable Register
+#regdef; UART_HALT; 0x00A4; UART Halt TX Register
+#regdef; UART_DBG_DLL; 0x00B0; UART Debug DLL Register
+#regdef; UART_DBG_DLH; 0x00B4; UART Debug DLH Register
+#regdef; UART_A_FCC; 0x00F0; UART FIFO Clock Control Register
+#regdef; UART_A_RXDMA_CTRL; 0x0100; UART RXDMA Control Register
+#regdef; UART_A_RXDMA_STR; 0x0104; UART RXDMA Start Register
+#regdef; UART_A_RXDMA_STA; 0x0108; UART RXDMA Status Register
+#regdef; UART_A_RXDMA_LMT; 0x010C; UART RXDMA Limit Register
+#regdef; UART_A_RXDMA_SADDRL; 0x0110; UART RXDMA Buffer Start Address Low Register
+#regdef; UART_A_RXDMA_SADDRH; 0x0114; UART RXDMA Buffer Start Address High Register
+#regdef; UART_A_RXDMA_BL; 0x0118; UART RXDMA Buffer Length Register
+#regdef; UART_A_RXDMA_IE; 0x0120; UART RXDMA Interrupt Enable Register
+#regdef; UART_A_RXDMA_IS; 0x0124; UART RXDMA Interrupt Status Register
+#regdef; UART_A_RXDMA_WADDRL; 0x0128; UART RXDMA Write Address Low Register
+#regdef; UART_A_RXDMA_WADDRH; 0x012C; UART RXDMA Write Address high Register
+#regdef; UART_A_RXDMA_RADDRL; 0x0130; UART RXDMA Read Address Low Register
+#regdef; UART_A_RXDMA_RADDRH; 0x0134; UART RXDMA Read Address high Register
+#regdef; UART_A_RXDMA_DCNT; 0x0138; UART RADMA Data Count Register
+
+#regdef; padding 0; 0x400; set size
+#typeend;

@@ -429,6 +429,21 @@ elif CPUSTYLE_STM32F0XX
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
+
+#elif CPUSTYLE_V3S
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
+
+	#include "allwnr_v3s.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
 #elif CPUSTYLE_VM14
 
 	// 1892ВМ14Я ELVEES multicore.ru

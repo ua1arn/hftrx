@@ -1,0 +1,59 @@
+## 0x01C20800
+
+#type; GPIO
+# 1 2 4 5 6
+#base; GPIOB 0x01C20824
+#base; GPIOC 0x01C20848
+##base; GPIOD 0x01C2086C
+#base; GPIOE 0x01C20890
+#base; GPIOF 0x01C208B4
+#base; GPIOG 0x01C208D8
+
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 2; Multi_Driving Register
+#regdef; PULL; 0x01C 2; Pull Register
+#regdef; padding 0; 0x024; Need for address arithmetics
+#typeend;
+
+#type; GPIOBLOCK
+
+#base; GPIOBLOCK 0x01C20800
+
+#aggreg; GPIO_PINS; 0x0000 7; GPIO pin control
+#regdef; CFG; 0x000 4; Configure Register
+#regdef; DATA; 0x0010; Data Register
+#regdef; DRV; 0x014 2; Multi_Driving Register
+#regdef; PULL; 0x01C 2; Pull Register
+#regdef; padding 0; 0x024; Need for address arithmetics
+#aggregend;
+#aggreg; GPIO_INTS; 0x0200 7; GPIO interrupt control
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#aggregend;
+#regdef; PIO_POW_MOD_SEL; 0x0340; PIO Group Withstand Voltage Mode Select Register
+#regdef; PIO_POW_MS_CTL; 0x0344; PIO Group Withstand Voltage Mode Select Control Register
+#regdef; PIO_POW_VAL; 0x0348; PIO Group Power Value Register
+#typeend;
+
+#type; GPIOINT
+
+#base; GPIOINTB 0x01C20820
+#base; GPIOINTC 0x01C20840
+##base; GPIOINTD 0x01C20860
+#base; GPIOINTE 0x01C20880
+#base; GPIOINTF 0x01C208A0
+#base; GPIOINTG 0x01C208C0
+
+#irq; GPIOB_NS 47 
+#irq; GPIOG_NS 49 
+
+#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
+#regdef; EINT_CTL; 0x010; External Interrupt Control Register
+#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
+#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
+#regdef; padding 0; 0x020; PB External Interrupt Debounce Register
+#typeend;
