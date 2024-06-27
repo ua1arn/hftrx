@@ -261,6 +261,200 @@
   <baseAddress>0x01C208C0</baseAddress>
   </peripheral>
   <peripheral>
+  <name>TIMER</name>
+  <description></description>
+  <baseAddress>0x01C20C00</baseAddress>
+  <registers>
+   <register>
+    <name>TMR_IRQ_EN_REG</name>
+    <displayName>TMR_IRQ_EN_REG</displayName>
+    <description>Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR_IRQ_STA_REG</name>
+    <displayName>TMR_IRQ_STA_REG</displayName>
+    <description>Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>3</dim>
+    <addressOffset>0x00000010</addressOffset>
+    <registers>
+     <register>
+      <name>CTRL_REG</name>
+      <displayName>CTRL_REG</displayName>
+      <description>Timer n Control Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>INTV_VALUE_REG</name>
+      <displayName>INTV_VALUE_REG</displayName>
+      <description>Timer n Interval Value Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CUR_VALUE_REG</name>
+      <displayName>CUR_VALUE_REG</displayName>
+      <description>Timer n Current Value Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x030</dimIncrement>
+   </cluster>
+   <register>
+    <name>WDOG_IRQ_EN_REG</name>
+    <displayName>WDOG_IRQ_EN_REG</displayName>
+    <description>Watchdog IRQ Enable Register</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_IRQ_STA_REG</name>
+    <displayName>WDOG_IRQ_STA_REG</displayName>
+    <description>Watchdog Status Register</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_SOFT_RST_REG</name>
+    <displayName>WDOG_SOFT_RST_REG</displayName>
+    <description>Watchdog Software Reset Register</description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CTRL_REG</name>
+    <displayName>WDOG_CTRL_REG</displayName>
+    <description>Watchdog Control Register</description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_CFG_REG</name>
+    <displayName>WDOG_CFG_REG</displayName>
+    <description>Watchdog Configuration Register</description>
+    <addressOffset>0x0B4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_MODE_REG</name>
+    <displayName>WDOG_MODE_REG</displayName>
+    <description>Watchdog Mode Register</description>
+    <addressOffset>0x0B8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDOG_OUTPUT_CFG_REG</name>
+    <displayName>WDOG_OUTPUT_CFG_REG</displayName>
+    <description>Watchdog Output Configuration Register</description>
+    <addressOffset>0x0BC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT_CTL_REG</name>
+    <displayName>AVS_CNT_CTL_REG</displayName>
+    <description>AVS Control Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT0_REG</name>
+    <displayName>AVS_CNT0_REG</displayName>
+    <description>AVS Counter 0 Register</description>
+    <addressOffset>0x0C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT1_REG</name>
+    <displayName>AVS_CNT1_REG</displayName>
+    <description>AVS Counter 1 Register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AVS_CNT_DIV_REG</name>
+    <displayName>AVS_CNT_DIV_REG</displayName>
+    <description>AVS Divisor Register</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_TEST_REG</name>
+    <displayName>CNT64_TEST_REG</displayName>
+    <description>64-bit Counter Test Mode Register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_CTRL_REG</name>
+    <displayName>CNT64_CTRL_REG</displayName>
+    <description>64-bit Counter Control Register</description>
+    <addressOffset>0x0D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_LOW_REG</name>
+    <displayName>CNT64_LOW_REG</displayName>
+    <description>64-bit Counter Low Register</description>
+    <addressOffset>0x0D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_HIGH_REG</name>
+    <displayName>CNT64_HIGH_REG</displayName>
+    <description>64-bit Counter High Register</description>
+    <addressOffset>0x0DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>UART0</name>
   <description></description>
   <baseAddress>0x01C28000</baseAddress>

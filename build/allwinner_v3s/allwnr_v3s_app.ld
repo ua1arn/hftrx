@@ -4,8 +4,8 @@
 
 MEMORY
 {
-  SRAM_A1 (rwx)	: ORIGIN = 0x00020000, 				LENGTH = 32k	/*  */
-  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 128M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
+  SRAM (rwx)	: ORIGIN = 0x00000000, 				LENGTH = 16k + 44k	/*  */
+  RAM (rwx)  : ORIGIN = 0x40000000 + 256, 			LENGTH = 64M - 256	/* DDR internal memory - 128 MB - 16 kB - 256 B*/
 }
 
 /* Library configurations */
@@ -165,7 +165,7 @@ SECTIONS
 		*(.dtcm*)
 
 		__data2_end__ = .;
-	} > RAM /* was: SRAM_A1 */
+	} > RAM /* was: SRAM */
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 

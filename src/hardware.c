@@ -2490,6 +2490,28 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+
+#elif CPUSTYLE_V3S
+
+	// Все сравнения должны быть не точнее 1 MB
+
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
+		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+
+	if (a < 0x00400000)
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	if (a >= 0x40000000)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_CACHED(ro, 0);
+//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
+//		return addrbase | TTB_PARA_CACHED(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #elif CPUSTYLE_A64
 
 	// Все сравнения должны быть не точнее 1 MB

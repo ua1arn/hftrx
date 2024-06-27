@@ -1,0 +1,43 @@
+#type; TIMER
+#base; TIMER 0x01C20C00
+#irq; TIMER0 50
+#irq; TIMER1 51
+#irq; TIMER3 52
+#irq; WATCHDOG 57
+
+#regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
+#regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register
+
+##regdef; TMR0_CTRL_REG; 0x0010; Timer 0 Control Register
+##regdef; TMR0_INTV_VALUE_REG; 0x0014; Timer 0 Interval Value Register
+##regdef; TMR0_CUR_VALUE_REG; 0x0018; Timer 0 Current Value Register
+##regdef; TMR1_CTRL_REG; 0x0020; Timer 1 Control Register
+##regdef; TMR1_INTV_VALUE_REG; 0x0024; Timer 1 Interval Value Register
+##regdef; TMR1_CUR_VALUE_REG; 0x0028; Timer 1 Current Value Register
+
+#aggreg; TMR; 0x0010 3; Timer
+#regdef; CTRL_REG; 0x000; Timer n Control Register
+#regdef; INTV_VALUE_REG; 0x004; Timer n Interval Value Register
+#regdef; CUR_VALUE_REG; 0x008; Timer n Current Value Register
+#regdef; padding 0; 0x010; Placeholder for 0x010 alignment
+#aggregend;
+
+#regdef; WDOG_IRQ_EN_REG; 0x00A0; Watchdog IRQ Enable Register
+#regdef; WDOG_IRQ_STA_REG; 0x00A4; Watchdog Status Register
+#regdef; WDOG_SOFT_RST_REG; 0x00A8; Watchdog Software Reset Register
+#regdef; WDOG_CTRL_REG; 0x00B0; Watchdog Control Register
+#regdef; WDOG_CFG_REG; 0x00B4; Watchdog Configuration Register
+#regdef; WDOG_MODE_REG; 0x00B8; Watchdog Mode Register
+#regdef; WDOG_OUTPUT_CFG_REG; 0x00BC; Watchdog Output Configuration Register
+#regdef; AVS_CNT_CTL_REG; 0x00C0; AVS Control Register
+#regdef; AVS_CNT0_REG; 0x00C4; AVS Counter 0 Register
+#regdef; AVS_CNT1_REG; 0x00C8; AVS Counter 1 Register
+#regdef; AVS_CNT_DIV_REG; 0x00CC; AVS Divisor Register
+
+#regdef; CNT64_TEST_REG; 0x00D0; 64-bit Counter Test Mode Register
+#regdef; CNT64_CTRL_REG; 0x00D4; 64-bit Counter Control Register
+#regdef; CNT64_LOW_REG; 0x00D8; 64-bit Counter Low Register
+#regdef; CNT64_HIGH_REG; 0x00DC; 64-bit Counter High Register
+
+#regdef; padding 0; 1024; Placeholder for alignment
+#typeend;

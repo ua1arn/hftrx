@@ -1788,6 +1788,20 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
+#elif CPUSTYLE_V3S
+
+// V3s
+uint_fast32_t allwnrt113_get_hosc_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+uint_fast32_t allwnrt113_get_losc_freq(void)
+{
+	return LSEFREQ;
+}
+
 #elif CPUSTYLE_A64
 
 // A64
@@ -5111,7 +5125,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -5519,7 +5533,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S
 
 	// timebase timer
 	const unsigned ix = 1;

@@ -668,28 +668,29 @@
 
 // WITHUART0HW
 #define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = (UINT32_C(1) << 2); /* PE2 UART0-TX */ \
-		const portholder_t RXMASK = (UINT32_C(1) << 3); /* PE3 UART0-RX - pull-up RX data */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
-		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
-	} while (0)
-
-// WITHCAN0HW
-#define HARDWARE_CAN0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 2; /* PB2 CAN0_TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 3; /* PB3 CAN0_RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF8); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF8); \
+		const portholder_t TXMASK = (UINT32_C(1) << 8); /* PB8 UART0-TX */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 9); /* PB9 UART0-RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
-// WITHCAN1HW
-#define HARDWARE_CAN1_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 4; /* PB4 CAN1_TX - Header P2 pins */ \
-		const portholder_t RXMASK = UINT32_C(1) << 5; /* PB5 CAN1_RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF8); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF8); \
+// WITHUART1HW
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const portholder_t TXMASK = (UINT32_C(1) << 21); /* PE21 UART1-TX */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 22); /* PE22 UART1-RX - pull-up RX data */  \
+		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF4); \
+		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF4); \
+		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+
+
+// WITHUART2HW
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const portholder_t TXMASK = (UINT32_C(1) << 0); /* PB0 UART2-TX */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 1); /* PB1 UART2-RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -1177,17 +1178,17 @@
 
 	#endif
 
-	#define BOARD_BLINK2_BIT (UINT32_C(1) << 2)	// PG2 - led to VCC3.3
-	#define BOARD_BLINK1_BIT (UINT32_C(1) << 1)	// PG1 - led to VCC3.3
-	#define BOARD_BLINK0_BIT (UINT32_C(1) << 0)	// PG0 - led to VCC3.3
+	#define BOARD_BLINK2_BIT (UINT32_C(1) << 2)	// PG2 - RED led to VCC3.3
+	#define BOARD_BLINK1_BIT (UINT32_C(1) << 1)	// PG1 - BLUE led to VCC3.3
+	#define BOARD_BLINK0_BIT (UINT32_C(1) << 0)	// PG0 - GREEN led to VCC3.3
 
 #if 1
 	// RGB_3528 LED
 	// PG2, PG1, PG0 to VCC3.3
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piog_outputs(BOARD_BLINK2_BIT, 0 * BOARD_BLINK2_BIT); \
-		arm_hardware_piog_outputs(BOARD_BLINK1_BIT, 0 * BOARD_BLINK1_BIT); \
-		arm_hardware_piog_outputs(BOARD_BLINK0_BIT, 0 * BOARD_BLINK0_BIT); \
+		arm_hardware_piog_outputs(1*BOARD_BLINK2_BIT, 0 * BOARD_BLINK2_BIT); \
+		arm_hardware_piog_outputs(0*BOARD_BLINK1_BIT, 0 * BOARD_BLINK1_BIT); \
+		arm_hardware_piog_outputs(0*BOARD_BLINK0_BIT, 0 * BOARD_BLINK0_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			gpioX_setstate(GPIOG, BOARD_BLINK2_BIT, ! (state) * BOARD_BLINK2_BIT); \

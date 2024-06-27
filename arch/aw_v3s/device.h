@@ -36,6 +36,10 @@ typedef enum IRQn
     UART2_IRQn = 34,                                  /*!< UART  */
     GPIOB_NS_IRQn = 47,                               /*!< GPIOINT  */
     GPIOG_NS_IRQn = 49,                               /*!< GPIOINT  */
+    TIMER0_IRQn = 50,                                 /*!< TIMER  */
+    TIMER1_IRQn = 51,                                 /*!< TIMER  */
+    TIMER3_IRQn = 52,                                 /*!< TIMER  */
+    WATCHDOG_IRQn = 57,                               /*!< TIMER  */
     VE_IRQn = 90,                                     /*!< VE Video Encoding */
 
     MAX_IRQ_n,
@@ -57,6 +61,7 @@ typedef enum IRQn
 #define GPIOF_BASE ((uintptr_t) 0x01C208B4)           /*!< GPIO  Base */
 #define GPIOINTG_BASE ((uintptr_t) 0x01C208C0)        /*!< GPIOINT  Base */
 #define GPIOG_BASE ((uintptr_t) 0x01C208D8)           /*!< GPIO  Base */
+#define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER  Base */
 #define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
@@ -110,6 +115,41 @@ typedef struct GPIOINT_Type
     volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief TIMER
+ */
+/*!< TIMER  */
+typedef struct TIMER_Type
+{
+    volatile uint32_t TMR_IRQ_EN_REG;                 /*!< Offset 0x000 Timer IRQ Enable Register */
+    volatile uint32_t TMR_IRQ_STA_REG;                /*!< Offset 0x004 Timer Status Register */
+             uint32_t reserved_0x008 [0x0002];
+    struct
+    {
+        volatile uint32_t CTRL_REG;                   /*!< Offset 0x010 Timer n Control Register */
+        volatile uint32_t INTV_VALUE_REG;             /*!< Offset 0x014 Timer n Interval Value Register */
+        volatile uint32_t CUR_VALUE_REG;              /*!< Offset 0x018 Timer n Current Value Register */
+                 uint32_t reserved_0x00C;
+    } TMR [0x003];                                    /*!< Offset 0x010 Timer */
+             uint32_t reserved_0x040 [0x0018];
+    volatile uint32_t WDOG_IRQ_EN_REG;                /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
+    volatile uint32_t WDOG_IRQ_STA_REG;               /*!< Offset 0x0A4 Watchdog Status Register */
+    volatile uint32_t WDOG_SOFT_RST_REG;              /*!< Offset 0x0A8 Watchdog Software Reset Register */
+             uint32_t reserved_0x0AC;
+    volatile uint32_t WDOG_CTRL_REG;                  /*!< Offset 0x0B0 Watchdog Control Register */
+    volatile uint32_t WDOG_CFG_REG;                   /*!< Offset 0x0B4 Watchdog Configuration Register */
+    volatile uint32_t WDOG_MODE_REG;                  /*!< Offset 0x0B8 Watchdog Mode Register */
+    volatile uint32_t WDOG_OUTPUT_CFG_REG;            /*!< Offset 0x0BC Watchdog Output Configuration Register */
+    volatile uint32_t AVS_CNT_CTL_REG;                /*!< Offset 0x0C0 AVS Control Register */
+    volatile uint32_t AVS_CNT0_REG;                   /*!< Offset 0x0C4 AVS Counter 0 Register */
+    volatile uint32_t AVS_CNT1_REG;                   /*!< Offset 0x0C8 AVS Counter 1 Register */
+    volatile uint32_t AVS_CNT_DIV_REG;                /*!< Offset 0x0CC AVS Divisor Register */
+    volatile uint32_t CNT64_TEST_REG;                 /*!< Offset 0x0D0 64-bit Counter Test Mode Register */
+    volatile uint32_t CNT64_CTRL_REG;                 /*!< Offset 0x0D4 64-bit Counter Control Register */
+    volatile uint32_t CNT64_LOW_REG;                  /*!< Offset 0x0D8 64-bit Counter Low Register */
+    volatile uint32_t CNT64_HIGH_REG;                 /*!< Offset 0x0DC 64-bit Counter High Register */
+             uint32_t reserved_0x0E0 [0x00C8];
+} TIMER_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief UART
  */
@@ -548,6 +588,7 @@ typedef struct VE_Type
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF  register set access pointer */
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
+#define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */

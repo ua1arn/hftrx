@@ -3,7 +3,7 @@
 SET CONVERTER=..\Debug\genregdefs.exe
 SET OUTFILE=..\..\..\arch\aw_v3s\device.h
 SET FILELIST=gic.csv ^
-	uart.csv gpio.csv ^
+	uart.csv gpio.csv timer.csv ^
 	ve.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%

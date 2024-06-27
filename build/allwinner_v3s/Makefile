@@ -282,19 +282,14 @@ allZ:
 bootloader: BOOT2 fsbl.alw32
   
 app_run: $(PROJECT)_app.alw32
-	$(XFEL) ddr t113-s3
+	$(XFEL) ddr v3s
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100 
 	
 # bootloader debug - check allwnr_t113s3_boot.ld
 _app_run: fsbl.alw32
-	$(XFEL) write 0x00028000 fsbl.alw32
-	$(XFEL) exec 0x00028000 
-
-app_runXBOOT: xboot_t113_800.bin
-	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 xboot_t113_800.bin
-	$(XFEL) exec 0x40000000 
+	$(XFEL) write 0x00008000 fsbl.alw32
+	$(XFEL) exec 0x00008000 
 
 flash:
 	-$(XFEL) spinor write 0x00000000 fsbl.alw32
