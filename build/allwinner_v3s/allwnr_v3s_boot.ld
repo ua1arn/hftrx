@@ -4,8 +4,8 @@
 
 MEMORY
 {
-  SRAM (rwx)	: ORIGIN = 0x00000000 + 256, 				LENGTH = 16k + 44k - 256	/*  */
-  debugRAM (rwx) : ORIGIN = 0x00000000 + 256 + 32k, 				LENGTH = 16k + 44k - 256 - 32k    /* version of parameters for bootloader tests */
+  RAM (rwx)	: ORIGIN = 0x00000000 + 256, LENGTH = 16k + 44k - 256	/*  */
+  debugRAM (rwx) : ORIGIN = 0x00000000 + 256 + 32k, LENGTH = 16k + 44k - 256 - 32k    /* version of parameters for bootloader tests */
   DDR3 (rwx) : ORIGIN = 0x40000000 + 32M, 	LENGTH = 64M - 32M		/*  */
 }
 
