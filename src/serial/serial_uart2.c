@@ -656,6 +656,43 @@ xxxx!;
 	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
 	}
 
+
+#elif CPUSTYLE_V3S
+
+	const unsigned ix = 2;
+
+	/* Open the clock gate for uart2 */
+	CCU->BUS_CLK_GATING_REG3 |= (1u << (ix + 16));
+
+	/* De-assert uart2 reset */
+	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_uart_freq() / ((defbaudrate) * 16);
+
+	UART2->UART_DLH_IER = 0;
+	UART2->UART_IIR_FCR = 0xf7;
+	UART2->UART_MCR = 0x00;
+
+	UART2->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART2->UART_RBR_THR_DLL = divisor & 0xff;
+	UART2->UART_DLH_IER = (divisor >> 8) & 0xff;
+	UART2->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART2->UART_LCR &= ~ 0x3f;
+	UART2->UART_LCR |=
+			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
+			(!! parity << 3) |	// bit3 1: parity enable
+			0;
+
+	HARDWARE_UART2_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART2_IRQn, UART2_IRQHandler);
+	}
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif

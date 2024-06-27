@@ -1802,6 +1802,11 @@ uint_fast32_t allwnrt113_get_losc_freq(void)
 	return LSEFREQ;
 }
 
+uint_fast32_t allwnrt113_get_uart_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
 #elif CPUSTYLE_A64
 
 // A64

@@ -962,7 +962,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
 
 	const unsigned ix = 0;
 
@@ -971,6 +971,42 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
+
+	/* Config uart0 to 115200-8-1-0 */
+	uint32_t divisor = allwnrt113_get_uart_freq() / ((defbaudrate) * 16);
+
+	UART0->UART_DLH_IER = 0;
+	UART0->UART_IIR_FCR = 0xf7;
+	UART0->UART_MCR = 0x00;
+
+	UART0->UART_LCR |= (1 << 7);	// Divisor Latch Access Bit
+	UART0->UART_RBR_THR_DLL = divisor & 0xff;
+	UART0->UART_DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);	// Divisor Latch Access Bit
+	//
+	UART0->UART_LCR &= ~ 0x3f;
+	UART0->UART_LCR |=
+			((0x03 & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
+			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
+			(!! parity << 3) |	// bit3 1: parity enable
+			0;
+
+	HARDWARE_UART0_INITIALIZE();
+
+	if (debug == 0)
+	{
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
+
+#elif CPUSTYLE_V3S
+
+	const unsigned ix = 0;
+
+	/* Open the clock gate for uart0 */
+	CCU->BUS_CLK_GATING_REG3 |= (1u << (ix + 16));
+
+	/* De-assert uart0 reset */
+	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
 	/* Config uart0 to 115200-8-1-0 */
 	uint32_t divisor = allwnrt113_get_uart_freq() / ((defbaudrate) * 16);
