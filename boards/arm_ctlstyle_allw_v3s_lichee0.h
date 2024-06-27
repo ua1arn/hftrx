@@ -255,6 +255,9 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define BOARD_AGCCODE_ON 1
+	#define BOARD_AGCCODE_OFF 0
+
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
@@ -312,7 +315,7 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	////#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch.h"
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9d_2ch.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
@@ -323,14 +326,14 @@
 
 	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(16uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
-	#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
+	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	#define FORMATFROMLIBRARY 	1
 	#define WITHUSBHEADSET	1
@@ -431,7 +434,7 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_UA1CEI_V2 1
@@ -464,7 +467,7 @@
 	#endif /* WITHTX */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
@@ -528,13 +531,13 @@
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	//#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	#define TSC1_TYPE TSC_TYPE_AWTPADC	/* Allwinner F133/t113-s3 resistive touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_AWTPADC	/* Allwinner F133/t113-s3 resistive touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
@@ -550,7 +553,7 @@
 	//#define WITHWFM	1			/* используется WFM */
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
-	#define WITHELKEY	1
+	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
@@ -709,8 +712,5 @@
 
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-
-//	#define BOARD_AGCCODE_ON 1
-//	#define BOARD_AGCCODE_OFF 0
 
 #endif /* ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED */
