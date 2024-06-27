@@ -1791,20 +1791,87 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYLE_V3S
 
 // V3s
-uint_fast32_t allwnrt113_get_hosc_freq(void)
-{
-    return REFINFREQ;	// 24 MHz usually
-}
-
-// V3s
 uint_fast32_t allwnrt113_get_losc_freq(void)
 {
 	return LSEFREQ;
 }
 
-uint_fast32_t allwnrt113_get_uart_freq(void)
+// V3s
+uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
     return REFINFREQ;	// 24 MHz usually
+}
+
+//	The PLL Output = 24MHz*N*K/2.
+//	Note: The PLL Output should be fixed to 600MHz, it is not recommended to
+//	vary this value arbitrarily.
+//	In the Clock Control Module, PLL(2X) output= PLL*2 = 24MHz*N*K.
+//	The PLL output clock must be in the range of 200MHz~1.8GHz.
+//	Its default is 600MHz.
+// V3s
+uint_fast32_t allwnrt113_get_pll_periph0_x2_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_PERIPH0_CTRL_REG;
+	//const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x0F);	// PLL_24M_POST_DIV
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x1F);	// PLL_FACTOR_N
+	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);	// PLL_FACTOR_K
+	//const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);	// PLL_FACTOR_M = PLL Factor M (M = Factor + 1) is only valid in plltest debug.
+
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N  * K;
+}
+
+// V3s
+uint_fast32_t allwnrt113_get_pll_periph0_freq(void)
+{
+	return allwnrt113_get_pll_periph0_x2_freq() / 2;
+}
+
+// V3s
+uint_fast32_t allwnrt113_get_apb_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	//	APB2 Clock Source Select
+	//	00: LOSC
+	//	01: OSC24M
+	//	1X: PLL_PERIPH0
+	// This clock is used for some special module apbclk(UART、TWI). Because
+	// these modules need special clock rate even if the apb1clk changed
+	switch ((clkreg >> 24) & 0x03)	/* APB2_CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		// 00: LOSC
+		return allwnrt113_get_losc_freq() / (M * N);
+	case 0x01:
+		// 01: OSC24M
+		return allwnrt113_get_hosc_freq() / (M * N);
+	case 0x02:
+	case 0x03:
+		// 1X: PLL_PERIPH0
+		return allwnrt113_get_pll_periph0_freq() / (M * N);
+	}
+}
+
+// V3s
+uint_fast32_t allwnrt113_get_apb1_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+// apbclk
+uint_fast32_t allwnrt113_get_uart_freq(void)
+{
+    return allwnrt113_get_apb_freq();
+}
+
+// V3s
+// apbclk
+uint_fast32_t allwnrt113_get_twi_freq(void)
+{
+    return allwnrt113_get_apb_freq();
 }
 
 #elif CPUSTYLE_A64

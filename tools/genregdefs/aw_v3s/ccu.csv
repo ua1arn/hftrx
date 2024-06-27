@@ -12,7 +12,7 @@
 #regdef; PLL_DDR1_CTRL_REG;  0x004C; PLL_DDR1 Control Register
 #regdef; CPU_AXI_CFG_REG;  0x0050; CPU/AXI Configuration Register 
 #regdef; AHB_APB0_CFG_REG;  0x0054; AHB/APB0 Configuration Register
-#regdef; APB1_CFG_REG;  0x0058; APB1 Configuration Register
+#regdef; APB2_CFG_REG;  0x0058; APB2 Configuration Register
 #regdef; AHB2_CFG_REG;  0x005C; AHB2 Configuration Register
 #regdef; BUS_CLK_GATING_REG0;  0x0060; Bus Clock Gating Register 0
 #regdef; BUS_CLK_GATING_REG1;  0x0064; Bus Clock Gating Register 1

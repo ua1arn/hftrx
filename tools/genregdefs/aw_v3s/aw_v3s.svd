@@ -114,9 +114,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>APB1_CFG_REG</name>
-    <displayName>APB1_CFG_REG</displayName>
-    <description>APB1 Configuration Register</description>
+    <name>APB2_CFG_REG</name>
+    <displayName>APB2_CFG_REG</displayName>
+    <description>APB2 Configuration Register</description>
     <addressOffset>0x058</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
