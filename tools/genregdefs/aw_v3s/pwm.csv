@@ -1,0 +1,9 @@
+#type; PWM
+#base; PWM 0x01C21400
+
+#regdef; PWM_CH_CTRL 	; 0x00 ; PWM Control Register
+#regdef; PWM_CH0_PERIOD ; 0x04 ; PWM Channel 0 Period Register
+#regdef; PWM_CH1_PERIOD ; 0x08 ; PWM Channel 1 Period Registe
+
+#regdef; padding 0; 1024; set size
+#typeend;

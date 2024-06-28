@@ -4487,13 +4487,13 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>16</dim>
+    <dim>8</dim>
     <addressOffset>0x00000100</addressOffset>
     <registers>
      <register>
       <name>DMAC_EN_REGN</name>
       <displayName>DMAC_EN_REGN</displayName>
-      <description>DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040</description>
+      <description>DMAC Channel Enable Register N (N = 0 to 7) 0x0100 + N*0x0040</description>
       <addressOffset>0x000</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4502,7 +4502,7 @@
      <register>
       <name>DMAC_PAU_REGN</name>
       <displayName>DMAC_PAU_REGN</displayName>
-      <description>DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040</description>
+      <description>DMAC Channel Pause Register N (N = 0 to 7) 0x0104 + N*0x0040</description>
       <addressOffset>0x004</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4511,7 +4511,7 @@
      <register>
       <name>DMAC_DESC_ADDR_REGN</name>
       <displayName>DMAC_DESC_ADDR_REGN</displayName>
-      <description>DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040</description>
+      <description>DMAC Channel Start Address Register N (N = 0 to 7) 0x0108 + N*0x0040</description>
       <addressOffset>0x008</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4520,7 +4520,7 @@
      <register>
       <name>DMAC_CFG_REGN</name>
       <displayName>DMAC_CFG_REGN</displayName>
-      <description>DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040</description>
+      <description>DMAC Channel Configuration Register N (N = 0 to 7) 0x010C + N*0x0040</description>
       <addressOffset>0x00C</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4529,7 +4529,7 @@
      <register>
       <name>DMAC_CUR_SRC_REGN</name>
       <displayName>DMAC_CUR_SRC_REGN</displayName>
-      <description>DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040</description>
+      <description>DMAC Channel Current Source Register N (N = 0 to 7) 0x0110 + N*0x0040</description>
       <addressOffset>0x010</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4538,7 +4538,7 @@
      <register>
       <name>DMAC_CUR_DEST_REGN</name>
       <displayName>DMAC_CUR_DEST_REGN</displayName>
-      <description>DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040</description>
+      <description>DMAC Channel Current Destination Register N (N = 0 to 7) 0x0114 + N*0x0040</description>
       <addressOffset>0x014</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4547,7 +4547,7 @@
      <register>
       <name>DMAC_BCNT_LEFT_REGN</name>
       <displayName>DMAC_BCNT_LEFT_REGN</displayName>
-      <description>DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040</description>
+      <description>DMAC Channel Byte Counter Left Register N (N = 0 to 7) 0x0118 + N*0x0040</description>
       <addressOffset>0x018</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4556,7 +4556,7 @@
      <register>
       <name>DMAC_PARA_REGN</name>
       <displayName>DMAC_PARA_REGN</displayName>
-      <description>DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040</description>
+      <description>DMAC Channel Parameter Register N (N = 0 to 7) 0x011C + N*0x0040</description>
       <addressOffset>0x01C</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4565,7 +4565,7 @@
      <register>
       <name>DMAC_MODE_REGN</name>
       <displayName>DMAC_MODE_REGN</displayName>
-      <description>DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040</description>
+      <description>DMAC Mode Register N (N = 0 to 7) 0x0128 + N*0x0040</description>
       <addressOffset>0x028</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4574,7 +4574,7 @@
      <register>
       <name>DMAC_FDESC_ADDR_REGN</name>
       <displayName>DMAC_FDESC_ADDR_REGN</displayName>
-      <description>DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040</description>
+      <description>DMAC Former Descriptor Address Register N (N = 0 to 7) 0x012C + N*0x0040</description>
       <addressOffset>0x02C</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
@@ -4583,14 +4583,14 @@
      <register>
       <name>DMAC_PKG_NUM_REGN</name>
       <displayName>DMAC_PKG_NUM_REGN</displayName>
-      <description>DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040</description>
+      <description>DMAC Package Number Register N (N = 0 to 7) 0x0130 + N*0x0040</description>
       <addressOffset>0x030</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x400</dimIncrement>
+    <dimIncrement>0x200</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

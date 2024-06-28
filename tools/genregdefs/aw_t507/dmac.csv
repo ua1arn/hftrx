@@ -27,4 +27,6 @@
 
 #regdef; padding 0; 0x40; Placeholder for 0x40 alignment
 #aggregend;
+
+#regdef; padding 0; 4096; Placeholder for 0x40 alignment
 #typeend;

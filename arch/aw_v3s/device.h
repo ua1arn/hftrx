@@ -40,6 +40,7 @@ typedef enum IRQn
     TIMER1_IRQn = 51,                                 /*!< TIMER  */
     TIMER3_IRQn = 52,                                 /*!< TIMER  */
     WATCHDOG_IRQn = 57,                               /*!< TIMER  */
+    DMAC_IRQn = 82,                                   /*!< DMAC  */
     VE_IRQn = 90,                                     /*!< VE Video Encoding */
 
     MAX_IRQ_n,
@@ -49,6 +50,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC  Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU  Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x01C20800)       /*!< GPIOBLOCK  Base */
@@ -63,6 +65,7 @@ typedef enum IRQn
 #define GPIOINTG_BASE ((uintptr_t) 0x01C208C0)        /*!< GPIOINT  Base */
 #define GPIOG_BASE ((uintptr_t) 0x01C208D8)           /*!< GPIO  Base */
 #define TIMER_BASE ((uintptr_t) 0x01C20C00)           /*!< TIMER  Base */
+#define PWM_BASE ((uintptr_t) 0x01C21400)             /*!< PWM  Base */
 #define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
@@ -175,6 +178,34 @@ typedef struct CCU_Type
              uint32_t reserved_0x308 [0x003E];
 } CCU_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief DMAC
+ */
+/*!< DMAC  */
+typedef struct DMAC_Type
+{
+    volatile uint32_t DMAC_IRQ_EN_REG;                /*!< Offset 0x000 DMAC IRQ Enable Register */
+             uint32_t reserved_0x004 [0x0003];
+    volatile uint32_t DMAC_IRQ_PEND_REG;              /*!< Offset 0x010 DMAC IRQ Pending Register */
+             uint32_t reserved_0x014 [0x0003];
+    volatile uint32_t DMAC_AUTO_GATE_REG;             /*!< Offset 0x020 DMAC Auto Gating Register */
+             uint32_t reserved_0x024 [0x0003];
+    const volatile uint32_t DMAC_STA_REG;             /*!< Offset 0x030 DMAC Status Register */
+             uint32_t reserved_0x034 [0x0033];
+    struct
+    {
+        volatile uint32_t DMAC_EN_REGN;               /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 7) 0x0100 + N*0x0040 */
+        volatile uint32_t DMAC_PAU_REGN;              /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 7) 0x0104 + N*0x0040 */
+        volatile uint32_t DMAC_DESC_ADDR_REGN;        /*!< Offset 0x108 DMAC Channel Start Address Register N (N = 0 to 7) 0x0108 + N*0x0040 */
+        const volatile uint32_t DMAC_CFG_REGN;        /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 7) 0x010C + N*0x0040 */
+        const volatile uint32_t DMAC_CUR_SRC_REGN;    /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 7) 0x0110 + N*0x0040 */
+        const volatile uint32_t DMAC_CUR_DEST_REGN;   /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 7) 0x0114 + N*0x0040 */
+        const volatile uint32_t DMAC_BCNT_LEFT_REGN;  /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 7) 0x0118 + N*0x0040 */
+        const volatile uint32_t DMAC_PARA_REGN;       /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 7) 0x011C + N*0x0040 */
+                 uint32_t reserved_0x020 [0x0008];
+    } CH [0x008];                                     /*!< Offset 0x100 Channel [0..7] */
+             uint32_t reserved_0x300 [0x0340];
+} DMAC_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief GPIO
  */
 /*!< GPIO  */
@@ -221,6 +252,17 @@ typedef struct GPIOINT_Type
     volatile uint32_t EINT_DEB;                       /*!< Offset 0x018 External Interrupt Debounce Register */
              uint32_t reserved_0x01C;
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief PWM
+ */
+/*!< PWM  */
+typedef struct PWM_Type
+{
+    volatile uint32_t PWM_CH_CTRL;                    /*!< Offset 0x000 PWM Control Register */
+    volatile uint32_t PWM_CH0_PERIOD;                 /*!< Offset 0x004 PWM Channel 0 Period Register */
+    volatile uint32_t PWM_CH1_PERIOD;                 /*!< Offset 0x008 PWM Channel 1 Period Registe */
+             uint32_t reserved_0x00C [0x00FD];
+} PWM_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief TIMER
  */
@@ -682,6 +724,7 @@ typedef struct VE_Type
 
 /* Access pointers */
 
+#define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
@@ -696,6 +739,7 @@ typedef struct VE_Type
 #define GPIOINTG ((GPIOINT_TypeDef *) GPIOINTG_BASE)  /*!< GPIOINTG  register set access pointer */
 #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
+#define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */

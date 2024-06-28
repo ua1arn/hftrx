@@ -1153,7 +1153,8 @@ typedef struct DMAC_Type
         const volatile uint32_t DMAC_PKG_NUM_REGN;    /*!< Offset 0x130 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
                  uint32_t reserved_0x034 [0x0003];
     } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
-} DMAC_TypeDef; /* size of structure = 0x500 */
+             uint32_t reserved_0x500 [0x02C0];
+} DMAC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief DMIC
  */
