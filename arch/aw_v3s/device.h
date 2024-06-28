@@ -34,6 +34,8 @@ typedef enum IRQn
     UART0_IRQn = 32,                                  /*!< UART  */
     UART1_IRQn = 33,                                  /*!< UART  */
     UART2_IRQn = 34,                                  /*!< UART  */
+    TWI0_IRQn = 38,                                   /*!< TWI  */
+    TWI1_IRQn = 39,                                   /*!< TWI  */
     GPIOB_NS_IRQn = 47,                               /*!< GPIOINT  */
     GPIOG_NS_IRQn = 49,                               /*!< GPIOINT  */
     TIMER0_IRQn = 50,                                 /*!< TIMER  */
@@ -69,6 +71,8 @@ typedef enum IRQn
 #define UART0_BASE ((uintptr_t) 0x01C28000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x01C28400)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
+#define TWI0_BASE ((uintptr_t) 0x01C2AC00)            /*!< TWI  Base */
+#define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 
@@ -298,6 +302,23 @@ typedef struct TIMER_Type
     volatile uint32_t CNT64_HIGH_REG;                 /*!< Offset 0x0DC 64-bit Counter High Register */
              uint32_t reserved_0x0E0 [0x00C8];
 } TIMER_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief TWI
+ */
+/*!< TWI  */
+typedef struct TWI_Type
+{
+    volatile uint32_t TWI_ADDR;                       /*!< Offset 0x000 TWI Slave Address Register */
+    volatile uint32_t TWI_XADDR;                      /*!< Offset 0x004 TWI Extended Slave Address Register */
+    volatile uint32_t TWI_DATA;                       /*!< Offset 0x008 TWI Data Byte Register */
+    volatile uint32_t TWI_CNTR;                       /*!< Offset 0x00C TWI Control Register */
+    volatile uint32_t TWI_STAT;                       /*!< Offset 0x010 TWI Status Register */
+    volatile uint32_t TWI_CCR;                        /*!< Offset 0x014 TWI Clock Control Register */
+    volatile uint32_t TWI_SRST;                       /*!< Offset 0x018 TWI Software Reset Register */
+    volatile uint32_t TWI_EFR;                        /*!< Offset 0x01C TWI Enhance Feature Register */
+    volatile uint32_t TWI_LCR;                        /*!< Offset 0x020 TWI Line Control Register */
+             uint32_t reserved_0x024 [0x00F7];
+} TWI_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief UART
  */
@@ -743,6 +764,8 @@ typedef struct VE_Type
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
+#define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0  register set access pointer */
+#define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

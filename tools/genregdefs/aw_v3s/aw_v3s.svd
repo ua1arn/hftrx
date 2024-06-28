@@ -1221,6 +1221,98 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>TWI0</name>
+  <description></description>
+  <baseAddress>0x01C2AC00</baseAddress>
+  <registers>
+   <register>
+    <name>TWI_ADDR</name>
+    <displayName>TWI_ADDR</displayName>
+    <description>TWI Slave Address Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_XADDR</name>
+    <displayName>TWI_XADDR</displayName>
+    <description>TWI Extended Slave Address Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_DATA</name>
+    <displayName>TWI_DATA</displayName>
+    <description>TWI Data Byte Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_CNTR</name>
+    <displayName>TWI_CNTR</displayName>
+    <description>TWI Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_STAT</name>
+    <displayName>TWI_STAT</displayName>
+    <description>TWI Status Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_CCR</name>
+    <displayName>TWI_CCR</displayName>
+    <description>TWI Clock Control Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_SRST</name>
+    <displayName>TWI_SRST</displayName>
+    <description>TWI Software Reset Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_EFR</name>
+    <displayName>TWI_EFR</displayName>
+    <description>TWI Enhance Feature Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI_LCR</name>
+    <displayName>TWI_LCR</displayName>
+    <description>TWI Line Control Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="TWI0">
+  <name>TWI1</name>
+  <baseAddress>0x01C2B000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>UART0</name>
   <description></description>
   <baseAddress>0x01C28000</baseAddress>
