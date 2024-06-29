@@ -73,6 +73,8 @@ typedef enum IRQn
 #define UART2_BASE ((uintptr_t) 0x01C28800)           /*!< UART  Base */
 #define TWI0_BASE ((uintptr_t) 0x01C2AC00)            /*!< TWI  Base */
 #define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI  Base */
+#define DRAM_COM_BASE ((uintptr_t) 0x01C62000)        /*!< DRAM_COM  Base */
+#define DRAM_CTL_BASE ((uintptr_t) 0x01C63000)        /*!< DRAM_CTL  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 

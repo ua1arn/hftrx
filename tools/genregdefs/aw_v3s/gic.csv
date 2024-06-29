@@ -4,6 +4,8 @@
 #type; GIC_DISTRIBUTOR; GIC DISTRIBUTOR
 #base; GIC_DISTRIBUTOR  0x01C81000
 
+#typeend;
+
 #type; GIC_INTERFACE; GIC CPU IF
 #base; GIC_INTERFACE 0x01C82000
 
@@ -30,3 +32,5 @@
 #irq; SecurePhysicalTimer 29
 #irq; NonSecurePhysicalTimer 30
 #irq; Legacy_nIRQ 31
+
+#typeend;

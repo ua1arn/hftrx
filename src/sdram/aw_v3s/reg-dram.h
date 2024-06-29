@@ -1,8 +1,8 @@
 #ifndef __V3S_REG_DRAM_H__
 #define __V3S_REG_DRAM_H__
 
-#define V3S_DRAM_COM_BASE			(0x01c62000)
-#define V3S_DRAM_CTL_BASE			(0x01c63000)
+#define V3S_DRAM_COM_BASE			DRAM_COM_BASE//(0x01c62000)
+#define V3S_DRAM_CTL_BASE			DRAM_CTL_BASE//(0x01c63000)
 
 #define MCTL_CR_BL8					(0x4 << 20)
 #define MCTL_CR_1T					(0x1 << 19)

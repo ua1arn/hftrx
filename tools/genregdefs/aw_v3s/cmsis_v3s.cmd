@@ -5,7 +5,8 @@ SET OUTFILE=..\..\..\arch\aw_v3s\device.h
 SET FILELIST=gic.csv ccu.csv ^
 	uart.csv gpio.csv twi.csv ^
 	timer.csv pwm.csv dmac.csv ^
-	ve.csv
+	ve.csv ^
+	dram.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%
 

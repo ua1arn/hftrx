@@ -1,0 +1,9 @@
+#type; DRAM_COM
+#base; DRAM_COM 0x01c62000
+
+#typeend;
+
+#type; DRAM_CTL
+#base; DRAM_CTL 0x01c63000
+
+#typeend;
