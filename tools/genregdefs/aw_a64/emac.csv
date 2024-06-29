@@ -28,3 +28,5 @@
 #regdef; EMAC_RX_CUR_DESC; 0x00C4; EMAC Current Receive Descriptor Register
 #regdef; EMAC_RX_CUR_BUF; 0x00C8; EMAC Current Receive Buffer Address Register
 #regdef; EMAC_RGMII_STA; 0x00D0; EMAC RGMII Status Register
+
+#typeend;

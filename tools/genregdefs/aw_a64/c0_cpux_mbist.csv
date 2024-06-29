@@ -1,2 +1,4 @@
 #type; C0_CPUX_MBIST
 #base; C0_CPUX_MBIST 0x01502000
+
+#typeend;

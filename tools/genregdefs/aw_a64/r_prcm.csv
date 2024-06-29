@@ -21,3 +21,5 @@
 #regdef; C1_CPU3_PWR_SWITCH_CTRL; 0x015C; C1_CPU3 Power Switch Control Register
 #regdef; RPIO_HOLD_CTRL_REG; 0x01F0; R_PIO Hold Control Register
 #regdef; OSC24M_CTRL_REG; 0x01F4; OSC24M Control Register
+
+#typeend;

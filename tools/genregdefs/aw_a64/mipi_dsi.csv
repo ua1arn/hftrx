@@ -1,2 +1,4 @@
 #type; MIPI_DSI
 #base; MIPI_DSI 0x01CA0000
+
+#typeend;

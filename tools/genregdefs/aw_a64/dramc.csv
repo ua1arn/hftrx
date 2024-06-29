@@ -39,3 +39,5 @@
 #regdef; pldtr;		0x244; priority level data threshold reg
 #regdef; hpcr;		0x250 32; host port configure register
 #regdef; csel;		0x2e0; controller select register
+
+#typeend;

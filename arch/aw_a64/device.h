@@ -1747,7 +1747,7 @@ typedef struct SYS_CFG_Type
              uint32_t reserved_0x000;
     volatile uint32_t MEMMAP_REG;                     /*!< Offset 0x004 DE memory control Register */
              uint32_t reserved_0x008 [0x0007];
-    volatile uint32_t VER_REG;                        /*!< Offset 0x024 Version Register */
+    const volatile uint32_t VER_REG;                  /*!< Offset 0x024 Version Register */
              uint32_t reserved_0x028 [0x0002];
     volatile uint32_t EMAC_EPHY_CLK_REG0;             /*!< Offset 0x030 EMAC-EPHY Clock Register 0 */
 } SYS_CFG_TypeDef; /* size of structure = 0x034 */

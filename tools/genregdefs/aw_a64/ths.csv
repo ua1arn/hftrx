@@ -15,3 +15,5 @@
 #regdef; THS_SHUTDOWN_CTRL; 0x0080; THS Shutdown Threshold Control Register
 #regdef; THS_CDATA; 0x00A0; THS Calibration Data
 #regdef; THS_DATA; 0x00C0; THS Data Register
+
+#typeend;

@@ -14,3 +14,5 @@
 #regdef; CTRLDSSEGMENT; 0x0020; EHCI 4G Segment Selector Register
 #regdef; PERIODICLISTBASE; 0x0024; EHCI Frame List Base Address Register
 #regdef; ASYNCLISTADDR; 0x0028; EHCI Next Asynchronous List Address Register
+
+#typeend;

@@ -1,2 +1,4 @@
 #type; DRAMPHY0
 #base; DRAMPHY0 0x01C65000
+
+#typeend;

@@ -7,3 +7,5 @@
 #regdef; RQ_FIQ_STATUS; 0x0014; IRQ/FIQ Status Register
 #regdef; GENER_CTRL_REG2; 0x0018; General Control Register2
 #regdef; DBG_STATE; 0x001C; Debug State Register
+
+#typeend;

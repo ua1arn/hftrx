@@ -1,2 +1,4 @@
 #type; SRAMC
 #base; SRAMC 0x01c00000
+
+#typeend;

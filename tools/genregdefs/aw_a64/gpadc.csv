@@ -17,3 +17,5 @@
 #regdef; GP_DATA_INTS; 0x0038; GPADC Data Interrupt Status Register
 #regdef; GP_CH0_CMP_DATA; 0x0040; GPADC CH0 Compare Data Register
 #regdef; GP_CH0_DATA; 0x0080; GPADC CH0 Data Register
+
+#typeend;

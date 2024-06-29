@@ -30,3 +30,5 @@
 #aggregend;
 #regdef; TCON1_GAMMA_TABLE_REG; 0x400 256; Gamma Table 0x400-0x7FF
 #regdef; TCON_ECC_FIFO_BIST_REG; 0xFFC;
+
+#typeend;

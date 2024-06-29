@@ -1,2 +1,4 @@
 #type; R_CPUCFG
 #base; R_CPUCFG 0x01F01C00
+
+#typeend;

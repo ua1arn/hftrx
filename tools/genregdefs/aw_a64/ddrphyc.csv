@@ -55,3 +55,5 @@
 #regdef; PHYC_REG_3BC; 0x3bC; Reg_3BC Rank 1
 #regdef; PHYC_REG_3C4; 0x3C4; Reg_3C4 Rank 1
 #regdef; PHYC_REG_3C8; 0x3C8; Reg_3C8 Rank 1
+
+#typeend;

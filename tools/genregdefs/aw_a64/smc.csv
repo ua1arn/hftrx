@@ -1,3 +1,5 @@
 #type; SMC
 #base; SMC 0x03007000
 #irq; SMC 76
+
+#typeend;

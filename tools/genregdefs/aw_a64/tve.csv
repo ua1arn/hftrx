@@ -38,3 +38,5 @@
 #regdef; TVE_390_REG; 0x0390; TV Encoder Low Pass Shoot Control Register
 #regdef; TVE_394_REG; 0x0394; TV Encoder Low Pass Coring Register
 #regdef; TVE_3A0_REG; 0x03A0; TV Encoder Noise Reduction Register
+
+#typeend;

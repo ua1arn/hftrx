@@ -10,3 +10,5 @@
 #regdef;CE_CSA; 0x0024; DMA Current Source Address
 #regdef;CE_CDA; 0x0028; DMA Current Destination Address
 #regdef;CE_TPR; 0x002C; Throughput Register
+
+#typeend;

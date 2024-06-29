@@ -31,3 +31,5 @@
 #regdef; I2S/PCM_TX3CHMAP; 0x0050; I2S/PCM TX3 Channel Mapping Register I2S/PCM_TXnCHMAP
 #regdef; I2S/PCM_RXCHSEL; 0x0054; I2S/PCM RX Channel Select register
 #regdef; I2S/PCM_RXCHMAP; 0x0058; I2S/PCM RX Channel Mapping Register
+
+#typeend;

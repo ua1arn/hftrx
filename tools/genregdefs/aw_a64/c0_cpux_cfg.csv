@@ -13,3 +13,5 @@
 #regdef; LOW; 0x000; Reset Vector Base Address Registerx_L
 #regdef; HIGH; 0x004; Reset Vector Base Address Registerx_H
 #aggregend;
+
+#typeend;

@@ -23,3 +23,5 @@
 #regdef; CRY_CONFIG_REG;  0x0210; Crypt Configuration Register
 #regdef; CRY_KEY_REG;  0x0214; Crypt Key Register
 #regdef; CRY_ENABLE_REG;  0x0218; Crypt Enable Register
+
+#typeend;

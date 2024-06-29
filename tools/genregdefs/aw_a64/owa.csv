@@ -23,3 +23,5 @@
 #regdef; OWA_EXP_INFO_1; 0x004C; OWA Expand Infomation Register1
 #regdef; OWA_EXP_DBG_0; 0x0050; OWA Expand Debug Register0
 #regdef; OWA_EXP_DBG_1; 0x0054; OWA Expand Debug Register1
+
+#typeend;

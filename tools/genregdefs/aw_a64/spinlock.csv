@@ -9,3 +9,5 @@
 #regdef; SPINLOCK_LOCKID3_REG; 0x008C; Spinlock Lockid3 Register
 #regdef; SPINLOCK_LOCKID4_REG; 0x0090; Spinlock Lockid4 Register
 #regdef; SPINLOCK_LOCK_REG; 0x0100 32; Spinlock Register N (N = 0 to 31)
+
+#typeend;

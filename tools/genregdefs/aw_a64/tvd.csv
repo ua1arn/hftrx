@@ -30,3 +30,5 @@
 #regdef; TVD_STATUS4; 0x018C; TVD DEBUG STATUS Register4
 #regdef; TVD_STATUS5; 0x0190; TVD DEBUG STATUS Register5
 #regdef; TVD_STATUS6; 0x0194; TVD DEBUG STATUS Register6
+
+#typeend;

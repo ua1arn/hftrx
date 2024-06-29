@@ -6,3 +6,5 @@
 #regdef; TVE_DAC_CFG2; 0x0030; TV Encoder DAC CFG2 Register
 #regdef; TVE_DAC_CFG3; 0x0034; TV Encoder DAC CFG2 Register
 #regdef; TVE_DAC_TEST; 0x00F0; TV Encoder DAC TEST Register
+
+#typeend;

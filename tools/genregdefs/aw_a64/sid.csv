@@ -5,3 +5,5 @@
 #regdef; SID_RKEY1; 0x004; Securiy root key[63:32]
 #regdef; SID_RKEY2; 0x008; Securiy root key[95:64]
 #regdef; SID_RKEY3; 0x00C; Securiy root key[127:96]
+
+#typeend;

@@ -12,3 +12,5 @@
 #regdef; RTMR1_CTRL_REG; 0x40; R_timer 1 Control Register
 #regdef; RTMR1_INTV_VALUE_REG; 0x44; R_timer 1 Interval Value Register
 #regdef; RTMR1_CUR_VALUE_REG; 0x48; R_timer 1 Current Value Register
+
+#typeend;

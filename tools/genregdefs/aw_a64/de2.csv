@@ -1,6 +1,8 @@
 #type; DE; Display Engine (DE)
 #base; DE 0x01000000
 
+#typeend;
+
 #type; DE_TOP; Display Engine Top
 
 #base; DE_TOP 0x01000000
@@ -12,6 +14,8 @@
 #regdef; DE2TCON_MUX;	0x010;	MUX register
 #regdef; CMD_CTL;		0x014;	
 
+#typeend;
+
 #type; DE_GLB
 #base; DE_MIXER0_GLB 0x1100000
 #base; DE_MIXER1_GLB 0x1200000
@@ -19,6 +23,8 @@
 #regdef; GLB_STS;		0x004;	Global status register
 #regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
 #regdef; GLB_SIZE;		0x00C;	Global size register
+
+#typeend;
 
 #type; DE_BLD
 #base; DE_MIXER0_BLD 0x1101000

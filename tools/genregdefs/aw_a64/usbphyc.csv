@@ -9,3 +9,5 @@
 #regdef; PHY_OTGCTL; 0x20; Control PHY routing to EHCI or OTG
 #regdef; PHY_STATUS; 0x24; PHY Status Register
 #regdef; USB_SPDCR; 0x28; HCI SIE Port Disable Control Register
+
+#typeend;

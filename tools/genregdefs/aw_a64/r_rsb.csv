@@ -13,3 +13,5 @@
 #regdef; RSB_PMCR; 0x0028; RSB PMU Mode Control register
 #regdef; RSB_CMD; 0x002C; RSB Command Register
 #regdef; RSB_SADDR; 0x0030; RSB Slave address Register
+
+#typeend;

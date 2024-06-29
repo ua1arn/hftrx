@@ -15,3 +15,5 @@ SYN_DATA_COUNTER_REG0; 0x110; Synchronize Data Counter Register 0
 SYN_DATA_COUNTER_REG1; 0x114; Synchronize Data Counter Register 1
 SYN_DATA_COUNTER_REG2; 0x118; Synchronize Data Counter Register 2
 SYN_DATA_COUNTER_REG3; 0x11c; Synchronize Data Counter Register 3
+
+#typeend;

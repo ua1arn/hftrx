@@ -6,3 +6,5 @@
 #regdef;CIR_RXINT; 0x002C; CIR Receiver Interrupt Control Register
 #regdef;CIR_RXSTA; 0x0030; CIR Receiver Status Register
 #regdef;CIR_RXCFG; 0x0034; CIR Receiver Configure Register
+
+#typeend;

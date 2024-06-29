@@ -94,3 +94,5 @@
 #regdef; PS_CTRL_REG; 0x0300; PS Control Register
 #regdef; PS_CNT_REG; 0x0304; PS Counter Register
 #regdef; PLL_LOCK_CTRL_REG; 0x0320; PLL Lock Control Register
+
+#typeend;

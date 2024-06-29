@@ -218,3 +218,4 @@
 ##regdef; PHOUT_CTRL; 0x01E; Phone output Register
 ##regdef; PHIN_CTRL; 0x01F; Phone input Register
 
+#typeend;

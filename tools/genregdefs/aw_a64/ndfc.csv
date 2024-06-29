@@ -31,3 +31,5 @@
 #regdef; NDFC_IO_DATA; 0x300; Data Input/ Output Port Address Register
 #regdef; RAM0_BASE 1; 0x400 1024; 1024 Bytes RAM0 base
 #regdef; RAM1_BASE 1; 0x800 1024; 1024 Bytes RAM1 base
+
+#typeend;

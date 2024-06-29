@@ -1,3 +1,5 @@
 #type; R_INTC
 #base; R_INTC 0x01F00C00
 ##irq; R_INTC 50
+
+#typeend;

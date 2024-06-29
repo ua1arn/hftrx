@@ -10,3 +10,5 @@
 #regdef; TP_INT_FIFO_STAT_REG; 0x0014; TP Interrupt FIFO Status Register
 #regdef; TP_CALI_DATA_REG; 0x001C; TP Calibration Data Register
 #regdef; TP_DATA_REG; 0x0024; TP Data Register
+
+#typeend;

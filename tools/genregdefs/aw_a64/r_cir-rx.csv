@@ -1,3 +1,5 @@
 #type; R_CIR_RX
 #base; R_CIR_RX 0x01F02000
 #irq; R_CIR_RX 69
+
+#typeend;
