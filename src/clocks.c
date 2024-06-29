@@ -3945,15 +3945,27 @@ uint_fast32_t allwnrt113_get_hosc_freq(void)
 }
 
 // T113-s3
-uint_fast32_t allwnrt113_get_32k_freq(void)
-{
-	return allwnrt113_get_hosc_freq() / 750;	// Найдено на блок-схеме CCU
-    //return HARDWARE_CLK32K_FREQ;	// 32 kHz RC
-}
-
 uint_fast32_t allwnrt113_get_16M_freq(void)
 {
     return HARDWARE_CLK16M_RC_FREQ;	// 16 MHz RC
+}
+
+// T113-s3
+uint_fast32_t allwnrt113_get_32k_freq(void)
+{
+	return allwnrt113_get_hosc_freq() / 750;	// Найдено на блок-схеме CCU
+}
+
+// T113-s3
+// unused
+uint_fast32_t allwnrt113_get_losc_freq(void)
+{
+	const uint_fast32_t reg = RTC->LOSC_CTRL_REG;
+	//	LOSC_SRC_SEL
+	//	LOSC Clock Source Select
+	//	0: Low frequency clock from 16M RC
+	//	1: External 32.768 kHz OSC
+	return (reg & 0x01) ? LSEFREQ : HARDWARE_CLK16M_RC_FREQ;
 }
 
 uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
