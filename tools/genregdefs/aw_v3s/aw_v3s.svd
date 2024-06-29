@@ -1027,6 +1027,180 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>RTC</name>
+  <description></description>
+  <baseAddress>0x01C20400</baseAddress>
+  <registers>
+   <register>
+    <name>LOSC_CTRL_REG</name>
+    <displayName>LOSC_CTRL_REG</displayName>
+    <description>Low Oscillator Control Register l</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LOSC_AUTO_SWT_STA_REG</name>
+    <displayName>LOSC_AUTO_SWT_STA_REG</displayName>
+    <description>LOSC Auto Switch Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_YY_MM_DD_REG</name>
+    <displayName>RTC_YY_MM_DD_REG</displayName>
+    <description>RTC Year-Month-Day Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_HH_MM_SS_REG</name>
+    <displayName>RTC_HH_MM_SS_REG</displayName>
+    <description>RTC Hour-Minute-Second Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_COUNTER_REG</name>
+    <displayName>ALARM0_COUNTER_REG</displayName>
+    <description>Alarm 0 Counter Register </description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_CUR_VLU_REG</name>
+    <displayName>ALARM0_CUR_VLU_REG</displayName>
+    <description>Alarm 0 Counter Current Value Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_ENABLE_REG</name>
+    <displayName>ALARM0_ENABLE_REG</displayName>
+    <description>Alarm 0 Enable Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_IRQ_EN</name>
+    <displayName>ALARM0_IRQ_EN</displayName>
+    <description>Alarm 0 IRQ Enable Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_IRQ_STA_REG</name>
+    <displayName>ALARM0_IRQ_STA_REG</displayName>
+    <description>Alarm 0 IRQ Status Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM1_WK_HH_MM_SS</name>
+    <displayName>ALARM1_WK_HH_MM_SS</displayName>
+    <description>Alarm 1 Week HMS Register </description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM1_ENABLE_REG</name>
+    <displayName>ALARM1_ENABLE_REG</displayName>
+    <description>Alarm 1 Enable Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM1_IRQ_EN</name>
+    <displayName>ALARM1_IRQ_EN</displayName>
+    <description>Alarm 1 IRQ Enable Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM1_IRQ_STA_REG</name>
+    <displayName>ALARM1_IRQ_STA_REG</displayName>
+    <description>Alarm 1 IRQ Status Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM_CONFIG_REG</name>
+    <displayName>ALARM_CONFIG_REG</displayName>
+    <description>Alarm Config Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LOSC_OUT_GATING_REG</name>
+    <displayName>LOSC_OUT_GATING_REG</displayName>
+    <description>LOSC output gating register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>GP_DATA_REG</name>
+     <displayName>GP_DATA_REG</displayName>
+     <description>General Purpose Register (N=0~7)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>VDD_RTC_REG</name>
+    <displayName>VDD_RTC_REG</displayName>
+    <description>VDD RTC Regulate Register</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CHARA_REG</name>
+    <displayName>IC_CHARA_REG</displayName>
+    <description>IC Characteristic Register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>TIMER</name>
   <description></description>
   <baseAddress>0x01C20C00</baseAddress>

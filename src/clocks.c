@@ -1791,23 +1791,19 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYLE_V3S
 
 // V3s
-uint_fast32_t allwnrt113_get_losc_freq(void)
-{
-	return LSEFREQ;
-}
-
-// V3s
 uint_fast32_t allwnrt113_get_hosc_freq(void)
 {
     return REFINFREQ;	// 24 MHz usually
 }
 
-
-uint_fast32_t allwnr_v3s_get_arm_freq(void)
+// V3s
+uint_fast32_t allwnrt113_get_losc_freq(void)
 {
-	return 1008000000;
-}
+	const uint_fast32_t reg = RTC->LOSC_CTRL_REG;
 
+	// LOSC_SRC_SEL 0: Internal 32KHz, 1: External 32.768KHz OSC.
+	return (reg & 0x01) ? LSEFREQ : allwnrt113_get_hosc_freq() / 750;
+}
 
 //	The PLL Output = 24MHz*N*K/2.
 //	Note: The PLL Output should be fixed to 600MHz, it is not recommended to
@@ -1833,8 +1829,44 @@ uint_fast32_t allwnr_v3s_get_pll_periph0_freq(void)
 	return allwnr_v3s_get_pll_periph0_x2_freq() / 2;
 }
 
+
+uint_fast32_t allwnr_v3s_get_cpu_freq(void)
+{
+	return 1008000000;
+}
+
 // V3s
-uint_fast32_t allwnr_v3s_get_apb_freq(void)
+uint_fast32_t allwnr_v3s_get_sysapb_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_axi_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_ahb1_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_ahb2_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_apb1_freq(void)
+{
+    return REFINFREQ;	// 24 MHz usually
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_apb2_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->APB2_CFG_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 16) & 0x03);
@@ -1871,14 +1903,14 @@ uint_fast32_t allwnr_v3s_get_apb_freq(void)
 // apbclk
 uint_fast32_t allwnrt113_get_uart_freq(void)
 {
-    return allwnr_v3s_get_apb_freq();
+    return allwnr_v3s_get_apb2_freq();
 }
 
 // V3s
 // apbclk
 uint_fast32_t allwnrt113_get_twi_freq(void)
 {
-    return allwnr_v3s_get_apb_freq();
+    return allwnr_v3s_get_apb2_freq();
 }
 
 /////////////////////
