@@ -10569,10 +10569,13 @@ void hightests(void)
 	//hmain();
 #if 0
 	{
-		uint_fast32_t allwnr_v3s_get_apb_freq(void);
-
-		PRINTF("CCU->APB2_CFG_REG=%08X\n", (unsigned) CCU->APB2_CFG_REG);
-		PRINTF("allwnr_v3s_get_apb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_cpu_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_cpu_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_sysapb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_sysapb_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_ahb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
 	}
 #endif
 #if 0

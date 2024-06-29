@@ -268,6 +268,12 @@ void set_pll_riscv_axi(unsigned n);
 
 void allwnr_v3s_pll_initialize(void);
 uint_fast32_t allwnr_v3s_get_cpu_freq(void);
+uint_fast32_t allwnr_v3s_get_axi_freq(void);
+uint_fast32_t allwnr_v3s_get_sysapb_freq(void);
+uint_fast32_t allwnr_v3s_get_ahb2_freq(void);
+uint_fast32_t allwnr_v3s_get_ahb1_freq(void);
+uint_fast32_t allwnr_v3s_get_apb2_freq(void);
+uint_fast32_t allwnr_v3s_get_apb1_freq(void);
 
 uint_fast32_t elveesvm14_get_arm_freq(void);
 uint_fast32_t elveesvm14_get_usart_freq(void);

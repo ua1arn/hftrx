@@ -1829,40 +1829,111 @@ uint_fast32_t allwnr_v3s_get_pll_periph0_freq(void)
 	return allwnr_v3s_get_pll_periph0_x2_freq() / 2;
 }
 
+// V3s
+uint_fast32_t allwnr_v3s_get_pllcpu_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
+	const uint_fast32_t P = UINT32_C(1) + ((reg >> 16) & 0x03);
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0x1F);
+	const uint_fast32_t K = UINT32_C(1) + ((reg >> 4) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 0) & 0x03);
+//	The PLL Output= (24MHz*N*K)/(M*P).
+//	The PLL output is for the CPUX Clock.
+//	Note: The PLL output clock must be in the range of 200MHz~2.6GHz. Its default is 408MHz.
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() * N * K / (M * P);
+}
 
+// V3s
 uint_fast32_t allwnr_v3s_get_cpu_freq(void)
 {
-	return 1008000000;
+	const uint_fast32_t clkreg = CCU->CPU_AXI_CFG_REG;
+	//	00: LOSC
+	//	01: OSC24M
+	//	1X: PLL_CPU
+	//	If the clock source is changed, at most to wait for 8 present running clock cycles
+	switch ((clkreg >> 16) & 0x03)	/* CPU_CLK_SRC_SEL */
+	{
+	case 0x00:
+	default:
+		return allwnrt113_get_losc_freq();
+	case 0x01:
+		return allwnrt113_get_hosc_freq();
+	case 0x02:
+	case 0x03:
+		return allwnr_v3s_get_pllcpu_freq();
+	}
 }
 
 // V3s
 uint_fast32_t allwnr_v3s_get_sysapb_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
+	const uint_fast32_t clkreg = CCU->CPU_AXI_CFG_REG;
+	const uint_fast32_t clkdiv = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// CPU_APB_CLK_DIV
+    return allwnr_v3s_get_cpu_freq() / clkdiv;
 }
 
 // V3s
 uint_fast32_t allwnr_v3s_get_axi_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
-}
-
-// V3s
-uint_fast32_t allwnr_v3s_get_ahb1_freq(void)
-{
-    return REFINFREQ;	// 24 MHz usually
-}
-
-// V3s
-uint_fast32_t allwnr_v3s_get_ahb2_freq(void)
-{
-    return REFINFREQ;	// 24 MHz usually
+	const uint_fast32_t clkreg = CCU->CPU_AXI_CFG_REG;
+	const uint_fast32_t AXI_CLK_DIV_RATIO = UINT32_C(1) + ((clkreg >> 0) & 0x03);
+	return allwnr_v3s_get_cpu_freq() / AXI_CLK_DIV_RATIO;
 }
 
 // V3s
 uint_fast32_t allwnr_v3s_get_apb1_freq(void)
 {
-    return REFINFREQ;	// 24 MHz usually
+	const uint_fast32_t clkreg = CCU->AHB1_APB1_CFG_REG;
+	const uint_fast32_t APB1_CLK_RATIO = ((clkreg >> 8) & 0x03) ? (UINT32_C(1) << ((clkreg >> 8) & 0x03)) : 2;
+	const uint_fast32_t AHB1_PRE_DIV = UINT32_C(1) << ((clkreg >> 6) & 0x03);
+	const uint_fast32_t AHB1_CLK_DIV_RATIO = UINT32_C(1) << ((clkreg >> 4) & 0x03);
+
+	return allwnr_v3s_get_ahb1_freq() / APB1_CLK_RATIO;
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_ahb2_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->AHB2_CFG_REG;
+	//	00: AHB1 Clock
+	//	01: PLL_PERIPH0 / 2
+	//	1X: / EMAC ,USB OTG_EHCI/OHCI0 and USBOTG_Device0 default clock source is AHB2 Clock
+	switch ((clkreg >> 0) & 0x03)	/* AHB2_CLK_CFG */
+	{
+	default:
+	case 0x00:
+		return allwnr_v3s_get_ahb1_freq();
+	case 0x01:
+		return allwnr_v3s_get_pll_periph0_freq() / 2;
+	case 0x02:
+	case 0x03:
+		return allwnr_v3s_get_ahb2_freq();
+	}
+}
+
+// V3s
+uint_fast32_t allwnr_v3s_get_ahb1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->AHB1_APB1_CFG_REG;
+	const uint_fast32_t APB1_CLK_RATIO = ((clkreg >> 8) & 0x03) ? (UINT32_C(1) << ((clkreg >> 8) & 0x03)) : 2;
+	const uint_fast32_t AHB1_PRE_DIV = UINT32_C(1) << ((clkreg >> 6) & 0x03);
+	const uint_fast32_t AHB1_CLK_DIV_RATIO = UINT32_C(1) << ((clkreg >> 4) & 0x03);
+	//	00: LOSC
+	//	01: OSC24M
+	//	10: AXI
+	//	11: PLL_PERIPH0/ AHB1_PRE_DIV
+	switch ((clkreg >> 12) & 0x03)	/* AHB1_CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:
+		return allwnrt113_get_losc_freq();
+	case 0x01:
+		return allwnrt113_get_hosc_freq();
+	case 0x02:
+		return allwnr_v3s_get_axi_freq();
+	case 0x03:
+		return allwnr_v3s_get_pll_periph0_freq() / AHB1_PRE_DIV;
+	}
 }
 
 // V3s
@@ -1915,6 +1986,7 @@ uint_fast32_t allwnrt113_get_twi_freq(void)
 
 /////////////////////
 
+// V3s
 static void clock_set_pll_cpu(uint32_t clk)
 {
 	int p = 0;
@@ -1940,7 +2012,7 @@ static void clock_set_pll_cpu(uint32_t clk)
 	/* cpu pll rate = ((24000000 * n * k) >> p) / m */
 	val = (0x1 << 31);
 	val |= ((p & 0x3) << 16);
-	val |= ((((clk / (24000000 * k / m)) - 1) & 0x1f) << 8);
+	val |= ((((clk / (allwnrt113_get_hosc_freq() * k / m)) - 1) & 0x1f) << 8);
 	val |= (((k - 1) & 0x3) << 4);
 	val |= (((m - 1) & 0x3) << 0);
 	CCU->PLL_CPU_CTRL_REG = val;
@@ -1957,14 +2029,7 @@ static void clock_set_pll_cpu(uint32_t clk)
 // V3s
 void allwnr_v3s_pll_initialize(void)
 {
-	clock_set_pll_cpu(1008000000);
-
-	CCU->APB2_CFG_REG =
-		0x01 * (UINT32_C(1) << 24) |
-		//0x02 * (UINT32_C(1) << 16) |	// N 0..3
-		//0x00 * (UINT32_C(1) << 0) |	// M 0..31
-		0;
-	(void) CCU->APB2_CFG_REG;
+	clock_set_pll_cpu(50 * allwnrt113_get_hosc_freq());
 
 	/* pll video - 396MHZ */
 	CCU->PLL_VIDEO_CTRL_REG = 0x91004107;
@@ -1976,13 +2041,23 @@ void allwnr_v3s_pll_initialize(void)
 	while((CCU->PLL_PERIPH0_CTRL_REG & (1 << 28)) == 0)
 		;
 
+	CCU->APB2_CFG_REG =
+		0x02 * (UINT32_C(1) << 24) |	// periph0
+		0x02 * (UINT32_C(1) << 16) |	// N 0..3
+		//0x00 * (UINT32_C(1) << 0) |	// M 0..31
+		0;
+	(void) CCU->APB2_CFG_REG;
+	local_delay_us(10);
+
 	/* ahb1 = pll periph0 / 3, apb1 = ahb1 / 2 */
-	CCU->AHB_APB0_CFG_REG = 0x00003180;
-	(void) CCU->AHB_APB0_CFG_REG;
+	CCU->AHB1_APB1_CFG_REG = 0x00003180;
+	(void) CCU->AHB1_APB1_CFG_REG;
+	local_delay_us(10);
 
 	/* mbus  = pll periph0 / 4 */
 	CCU->MBUS_CLK_REG = 0x81000003;
 	(void) CCU->MBUS_CLK_REG;
+	local_delay_us(10);
 }
 
 #elif CPUSTYLE_A64

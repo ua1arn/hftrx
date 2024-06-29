@@ -54,7 +54,6 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC  Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU  Base */
@@ -105,7 +104,7 @@ typedef struct CCU_Type
              uint32_t reserved_0x048;
     volatile uint32_t PLL_DDR1_CTRL_REG;              /*!< Offset 0x04C PLL_DDR1 Control Register */
     volatile uint32_t CPU_AXI_CFG_REG;                /*!< Offset 0x050 CPU/AXI Configuration Register  */
-    volatile uint32_t AHB_APB0_CFG_REG;               /*!< Offset 0x054 AHB/APB0 Configuration Register */
+    volatile uint32_t AHB1_APB1_CFG_REG;              /*!< Offset 0x054 AHB/APB0 Configuration Register (AHB_APB0_CFG_REG) */
     volatile uint32_t APB2_CFG_REG;                   /*!< Offset 0x058 APB2 Configuration Register */
     volatile uint32_t AHB2_CFG_REG;                   /*!< Offset 0x05C AHB2 Configuration Register */
     volatile uint32_t BUS_CLK_GATING_REG0;            /*!< Offset 0x060 Bus Clock Gating Register 0 */
@@ -306,17 +305,6 @@ typedef struct RTC_Type
     volatile uint32_t IC_CHARA_REG;                   /*!< Offset 0x1F0 IC Characteristic Register */
              uint32_t reserved_0x1F4 [0x0083];
 } RTC_TypeDef; /* size of structure = 0x400 */
-/*
- * @brief SYS_CFG
- */
-/*!< SYS_CFG  */
-typedef struct SYS_CFG_Type
-{
-             uint32_t reserved_0x000 [0x0009];
-    const volatile uint32_t VER_REG;                  /*!< Offset 0x024 Version Register */
-             uint32_t reserved_0x028 [0x0002];
-    volatile uint32_t EMAC_CLK_REG;                   /*!< Offset 0x030 EMAC-EPHY Clock Register */
-} SYS_CFG_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief TIMER
  */
@@ -795,7 +783,6 @@ typedef struct VE_Type
 
 /* Access pointers */
 
-#define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
