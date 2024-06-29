@@ -35,3 +35,5 @@
 #regdef; O_HcRhDesriptorB; 0x044C; OHCI Root Hub Descriptor Register B
 #regdef; O_HcRhStatus; 0x0450; OHCI Root Hub Status Register
 #regdef; O_HcRhPortStatus; 0x0454 1; OHCI Root Hub Port Status Register
+
+#typeend;

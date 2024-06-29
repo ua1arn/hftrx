@@ -21,6 +21,8 @@
 #regdef; padding 0; 0x020; Need for address arithmetics
 #aggregend;
 
+#typeend;
+
 #type; TVD0; Video Decoding
 #base; TVD0 0x05C01000
 

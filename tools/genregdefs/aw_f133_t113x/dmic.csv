@@ -1,5 +1,6 @@
 #type; DMIC
 #base; DMIC 0x02031000
+
 #regdef; DMIC_EN; 0x0000; DMIC Enable Control Register
 #regdef; DMIC_SR; 0x0004; DMIC Sample Rate Register
 #regdef; DMIC_CTR; 0x0008; DMIC Control Register
@@ -16,3 +17,5 @@
 #regdef; HPF_EN_CTR; 0x0038; High Pass Filter Enable Control Register
 #regdef; HPF_COEF_REG; 0x003C; High Pass Filter Coefficient Register
 #regdef; HPF_GAIN_REG; 0x0040; High Pass Filter Gain Register
+
+#typeend;

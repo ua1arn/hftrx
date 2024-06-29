@@ -10,3 +10,5 @@
 ##regdef; SID_THSx_CDATA; 0x214 2; The calibration value of the T-sensor.
 
 #regdef; align 0; 0x1000; set size
+
+#typeend;

@@ -1,7 +1,6 @@
 #type; TV_Encoder; TV Encoder (display out interface = CVBS OUT)
 #base; TV_Encoder 0x05604000
 
-
 #regdef; TVE_000_REG; 0x0000; TV Encoder Clock Gating Register
 #regdef; TVE_004_REG; 0x0004; TV Encoder Configuration Register
 #regdef; TVE_008_REG; 0x0008; TV Encoder DAC Register1
@@ -41,3 +40,5 @@
 #regdef; TVE_390_REG; 0x0390; TV Encoder Low Pass Shoot Control Register
 #regdef; TVE_394_REG; 0x0394; TV Encoder Low Pass Coring Register
 #regdef; TVE_3A0_REG; 0x03A0; TV Encoder Noise Reduction Register
+
+#typeend;

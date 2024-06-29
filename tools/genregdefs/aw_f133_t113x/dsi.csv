@@ -4,7 +4,6 @@
 #irq; DSI0 124
 #irqrv; DSI0 108
 
-
 #regdef; DSI_CTL; 0x0000; dsi_gctl 0x00 - 0x0c
 #regdef; DSI_GINT0; 0x0004; dsi_gint0 
 #regdef; DSI_GINT1; 0x0008; dsi_gint1 
@@ -53,6 +52,8 @@
 #regdef; DSI_DEBUG_DATA; 0x02f8; dsi_debug_data 
 #regdef; DSI_CMD_TX; 0x0300 64; dsi_cmd_tx[64] 0x300 - 0x3fc
 
+#typeend;
+
 #type; DSI_DPHY; MIPI DSI Physical Interface
 #base; DSI_DPHY 0x05451000
 
@@ -95,3 +96,4 @@
 #regdef; COMBO_PHY_REG1; 0x114; The TCON LCD0 PHY0 is controlled by COMBO_PHY_REG (reg0x1110, reg0x1114)
 #regdef; COMBO_PHY_REG2; 0x118;
 
+#typeend;

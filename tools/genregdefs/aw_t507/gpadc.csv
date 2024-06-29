@@ -24,3 +24,5 @@
 #regdef; GP_CH1_DATA; 0x0084; GPADC CH1 Data Register
 #regdef; GP_CH2_DATA; 0x0088; GPADC CH2 Data Register
 #regdef; GP_CH3_DATA; 0x008C; GPADC CH3 Data Register
+
+#typeend;

@@ -32,3 +32,5 @@
 #regdef; ERROR_COUNT_7BIT; 0x64; RW Счётчик 7-битных ошибок
 #regdef; ERROR_COUNT_8BIT; 0x68; RW Счётчик 8-битных ошибок
 #regdef; SLAVE_DMA_CFG; 0x80; RW Регистр конфигурации Slave DMA
+
+#typeend;

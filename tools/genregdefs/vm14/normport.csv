@@ -25,3 +25,5 @@
 #regdef; ADDR_CFG_0; 0x2014; RW Регистр настройки адреса 0
 #regdef; ADDR_CFG_1; 0x2018; RW Регистр настройки адреса 1
 #regdef; BYTE_ORDER; 0x2024; RW Регистр настройки порядка байтов
+
+#typeend;

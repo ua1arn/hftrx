@@ -1,14 +1,18 @@
 #type; CSI
 #base; CSI 0x05800800
 
+#typeend;
+
 #type; CSIC_TOP
 #base; CSIC_TOP 0x05800800
+
 #irq; CSI_CMB 136
 #irq; CSI_TDM 137
 #irq; CSI_TOP_PKT 138
 #irqrv; CSI_CMB 120
 #irqrv; CSI_TDM 121
 #irqrv; CSI_TOP_PKT 122
+
 #regdef; CSIC_TOP_EN_REG; 0x0000; CSIC TOP Enable Register
 #regdef; CSIC_PTN_GEN_EN_REG; 0x0004; CSIC Pattern Generation Enable Register
 #regdef; CSIC_PTN_CTRL_REG; 0x0008; CSIC Pattern Control Register
@@ -37,16 +41,21 @@
 #regdef; CSIC_MULF_INT_REG; 0x0104; CSIC Multi-Frame Interrupt Register
 #regdef; CSIC_FEATURE_LIST_REG; 0x01F0; CSIC Feature List Register
 
+#typeend;
+
 #type; CSIC_PARSER
 #base; CSIC_PARSER0 0x05820000
 #base; CSIC_PARSER1 0x05821000
 #base; CSIC_PARSER2 0x05822000
+
 #irq; CSIC_PARSER0 132
 #irq; CSIC_PARSER1 133
 #irq; CSIC_PARSER2 134
+
 #irqrv; CSIC_PARSER0 116
 #irqrv; CSIC_PARSER1 117
 #irqrv; CSIC_PARSER2 118
+
 #regdef; CSIC_PRS_EN_REG; 0x0000; CSIC Parser Enable Register
 #regdef; CSIC_PRS_NCSIC_IF_CFG_REG; 0x0004; CSIC Parser NCSIC Interface Configuration Register
 #regdef; CSIC_PRS_CAP_REG; 0x000C; CSIC Parser Capture Register
@@ -106,19 +115,24 @@
 #regdef; CSIC_PRS_XHS_LENGTH_REG; 0x0550; CSIC Parser XHS LENGTH Register
 #regdef; CSIC_PRS_SYNC_DLY_REG; 0x0554; CSIC Parser SYNC DELAY Register
 
+#typeend;
+
 #type; CSIC_DMA
 #base; CSIC_DMA0 0x05830000
 #base; CSIC_DMA1 0x05831000
 #base; CSIC_DMA2 0x05832000
 #base; CSIC_DMA3 0x05833000
+
 #irq; CSIC_DMA0 127
 #irq; CSIC_DMA1 128
 #irq; CSIC_DMA2 129
 #irq; CSIC_DMA3 130
+
 #irqrv; CSIC_DMA0 111
 #irqrv; CSIC_DMA1 112
 #irqrv; CSIC_DMA2 113
 #irqrv; CSIC_DMA3 114
+
 #regdef; CSIC_DMA_TOP_REG;  0x0000; CSIC DMA TOP Register
 #regdef; CSIC_DMA_MUL_CH_CFG_REG; 0x0004; CSIC DMA Multi-Channel Configuration Register
 #regdef; CSIC_DMA_FRM_CLK_CNT_REG; 0x0010; CSIC DMA Frame Rate Clock Counter Register
@@ -232,4 +246,6 @@
 #regdef; CSIC_LBC_CH3_LINE_TAR_BIT1_REG; 0x0908; CSIC LBC Channel3 Line Target Bit1 Register
 #regdef; CSIC_LBC_CH3_RC_ADV_REG; 0x090C; CSIC LBC Channel3 RC ADV Register
 #regdef; CSIC_LBC_CH3_MB_MIN_REG; 0x0910; CSIC LBC Channel3 MB MIN Register
+
+#typeend;
 

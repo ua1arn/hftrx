@@ -27,3 +27,5 @@
 #regdef; UART_SRT;   0x009C; 
 #regdef; UART_STET;  0x00A0; 
 #regdef; UART_HTX;   0x00A4; 
+
+#typeend;

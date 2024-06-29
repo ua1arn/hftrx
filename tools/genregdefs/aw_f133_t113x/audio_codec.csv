@@ -130,3 +130,5 @@
 #regdef; HP2_REG; 0x0340; * Headphone2 Analog Control Register
 #regdef; POWER_REG; 0x0348; * POWER Analog Control Register
 #regdef; ADC_CUR_REG; 0x034C; * ADC Current Analog Control Register
+
+#typeend;

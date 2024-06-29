@@ -21,3 +21,5 @@
 #regdef; RISC_AXI_PMU_REQ_WR; 0x0118; RISC AXI PMU Write Request Register
 #regdef; RISC_AXI_PMU_BW_RD; 0x011C; RISC AXI PMU Read Bandwidth Register
 #regdef; RISC_AXI_PMU_BW_WR; 0x0120; RISC AXI PMU Write Bandwidth Register
+
+#typeend;

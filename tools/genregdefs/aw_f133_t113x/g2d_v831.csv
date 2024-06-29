@@ -78,3 +78,5 @@
 #regdef; G2D_SCALER_HFILTER_REG; 0x200 32; Scaling horizontal filtering coefficient ram block register0x200-0x27c)
 #regdef; G2D_SCALER_VFILTER_REG; 0x280 32; Scaling vertical filtering coefficient ram block register0x280-0x2fc)
 #regdef; G2D_PALETTE_TAB_REG; 0x400 256; Scaling horizontal filtering coefficient ram block register0x400-0x7fc)
+
+#typeend;

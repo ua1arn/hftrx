@@ -14,3 +14,5 @@
 #regdef; HSIC_PHY_tune2; 0x020; HSIC PHY Tune2 Register - REG_PHY_OTGCTL 0x20
 #regdef; HSIC_PHY_tune3; 0x024; HSIC PHY Tune3 Register 
 #regdef; USB_SPDCR; 0x028; HCI SIE Port Disable Control Register 
+
+#typeend;

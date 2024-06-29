@@ -1,7 +1,9 @@
 #type; EMAC
 #base; EMAC 0x04500000
+
 #irq; EMAC 78
 #irqrv; EMAC 62
+
 #regdef; EMAC_BASIC_CTL0; 0x0000; EMAC Basic Control Register0
 #regdef; EMAC_BASIC_CTL1; 0x0004; EMAC Basic Control Register1
 #regdef; EMAC_INT_STA; 0x0008; EMAC Interrupt Status Register
@@ -29,3 +31,5 @@
 #regdef; EMAC_RX_CUR_DESC; 0x00C4; EMAC Current Receive Descriptor Register
 #regdef; EMAC_RX_CUR_BUF; 0x00C8; EMAC Current Receive Buffer Address Register
 #regdef; EMAC_RGMII_STA; 0x00D0; EMAC RGMII Status Register
+
+#typeend;

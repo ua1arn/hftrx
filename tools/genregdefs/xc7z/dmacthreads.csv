@@ -1,2 +1,4 @@
 CSR;0x000;Channel status for DMA channel
 CPC;0x004;Channel PC for DMA channel
+
+#typeend;

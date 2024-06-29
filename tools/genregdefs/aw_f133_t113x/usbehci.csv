@@ -1,4 +1,5 @@
 #type; USBEHCI
+
 #regdef; E_CAPLENGTH 2; 0x0000; EHCI Capability Register Length Register
 #regdef; E_HCIVERSION 2; 0x0002; EHCI Host Interface Version Number Register
 #regdef; E_HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
@@ -35,3 +36,5 @@
 #regdef; O_HcRhDesriptorB; 0x044C; OHCI Root Hub Descriptor Register B
 #regdef; O_HcRhStatus; 0x0450; OHCI Root Hub Status Register
 #regdef; O_HcRhPortStatus; 0x0454 1; OHCI Root Hub Port Status Register
+
+#typeend;

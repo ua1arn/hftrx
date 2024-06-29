@@ -18,6 +18,8 @@
 #regdef; DRV; 0x014 2; Multi_Driving Register
 #regdef; PULL; 0x01C 2; Pull Register
 
+#typeend;
+
 #type; GPIOBLOCK; Port Controller
 #base; GPIOBLOCK 0x0300B000
 #base; GPIOBLOCK_L 0x01F02C00

@@ -49,3 +49,5 @@
 #regdef; BC; 0x08; USB DMA Byte Counter Register/USB DMA RESIDUAL Byte Counter Register
 #regdef; dummy 0; 0x10;
 #aggregend;
+
+#typeend;

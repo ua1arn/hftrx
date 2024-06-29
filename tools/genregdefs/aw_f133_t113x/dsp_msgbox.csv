@@ -1,2 +1,4 @@
 #type; xDSP_MSGBOX
 #base; xDSP_MSGBOX 0x01701000
+
+#typeend;

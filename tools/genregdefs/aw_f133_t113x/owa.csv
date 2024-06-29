@@ -14,3 +14,5 @@
 #regdef; OWA_TX_CNT; 0x0024; OWA TX Counter Register
 #regdef; OWA_TX_CHSTA0; 0x002C; OWA TX Channel Status Register0
 #regdef; OWA_TX_CHSTA1; 0x0030; OWA TX Channel Status Register1
+
+#typeend;

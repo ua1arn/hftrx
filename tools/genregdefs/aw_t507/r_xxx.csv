@@ -1,12 +1,20 @@
 #type; R_CPUCFG
 #base; R_CPUCFG	0x07000400
 
+#typeend;
+
 #type; R_WDOG
 #base; R_WDOG	0x07020400
+
+#typeend;
 
 #type; R_RSB
 #base; R_RSB	0x07083000
 #irq; R_RSB 141
 
+#typeend;
+
 #type; TWD; Trust Watchdog
 #irq; TWD 140; Trust Watchdog
+
+#typeend;

@@ -43,6 +43,8 @@
 #regdef; C0_CPU_STATUS; 0x0080; Cluster 0 CPU Status Register
 #regdef; L2_STATUS_REG; 0x0084; Cluster 0 L2 Status Register
 
+#typeend;
+
 #type; C0_CPUX_CFG_H616; H616 Cluster 0 Configuration Register List
 #base; C0_CPUX_CFG_H616 0x09010000
 
@@ -59,4 +61,6 @@
 #regdef; L2_STATUS_REG; 0x0084; Cluster 0 L2 Status Register
 #regdef; DBG_REG0; 0x00C0; Cluster 0 Debug State Register0
 #regdef; DBG_REG1; 0x00C4; Cluster 0 Debug State Register1
+
+#typeend;
 

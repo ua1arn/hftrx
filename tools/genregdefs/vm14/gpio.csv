@@ -9,6 +9,8 @@
 #regdef; gpio_swport_ddr; 0x004; Регистр направления потока данных через порт А. W/R 0x0 0x04
 #regdef; gpio_swport_ctl; 0x008; Регистр источника данных порта А. W/R 0x0 0x08
 
+#typeend;
+
 #type; GPIOBLOCK; Регистры блока управления GPIO
 
 #base; GPIO0 0x38034000
@@ -38,3 +40,5 @@
 #regdef; gpio_ext_portc; 0x058; Внешний регистр порта C. R 0x0 0x58
 #regdef; gpio_ext_portd; 0x05c; Внешний регистр порта D. R 0x0 0x5C
 #regdef; gpio_ls_sync; 0x60; Регистр включения синхронизации прерываний по уровню. W/R 0x0 0x60
+
+#typeend;

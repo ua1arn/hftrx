@@ -1,8 +1,11 @@
 #type; CLINT
 #base; CLINT 0x14000000 
+
 #regdef; msip 4;	0x00000;	This register generates machine mode software interrupts when set.
 #regdef; mtimecmplo 4;	0x4000;	This register holds the compare value for the timer.
 #regdef; mtimecmphi 4;	0x4004;	This register holds the compare value for the timer.
 #regdef; mtimelo 4;	0xBFF8;	Provides the current timer value.
 #regdef; mtimehi 4;	0xBFFC;	Provides the current timer value.
 #regdef; padding 0; 0xC000
+
+#typeend;

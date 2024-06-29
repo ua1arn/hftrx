@@ -1,6 +1,7 @@
 #type; USBPHYC
 #base; USBPHY0 0x04100400
 #base; USBPHY1 0x04200800
+
 #regdef; USB_CTRL; 0x000; HCI Interface Register (HCI_Interface)
 #regdef; USBPHY_PHYCTL; 0x004; USBPHY_PHYCTL
 #regdef; HCI_CTRL3; 0x008; HCI Control 3 Register (bist)
@@ -8,3 +9,5 @@
 #regdef; PHY_OTGCTL; 0x020; Control PHY routing to EHCI or OTG
 #regdef; PHY_STATUS; 0x024; PHY Status Register
 #regdef; USB_SPDCR; 0x028; HCI SIE Port Disable Control Register
+
+#typeend;

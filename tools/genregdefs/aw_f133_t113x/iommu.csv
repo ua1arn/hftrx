@@ -1,7 +1,9 @@
 #type; IOMMU
 #base; IOMMU 0x02010000
+
 #irq; IOMMU 96
 #irqrv; IOMMU 80
+
 #regdef; IOMMU_RESET_REG; 0x0010; IOMMU Reset Register
 #regdef; IOMMU_ENABLE_REG; 0x0020; IOMMU Enable Register
 #regdef; IOMMU_BYPASS_REG; 0x0030; IOMMU Bypass Register
@@ -118,3 +120,5 @@
 #regdef; IOMMU_PMU_TL_LOW6_REG; 0x0360; IOMMU Total Latency Low 6 Register
 #regdef; IOMMU_PMU_TL_HIGH6_REG; 0x0364; IOMMU Total Latency High 6 Register
 #regdef; IOMMU_PMU_ML6_REG; 0x0368; IOMMU Max Latency 6 Register
+
+#typeend;

@@ -7,3 +7,5 @@
 #regdef; LRADC_INTC; 0x0004; LRADC Interrupt Control Register
 #regdef; LRADC_INTS; 0x0008; LRADC Interrupt Status Register
 #regdef; LRADC_DATA0; 0x000C; LRADC Data Register0
+
+#typeend;

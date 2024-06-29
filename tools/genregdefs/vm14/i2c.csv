@@ -50,3 +50,5 @@
 #regdef; IC_ENABLE_STATUS; 0x009C; Регистр статуса включения R 0x0 0x9C
 #regdef; IC_FS_SPKLEN; 0x00A0; Регистр управления фильтрацией для standard-speed и fast.speed режимов W/R 0x5 0xA0
 #regdef; IC_HS_SPKLEN; 0x00A4; Регистр управления фильтрацией для high.speed режима. W/R 0x1 0xA4
+
+#typeend;

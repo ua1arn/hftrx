@@ -18,6 +18,8 @@
 #regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register
 #regdef; DE_IP_CFG; 	0x024;	DE IP Configure Register
 
+#typeend;
+
 #type; DE_GLB; Display Engine (DE) - Global Control
 #base; DE_MIXER0_GLB 0x05100000; RT-Mixer 0
 #base; DE_MIXER1_GLB 0x05200000; RT-Mixer 1
@@ -26,6 +28,8 @@
 #regdef; GLB_STS;		0x004;	Global status register
 #regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
 #regdef; GLB_SIZE;		0x00C;	Global size register
+
+#typeend;
 
 #type; DE_BLD; Display Engine (DE) - Blender
 #base; DE_MIXER0_BLD 0x05101000; RT-Mixer 0

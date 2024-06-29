@@ -10,3 +10,5 @@ FTRD;0x038;Fault Type DMA Manager Register
 FTR;0x40 8;Fault type for DMA channel 0..7
 CH_THREAD 8 DMAC_THREAD_TypeDef;0x100 8;Channel status and PC for DMA channel 0..7
 CH 0x20 DMAC_CH_TypeDef;0x400 8;Channel status and PC for DMA channel 0..7
+
+#typeend;

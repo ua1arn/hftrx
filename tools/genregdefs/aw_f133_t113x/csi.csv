@@ -1,11 +1,15 @@
 #type; CSI
 #base; CSI 0x05800000
 
+#typeend;
+
 #type; CSIC_CCU
 #base; CSIC_CCU 0x05800000
 #regdef; CCU_CLK_MODE_REG; 0x0000; CCU Clock Mode Register
 #regdef; CCU_PARSER_CLK_EN_REG; 0x0004; CCU Parser Clock Enable Register
 #regdef; CCU_POST0_CLK_EN_REG; 0x000C; CCU Post0 Clock Enable Register
+
+#typeend;
 
 #type; CSIC_TOP
 #base; CSIC_TOP 0x05800800
@@ -27,6 +31,8 @@
 #regdef; CSIC_MBUS_REQ_MAX_REG; 0x00F0; CSIC MBUS REQ MAX Register
 #regdef; CSIC_MULF_MOD_REG; 0x0100; CSIC Multi-Frame Mode Register
 #regdef; CSIC_MULF_INT_REG; 0x0104; CSIC Multi-Frame Interrupt Register
+
+#typeend;
 
 #type; CSIC_PARSER
 #base; CSIC_PARSER0 0x05801000
@@ -81,6 +87,8 @@
 #regdef; CSIC_PRS_NCSIC_RX_SIGNAL5_DLY_ADJ_REG; 0x0514; CSIC Parser NCSIC RX Signal5 Delay Adjust Register
 #regdef; CSIC_PRS_NCSIC_RX_SIGNAL6_DLY_ADJ_REG; 0x0518; CSIC Parser NCSIC RX Signal6 Delay Adjust Register
 
+#typeend;
+
 #type; CSIC_DMA
 #base; CSIC_DMA0 0x05809000
 #base; CSIC_DMA1 0x05809200
@@ -120,4 +128,6 @@
 #regdef; CSIC_DMA_BUF_ADDR_FIFO_CON_REG; 0x0090; CSIC DMA BUF Address FIFO Content Register
 #regdef; CSIC_DMA_STORED_FRM_CNT_REG; 0x0094; CSIC DMA Stored Frame Counter Register
 #regdef; CSIC_FEATURE_REG; 0x01F4; CSIC DMA Feature List Register
+
+#typeend;
 

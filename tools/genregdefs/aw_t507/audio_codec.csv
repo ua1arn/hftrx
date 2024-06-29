@@ -64,3 +64,5 @@
 #regdef; DAC_REG; 0x0310; DAC Analog Control Register
 #regdef; MIXER_REG; 0x0314; MIXER Analog Control Register
 #regdef; RAMP_REG; 0x031C; RAMP Control Register
+
+#typeend;

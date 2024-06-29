@@ -26,3 +26,5 @@
 #regdef; NMI_IRQ_ENABLE_REG; 0x0324; NMI Interrupt Enable Register
 #regdef; NMI_IRQ_PEND_REG; 0x0328; NMI Interrupt Pending Register
 #regdef; PRCM_VERSION_REG; 0x03F0; PRCM Version Register
+
+#typeend;

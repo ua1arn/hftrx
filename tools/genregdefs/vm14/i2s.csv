@@ -59,3 +59,5 @@
 #regdef; I2S_COMP_PARAM_1; 0x1F4; Первый регистр параметров компонента. R 0x24c067e 0x1F4
 #regdef; I2S_COMP_VERSION; 0x1F8; Регистр ревизии компонента. R 0x3130362a 0x1F8
 #regdef; I2S_COMP_TYPE; 0x1FC; Регистр типа компонента. R 0x445701a0 0x1FC
+
+#typeend;

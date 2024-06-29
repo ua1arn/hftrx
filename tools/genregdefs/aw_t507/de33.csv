@@ -41,6 +41,8 @@
 #regdef; DE_PORT2CHN_MUX; 0x028 4; DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
 #regdef; DE_DEBUG_CTL; 0x0E0; DE_DEBUG_CTL_OFFSET
 
+#typeend;
+
 # DE0 dedicated for TCON_LCD0/TCON_TV0, 
 # DE1 dedicated for TCON_LCD1/TCON_TV1 tv output blocks
 # 7.1.2. Block Diagram - Allwinner_T5_Series_User_Manual-v1.3.pdf
@@ -51,6 +53,8 @@
 #regdef; RTWB_RCQ_IRQ; 0x00; RTWB_RCQ_IRQ_OFFSET          (0x8200)
 #regdef; RTWB_RCQ_STS; 0x04; RTWB_RCQ_STS_OFFSET          (0x8204)
 #regdef; RTWB_RCQ_CTL; 0x10; RTWB_RCQ_CTL_OFFSET          (0x8210)
+
+#typeend;
 
 #type; DE_GLB; Display Engine (DE) - Global Control
 
@@ -72,6 +76,8 @@
 #regdef; GLB_CLK;		0x00C;	Global clock register
 #regdef; GLB_DBUFFER;	0x010;	Global double buffer control register
 #regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+
+#typeend;
 
 # define DE2_BLD_BASE 0x1000
 # define DE2_CH_BASE 0x2000

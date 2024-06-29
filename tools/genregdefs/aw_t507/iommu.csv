@@ -115,3 +115,5 @@
 #regdef; IOMMU_PMU_TL_LOW_REG6; 0x0360; IOMMU Total Latency Low Register 6
 #regdef; IOMMU_PMU_TL_HIGH_REG6; 0x0364; IOMMU Total Latency High Register 6
 #regdef; IOMMU_PMU_ML_REG6; 0x0368; IOMMU Max Latency Register 6
+
+#typeend;

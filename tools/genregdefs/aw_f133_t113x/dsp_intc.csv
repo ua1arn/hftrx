@@ -10,3 +10,5 @@
 #regdef; FAST_FORCING; 0x70;
 #regdef; PRIORITY; 0x80 2;
 #regdef; GROUP_CONFIG; 0xC0 4;
+
+#typeend;

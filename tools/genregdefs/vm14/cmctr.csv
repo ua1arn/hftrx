@@ -26,3 +26,5 @@
 #regdef; SEL_SPLL; 0x10c; Регистр контроля SPLL
 #regdef; SEL_VPLL; 0x110; Регистр контроля VPLL
 #regdef; SEL_UPLL; 0x114; Регистр контроля UPLL
+
+#typeend;

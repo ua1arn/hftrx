@@ -2429,7 +2429,7 @@ typedef struct SYS_CFG_Type
              uint32_t reserved_0x000 [0x0002];
     volatile uint32_t DSP_BOOT_RAMMAP_REG;            /*!< Offset 0x008 DSP Boot SRAM Remap Control Register */
              uint32_t reserved_0x00C [0x0006];
-    volatile uint32_t VER_REG;                        /*!< Offset 0x024 Version Register */
+    const volatile uint32_t VER_REG;                  /*!< Offset 0x024 Version Register */
              uint32_t reserved_0x028 [0x0002];
     volatile uint32_t EMAC_EPHY_CLK_REG0;             /*!< Offset 0x030 EMAC-EPHY Clock Register 0 */
              uint32_t reserved_0x034 [0x0047];

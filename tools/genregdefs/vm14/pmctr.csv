@@ -29,3 +29,5 @@
 #regdef; CORE_PWR_ISTAT; 0x098; Регистр статуса прерывания CORE_PWR_INT
 #regdef; CORE_PWR_ICLR; 0x09c; Регистр очистки статуса прерывания CORE_PWR_INT
 #regdef; CORE_PWR_DELAY; 0x0a0; Регистр задания задержек автоматов доменов
+
+#typeend;
