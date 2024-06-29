@@ -2,7 +2,7 @@
 #base; SYS_CFG 0x01C00000
 
 #regdef; MEMMAP_REG; 0x0004; DE memory control Register
-#regdef; VER_REG; 0x0024; Version Register
+#regdefr; VER_REG; 0x0024; Version Register
 #regdef; EMAC_EPHY_CLK_REG0; 0x0030; EMAC-EPHY Clock Register 0
 # regdef; SYS_LDO_CTRL_REG; 0x0150; System LDO Control Register
 # regdef; RESCAL_CTRL_REG; 0x0160; Resistor Calibration Control Register

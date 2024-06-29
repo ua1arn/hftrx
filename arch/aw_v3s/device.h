@@ -54,6 +54,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define SYS_CFG_BASE ((uintptr_t) 0x01C00000)         /*!< SYS_CFG  Base */
 #define DMAC_BASE ((uintptr_t) 0x01C02000)            /*!< DMAC  Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define CCU_BASE ((uintptr_t) 0x01C20000)             /*!< CCU  Base */
@@ -305,6 +306,17 @@ typedef struct RTC_Type
     volatile uint32_t IC_CHARA_REG;                   /*!< Offset 0x1F0 IC Characteristic Register */
              uint32_t reserved_0x1F4 [0x0083];
 } RTC_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief SYS_CFG
+ */
+/*!< SYS_CFG  */
+typedef struct SYS_CFG_Type
+{
+             uint32_t reserved_0x000 [0x0009];
+    const volatile uint32_t VER_REG;                  /*!< Offset 0x024 Version Register */
+             uint32_t reserved_0x028 [0x0002];
+    volatile uint32_t EMAC_CLK_REG;                   /*!< Offset 0x030 EMAC-EPHY Clock Register */
+} SYS_CFG_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief TIMER
  */
@@ -783,6 +795,7 @@ typedef struct VE_Type
 
 /* Access pointers */
 
+#define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */

@@ -6,7 +6,7 @@ SET FILELIST=gic.csv ccu.csv rtc.csv ^
 	uart.csv gpio.csv twi.csv ^
 	timer.csv pwm.csv dmac.csv ^
 	ve.csv ^
-	dram.csv
+	dram.csv sys_cfg.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%
 
