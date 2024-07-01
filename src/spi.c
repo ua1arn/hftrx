@@ -1481,7 +1481,7 @@ void hardware_spi_master_initialize(void)
 		;
 
 	SPIHARD_PTR->SPI_GCR =
-		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
 		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
 		0;
 
@@ -1511,7 +1511,7 @@ void hardware_spi_master_initialize(void)
 		;
 
 	SPIHARD_PTR->SPI_GCR =
-		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
 		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
 		0;
 
@@ -1539,7 +1539,7 @@ void hardware_spi_master_initialize(void)
 		;
 
 	SPIHARD_PTR->SPI_GCR =
-		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
 		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
 		0;
 
