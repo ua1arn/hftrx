@@ -1465,8 +1465,32 @@ void hardware_spi_master_initialize(void)
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_A64
+	unsigned ix = SPIHARD_IX;	// SPI0
+	/* Open the clock gate for SPI */
+	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << (20 + ix));	// SPI_GATING
 
-	#warning Implement for CPUSTYLE_A64
+	//CCU->SPI_BGR_REG &= ~ (UINT32_C(1) << 20);	// Assert SPI reset
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << (20 + ix));	// De-assert SPI reset
+
+	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI_CLK_GATING
+	(void) SPIHARD_CCU_CLK_REG;
+
+	/* Do a soft reset */
+	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
+	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+		;
+
+	SPIHARD_PTR->SPI_GCR =
+		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
+		0;
+
+	/* Enable SPIx */
+	SPIHARD_PTR->SPI_GCR |= (UINT32_C(1) << 0);	// EN SPI Module Enable Control
+
+	// De-assert hardware CS
+	//SPIHARD_PTR->SPI_TCR |= (1u << 7);
+	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616
 	unsigned ix = SPIHARD_IX;	// SPI0
@@ -1497,7 +1521,6 @@ void hardware_spi_master_initialize(void)
 	// De-assert hardware CS
 	//SPIHARD_PTR->SPI_TCR |= (1u << 7);
 	SPIIO_INITIALIZE();
-
 
 #elif CPUSTYLE_V3S
 
