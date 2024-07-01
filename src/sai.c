@@ -3387,9 +3387,9 @@ enum
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
-#if CPUSTYLE_A64
-	#define DMAC_DEST_ADDR_MODE_POS 21	// DMA Destination Address Mode
-	#define DMAC_SRC_ADDR_MODE_POS 5	// DMA Source Address Mode
+#if CPUSTYLE_A64 || CPUSTYLE_V3S
+	#define DMAC_DEST_ADDR_MODE_POS 21	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
+	#define DMAC_SRC_ADDR_MODE_POS 5	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
 	static void (* dmac_handlers [8])(unsigned dmach);
 #else
 	#define DMAC_DEST_ADDR_MODE_POS 24	// DMA Destination Address Mode
@@ -3404,7 +3404,7 @@ static void DMAC_NS_IRQHandler(void)
 	const unsigned flag = 0x07;
 	unsigned dmach;
 
-#if CPUSTYLE_A64
+#if CPUSTYLE_A64 || CPUSTYLE_V3S
 
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
 	DMAC->DMAC_IRQ_PEND_REG = reg0;	// Write 1 to clear the pending status.
@@ -3435,7 +3435,7 @@ static void DMAC_NS_IRQHandler(void)
 			dmac_handlers [dmach](dmach);
 		}
 	}
-#if ! CPUSTYLE_A64
+#if ! (CPUSTYLE_A64 || CPUSTYLE_V3S)
 	for (dmach = 8; dmach < 16; ++ dmach)
 	{
 		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
@@ -3642,7 +3642,8 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 	reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
 	reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
 	reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
-
+#else
+	#warning Unexpected CPUSTYLE_xxx
 #endif
 }
 
@@ -3672,6 +3673,9 @@ static void I2S_fill_TXxCHMAP(
 {
 #if CPUSTYLE_A64
 	//#warning Implement for CPUSTYLE_A64
+
+#elif CPUSTYLE_V3S
+	//#warning Implement for CPUSTYLE_V3S
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 	//#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
