@@ -2192,7 +2192,7 @@ void hardware_spi_disconnect(void)
 		val &= ~((0x3 << 4) | (0x1 << 7));
 		val |= ((0 & 0x3) << 4) | (0x1 << 7);	// SS=1
 		SPIHARD_PTR->SPI_TCR = val;
-		(void) SPIHARD_PTR->SPI_TCR;
+		//(void) SPIHARD_PTR->SPI_TCR;
 	}
 
 	HARDWARE_SPI_DISCONNECT();
@@ -2285,7 +2285,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
 		;
 
-	return v;
+	return v & 0xFF;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3305,9 +3305,9 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
 
 	// TXFIFO and RXFIFO Reset
-	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-		;
+//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
+//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
+//		;
 
 	return v & 0xFFFF;
 
@@ -3360,7 +3360,6 @@ void RAMFUNC hardware_spi_b16_p1(
 	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);	/* 16bit access */
 
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
-	(void) SPIHARD_PTR->SPI_TCR;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3479,9 +3478,9 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	const portholder_t v = __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
 
 	// TXFIFO and RXFIFO Reset
-	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-		;
+//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
+//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
+//		;
 
 	return v;
 
@@ -3518,7 +3517,6 @@ void hardware_spi_b32_p1(
 	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
 
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
-	(void) SPIHARD_PTR->SPI_TCR;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3606,7 +3604,6 @@ void hardware_spi_b8_p1(
 	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v; /* 8bit access */
 
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
-	(void) SPIHARD_PTR->SPI_TCR;
 
 #else
 	#error Wrong CPUSTYLE macro
