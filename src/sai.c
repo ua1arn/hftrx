@@ -3409,23 +3409,21 @@ static void DMAC_NS_IRQHandler(void)
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
 	DMAC->DMAC_IRQ_PEND_REG = reg0;	// Write 1 to clear the pending status.
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+	for (dmach = 0; dmach < 8; ++ dmach)
+	{
+		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
+		if ((reg0 & maskreg0) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
+
+#else /* CPUSTYLE_A64 || CPUSTYLE_V3S */
 
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
-	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
-	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
-	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
-
-#else /* CPUSTYLE_A64 */
-
-#endif /* CPUSTYLE_A64 */
 
 	for (dmach = 0; dmach < 8; ++ dmach)
 	{
@@ -3435,7 +3433,6 @@ static void DMAC_NS_IRQHandler(void)
 			dmac_handlers [dmach](dmach);
 		}
 	}
-#if ! (CPUSTYLE_A64 || CPUSTYLE_V3S)
 	for (dmach = 8; dmach < 16; ++ dmach)
 	{
 		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
@@ -3444,7 +3441,8 @@ static void DMAC_NS_IRQHandler(void)
 			dmac_handlers [dmach](dmach);
 		}
 	}
-#endif /* ! CPUSTYLE_A64 */
+
+#endif /* CPUSTYLE_A64 */
 }
 
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PARAM]
@@ -3482,10 +3480,16 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 	//ASSERT(DMAC_Ch_Total <= 8);
 	dmac_handlers [dmach] = handler;
 
-#if CPUSTYLE_A64
+#if CPUSTYLE_A64 || CPUSTYLE_V3S
 
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
 	DMAC->DMAC_IRQ_EN_REG = (DMAC->DMAC_IRQ_EN_REG & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+    arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+    DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+    DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -3494,15 +3498,8 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
-	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
-
-#else /* CPUSTYLE_A64 */
-
-	#warning Unrecognized CPUSTYLE_xxx
+#else
+	#error Unhandled CPUSTYLE_xxx
 
 #endif /* CPUSTYLE_A64 */
 }
@@ -3516,6 +3513,11 @@ static void DMAC_clock_initialize(void)
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);			// DMA_RST 1: De-assert reset
 
 #elif CPUSTYLE_A64
+
+	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 6);	// DMA_GATING
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 6);	// DMA_RST
+
+#elif CPUSTYLE_V3S
 
 	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 6);	// DMA_GATING
 	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 6);	// DMA_RST
