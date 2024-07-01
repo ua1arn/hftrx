@@ -8,8 +8,8 @@
 
 // mango-pi board
 
-#ifndef ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED
-#define ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED 1
+#ifndef ARM_ALW_V3S_CPUSTYLE_LICHEE0_H_INCLUDED
+#define ARM_ALW_V3S_CPUSTYLE_LICHEE0_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1210,4 +1210,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED */
+#endif /* ARM_ALW_V3S_CPUSTYLE_LICHEE0_H_INCLUDED */

@@ -11595,7 +11595,7 @@ void hightests(void)
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 
 		memset(b, 0xE5, sizeof b);
-		readDATAFLASH(0x00080000, b, ARRAY_SIZE(b));
+		readDATAFLASH(0x00040000, b, ARRAY_SIZE(b));
 		printhex(0x00080000, b, ARRAY_SIZE(b));
 	}
 #endif

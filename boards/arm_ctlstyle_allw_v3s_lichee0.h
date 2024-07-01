@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
 // rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED
-#define ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED 1
+#ifndef ARM_ALW_V3S_CTLSTYLE_LICHEE0_H_INCLUDED
+#define ARM_ALW_V3S_CTLSTYLE_LICHEE0_H_INCLUDED 1
 
 	//#define WITHBRANDSTR "Falcon"
 
@@ -63,7 +63,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	//#define CTLREGMODE_MANGO_PI	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_LICHEE0	1	/* STM32MP157, дополнения для подключения трансвертора */
 	#define CTLREGMODE_NOCTLREG 1
 
 	#define WITHPABIASMIN		0
@@ -713,4 +713,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALLWT128S3_CTLSTYLE_MANGO_PI_H_INCLUDED */
+#endif /* ARM_ALW_V3S_CTLSTYLE_LICHEE0_H_INCLUDED */
