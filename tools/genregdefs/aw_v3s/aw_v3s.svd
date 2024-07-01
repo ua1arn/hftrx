@@ -1201,6 +1201,130 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>SPI</name>
+  <description>Serial Peripheral Interface</description>
+  <baseAddress>0x01C68000</baseAddress>
+  <registers>
+   <register>
+    <name>SPI_GCR</name>
+    <displayName>SPI_GCR</displayName>
+    <description>SPI Global Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_TCR</name>
+    <displayName>SPI_TCR</displayName>
+    <description>SPI Transfer Control Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_IER</name>
+    <displayName>SPI_IER</displayName>
+    <description>SPI Interrupt Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_ISR</name>
+    <displayName>SPI_ISR</displayName>
+    <description>SPI Interrupt Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_FCR</name>
+    <displayName>SPI_FCR</displayName>
+    <description>SPI FIFO Control Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_FSR</name>
+    <displayName>SPI_FSR</displayName>
+    <description>SPI FIFO Status Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_WCR</name>
+    <displayName>SPI_WCR</displayName>
+    <description>SPI Wait Clock Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_CCR</name>
+    <displayName>SPI_CCR</displayName>
+    <description>SPI Clock Rate Control register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_MBC</name>
+    <displayName>SPI_MBC</displayName>
+    <description>SPI Master Burst Counter Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_MTC</name>
+    <displayName>SPI_MTC</displayName>
+    <description>SPI Master Transmit Counter Register</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_BCC</name>
+    <displayName>SPI_BCC</displayName>
+    <description>SPI Master Burst Control Register</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_TXD</name>
+    <displayName>SPI_TXD</displayName>
+    <description>SPI TX Data Register</description>
+    <addressOffset>0x200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI_RXD</name>
+    <displayName>SPI_RXD</displayName>
+    <description>SPI RX Data Register</description>
+    <addressOffset>0x300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SYS_CFG</name>
   <description></description>
   <baseAddress>0x01C00000</baseAddress>

@@ -956,10 +956,10 @@ prog_select_init(void)
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
 		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616  || CPUSTYLE_V3S
 		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
-		static portholder_t spi_samp_dl_reg_val [SPIC_SPEEDS_COUNT];
+		//static portholder_t spi_samp_dl_reg_val [SPIC_SPEEDS_COUNT];
 	#else
 		#error Undefined CPUSTYLE_xxx
 	#endif /* CPUSTYLE_STM32F1XX */
@@ -1129,7 +1129,7 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#if CPUSTYLE_ALLWINNER
 //static void sys_spinor_exit(void)
 //{
 //	//uintptr_t addr = 0x04025000;
@@ -1140,7 +1140,7 @@ static void DMA2_SPI1_TX_initialize(void)
 //	val &= ~ ((1u << 1) | (1u << 0));
 //	SPIDFHARD_PTR->SPI_GCR = val;
 //}
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 */
+#endif /* CPUSTYLE_ALLWINNER */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
@@ -1468,7 +1468,7 @@ void hardware_spi_master_initialize(void)
 
 	#warning Implement for CPUSTYLE_A64
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616
 	unsigned ix = SPIHARD_IX;	// SPI0
 
 	/* Open the clock gate for SPI0 */
@@ -1479,6 +1479,35 @@ void hardware_spi_master_initialize(void)
 	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 16);	// De-assert SPIx reset
 
 	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI0_CLK_GATING
+	(void) SPIHARD_CCU_CLK_REG;
+
+	/* Do a soft reset */
+	SPIHARD_PTR->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
+	while ((SPIHARD_PTR->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+		;
+
+	SPIHARD_PTR->SPI_GCR =
+		1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
+		0;
+
+	/* Enable SPIx */
+	SPIHARD_PTR->SPI_GCR |= (UINT32_C(1) << 0);	// EN SPI Module Enable Control
+
+	// De-assert hardware CS
+	//SPIHARD_PTR->SPI_TCR |= (1u << 7);
+	SPIIO_INITIALIZE();
+
+
+#elif CPUSTYLE_V3S
+
+	/* Open the clock gate for SPI */
+	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 20);	// SPI_GATING
+
+	//CCU->SPI_BGR_REG &= ~ (UINT32_C(1) << 20);	// Assert SPI reset
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 20);	// De-assert SPI reset
+
+	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI_CLK_GATING
 	(void) SPIHARD_CCU_CLK_REG;
 
 	/* Do a soft reset */
@@ -1809,7 +1838,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
 	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	enum
 	{
@@ -1854,38 +1883,38 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (2u << 0);
 	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (3u << 0);
 
-	if (0)
-	{
-		SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-		(void) SPIHARD_CCU_CLK_REG;
-
-		SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][SPIC_MODE3];
-		(void) SPIHARD_PTR->SPI_TCR;
-
-		// SPI delay calibration
-		SPIHARD_PTR->SPI_SAMP_DL = 0xA0;
-		(void) SPIHARD_PTR->SPI_SAMP_DL;
-		SPIHARD_PTR->SPI_SAMP_DL = 0x20;
-		(void) SPIHARD_PTR->SPI_SAMP_DL;
-
-		SPIHARD_PTR->SPI_SAMP_DL |= (UINT32_C(1) << 15);
-		(void) SPIHARD_PTR->SPI_SAMP_DL;
-
-		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 15)) == 0)
-			;
-		SPIHARD_PTR->SPI_SAMP_DL &= ~ (UINT32_C(1) << 15);
-		(void) SPIHARD_PTR->SPI_SAMP_DL;
-
-		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 14)) == 0)
-			;
-		unsigned dly = (SPIHARD_PTR->SPI_SAMP_DL >> 8) & 0x3F;
-
-		SPIHARD_PTR->SPI_SAMP_DL = dly | (UINT32_C(1) << 7);
-
-		//PRINTF("hardware_spi_master_setfreq: prei=%u,value=%u, spispeed=%u,SPI_SAMP_DL=%08X,dly=%u\n", prei, value, (unsigned) spispeed, (unsigned) SPIHARD_PTR->SPI_SAMP_DL, dly);
-		spi_samp_dl_reg_val [spispeedindex] = dly | (UINT32_C(1) << 7);
-
-	}
+//	if (0)
+//	{
+//		SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+//		(void) SPIHARD_CCU_CLK_REG;
+//
+//		SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][SPIC_MODE3];
+//		(void) SPIHARD_PTR->SPI_TCR;
+//
+//		// SPI delay calibration
+//		SPIHARD_PTR->SPI_SAMP_DL = 0xA0;
+//		(void) SPIHARD_PTR->SPI_SAMP_DL;
+//		SPIHARD_PTR->SPI_SAMP_DL = 0x20;
+//		(void) SPIHARD_PTR->SPI_SAMP_DL;
+//
+//		SPIHARD_PTR->SPI_SAMP_DL |= (UINT32_C(1) << 15);
+//		(void) SPIHARD_PTR->SPI_SAMP_DL;
+//
+//		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 15)) == 0)
+//			;
+//		SPIHARD_PTR->SPI_SAMP_DL &= ~ (UINT32_C(1) << 15);
+//		(void) SPIHARD_PTR->SPI_SAMP_DL;
+//
+//		while ((SPIHARD_PTR->SPI_SAMP_DL & (UINT32_C(1) << 14)) == 0)
+//			;
+//		unsigned dly = (SPIHARD_PTR->SPI_SAMP_DL >> 8) & 0x3F;
+//
+//		SPIHARD_PTR->SPI_SAMP_DL = dly | (UINT32_C(1) << 7);
+//
+//		//PRINTF("hardware_spi_master_setfreq: prei=%u,value=%u, spispeed=%u,SPI_SAMP_DL=%08X,dly=%u\n", prei, value, (unsigned) spispeed, (unsigned) SPIHARD_PTR->SPI_SAMP_DL, dly);
+//		spi_samp_dl_reg_val [spispeedindex] = dly | (UINT32_C(1) << 7);
+//
+//	}
 
 
 #else
@@ -2038,13 +2067,13 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	(void) SPIHARD_CCU_CLK_REG;
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+	//SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -2129,7 +2158,7 @@ void hardware_spi_disconnect(void)
 	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	{
 		unsigned val = SPIHARD_PTR->SPI_TCR;
@@ -2216,7 +2245,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return SPI0->RXD & 0xFF;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)
@@ -3174,13 +3203,13 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	(void) SPIHARD_CCU_CLK_REG;
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+	//SPIHARD_PTR->SPI_SAMP_DL = CPUSTYLE_ALLWINNER [spispeedindex];
 //	{
 //		unsigned val = SPI0->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3236,7 +3265,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (1u << 31)) != 0)
@@ -3288,7 +3317,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_PTR->SPI_MBC = 2;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 2;	// 23..0: Number of bursts
@@ -3366,13 +3395,13 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	(void) SPIHARD_CCU_CLK_REG;
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+	//SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3405,7 +3434,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (1u << 31)) != 0)
@@ -3441,7 +3470,7 @@ void hardware_spi_b32_p1(
 
 	HW_SPIUSED->SPDR.UINT32 = v;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_PTR->SPI_MBC = 4;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 4;	// 23..0: Number of bursts
@@ -3528,7 +3557,7 @@ void hardware_spi_b8_p1(
 	while ((SPI0->SR & (UINT32_C(1) << 2)) == 0)	// TX FIFO not full
 		;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
+#elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_PTR->SPI_MBC = 1;	// Master Burst Counter
 	SPIHARD_PTR->SPI_MTC = 1;	// 23..0: Number of bursts
@@ -4177,7 +4206,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 		spidf_progval8(* buff ++);
 }
 
-#elif WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
+#elif WIHSPIDFHW && (CPUSTYLE_ALLWINNER)
 
 static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
 {

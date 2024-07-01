@@ -46,6 +46,7 @@ typedef enum IRQn
     ALARM1_IRQn = 73,                                 /*!< RTC  */
     DMAC_IRQn = 82,                                   /*!< DMAC  */
     VE_IRQn = 90,                                     /*!< VE Video Encoding */
+    SPI_IRQn = 97,                                    /*!< SPI SPI interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -79,6 +80,7 @@ typedef enum IRQn
 #define TWI1_BASE ((uintptr_t) 0x01C2B000)            /*!< TWI  Base */
 #define DRAM_COM_BASE ((uintptr_t) 0x01C62000)        /*!< DRAM_COM  Base */
 #define DRAM_CTL_BASE ((uintptr_t) 0x01C63000)        /*!< DRAM_CTL  Base */
+#define SPI_BASE ((uintptr_t) 0x01C68000)             /*!< SPI Serial Peripheral Interface Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 
@@ -306,6 +308,32 @@ typedef struct RTC_Type
     volatile uint32_t IC_CHARA_REG;                   /*!< Offset 0x1F0 IC Characteristic Register */
              uint32_t reserved_0x1F4 [0x0083];
 } RTC_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief SPI
+ */
+/*!< SPI Serial Peripheral Interface */
+typedef struct SPI_Type
+{
+             uint32_t reserved_0x000;
+    volatile uint32_t SPI_GCR;                        /*!< Offset 0x004 SPI Global Control Register */
+    volatile uint32_t SPI_TCR;                        /*!< Offset 0x008 SPI Transfer Control Register */
+             uint32_t reserved_0x00C;
+    volatile uint32_t SPI_IER;                        /*!< Offset 0x010 SPI Interrupt Control Register */
+    volatile uint32_t SPI_ISR;                        /*!< Offset 0x014 SPI Interrupt Status Register */
+    volatile uint32_t SPI_FCR;                        /*!< Offset 0x018 SPI FIFO Control Register */
+    volatile uint32_t SPI_FSR;                        /*!< Offset 0x01C SPI FIFO Status Register */
+    volatile uint32_t SPI_WCR;                        /*!< Offset 0x020 SPI Wait Clock Register */
+    volatile uint32_t SPI_CCR;                        /*!< Offset 0x024 SPI Clock Rate Control register */
+             uint32_t reserved_0x028 [0x0002];
+    volatile uint32_t SPI_MBC;                        /*!< Offset 0x030 SPI Master Burst Counter Register */
+    volatile uint32_t SPI_MTC;                        /*!< Offset 0x034 SPI Master Transmit Counter Register */
+    volatile uint32_t SPI_BCC;                        /*!< Offset 0x038 SPI Master Burst Control Register */
+             uint32_t reserved_0x03C [0x0071];
+    volatile uint32_t SPI_TXD;                        /*!< Offset 0x200 SPI TX Data Register */
+             uint32_t reserved_0x204 [0x003F];
+    volatile uint32_t SPI_RXD;                        /*!< Offset 0x300 SPI RX Data Register */
+             uint32_t reserved_0x304 [0x033F];
+} SPI_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SYS_CFG
  */
@@ -818,6 +846,7 @@ typedef struct VE_Type
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */
 #define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0  register set access pointer */
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
+#define SPI ((SPI_TypeDef *) SPI_BASE)                /*!< SPI Serial Peripheral Interface register set access pointer */
 
 
 #endif /* HEADER_00003039_INCLUDED */

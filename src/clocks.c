@@ -2041,11 +2041,19 @@ void allwnr_v3s_pll_initialize(void)
 	while((CCU->PLL_PERIPH0_CTRL_REG & (1 << 28)) == 0)
 		;
 
+#if 0
+	CCU->APB2_CFG_REG =
+		0x01 * (UINT32_C(1) << 24) |	// 24
+		0x00 * (UINT32_C(1) << 16) |	// N 0..3
+		0x00 * (UINT32_C(1) << 0) |	// M 0..31
+		0;
+#else
 	CCU->APB2_CFG_REG =
 		0x02 * (UINT32_C(1) << 24) |	// periph0
-		0x02 * (UINT32_C(1) << 16) |	// N 0..3
-		//0x00 * (UINT32_C(1) << 0) |	// M 0..31
+		0x01 * (UINT32_C(1) << 16) |	// N 0..3
+		0x04 * (UINT32_C(1) << 0) |	// M 0..31
 		0;
+#endif
 	(void) CCU->APB2_CFG_REG;
 	local_delay_us(10);
 

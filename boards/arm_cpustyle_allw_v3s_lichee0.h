@@ -11,21 +11,21 @@
 #ifndef ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED
 #define ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED 1
 
-//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-////#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-////#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-//
-////#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-////#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-////#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+
+//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+//#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
-//
-////#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-//
-////#define WITHCAN0HW 1
+
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
+
+//#define WITHCAN0HW 1
 //#define WITHCAN1HW 1
 
 #if WITHINTEGRATEDDSP
@@ -598,30 +598,21 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
-		arm_hardware_piog_outputs(targetext1, 1 * targetext1); /*  */ \
-		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_piog_outputs(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_piog_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_piog_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_piog_outputs(targetrtc1, 0 * targetrtc1); /*  */ \
-		arm_hardware_piog_outputs(targetadc2, 1 * targetadc2); /*  */ \
-		arm_hardware_piog_outputs(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_piog_outputs(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC2 SPI_CS */ \
 	} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_BIT			(UINT32_C(1) << 2)	// PC2 SPI0_CLK
-	#define	SPI_MOSI_BIT			(UINT32_C(1) << 4)	// PC4 SPI0_MOSI
-	#define	SPI_MISO_BIT			(UINT32_C(1) << 5)	// PC5 SPI0_MISO
+	#define	SPI_SCLK_BIT			(UINT32_C(1) << 1)	// PC1 SPI_CLK
+	#define	SPI_MOSI_BIT			(UINT32_C(1) << 3)	// PC3 SPI_MOSI
+	#define	SPI_MISO_BIT			(UINT32_C(1) << 0)	// PC0 SPI_MISO
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 	//#define SPDIF_SCLK_BIT (UINT32_C(1) << 2)	// PC2 SPI0_CLK
-	#define SPDIF_NCS_BIT (UINT32_C(1) << 3)	// PC3 SPI0_CS
-	//#define SPDIF_MOSI_BIT (UINT32_C(1) << 4)	// PC4 SPI0_MOSI
+	#define SPDIF_NCS_BIT (UINT32_C(1) << 2)	// PC2 SPI_CS
+	//#define SPDIF_MOSI_BIT (UINT32_C(1) << 4)	// PC4 SPIMOSI
 	//#define SPDIF_MISO_BIT (UINT32_C(1) << 5)	// PC5 SPI0_MISO
-	#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
-	#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
+//	#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
+//	#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
 //	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); local_delay_us(1); } while (0)
 //	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); local_delay_us(1); } while (0)
@@ -631,18 +622,15 @@
 //
 //	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
-	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define BOARD_SPI_FREQ (allwnrt113_get_spi0_freq())
-	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (CCU->SPI_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define BOARD_SPI_FREQ (allwnr_v3s_get_apb2_freq())
+	#define	SPIDFHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
-		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
-		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
-		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
+		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF3); 	/* PC2 SPI_CLK */ \
+		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF3); 	/* PC4 SPI_MOSI */ \
+		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF3); 	/* PC5 SPI_MISO */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
