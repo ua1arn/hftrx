@@ -2285,7 +2285,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
 		;
 
-	return v & 0xFF;
+	return v;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3309,7 +3309,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 //	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
 //		;
 
-	return v & 0xFFFF;
+	return v;
 
 #else
 	#error Wrong CPUSTYLE macro
