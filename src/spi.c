@@ -2275,7 +2275,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
 
 	const portholder_t v = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
@@ -3299,7 +3299,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
 
 	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
@@ -3359,7 +3359,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);	/* 16bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3472,7 +3472,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)
+	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
 
 	const portholder_t v = __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
@@ -3603,7 +3603,7 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v; /* 8bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
