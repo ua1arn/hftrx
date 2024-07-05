@@ -3516,7 +3516,7 @@ void hardware_spi_b32_p1(
 
 	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
 
-	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// запуск обмена
+	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3959,7 +3959,7 @@ void nand_tests(void)
 
 #define SPIDF_SPEEDC SPIC_SPEEDFAST
 
-static IRQLSPINLOCK_t spidflock;
+static IRQLSPINLOCK_t spidflock;	// протокольная блокировка (несколько физических обменов)
 
 static void accureDATAFLASH(IRQL_t * oldIRQL, IRQL_t * oldIRQL2spi)
 {
