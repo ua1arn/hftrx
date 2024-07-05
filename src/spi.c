@@ -18,9 +18,9 @@
 	#include <machine/endian.h>
 #endif /* ! LINUX_SUNSYSTEM */
 
-#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133)	/* доступ к SPI разделяет DFU устройство и user mode программа */
+#define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_ALLWINNER)	/* доступ к SPI разделяет DFU устройство и user mode программа */
+#define USESPIDFSHARESPILOCK (WIHSPIDFHW && CPUSTYLE_ALLWINNER)
 
-#define USESPIDFSHARESPILOCK (WIHSPIDFHW && (CPUSTYLE_T113 || CPUSTYLE_F133))
 #if WITHSPIHW || WITHSPISW
 
 #if UC1608_CSP
