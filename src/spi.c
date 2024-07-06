@@ -2128,9 +2128,9 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //	}
  	HARDWARE_SPI_CONNECT();
 	// TXFIFO and RXFIFO Reset
-	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-		;
+//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
+//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
+//		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3268,9 +3268,9 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //	}
  	HARDWARE_SPI_CONNECT();
 	// TXFIFO and RXFIFO Reset
-	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-		;
+//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
+//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
+//		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3464,9 +3464,9 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //	}
  	HARDWARE_SPI_CONNECT();
 	// TXFIFO and RXFIFO Reset
-	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-		;
+//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
+//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
+//		;
 
 #else
 	#error Wrong CPUSTYLE macro
