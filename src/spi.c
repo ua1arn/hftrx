@@ -1162,6 +1162,25 @@ static void DMA2_SPI1_TX_initialize(void)
 //	val &= ~ ((1u << 1) | (1u << 0));
 //	SPIDFHARD_PTR->SPI_GCR = val;
 //}
+static void aw_spi_wait(void)
+{
+	local_delay_us(1);
+	return;
+	enum { size = 0x50 };
+	static uint8_t v1 [size];
+	static uint8_t v2 [size];
+	memcpy(v1, SPIDFHARD_PTR, size);
+	local_delay_us(1);
+	memcpy(v2, SPIDFHARD_PTR, size);
+	if (memcmp(v1, v2, size))
+	{
+		PRINTF("Before:\n");
+		printhex32(0, v1, size);
+		PRINTF("After:\n");
+		printhex32(0, v2, size);
+
+	}
+}
 #endif /* CPUSTYLE_ALLWINNER */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
@@ -1915,6 +1934,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 		0;
 
 	const portholder_t tcr =
+			1 * (UINT32_C(1) << 13) |	// SDM: 1: Normal sample mode
 			0 * (UINT32_C(1) << 12) |	// FBS: 0: MSB first
 			1 * (UINT32_C(1) << 6) |		// SS_OWNER: 1: Software
 			//(UINT32_C(1) << 7) |		// SS_LEVEL: 1: Set SS to high
@@ -2297,9 +2317,8 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-
-	const portholder_t v = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
-	return v;
+	aw_spi_wait();
+	return  * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3311,9 +3330,8 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-
-	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
-	return v;
+	aw_spi_wait();
+	return __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3474,9 +3492,8 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-
-	const portholder_t v = __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
-	return v;
+	aw_spi_wait();
+	return __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3681,7 +3698,7 @@ void spi_initialize(void)
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
-	hardware_spi_master_setfreq(SPIC_SPEED1M, 4000000);	/* 1 MHz для XPT2046 */
+	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000);	/* 1 MHz для XPT2046 */
 	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000);	/* 25 MHz  */
