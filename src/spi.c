@@ -19,7 +19,7 @@
 #endif /* ! LINUX_SUNSYSTEM */
 
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_ALLWINNER)	/* доступ к SPI разделяет DFU устройство и user mode программа */
-#define USESPIDFSHARESPILOCK (WIHSPIDFHW && CPUSTYLE_ALLWINNER)
+#define USESPIDFSHARESPI (WIHSPIDFHW && CPUSTYLE_ALLWINNER)
 
 #if WITHSPIHW || WITHSPISW
 
@@ -489,22 +489,16 @@ typedef struct lowspiio_tag
 	lowspiexchange_t chunks [3];
 } lowspiio_t;
 
-static LCLSPINLOCK_t spilock = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t spilock;
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
-#if ! LINUX_SUBSYSTEM
-	RiseIrql(IRQL_SYSTEM, oldIrql);
-#endif /* ! LINUX_SUBSYSTEM */
-	LCLSPIN_LOCK(& spilock);
+	IRQLSPIN_LOCK(& spilock, oldIrql);
 }
 
 void spi_operate_unlock(IRQL_t irql)
 {
-	LCLSPIN_UNLOCK(& spilock);
-#if ! LINUX_SUBSYSTEM
-	LowerIrql(irql);
-#endif /* ! LINUX_SUBSYSTEM */
+	IRQLSPIN_UNLOCK(& spilock, irql);
 }
 
 static void spi_operate(lowspiio_t * iospi)
@@ -1884,16 +1878,16 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
-		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		factorN * (UINT32_C(1) << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		factorM * ( UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
 		(UINT32_C(1) << 31) |	// 1: Clock is ON
 		0;
 
 	const portholder_t tcr =
-			(0u << 12) |	// FBS: 0: MSB first
-			(1u << 6) |		// SS_OWNER: 1: Software
-			//(1u << 7) |		// SS_LEVEL: 1: Set SS to high
+			0 * (UINT32_C(1) << 12) |	// FBS: 0: MSB first
+			1 * (UINT32_C(1) << 6) |		// SS_OWNER: 1: Software
+			//(UINT32_C(1) << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
 
 //	tcr &= ~((0x3 << 4) | (0x1 << 7));
@@ -3644,6 +3638,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 void spi_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& spilock, IRQL_SYSTEM);
 
 #if WITHSPIHW && WITHSPISW
 	// программный и аппаратный SPI
@@ -3965,16 +3960,16 @@ static void accureDATAFLASH(IRQL_t * oldIRQL, IRQL_t * oldIRQL2spi)
 {
 	ASSERT(oldIRQL != oldIRQL2spi);
 	IRQLSPIN_LOCK(& spidflock, oldIRQL);
-#if	USESPIDFSHARESPILOCK
+#if USESPIDFSHARESPI
 	spi_operate_lock(oldIRQL2spi);
-#endif /* USESPIDFSHARESPILOCK */
+#endif /* USESPIDFSHARESPI */
 }
 
 static void releaseDATAFLASH(IRQL_t setIRQL, IRQL_t setIRQL2spi)
 {
-#if	USESPIDFSHARESPILOCK
+#if USESPIDFSHARESPI
 	spi_operate_unlock(setIRQL2spi);
-#endif /* USESPIDFSHARESPILOCK */
+#endif /* USESPIDFSHARESPI */
 	IRQLSPIN_UNLOCK(& spidflock, setIRQL);
 }
 
