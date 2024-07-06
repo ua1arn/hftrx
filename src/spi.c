@@ -1894,10 +1894,12 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	// T507 have different codes
 	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 
-	SPIHARD_CCU_CLK_REG = (SPIHARD_CCU_CLK_REG & ~ (0x03u << 24)) |
-		(clk_src << 24) |	/* CLK_SRC_SEL */
+	SPIHARD_CCU_CLK_REG = //(SPIHARD_CCU_CLK_REG & ~ (0x03u << 24)) |
+			clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
 		0;
-
+	(void) SPIHARD_CCU_CLK_REG;
+	SPIHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);	// 1: Clock is ON
+	(void) SPIHARD_CCU_CLK_REG;
 	//TP();
 	// SCLK = Clock Source/M/N.
 	unsigned value;
@@ -1908,7 +1910,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	ccu_spi_clk_reg_val [spispeedindex] =
 		clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 		factorN * (UINT32_C(1) << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-		factorM * ( UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		factorM * (UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
 		(UINT32_C(1) << 31) |	// 1: Clock is ON
 		0;
 
@@ -2127,10 +2129,6 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //		(void) SPIHARD_PTR->SPI_TCR;
 //	}
  	HARDWARE_SPI_CONNECT();
-	// TXFIFO and RXFIFO Reset
-//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-//		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2301,12 +2299,6 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 
 	const portholder_t v = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
-
-	// TXFIFO and RXFIFO Reset
-	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-		;
-
 	return v;
 
 #else
@@ -3267,10 +3259,6 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //		(void) SPI0->SPI_TCR;
 //	}
  	HARDWARE_SPI_CONNECT();
-	// TXFIFO and RXFIFO Reset
-//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-//		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3325,12 +3313,6 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 		;
 
 	const portholder_t v = __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
-
-	// TXFIFO and RXFIFO Reset
-//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-//		;
-
 	return v;
 
 #else
@@ -3463,10 +3445,6 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 //		(void) SPIHARD_PTR->SPI_TCR;
 //	}
  	HARDWARE_SPI_CONNECT();
-	// TXFIFO and RXFIFO Reset
-//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-//		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -3498,12 +3476,6 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 
 	const portholder_t v = __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
-
-	// TXFIFO and RXFIFO Reset
-//	SPIHARD_PTR->SPI_FCR |= (UINT32_C(1) << 31) | (UINT32_C(1) << 15);
-//	while ((SPIHARD_PTR->SPI_FCR & ((UINT32_C(1) << 31) | (UINT32_C(1) << 15))) != 0)
-//		;
-
 	return v;
 
 #else
@@ -3709,10 +3681,10 @@ void spi_initialize(void)
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
-	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000uL);	/* 1 MHz для XPT2046 */
-	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz для CS4272 */
-	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
-	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
+	hardware_spi_master_setfreq(SPIC_SPEED1M, 4000000);	/* 1 MHz для XPT2046 */
+	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
+	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
+	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000);	/* 25 MHz  */
 
 #endif /* WITHSPIHW */
 }

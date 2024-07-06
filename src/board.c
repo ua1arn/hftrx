@@ -7175,6 +7175,8 @@ restart:
 					if (board_fpga_get_CONF_DONE() != 0)
 					{
 						PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+						if (score)
+							spi_complete(targetnone);
 						goto restart;
 					}
 
@@ -7374,6 +7376,11 @@ restart:
 				if (board_fpga_get_CONF_DONE() != 0)
 				{
 					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u\n", score);
+		#if WITHSPIEXT16	// for skip in test configurations
+					hardware_spi_complete_b16();
+		#else /* WITHSPIEXT16 */	// for skip in test configurations
+					spi_complete(targetnone);
+		#endif /* WITHSPIEXT16 */	// for skip in test configurations
 					goto restart;
 				}
 #if WITHSPIEXT16	// for skip in test configurations
