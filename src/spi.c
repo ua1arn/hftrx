@@ -489,17 +489,45 @@ typedef struct lowspiio_tag
 	lowspiexchange_t chunks [3];
 } lowspiio_t;
 
-static IRQLSPINLOCK_t spilock;
+static IRQLSPINLOCK_t spicslock;
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
-	IRQLSPIN_LOCK(& spilock, oldIrql);
+	IRQLSPIN_LOCK(& spicslock, oldIrql);
 }
 
 void spi_operate_unlock(IRQL_t irql)
 {
-	IRQLSPIN_UNLOCK(& spilock, irql);
+	IRQLSPIN_UNLOCK(& spicslock, irql);
 }
+
+#if USESPIDFSHARESPI
+
+void spidf_operate_lock(IRQL_t * oldIrql)
+{
+	spi_operate_lock(oldIrql);
+}
+
+void spidf_operate_unlock(IRQL_t irql)
+{
+	spi_operate_unlock(irql);
+}
+
+#else /* USESPIDFSHARESPI */
+
+	static IRQLSPINLOCK_t spidfcslock;
+
+	void spidf_operate_lock(IRQL_t * oldIrql)
+	{
+		IRQLSPIN_LOCK(& spidfcslock, oldIrql);
+	}
+
+	void spidf_operate_unlock(IRQL_t irql)
+	{
+		IRQLSPIN_UNLOCK(& spidfcslock, irql);
+	}
+#endif /* USESPIDFSHARESPI */
+
 
 static void spi_operate(lowspiio_t * iospi)
 {
@@ -3638,7 +3666,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 void spi_initialize(void)
 {
-	IRQLSPINLOCK_INITIALIZE(& spilock, IRQL_SYSTEM);
+	IRQLSPINLOCK_INITIALIZE(& spicslock, IRQL_SYSTEM);
 
 #if WITHSPIHW && WITHSPISW
 	// программный и аппаратный SPI
@@ -3993,6 +4021,9 @@ static uint8_t dmyb [SPDFIO_numwires];
 void spidf_initialize(void)
 {
 	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+#if ! USESPIDFSHARESPI
+	IRQLSPINLOCK_INITIALIZE(& spidfcslock, IRQL_SYSTEM);
+#endif /* ! USESPIDFSHARESPI */
 #if defined (SPIDF_SOFTINITIALIZE)
 	// Connect I/O pins
 	SPIDF_SOFTINITIALIZE();
@@ -4339,6 +4370,9 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 void spidf_initialize(void)
 {
 	IRQLSPINLOCK_INITIALIZE(& spidflock, IRQL_SYSTEM);
+#if ! USESPIDFSHARESPI
+	IRQLSPINLOCK_INITIALIZE(& spidfcslock, IRQL_SYSTEM);
+#endif /* ! USESPIDFSHARESPI */
 	hardware_spi_master_initialize();
 	prog_select_init();		// spi CS initialize
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
