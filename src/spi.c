@@ -978,10 +978,12 @@ prog_select_init(void)
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
 		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616  || CPUSTYLE_V3S
+	#elif CPUSTYLE_ALLWINNER
 		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
 		//static portholder_t spi_samp_dl_reg_val [SPIC_SPEEDS_COUNT];
+		static unsigned spi_bdelay [SPIC_SPEEDS_COUNT];
+		static unsigned bdelay;
 	#else
 		#error Undefined CPUSTYLE_xxx
 	#endif /* CPUSTYLE_STM32F1XX */
@@ -1162,25 +1164,6 @@ static void DMA2_SPI1_TX_initialize(void)
 //	val &= ~ ((1u << 1) | (1u << 0));
 //	SPIDFHARD_PTR->SPI_GCR = val;
 //}
-static void aw_spi_wait(void)
-{
-	local_delay_us(1);
-	return;
-	enum { size = 0x50 };
-	static uint8_t v1 [size];
-	static uint8_t v2 [size];
-	memcpy(v1, SPIDFHARD_PTR, size);
-	local_delay_us(1);
-	memcpy(v2, SPIDFHARD_PTR, size);
-	if (memcmp(v1, v2, size))
-	{
-		PRINTF("Before:\n");
-		printhex32(0, v1, size);
-		PRINTF("After:\n");
-		printhex32(0, v2, size);
-
-	}
-}
 #endif /* CPUSTYLE_ALLWINNER */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
@@ -1939,7 +1922,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			1 * (UINT32_C(1) << 6) |		// SS_OWNER: 1: Software
 			//(UINT32_C(1) << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
-
+	spi_bdelay [spispeedindex] = spispeed < 4000000;
 //	tcr &= ~((0x3 << 4) | (0x1 << 7));
 //	tcr |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
 
@@ -2141,6 +2124,7 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	//SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+	bdelay = spi_bdelay [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -2317,7 +2301,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	aw_spi_wait();
+	local_delay_us(bdelay);
 	return  * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
 
 #else
@@ -3270,6 +3254,7 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	//SPIHARD_PTR->SPI_SAMP_DL = CPUSTYLE_ALLWINNER [spispeedindex];
+	bdelay = spi_bdelay [spispeedindex];
 //	{
 //		unsigned val = SPI0->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3330,7 +3315,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	aw_spi_wait();
+	local_delay_us(bdelay);
 	return __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
 
 #else
@@ -3455,6 +3440,7 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	//SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
+	bdelay = spi_bdelay [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3492,7 +3478,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	aw_spi_wait();
+	local_delay_us(bdelay);
 	return __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
 
 #else
