@@ -8122,9 +8122,9 @@ void board_initialize(void)
 	i2c_initialize();
 #endif /* (WITHTWIHW || WITHTWISW) */
 
-#if (WITHSPIHW || WITHSPISW)
+#if WITHSPIHW || WITHSPISW || WIHSPIDFOVERSPI
 	spi_initialize();
-#endif /* (WITHSPIHW || WITHSPISW) */
+#endif /* WITHSPIHW || WITHSPISW || WIHSPIDFOVERSPI */
 
 #if (WITHNANDHW || WITHNANDSW)
 	nand_initialize();
