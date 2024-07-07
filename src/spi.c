@@ -529,6 +529,12 @@ void spidf_operate_unlock(IRQL_t irql)
 #endif /* USESPIDFSHARESPI */
 
 
+enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
+
+static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb);
+static void spi_transfer_b16(spitarget_t target, const uint16_t * txbuff, uint16_t * rxbuff, int len, uint_fast8_t readnb);
+static void spi_transfer_b32(spitarget_t target, const uint32_t * txbuff, uint32_t * rxbuff, int len, uint_fast8_t readnb);
+
 static void spi_operate(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
@@ -566,7 +572,7 @@ static void spi_operate(lowspiio_t * iospi)
 	for (i = 0; i < iospi->count; ++ i)
 	{
 		lowspiexchange_t * const ex = & iospi->chunks [i];
-		unsigned size = ex->bytecount;
+		const unsigned size = ex->bytecount;
 		if (size == 0)
 			continue;
 
@@ -576,34 +582,16 @@ static void spi_operate(lowspiio_t * iospi)
 			switch (iospi->spiiosize)
 			{
 			case SPIIOSIZE_U8:
-				{
-					const uint8_t * txbuff = (uint8_t *) ex->txbuff;
-					spi_progval8_p1(target, * txbuff);
-					while (-- size)
-						spi_progval8_p2(target, * ++ txbuff);
-					spi_complete(target);
-				}
+				spi_transfer_b8(target, (const uint8_t *) ex->txbuff, NULL, size, SPDFIO_1WIRE);
 				break;
 		#if WITHSPI16BIT
 			case SPIIOSIZE_U16:
-				{
-					const uint16_t * txbuff = (uint16_t *) ex->txbuff;
-					hardware_spi_b16_p1(* txbuff);
-					while (-- size)
-						hardware_spi_b16_p2(* ++ txbuff);
-					hardware_spi_complete_b16();
-				}
+				spi_transfer_b16(target, (const uint16_t *) ex->txbuff, NULL, size, SPDFIO_1WIRE);
 				break;
 		#endif /* WITHSPI16BIT */
 		#if WITHSPI32BIT
 			case SPIIOSIZE_U32:
-				{
-					const uint32_t * txbuff = (uint32_t *) ex->txbuff;
-					hardware_spi_b32_p1(* txbuff);
-					while (-- size)
-						hardware_spi_b32_p2(* ++ txbuff);
-					hardware_spi_complete_b32();
-				}
+				spi_transfer_b32(target, (const uint32_t *) ex->txbuff, NULL, size, SPDFIO_1WIRE);
 				break;
 		#endif /* WITHSPI32BIT */
 			default:
@@ -615,40 +603,16 @@ static void spi_operate(lowspiio_t * iospi)
 			switch (iospi->spiiosize)
 			{
 			case SPIIOSIZE_U8:
-				{
-					uint8_t * rxbuff = (uint8_t *) ex->rxbuff;
-					spi_to_read(target);
-					while (size --)
-						* rxbuff ++ = spi_read_byte(target, 0xff);
-					spi_to_write(target);
-				}
+				spi_transfer_b8(target, NULL, (uint8_t *) ex->rxbuff, size, SPDFIO_1WIRE);
 				break;
 		#if WITHSPI16BIT
 			case SPIIOSIZE_U16:
-				{
-					uint16_t * rxbuff = (uint16_t *) ex->rxbuff;
-					spi_to_read(target);
-					while (size --)
-					{
-						hardware_spi_b16_p1(0xFFFF);
-						* rxbuff ++ = hardware_spi_complete_b16();
-					}
-					spi_to_write(target);
-				}
+				spi_transfer_b16(target, NULL, (uint16_t *) ex->rxbuff, size, SPDFIO_1WIRE);
 				break;
 		#endif /* WITHSPI16BIT */
 		#if WITHSPI32BIT
 			case SPIIOSIZE_U32:
-				{
-					uint32_t * rxbuff = (uint32_t *) ex->rxbuff;
-					spi_to_read(target);
-					while (size --)
-					{
-						hardware_spi_b32_p1(0xFFFFFFFF);
-						* rxbuff ++ = hardware_spi_complete_b32();
-					}
-					spi_to_write(target);
-				}
+				spi_transfer_b32(target, NULL, (uint32_t *) ex->rxbuff, size, SPDFIO_1WIRE);
 				break;
 		#endif /* WITHSPI32BIT */
 			default:
@@ -662,37 +626,16 @@ static void spi_operate(lowspiio_t * iospi)
 			switch (iospi->spiiosize)
 			{
 			case SPIIOSIZE_U8:
-				{
-					uint8_t * rxbuff = (uint8_t *) ex->rxbuff;
-					const uint8_t * txbuff = (const uint8_t *) ex->txbuff;
-					while (size --)
-						* rxbuff ++ = spi_read_byte(target, * txbuff ++);
-				}
+				spi_transfer_b8(target, (const uint8_t *) ex->txbuff, (uint8_t *) ex->rxbuff, size, SPDFIO_1WIRE);
 				break;
 		#if WITHSPI16BIT
 			case SPIIOSIZE_U16:
-				{
-					uint16_t * rxbuff = (uint16_t *) ex->rxbuff;
-					const uint16_t * txbuff = (const uint16_t *) ex->txbuff;
-					while (size --)
-					{
-						hardware_spi_b16_p1(* txbuff ++);
-						* rxbuff ++ = hardware_spi_complete_b16();
-					}
-				}
+				spi_transfer_b16(target, (const uint16_t *) ex->txbuff, (uint16_t *) ex->rxbuff, size, SPDFIO_1WIRE);
 				break;
 		#endif /* WITHSPI16BIT */
 		#if WITHSPI32BIT
 			case SPIIOSIZE_U32:
-				{
-					uint32_t * rxbuff = (uint32_t *) ex->rxbuff;
-					const uint32_t * txbuff = (const uint32_t *) ex->txbuff;
-					while (size --)
-					{
-						hardware_spi_b32_p1(* txbuff ++);
-						* rxbuff ++ = hardware_spi_complete_b32();
-					}
-				}
+				spi_transfer_b32(target, (const uint32_t *) ex->txbuff, (uint32_t *) ex->rxbuff, size, SPDFIO_1WIRE);
 				break;
 		#endif /* WITHSPI32BIT */
 			default:
@@ -1154,17 +1097,225 @@ static void DMA2_SPI1_TX_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 #if CPUSTYLE_ALLWINNER
-//static void sys_spinor_exit(void)
-//{
-//	//uintptr_t addr = 0x04025000;
-//	unsigned int val;
-//
-//	/* Disable the spi0 controller */
-//	val = SPIDFHARD_PTR->SPI_GCR;
-//	val &= ~ ((1u << 1) | (1u << 0));
-//	SPIDFHARD_PTR->SPI_GCR = val;
-//}
+
+static void spidf_spi_write_txbuf_b8(const uint8_t * __restrict buf, int len)
+{
+    if (buf != NULL)
+    {
+		while (len --)
+		{
+            * (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = * buf ++;
+        }
+    }
+    else
+    {
+		while (len --)
+        {
+ 			* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = 0xFF;
+        }
+    }
+
+}
+
+static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
+{
+	if (buf != NULL)
+	{
+		while (len --)
+		{
+			* buf ++ = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
+		}
+
+	}
+	else
+	{
+		while (len --)
+		{
+			(void) * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
+		}
+	}
+}
+
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb)
+{
+	int count = len;
+	const uint8_t * tx = txbuff;
+	uint8_t * rx = rxbuff;
+	enum { MAXCHUNK = 64 };
+
+
+	while (count > 0)
+	{
+		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
+		int i;
+
+		SPIHARD_PTR->SPI_MBC = chunk;	// total burst counter
+		switch (readnb)
+		{
+		default:
+		case SPDFIO_1WIRE:
+			spidf_spi_write_txbuf_b8(tx, chunk);
+			SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
+			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+			SPIHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
+			break;
+
+		case SPDFIO_4WIRE:
+			SPIHARD_PTR->SPI_BCC = (1u << 29);	/* Quad_EN */
+			if (tx != NULL)
+			{
+				// 4-wire write
+				spidf_spi_write_txbuf_b8(tx, chunk);
+				SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
+			}
+			else
+			{
+				// 4-wire read
+				SPIHARD_PTR->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			}
+			break;
+		case SPDFIO_2WIRE:
+			ASSERT(0);
+			break;
+		}
+
+		local_delay_us(bdelay);
+		SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
+		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+		while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
+			;
+		SPIHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
+
+		spidf_spi_read_rxbuf_b8(rx, chunk);
+
+		if (rx != NULL)
+			rx += chunk;
+		if (tx != NULL)
+			tx += chunk;
+		count -= chunk;
+	}
+}
+
+#else /* CPUSTYLE_ALLWINNER */
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int size, uint_fast8_t readnb)
+{
+	ASSERT(SPDFIO_1WIRE == readnb);
+	if (rxbuff == NULL && txbuff != NULL)
+	{
+		// SPI TX only
+		if (size == 0)
+			return;
+		spi_progval8_p1(target, * txbuff);
+		while (-- size)
+			spi_progval8_p2(target, * ++ txbuff);
+		spi_complete(target);
+	}
+	else if (rxbuff != NULL && txbuff == NULL)
+	{
+		// SPI RX only
+		spi_to_read(target);
+		while (size --)
+			* rxbuff ++ = spi_read_byte(target, 0xff);
+		spi_to_write(target);
+	}
+	else if (rxbuff != NULL && txbuff != NULL)
+	{
+		// SPI TX & RX - exchange
+		while (size --)
+			* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+	}
+	else
+	{
+		ASSERT(0);
+	}
+}
 #endif /* CPUSTYLE_ALLWINNER */
+
+#if WITHSPI16BIT
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spi_transfer_b16(spitarget_t target, const uint16_t * txbuff, uint16_t * rxbuff, int size, uint_fast8_t readnb)
+{
+	ASSERT(SPDFIO_1WIRE == readnb);
+	if (rxbuff == NULL && txbuff != NULL)
+	{
+		// SPI TX only
+		if (size == 0)
+			return;
+		hardware_spi_b16_p1(__UNALIGNED_UINT16_READ(txbuff));
+		while (-- size)
+			hardware_spi_b16_p2(__UNALIGNED_UINT16_READ(++ txbuff));
+		hardware_spi_complete_b16();
+	}
+	else if (rxbuff != NULL && txbuff == NULL)
+	{
+		// SPI RX only
+		spi_to_read(target);
+		while (size --)
+		{
+			hardware_spi_b16_p1(0xFFFF);
+			__UNALIGNED_UINT16_WRITE(rxbuff ++, hardware_spi_complete_b16());
+		}
+		spi_to_write(target);
+	}
+	else if (rxbuff != NULL && txbuff != NULL)
+	{
+		// SPI TX & RX - exchange
+		while (size --)
+		{
+			hardware_spi_b16_p1(__UNALIGNED_UINT16_READ(txbuff ++));
+			__UNALIGNED_UINT16_WRITE(rxbuff ++, hardware_spi_complete_b16());
+		}
+	}
+	else
+	{
+		ASSERT(0);
+	}
+}
+#endif /* WITHSPI16BIT */
+
+#if WITHSPI32BIT
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spi_transfer_b32(spitarget_t target, const uint32_t * txbuff, uint32_t * rxbuff, int size, uint_fast8_t readnb)
+{
+	ASSERT(SPDFIO_1WIRE == readnb);
+	if (rxbuff == NULL && txbuff != NULL)
+	{
+		// SPI TX only
+		if (size == 0)
+			return;
+		hardware_spi_b32_p1(__UNALIGNED_UINT32_READ(txbuff));
+		while (-- size)
+			hardware_spi_b32_p2(__UNALIGNED_UINT32_READ(++ txbuff));
+		hardware_spi_complete_b32();
+	}
+	else if (rxbuff != NULL && txbuff == NULL)
+	{
+		// SPI RX only
+		spi_to_read(target);
+		while (size --)
+		{
+			hardware_spi_b32_p1(0xFFFFFFFF);
+			__UNALIGNED_UINT32_WRITE(rxbuff ++, hardware_spi_complete_b32());
+		}
+		spi_to_write(target);
+	}
+	else if (rxbuff != NULL && txbuff != NULL)
+	{
+		// SPI TX & RX - exchange
+		while (size --)
+		{
+			hardware_spi_b32_p1(__UNALIGNED_UINT32_READ(txbuff ++));
+			__UNALIGNED_UINT32_WRITE(rxbuff ++, hardware_spi_complete_b32());
+		}
+	}
+	else
+	{
+		ASSERT(0);
+	}
+}
+#endif /* WITHSPI32BIT */
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
@@ -3970,7 +4121,7 @@ static void releaseDATAFLASH(IRQL_t setIRQL)
 }
 
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
-enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
+//enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
 static uint8_t readxb [SPDFIO_numwires] = { 0x0b, 0x00, 0x00 };
 static uint8_t dmyb [SPDFIO_numwires];
@@ -4240,101 +4391,9 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 
 #elif WIHSPIDFHW && (CPUSTYLE_ALLWINNER)
 
-static void spidf_spi_write_txbuf(const volatile uint8_t * buf, int len)
-{
-
-//	while ((SPIDFHARD_PTR->SPI_FSR & (UINT32_C(0x7F) << 28)) != 0)	// TB_CNT
-//		;
-    if (buf != NULL)
-    {
-        int i;
-        for(i = 0; i < len; i ++)
-        {
-            * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = * buf ++;
-        }
-    }
-    else
-    {
-        int i;
-        for(i = 0; i < len; i ++)
-        {
- 			* (volatile uint8_t *) & SPIDFHARD_PTR->SPI_TXD = 0xFF;
-        }
-    }
-
-}
-
-// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fast8_t readnb)
-{
-	int count = len;
-	const volatile uint8_t * tx = txbuf;
-	volatile uint8_t * rx = rxbuf;
-	enum { MAXCHUNK = 64 };
-
-
-	while (count > 0)
-	{
-		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
-		int i;
-
-		SPIDFHARD_PTR->SPI_MBC = chunk;	// total burst counter
-		switch (readnb)
-		{
-		default:
-		case SPDFIO_1WIRE:
-			spidf_spi_write_txbuf(tx, chunk);
-		    SPIDFHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
-			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPIDFHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
-			break;
-
-		case SPDFIO_4WIRE:
-			SPIDFHARD_PTR->SPI_BCC = (1u << 29);	/* Quad_EN */
-			if (tx != NULL)
-			{
-				// 4-wire write
-				spidf_spi_write_txbuf(tx, chunk);
-			    SPIDFHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
-			}
-			else
-			{
-				// 4-wire read
-			    SPIDFHARD_PTR->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
-			}
-			break;
-		case SPDFIO_2WIRE:
-			ASSERT(0);
-			break;
-		}
-
-		local_delay_us(bdelay);
-		SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
-		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPIDFHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
-			;
-		SPIDFHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
-
-		for (i = 0; i < chunk; i ++)
-		{
-//        	while ((SPIDFHARD_PTR->SPI_FSR & (UINT32_C(0xFF) << 0)) == 0)	// RF_CNT
-//        		;
-			const unsigned v = * (volatile uint8_t *) & SPIDFHARD_PTR->SPI_RXD;
-			if (rx != NULL)
-				* rx++ = v;
-		}
-
-		if (tx != NULL)
-			tx += chunk;
-		count -= chunk;
-	}
-
-	return len;
-}
-
 // 0 - ok, 1 - error
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
+static int spi_verify_b8(spitarget_t target, const void * buf, int len, uint_fast8_t readnb)
 {
 	return 0;
 }
@@ -4418,28 +4477,28 @@ static IRQL_t spidf_iostart(
 	// assert CS
 	prog_select(targetdataflash);
 
-	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
-	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
+	spi_transfer_b8(targetdataflash, b, NULL, 1, SPDFIO_1WIRE);
+	spi_transfer_b8(targetdataflash, b + 1, NULL, i - 1, readnb);
     return oldcsIRQL;
 }
 
 // вычитываем все заказанное количество
 static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
-	spidf_spi_transfer(NULL, buff, size, readnb);
+	spi_transfer_b8(targetdataflash, NULL, buff, size, readnb);
 }
 
 // передаем все заказанное количество
 static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
-	spidf_spi_transfer(buff, NULL, size, readnb);
+	spi_transfer_b8(targetdataflash, buff, NULL, size, readnb);
 }
 
 // вычитываем все заказанное количество
 // 0 - ok, 1 - error
 static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
-	return spidf_spi_verify(buff, size, readnb);
+	return spi_verify_b8(targetdataflash, buff, size, readnb);
 }
 
 
