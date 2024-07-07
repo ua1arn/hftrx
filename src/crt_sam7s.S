@@ -38,7 +38,7 @@
 *                   Therefore partial copyright by egnite Software GmbH.
 ****************************************************************************/
 
-#include "armcpu/at91sam7s64.h"
+#include "../arch/at91sam/at91sam7s64.h"
 /*
  * Some defines for the program status registers
  */
