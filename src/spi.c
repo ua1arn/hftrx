@@ -2301,7 +2301,6 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	local_delay_us(bdelay);
 	return  * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
 
 #else
@@ -3315,7 +3314,6 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	local_delay_us(bdelay);
 	return __bswap16(* (volatile uint16_t *) & SPIHARD_PTR->SPI_RXD);
 
 #else
@@ -3366,6 +3364,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __bswap16(v);	/* 16bit access */
 
+	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
@@ -3478,7 +3477,6 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	local_delay_us(bdelay);
 	return __bswap32(SPIHARD_PTR->SPI_RXD);	/* 32-bit access */
 
 #else
@@ -3513,6 +3511,7 @@ void hardware_spi_b32_p1(
 
 	SPIHARD_PTR->SPI_TXD = __bswap32(v);	/* 32bit access */
 
+	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
@@ -3600,6 +3599,7 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v; /* 8bit access */
 
+	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
@@ -4308,7 +4308,8 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			break;
 		}
 
-		SPIDFHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH
+		local_delay_us(bdelay);
+		SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 		while ((SPIDFHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 			;
