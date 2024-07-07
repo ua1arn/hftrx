@@ -217,9 +217,9 @@
 
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
 
-	
-	
-	
+	//#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_UA1CEI	1
+	//#define COLORSTYLE_RED	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255

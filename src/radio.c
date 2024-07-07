@@ -4857,6 +4857,13 @@ static void bringtimers(void)
 
 #if WITHAUTOTUNER
 
+enum phases
+{
+	PHASE_ABORT,
+	PHASE_DONE,
+	PHASE_CONTINUE
+};
+
 #if WITHAUTOTUNER_N7DDCALGO
 
 // N7DDC code.
@@ -5563,7 +5570,9 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
-#if ! WITHAUTOTUNER_N7DDCEXT
+#if WITHAUTOTUNER_N7DDCEXT
+
+#else
 
 static void scanminLk_init(void)
 {
@@ -5695,18 +5704,44 @@ static void auto_tune(void)
 	TP();
 }
 
+
+static void auto_tune0_init(void)
+{
+}
+
+static void auto_tune1_init(void)
+{
+}
+
+static void auto_tune2_init(void)
+{
+}
+
+static enum phases auto_tune0(void)
+{
+	return PHASE_DONE;
+}
+
+static enum phases auto_tune1(void)
+{
+	return PHASE_DONE;
+}
+
+static enum phases auto_tune2(void)
+{
+	return PHASE_DONE;
+}
+
+static enum phases auto_tune3(void)
+{
+	return PHASE_DONE;
+}
+
 #else /* WITHAUTOTUNER_N7DDCALGO, WITHAUTOTUNER_N7DDCEXT */
 
 static uint_fast8_t tuner_bg;
 static uint_fast8_t tuner_ant;
 static tus_t tunerstatuses [KSCH_COUNT];
-
-enum phases
-{
-	PHASE_ABORT,
-	PHASE_DONE,
-	PHASE_CONTINUE
-};
 
 static void auto_tune0_init(void)
 {
