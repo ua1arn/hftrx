@@ -220,6 +220,7 @@
 	//#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_UA1CEI	1
 	//#define COLORSTYLE_RED	1
+	#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -521,7 +522,8 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 1
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_N7DDCEXT 1
+		//#define WITHAUTOTUNER_N7DDCEXT 1
+		#define SHORTSET8	1
 		#define WITHAUTOTUNER_AVBELNN 1
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#elif 1
