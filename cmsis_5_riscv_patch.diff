@@ -1,0 +1,20 @@
+diff --git "a/CMSIS/Core_A/Include/cmsis_gcc.h" "b/CMSIS/Core_A/Include/cmsis_gcc.h"
+index ef5145b62..70959d552 100644
+--- "a/CMSIS/Core_A/Include/cmsis_gcc.h"
++++ "b/CMSIS/Core_A/Include/cmsis_gcc.h"
+@@ -112,6 +112,7 @@
+   #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+ #endif
+ 
++#if ! defined(__riscv)
+ 
+ /* ##########################  Core Instruction Access  ######################### */
+ /**
+@@ -960,6 +961,7 @@ __STATIC_INLINE void __FPU_Enable(void)
+ }
+ 
+ /*@} end of group CMSIS_Core_intrinsics */
++#endif /* ! defined(__riscv) */
+ 
+ #pragma GCC diagnostic pop
+ 

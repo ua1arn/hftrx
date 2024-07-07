@@ -12,6 +12,7 @@
 1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/avr-gcc-builds/<br> Прямая ссылка https://github.com/ZakKemble/avr-gcc-build/releases/download/v12.1.0-1/avr-gcc-12.1.0-x64-windows.zip (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
 1.3 **RISC-V:** riscv-none-elf-gcc.exe (xPack GNU RISC-V Embedded GCC v13.2.0-2) https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/ <br>
 https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v13.2.0-2/xpack-riscv-none-elf-gcc-13.2.0-2-win32-x64.zip <br>
+Для возможности компиляции внести изменения в файл CMSIS_5/CMSIS/Core_A/Include/cmsis_gcc.h используя cmsis_5_riscv_patch.diff <br>
 1.4 **Утилиты для сборки:** https://xpack.github.io/dev-tools/windows-build-tools/releases/ https://github.com/xpack-dev-tools/windows-build-tools-xpack/releases/download/v4.4.1-2/xpack-windows-build-tools-4.4.1-2-win32-x64.zip <br>
 1.5 **Утилиты для работы с GIT репозиториями** https://git-scm.com/downloads <br>
 
