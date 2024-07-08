@@ -565,7 +565,7 @@ typedef struct USBPHYC_Type
     volatile uint32_t UTMI_TUNE;                      /*!< Offset 0x018 HSIC UTMI PHY TUNE Register(Default Value: 0x023438E4) */
              uint32_t reserved_0x01C;
     volatile uint32_t HSIC_CFG;                       /*!< Offset 0x020 HSIC PHY CFG(Default Value: 0x00000000) */
-    volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x024 PHY Status Register */
+    volatile uint32_t HSIC_PHY_STATUS;                /*!< Offset 0x024 HSIC PHY STATUS(Default Value: 0x00000000 */
 } USBPHYC_TypeDef; /* size of structure = 0x028 */
 /*
  * @brief USB_EHCI_Capability

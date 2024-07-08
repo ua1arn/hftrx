@@ -13,6 +13,6 @@
 #regdef; HSIC_STATUS; 0x004; HSIC status Register(Default Value: 0x00000000)
 #regdef; UTMI_TUNE; 0x018; HSIC UTMI PHY TUNE Register(Default Value: 0x023438E4)
 #regdef; HSIC_CFG; 0x020; HSIC PHY CFG(Default Value: 0x00000000)
-#regdef; HSIC_STATUS; 0x024; PHY Status Register
+#regdef; HSIC_PHY_STATUS; 0x024; HSIC PHY STATUS(Default Value: 0x00000000
 
 #typeend;

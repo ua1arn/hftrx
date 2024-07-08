@@ -2330,9 +2330,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HSIC_STATUS</name>
-    <displayName>HSIC_STATUS</displayName>
-    <description>PHY Status Register</description>
+    <name>HSIC_PHY_STATUS</name>
+    <displayName>HSIC_PHY_STATUS</displayName>
+    <description>HSIC PHY STATUS(Default Value: 0x00000000</description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
