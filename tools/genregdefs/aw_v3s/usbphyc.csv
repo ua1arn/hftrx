@@ -1,12 +1,18 @@
 #type; USBPHYC
 #base; USBPHY 0x01C1A800
 
-#regdef; USB_CTRL; 0x000; HCI Interface Register (HCI_Interface)
-#regdef; USBPHY_PHYCTL; 0x004; USBPHY_PHYCTL
-#regdef; HCI_CTRL3; 0x008; HCI Control 3 Register (bist)
-#regdef; PHY_CTRL; 0x010; PHY Control Register (PHY_Control)
-#regdef; PHY_OTGCTL; 0x020; Control PHY routing to EHCI or OTG
-#regdef; PHY_STATUS; 0x024; PHY Status Register
-#regdef; USB_SPDCR; 0x028; HCI SIE Port Disable Control Register
+##regdef; USB_CTRL; 0x000; HCI Interface Register (HCI_Interface)
+##regdef; USBPHY_PHYCTL; 0x004; USBPHY_PHYCTL
+##regdef; HCI_CTRL3; 0x008; HCI Control 3 Register (bist)
+##regdef; PHY_CTRL; 0x010; PHY Control Register (PHY_Control)
+##regdef; PHY_OTGCTL; 0x020; Control PHY routing to EHCI or OTG
+##regdef; PHY_STATUS; 0x024; PHY Status Register
+##regdef; USB_SPDCR; 0x028; HCI SIE Port Disable Control Register
+
+#regdef; HCI_ICR; 0x000; HCI Interface Control Register(Default Value: 0x10000000)
+#regdef; HSIC_STATUS; 0x004; HSIC status Register(Default Value: 0x00000000)
+#regdef; UTMI_TUNE; 0x018; HSIC UTMI PHY TUNE Register(Default Value: 0x023438E4)
+#regdef; HSIC_CFG; 0x020; HSIC PHY CFG(Default Value: 0x00000000)
+#regdef; HSIC_STATUS; 0x024; PHY Status Register
 
 #typeend;

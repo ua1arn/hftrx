@@ -559,16 +559,14 @@ typedef struct USBOTG_Type
 /*!< USBPHYC  */
 typedef struct USBPHYC_Type
 {
-    volatile uint32_t USB_CTRL;                       /*!< Offset 0x000 HCI Interface Register (HCI_Interface) */
-    volatile uint32_t USBPHY_PHYCTL;                  /*!< Offset 0x004 USBPHY_PHYCTL */
-    volatile uint32_t HCI_CTRL3;                      /*!< Offset 0x008 HCI Control 3 Register (bist) */
-             uint32_t reserved_0x00C;
-    volatile uint32_t PHY_CTRL;                       /*!< Offset 0x010 PHY Control Register (PHY_Control) */
-             uint32_t reserved_0x014 [0x0003];
-    volatile uint32_t PHY_OTGCTL;                     /*!< Offset 0x020 Control PHY routing to EHCI or OTG */
-    volatile uint32_t PHY_STATUS;                     /*!< Offset 0x024 PHY Status Register */
-    volatile uint32_t USB_SPDCR;                      /*!< Offset 0x028 HCI SIE Port Disable Control Register */
-} USBPHYC_TypeDef; /* size of structure = 0x02C */
+    volatile uint32_t HCI_ICR;                        /*!< Offset 0x000 HCI Interface Control Register(Default Value: 0x10000000) */
+    volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x004 HSIC status Register(Default Value: 0x00000000) */
+             uint32_t reserved_0x008 [0x0004];
+    volatile uint32_t UTMI_TUNE;                      /*!< Offset 0x018 HSIC UTMI PHY TUNE Register(Default Value: 0x023438E4) */
+             uint32_t reserved_0x01C;
+    volatile uint32_t HSIC_CFG;                       /*!< Offset 0x020 HSIC PHY CFG(Default Value: 0x00000000) */
+    volatile uint32_t HSIC_STATUS;                    /*!< Offset 0x024 PHY Status Register */
+} USBPHYC_TypeDef; /* size of structure = 0x028 */
 /*
  * @brief USB_EHCI_Capability
  */
