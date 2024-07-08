@@ -540,6 +540,7 @@ uint_fast32_t cpu_getdebugticks(void);	// получение из аппарат
 uint_fast32_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 
 void tickers_initialize(void);
+void tickers_deinitialize(void);
 void spool_systimerbundle1(void);
 void spool_systimerbundle2(void);
 void spool_elkeybundle(void);

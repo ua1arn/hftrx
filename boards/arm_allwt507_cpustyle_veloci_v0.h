@@ -38,6 +38,7 @@
 //#define WITHUARTFIFO	1	/* испольование FIFO */
 #define WITHUART5HW	1		/* mini dinn8	*/
 //#define WITHCAT_USART5 1
+#define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
 
 void user_uart5_onrxchar(uint_fast8_t c);
 void user_uart5_ontxchar(void * ctx);

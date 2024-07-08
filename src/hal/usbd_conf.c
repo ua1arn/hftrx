@@ -609,6 +609,28 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	arm_hardware_disable_handler(USB_EHCI_IRQn);
 	arm_hardware_disable_handler(USB_OHCI_IRQn);
 
+//	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 29);	// USBOHCI_GATING
+//	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 26);	// USBEHCI_GATING
+	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << 24);	// USB OTG_Device_GATING.
+
+//	CCU->USBPHY_CFG_REG |= (UINT32_C(1) << 16);	// SCLK_GATING_OHCI0
+//	CCU->USBPHY_CFG_REG |= (UINT32_C(1) << 8);	// SCLK_GATING_USBPHY0
+	CCU->USBPHY_CFG_REG |= (UINT32_C(1) << 0);	// USBPHY0_RST
+
+//	CCU->DRAM_CLK_GATING_REG |= (UINT32_C(1) << 18);	// USB_OHCI_DCLK_GATING
+//	CCU->DRAM_CLK_GATING_REG |= (UINT32_C(1) << 17);	// USB_EHCI_DCLK_GATING
+
+//	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 29);	// USBOHCI_RST
+//	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 26);	// USBEHCI_RST
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 24);	// USB_OTG_Device_RST
+
+	//	HCI:
+	//	01C1A800: 00000000 00000001 00000000 00000000 00000002 00000000 023438E4 00000053
+	//	01C1A820: 00240000 00000000
+
+	PRINTF("HCI:\n");
+	printhex32(USBPHY_BASE, USBPHY, sizeof * USBPHY);
+
 	arm_hardware_set_handler_system(USB_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #else
@@ -725,7 +747,10 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYLE_V3S
 	//	Allwinner USB DRD support (musb_otg)
-	#warning HAL_PCD_MspDeInit should be implemented
+
+	CCU->USBPHY_CFG_REG &= ~ (UINT32_C(1) << 0);	// USBPHY0_RST
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 24);	// USB_OTG_Device_RST
+	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 24);	// USB OTG_Device_GATING.
 
 	arm_hardware_disable_handler(USB_DEVICE_IRQn);
 

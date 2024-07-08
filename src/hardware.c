@@ -242,6 +242,7 @@ void ticker_add(ticker_t * p)
 
 	RiseIrql(TICKER_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
+	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	InsertHeadVList(& tickers, & p->item);
 	LCLSPIN_UNLOCK(& tickerslock);
 	LowerIrql(oldIrql);
@@ -342,6 +343,17 @@ void tickers_initialize(void)
 {
 	LCLSPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
+}
+
+void tickers_deinitialize(void)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(TICKER_IRQL, & oldIrql);
+	LCLSPIN_LOCK(& tickerslock);
+	RemoveEntryVList(& tickers);
+	LCLSPIN_UNLOCK(& tickerslock);
+	LowerIrql(oldIrql);
 }
 
 // инициализация списка обработчиков конца преобразования АЦП
