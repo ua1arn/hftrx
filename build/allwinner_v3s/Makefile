@@ -141,7 +141,7 @@ SRCDIRS += $(PRJROOT)/lvgl/src
 DINCDIR += $(PRJROOT)/lvgl/src
 endif
 
-ifeq (1, 0)
+ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 DINCDIR += $(MDLWUSBDIR)/Core/Inc

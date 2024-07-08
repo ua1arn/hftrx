@@ -121,9 +121,11 @@
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
-	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-//	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHTINYUSB 1
+
+	#define WITHUSBHW_DEVICE	USBOTG		/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#if WITHFUSBDFS
 		//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -140,28 +142,24 @@
 //	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
 //	#define WITHUSBHOST_DMAENABLE 1
 
-#if 0
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//	#define WITHEHCIHW	1	/* USB_EHCI controller */
+//
+//	#define BOARD_TUH_RHPORT 1
+//
+	#define WITHUSBHW_EHCI		USBEHCI
+	#define WITHUSBHW_EHCI_IRQ	USB_EHCI_IRQn
 
-	#define WITHTINYUSB 1
-	#define BOARD_TUH_RHPORT 1
-
-	#define WITHUSBHW_EHCI		USBEHCI1
-	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	1
-
-	#define WITHUSBHW_OHCI		USBOHCI1
-	#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	1
-
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
+	#define WITHUSBHW_OHCI		USBOHCI
+	#define WITHUSBHW_OHCI_IRQ	USB_OHCI_IRQn
+//
+//	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHUSBHEADSET
+	#if 0//WITHUSBHEADSET
 		#define WITHUAC2		WITHUSBDEV_HSDESC //1	/* UAC2 support */
 		#define WITHUSBUACINOUT		1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
@@ -202,7 +200,6 @@
 
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-#endif
 
 #endif /* WITHISBOOTLOADER */
 

@@ -601,6 +601,16 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
+#elif CPUSTYLE_V3S
+	//	Allwinner USB DRD support (musb_otg)
+	#warning HAL_PCD_MspInit should be implemented
+
+	arm_hardware_disable_handler(USB_DEVICE_IRQn);
+	arm_hardware_disable_handler(USB_EHCI_IRQn);
+	arm_hardware_disable_handler(USB_OHCI_IRQn);
+
+	arm_hardware_set_handler_system(USB_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+
 #else
 	#error HAL_PCD_MspInit should be implemented
 
@@ -712,6 +722,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST Assert
 	CCU->USB_BGR_REG &= ~ (1uL << 8);	// USBOTG0_GATING
 	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN
+
+#elif CPUSTYLE_V3S
+	//	Allwinner USB DRD support (musb_otg)
+	#warning HAL_PCD_MspDeInit should be implemented
+
+	arm_hardware_disable_handler(USB_DEVICE_IRQn);
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented
