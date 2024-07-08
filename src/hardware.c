@@ -297,6 +297,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 	LowerIrql(oldIrql);
 }
 
+// Вызывается из обработчика системного таймера
 static void tickers_event(void)
 {
 	IRQL_t oldIrql;
@@ -304,6 +305,7 @@ static void tickers_event(void)
 	RiseIrql(TICKER_IRQL, & oldIrql);
 	LCLSPIN_LOCK(& tickerslock);
 	PVLIST_ENTRY t;
+	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	for (t = tickers.Blink; t != & tickers;)
 	{
 		ASSERT(t != NULL);
