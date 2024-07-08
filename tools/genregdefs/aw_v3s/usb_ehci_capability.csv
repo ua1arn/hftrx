@@ -1,0 +1,18 @@
+#type; USB_EHCI_Capability
+#base; USBEHCI 0x01C1A000
+
+#irq; USB_EHCI 104
+
+#regdefr; HCCAPBASE; 0x0000; EHCI Capability Register (HCIVERSION and CAPLENGTH) register
+#regdefr; HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
+#regdefr; HCCPARAMS; 0x0008; EHCI Host Control Capability Parameter Register
+#regdef; HCSPPORTROUTE; 0x000C; EHCI Companion Port Route Description
+#regdef; USBCMD; 0x0010; EHCI USB Command Register
+#regdef; USBSTS; 0x0014; EHCI USB Status Register
+#regdef; USBINTR; 0x0018; EHCI USB Interrupt Enable Register
+#regdef; FRINDEX; 0x001C; EHCI USB Frame Index Register
+#regdef; CTRLDSSEGMENT; 0x0020; EHCI 4G Segment Selector Register
+#regdef; PERIODICLISTBASE; 0x0024; EHCI Frame List Base Address Register
+#regdef; ASYNCLISTADDR; 0x0028; EHCI Next Asynchronous List Address Register
+
+#typeend;
