@@ -8103,6 +8103,11 @@ enc2menu_value(
 	case RJ_CATSIG:
 		local_snprintf_P(buff, sz, PSTR("%s"), catsiglabels [value]);
 		break;
+#if WITHCAT_MUX
+	case RJ_CATMUX:
+		local_snprintf_P(buff, sz, PSTR("%s"), catmuxlabels [value]);
+		break;
+#endif /* WITHCAT_MUX */
 	case RJ_ON:
 		local_snprintf_P(buff, sz, PSTR("%s"), value ? "ON" : "OFF");
 		break;
@@ -8134,6 +8139,11 @@ enc2menu_value(
 		case RJ_CATSIG:
 			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catsiglabels [value]);
 			break;
+	#if WITHCAT_MUX
+		case RJ_CATMUX:
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catmuxlabels [value]);
+			break;
+	#endif /* WITHCAT_MUX */
 		case RJ_ON:
 			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
 			break;
