@@ -493,6 +493,7 @@
 				usbd_cdc_tx((ctx), (c)); \
 				hardware_uart5_enabletx(0); \
 			} else { \
+				usbd_cdc_enabletx(0); \
 				hardware_uart5_tx((ctx), (c)); \
 			} \
 		} while (0)
