@@ -433,8 +433,7 @@
 	// с принятым символом
 	#define HARDWARE_UART5_ONRXCHAR(c) do { \
 			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart0_enablerx(0); \
-				cat2_parsechar(c); \
+				hardware_uart5_enablerx(0); \
 			} else { \
 				cat2_parsechar(c); \
 			} \
@@ -442,17 +441,18 @@
 	// вызывается из обработчика прерываний UART5
 	#define HARDWARE_UART5_ONOVERFLOW() do { \
 		if (board_get_catmux() == BOARD_CATMUX_USB) \
-			; \
+			hardware_uart5_enablerx(0); \
 		else \
 			cat2_rxoverflow(); \
 		} while (0)
 	// вызывается из обработчика прерываний UART5
 	// по готовности передатчика
 	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
-			hardware_uart0_enabletx(0); \
-		else \
+		if (board_get_catmux() == BOARD_CATMUX_USB) { \
+			hardware_uart5_enabletx(0); \
+		} else { \
 			cat2_sendchar(ctx); \
+		} \
 	} while (0)
 	// вызывается из обработчика прерываний UART5
 	// по окончании передачи (сдвиговый регистр передатчика пуст)
@@ -491,6 +491,7 @@
 	#define HARDWARE_CAT_TX(ctx, c) do { \
 			if (board_get_catmux() == BOARD_CATMUX_USB) { \
 				usbd_cdc_tx((ctx), (c)); \
+				hardware_uart5_enabletx(0); \
 			} else { \
 				hardware_uart5_tx((ctx), (c)); \
 			} \
