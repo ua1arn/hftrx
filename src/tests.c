@@ -10989,7 +10989,7 @@ void hightests(void)
 		//	la	a1, 0x23
 		//	sb	a1, 0 (a0)
 		//	xxx:	j	xxx
-		// Test: write byte to 0x02500000 = UART0 data tegister
+		// Test: write byte 0x23 to 0x02500000 = UART0 data tegister
 		static const uint32_t code [] = {
 				0x02500537, // 37 05 50 02
 				0x0230059B,	// 9B 05 30 02
@@ -11030,7 +11030,7 @@ void hightests(void)
 		PRINTF("RISC_CFG->RISC_STA_ADD0_REG=%08" PRIX32 ", RISC_CFG->RISC_STA_ADD1_REG=%08" PRIX32 "\n", RISC_CFG->RISC_STA_ADD0_REG, RISC_CFG->RISC_STA_ADD1_REG);
 		//printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		local_delay_ms(3000);
-		//((void (*) (void)) code)();		/* test code invokation for risc-v here */
+		//((void (*) (void)) code)();		/* test code invocation for risc-v here */
 		TP();
 		printhex32(RISC_CFG_BASE, RISC_CFG, sizeof * RISC_CFG);
 		for (;;)
