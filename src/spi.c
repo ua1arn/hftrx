@@ -4341,7 +4341,7 @@ static IRQL_t spidf_iostart(
 	IRQL_t oldcsIRQL;
 	spidf_operate_lock(& oldcsIRQL);
 	ASSERT(readnb == SPDFIO_1WIRE);
-	spidf_select();	/* start sending data to target chip */
+	spidf_select(& oldcsIRQL);	/* start sending data to target chip */
 	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
 
 	if (hasaddress)
