@@ -3412,6 +3412,15 @@ SystemInit_BOOT0(void)
 
 #endif /* CPUSTYLE_VM14 */
 
+#if LINUX_SUBSYSTEM
+// Stub
+void
+SystemInit(void)
+{
+
+}
+#else /* LINUX_SUBSYSTEM */
+
 // watchdog disable, clock initialize, cache enable
 void
 SystemInit(void)
@@ -3419,7 +3428,6 @@ SystemInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
-#if ! LINUX_SUBSYSTEM
 	sysinit_hwprepare_initialize();
 	sysinit_fpu_initialize();
 #if ! WITHISBOOTLOADER_DDR
@@ -3442,8 +3450,8 @@ SystemInit(void)
 	sysinit_cache_core0_initialize();	// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 #endif
-#endif /* ! LINUX_SUBSYSTEM */
 }
+#endif /* LINUX_SUBSYSTEM */
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
