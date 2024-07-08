@@ -1535,6 +1535,18 @@ static const FLASHMEM struct menudef menutable [] =
 		& catenable,
 		getzerobase,
 	},
+#if WITHCAT_MUX
+	{
+		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gcatmux),
+		nvramoffs0,
+		NULL,
+		& gcatmux,
+		getzerobase,
+	},
+#endif /* WITHCAT_MUX */
 	#if WITHUSBCDCACM == 0
 	{
 		QLABEL("CAT SPD "), 7, 0, RJ_CATSPEED,	ISTEP1,

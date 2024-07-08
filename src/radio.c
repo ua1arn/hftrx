@@ -3339,6 +3339,9 @@ filter_t fi_2p0_455 =
 		uint8_t catsigptt;	/* Выбраный сигнал для перехода на передачу по CAT */
 	#endif /* WITHTX */
 	uint8_t catsigkey;	/* Выбраный сигнал для манипуляции по CAT */
+#if WITHCAT_MUX
+	uint8_t gcatmux;	/* удаленное управление разрешено */
+#endif /* WITHCAT_MUX */
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
@@ -4027,6 +4030,7 @@ enum
 #endif /* WITHTX */
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
 
+	static uint_fast8_t gcatmux = BOARD_CATMUX_USB;
 
 #else /* WITHCAT */
 
@@ -11705,6 +11709,7 @@ updateboardZZZ(
 	#if WITHCAT
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
+		board_set_catmux(gcatmux);
 	#endif	/* WITHCAT */
 
 	#if WITHMODEM
