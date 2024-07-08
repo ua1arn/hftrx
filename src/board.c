@@ -74,6 +74,7 @@ static uint_fast8_t 	glob_preamp;		// включение предусилите�
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
 static uint_fast8_t 	glob_forcexvrtr;	// принудительно включить коммутацию трансвертора
+static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USB;
 
 #if WITHLCDBACKLIGHT
 	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
@@ -3977,7 +3978,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD20 SN74HC595PW
 		RBBIT(0005, glob_tx);		// PTT_OUT
-		RBBIT(0004, 1);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
+		RBBIT(0004, glob_catmux == BOARD_CATMUX_DIN8);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
 		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
@@ -6097,6 +6098,22 @@ board_set_showovf(uint_fast8_t v)
 	const uint_fast8_t n = v != 0;
 	glob_showovf = n;
 }
+
+void
+board_set_catmux(uint_fast8_t n)	// выбор одного из каналов CAT
+{
+	if (glob_catmux != n)
+	{
+		glob_catmux = n;
+		board_ctlreg1changed();
+	}
+}
+
+uint_fast8_t board_get_catmux(void)
+{
+	return glob_catmux;
+}
+
 
 /////////////////////////////////////////////
 // --- Набор функций требования установки сигналов на управляющих выходах.

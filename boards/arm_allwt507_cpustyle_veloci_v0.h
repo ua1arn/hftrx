@@ -38,13 +38,8 @@
 //#define WITHUARTFIFO	1	/* испольование FIFO */
 #define WITHUART5HW	1		/* mini dinn8	*/
 //#define WITHCAT_USART5 1
+
 #define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
-
-void user_uart5_onrxchar(uint_fast8_t c);
-void user_uart5_ontxchar(void * ctx);
-
-#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar((c)); } while (0)
-#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar((ctx)); } while (0)
 
 
 // OHCI at USB1HSFSP2_BASE
@@ -86,8 +81,8 @@ void user_uart5_ontxchar(void * ctx);
 	#define WITHOHCIHW_OHCIPORT 0
 
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
+//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+//	#define WITHMODEM_CDC	1
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
@@ -197,8 +192,8 @@ void user_uart5_ontxchar(void * ctx);
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
 
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
+//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+//	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
 		#if WITHUSBDEV_HSDESC
@@ -410,6 +405,133 @@ void user_uart5_ontxchar(void * ctx);
 		} while (0)
 
 #endif /* (WITHCAT && WITHCAT_CDC) */
+
+
+#if (WITHCAT && WITHCAT_MUX && WITHUART5HW)
+
+	////////////////////////////////////
+	// CAT функции работают через UART5
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT_INITIALIZE() do { \
+			hardware_uart5_initialize(0, DEBUGSPEED, 8, 0, 0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
+			hardware_uart5_set_speed(baudrate); \
+		} while (0)
+
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
+	#define HARDWARE_CAT_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc1_getrts() : 0)
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
+	#define HARDWARE_CAT_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc1_getdtr() : 0)
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
+	#define HARDWARE_CAT2_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc2_getrts() : 0)
+	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
+	#define HARDWARE_CAT2_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc2_getdtr() : 0)
+
+	// вызывается из обработчика прерываний UART5
+	// с принятым символом
+	#define HARDWARE_UART5_ONRXCHAR(c) do { \
+			if (board_get_catmux() == BOARD_CATMUX_USB) { \
+				hardware_uart0_enablerx(0); \
+				cat2_parsechar(c); \
+			} else { \
+				cat2_parsechar(c); \
+			} \
+		} while (0)
+	// вызывается из обработчика прерываний UART5
+	#define HARDWARE_UART5_ONOVERFLOW() do { \
+		if (board_get_catmux() == BOARD_CATMUX_USB) \
+			; \
+		else \
+			cat2_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART5
+	// по готовности передатчика
+	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
+		if (board_get_catmux() == BOARD_CATMUX_USB) \
+			hardware_uart0_enabletx(0); \
+		else \
+			cat2_sendchar(ctx); \
+	} while (0)
+	// вызывается из обработчика прерываний UART5
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART5_ONTXDONE(ctx) do { \
+		if (board_get_catmux() == BOARD_CATMUX_USB) \
+			; \
+		else \
+			cat2_txdone(ctx); \
+	} while (0)
+	////////////////////////////////////
+	// CAT функции работают через виртуальный USB последовательный порт
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT_ENABLETX(v) do { \
+			if (board_get_catmux() == BOARD_CATMUX_USB) { \
+				hardware_uart5_enabletx(0); \
+				usbd_cdc_enabletx(v); \
+			} else { \
+				usbd_cdc_enabletx(0); \
+				hardware_uart5_enabletx(v); \
+			} \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT_ENABLERX(v) do { \
+			if (board_get_catmux() == BOARD_CATMUX_USB) { \
+				hardware_uart5_enablerx(0); \
+				usbd_cdc_enablerx(v); \
+			} else { \
+				usbd_cdc_enablerx(0); \
+				hardware_uart5_enablerx(v); \
+			} \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_CAT_TX(ctx, c) do { \
+			if (board_get_catmux() == BOARD_CATMUX_USB) { \
+				usbd_cdc_tx((ctx), (c)); \
+			} else { \
+				hardware_uart5_tx((ctx), (c)); \
+			} \
+		} while (0)
+
+	// вызывается из обработчика прерываний CDC
+	// с принятым символом
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
+		if (board_get_catmux() == BOARD_CATMUX_USB) \
+			cat2_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	// произошёл разрыв связи при работе по USB CDC
+	#define HARDWARE_CDC_ONDISCONNECT() do { \
+		if (board_get_catmux() == BOARD_CATMUX_USB) \
+			cat2_disconnect(); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	// по готовности передатчика
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
+		if (board_get_catmux() == BOARD_CATMUX_USB) \
+			cat2_sendchar(ctx); \
+		} while (0)
+	////////////////////////////////////
+	/* манипуляция от виртуального CDC порта */
+	#define FROMCAT_DTR_INITIALIZE() do { \
+		} while (0)
+
+	/* переход на передачу от виртуального CDC порта*/
+	#define FROMCAT_RTS_INITIALIZE() do { \
+		} while (0)
+
+#else /* (WITHCAT && WITHCAT_MUX && WITHUART5HW) */
+
+	void user_uart5_onrxchar(uint_fast8_t c);
+	void user_uart5_ontxchar(void * ctx);
+
+	#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar((c)); } while (0)
+	#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar((ctx)); } while (0)
+
+#endif /* (WITHCAT && WITHCAT_MUX && WITHUART5HW) */
 
 #if WITHSDHCHW && WITHSDHC0HW
 	// SD CARD

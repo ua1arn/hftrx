@@ -171,6 +171,10 @@ void board_lcd_reset(uint_fast8_t v);	// выставить уровень на 
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 void board_set_nb_enable(uint_fast8_t pathi, uint_fast8_t v);	/* Управлением включением RX Noise Blanker */
 
+enum { BOARD_CATMUX_USB, BOARD_CATMUX_DIN8, BOARD_CATMUX_count };
+void board_set_catmux(uint_fast8_t n);	// выбор одного из каналов CAT
+uint_fast8_t board_get_catmux(void);
+
 /* звуки - подзвучка нажатий и самоконтроль в телеграфе */
 /* вызывается при запрещённых прерываниях. */
 void board_beep_initialize(void);
