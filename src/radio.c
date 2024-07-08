@@ -7619,6 +7619,7 @@ enum
 	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
 	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
 	RJ_CATSPEED,	/* отображение скорости CAT */
+	RJ_CATMUX,		/* выбор одного из каналов CAT */
 	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
 	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
@@ -7666,6 +7667,12 @@ static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 	"SER2 DTR",
 	"SER2 RTS",
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
+};
+
+static const FLASHMEM char catmuxlabels [BOARD_CATMUX_count] [9] =
+{
+	"USB     ",
+	"DIN8    ",
 };
 
 static unsigned valoffset0(void)
@@ -17166,6 +17173,14 @@ void display2_menu_valxx(
 		width = comma ? VALUEW - 1 : VALUEW;
 		display_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
 		break;
+
+#if WITHCAT_MUX
+	case RJ_CATMUX:
+		comma = 8;
+		width = VALUEW;
+		display_menu_string_P(x, y, catmuxlabels [value], width, comma);
+		break;
+#endif /* WITHCAT_MUX */
 
 	case RJ_CATSIG:
 	{
