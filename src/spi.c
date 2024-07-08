@@ -6,7 +6,6 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "cmsis_gcc.h"
 #include "bootloader.h"
 #include "clocks.h"
 #include "spi.h"
