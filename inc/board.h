@@ -383,6 +383,9 @@ enum
 typedef uint_fast8_t STTE_t;
 
 void board_fpga_reset(void);
+void board_fpga_loader_initialize(void);
+void board_fpga_loader_PS(void);	/* FPGA загружается процессором с помощью SPI */
+void board_fpga_loader_wait_AS(void);	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 
 uint8_t iq_shift_cic_rx(uint8_t val);
 uint8_t iq_shift_fir_rx(uint8_t val);

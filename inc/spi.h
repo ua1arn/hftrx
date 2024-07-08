@@ -263,39 +263,6 @@ typedef enum
 
 #endif /* WITHSPISW */
 
-// Эти три функции должны использоваться везде, где надо работать с SPI.
-#define prog_select(target) do { prog_select_impl(target); } while (0)
-#define prog_unselect(target) do { prog_unselect_impl(target); } while (0)
-#define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
-
-
-void prog_pulse_ioupdate(void);
-
-void prog_select_impl(
-	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
-	);
-void prog_unselect_impl(
-	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
-	);
-
-uint_fast8_t prog_spi_read_byte_impl(uint_fast8_t bytetosend);
-
-// Send a frame of bytes via SPI
-void prog_spi_send_frame(
-	spitarget_t target,
-	const uint8_t * buff, 
-	unsigned int size
-	);
-
-// Read a frame of bytes via SPI
-// Приём блока
-// На сигнале MOSI при этом должно обеспечиваться состояние логической "1" для корректной работы SD CARD
-void prog_spi_read_frame(
-	spitarget_t target,
-	uint8_t * buff, 
-	unsigned int size
-	);
-
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
@@ -327,157 +294,22 @@ void prog_spi_exchange32(
 	unsigned int size
 	);
 
-void spi_operate_lock(IRQL_t * oldIrql);
-void spi_operate_unlock(IRQL_t irql);
-
-#if SPI_BIDIRECTIONAL
-
-	void prog_spi_to_read_impl(void);
-	void prog_spi_to_write_impl(void);
-
-	//void (prog_spi_to_read)(spitarget_t target);
-	//void (prog_spi_to_write)(spitarget_t target);
-
-	#define spi_to_read(target) do { prog_spi_to_read_impl(); } while (0)
-	#define spi_to_write(target) do { prog_spi_to_write_impl(); } while (0)
-
-
-#else
-	#define spi_to_read(target) do { } while (0)
-	#define spi_to_write(target) do { } while (0)
-#endif
-
-
-// 8-ми битные функции обмена по SPI
-#if WITHSPIHW && ! WITHSPISW
-	/* только аппаратный SPI */
-	#define spi_select(target, spimode) \
-		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
-	#define spi_select2(target, spimode, speedcode) \
-		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
-	#define spi_unselect(target) \
-		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
-	#define spi_complete(target) \
-		((void) (target), hardware_spi_complete_b8())		// ожидание выдачи последнего байта в последовательности
-	#define spi_progval8(target, v) \
-		((void) (target), hardware_spi_b8(v))	// выдача байта и дождаться его передачи
-	#define spi_progval8_p1(target, v) \
-		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
-	#define spi_progval8_p2(target, v) \
-		(hardware_spi_b8_p2(v))	// выдача средних байтов в последовательности
-	#define spi_progval8_p3(target, v) \
-		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
-	#define spi_read_byte(target, v) \
-			((void) (target), hardware_spi_b8(v))
-	#if WITHSPIHWDMA
-		#define spi_send_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// Передача блока
-		#define spi_read_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// Приём блока
-	#else /* WITHSPIHWDMA */
-		#define spi_send_frame(target, buff, count) \
-			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
-		#define spi_read_frame(target, buff, count) \
-			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
-	#endif /* WITHSPIHWDMA */
-#elif WITHSPIHW
-	/* аппаратный и программный SPI - следующая передача может оказаться программной - потому отсоединяемся */
-	#define spi_select(target, spimode) \
-		do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
-	#define spi_select2(target, spimode, speedcode) \
-		do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
-	#define spi_unselect(target) \
-		do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
-	#define spi_complete(target) \
-		((void) (target), hardware_spi_complete_b8())		// ожидание выдачи последнего байта в последовательности
-	#define spi_progval8(target, v) \
-		((void) (target), hardware_spi_b8(v))	// выдача байта и дождаться его передачи
-	#define spi_progval8_p1(target, v) \
-		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
-	#define spi_progval8_p2(target, v) \
-		do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// выдача средних байтов в последовательности
-	#define spi_progval8_p3(target, v) \
-		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
-	#define spi_read_byte(target, v) \
-			((void) (target), hardware_spi_b8(v))
-	#if WITHSPIHWDMA
-		#define spi_send_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// Передача блока
-		#define spi_read_frame(target, buff, count) \
-			do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// Приём блока
-	#else /* WITHSPIHWDMA */
-		#define spi_send_frame(target, buff, count) \
-			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
-		#define spi_read_frame(target, buff, count) \
-			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
-	#endif /* WITHSPIHWDMA */
-#elif WITHSPISW
-	/* только программный SPI */
-	#define spi_select(target, spimode) \
-		do { prog_select(target); } while (0)	// начало выдачи информации по SPI
-	#define spi_select2(target, spimode, speedcode) \
-		do { prog_select(target); } while (0)	// начало выдачи информации по SPI
-	#define spi_unselect(target) \
-		do { prog_unselect(target); } while (0)	// заверщение выдачи информации по SPI
-	#define spi_complete(target) \
-		do { (void) (target); } while (0)
-	#define spi_progval8(target, v) \
-			prog_read_byte(target, v)
-	#define spi_progval8_p1(target, v) \
-		do { prog_val8((target), (v)); } while (0)
-	#define spi_progval8_p2(target, v) \
-		do { prog_val8((target), (v)); } while (0)
-	#define spi_progval8_p3(target, v) \
-			prog_read_byte(target, v)
-	#define spi_read_byte(target, v) \
-			prog_read_byte(target, v)
-	#define spi_send_frame(target, buff, count) \
-		do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
-	#define spi_read_frame(target, buff, count) \
-		do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
-#endif /* WITHSPIHW */
-
-
 void hardware_spi_slave_initialize(void);		
 void hardware_spi_slave_enable(uint_fast8_t spimode);	
 void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
 
-// --- dsp
-
-
-
 
 void hardware_spi_master_initialize(void);		/* инициализация и перевод в состояние "отключено" */
 void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed);
-void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено */
-void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
-void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
-void hardware_spi_disconnect(void);	/* управление состоянием - отключено */
 
-portholder_t hardware_spi_b32(portholder_t v);	/* передача 16-ти бит, возврат считанного */
-portholder_t hardware_spi_b16(portholder_t v);	/* передача 16-ти бит, возврат считанного */
-portholder_t hardware_spi_b8(portholder_t v);	/* передача 8-ти бит, возврат считанного */
+void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
+void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
 
-/* группа функций для использования в групповых передачах по SPI. Количество бит определяется типом spi_connect */
-void hardware_spi_b32_p1(portholder_t v);	/* передача первого слова в последовательности */
-void hardware_spi_b16_p1(portholder_t v);	/* передача первого слова в последовательности */
-void hardware_spi_b8_p1(portholder_t v);	/* передача первого байта в последовательности */
-
-portholder_t hardware_spi_b32_p2(portholder_t v);	/* дождаться готовности, передача слова */
-portholder_t hardware_spi_b16_p2(portholder_t v);	/* дождаться готовности, передача слова */
-portholder_t hardware_spi_b8_p2(portholder_t v);	/* дождаться готовности, передача байта */
-
-portholder_t hardware_spi_complete_b8(void);	/* дождаться готовности передача 8-ти бит */
-portholder_t hardware_spi_complete_b16(void);	/* дождаться готовности передача 16-ти бит*/
-portholder_t hardware_spi_complete_b32(void);	/* дождаться готовности передача 16-ти бит*/
-
-// Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
-void hardware_spi_master_read_frame(uint8_t * pBuffer, uint_fast32_t size);
-void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
-// Send a frame of bytes via SPI
-void hardware_spi_master_send_frame(const uint8_t * pBuffer, uint_fast32_t size);
-void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t size);
+void board_fpga_fir_coef_p1(int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
+void board_fpga_fir_coef_p2(int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.
+void board_fpga_fir_complete(void);
+void board_fpga_fir_connect(IRQL_t * oldIrql);
+void board_fpga_fir_disconnect(IRQL_t irql);
 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);

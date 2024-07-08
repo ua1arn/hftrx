@@ -7,6 +7,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "bootloader.h"
+#include "board.h"
 #include "clocks.h"
 #include "spi.h"
 #include "gpio.h"
@@ -22,6 +23,178 @@
 #define USESPIDFSHARESPI (WIHSPIDFHW && CPUSTYLE_ALLWINNER)
 
 #if WITHSPIHW || WITHSPISW
+
+void spi_operate_lock(IRQL_t * oldIrql);
+void spi_operate_unlock(IRQL_t irql);
+
+// Эти три функции должны использоваться везде, где надо работать с SPI.
+#define prog_select(target) do { prog_select_impl(target); } while (0)
+#define prog_unselect(target) do { prog_unselect_impl(target); } while (0)
+#define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
+
+
+void prog_pulse_ioupdate(void);
+
+void prog_select_impl(
+	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
+	);
+void prog_unselect_impl(
+	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
+	);
+
+uint_fast8_t prog_spi_read_byte_impl(uint_fast8_t bytetosend);
+
+// Send a frame of bytes via SPI
+void prog_spi_send_frame(
+	spitarget_t target,
+	const uint8_t * buff,
+	unsigned int size
+	);
+
+// Read a frame of bytes via SPI
+// Приём блока
+// На сигнале MOSI при этом должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+void prog_spi_read_frame(
+	spitarget_t target,
+	uint8_t * buff,
+	unsigned int size
+	);
+
+#if SPI_BIDIRECTIONAL
+
+	void prog_spi_to_read_impl(void);
+	void prog_spi_to_write_impl(void);
+
+	//void (prog_spi_to_read)(spitarget_t target);
+	//void (prog_spi_to_write)(spitarget_t target);
+
+	#define spi_to_read(target) do { prog_spi_to_read_impl(); } while (0)
+	#define spi_to_write(target) do { prog_spi_to_write_impl(); } while (0)
+
+
+#else
+	#define spi_to_read(target) do { } while (0)
+	#define spi_to_write(target) do { } while (0)
+#endif
+
+	// 8-ми битные функции обмена по SPI
+	#if WITHSPIHW && ! WITHSPISW
+		/* только аппаратный SPI */
+		#define spi_select(target, spimode) \
+			do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
+		#define spi_select2(target, spimode, speedcode) \
+			do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
+		#define spi_unselect(target) \
+			do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
+		#define spi_complete(target) \
+			((void) (target), hardware_spi_complete_b8())		// ожидание выдачи последнего байта в последовательности
+		#define spi_progval8(target, v) \
+			((void) (target), hardware_spi_b8(v))	// выдача байта и дождаться его передачи
+		#define spi_progval8_p1(target, v) \
+			do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
+		#define spi_progval8_p2(target, v) \
+			(hardware_spi_b8_p2(v))	// выдача средних байтов в последовательности
+		#define spi_progval8_p3(target, v) \
+			((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
+		#define spi_read_byte(target, v) \
+				((void) (target), hardware_spi_b8(v))
+		#if WITHSPIHWDMA
+			#define spi_send_frame(target, buff, count) \
+				do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// Передача блока
+			#define spi_read_frame(target, buff, count) \
+				do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// Приём блока
+		#else /* WITHSPIHWDMA */
+			#define spi_send_frame(target, buff, count) \
+				do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
+			#define spi_read_frame(target, buff, count) \
+				do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
+		#endif /* WITHSPIHWDMA */
+	#elif WITHSPIHW
+		/* аппаратный и программный SPI - следующая передача может оказаться программной - потому отсоединяемся */
+		#define spi_select(target, spimode) \
+			do { hardware_spi_connect(SPIC_SPEEDFAST, (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
+		#define spi_select2(target, spimode, speedcode) \
+			do { hardware_spi_connect((speedcode), (spimode)); prog_select(target); } while (0)	// начало выдачи информации по SPI
+		#define spi_unselect(target) \
+			do { prog_unselect(target); hardware_spi_disconnect(); } while (0)	// заверщение выдачи информации по SPI  - поднять чипселект
+		#define spi_complete(target) \
+			((void) (target), hardware_spi_complete_b8())		// ожидание выдачи последнего байта в последовательности
+		#define spi_progval8(target, v) \
+			((void) (target), hardware_spi_b8(v))	// выдача байта и дождаться его передачи
+		#define spi_progval8_p1(target, v) \
+			do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
+		#define spi_progval8_p2(target, v) \
+			do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// выдача средних байтов в последовательности
+		#define spi_progval8_p3(target, v) \
+			((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
+		#define spi_read_byte(target, v) \
+				((void) (target), hardware_spi_b8(v))
+		#if WITHSPIHWDMA
+			#define spi_send_frame(target, buff, count) \
+				do { (void) (target); hardware_spi_master_send_frame((buff), (count)); } while (0)	// Передача блока
+			#define spi_read_frame(target, buff, count) \
+				do { (void) (target); hardware_spi_master_read_frame((buff), (count)); } while (0)	// Приём блока
+		#else /* WITHSPIHWDMA */
+			#define spi_send_frame(target, buff, count) \
+				do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
+			#define spi_read_frame(target, buff, count) \
+				do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
+		#endif /* WITHSPIHWDMA */
+	#elif WITHSPISW
+		/* только программный SPI */
+		#define spi_select(target, spimode) \
+			do { prog_select(target); } while (0)	// начало выдачи информации по SPI
+		#define spi_select2(target, spimode, speedcode) \
+			do { prog_select(target); } while (0)	// начало выдачи информации по SPI
+		#define spi_unselect(target) \
+			do { prog_unselect(target); } while (0)	// заверщение выдачи информации по SPI
+		#define spi_complete(target) \
+			do { (void) (target); } while (0)
+		#define spi_progval8(target, v) \
+				prog_read_byte(target, v)
+		#define spi_progval8_p1(target, v) \
+			do { prog_val8((target), (v)); } while (0)
+		#define spi_progval8_p2(target, v) \
+			do { prog_val8((target), (v)); } while (0)
+		#define spi_progval8_p3(target, v) \
+				prog_read_byte(target, v)
+		#define spi_read_byte(target, v) \
+				prog_read_byte(target, v)
+		#define spi_send_frame(target, buff, count) \
+			do { prog_spi_send_frame((target), (buff), (count)); } while (0)	// Передача блока
+		#define spi_read_frame(target, buff, count) \
+			do { prog_spi_read_frame((target), (buff), (count)); } while (0)	// Приём блока
+	#endif /* WITHSPIHW */
+
+	void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено */
+	void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
+	void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
+	void hardware_spi_disconnect(void);	/* управление состоянием - отключено */
+
+	portholder_t hardware_spi_b32(portholder_t v);	/* передача 16-ти бит, возврат считанного */
+	portholder_t hardware_spi_b16(portholder_t v);	/* передача 16-ти бит, возврат считанного */
+	portholder_t hardware_spi_b8(portholder_t v);	/* передача 8-ти бит, возврат считанного */
+
+	/* группа функций для использования в групповых передачах по SPI. Количество бит определяется типом spi_connect */
+	void hardware_spi_b32_p1(portholder_t v);	/* передача первого слова в последовательности */
+	void hardware_spi_b16_p1(portholder_t v);	/* передача первого слова в последовательности */
+	void hardware_spi_b8_p1(portholder_t v);	/* передача первого байта в последовательности */
+
+	portholder_t hardware_spi_b32_p2(portholder_t v);	/* дождаться готовности, передача слова */
+	portholder_t hardware_spi_b16_p2(portholder_t v);	/* дождаться готовности, передача слова */
+	portholder_t hardware_spi_b8_p2(portholder_t v);	/* дождаться готовности, передача байта */
+
+	portholder_t hardware_spi_complete_b8(void);	/* дождаться готовности передача 8-ти бит */
+	portholder_t hardware_spi_complete_b16(void);	/* дождаться готовности передача 16-ти бит*/
+	portholder_t hardware_spi_complete_b32(void);	/* дождаться готовности передача 16-ти бит*/
+
+	// Read a frame of bytes via SPI
+	// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+	void hardware_spi_master_read_frame(uint8_t * pBuffer, uint_fast32_t size);
+	void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
+	// Send a frame of bytes via SPI
+	void hardware_spi_master_send_frame(const uint8_t * pBuffer, uint_fast32_t size);
+	void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t size);
 
 #if UC1608_CSP
 
@@ -1096,141 +1269,6 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
-#if CPUSTYLE_ALLWINNER
-
-static void spidf_spi_write_txbuf_b8(const uint8_t * __restrict buf, int len)
-{
-    if (buf != NULL)
-    {
-		while (len --)
-		{
-            * (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = * buf ++;
-        }
-    }
-    else
-    {
-		while (len --)
-        {
- 			* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = 0xFF;
-        }
-    }
-
-}
-
-static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
-{
-	if (buf != NULL)
-	{
-		while (len --)
-		{
-			* buf ++ = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
-		}
-
-	}
-	else
-	{
-		while (len --)
-		{
-			(void) * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
-		}
-	}
-}
-
-// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb)
-{
-	int count = len;
-	enum { MAXCHUNK = 64 };
-
-
-	while (count > 0)
-	{
-		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
-		int i;
-
-		SPIHARD_PTR->SPI_MBC = chunk;	// total burst counter
-		switch (readnb)
-		{
-		default:
-		case SPDFIO_1WIRE:
-			spidf_spi_write_txbuf_b8(txbuff, chunk);
-			SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
-			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPIHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
-			break;
-
-		case SPDFIO_4WIRE:
-			SPIHARD_PTR->SPI_BCC = (1u << 29);	/* Quad_EN */
-			if (txbuff != NULL)
-			{
-				// 4-wire write
-				spidf_spi_write_txbuf_b8(txbuff, chunk);
-				SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
-			}
-			else
-			{
-				// 4-wire read
-				SPIHARD_PTR->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
-			}
-			break;
-		case SPDFIO_2WIRE:
-			ASSERT(0);
-			break;
-		}
-
-		local_delay_us(bdelay);
-		SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
-		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
-			;
-		SPIHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
-
-		spidf_spi_read_rxbuf_b8(rxbuff, chunk);
-
-		if (rxbuff != NULL)
-			rxbuff += chunk;
-		if (txbuff != NULL)
-			txbuff += chunk;
-		count -= chunk;
-	}
-}
-
-#else /* CPUSTYLE_ALLWINNER */
-// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int size, uint_fast8_t readnb)
-{
-	ASSERT(SPDFIO_1WIRE == readnb);
-	if (rxbuff == NULL && txbuff != NULL)
-	{
-		// SPI TX only
-		if (size == 0)
-			return;
-		spi_progval8_p1(target, * txbuff);
-		while (-- size)
-			spi_progval8_p2(target, * ++ txbuff);
-		spi_complete(target);
-	}
-	else if (rxbuff != NULL && txbuff == NULL)
-	{
-		// SPI RX only
-		spi_to_read(target);
-		while (size --)
-			* rxbuff ++ = spi_read_byte(target, 0xff);
-		spi_to_write(target);
-	}
-	else if (rxbuff != NULL && txbuff != NULL)
-	{
-		// SPI TX & RX - exchange
-		while (size --)
-			* rxbuff ++ = spi_read_byte(target, * txbuff ++);
-	}
-	else
-	{
-		ASSERT(0);
-	}
-}
-#endif /* CPUSTYLE_ALLWINNER */
-
 #if WITHSPI16BIT
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static void spi_transfer_b16(spitarget_t target, const uint16_t * txbuff, uint16_t * rxbuff, int size, uint_fast8_t readnb)
@@ -1730,6 +1768,143 @@ void hardware_spi_master_initialize(void)
 }
 
 #endif /* WITHSPIHW */
+
+#if WITHSPIHW && CPUSTYLE_ALLWINNER
+
+static void spidf_spi_write_txbuf_b8(const uint8_t * __restrict buf, int len)
+{
+    if (buf != NULL)
+    {
+		while (len --)
+		{
+            * (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = * buf ++;
+        }
+    }
+    else
+    {
+		while (len --)
+        {
+ 			* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = 0xFF;
+        }
+    }
+
+}
+
+static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
+{
+	if (buf != NULL)
+	{
+		while (len --)
+		{
+			* buf ++ = * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
+		}
+
+	}
+	else
+	{
+		while (len --)
+		{
+			(void) * (volatile uint8_t *) & SPIHARD_PTR->SPI_RXD;
+		}
+	}
+}
+
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb)
+{
+	int count = len;
+	enum { MAXCHUNK = 64 };
+
+
+	while (count > 0)
+	{
+		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
+		int i;
+
+		SPIHARD_PTR->SPI_MBC = chunk;	// total burst counter
+		switch (readnb)
+		{
+		default:
+		case SPDFIO_1WIRE:
+			spidf_spi_write_txbuf_b8(txbuff, chunk);
+			SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
+			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+			SPIHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
+			break;
+
+		case SPDFIO_4WIRE:
+			SPIHARD_PTR->SPI_BCC = (1u << 29);	/* Quad_EN */
+			if (txbuff != NULL)
+			{
+				// 4-wire write
+				spidf_spi_write_txbuf_b8(txbuff, chunk);
+				SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
+			}
+			else
+			{
+				// 4-wire read
+				SPIHARD_PTR->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			}
+			break;
+		case SPDFIO_2WIRE:
+			ASSERT(0);
+			break;
+		}
+
+		local_delay_us(bdelay);
+		SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
+		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+		while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
+			;
+		SPIHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
+
+		spidf_spi_read_rxbuf_b8(rxbuff, chunk);
+
+		if (rxbuff != NULL)
+			rxbuff += chunk;
+		if (txbuff != NULL)
+			txbuff += chunk;
+		count -= chunk;
+	}
+}
+
+#else /* WITHSPIHW && CPUSTYLE_ALLWINNER */
+
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int size, uint_fast8_t readnb)
+{
+	ASSERT(SPDFIO_1WIRE == readnb);
+	if (rxbuff == NULL && txbuff != NULL)
+	{
+		// SPI TX only
+		if (size == 0)
+			return;
+		spi_progval8_p1(target, * txbuff);
+		while (-- size)
+			spi_progval8_p2(target, * ++ txbuff);
+		spi_complete(target);
+	}
+	else if (rxbuff != NULL && txbuff == NULL)
+	{
+		// SPI RX only
+		spi_to_read(target);
+		while (size --)
+			* rxbuff ++ = spi_read_byte(target, 0xff);
+		spi_to_write(target);
+	}
+	else if (rxbuff != NULL && txbuff != NULL)
+	{
+		// SPI TX & RX - exchange
+		while (size --)
+			* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+	}
+	else
+	{
+		ASSERT(0);
+	}
+}
+
+#endif /* WITHSPIHW && CPUSTYLE_ALLWINNER */
 
 #if WITHSPIHW
 
@@ -6974,4 +7149,694 @@ static uint32_t InitQspi(void)
 }
 
 #endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
+
+#if ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+
+void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2)
+{
+	spi_progval8_p1(target, v1);
+	spi_progval8_p2(target, v2 >> 24);
+	spi_progval8_p2(target, v2 >> 16);
+	spi_progval8_p2(target, v2 >> 8);
+	spi_progval8_p2(target, v2 >> 0);
+}
+
+void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2)
+{
+	spi_progval8_p2(target, v1);
+	spi_progval8_p2(target, v2 >> 24);
+	spi_progval8_p2(target, v2 >> 16);
+	spi_progval8_p2(target, v2 >> 8);
+	spi_progval8_p2(target, v2 >> 0);
+}
+
+#elif WITHDSPEXTFIR && ! LINUX_SUBSYSTEM
+
+// Передача одного (первого) 32-битного значения и формирование строба.
+void board_fpga_fir_coef_p1(int_fast32_t v)
+{
+#if WITHSPI32BIT
+	hardware_spi_b32_p1(v);		// на последнем бите формируется coef_in_clk
+
+#elif WITHSPI16BIT
+	hardware_spi_b16_p1(v >> 16);
+	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
+
+#elif WITHSPIHW
+	hardware_spi_b8_p1(v >> 24);
+	hardware_spi_b8_p2(v >> 16);
+	hardware_spi_b8_p2(v >> 8);
+	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p1(0, v >> 24);
+	spi_progval8_p2(0, v >> 16);
+	spi_progval8_p2(0, v >> 8);
+	spi_progval8_p2(0, v >> 0);	// на последнем бите формируется coef_in_clk
+
+#endif /* WITHSPI32BIT */
+}
+
+// Передача одного (последующего) 32-битного значения и формирование строба.
+void board_fpga_fir_coef_p2(int_fast32_t v)
+{
+#if WITHSPI32BIT
+	hardware_spi_b32_p2(v);		// на последнем бите формируется coef_in_clk
+
+#elif WITHSPI16BIT
+	hardware_spi_b16_p2(v >> 16);
+	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
+
+#elif WITHSPIHW
+	hardware_spi_b8_p2(v >> 24);
+	hardware_spi_b8_p2(v >> 16);
+	hardware_spi_b8_p2(v >> 8);
+	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p2(0, v >> 24);
+	spi_progval8_p2(0, v >> 16);
+	spi_progval8_p2(0, v >> 8);
+	spi_progval8_p2(0, v >> 0);	// на последнем бите формируется coef_in_clk
+
+#endif /* WITHSPI32BIT */
+}
+
+void
+board_fpga_fir_complete(void)
+{
+#if WITHSPI32BIT
+	hardware_spi_complete_b32();
+
+#elif WITHSPI16BIT
+	hardware_spi_complete_b16();
+
+#elif WITHSPIHW
+	hardware_spi_complete_b8();
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_complete(targetnone);
+
+#endif /* WITHSPI32BIT */
+}
+
+void
+board_fpga_fir_connect(IRQL_t * oldIrql)
+{
+	spi_operate_lock(oldIrql);
+#if WITHSPI32BIT
+	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
+
+	hardware_spi_b32_p1(0x00000000);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b32();
+
+#elif WITHSPI16BIT
+	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
+
+	hardware_spi_b16_p1(0x0000);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b16();
+
+#elif WITHSPIHW
+	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
+
+	hardware_spi_b8_p1(0x00);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b8();
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p1(targetnone, 0x00);	// provide clock for reset bit counter while CS=1
+	spi_complete(targetnone);
+
+#endif /* WITHSPI32BIT */
+
+#if defined (TARGET_FPGA_FIR_CS_BIT)
+	TARGET_FPGA_FIR_CS_PORT_C(TARGET_FPGA_FIR_CS_BIT);	/* start sending data to target chip */
+
+#else /* defined (TARGET_FPGA_FIR_CS_BIT) */
+	prog_select(targetfir1);	/* start sending data to target chip */
+
+#endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
+}
+
+void
+board_fpga_fir_disconnect(IRQL_t irql)
+{
+#if defined (TARGET_FPGA_FIR_CS_BIT)
+	TARGET_FPGA_FIR_CS_PORT_S(TARGET_FPGA_FIR_CS_BIT); /* Disable SPI */
+
+#else /* defined (TARGET_FPGA_FIR_CS_BIT) */
+	prog_unselect(targetfir1);			/* Disable SPI */
+
+#endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
+
+#if WITHSPIHW
+	hardware_spi_disconnect();
+#else /* WITHSPIHW */
+#endif
+	spi_operate_unlock(irql);
+}
+#endif /* WITHDSPEXTFIR && ! LINUX_SUBSYSTEM */
+
+
+#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+
+
+/* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
+static uint_fast8_t board_fpga_get_CONF_DONE(void)
+{
+#if FPGA_CONF_DONE_BIT != 0
+	return (FPGA_CONF_DONE_INPUT & FPGA_CONF_DONE_BIT) != 0;
+#else /* FPGA_CONF_DONE_BIT != 0 */
+	return 0;
+#endif /* FPGA_CONF_DONE_BIT != 0 */
+}
+
+static uint_fast8_t board_fpga_get_NSTATUS(void)
+{
+#if FPGA_NSTATUS_BIT != 0
+	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
+#else /* FPGA_NSTATUS_BIT != 0 */
+	return 1;
+#endif /* FPGA_NSTATUS_BIT != 0 */
+
+}
+
+/* не на всех платах соединено с процессором */
+static uint_fast8_t board_fpga_get_INIT_DONE(void)
+{
+#if 0 && FPGA_INIT_DONE_BIT != 0
+	return (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0;
+#else
+	return 1;
+#endif
+}
+
+void board_fpga_loader_initialize(void)
+{
+	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
+	HARDWARE_FPGA_LOADER_INITIALIZE();
+}
+
+#if WITHFPGALOAD_PS && defined (BOARD_BITIMAGE_NAME_ZIP)
+
+static ALIGNX_BEGIN const uint8_t rbfimage0_zip [] ALIGNX_END =
+{
+#include BOARD_BITIMAGE_NAME_ZIP
+};
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint8_t * getrbfimagezip(size_t * count)
+{
+	* count = sizeof rbfimage0_zip / sizeof rbfimage0_zip [0];
+	return & rbfimage0_zip [0];
+}
+
+#include "unzipLIB.h"
+
+
+/* FPGA загружается процессором с помощью SPI из упакованного .zip образа в памяти */
+void board_fpga_loader_PS(void)
+{
+	unsigned long w = 1000;
+	unsigned retries = 0;
+	size_t rbflength;
+	static ZIPFILE zpf; // Statically allocate the 41K UNZIP class/structure
+
+	const uint8_t * const zipp = getrbfimagezip(& rbflength);
+	unzFile zHandle;
+	int err;
+
+    zHandle = unzOpen(NULL, zipp, rbflength, & zpf, NULL, NULL, NULL, NULL);
+    ASSERT(NULL != zHandle);
+    if (NULL == zHandle)
+    {
+    	PRINTF("Wrong compressed FPGA image format\n");
+    	return;
+    }
+
+    char szTemp [256];
+//    err = unzGetGlobalComment(zHandle, (char *)szTemp, sizeof(szTemp));
+//    if (err >= 0)
+//    {
+//        PRINTF("Global Comment:\n");
+//        printhex(0, szTemp, err);
+//    }
+
+	int rc;
+
+	rc = unzLocateFile(zHandle, BOARD_BITIMAGE_NAME_COMPRESSED, 2);
+	if (rc != UNZ_OK) /* Report the file not found */
+	{
+		PRINTF("file %s not found within archive\n", BOARD_BITIMAGE_NAME_COMPRESSED);
+		unzClose(zHandle);
+		return;
+	}
+
+	//PRINTF("File located within archive.\n");
+
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
+
+restart:
+
+	rc = unzOpenCurrentFile(zHandle); /* Try to open the file we want */
+	if (rc != UNZ_OK) {
+	   PRINTF("Error opening file = %d\n", rc);
+	   unzClose(zHandle);
+	   return;
+	}
+
+	if (++ retries > 4)
+	{
+		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+
+		spi_unselect(targetnone);
+
+		rc = unzCloseCurrentFile(zHandle);
+		unzClose(zHandle);
+
+		return;
+	}
+	;
+
+	/* ZIP-compressed images load */
+	do {
+		unsigned score = 0;
+
+		PRINTF("fpga: board_fpga_loader_PS (zip) start\n");
+		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 1) Выставить "1" на nCONFIG */
+		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1 (zip)\n"));
+		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* x) Дождаться "0" на nSTATUS */
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 (zip) \n");
+		while (board_fpga_get_NSTATUS() != 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+			{
+				FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+				goto restart;
+			}
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			//PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+			FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+			goto restart;
+		}
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 2) Дождаться "1" на nSTATUS */
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 (zip) \n");
+		while (board_fpga_get_NSTATUS() == 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done (zip) \n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u (zip)\n", score);
+			goto restart;
+		}
+		/* 3) Выдать байты (младший бит .rbf файла первым) */
+		//PRINTF("fpga: start sending compressed RBF image (%u bytes))\n", (unsigned) rbflength);
+
+		unsigned wcd = 0;
+		rc = 1;
+		score = 0;
+		while (rc > 0)
+		{
+			rc = unzReadCurrentFile(zHandle, szTemp, sizeof(szTemp));
+			if (rc >= 0)
+			{
+				int l;
+				for (l = 0; l < rc; ++ l)
+				{
+					if (board_fpga_get_CONF_DONE() != 0)
+					{
+						PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u (zip) \n", score);
+						if (score)
+							spi_complete(targetnone);
+						goto restart;
+					}
+
+					if (0 == score) {
+						spi_progval8_p1(targetnone, revbits8(szTemp [l]));
+					} else {
+						spi_progval8_p2(targetnone, revbits8(szTemp [l]));
+					}
+					++ score;
+				}
+			} else {
+				PRINTF("Error reading from file\n");
+				break;
+			}
+		}
+		spi_complete(targetnone);
+
+
+		//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
+		/* 4) Дождаться "1" на CONF_DONE */
+		while (board_fpga_get_CONF_DONE() == 0)
+		{
+			++ wcd;
+			spi_progval8_p1(targetnone, 0xFF);
+			spi_complete(targetnone);
+		}
+
+		PRINTF("fpga: CONF_DONE asserted, score=%u, wcd=%u\n", score, wcd);
+		////if (wcd >= rbflength)
+		////	goto restart;
+		/*
+		After the configuration data is accepted and CONF_DONE goes
+		high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
+		user mode.
+		*/
+		} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
+
+		//unzClose(& zpf);
+
+
+	//PRINTF("fpga: board_fpga_loader_PS done\n");
+	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
+	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+
+	rc = unzCloseCurrentFile(zHandle);
+	unzClose(zHandle);
+
+	spi_unselect(targetnone);
+	PRINTF("board_fpga_loader_PS: usermode okay\n");
+}
+
+#elif WITHFPGALOAD_PS
+
+#if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
+
+/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
+static ALIGNX_BEGIN const uint16_t rbfimage0 [] ALIGNX_END =
+{
+#include BOARD_BITIMAGE_NAME
+};
+
+/* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
+const uint16_t * getrbfimage(size_t * count)
+{
+	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
+	return & rbfimage0 [0];
+}
+
+#endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
+
+
+#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+
+void fpga_send16_p1(uint_fast16_t v16)
+{
+#if WITHSPIEXT16// for skip in test configurations
+	hardware_spi_b16_p1(v16);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_progval8_p1(targetnone, v16 >> 8);
+	spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+}
+
+void fpga_send16_p2(uint_fast16_t v16)
+{
+#if WITHSPIEXT16// for skip in test configurations
+	hardware_spi_b16_p2(v16);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_progval8_p2(targetnone, v16 >> 8);
+	spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+}
+
+/* FPGA загружается процессором с помощью SPI */
+void board_fpga_loader_PS(void)
+{
+	unsigned retries = 0;
+
+#if WITHSPIEXT16	// for skip in test configurations
+	hardware_spi_connect_b16(SPIC_SPEEDFAST, SPIC_MODE0);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	// Software SPI
+	spi_select2(targetnone, SPIC_MODE0, SPIC_SPEEDFAST);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+restart:
+
+	if (++ retries > 4)
+	{
+		PRINTF(PSTR("fpga: board_fpga_loader_PS: FPGA is not respond.\n"));
+
+#if WITHSPIEXT16	// for skip in test configurations
+		hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+		spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+		return;
+	}
+	;
+
+	unsigned long w = 1000;
+	do {
+		size_t rbflength;
+		const uint16_t * p = getrbfimage(& rbflength);
+		unsigned score = 0;
+
+		PRINTF("fpga: board_fpga_loader_PS start\n");
+		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 1) Выставить "1" на nCONFIG */
+		//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+		FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* x) Дождаться "0" на nSTATUS */
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0\n");
+		while (board_fpga_get_NSTATUS() != 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+			{
+				FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+				goto restart;
+			}
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==0 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 1 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			goto restart;
+		}
+		FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+		local_delay_ms(1);
+		/* 2) Дождаться "1" на nSTATUS */
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1\n");
+		while (board_fpga_get_NSTATUS() == 0)
+		{
+			local_delay_ms(1);
+			if (-- w == 0)
+				goto restart;
+		}
+		//PRINTF("fpga: waiting for FPGA_NSTATUS_BIT==1 done\n");
+		if (board_fpga_get_CONF_DONE() != 0)
+		{
+			PRINTF("fpga: 2 Unexpected state of CONF_DONE==1, score=%u\n", score);
+			goto restart;
+		}
+		/* 3) Выдать байты (бладший бит .rbf файла первым) */
+		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
+		if (rbflength != 0)
+		{
+			unsigned wcd = 0;
+			size_t n = rbflength - 1;
+			//
+
+#if WITHSPIEXT16// for skip in test configurations
+			hardware_spi_b16_p1(* p ++);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			// Software SPI
+			const uint_fast16_t v16 = * p ++;
+			spi_progval8_p1(targetnone, v16 >> 8);
+			spi_progval8_p2(targetnone, v16 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+			++ score;
+			while (n --)
+			{
+				if (board_fpga_get_CONF_DONE() != 0)
+				{
+					PRINTF("fpga: 3 Unexpected state of CONF_DONE==1, score=%u\n", score);
+		#if WITHSPIEXT16	// for skip in test configurations
+					hardware_spi_complete_b16();
+		#else /* WITHSPIEXT16 */	// for skip in test configurations
+					spi_complete(targetnone);
+		#endif /* WITHSPIEXT16 */	// for skip in test configurations
+					goto restart;
+				}
+#if WITHSPIEXT16	// for skip in test configurations
+				hardware_spi_b16_p2(* p ++);
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+				const uint_fast16_t v16_2 = * p ++;
+				spi_progval8_p2(targetnone, v16_2 >> 8);
+				spi_progval8_p2(targetnone, v16_2 >> 0);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+				++ score;
+			}
+#if WITHSPIEXT16	// for skip in test configurations
+			hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+			spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+
+			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
+			/* 4) Дождаться "1" на CONF_DONE */
+			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
+			{
+				++ wcd;
+#if WITHSPIEXT16	// for skip in test configurations
+				hardware_spi_b16_p1(0xffff);
+				hardware_spi_complete_b16();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+				const uint_fast16_t v16_3 = 0xFFFF;
+				spi_progval8_p1(targetnone, v16_3 >> 8);
+				spi_progval8_p2(targetnone, v16_3 >> 0);
+				spi_complete(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+			}
+
+			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
+			if (wcd >= rbflength)
+				goto restart;
+			/*
+			After the configuration data is accepted and CONF_DONE goes
+			high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
+			user mode.
+			*/
+		}
+	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
+	//PRINTF("fpga: board_fpga_loader_PS done\n");
+	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
+	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+
+#if WITHSPIEXT16	// for skip in test configurations
+	hardware_spi_disconnect();
+#else /* WITHSPIEXT16 */	// for skip in test configurations
+	spi_unselect(targetnone);
+#endif /* WITHSPIEXT16 */	// for skip in test configurations
+	PRINTF("board_fpga_loader_PS: usermode okay\n");
+}
+
+#elif WITHFPGAWAIT_ARTIX7
+
+/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+void board_fpga_loader_wait_AS(void)
+{
+	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS start\n"));
+
+	while (board_fpga_get_CONF_DONE() == 0)
+		;
+
+	PRINTF(PSTR("fpga: CONF_DONE asserted\n"));
+
+	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
+}
+
+#elif WITHFPGAWAIT_AS
+
+/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+void board_fpga_loader_wait_AS(void)
+{
+	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS start\n"));
+	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+	/* 1) Выставить "1" на nCONFIG */
+	//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+	local_delay_ms(5);
+	/* x) Дождаться "0" на nSTATUS */
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+	while (board_fpga_get_NSTATUS() != 0)
+			;
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+
+	/* 1) Дождаться "1" на nSTATUS */
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+	while (board_fpga_get_NSTATUS() == 0)
+		;
+	/* 2) Дождаться "1" на CONF_DONE */
+	//PRINTF(PSTR("fpga: waiting for CONF_DONE==1\n"));
+	while (board_fpga_get_CONF_DONE() == 0)
+		;
+	PRINTF(PSTR("fpga: CONF_DONE asserted\n"));
+	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
+	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+		;
+	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
+}
+
+#endif
+
+/* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
+void board_fpga_reset(void)
+{
+#if FPGA_NCONFIG_BIT != 0
+
+	unsigned w = 500;
+	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+	local_delay_ms(1);
+	/* 1) Выставить "1" на nCONFIG */
+	//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+	/* x) Дождаться "0" на nSTATUS */
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+	while (board_fpga_get_NSTATUS() != 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+	/* 2) Дождаться "1" на nSTATUS */
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+	while (board_fpga_get_NSTATUS() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+restart:
+	;
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+
+#endif
+}
+
+#endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
