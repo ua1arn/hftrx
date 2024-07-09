@@ -152,7 +152,7 @@ public:
 	{
 		union
 		{
-			float32_t f;
+			float f;
 			int32_t i;
 		} v0, v1;
 		switch (nch)
@@ -237,7 +237,7 @@ public:
 	{
 		union
 		{
-			float32_t f;
+			float f;
 			int32_t i;
 		} v0, v1;
 		switch (nch)
@@ -321,7 +321,7 @@ public:
 	{
 		union
 		{
-			float32_t f;
+			float f;
 			int32_t i;
 		} v0, v1;
 		switch (nch)
