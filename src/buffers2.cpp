@@ -279,6 +279,43 @@ public:
 		return ss * nch;
 	}
 
+	// во внутреннее представление из буфера
+	unsigned peek_IEEE_FLOAT(const uint8_t * buff, apptype * dest)
+	{
+		union
+		{
+			float32_t f;
+			int32_t i;
+		} v0, v1;
+		switch (nch)
+		{
+		case 1:
+			switch (ss)
+			{
+			case 4:
+				// 32 bit values - mono
+				v0.i = USBD_peek_u32(buff + 0);
+				dest [0] = v0.f;
+				break;
+			}
+			break;
+
+		case 2:
+			switch (ss)
+			{
+			case 4:
+				// 32 bit values - stereo
+				v0.i = USBD_peek_u32(buff + 0);
+				v1.i = USBD_peek_u32(buff + 4);
+				dest [0] = v0.f;
+				dest [1] = v1.f;
+				break;
+			}
+			break;
+		}
+		return ss * nch;
+	}
+
 	static int sssize() { return ss * nch; }
 
 };
