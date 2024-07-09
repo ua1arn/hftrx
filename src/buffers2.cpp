@@ -147,6 +147,43 @@ public:
 		return ss * nch;
 	}
 
+	// преобразование в буфер из внутреннего представления
+	unsigned poke_IEEE_FLOAT(uint8_t * buff, apptype ch0, apptype ch1)
+	{
+		union
+		{
+			float32_t f;
+			int32_t i;
+		} v0, v1;
+		switch (nch)
+		{
+		case 1:
+			switch (ss)
+			{
+			case 4:
+				// 32 bit values - mono
+				v0.f = ch0;
+				USBD_poke_u32(buff + 0, v0.i);
+				break;
+			}
+			break;
+
+		case 2:
+			switch (ss)
+			{
+			case 4:
+				// 32 bit values - stereo
+				v0.f = ch0;
+				v1.f = ch1;
+				USBD_poke_u32(buff + 0, v0.i);
+				USBD_poke_u32(buff + 4, v1.i);
+				break;
+			}
+			break;
+		}
+		return ss * nch;
+	}
+
 
 	// преобразование в буфер из внутреннего представления
 	unsigned poketransf_LE(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
