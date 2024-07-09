@@ -150,11 +150,6 @@ public:
 	// преобразование в буфер из внутреннего представления
 	unsigned poke_IEEE_FLOAT(uint8_t * buff, apptype ch0, apptype ch1)
 	{
-		union
-		{
-			float f;
-			int32_t i;
-		} v0, v1;
 		switch (nch)
 		{
 		case 1:
@@ -162,8 +157,7 @@ public:
 			{
 			case 4:
 				// 32 bit values - mono
-				v0.f = ch0;
-				USBD_poke_u32(buff + 0, v0.i);
+				USBD_poke_IEEE_FLOAT(buff + 0, ch0);
 				break;
 			}
 			break;
@@ -173,10 +167,8 @@ public:
 			{
 			case 4:
 				// 32 bit values - stereo
-				v0.f = ch0;
-				v1.f = ch1;
-				USBD_poke_u32(buff + 0, v0.i);
-				USBD_poke_u32(buff + 4, v1.i);
+				USBD_poke_IEEE_FLOAT(buff + 0, ch0);
+				USBD_poke_IEEE_FLOAT(buff + 4, ch1);
 				break;
 			}
 			break;
@@ -235,11 +227,6 @@ public:
 	// преобразование в буфер из внутреннего представления
 	unsigned poketransf_IEEE_FLOAT(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
 	{
-		union
-		{
-			float f;
-			int32_t i;
-		} v0, v1;
 		switch (nch)
 		{
 		case 1:
@@ -247,8 +234,7 @@ public:
 			{
 			case 4:
 				// 32 bit values - mono
-				v0.f = (int32_t) transform_do32(tfm, ch0) / INT32_MAX;
-				USBD_poke_u32(buff + 0, v0.i);
+				USBD_poke_IEEE_FLOAT(buff + 0, (int32_t) transform_do32(tfm, ch0) / INT32_MAX);
 				break;
 			}
 			break;
@@ -258,10 +244,8 @@ public:
 			{
 			case 4:
 				// 32 bit values - stereo
-				v0.f = (int32_t) transform_do32(tfm, ch0) / INT32_MAX;
-				v1.f = (int32_t) transform_do32(tfm, ch1) / INT32_MAX;
-				USBD_poke_u32(buff + 0, v0.i);
-				USBD_poke_u32(buff + 4, v1.i);
+				USBD_poke_IEEE_FLOAT(buff + 0, (int32_t) transform_do32(tfm, ch0) / INT32_MAX);
+				USBD_poke_IEEE_FLOAT(buff + 4, (int32_t) transform_do32(tfm, ch1) / INT32_MAX);
 				break;
 			}
 			break;
@@ -319,11 +303,6 @@ public:
 	// во внутреннее представление из буфера
 	unsigned peek_IEEE_FLOAT(const uint8_t * buff, apptype * dest)
 	{
-		union
-		{
-			float f;
-			int32_t i;
-		} v0, v1;
 		switch (nch)
 		{
 		case 1:
@@ -331,8 +310,7 @@ public:
 			{
 			case 4:
 				// 32 bit values - mono
-				v0.i = USBD_peek_u32(buff + 0);
-				dest [0] = v0.f;
+				dest [0] = USBD_peek_IEEE_FLOAT(buff + 0);
 				break;
 			}
 			break;
@@ -342,10 +320,8 @@ public:
 			{
 			case 4:
 				// 32 bit values - stereo
-				v0.i = USBD_peek_u32(buff + 0);
-				v1.i = USBD_peek_u32(buff + 4);
-				dest [0] = v0.f;
-				dest [1] = v1.f;
+				dest [0] = USBD_peek_IEEE_FLOAT(buff + 0);
+				dest [1] = USBD_peek_IEEE_FLOAT(buff + 4);
 				break;
 			}
 			break;

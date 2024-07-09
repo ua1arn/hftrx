@@ -18,15 +18,24 @@ extern "C" {
 
 
 /* получить 32-бит значение */
-uint_fast32_t
 /* Low endian memory layout */
+uint_fast32_t
 USBD_peek_u32(
+	const uint8_t * buff
+	);
+/* получить 32-бит значение */
+/* Low endian memory layout */
+float
+USBD_peek_IEEE_FLOAT(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 32-бит значение */
 /* Low endian memory layout */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+/* записать в буфер для ответа 32-бит значение */
+/* Low endian memory layout */
+unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float v);
 
 /* получить 24-бит значение */
 /* Low endian memory layout */

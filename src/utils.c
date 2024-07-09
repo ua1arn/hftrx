@@ -135,6 +135,7 @@ USBD_peek_u24(
 }
 
 /* получить 32-бит значение */
+/* Low endian memory layout */
 uint_fast32_t
 USBD_peek_u32(
 	const uint8_t * buff
@@ -147,6 +148,26 @@ USBD_peek_u32(
 		((uint_fast32_t) buff [0] << 0);
 }
 
+/* получить 32-бит значение */
+/* Low endian memory layout */
+float
+USBD_peek_IEEE_FLOAT(
+	const uint8_t * buff
+	)
+{
+	union
+	{
+		float f;
+		int32_t i;
+	} v;
+	v.i =
+		((uint_fast32_t) buff [3] << 24) +
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+	return v.f;
+}
+
 /* записать в буфер для ответа 32-бит значение */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 {
@@ -154,6 +175,23 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	buff [1] = HI_BYTE(v);
 	buff [2] = HI_24BY(v);
 	buff [3] = HI_32BY(v);
+
+	return 4;
+}
+
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float f)
+{
+	union
+	{
+		float f;
+		int32_t i;
+	} v;
+	v.f = f;
+	buff [0] = LO_BYTE(v.i);
+	buff [1] = HI_BYTE(v.i);
+	buff [2] = HI_24BY(v.i);
+	buff [3] = HI_32BY(v.i);
 
 	return 4;
 }
