@@ -195,6 +195,43 @@ public:
 		return ss * nch;
 	}
 
+	// преобразование в буфер из внутреннего представления
+	unsigned poketransf_IEEE_FLOAT(const transform_t * tfm, uint8_t * buff, apptype ch0, apptype ch1)
+	{
+		union
+		{
+			float32_t f;
+			int32_t i;
+		} v0, v1;
+		switch (nch)
+		{
+		case 1:
+			switch (ss)
+			{
+			case 4:
+				// 32 bit values - mono
+				v0.f = (int32_t) transform_do32(tfm, ch0) / INT32_MAX;
+				USBD_poke_u32(buff + 0, v0.i);
+				break;
+			}
+			break;
+
+		case 2:
+			switch (ss)
+			{
+			case 4:
+				// 32 bit values - stereo
+				v0.f = (int32_t) transform_do32(tfm, ch0) / INT32_MAX;
+				v1.f = (int32_t) transform_do32(tfm, ch1) / INT32_MAX;
+				USBD_poke_u32(buff + 0, v0.i);
+				USBD_poke_u32(buff + 4, v1.i);
+				break;
+			}
+			break;
+		}
+		return ss * nch;
+	}
+
 	// во внутреннее представление из буфера
 	unsigned peek_LE(const uint8_t * buff, apptype * dest)
 	{
