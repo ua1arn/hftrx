@@ -1724,6 +1724,7 @@ static unsigned UAC2_AS_InterfaceDescPCM(uint_fast8_t fill, uint8_t * buff, unsi
 	return length;
 }
 
+// https://learn.microsoft.com/en-us/windows-hardware/drivers/audio/usb-2-0-audio-drivers
 // 4.9.2 Class-Specific AS Interface Descriptor
 // Количество каналов определается тут
 static unsigned UAC2_AS_InterfaceDescIEEE(uint_fast8_t fill, uint8_t * buff, unsigned maxsize, uint_fast8_t bTerminalLink, uint_fast32_t bmChannelConfig)
