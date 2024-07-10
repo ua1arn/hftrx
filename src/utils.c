@@ -111,9 +111,13 @@ USBD_peek_u16(
 	const uint8_t * buff
 	)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	return __UNALIGNED_UINT16_READ(buff);
+#else
 	return
 		((uint_fast16_t) buff [1] << 8) +
 		((uint_fast16_t) buff [0] << 0);
+#endif
 }
 
 /* получить 24-бит значение */
@@ -136,21 +140,29 @@ USBD_peek_u32(
 	const uint8_t * buff
 	)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	return __UNALIGNED_UINT32_READ(buff);
+#else
 	return
 		((uint_fast32_t) buff [3] << 24) +
 		((uint_fast32_t) buff [2] << 16) +
 		((uint_fast32_t) buff [1] << 8) +
 		((uint_fast32_t) buff [0] << 0);
+#endif
 }
 
 /* записать в буфер для ответа 32-бит значение */
 /* Little endian memory layout */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	__UNALIGNED_UINT32_WRITE(buff, v);
+#else
 	buff [0] = LO_BYTE(v);
 	buff [1] = HI_BYTE(v);
 	buff [2] = HI_24BY(v);
 	buff [3] = HI_32BY(v);
+#endif
 
 	return 4;
 }
@@ -210,9 +222,13 @@ USBD_peek_u16_BE(
 	const uint8_t * buff
 	)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	return __bswap16(__UNALIGNED_UINT16_READ(buff));
+#else
 	return
 		((uint_fast32_t) buff [0] << 8) +
 		((uint_fast32_t) buff [1] << 0);
+#endif
 }
 
 /* получить 32-бит значение */
@@ -222,11 +238,15 @@ USBD_peek_u32_BE(
 	const uint8_t * buff
 	)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	return __bswap32(__UNALIGNED_UINT32_READ(buff));
+#else
 	return
 		((uint_fast32_t) buff [0] << 24) +
 		((uint_fast32_t) buff [1] << 16) +
 		((uint_fast32_t) buff [2] << 8) +
 		((uint_fast32_t) buff [3] << 0);
+#endif
 }
 
 /* получить 64-бит значение */
@@ -251,10 +271,14 @@ USBD_peek_u64_BE(
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	__UNALIGNED_UINT32_WRITE(buff, __bswap32(v));
+#else
 	buff [3] = LO_BYTE(v);
 	buff [2] = HI_BYTE(v);
 	buff [1] = HI_24BY(v);
 	buff [0] = HI_32BY(v);
+#endif
 
 	return 4;
 }
@@ -290,8 +314,12 @@ unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 /* Little endian memory layout */
 unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	__UNALIGNED_UINT16_WRITE(buff, v);
+#else
 	buff [0] = LO_BYTE(v);
 	buff [1] = HI_BYTE(v);
+#endif
 
 	return 2;
 }
@@ -300,8 +328,12 @@ unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 /* Big endian memory layout */
 unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	__UNALIGNED_UINT16_WRITE(buff, __bswap16(v));
+#else
 	buff [1] = LO_BYTE(v);
 	buff [0] = HI_BYTE(v);
+#endif
 
 	return 2;
 }
