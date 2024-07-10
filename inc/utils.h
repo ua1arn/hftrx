@@ -18,44 +18,45 @@ extern "C" {
 
 
 /* получить 32-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 uint_fast32_t
 USBD_peek_u32(
 	const uint8_t * buff
 	);
 /* получить 32-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 float
 USBD_peek_IEEE_FLOAT(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 32-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
 /* записать в буфер для ответа 32-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float v);
 
 /* получить 24-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 uint_fast32_t
 USBD_peek_u24(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 24-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
 
 /* получить 16-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 uint_fast16_t
 USBD_peek_u16(
 	const uint8_t * buff
 	);
 
 /* записать в буфер для ответа 16-бит значение */
+/* Little endian memory layout */
 unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v);
 
 /* получить 8-бит значение */

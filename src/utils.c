@@ -1,10 +1,3 @@
-/*
- * utils.c
- *
- *  Created on: Sep 30, 2023
- *      Author: Gena
- */
-
 /* $Id$ */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
@@ -14,7 +7,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "utils.h"
-
+#include <machine/endian.h>
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
@@ -35,9 +28,9 @@ const uint_fast8_t rbvalues [8] =
 // Функция разворота младших восьми бит
 uint_fast8_t revbits8(uint_fast8_t v)
 {
-	uint_fast8_t b = v & 0xff;
-	b = ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
-	return b & 0xff;
+	uint_fast8_t b = v & 0xFF;
+	b = ((b * UINT32_C(0x0802) & UINT32_C(0x22110)) | (b * UINT32_C(0x8020) & UINT32_C(0x88440))) * UINT32_C(0x10101) >> 16;
+	return b & 0xFF;
 }
 
 #if 0
@@ -112,6 +105,7 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 }
 
 /* получить 16-бит значение */
+/* Little endian memory layout */
 uint_fast16_t
 USBD_peek_u16(
 	const uint8_t * buff
@@ -123,6 +117,7 @@ USBD_peek_u16(
 }
 
 /* получить 24-бит значение */
+/* Little endian memory layout */
 uint_fast32_t
 USBD_peek_u24(
 	const uint8_t * buff
@@ -135,7 +130,7 @@ USBD_peek_u24(
 }
 
 /* получить 32-бит значение */
-/* Low endian memory layout */
+/* Little endian memory layout */
 uint_fast32_t
 USBD_peek_u32(
 	const uint8_t * buff
@@ -148,27 +143,8 @@ USBD_peek_u32(
 		((uint_fast32_t) buff [0] << 0);
 }
 
-/* получить 32-бит значение */
-/* Low endian memory layout */
-float
-USBD_peek_IEEE_FLOAT(
-	const uint8_t * buff
-	)
-{
-	union
-	{
-		float f;
-		int32_t i;
-	} v;
-	v.i =
-		((uint_fast32_t) buff [3] << 24) +
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-	return v.f;
-}
-
 /* записать в буфер для ответа 32-бит значение */
+/* Little endian memory layout */
 unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 {
 	buff [0] = LO_BYTE(v);
@@ -179,19 +155,50 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	return 4;
 }
 
+/* получить 32-бит значение */
+/* Little endian memory layout */
+float
+USBD_peek_IEEE_FLOAT(
+	const uint8_t * buff
+	)
+{
+	union
+	{
+		float f;
+		int8_t b [sizeof (float)];
+	} v;
+
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	v.b [0] = buff [0];
+	v.b [1] = buff [1];
+	v.b [2] = buff [2];
+	v.b [3] = buff [3];
+#else
+#error Write code
+#endif
+
+	return v.f;
+}
+
 /* записать в буфер для ответа 32-бит значение */
+/* Little endian memory layout */
 unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float f)
 {
 	union
 	{
 		float f;
-		int32_t i;
+		int8_t b [sizeof (float)];
 	} v;
+
 	v.f = f;
-	buff [0] = LO_BYTE(v.i);
-	buff [1] = HI_BYTE(v.i);
-	buff [2] = HI_24BY(v.i);
-	buff [3] = HI_32BY(v.i);
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	buff [0] = v.b [0];
+	buff [1] = v.b [1];
+	buff [2] = v.b [2];
+	buff [3] = v.b [3];
+#else
+#error Write code
+#endif
 
 	return 4;
 }
@@ -269,6 +276,7 @@ unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
 }
 
 /* записать в буфер для ответа 24-бит значение */
+/* Little endian memory layout */
 unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 {
 	buff [0] = LO_BYTE(v);
@@ -279,6 +287,7 @@ unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 }
 
 /* записать в буфер для ответа 16-бит значение */
+/* Little endian memory layout */
 unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 {
 	buff [0] = LO_BYTE(v);
