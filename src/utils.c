@@ -178,15 +178,17 @@ USBD_peek_IEEE_FLOAT(
 	{
 		float f;
 		int8_t b [sizeof (float)];
+		int32_t i;
 	} v;
 
 #if _BYTE_ORDER == _LITTLE_ENDIAN
+	v.i = __UNALIGNED_UINT32_READ(buff);
+#else
+#error Write code
 	v.b [0] = buff [0];
 	v.b [1] = buff [1];
 	v.b [2] = buff [2];
 	v.b [3] = buff [3];
-#else
-#error Write code
 #endif
 
 	return v.f;
@@ -200,16 +202,18 @@ unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float f)
 	{
 		float f;
 		int8_t b [sizeof (float)];
+		int32_t i;
 	} v;
 
 	v.f = f;
 #if _BYTE_ORDER == _LITTLE_ENDIAN
+	__UNALIGNED_UINT32_WRITE(buff, v.i);
+#else
+#error Write code
 	buff [0] = v.b [0];
 	buff [1] = v.b [1];
 	buff [2] = v.b [2];
 	buff [3] = v.b [3];
-#else
-#error Write code
 #endif
 
 	return 4;
