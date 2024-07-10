@@ -110,15 +110,15 @@ public:
 			{
 			case 2:
 				// 16 bit values - mono
-				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
+				USBD_poke_u16(buff + 0 * ss, adpt_output(& adp, ch0));
 				break;
 			case 3:
 				// 24 bit values - mono
-				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
+				USBD_poke_u24(buff + 0 * ss, adpt_output(& adp, ch0));
 				break;
 			case 4:
 				// 32 bit values - mono
-				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
+				USBD_poke_u32(buff + 0 * ss, adpt_output(& adp, ch0));
 				break;
 			}
 			break;
@@ -128,18 +128,18 @@ public:
 			{
 			case 2:
 				// 16 bit values - stereo
-				USBD_poke_u16(buff + 0, adpt_output(& adp, ch0));
-				USBD_poke_u16(buff + 2, adpt_output(& adp, ch1));
+				USBD_poke_u16(buff + 0 * ss, adpt_output(& adp, ch0));
+				USBD_poke_u16(buff + 1 * ss, adpt_output(& adp, ch1));
 				break;
 			case 3:
 				// 24 bit values - stereo
-				USBD_poke_u24(buff + 0, adpt_output(& adp, ch0));
-				USBD_poke_u24(buff + 3, adpt_output(& adp, ch1));
+				USBD_poke_u24(buff + 0 * ss, adpt_output(& adp, ch0));
+				USBD_poke_u24(buff + 1 * ss, adpt_output(& adp, ch1));
 				break;
 			case 4:
 				// 32 bit values - stereo
-				USBD_poke_u32(buff + 0, adpt_output(& adp, ch0));
-				USBD_poke_u32(buff + 4, adpt_output(& adp, ch1));
+				USBD_poke_u32(buff + 0 * ss, adpt_output(& adp, ch0));
+				USBD_poke_u32(buff + 1 * ss, adpt_output(& adp, ch1));
 				break;
 			}
 			break;
@@ -157,7 +157,7 @@ public:
 			{
 			case 4:
 				// 32 bit values - mono
-				USBD_poke_IEEE_FLOAT(buff + 0, ch0);
+				USBD_poke_IEEE_FLOAT(buff + 0 * ss, ch0);
 				break;
 			}
 			break;
@@ -167,8 +167,8 @@ public:
 			{
 			case 4:
 				// 32 bit values - stereo
-				USBD_poke_IEEE_FLOAT(buff + 0, ch0);
-				USBD_poke_IEEE_FLOAT(buff + 4, ch1);
+				USBD_poke_IEEE_FLOAT(buff + 0 * ss, ch0);
+				USBD_poke_IEEE_FLOAT(buff + 1 * ss, ch1);
 				break;
 			}
 			break;
@@ -187,15 +187,15 @@ public:
 			{
 			case 2:
 				// 16 bit values - mono
-				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
+				USBD_poke_u16(buff + 0 * ss, transform_do32(tfm, ch0));
 				break;
 			case 3:
 				// 24 bit values - mono
-				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
+				USBD_poke_u24(buff + 0 * ss, transform_do32(tfm, ch0));
 				break;
 			case 4:
 				// 32 bit values - mono
-				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
+				USBD_poke_u32(buff + 0 * ss, transform_do32(tfm, ch0));
 				break;
 			}
 			break;
@@ -205,18 +205,18 @@ public:
 			{
 			case 2:
 				// 16 bit values - stereo
-				USBD_poke_u16(buff + 0, transform_do32(tfm, ch0));
-				USBD_poke_u16(buff + 2, transform_do32(tfm, ch1));
+				USBD_poke_u16(buff + 0 * ss, transform_do32(tfm, ch0));
+				USBD_poke_u16(buff + 1 * ss, transform_do32(tfm, ch1));
 				break;
 			case 3:
 				// 24 bit values - stereo
-				USBD_poke_u24(buff + 0, transform_do32(tfm, ch0));
-				USBD_poke_u24(buff + 3, transform_do32(tfm, ch1));
+				USBD_poke_u24(buff + 0 * ss, transform_do32(tfm, ch0));
+				USBD_poke_u24(buff + 1 * ss, transform_do32(tfm, ch1));
 				break;
 			case 4:
 				// 32 bit values - stereo
-				USBD_poke_u32(buff + 0, transform_do32(tfm, ch0));
-				USBD_poke_u32(buff + 4, transform_do32(tfm, ch1));
+				USBD_poke_u32(buff + 0 * ss, transform_do32(tfm, ch0));
+				USBD_poke_u32(buff + 1 * ss, transform_do32(tfm, ch1));
 				break;
 			}
 			break;
@@ -234,7 +234,7 @@ public:
 			{
 			case 4:
 				// 32 bit values - mono
-				USBD_poke_IEEE_FLOAT(buff + 0, (int32_t) transform_do32(tfm, ch0) / INT32_MAX);
+				USBD_poke_IEEE_FLOAT(buff + 0 * ss, (int32_t) transform_do32(tfm, ch0) / INT32_MAX);
 				break;
 			}
 			break;
@@ -244,8 +244,8 @@ public:
 			{
 			case 4:
 				// 32 bit values - stereo
-				USBD_poke_IEEE_FLOAT(buff + 0, (int32_t) transform_do32(tfm, ch0) / INT32_MAX);
-				USBD_poke_IEEE_FLOAT(buff + 4, (int32_t) transform_do32(tfm, ch1) / INT32_MAX);
+				USBD_poke_IEEE_FLOAT(buff + 0 * ss, (int32_t) transform_do32(tfm, ch0) / INT32_MAX);
+				USBD_poke_IEEE_FLOAT(buff + 1 * ss, (int32_t) transform_do32(tfm, ch1) / INT32_MAX);
 				break;
 			}
 			break;
@@ -263,15 +263,15 @@ public:
 			{
 			case 2:
 				// 16 bit values - mono
-				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
+				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0 * ss));
 				break;
 			case 3:
 				// 24 bit values - mono
-				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
+				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0 * ss));
 				break;
 			case 4:
 				// 32 bit values - mono
-				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
+				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0 * ss));
 				break;
 			}
 			break;
@@ -281,18 +281,18 @@ public:
 			{
 			case 2:
 				// 16 bit values - stereo
-				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0));
-				dest [1] = adpt_input(& adp, USBD_peek_u16(buff + 2));
+				dest [0] = adpt_input(& adp, USBD_peek_u16(buff + 0 * ss));
+				dest [1] = adpt_input(& adp, USBD_peek_u16(buff + 1 * ss));
 				break;
 			case 3:
 				// 24 bit values - stereo
-				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0));
-				dest [1] = adpt_input(& adp, USBD_peek_u24(buff + 3));
+				dest [0] = adpt_input(& adp, USBD_peek_u24(buff + 0 * ss));
+				dest [1] = adpt_input(& adp, USBD_peek_u24(buff + 1 * ss));
 				break;
 			case 4:
 				// 32 bit values - stereo
-				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0));
-				dest [1] = adpt_input(& adp, USBD_peek_u32(buff + 4));
+				dest [0] = adpt_input(& adp, USBD_peek_u32(buff + 0 * ss));
+				dest [1] = adpt_input(& adp, USBD_peek_u32(buff + 1 * ss));
 				break;
 			}
 			break;
@@ -310,7 +310,7 @@ public:
 			{
 			case 4:
 				// 32 bit values - mono
-				dest [0] = USBD_peek_IEEE_FLOAT(buff + 0);
+				dest [0] = USBD_peek_IEEE_FLOAT(buff + 0 * ss);
 				break;
 			}
 			break;
@@ -320,8 +320,8 @@ public:
 			{
 			case 4:
 				// 32 bit values - stereo
-				dest [0] = USBD_peek_IEEE_FLOAT(buff + 0);
-				dest [1] = USBD_peek_IEEE_FLOAT(buff + 4);
+				dest [0] = USBD_peek_IEEE_FLOAT(buff + 0 * ss);
+				dest [1] = USBD_peek_IEEE_FLOAT(buff + 1 * ss);
 				break;
 			}
 			break;
