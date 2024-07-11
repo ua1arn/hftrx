@@ -662,16 +662,22 @@ typedef struct lowspiio_tag
 	lowspiexchange_t chunks [3];
 } lowspiio_t;
 
+#if USESPILOCK
 static IRQLSPINLOCK_t spicslock;
+#endif /* USESPILOCK */
 
 void spi_operate_lock(IRQL_t * oldIrql)
 {
+#if USESPILOCK
 	IRQLSPIN_LOCK(& spicslock, oldIrql);
+#endif /* USESPILOCK */
 }
 
 void spi_operate_unlock(IRQL_t irql)
 {
+#if USESPILOCK
 	IRQLSPIN_UNLOCK(& spicslock, irql);
+#endif /* USESPILOCK */
 }
 
 #if USESPIDFSHARESPI
@@ -3965,7 +3971,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 void spi_initialize(void)
 {
+#if USESPILOCK
 	IRQLSPINLOCK_INITIALIZE(& spicslock, IRQL_SYSTEM);
+#endif /* USESPILOCK */
 
 #if WITHSPIHW && WITHSPISW
 	// программный и аппаратный SPI
