@@ -885,8 +885,13 @@ static void mctl_phy_ac_remapping(dram_para_t *para) {
         cfg = ac_remapping_tables[3];
         break;
       case 10:
-        PRINTF("DDR Using MAP: 5 \n");
-        cfg = ac_remapping_tables[5];
+#if CPUSTYLE_T113_S4
+        PRINTF("DDR Using MAP: 0 \n");
+        cfg = ac_remapping_tables[0];
+#else /* CPUSTYLE_T113_S4 */
+	    PRINTF("DDR Using MAP: 5 \n");
+	    cfg = ac_remapping_tables[5];
+#if /* CPUSTYLE_T113_S4 */
         break;
       case 11:
         PRINTF("DDR Using MAP: 4 \n");
