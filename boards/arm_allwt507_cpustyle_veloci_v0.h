@@ -828,8 +828,8 @@
 	/* Perform delay after assert or de-assert specific CS line */
 	#define SPI_CS_DELAY(target) do { \
 		switch (target) { \
-		case targetxad2: local_delay_us(50); break; /* external SPI device (PA BOARD ADC) */ \
-		case targetctl1: local_delay_us(50); break; /* board control registers chain */ \
+		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
+		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
 		default: local_delay_us(1); break; \
 		} \
 	} while (0)
