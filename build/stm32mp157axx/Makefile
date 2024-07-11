@@ -51,13 +51,13 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/13.2.1/liblto_plugin.dll
 CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv4
-CORE += -mfpu=vfpv4
+CORE += -mfpu=neon-vfpv4
+#CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Os
-OPT = -Ofast
+OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
