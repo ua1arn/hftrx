@@ -3508,6 +3508,8 @@ const char * get_band_label3(unsigned b); /* получение человеко
 
 uint_fast8_t edgepins_getptt(void);		/* Есть ли запрос на передачу с одного из источников */
 
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale);
+
 void gnss_initialize(void);	/* инициализация парсера GNSS потока NMEA */
 int board_islfmmode(void);
 uint_fast8_t islfmstart(unsigned now);

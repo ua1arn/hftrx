@@ -5482,7 +5482,7 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 {
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
-	const adcvalholder_t f = board_getswrpair_filtered(& r, swrcalibr);
+	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
 	* pr = r;
 	* pf = f;
 

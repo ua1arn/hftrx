@@ -8428,6 +8428,8 @@ uint_fast8_t board_getavox(void)	/* получить значение от де�
 
 #if WITHTX && WITHSWRMTR
 
+enum { SWRPWRHSLEN = 4 };
+
 // возврат считанных с АЦП значений forward и reflected
 // коррекция неодинаковости детекторов
 adcvalholder_t board_getswrpair_filtered(
@@ -8439,18 +8441,43 @@ adcvalholder_t board_getswrpair_filtered(
 	// 1000 & 333 = swr=2, 1000 & 250 = swr=1,66, 1000 & 500 = swr=3
 	//* reflected = 333;
 	//return 1000;
+	static adcvalholder_t fh [SWRPWRHSLEN];
+	static adcvalholder_t rh [SWRPWRHSLEN];
+	static unsigned lastix;
+
+	fh [lastix] = board_getadc_unfiltered_truevalue(FWD);
+	rh [lastix] = board_getadc_unfiltered_truevalue(REF);
+
+	if (++ lastix >= SWRPWRHSLEN)
+		lastix = 0;
+
 	unsigned f = 0;
 	unsigned r = 0;
-
-	unsigned n;
-	for (n = 0; n < 4; ++ n)
+	unsigned i;
+	for (i = 0; i < 1; ++ i)
 	{
-		f += board_getadc_unfiltered_truevalue(FWD);
-		r += board_getadc_unfiltered_truevalue(REF);
+		f += fh [i];
+		r += rh [i];
 	}
 
-	* reflected = r * (unsigned long) swrcalibr / (100 * n);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
-	return f / n;
+	* reflected = r * (unsigned long) swrcalibr / (100 * SWRPWRHSLEN);		// калибровка - умножение на 0.8...1.2 с точностью в 0.01;
+	return f / SWRPWRHSLEN;
+}
+
+// возврат считанных с АЦП значений forward и reflected
+// коррекция неодинаковости детекторов
+adcvalholder_t board_getswrpair_filtered_tuner(
+	adcvalholder_t * reflected, 	// в значениях АЦП
+	uint_fast8_t swrcalibr	// 90..110 - коррекция
+	)
+{
+	ASSERT(SWRPWRHSLEN > 1);
+	unsigned n = SWRPWRHSLEN - 1;
+
+	while (n --)
+		board_getswrpair_filtered(reflected, swrcalibr);
+
+	return board_getswrpair_filtered(reflected, swrcalibr);
 }
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)

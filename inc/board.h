@@ -307,6 +307,11 @@ adcvalholder_t board_getswrmeter_cached(
 	uint_fast8_t swrcalibr	// 90..110 - коррекция
 	);
 /* получить значение forward & reflected ADC - для работы автотюнера */
+adcvalholder_t board_getswrpair_filtered_tuner(
+	adcvalholder_t * reflected, 	// в значениях АЦП
+	uint_fast8_t swrcalibr	// 90..110 - коррекция
+	);
+/* получить значение forward & reflected ADC - для работы защиты и показа на экране */
 adcvalholder_t board_getswrpair_filtered(
 	adcvalholder_t * reflected, 	// в значениях АЦП
 	uint_fast8_t swrcalibr	// 90..110 - коррекция
@@ -437,6 +442,7 @@ void nmeamodem_initialize(void);	/* сброс машины состояний �
 void nmeamodem_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void nmeamodem_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmeamodem_sendchar(void * ctx);							/* вызывается из обработчика прерываний */
+
 
 #ifdef __cplusplus
 }
