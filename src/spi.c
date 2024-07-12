@@ -670,6 +670,8 @@ void spi_operate_lock(IRQL_t * oldIrql)
 {
 #if USESPILOCK
 	IRQLSPIN_LOCK(& spicslock, oldIrql);
+#else /* USESPILOCK */
+	* oldIrql = IRQL_SYSTEM;	// dummy value
 #endif /* USESPILOCK */
 }
 
@@ -677,6 +679,8 @@ void spi_operate_unlock(IRQL_t irql)
 {
 #if USESPILOCK
 	IRQLSPIN_UNLOCK(& spicslock, irql);
+#else /* USESPILOCK */
+	(void) irql;
 #endif /* USESPILOCK */
 }
 
@@ -694,17 +698,18 @@ void spidf_operate_unlock(IRQL_t irql)
 
 #else /* USESPIDFSHARESPI */
 
-	static IRQLSPINLOCK_t spidfcslock;
+static IRQLSPINLOCK_t spidfcslock;
 
-	void spidf_operate_lock(IRQL_t * oldIrql)
-	{
-		IRQLSPIN_LOCK(& spidfcslock, oldIrql);
-	}
+void spidf_operate_lock(IRQL_t * oldIrql)
+{
+	IRQLSPIN_LOCK(& spidfcslock, oldIrql);
+}
 
-	void spidf_operate_unlock(IRQL_t irql)
-	{
-		IRQLSPIN_UNLOCK(& spidfcslock, irql);
-	}
+void spidf_operate_unlock(IRQL_t irql)
+{
+	IRQLSPIN_UNLOCK(& spidfcslock, irql);
+}
+
 #endif /* USESPIDFSHARESPI */
 
 
