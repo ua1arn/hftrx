@@ -127,10 +127,16 @@ USBD_peek_u24(
 	const uint8_t * buff
 	)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	return
+		((uint_fast32_t) buff [2] << 16) +
+		__UNALIGNED_UINT16_READ(buff);
+#else
 	return
 		((uint_fast32_t) buff [2] << 16) +
 		((uint_fast32_t) buff [1] << 8) +
 		((uint_fast32_t) buff [0] << 0);
+#endif
 }
 
 /* получить 32-бит значение */
@@ -307,9 +313,14 @@ unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
 /* Little endian memory layout */
 unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 {
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	__UNALIGNED_UINT16_WRITE(buff, v);
+	buff [2] = HI_24BY(v);
+#else
 	buff [0] = LO_BYTE(v);
 	buff [1] = HI_BYTE(v);
 	buff [2] = HI_24BY(v);
+#endif
 
 	return 3;
 }
