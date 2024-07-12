@@ -171,7 +171,7 @@ static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * fi
 /* на плату/dsp идут значения в диапазоне BOARDPOWERMIN..BOARDPOWERMAX */
 #define WITHPOWERTRIMMIN    5    	// Нижний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMMAX    100    	// Верхний предел регулировки (показываемый на дисплее)
-#define WITHPOWERTRIMATU    10    	// Значение для работы автотюнера
+#define WITHPOWERTRIMATU    30    	// Значение для работы автотюнера
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
@@ -4049,7 +4049,7 @@ enum
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
-	static uint_fast8_t gmikehclip = 20;		/* Ограничитель */
+	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
 
 	#if WITHCOMPRESSOR
 		static uint_fast8_t gcompressor_attack = 30;
@@ -4165,7 +4165,7 @@ enum
 	static uint_fast16_t tunerind;// = (LMAX - LMIN) / 2 + LMIN;
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
-	static uint_fast8_t gtunerdelay = 20;
+	static uint_fast8_t gtunerdelay = 40;
 
 #endif /* WITHAUTOTUNER */
 
