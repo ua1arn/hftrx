@@ -17,7 +17,6 @@ MEMORY
   FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
   DDR3 (rwx) 	: ORIGIN = 0xC0000000 + 64M, LENGTH = 256M - 64M 		/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
   RAM (rwx)		: ORIGIN = 0x2FFC0000 + 9k + 0x100, LENGTH = 256k - 16k - 9k - 0x100	/* SYSRAM - 256k - 16k - 9k - 256 B */
-   TTB (rwx)  	: ORIGIN = 0xC0000000 + 256M - 16k, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
   SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k		/* Cortex-M4 memories */
   SRAM2 (rwx)  	: ORIGIN = 0x30000000, LENGTH = 96k		/* Cortex-M4 memories visible for Cortex-A7*/
 }
@@ -200,6 +199,23 @@ SECTIONS
 		. = ALIGN(64);
 	} > DDR3
 
+	.ttb BLOCK(16k) (NOLOAD):
+	{
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > DDR3
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
+	} > DDR3
+
 	.heap (NOLOAD):
 	{
 		__HeapBase = .;
@@ -222,9 +238,6 @@ SECTIONS
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
-
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
-	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/

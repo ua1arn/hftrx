@@ -946,7 +946,7 @@ typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1> voice16rxdma
 typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1> voice16txdma_t;
 
 static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
-static voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
+static RAMNC voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
 
 
 static voice16rxdma_t codec16rx(IRQL_REALTIME, "16rx", voice16rxbuf, ARRAY_SIZE(voice16rxbuf));		// from codec
@@ -1203,7 +1203,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 
 typedef buffitem<voice32tx_t> voice32txbuf_t;
 
-static voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
+static RAMNC voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
 typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1> voice32txdma_t;
 
@@ -2050,7 +2050,7 @@ typedef enum
 	} uacinrts192_t;
 
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
-	static uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
+	static RAMNC uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
 
 	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1, 1> uacinrts192dma_t;
 
@@ -2127,7 +2127,7 @@ typedef enum
 	} uacinrts96_t;
 
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
-	static uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
+	static RAMNC uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
 
 	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1, 1> uacinrts96dma_t;
 
@@ -2207,7 +2207,7 @@ typedef struct
 
 typedef buffitem<uacin48_t> uacin48buf_t;
 
-static uacin48buf_t uacin48buf [UACIN48_CAPACITY];
+static RAMNC uacin48buf_t uacin48buf [UACIN48_CAPACITY];
 
 typedef dmahandle<FLOAT_t, uacin48buf_t, 1, 1> uacin48dma_t;
 

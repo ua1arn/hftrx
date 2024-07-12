@@ -14,8 +14,7 @@
 */
 MEMORY
 {
-  RAM (rwx) 	: ORIGIN = 0xC0000000 + 0x100, LENGTH = 256M - 16k - 0x100 	/* DDR3 256 MM - 16 kB - 256 B*/
-  TTB (rwx)  	: ORIGIN = 0xC0000000 + 256M - 16k, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
+  RAM (rwx) 	: ORIGIN = 0xC0000000 + 0x100, LENGTH = 256M - 0x100 	/* DDR3 256 MM - 16 kB - 256 B*/
   SYSRAM (rwx)	: ORIGIN = 0x2FFC0000 + 9k + 256, LENGTH = 256k - 9k - 0x100	/* SYSRAM - 256 k - 9 k - 256 B */
 }
 
@@ -203,6 +202,23 @@ SECTIONS
 		. = ALIGN(64);
 	} > RAM
 
+	.ttb BLOCK(16k) (NOLOAD):
+	{
+		PROVIDE(__TTB_BASE = .);
+		LONG(0)	/* dummy object */
+		. = ALIGN(16k);
+	} > RAM
+
+	.ramnc BLOCK(1M) (NOLOAD):
+	{
+		PROVIDE(__RAMNC_BASE = .);
+		__bss2_start__ = .;
+		*(.ramnc*)
+		__bss2_end__ = .;
+		. = ALIGN(1M);
+		PROVIDE(__RAMNC_TOP = .);
+	} > RAM
+
 	.heap (NOLOAD):
 	{
 		__HeapBase = .;
@@ -225,9 +241,6 @@ SECTIONS
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
-
-	PROVIDE(__TTB_BASE = ORIGIN(TTB));
-	/* PROVIDE(__ttb_end__ = ORIGIN(TTB) + LENGTH(TTB)); */
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
