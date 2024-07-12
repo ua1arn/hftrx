@@ -152,7 +152,7 @@ static const FLASHMEM struct menudef menutable [] =
 #endif /* WITHLCDBACKLIGHT */
 #if WITHKBDBACKLIGHT
 	{
-		QLABEL("KBD LIGH"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL2("KBD LIGH", "KBD Backlight"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		OFFSETOF(struct nvmap, gkblight),
