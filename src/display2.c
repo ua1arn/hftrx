@@ -3758,6 +3758,8 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 {
 	if (gvars.afsp.is_ready)
 	{
+		const FLOAT_t m1 = 0.6;
+		const FLOAT_t m2 = 1 - m1;
 		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
 		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 
@@ -3765,7 +3767,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		// осталась половина буфера
 
 		ARM_MORPH(arm_mult)(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
-		ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
+		VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0)); // 0-прямое, 1-обратное
 		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 		ARM_MORPH(arm_cmplx_mag)(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
 
@@ -3775,7 +3777,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 			const uint_fast16_t fftpos = raster2fftsingle(x, gvars.afsp.w, leftfftpos, rightfftpos);
 			ASSERT(fftpos < ARRAY_SIZE(gvars.afsp.fft_buf));
 			// filterig
-			gvars.afsp.val_array [x] = gvars.afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * gvars.afsp.fft_buf [fftpos];
+			gvars.afsp.val_array [x] = gvars.afsp.val_array [x] * m1 + m2 * gvars.afsp.fft_buf [fftpos];
 		}
 		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, gvars.afsp.w, & gvars.afsp.max_val);	// поиск в отображаемой части
 		gvars.afsp.max_val = FMAXF(gvars.afsp.max_val, (FLOAT_t) 0.001);
