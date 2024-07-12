@@ -611,7 +611,7 @@ static unsigned UAC2_AC_InterfaceDesc(
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_INTERFACE_DESCRIPTOR_TYPE;      /* bDescriptorType */
 		* buff ++ = bInterfaceNumber;					/* bInterfaceNumber */
-		* buff ++ = 0x00;								/* bAlternateSetting */
+		* buff ++ = 0x00;								/* bAlternateSetting.S Must be set to 0. */
 		* buff ++ = 0x00;                               /* bNumEndpoints */
 		* buff ++ = USB_DEVICE_CLASS_AUDIO;             /* bInterfaceClass */
 		* buff ++ = AUDIO_SUBCLASS_AUDIOCONTROL;        /* bInterfaceSubClass */
@@ -1543,9 +1543,9 @@ static unsigned UAC1_FormatTypeDesc_IN48(uint_fast8_t fill, uint8_t * buff, unsi
 		* buff ++ = AUDIO_INTERFACE_DESCRIPTOR_TYPE;// CS_INTERFACE Descriptor Type (bDescriptorType) 0x24
 		* buff ++ = AUDIO_STREAMING_FORMAT_TYPE;   // FORMAT_TYPE subtype. (bDescriptorSubtype) 0x02
 		* buff ++ = AUDIO_FORMAT_TYPE_I;							/* bFormatType */
-		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;		/* bNrChannels */
-		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES; /* bSubFrameSize :  2 Bytes per frame (16bits) */
-		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES * 8;		/* bBitResolution (16-bits per sample) */
+		* buff ++ = UACIN_FMT_CHANNELS_AUDIO48;			/* bNrChannels */
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES; 			/* bSubFrameSize */
+		* buff ++ = UACIN_AUDIO48_SAMPLEBYTES * 8;		/* bBitResolution */
 		* buff ++ = 1;										/* bSamFreqType only one frequency supported */
 		* buff ++ = LO_BYTE(samplefreq1);	/* Audio sampling frequency coded on 3 bytes */
 		* buff ++ = HI_BYTE(samplefreq1);
