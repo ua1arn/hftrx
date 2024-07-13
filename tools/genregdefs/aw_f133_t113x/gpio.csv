@@ -1,12 +1,4 @@
 #type; GPIO
-
-#base; GPIOB 0x02000030
-#base; GPIOC 0x02000060
-#base; GPIOD 0x02000090
-#base; GPIOE 0x020000C0
-#base; GPIOF 0x020000F0
-#base; GPIOG 0x02000120
-
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
 #regdef; DRV; 0x014 4; Multi_Driving Register
@@ -15,9 +7,6 @@
 #typeend;
 
 #type; GPIOBLOCK
-
-#base; GPIOBLOCK 0x02000000
-
 #aggreg; GPIO_PINS; 0x0000 7; GPIO pin control
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
@@ -38,33 +27,6 @@
 #typeend;
 
 #type; GPIOINT
-
-#base; GPIOINTB 0x02000220
-#base; GPIOINTC 0x02000240
-#base; GPIOINTD 0x02000260
-#base; GPIOINTE 0x02000280
-#base; GPIOINTF 0x020002A0
-#base; GPIOINTG 0x020002C0
-
-#irq; GPIOB_NS 101 
-#irq; GPIOB_S 102 
-#irq; GPIOC_NS 103 
-#irq; GPIOC_S 104 
-#irq; GPIOD_NS 105 
-#irq; GPIOD_S 106 
-#irq; GPIOE_NS 107 
-#irq; GPIOE_S 108 
-#irq; GPIOF_NS 109 
-#irq; GPIOF_S 110 
-#irq; GPIOG_NS 111 
-
-#irqrv; GPIOB_NS 85 
-#irqrv; GPIOC_NS 87 
-#irqrv; GPIOD_NS 89
-#irqrv; GPIOE_NS 91 
-#irqrv; GPIOF_NS 93 
-#irqrv; GPIOG_NS 95 
-
 #regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
 #regdef; EINT_CTL; 0x010; External Interrupt Control Register
 #regdef; EINT_STATUS; 0x014; External Interrupt Status Register

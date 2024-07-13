@@ -10,7 +10,9 @@ SET FILELIST=gic.csv r_cpucfg.csv r_ccu.csv cpusubsysctrl.csv risc_cfg.csv ccu.c
 	tvd.csv c0_cpux_cfg.csv ddrphyc.csv sid.csv ^
 	usb_ehci_capability.csv usb_ohci_capability.csv usbehci.csv usbotg.csv usbphyc.csv ^
 	spinlock.csv dmac.csv pwm.csv emac.csv msgbox.csv smc.csv spc.csv ^
-	mctl_com.csv mctl_phy.csv dcu.csv tv.csv ve.csv
+	mctl_com.csv mctl_phy.csv dcu.csv tv.csv ve.csv ^
+	memortmap_t113x.csv
+	
 
 %CONVERTER% %FILELIST% > %OUTFILE%
 

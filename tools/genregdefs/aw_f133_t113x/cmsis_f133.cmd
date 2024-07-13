@@ -8,7 +8,8 @@ SET FILELIST=risc_cfg.csv risc_wdg.csv risc_timestamp.csv ccu.csv plic.csv sys_c
 	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
 	de3.csv di.csv g2d.csv dsi.csv display_if_top.csv tcon_lcd.csv tcon_tv.csv tve_top.csv csi.csv tvd.csv tv.csv ve.csv ^
 	ddrphyc.csv sid.csv dmac.csv pwm.csv ^
-	emac.csv clint.csv mctl_com.csv mctl_phy.csv r_ccu.csv r_cpucfg.csv c0_cpux_cfg.csv c0_cpux_mbist.csv
+	emac.csv clint.csv mctl_com.csv mctl_phy.csv r_ccu.csv r_cpucfg.csv c0_cpux_cfg.csv c0_cpux_mbist.csv ^
+	memortmap_t113x.csv
 
 %CONVERTER% --riscv %FILELIST% > %OUTFILE%
 

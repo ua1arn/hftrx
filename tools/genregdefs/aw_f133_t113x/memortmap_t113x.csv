@@ -1,0 +1,65 @@
+#type; GPIO
+
+#base; GPIOB 0x02000030
+#base; GPIOC 0x02000060
+#base; GPIOD 0x02000090
+#base; GPIOE 0x020000C0
+#base; GPIOF 0x020000F0
+#base; GPIOG 0x02000120
+#typeend;
+
+#type; GPIOBLOCK
+
+#base; GPIOBLOCK 0x02000000
+#typeend;
+
+#type; GPIOINT
+
+#base; GPIOINTB 0x02000220
+#base; GPIOINTC 0x02000240
+#base; GPIOINTD 0x02000260
+#base; GPIOINTE 0x02000280
+#base; GPIOINTF 0x020002A0
+#base; GPIOINTG 0x020002C0
+
+#irq; GPIOB_NS 101 
+#irq; GPIOB_S 102 
+#irq; GPIOC_NS 103 
+#irq; GPIOC_S 104 
+#irq; GPIOD_NS 105 
+#irq; GPIOD_S 106 
+#irq; GPIOE_NS 107 
+#irq; GPIOE_S 108 
+#irq; GPIOF_NS 109 
+#irq; GPIOF_S 110 
+#irq; GPIOG_NS 111 
+
+#irqrv; GPIOB_NS 85 
+#irqrv; GPIOC_NS 87 
+#irqrv; GPIOD_NS 89
+#irqrv; GPIOE_NS 91 
+#irqrv; GPIOF_NS 93 
+#irqrv; GPIOG_NS 95 
+#typeend;
+
+#type; UART
+#base; UART0 0x02500000
+#base; UART1 0x02500400
+#base; UART2 0x02500800
+#base; UART3 0x02500C00
+#base; UART4 0x02501000
+#base; UART5 0x02501400
+
+#irq; UART0 34
+#irq; UART1 35
+#irq; UART2 36
+#irq; UART3 37
+#irq; UART4 38
+#irq; UART5 39
+#irqrv; UART0 18
+#irqrv; UART1 19
+#irqrv; UART2 20
+#irqrv; UART3 21
+#irqrv; UART4 22
+#irqrv; UART5 23
+#typeend;

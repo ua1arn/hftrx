@@ -726,6 +726,134 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file) {
 
 }
 
+static struct parsedfile * findregs(const char * name) {
+	PLIST_ENTRY t;
+	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
+		if (! strcmp(pfl->bname, name))
+			return pfl;
+	}
+	return NULL;
+}
+
+/* release memory of bitfields */
+static void freebitfields(PLIST_ENTRY p) {
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;) {
+		struct bitfield *const fieldp = CONTAINING_RECORD(t, struct bitfield, item);
+		t = t->Flink;
+		free(fieldp->bitfldname);
+	}
+}
+
+/* release memory of register definitions */
+static void freeregdfn(PLIST_ENTRY p) {
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;) {
+		struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
+		t = t->Flink;
+		free(regp->fldname);
+		free(regp->comment);
+		freeregdfn(&regp->aggregate);
+		freebitfields(&regp->bitfields);
+		free(regp);
+	}
+}
+
+
+/* release memory of defines */
+static void freedefines(PLIST_ENTRY p) {
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;) {
+		struct defdfn *const defp = CONTAINING_RECORD(t, struct defdfn, item);
+		t = t->Flink;
+		free(defp->name);
+		free(defp->value);
+		free(defp->comment);
+		free(defp);
+	}
+}
+
+static void freeregs(struct parsedfile *pfl) {
+	int i;
+	for (i = 0; i < pfl->irqrv_count; ++i) {
+		free(pfl->irqrv_xnames[i]);
+		free(pfl->irqrv_xcomments[i]);
+	}
+	for (i = 0; i < pfl->irq_count; ++i) {
+		free(pfl->irq_xnames[i]);
+		free(pfl->irq_xcomments[i]);
+	}
+	for (i = 0; i < pfl->base_count; ++i) {
+		free(pfl->base_xnames[i]);
+		//free(pfl->base_xcomments [i]);
+	}
+	//free(pfl->sss);
+	freeregdfn(&pfl->regslist);
+	freedefines(&pfl->defineslist);
+	free(pfl->comment);
+	free(pfl->file);
+}
+
+static void movelist(PLIST_ENTRY dst, PLIST_ENTRY src) {
+	while (! IsListEmpty(src)) {
+		PLIST_ENTRY const t = RemoveHeadList(src);
+		InsertTailList(dst, t);
+	}
+}
+
+static void mergestrings(char ** dst, char ** src) {
+	if (* dst == NULL) {
+		* dst = * src;
+		* src = NULL;
+	} else if (* dst != NULL && * src != NULL) {
+		free(* dst);
+		* dst = * src;
+		* src = NULL;
+	} else {
+
+	}
+}
+
+static void mergeregs(struct parsedfile * old, struct parsedfile * pfl) {
+	int t;
+	int i;
+
+	for (t = old->irqrv_count, i = 0; i < pfl->irqrv_count; ++i, ++ t) {
+		old->irqrv_array [t] = pfl->irqrv_array[i];
+		old->irqrv_xnames [t] = pfl->irqrv_xnames[i];
+		old->irqrv_xcomments [t] = pfl->irqrv_xcomments[i];
+	}
+	old->irqrv_count = t;
+	pfl->irqrv_count = 0;
+
+	for (t = old->irq_count, i = 0; i < pfl->irq_count; ++i, ++ t) {
+		old->irq_array [t] = pfl->irq_array[i];
+		old->irq_xnames [t] = pfl->irq_xnames[i];
+		old->irq_xcomments [t] = pfl->irq_xcomments[i];
+	}
+	old->irq_count = t;
+	pfl->irq_count = 0;
+
+	for (t = old->base_count, i = 0; i < pfl->base_count; ++i, ++ t) {
+		old->base_address [t] = pfl->base_address[i];
+		old->base_xnames [t] = pfl->base_xnames[i];
+		//old->base_xcomments [t] = pfl->base_xcomments[i];
+	}
+	old->base_count = t;
+	pfl->base_count = 0;
+
+	//free(pfl->sss);
+	movelist(&old->regslist, &pfl->regslist);
+	movelist(&old->defineslist, &pfl->defineslist);
+
+	mergestrings(& old->comment, & pfl->comment);
+	mergestrings(& old->file, & pfl->file);
+}
+
 static void loadfile(const char *file) {
 	FILE *fp = fopen(file, "rt");
 
@@ -742,7 +870,14 @@ static void loadfile(const char *file) {
 	for (;;) {
 		struct parsedfile *const pfl = calloc(1, sizeof(struct parsedfile));
 		if (loadregs(pfl, fp, file)) {
-			InsertTailList(&parsedfiles, &pfl->item);
+			struct parsedfile * const old = findregs(pfl->bname);
+			if (old == NULL) {
+				InsertTailList(&parsedfiles, &pfl->item);
+			} else {
+				mergeregs(old, pfl);
+				freeregs(pfl);
+				free(pfl);
+			}
 		} else {
 			free(pfl);
 			break;
@@ -812,68 +947,6 @@ static int collect_irqrv(struct parsedfile *pfl, int n, struct irqmap *v) {
 		v->pfl = pfl;
 	}
 	return score;
-}
-
-/* release memory of bitfields */
-static void freebitfields(PLIST_ENTRY p) {
-	PLIST_ENTRY t;
-	//fprintf(stderr, "Release memory\n");
-	for (t = p->Flink; t != p;) {
-		struct bitfield *const fieldp = CONTAINING_RECORD(t, struct bitfield, item);
-		t = t->Flink;
-		free(fieldp->bitfldname);
-	}
-}
-
-/* release memory of register definitions */
-static void freeregdfn(PLIST_ENTRY p) {
-	PLIST_ENTRY t;
-	//fprintf(stderr, "Release memory\n");
-	for (t = p->Flink; t != p;) {
-		struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn, item);
-		t = t->Flink;
-		free(regp->fldname);
-		free(regp->comment);
-		freeregdfn(&regp->aggregate);
-		freebitfields(&regp->bitfields);
-		free(regp);
-	}
-}
-
-
-/* release memory of defines */
-static void freedefines(PLIST_ENTRY p) {
-	PLIST_ENTRY t;
-	//fprintf(stderr, "Release memory\n");
-	for (t = p->Flink; t != p;) {
-		struct defdfn *const defp = CONTAINING_RECORD(t, struct defdfn, item);
-		t = t->Flink;
-		free(defp->name);
-		free(defp->value);
-		free(defp->comment);
-		free(defp);
-	}
-}
-
-static void freeregs(struct parsedfile *pfl) {
-	int i;
-	for (i = 0; i < pfl->irqrv_count; ++i) {
-		free(pfl->irqrv_xnames[i]);
-		free(pfl->irqrv_xcomments[i]);
-	}
-	for (i = 0; i < pfl->irq_count; ++i) {
-		free(pfl->irq_xnames[i]);
-		free(pfl->irq_xcomments[i]);
-	}
-	for (i = 0; i < pfl->base_count; ++i) {
-		free(pfl->base_xnames[i]);
-		//free(pfl->base_xcomments [i]);
-	}
-	//free(pfl->sss);
-	freeregdfn(&pfl->regslist);
-	freedefines(&pfl->defineslist);
-	free(pfl->comment);
-	free(pfl->file);
 }
 
 static void emitcpu(int indent) {
@@ -1397,6 +1470,7 @@ int main(int argc, char *argv[], char *envp[]) {
 			t = t->Flink;
 
 			freeregs(pfl);
+			free(pfl);
 		}
 	}
 
