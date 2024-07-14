@@ -2257,7 +2257,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			1 * (UINT32_C(1) << 6) |		// SS_OWNER: 1: Software
 			//(UINT32_C(1) << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
-	spi_bdelay [spispeedindex] = spispeed < 4000000;
+
+	// TODO: разобравться, почем требуется задержка
+	spi_bdelay [spispeedindex] = (spispeed < 4000000) ? ((spispeed < 1000000) ? 4 : 1) : 0;
 //	tcr &= ~((0x3 << 4) | (0x1 << 7));
 //	tcr |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
 
