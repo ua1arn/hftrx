@@ -303,7 +303,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 }
 
 void gendefines(struct parsedfile *pfl) {
-	PLIST_ENTRY const p = & pfl->defineslist;
+	PLIST_ENTRY const p = &pfl->defineslist;
 	PLIST_ENTRY t;
 	for (t = p->Flink; t != p; t = t->Flink) {
 		struct defdfn *const defp = CONTAINING_RECORD(t, struct defdfn, item);
@@ -431,10 +431,10 @@ static void trimname(char *s) {
 
 /* trim spaces */
 static void trimheadspaces(char *s) {
-	char * dst = s;
-	while (* s == ' ' || * s == '\t')
-		++ s;
-	while ((* dst ++ = * s ++) != '\0')
+	char *dst = s;
+	while (*s == ' ' || *s == '\t')
+		++s;
+	while ((*dst++ = *s++) != '\0')
 		;
 }
 
@@ -537,8 +537,7 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead) {
 			InsertTailList(listhead, &regp->item);
 			if (nextline(fp) == 0)
 				break;
-		}
-		else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
+		} else if (2 == sscanf(token0, "#regdef; %[a-zA-Z_0-9/-] %i %n", fldname, &fldsize, &pos)) {
 			struct regdfn *regp = parseregdef(token0 + pos, fldname, fldsize, 0, file);
 			//fprintf(stderr, "Parsed 2 regdef fldname='%s' fldszie=%u\n", fldname, fldsize);
 			/* parsed */
@@ -726,11 +725,11 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file) {
 
 }
 
-static struct parsedfile * findregs(const char * name) {
+static struct parsedfile* findregs(const char *name) {
 	PLIST_ENTRY t;
 	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink) {
 		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile, item);
-		if (! strcmp(pfl->bname, name))
+		if (!strcmp(pfl->bname, name))
 			return pfl;
 	}
 	return NULL;
@@ -761,7 +760,6 @@ static void freeregdfn(PLIST_ENTRY p) {
 		free(regp);
 	}
 }
-
 
 /* release memory of defines */
 static void freedefines(PLIST_ENTRY p) {
@@ -799,48 +797,49 @@ static void freeregs(struct parsedfile *pfl) {
 }
 
 static void movelist(PLIST_ENTRY dst, PLIST_ENTRY src) {
-	while (! IsListEmpty(src)) {
-		PLIST_ENTRY const t = RemoveHeadList(src);
+	while (!IsListEmpty(src)) {
+		PLIST_ENTRY const t = RemoveHeadList(src)
+		;
 		InsertTailList(dst, t);
 	}
 }
 
-static void mergestrings(char ** dst, char ** src) {
-	if (* dst == NULL) {
-		* dst = * src;
-		* src = NULL;
-	} else if (* dst != NULL && * src != NULL) {
-		free(* dst);
-		* dst = * src;
-		* src = NULL;
+static void mergestrings(char **dst, char **src) {
+	if (*dst == NULL) {
+		*dst = *src;
+		*src = NULL;
+	} else if (*dst != NULL && *src != NULL) {
+		free(*dst);
+		*dst = *src;
+		*src = NULL;
 	} else {
 
 	}
 }
 
-static void mergeregs(struct parsedfile * old, struct parsedfile * pfl) {
+static void mergeregs(struct parsedfile *old, struct parsedfile *pfl) {
 	int t;
 	int i;
 
-	for (t = old->irqrv_count, i = 0; i < pfl->irqrv_count; ++i, ++ t) {
-		old->irqrv_array [t] = pfl->irqrv_array[i];
-		old->irqrv_xnames [t] = pfl->irqrv_xnames[i];
-		old->irqrv_xcomments [t] = pfl->irqrv_xcomments[i];
+	for (t = old->irqrv_count, i = 0; i < pfl->irqrv_count && t < BASE_MAX; ++i, ++t) {
+		old->irqrv_array[t] = pfl->irqrv_array[i];
+		old->irqrv_xnames[t] = pfl->irqrv_xnames[i];
+		old->irqrv_xcomments[t] = pfl->irqrv_xcomments[i];
 	}
 	old->irqrv_count = t;
 	pfl->irqrv_count = 0;
 
-	for (t = old->irq_count, i = 0; i < pfl->irq_count; ++i, ++ t) {
-		old->irq_array [t] = pfl->irq_array[i];
-		old->irq_xnames [t] = pfl->irq_xnames[i];
-		old->irq_xcomments [t] = pfl->irq_xcomments[i];
+	for (t = old->irq_count, i = 0; i < pfl->irq_count && t < BASE_MAX; ++i, ++t) {
+		old->irq_array[t] = pfl->irq_array[i];
+		old->irq_xnames[t] = pfl->irq_xnames[i];
+		old->irq_xcomments[t] = pfl->irq_xcomments[i];
 	}
 	old->irq_count = t;
 	pfl->irq_count = 0;
 
-	for (t = old->base_count, i = 0; i < pfl->base_count; ++i, ++ t) {
-		old->base_address [t] = pfl->base_address[i];
-		old->base_xnames [t] = pfl->base_xnames[i];
+	for (t = old->base_count, i = 0; i < pfl->base_count && t < BASE_MAX; ++i, ++t) {
+		old->base_address[t] = pfl->base_address[i];
+		old->base_xnames[t] = pfl->base_xnames[i];
 		//old->base_xcomments [t] = pfl->base_xcomments[i];
 	}
 	old->base_count = t;
@@ -850,8 +849,8 @@ static void mergeregs(struct parsedfile * old, struct parsedfile * pfl) {
 	movelist(&old->regslist, &pfl->regslist);
 	movelist(&old->defineslist, &pfl->defineslist);
 
-	mergestrings(& old->comment, & pfl->comment);
-	mergestrings(& old->file, & pfl->file);
+	mergestrings(&old->comment, &pfl->comment);
+	mergestrings(&old->file, &pfl->file);
 }
 
 static void loadfile(const char *file) {
@@ -870,7 +869,7 @@ static void loadfile(const char *file) {
 	for (;;) {
 		struct parsedfile *const pfl = calloc(1, sizeof(struct parsedfile));
 		if (loadregs(pfl, fp, file)) {
-			struct parsedfile * const old = findregs(pfl->bname);
+			struct parsedfile *const old = findregs(pfl->bname);
 			if (old == NULL) {
 				InsertTailList(&parsedfiles, &pfl->item);
 			} else {
