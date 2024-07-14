@@ -4020,7 +4020,7 @@ void spi_initialize(void)
 
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
-	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
+	hardware_spi_master_setfreq(SPIC_SPEED400k, 400000);	/* 400 kHz для MCP3208, DS1305 */
 	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000);	/* 1 MHz для XPT2046 */
 	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
