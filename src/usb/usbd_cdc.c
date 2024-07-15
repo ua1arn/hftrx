@@ -341,8 +341,9 @@ static void cdcXout_buffer_save(
 	)
 {
 	unsigned i;
-	//PRINTF("1:%u '%*.*s'", length, length, length, data);
-
+	//printhex(offset * 256, data, length);
+	if (offset != MAIN_CDC_OFFSET)
+		return;
 	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
 	{
 		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
